@@ -20,7 +20,13 @@ namespace PoeClone.Inventory
         public EquipmentSet Equipment { get; private set; }
         public StatSheet Stats { get; private set; }
 
+        // PlayerStats lives in a different assembly (this one compiles first and can't reference
+        // it), so PlayerStatsLink forwards the death notification here -- the same bridging
+        // pattern it already uses for base stats flowing in and gear bonuses flowing out.
+        public bool IsPlayerDead { get; private set; }
+
         public event Action StatsChanged;
+        public event Action PlayerDied;
 
         private void Awake()
         {
@@ -49,6 +55,15 @@ namespace PoeClone.Inventory
         {
             Stats = StatSheet.Build(baseStats, Equipment);
             StatsChanged?.Invoke();
+        }
+
+        public void NotifyPlayerDied()
+        {
+            if (IsPlayerDead)
+                return;
+
+            IsPlayerDead = true;
+            PlayerDied?.Invoke();
         }
     }
 }

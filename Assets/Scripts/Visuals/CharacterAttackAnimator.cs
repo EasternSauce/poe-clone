@@ -64,15 +64,48 @@ namespace PoeClone.Visuals
             Range = 1.6f
         };
 
+        // A diagonal cross-body cut: yaw (sideways sweep) dominates pitch (forward/back) so the
+        // blade reads as slashing from high on one shoulder down to the opposite hip, not
+        // chopping straight down like an overhead axe swing. Roll twists the blade through the cut.
         private static readonly AttackProfile SwordProfile = new AttackProfile
         {
             Duration = 0.55f,
             StrikeTime = 0.45f,
-            WindupOffset = new Pose(50f, -35f, -20f, 60f),
-            StrikeOffset = new Pose(-70f, 45f, 25f, 35f),
+            WindupOffset = new Pose(30f, -55f, -40f, 65f),
+            StrikeOffset = new Pose(-35f, 55f, 45f, 30f),
             BaseAttacksPerSecond = 1.2f,
             Range = 2.2f
         };
+
+        // A straight thrust: pitch dominates with almost no yaw/roll, so the arm punches the
+        // blade forward and snaps back rather than sweeping across the body. Shares the slash's
+        // pace and reach (see PickProfile) so it's a pure visual variant, not a balance change.
+        private static readonly AttackProfile SwordStabProfile = new AttackProfile
+        {
+            Duration = 0.4f,
+            StrikeTime = 0.55f,
+            WindupOffset = new Pose(45f, -8f, -5f, 95f),
+            StrikeOffset = new Pose(-80f, 4f, 0f, 8f),
+            BaseAttacksPerSecond = SwordProfile.BaseAttacksPerSecond,
+            Range = SwordProfile.Range
+        };
+
+        // Mirror of SwordProfile (yaw/roll negated): the same diagonal cut from the opposite
+        // shoulder, so consecutive swings don't always cross the body the same way.
+        private static readonly AttackProfile SwordSlashMirroredProfile = new AttackProfile
+        {
+            Duration = SwordProfile.Duration,
+            StrikeTime = SwordProfile.StrikeTime,
+            WindupOffset = new Pose(SwordProfile.WindupOffset.ArmPitch, -SwordProfile.WindupOffset.ArmYaw, -SwordProfile.WindupOffset.ArmRoll, SwordProfile.WindupOffset.ElbowBend),
+            StrikeOffset = new Pose(SwordProfile.StrikeOffset.ArmPitch, -SwordProfile.StrikeOffset.ArmYaw, -SwordProfile.StrikeOffset.ArmRoll, SwordProfile.StrikeOffset.ElbowBend),
+            BaseAttacksPerSecond = SwordProfile.BaseAttacksPerSecond,
+            Range = SwordProfile.Range
+        };
+
+        // Chance a sword swing plays the stab variant, or mirrors the slash to the opposite
+        // diagonal, instead of the default slash.
+        private const float SwordStabChance = 0.25f;
+        private const float SwordMirrorChance = 0.15f;
 
         // Tuned for a rest pose that's already raised forward (e.g. the zombie's -65 deg stance),
         // so it doesn't need nearly as much swing as a weapon profile to read as a forward strike.
@@ -123,7 +156,24 @@ namespace PoeClone.Visuals
 
         public void PlayAttack(WeaponType weaponType)
         {
-            Play(ProfileFor(weaponType));
+            Play(PickProfile(weaponType));
+        }
+
+        // Picks which animation actually plays. Independent of ProfileFor, which stays the
+        // canonical source for pacing/range (BaseAttackSpeed, AttackRange) so those numbers don't
+        // flicker between variants.
+        private static AttackProfile PickProfile(WeaponType weaponType)
+        {
+            if (weaponType != WeaponType.Sword)
+                return ProfileFor(weaponType);
+
+            float roll = UnityEngine.Random.value;
+            if (roll < SwordStabChance)
+                return SwordStabProfile;
+            if (roll < SwordStabChance + SwordMirrorChance)
+                return SwordSlashMirroredProfile;
+
+            return SwordProfile;
         }
 
         /// <summary>Enemy claw swipe: a separate profile from player weapons since it's tuned for a different rest pose.</summary>

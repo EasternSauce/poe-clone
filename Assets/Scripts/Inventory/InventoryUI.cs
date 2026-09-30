@@ -128,6 +128,21 @@ namespace PoeClone.Inventory
 
             BuildUI(hasPreview);
             StartCoroutine(Prewarm());
+
+            inventory.PlayerDied += OnPlayerDied;
+        }
+
+        private void OnDestroy()
+        {
+            if (inventory != null)
+                inventory.PlayerDied -= OnPlayerDied;
+        }
+
+        // Can't loot/reroll gear once dead: force the panel shut and leave it locked (see the
+        // Update guard below, which stops I/Escape from reopening it).
+        private void OnPlayerDied()
+        {
+            SetOpen(false);
         }
 
         // Opens everything once, invisibly, so the first real open has nothing left to set up
@@ -155,8 +170,10 @@ namespace PoeClone.Inventory
             if (warming)
                 return;
 
+            bool dead = inventory.IsPlayerDead;
+
             Keyboard keyboard = Keyboard.current;
-            if (keyboard != null)
+            if (keyboard != null && !dead)
             {
                 if (keyboard.iKey.wasPressedThisFrame)
                     SetOpen(!isOpen);

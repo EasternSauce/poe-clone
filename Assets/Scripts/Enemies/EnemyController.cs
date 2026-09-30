@@ -32,6 +32,7 @@ namespace PoeClone.Enemies
 
         private CharacterController controller;
         private PlayerController player;
+        private PlayerStats playerStats;
         private State state = State.Idle;
         private float verticalVelocity;
         private int avoidSide;
@@ -67,6 +68,7 @@ namespace PoeClone.Enemies
         private void Start()
         {
             player = FindAnyObjectByType<PlayerController>();
+            playerStats = FindAnyObjectByType<PlayerStats>();
 
             // Deferred to Start so it runs after EnemyCombat.Awake has had a chance to add the
             // attack animator to the model.
@@ -80,14 +82,21 @@ private void Update()
                 player = FindAnyObjectByType<PlayerController>();
             }
 
+            if (playerStats == null)
+            {
+                playerStats = FindAnyObjectByType<PlayerStats>();
+            }
+
             bool staggered = stagger != null && stagger.IsStaggered;
             bool attacking = attackAnimator != null && attackAnimator.IsAttacking;
+            bool playerDead = playerStats != null && playerStats.IsDead;
 
             Vector3 horizontal = Vector3.zero;
             Vector3 facing = Vector3.zero;
 
-            // A mini-stun: frozen in place, no tracking, until it wears off.
-            if (player != null && !staggered)
+            // A mini-stun: frozen in place, no tracking, until it wears off. A dead player is
+            // treated the same as no target: stop chasing/facing rather than stand there tracking a corpse.
+            if (player != null && !staggered && !playerDead)
             {
                 Vector3 toPlayer = player.transform.position - transform.position;
                 toPlayer.y = 0f;

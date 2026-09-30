@@ -50,12 +50,25 @@ namespace PoeClone.Player
         {
             if (attackAnimator != null)
                 attackAnimator.StrikeFrame += PerformHit;
+
+            stats.Died += OnDied;
         }
 
         private void OnDestroy()
         {
             if (attackAnimator != null)
                 attackAnimator.StrikeFrame -= PerformHit;
+
+            if (stats != null)
+                stats.Died -= OnDied;
+        }
+
+        // No more input handling, highlighting, or hits once dead: PlayerStats has already
+        // stopped movement and played the death collapse, so combat just gets out of the way too.
+        private void OnDied()
+        {
+            SetHighlight(null);
+            enabled = false;
         }
 
         private void Update()
@@ -157,7 +170,7 @@ namespace PoeClone.Player
                 if (target == null || target == (object)stats)
                     continue;
 
-                if (!IsInCone(hitBuffer[i].transform.position, range))
+                if (!IsInCone(hitBuffer[i].transform.position, range, transform.forward))
                     continue;
 
                 if (hitAlready.Add(target))
@@ -165,7 +178,7 @@ namespace PoeClone.Player
             }
         }
 
-        private bool IsInCone(Vector3 worldPosition, float range)
+        private bool IsInCone(Vector3 worldPosition, float range, Vector3 forward)
         {
             Vector3 toTarget = worldPosition - transform.position;
             toTarget.y = 0f;
@@ -177,20 +190,30 @@ namespace PoeClone.Player
             if (distance <= 0.001f)
                 return true;
 
-            return Vector3.Angle(transform.forward, toTarget) <= coneHalfAngle;
+            return Vector3.Angle(forward, toTarget) <= coneHalfAngle;
         }
 
         // Pure aiming feedback: highlights whichever in-range enemy is closest to the cursor on
-        // screen. Doesn't gate or affect PerformHit's cone damage in any way.
+        // screen. Must only ever highlight a target that PerformHit would actually hit right now,
+        // so it re-runs the exact same distance+cone check PerformHit uses -- against the aim
+        // direction FaceAimPoint would snap to on attack, not the player's current facing, since
+        // that's what the cone will actually be measured from by the time the swing lands.
+        // Without this, OverlapSphere's collider-inclusive test could highlight an enemy whose
+        // actual center is farther than the weapon's range, or outside the swing's forward cone,
+        // so the swing would visibly miss despite the highlight.
         private void UpdateAimHighlight()
         {
             Camera cam = Camera.main;
             Mouse mouse = Mouse.current;
-            if (cam == null || mouse == null)
+            if (cam == null || mouse == null || !TryGetAimPoint(out Vector3 aimPoint))
             {
                 SetHighlight(null);
                 return;
             }
+
+            Vector3 aimDirection = aimPoint - transform.position;
+            aimDirection.y = 0f;
+            aimDirection = aimDirection.sqrMagnitude > 0.0001f ? aimDirection.normalized : transform.forward;
 
             float range = CharacterAttackAnimator.AttackRange(CurrentWeaponType());
             int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
@@ -204,6 +227,9 @@ namespace PoeClone.Player
             {
                 EnemyHealth enemy = hitBuffer[i].GetComponentInParent<EnemyHealth>();
                 if (enemy == null || enemy.IsDead || !seen.Add(enemy))
+                    continue;
+
+                if (!IsInCone(enemy.transform.position, range, aimDirection))
                     continue;
 
                 Vector3 screen = cam.WorldToScreenPoint(enemy.transform.position + Vector3.up);

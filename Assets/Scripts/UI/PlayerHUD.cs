@@ -52,6 +52,9 @@ namespace PoeClone.UI
             if (stats == null)
                 return;
 
+            if (stats.IsDead)
+                DrawDeathOverlay();
+
             GUILayout.BeginArea(
                 new Rect(20f, 20f, 350f, 340f)
             );
@@ -117,6 +120,19 @@ namespace PoeClone.UI
             );
 
             GUILayout.EndArea();
+        }
+
+        private static void DrawDeathOverlay()
+        {
+            GUIStyle style = new GUIStyle
+            {
+                fontSize = 48,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter
+            };
+            style.normal.textColor = new Color(0.85f, 0.15f, 0.15f);
+
+            GUI.Label(new Rect(0f, Screen.height * 0.35f, Screen.width, 80f), "YOU DIED", style);
         }
 
         private static float SafeRatio(float current, float max)

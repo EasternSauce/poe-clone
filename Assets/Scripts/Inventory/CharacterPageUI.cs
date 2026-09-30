@@ -68,12 +68,22 @@ namespace PoeClone.Inventory
             BuildUI();
             inventory.StatsChanged += Refresh;
             StartCoroutine(Prewarm());
+
+            inventory.PlayerDied += OnPlayerDied;
         }
 
         private void OnDestroy()
         {
             if (inventory != null)
+            {
                 inventory.StatsChanged -= Refresh;
+                inventory.PlayerDied -= OnPlayerDied;
+            }
+        }
+
+        private void OnPlayerDied()
+        {
+            SetOpen(false);
         }
 
         // Same trick as the inventory: build and show once invisibly so the first open is smooth.
@@ -92,6 +102,9 @@ namespace PoeClone.Inventory
         private void Update()
         {
             if (warming)
+                return;
+
+            if (inventory.IsPlayerDead)
                 return;
 
             Keyboard keyboard = Keyboard.current;

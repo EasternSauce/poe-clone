@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using PoeClone.Combat;
 using PoeClone.Player;
+using PoeClone.Visuals;
 
 namespace PoeClone.Enemies
 {
@@ -17,6 +18,8 @@ namespace PoeClone.Enemies
         [SerializeField] private int experienceReward = 20;
 
         [Header("Death")]
+        [Tooltip("Beat before the body topples, so the knee-buckle/limb collapse (CharacterDeathAnimator) reads before the big rotation grabs the eye.")]
+        [SerializeField] private float deathWindUp = 0.15f;
         [SerializeField] private float collapseDuration = 0.6f;
         [SerializeField] private float destroyDelay = 1.5f;
 
@@ -64,6 +67,12 @@ namespace PoeClone.Enemies
             if (controller != null)
                 controller.enabled = false;
 
+            // Without this a dead enemy keeps swinging at the player: EnemyCombat has no dead
+            // check of its own since it's never needed one before now.
+            EnemyCombat combat = GetComponent<EnemyCombat>();
+            if (combat != null)
+                combat.enabled = false;
+
             CharacterController cc = GetComponent<CharacterController>();
             if (cc != null)
                 cc.enabled = false;
@@ -72,11 +81,15 @@ namespace PoeClone.Enemies
             if (player != null)
                 player.GainExperience(experienceReward);
 
+            CharacterDeathAnimator.PlayOn(transform);
+
             StartCoroutine(CollapseAndRemove());
         }
 
         private IEnumerator CollapseAndRemove()
         {
+            yield return new WaitForSeconds(deathWindUp);
+
             Quaternion startRotation = transform.rotation;
             Quaternion collapsedRotation = startRotation * Quaternion.Euler(0f, 0f, 90f);
             Vector3 startPosition = transform.position;

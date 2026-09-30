@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using PoeClone.Combat;
+using PoeClone.Visuals;
 
 namespace PoeClone.Player
 {
@@ -20,6 +22,11 @@ namespace PoeClone.Player
 
         private float currentHealth;
         private float currentMana;
+        private bool dead;
+
+        public bool IsDead => dead;
+
+        public event Action Died;
 
         // Bonuses from worn equipment. Set by PlayerStatsLink; the base values above are untouched.
         private int bonusStrength;
@@ -90,13 +97,19 @@ private void LevelUp()
 
         public void TakeDamage(float amount)
         {
-            if (amount <= 0f)
+            if (dead || amount <= 0f)
                 return;
 
             currentHealth = Mathf.Max(
                 0f,
                 currentHealth - amount
             );
+
+            if (currentHealth <= 0f)
+            {
+                Die();
+                return;
+            }
 
             Stagger stagger = GetComponent<Stagger>();
             if (stagger == null)
@@ -106,13 +119,33 @@ private void LevelUp()
 
 public void Heal(float amount)
         {
-            if (amount <= 0f)
+            if (dead || amount <= 0f)
                 return;
 
             currentHealth = Mathf.Min(
                 MaxHealth,
                 currentHealth + amount
             );
+        }
+
+        // Stops movement/the character controller and plays the same limb-collapse used for
+        // enemies (see CharacterDeathAnimator), but leaves the player in the scene -- there's no
+        // corpse cleanup for the player the way there is for EnemyHealth.
+        private void Die()
+        {
+            dead = true;
+            currentHealth = 0f;
+            Died?.Invoke();
+
+            PlayerController controller = GetComponent<PlayerController>();
+            if (controller != null)
+                controller.enabled = false;
+
+            CharacterController cc = GetComponent<CharacterController>();
+            if (cc != null)
+                cc.enabled = false;
+
+            CharacterDeathAnimator.PlayOn(transform);
         }
 
         /// <summary>

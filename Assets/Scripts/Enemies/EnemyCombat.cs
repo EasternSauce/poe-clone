@@ -60,6 +60,9 @@ namespace PoeClone.Enemies
                 return;
             }
 
+            if (playerStats.IsDead)
+                return;
+
             if (cooldownTimer > 0f || attackAnimator.IsAttacking || stagger.IsStaggered)
                 return;
 
