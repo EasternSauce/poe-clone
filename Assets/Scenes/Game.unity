@@ -5896,7 +5896,7 @@ Transform:
   m_GameObject: {fileID: 322552671}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.3000002, y: 3.85, z: -0.00000011920929}
+  m_LocalPosition: {x: -1.3000002, y: 3.85, z: 0.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -8095,7 +8095,7 @@ Transform:
   m_GameObject: {fileID: 459221888}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.2999989, y: 3.85, z: 0.00000059604645}
+  m_LocalPosition: {x: -1.2999989, y: 3.85, z: 0.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -8840,7 +8840,7 @@ Transform:
   m_GameObject: {fileID: 518031616}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.3000002, y: 3.85, z: 0.00000011920929}
+  m_LocalPosition: {x: 1.3000002, y: 3.85, z: 0.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -10224,6 +10224,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1506741975}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &601791249
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 601791250}
+  - component: {fileID: 601791251}
+  m_Layer: 0
+  m_Name: ManualPointLightManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &601791250
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 601791249}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1552516228}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &601791251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 601791249}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7acff5268ccf6b54b9cb8ad605becd40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PoeClone.Visuals.ManualPointLightManager
+  lightsRoot: {fileID: 1675632344}
+  includeInactiveAtStart: 1
 --- !u!1001 &605982989
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12093,7 +12139,7 @@ Transform:
   m_GameObject: {fileID: 682892788}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.2999994, y: 3.85, z: 0.00000011920929}
+  m_LocalPosition: {x: 1.2999994, y: 3.85, z: 0.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -14574,7 +14620,7 @@ Transform:
   m_GameObject: {fileID: 839323475}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.2999994, y: 3.85, z: -0.00000011920929}
+  m_LocalPosition: {x: -1.2999994, y: 3.85, z: 0.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -17054,6 +17100,7 @@ GameObject:
   - component: {fileID: 962017738}
   - component: {fileID: 962017739}
   - component: {fileID: 962017740}
+  - component: {fileID: 841544551}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -17188,6 +17235,22 @@ MonoBehaviour:
   damping: 0.85
   windAmplitude: 4
   windSpeed: 1.3
+--- !u!114 &841544551
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 962017731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e15237754104a999aaff873f6fbdc86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PoeClone.Player.PlayerCombat
+  damagePercentPerStrength: 1
+  attackRange: 1.6
+  attackRadius: 1.1
+  attackHeight: 1
 --- !u!1 &964919908
 GameObject:
   m_ObjectHideFlags: 0
@@ -22249,7 +22312,7 @@ Transform:
   m_GameObject: {fileID: 1161884479}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.3, y: 3.85, z: 0}
+  m_LocalPosition: {x: 1.3, y: 3.85, z: 0.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -22334,7 +22397,7 @@ Transform:
   m_GameObject: {fileID: 1184253947}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.2999989, y: 3.85, z: -0.00000059604645}
+  m_LocalPosition: {x: 1.2999989, y: 3.85, z: 0.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -26728,7 +26791,7 @@ Transform:
   m_GameObject: {fileID: 1483702260}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.3, y: 3.85, z: 0}
+  m_LocalPosition: {x: -1.3, y: 3.85, z: 0.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -27868,6 +27931,7 @@ Transform:
   - {fileID: 1133352390}
   - {fileID: 1645830438}
   - {fileID: 1187659523}
+  - {fileID: 601791250}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1553127915
@@ -33642,6 +33706,7 @@ GameObject:
   - component: {fileID: 1892388263}
   - component: {fileID: 1892388265}
   - component: {fileID: 1892388264}
+  - component: {fileID: 865607907}
   m_Layer: 0
   m_Name: Model
   m_TagString: Untagged
@@ -33719,6 +33784,20 @@ MonoBehaviour:
   rightKnee: {fileID: 1048389057}
   leftElbow: {fileID: 404555354}
   rightElbow: {fileID: 2060653405}
+--- !u!114 &865607907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1892388262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b7b625a49674e9a8e32f7e6542b2465, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PoeClone.Visuals.CharacterAttackAnimator
+  weaponArm: {fileID: 0}
+  weaponElbow: {fileID: 0}
 --- !u!1001 &1904599793
 PrefabInstance:
   m_ObjectHideFlags: 0

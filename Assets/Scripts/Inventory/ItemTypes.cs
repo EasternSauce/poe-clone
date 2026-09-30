@@ -18,6 +18,17 @@ namespace PoeClone.Inventory
         Shield
     }
 
+    /// <summary>
+    /// The style of weapon an item is, for a Weapon item. Decides which attack animation and
+    /// base attack pace the player's combat script uses when it is wielded.
+    /// Unarmed is not stored on any item; combat code falls back to it when no weapon is equipped.
+    /// </summary>
+    public enum WeaponType
+    {
+        Unarmed,
+        Sword
+    }
+
     /// <summary>The places gear can be worn. There are two ring slots and one amulet slot.</summary>
     public enum EquipSlot
     {
@@ -55,12 +66,15 @@ namespace PoeClone.Inventory
         /// </summary>
         public bool HasCape { get; }
 
+        /// <summary>For a Weapon item, which attack animation/pace it uses. Meaningless otherwise.</summary>
+        public WeaponType WeaponType { get; }
+
         public ItemData(string name, ItemType type, int width, int height, Color tint)
             : this(null, name, type, width, height, tint, null)
         {
         }
 
-        public ItemData(string id, string name, ItemType type, int width, int height, Color tint, IEnumerable<StatModifier> modifiers, bool hasCape = false)
+        public ItemData(string id, string name, ItemType type, int width, int height, Color tint, IEnumerable<StatModifier> modifiers, bool hasCape = false, WeaponType weaponType = WeaponType.Sword)
         {
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentException("Item needs a name.", nameof(name));
@@ -77,6 +91,7 @@ namespace PoeClone.Inventory
             Tint = tint;
             Modifiers = modifiers == null ? NoModifiers : new List<StatModifier>(modifiers);
             HasCape = hasCape;
+            WeaponType = weaponType;
         }
 
         public override string ToString()

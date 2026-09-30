@@ -10,6 +10,8 @@ namespace PoeClone.UI
         private GUIStyle titleStyle;
         private GUIStyle textStyle;
 
+        private static Texture2D pixel;
+
         private void Start()
         {
             if (stats == null)
@@ -39,6 +41,10 @@ namespace PoeClone.UI
             };
 
             textStyle.normal.textColor = Color.white;
+
+            pixel = new Texture2D(1, 1);
+            pixel.SetPixel(0, 0, Color.white);
+            pixel.Apply();
         }
 
         private void OnGUI()
@@ -47,7 +53,7 @@ namespace PoeClone.UI
                 return;
 
             GUILayout.BeginArea(
-                new Rect(20f, 20f, 350f, 300f)
+                new Rect(20f, 20f, 350f, 340f)
             );
 
             GUILayout.Label(
@@ -62,10 +68,16 @@ namespace PoeClone.UI
                 textStyle
             );
 
+            DrawBar(GUILayoutUtility.GetRect(280f, 16f), SafeRatio(stats.CurrentHealth, stats.MaxHealth), new Color(0.75f, 0.15f, 0.15f));
+
+            GUILayout.Space(6f);
+
             GUILayout.Label(
                 $"Mana:   {stats.CurrentMana:0} / {stats.MaxMana:0}",
                 textStyle
             );
+
+            DrawBar(GUILayoutUtility.GetRect(280f, 16f), SafeRatio(stats.CurrentMana, stats.MaxMana), new Color(0.2f, 0.35f, 0.85f));
 
             GUILayout.Space(12f);
 
@@ -105,6 +117,24 @@ namespace PoeClone.UI
             );
 
             GUILayout.EndArea();
+        }
+
+        private static float SafeRatio(float current, float max)
+        {
+            return max > 0f ? Mathf.Clamp01(current / max) : 0f;
+        }
+
+        private static void DrawBar(Rect rect, float fraction, Color fillColor)
+        {
+            Color previous = GUI.color;
+
+            GUI.color = new Color(0f, 0f, 0f, 0.6f);
+            GUI.DrawTexture(rect, pixel);
+
+            GUI.color = fillColor;
+            GUI.DrawTexture(new Rect(rect.x, rect.y, rect.width * fraction, rect.height), pixel);
+
+            GUI.color = previous;
         }
     }
 }

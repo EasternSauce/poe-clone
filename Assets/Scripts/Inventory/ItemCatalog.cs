@@ -14,6 +14,11 @@ namespace PoeClone.Inventory
             return new ItemData(id, name, type, w, h, tint, mods);
         }
 
+        private static ItemData MakeWeapon(string id, string name, int w, int h, Color tint, WeaponType weaponType, params StatModifier[] mods)
+        {
+            return new ItemData(id, name, ItemType.Weapon, w, h, tint, mods, hasCape: false, weaponType: weaponType);
+        }
+
         private static StatModifier Mod(StatType stat, float value)
         {
             return new StatModifier(stat, value);
@@ -53,7 +58,7 @@ namespace PoeClone.Inventory
                 Make("sapphire_ring", "Sapphire Ring", ItemType.Ring, 1, 1, new Color(0.30f, 0.50f, 0.95f),
                     Mod(StatType.ColdResistance, 20), Mod(StatType.MaxMana, 15)),
 
-                Make("rusty_sword", "Rusty Sword", ItemType.Weapon, 1, 3, new Color(0.65f, 0.62f, 0.58f),
+                MakeWeapon("rusty_sword", "Rusty Sword", 1, 3, new Color(0.65f, 0.62f, 0.58f), WeaponType.Sword,
                     Mod(StatType.PhysicalDamage, 6)),
 
                 Make("wooden_shield", "Wooden Shield", ItemType.Shield, 2, 2, new Color(0.60f, 0.42f, 0.25f),

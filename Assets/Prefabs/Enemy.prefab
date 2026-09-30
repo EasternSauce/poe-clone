@@ -212,6 +212,8 @@ GameObject:
   - component: {fileID: 3622398606814456648}
   - component: {fileID: 1822648836739275154}
   - component: {fileID: 8803805779696094684}
+  - component: {fileID: 206919727}
+  - component: {fileID: 328299270}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -280,6 +282,37 @@ MonoBehaviour:
   rotationSpeed: 10
   gravity: -20
   lookAhead: 1.8
+--- !u!114 &206919727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1574276915870265490}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6c5705ad3c044539365286e657b5610, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PoeClone.Enemies.EnemyHealth
+  maxHealth: 30
+  experienceReward: 20
+  collapseDuration: 0.6
+  destroyDelay: 1.5
+--- !u!114 &328299270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1574276915870265490}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2b53789276c4f6c8e912258ace5d778, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PoeClone.UI.EnemyHealthBarUI
+  heightOffset: 2.3
+  barWidth: 60
+  barHeight: 7
 --- !u!1 &1705373044896254702
 GameObject:
   m_ObjectHideFlags: 0

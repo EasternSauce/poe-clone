@@ -56,6 +56,12 @@ namespace PoeClone.Visuals
         private float phase;
         private float blend;
 
+        // While an attack is playing, CharacterAttackAnimator owns the right arm/elbow pose;
+        // skipping them here (rather than both scripts writing to the same pivot every frame)
+        // avoids fighting over control regardless of script execution order.
+        private CharacterAttackAnimator attackAnimator;
+        private bool RightArmSuppressed => attackAnimator != null && attackAnimator.IsAttacking;
+
 public void Configure(
             Transform leftLegPivot,
             Transform rightLegPivot,
@@ -88,6 +94,7 @@ public void Configure(
         {
             lastPosition = transform.position;
             baseLocalPosition = transform.localPosition;
+            attackAnimator = GetComponent<CharacterAttackAnimator>();
         }
 
 private void LateUpdate()
@@ -118,10 +125,13 @@ private void LateUpdate()
             float legAmp = Mathf.Lerp(legSwing, runLegSwing, runBlend) * blend;
             float armAmp = Mathf.Lerp(armSwing, runArmSwing, runBlend) * blend;
 
+            bool rightArmSuppressed = RightArmSuppressed;
+
             SetPivot(leftLeg, s * legAmp);
             SetPivot(rightLeg, -s * legAmp);
             SetPivot(leftArm, armRestAngle - s * armAmp);
-            SetPivot(rightArm, armRestAngle + s * armAmp);
+            if (!rightArmSuppressed)
+                SetPivot(rightArm, armRestAngle + s * armAmp);
 
             // Knees bend while the leg swings forward (more so when running).
             float kneeMax = Mathf.Lerp(walkKneeBend, runKneeBend, runBlend) * blend;
@@ -131,7 +141,8 @@ private void LateUpdate()
             // Elbows bend forward; running holds the arms sharply bent.
             float elbow = -Mathf.Lerp(walkElbowBend, runElbowBend, runBlend) * blend;
             SetPivot(leftElbow, elbow);
-            SetPivot(rightElbow, elbow);
+            if (!rightArmSuppressed)
+                SetPivot(rightElbow, elbow);
 
             SetPivot(upperBody, runLean * runBlend * blend);
 

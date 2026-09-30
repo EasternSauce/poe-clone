@@ -66,6 +66,19 @@ Shader "PoeClone/ToonLit"
                 float _TexInfluence;
             CBUFFER_END
 
+            // ---------------------------------------------------------------
+            // Manual point-light feed (fallback for URP's Forward+ additional
+            // lights, which aren't reliably reaching this custom shader in
+            // this project's URP version). Pushed once per frame from
+            // ManualPointLightManager.cs via Shader.SetGlobalVectorArray /
+            // SetGlobalInt. Plain "old-school" forward-additive lighting,
+            // independent of any Forward+/clustered light-loop keywords.
+            // ---------------------------------------------------------------
+            #define MAX_MANUAL_LIGHTS 24
+            float4 _ManualLightPosRange[MAX_MANUAL_LIGHTS];   // xyz = world pos, w = range
+            float4 _ManualLightColorIntensity[MAX_MANUAL_LIGHTS]; // rgb = color, a = intensity
+            int _ManualLightCount;
+
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
@@ -125,6 +138,29 @@ Shader "PoeClone/ToonLit"
                     color += albedo * addLight.color.rgb * addNdotL * addLight.distanceAttenuation * addLight.shadowAttenuation;
                 }
                 #endif
+
+                // Manual point lights - simple windowed inverse-square falloff,
+                // matching Unity's own smooth range cutoff formula, entirely
+                // independent of the URP additional-lights keyword machinery.
+                for (int m = 0; m < _ManualLightCount; m++)
+                {
+                    float3 lightPosWS = _ManualLightPosRange[m].xyz;
+                    float lightRange = max(_ManualLightPosRange[m].w, 0.001);
+                    float3 toLight = lightPosWS - IN.positionWS;
+                    float distSq = max(dot(toLight, toLight), 1e-4);
+                    float dist = sqrt(distSq);
+                    float3 lightDir = toLight / dist;
+
+                    float rangeSq = lightRange * lightRange;
+                    float distFrac = saturate(distSq / rangeSq);
+                    float distanceAtten = 1.0 - distFrac * distFrac;
+                    distanceAtten = distanceAtten * distanceAtten;
+                    float invSq = 1.0 / distSq;
+
+                    float mNdotL = saturate(dot(normalWS, lightDir));
+                    half3 mLightColor = _ManualLightColorIntensity[m].rgb * _ManualLightColorIntensity[m].a;
+                    color += albedo * mLightColor * mNdotL * invSq * distanceAtten;
+                }
 
                 float3 viewDir = normalize(GetCameraPositionWS() - IN.positionWS);
                 float rim = 1.0 - saturate(dot(viewDir, normalWS));

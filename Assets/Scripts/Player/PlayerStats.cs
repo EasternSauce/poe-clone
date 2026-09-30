@@ -1,8 +1,9 @@
 using UnityEngine;
+using PoeClone.Combat;
 
 namespace PoeClone.Player
 {
-    public class PlayerStats : MonoBehaviour
+    public class PlayerStats : MonoBehaviour, IDamageable
     {
         [Header("Progression")]
         [SerializeField] private int level = 1;
