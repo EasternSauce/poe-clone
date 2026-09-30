@@ -27,6 +27,7 @@ namespace PoeClone.Inventory
 
         public event Action StatsChanged;
         public event Action PlayerDied;
+        public event Action PlayerRevived;
 
         private void Awake()
         {
@@ -64,6 +65,15 @@ namespace PoeClone.Inventory
 
             IsPlayerDead = true;
             PlayerDied?.Invoke();
+        }
+
+        public void NotifyPlayerRevived()
+        {
+            if (!IsPlayerDead)
+                return;
+
+            IsPlayerDead = false;
+            PlayerRevived?.Invoke();
         }
     }
 }

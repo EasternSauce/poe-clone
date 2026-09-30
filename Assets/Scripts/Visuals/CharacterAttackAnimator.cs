@@ -102,10 +102,10 @@ namespace PoeClone.Visuals
             Range = SwordProfile.Range
         };
 
-        // Chance a sword swing plays the stab variant, or mirrors the slash to the opposite
-        // diagonal, instead of the default slash.
-        private const float SwordStabChance = 0.25f;
-        private const float SwordMirrorChance = 0.15f;
+        // Equal odds of a stab, a slash from the right shoulder, or the mirrored slash from the
+        // left shoulder, so no variant reads as the "default" attack.
+        private const float SwordStabChance = 1f / 3f;
+        private const float SwordMirrorChance = 1f / 3f;
 
         // Tuned for a rest pose that's already raised forward (e.g. the zombie's -65 deg stance),
         // so it doesn't need nearly as much swing as a weapon profile to read as a forward strike.

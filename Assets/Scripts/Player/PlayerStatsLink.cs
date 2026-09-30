@@ -40,6 +40,7 @@ namespace PoeClone.Player
         {
             inventory.StatsChanged += Apply;
             stats.Died += OnPlayerDied;
+            stats.Revived += OnPlayerRevived;
             PushBase();
         }
 
@@ -49,15 +50,23 @@ namespace PoeClone.Player
                 inventory.StatsChanged -= Apply;
 
             if (stats != null)
+            {
                 stats.Died -= OnPlayerDied;
+                stats.Revived -= OnPlayerRevived;
+            }
         }
 
         // PlayerInventory lives in its own assembly and can't reference PlayerStats directly, so
-        // this forwards the death notification the same way base stats/gear bonuses already cross
-        // that boundary.
+        // this forwards the death/revive notifications the same way base stats/gear bonuses
+        // already cross that boundary.
         private void OnPlayerDied()
         {
             inventory.NotifyPlayerDied();
+        }
+
+        private void OnPlayerRevived()
+        {
+            inventory.NotifyPlayerRevived();
         }
 
         private void Update()

@@ -62,6 +62,33 @@ namespace PoeClone.Visuals
             deathAnimator.PlayDeath();
         }
 
+        /// <summary>
+        /// Undoes <see cref="PlayOn"/>: stops the collapse, re-enables the walk/attack animators,
+        /// and snaps the rig back to its resting pose via CharacterWalkAnimator.ResetAnimatorState
+        /// (the same reset used after a teleport). Used to bring the player back on revive.
+        /// </summary>
+        public static void ResetOn(Transform root)
+        {
+            Transform model = root.Find("Model");
+            if (model == null)
+                return;
+
+            CharacterDeathAnimator deathAnimator = model.GetComponent<CharacterDeathAnimator>();
+            if (deathAnimator != null)
+                deathAnimator.enabled = false;
+
+            CharacterWalkAnimator walkAnimator = model.GetComponent<CharacterWalkAnimator>();
+            if (walkAnimator != null)
+            {
+                walkAnimator.enabled = true;
+                walkAnimator.ResetAnimatorState();
+            }
+
+            CharacterAttackAnimator attackAnimator = model.GetComponent<CharacterAttackAnimator>();
+            if (attackAnimator != null)
+                attackAnimator.enabled = true;
+        }
+
         private void Awake()
         {
             leftLeg = FindDescendant(transform, "LegL");

@@ -25,7 +25,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 6f0fc306e5c57464b93bf90649ba0c42, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -85,7 +85,7 @@ Material:
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _AmbientBoost: 0.43
+    - _AmbientBoost: 0.35
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
@@ -106,7 +106,7 @@ Material:
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _RimIntensity: 0.28
+    - _RimIntensity: 0.16
     - _RimPower: 3.5
     - _ScreenSpaceReflections: 1
     - _ScreenSpaceReflectionsContributeTransparent: 1
@@ -118,17 +118,17 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
-    - _TexInfluence: 0
-    - _TriplanarTileSize: 2
+    - _TexInfluence: 1
+    - _TriplanarTileSize: 0.2
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.72156864, g: 0.6039216, b: 0.38823527, a: 1}
+    - _BaseColor: {r: 0.72156864, g: 0.6039216, b: 0.38823524, a: 1}
     - _Color: {r: 0.72156864, g: 0.6039216, b: 0.38823527, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _RimColor: {r: 0.88862747, g: 0.84156865, b: 0.75529414, a: 1}
-    - _ShadowColor: {r: 0.36078432, g: 0.3019608, b: 0.24070586, a: 1}
+    - _RimColor: {r: 0.88862747, g: 0.84156865, b: 0.7552941, a: 1}
+    - _ShadowColor: {r: 0.36078432, g: 0.3019608, b: 0.24070585, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -85,7 +85,7 @@ Material:
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _AmbientBoost: 0.43
+    - _AmbientBoost: 0.35
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
@@ -106,7 +106,7 @@ Material:
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _RimIntensity: 0.28
+    - _RimIntensity: 0.16
     - _RimPower: 3.5
     - _ScreenSpaceReflections: 1
     - _ScreenSpaceReflectionsContributeTransparent: 1
@@ -124,11 +124,11 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.47843128, g: 0.22745094, b: 0.17254898, a: 1}
+    - _BaseColor: {r: 0.47843128, g: 0.2274509, b: 0.17254895, a: 1}
     - _Color: {r: 0.47843128, g: 0.22745094, b: 0.17254898, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _RimColor: {r: 0.79137254, g: 0.6909804, b: 0.66901964, a: 1}
-    - _ShadowColor: {r: 0.23921564, g: 0.11372547, b: 0.10698037, a: 1}
+    - _RimColor: {r: 0.79137254, g: 0.6909804, b: 0.6690196, a: 1}
+    - _ShadowColor: {r: 0.23921564, g: 0.11372545, b: 0.106980346, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

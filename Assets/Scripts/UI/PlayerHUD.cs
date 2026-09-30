@@ -53,7 +53,7 @@ namespace PoeClone.UI
                 return;
 
             if (stats.IsDead)
-                DrawDeathOverlay();
+                DrawDeathOverlay(stats);
 
             GUILayout.BeginArea(
                 new Rect(20f, 20f, 350f, 340f)
@@ -122,17 +122,33 @@ namespace PoeClone.UI
             GUILayout.EndArea();
         }
 
-        private static void DrawDeathOverlay()
+        // YOU DIED stays up throughout; underneath it, a 3/2/1 countdown counts down to a
+        // "press any button" prompt once PlayerStats promotes to AwaitingRevive.
+        private static void DrawDeathOverlay(PlayerStats stats)
         {
-            GUIStyle style = new GUIStyle
+            GUIStyle titleOverlayStyle = new GUIStyle
             {
                 fontSize = 48,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter
             };
-            style.normal.textColor = new Color(0.85f, 0.15f, 0.15f);
+            titleOverlayStyle.normal.textColor = new Color(0.85f, 0.15f, 0.15f);
 
-            GUI.Label(new Rect(0f, Screen.height * 0.35f, Screen.width, 80f), "YOU DIED", style);
+            GUI.Label(new Rect(0f, Screen.height * 0.32f, Screen.width, 80f), "YOU DIED", titleOverlayStyle);
+
+            GUIStyle subStyle = new GUIStyle
+            {
+                fontSize = 32,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter
+            };
+            subStyle.normal.textColor = Color.white;
+
+            string sub = stats.IsAwaitingRevive
+                ? "Press any button to revive"
+                : stats.CountdownSecondsRemaining.ToString();
+
+            GUI.Label(new Rect(0f, Screen.height * 0.32f + 70f, Screen.width, 50f), sub, subStyle);
         }
 
         private static float SafeRatio(float current, float max)

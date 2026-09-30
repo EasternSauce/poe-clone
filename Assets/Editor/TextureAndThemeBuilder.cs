@@ -36,6 +36,16 @@ public static class TextureAndThemeBuilder
             { "Leather", cloth }, { "EnemyCloth", cloth }, { "EnemyPants", cloth },
             { "Wall", wall },
             { "Roof", roof },
+
+            // Equipment (see EquipmentBuilder): these share this same material folder but were
+            // never added here, so they kept the flat, untextured look (_TexInfluence stayed 0)
+            // even after the rest of the world got its thematic pass -- worn gear read as plastic
+            // next to everything else.
+            { "Tan", cloth }, { "TanDark", cloth }, { "TanLight", cloth },
+            { "SteelDark", stone }, { "RustSteel", stone }, { "Rust", stone },
+            { "Bronze", stone }, { "BronzeLight", stone }, { "Gold", stone },
+            { "Rope", bark }, { "RopeDark", bark },
+            { "ShieldWood", bark }, { "ShieldWoodDark", bark },
         };
 
         // World-units-per-tile for triplanar sampling (the custom meshes have no UVs,
@@ -49,6 +59,12 @@ public static class TextureAndThemeBuilder
             { "Leather", 0.35f }, { "EnemyCloth", 0.3f }, { "EnemyPants", 0.3f },
             { "Wall", 1.6f },
             { "Roof", 1.2f },
+
+            { "Tan", 0.3f }, { "TanDark", 0.3f }, { "TanLight", 0.3f },
+            { "SteelDark", 0.6f }, { "RustSteel", 0.5f }, { "Rust", 0.4f },
+            { "Bronze", 0.6f }, { "BronzeLight", 0.6f }, { "Gold", 0.4f },
+            { "Rope", 0.2f }, { "RopeDark", 0.2f },
+            { "ShieldWood", 0.5f }, { "ShieldWoodDark", 0.5f },
         };
 
         Shader toon = Shader.Find("PoeClone/ToonLit");

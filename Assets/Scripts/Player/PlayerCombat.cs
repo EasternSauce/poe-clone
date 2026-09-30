@@ -52,6 +52,7 @@ namespace PoeClone.Player
                 attackAnimator.StrikeFrame += PerformHit;
 
             stats.Died += OnDied;
+            stats.Revived += OnRevived;
         }
 
         private void OnDestroy()
@@ -60,7 +61,10 @@ namespace PoeClone.Player
                 attackAnimator.StrikeFrame -= PerformHit;
 
             if (stats != null)
+            {
                 stats.Died -= OnDied;
+                stats.Revived -= OnRevived;
+            }
         }
 
         // No more input handling, highlighting, or hits once dead: PlayerStats has already
@@ -69,6 +73,12 @@ namespace PoeClone.Player
         {
             SetHighlight(null);
             enabled = false;
+        }
+
+        private void OnRevived()
+        {
+            cooldownTimer = 0f;
+            enabled = true;
         }
 
         private void Update()
