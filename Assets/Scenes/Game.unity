@@ -29710,6 +29710,80 @@ Transform:
   m_Children: []
   m_Father: {fileID: 915999108}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1639911399
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1639911401}
+  - component: {fileID: 1639911400}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1639911400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639911399}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bbf28a526e5eec40abfb576295b27ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PoeClone.Audio::PoeClone.Audio.AudioManager
+  playerSwing:
+  - {fileID: 8300000, guid: 3c6f39ae65d8a5d4b82c74978ed0b6b0, type: 3}
+  - {fileID: 8300000, guid: 96c0d6e4e43e1c14ab0f5fe923514579, type: 3}
+  - {fileID: 8300000, guid: 3c608d1f2d639f94ca6ed4c6ff2a98e4, type: 3}
+  meleeHit:
+  - {fileID: 8300000, guid: 346438f69794bff48b9bfa302044461e, type: 3}
+  - {fileID: 8300000, guid: 18ec5dfc6b0ace244af58afb702af326, type: 3}
+  enemyDeath:
+  - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+  - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+  enemyAggro:
+  - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+  - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+  - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+  playerHurt:
+  - {fileID: 8300000, guid: 6e8997d11b2c26e47b2dfe8bd7bec284, type: 3}
+  - {fileID: 8300000, guid: c1de4b0d0b171a445bbc345937e4e677, type: 3}
+  - {fileID: 8300000, guid: 801ad7a99eda38945a97267f3c982613, type: 3}
+  playerLevelUp: {fileID: 8300000, guid: 02c09b0084c54cc43850d935b952c200, type: 3}
+  playerLanding: {fileID: 8300000, guid: 05b36d90bdf0d0b459e0edd424943b07, type: 3}
+  uiInventoryOpen: {fileID: 8300000, guid: 9df4dba7b36659f48a08668689523534, type: 3}
+  uiInventoryClose: {fileID: 8300000, guid: e62ed051481e07d47bad072848f78967, type: 3}
+  uiClick: {fileID: 8300000, guid: 8bc2fcc49cc968441953154ad307b3ff, type: 3}
+  uiDenied: {fileID: 8300000, guid: a1be5d23278eec44386ec4494ebbbadd, type: 3}
+  uiEquip: {fileID: 8300000, guid: b8338d68cc3fa9e49b8f7ad07d2abadc, type: 3}
+  uiUnequip: {fileID: 8300000, guid: 1bd2f9128febe964aabdcbfcca3e109b, type: 3}
+  gateOpen: {fileID: 8300000, guid: 255f0c0a1b85a6d4490764b5ca6fcfb6, type: 3}
+  sfxVolume: 0.8
+  uiVolume: 0.6
+  inventoryToggleVolume: 0.1
+--- !u!4 &1639911401
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639911399}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1645044031
 GameObject:
   m_ObjectHideFlags: 0
@@ -33793,6 +33867,11 @@ MonoBehaviour:
   runBobHeight: 0.12
   runLean: 14
   staggerTiltAngle: -22
+  footstepClips:
+  - {fileID: 8300000, guid: bf4f83921a7f06c44b147fc62cfcdf82, type: 3}
+  footstepVolume: 0.6
+  footstepPitchRange: {x: 0.95, y: 1.05}
+  footstepVolumeRange: {x: 0.7, y: 1}
   upperBody: {fileID: 426971162}
   leftKnee: {fileID: 503549214}
   rightKnee: {fileID: 1048389057}
@@ -38219,3 +38298,4 @@ SceneRoots:
   - {fileID: 124213966}
   - {fileID: 182803872}
   - {fileID: 1675632344}
+  - {fileID: 1639911401}

@@ -163,6 +163,11 @@ MonoBehaviour:
   runStrideLength: 5.4
   runBobHeight: 0.12
   runLean: 14
+  staggerTiltAngle: -22
+  footstepClips:
+  - {fileID: 8300000, guid: bf4f83921a7f06c44b147fc62cfcdf82, type: 3}
+  footstepVolume: 0.6
+  footstepPitchRange: {x: 0.95, y: 1.05}
   upperBody: {fileID: 384135309416976221}
   leftKnee: {fileID: 1979682895441618101}
   rightKnee: {fileID: 2679910447178751692}
@@ -296,6 +301,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PoeClone.Enemies.EnemyHealth
   maxHealth: 30
   experienceReward: 20
+  deathWindUp: 0.15
   collapseDuration: 0.6
   destroyDelay: 1.5
 --- !u!114 &328299270

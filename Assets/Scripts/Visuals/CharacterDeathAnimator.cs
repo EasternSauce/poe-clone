@@ -41,7 +41,14 @@ namespace PoeClone.Visuals
         /// immediately overwrite the collapse pose). Shared by EnemyHealth and PlayerStats so a
         /// death always looks the same either way. No-ops if there's no "Model" child.
         /// </summary>
-        public static void PlayOn(Transform root)
+        /// <param name="foldLowerBody">
+        /// The player has no separate root topple, so it needs the full leg/knee/upper-body fold to
+        /// read as collapsed while staying upright. Enemies do get a root topple (see
+        /// EnemyHealth.Collapse) which lies the whole rig on the ground -- combining that with this
+        /// same big local fold doubled up and buried the legs under the torso, so enemies pass false
+        /// here and only get the (much smaller) arm splay.
+        /// </param>
+        public static void PlayOn(Transform root, bool foldLowerBody = true)
         {
             Transform model = root.Find("Model");
             if (model == null)
@@ -59,7 +66,7 @@ namespace PoeClone.Visuals
             if (deathAnimator == null)
                 deathAnimator = model.gameObject.AddComponent<CharacterDeathAnimator>();
 
-            deathAnimator.PlayDeath();
+            deathAnimator.PlayDeath(foldLowerBody);
         }
 
         /// <summary>
@@ -102,15 +109,21 @@ namespace PoeClone.Visuals
             rightElbow = rightArm != null ? FindDescendant(rightArm, "Elbow") : null;
         }
 
-        public void PlayDeath()
+        public void PlayDeath(bool foldLowerBody = true)
         {
+            float legPitchL = foldLowerBody ? -32f : 0f;
+            float legPitchR = foldLowerBody ? -22f : 0f;
+            float kneePitchL = foldLowerBody ? 125f : 0f;
+            float kneePitchR = foldLowerBody ? 112f : 0f;
+            float upperBodyPitch = foldLowerBody ? 85f : 0f;
+
             joints = new[]
             {
-                MakeJoint(leftLeg, -32f, 0f),
-                MakeJoint(rightLeg, -22f, 0f),
-                MakeJoint(leftKnee, 125f, 0f),
-                MakeJoint(rightKnee, 112f, 0f),
-                MakeJoint(upperBody, 85f, 0f),
+                MakeJoint(leftLeg, legPitchL, 0f),
+                MakeJoint(rightLeg, legPitchR, 0f),
+                MakeJoint(leftKnee, kneePitchL, 0f),
+                MakeJoint(rightKnee, kneePitchR, 0f),
+                MakeJoint(upperBody, upperBodyPitch, 0f),
                 MakeJoint(leftArm, -15f, -72f),
                 MakeJoint(rightArm, -15f, 72f),
                 MakeJoint(leftElbow, -32f, 0f),

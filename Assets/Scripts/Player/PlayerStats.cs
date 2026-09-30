@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using PoeClone.Audio;
 using PoeClone.Combat;
 using PoeClone.Visuals;
 using PoeClone.UI;
@@ -148,6 +149,9 @@ private void LevelUp()
             currentMana = MaxMana;
 
             Debug.Log($"Player reached level {level}");
+
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayAtPoint(AudioManager.Instance.playerLevelUp, transform.position);
         }
 
         public void TakeDamage(float amount)
@@ -170,6 +174,9 @@ private void LevelUp()
             if (stagger == null)
                 stagger = gameObject.AddComponent<Stagger>();
             stagger.Trigger();
+
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.playerHurt, transform.position);
         }
 
 public void Heal(float amount)

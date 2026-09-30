@@ -1,4 +1,5 @@
 using UnityEngine;
+using PoeClone.Audio;
 using PoeClone.Player;
 
 namespace PoeClone.World
@@ -34,6 +35,10 @@ namespace PoeClone.World
             if (manager.CurrentAreaIndex == targetAreaIndex) return;
 
             armed = false;
+
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayAtPoint(AudioManager.Instance.gateOpen, transform.position);
+
             manager.EnterArea(targetAreaIndex);
         }
 

@@ -46,6 +46,13 @@ namespace PoeClone.Visuals
         [Tooltip("How far the upper body rocks back when staggered (see Combat.Stagger).")]
         [SerializeField] private float staggerTiltAngle = -22f;
 
+        [Header("Footsteps")]
+        [SerializeField] private AudioClip[] footstepClips;
+        [SerializeField] private float footstepVolume = 0.6f;
+        [Tooltip("Wide on purpose: with only a couple of source clips shared by the player and every enemy, narrow variation still reads as identical clicks once several characters are stepping near each other.")]
+        [SerializeField] private Vector2 footstepPitchRange = new Vector2(0.75f, 1.3f);
+        [SerializeField] private Vector2 footstepVolumeRange = new Vector2(0.7f, 1f);
+
         [Header("Optional joints")]
         [SerializeField] private Transform upperBody;
         [SerializeField] private Transform leftKnee;
@@ -69,6 +76,9 @@ namespace PoeClone.Visuals
 
         // Read for its RecoilFraction only; Stagger itself lives on the root, not this model.
         private Stagger stagger;
+
+        private AudioSource audioSource;
+        private int lastStepIndex;
 
         /// <summary>The right/left arm's rest pitch (0 for the player, more raised for monsters). Shared with CharacterAttackAnimator so its swing offsets land correctly regardless of rig.</summary>
         public float ArmRestAngle => armRestAngle;
@@ -107,6 +117,12 @@ public void Configure(
             baseLocalPosition = transform.localPosition;
             attackAnimator = GetComponent<CharacterAttackAnimator>();
             stagger = GetComponentInParent<Stagger>();
+
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+                audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 1f;
         }
 
 private void LateUpdate()
@@ -133,6 +149,13 @@ private void LateUpdate()
             phase += speed * dt / stride * Mathf.PI * 2f;
             float s = Mathf.Sin(phase);
             float c = Mathf.Cos(phase);
+
+            // One foot lands every half-cycle (PI radians of phase); fire a step each
+            // time we cross into a new half-cycle while actually moving.
+            int stepIndex = Mathf.FloorToInt(phase / Mathf.PI);
+            if (moving && stepIndex != lastStepIndex)
+                PlayFootstep();
+            lastStepIndex = stepIndex;
 
             float legAmp = Mathf.Lerp(legSwing, runLegSwing, runBlend) * blend;
             float armAmp = Mathf.Lerp(armSwing, runArmSwing, runBlend) * blend;
@@ -184,6 +207,21 @@ private void LateUpdate()
             SetPivot(rightElbow, 0f);
             SetPivot(upperBody, 0f);
             transform.localPosition = baseLocalPosition;
+            lastStepIndex = Mathf.FloorToInt(phase / Mathf.PI);
+        }
+
+        private void PlayFootstep()
+        {
+            if (audioSource == null || footstepClips == null || footstepClips.Length == 0)
+                return;
+
+            AudioClip clip = footstepClips[Random.Range(0, footstepClips.Length)];
+            if (clip == null)
+                return;
+
+            audioSource.pitch = Random.Range(footstepPitchRange.x, footstepPitchRange.y);
+            float volume = footstepVolume * Random.Range(footstepVolumeRange.x, footstepVolumeRange.y);
+            audioSource.PlayOneShot(clip, volume);
         }
 
         

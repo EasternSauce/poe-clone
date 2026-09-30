@@ -3,7 +3,8 @@
   "rootNamespace": "PoeClone.Inventory",
   "references": [
     "UnityEngine.UI",
-    "Unity.InputSystem"
+    "Unity.InputSystem",
+    "PoeClone.Audio"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

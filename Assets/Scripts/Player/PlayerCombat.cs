@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using PoeClone.Audio;
 using PoeClone.Combat;
 using PoeClone.Enemies;
 using PoeClone.Inventory;
@@ -113,6 +114,9 @@ namespace PoeClone.Player
             cooldownTimer = attacksPerSecond > 0f ? 1f / attacksPerSecond : 1f;
 
             attackAnimator.PlayAttack(weaponType);
+
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.playerSwing, transform.position);
         }
 
         // Instantly snaps the player to face wherever the mouse is pointing, on the ground plane

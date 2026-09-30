@@ -3,4 +3,5 @@
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="PoeClone.Tests.EditMode.csproj" />
+  <Project Path="PoeClone.Audio.csproj" />
 </Solution>

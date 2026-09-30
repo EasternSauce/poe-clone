@@ -1,4 +1,5 @@
 using UnityEngine;
+using PoeClone.Audio;
 using PoeClone.Combat;
 using PoeClone.Player;
 using PoeClone.Visuals;
@@ -214,6 +215,9 @@ private bool IsBlocked(Vector3 direction)
             if (state == State.Idle && distance <= aggroRange)
             {
                 state = State.Chasing;
+
+                if (AudioManager.Instance != null)
+                    AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.enemyAggro, transform.position);
             }
             else if (state == State.Chasing && distance > loseInterestRange)
             {

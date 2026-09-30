@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using PoeClone.Audio;
 
 namespace PoeClone.Inventory
 {
@@ -219,6 +220,13 @@ namespace PoeClone.Inventory
                 tooltipRect.gameObject.SetActive(false);
             else
                 Refresh();
+
+            // Prewarm() also calls this (invisibly, to warm up layout/fonts) -- that pass must stay silent.
+            if (!warming && AudioManager.Instance != null)
+            {
+                AudioClip toggleClip = open ? AudioManager.Instance.uiInventoryOpen : AudioManager.Instance.uiInventoryClose;
+                AudioManager.Instance.PlayUI(toggleClip, AudioManager.Instance.inventoryToggleVolume);
+            }
         }
 
         // ------------------------------------------------------------------ building the UI
@@ -642,14 +650,20 @@ private Vector2 CellSize(int w, int h)
             {
                 // Take off whatever is worn.
                 cursorItem = inventory.Equipment.Unequip(s.Slot);
+                if (cursorItem != null)
+                    PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiUnequip : null);
                 return;
             }
 
             // Only the matching type of gear fits this slot.
             ItemData replaced;
             if (!inventory.Equipment.TryEquip(s.Slot, cursorItem, out replaced))
+            {
+                PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiDenied : null);
                 return;
+            }
 
+            PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiEquip : null);
             cursorItem = replaced;
         }
 
@@ -659,14 +673,30 @@ private Vector2 CellSize(int w, int h)
             {
                 PlacedItem p = inventory.Grid.GetAt(Mathf.FloorToInt(pos.x), Mathf.FloorToInt(pos.y));
                 if (p != null && inventory.Grid.Remove(p.Item))
+                {
                     cursorItem = p.Item;
+                    PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiClick : null);
+                }
                 return;
             }
 
             Vector2Int o = FootprintOrigin(cursorItem, pos);
             ItemData replaced;
             if (inventory.Grid.TryPlaceOrSwap(cursorItem, o.x, o.y, out replaced))
+            {
                 cursorItem = replaced;
+                PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiClick : null);
+            }
+            else
+            {
+                PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiDenied : null);
+            }
+        }
+
+        private void PlayUISound(AudioClip clip)
+        {
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayUI(clip);
         }
     }
 }
