@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using PoeClone.Combat;
+using PoeClone.Enemies;
 using PoeClone.Inventory;
 using PoeClone.Visuals;
 
@@ -12,6 +13,11 @@ namespace PoeClone.Player
     /// whatever is equipped there. Damage and pace both read from the character's stat sheet, so
     /// gear and attributes matter, and the swing itself is handed to <see cref="CharacterAttackAnimator"/>
     /// so each weapon type plays its own animation.
+    ///
+    /// Also drives the melee aim-assist: every frame it highlights whichever nearby enemy is
+    /// closest to the cursor (in range, white outline via <see cref="Outline"/>), purely as aiming
+    /// feedback. The swing itself always damages every valid target inside a forward cone,
+    /// regardless of which one is highlighted.
     /// </summary>
     [RequireComponent(typeof(PlayerStats))]
     [RequireComponent(typeof(PlayerInventory))]
@@ -20,9 +26,8 @@ namespace PoeClone.Player
         [Tooltip("Percent damage increase granted per point of Strength.")]
         [SerializeField] private float damagePercentPerStrength = 1f;
 
-        [SerializeField] private float attackRange = 1.6f;
-        [SerializeField] private float attackRadius = 1.1f;
-        [SerializeField] private float attackHeight = 1f;
+        [Tooltip("Half-angle, in degrees, of the forward cone a swing needs to reach a target in.")]
+        [SerializeField] private float coneHalfAngle = 35f;
 
         private PlayerStats stats;
         private PlayerInventory inventory;
@@ -31,6 +36,8 @@ namespace PoeClone.Player
         private float cooldownTimer;
         private float pendingDamage;
         private readonly Collider[] hitBuffer = new Collider[16];
+
+        private EnemyHealth highlighted;
 
         private void Awake()
         {
@@ -56,6 +63,8 @@ namespace PoeClone.Player
             if (cooldownTimer > 0f)
                 cooldownTimer -= Time.deltaTime;
 
+            UpdateAimHighlight();
+
             Mouse mouse = Mouse.current;
             bool attackPressed = mouse != null && mouse.leftButton.wasPressedThisFrame;
 
@@ -63,10 +72,17 @@ namespace PoeClone.Player
                 StartAttack();
         }
 
-        private void StartAttack()
+        private WeaponType CurrentWeaponType()
         {
             ItemData weapon = inventory.Equipment.Get(EquipSlot.MainHand);
-            WeaponType weaponType = weapon != null ? weapon.WeaponType : WeaponType.Unarmed;
+            return weapon != null ? weapon.WeaponType : WeaponType.Unarmed;
+        }
+
+        private void StartAttack()
+        {
+            WeaponType weaponType = CurrentWeaponType();
+
+            FaceAimPoint();
 
             pendingDamage = ComputeDamage();
 
@@ -74,6 +90,40 @@ namespace PoeClone.Player
             cooldownTimer = attacksPerSecond > 0f ? 1f / attacksPerSecond : 1f;
 
             attackAnimator.PlayAttack(weaponType);
+        }
+
+        // Instantly snaps the player to face wherever the mouse is pointing, on the ground plane
+        // through the player's feet, before the swing plays. Without this the swing would play
+        // facing whatever way WASD movement last pointed, not the clicked target.
+        private void FaceAimPoint()
+        {
+            if (TryGetAimPoint(out Vector3 point))
+            {
+                Vector3 direction = point - transform.position;
+                direction.y = 0f;
+
+                if (direction.sqrMagnitude > 0.0001f)
+                    transform.rotation = Quaternion.LookRotation(direction);
+            }
+        }
+
+        private bool TryGetAimPoint(out Vector3 point)
+        {
+            point = Vector3.zero;
+
+            Mouse mouse = Mouse.current;
+            Camera cam = Camera.main;
+            if (mouse == null || cam == null)
+                return false;
+
+            Ray ray = cam.ScreenPointToRay(mouse.position.ReadValue());
+            Plane ground = new Plane(Vector3.up, transform.position);
+
+            if (!ground.Raycast(ray, out float enter))
+                return false;
+
+            point = ray.GetPoint(enter);
+            return true;
         }
 
         // The stat sheet's PhysicalDamage already covers the unarmed base (PlayerStatsLink sets it
@@ -93,11 +143,12 @@ namespace PoeClone.Player
             return baseAttacksPerSecond * (1f + increasedPercent / 100f);
         }
 
+        // Damages everything the weapon actually reaches: a forward cone out to the weapon's
+        // range. Intentionally independent of the aim highlight, which only ever picks one target.
         private void PerformHit()
         {
-            Vector3 origin = transform.position + Vector3.up * attackHeight + transform.forward * attackRange;
-
-            int count = Physics.OverlapSphereNonAlloc(origin, attackRadius, hitBuffer);
+            float range = CharacterAttackAnimator.AttackRange(CurrentWeaponType());
+            int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
             var hitAlready = new HashSet<IDamageable>();
 
             for (int i = 0; i < count; i++)
@@ -106,16 +157,102 @@ namespace PoeClone.Player
                 if (target == null || target == (object)stats)
                     continue;
 
+                if (!IsInCone(hitBuffer[i].transform.position, range))
+                    continue;
+
                 if (hitAlready.Add(target))
                     target.TakeDamage(pendingDamage);
             }
         }
 
+        private bool IsInCone(Vector3 worldPosition, float range)
+        {
+            Vector3 toTarget = worldPosition - transform.position;
+            toTarget.y = 0f;
+
+            float distance = toTarget.magnitude;
+            if (distance > range)
+                return false;
+
+            if (distance <= 0.001f)
+                return true;
+
+            return Vector3.Angle(transform.forward, toTarget) <= coneHalfAngle;
+        }
+
+        // Pure aiming feedback: highlights whichever in-range enemy is closest to the cursor on
+        // screen. Doesn't gate or affect PerformHit's cone damage in any way.
+        private void UpdateAimHighlight()
+        {
+            Camera cam = Camera.main;
+            Mouse mouse = Mouse.current;
+            if (cam == null || mouse == null)
+            {
+                SetHighlight(null);
+                return;
+            }
+
+            float range = CharacterAttackAnimator.AttackRange(CurrentWeaponType());
+            int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
+
+            Vector2 cursor = mouse.position.ReadValue();
+            var seen = new HashSet<EnemyHealth>();
+            EnemyHealth best = null;
+            float bestDistanceSq = float.MaxValue;
+
+            for (int i = 0; i < count; i++)
+            {
+                EnemyHealth enemy = hitBuffer[i].GetComponentInParent<EnemyHealth>();
+                if (enemy == null || enemy.IsDead || !seen.Add(enemy))
+                    continue;
+
+                Vector3 screen = cam.WorldToScreenPoint(enemy.transform.position + Vector3.up);
+                if (screen.z <= 0f)
+                    continue;
+
+                float distanceSq = ((Vector2)screen - cursor).sqrMagnitude;
+                if (distanceSq < bestDistanceSq)
+                {
+                    bestDistanceSq = distanceSq;
+                    best = enemy;
+                }
+            }
+
+            SetHighlight(best);
+        }
+
+        private void SetHighlight(EnemyHealth enemy)
+        {
+            if (enemy == highlighted)
+                return;
+
+            if (highlighted != null)
+                GetOutline(highlighted).SetHighlighted(false);
+
+            if (enemy != null)
+                GetOutline(enemy).SetHighlighted(true);
+
+            highlighted = enemy;
+        }
+
+        private static Outline GetOutline(EnemyHealth enemy)
+        {
+            Outline outline = enemy.GetComponent<Outline>();
+            if (outline == null)
+                outline = enemy.gameObject.AddComponent<Outline>();
+            return outline;
+        }
+
         private void OnDrawGizmosSelected()
         {
-            Vector3 origin = transform.position + Vector3.up * attackHeight + transform.forward * attackRange;
+            float range = Application.isPlaying ? CharacterAttackAnimator.AttackRange(CurrentWeaponType()) : 1.6f;
+
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(origin, attackRadius);
+            Vector3 left = Quaternion.AngleAxis(-coneHalfAngle, Vector3.up) * transform.forward;
+            Vector3 right = Quaternion.AngleAxis(coneHalfAngle, Vector3.up) * transform.forward;
+            Gizmos.DrawLine(transform.position, transform.position + left * range);
+            Gizmos.DrawLine(transform.position, transform.position + right * range);
+            Gizmos.DrawWireSphere(transform.position, range);
         }
     }
 }

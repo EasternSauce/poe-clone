@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using PoeClone.Combat;
+using PoeClone.Visuals;
 
 namespace PoeClone.Player
 {
@@ -14,6 +16,8 @@ namespace PoeClone.Player
 
         private CharacterController controller;
         private Vector3 verticalVelocity;
+        private CharacterAttackAnimator attackAnimator;
+        private Stagger stagger;
 
         // Walking speed. Enemies scale off this, so sprinting does not change their speed.
         public float MoveSpeed => moveSpeed;
@@ -41,6 +45,11 @@ namespace PoeClone.Player
         private void Awake()
         {
             controller = GetComponent<CharacterController>();
+            attackAnimator = GetComponentInChildren<CharacterAttackAnimator>();
+
+            stagger = GetComponent<Stagger>();
+            if (stagger == null)
+                stagger = gameObject.AddComponent<Stagger>();
         }
 
 private void Update()
@@ -68,13 +77,21 @@ private void Update()
                 1f
             );
 
+            bool staggered = stagger != null && stagger.IsStaggered;
+            if (staggered)
+                movement = Vector3.zero;
+
             controller.Move(
                 movement *
                 CurrentSpeed *
                 Time.deltaTime
             );
 
-            if (movement.sqrMagnitude > 0.001f)
+            // Skip the movement-direction turn while a swing is in progress, otherwise holding a
+            // movement key fights the instant snap-to-click facing PlayerCombat just applied.
+            bool attacking = attackAnimator != null && attackAnimator.IsAttacking;
+
+            if (movement.sqrMagnitude > 0.001f && !attacking)
             {
                 Quaternion targetRotation =
                     Quaternion.LookRotation(movement);

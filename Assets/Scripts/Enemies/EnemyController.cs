@@ -1,5 +1,7 @@
 using UnityEngine;
+using PoeClone.Combat;
 using PoeClone.Player;
+using PoeClone.Visuals;
 
 namespace PoeClone.Enemies
 {
@@ -34,6 +36,8 @@ namespace PoeClone.Enemies
         private float verticalVelocity;
         private int avoidSide;
         private float lastBlockedTime = -10f;
+        private CharacterAttackAnimator attackAnimator;
+        private Stagger stagger;
 
         // How long the enemy sticks to an avoidance side after the direct path was last blocked.
         private const float AvoidCommitTime = 1.0f;
@@ -51,11 +55,22 @@ namespace PoeClone.Enemies
         private void Awake()
         {
             controller = GetComponent<CharacterController>();
+
+            stagger = GetComponent<Stagger>();
+            if (stagger == null)
+                stagger = gameObject.AddComponent<Stagger>();
+
+            if (GetComponent<EnemyCombat>() == null)
+                gameObject.AddComponent<EnemyCombat>();
         }
 
         private void Start()
         {
             player = FindAnyObjectByType<PlayerController>();
+
+            // Deferred to Start so it runs after EnemyCombat.Awake has had a chance to add the
+            // attack animator to the model.
+            attackAnimator = GetComponentInChildren<CharacterAttackAnimator>();
         }
 
 private void Update()
@@ -65,10 +80,14 @@ private void Update()
                 player = FindAnyObjectByType<PlayerController>();
             }
 
+            bool staggered = stagger != null && stagger.IsStaggered;
+            bool attacking = attackAnimator != null && attackAnimator.IsAttacking;
+
             Vector3 horizontal = Vector3.zero;
             Vector3 facing = Vector3.zero;
 
-            if (player != null)
+            // A mini-stun: frozen in place, no tracking, until it wears off.
+            if (player != null && !staggered)
             {
                 Vector3 toPlayer = player.transform.position - transform.position;
                 toPlayer.y = 0f;
@@ -80,7 +99,8 @@ private void Update()
                 {
                     facing = toPlayer;
 
-                    if (distance > stopDistance)
+                    // Still allowed to face the player mid-swing, just not to keep closing in.
+                    if (distance > stopDistance && !attacking)
                     {
                         horizontal = Steer(toPlayer / distance);
                         facing = horizontal;

@@ -44,7 +44,15 @@ namespace PoeClone.Enemies
             Damaged?.Invoke();
 
             if (currentHealth <= 0f)
+            {
                 Die();
+                return;
+            }
+
+            Stagger stagger = GetComponent<Stagger>();
+            if (stagger == null)
+                stagger = gameObject.AddComponent<Stagger>();
+            stagger.Trigger();
         }
 
         private void Die()

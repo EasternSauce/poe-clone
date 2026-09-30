@@ -20,7 +20,7 @@ namespace PoeClone.Visuals
 
         private struct Pose
         {
-            public float ArmPitch; // X: forward(+)/back(-) swing
+            public float ArmPitch; // X: forward/at-target(-)  back(+), relative to this rig's rest pose
             public float ArmYaw;   // Y: sideways sweep
             public float ArmRoll;  // Z: twist
             public float ElbowBend;
@@ -32,41 +32,62 @@ namespace PoeClone.Visuals
                 ArmRoll = roll;
                 ElbowBend = elbow;
             }
+
+            public static Pose operator +(Pose a, Pose b)
+            {
+                return new Pose(a.ArmPitch + b.ArmPitch, a.ArmYaw + b.ArmYaw, a.ArmRoll + b.ArmRoll, a.ElbowBend + b.ElbowBend);
+            }
         }
 
+        // Windup/Strike are stored as offsets from the character's own rest pose (see ArmRestAngle
+        // on CharacterWalkAnimator), not absolute angles. That way the same profile reads correctly
+        // whether rest is 0 deg (player, arms hanging) or -65 deg (zombie, arms already raised
+        // forward). Pitch offsets are negative to swing forward/at-target and positive to pull back
+        // -- proven by the zombie's rest pose, which must use negative pitch to reach forward.
         private class AttackProfile
         {
             public float Duration;
             public float StrikeTime; // fraction of Duration where the hit lands
-            public Pose Rest;
-            public Pose Windup;
-            public Pose Strike;
+            public Pose WindupOffset;
+            public Pose StrikeOffset;
             public float BaseAttacksPerSecond;
+            public float Range;
         }
-
-        private static readonly Pose ArmRest = new Pose(0f, 0f, 0f, 0f);
 
         private static readonly AttackProfile UnarmedProfile = new AttackProfile
         {
             Duration = 0.35f,
             StrikeTime = 0.4f,
-            Rest = ArmRest,
-            Windup = new Pose(-25f, -10f, 0f, 110f),
-            Strike = new Pose(95f, 5f, 0f, 15f),
-            BaseAttacksPerSecond = 1.8f
+            WindupOffset = new Pose(25f, -10f, 0f, 110f),
+            StrikeOffset = new Pose(-75f, 5f, 0f, 15f),
+            BaseAttacksPerSecond = 1.8f,
+            Range = 1.6f
         };
 
         private static readonly AttackProfile SwordProfile = new AttackProfile
         {
             Duration = 0.55f,
             StrikeTime = 0.45f,
-            Rest = ArmRest,
-            Windup = new Pose(-60f, -35f, -20f, 60f),
-            Strike = new Pose(70f, 45f, 25f, 35f),
-            BaseAttacksPerSecond = 1.2f
+            WindupOffset = new Pose(50f, -35f, -20f, 60f),
+            StrikeOffset = new Pose(-70f, 45f, 25f, 35f),
+            BaseAttacksPerSecond = 1.2f,
+            Range = 2.2f
+        };
+
+        // Tuned for a rest pose that's already raised forward (e.g. the zombie's -65 deg stance),
+        // so it doesn't need nearly as much swing as a weapon profile to read as a forward strike.
+        private static readonly AttackProfile ClawProfile = new AttackProfile
+        {
+            Duration = 0.5f,
+            StrikeTime = 0.45f,
+            WindupOffset = new Pose(15f, -20f, 0f, 70f),
+            StrikeOffset = new Pose(-40f, 15f, 0f, 20f),
+            BaseAttacksPerSecond = 1.0f,
+            Range = 1.8f
         };
 
         private AttackProfile activeProfile;
+        private Pose rest;
         private float timer;
         private bool strikeFired;
 
@@ -82,6 +103,10 @@ namespace PoeClone.Visuals
 
             if (weaponElbow == null && weaponArm != null)
                 weaponElbow = FindDescendant(weaponArm, "Elbow");
+
+            CharacterWalkAnimator walkAnimator = GetComponent<CharacterWalkAnimator>();
+            float restPitch = walkAnimator != null ? walkAnimator.ArmRestAngle : 0f;
+            rest = new Pose(restPitch, 0f, 0f, 0f);
         }
 
         /// <summary>Base attacks-per-second for a weapon type, before the AttackSpeed stat is applied.</summary>
@@ -90,9 +115,36 @@ namespace PoeClone.Visuals
             return ProfileFor(weaponType).BaseAttacksPerSecond;
         }
 
+        /// <summary>How far this weapon type's swing reaches, for both the melee hit check and aim-highlight queries.</summary>
+        public static float AttackRange(WeaponType weaponType)
+        {
+            return ProfileFor(weaponType).Range;
+        }
+
         public void PlayAttack(WeaponType weaponType)
         {
-            activeProfile = ProfileFor(weaponType);
+            Play(ProfileFor(weaponType));
+        }
+
+        /// <summary>Enemy claw swipe: a separate profile from player weapons since it's tuned for a different rest pose.</summary>
+        public void PlayClawAttack()
+        {
+            Play(ClawProfile);
+        }
+
+        /// <summary>Immediately cancels an in-progress swing and snaps back to rest. Used when staggered.</summary>
+        public void CancelAttack()
+        {
+            if (!IsAttacking)
+                return;
+
+            IsAttacking = false;
+            Apply(rest);
+        }
+
+        private void Play(AttackProfile profile)
+        {
+            activeProfile = profile;
             timer = 0f;
             strikeFired = false;
             IsAttacking = true;
@@ -115,17 +167,20 @@ namespace PoeClone.Visuals
             timer += Time.deltaTime;
             float f = Mathf.Clamp01(timer / activeProfile.Duration);
 
+            Pose windup = rest + activeProfile.WindupOffset;
+            Pose strike = rest + activeProfile.StrikeOffset;
+
             Pose pose;
             if (f < activeProfile.StrikeTime)
             {
                 float t = activeProfile.StrikeTime > 0f ? f / activeProfile.StrikeTime : 1f;
-                pose = Lerp(activeProfile.Rest, activeProfile.Windup, EaseOut(t));
+                pose = Lerp(rest, windup, EaseOut(t));
             }
             else
             {
                 float recoverSpan = 1f - activeProfile.StrikeTime;
                 float t = recoverSpan > 0f ? (f - activeProfile.StrikeTime) / recoverSpan : 1f;
-                pose = Lerp(activeProfile.Strike, activeProfile.Rest, t);
+                pose = Lerp(strike, rest, t);
 
                 if (!strikeFired)
                 {

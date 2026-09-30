@@ -97,6 +97,11 @@ private void LevelUp()
                 0f,
                 currentHealth - amount
             );
+
+            Stagger stagger = GetComponent<Stagger>();
+            if (stagger == null)
+                stagger = gameObject.AddComponent<Stagger>();
+            stagger.Trigger();
         }
 
 public void Heal(float amount)

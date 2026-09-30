@@ -1,4 +1,5 @@
 using UnityEngine;
+using PoeClone.Combat;
 
 namespace PoeClone.Visuals
 {
@@ -41,6 +42,10 @@ namespace PoeClone.Visuals
         [SerializeField] private float runBobHeight = 0.12f;
         [SerializeField] private float runLean = 14f;
 
+        [Header("Stagger")]
+        [Tooltip("How far the upper body rocks back when staggered (see Combat.Stagger).")]
+        [SerializeField] private float staggerTiltAngle = -22f;
+
         [Header("Optional joints")]
         [SerializeField] private Transform upperBody;
         [SerializeField] private Transform leftKnee;
@@ -61,6 +66,12 @@ namespace PoeClone.Visuals
         // avoids fighting over control regardless of script execution order.
         private CharacterAttackAnimator attackAnimator;
         private bool RightArmSuppressed => attackAnimator != null && attackAnimator.IsAttacking;
+
+        // Read for its RecoilFraction only; Stagger itself lives on the root, not this model.
+        private Stagger stagger;
+
+        /// <summary>The right/left arm's rest pitch (0 for the player, more raised for monsters). Shared with CharacterAttackAnimator so its swing offsets land correctly regardless of rig.</summary>
+        public float ArmRestAngle => armRestAngle;
 
 public void Configure(
             Transform leftLegPivot,
@@ -95,6 +106,7 @@ public void Configure(
             lastPosition = transform.position;
             baseLocalPosition = transform.localPosition;
             attackAnimator = GetComponent<CharacterAttackAnimator>();
+            stagger = GetComponentInParent<Stagger>();
         }
 
 private void LateUpdate()
@@ -144,7 +156,8 @@ private void LateUpdate()
             if (!rightArmSuppressed)
                 SetPivot(rightElbow, elbow);
 
-            SetPivot(upperBody, runLean * runBlend * blend);
+            float staggerTilt = stagger != null ? stagger.RecoilFraction * staggerTiltAngle : 0f;
+            SetPivot(upperBody, runLean * runBlend * blend + staggerTilt);
 
             float bobAmount = Mathf.Lerp(bobHeight, runBobHeight, runBlend);
             float bob = Mathf.Abs(c) * bobAmount * blend;
