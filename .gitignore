@@ -1,0 +1,84 @@
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# Memory captures
+[Mm]emoryCaptures/
+
+# Asset import settings
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+
+# Visual Studio / Rider / IDE
+.vs/
+.idea/
+.gradle/
+.vscode/
+
+# Generated solution/project files
+ExportedObj/
+.consulo/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+
+# Unity generated packages
+/[Ll]ibrary/[Pp]ackage[Cc]ache/
+/[Ll]ibrary/[Pp]ackage[Mm]anager/
+/[Ll]ibrary/[Ss]cript[Mm]apper/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Crash reports
+sysinfo.txt
+
+# Builds
+*.apk
+*.aab
+*.unitypackage
+*.app
+*.exe
+*.appimage
+*.x86
+*.x86_64
+*.dll
+*.so
+*.dylib
+
+# Addressables
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+
+# User-specific settings
+/[Aa]ssets/[Ss]treamingAssets/[Aa]ddressable[Aa]ssets/*
+
+# JetBrains Rider
+*.sln.iml
+
+# Gradle
+.gradle/
+gradle/
+local.properties
+
+# Generated documentation
+[Dd]ocs/
+
+# Plastic SCM
+.plastic/

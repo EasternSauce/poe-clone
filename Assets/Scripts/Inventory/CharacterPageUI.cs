@@ -1,0 +1,207 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
+
+namespace PoeClone.Inventory
+{
+    /// <summary>
+    /// The character page (press C): every stat the character has, combined from base stats and gear.
+    /// Values that gear is boosting show the bonus in green, and everything updates the moment you equip something.
+    /// </summary>
+    public class CharacterPageUI : MonoBehaviour
+    {
+        [SerializeField] private PlayerInventory inventory;
+
+        private const float RowHeight = 26f;
+        private const float PanelWidth = 420f;
+
+        private struct Group
+        {
+            public string Title;
+            public StatType[] Stats;
+
+            public Group(string title, params StatType[] stats)
+            {
+                Title = title;
+                Stats = stats;
+            }
+        }
+
+        private static readonly Group[] Groups =
+        {
+            new Group("Attributes", StatType.Strength, StatType.Dexterity, StatType.Intelligence),
+            new Group("Vitals", StatType.MaxLife, StatType.MaxMana),
+            new Group("Defences", StatType.Armour, StatType.Evasion, StatType.BlockChance),
+            new Group("Offence", StatType.PhysicalDamage, StatType.AttackSpeed),
+            new Group("Resistances", StatType.FireResistance, StatType.ColdResistance, StatType.LightningResistance),
+            new Group("Movement", StatType.MovementSpeed)
+        };
+
+        private readonly Dictionary<StatType, Text> valueTexts = new Dictionary<StatType, Text>();
+
+        private Canvas canvas;
+        private CanvasGroup canvasGroup;
+        private RectTransform panel;
+        private Text levelText;
+        private bool isOpen;
+        private bool warming;
+
+        public bool IsOpen
+        {
+            get { return isOpen; }
+        }
+
+        private void Start()
+        {
+            if (inventory == null)
+                inventory = FindAnyObjectByType<PlayerInventory>();
+
+            if (inventory == null)
+            {
+                Debug.LogError("CharacterPageUI: no PlayerInventory found in the scene.");
+                enabled = false;
+                return;
+            }
+
+            BuildUI();
+            inventory.StatsChanged += Refresh;
+            StartCoroutine(Prewarm());
+        }
+
+        private void OnDestroy()
+        {
+            if (inventory != null)
+                inventory.StatsChanged -= Refresh;
+        }
+
+        // Same trick as the inventory: build and show once invisibly so the first open is smooth.
+        private IEnumerator Prewarm()
+        {
+            warming = true;
+            canvasGroup.alpha = 0f;
+            SetOpen(true);
+            yield return null;
+            yield return null;
+            SetOpen(false);
+            canvasGroup.alpha = 1f;
+            warming = false;
+        }
+
+        private void Update()
+        {
+            if (warming)
+                return;
+
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null)
+                return;
+
+            if (keyboard.cKey.wasPressedThisFrame)
+                SetOpen(!isOpen);
+            else if (isOpen && keyboard.escapeKey.wasPressedThisFrame)
+                SetOpen(false);
+        }
+
+        private void SetOpen(bool open)
+        {
+            isOpen = open;
+            panel.gameObject.SetActive(open);
+            if (open)
+                Refresh();
+        }
+
+        private void BuildUI()
+        {
+            canvas = UiKit.NewCanvas("CharacterCanvas", transform, 49, out canvasGroup);
+
+            int lines = 0;
+            foreach (Group g in Groups)
+                lines += 1 + g.Stats.Length;
+
+            float headerHeight = 84f;
+            float panelHeight = headerHeight + lines * RowHeight + 30f;
+
+            Image bg = UiKit.NewImage("Panel", canvas.transform, UiKit.PanelColor);
+            panel = bg.rectTransform;
+            panel.anchorMin = new Vector2(0f, 0.5f);
+            panel.anchorMax = new Vector2(0f, 0.5f);
+            panel.pivot = new Vector2(0f, 0.5f);
+            panel.anchoredPosition = new Vector2(30f, 0f);
+            panel.sizeDelta = new Vector2(PanelWidth, panelHeight);
+            UiKit.AddOutline(bg, UiKit.BorderColor, 3f);
+
+            Text title = UiKit.NewText("Title", panel, "CHARACTER", 26, UiKit.Gold, TextAnchor.UpperCenter);
+            UiKit.TopLeft(title.rectTransform, new Vector2(0f, -14f), new Vector2(PanelWidth, 34f));
+
+            levelText = UiKit.NewText("Level", panel, "", 18, UiKit.DimText, TextAnchor.UpperCenter);
+            UiKit.TopLeft(levelText.rectTransform, new Vector2(0f, -48f), new Vector2(PanelWidth, 26f));
+
+            float y = -headerHeight;
+            foreach (Group g in Groups)
+            {
+                Text header = UiKit.NewText("Header_" + g.Title, panel, g.Title.ToUpperInvariant(), 15, UiKit.Gold, TextAnchor.MiddleLeft);
+                UiKit.TopLeft(header.rectTransform, new Vector2(26f, y), new Vector2(PanelWidth - 52f, RowHeight));
+                y -= RowHeight;
+
+                foreach (StatType stat in g.Stats)
+                {
+                    Text label = UiKit.NewText("Label_" + stat, panel, LabelFor(stat), 17, UiKit.TextColor, TextAnchor.MiddleLeft);
+                    UiKit.TopLeft(label.rectTransform, new Vector2(40f, y), new Vector2(PanelWidth * 0.5f, RowHeight));
+
+                    Text value = UiKit.NewText("Value_" + stat, panel, "", 17, UiKit.TextColor, TextAnchor.MiddleRight);
+                    UiKit.TopLeft(value.rectTransform, new Vector2(PanelWidth * 0.45f, y), new Vector2(PanelWidth * 0.55f - 40f, RowHeight));
+                    valueTexts[stat] = value;
+
+                    y -= RowHeight;
+                }
+            }
+
+            panel.gameObject.SetActive(false);
+        }
+
+        private static string LabelFor(StatType stat)
+        {
+            switch (stat)
+            {
+                case StatType.MaxLife: return "Life";
+                case StatType.MaxMana: return "Mana";
+                default: return StatFormatter.Label(stat);
+            }
+        }
+
+        private static string ValueFor(StatType stat, float value)
+        {
+            string text = StatFormatter.Value(stat, value);
+            bool increase = stat == StatType.MovementSpeed || stat == StatType.AttackSpeed;
+            return increase && value > 0f ? "+" + text : text;
+        }
+
+        private void Refresh()
+        {
+            if (inventory == null || inventory.Stats == null || levelText == null)
+                return;
+
+            StatSheet sheet = inventory.Stats;
+            levelText.text = "Level " + sheet.Level + "    XP " + sheet.Experience + " / " + sheet.ExperienceRequired;
+
+            string green = UiKit.Hex(UiKit.BonusGreen);
+
+            foreach (KeyValuePair<StatType, Text> pair in valueTexts)
+            {
+                StatType stat = pair.Key;
+                string text = ValueFor(stat, sheet.Total(stat));
+
+                float bonus = sheet.FromGear(stat);
+                if (Mathf.Abs(bonus) > 0.001f)
+                {
+                    string sign = bonus > 0f ? "+" : "-";
+                    text += "  <color=#" + green + ">(" + sign + StatFormatter.Number(Mathf.Abs(bonus)) + ")</color>";
+                }
+
+                pair.Value.text = text;
+            }
+        }
+    }
+}
