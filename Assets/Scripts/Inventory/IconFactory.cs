@@ -234,6 +234,18 @@ namespace PoeClone.Inventory
                     sub.Add(Poly(0.29f, 0.77f, 0.71f, 0.77f, 0.71f, 0.55f, 0.5f, 0.24f, 0.29f, 0.55f));
                     top.Add(Circle(0.5f, 0.56f, 0.1f));
                     break;
+
+                case ItemType.Quiver:
+                    // A tall tube with three fletched arrows standing out of the top.
+                    add.Add(Rect(0.32f, 0.08f, 0.62f, 0.66f));
+                    add.Add(Capsule(0.38f, 0.66f, 0.3f, 0.9f, 0.025f));
+                    add.Add(Capsule(0.47f, 0.66f, 0.47f, 0.94f, 0.025f));
+                    add.Add(Capsule(0.56f, 0.66f, 0.66f, 0.9f, 0.025f));
+                    add.Add(Poly(0.24f, 0.86f, 0.34f, 0.86f, 0.3f, 0.96f));
+                    add.Add(Poly(0.42f, 0.9f, 0.52f, 0.9f, 0.47f, 1f));
+                    add.Add(Poly(0.62f, 0.86f, 0.72f, 0.86f, 0.66f, 0.96f));
+                    sub.Add(Rect(0.32f, 0.56f, 0.62f, 0.6f));
+                    break;
             }
         }
     }

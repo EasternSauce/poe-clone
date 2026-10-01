@@ -9,7 +9,10 @@ namespace PoeClone.Enemies
     /// <summary>
     /// Basic enemy: stands still until the player gets close, then chases
     /// at a fraction of the player's speed. If the player gets far enough
-    /// away, the enemy loses interest and stops. No attacks yet.
+    /// away, the enemy loses interest and stops. Ranged kinds stop at shooting range
+    /// instead of closing in, stand their ground, and only every few shots take a
+    /// short step back if the player is close (so they can't be pinned, but don't kite
+    /// endlessly either). Attacking itself is <see cref="EnemyCombat"/>.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class EnemyController : MonoBehaviour
@@ -44,6 +47,16 @@ namespace PoeClone.Enemies
         // How long the enemy sticks to an avoidance side after the direct path was last blocked.
         private const float AvoidCommitTime = 1.0f;
 
+        [Header("Ranged Repositioning")]
+        [Tooltip("Ranged kinds back off after this many attacks (0 = never).")]
+        [SerializeField] private int attacksBeforeRetreat = 0;
+        [Tooltip("...but only if the player is at least this close.")]
+        [SerializeField] private float retreatTriggerDistance = 6f;
+        [SerializeField] private float retreatSeconds = 1.2f;
+
+        private int attacksAtLastRetreat;
+        private float retreatUntil = -1f;
+
         [Header("Obstacle Avoidance")]
         [SerializeField] private float lookAhead = 1.8f;
 
@@ -64,6 +77,26 @@ namespace PoeClone.Enemies
 
             if (GetComponent<EnemyCombat>() == null)
                 gameObject.AddComponent<EnemyCombat>();
+        }
+
+        /// <summary>Takes on a kind's pace and preferred distance (see <see cref="EnemyKinds.Apply"/>).</summary>
+        public void Configure(EnemyKind kind)
+        {
+            speedRatioToPlayer = kind.SpeedRatio;
+
+            if (kind.IsRanged)
+            {
+                // Stop a little inside casting range so a step back by the player doesn't
+                // immediately put them out of it again.
+                stopDistance = kind.AttackRange * 0.8f;
+                attacksBeforeRetreat = 3;
+                aggroRange = Mathf.Max(aggroRange, kind.AttackRange + 3f);
+                loseInterestRange = Mathf.Max(loseInterestRange, aggroRange + 6f);
+            }
+            else
+            {
+                stopDistance = kind.AttackRange * 0.9f;
+            }
         }
 
         private void Start()
@@ -109,8 +142,15 @@ private void Update()
                 {
                     facing = toPlayer;
 
+                    // A retreat runs its course first, even once it's carried the enemy past its
+                    // stop distance; then it turns back to face the player and shoot.
+                    if (!attacking && distance > 0.001f && ShouldRetreat(distance))
+                    {
+                        horizontal = Steer(-toPlayer / distance);
+                        facing = horizontal;
+                    }
                     // Still allowed to face the player mid-swing, just not to keep closing in.
-                    if (distance > stopDistance && !attacking)
+                    else if (distance > stopDistance && !attacking)
                     {
                         horizontal = Steer(toPlayer / distance);
                         facing = horizontal;
@@ -208,6 +248,27 @@ private bool IsBlocked(Vector3 direction)
             }
 
             return player == null || hit.collider.gameObject != player.gameObject;
+        }
+
+        // Every few attacks, if the player has closed in, a short burst of backing off; the rest of
+        // the time a ranged enemy holds its ground and keeps shooting.
+        private bool ShouldRetreat(float distance)
+        {
+            if (Time.time < retreatUntil)
+                return true;
+
+            if (attacksBeforeRetreat <= 0 || attackAnimator == null)
+                return false;
+
+            if (attackAnimator.AttackCount - attacksAtLastRetreat < attacksBeforeRetreat)
+                return false;
+
+            attacksAtLastRetreat = attackAnimator.AttackCount;
+            if (distance > retreatTriggerDistance)
+                return false;
+
+            retreatUntil = Time.time + retreatSeconds;
+            return true;
         }
 
         private void UpdateState(float distance)

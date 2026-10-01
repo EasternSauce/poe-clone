@@ -21,7 +21,8 @@ namespace PoeClone.EditorTools
         private static readonly string[] AllIds =
         {
             "iron_helmet", "bronze_helmet", "studded_vest", "leather_gloves", "leather_boots", "rope_belt",
-            "jade_amulet", "iron_ring", "ruby_ring", "sapphire_ring", "rusty_sword", "wooden_shield"
+            "jade_amulet", "iron_ring", "ruby_ring", "sapphire_ring", "rusty_sword", "wooden_shield",
+            "hand_axe", "iron_mace", "steel_dagger", "short_bow", "leather_quiver"
         };
 
         private static readonly Dictionary<string, Material> Mats = new Dictionary<string, Material>();
@@ -47,6 +48,7 @@ namespace PoeClone.EditorTools
             Ring("sapphire_ring", "Steel", "GemBlue");
             RustySword();
             WoodenShield();
+            WeaponModels();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -152,6 +154,9 @@ namespace PoeClone.EditorTools
             Mat("Rust", "#9b4f2a", 0.05f, false);
             Mat("ShieldWood", "#8a5e34", 0.05f, false);
             Mat("ShieldWoodDark", "#5e3f22", 0.05f, false);
+            Mat("Silver", "#c9ced6", 0.45f, false);
+            Mat("PaleWood", "#d6c79a", 0.05f, false);
+            Mat("BowString", "#ece6d6", 0.05f, false);
         }
 
         // ------------------------------------------------------------------ builders
@@ -391,6 +396,124 @@ namespace PoeClone.EditorTools
             Shape(sword, "Tip", "Cone", "RustSteel", new Vector3(0f, 1.085f, 0f), new Vector3(0.05f, 0.14f, 0.014f));
 
             Save(root, "rusty_sword");
+        }
+
+        /// <summary>
+        /// Just the weapons added after the starter set (axe, mace, dagger, bow, quiver), leaving the
+        /// other prefabs untouched. Build Equipment also builds these.
+        /// </summary>
+        [MenuItem("PoeClone/Build Weapons")]
+        public static void BuildWeapons()
+        {
+            EnsureFolder(OutDir);
+            LoadMeshes();
+            MakeMaterials();
+            WeaponModels();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("EquipmentBuilder: built the weapon prefabs");
+        }
+
+        private static void WeaponModels()
+        {
+            HandAxe();
+            IronMace();
+            SteelDagger();
+            ShortBow();
+            LeatherQuiver();
+        }
+
+        // Like the sword: built along +y from the grip, tipped to point forward and slightly down.
+        private static void HandAxe()
+        {
+            GameObject root = NewRoot("hand_axe");
+            Transform axe = Node(root, "Socket_MainHand", new Vector3(0f, 0f, 0.03f), new Vector3(112f, 0f, 0f));
+
+            Cube(axe, "Haft", "PaleWood", new Vector3(0f, 0.30f, 0f), new Vector3(0.06f, 0.72f, 0.06f));
+            Shape(axe, "Pommel", "IcoHead", "GemGreen", new Vector3(0f, -0.05f, 0f), new Vector3(0.08f, 0.08f, 0.08f));
+            Cube(axe, "Collar", "Gold", new Vector3(0f, 0.60f, 0f), new Vector3(0.10f, 0.10f, 0.08f));
+            Cube(axe, "Blade", "Silver", new Vector3(0.13f, 0.60f, 0f), new Vector3(0.20f, 0.20f, 0.03f));
+            Cube(axe, "Edge", "Steel", new Vector3(0.245f, 0.60f, 0f), new Vector3(0.05f, 0.34f, 0.032f));
+            Cube(axe, "Spike", "Silver", new Vector3(-0.09f, 0.62f, 0f), new Vector3(0.10f, 0.07f, 0.03f));
+            Shape(axe, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.60f, 0.045f), new Vector3(0.06f, 0.06f, 0.04f));
+
+            Save(root, "hand_axe");
+        }
+
+        private static void IronMace()
+        {
+            GameObject root = NewRoot("iron_mace");
+            Transform mace = Node(root, "Socket_MainHand", new Vector3(0f, 0f, 0.03f), new Vector3(112f, 0f, 0f));
+
+            Cube(mace, "Handle", "PaleWood", new Vector3(0f, 0.27f, 0f), new Vector3(0.055f, 0.62f, 0.055f));
+            Shape(mace, "Pommel", "IcoHead", "Gold", new Vector3(0f, -0.05f, 0f), new Vector3(0.08f, 0.08f, 0.08f));
+            Cube(mace, "Collar", "Gold", new Vector3(0f, 0.58f, 0f), new Vector3(0.10f, 0.05f, 0.10f));
+            Shape(mace, "Head", "IcoHead", "Silver", new Vector3(0f, 0.72f, 0f), new Vector3(0.22f, 0.28f, 0.22f));
+            Cube(mace, "FlangeX", "Steel", new Vector3(0f, 0.72f, 0f), new Vector3(0.30f, 0.22f, 0.04f));
+            Cube(mace, "FlangeZ", "Steel", new Vector3(0f, 0.72f, 0f), new Vector3(0.04f, 0.22f, 0.30f));
+            Shape(mace, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.88f, 0f), new Vector3(0.07f, 0.07f, 0.07f));
+
+            Save(root, "iron_mace");
+        }
+
+        private static void SteelDagger()
+        {
+            GameObject root = NewRoot("steel_dagger");
+            Transform dagger = Node(root, "Socket_MainHand", new Vector3(0f, 0f, 0.03f), new Vector3(112f, 0f, 0f));
+
+            Cube(dagger, "Grip", "PaleWood", new Vector3(0f, 0.06f, 0f), new Vector3(0.045f, 0.14f, 0.045f));
+            Shape(dagger, "Pommel", "IcoHead", "GemBlue", new Vector3(0f, -0.03f, 0f), new Vector3(0.06f, 0.06f, 0.06f));
+            Cube(dagger, "Guard", "Gold", new Vector3(0f, 0.145f, 0f), new Vector3(0.18f, 0.035f, 0.06f));
+            Cube(dagger, "Blade", "Silver", new Vector3(0f, 0.33f, 0f), new Vector3(0.07f, 0.34f, 0.02f));
+            Shape(dagger, "Tip", "Cone", "Silver", new Vector3(0f, 0.54f, 0f), new Vector3(0.035f, 0.09f, 0.01f));
+
+            Save(root, "steel_dagger");
+        }
+
+        // Held in the off (left) hand, like a real archer: the right hand draws. Built upright along
+        // +y with the belly towards +z, then turned so that with the arm raised at the target (the
+        // bow attack) the bow stands upright, belly to the target and string to the archer. With
+        // the arm hanging at rest that leaves it carried level at the hip, pointing forward.
+        private static void ShortBow()
+        {
+            GameObject root = NewRoot("short_bow");
+            Transform bow = Node(root, "Socket_OffHand", new Vector3(0f, 0f, 0.02f), new Vector3(90f, 0f, 0f));
+
+            Cube(bow, "Grip", "Leather", new Vector3(0f, 0f, 0.22f), new Vector3(0.06f, 0.16f, 0.06f));
+            Bar(bow, "UpperInner", "Silver", new Vector3(0f, 0.07f, 0.22f), new Vector3(0f, 0.30f, 0.16f), 0.05f);
+            Bar(bow, "UpperOuter", "Silver", new Vector3(0f, 0.30f, 0.16f), new Vector3(0f, 0.52f, 0f), 0.04f);
+            Bar(bow, "LowerInner", "Silver", new Vector3(0f, -0.07f, 0.22f), new Vector3(0f, -0.30f, 0.16f), 0.05f);
+            Bar(bow, "LowerOuter", "Silver", new Vector3(0f, -0.30f, 0.16f), new Vector3(0f, -0.52f, 0f), 0.04f);
+            Shape(bow, "TipTop", "Cone", "Gold", new Vector3(0f, 0.55f, 0f), new Vector3(0.03f, 0.07f, 0.03f));
+            Shape(bow, "TipBottom", "Cone", "Gold", new Vector3(0f, -0.55f, 0f), new Vector3(0.03f, 0.07f, 0.03f), new Vector3(180f, 0f, 0f));
+            Bar(bow, "String", "BowString", new Vector3(0f, 0.52f, 0f), new Vector3(0f, -0.52f, 0f), 0.01f);
+            Shape(bow, "GemTop", "IcoHead", "GemGreen", new Vector3(0f, 0.14f, 0.22f), new Vector3(0.05f, 0.05f, 0.04f));
+            Shape(bow, "GemBottom", "IcoHead", "GemGreen", new Vector3(0f, -0.14f, 0.22f), new Vector3(0.05f, 0.05f, 0.04f));
+
+            Save(root, "short_bow");
+        }
+
+        // Worn on the back, tilted over the right shoulder so the arrows are within the drawing
+        // hand's reach: a leather tube with gold bands, fletched arrows standing out of the top.
+        private static void LeatherQuiver()
+        {
+            GameObject root = NewRoot("leather_quiver");
+            Transform quiver = Node(root, "Socket_Chest", new Vector3(0.06f, 0.05f, -0.30f), new Vector3(0f, 0f, -22f));
+
+            Shape(quiver, "Tube", "Cylinder", "Leather", new Vector3(0f, 0.05f, 0f), new Vector3(0.20f, 0.30f, 0.20f));
+            Shape(quiver, "Bottom", "Cylinder", "TanDark", new Vector3(0f, -0.26f, 0f), new Vector3(0.21f, 0.03f, 0.21f));
+            Shape(quiver, "BandTop", "Cylinder", "Gold", new Vector3(0f, 0.33f, 0f), new Vector3(0.215f, 0.03f, 0.215f));
+            Shape(quiver, "BandMid", "Cylinder", "Gold", new Vector3(0f, -0.05f, 0f), new Vector3(0.21f, 0.025f, 0.21f));
+
+            float[] xs = { -0.05f, 0.0f, 0.05f };
+            float[] zs = { 0.02f, -0.03f, 0.02f };
+            for (int k = 0; k < 3; k++)
+            {
+                Cube(quiver, "Shaft" + k, "PaleWood", new Vector3(xs[k], 0.42f, zs[k]), new Vector3(0.018f, 0.24f, 0.018f));
+                Cube(quiver, "Fletch" + k, k == 1 ? "GemRed" : "BowString", new Vector3(xs[k], 0.52f, zs[k]), new Vector3(0.05f, 0.09f, 0.012f));
+            }
+
+            Save(root, "leather_quiver");
         }
 
         // Strapped to the off forearm and held facing forward.

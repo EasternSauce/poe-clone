@@ -43,6 +43,9 @@ namespace PoeClone.Network
 
         private readonly SnapshotTimeline timeline = new SnapshotTimeline();
         private readonly Dictionary<int, Puppet> puppets = new Dictionary<int, Puppet>();
+        private readonly Dictionary<int, LootDrop> loot = new Dictionary<int, LootDrop>();
+        private readonly HashSet<int> lootSeen = new HashSet<int>();
+        private readonly List<int> lootGone = new List<int>();
         private readonly List<StateSnapshot> due = new List<StateSnapshot>();
         private readonly List<int> scratchIds = new List<int>();
         private readonly EntityState scratch = new EntityState();
@@ -95,6 +98,7 @@ namespace PoeClone.Network
                 GameObject player = playerStats.gameObject;
                 SetEnabled(player.GetComponent<PlayerController>(), false);
                 SetEnabled(player.GetComponent<PlayerCombat>(), false);
+                SetEnabled(player.GetComponent<LootPicker>(), false);
                 // No local revive countdown / "press any key" handling - the real player's values come in via ApplyReplicatedState.
                 playerStats.enabled = false;
 
@@ -112,6 +116,10 @@ namespace PoeClone.Network
                 playerStagger = player.GetComponent<Stagger>();
                 if (playerStagger == null)
                     playerStagger = player.AddComponent<Stagger>();
+
+                // A replayed bow shot looses a harmless arrow, the way the player's did.
+                if (playerAttack != null)
+                    playerAttack.StrikeFrame += OnPlayerStrike;
             }
 
             // The spectator's own (local, starter) inventory isn't the player's - don't let I/C open it.
@@ -130,21 +138,24 @@ namespace PoeClone.Network
             loadingScreen = FindAnyObjectByType<LoadingScreenUI>();
 
             var spawner = FindAnyObjectByType<EnemySpawner>();
+            SetEnabled(spawner, false); // no respawning of this tab's own enemies
             enemyPrefab = spawner != null ? spawner.EnemyPrefab : null;
             puppetParent = spawner != null ? spawner.transform : transform;
             if (enemyPrefab == null)
                 Debug.LogWarning("SpectatorReplica: no EnemySpawner prefab found - enemies won't be shown.");
 
-            // This tab's own randomly spawned enemies have nothing to do with the player's.
+            // This tab's own randomly spawned enemies (and its own starter loot) have nothing to do
+            // with the player's; the player's loot arrives in the snapshots.
             foreach (var enemy in FindObjectsByType<EnemyHealth>())
                 Destroy(enemy.gameObject);
+            foreach (var drop in new List<LootDrop>(LootDrop.All))
+                Destroy(drop.gameObject);
 
+            // Gear only needs to look right here, and the look is keyed by base id, so one display
+            // item per base covers every starter item and every drop.
             itemsById = new Dictionary<string, ItemData>();
-            foreach (ItemData item in ItemCatalog.CreateStarterItems())
-            {
-                if (!string.IsNullOrEmpty(item.Id))
-                    itemsById[item.Id] = item;
-            }
+            foreach (string id in ItemGenerator.BaseIds)
+                itemsById[id] = ItemGenerator.Display(id, null, ItemRarity.Normal);
         }
 
         /// <summary>Feeds one raw "state" message from the server.</summary>
@@ -179,6 +190,13 @@ namespace PoeClone.Network
                     Destroy(puppet.Root);
             }
             puppets.Clear();
+
+            foreach (LootDrop drop in loot.Values)
+            {
+                if (drop != null)
+                    Destroy(drop.gameObject);
+            }
+            loot.Clear();
 
             if (playerStats != null && playerApplied != null && playerApplied.d != 0)
                 CharacterDeathAnimator.ResetOn(playerStats.transform);
@@ -247,6 +265,50 @@ namespace PoeClone.Network
                 if (puppet != null)
                     ApplyEnemyEvents(puppet, e);
             }
+
+            ApplyLoot(s.l);
+        }
+
+        // Items on the ground: shown as they appear, removed once the player's snapshot stops
+        // listing them (picked up, expired, or out of range).
+        private void ApplyLoot(LootState[] states)
+        {
+            lootSeen.Clear();
+            if (states != null)
+            {
+                foreach (LootState l in states)
+                {
+                    if (l == null)
+                        continue;
+                    lootSeen.Add(l.i);
+                    if (loot.ContainsKey(l.i))
+                        continue;
+
+                    ItemData item = ItemGenerator.Display(l.b, l.n, (ItemRarity)l.q);
+                    if (item != null)
+                        loot[l.i] = LootDrop.Spawn(item, new Vector3(l.x, l.y, l.z), interactive: false, id: l.i);
+                }
+            }
+
+            lootGone.Clear();
+            foreach (var pair in loot)
+            {
+                if (!lootSeen.Contains(pair.Key))
+                    lootGone.Add(pair.Key);
+            }
+            foreach (int id in lootGone)
+            {
+                if (loot[id] != null)
+                    Destroy(loot[id].gameObject);
+                loot.Remove(id);
+            }
+        }
+
+        private void OnPlayerStrike()
+        {
+            if (active && playerStats != null && playerAttack != null &&
+                CharacterAttackAnimator.IsRangedProfile(playerAttack.ProfileId))
+                PlayerArrow.LaunchVisual(playerStats.transform, CharacterAttackAnimator.AttackRange(WeaponType.Bow));
         }
 
         private void ApplyFade(int fade)
@@ -282,6 +344,14 @@ namespace PoeClone.Network
             if (appliedEquipment == null)
                 appliedEquipment = new string[slots.Length];
 
+            // Two passes: empty every slot that changed, then fill them. Filling one at a time could
+            // be refused mid-swap by the hand rules (a bow arriving while the old shield is still on).
+            for (int k = 0; k < slots.Length && k < eq.Length; k++)
+            {
+                if (appliedEquipment[k] != (eq[k] ?? string.Empty))
+                    playerInventory.Equipment.Unequip(slots[k]);
+            }
+
             for (int k = 0; k < slots.Length && k < eq.Length; k++)
             {
                 string id = eq[k] ?? string.Empty;
@@ -289,11 +359,8 @@ namespace PoeClone.Network
                     continue;
                 appliedEquipment[k] = id;
 
-                EquipSlot slot = slots[k];
-                if (id.Length == 0 || !itemsById.TryGetValue(id, out ItemData item))
-                    playerInventory.Equipment.Unequip(slot);
-                else if (playerInventory.Equipment.Get(slot) != item)
-                    playerInventory.Equipment.TryEquip(slot, item, out _);
+                if (id.Length > 0 && itemsById.TryGetValue(id, out ItemData item))
+                    playerInventory.Equipment.TryEquip(slots[k], item, out _);
             }
         }
 
@@ -483,6 +550,10 @@ namespace PoeClone.Network
             GameObject go = Instantiate(enemyPrefab, position, rotation, puppetParent);
             go.name = $"EnemyPuppet_{e.i}";
 
+            EnemyKind kind = EnemyKinds.Get(e.k);
+            EnemyKinds.ApplyLook(go, kind);
+            go.GetComponent<EnemyHealth>()?.SetKindIndex(e.k);
+
             // Awake has run (adding EnemyCombat + the attack animator); Start hasn't. Switch off
             // everything that would think for itself before it gets the chance.
             SetEnabled(go.GetComponent<EnemyController>(), false);
@@ -505,6 +576,17 @@ namespace PoeClone.Network
             };
             if (puppet.Stagger == null)
                 puppet.Stagger = go.AddComponent<Stagger>();
+
+            // A caster's or archer's replayed attack sends a harmless bolt/arrow at the player.
+            if (kind.IsRanged && puppet.Attack != null)
+            {
+                Transform body = go.transform;
+                puppet.Attack.StrikeFrame += () =>
+                {
+                    if (body != null && playerStats != null)
+                        EnemyProjectile.LaunchVisual(EnemyCombat.BoltOrigin(body), playerStats.transform.position, kind);
+                };
+            }
 
             if (puppet.Health != null)
             {

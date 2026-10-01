@@ -5,12 +5,14 @@ using PoeClone.Audio;
 using PoeClone.Combat;
 using PoeClone.Player;
 using PoeClone.Visuals;
+using PoeClone.World;
 
 namespace PoeClone.Enemies
 {
     /// <summary>
     /// Hit points for an enemy. On death it stops the AI/controller, plays a short
-    /// collapse animation, grants the player experience, then leaves the corpse in place.
+    /// collapse animation, grants the player experience, may drop loot, and leaves the corpse
+    /// for a while before it sinks away (enemies keep respawning, so corpses can't pile up forever).
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class EnemyHealth : MonoBehaviour, IDamageable
@@ -22,6 +24,7 @@ namespace PoeClone.Enemies
         [Tooltip("Beat before the body topples, so the knee-buckle/limb collapse (CharacterDeathAnimator) reads before the big rotation grabs the eye.")]
         [SerializeField] private float deathWindUp = 0.15f;
         [SerializeField] private float collapseDuration = 0.6f;
+        [SerializeField] private float corpseSeconds = 25f;
 
         private float currentHealth;
         private bool dead;
@@ -30,12 +33,30 @@ namespace PoeClone.Enemies
         public float CurrentHealth => currentHealth;
         public bool IsDead => dead;
 
+        /// <summary>Which <see cref="EnemyKinds"/> entry this is (replicated, and decides loot).</summary>
+        public int KindIndex { get; private set; }
+
         public event Action Damaged;
         public event Action Died;
 
         private void Awake()
         {
             currentHealth = maxHealth;
+        }
+
+        /// <summary>Takes on a kind's toughness and reward (see <see cref="EnemyKinds.Apply"/>).</summary>
+        public void Configure(int kindIndex, EnemyKind kind)
+        {
+            KindIndex = kindIndex;
+            maxHealth = kind.MaxHealth;
+            currentHealth = maxHealth;
+            experienceReward = kind.Experience;
+        }
+
+        /// <summary>Spectator puppets: which kind to draw (their numbers come over the wire).</summary>
+        public void SetKindIndex(int kindIndex)
+        {
+            KindIndex = kindIndex;
         }
 
         public void TakeDamage(float amount)
@@ -103,7 +124,7 @@ namespace PoeClone.Enemies
                 return;
             }
 
-            StartCoroutine(Collapse());
+            StartCoroutine(Collapse(removeCorpse: false));
         }
 
         private void DisableLiveBehaviour()
@@ -137,12 +158,14 @@ namespace PoeClone.Enemies
             if (player != null)
                 player.GainExperience(experienceReward);
 
+            LootDrop.RollDrop(EnemyKinds.Get(KindIndex), transform.position, player != null ? player.Level : 1);
+
             // foldLowerBody: false -- the root topple below already lies the whole rig on the
             // ground, so the big local leg/knee/upper-body fold used for the player (who has no
             // topple) would double up on top of it and bury the legs under the torso.
             CharacterDeathAnimator.PlayOn(transform, foldLowerBody: false);
 
-            StartCoroutine(Collapse());
+            StartCoroutine(Collapse(removeCorpse: true));
         }
 
         // Topples the whole root forward (pivoting on the character's own position, roughly hip
@@ -153,7 +176,7 @@ namespace PoeClone.Enemies
         // root alone, with the limbs left in their natural standing proportions (foldLowerBody:
         // false above), is what actually reads as a body lying on the ground with visible legs.
         // The corpse is left in place afterward rather than destroyed.
-        private IEnumerator Collapse()
+        private IEnumerator Collapse(bool removeCorpse)
         {
             yield return new WaitForSeconds(deathWindUp);
 
@@ -171,6 +194,23 @@ namespace PoeClone.Enemies
                 transform.rotation = Quaternion.Slerp(startRotation, toppledRotation, f);
                 yield return null;
             }
+
+            // Only the real game removes corpses; a spectator's puppet goes when the player's does.
+            if (!removeCorpse || corpseSeconds <= 0f)
+                yield break;
+
+            yield return new WaitForSeconds(corpseSeconds);
+
+            Vector3 lying = transform.position;
+            Vector3 buried = lying + Vector3.down * 1.5f;
+            const float sinkSeconds = 2f;
+            for (float s = 0f; s < sinkSeconds; s += Time.deltaTime)
+            {
+                transform.position = Vector3.Lerp(lying, buried, s / sinkSeconds);
+                yield return null;
+            }
+
+            Destroy(gameObject);
         }
     }
 }

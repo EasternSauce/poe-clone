@@ -15,7 +15,19 @@ namespace PoeClone.Inventory
         Amulet,
         Ring,
         Weapon,
-        Shield
+        Shield,
+        Quiver   // off hand, worn with a bow
+    }
+
+    /// <summary>
+    /// How special an item is, PoE style: Normal (its base stats only), Magic (one or two extra
+    /// stats, blue) or Rare (three or more, yellow, with a made-up name).
+    /// </summary>
+    public enum ItemRarity
+    {
+        Normal,
+        Magic,
+        Rare
     }
 
     /// <summary>
@@ -25,8 +37,13 @@ namespace PoeClone.Inventory
     /// </summary>
     public enum WeaponType
     {
+        // Values are stable (saved/replicated by number); add new types at the end.
         Unarmed,
-        Sword
+        Sword,
+        Axe,
+        Mace,
+        Dagger,
+        Bow
     }
 
     /// <summary>The places gear can be worn. There are two ring slots and one amulet slot.</summary>
@@ -69,12 +86,16 @@ namespace PoeClone.Inventory
         /// <summary>For a Weapon item, which attack animation/pace it uses. Meaningless otherwise.</summary>
         public WeaponType WeaponType { get; }
 
+        /// <summary>Normal / Magic / Rare: the colour of its name and border.</summary>
+        public ItemRarity Rarity { get; }
+
         public ItemData(string name, ItemType type, int width, int height, Color tint)
             : this(null, name, type, width, height, tint, null)
         {
         }
 
-        public ItemData(string id, string name, ItemType type, int width, int height, Color tint, IEnumerable<StatModifier> modifiers, bool hasCape = false, WeaponType weaponType = WeaponType.Sword)
+        /// <param name="rarity">Defaults to Magic for an item with stats and Normal without (the starter items).</param>
+        public ItemData(string id, string name, ItemType type, int width, int height, Color tint, IEnumerable<StatModifier> modifiers, bool hasCape = false, WeaponType weaponType = WeaponType.Sword, ItemRarity? rarity = null)
         {
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentException("Item needs a name.", nameof(name));
@@ -92,6 +113,7 @@ namespace PoeClone.Inventory
             Modifiers = modifiers == null ? NoModifiers : new List<StatModifier>(modifiers);
             HasCape = hasCape;
             WeaponType = weaponType;
+            Rarity = rarity ?? (Modifiers.Count > 0 ? ItemRarity.Magic : ItemRarity.Normal);
         }
 
         public override string ToString()
@@ -117,6 +139,17 @@ namespace PoeClone.Inventory
             EquipSlot.Boots
         };
 
+        /// <summary>
+        /// Every type the slot takes. The off hand holds a shield, or a quiver for a bow;
+        /// <see cref="AcceptedType"/> is its main one (the slot's hint icon).
+        /// </summary>
+        public static ItemType[] AcceptedTypes(EquipSlot slot)
+        {
+            if (slot == EquipSlot.OffHand)
+                return new[] { ItemType.Shield, ItemType.Quiver };
+            return new[] { AcceptedType(slot) };
+        }
+
         public static ItemType AcceptedType(EquipSlot slot)
         {
             switch (slot)
@@ -137,7 +170,23 @@ namespace PoeClone.Inventory
 
         public static bool Accepts(EquipSlot slot, ItemData item)
         {
-            return item != null && item.Type == AcceptedType(slot);
+            return item != null && Array.IndexOf(AcceptedTypes(slot), item.Type) >= 0;
+        }
+
+        /// <summary>
+        /// Whether a main-hand and an off-hand item can be worn together. A bow takes both hands:
+        /// no shield with it, only a quiver; and a quiver is only for a bow (or empty hands).
+        /// Either may be null (nothing in that hand).
+        /// </summary>
+        public static bool HandsCompatible(ItemData mainHand, ItemData offHand)
+        {
+            bool bow = mainHand != null && mainHand.Type == ItemType.Weapon && mainHand.WeaponType == WeaponType.Bow;
+
+            if (bow)
+                return offHand == null || offHand.Type == ItemType.Quiver;
+            if (offHand != null && offHand.Type == ItemType.Quiver)
+                return mainHand == null;
+            return true;
         }
     }
 }

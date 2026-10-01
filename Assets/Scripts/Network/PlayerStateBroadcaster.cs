@@ -37,6 +37,7 @@ namespace PoeClone.Network
         private readonly List<EntityState> enemyStates = new List<EntityState>();
         private readonly Dictionary<EnemyHealth, int> enemyIds = new Dictionary<EnemyHealth, int>();
         private int nextEnemyId = 1; // 0 is the player
+        private readonly List<LootState> lootStates = new List<LootState>();
         private readonly StateSnapshot snapshot = new StateSnapshot
         {
             p = new EntityState(),
@@ -137,6 +138,7 @@ namespace PoeClone.Network
             }
 
             CaptureEnemies(pt.position);
+            CaptureLoot(pt.position);
             return snapshot;
         }
 
@@ -184,12 +186,45 @@ namespace PoeClone.Network
 
                 var ai = enemy.GetComponent<EnemyController>();
                 e.ch = ai != null && ai.CurrentState == EnemyController.State.Chasing ? 1 : 0;
+                e.k = enemy.KindIndex;
             }
 
             if (snapshot.e == null || snapshot.e.Length != count)
                 snapshot.e = new EntityState[count];
             for (int k = 0; k < count; k++)
                 snapshot.e[k] = enemyStates[k];
+        }
+
+        // Loot never moves, so this is cheap; the list is short (drops expire, pickups remove them).
+        private void CaptureLoot(Vector3 center)
+        {
+            float radiusSq = interestRadius * interestRadius;
+            int count = 0;
+
+            foreach (LootDrop drop in LootDrop.All)
+            {
+                Vector3 position = drop.transform.position;
+                Vector3 offset = position - center;
+                offset.y = 0f;
+                if (offset.sqrMagnitude > radiusSq)
+                    continue;
+
+                if (count == lootStates.Count)
+                    lootStates.Add(new LootState());
+                LootState l = lootStates[count++];
+                l.i = drop.Id;
+                l.x = position.x;
+                l.y = position.y;
+                l.z = position.z;
+                l.b = drop.Item.Id;
+                l.n = drop.Item.Name;
+                l.q = (int)drop.Item.Rarity;
+            }
+
+            if (snapshot.l == null || snapshot.l.Length != count)
+                snapshot.l = new LootState[count];
+            for (int k = 0; k < count; k++)
+                snapshot.l[k] = lootStates[k];
         }
 
         // Small sequential ids: stable for the enemy's lifetime and shorter on the wire than instance ids.

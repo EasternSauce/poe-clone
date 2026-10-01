@@ -70,7 +70,30 @@ namespace PoeClone.Network.Replication
                     AppendEntity(sb, s.e[k]);
                 }
             }
-            sb.Append("]}");
+            sb.Append(']');
+
+            if (s.l != null && s.l.Length > 0)
+            {
+                sb.Append(",\"l\":[");
+                for (int k = 0; k < s.l.Length; k++)
+                {
+                    LootState loot = s.l[k];
+                    if (k > 0) sb.Append(',');
+                    sb.Append("{\"i\":").Append(loot.i.ToString(CultureInfo.InvariantCulture));
+                    AppendFloat(sb, "x", loot.x, 2);
+                    AppendFloat(sb, "y", loot.y, 2);
+                    AppendFloat(sb, "z", loot.z, 2);
+                    sb.Append(",\"b\":");
+                    AppendString(sb, loot.b ?? string.Empty);
+                    sb.Append(",\"n\":");
+                    AppendString(sb, loot.n ?? string.Empty);
+                    AppendInt(sb, "q", loot.q);
+                    sb.Append('}');
+                }
+                sb.Append(']');
+            }
+
+            sb.Append('}');
             return sb.ToString();
         }
 
@@ -103,6 +126,8 @@ namespace PoeClone.Network.Replication
 
             if (s.e == null)
                 s.e = new EntityState[0];
+            if (s.l == null)
+                s.l = new LootState[0];
 
             return s;
         }
@@ -121,6 +146,7 @@ namespace PoeClone.Network.Replication
             AppendInt(sb, "ap", e.ap);
             AppendInt(sb, "stg", e.stg);
             AppendInt(sb, "ch", e.ch);
+            AppendInt(sb, "k", e.k);
             sb.Append('}');
         }
 

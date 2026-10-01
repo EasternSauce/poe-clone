@@ -22,7 +22,15 @@ namespace PoeClone.Inventory
 
         public bool CanEquip(EquipSlot slot, ItemData item)
         {
-            return SlotRules.Accepts(slot, item);
+            if (!SlotRules.Accepts(slot, item))
+                return false;
+
+            // The two hands have to suit each other (a bow takes no shield, a quiver needs a bow).
+            if (slot == EquipSlot.MainHand)
+                return SlotRules.HandsCompatible(item, Get(EquipSlot.OffHand));
+            if (slot == EquipSlot.OffHand)
+                return SlotRules.HandsCompatible(Get(EquipSlot.MainHand), item);
+            return true;
         }
 
         /// <summary>Equips the item. Whatever was in the slot is returned in <paramref name="replaced"/>.</summary>

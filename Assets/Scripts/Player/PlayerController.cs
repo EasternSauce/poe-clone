@@ -15,10 +15,37 @@ namespace PoeClone.Player
         [SerializeField] private float gravity = -20f;
         [SerializeField] private float sprintMultiplier = 1.7f;
 
+        [Tooltip("Speed while chilled by a cold hit, as a fraction of normal.")]
+        [SerializeField] private float chilledSpeed = 0.7f;
+
         private CharacterController controller;
         private Vector3 verticalVelocity;
         private CharacterAttackAnimator attackAnimator;
         private Stagger stagger;
+        private float chilledUntil = -1f;
+
+        // Walking somewhere on its own (to an item the player clicked), until it arrives, the player
+        // steers or attacks, or it gives up (stuck behind something).
+        private const float WalkTimeout = 6f;
+        private bool walking;
+        private Vector3 walkTarget;
+        private float walkArriveDistance;
+        private float walkGiveUpAt;
+
+        public bool IsWalkingToTarget => walking;
+
+        public void WalkTo(Vector3 target, float arriveDistance)
+        {
+            walking = true;
+            walkTarget = target;
+            walkArriveDistance = arriveDistance;
+            walkGiveUpAt = Time.time + WalkTimeout;
+        }
+
+        public void CancelWalk()
+        {
+            walking = false;
+        }
 
         // Walking speed. Enemies scale off this, so sprinting does not change their speed.
         public float MoveSpeed => moveSpeed;
@@ -33,9 +60,15 @@ namespace PoeClone.Player
 
         public float SpeedMultiplier => speedMultiplier;
 
-        private float CurrentSpeed => (IsSprinting() ? moveSpeed * sprintMultiplier : moveSpeed) * speedMultiplier;
+        public bool IsChilled => Time.time < chilledUntil;
 
-        // Hold Shift (or toggle the on-screen run button) to sprint. No stamina.
+        /// <summary>Slowed for a moment by a cold hit (PoE's chill).</summary>
+        public void Chill(float seconds)
+        {
+            chilledUntil = Mathf.Max(chilledUntil, Time.time + seconds);
+        }
+
+        // Hold Shift (or toggle the on-screen run button) to sprint. No stamina or mana cost.
         private bool IsSprinting()
         {
             if (VirtualInput.Sprint)
@@ -54,6 +87,9 @@ namespace PoeClone.Player
             stagger = GetComponent<Stagger>();
             if (stagger == null)
                 stagger = gameObject.AddComponent<Stagger>();
+
+            if (GetComponent<LootPicker>() == null)
+                gameObject.AddComponent<LootPicker>();
         }
 
 private void Update()
@@ -81,13 +117,23 @@ private void Update()
                 1f
             );
 
+            // Steering by hand always wins over walking to a clicked item.
+            if (movement.sqrMagnitude > 0.001f)
+                walking = false;
+            else if (walking)
+                movement = WalkDirection();
+
             bool staggered = stagger != null && stagger.IsStaggered;
             if (staggered)
                 movement = Vector3.zero;
 
+            float speed = (IsSprinting() ? moveSpeed * sprintMultiplier : moveSpeed) * speedMultiplier;
+            if (IsChilled)
+                speed *= chilledSpeed;
+
             controller.Move(
                 movement *
-                CurrentSpeed *
+                speed *
                 Time.deltaTime
             );
 
@@ -109,6 +155,20 @@ private void Update()
             }
 
             ApplyGravity();
+        }
+
+        private Vector3 WalkDirection()
+        {
+            Vector3 toTarget = walkTarget - transform.position;
+            toTarget.y = 0f;
+
+            if (toTarget.magnitude <= walkArriveDistance || Time.time > walkGiveUpAt)
+            {
+                walking = false;
+                return Vector3.zero;
+            }
+
+            return toTarget.normalized;
         }
 
         private Vector2 ReadMovementInput()

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using PoeClone.Audio;
 using PoeClone.Combat;
+using PoeClone.Inventory;
 using PoeClone.Visuals;
 using PoeClone.UI;
 using PoeClone.CameraSystem;
@@ -28,6 +29,13 @@ namespace PoeClone.Player
         [Header("Death")]
         [Tooltip("Seconds the 3, 2, 1 countdown takes before the revive prompt appears.")]
         [SerializeField] private float reviveCountdown = 3f;
+
+        [Header("Defences")]
+        [Tooltip("How long a cold hit slows the player.")]
+        [SerializeField] private float chillSeconds = 1.5f;
+
+        private PlayerInventory inventory;
+        private PlayerController controller;
 
         private float currentHealth;
         private float currentMana;
@@ -77,6 +85,8 @@ namespace PoeClone.Player
         {
             currentHealth = maxHealth;
             currentMana = maxMana;
+            inventory = GetComponent<PlayerInventory>();
+            controller = GetComponent<PlayerController>();
 
             spawnPosition = transform.position;
             spawnRotation = transform.rotation;
@@ -84,6 +94,9 @@ namespace PoeClone.Player
 
         private void Update()
         {
+            if (!dead)
+                currentMana = Mathf.Min(MaxMana, currentMana + DefenceMath.ManaRegenPerSecond(MaxMana, Intelligence) * Time.deltaTime);
+
             if (respawnPhase == RespawnPhase.Countdown)
             {
                 countdownTimer -= Time.deltaTime;
@@ -155,6 +168,70 @@ private void LevelUp()
 
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlayAtPoint(AudioManager.Instance.playerLevelUp, transform.position);
+        }
+
+        /// <summary>
+        /// An enemy attack reaching the player. In order: evasion may dodge it, block may stop it
+        /// (neither takes damage nor staggers), then armour shrinks a physical hit and resistance an
+        /// elemental one, and mana soaks part of what's left; a cold hit also chills. See
+        /// <see cref="DefenceMath"/> for the numbers.
+        /// </summary>
+        public void TakeHit(float damage, DamageType type)
+        {
+            if (dead || damage <= 0f)
+                return;
+
+            Vector3 textAt = transform.position + Vector3.up * 1.2f;
+            StatSheet sheet = inventory != null ? inventory.Stats : null;
+
+            if (sheet != null)
+            {
+                if (UnityEngine.Random.value < DefenceMath.EvadeChance(sheet.Total(StatType.Evasion)))
+                {
+                    CombatText.Show(textAt, "Evaded", CombatText.AvoidColor, 0.8f);
+                    return;
+                }
+
+                if (UnityEngine.Random.value < DefenceMath.BlockChance(sheet.Total(StatType.BlockChance)))
+                {
+                    CombatText.Show(textAt, "Blocked", CombatText.BlockColor, 0.8f);
+                    if (AudioManager.Instance != null)
+                        AudioManager.Instance.PlayAtPoint(AudioManager.Instance.combatBlock, transform.position);
+                    return;
+                }
+
+                damage = Mitigate(sheet, damage, type);
+            }
+
+            if (type == DamageType.Cold && controller != null)
+            {
+                if (!controller.IsChilled)
+                    CombatText.Show(textAt + Vector3.up * 0.4f, "Chilled", CombatText.ColdColor, 0.7f);
+                controller.Chill(chillSeconds);
+            }
+
+            Color color = type == DamageType.Physical ? CombatText.PlayerHurtColor : CombatText.ColorFor(type);
+            CombatText.Show(textAt, Mathf.Max(1, Mathf.RoundToInt(damage)).ToString(), color);
+
+            float absorbed = DefenceMath.ManaAbsorbed(damage, currentMana);
+            currentMana -= absorbed;
+
+            TakeDamage(damage - absorbed);
+        }
+
+        private static float Mitigate(StatSheet sheet, float damage, DamageType type)
+        {
+            switch (type)
+            {
+                case DamageType.Fire:
+                    return DefenceMath.AfterResistance(damage, sheet.Total(StatType.FireResistance));
+                case DamageType.Cold:
+                    return DefenceMath.AfterResistance(damage, sheet.Total(StatType.ColdResistance));
+                case DamageType.Lightning:
+                    return DefenceMath.AfterResistance(damage, sheet.Total(StatType.LightningResistance));
+                default:
+                    return damage * (1f - DefenceMath.ArmourReduction(sheet.Total(StatType.Armour), damage));
+            }
         }
 
         public void TakeDamage(float amount)

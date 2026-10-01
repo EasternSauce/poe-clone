@@ -17152,6 +17152,7 @@ MonoBehaviour:
   rotationSpeed: 12
   gravity: -20
   sprintMultiplier: 1.7
+  chilledSpeed: 0.7
 --- !u!143 &962017733
 CharacterController:
   m_ObjectHideFlags: 0
@@ -17213,6 +17214,7 @@ MonoBehaviour:
   maxHealth: 100
   maxMana: 50
   reviveCountdown: 3
+  chillSeconds: 1.5
 --- !u!114 &962017738
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29753,6 +29755,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
   - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
   - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+  combatBlock: {fileID: 8300000, guid: eeeea64e5bcfce840b5add4a8b6c2c18, type: 3}
   playerHurt:
   - {fileID: 8300000, guid: 6e8997d11b2c26e47b2dfe8bd7bec284, type: 3}
   - {fileID: 8300000, guid: c1de4b0d0b171a445bbc345937e4e677, type: 3}
@@ -29764,6 +29767,7 @@ MonoBehaviour:
   uiItemPickup: {fileID: 8300000, guid: 7baf97f3279ffef40b747402df81ee46, type: 3}
   uiItemPlace: {fileID: 8300000, guid: 46190f48c471d1e47b59959d5fb422de, type: 3}
   gateOpen: {fileID: 8300000, guid: 255f0c0a1b85a6d4490764b5ca6fcfb6, type: 3}
+  lootDrop: {fileID: 8300000, guid: 8f7eaa9ac09b4ee47a3ddaa2af296db1, type: 3}
   sfxVolume: 0.8
   uiVolume: 0.6
   inventoryToggleVolume: 0.1
@@ -34208,7 +34212,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PoeClone.Enemies.EnemySpawner
   enemyPrefab: {fileID: 1574276915870265490, guid: b74681846e77ada4780a3452dd9d082d, type: 3}
-  enemyCount: 12
+  enemyCount: 24
+  respawnInterval: 4
+  respawnMinDistance: 24
   areaHalfSize: 40
   minDistanceFromPlayer: 14
   clearanceRadius: 1.2

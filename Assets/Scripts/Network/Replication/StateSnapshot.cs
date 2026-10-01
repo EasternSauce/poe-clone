@@ -24,6 +24,7 @@ namespace PoeClone.Network.Replication
         public int ap;     // attack profile id of the latest swing (see CharacterAttackAnimator.ProfileId)
         public int stg;    // staggers (non-lethal hits taken) so far - same counter trick as atk
         public int ch;     // enemies: 1 = chasing the player (drives the aggro sound)
+        public int k;      // enemies: kind (index into EnemyKinds) - decides the look
 
         public EntityState Clone()
         {
@@ -49,6 +50,19 @@ namespace PoeClone.Network.Replication
         public int rv;     // 1 = countdown finished, waiting for the player to press a key to revive
     }
 
+    /// <summary>An item lying on the ground near the player.</summary>
+    [Serializable]
+    public class LootState
+    {
+        public int i;      // drop id, stable while it lies there
+        public float x;
+        public float y;
+        public float z;
+        public string b;   // item base id (its icon)
+        public string n;   // item name
+        public int q;      // rarity (ItemRarity)
+    }
+
     [Serializable]
     public class StateSnapshot
     {
@@ -64,5 +78,6 @@ namespace PoeClone.Network.Replication
         public PlayerHudState hud;
         public string[] eq;    // equipped item id per EquipSlot (by enum order), "" = empty
         public EntityState[] e;
+        public LootState[] l;  // items on the ground nearby
     }
 }

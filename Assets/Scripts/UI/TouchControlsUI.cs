@@ -28,9 +28,6 @@ namespace PoeClone.UI
         private static readonly Color RunOnColor = new Color(0.62f, 0.48f, 0.20f, 0.85f);
         private static readonly Color UnreadColor = new Color(0.85f, 0.20f, 0.15f, 1f);
 
-        private static Sprite discSprite;
-        private static Sprite ringSprite;
-
         private GameObject controlsRoot;
         private GameObject combatRoot;
         private GameObject menuRoot;
@@ -44,6 +41,8 @@ namespace PoeClone.UI
         private int joystickPointer = int.MinValue;
 
         private Image attackImage;
+        private Image attackIcon;
+        private string attackIconFor;
         private Image runImage;
         private GameObject unreadDot;
 
@@ -103,9 +102,26 @@ namespace PoeClone.UI
             // The character page sits where the HUD is drawn (OnGUI draws over uGUI).
             PlayerHUD.SetHiddenBy(this, characterOpen);
 
+            UpdateAttackIcon();
+
             if (ChatUI.PanelVisible)
                 seenMessages = ChatUI.MessageCount;
             unreadDot.SetActive(ChatUI.MessageCount > seenMessages);
+        }
+
+        // The equipped weapon's painted icon (a bow for a bow), or the plain sword silhouette unarmed.
+        private void UpdateAttackIcon()
+        {
+            PlayerInventory inventory = stats != null ? stats.GetComponent<PlayerInventory>() : null;
+            ItemData weapon = inventory != null ? inventory.Equipment.Get(EquipSlot.MainHand) : null;
+            string id = weapon != null ? weapon.Id : "";
+            if (id == attackIconFor)
+                return;
+
+            attackIconFor = id;
+            Sprite painted = weapon != null ? ItemArt.PaintedIcon(weapon) : null;
+            attackIcon.sprite = painted != null ? painted : IconFactory.Get(ItemType.Weapon);
+            attackIcon.color = painted != null ? Color.white : new Color(0.92f, 0.86f, 0.72f, 0.9f);
         }
 
         private void FindGameplay()
@@ -148,6 +164,10 @@ namespace PoeClone.UI
         private void OnJoystickDown(PointerEventData e)
         {
             if (joystickPointer != int.MinValue)
+                return;
+
+            // A tap on an item lying in the joystick area picks it up (LootPicker) instead.
+            if (LootPicker.PickableAt(e.position) != null)
                 return;
 
             joystickPointer = e.pointerId;
@@ -240,8 +260,6 @@ namespace PoeClone.UI
 
         private void Build()
         {
-            EnsureSprites();
-
             Canvas canvas = NewCanvas("TouchControlsCanvas", 700);
             controlsRoot = canvas.gameObject;
 
@@ -260,12 +278,12 @@ namespace PoeClone.UI
             joystickZone.offsetMax = Vector2.zero;
 
             joystickBaseImage = UiKit.NewImage("Base", joystickZone, Color.white);
-            joystickBaseImage.sprite = ringSprite;
+            joystickBaseImage.sprite = UiKit.Ring;
             joystickBase = joystickBaseImage.rectTransform;
             Place(joystickBase, Vector2.zero, JoystickIdle, new Vector2(220f, 220f));
 
             joystickKnobImage = UiKit.NewImage("Knob", joystickBase, Color.white);
-            joystickKnobImage.sprite = discSprite;
+            joystickKnobImage.sprite = UiKit.Disc;
             joystickKnob = joystickKnobImage.rectTransform;
             Place(joystickKnob, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(96f, 96f));
 
@@ -278,10 +296,10 @@ namespace PoeClone.UI
             stick.Up += OnJoystickUp;
 
             attackImage = NewRoundButton("Attack", combat, new Vector2(1f, 0f), new Vector2(-150f, 150f), 180f, null);
-            Image swordIcon = UiKit.NewImage("Icon", attackImage.rectTransform, new Color(0.92f, 0.86f, 0.72f, 0.9f));
-            swordIcon.sprite = IconFactory.Get(ItemType.Weapon);
-            swordIcon.preserveAspect = true;
-            Place(swordIcon.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(104f, 104f));
+            attackIcon = UiKit.NewImage("Icon", attackImage.rectTransform, new Color(0.92f, 0.86f, 0.72f, 0.9f));
+            attackIcon.sprite = IconFactory.Get(ItemType.Weapon);
+            attackIcon.preserveAspect = true;
+            Place(attackIcon.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(104f, 104f));
 
             TouchPointerRelay attack = attackImage.gameObject.AddComponent<TouchPointerRelay>();
             attack.Down += _ =>
@@ -317,11 +335,13 @@ namespace PoeClone.UI
             chat.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ToggleChat();
 
             Image dot = UiKit.NewImage("Unread", chat.rectTransform, UnreadColor);
-            dot.sprite = discSprite;
+            dot.sprite = UiKit.Disc;
             Place(dot.rectTransform, new Vector2(0.85f, 0.85f), Vector2.zero, new Vector2(24f, 24f));
             unreadDot = dot.gameObject;
 
-            // The inventory reads raw touches, so it must know these buttons sit on top of it.
+            // The inventory and item pickup read raw touches, so they must know these buttons sit on top.
+            TouchMode.AddBlocker(attackImage.rectTransform);
+            TouchMode.AddBlocker(runImage.rectTransform);
             TouchMode.AddBlocker(bag.rectTransform);
             TouchMode.AddBlocker(character.rectTransform);
             TouchMode.AddBlocker(chat.rectTransform);
@@ -361,12 +381,12 @@ namespace PoeClone.UI
         private static Image NewRoundButton(string name, Transform parent, Vector2 anchor, Vector2 position, float size, string label)
         {
             Image image = UiKit.NewImage(name, parent, ControlColor);
-            image.sprite = discSprite;
+            image.sprite = UiKit.Disc;
             image.raycastTarget = true;
             Place(image.rectTransform, anchor, position, new Vector2(size, size));
 
             Image rim = UiKit.NewImage("Rim", image.rectTransform, new Color(UiKit.BorderColor.r, UiKit.BorderColor.g, UiKit.BorderColor.b, 0.8f));
-            rim.sprite = ringSprite;
+            rim.sprite = UiKit.Ring;
             UiKit.Stretch(rim.rectTransform, 0f);
 
             if (label != null)
@@ -385,44 +405,6 @@ namespace PoeClone.UI
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
-        }
-
-        private static void EnsureSprites()
-        {
-            if (discSprite == null)
-                discSprite = MakeCircle(128, 0f);
-            if (ringSprite == null)
-                ringSprite = MakeCircle(128, 0.07f);
-        }
-
-        // Antialiased white circle: filled, or a ring whose thickness is a fraction of the size.
-        private static Sprite MakeCircle(int size, float ringThickness)
-        {
-            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
-            {
-                wrapMode = TextureWrapMode.Clamp,
-                filterMode = FilterMode.Bilinear
-            };
-
-            float radius = size * 0.5f;
-            float inner = radius - ringThickness * size;
-            var pixels = new Color32[size * size];
-
-            for (int y = 0; y < size; y++)
-            {
-                for (int x = 0; x < size; x++)
-                {
-                    float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(radius, radius));
-                    float alpha = Mathf.Clamp01(radius - d);
-                    if (ringThickness > 0f)
-                        alpha *= Mathf.Clamp01(d - inner);
-                    pixels[y * size + x] = new Color32(255, 255, 255, (byte)(alpha * 255f));
-                }
-            }
-
-            texture.SetPixels32(pixels);
-            texture.Apply();
-            return Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f);
         }
     }
 }

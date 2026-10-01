@@ -249,6 +249,41 @@ namespace PoeClone.Tests
             return new ItemData(name, type, 1, 1, Color.white);
         }
 
+        private static ItemData Weapon(WeaponType weaponType)
+        {
+            return new ItemData(null, weaponType.ToString(), ItemType.Weapon, 1, 3, Color.white, null, weaponType: weaponType);
+        }
+
+        [Test]
+        public void ABow_TakesNoShield_OnlyAQuiver()
+        {
+            Assert.IsTrue(equipment.TryEquip(EquipSlot.MainHand, Weapon(WeaponType.Bow), out _));
+            Assert.IsFalse(equipment.CanEquip(EquipSlot.OffHand, Of(ItemType.Shield)));
+            Assert.IsTrue(equipment.CanEquip(EquipSlot.OffHand, Of(ItemType.Quiver)));
+        }
+
+        [Test]
+        public void WithAShieldWorn_ABowCantBeEquipped_ButASwordCan()
+        {
+            Assert.IsTrue(equipment.TryEquip(EquipSlot.OffHand, Of(ItemType.Shield), out _));
+            Assert.IsFalse(equipment.CanEquip(EquipSlot.MainHand, Weapon(WeaponType.Bow)));
+            Assert.IsTrue(equipment.CanEquip(EquipSlot.MainHand, Weapon(WeaponType.Sword)));
+        }
+
+        [Test]
+        public void AQuiver_GoesWithABowOrEmptyHands_NotAnotherWeapon()
+        {
+            Assert.IsTrue(equipment.CanEquip(EquipSlot.OffHand, Of(ItemType.Quiver)));
+
+            Assert.IsTrue(equipment.TryEquip(EquipSlot.MainHand, Weapon(WeaponType.Sword), out _));
+            Assert.IsFalse(equipment.CanEquip(EquipSlot.OffHand, Of(ItemType.Quiver)));
+
+            equipment.Unequip(EquipSlot.MainHand);
+            Assert.IsTrue(equipment.TryEquip(EquipSlot.OffHand, Of(ItemType.Quiver), out _));
+            Assert.IsFalse(equipment.CanEquip(EquipSlot.MainHand, Weapon(WeaponType.Axe)));
+            Assert.IsTrue(equipment.CanEquip(EquipSlot.MainHand, Weapon(WeaponType.Bow)));
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -256,13 +291,13 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void EverySlot_AcceptsOnlyItsOwnItemType()
+        public void EverySlot_AcceptsOnlyItsOwnItemTypes()
         {
             foreach (EquipSlot slot in SlotRules.AllSlots)
             {
                 foreach (ItemType type in Enum.GetValues(typeof(ItemType)))
                 {
-                    bool expected = type == SlotRules.AcceptedType(slot);
+                    bool expected = Array.IndexOf(SlotRules.AcceptedTypes(slot), type) >= 0;
                     Assert.AreEqual(expected, equipment.CanEquip(slot, Of(type)), slot + " with " + type);
                 }
             }
@@ -453,18 +488,14 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void StarterItems_CoverEveryEquipmentSlot_AndIncludeASpareRing()
+        public void StarterItems_AreThreeOrFourBasicItems_IncludingAWeapon()
         {
             List<ItemData> items = ItemCatalog.CreateStarterItems();
 
-            foreach (EquipSlot slot in SlotRules.AllSlots)
-            {
-                bool found = items.Exists(i => SlotRules.Accepts(slot, i));
-                Assert.IsTrue(found, "no starter item fits " + slot);
-            }
-
-            int rings = items.FindAll(i => i.Type == ItemType.Ring).Count;
-            Assert.GreaterOrEqual(rings, 3);
+            Assert.That(items.Count, Is.InRange(3, 4));
+            Assert.IsTrue(items.Exists(i => i.Type == ItemType.Weapon), "no starter weapon");
+            foreach (ItemData item in items)
+                Assert.AreEqual(ItemRarity.Normal, item.Rarity, item.Name);
         }
     }
 }

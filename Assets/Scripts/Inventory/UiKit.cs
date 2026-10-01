@@ -23,6 +23,58 @@ namespace PoeClone.Inventory
         public static readonly Color DimText = new Color(0.62f, 0.59f, 0.52f, 1f);
         public static readonly Color MagicBlue = new Color(0.53f, 0.53f, 1f, 1f);
         public static readonly Color BonusGreen = new Color(0.50f, 0.84f, 0.50f, 1f);
+        public static readonly Color NormalWhite = new Color(0.90f, 0.88f, 0.84f, 1f);
+        public static readonly Color RareYellow = new Color(1f, 1f, 0.47f, 1f);
+
+        /// <summary>PoE's item name colours: white Normal, blue Magic, yellow Rare.</summary>
+        public static Color RarityColor(ItemRarity rarity)
+        {
+            switch (rarity)
+            {
+                case ItemRarity.Magic: return MagicBlue;
+                case ItemRarity.Rare: return RareYellow;
+                default: return NormalWhite;
+            }
+        }
+
+        private static Sprite disc;
+        private static Sprite ring;
+
+        /// <summary>An antialiased white disc, for round buttons and glows.</summary>
+        public static Sprite Disc => disc != null ? disc : disc = MakeCircle(128, 0f);
+
+        /// <summary>An antialiased white ring (a disc's outline).</summary>
+        public static Sprite Ring => ring != null ? ring : ring = MakeCircle(128, 0.07f);
+
+        // Filled, or a ring whose thickness is a fraction of the size.
+        private static Sprite MakeCircle(int size, float ringThickness)
+        {
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear
+            };
+
+            float radius = size * 0.5f;
+            float inner = radius - ringThickness * size;
+            var pixels = new Color32[size * size];
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(radius, radius));
+                    float alpha = Mathf.Clamp01(radius - d);
+                    if (ringThickness > 0f)
+                        alpha *= Mathf.Clamp01(d - inner);
+                    pixels[y * size + x] = new Color32(255, 255, 255, (byte)(alpha * 255f));
+                }
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            return Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f);
+        }
 
         private static Font font;
 

@@ -38,6 +38,7 @@ namespace PoeClone.Inventory
         private static readonly Color PlateColor = new Color(0.11f, 0.10f, 0.13f, 1f);
         private static readonly Color PlateBorder = new Color(0.40f, 0.36f, 0.30f, 1f);
         private static readonly Color MagicBorder = new Color(0.42f, 0.42f, 0.85f, 1f);
+        private static readonly Color RareBorder = new Color(0.85f, 0.80f, 0.35f, 1f);
         private static readonly Color GoodSoft = new Color(0.25f, 0.80f, 0.35f, 0.16f);
         private static readonly Color GoodStrong = new Color(0.25f, 0.85f, 0.35f, 0.40f);
         private static readonly Color Bad = new Color(0.90f, 0.20f, 0.20f, 0.40f);
@@ -114,6 +115,7 @@ namespace PoeClone.Inventory
         private ItemData cursorItem;
         private bool isOpen;
         private bool warming;
+        private bool gridDirty;
 
         // The touch currently being followed (see UpdateTouch).
         private bool touchTracking;
@@ -150,12 +152,16 @@ namespace PoeClone.Inventory
             StartCoroutine(Prewarm());
 
             inventory.PlayerDied += OnPlayerDied;
+            inventory.Grid.Changed += OnGridChanged;
         }
 
         private void OnDestroy()
         {
             if (inventory != null)
+            {
                 inventory.PlayerDied -= OnPlayerDied;
+                inventory.Grid.Changed -= OnGridChanged;
+            }
         }
 
         // Can't loot/reroll gear once dead: force the panel shut and leave it locked (see the
@@ -203,6 +209,9 @@ namespace PoeClone.Inventory
 
             if (!isOpen)
                 return;
+
+            if (gridDirty)
+                Refresh();
 
             if (TouchMode.Active)
             {
@@ -484,7 +493,7 @@ private Vector2 CellSize(int w, int h)
             if (painted != null)
             {
                 plate = new Color(PlateColor.r, PlateColor.g, PlateColor.b, alpha);
-                border = item.Modifiers.Count > 0 ? MagicBorder : PlateBorder;
+                border = item.Rarity == ItemRarity.Rare ? RareBorder : item.Rarity == ItemRarity.Magic ? MagicBorder : PlateBorder;
             }
             else
             {
@@ -526,8 +535,17 @@ private Vector2 CellSize(int w, int h)
             return rt;
         }
 
+        // Something landed in the bag from outside this screen (a picked-up drop): redraw once,
+        // next frame, rather than on every change of a click that redraws anyway.
+        private void OnGridChanged()
+        {
+            gridDirty = true;
+        }
+
         private void Refresh()
         {
+            gridDirty = false;
+
             foreach (GameObject go in itemViews)
                 Destroy(go);
             itemViews.Clear();
@@ -670,13 +688,27 @@ private Vector2 CellSize(int w, int h)
         // Name, type, then the item's real stats (the ones that change the character when worn).
         private static string BuildTooltipText(ItemData item, out int lineCount)
         {
-            string type = Regex.Replace(item.Type.ToString(), "(?<=.)([A-Z])", " $1");
+            // Weapons name their kind ("Bow", "Axe"); everything else its slot type ("Body Armour").
+            string typeName = item.Type == ItemType.Weapon ? item.WeaponType.ToString() : item.Type.ToString();
+            string type = Regex.Replace(typeName, "(?<=.)([A-Z])", " $1");
             string magic = UiKit.Hex(UiKit.MagicBlue);
 
             StringBuilder sb = new StringBuilder();
-            sb.Append("<b><color=#").Append(magic).Append(">").Append(item.Name).Append("</color></b>\n");
+            sb.Append("<b><color=#").Append(UiKit.Hex(UiKit.RarityColor(item.Rarity))).Append(">").Append(item.Name).Append("</color></b>\n");
             sb.Append("<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">").Append(type).Append("</color>");
             lineCount = 2;
+
+            // Which hands it takes, for the gear where that limits what else can be worn.
+            string handNote = null;
+            if (item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Bow)
+                handNote = "Two-handed: no shield (a quiver goes in the off hand)";
+            else if (item.Type == ItemType.Quiver)
+                handNote = "Off hand, worn with a bow";
+            if (handNote != null)
+            {
+                sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append("><size=14>").Append(handNote).Append("</size></color>");
+                lineCount++;
+            }
 
             if (item.Modifiers.Count > 0)
             {

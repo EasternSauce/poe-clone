@@ -73,6 +73,7 @@ namespace PoeClone.Visuals
         // avoids fighting over control regardless of script execution order.
         private CharacterAttackAnimator attackAnimator;
         private bool RightArmSuppressed => attackAnimator != null && attackAnimator.IsAttacking;
+        private bool LeftArmSuppressed => attackAnimator != null && attackAnimator.DrivesOffArm;
 
         // Read for its RecoilFraction only; Stagger itself lives on the root, not this model.
         private Stagger stagger;
@@ -161,10 +162,12 @@ private void LateUpdate()
             float armAmp = Mathf.Lerp(armSwing, runArmSwing, runBlend) * blend;
 
             bool rightArmSuppressed = RightArmSuppressed;
+            bool leftArmSuppressed = LeftArmSuppressed;
 
             SetPivot(leftLeg, s * legAmp);
             SetPivot(rightLeg, -s * legAmp);
-            SetPivot(leftArm, armRestAngle - s * armAmp);
+            if (!leftArmSuppressed)
+                SetPivot(leftArm, armRestAngle - s * armAmp);
             if (!rightArmSuppressed)
                 SetPivot(rightArm, armRestAngle + s * armAmp);
 
@@ -175,7 +178,8 @@ private void LateUpdate()
 
             // Elbows bend forward; running holds the arms sharply bent.
             float elbow = -Mathf.Lerp(walkElbowBend, runElbowBend, runBlend) * blend;
-            SetPivot(leftElbow, elbow);
+            if (!leftArmSuppressed)
+                SetPivot(leftElbow, elbow);
             if (!rightArmSuppressed)
                 SetPivot(rightElbow, elbow);
 

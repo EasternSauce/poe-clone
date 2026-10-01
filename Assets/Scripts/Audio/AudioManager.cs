@@ -17,6 +17,7 @@ namespace PoeClone.Audio
         public AudioClip[] meleeHit;
         public AudioClip[] enemyDeath;
         public AudioClip[] enemyAggro;
+        public AudioClip combatBlock;
 
         [Header("Player")]
         public AudioClip[] playerHurt;
@@ -33,6 +34,7 @@ namespace PoeClone.Audio
 
         [Header("World")]
         public AudioClip gateOpen;
+        public AudioClip lootDrop;
 
         [Header("Volumes")]
         [Range(0f, 1f)] public float sfxVolume = 0.8f;

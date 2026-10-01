@@ -52,7 +52,8 @@ namespace PoeClone.UI
             if (cam == null)
                 return;
 
-            Vector3 world = transform.position + Vector3.up * heightOffset;
+            // Bigger kinds are scaled up as a whole; keep the bar above their heads.
+            Vector3 world = transform.position + Vector3.up * heightOffset * transform.localScale.y;
             Vector3 screen = cam.WorldToScreenPoint(world);
 
             if (screen.z <= 0f)

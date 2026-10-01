@@ -7,8 +7,8 @@ namespace PoeClone.Player
     /// Connects the equipment stat sheet to the actual character.
     /// Base stats flow into the sheet; the sheet's gear bonuses flow back out to
     /// PlayerStats (life, mana, attributes) and PlayerController (movement speed).
-    /// Armour, evasion, block, resistances, damage and attack speed are calculated and shown on the
-    /// character page, but nothing consumes them yet because there is no combat.
+    /// Combat reads the rest straight from the sheet: damage and attack speed (PlayerCombat), and
+    /// armour, evasion, block and resistances when the player is hit (PlayerStats.TakeHit).
     /// </summary>
     [RequireComponent(typeof(PlayerStats))]
     [RequireComponent(typeof(PlayerInventory))]

@@ -57,6 +57,7 @@ namespace PoeClone.EditorTools
 
             // The sword art lies diagonally (tip up-right). Stand it upright for a 1x3 item, then rust the blade.
             Make("rusty_sword", "Weapons/512x512/one-handed_sword_03.png", 1, 3, b => Rustify(b), 45f);
+            WeaponIcons();
 
             // One ring band, three gems.
             Make("iron_ring", "Armor/512x512/heavy_belt_03.png", 1, 1, b => ShiftGem(b, 0.60f, 0.06f, 0.55f, 0.72f));
@@ -67,6 +68,144 @@ namespace PoeClone.EditorTools
 
             AssetDatabase.Refresh();
             Debug.Log("ItemIconBuilder: icons written to " + OutDir);
+        }
+
+        /// <summary>Just the weapons added after the starter set, leaving the other icons untouched.</summary>
+        [MenuItem("PoeClone/Build Weapon Icons")]
+        public static void BuildWeaponIcons()
+        {
+            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), OutDir));
+            WeaponIcons();
+            AssetDatabase.Refresh();
+            Debug.Log("ItemIconBuilder: weapon icons written to " + OutDir);
+        }
+
+        // These lie diagonally like the sword art; stood upright to match.
+        private static void WeaponIcons()
+        {
+            Make("hand_axe", "Weapons/512x512/one-handed_hand_axe_03.png", 2, 3, b => b, 45f);
+            Make("iron_mace", "Weapons/512x512/one-handed_mace_03.png", 1, 3, b => b, 45f);
+            Make("steel_dagger", "Weapons/512x512/dagger_03.png", 1, 2, b => b, 45f);
+            Make("short_bow", "Weapons/512x512/bow_03.png", 2, 3, b => b, 45f);
+            MakeQuiver();
+        }
+
+        // None of the source art has a quiver, so this one is painted: a shaded leather tube with
+        // gold bands and stitching, three fletched arrows standing out of it, tilted like the
+        // weapons. It then goes through the same unify/outline pass as every other icon.
+        private static void MakeQuiver()
+        {
+            const int w = 320;
+            const int h = 480;
+            Bitmap canvas = new Bitmap(w, h);
+            float cx = w * 0.5f;
+            const float bottom = 40f;
+            const float top = 330f;
+
+            // Arrows first, so the tube's rim covers where they go in.
+            Color shaft = new Color(0.72f, 0.58f, 0.38f);
+            Color[] vanes = { new Color(0.95f, 0.93f, 0.88f), new Color(0.82f, 0.18f, 0.16f), new Color(0.95f, 0.93f, 0.88f) };
+            float[] baseX = { cx - 34f, cx, cx + 32f };
+            float[] tipX = { cx - 70f, cx + 4f, cx + 66f };
+            float[] tipY = { 440f, 466f, 446f };
+            for (int k = 0; k < 3; k++)
+            {
+                Vector2 from = new Vector2(baseX[k], top - 30f);
+                Vector2 to = new Vector2(tipX[k], tipY[k]);
+                FillCapsule(canvas, from, to, 6f, shaft);
+                DrawFletching(canvas, from, to, vanes[k]);
+            }
+
+            Vector2 light = new Vector2(-0.7f, 0.7f).normalized;
+            for (int y = (int)bottom; y < (int)top; y++)
+            {
+                float t = (y - bottom) / (top - bottom);
+                float half = Mathf.Lerp(68f, 88f, t);
+
+                for (int x = 0; x < w; x++)
+                {
+                    float dx = (x + 0.5f - cx) / half;
+                    if (Mathf.Abs(dx) > 1f)
+                        continue;
+
+                    // Rounded bottom corners.
+                    if (y < bottom + 18f && dx * dx + Mathf.Pow((bottom + 18f - y) / 18f, 2f) > 1f)
+                        continue;
+
+                    float nz = Mathf.Sqrt(1f - dx * dx);
+                    float lit = Mathf.Clamp01(0.35f + 0.65f * (dx * light.x + nz * 0.75f));
+                    float grain = 0.85f + 0.3f * Fbm(x * 0.04f, y * 0.04f, 7);
+
+                    Color col = Color.Lerp(new Color(0.22f, 0.12f, 0.06f), new Color(0.66f, 0.42f, 0.22f), lit) * grain;
+
+                    bool band = y > top - 26f || (y > bottom + 104f && y < bottom + 124f) || y < bottom + 10f;
+                    if (band)
+                        col = Color.Lerp(new Color(0.42f, 0.30f, 0.08f), new Color(0.98f, 0.82f, 0.40f), lit);
+
+                    bool stitch = !band && Mathf.Abs(dx - 0.55f) < 0.03f && ((int)(y / 12f)) % 2 == 0;
+                    if (stitch)
+                        col = new Color(0.90f, 0.80f, 0.60f);
+
+                    col.a = 1f;
+                    canvas.P[y * w + x] = col;
+                }
+            }
+
+            Bitmap b = Rotate(canvas, -18f);
+            Finish("leather_quiver", Trim(b), 2, 3);
+        }
+
+        private static void FillCapsule(Bitmap canvas, Vector2 a, Vector2 b, float radius, Color color)
+        {
+            int x0 = Mathf.Max(0, Mathf.FloorToInt(Mathf.Min(a.x, b.x) - radius));
+            int x1 = Mathf.Min(canvas.W - 1, Mathf.CeilToInt(Mathf.Max(a.x, b.x) + radius));
+            int y0 = Mathf.Max(0, Mathf.FloorToInt(Mathf.Min(a.y, b.y) - radius));
+            int y1 = Mathf.Min(canvas.H - 1, Mathf.CeilToInt(Mathf.Max(a.y, b.y) + radius));
+            Vector2 ab = b - a;
+
+            for (int y = y0; y <= y1; y++)
+            {
+                for (int x = x0; x <= x1; x++)
+                {
+                    Vector2 p = new Vector2(x + 0.5f, y + 0.5f);
+                    float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / ab.sqrMagnitude);
+                    Vector2 d = p - (a + ab * t);
+                    if (d.magnitude > radius)
+                        continue;
+
+                    float lit = 0.75f + 0.25f * Mathf.Clamp(-d.x / radius, -1f, 1f);
+                    Color c = color * lit;
+                    c.a = 1f;
+                    canvas.P[y * canvas.W + x] = c;
+                }
+            }
+        }
+
+        // Two vanes along the last stretch of the shaft, widening towards the nock.
+        private static void DrawFletching(Bitmap canvas, Vector2 from, Vector2 to, Color color)
+        {
+            Vector2 dir = (to - from).normalized;
+            Vector2 side = new Vector2(-dir.y, dir.x);
+            const float length = 70f;
+
+            for (float s = 0f; s < length; s += 0.5f)
+            {
+                float width = Mathf.Lerp(4f, 20f, s / length) * (s > length - 10f ? (length - s) / 10f + 0.2f : 1f);
+                Vector2 c = to - dir * (length - s) - dir * 6f;
+                for (float k = -width; k <= width; k += 0.5f)
+                {
+                    Vector2 p = c + side * k;
+                    int x = Mathf.FloorToInt(p.x);
+                    int y = Mathf.FloorToInt(p.y);
+                    if (x < 0 || y < 0 || x >= canvas.W || y >= canvas.H)
+                        continue;
+
+                    float shade = 0.75f + 0.25f * Mathf.Sign(k);
+                    Color col = color * shade;
+                    col.a = 1f;
+                    canvas.P[y * canvas.W + x] = col;
+                }
+            }
         }
 
         // ------------------------------------------------------------------ pipeline

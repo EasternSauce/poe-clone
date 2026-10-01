@@ -8,7 +8,9 @@ namespace PoeClone.Visuals
     /// Procedural attack swing for the same blocky pivot rig <see cref="CharacterWalkAnimator"/>
     /// animates. Drives the weapon (right) arm and its elbow through a windup/strike/recover
     /// arc shaped by the equipped weapon's <see cref="WeaponType"/>, so every weapon type reads
-    /// as a distinct attack without needing hand-authored animation clips.
+    /// as a distinct attack without needing hand-authored animation clips. Two-handed attacks
+    /// (the bow: left arm holds it out at the target while the right draws and releases) also
+    /// drive the off (left) arm.
     /// </summary>
     public class CharacterAttackAnimator : MonoBehaviour
     {
@@ -17,6 +19,12 @@ namespace PoeClone.Visuals
 
         [Tooltip("The elbow pivot beneath the weapon arm (e.g. Elbow). Auto-found by name if left empty.")]
         [SerializeField] private Transform weaponElbow;
+
+        [Tooltip("The other shoulder pivot (e.g. ArmL), for two-handed attacks like the bow. Auto-found by name if left empty.")]
+        [SerializeField] private Transform offArm;
+
+        [Tooltip("The elbow pivot beneath the off arm. Auto-found by name if left empty.")]
+        [SerializeField] private Transform offElbow;
 
         private struct Pose
         {
@@ -52,6 +60,16 @@ namespace PoeClone.Visuals
             public Pose StrikeOffset;
             public float BaseAttacksPerSecond;
             public float Range;
+
+            // Absolute: the poses are real angles, not offsets from rest. For a stance that must
+            // look the same on every rig (aiming a bow is "arm straight at the target" whether
+            // the character's arms rest hanging or raised).
+            public bool Absolute;
+
+            // Two-handed: the off arm has its own windup/strike poses.
+            public bool UsesOffArm;
+            public Pose OffWindup;
+            public Pose OffStrike;
         }
 
         private static readonly AttackProfile UnarmedProfile = new AttackProfile
@@ -119,16 +137,84 @@ namespace PoeClone.Visuals
             Range = 1.8f
         };
 
+        // An overhead chop: big pull back, then straight down through the target. Slower than the
+        // sword, a little more reach.
+        private static readonly AttackProfile AxeProfile = new AttackProfile
+        {
+            Duration = 0.65f,
+            StrikeTime = 0.5f,
+            WindupOffset = new Pose(70f, -12f, 0f, 75f),
+            StrikeOffset = new Pose(-65f, 6f, 0f, 15f),
+            BaseAttacksPerSecond = 1.0f,
+            Range = 2.3f
+        };
+
+        // A heavy, low diagonal smash: the slowest weapon.
+        private static readonly AttackProfile MaceProfile = new AttackProfile
+        {
+            Duration = 0.7f,
+            StrikeTime = 0.55f,
+            WindupOffset = new Pose(45f, -45f, -25f, 60f),
+            StrikeOffset = new Pose(-50f, 40f, 30f, 25f),
+            BaseAttacksPerSecond = 0.9f,
+            Range = 2.2f
+        };
+
+        // Quick, short jabs: the fastest weapon, with the least reach.
+        private static readonly AttackProfile DaggerProfile = new AttackProfile
+        {
+            Duration = 0.28f,
+            StrikeTime = 0.5f,
+            WindupOffset = new Pose(35f, -6f, 0f, 90f),
+            StrikeOffset = new Pose(-72f, 3f, 0f, 10f),
+            BaseAttacksPerSecond = 2.0f,
+            Range = 1.7f
+        };
+
+        // Aim and loose: the off (left) arm raises the bow straight at the target, while the
+        // weapon (right) arm comes up across the body and draws the string back to the chin with
+        // the elbow sharply bent; at the release the drawing hand snaps back. The "strike" is the
+        // moment the arrow leaves; Range is how far arrows fly.
+        private static readonly AttackProfile BowProfile = new AttackProfile
+        {
+            Duration = 0.6f,
+            StrikeTime = 0.65f,
+            Absolute = true,
+            WindupOffset = new Pose(-80f, -28f, 0f, 125f),
+            StrikeOffset = new Pose(-78f, -12f, 0f, 95f),
+            UsesOffArm = true,
+            OffWindup = new Pose(-90f, -4f, 0f, 0f),
+            OffStrike = new Pose(-90f, -4f, 0f, 0f),
+            BaseAttacksPerSecond = 1.25f,
+            Range = 14f
+        };
+
         // Stable ids for every profile, so a spectator replica can replay exactly the swing the player
-        // made (including which random sword variant) - see PlayReplicated.
+        // made (including which random sword variant) - see PlayReplicated. New profiles go at the end.
         private static readonly AttackProfile[] ProfilesById =
         {
             UnarmedProfile,
             SwordProfile,
             SwordStabProfile,
             SwordSlashMirroredProfile,
-            ClawProfile
+            ClawProfile,
+            AxeProfile,
+            MaceProfile,
+            DaggerProfile,
+            BowProfile
         };
+
+        /// <summary>Whether the profile with this id shoots (an arrow) rather than hits.</summary>
+        public static bool IsRangedProfile(int profileId)
+        {
+            return profileId >= 0 && profileId < ProfilesById.Length && ProfilesById[profileId] == BowProfile;
+        }
+
+        /// <summary>Whether a weapon type shoots instead of hitting what's in reach.</summary>
+        public static bool IsRanged(WeaponType weaponType)
+        {
+            return weaponType == WeaponType.Bow;
+        }
 
         private AttackProfile activeProfile;
         private Pose rest;
@@ -136,6 +222,9 @@ namespace PoeClone.Visuals
         private bool strikeFired;
 
         public bool IsAttacking { get; private set; }
+
+        /// <summary>True while a two-handed attack is posing the off arm (the walk cycle leaves it alone).</summary>
+        public bool DrivesOffArm => IsAttacking && activeProfile != null && activeProfile.UsesOffArm;
 
         /// <summary>Swings started so far. Only ever increases, so an observer sampling it periodically can't miss a swing.</summary>
         public int AttackCount { get; private set; }
@@ -156,6 +245,12 @@ namespace PoeClone.Visuals
 
             if (weaponElbow == null && weaponArm != null)
                 weaponElbow = FindDescendant(weaponArm, "Elbow");
+
+            if (offArm == null)
+                offArm = FindDescendant(transform, "ArmL");
+
+            if (offElbow == null && offArm != null)
+                offElbow = FindDescendant(offArm, "Elbow");
 
             CharacterWalkAnimator walkAnimator = GetComponent<CharacterWalkAnimator>();
             float restPitch = walkAnimator != null ? walkAnimator.ArmRestAngle : 0f;
@@ -208,8 +303,11 @@ namespace PoeClone.Visuals
             if (!IsAttacking)
                 return;
 
+            bool offArmPosed = activeProfile != null && activeProfile.UsesOffArm;
             IsAttacking = false;
-            Apply(rest);
+            Apply(weaponArm, weaponElbow, rest);
+            if (offArmPosed)
+                Apply(offArm, offElbow, rest);
 
             if (!strikeFired)
                 AttackCancelled?.Invoke();
@@ -238,6 +336,10 @@ namespace PoeClone.Visuals
             switch (weaponType)
             {
                 case WeaponType.Sword: return SwordProfile;
+                case WeaponType.Axe: return AxeProfile;
+                case WeaponType.Mace: return MaceProfile;
+                case WeaponType.Dagger: return DaggerProfile;
+                case WeaponType.Bow: return BowProfile;
                 default: return UnarmedProfile;
             }
         }
@@ -250,20 +352,24 @@ namespace PoeClone.Visuals
             timer += Time.deltaTime;
             float f = Mathf.Clamp01(timer / activeProfile.Duration);
 
-            Pose windup = rest + activeProfile.WindupOffset;
-            Pose strike = rest + activeProfile.StrikeOffset;
+            AttackProfile p = activeProfile;
+            Pose windup = p.Absolute ? p.WindupOffset : rest + p.WindupOffset;
+            Pose strike = p.Absolute ? p.StrikeOffset : rest + p.StrikeOffset;
 
             Pose pose;
-            if (f < activeProfile.StrikeTime)
+            Pose offPose = rest;
+            if (f < p.StrikeTime)
             {
-                float t = activeProfile.StrikeTime > 0f ? f / activeProfile.StrikeTime : 1f;
-                pose = Lerp(rest, windup, EaseOut(t));
+                float t = EaseOut(p.StrikeTime > 0f ? f / p.StrikeTime : 1f);
+                pose = Lerp(rest, windup, t);
+                offPose = Lerp(rest, p.OffWindup, t);
             }
             else
             {
-                float recoverSpan = 1f - activeProfile.StrikeTime;
-                float t = recoverSpan > 0f ? (f - activeProfile.StrikeTime) / recoverSpan : 1f;
+                float recoverSpan = 1f - p.StrikeTime;
+                float t = recoverSpan > 0f ? (f - p.StrikeTime) / recoverSpan : 1f;
                 pose = Lerp(strike, rest, t);
+                offPose = Lerp(p.OffStrike, rest, t);
 
                 if (!strikeFired)
                 {
@@ -272,7 +378,9 @@ namespace PoeClone.Visuals
                 }
             }
 
-            Apply(pose);
+            Apply(weaponArm, weaponElbow, pose);
+            if (p.UsesOffArm)
+                Apply(offArm, offElbow, offPose);
 
             if (f >= 1f)
                 IsAttacking = false;
@@ -292,13 +400,13 @@ namespace PoeClone.Visuals
                 Mathf.Lerp(a.ElbowBend, b.ElbowBend, t));
         }
 
-        private void Apply(Pose pose)
+        private static void Apply(Transform arm, Transform elbow, Pose pose)
         {
-            if (weaponArm != null)
-                weaponArm.localRotation = Quaternion.Euler(pose.ArmPitch, pose.ArmYaw, pose.ArmRoll);
+            if (arm != null)
+                arm.localRotation = Quaternion.Euler(pose.ArmPitch, pose.ArmYaw, pose.ArmRoll);
 
-            if (weaponElbow != null)
-                weaponElbow.localRotation = Quaternion.Euler(-pose.ElbowBend, 0f, 0f);
+            if (elbow != null)
+                elbow.localRotation = Quaternion.Euler(-pose.ElbowBend, 0f, 0f);
         }
 
         private static Transform FindDescendant(Transform root, string name)

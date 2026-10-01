@@ -40,6 +40,7 @@ namespace PoeClone.Inventory
         };
 
         private readonly Dictionary<StatType, Text> valueTexts = new Dictionary<StatType, Text>();
+        private readonly Dictionary<StatType, Text> labelTexts = new Dictionary<StatType, Text>();
 
         private Canvas canvas;
         private CanvasGroup canvasGroup;
@@ -163,6 +164,7 @@ namespace PoeClone.Inventory
                 {
                     Text label = UiKit.NewText("Label_" + stat, panel, LabelFor(stat), 17, UiKit.TextColor, TextAnchor.MiddleLeft);
                     UiKit.TopLeft(label.rectTransform, new Vector2(40f, y), new Vector2(PanelWidth * 0.5f, RowHeight));
+                    labelTexts[stat] = label;
 
                     Text value = UiKit.NewText("Value_" + stat, panel, "", 17, UiKit.TextColor, TextAnchor.MiddleRight);
                     UiKit.TopLeft(value.rectTransform, new Vector2(PanelWidth * 0.45f, y), new Vector2(PanelWidth * 0.55f - 40f, RowHeight));
@@ -216,6 +218,39 @@ namespace PoeClone.Inventory
 
                 pair.Value.text = text;
             }
+
+            foreach (KeyValuePair<StatType, Text> pair in labelTexts)
+                pair.Value.text = LabelFor(pair.Key) + Hint(pair.Key, sheet);
+        }
+
+        // What a defensive/resource stat actually does right now, shown small and dim after its name.
+        private static string Hint(StatType stat, StatSheet sheet)
+        {
+            string hint;
+            switch (stat)
+            {
+                case StatType.Armour:
+                    float reduction = DefenceMath.ArmourReduction(sheet.Total(StatType.Armour), DefenceMath.ReferenceHit);
+                    hint = Percent(reduction) + " less from a " + StatFormatter.Number(DefenceMath.ReferenceHit) + " hit";
+                    break;
+                case StatType.Evasion:
+                    hint = Percent(DefenceMath.EvadeChance(sheet.Total(StatType.Evasion))) + " to evade";
+                    break;
+                case StatType.MaxMana:
+                    float regen = DefenceMath.ManaRegenPerSecond(sheet.Total(StatType.MaxMana), sheet.Total(StatType.Intelligence));
+                    hint = Percent(DefenceMath.ManaAbsorbShare) + " of hits, +" +
+                           regen.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "/s";
+                    break;
+                default:
+                    return "";
+            }
+
+            return "  <size=13><color=#" + UiKit.Hex(UiKit.DimText) + ">" + hint + "</color></size>";
+        }
+
+        private static string Percent(float fraction)
+        {
+            return Mathf.RoundToInt(fraction * 100f) + "%";
         }
     }
 }

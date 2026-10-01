@@ -223,9 +223,13 @@ namespace PoeClone.Tests
             "Socket_Ring", "Socket_MainHand", "Socket_OffHand"
         };
 
-        private static string[] ExpectedSockets(ItemType type)
+        private static string[] ExpectedSockets(ItemData item)
         {
-            switch (type)
+            // A bow is held in the off hand (the main hand draws the string).
+            if (item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Bow)
+                return new[] { "Socket_OffHand" };
+
+            switch (item.Type)
             {
                 case ItemType.Helmet: return new[] { "Socket_Head" };
                 case ItemType.BodyArmour: return new[] { "Socket_Chest" };
@@ -236,6 +240,7 @@ namespace PoeClone.Tests
                 case ItemType.Ring: return new[] { "Socket_Ring" };
                 case ItemType.Weapon: return new[] { "Socket_MainHand" };
                 case ItemType.Shield: return new[] { "Socket_OffHand" };
+                case ItemType.Quiver: return new[] { "Socket_Chest" };
                 default: return new string[0];
             }
         }
@@ -256,9 +261,9 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void EveryStarterItem_HasAPaintedIcon_SizedForItsCells()
+        public void EveryItemBase_HasAPaintedIcon_SizedForItsCells()
         {
-            foreach (ItemData item in ItemCatalog.CreateStarterItems())
+            foreach (ItemData item in AllBaseItems())
             {
                 Sprite icon = Resources.Load<Sprite>("ItemIcons/" + item.Id);
                 Assert.IsNotNull(icon, item.Name + " has no icon at Resources/ItemIcons/" + item.Id);
@@ -270,9 +275,9 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void EveryStarterItem_HasA3DLook_ThatAttachesToTheRightSockets()
+        public void EveryItemBase_HasA3DLook_ThatAttachesToTheRightSockets()
         {
-            foreach (ItemData item in ItemCatalog.CreateStarterItems())
+            foreach (ItemData item in AllBaseItems())
             {
                 GameObject prefab = Resources.Load<GameObject>("Equipment/" + item.Id);
                 Assert.IsNotNull(prefab, item.Name + " has no prefab at Resources/Equipment/" + item.Id);
@@ -285,7 +290,7 @@ namespace PoeClone.Tests
                     Assert.Greater(child.childCount, 0, item.Name + "/" + child.name + " is empty");
                 }
 
-                foreach (string expected in ExpectedSockets(item.Type))
+                foreach (string expected in ExpectedSockets(item))
                     Assert.IsTrue(found.Contains(expected), item.Name + " is missing " + expected);
             }
         }
@@ -293,7 +298,7 @@ namespace PoeClone.Tests
         [Test]
         public void EveryEquipmentPrefab_HasNoMissingMeshesOrMaterials()
         {
-            foreach (ItemData item in ItemCatalog.CreateStarterItems())
+            foreach (ItemData item in AllBaseItems())
             {
                 GameObject prefab = Resources.Load<GameObject>("Equipment/" + item.Id);
                 Assert.IsNotNull(prefab, item.Id);
@@ -310,10 +315,20 @@ namespace PoeClone.Tests
         public void ItemsOfTheSameType_ButDifferentIds_LookDifferent()
         {
             // The two helmets must not share a prefab, or equipping the other one would show no change.
-            List<ItemData> items = ItemCatalog.CreateStarterItems();
-            GameObject a = Resources.Load<GameObject>("Equipment/" + items.Find(i => i.Id == "iron_helmet").Id);
-            GameObject b = Resources.Load<GameObject>("Equipment/" + items.Find(i => i.Id == "bronze_helmet").Id);
+            GameObject a = Resources.Load<GameObject>("Equipment/iron_helmet");
+            GameObject b = Resources.Load<GameObject>("Equipment/bronze_helmet");
+            Assert.IsNotNull(a);
+            Assert.IsNotNull(b);
             Assert.AreNotSame(a, b);
+        }
+
+        // Every item that can exist (starter gear and drops alike), one per base.
+        private static List<ItemData> AllBaseItems()
+        {
+            var items = new List<ItemData>();
+            foreach (string id in ItemGenerator.BaseIds)
+                items.Add(ItemGenerator.Display(id, null, ItemRarity.Normal));
+            return items;
         }
     }
 }

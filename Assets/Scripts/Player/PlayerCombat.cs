@@ -5,7 +5,9 @@ using PoeClone.Audio;
 using PoeClone.Combat;
 using PoeClone.Enemies;
 using PoeClone.Inventory;
+using PoeClone.UI;
 using PoeClone.Visuals;
+using PoeClone.World;
 
 namespace PoeClone.Player
 {
@@ -22,6 +24,9 @@ namespace PoeClone.Player
     ///
     /// Touch has no cursor, so there the attack button aims itself: at the nearest enemy in reach,
     /// or straight ahead when nothing is.
+    ///
+    /// A bow shoots instead (<see cref="PlayerArrow"/>, no ammo); its "reach" is how far arrows fly,
+    /// so the same aiming and highlighting work for it unchanged.
     /// </summary>
     [RequireComponent(typeof(PlayerStats))]
     [RequireComponent(typeof(PlayerInventory))]
@@ -36,6 +41,7 @@ namespace PoeClone.Player
         private PlayerStats stats;
         private PlayerInventory inventory;
         private CharacterAttackAnimator attackAnimator;
+        private PlayerController controller;
 
         private float cooldownTimer;
         private float pendingDamage;
@@ -47,6 +53,7 @@ namespace PoeClone.Player
         {
             stats = GetComponent<PlayerStats>();
             inventory = GetComponent<PlayerInventory>();
+            controller = GetComponent<PlayerController>();
             attackAnimator = GetComponentInChildren<CharacterAttackAnimator>();
         }
 
@@ -116,8 +123,10 @@ namespace PoeClone.Player
             else
             {
                 Mouse mouse = Mouse.current;
-                // A focused UI text field (e.g. the chat box) should consume the click, not the attack.
-                attackPressed = mouse != null && mouse.leftButton.wasPressedThisFrame && !PlayerController.IsUiFocused();
+                // A focused UI text field (e.g. the chat box) should consume the click, not the attack,
+                // and so does an item on the ground (LootPicker picks it up instead).
+                attackPressed = mouse != null && mouse.leftButton.wasPressedThisFrame && !PlayerController.IsUiFocused() &&
+                                LootPicker.PickableAt(mouse.position.ReadValue()) == null;
             }
 
             if (attackPressed && cooldownTimer <= 0f && attackAnimator != null && !attackAnimator.IsAttacking)
@@ -133,6 +142,10 @@ namespace PoeClone.Player
         private void StartAttack()
         {
             WeaponType weaponType = CurrentWeaponType();
+
+            // Attacking means the player has changed their mind about walking to an item.
+            if (controller != null)
+                controller.CancelWalk();
 
             FaceAimPoint();
 
@@ -234,9 +247,23 @@ namespace PoeClone.Player
 
         // Damages everything the weapon actually reaches: a forward cone out to the weapon's
         // range. Intentionally independent of the aim highlight, which only ever picks one target.
+        // A bow looses an arrow instead.
         private void PerformHit()
         {
-            float range = CharacterAttackAnimator.AttackRange(CurrentWeaponType());
+            // Disabled while dead, and on a spectator's puppet player: the strike event still fires
+            // there (the swing is replayed), but it must not damage anything.
+            if (!enabled)
+                return;
+
+            WeaponType weaponType = CurrentWeaponType();
+            float range = CharacterAttackAnimator.AttackRange(weaponType);
+
+            if (CharacterAttackAnimator.IsRanged(weaponType))
+            {
+                PlayerArrow.Launch(transform, range, pendingDamage);
+                return;
+            }
+
             int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
             var hitAlready = new HashSet<IDamageable>();
 
@@ -250,7 +277,13 @@ namespace PoeClone.Player
                     continue;
 
                 if (hitAlready.Add(target))
+                {
                     target.TakeDamage(pendingDamage);
+
+                    Transform hit = ((Component)target).transform;
+                    CombatText.Show(hit.position + Vector3.up * 1.6f * hit.localScale.y,
+                        Mathf.Max(1, Mathf.RoundToInt(pendingDamage)).ToString(), CombatText.PhysicalColor);
+                }
             }
         }
 
