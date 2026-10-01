@@ -90,7 +90,8 @@ namespace PoeClone.Player
             UpdateAimHighlight();
 
             Mouse mouse = Mouse.current;
-            bool attackPressed = mouse != null && mouse.leftButton.wasPressedThisFrame;
+            // A focused UI text field (e.g. the chat box) should consume the click, not the attack.
+            bool attackPressed = mouse != null && mouse.leftButton.wasPressedThisFrame && !PlayerController.IsUiFocused();
 
             if (attackPressed && cooldownTimer <= 0f && attackAnimator != null && !attackAnimator.IsAttacking)
                 StartAttack();

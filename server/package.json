@@ -1,0 +1,17 @@
+{
+  "name": "poeclone-session-server",
+  "version": "1.0.0",
+  "description": "Session-lock, spectator relay and chat backend for the PoeClone browser build.",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/room.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

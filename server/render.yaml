@@ -1,0 +1,14 @@
+# Render.com Blueprint for the session server.
+# Deploy: https://dashboard.render.com/blueprints -> New Blueprint Instance -> point at this repo.
+# See DEPLOYMENT.md at the repo root for the full click-by-click walkthrough.
+services:
+  - type: web
+    name: poeclone-session-server
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: ALLOWED_ORIGIN
+        value: "*" # tighten to your GitHub Pages origin once it's live, e.g. https://yourname.github.io

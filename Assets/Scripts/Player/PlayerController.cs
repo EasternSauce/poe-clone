@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using PoeClone.Combat;
 using PoeClone.Visuals;
@@ -111,7 +112,8 @@ private void Update()
         {
             Keyboard keyboard = Keyboard.current;
 
-            if (keyboard == null)
+            // A focused UI text field (e.g. the chat box) should consume WASD as text, not movement.
+            if (keyboard == null || IsUiFocused())
                 return Vector2.zero;
 
             Vector2 input = Vector2.zero;
@@ -141,6 +143,12 @@ private void Update()
             }
 
             return input.normalized;
+        }
+
+        internal static bool IsUiFocused()
+        {
+            EventSystem es = EventSystem.current;
+            return es != null && es.currentSelectedGameObject != null;
         }
 
         private void ApplyGravity()
