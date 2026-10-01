@@ -126,11 +126,22 @@ namespace PoeClone.Player
                 // A focused UI text field (e.g. the chat box) should consume the click, not the attack,
                 // and so does an item on the ground (LootPicker picks it up instead).
                 attackPressed = mouse != null && mouse.leftButton.wasPressedThisFrame && !PlayerController.IsUiFocused() &&
-                                LootPicker.PickableAt(mouse.position.ReadValue()) == null;
+                                LootPicker.PickableAt(mouse.position.ReadValue()) == null &&
+                                !HoldingInventoryItem();
             }
 
             if (attackPressed && cooldownTimer <= 0f && attackAnimator != null && !attackAnimator.IsAttacking)
                 StartAttack();
+        }
+
+        private InventoryUI inventoryUI;
+
+        // While an item is on the inventory cursor, a click in the world throws it away instead.
+        private bool HoldingInventoryItem()
+        {
+            if (inventoryUI == null)
+                inventoryUI = FindAnyObjectByType<InventoryUI>();
+            return inventoryUI != null && inventoryUI.IsOpen && inventoryUI.IsHoldingItem;
         }
 
         private WeaponType CurrentWeaponType()

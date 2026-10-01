@@ -29,6 +29,15 @@ namespace PoeClone.Inventory
         public event Action PlayerDied;
         public event Action PlayerRevived;
 
+        /// <summary>An item thrown out of the bag (InventoryUI); whoever listens puts it on the ground.</summary>
+        public event Action<ItemData> ItemThrown;
+
+        public void ThrowAway(ItemData item)
+        {
+            if (item != null)
+                ItemThrown?.Invoke(item);
+        }
+
         private void Awake()
         {
             Grid = new InventoryGrid(gridWidth, gridHeight);

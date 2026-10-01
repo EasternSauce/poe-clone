@@ -62,6 +62,27 @@ namespace PoeClone.Player
             inventory = GetComponent<PlayerInventory>();
         }
 
+        private void Start()
+        {
+            if (inventory != null)
+                inventory.ItemThrown += OnItemThrown;
+        }
+
+        private void OnDestroy()
+        {
+            if (inventory != null)
+                inventory.ItemThrown -= OnItemThrown;
+        }
+
+        // An item thrown out of the bag lands on the ground just in front of the character.
+        private void OnItemThrown(ItemData item)
+        {
+            Vector3 at = transform.position + transform.forward * 1.3f;
+            LootDrop.Spawn(item, LootDrop.GroundBelow(at), interactive: true, id: 0);
+            if (Audio.AudioManager.Instance != null)
+                Audio.AudioManager.Instance.PlayAtPoint(Audio.AudioManager.Instance.lootDrop, at);
+        }
+
         private void OnDisable()
         {
             SetHovered(null);

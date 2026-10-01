@@ -18,6 +18,9 @@ namespace PoeClone.Inventory
     ///
     /// Touch: tap to pick up / put down, or drag an item where it should go; press and hold an
     /// item for its tooltip. The preview is dropped there to make room for the on-screen buttons.
+    ///
+    /// Putting an item down outside the panels (click or tap there, or drag it out) throws it on
+    /// the ground next to the character.
     /// </summary>
     public class InventoryUI : MonoBehaviour
     {
@@ -92,6 +95,7 @@ namespace PoeClone.Inventory
 
         private struct Hover
         {
+            public Vector2 Screen;
             public SlotView Slot;
             public bool OverGrid;
             public Vector2 GridPos; // in cells, origin at the grid's top-left
@@ -130,6 +134,9 @@ namespace PoeClone.Inventory
         {
             get { return isOpen; }
         }
+
+        /// <summary>An item is on the cursor (so a click outside the panel throws it, rather than attacking).</summary>
+        public bool IsHoldingItem => cursorItem != null;
 
         private void Start()
         {
@@ -593,7 +600,7 @@ private Vector2 CellSize(int w, int h)
 
         private Hover Hit(Vector2 screenPos)
         {
-            Hover h = new Hover();
+            Hover h = new Hover { Screen = screenPos };
 
             foreach (SlotView s in slotViews)
             {
@@ -787,10 +794,34 @@ private Vector2 CellSize(int w, int h)
                 ClickSlot(h.Slot);
             else if (h.OverGrid)
                 ClickGrid(h.GridPos);
+            else if (cursorItem != null && !OverInventory(h.Screen))
+                ThrowCursorItem();
             else
                 return;
 
             Refresh();
+        }
+
+        // Anywhere outside the inventory and character-preview panels (and any other on-screen
+        // panel, like chat) counts as the world: putting the item there drops it on the ground.
+        private bool OverInventory(Vector2 screen)
+        {
+            if (RectTransformUtility.RectangleContainsScreenPoint(panel, screen, null))
+                return true;
+            if (previewPanel.gameObject.activeSelf && RectTransformUtility.RectangleContainsScreenPoint(previewPanel, screen, null))
+                return true;
+            if (!TouchMode.Active && UnityEngine.EventSystems.EventSystem.current != null &&
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                return true;
+            return false;
+        }
+
+        private void ThrowCursorItem()
+        {
+            ItemData item = cursorItem;
+            cursorItem = null;
+            inventory.ThrowAway(item);
+            PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiItemPlace : null);
         }
 
         private void ClickSlot(SlotView s)
