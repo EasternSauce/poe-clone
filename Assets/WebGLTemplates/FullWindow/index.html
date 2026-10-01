@@ -55,6 +55,37 @@
       // Clicking the game gives it keyboard focus (and takes it away from the button).
       canvas.addEventListener("pointerdown", function () { canvas.focus(); });
 
+      // The canvas renders at its CSS size x pixel ratio, and must not exceed the GPU's maximum
+      // render size or WebGL silently draws nothing (black screen). Hardened browsers
+      // (LibreWolf, Firefox with resistFingerprinting) report a minimal 2048px limit together
+      // with a spoofed devicePixelRatio of 2, which a full-window canvas easily exceeds.
+      var gpuLimit = (function () {
+        try {
+          var gl = document.createElement("canvas").getContext("webgl2") || document.createElement("canvas").getContext("webgl");
+          if (!gl) return 4096;
+          var viewport = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+          var limit = Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE), gl.getParameter(gl.MAX_TEXTURE_SIZE), viewport[0], viewport[1]);
+          var lose = gl.getExtension("WEBGL_lose_context");
+          if (lose) lose.loseContext();
+          return limit;
+        } catch (e) {
+          return 4096;
+        }
+      })();
+
+      // Sharp on high-DPI screens, capped at 2x (4K laptops shouldn't render 4x the pixels)
+      // and at whatever keeps the canvas within the GPU limit.
+      function pixelRatio() {
+        var longest = Math.max(canvas.clientWidth, canvas.clientHeight, 1);
+        return Math.max(0.25, Math.min(window.devicePixelRatio || 1, 2, (gpuLimit - 8) / longest));
+      }
+
+      var unityInstance = null;
+      window.addEventListener("resize", function () {
+        // Unity re-reads this every time it sizes the canvas (window resize, fullscreen).
+        if (unityInstance) unityInstance.Module.devicePixelRatio = pixelRatio();
+      });
+
       var config = {
         dataUrl: "Build/{{{ DATA_FILENAME }}}",
         frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
@@ -71,8 +102,7 @@
         companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
         productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
         productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
-        // Sharp on high-DPI screens, but capped so 4K laptops don't render 4x the pixels.
-        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+        devicePixelRatio: pixelRatio(),
         showBanner: function (msg, type) { if (type === "error") showError(msg); else console.warn(msg); }
       };
 
@@ -82,7 +112,8 @@
         createUnityInstance(canvas, config, function (progress) {
           fill.style.width = Math.round(progress * 100) + "%";
           document.getElementById("bar").setAttribute("aria-valuenow", Math.round(progress * 100));
-        }).then(function () {
+        }).then(function (instance) {
+          unityInstance = instance;
           loading.classList.add("done");
           fsButton.style.display = "flex";
           canvas.focus();
