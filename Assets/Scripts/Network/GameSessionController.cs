@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
+using PoeClone.Inventory;
 
 namespace PoeClone.Network
 {
@@ -78,6 +79,7 @@ namespace PoeClone.Network
             gameObject.AddComponent<SessionGateUI>();
             gameObject.AddComponent<SpectatorView>();
             gameObject.AddComponent<ChatUI>();
+            gameObject.AddComponent<PoeClone.UI.TouchControlsUI>();
             namePrompt = gameObject.AddComponent<NamePromptUI>();
 
             stateBroadcaster = gameObject.AddComponent<PlayerStateBroadcaster>();
@@ -92,6 +94,9 @@ namespace PoeClone.Network
             client.RequestLocationSearch(search =>
             {
                 Role = ParseRole(search);
+                // ?touch=1 forces the phone controls (testing them in a desktop browser).
+                if (HasFlag(search, "touch"))
+                    TouchMode.SetForced(true);
                 string overrideUrl = ParseServerOverride(search);
                 if (!string.IsNullOrEmpty(overrideUrl))
                     serverUrl = overrideUrl;
@@ -251,6 +256,16 @@ namespace PoeClone.Network
                     return SessionRole.Spectator;
             }
             return SessionRole.Player;
+        }
+
+        private static bool HasFlag(string queryString, string name)
+        {
+            foreach (var (key, value) in EnumerateQuery(queryString))
+            {
+                if (key == name && (value == "1" || value.Equals("true", StringComparison.OrdinalIgnoreCase)))
+                    return true;
+            }
+            return false;
         }
 
         private static string ParseServerOverride(string queryString)

@@ -66,6 +66,7 @@ namespace PoeClone.Network
             var scaler = canvasRoot.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
+            canvasRoot.AddComponent<PoeClone.Inventory.TouchAwareScaler>();
             canvasRoot.AddComponent<GraphicRaycaster>();
 
             var bgGO = new GameObject("Background");

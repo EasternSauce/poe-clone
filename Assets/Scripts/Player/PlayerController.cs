@@ -35,9 +35,12 @@ namespace PoeClone.Player
 
         private float CurrentSpeed => (IsSprinting() ? moveSpeed * sprintMultiplier : moveSpeed) * speedMultiplier;
 
-        // Hold Shift to sprint. No stamina: it lasts as long as the key is held.
+        // Hold Shift (or toggle the on-screen run button) to sprint. No stamina.
         private bool IsSprinting()
         {
+            if (VirtualInput.Sprint)
+                return true;
+
             Keyboard keyboard = Keyboard.current;
             return keyboard != null &&
                    (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed);
@@ -113,7 +116,14 @@ private void Update()
             Keyboard keyboard = Keyboard.current;
 
             // A focused UI text field (e.g. the chat box) should consume WASD as text, not movement.
-            if (keyboard == null || IsUiFocused())
+            if (IsUiFocused())
+                return Vector2.zero;
+
+            // The touch joystick keeps its analog length, so a light push walks slower.
+            if (VirtualInput.Move.sqrMagnitude > 0.0001f)
+                return Vector2.ClampMagnitude(VirtualInput.Move, 1f);
+
+            if (keyboard == null)
                 return Vector2.zero;
 
             Vector2 input = Vector2.zero;

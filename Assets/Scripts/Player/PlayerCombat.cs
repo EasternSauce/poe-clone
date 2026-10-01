@@ -19,6 +19,9 @@ namespace PoeClone.Player
     /// closest to the cursor (in range, white outline via <see cref="Outline"/>), purely as aiming
     /// feedback. The swing itself always damages every valid target inside a forward cone,
     /// regardless of which one is highlighted.
+    ///
+    /// Touch has no cursor, so there the attack button aims itself: at the nearest enemy in reach,
+    /// or straight ahead when nothing is.
     /// </summary>
     [RequireComponent(typeof(PlayerStats))]
     [RequireComponent(typeof(PlayerInventory))]
@@ -103,9 +106,19 @@ namespace PoeClone.Player
 
             UpdateAimHighlight();
 
-            Mouse mouse = Mouse.current;
-            // A focused UI text field (e.g. the chat box) should consume the click, not the attack.
-            bool attackPressed = mouse != null && mouse.leftButton.wasPressedThisFrame && !PlayerController.IsUiFocused();
+            bool attackPressed;
+            if (TouchMode.Active)
+            {
+                // Mouse input is ignored on touch: browsers turn taps into mouse clicks too, so
+                // every tap on a button would also swing.
+                attackPressed = VirtualInput.AttackHeld;
+            }
+            else
+            {
+                Mouse mouse = Mouse.current;
+                // A focused UI text field (e.g. the chat box) should consume the click, not the attack.
+                attackPressed = mouse != null && mouse.leftButton.wasPressedThisFrame && !PlayerController.IsUiFocused();
+            }
 
             if (attackPressed && cooldownTimer <= 0f && attackAnimator != null && !attackAnimator.IsAttacking)
                 StartAttack();
@@ -153,6 +166,9 @@ namespace PoeClone.Player
         {
             point = Vector3.zero;
 
+            if (TouchMode.Active)
+                return TryGetAutoAimPoint(out point);
+
             Mouse mouse = Mouse.current;
             Camera cam = Camera.main;
             if (mouse == null || cam == null)
@@ -166,6 +182,37 @@ namespace PoeClone.Player
 
             point = ray.GetPoint(enter);
             return true;
+        }
+
+        // Touch aim: the nearest living enemy the swing can reach. Uses the same centre-distance
+        // test as IsInCone, so the target picked is always one PerformHit will hit once faced.
+        // No target means no aim point, and the swing goes wherever the player already faces.
+        private bool TryGetAutoAimPoint(out Vector3 point)
+        {
+            point = Vector3.zero;
+
+            float range = CharacterAttackAnimator.AttackRange(CurrentWeaponType());
+            int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
+            float bestDistanceSq = range * range;
+            bool found = false;
+
+            for (int i = 0; i < count; i++)
+            {
+                EnemyHealth enemy = hitBuffer[i].GetComponentInParent<EnemyHealth>();
+                if (enemy == null || enemy.IsDead)
+                    continue;
+
+                Vector3 toEnemy = enemy.transform.position - transform.position;
+                toEnemy.y = 0f;
+                if (toEnemy.sqrMagnitude <= bestDistanceSq)
+                {
+                    bestDistanceSq = toEnemy.sqrMagnitude;
+                    point = enemy.transform.position;
+                    found = true;
+                }
+            }
+
+            return found;
         }
 
         // The stat sheet's PhysicalDamage already covers the unarmed base (PlayerStatsLink sets it
@@ -234,7 +281,8 @@ namespace PoeClone.Player
         {
             Camera cam = Camera.main;
             Mouse mouse = Mouse.current;
-            if (cam == null || mouse == null || !TryGetAimPoint(out Vector3 aimPoint))
+            bool touch = TouchMode.Active;
+            if (cam == null || (!touch && mouse == null) || !TryGetAimPoint(out Vector3 aimPoint))
             {
                 SetHighlight(null);
                 return;
@@ -247,7 +295,10 @@ namespace PoeClone.Player
             float range = CharacterAttackAnimator.AttackRange(CurrentWeaponType());
             int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
 
-            Vector2 cursor = mouse.position.ReadValue();
+            // On touch the "cursor" is the auto-aim target itself, so that is what gets outlined.
+            Vector2 cursor = touch
+                ? (Vector2)cam.WorldToScreenPoint(aimPoint + Vector3.up)
+                : mouse.position.ReadValue();
             var seen = new HashSet<EnemyHealth>();
             EnemyHealth best = null;
             float bestDistanceSq = float.MaxValue;

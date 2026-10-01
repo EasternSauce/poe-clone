@@ -105,6 +105,9 @@ namespace PoeClone.Player
             if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame)
                 return true;
 
+            if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+                return true;
+
             Mouse mouse = Mouse.current;
             if (mouse != null &&
                 (mouse.leftButton.wasPressedThisFrame ||

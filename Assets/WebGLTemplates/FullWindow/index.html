@@ -8,6 +8,10 @@
       html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
       /* The canvas always fills the window; Unity matches its render resolution to this size. */
       #game-canvas { display: block; width: 100vw; height: 100vh; height: 100dvh; background: #000; outline: none; }
+      /* Touch: no browser gestures on the game (pinch zoom, double-tap zoom, pull-to-refresh), and
+         no text selection / iOS callout when a finger is held down (the inventory uses long presses). */
+      html, body, #game-canvas { touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none;
+                                 -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
       #loading { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
                  gap: 18px; color: #e8e2d4; font: 600 20px/1.3 system-ui, sans-serif; background: #000; transition: opacity .4s; }
       #loading.done { opacity: 0; pointer-events: none; }
@@ -18,6 +22,8 @@
                     background: rgba(0,0,0,.45); color: #fff; opacity: .7; display: none; align-items: center; justify-content: center; }
       #fullscreen:hover, #fullscreen:focus-visible { opacity: 1; background: rgba(0,0,0,.7); }
       #fullscreen svg { width: 22px; height: 22px; }
+      /* On phones the top right holds the game's own buttons, so fullscreen moves to the top middle. */
+      @media (pointer: coarse) { #fullscreen { right: auto; left: 50%; transform: translateX(-50%); } }
     </style>
   </head>
   <body>
@@ -74,10 +80,12 @@
       })();
 
       // Sharp on high-DPI screens, capped at 2x (4K laptops shouldn't render 4x the pixels)
-      // and at whatever keeps the canvas within the GPU limit.
+      // and at whatever keeps the canvas within the GPU limit. Phones get 1.5x: their 3x screens
+      // are tiny, and every pixel costs battery and frame rate on a mobile GPU.
+      var maxRatio = window.matchMedia && window.matchMedia("(pointer: coarse)").matches ? 1.5 : 2;
       function pixelRatio() {
         var longest = Math.max(canvas.clientWidth, canvas.clientHeight, 1);
-        return Math.max(0.25, Math.min(window.devicePixelRatio || 1, 2, (gpuLimit - 8) / longest));
+        return Math.max(0.25, Math.min(window.devicePixelRatio || 1, maxRatio, (gpuLimit - 8) / longest));
       }
 
       var unityInstance = null;

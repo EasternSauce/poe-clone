@@ -1,4 +1,5 @@
 using UnityEngine;
+using PoeClone.Inventory;
 using PoeClone.Player;
 
 namespace PoeClone.UI
@@ -22,6 +23,7 @@ namespace PoeClone.UI
 
         private GUIStyle titleStyle;
         private GUIStyle textStyle;
+        private GUIStyle barLabelStyle;
 
         private static Texture2D pixel;
 
@@ -55,6 +57,12 @@ namespace PoeClone.UI
 
             textStyle.normal.textColor = Color.white;
 
+            barLabelStyle = new GUIStyle(textStyle)
+            {
+                fontSize = 14,
+                alignment = TextAnchor.MiddleCenter
+            };
+
             pixel = new Texture2D(1, 1);
             pixel.SetPixel(0, 0, Color.white);
             pixel.Apply();
@@ -65,8 +73,14 @@ namespace PoeClone.UI
             if (stats == null || hiders.Count > 0)
                 return;
 
+            if (TouchMode.Active)
+            {
+                DrawTouchHud();
+                return;
+            }
+
             if (stats.IsDead)
-                DrawDeathOverlay(stats, SpectatorMode);
+                DrawDeathOverlay(stats, SpectatorMode, Screen.width, Screen.height);
 
             GUILayout.BeginArea(
                 new Rect(20f, 20f, 760f, 340f)
@@ -138,9 +152,49 @@ namespace PoeClone.UI
             GUILayout.EndArea();
         }
 
+        // Phone layout: just the bars, scaled up from raw screen pixels (see TouchMode.GuiScale).
+        // The attributes live on the character page, and there are no keys to list.
+        private void DrawTouchHud()
+        {
+            float scale = TouchMode.GuiScale;
+            Matrix4x4 previous = GUI.matrix;
+            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
+
+            float width = Screen.width / scale;
+            float height = Screen.height / scale;
+
+            if (stats.IsDead)
+                DrawDeathOverlay(stats, SpectatorMode, width, height);
+
+            const float x = 14f;
+            const float barWidth = 210f;
+            float y = 12f;
+
+            GUI.Label(new Rect(x, y, barWidth, 30f), $"Level {stats.Level}", titleStyle);
+            y += 32f;
+
+            DrawLabeledBar(new Rect(x, y, barWidth, 20f), SafeRatio(stats.CurrentHealth, stats.MaxHealth), new Color(0.75f, 0.15f, 0.15f),
+                $"{stats.CurrentHealth:0} / {stats.MaxHealth:0}");
+            y += 24f;
+
+            DrawLabeledBar(new Rect(x, y, barWidth, 20f), SafeRatio(stats.CurrentMana, stats.MaxMana), new Color(0.2f, 0.35f, 0.85f),
+                $"{stats.CurrentMana:0} / {stats.MaxMana:0}");
+            y += 24f;
+
+            DrawBar(new Rect(x, y, barWidth, 6f), SafeRatio(stats.Experience, stats.ExperienceRequiredForNextLevel()), new Color(0.85f, 0.7f, 0.3f));
+
+            GUI.matrix = previous;
+        }
+
+        private void DrawLabeledBar(Rect rect, float fraction, Color fillColor, string label)
+        {
+            DrawBar(rect, fraction, fillColor);
+            GUI.Label(rect, label, barLabelStyle);
+        }
+
         // YOU DIED stays up throughout; underneath it, a 3/2/1 countdown counts down to a
         // "press any button" prompt once PlayerStats promotes to AwaitingRevive.
-        private static void DrawDeathOverlay(PlayerStats stats, bool spectating)
+        private static void DrawDeathOverlay(PlayerStats stats, bool spectating, float screenWidth, float screenHeight)
         {
             GUIStyle titleOverlayStyle = new GUIStyle
             {
@@ -150,7 +204,7 @@ namespace PoeClone.UI
             };
             titleOverlayStyle.normal.textColor = new Color(0.85f, 0.15f, 0.15f);
 
-            GUI.Label(new Rect(0f, Screen.height * 0.32f, Screen.width, 80f), spectating ? "THE PLAYER DIED" : "YOU DIED", titleOverlayStyle);
+            GUI.Label(new Rect(0f, screenHeight * 0.32f, screenWidth, 80f), spectating ? "THE PLAYER DIED" : "YOU DIED", titleOverlayStyle);
 
             GUIStyle subStyle = new GUIStyle
             {
@@ -160,11 +214,12 @@ namespace PoeClone.UI
             };
             subStyle.normal.textColor = Color.white;
 
+            string revivePrompt = TouchMode.Active ? "Tap to revive" : "Press any button to revive";
             string sub = stats.IsAwaitingRevive
-                ? (spectating ? "Waiting for them to revive..." : "Press any button to revive")
+                ? (spectating ? "Waiting for them to revive..." : revivePrompt)
                 : stats.CountdownSecondsRemaining.ToString();
 
-            GUI.Label(new Rect(0f, Screen.height * 0.32f + 70f, Screen.width, 50f), sub, subStyle);
+            GUI.Label(new Rect(0f, screenHeight * 0.32f + 70f, screenWidth, 50f), sub, subStyle);
         }
 
         private static float SafeRatio(float current, float max)

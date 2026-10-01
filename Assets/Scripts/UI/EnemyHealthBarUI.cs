@@ -1,5 +1,6 @@
 using UnityEngine;
 using PoeClone.Enemies;
+using PoeClone.Inventory;
 
 namespace PoeClone.UI
 {
@@ -57,12 +58,17 @@ namespace PoeClone.UI
             if (screen.z <= 0f)
                 return;
 
-            float x = screen.x - barWidth * 0.5f;
+            // Raw screen pixels: grow the bar on a phone so it stays readable.
+            float scale = TouchMode.GuiScale;
+            float width = barWidth * scale;
+            float height = barHeight * scale;
+
+            float x = screen.x - width * 0.5f;
             float y = Screen.height - screen.y;
 
             float fraction = health.MaxHealth > 0f ? health.CurrentHealth / health.MaxHealth : 0f;
 
-            DrawBar(new Rect(x, y, barWidth, barHeight), fraction, new Color(0.75f, 0.15f, 0.15f));
+            DrawBar(new Rect(x, y, width, height), fraction, new Color(0.75f, 0.15f, 0.15f));
         }
 
         private static void DrawBar(Rect rect, float fraction, Color fillColor)

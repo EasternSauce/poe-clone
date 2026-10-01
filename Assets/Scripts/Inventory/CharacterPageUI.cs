@@ -117,7 +117,8 @@ namespace PoeClone.Inventory
                 SetOpen(false);
         }
 
-        private void SetOpen(bool open)
+        /// <summary>Opens or closes the page (C key, or the on-screen button on touch).</summary>
+        public void SetOpen(bool open)
         {
             isOpen = open;
             panel.gameObject.SetActive(open);

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using PoeClone.Inventory;
 
 namespace PoeClone.Network
 {
@@ -16,6 +17,9 @@ namespace PoeClone.Network
     ///
     /// Keys: Enter opens the chat box, Enter sends. The player then gets control back (so WASD moves
     /// again); spectators have nothing else to control, so their box stays focused. Escape leaves it.
+    ///
+    /// Touch: the player's chat sits behind an on-screen button (TouchControlsUI) at the top right,
+    /// since the bottom right is taken by the attack button; spectators keep it open where it is.
     /// </summary>
     public class ChatUI : MonoBehaviour
     {
@@ -23,7 +27,21 @@ namespace PoeClone.Network
 
         private InputField inputField;
         private Text logText;
+        private Text fieldText;
+        private Text placeholderText;
+        private Text sendText;
+        private RectTransform panelRect;
+        private RectTransform fieldRect;
+        private RectTransform sendRect;
         private readonly Queue<string> lines = new Queue<string>();
+
+        private bool touchPanelOpen;
+
+        /// <summary>Messages received so far, for the touch chat button's unread dot.</summary>
+        public static int MessageCount { get; private set; }
+
+        /// <summary>Whether the panel is showing (always true outside the touch player layout).</summary>
+        public static bool PanelVisible => Instance != null && Instance.panelRect != null && Instance.panelRect.gameObject.activeSelf;
 
         /// <summary>True while the chat box has keyboard focus, so gameplay input can ignore WASD/click while typing.</summary>
         public static bool IsTyping => Instance != null && Instance.inputField != null && Instance.inputField.isFocused;
@@ -38,20 +56,72 @@ namespace PoeClone.Network
         private void Awake()
         {
             Instance = this;
+            MessageCount = 0;
             UiEventSystemBootstrap.EnsureExists();
             Build();
         }
 
         private void OnEnable()
         {
+            TouchMode.Changed += Relayout;
             var ctrl = GameSessionController.Instance;
-            if (ctrl != null) ctrl.ChatReceived += HandleChat;
+            if (ctrl != null)
+            {
+                ctrl.ChatReceived += HandleChat;
+                ctrl.StateChanged += Relayout;
+            }
+            Relayout();
         }
 
         private void OnDisable()
         {
+            TouchMode.Changed -= Relayout;
             var ctrl = GameSessionController.Instance;
-            if (ctrl != null) ctrl.ChatReceived -= HandleChat;
+            if (ctrl != null)
+            {
+                ctrl.ChatReceived -= HandleChat;
+                ctrl.StateChanged -= Relayout;
+            }
+        }
+
+        /// <summary>Touch player layout: shows or hides the panel (the on-screen chat button).</summary>
+        public static void SetPanelOpen(bool open)
+        {
+            if (Instance == null) return;
+            Instance.touchPanelOpen = open;
+            if (!open && Instance.inputField.isFocused)
+                Instance.inputField.DeactivateInputField();
+            Instance.Relayout();
+        }
+
+        // Desktop: bottom right, always shown. Touch: bigger text; the player's panel moves to the
+        // top right (left of the on-screen buttons) and only shows when opened.
+        private void Relayout()
+        {
+            if (panelRect == null) return;
+
+            bool touch = TouchMode.Active;
+            bool touchPlayer = touch && !StayInChat;
+
+            panelRect.gameObject.SetActive(!touchPlayer || touchPanelOpen);
+
+            Vector2 corner = touchPlayer ? new Vector2(1f, 1f) : new Vector2(1f, 0f);
+            panelRect.anchorMin = corner;
+            panelRect.anchorMax = corner;
+            panelRect.pivot = corner;
+            panelRect.anchoredPosition = touchPlayer ? new Vector2(-150f, -20f) : new Vector2(-20f, 20f);
+            panelRect.sizeDelta = touch ? new Vector2(520f, 250f) : new Vector2(460f, 220f);
+
+            int fontSize = touch ? 20 : 16;
+            logText.fontSize = fontSize;
+            fieldText.fontSize = fontSize;
+            placeholderText.fontSize = fontSize;
+            sendText.fontSize = fontSize;
+
+            float fieldTop = touch ? 50f : 42f;
+            fieldRect.offsetMax = new Vector2(0f, fieldTop);
+            sendRect.offsetMax = new Vector2(-10f, fieldTop);
+            logText.rectTransform.offsetMin = new Vector2(10f, fieldTop + 4f);
         }
 
         private void Update()
@@ -69,6 +139,7 @@ namespace PoeClone.Network
 
         private void HandleChat(ChatEnvelope msg)
         {
+            MessageCount++;
             string prefix = msg.Role == "player" ? "[Player]" : "[Watching]";
             AppendLine($"{prefix} {msg.From}: {msg.Text}");
         }
@@ -149,13 +220,14 @@ namespace PoeClone.Network
             var scaler = canvasGO.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
+            canvasGO.AddComponent<TouchAwareScaler>();
             canvasGO.AddComponent<GraphicRaycaster>();
 
             var panelGO = new GameObject("Panel");
             panelGO.transform.SetParent(canvasGO.transform, false);
             var panelImage = panelGO.AddComponent<Image>();
             panelImage.color = new Color(0f, 0f, 0f, 0.55f);
-            var panelRect = panelImage.rectTransform;
+            panelRect = panelImage.rectTransform;
             panelRect.anchorMin = new Vector2(1f, 0f);
             panelRect.anchorMax = new Vector2(1f, 0f);
             panelRect.pivot = new Vector2(1f, 0f);
@@ -182,7 +254,7 @@ namespace PoeClone.Network
             fieldGO.transform.SetParent(panelGO.transform, false);
             var fieldImage = fieldGO.AddComponent<Image>();
             fieldImage.color = new Color(1f, 1f, 1f, 0.9f);
-            var fieldRect = fieldImage.rectTransform;
+            fieldRect = fieldImage.rectTransform;
             fieldRect.anchorMin = new Vector2(0f, 0f);
             fieldRect.anchorMax = new Vector2(0.78f, 0f);
             fieldRect.pivot = new Vector2(0f, 0f);
@@ -200,7 +272,7 @@ namespace PoeClone.Network
 
             var fieldTextGO = new GameObject("Text");
             fieldTextGO.transform.SetParent(fieldGO.transform, false);
-            var fieldText = fieldTextGO.AddComponent<Text>();
+            fieldText = fieldTextGO.AddComponent<Text>();
             fieldText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             fieldText.fontSize = 16;
             fieldText.color = Color.black;
@@ -212,7 +284,8 @@ namespace PoeClone.Network
 
             var placeholderGO = new GameObject("Placeholder");
             placeholderGO.transform.SetParent(fieldGO.transform, false);
-            var placeholder = placeholderGO.AddComponent<Text>();
+            placeholderText = placeholderGO.AddComponent<Text>();
+            var placeholder = placeholderText;
             placeholder.font = fieldText.font;
             placeholder.fontSize = 16;
             placeholder.fontStyle = FontStyle.Italic;
@@ -227,7 +300,8 @@ namespace PoeClone.Network
             buttonGO.transform.SetParent(panelGO.transform, false);
             var buttonImage = buttonGO.AddComponent<Image>();
             buttonImage.color = new Color(0.2f, 0.5f, 0.9f, 1f);
-            var buttonRect = buttonImage.rectTransform;
+            sendRect = buttonImage.rectTransform;
+            var buttonRect = sendRect;
             buttonRect.anchorMin = new Vector2(0.78f, 0f);
             buttonRect.anchorMax = new Vector2(1f, 0f);
             buttonRect.pivot = new Vector2(0f, 0f);
@@ -238,7 +312,8 @@ namespace PoeClone.Network
 
             var buttonTextGO = new GameObject("Text");
             buttonTextGO.transform.SetParent(buttonGO.transform, false);
-            var buttonText = buttonTextGO.AddComponent<Text>();
+            sendText = buttonTextGO.AddComponent<Text>();
+            var buttonText = sendText;
             buttonText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             buttonText.fontSize = 16;
             buttonText.alignment = TextAnchor.MiddleCenter;

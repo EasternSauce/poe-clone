@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 using UnityEngine.UI;
 using PoeClone.Audio;
 
@@ -14,6 +15,9 @@ namespace PoeClone.Inventory
     /// Click an item to pick it up onto the cursor, click a slot or grid spot to put it down.
     /// A live preview of the character (facing you) sits beside the panel and shows worn gear.
     /// Built entirely at runtime with uGUI. Slots show a silhouette icon instead of a text label.
+    ///
+    /// Touch: tap to pick up / put down, or drag an item where it should go; press and hold an
+    /// item for its tooltip. The preview is dropped there to make room for the on-screen buttons.
     /// </summary>
     public class InventoryUI : MonoBehaviour
     {
@@ -38,6 +42,12 @@ namespace PoeClone.Inventory
         private static readonly Color GoodStrong = new Color(0.25f, 0.85f, 0.35f, 0.40f);
         private static readonly Color Bad = new Color(0.90f, 0.20f, 0.20f, 0.40f);
         private static readonly Color HoverTint = new Color(1f, 1f, 1f, 0.10f);
+
+        // Touch layout: the panel moves left to clear the on-screen button column (TouchControlsUI).
+        private const float DesktopRightInset = 30f;
+        private const float TouchRightInset = 150f;
+        private const float LongPressSeconds = 0.4f;
+        private const float DragThreshold = 14f; // canvas units
 
         // Equipment layout in cells (column, row, width, height) on an 8x6 board, PoE style:
         // weapons on the sides, helmet + amulet on top, body armour in the middle,
@@ -104,6 +114,15 @@ namespace PoeClone.Inventory
         private ItemData cursorItem;
         private bool isOpen;
         private bool warming;
+
+        // The touch currently being followed (see UpdateTouch).
+        private bool touchTracking;
+        private bool touchHadItem;
+        private bool touchPickupTried;
+        private bool touchInspecting;
+        private Vector2 touchStart;
+        private float touchStartTime;
+        private Vector2 lastTouchPos;
 
         public bool IsOpen
         {
@@ -185,6 +204,12 @@ namespace PoeClone.Inventory
             if (!isOpen)
                 return;
 
+            if (TouchMode.Active)
+            {
+                UpdateTouch();
+                return;
+            }
+
             Mouse mouse = Mouse.current;
             if (mouse == null)
                 return;
@@ -202,16 +227,92 @@ namespace PoeClone.Inventory
                 HandleClick(hover);
         }
 
+        // Follows one finger. With nothing held: a tap picks the item up (it then waits where it
+        // was until the next tap puts it down), dragging picks it up and drops it where the finger
+        // lifts, and holding still shows the tooltip without picking anything up. With an item
+        // already held, lifting the finger puts it down there, whether that was a tap or a drag.
+        private void UpdateTouch()
+        {
+            Touchscreen screen = Touchscreen.current;
+            if (screen == null)
+                return;
+
+            TouchControl touch = screen.primaryTouch;
+            Vector2 pos = touch.position.ReadValue();
+
+            if (touch.press.wasPressedThisFrame)
+            {
+                touchTracking = !TouchMode.IsOverBlocker(pos);
+                touchHadItem = cursorItem != null;
+                touchPickupTried = false;
+                touchInspecting = false;
+                touchStart = pos;
+                touchStartTime = Time.unscaledTime;
+            }
+
+            if (touchTracking)
+                lastTouchPos = pos;
+
+            if (cursorView != null)
+                cursorView.position = lastTouchPos;
+
+            if (!touchTracking)
+            {
+                UpdateHighlights(new Hover());
+                return;
+            }
+
+            bool moved = (pos - touchStart).magnitude > DragThreshold * canvas.scaleFactor;
+            bool held = Time.unscaledTime - touchStartTime >= LongPressSeconds;
+
+            if (touch.press.isPressed && !touchHadItem && cursorItem == null)
+            {
+                // Dragging still works after the tooltip came up: hold to read, then pull it out.
+                if (moved && !touchPickupTried)
+                {
+                    touchPickupTried = true;
+                    tooltipRect.gameObject.SetActive(false);
+                    HandleClick(Hit(touchStart));
+                }
+                else if (held && !moved && !touchInspecting)
+                {
+                    touchInspecting = true;
+                    UpdateTooltip(Hit(touchStart), touchStart);
+                }
+            }
+
+            UpdateHighlights(cursorItem != null && touch.press.isPressed ? Hit(pos) : new Hover());
+
+            if (!touch.press.wasReleasedThisFrame && touch.press.isPressed)
+                return;
+
+            touchTracking = false;
+            tooltipRect.gameObject.SetActive(false);
+
+            bool dragPickedUp = touchPickupTried && cursorItem != null;
+            bool tap = !moved && !held;
+
+            if (touchHadItem || dragPickedUp || (tap && !touchInspecting))
+                HandleClick(Hit(pos));
+        }
+
         // ------------------------------------------------------------------ open / close
 
-        private void SetOpen(bool open)
+        /// <summary>Opens or closes the panel (I key, or the on-screen bag button on touch).</summary>
+        public void SetOpen(bool open)
         {
             isOpen = open;
+            touchTracking = false;
+            bool touch = TouchMode.Active;
+
             panel.gameObject.SetActive(open);
-            previewPanel.gameObject.SetActive(open);
+            panel.anchoredPosition = new Vector2(-(touch ? TouchRightInset : DesktopRightInset), 0f);
+
+            // No room for the character preview beside the panel on a phone.
+            previewPanel.gameObject.SetActive(open && !touch);
 
             if (preview != null)
-                preview.SetActive(open);
+                preview.SetActive(open && !touch);
 
             if (cursorView != null)
                 cursorView.gameObject.SetActive(open);
@@ -616,14 +717,30 @@ private Vector2 CellSize(int w, int h)
                 return;
             }
 
+            // Larger on touch: the text is read on a phone, at arm's length.
+            bool touch = TouchMode.Active;
+            tooltipText.fontSize = touch ? 22 : 17;
+            float lineHeight = touch ? 26f : 23f;
+
             int lines;
             tooltipText.text = BuildTooltipText(item, out lines);
-            tooltipRect.sizeDelta = new Vector2(270f, 24f + lines * 23f);
+            tooltipRect.sizeDelta = new Vector2(touch ? 340f : 270f, 24f + lines * lineHeight);
 
             tooltipRect.gameObject.SetActive(true);
             tooltipRect.SetAsLastSibling();
 
             Vector2 size = tooltipRect.sizeDelta * canvas.scaleFactor;
+
+            if (touch)
+            {
+                // Left of the finger, so the finger doesn't cover it (the panel is on the right).
+                float offset = 40f * canvas.scaleFactor;
+                float y = Mathf.Clamp(mousePos.y, size.y * 0.5f, Screen.height - size.y * 0.5f);
+                tooltipRect.pivot = new Vector2(1f, 0.5f);
+                tooltipRect.position = new Vector2(Mathf.Max(mousePos.x - offset, size.x), y);
+                return;
+            }
+
             bool flipX = mousePos.x + 18f + size.x > Screen.width;
             bool flipY = mousePos.y - 18f - size.y < 0f;
             tooltipRect.pivot = new Vector2(flipX ? 1f : 0f, flipY ? 0f : 1f);
