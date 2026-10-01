@@ -651,7 +651,7 @@ private Vector2 CellSize(int w, int h)
                 // Take off whatever is worn.
                 cursorItem = inventory.Equipment.Unequip(s.Slot);
                 if (cursorItem != null)
-                    PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiUnequip : null);
+                    PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiItemPickup : null);
                 return;
             }
 
@@ -663,7 +663,7 @@ private Vector2 CellSize(int w, int h)
                 return;
             }
 
-            PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiEquip : null);
+            PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiItemPlace : null);
             cursorItem = replaced;
         }
 
@@ -675,7 +675,7 @@ private Vector2 CellSize(int w, int h)
                 if (p != null && inventory.Grid.Remove(p.Item))
                 {
                     cursorItem = p.Item;
-                    PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiClick : null);
+                    PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiItemPickup : null);
                 }
                 return;
             }
@@ -685,7 +685,7 @@ private Vector2 CellSize(int w, int h)
             if (inventory.Grid.TryPlaceOrSwap(cursorItem, o.x, o.y, out replaced))
             {
                 cursorItem = replaced;
-                PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiClick : null);
+                PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiItemPlace : null);
             }
             else
             {

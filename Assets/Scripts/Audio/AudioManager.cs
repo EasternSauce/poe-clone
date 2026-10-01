@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace PoeClone.Audio
 {
@@ -24,10 +25,11 @@ namespace PoeClone.Audio
         [Header("UI")]
         public AudioClip uiInventoryOpen;
         public AudioClip uiInventoryClose;
-        public AudioClip uiClick;
         public AudioClip uiDenied;
-        public AudioClip uiEquip;
-        public AudioClip uiUnequip;
+        [Tooltip("Picking an item up onto the cursor, from the grid or an equipment slot.")]
+        [FormerlySerializedAs("uiUnequip")] public AudioClip uiItemPickup;
+        [Tooltip("Putting the cursor item down, into the grid or an equipment slot.")]
+        [FormerlySerializedAs("uiEquip")] public AudioClip uiItemPlace;
 
         [Header("World")]
         public AudioClip gateOpen;
