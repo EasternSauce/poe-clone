@@ -50,7 +50,10 @@ namespace PoeClone.Player
         private void Start()
         {
             if (attackAnimator != null)
+            {
                 attackAnimator.StrikeFrame += PerformHit;
+                attackAnimator.AttackCancelled += OnAttackCancelled;
+            }
 
             stats.Died += OnDied;
             stats.Revived += OnRevived;
@@ -59,7 +62,10 @@ namespace PoeClone.Player
         private void OnDestroy()
         {
             if (attackAnimator != null)
+            {
                 attackAnimator.StrikeFrame -= PerformHit;
+                attackAnimator.AttackCancelled -= OnAttackCancelled;
+            }
 
             if (stats != null)
             {
@@ -74,6 +80,14 @@ namespace PoeClone.Player
         {
             SetHighlight(null);
             enabled = false;
+        }
+
+        // A staggered swing never landed, so it shouldn't cost a full attack interval. Without the
+        // refund the victim is still on cooldown when the stagger ends, the attacker's next hit lands
+        // first, and whoever opens a 1v1 keeps the other locked in stagger.
+        private void OnAttackCancelled()
+        {
+            cooldownTimer = 0f;
         }
 
         private void OnRevived()

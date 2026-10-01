@@ -146,6 +146,9 @@ namespace PoeClone.Visuals
         /// <summary>Fires once per swing, at the moment the weapon reaches its target.</summary>
         public event Action StrikeFrame;
 
+        /// <summary>Fires when a swing is cut off before its strike (a stagger), so the owner can refund the swing's cooldown.</summary>
+        public event Action AttackCancelled;
+
         private void Awake()
         {
             if (weaponArm == null)
@@ -207,6 +210,9 @@ namespace PoeClone.Visuals
 
             IsAttacking = false;
             Apply(rest);
+
+            if (!strikeFired)
+                AttackCancelled?.Invoke();
         }
 
         /// <summary>Plays the swing with the given <see cref="ProfileId"/> (spectator replay). Unknown ids are ignored.</summary>

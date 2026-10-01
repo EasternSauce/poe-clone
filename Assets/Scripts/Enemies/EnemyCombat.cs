@@ -41,12 +41,16 @@ namespace PoeClone.Enemies
         {
             playerStats = FindAnyObjectByType<PlayerStats>();
             attackAnimator.StrikeFrame += OnStrikeFrame;
+            attackAnimator.AttackCancelled += OnAttackCancelled;
         }
 
         private void OnDestroy()
         {
             if (attackAnimator != null)
+            {
                 attackAnimator.StrikeFrame -= OnStrikeFrame;
+                attackAnimator.AttackCancelled -= OnAttackCancelled;
+            }
         }
 
         private void Update()
@@ -72,6 +76,12 @@ namespace PoeClone.Enemies
             FacePlayer();
             attackAnimator.PlayClawAttack();
             cooldownTimer = attackCooldown;
+        }
+
+        // Same rule as the player: a swing cut short by a stagger refunds its cooldown.
+        private void OnAttackCancelled()
+        {
+            cooldownTimer = 0f;
         }
 
         private void OnStrikeFrame()
