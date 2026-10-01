@@ -39,6 +39,26 @@ namespace PoeClone.Inventory
 
         private static Sprite disc;
         private static Sprite ring;
+        private static Sprite square;
+
+        /// <summary>A plain white square (Filled images, e.g. cooldown sweeps, need some sprite to fill).</summary>
+        public static Sprite Square
+        {
+            get
+            {
+                if (square == null)
+                {
+                    var texture = new Texture2D(4, 4, TextureFormat.RGBA32, false);
+                    var pixels = new Color32[16];
+                    for (int k = 0; k < pixels.Length; k++)
+                        pixels[k] = new Color32(255, 255, 255, 255);
+                    texture.SetPixels32(pixels);
+                    texture.Apply();
+                    square = Sprite.Create(texture, new Rect(0f, 0f, 4f, 4f), new Vector2(0.5f, 0.5f), 100f);
+                }
+                return square;
+            }
+        }
 
         /// <summary>An antialiased white disc, for round buttons and glows.</summary>
         public static Sprite Disc => disc != null ? disc : disc = MakeCircle(128, 0f);

@@ -34,6 +34,45 @@ namespace PoeClone.Player
 
         public bool IsWalkingToTarget => walking;
 
+        // A dash: moves the character itself for a moment, ignoring input.
+        private Vector3 dashVelocity;
+        private float dashTimeLeft;
+
+        public bool IsDashing => dashTimeLeft > 0f;
+
+        /// <summary>Rushes the character along a flat direction, covering the distance in the time.</summary>
+        public void Dash(Vector3 direction, float distance, float seconds)
+        {
+            direction.y = 0f;
+            if (direction.sqrMagnitude < 0.0001f)
+                direction = transform.forward;
+            direction.Normalize();
+
+            walking = false;
+            dashTimeLeft = Mathf.Max(0.05f, seconds);
+            dashVelocity = direction * (distance / dashTimeLeft);
+            transform.rotation = Quaternion.LookRotation(direction);
+        }
+
+        /// <summary>The direction the movement input currently points, in world space (zero when idle).</summary>
+        public Vector3 InputDirection()
+        {
+            Vector2 input = ReadMovementInput();
+            if (input.sqrMagnitude < 0.0001f)
+                return Vector3.zero;
+
+            Vector3 forward = Vector3.forward;
+            Camera cam = Camera.main;
+            if (cam != null)
+            {
+                forward = cam.transform.forward;
+                forward.y = 0f;
+                forward.Normalize();
+            }
+            Vector3 right = new Vector3(forward.z, 0f, -forward.x);
+            return (right * input.x + forward * input.y).normalized;
+        }
+
         public void WalkTo(Vector3 target, float arriveDistance)
         {
             walking = true;
@@ -90,10 +129,20 @@ namespace PoeClone.Player
 
             if (GetComponent<LootPicker>() == null)
                 gameObject.AddComponent<LootPicker>();
+            if (GetComponent<Skills.PlayerSkills>() == null)
+                gameObject.AddComponent<Skills.PlayerSkills>();
         }
 
 private void Update()
         {
+            if (dashTimeLeft > 0f)
+            {
+                dashTimeLeft -= Time.deltaTime;
+                controller.Move(dashVelocity * Time.deltaTime);
+                ApplyGravity();
+                return;
+            }
+
             Vector2 input = ReadMovementInput();
 
             // Move relative to the camera so W is always "up the screen",
@@ -213,6 +262,13 @@ private void Update()
             }
 
             return input.normalized;
+        }
+
+        /// <summary>The mouse is over a clickable on-screen panel (skills, chat...), not the world.</summary>
+        internal static bool IsPointerOverUi()
+        {
+            EventSystem es = EventSystem.current;
+            return es != null && es.IsPointerOverGameObject();
         }
 
         internal static bool IsUiFocused()

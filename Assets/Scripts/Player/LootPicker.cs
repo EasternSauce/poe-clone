@@ -123,7 +123,7 @@ namespace PoeClone.Player
         private LootDrop ReadMouse()
         {
             Mouse mouse = Mouse.current;
-            if (mouse == null)
+            if (mouse == null || PlayerController.IsPointerOverUi())
                 return null;
 
             LootDrop under = PickableAt(mouse.position.ReadValue());

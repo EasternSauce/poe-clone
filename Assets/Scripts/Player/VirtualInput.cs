@@ -18,10 +18,14 @@ namespace PoeClone.Player
         /// <summary>Attack button held: swings repeatedly, as fast as the weapon allows.</summary>
         public static bool AttackHeld;
 
+        /// <summary>A touch skill button was pressed this frame (its slot), or -1. PlayerSkills consumes it.</summary>
+        public static int SkillPressed = -1;
+
         public static void Clear()
         {
             Move = Vector2.zero;
             AttackHeld = false;
+            SkillPressed = -1;
         }
 
         // Domain reload is off in this project, so statics must be reset per play session.

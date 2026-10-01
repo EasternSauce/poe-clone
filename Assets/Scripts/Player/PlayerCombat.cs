@@ -126,6 +126,7 @@ namespace PoeClone.Player
                 // A focused UI text field (e.g. the chat box) should consume the click, not the attack,
                 // and so does an item on the ground (LootPicker picks it up instead).
                 attackPressed = mouse != null && mouse.leftButton.wasPressedThisFrame && !PlayerController.IsUiFocused() &&
+                                !PlayerController.IsPointerOverUi() &&
                                 LootPicker.PickableAt(mouse.position.ReadValue()) == null &&
                                 !HoldingInventoryItem();
             }

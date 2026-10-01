@@ -62,10 +62,18 @@ namespace PoeClone.Enemies
 
         public State CurrentState => state;
 
+        private float chilledUntil = -1f;
+
+        /// <summary>Slowed to half speed for a while (frost skills).</summary>
+        public void Chill(float seconds)
+        {
+            chilledUntil = Mathf.Max(chilledUntil, Time.time + seconds);
+        }
+
         private float MoveSpeed =>
-            player != null
+            (player != null
                 ? player.MoveSpeed * speedRatioToPlayer
-                : fallbackSpeed;
+                : fallbackSpeed) * (Time.time < chilledUntil ? 0.5f : 1f);
 
         private void Awake()
         {

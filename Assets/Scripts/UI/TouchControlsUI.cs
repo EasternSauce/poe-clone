@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -45,6 +46,16 @@ namespace PoeClone.UI
         private string attackIconFor;
         private Image runImage;
         private GameObject unreadDot;
+
+        private class SkillButton
+        {
+            public Image Back;
+            public Image Cooldown;
+            public Text Label;
+        }
+
+        private readonly List<SkillButton> skillButtons = new List<SkillButton>();
+        private Skills.PlayerSkills skills;
 
         private PlayerStats stats;
         private InventoryUI inventoryUI;
@@ -97,7 +108,8 @@ namespace PoeClone.UI
             bool characterOpen = characterUI != null && characterUI.IsOpen;
 
             menuRoot.SetActive(!dead);
-            SetCombatShown(!dead && !inventoryOpen && !characterOpen);
+            SetCombatShown(!dead && !inventoryOpen && !characterOpen && !SkillBarUI.IsOpen);
+            UpdateSkillButtons();
 
             // The character page sits where the HUD is drawn (OnGUI draws over uGUI).
             PlayerHUD.SetHiddenBy(this, characterOpen);
@@ -132,6 +144,41 @@ namespace PoeClone.UI
                 inventoryUI = FindAnyObjectByType<InventoryUI>();
             if (characterUI == null)
                 characterUI = FindAnyObjectByType<CharacterPageUI>();
+            if (skills == null)
+                skills = FindAnyObjectByType<Skills.PlayerSkills>();
+        }
+
+        // Each round skill button shows its skill's letters, the cooldown sweeping round, and a
+        // blue tint when there isn't enough mana; an empty slot is a faint ring.
+        private void UpdateSkillButtons()
+        {
+            for (int k = 0; k < skillButtons.Count; k++)
+            {
+                SkillButton button = skillButtons[k];
+                Skills.SkillId? id = skills != null ? skills.Slot(k) : null;
+                if (id == null)
+                {
+                    button.Back.color = new Color(0.08f, 0.07f, 0.06f, 0.3f);
+                    button.Label.text = "";
+                    button.Cooldown.fillAmount = 0f;
+                    continue;
+                }
+
+                Skills.SkillDefinition skill = Skills.SkillBook.Get(id.Value);
+                bool affordable = skills.CanAfford(skill.Id);
+                Color c = affordable ? skill.Color : Color.Lerp(skill.Color, new Color(0.2f, 0.3f, 0.9f), 0.6f);
+                button.Back.color = new Color(c.r * 0.45f, c.g * 0.45f, c.b * 0.45f, 0.8f);
+                button.Label.text = skill.Short;
+                button.Cooldown.fillAmount = skill.Cooldown > 0f ? skills.CooldownLeft(skill.Id) / skill.Cooldown : 0f;
+            }
+        }
+
+        private void ToggleSkills()
+        {
+            bool open = !SkillBarUI.IsOpen;
+            if (open)
+                CloseOthers();
+            SkillBarUI.SetOpen(open);
         }
 
         private void SetCombatShown(bool shown)
@@ -254,6 +301,7 @@ namespace PoeClone.UI
             if (characterUI != null && characterUI.IsOpen)
                 characterUI.SetOpen(false);
             ChatUI.SetPanelOpen(false);
+            SkillBarUI.SetOpen(false);
         }
 
         // ------------------------------------------------------------------ building
@@ -313,7 +361,32 @@ namespace PoeClone.UI
                 attackImage.color = ControlColor;
             };
 
-            runImage = NewRoundButton("Run", combat, new Vector2(1f, 0f), new Vector2(-325f, 92f), 104f, "RUN");
+            // Skill buttons on an arc around the attack button, in thumb's reach.
+            for (int k = 0; k < Skills.SkillBook.SlotCount; k++)
+            {
+                float angle = (105f + k * 25f) * Mathf.Deg2Rad;
+                Vector2 at = new Vector2(-150f + Mathf.Cos(angle) * 185f, 150f + Mathf.Sin(angle) * 185f);
+                Image back = NewRoundButton("Skill" + k, combat, new Vector2(1f, 0f), at, 88f, null);
+
+                Text label = UiKit.NewText("Label", back.rectTransform, "", 22, UiKit.TextColor, TextAnchor.MiddleCenter);
+                label.fontStyle = FontStyle.Bold;
+                UiKit.Stretch(label.rectTransform, 0f);
+
+                Image cooldown = UiKit.NewImage("Cooldown", back.rectTransform, new Color(0f, 0f, 0f, 0.6f));
+                cooldown.sprite = UiKit.Disc;
+                cooldown.type = Image.Type.Filled;
+                cooldown.fillMethod = Image.FillMethod.Radial360;
+                cooldown.fillOrigin = (int)Image.Origin360.Top;
+                cooldown.fillClockwise = false;
+                UiKit.Stretch(cooldown.rectTransform, 0f);
+
+                int slot = k;
+                back.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.SkillPressed = slot;
+                TouchMode.AddBlocker(back.rectTransform);
+                skillButtons.Add(new SkillButton { Back = back, Cooldown = cooldown, Label = label });
+            }
+
+            runImage = NewRoundButton("Run", combat, new Vector2(1f, 0f), new Vector2(-480f, 76f), 96f, "RUN");
             runImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ =>
             {
                 VirtualInput.Sprint = !VirtualInput.Sprint;
@@ -331,7 +404,11 @@ namespace PoeClone.UI
             Image character = NewRoundButton("Character", menu, Vector2.one, new Vector2(-70f, -180f), 96f, "CHAR");
             character.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ToggleCharacter();
 
-            Image chat = NewRoundButton("Chat", menu, Vector2.one, new Vector2(-70f, -290f), 96f, "CHAT");
+            Image skillsButton = NewRoundButton("Skills", menu, Vector2.one, new Vector2(-70f, -290f), 96f, "SKL");
+            skillsButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ToggleSkills();
+            TouchMode.AddBlocker(skillsButton.rectTransform);
+
+            Image chat = NewRoundButton("Chat", menu, Vector2.one, new Vector2(-70f, -400f), 96f, "CHAT");
             chat.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ToggleChat();
 
             Image dot = UiKit.NewImage("Unread", chat.rectTransform, UnreadColor);

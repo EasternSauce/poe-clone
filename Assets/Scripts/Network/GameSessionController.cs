@@ -80,6 +80,7 @@ namespace PoeClone.Network
             gameObject.AddComponent<SpectatorView>();
             gameObject.AddComponent<ChatUI>();
             gameObject.AddComponent<PoeClone.UI.TouchControlsUI>();
+            gameObject.AddComponent<PoeClone.UI.SkillBarUI>();
             namePrompt = gameObject.AddComponent<NamePromptUI>();
 
             stateBroadcaster = gameObject.AddComponent<PlayerStateBroadcaster>();

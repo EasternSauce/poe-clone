@@ -56,6 +56,9 @@ namespace PoeClone.Player
         public event Action Died;
         public event Action Revived;
 
+        /// <summary>Fires with the new level each time the character levels up.</summary>
+        public event Action<int> LeveledUp;
+
         // Bonuses from worn equipment. Set by PlayerStatsLink; the base values above are untouched.
         private int bonusStrength;
         private int bonusDexterity;
@@ -95,7 +98,16 @@ namespace PoeClone.Player
         private void Update()
         {
             if (!dead)
+            {
                 currentMana = Mathf.Min(MaxMana, currentMana + DefenceMath.ManaRegenPerSecond(MaxMana, Intelligence) * Time.deltaTime);
+
+                if (healOverTimeLeft > 0f)
+                {
+                    float step = Mathf.Min(healOverTimeLeft, healOverTimeRate * Time.deltaTime);
+                    healOverTimeLeft -= step;
+                    currentHealth = Mathf.Min(MaxHealth, currentHealth + step);
+                }
+            }
 
             if (respawnPhase == RespawnPhase.Countdown)
             {
@@ -165,6 +177,7 @@ private void LevelUp()
             currentMana = MaxMana;
 
             Debug.Log($"Player reached level {level}");
+            LeveledUp?.Invoke(level);
 
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlayAtPoint(AudioManager.Instance.playerLevelUp, transform.position);
@@ -176,6 +189,34 @@ private void LevelUp()
         /// elemental one, and mana soaks part of what's left; a cold hit also chills. See
         /// <see cref="DefenceMath"/> for the numbers.
         /// </summary>
+        private float healOverTimeLeft;
+        private float healOverTimeRate;
+
+        /// <summary>Pays a skill's mana cost. False (nothing spent) if there isn't enough.</summary>
+        public bool TrySpendMana(float amount)
+        {
+            if (dead || currentMana < amount)
+                return false;
+            currentMana -= amount;
+            return true;
+        }
+
+        /// <summary>Gives back mana (potions), up to the maximum.</summary>
+        public void RestoreMana(float amount)
+        {
+            if (!dead && amount > 0f)
+                currentMana = Mathf.Min(MaxMana, currentMana + amount);
+        }
+
+        /// <summary>Heals this much over this many seconds (stacks onto any heal already running).</summary>
+        public void HealOverTime(float amount, float seconds)
+        {
+            if (dead || amount <= 0f)
+                return;
+            healOverTimeLeft += amount;
+            healOverTimeRate = healOverTimeLeft / Mathf.Max(0.1f, seconds);
+        }
+
         public void TakeHit(float damage, DamageType type)
         {
             if (dead || damage <= 0f)
