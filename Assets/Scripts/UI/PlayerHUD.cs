@@ -59,7 +59,7 @@ namespace PoeClone.UI
                 DrawDeathOverlay(stats, SpectatorMode);
 
             GUILayout.BeginArea(
-                new Rect(20f, 20f, 350f, 340f)
+                new Rect(20f, 20f, 760f, 340f)
             );
 
             GUILayout.Label(
@@ -74,7 +74,7 @@ namespace PoeClone.UI
                 textStyle
             );
 
-            DrawBar(GUILayoutUtility.GetRect(280f, 16f), SafeRatio(stats.CurrentHealth, stats.MaxHealth), new Color(0.75f, 0.15f, 0.15f));
+            DrawBar(GUILayoutUtility.GetRect(280f, 16f, GUILayout.ExpandWidth(false)), SafeRatio(stats.CurrentHealth, stats.MaxHealth), new Color(0.75f, 0.15f, 0.15f));
 
             GUILayout.Space(6f);
 
@@ -83,7 +83,7 @@ namespace PoeClone.UI
                 textStyle
             );
 
-            DrawBar(GUILayoutUtility.GetRect(280f, 16f), SafeRatio(stats.CurrentMana, stats.MaxMana), new Color(0.2f, 0.35f, 0.85f));
+            DrawBar(GUILayoutUtility.GetRect(280f, 16f, GUILayout.ExpandWidth(false)), SafeRatio(stats.CurrentMana, stats.MaxMana), new Color(0.2f, 0.35f, 0.85f));
 
             GUILayout.Space(12f);
 

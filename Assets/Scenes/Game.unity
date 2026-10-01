@@ -29758,7 +29758,6 @@ MonoBehaviour:
   - {fileID: 8300000, guid: c1de4b0d0b171a445bbc345937e4e677, type: 3}
   - {fileID: 8300000, guid: 801ad7a99eda38945a97267f3c982613, type: 3}
   playerLevelUp: {fileID: 8300000, guid: 02c09b0084c54cc43850d935b952c200, type: 3}
-  playerLanding: {fileID: 8300000, guid: 05b36d90bdf0d0b459e0edd424943b07, type: 3}
   uiInventoryOpen: {fileID: 8300000, guid: 9df4dba7b36659f48a08668689523534, type: 3}
   uiInventoryClose: {fileID: 8300000, guid: e62ed051481e07d47bad072848f78967, type: 3}
   uiClick: {fileID: 8300000, guid: 8bc2fcc49cc968441953154ad307b3ff, type: 3}
@@ -37677,7 +37676,7 @@ MeshRenderer:
   m_GameObject: {fileID: 2096999236}
   m_Enabled: 1
   m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
   m_MotionVectors: 1

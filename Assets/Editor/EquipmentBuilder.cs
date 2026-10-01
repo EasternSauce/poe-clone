@@ -191,7 +191,12 @@ namespace PoeClone.EditorTools
             go.transform.localRotation = Quaternion.Euler(euler);
             go.transform.localScale = scale;
             go.AddComponent<MeshFilter>().sharedMesh = Meshes[mesh];
-            go.AddComponent<MeshRenderer>().sharedMaterial = Mats[mat];
+            MeshRenderer renderer = go.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = Mats[mat];
+            // Shoulder pads sit right where the head/hood shadow edge falls; with toon shading's
+            // hard light/shadow step, that edge crawling across them while walking reads as blinking.
+            if (name.StartsWith("Shoulder"))
+                renderer.receiveShadows = false;
         }
 
         // A thin bar between two points (used for the chain).

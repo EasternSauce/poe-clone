@@ -779,6 +779,9 @@ private static void BuildCharacter(Transform parent, bool enemy)
 
                 // One steel pauldron, replaced by the shoulder pads of any body armour.
                 GameObject pauldron = AddMesh(u, "Pauldron", meshes["Cylinder"], mats["Steel"], new Vector3(-0.52f, 1.72f, 0f), new Vector3(0.42f, 0.16f, 0.42f));
+                // Small and right under the hood's shadow edge: with toon shading's hard light/shadow
+                // step, that edge crawling across it as the body bobs read as blinking.
+                pauldron.GetComponent<Renderer>().receiveShadows = false;
                 TagBaseGear(pauldron, EquipSlot.BodyArmour);
             }
 

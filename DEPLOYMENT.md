@@ -196,12 +196,25 @@ in-browser) and pushing/committing - no Unity rebuild needed.
 ---
 
 ## Updating the game later
-1. Make your changes in the main project, rebuild WebGL (step 2.1).
-2. Copy `StreamingAssets/network-config.json` from your *previous* build output into the new
-   one (or re-edit it) so you don't lose your server URL.
-3. Replace the contents of the `poe-clone-web` repo with the new build output and push.
-4. If you changed `server/`, just push to the main repo's branch Render is watching - it
-   auto-redeploys.
+1. Make your changes in the main project and rebuild (step 2.1), into the same `Builds/WebGL`
+   folder - if that folder is your clone of `poe-clone-web`, the build simply overwrites the
+   files in place.
+2. The server URL comes along automatically: it's baked in from
+   `Assets/StreamingAssets/network-config.json`, which already points at
+   `wss://poe-clone-session-server.onrender.com`.
+3. Publish it from the build folder - `-A` matters, it also removes files the new build no
+   longer has:
+   ```
+   git add -A
+   git commit -m "Update build"
+   git push
+   ```
+4. If you changed `server/`, push the main `poe-clone` repo's `master` - Render redeploys it
+   automatically.
+
+The web page around the game comes from `Assets/WebGLTemplates/FullWindow/index.html` (selected
+in Player Settings -> Web -> Resolution and Presentation): it fills the browser window, has no
+Unity branding, and has its own fullscreen button (top-right; F11 works too).
 
 ## How the live spectator view works
 The spectator isn't watching a video. Their browser runs the same game and rebuilds the
