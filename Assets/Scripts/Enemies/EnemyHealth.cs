@@ -48,12 +48,13 @@ namespace PoeClone.Enemies
         }
 
         /// <summary>Takes on a kind's toughness and reward (see <see cref="EnemyKinds.Apply"/>).</summary>
-        public void Configure(int kindIndex, EnemyKind kind)
+        public void Configure(int kindIndex, EnemyKind kind, int level = 1)
         {
             KindIndex = kindIndex;
-            maxHealth = kind.MaxHealth;
+            MonsterLevel = Mathf.Max(1, level);
+            maxHealth = kind.MaxHealth * EnemyKinds.LifeScale(MonsterLevel);
             currentHealth = maxHealth;
-            experienceReward = kind.Experience;
+            experienceReward = Mathf.RoundToInt(kind.Experience * EnemyKinds.ExperienceScale(MonsterLevel));
         }
 
         /// <summary>Spectator puppets: which kind to draw (their numbers come over the wire).</summary>
@@ -161,7 +162,8 @@ namespace PoeClone.Enemies
             if (player != null)
                 player.GainExperience(experienceReward);
 
-            LootDrop.RollDrop(EnemyKinds.Get(KindIndex), transform.position, player != null ? player.Level : 1);
+            // Deeper areas drop better gear: the item level follows the monster level.
+            LootDrop.RollDrop(EnemyKinds.Get(KindIndex), transform.position, Mathf.Max(MonsterLevel, 1));
             KillRewards.Grant(EnemyKinds.Get(KindIndex), MonsterLevel, transform.position);
 
             // foldLowerBody: false -- the root topple below already lies the whole rig on the

@@ -217,6 +217,13 @@ private void LevelUp()
             healOverTimeRate = healOverTimeLeft / Mathf.Max(0.1f, seconds);
         }
 
+        /// <summary>Where a revive puts the player back (the entrance of the current area).</summary>
+        public void SetSpawnPoint(Vector3 position, Quaternion rotation)
+        {
+            spawnPosition = position;
+            spawnRotation = rotation;
+        }
+
         public void TakeHit(float damage, DamageType type)
         {
             if (dead || damage <= 0f)

@@ -11,13 +11,20 @@ namespace PoeClone.World
         public string areaName;
         public Color groundColor = Color.white;
         public Transform spawnPoint;
+
+        [Tooltip("Enemy level here (0 for a town). Shown when entering.")]
+        public int monsterLevel;
+        public bool isTown;
+        [Tooltip("False for areas with their own ground (WorldBuilder): only the original area retints the shared ground.")]
+        public bool tintsSharedGround = true;
     }
 
     /// <summary>
-    /// Proof-of-concept area switcher. All areas share the same physical scene space;
-    /// switching an area means: fade to a loading screen, teleport the player to the
-    /// target area's spawn point, retint the ground, fade back in.
-    /// No per-area props or enemies yet (by design, for this POC).
+    /// Area switcher: fade to a loading screen, teleport the player into the target area (its
+    /// spawn point, or a given arrival point such as in front of the gate back), fade back in.
+    /// The scene's original proof-of-concept areas share one space and differ only by ground
+    /// tint; <see cref="WorldBuilder"/> replaces them at start-up with real areas laid out apart
+    /// from each other (town, forest, graveyard, ruins), each with its own ground and gates.
     /// </summary>
     public class AreaManager : MonoBehaviour
     {
@@ -37,7 +44,13 @@ namespace PoeClone.World
 
         public int CurrentAreaIndex { get; private set; } = -1;
 
+        /// <summary>Fires after the player arrives in a new area (with its index).</summary>
+        public event Action<int> AreaChanged;
+
+        public AreaDefinition Current => areas != null && CurrentAreaIndex >= 0 && CurrentAreaIndex < areas.Length ? areas[CurrentAreaIndex] : null;
+
         private bool switching;
+        private bool separateAreas;
         private MaterialPropertyBlock mpb;
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
@@ -49,12 +62,29 @@ namespace PoeClone.World
 
 private void Start()
         {
+            if (separateAreas)
+                return; // WorldBuilder already set everything up
+
             if (areas != null && areas.Length > startAreaIndex)
             {
                 ApplyGroundColor(areas[startAreaIndex].groundColor);
                 CurrentAreaIndex = startAreaIndex;
             }
             UpdateGateVisibility(CurrentAreaIndex);
+        }
+
+        /// <summary>
+        /// Replaces the scene's areas with real, separate ones (WorldBuilder) and starts in one of
+        /// them. Gates then stay active everywhere: each lives in its own area.
+        /// </summary>
+        public void SetAreas(AreaDefinition[] definitions, int startIndex)
+        {
+            areas = definitions;
+            separateAreas = true;
+            CurrentAreaIndex = startIndex;
+            if (areas[startIndex].tintsSharedGround)
+                ApplyGroundColor(areas[startIndex].groundColor);
+            AreaChanged?.Invoke(startIndex);
         }
 
         public bool IsSwitching => switching;
@@ -67,20 +97,28 @@ private void Start()
         {
             if (areas == null || index < 0 || index >= areas.Length || index == CurrentAreaIndex)
                 return;
-            ApplyGroundColor(areas[index].groundColor);
+            if (areas[index].tintsSharedGround)
+                ApplyGroundColor(areas[index].groundColor);
             CurrentAreaIndex = index;
             UpdateGateVisibility(CurrentAreaIndex);
+            AreaChanged?.Invoke(index);
         }
 
         public void EnterArea(int index)
         {
+            EnterArea(index, null);
+        }
+
+        /// <summary>Goes to an area, arriving at the given spot (or the area's spawn point).</summary>
+        public void EnterArea(int index, Transform arrival)
+        {
             if (switching) return;
             if (areas == null || index < 0 || index >= areas.Length) return;
             if (index == CurrentAreaIndex) return;
-            StartCoroutine(SwitchRoutine(index));
+            StartCoroutine(SwitchRoutine(index, arrival));
         }
 
-private IEnumerator SwitchRoutine(int index)
+private IEnumerator SwitchRoutine(int index, Transform arrival)
         {
             switching = true;
 
@@ -104,23 +142,35 @@ private IEnumerator SwitchRoutine(int index)
             Time.timeScale = 1f;
 
             var def = areas[index];
+            Transform target = arrival != null ? arrival : def.spawnPoint;
 
-            if (player != null && def.spawnPoint != null)
+            if (player != null && target != null)
             {
                 var controller = player.GetComponent<CharacterController>();
                 if (controller != null) controller.enabled = false;
-                player.position = def.spawnPoint.position;
-                player.rotation = def.spawnPoint.rotation;
+                player.position = target.position;
+                player.rotation = target.rotation;
                 if (controller != null) controller.enabled = true;
 
                 var walkAnim = player.GetComponentInChildren<PoeClone.Visuals.CharacterWalkAnimator>();
                 if (walkAnim != null)
                     walkAnim.ResetAnimatorState();
+
+                // Dying brings you back to where you entered this area, not to where the game began.
+                var stats = player.GetComponent<PoeClone.Player.PlayerStats>();
+                if (stats != null)
+                    stats.SetSpawnPoint(target.position, target.rotation);
+
+                var cam = Camera.main != null ? Camera.main.GetComponent<PoeClone.CameraSystem.CameraFollow>() : null;
+                if (cam != null)
+                    cam.SnapToTarget();
             }
 
-            ApplyGroundColor(def.groundColor);
+            if (def.tintsSharedGround)
+                ApplyGroundColor(def.groundColor);
             CurrentAreaIndex = index;
             UpdateGateVisibility(CurrentAreaIndex);
+            AreaChanged?.Invoke(index);
 
             if (simulatedLoadSeconds > 0f)
                 yield return new WaitForSeconds(simulatedLoadSeconds);
@@ -133,6 +183,9 @@ private IEnumerator SwitchRoutine(int index)
 
         private void UpdateGateVisibility(int areaIndex)
         {
+            if (separateAreas)
+                return;
+
             var gates = FindObjectsByType<AreaGate>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             foreach (var g in gates)
                 g.gameObject.SetActive(g.fromAreaIndex == areaIndex);

@@ -46,11 +46,11 @@ namespace PoeClone.Enemies
         }
 
         /// <summary>Takes on a kind's attack (see <see cref="EnemyKinds.Apply"/>).</summary>
-        public void Configure(EnemyKind enemyKind)
+        public void Configure(EnemyKind enemyKind, int level = 1)
         {
             kind = enemyKind;
             attackRange = enemyKind.AttackRange;
-            damage = enemyKind.Damage;
+            damage = enemyKind.Damage * EnemyKinds.DamageScale(level);
             attackCooldown = enemyKind.AttackCooldown;
         }
 

@@ -51,6 +51,65 @@ namespace PoeClone.UI
             }
         }
 
+        // The area title shown for a few seconds on arriving somewhere.
+        private const float TitleSeconds = 3.5f;
+        private string titleText;
+        private string titleSub;
+        private float titleShownAt = -100f;
+        private bool titlePending;
+        private PoeClone.World.AreaManager subscribedAreas;
+
+        private void Update()
+        {
+            var areas = PoeClone.World.AreaManager.Instance;
+            if (areas != null && areas != subscribedAreas)
+            {
+                if (subscribedAreas != null)
+                    subscribedAreas.AreaChanged -= OnAreaChanged;
+                subscribedAreas = areas;
+                areas.AreaChanged += OnAreaChanged;
+                if (areas.CurrentAreaIndex >= 0)
+                    OnAreaChanged(areas.CurrentAreaIndex);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (subscribedAreas != null)
+                subscribedAreas.AreaChanged -= OnAreaChanged;
+        }
+
+        private void OnAreaChanged(int index)
+        {
+            var area = subscribedAreas != null ? subscribedAreas.Current : null;
+            if (area == null)
+                return;
+            titleText = area.areaName;
+            titleSub = area.isTown ? "Town - you are safe here" : area.monsterLevel > 0 ? "Monster level " + area.monsterLevel : "";
+            // Starts when the HUD is actually on screen (not behind the name prompt or a loading fade).
+            titlePending = true;
+        }
+
+        // Big centred title that fades out, under the top edge.
+        private void DrawAreaTitle(float width)
+        {
+            float age = Time.unscaledTime - titleShownAt;
+            if (titleText == null || age > TitleSeconds)
+                return;
+
+            float alpha = age < 0.4f ? age / 0.4f : age > TitleSeconds - 1f ? (TitleSeconds - age) : 1f;
+            var big = new GUIStyle { fontSize = 34, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            big.normal.textColor = new Color(0.95f, 0.85f, 0.6f, alpha);
+            var small = new GUIStyle { fontSize = 18, alignment = TextAnchor.MiddleCenter };
+            small.normal.textColor = new Color(0.85f, 0.82f, 0.75f, alpha);
+            var shadow = new GUIStyle(big);
+            shadow.normal.textColor = new Color(0f, 0f, 0f, 0.7f * alpha);
+
+            GUI.Label(new Rect(2f, 92f, width, 50f), titleText, shadow);
+            GUI.Label(new Rect(0f, 90f, width, 50f), titleText, big);
+            GUI.Label(new Rect(0f, 132f, width, 26f), titleSub, small);
+        }
+
         public void SetStats(PlayerStats playerStats)
         {
             stats = playerStats;
@@ -97,6 +156,13 @@ namespace PoeClone.UI
             if (stats == null || AnyHider())
                 return;
 
+            var loading = PoeClone.World.AreaManager.Instance != null ? PoeClone.World.AreaManager.Instance.loadingScreen : null;
+            if (titlePending && (loading == null || !loading.IsShowing))
+            {
+                titlePending = false;
+                titleShownAt = Time.unscaledTime;
+            }
+
             if (TouchMode.Active)
             {
                 DrawTouchHud();
@@ -105,6 +171,8 @@ namespace PoeClone.UI
 
             if (stats.IsDead)
                 DrawDeathOverlay(stats, SpectatorMode, Screen.width, Screen.height);
+
+            DrawAreaTitle(Screen.width);
 
             GUILayout.BeginArea(
                 new Rect(20f, 20f, 760f, 340f)
@@ -192,6 +260,8 @@ namespace PoeClone.UI
 
             if (stats.IsDead)
                 DrawDeathOverlay(stats, SpectatorMode, width, height);
+
+            DrawAreaTitle(width);
 
             const float x = 14f;
             const float barWidth = 210f;

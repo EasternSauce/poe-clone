@@ -47,6 +47,47 @@ namespace PoeClone.Enemies
         private PlayerController player;
         private float nextCheckAt;
 
+        // Set by WorldBuilder for each area: where the area is, how tough its enemies are, and
+        // which kinds live there (one weight per EnemyKinds entry; null = their default weights).
+        private Vector3 center;
+        private int monsterLevel = 1;
+        private float[] kindWeights;
+
+        public int MonsterLevel => monsterLevel;
+
+        // Arrival points (spawn, gate exits) that no enemy may spawn near, so stepping into an area
+        // never drops the player straight into a fight.
+        private const float SafeRadius = 16f;
+        private readonly System.Collections.Generic.List<Vector3> safeSpots = new System.Collections.Generic.List<Vector3>();
+
+        public void SetSafeSpots(System.Collections.Generic.IEnumerable<Vector3> spots)
+        {
+            safeSpots.Clear();
+            safeSpots.AddRange(spots);
+        }
+
+        private bool NearSafeSpot(Vector3 p)
+        {
+            foreach (Vector3 s in safeSpots)
+            {
+                float dx = s.x - p.x;
+                float dz = s.z - p.z;
+                if (dx * dx + dz * dz < SafeRadius * SafeRadius)
+                    return true;
+            }
+            return false;
+        }
+
+        public void Configure(GameObject prefab, Vector3 areaCenter, float halfSize, int count, int level, float[] weights)
+        {
+            enemyPrefab = prefab;
+            center = new Vector3(areaCenter.x, 0f, areaCenter.z);
+            areaHalfSize = halfSize;
+            enemyCount = count;
+            monsterLevel = Mathf.Max(1, level);
+            kindWeights = weights;
+        }
+
         /// <summary>The prefab spawned here; spectator replicas instantiate it as puppets for the player's enemies.</summary>
         public GameObject EnemyPrefab => enemyPrefab;
 
@@ -113,12 +154,12 @@ namespace PoeClone.Enemies
         private void Spawn(Vector3 point)
         {
             // Bigger kinds stand taller: lift the pivot so their feet start on the ground, not in it.
-            int kindIndex = EnemyKinds.PickIndex();
+            int kindIndex = EnemyKinds.PickIndex(kindWeights);
             point.y = spawnHeight * EnemyKinds.Get(kindIndex).Scale;
 
             Quaternion rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
             GameObject enemy = Instantiate(enemyPrefab, point, rotation, transform);
-            EnemyKinds.Apply(enemy, kindIndex);
+            EnemyKinds.Apply(enemy, kindIndex, monsterLevel);
 
             EnemyHealth health = enemy.GetComponent<EnemyHealth>();
             if (health != null)
@@ -136,12 +177,12 @@ namespace PoeClone.Enemies
             {
                 Vector2 scatter = Random.insideUnitCircle * respawnScatter;
                 Vector3 candidate = new Vector3(
-                    Mathf.Clamp(center.x + scatter.x, -areaHalfSize, areaHalfSize),
+                    Mathf.Clamp(center.x + scatter.x, this.center.x - areaHalfSize, this.center.x + areaHalfSize),
                     spawnHeight,
-                    Mathf.Clamp(center.z + scatter.y, -areaHalfSize, areaHalfSize)
+                    Mathf.Clamp(center.z + scatter.y, this.center.z - areaHalfSize, this.center.z + areaHalfSize)
                 );
 
-                if (!Physics.CheckSphere(candidate + Vector3.up * 0.5f, clearanceRadius))
+                if (!NearSafeSpot(candidate) && !Physics.CheckSphere(candidate + Vector3.up * 0.5f, clearanceRadius))
                 {
                     point = candidate;
                     return true;
@@ -157,15 +198,15 @@ namespace PoeClone.Enemies
             for (int attempt = 0; attempt < maxAttemptsPerEnemy; attempt++)
             {
                 Vector3 candidate = new Vector3(
-                    Random.Range(-areaHalfSize, areaHalfSize),
+                    center.x + Random.Range(-areaHalfSize, areaHalfSize),
                     spawnHeight,
-                    Random.Range(-areaHalfSize, areaHalfSize)
+                    center.z + Random.Range(-areaHalfSize, areaHalfSize)
                 );
 
                 Vector3 flatOffset = candidate - playerPos;
                 flatOffset.y = 0f;
 
-                if (flatOffset.magnitude < minDistance)
+                if (flatOffset.magnitude < minDistance || NearSafeSpot(candidate))
                     continue;
 
                 // Check a sphere above the ground so the floor itself doesn't count.

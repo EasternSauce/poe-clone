@@ -1,27 +1,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 using PoeClone.Inventory;
-using PoeClone.Player;
 
 namespace PoeClone.World
 {
     /// <summary>
     /// At the start of a game the bag is empty and the first gear (ItemCatalog's starter items,
     /// a weapon among them) lies on the ground in a ring around the player, to be picked up.
+    /// Placed by <see cref="WorldBuilder"/> once the player is standing in the starting area.
     /// </summary>
     public static class StarterLoot
     {
         private const float Radius = 2.5f;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void Place()
+        public static void PlaceAround(Vector3 center)
         {
-            PlayerController player = Object.FindAnyObjectByType<PlayerController>();
-            if (player == null)
-                return;
-
             List<ItemData> items = ItemCatalog.CreateStarterItems();
-            Vector3 center = player.transform.position;
 
             for (int k = 0; k < items.Count; k++)
             {

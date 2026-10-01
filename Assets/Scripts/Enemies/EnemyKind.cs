@@ -139,32 +139,44 @@ namespace PoeClone.Enemies
             return All[Mathf.Clamp(index, 0, All.Length - 1)];
         }
 
-        /// <summary>A random kind index, by spawn weight.</summary>
-        public static int PickIndex()
+        /// <summary>A random kind index, by spawn weight (or by an area's own weights, one per kind).</summary>
+        public static int PickIndex(float[] weights = null)
         {
             float total = 0f;
-            foreach (EnemyKind kind in All)
-                total += kind.SpawnWeight;
+            for (int k = 0; k < All.Length; k++)
+                total += Weight(k, weights);
 
             float roll = Random.value * total;
             for (int k = 0; k < All.Length; k++)
             {
-                roll -= All[k].SpawnWeight;
-                if (roll <= 0f)
+                roll -= Weight(k, weights);
+                if (roll <= 0f && Weight(k, weights) > 0f)
                     return k;
             }
             return 0;
         }
 
-        /// <summary>Makes a freshly spawned enemy this kind: its look and all its gameplay numbers.</summary>
-        public static void Apply(GameObject enemy, int index)
+        private static float Weight(int k, float[] weights)
+        {
+            return weights != null && k < weights.Length ? weights[k] : All[k].SpawnWeight;
+        }
+
+        /// <summary>
+        /// How much tougher each monster level makes an enemy: life, damage and the experience it's worth.
+        /// </summary>
+        public static float LifeScale(int level) => 1f + 0.35f * (Mathf.Max(1, level) - 1);
+        public static float DamageScale(int level) => 1f + 0.22f * (Mathf.Max(1, level) - 1);
+        public static float ExperienceScale(int level) => 1f + 0.4f * (Mathf.Max(1, level) - 1);
+
+        /// <summary>Makes a freshly spawned enemy this kind and level: its look and all its gameplay numbers.</summary>
+        public static void Apply(GameObject enemy, int index, int level = 1)
         {
             EnemyKind kind = Get(index);
             ApplyLook(enemy, kind);
 
-            enemy.GetComponent<EnemyHealth>()?.Configure(index, kind);
+            enemy.GetComponent<EnemyHealth>()?.Configure(index, kind, level);
             enemy.GetComponent<EnemyController>()?.Configure(kind);
-            enemy.GetComponent<EnemyCombat>()?.Configure(kind);
+            enemy.GetComponent<EnemyCombat>()?.Configure(kind, level);
         }
 
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");

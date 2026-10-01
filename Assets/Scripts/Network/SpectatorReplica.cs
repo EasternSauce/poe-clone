@@ -140,7 +140,8 @@ namespace PoeClone.Network
             loadingScreen = FindAnyObjectByType<LoadingScreenUI>();
 
             var spawner = FindAnyObjectByType<EnemySpawner>();
-            SetEnabled(spawner, false); // no respawning of this tab's own enemies
+            foreach (var each in FindObjectsByType<EnemySpawner>())
+                SetEnabled(each, false); // no respawning of this tab's own enemies
             enemyPrefab = spawner != null ? spawner.EnemyPrefab : null;
             puppetParent = spawner != null ? spawner.transform : transform;
             if (enemyPrefab == null)
