@@ -55,6 +55,10 @@ namespace PoeClone.UI
         }
 
         private readonly List<SkillButton> skillButtons = new List<SkillButton>();
+        private Image healthPotionImage;
+        private Image manaPotionImage;
+        private Text healthPotionText;
+        private Text manaPotionText;
         private Skills.PlayerSkills skills;
 
         private PlayerStats stats;
@@ -110,6 +114,7 @@ namespace PoeClone.UI
             menuRoot.SetActive(!dead);
             SetCombatShown(!dead && !inventoryOpen && !characterOpen && !SkillBarUI.IsOpen);
             UpdateSkillButtons();
+            UpdatePotionButtons();
 
             // The character page sits where the HUD is drawn (OnGUI draws over uGUI).
             PlayerHUD.SetHiddenBy(this, characterOpen);
@@ -171,6 +176,17 @@ namespace PoeClone.UI
                 button.Label.text = skill.Short;
                 button.Cooldown.fillAmount = skill.Cooldown > 0f ? skills.CooldownLeft(skill.Id) / skill.Cooldown : 0f;
             }
+        }
+
+        private void UpdatePotionButtons()
+        {
+            PlayerPotions potions = stats != null ? stats.GetComponent<PlayerPotions>() : null;
+            int health = potions != null ? potions.HealthPotions : 0;
+            int mana = potions != null ? potions.ManaPotions : 0;
+            healthPotionText.text = "HP\n" + health;
+            manaPotionText.text = "MP\n" + mana;
+            healthPotionImage.color = health > 0 ? new Color(0.45f, 0.1f, 0.1f, 0.8f) : ControlColor;
+            manaPotionImage.color = mana > 0 ? new Color(0.12f, 0.18f, 0.5f, 0.8f) : ControlColor;
         }
 
         private void ToggleSkills()
@@ -385,6 +401,19 @@ namespace PoeClone.UI
                 TouchMode.AddBlocker(back.rectTransform);
                 skillButtons.Add(new SkillButton { Back = back, Cooldown = cooldown, Label = label });
             }
+
+            // Potions: two small buttons along the bottom, between the run and skill buttons.
+            healthPotionImage = NewRoundButton("HealthPotion", combat, new Vector2(1f, 0f), new Vector2(-370f, 40f), 72f, null);
+            healthPotionText = UiKit.NewText("Count", healthPotionImage.rectTransform, "", 18, new Color(1f, 0.6f, 0.55f), TextAnchor.MiddleCenter);
+            UiKit.Stretch(healthPotionText.rectTransform, 0f);
+            healthPotionImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.PotionPressed = 0;
+            TouchMode.AddBlocker(healthPotionImage.rectTransform);
+
+            manaPotionImage = NewRoundButton("ManaPotion", combat, new Vector2(1f, 0f), new Vector2(-275f, 40f), 72f, null);
+            manaPotionText = UiKit.NewText("Count", manaPotionImage.rectTransform, "", 18, new Color(0.65f, 0.72f, 1f), TextAnchor.MiddleCenter);
+            UiKit.Stretch(manaPotionText.rectTransform, 0f);
+            manaPotionImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.PotionPressed = 1;
+            TouchMode.AddBlocker(manaPotionImage.rectTransform);
 
             runImage = NewRoundButton("Run", combat, new Vector2(1f, 0f), new Vector2(-480f, 76f), 96f, "RUN");
             runImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ =>

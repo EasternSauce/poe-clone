@@ -100,6 +100,7 @@ namespace PoeClone.Network
                 SetEnabled(player.GetComponent<PlayerCombat>(), false);
                 SetEnabled(player.GetComponent<LootPicker>(), false);
                 SetEnabled(player.GetComponent<Skills.PlayerSkills>(), false);
+                SetEnabled(player.GetComponent<PlayerPotions>(), false);
                 // No local revive countdown / "press any key" handling - the real player's values come in via ApplyReplicatedState.
                 playerStats.enabled = false;
 

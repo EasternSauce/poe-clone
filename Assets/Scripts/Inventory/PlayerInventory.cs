@@ -26,6 +26,29 @@ namespace PoeClone.Inventory
         public bool IsPlayerDead { get; private set; }
 
         public event Action StatsChanged;
+
+        /// <summary>Gold in the purse (kills pay it, the merchant takes it).</summary>
+        public int Gold { get; private set; }
+
+        public event Action GoldChanged;
+
+        public void AddGold(int amount)
+        {
+            if (amount <= 0)
+                return;
+            Gold += amount;
+            GoldChanged?.Invoke();
+        }
+
+        /// <summary>Pays gold if there's enough; false (nothing taken) otherwise.</summary>
+        public bool TrySpendGold(int amount)
+        {
+            if (amount < 0 || Gold < amount)
+                return false;
+            Gold -= amount;
+            GoldChanged?.Invoke();
+            return true;
+        }
         public event Action PlayerDied;
         public event Action PlayerRevived;
 

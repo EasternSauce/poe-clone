@@ -131,6 +131,8 @@ namespace PoeClone.Player
                 gameObject.AddComponent<LootPicker>();
             if (GetComponent<Skills.PlayerSkills>() == null)
                 gameObject.AddComponent<Skills.PlayerSkills>();
+            if (GetComponent<PlayerPotions>() == null)
+                gameObject.AddComponent<PlayerPotions>();
         }
 
 private void Update()

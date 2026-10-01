@@ -21,9 +21,25 @@ namespace PoeClone.UI
             else hiders.Remove(hider);
         }
 
+        // Domain reload is off in this project: without this, a hider from the previous play
+        // session (destroyed while it was hiding the HUD) would keep it hidden forever.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetHiders()
+        {
+            hiders.Clear();
+        }
+
+        // A hider destroyed without un-hiding (scene unload, a crash in its OnDestroy) stops counting.
+        private static bool AnyHider()
+        {
+            hiders.RemoveWhere(h => h is Object unityObject && unityObject == null);
+            return hiders.Count > 0;
+        }
+
         private GUIStyle titleStyle;
         private GUIStyle textStyle;
         private GUIStyle barLabelStyle;
+        private GUIStyle barLabelStyleLeft;
 
         private static Texture2D pixel;
 
@@ -63,6 +79,14 @@ namespace PoeClone.UI
                 alignment = TextAnchor.MiddleCenter
             };
 
+            barLabelStyleLeft = new GUIStyle(textStyle)
+            {
+                fontSize = 13,
+                alignment = TextAnchor.UpperLeft,
+                richText = true
+            };
+            textStyle.richText = true;
+
             pixel = new Texture2D(1, 1);
             pixel.SetPixel(0, 0, Color.white);
             pixel.Apply();
@@ -70,7 +94,7 @@ namespace PoeClone.UI
 
         private void OnGUI()
         {
-            if (stats == null || hiders.Count > 0)
+            if (stats == null || AnyHider())
                 return;
 
             if (TouchMode.Active)
@@ -140,11 +164,14 @@ namespace PoeClone.UI
             );
 
             if (!SpectatorMode)
+                GUILayout.Label(PurseLine(), textStyle);
+
+            if (!SpectatorMode)
             {
                 GUILayout.Space(20f);
 
                 GUILayout.Label(
-                    "WASD / Arrow Keys - Move | Shift - Sprint | Q E R F - Skills | K - Skill list | I - Inventory | C - Character | Enter - Chat",
+                    "WASD / Arrow Keys - Move | Shift - Sprint | Q E R F - Skills | 1 2 - Potions\nK - Skill list | I - Inventory | C - Character | Enter - Chat",
                     textStyle
                 );
             }
@@ -182,8 +209,26 @@ namespace PoeClone.UI
             y += 24f;
 
             DrawBar(new Rect(x, y, barWidth, 6f), SafeRatio(stats.Experience, stats.ExperienceRequiredForNextLevel()), new Color(0.85f, 0.7f, 0.3f));
+            y += 10f;
+
+            if (!SpectatorMode)
+                GUI.Label(new Rect(x, y, 400f, 22f), PurseLine(), barLabelStyleLeft);
 
             GUI.matrix = previous;
+        }
+
+        // Gold and potion counts: "1 Health x3   2 Mana x1   Gold 120" (keys only on desktop).
+        private string PurseLine()
+        {
+            var inventory = stats.GetComponent<PoeClone.Inventory.PlayerInventory>();
+            var potions = stats.GetComponent<PlayerPotions>();
+            int gold = inventory != null ? inventory.Gold : 0;
+            int health = potions != null ? potions.HealthPotions : 0;
+            int mana = potions != null ? potions.ManaPotions : 0;
+
+            string keys1 = TouchMode.Active ? "" : "[1] ";
+            string keys2 = TouchMode.Active ? "" : "[2] ";
+            return $"<color=#ff7a70>{keys1}Health x{health}</color>   <color=#8fa2ff>{keys2}Mana x{mana}</color>   <color=#ffd34d>Gold {gold}</color>";
         }
 
         private void DrawLabeledBar(Rect rect, float fraction, Color fillColor, string label)

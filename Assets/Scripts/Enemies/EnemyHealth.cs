@@ -36,6 +36,9 @@ namespace PoeClone.Enemies
         /// <summary>Which <see cref="EnemyKinds"/> entry this is (replicated, and decides loot).</summary>
         public int KindIndex { get; private set; }
 
+        /// <summary>How tough this one is (areas deeper in the world spawn higher levels).</summary>
+        public int MonsterLevel { get; private set; } = 1;
+
         public event Action Damaged;
         public event Action Died;
 
@@ -159,6 +162,7 @@ namespace PoeClone.Enemies
                 player.GainExperience(experienceReward);
 
             LootDrop.RollDrop(EnemyKinds.Get(KindIndex), transform.position, player != null ? player.Level : 1);
+            KillRewards.Grant(EnemyKinds.Get(KindIndex), MonsterLevel, transform.position);
 
             // foldLowerBody: false -- the root topple below already lies the whole rig on the
             // ground, so the big local leg/knee/upper-body fold used for the player (who has no
