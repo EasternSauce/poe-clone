@@ -19,6 +19,9 @@ namespace PoeClone.Enemies
         [SerializeField] private float spawnHeight = 1.1f;
         [SerializeField] private int maxAttemptsPerEnemy = 40;
 
+        /// <summary>The prefab spawned here; spectator replicas instantiate it as puppets for the player's enemies.</summary>
+        public GameObject EnemyPrefab => enemyPrefab;
+
         private void Start()
         {
             PlayerController player = FindAnyObjectByType<PlayerController>();

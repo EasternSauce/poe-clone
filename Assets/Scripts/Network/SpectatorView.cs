@@ -4,17 +4,24 @@ using UnityEngine.UI;
 namespace PoeClone.Network
 {
     /// <summary>
-    /// Full-screen view shown only to the "spectator" role: the last JPEG frame the player
-    /// broadcast, a small HUD readout, and a "no one is playing" placeholder otherwise. Built at
-    /// runtime the same way as the rest of this project's UI (see LoadingScreenUI).
+    /// Spectator-only overlay. The game itself is drawn by this tab's own camera, posed by
+    /// <see cref="SpectatorReplica"/>; this just covers it with a "connecting" / "no one is
+    /// playing" screen until there's something to watch, then shows a small LIVE badge, and a
+    /// notice if the stream stalls. Built at runtime the same way as the rest of this project's
+    /// UI (see LoadingScreenUI).
     /// </summary>
     public class SpectatorView : MonoBehaviour
     {
+        // No snapshot for this long while a player is supposedly active = say so, instead of
+        // leaving the watcher staring at a frozen scene wondering if it's broken.
+        private const float StallNoticeSeconds = 1.5f;
+
         private GameObject canvasRoot;
-        private RawImage feedImage;
-        private Text hudText;
+        private GameObject waitingRoot;
         private Text waitingText;
-        private Texture2D frameTexture;
+        private GameObject liveBadge;
+        private Text liveText;
+        private GameObject stallNotice;
 
         private void Awake()
         {
@@ -25,7 +32,6 @@ namespace PoeClone.Network
         {
             var ctrl = GameSessionController.Instance;
             if (ctrl == null) return;
-            ctrl.FrameReceived += HandleFrame;
             ctrl.StateChanged += Refresh;
             Refresh();
         }
@@ -34,55 +40,60 @@ namespace PoeClone.Network
         {
             var ctrl = GameSessionController.Instance;
             if (ctrl == null) return;
-            ctrl.FrameReceived -= HandleFrame;
             ctrl.StateChanged -= Refresh;
         }
 
-        private void HandleFrame(FrameEnvelope frame)
+        // Polled rather than evented: whether data is flowing changes with every snapshot (10/s)
+        // and stalls are by definition the absence of an event.
+        private void Update()
         {
-            if (GameSessionController.Instance.Role != SessionRole.Spectator) return;
-            if (string.IsNullOrEmpty(frame.ImageBase64)) return;
-
-            byte[] bytes = System.Convert.FromBase64String(frame.ImageBase64);
-            if (frameTexture == null)
-                frameTexture = new Texture2D(2, 2, TextureFormat.RGB24, false);
-            frameTexture.LoadImage(bytes); // auto-resizes to the incoming JPEG's dimensions
-
-            feedImage.texture = frameTexture;
-            feedImage.color = Color.white;
-
-            var hud = frame.Hud;
-            hudText.text = hud != null
-                ? $"Level {hud.level}   HP {hud.hp:0}/{hud.maxHp:0}   MP {hud.mp:0}/{hud.maxMp:0}   {hud.area}"
-                : string.Empty;
+            if (canvasRoot.activeSelf)
+                Refresh();
         }
 
         private void Refresh()
         {
             var ctrl = GameSessionController.Instance;
             bool isSpectator = ctrl != null && ctrl.Role == SessionRole.Spectator;
-            canvasRoot.SetActive(isSpectator);
+            if (canvasRoot.activeSelf != isSpectator)
+                canvasRoot.SetActive(isSpectator);
             if (!isSpectator) return;
 
-            bool waiting = !ctrl.Connected || !ctrl.RemotePlayerActive;
-            waitingText.gameObject.SetActive(waiting);
-            feedImage.gameObject.SetActive(!waiting);
-            hudText.gameObject.SetActive(!waiting);
+            var replica = ctrl.Replica;
+            bool hasData = replica != null && replica.HasLiveData;
+            bool watching = ctrl.Connected && ctrl.RemotePlayerActive && hasData;
 
-            if (!waiting) return;
+            SetActive(waitingRoot, !watching);
+            SetActive(liveBadge, watching);
 
+            if (watching)
+            {
+                bool stalled = replica.SecondsSinceLastSnapshot > StallNoticeSeconds;
+                SetActive(stallNotice, stalled);
+                string text = ctrl.SpectatorCount > 1 ? $"LIVE  ·  {ctrl.SpectatorCount} watching" : "LIVE";
+                if (liveText.text != text) liveText.text = text;
+                return;
+            }
+
+            SetActive(stallNotice, false);
+
+            string message;
             if (!ctrl.Connected)
-            {
-                // Distinct from "no one playing": the feed itself can't be trusted right now,
-                // so don't claim to know whether anyone is playing.
-                waitingText.text = "Connecting to the game server...";
-            }
+                // Distinct from "no one playing": we can't know whether anyone is playing right now.
+                message = "Connecting to the game server...\n\n(The free server can take up to a minute to wake up.)";
+            else if (ctrl.RemotePlayerActive)
+                message = "Someone is playing - joining their game...";
             else
-            {
-                waitingText.text = ctrl.SpectatorCount > 1
-                    ? $"No one is playing right now.\nYou'll see the feed as soon as someone starts.\n\n({ctrl.SpectatorCount} watching)"
-                    : "No one is playing right now.\nYou'll see the feed as soon as someone starts.";
-            }
+                message = ctrl.SpectatorCount > 1
+                    ? $"No one is playing right now.\nYou'll see the game as soon as someone starts.\n\n({ctrl.SpectatorCount} watching)"
+                    : "No one is playing right now.\nYou'll see the game as soon as someone starts.";
+
+            if (waitingText.text != message) waitingText.text = message;
+        }
+
+        private static void SetActive(GameObject go, bool value)
+        {
+            if (go.activeSelf != value) go.SetActive(value);
         }
 
         private void Build()
@@ -99,41 +110,73 @@ namespace PoeClone.Network
             var scaler = canvasGO.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.matchWidthOrHeight = 0.5f;
             canvasGO.AddComponent<GraphicRaycaster>();
 
-            var bgGO = new GameObject("Background");
-            bgGO.transform.SetParent(canvasGO.transform, false);
-            var bg = bgGO.AddComponent<Image>();
+            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            // Waiting screen: opaque, so the idle local scene behind it never reads as "the game".
+            waitingRoot = new GameObject("Waiting");
+            waitingRoot.transform.SetParent(canvasGO.transform, false);
+            var bg = waitingRoot.AddComponent<Image>();
             bg.color = Color.black;
             RuntimeUiUtil.StretchFull(bg.rectTransform);
 
-            var feedGO = new GameObject("Feed");
-            feedGO.transform.SetParent(canvasGO.transform, false);
-            feedImage = feedGO.AddComponent<RawImage>();
-            feedImage.color = new Color(1f, 1f, 1f, 0f);
-            RuntimeUiUtil.StretchFull(feedImage.rectTransform, 0.03f);
-
-            var hudGO = new GameObject("HudText");
-            hudGO.transform.SetParent(canvasGO.transform, false);
-            hudText = hudGO.AddComponent<Text>();
-            hudText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            hudText.fontSize = 22;
-            hudText.alignment = TextAnchor.LowerLeft;
-            hudText.color = Color.white;
-            var hudRect = hudText.rectTransform;
-            hudRect.anchorMin = new Vector2(0f, 0f);
-            hudRect.anchorMax = new Vector2(1f, 0.08f);
-            hudRect.offsetMin = new Vector2(20f, 6f);
-            hudRect.offsetMax = new Vector2(-20f, 0f);
-
             var waitingGO = new GameObject("WaitingText");
-            waitingGO.transform.SetParent(canvasGO.transform, false);
+            waitingGO.transform.SetParent(waitingRoot.transform, false);
             waitingText = waitingGO.AddComponent<Text>();
-            waitingText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            waitingText.font = font;
             waitingText.fontSize = 32;
             waitingText.alignment = TextAnchor.MiddleCenter;
             waitingText.color = Color.white;
+            waitingText.horizontalOverflow = HorizontalWrapMode.Wrap;
             RuntimeUiUtil.StretchFull(waitingText.rectTransform, 0.1f);
+
+            // LIVE badge, top-centre so it stays clear of the HUD (top-left) and chat (bottom-right).
+            liveBadge = new GameObject("LiveBadge");
+            liveBadge.transform.SetParent(canvasGO.transform, false);
+            var badgeImage = liveBadge.AddComponent<Image>();
+            badgeImage.color = new Color(0.75f, 0.1f, 0.1f, 0.85f);
+            badgeImage.raycastTarget = false;
+            var badgeRect = badgeImage.rectTransform;
+            badgeRect.anchorMin = badgeRect.anchorMax = new Vector2(0.5f, 1f);
+            badgeRect.pivot = new Vector2(0.5f, 1f);
+            badgeRect.anchoredPosition = new Vector2(0f, -16f);
+            badgeRect.sizeDelta = new Vector2(260f, 40f);
+
+            var liveGO = new GameObject("LiveText");
+            liveGO.transform.SetParent(liveBadge.transform, false);
+            liveText = liveGO.AddComponent<Text>();
+            liveText.font = font;
+            liveText.fontSize = 22;
+            liveText.fontStyle = FontStyle.Bold;
+            liveText.alignment = TextAnchor.MiddleCenter;
+            liveText.color = Color.white;
+            liveText.raycastTarget = false;
+            liveText.text = "LIVE";
+            RuntimeUiUtil.StretchFull(liveText.rectTransform);
+            liveBadge.SetActive(false);
+
+            stallNotice = new GameObject("StallNotice");
+            stallNotice.transform.SetParent(canvasGO.transform, false);
+            var stallBg = stallNotice.AddComponent<Image>();
+            stallBg.color = new Color(0f, 0f, 0f, 0.7f);
+            stallBg.raycastTarget = false;
+            var stallRect = stallBg.rectTransform;
+            stallRect.anchorMin = stallRect.anchorMax = new Vector2(0.5f, 0.5f);
+            stallRect.sizeDelta = new Vector2(760f, 90f);
+
+            var stallTextGO = new GameObject("Text");
+            stallTextGO.transform.SetParent(stallNotice.transform, false);
+            var stallText = stallTextGO.AddComponent<Text>();
+            stallText.font = font;
+            stallText.fontSize = 26;
+            stallText.alignment = TextAnchor.MiddleCenter;
+            stallText.color = Color.white;
+            stallText.raycastTarget = false;
+            stallText.text = "Waiting for the player's game...\n(their tab may be in the background)";
+            RuntimeUiUtil.StretchFull(stallText.rectTransform);
+            stallNotice.SetActive(false);
         }
     }
 }

@@ -9,7 +9,11 @@ const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
 const HEARTBEAT_MS = 15000;
 // If the player's tab is frozen/crashed without a clean socket close, the ws
 // heartbeat (below) still reclaims the slot within ~2 missed pings.
-const FRAME_RATE_LIMIT_MS = 300; // hard floor so a misbehaving client can't flood spectators
+// The player sends ~10 snapshots/s; allow some burstiness from frame timing but cap
+// at ~20/s so a misbehaving client can't flood spectators.
+const STATE_RATE_LIMIT_MS = 45;
+// Snapshots are a few KB and chat lines are tiny; nothing legitimate comes close to this.
+const MAX_PAYLOAD_BYTES = 64 * 1024;
 
 const room = new Room();
 
@@ -46,13 +50,13 @@ const httpServer = http.createServer((req, res) => {
   res.end('Not found');
 });
 
-const wss = new WebSocketServer({ server: httpServer });
+const wss = new WebSocketServer({ server: httpServer, maxPayload: MAX_PAYLOAD_BYTES });
 
 let debugConnCounter = 0;
 
 wss.on('connection', (ws) => {
   ws.isAlive = true;
-  ws.lastFrameAt = 0;
+  ws.lastStateAt = 0;
   ws.role = null;
   ws._debugLabel = `conn#${++debugConnCounter}`;
   if (process.env.DEBUG_ROOM) console.log('connected', ws._debugLabel);
@@ -62,12 +66,14 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('message', (raw) => {
+    const text = raw.toString();
     let msg;
     try {
-      msg = JSON.parse(raw.toString());
+      msg = JSON.parse(text);
     } catch {
-      return; // ignore malformed frames
+      return; // ignore malformed messages
     }
+    if (!msg || typeof msg !== 'object') return;
 
     switch (msg.type) {
       case 'hello': {
@@ -85,17 +91,17 @@ wss.on('connection', (ws) => {
 
         if (role === 'spectator') {
           safeSend(ws, room.statusMessage());
-          if (room.lastFrame) safeSend(ws, room.lastFrame);
+          if (room.lastState) safeSendRaw(ws, room.lastState);
           for (const chatMsg of room.chatHistory) safeSend(ws, chatMsg);
         }
         break;
       }
 
-      case 'frame': {
+      case 'state': {
         const now = Date.now();
-        if (now - ws.lastFrameAt < FRAME_RATE_LIMIT_MS) return;
-        ws.lastFrameAt = now;
-        room.submitFrame(ws, msg);
+        if (now - ws.lastStateAt < STATE_RATE_LIMIT_MS) return;
+        ws.lastStateAt = now;
+        room.submitState(ws, msg, Buffer.byteLength(text));
         break;
       }
 
@@ -134,8 +140,12 @@ const heartbeat = setInterval(() => {
 wss.on('close', () => clearInterval(heartbeat));
 
 function safeSend(client, message) {
+  safeSendRaw(client, JSON.stringify(message));
+}
+
+function safeSendRaw(client, serialized) {
   try {
-    client.send(JSON.stringify(message));
+    client.send(serialized);
   } catch {
     // client already gone; 'close' handler will clean up the room.
   }

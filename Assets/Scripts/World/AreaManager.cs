@@ -57,6 +57,21 @@ private void Start()
             UpdateGateVisibility(CurrentAreaIndex);
         }
 
+        public bool IsSwitching => switching;
+
+        /// <summary>
+        /// Spectator replica: shows an area's look (ground tint, gates) without any of the
+        /// transition - the replicated player position and loading-screen state cover the rest.
+        /// </summary>
+        public void ApplyAreaImmediate(int index)
+        {
+            if (areas == null || index < 0 || index >= areas.Length || index == CurrentAreaIndex)
+                return;
+            ApplyGroundColor(areas[index].groundColor);
+            CurrentAreaIndex = index;
+            UpdateGateVisibility(CurrentAreaIndex);
+        }
+
         public void EnterArea(int index)
         {
             if (switching) return;

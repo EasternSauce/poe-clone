@@ -78,7 +78,9 @@ namespace PoeClone.Network
         /// <summary>
         /// WebGL only: asynchronously fetches window.location.search via the bridge and delivers
         /// it to the callback. In the Editor/desktop builds there is no browser URL, so the
-        /// callback fires immediately with an empty string.
+        /// callback fires immediately with <see cref="DevQueryPrefsKey"/> from PlayerPrefs - empty
+        /// unless set, e.g. to "?role=spectator&amp;server=ws://localhost:8099" to try the spectator
+        /// side in the Editor.
         /// </summary>
         public void RequestLocationSearch(Action<string> callback)
         {
@@ -86,9 +88,11 @@ namespace PoeClone.Network
             pendingLocationSearchCallback = callback;
             WSRequestLocationSearch(GoName);
 #else
-            callback?.Invoke(string.Empty);
+            callback?.Invoke(PlayerPrefs.GetString(DevQueryPrefsKey, string.Empty));
 #endif
         }
+
+        public const string DevQueryPrefsKey = "PoeClone.DevQuery";
 
         // --- Callbacks invoked by WebSocketBridge.jslib via SendMessage (WebGL builds only). ---
         public void OnWSOpen(string _) => OnOpen?.Invoke();

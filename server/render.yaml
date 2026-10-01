@@ -3,7 +3,7 @@
 # See DEPLOYMENT.md at the repo root for the full click-by-click walkthrough.
 services:
   - type: web
-    name: poeclone-session-server
+    name: poe-clone-session-server
     runtime: node
     plan: free
     rootDir: server

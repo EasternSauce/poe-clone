@@ -119,12 +119,29 @@ namespace PoeClone.Visuals
             Range = 1.8f
         };
 
+        // Stable ids for every profile, so a spectator replica can replay exactly the swing the player
+        // made (including which random sword variant) - see PlayReplicated.
+        private static readonly AttackProfile[] ProfilesById =
+        {
+            UnarmedProfile,
+            SwordProfile,
+            SwordStabProfile,
+            SwordSlashMirroredProfile,
+            ClawProfile
+        };
+
         private AttackProfile activeProfile;
         private Pose rest;
         private float timer;
         private bool strikeFired;
 
         public bool IsAttacking { get; private set; }
+
+        /// <summary>Swings started so far. Only ever increases, so an observer sampling it periodically can't miss a swing.</summary>
+        public int AttackCount { get; private set; }
+
+        /// <summary>Id of the most recently started swing's profile, for <see cref="PlayReplicated"/>.</summary>
+        public int ProfileId { get; private set; }
 
         /// <summary>Fires once per swing, at the moment the weapon reaches its target.</summary>
         public event Action StrikeFrame;
@@ -192,8 +209,18 @@ namespace PoeClone.Visuals
             Apply(rest);
         }
 
+        /// <summary>Plays the swing with the given <see cref="ProfileId"/> (spectator replay). Unknown ids are ignored.</summary>
+        public void PlayReplicated(int profileId)
+        {
+            if (profileId < 0 || profileId >= ProfilesById.Length)
+                return;
+            Play(ProfilesById[profileId]);
+        }
+
         private void Play(AttackProfile profile)
         {
+            AttackCount++;
+            ProfileId = Array.IndexOf(ProfilesById, profile);
             activeProfile = profile;
             timer = 0f;
             strikeFired = false;

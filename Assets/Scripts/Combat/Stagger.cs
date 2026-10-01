@@ -22,8 +22,12 @@ namespace PoeClone.Combat
         /// <summary>0 -> 1 -> 0 over the stagger's duration, for a visual recoil to ride on.</summary>
         public float RecoilFraction { get; private set; }
 
+        /// <summary>Staggers so far. Only ever increases, so a periodic observer (spectator replication) can't miss one.</summary>
+        public int TriggerCount { get; private set; }
+
         public void Trigger()
         {
+            TriggerCount++;
             timer = 0f;
             IsStaggered = true;
 

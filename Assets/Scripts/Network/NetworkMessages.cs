@@ -8,19 +8,9 @@ namespace PoeClone.Network
         Spectator
     }
 
-    // Wire format shared with server/room.js. Kept as plain JsonUtility-serializable
+    // Wire format shared with server/room.js. (The 10Hz gameplay "state" message lives in
+    // Replication/StateSnapshot.cs.) Kept as plain JsonUtility-serializable
     // classes (no dictionaries/polymorphism) since JsonUtility can't handle either.
-
-    [Serializable]
-    public class HudPayload
-    {
-        public float hp;
-        public float maxHp;
-        public float mp;
-        public float maxMp;
-        public int level;
-        public string area;
-    }
 
     // Catch-all inbound shape: JsonUtility silently ignores JSON fields that don't
     // exist on this class and leaves fields the JSON didn't set at their default,
@@ -34,8 +24,6 @@ namespace PoeClone.Network
         public string reason;
         public bool playerActive;
         public int spectatorCount;
-        public string image;
-        public HudPayload hud;
         public string from;
         public string text;
         public long ts;
@@ -53,8 +41,6 @@ namespace PoeClone.Network
     public class FrameMessage
     {
         public string type = "frame";
-        public string image;
-        public HudPayload hud;
     }
 
     [Serializable]
@@ -62,20 +48,6 @@ namespace PoeClone.Network
     {
         public string type = "chat";
         public string text;
-    }
-
-    public readonly struct FrameEnvelope
-    {
-        public readonly string ImageBase64;
-        public readonly HudPayload Hud;
-        public readonly long Ts;
-
-        public FrameEnvelope(string imageBase64, HudPayload hud, long ts)
-        {
-            ImageBase64 = imageBase64;
-            Hud = hud;
-            Ts = ts;
-        }
     }
 
     public readonly struct ChatEnvelope

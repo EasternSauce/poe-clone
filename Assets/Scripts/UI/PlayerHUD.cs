@@ -7,6 +7,9 @@ namespace PoeClone.UI
     {
         private PlayerStats stats;
 
+        /// <summary>Spectator replica: same HUD, but no control hints and the death text addressed to a watcher.</summary>
+        public bool SpectatorMode { get; set; }
+
         private GUIStyle titleStyle;
         private GUIStyle textStyle;
 
@@ -53,7 +56,7 @@ namespace PoeClone.UI
                 return;
 
             if (stats.IsDead)
-                DrawDeathOverlay(stats);
+                DrawDeathOverlay(stats, SpectatorMode);
 
             GUILayout.BeginArea(
                 new Rect(20f, 20f, 350f, 340f)
@@ -112,19 +115,22 @@ namespace PoeClone.UI
                 textStyle
             );
 
-            GUILayout.Space(20f);
+            if (!SpectatorMode)
+            {
+                GUILayout.Space(20f);
 
-            GUILayout.Label(
-                "WASD / Arrow Keys - Move | Shift - Sprint | I - Inventory | C - Character",
-                textStyle
-            );
+                GUILayout.Label(
+                    "WASD / Arrow Keys - Move | Shift - Sprint | I - Inventory | C - Character",
+                    textStyle
+                );
+            }
 
             GUILayout.EndArea();
         }
 
         // YOU DIED stays up throughout; underneath it, a 3/2/1 countdown counts down to a
         // "press any button" prompt once PlayerStats promotes to AwaitingRevive.
-        private static void DrawDeathOverlay(PlayerStats stats)
+        private static void DrawDeathOverlay(PlayerStats stats, bool spectating)
         {
             GUIStyle titleOverlayStyle = new GUIStyle
             {
@@ -134,7 +140,7 @@ namespace PoeClone.UI
             };
             titleOverlayStyle.normal.textColor = new Color(0.85f, 0.15f, 0.15f);
 
-            GUI.Label(new Rect(0f, Screen.height * 0.32f, Screen.width, 80f), "YOU DIED", titleOverlayStyle);
+            GUI.Label(new Rect(0f, Screen.height * 0.32f, Screen.width, 80f), spectating ? "THE PLAYER DIED" : "YOU DIED", titleOverlayStyle);
 
             GUIStyle subStyle = new GUIStyle
             {
@@ -145,7 +151,7 @@ namespace PoeClone.UI
             subStyle.normal.textColor = Color.white;
 
             string sub = stats.IsAwaitingRevive
-                ? "Press any button to revive"
+                ? (spectating ? "Waiting for them to revive..." : "Press any button to revive")
                 : stats.CountdownSecondsRemaining.ToString();
 
             GUI.Label(new Rect(0f, Screen.height * 0.32f + 70f, Screen.width, 50f), sub, subStyle);

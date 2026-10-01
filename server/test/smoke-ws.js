@@ -32,7 +32,7 @@ async function wait(ms) {
   spectator.send(JSON.stringify({ type: 'hello', role: 'spectator', name: 'Watcher' }));
   await wait(200);
 
-  player.send(JSON.stringify({ type: 'frame', image: 'FAKEJPEGBASE64', hud: { hp: 100 } }));
+  player.send(JSON.stringify({ type: 'state', seq: 1, t: 1.5, area: 0, p: { i: 0, x: 1, z: 2 }, e: [] }));
   await wait(200);
 
   spectator.send(JSON.stringify({ type: 'chat', text: 'hi from spectator' }));

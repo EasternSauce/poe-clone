@@ -61,14 +61,53 @@ namespace PoeClone.Enemies
                 AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.meleeHit, transform.position);
         }
 
-        private void Die()
+        /// <summary>
+        /// Spectator replica: mirrors the real enemy's health so the floating bar shows, with none
+        /// of the gameplay side effects (no stagger, sound or death here - the replica drives those
+        /// from the replicated counters itself).
+        /// </summary>
+        public void ApplyReplicatedHealth(float health, float max)
         {
+            if (dead)
+                return;
+
+            if (max > 0f)
+                maxHealth = max;
+
+            float clamped = Mathf.Clamp(health, 0f, maxHealth);
+            bool lost = clamped < currentHealth;
+            currentHealth = clamped;
+            if (lost)
+                Damaged?.Invoke();
+        }
+
+        /// <summary>
+        /// Spectator replica: the same death the real enemy just had (limb collapse + topple),
+        /// minus experience, AI and sound side effects. <paramref name="instant"/> lays out an
+        /// enemy that was already a corpse before the spectator first saw it, without replaying the fall.
+        /// </summary>
+        public void ApplyReplicatedDeath(bool instant)
+        {
+            if (dead)
+                return;
+
             dead = true;
+            currentHealth = 0f;
             Died?.Invoke();
+            DisableLiveBehaviour();
+            CharacterDeathAnimator.PlayOn(transform, foldLowerBody: false);
 
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.enemyDeath, transform.position);
+            if (instant)
+            {
+                transform.rotation = Quaternion.Euler(80f, transform.eulerAngles.y, 0f);
+                return;
+            }
 
+            StartCoroutine(Collapse());
+        }
+
+        private void DisableLiveBehaviour()
+        {
             EnemyController controller = GetComponent<EnemyController>();
             if (controller != null)
                 controller.enabled = false;
@@ -82,6 +121,17 @@ namespace PoeClone.Enemies
             CharacterController cc = GetComponent<CharacterController>();
             if (cc != null)
                 cc.enabled = false;
+        }
+
+        private void Die()
+        {
+            dead = true;
+            Died?.Invoke();
+
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.enemyDeath, transform.position);
+
+            DisableLiveBehaviour();
 
             PlayerStats player = FindAnyObjectByType<PlayerStats>();
             if (player != null)

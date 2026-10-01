@@ -3,6 +3,7 @@
   "rootNamespace": "PoeClone.Tests",
   "references": [
     "PoeClone.Inventory",
+    "PoeClone.Replication",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner"
   ],

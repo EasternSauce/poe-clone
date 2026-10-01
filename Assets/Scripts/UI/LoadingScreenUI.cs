@@ -66,6 +66,9 @@ namespace PoeClone.UI
             textRect.offsetMax = Vector2.zero;
         }
 
+        /// <summary>True from the start of a fade-in until its fade-out finishes.</summary>
+        public bool IsShowing => canvasGroup != null && canvasGroup.blocksRaycasts;
+
         public IEnumerator FadeIn()
         {
             canvasGroup.blocksRaycasts = true;

@@ -250,6 +250,33 @@ public void Heal(float amount)
         }
 
         /// <summary>
+        /// Spectator replica: overwrites everything the HUD reads with the real player's values.
+        /// Totals go into the base fields with gear bonuses zeroed, so nothing gets double-counted
+        /// (the replica removes PlayerStatsLink, which would otherwise re-add gear bonuses). Fires
+        /// no events and has no side effects - death/revive visuals are the replica's job.
+        /// </summary>
+        public void ApplyReplicatedState(int newLevel, int newExperience, int str, int dex, int intel,
+            float health, float maxHp, float mana, float maxMp, bool isDead, float countdown, bool awaitingRevive)
+        {
+            level = Mathf.Max(1, newLevel);
+            experience = Mathf.Max(0, newExperience);
+            strength = str;
+            dexterity = dex;
+            intelligence = intel;
+            bonusStrength = bonusDexterity = bonusIntelligence = 0;
+            bonusMaxHealth = bonusMaxMana = 0f;
+            maxHealth = maxHp;
+            maxMana = maxMp;
+            currentHealth = health;
+            currentMana = mana;
+            dead = isDead;
+            countdownTimer = countdown;
+            respawnPhase = !isDead ? RespawnPhase.None
+                : awaitingRevive ? RespawnPhase.AwaitingRevive
+                : RespawnPhase.Countdown;
+        }
+
+        /// <summary>
         /// Applies what worn equipment adds on top of the base stats. Current life/mana are
         /// never raised by this (equipping does not heal you), only capped to the new maximum.
         /// </summary>

@@ -10,8 +10,9 @@ namespace PoeClone.Network
     /// <see cref="Bootstrap"/>) so nothing needed to be wired up in Game.unity: it figures out
     /// whether this browser tab is the "player" or a "spectator" from the URL, connects to the
     /// session server, and holds the whole world paused (Time.timeScale = 0) until it is either
-    /// granted the single play slot or settles into spectating - so a denied/second player and
-    /// every spectator never simulate or render a live, interactable copy of the game locally.
+    /// granted the single play slot or settles into spectating - so a denied/second player never
+    /// simulates a live, interactable copy of the game locally. Spectators instead get their scene
+    /// turned into a puppet of the real player's game (see <see cref="SpectatorReplica"/>).
     /// </summary>
     public class GameSessionController : MonoBehaviour
     {
@@ -25,11 +26,15 @@ namespace PoeClone.Network
         public string DenyReason { get; private set; }
 
         public event Action StateChanged;
-        public event Action<FrameEnvelope> FrameReceived;
         public event Action<ChatEnvelope> ChatReceived;
 
+        private const string StatePrefix = "{\"type\":\"state\"";
+
         private WebSocketClient client;
-        private PlayerFrameBroadcaster frameBroadcaster;
+        private PlayerStateBroadcaster stateBroadcaster;
+        private SpectatorReplica replica;
+
+        public SpectatorReplica Replica => replica;
         private string serverUrl;
         private float reconnectDelay = 2f;
         private Coroutine reconnectRoutine;
@@ -70,8 +75,9 @@ namespace PoeClone.Network
             gameObject.AddComponent<SpectatorView>();
             gameObject.AddComponent<ChatUI>();
 
-            frameBroadcaster = gameObject.AddComponent<PlayerFrameBroadcaster>();
-            frameBroadcaster.enabled = false;
+            stateBroadcaster = gameObject.AddComponent<PlayerStateBroadcaster>();
+            stateBroadcaster.enabled = false;
+            replica = gameObject.AddComponent<SpectatorReplica>();
         }
 
         private IEnumerator Start()
@@ -85,6 +91,15 @@ namespace PoeClone.Network
                 if (!string.IsNullOrEmpty(overrideUrl))
                     serverUrl = overrideUrl;
 
+                if (Role == SessionRole.Spectator)
+                {
+                    // Spectators run the world (so puppets animate and sounds play) but with every
+                    // gameplay system switched off by the replica.
+                    replica.Enter();
+                    SetWorldActive(true);
+                }
+                StateChanged?.Invoke();
+
                 client.Connect(serverUrl);
             });
         }
@@ -95,10 +110,11 @@ namespace PoeClone.Network
             client.Send(JsonUtility.ToJson(new ChatOutMessage { text = text }));
         }
 
-        public void SendFrame(string base64Jpeg, HudPayload hud)
+        /// <summary>Sends one already-serialized gameplay snapshot (see PlayerStateBroadcaster).</summary>
+        public void SendState(string json)
         {
             if (!Connected || Role != SessionRole.Player || !PlayGranted) return;
-            client.Send(JsonUtility.ToJson(new FrameMessage { image = base64Jpeg, hud = hud }));
+            client.Send(json);
         }
 
         private void HandleOpen()
@@ -115,6 +131,15 @@ namespace PoeClone.Network
 
         private void HandleMessage(string json)
         {
+            // Fast path for the 10Hz gameplay stream: skip the generic parse below, the replica
+            // parses it into its own type. The server always writes "type" first.
+            if (json != null && json.StartsWith(StatePrefix, StringComparison.Ordinal))
+            {
+                if (Role == SessionRole.Spectator)
+                    replica.HandleState(json);
+                return;
+            }
+
             ServerMessage msg;
             try
             {
@@ -136,19 +161,17 @@ namespace PoeClone.Network
                     if (Role == SessionRole.Player)
                     {
                         SetWorldActive(msg.granted);
-                        frameBroadcaster.enabled = msg.granted;
+                        stateBroadcaster.enabled = msg.granted;
                     }
                     StateChanged?.Invoke();
                     break;
 
                 case "status":
+                    if (!msg.playerActive && Role == SessionRole.Spectator)
+                        replica.ResetReplica();
                     RemotePlayerActive = msg.playerActive;
                     SpectatorCount = msg.spectatorCount;
                     StateChanged?.Invoke();
-                    break;
-
-                case "frame":
-                    FrameReceived?.Invoke(new FrameEnvelope(msg.image, msg.hud, msg.ts));
                     break;
 
                 case "chat":
@@ -161,8 +184,12 @@ namespace PoeClone.Network
         {
             Connected = false;
             PlayGranted = false;
-            SetWorldActive(false);
-            frameBroadcaster.enabled = false;
+            RemotePlayerActive = false;
+            stateBroadcaster.enabled = false;
+            if (Role == SessionRole.Spectator)
+                replica.ResetReplica(); // the server resends the latest snapshot on reconnect
+            else
+                SetWorldActive(false);
             StateChanged?.Invoke();
 
             // Always reschedule: ScheduleReconnect() itself stops any previous pending attempt
