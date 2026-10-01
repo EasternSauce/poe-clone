@@ -108,7 +108,7 @@ namespace PoeClone.Inventory
                 return;
 
             Keyboard keyboard = Keyboard.current;
-            if (keyboard == null)
+            if (keyboard == null || UiKit.IsTypingInTextField())
                 return;
 
             if (keyboard.cKey.wasPressedThisFrame)

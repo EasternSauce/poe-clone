@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using PoeClone.UI;
 
 namespace PoeClone.Network
 {
@@ -41,6 +42,7 @@ namespace PoeClone.Network
 
             canvasGroup.alpha = shouldShow ? 1f : 0f;
             canvasGroup.blocksRaycasts = shouldShow;
+            PlayerHUD.SetHiddenBy(this, shouldShow);
             if (!shouldShow) return;
 
             if (!ctrl.Connected && string.IsNullOrEmpty(ctrl.DenyReason))

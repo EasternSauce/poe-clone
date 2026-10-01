@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace PoeClone.Inventory
@@ -10,6 +11,15 @@ namespace PoeClone.Inventory
         public static readonly Color BorderColor = new Color(0.55f, 0.43f, 0.22f, 1f);
         public static readonly Color Gold = new Color(0.86f, 0.72f, 0.42f, 1f);
         public static readonly Color TextColor = new Color(0.90f, 0.86f, 0.76f, 1f);
+
+        /// <summary>True while a text field (e.g. the chat box) has keyboard focus, so hotkeys must not fire.</summary>
+        public static bool IsTypingInTextField()
+        {
+            GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+            if (selected == null) return false;
+            var field = selected.GetComponent<InputField>();
+            return field != null && field.isFocused;
+        }
         public static readonly Color DimText = new Color(0.62f, 0.59f, 0.52f, 1f);
         public static readonly Color MagicBlue = new Color(0.53f, 0.53f, 1f, 1f);
         public static readonly Color BonusGreen = new Color(0.50f, 0.84f, 0.50f, 1f);

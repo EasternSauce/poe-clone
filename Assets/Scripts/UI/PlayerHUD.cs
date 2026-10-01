@@ -10,6 +10,16 @@ namespace PoeClone.UI
         /// <summary>Spectator replica: same HUD, but no control hints and the death text addressed to a watcher.</summary>
         public bool SpectatorMode { get; set; }
 
+        // OnGUI always draws above uGUI canvases, so full-screen uGUI overlays (name prompt,
+        // session gate) hide the HUD through this instead of just covering it.
+        private static readonly System.Collections.Generic.HashSet<object> hiders = new System.Collections.Generic.HashSet<object>();
+
+        public static void SetHiddenBy(object hider, bool hidden)
+        {
+            if (hidden) hiders.Add(hider);
+            else hiders.Remove(hider);
+        }
+
         private GUIStyle titleStyle;
         private GUIStyle textStyle;
 
@@ -52,7 +62,7 @@ namespace PoeClone.UI
 
         private void OnGUI()
         {
-            if (stats == null)
+            if (stats == null || hiders.Count > 0)
                 return;
 
             if (stats.IsDead)
@@ -120,7 +130,7 @@ namespace PoeClone.UI
                 GUILayout.Space(20f);
 
                 GUILayout.Label(
-                    "WASD / Arrow Keys - Move | Shift - Sprint | I - Inventory | C - Character",
+                    "WASD / Arrow Keys - Move | Shift - Sprint | I - Inventory | C - Character | Enter - Chat",
                     textStyle
                 );
             }

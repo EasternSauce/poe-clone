@@ -174,7 +174,7 @@ namespace PoeClone.Inventory
             bool dead = inventory.IsPlayerDead;
 
             Keyboard keyboard = Keyboard.current;
-            if (keyboard != null && !dead)
+            if (keyboard != null && !dead && !UiKit.IsTypingInTextField())
             {
                 if (keyboard.iKey.wasPressedThisFrame)
                     SetOpen(!isOpen);

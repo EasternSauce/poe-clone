@@ -24,15 +24,19 @@ namespace PoeClone.Network
         public bool RemotePlayerActive { get; private set; }
         public int SpectatorCount { get; private set; }
         public string DenyReason { get; private set; }
+        /// <summary>Display name sent to the server; empty lets the server pick a default.</summary>
+        public string PlayerName { get; private set; } = string.Empty;
 
         public event Action StateChanged;
         public event Action<ChatEnvelope> ChatReceived;
 
         private const string StatePrefix = "{\"type\":\"state\"";
+        private const string NamePrefKey = "PoeClone.PlayerName";
 
         private WebSocketClient client;
         private PlayerStateBroadcaster stateBroadcaster;
         private SpectatorReplica replica;
+        private NamePromptUI namePrompt;
 
         public SpectatorReplica Replica => replica;
         private string serverUrl;
@@ -74,6 +78,7 @@ namespace PoeClone.Network
             gameObject.AddComponent<SessionGateUI>();
             gameObject.AddComponent<SpectatorView>();
             gameObject.AddComponent<ChatUI>();
+            namePrompt = gameObject.AddComponent<NamePromptUI>();
 
             stateBroadcaster = gameObject.AddComponent<PlayerStateBroadcaster>();
             stateBroadcaster.enabled = false;
@@ -100,7 +105,14 @@ namespace PoeClone.Network
                 }
                 StateChanged?.Invoke();
 
-                client.Connect(serverUrl);
+                string confirmLabel = Role == SessionRole.Spectator ? "Watch" : "Play";
+                namePrompt.Show(PlayerPrefs.GetString(NamePrefKey, string.Empty), confirmLabel, name =>
+                {
+                    PlayerName = name;
+                    PlayerPrefs.SetString(NamePrefKey, name);
+                    PlayerPrefs.Save();
+                    client.Connect(serverUrl);
+                });
             });
         }
 
@@ -123,7 +135,11 @@ namespace PoeClone.Network
             reconnectDelay = 2f;
             DenyReason = null;
 
-            var hello = new HelloMessage { role = Role == SessionRole.Spectator ? "spectator" : "player" };
+            var hello = new HelloMessage
+            {
+                role = Role == SessionRole.Spectator ? "spectator" : "player",
+                name = PlayerName,
+            };
             client.Send(JsonUtility.ToJson(hello));
 
             StateChanged?.Invoke();

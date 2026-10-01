@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -12,6 +13,9 @@ namespace PoeClone.Network
     /// uGUI in the project, so it also makes sure an EventSystem with the New Input System's UI
     /// module exists (see UiEventSystemBootstrap) - without it, clicks and typed text would
     /// silently do nothing.
+    ///
+    /// Keys: Enter opens the chat box, Enter sends. The player then gets control back (so WASD moves
+    /// again); spectators have nothing else to control, so their box stays focused. Escape leaves it.
     /// </summary>
     public class ChatUI : MonoBehaviour
     {
@@ -25,6 +29,11 @@ namespace PoeClone.Network
         public static bool IsTyping => Instance != null && Instance.inputField != null && Instance.inputField.isFocused;
 
         private static ChatUI Instance;
+
+        /// <summary>Frame in which some text field already used the Enter press (so it doesn't also open the chat).</summary>
+        internal static int EnterHandledFrame = -1;
+
+        private bool keepFocusAfterSubmit;
 
         private void Awake()
         {
@@ -47,10 +56,15 @@ namespace PoeClone.Network
 
         private void Update()
         {
-            if (inputField == null || !inputField.isFocused || Keyboard.current == null) return;
+            var keyboard = Keyboard.current;
+            if (keyboard == null || Time.frameCount == EnterHandledFrame) return;
+            if (!keyboard.enterKey.wasPressedThisFrame && !keyboard.numpadEnterKey.wasPressedThisFrame) return;
 
-            if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame)
-                Submit();
+            // Only when nothing else has the UI focus (e.g. not while a menu button is selected).
+            if (EventSystem.current == null || EventSystem.current.currentSelectedGameObject != null) return;
+
+            inputField.Select();
+            inputField.ActivateInputField();
         }
 
         private void HandleChat(ChatEnvelope msg)
@@ -71,14 +85,57 @@ namespace PoeClone.Network
             logText.text = sb.ToString();
         }
 
-        private void Submit()
+        private static bool StayInChat => GameSessionController.Instance != null && GameSessionController.Instance.Role == SessionRole.Spectator;
+
+        private void Send()
         {
             string text = inputField.text;
             if (!string.IsNullOrWhiteSpace(text))
                 GameSessionController.Instance?.SendChat(text);
-
             inputField.text = string.Empty;
-            inputField.ActivateInputField();
+        }
+
+        // Enter in the box. The field deactivates itself right after this, firing onEndEdit.
+        private void HandleSubmit()
+        {
+            EnterHandledFrame = Time.frameCount;
+            Send();
+            keepFocusAfterSubmit = StayInChat;
+        }
+
+        // Fires whenever the box loses focus: after Enter, Escape, or a click elsewhere.
+        private void HandleEndEdit()
+        {
+            if (keepFocusAfterSubmit)
+            {
+                // Re-focus next frame ourselves: the UI "submit" for the same Enter press may have
+                // reached the field while it was still focused, in which case it did nothing.
+                keepFocusAfterSubmit = false;
+                inputField.ActivateInputField();
+                return;
+            }
+
+            // Leave the box entirely so gameplay keys work again (a selected-but-unfocused field
+            // still counts as UI focus for movement). Skipped when focus is already moving to
+            // another UI object, e.g. the Send button.
+            var es = EventSystem.current;
+            if (es != null && !es.alreadySelecting && es.currentSelectedGameObject == inputField.gameObject)
+                es.SetSelectedGameObject(null);
+        }
+
+        private void OnSendClicked()
+        {
+            Send();
+            var es = EventSystem.current;
+            if (StayInChat)
+            {
+                inputField.Select();
+                inputField.ActivateInputField();
+            }
+            else if (es != null)
+            {
+                es.SetSelectedGameObject(null);
+            }
         }
 
         private void Build()
@@ -111,6 +168,7 @@ namespace PoeClone.Network
             logText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             logText.fontSize = 16;
             logText.color = Color.white;
+            logText.supportRichText = false; // names and messages are user text
             logText.alignment = TextAnchor.LowerLeft;
             logText.horizontalOverflow = HorizontalWrapMode.Wrap;
             logText.verticalOverflow = VerticalWrapMode.Truncate;
@@ -134,6 +192,11 @@ namespace PoeClone.Network
             inputField = fieldGO.AddComponent<InputField>();
             inputField.lineType = InputField.LineType.SingleLine;
             inputField.characterLimit = 200;
+            // Enter sends. This must be onSubmit: the field handles Enter itself (submit, then
+            // deactivate) before any Update() of ours could see the key, and the same press then
+            // reaches it as a UI "submit" that re-focuses it with all its text selected.
+            inputField.onSubmit.AddListener(_ => HandleSubmit());
+            inputField.onEndEdit.AddListener(_ => HandleEndEdit());
 
             var fieldTextGO = new GameObject("Text");
             fieldTextGO.transform.SetParent(fieldGO.transform, false);
@@ -171,7 +234,7 @@ namespace PoeClone.Network
             buttonRect.offsetMin = new Vector2(4f, 8f);
             buttonRect.offsetMax = new Vector2(-10f, 42f);
             var button = buttonGO.AddComponent<Button>();
-            button.onClick.AddListener(Submit);
+            button.onClick.AddListener(OnSendClicked);
 
             var buttonTextGO = new GameObject("Text");
             buttonTextGO.transform.SetParent(buttonGO.transform, false);
