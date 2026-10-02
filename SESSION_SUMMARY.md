@@ -57,18 +57,17 @@ keep in the morning"). It sits on top of `master`, one commit per feature, oldes
 | 13 | Fit the new buttons and panels on phones | second touch-menu column (TREE, TOWN) |
 | 14 | Add higher-tier item bases | 21 tiered bases reusing art via `ItemData.ArtId`/`ArtTint` |
 | 15-17 | Fix commits | gates blocked by scenery; enemy-over-NPC click priority; boss XP; per-frame scene searches; identical reward items (TickCount seeds); skills panel vs passive tree stacking |
+| 18-24 | Feedback quick fixes (2026-10-02) | bolts from the staff orb; pink bows/arrows (URP Lit -> ToonLit); chat newest line visible; slate bag grid; textured town grass; light sources in every area + torches out of pillars; textured UI panels and inset slots |
 
 State: 137/137 EditMode tests pass on the branch (120 on master). A local Web build of the
 branch compiled and was then discarded (the deploy folder was restored to the live build).
 **Not verified:** a live spectator watching the new content (needs a second client).
 
-**Plan:** the user will pick features from this branch to merge into `master` (then build Web
-and deploy). Later commits build on earlier ones (NPCs/quests need areas; bosses need quests;
-the save system needs passives/quests/skills; the Frozen Hollow needs bosses; tiers touch save
-data), so merge in order or cut off from the end; cherry-picking a later commit alone will
-conflict or not compile. Ask the user which features to keep before merging anything.
+**Decided 2026-10-02:** the user keeps all of it. All work, including the feedback below,
+happens on `overnight-features` until the user says to merge it into `master`. Don't merge,
+push or deploy before then.
 
-## Latest feedback from the user (2026-10-02) - not started yet
+## Latest feedback from the user (2026-10-02)
 
 The user played the overnight build and reported (their words, lightly condensed):
 1. **Bow aim on mobile** is super hard - "you should be able to attack by clicking on screen?
@@ -87,14 +86,22 @@ The user played the overnight build and reported (their words, lightly condensed
    some that use a skill from time to time, and cool enemy-only skills.
 10. **Town grass** looks too plastic.
 
-Findings so far (no code changed yet):
-- (5) `EnemyCombat.BoltOrigin` spawns bolts 0.5 m up in front of the body; it should start at
-  the staff's orb (casters get a staff from `EnemyKinds.AddStaff`, socket `Socket_MainHand`).
-- (2) Likely cause: projectiles/bow parts built at runtime (`RuntimePrimitives.Create` uses
-  `GameObject.CreatePrimitive` + property-block colours) get a default material whose shader is
-  stripped from Web builds; the replica path may build them differently from the player's.
-  Confirm in a Web build (spectator) before fixing - e.g. give primitives a project material
-  or add the shader to Always Included Shaders.
+Done (one commit each, tested in Editor Play mode, 137/137 EditMode tests):
+- (5) Bolts start at the caster's staff orb (`EnemyKinds.StaffOrbName`).
+- (2) The bow's Silver/BowString materials, PaleWood, and every runtime primitive used URP Lit,
+  whose variants the Web build strips. They now use ToonLit (`Resources/RuntimePrimitive.mat`).
+  **Still to confirm in a Web build** (player and spectator).
+- (3) Chat log grows upwards in a `RectMask2D` viewport; Text's Truncate had cut the newest line.
+- (8) Bag grid: slate cells with lighter grid lines and a frame.
+- (10) Generated ground textures are 512 px with grain; Haven grass has blade strokes.
+- (6) `ManualPointLightManager` re-scans after `WorldBuilder` and sends the 24 lights nearest the
+  view each frame. `WorldBuilder.Glow` adds lights: Haven lanterns, graveyard candles + green
+  crypt flames, ruin braziers/altar/lava, ice crystals, Greenwood glowshrooms, waystones. The
+  Greenwood ruin torches were moved off the pillars onto posts (scene edit).
+- Extra (asked mid-session): UI backgrounds textured: `UiKit.Grain` (tiled panel grain) and
+  `UiKit.Inset` (sliced recessed slot) on panels, slots, bag cells, skill slots and buttons.
+
+Still open:
 - (4) iPhone Safari has no Fullscreen API for non-video elements (iPad is partial). Practical
   fix: a web app manifest + `apple-mobile-web-app-capable` meta so "Add to Home Screen" opens
   the game fullscreen, plus an in-page hint on iOS. The page template is
@@ -105,10 +112,9 @@ Findings so far (no code changed yet):
   and gates, waystones, spawners, safe spots and the minimap all depend on area bounds
   (currently a 100x100 m square per area, `WorldBuilder.HalfSize`, walls at +-49.5).
 
-Proposed order (the user had not answered yet when the session ended): quick fixes (5, 2, 3,
-8, 10, 6) -> bow tap-to-attack/auto-aim on mobile (1) -> enemy variety (9) -> Safari home-screen
-support (4) -> area layout overhaul (7) as its own task. Also still open: which branch to do
-this on, and which overnight features the user keeps.
+Next, in the proposed order: bow tap-to-attack/auto-aim on mobile (1) -> enemy variety (9) ->
+Safari home-screen support (4) -> area layout overhaul (7) as its own task. Confirm with the
+user before starting.
 
 ## Architecture notes
 
