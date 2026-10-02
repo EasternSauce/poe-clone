@@ -60,6 +60,7 @@ keep in the morning"). It sits on top of `master`, one commit per feature, oldes
 | 18-24 | Feedback quick fixes (2026-10-02) | bolts from the staff orb; pink bows/arrows (URP Lit -> ToonLit); chat newest line visible; slate bag grid; textured town grass; light sources in every area + torches out of pillars; textured UI panels and inset slots |
 | 25 | Up to 10 players (2026-10-02) | each plays their own game; 11th is queued; spectators watch one player and switch with left/right arrows or the < > buttons by the LIVE badge; server `room.js` + `SpectatorView` |
 | 26-27 | Tap to attack on touch; coloured chat names (2026-10-02) | a finger on the world aims/attacks there (snaps to an enemy within 2.5 m, hold to keep attacking, any finger so the joystick stays usable); chat names coloured per name, role tags tinted, user text escaped |
+| 28 | iPhone full screen (2026-10-02) | Home Screen web app: manifest + Apple meta tags + icons in `Assets/WebGLTemplates/FullWindow/`; the fullscreen button explains Add to Home Screen on iPhone, hides when launched from the Home Screen; canvas avoids the notch |
 
 State: 137/137 EditMode tests pass on the branch (120 on master). A local Web build of the
 branch compiled and was then discarded (the deploy folder was restored to the live build).
@@ -111,19 +112,20 @@ Done (one commit each, tested in Editor Play mode, 137/137 EditMode tests):
   snapping to a nearby enemy; the attack button keeps its nearest-enemy auto-aim.
 - Extra: chat names are coloured (`ChatUI.FormatLine`).
 
+- (4) iPhone: "Add to Home Screen" opens the game full screen (manifest, meta tags, icons in the
+  page template); the fullscreen button shows how on iPhone. Tested in headless Chrome with an
+  impersonated iPhone; **still to check on a real iPhone, and that the Web build copies the
+  template's extra files** (manifest, icons) next to index.html.
+
 Still open (the user wants to confirm before each of these is started):
-- (4) iPhone Safari has no Fullscreen API for non-video elements (iPad is partial). Practical
-  fix: a web app manifest + `apple-mobile-web-app-capable` meta so "Add to Home Screen" opens
-  the game fullscreen, plus an in-page hint on iOS. The page template is
-  `Assets/WebGLTemplates/FullWindow/index.html`.
 - (9) Each area mixes the same 7 base kinds by weight (`WorldBuilder.KindWeights`); only the
   Graveyard/Ruins/Frozen natives differ. Per-area rosters + a few skill-using enemies would fix it.
 - (7) is a rewrite of `WorldBuilder` (layout generators: open field / rooms+corridors / cave),
   and gates, waystones, spawners, safe spots and the minimap all depend on area bounds
   (currently a 100x100 m square per area, `WorldBuilder.HalfSize`, walls at +-49.5).
 
-Next, in the proposed order: enemy variety (9) -> Safari home-screen support (4) -> area layout
-overhaul (7) as its own task. Confirm with the user before starting each.
+Next, in the proposed order: enemy variety (9) -> area layout overhaul (7) as its own task.
+Confirm with the user before starting each.
 
 ## Architecture notes
 
