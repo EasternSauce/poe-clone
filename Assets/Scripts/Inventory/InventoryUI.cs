@@ -34,7 +34,10 @@ namespace PoeClone.Inventory
         private const int EquipCols = 8;
         private const int EquipRows = 6;
 
-        private static readonly Color CellColor = new Color(0.14f, 0.13f, 0.12f, 1f);
+        // The bag grid is cool slate against the warm brown panel, with lighter lines between
+        // the cells, so it reads at a glance.
+        private static readonly Color CellColor = new Color(0.10f, 0.11f, 0.15f, 1f);
+        private static readonly Color GridLineColor = new Color(0.30f, 0.32f, 0.40f, 1f);
         private static readonly Color SlotColor = new Color(0.11f, 0.10f, 0.10f, 1f);
         private static readonly Color SlotBorder = new Color(0.30f, 0.25f, 0.15f, 1f);
         private static readonly Color SlotHint = new Color(0.62f, 0.60f, 0.55f, 0.32f);
@@ -429,6 +432,11 @@ private Vector2 CellSize(int w, int h)
             gridArea.pivot = new Vector2(0.5f, 0f);
             gridArea.anchoredPosition = new Vector2(0f, Pad);
             gridArea.sizeDelta = new Vector2(gridW, gridH);
+
+            // The gaps between the cells show this backing through as grid lines.
+            Image gridBacking = UiKit.NewImage("GridLines", gridArea, GridLineColor);
+            UiKit.Stretch(gridBacking.rectTransform, -Gap);
+            UiKit.AddOutline(gridBacking, UiKit.BorderColor, 2f);
 
             for (int y = 0; y < inventory.Grid.Height; y++)
             {
