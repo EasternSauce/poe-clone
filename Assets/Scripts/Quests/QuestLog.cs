@@ -78,6 +78,12 @@ namespace PoeClone.Quests
             return QuestState.Locked;
         }
 
+        /// <summary>Been to this area this session (waystones only go where the player has been).</summary>
+        public bool HasVisited(int area)
+        {
+            return visited.Contains(area);
+        }
+
         public int Progress(QuestDefinition quest)
         {
             return active.TryGetValue(quest.Id, out int progress) ? Mathf.Min(progress, quest.Count) : 0;

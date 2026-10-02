@@ -466,6 +466,10 @@ namespace PoeClone.UI
             tree.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TogglePassives();
             TouchMode.AddBlocker(tree.rectTransform);
 
+            Image town = NewRoundButton("Town", menu, Vector2.one, new Vector2(-70f, -620f), 96f, "TOWN");
+            town.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TownPortal.Pressed = true;
+            TouchMode.AddBlocker(town.rectTransform);
+
             // Portrait warning, above everything (name prompt included), swallowing touches.
             Canvas rotateCanvas = NewCanvas("RotateDeviceCanvas", 1000);
             rotateRoot = rotateCanvas.gameObject;

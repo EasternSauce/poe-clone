@@ -12,7 +12,7 @@ namespace PoeClone.UI
     /// </summary>
     public class BossBarUI : MonoBehaviour
     {
-        private const float ShowRange = 22f;
+        private const float ShowRange = 15f;
         private const float Width = 760f;
 
         private GameObject root;

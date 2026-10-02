@@ -10,7 +10,8 @@ namespace PoeClone.World
         Elder,
         Merchant,
         Smith,
-        Guard
+        Guard,
+        Waystone   // not a person: the travel stone (see Waystone)
     }
 
     /// <summary>
@@ -33,6 +34,7 @@ namespace PoeClone.World
         private string marker = "";
         private Quaternion homeRotation;
         private Transform player;
+        private bool turnsToPlayer = true;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
@@ -129,6 +131,18 @@ namespace PoeClone.World
                 DestroyImmediate(component);
         }
 
+        /// <summary>Makes a fixed object (a waystone) talkable, with a name tag; it doesn't turn.</summary>
+        public static Npc CreateFixed(GameObject go, NpcRole role, string displayName, float labelHeight)
+        {
+            Npc npc = go.AddComponent<Npc>();
+            npc.Role = role;
+            npc.DisplayName = displayName;
+            npc.turnsToPlayer = false;
+            npc.homeRotation = go.transform.rotation;
+            npc.label = WorldLabel.Create(go.transform, displayName, new Color(0.65f, 0.85f, 1f), labelHeight, 24);
+            return npc;
+        }
+
         private static readonly Color NameColor = new Color(0.95f, 0.88f, 0.62f);
         private static readonly Color MarkerColor = new Color(1f, 0.82f, 0.25f);
 
@@ -155,6 +169,9 @@ namespace PoeClone.World
 
         private void Update()
         {
+            if (!turnsToPlayer)
+                return;
+
             if (player == null)
             {
                 var controller = FindAnyObjectByType<Player.PlayerController>();

@@ -139,6 +139,8 @@ namespace PoeClone.Player
                 gameObject.AddComponent<Quests.QuestLog>();
             if (GetComponent<PlayerPassives>() == null)
                 gameObject.AddComponent<PlayerPassives>();
+            if (GetComponent<TownPortal>() == null)
+                gameObject.AddComponent<TownPortal>();
         }
 
 private void Update()

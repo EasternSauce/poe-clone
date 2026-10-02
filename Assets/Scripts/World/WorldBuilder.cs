@@ -122,6 +122,7 @@ namespace PoeClone.World
             BuildHaven();
             BuildGraveyard();
             BuildRuins();
+            BuildWaystones();
 
             // Gates: Haven - Greenwood - Graveyard - Ruins, and a way home from the Ruins.
             Connect(Haven, new Vector3(40f, 0f, 0f), Greenwood, new Vector3(-40f, 0f, 2f));
@@ -766,6 +767,36 @@ namespace PoeClone.World
             currentArea = area;
             rng = new System.Random(seed);
             claimed.Clear();
+            Claim(WaystoneSpot(area), 2.5f);
+        }
+
+        /// <summary>Each area's waystone: just south of its spawn point.</summary>
+        public static Vector3 WaystoneSpot(int area)
+        {
+            return Center(area) + new Vector3(0f, 0f, -11f);
+        }
+
+        // A dark stone column with a glowing blue crystal on top; talk to it to travel.
+        private void BuildWaystones()
+        {
+            Transform t = Group("Waystones");
+            for (int a = 0; a < Centers.Length; a++)
+            {
+                Vector3 p = WaystoneSpot(a);
+                if (a == Greenwood)
+                    ClearSpot(p, 2.5f);
+
+                var stone = new GameObject("Waystone_" + AreaNames[a]);
+                stone.transform.SetParent(t, false);
+                stone.transform.position = p;
+                Cyl(stone.transform, p + Vector3.up * 0.12f, 0.85f, 0.24f, kit.Mat("Stone"));
+                Box(stone.transform, p + Vector3.up * 1.3f, new Vector3(0.55f, 2.3f, 0.55f), kit.Mat("TombstoneDark"), euler: new Vector3(0f, 45f, 0f));
+                Ball(stone.transform, p + Vector3.up * 2.75f, 0.38f, kit.Mat("Water"), solid: false);
+
+                Transform arrival = Marker("Arrive_" + AreaNames[a] + "_waystone", p + new Vector3(0f, 1.1f, 2.6f), 0f);
+                Waystone.Attach(stone, a, arrival);
+                Npc.CreateFixed(stone, NpcRole.Waystone, "Waystone", 3.5f);
+            }
         }
 
         private Transform Group(string name)

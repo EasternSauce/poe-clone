@@ -23,7 +23,46 @@ namespace PoeClone.UI
 
         public static void Open(Npc npc)
         {
-            Main(npc, Greeting(npc.Role));
+            if (npc.Role == NpcRole.Waystone)
+                WaystonePage(npc);
+            else
+                Main(npc, Greeting(npc.Role));
+        }
+
+        // ------------------------------------------------------------------ waystones
+
+        private static void WaystonePage(Npc npc)
+        {
+            QuestLog log = QuestLog.Instance;
+            AreaManager areas = AreaManager.Instance;
+            int here = areas != null ? areas.CurrentAreaIndex : -1;
+
+            var options = new List<DialogueOption>();
+            for (int a = 0; a < WorldBuilder.AreaNames.Length; a++)
+            {
+                if (a == here)
+                    continue;
+
+                int area = a;
+                bool known = log != null && log.HasVisited(a);
+                string level = WorldBuilder.MonsterLevels[a] > 0 ? "  <color=" + Dim + ">(level " + WorldBuilder.MonsterLevels[a] + ")</color>" : "  <color=" + Dim + ">(town)</color>";
+                options.Add(known
+                    ? new DialogueOption("Travel to " + WorldBuilder.AreaNames[a] + level, () => Travel(area))
+                    : new DialogueOption("<color=" + Dim + ">" + WorldBuilder.AreaNames[a] + " - not found yet (reach it on foot first)</color>", null, false));
+            }
+            options.Add(new DialogueOption("Leave", DialogueUI.Close));
+
+            DialogueUI.Show(npc, "The stone hums under your hand. It can take you anywhere you have already been.", options);
+        }
+
+        private static void Travel(int area)
+        {
+            DialogueUI.Close();
+            AreaManager areas = AreaManager.Instance;
+            if (areas == null || areas.IsSwitching)
+                return;
+            Waystone stone = Waystone.In(area);
+            areas.EnterArea(area, stone != null ? stone.Arrival : null);
         }
 
         private static string Greeting(NpcRole role)
