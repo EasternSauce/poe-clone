@@ -112,7 +112,7 @@ namespace PoeClone.UI
             bool characterOpen = characterUI != null && characterUI.IsOpen;
 
             menuRoot.SetActive(!dead);
-            SetCombatShown(!dead && !inventoryOpen && !characterOpen && !SkillBarUI.IsOpen && !DialogueUI.IsOpen);
+            SetCombatShown(!dead && !inventoryOpen && !characterOpen && !SkillBarUI.IsOpen && !DialogueUI.IsOpen && !PassiveTreeUI.IsOpen);
             UpdateSkillButtons();
             UpdatePotionButtons();
 
@@ -301,6 +301,14 @@ namespace PoeClone.UI
             characterUI.SetOpen(open);
         }
 
+        private void TogglePassives()
+        {
+            bool open = !PassiveTreeUI.IsOpen;
+            if (open)
+                CloseOthers();
+            PassiveTreeUI.SetOpen(open);
+        }
+
         private void ToggleChat()
         {
             bool open = !ChatUI.PanelVisible;
@@ -318,6 +326,7 @@ namespace PoeClone.UI
                 characterUI.SetOpen(false);
             ChatUI.SetPanelOpen(false);
             SkillBarUI.SetOpen(false);
+            PassiveTreeUI.SetOpen(false);
             DialogueUI.Close();
         }
 
@@ -452,6 +461,10 @@ namespace PoeClone.UI
             TouchMode.AddBlocker(bag.rectTransform);
             TouchMode.AddBlocker(character.rectTransform);
             TouchMode.AddBlocker(chat.rectTransform);
+
+            Image tree = NewRoundButton("Tree", menu, Vector2.one, new Vector2(-70f, -510f), 96f, "TREE");
+            tree.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TogglePassives();
+            TouchMode.AddBlocker(tree.rectTransform);
 
             // Portrait warning, above everything (name prompt included), swallowing touches.
             Canvas rotateCanvas = NewCanvas("RotateDeviceCanvas", 1000);

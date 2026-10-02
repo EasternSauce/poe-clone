@@ -103,6 +103,7 @@ namespace PoeClone.Network
                 SetEnabled(player.GetComponent<PlayerPotions>(), false);
                 SetEnabled(player.GetComponent<NpcInteractor>(), false);
                 SetEnabled(player.GetComponent<Quests.QuestLog>(), false);
+                SetEnabled(player.GetComponent<PlayerPassives>(), false);
                 // No local revive countdown / "press any key" handling - the real player's values come in via ApplyReplicatedState.
                 playerStats.enabled = false;
 

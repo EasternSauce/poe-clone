@@ -137,6 +137,8 @@ namespace PoeClone.Player
                 gameObject.AddComponent<NpcInteractor>();
             if (GetComponent<Quests.QuestLog>() == null)
                 gameObject.AddComponent<Quests.QuestLog>();
+            if (GetComponent<PlayerPassives>() == null)
+                gameObject.AddComponent<PlayerPassives>();
         }
 
 private void Update()

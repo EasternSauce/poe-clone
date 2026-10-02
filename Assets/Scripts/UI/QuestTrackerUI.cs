@@ -84,7 +84,7 @@ namespace PoeClone.UI
             if (characterUI == null)
                 characterUI = FindAnyObjectByType<CharacterPageUI>();
             bool covered = (inventoryUI != null && inventoryUI.IsOpen) || (characterUI != null && characterUI.IsOpen) ||
-                           SkillBarUI.IsOpen || DialogueUI.IsOpen;
+                           SkillBarUI.IsOpen || DialogueUI.IsOpen || PassiveTreeUI.IsOpen;
             back.gameObject.SetActive(text.text.Length > 0 && !covered);
 
             // Clear of the touch menu buttons down the right edge.

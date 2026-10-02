@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace PoeClone.Inventory
@@ -75,9 +76,18 @@ namespace PoeClone.Inventory
             Recalculate();
         }
 
+        private List<StatModifier> passives = new List<StatModifier>();
+
+        /// <summary>The stat lines from the passive tree, counted with the gear's.</summary>
+        public void SetPassiveModifiers(List<StatModifier> modifiers)
+        {
+            passives = modifiers ?? new List<StatModifier>();
+            Recalculate();
+        }
+
         public void Recalculate()
         {
-            Stats = StatSheet.Build(baseStats, Equipment);
+            Stats = StatSheet.Build(baseStats, Equipment, passives);
             StatsChanged?.Invoke();
         }
 

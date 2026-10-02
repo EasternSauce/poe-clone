@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace PoeClone.Inventory
@@ -78,7 +79,7 @@ namespace PoeClone.Inventory
         public int Experience { get; }
         public int ExperienceRequired { get; }
 
-        private StatSheet(BaseStats baseStats, EquipmentSet equipment)
+        private StatSheet(BaseStats baseStats, EquipmentSet equipment, IEnumerable<StatModifier> extra)
         {
             int count = Enum.GetValues(typeof(StatType)).Length;
             baseValues = new float[count];
@@ -105,17 +106,24 @@ namespace PoeClone.Inventory
                 }
             }
 
+            // Passives count like gear (and their attributes grant the same life/mana/evasion).
+            if (extra != null)
+            {
+                foreach (StatModifier m in extra)
+                    gear[(int)m.Stat] += m.Value;
+            }
+
             derived[(int)StatType.MaxLife] = (float)Math.Floor(gear[(int)StatType.Strength] * LifePerStrength);
             derived[(int)StatType.MaxMana] = (float)Math.Floor(gear[(int)StatType.Intelligence] * ManaPerIntelligence);
             derived[(int)StatType.Evasion] = (float)Math.Floor(gear[(int)StatType.Dexterity] * EvasionPerDexterity);
         }
 
-        public static StatSheet Build(BaseStats baseStats, EquipmentSet equipment)
+        public static StatSheet Build(BaseStats baseStats, EquipmentSet equipment, IEnumerable<StatModifier> extra = null)
         {
             if (baseStats == null)
                 throw new ArgumentNullException(nameof(baseStats));
 
-            return new StatSheet(baseStats, equipment);
+            return new StatSheet(baseStats, equipment, extra);
         }
 
         /// <summary>The character's own value, before gear.</summary>

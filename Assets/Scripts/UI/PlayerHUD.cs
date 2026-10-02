@@ -239,7 +239,7 @@ namespace PoeClone.UI
                 GUILayout.Space(20f);
 
                 GUILayout.Label(
-                    "WASD / Arrow Keys - Move | Shift - Sprint | Q E R F - Skills | 1 2 - Potions\nK - Skill list | I - Inventory | C - Character | Enter - Chat",
+                    "WASD / Arrow Keys - Move | Shift - Sprint | Q E R F - Skills | 1 2 - Potions\nK - Skill list | P - Passives | I - Inventory | C - Character | Enter - Chat",
                     textStyle
                 );
             }
@@ -298,7 +298,13 @@ namespace PoeClone.UI
 
             string keys1 = TouchMode.Active ? "" : "[1] ";
             string keys2 = TouchMode.Active ? "" : "[2] ";
-            return $"<color=#ff7a70>{keys1}Health x{health}</color>   <color=#8fa2ff>{keys2}Mana x{mana}</color>   <color=#ffd34d>Gold {gold}</color>";
+            string line = $"<color=#ff7a70>{keys1}Health x{health}</color>   <color=#8fa2ff>{keys2}Mana x{mana}</color>   <color=#ffd34d>Gold {gold}</color>";
+
+            var passives = stats.GetComponent<PlayerPassives>();
+            int points = passives != null && passives.enabled ? passives.Unspent : 0;
+            if (points > 0)
+                line += $"   <color=#ffd040>+{points} passive point{(points > 1 ? "s" : "")}{(TouchMode.Active ? "" : " (P)")}</color>";
+            return line;
         }
 
         private void DrawLabeledBar(Rect rect, float fraction, Color fillColor, string label)
