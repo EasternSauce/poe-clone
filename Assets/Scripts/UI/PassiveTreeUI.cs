@@ -127,7 +127,7 @@ namespace PoeClone.UI
         private void UpdateBadge()
         {
             int unspent = passives.Unspent;
-            bool show = unspent > 0 && !panelRoot.activeSelf && !passives.GetComponent<PlayerStats>().IsDead;
+            bool show = unspent > 0 && !panelRoot.activeSelf && !SkillBarUI.PickerOpen && !passives.GetComponent<PlayerStats>().IsDead;
             if (badge.gameObject.activeSelf != show)
                 badge.gameObject.SetActive(show);
             if (!show)

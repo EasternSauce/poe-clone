@@ -53,8 +53,9 @@ namespace PoeClone.UI
         {
             if (!decided)
             {
-                // After the name prompt, so the two don't fight over the screen.
-                if (namePrompt != null && namePrompt.IsShowing)
+                // After the name prompt (which always comes up first, once the page has loaded), so
+                // the two don't fight over the screen.
+                if (namePrompt != null && (!namePrompt.HasConfirmed || namePrompt.IsShowing))
                     return;
                 decided = true;
                 if (PlayerPrefs.GetString(SeenKey, "") != version)

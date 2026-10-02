@@ -1,28 +1,7 @@
-version: 2026-10-02b
+version: 2026-10-02c
 <b>Fixes</b>
-- Casting Chain Lightning or Fire Bolt with a bow no longer also shoots an arrow (and with a melee weapon no longer adds a free swing).
-- Clicking an item to pick it up no longer swings at the air on the same click.
-- Clicking a townsperson or a waystone is more forgiving (their name tag counts too), and never shoots them.
-- Clicking a gate walks you through it.
-- Haven is listed first on the waystone.
-- Right-clicking in the game no longer opens the browser menu in Firefox.
-- Bows re-aim at the target when the arrow leaves, so shooting while strafing hits what you clicked. Arrows also hit enemies they visibly graze.
-
-<b>Loot</b>
-- Each rarity has its own drop sound; uniques ring out. (The odd thud when an enemy died was the old item-drop sound.)
-- Picking up and putting down items sounds like what they are: weapons clink, armour thumps, jewellery glimmers.
-- Item base stats now vary a little (a 15 evasion base rolls 12 to 16).
-- Items dropping on the same spot spread out so every icon shows, and items and their names draw over corpses.
-- Hover an item on the ground to see its stats; hovering items while holding one shows their stats too.
-- Bows and quivers drop much more often, and there's a new early Crude Bow.
-- More caster and archer gear: Silk Robe, Silk Gloves, Silk Slippers, Sage Circlet, Hunter Hood, Mystic Robe; Intelligence and Dexterity roll on more slots.
-
-<b>Balance</b>
-- Spells gain 1.5% damage per Intelligence (was 2%).
-- Chain Lightning reaches 9 m (was 12) and rewards aim: cast on an enemy under the cursor for full damage (+25% up close); a blind cast hits for 70%. Each arc deals 70% of the one before.
+- Shadows no longer come and go as you move: the browser version only drew them up to 30 m from the camera, which ended right around your character. They now reach 65 m.
+- This window no longer opens underneath the name prompt.
 
 <b>Interface</b>
-- A pulsing note above the skill bar shows when you have passive points to spend (click it or press P).
-- The chat sits under the inventory and its tooltips. When you're not typing its background disappears and messages fade after a while; scroll the mouse wheel over it to read back.
-- A soft white light around your character keeps nearby things readable in the dark.
-- This window: a note of what changed, once per update.
+- Click a skill square on the bar to pick which skill goes there (or empty it). K still opens the full skill list.

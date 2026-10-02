@@ -12,7 +12,9 @@ namespace PoeClone.UI
     /// The skill bar (desktop: four squares at the bottom of the screen labelled Q E R F, with the
     /// cooldown sweeping down over them and a blue tint when there isn't enough mana) and the skills
     /// panel (K, or the SKL button on touch), which lists every skill and where it's slotted, with a
-    /// button per slot to put it there. On touch the bar itself is TouchControlsUI's round buttons.
+    /// button per slot to put it there. Clicking a square on the bar opens a short list of the
+    /// unlocked skills above it, to bind one there directly. On touch the bar itself is
+    /// TouchControlsUI's round buttons.
     /// Installed by <see cref="GameSessionController"/>; built at runtime.
     /// </summary>
     public class SkillBarUI : MonoBehaviour
@@ -42,9 +44,16 @@ namespace PoeClone.UI
 
         private GameObject barRoot;
         private GameObject panelRoot;
+        private RectTransform barRect;
+        private RectTransform picker;
+        private readonly List<GameObject> pickerRows = new List<GameObject>();
+        private int pickerSlot = -1;
         private PlayerSkills skills;
 
         public static bool IsOpen => instance != null && instance.panelRoot != null && instance.panelRoot.activeSelf;
+
+        /// <summary>The bind list over the bar is open (other things over the bar make way).</summary>
+        public static bool PickerOpen => instance != null && instance.pickerSlot >= 0;
 
         public static void SetOpen(bool open)
         {
@@ -81,8 +90,11 @@ namespace PoeClone.UI
             if (!show)
             {
                 panelRoot.SetActive(false);
+                ClosePicker();
                 return;
             }
+
+            UpdatePicker();
 
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && !UiKit.IsTypingInTextField())
@@ -95,6 +107,123 @@ namespace PoeClone.UI
 
             for (int k = 0; k < slotViews.Count; k++)
                 UpdateSlot(slotViews[k], skills.Slot(k));
+        }
+
+        // ------------------------------------------------------------------ picker
+
+        private const float PickerRowHeight = 40f;
+        private const float PickerWidth = 280f;
+
+        private void OpenPicker(int slot)
+        {
+            if (skills == null || TouchMode.Active)
+                return;
+            if (pickerSlot == slot)
+            {
+                ClosePicker();
+                return;
+            }
+
+            pickerSlot = slot;
+            int shown = 0;
+            for (int k = 0; k < pickerRows.Count; k++)
+            {
+                // The last row is "(empty)"; the others follow SkillBook.All.
+                bool visible = k == pickerRows.Count - 1 || skills.IsUnlocked(SkillBook.All[k].Id);
+                pickerRows[k].SetActive(visible);
+                if (!visible)
+                    continue;
+
+                var rt = (RectTransform)pickerRows[k].transform;
+                UiKit.TopLeft(rt, new Vector2(4f, -4f - shown * PickerRowHeight), new Vector2(PickerWidth - 8f, PickerRowHeight - 4f));
+                bool here = k < SkillBook.All.Length && skills.Slot(slot) == SkillBook.All[k].Id;
+                pickerRows[k].GetComponent<Image>().color = here ? new Color(0.45f, 0.35f, 0.15f, 1f) : new Color(0.12f, 0.10f, 0.09f, 1f);
+                shown++;
+            }
+
+            picker.sizeDelta = new Vector2(PickerWidth, shown * PickerRowHeight + 8f);
+            // Above the clicked square.
+            float slotCentre = slot * (SlotSize + 8f) + 4f + SlotSize * 0.5f - barRect.sizeDelta.x * 0.5f;
+            picker.anchoredPosition = new Vector2(slotCentre, 18f + SlotSize + 10f);
+            picker.gameObject.SetActive(true);
+        }
+
+        private void ClosePicker()
+        {
+            pickerSlot = -1;
+            if (picker != null)
+                picker.gameObject.SetActive(false);
+        }
+
+        // A click anywhere but the list (or the bar, which toggles it itself) closes it, as does Escape.
+        private void UpdatePicker()
+        {
+            if (pickerSlot < 0)
+                return;
+
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+            {
+                ClosePicker();
+                return;
+            }
+
+            Mouse mouse = Mouse.current;
+            if (mouse != null && (mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame))
+            {
+                Vector2 at = mouse.position.ReadValue();
+                if (!RectTransformUtility.RectangleContainsScreenPoint(picker, at, null) &&
+                    !RectTransformUtility.RectangleContainsScreenPoint(barRect, at, null))
+                    ClosePicker();
+            }
+        }
+
+        private void Pick(int row)
+        {
+            if (skills == null || pickerSlot < 0)
+                return;
+            if (row < SkillBook.All.Length)
+                skills.Assign(pickerSlot, SkillBook.All[row].Id);
+            else
+                skills.ClearSlot(pickerSlot);
+            if (Audio.AudioManager.Instance != null)
+                Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.uiItemPlace, 0.4f);
+            ClosePicker();
+        }
+
+        private void BuildPicker(Transform canvas)
+        {
+            Image back = UiKit.NewImage("SkillPicker", canvas, UiKit.PanelColor);
+            UiKit.Grain(back);
+            back.raycastTarget = true;
+            picker = back.rectTransform;
+            picker.anchorMin = picker.anchorMax = new Vector2(0.5f, 0f);
+            picker.pivot = new Vector2(0.5f, 0f);
+            UiKit.AddOutline(back, UiKit.BorderColor, 2f);
+
+            for (int k = 0; k <= SkillBook.All.Length; k++)
+            {
+                int row = k;
+                string label;
+                if (k < SkillBook.All.Length)
+                {
+                    SkillDefinition skill = SkillBook.All[k];
+                    label = "<color=#" + UiKit.Hex(skill.Color) + "><b>" + skill.Short + "</b></color>  " + skill.Name;
+                }
+                else
+                {
+                    label = "<color=#" + UiKit.Hex(UiKit.DimText) + ">(empty)</color>";
+                }
+
+                Image item = UiKit.NewImage("Pick_" + k, picker, Color.black);
+                item.raycastTarget = true;
+                Text text = UiKit.NewText("Text", item.rectTransform, label, 18, UiKit.TextColor, TextAnchor.MiddleLeft);
+                UiKit.Stretch(text.rectTransform, 10f);
+                item.gameObject.AddComponent<TouchPointerRelay>().Up += _ => Pick(row);
+                pickerRows.Add(item.gameObject);
+            }
+
+            picker.gameObject.SetActive(false);
         }
 
         private void UpdateSlot(SlotView view, SkillId? id)
@@ -164,11 +293,15 @@ namespace PoeClone.UI
             bar.anchoredPosition = new Vector2(0f, 18f);
             bar.sizeDelta = new Vector2(SkillBook.SlotCount * (SlotSize + 8f), SlotSize);
             barRoot = bar.gameObject;
+            barRect = bar;
 
             for (int k = 0; k < SkillBook.SlotCount; k++)
             {
                 Image back = UiKit.NewImage("Slot" + k, bar, Color.black);
                 UiKit.Inset(back);
+                back.raycastTarget = true;
+                int clicked = k;
+                back.gameObject.AddComponent<TouchPointerRelay>().Up += _ => OpenPicker(clicked);
                 UiKit.TopLeft(back.rectTransform, new Vector2(k * (SlotSize + 8f) + 4f, 0f), new Vector2(SlotSize, SlotSize));
                 UiKit.AddOutline(back, UiKit.BorderColor, 2f);
 
@@ -191,6 +324,8 @@ namespace PoeClone.UI
 
                 slotViews.Add(new SlotView { Back = back, Cooldown = cooldown, NoMana = noMana, Name = name });
             }
+
+            BuildPicker(canvas.transform);
 
             // The panel: centred list, one row per skill.
             const float rowHeight = 74f;

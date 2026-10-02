@@ -23,6 +23,9 @@ namespace PoeClone.Network
 
         public bool IsShowing => canvasRoot != null && canvasRoot.activeSelf;
 
+        /// <summary>The name has been given (the game is starting), at least once.</summary>
+        public bool HasConfirmed { get; private set; }
+
         private void Awake()
         {
             UiEventSystemBootstrap.EnsureExists();
@@ -50,6 +53,7 @@ namespace PoeClone.Network
             onDone = null;
 
             canvasRoot.SetActive(false);
+            HasConfirmed = true;
             PlayerHUD.SetHiddenBy(this, false);
             if (EventSystem.current != null)
                 EventSystem.current.SetSelectedGameObject(null);
