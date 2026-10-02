@@ -15,7 +15,15 @@ namespace PoeClone.Player
         /// <summary>Sprint toggle (touch has no Shift to hold).</summary>
         public static bool Sprint;
 
-        /// <summary>Attack button held: swings repeatedly, as fast as the weapon allows.</summary>
+        /// <summary>
+        /// The aim stick's direction, screen-relative like <see cref="Move"/>, length 0..1, zero
+        /// when not held. Replaces a plain attack button: holding it off-centre attacks (or casts)
+        /// repeatedly in that direction, same as holding the old button but steerable, since every
+        /// weapon and spell needs a direction, not just a go/no-go signal.
+        /// </summary>
+        public static Vector2 Aim;
+
+        /// <summary>True while <see cref="Aim"/> is held past its dead zone: swings/shoots/casts repeatedly.</summary>
         public static bool AttackHeld;
 
         /// <summary>A touch skill button was pressed this frame (its slot), or -1. PlayerSkills consumes it.</summary>
@@ -27,6 +35,7 @@ namespace PoeClone.Player
         public static void Clear()
         {
             Move = Vector2.zero;
+            Aim = Vector2.zero;
             AttackHeld = false;
             SkillPressed = -1;
             PotionPressed = -1;

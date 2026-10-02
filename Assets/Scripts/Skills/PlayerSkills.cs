@@ -15,7 +15,9 @@ namespace PoeClone.Skills
     /// The player's skills (see <see cref="SkillBook"/>): four bar slots used with Q, E, R and F
     /// (or the round touch buttons). Skills unlock as the character levels up and drop into the
     /// first free slot; the skills panel (K) moves them around. Each costs mana and has a cooldown.
-    /// Aiming works like attacks: the mouse on desktop, the nearest enemy on touch.
+    /// Aiming works like attacks: the mouse on desktop, <see cref="VirtualInput.Aim"/> (the aim
+    /// stick) on touch - whatever enemy that direction currently lines up with, or a blind cast at
+    /// the nearest enemy (for less damage) if it doesn't line up with anything or isn't held.
     /// Self-added by <see cref="PlayerController"/>.
     /// </summary>
     public class PlayerSkills : MonoBehaviour
@@ -206,7 +208,7 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.FireBolt:
-                    Face(AimDirection(16f));
+                    Face(AimDirection());
                     if (attackAnimator != null)
                         attackAnimator.PlayAttack(WeaponType.Unarmed);
                     int bolts = 1 + Mathf.Max(0, Mathf.RoundToInt(Stat(StatType.AdditionalSpellProjectiles)));
@@ -217,7 +219,7 @@ namespace PoeClone.Skills
                 case SkillId.Dash:
                     Vector3 dir = controller.InputDirection();
                     if (dir.sqrMagnitude < 0.01f)
-                        dir = AimDirection(10f);
+                        dir = AimDirection();
                     SkillEffects.Shockwave(transform.position, 1.2f, skill.Color, 0.25f);
                     controller.Dash(dir, 7f, 0.18f);
                     break;
@@ -378,12 +380,43 @@ namespace PoeClone.Skills
             return best;
         }
 
+        // Half-angle, in degrees, of the cone the aim stick's direction has to land an enemy in to
+        // count as deliberately aimed at it (as opposed to a blind cast at whatever's nearest).
+        private const float AimConeHalfAngle = 20f;
+
+        // The closest living enemy that a world direction (e.g. the aim stick's) currently points
+        // at, within reach and AimConeHalfAngle of it. Zero direction never matches anything.
+        private EnemyHealth EnemyInDirection(Vector3 direction, float reach)
+        {
+            direction.y = 0f;
+            if (direction.sqrMagnitude < 0.0001f)
+                return null;
+
+            EnemyHealth best = null;
+            float bestSq = reach * reach;
+            foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
+            {
+                Vector3 toEnemy = enemy.transform.position - transform.position;
+                toEnemy.y = 0f;
+                if (Vector3.Angle(direction, toEnemy) > AimConeHalfAngle)
+                    continue;
+
+                float distSq = toEnemy.sqrMagnitude;
+                if (distSq <= bestSq)
+                {
+                    bestSq = distSq;
+                    best = enemy;
+                }
+            }
+            return best;
+        }
+
         // The living enemy drawn under the mouse (or within a short distance of the ground point
-        // under it), within reach of the player. On touch: the nearest enemy, as aimed casts go.
+        // under it), within reach of the player. On touch: whatever the aim stick points at.
         private EnemyHealth AimedEnemy(float reach)
         {
             if (TouchMode.Active)
-                return Nearest(transform.position, reach, new HashSet<EnemyHealth>());
+                return EnemyInDirection(PlayerController.CameraRelativeDirection(VirtualInput.Aim), reach);
 
             Mouse mouse = Mouse.current;
             Camera cam = Camera.main;
@@ -411,15 +444,15 @@ namespace PoeClone.Skills
             return d.sqrMagnitude <= reach * reach;
         }
 
-        // Where a cast should go: the mouse on desktop; on touch the nearest enemy in range, else
+        // Where a cast should go: the mouse on desktop; on touch, the aim stick's direction, else
         // the joystick direction, else straight ahead.
-        private Vector3 AimDirection(float range)
+        private Vector3 AimDirection()
         {
             if (TouchMode.Active)
             {
-                EnemyHealth nearest = Nearest(transform.position, range, new HashSet<EnemyHealth>());
-                if (nearest != null)
-                    return Flat(nearest.transform.position - transform.position);
+                Vector3 aim = PlayerController.CameraRelativeDirection(VirtualInput.Aim);
+                if (aim.sqrMagnitude > 0.0001f)
+                    return aim;
 
                 Vector3 input = controller.InputDirection();
                 return input.sqrMagnitude > 0.01f ? input : transform.forward;

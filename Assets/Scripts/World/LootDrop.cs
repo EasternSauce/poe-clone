@@ -301,10 +301,16 @@ namespace PoeClone.World
             icon.localScale = Vector3.one * (on ? 1.2f : 1f);
         }
 
+        // Extra slack (screen pixels) added around the name tag and icon before testing a click/tap
+        // against them - the drawn item itself can be a sliver (a dagger's icon is barely wider than
+        // its blade) and still needs to be easy to hit. Touch gets more than the mouse, for fingers.
+        private const float MouseHitPadding = 14f;
+        private const float TouchHitPadding = 34f;
+
         /// <summary>
-        /// The drop whose name tag or icon is under this screen point (the nearest to the camera if
-        /// they overlap), or null. Only interactive drops that have landed count; the glow around the
-        /// icon doesn't, so the target is no bigger than what reads as the item.
+        /// The drop whose name tag or icon (plus a little slack, for easy clicking/tapping) is under
+        /// this screen point - the nearest to the camera if they overlap, or null. Only interactive
+        /// drops that have landed count.
         /// </summary>
         public static LootDrop FindAtScreen(Vector2 screenPoint)
         {
@@ -312,6 +318,7 @@ namespace PoeClone.World
             if (cam == null)
                 return null;
 
+            float padding = TouchMode.Active ? TouchHitPadding : MouseHitPadding;
             LootDrop best = null;
             float bestDepth = float.MaxValue;
 
@@ -320,8 +327,8 @@ namespace PoeClone.World
                 if (!drop.interactive || drop.icon == null || Time.time < drop.clickableAt)
                     continue;
 
-                bool hit = RectTransformUtility.RectangleContainsScreenPoint(drop.labelBack.rectTransform, screenPoint, cam) ||
-                           RectTransformUtility.RectangleContainsScreenPoint(drop.icon, screenPoint, cam);
+                bool hit = PaddedRectContainsScreenPoint(drop.labelBack.rectTransform, cam, screenPoint, padding) ||
+                           PaddedRectContainsScreenPoint(drop.icon, cam, screenPoint, padding);
                 if (!hit)
                     continue;
 
@@ -334,6 +341,29 @@ namespace PoeClone.World
             }
 
             return best;
+        }
+
+        private static readonly Vector3[] cornerBuffer = new Vector3[4];
+
+        // Same test as RectTransformUtility.RectangleContainsScreenPoint, but inflated by padding
+        // screen pixels on every side.
+        private static bool PaddedRectContainsScreenPoint(RectTransform rect, Camera cam, Vector2 screenPoint, float padding)
+        {
+            Vector3[] corners = cornerBuffer;
+            rect.GetWorldCorners(corners);
+
+            Vector2 min = cam.WorldToScreenPoint(corners[0]);
+            Vector2 max = min;
+            for (int i = 1; i < 4; i++)
+            {
+                Vector2 p = cam.WorldToScreenPoint(corners[i]);
+                min = Vector2.Min(min, p);
+                max = Vector2.Max(max, p);
+            }
+
+            min -= new Vector2(padding, padding);
+            max += new Vector2(padding, padding);
+            return screenPoint.x >= min.x && screenPoint.x <= max.x && screenPoint.y >= min.y && screenPoint.y <= max.y;
         }
 
         /// <summary>Puts the item in the bag. False (with a notice) if there's no room.</summary>

@@ -76,11 +76,18 @@ namespace PoeClone.Inventory
             }
         }
 
+        // Gold drops constantly (every kill, every autocollected pile) and its clip is much hotter
+        // at the source than the other drop clips, so it gets turned down on its own.
+        private const float GoldDropVolume = 0.3f;
+
         public static void PlayDrop(ItemData item, Vector3 at)
         {
             AudioClip clip = Drop(item);
-            if (clip != null)
-                AudioManager.Instance.PlayAtPoint(clip, at);
+            if (clip == null)
+                return;
+
+            float volume = item != null && item.Type == ItemType.Gold ? GoldDropVolume : 1f;
+            AudioManager.Instance.PlayAtPoint(clip, at, volume);
         }
     }
 }

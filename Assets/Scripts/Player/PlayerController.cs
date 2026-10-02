@@ -57,7 +57,16 @@ namespace PoeClone.Player
         /// <summary>The direction the movement input currently points, in world space (zero when idle).</summary>
         public Vector3 InputDirection()
         {
-            Vector2 input = ReadMovementInput();
+            return CameraRelativeDirection(ReadMovementInput());
+        }
+
+        /// <summary>
+        /// Turns a screen-relative stick input (y = up the screen, as from a joystick or WASD) into
+        /// a flat world direction, relative to the camera's current yaw - so "up" on any stick always
+        /// points up the screen no matter how the camera is rotated. Zero input gives zero back.
+        /// </summary>
+        public static Vector3 CameraRelativeDirection(Vector2 input)
+        {
             if (input.sqrMagnitude < 0.0001f)
                 return Vector3.zero;
 

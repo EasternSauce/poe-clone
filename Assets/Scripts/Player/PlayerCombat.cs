@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
 using PoeClone.Audio;
 using PoeClone.Combat;
 using PoeClone.Enemies;
@@ -24,11 +22,11 @@ namespace PoeClone.Player
     /// feedback. The swing itself always damages every valid target inside a forward cone,
     /// regardless of which one is highlighted.
     ///
-    /// Touch has no cursor, so there are two ways to attack. A finger on the game world (anywhere
-    /// that isn't a button, an item or a townsperson) aims and attacks at that spot, snapping to an
-    /// enemy near the finger, and keeps attacking while held, following the finger; a quick tap
-    /// during the weapon's cooldown is remembered briefly instead of lost. The attack button aims
-    /// itself: at the nearest enemy in reach, or straight ahead when nothing is.
+    /// Touch has no cursor, so instead of a button, attacking uses a second stick
+    /// (<see cref="VirtualInput.Aim"/>, drawn by TouchControlsUI next to the movement stick):
+    /// holding it off-centre swings/shoots repeatedly towards wherever it points, exactly like
+    /// holding the mouse button down while pointing it, so aiming is always explicit - there is no
+    /// automatic targeting.
     ///
     /// A bow shoots instead (<see cref="PlayerArrow"/>, no ammo); its "reach" is how far arrows fly,
     /// so the same aiming and highlighting work for it unchanged.
@@ -67,16 +65,6 @@ namespace PoeClone.Player
         private readonly Collider[] hitBuffer = new Collider[16];
 
         private EnemyHealth highlighted;
-
-        // Touch: an enemy this close (metres) to the point under the finger is aimed at instead.
-        private const float TapSnapRadius = 2.5f;
-        // Touch: a tap that lands during the cooldown still fires if it comes up within this long.
-        private const float TapBufferSeconds = 0.35f;
-
-        private int aimTouchId = -1;          // the finger aiming on the world, or -1
-        private Vector2 aimTouchPosition;     // where it is (or was, for a buffered tap)
-        private float tapBufferedUntil = -1f;
-        private static readonly List<RaycastResult> uiHits = new List<RaycastResult>();
 
         private void Awake()
         {
@@ -148,8 +136,12 @@ namespace PoeClone.Player
             {
                 // Mouse input is ignored on touch: browsers turn taps into mouse clicks too, so
                 // every tap on a button would also swing.
-                bool fingerOnWorld = ReadWorldTouch();
-                attackPressed = VirtualInput.AttackHeld || fingerOnWorld || Time.time < tapBufferedUntil;
+                attackPressed = VirtualInput.AttackHeld;
+                // Keep turning to face the stick while it's held, even mid-cooldown, so the swing
+                // that finally lands is aimed at wherever it's currently pointing, not wherever it
+                // happened to point when the cooldown last ended.
+                if (attackPressed)
+                    FaceAimPoint();
             }
             else
             {
@@ -197,7 +189,6 @@ namespace PoeClone.Player
             FaceAimPoint();
             aimEnemy = highlighted;
             hasAimPoint = TryGetAimPoint(out aimPoint);
-            tapBufferedUntil = -1f;
 
             pendingDamage = ComputeDamage();
 
@@ -231,7 +222,14 @@ namespace PoeClone.Player
             point = Vector3.zero;
 
             if (TouchMode.Active)
-                return TouchAiming ? TryGetTouchAimPoint(out point) : TryGetAutoAimPoint(out point);
+            {
+                Vector3 direction = PlayerController.CameraRelativeDirection(VirtualInput.Aim);
+                if (direction.sqrMagnitude < 0.0001f)
+                    return false;
+
+                point = transform.position + direction * 10f;
+                return true;
+            }
 
             Mouse mouse = Mouse.current;
             Camera cam = Camera.main;
@@ -246,139 +244,6 @@ namespace PoeClone.Player
 
             point = ray.GetPoint(enter);
             return true;
-        }
-
-        // A finger is on the world, or a tap is still waiting to fire.
-        private bool TouchAiming => aimTouchId != -1 || Time.time < tapBufferedUntil;
-
-        // Follows the finger that went down on the game world, if any; true while it's held.
-        // Any finger counts, so the left thumb can stay on the joystick.
-        private bool ReadWorldTouch()
-        {
-            Touchscreen screen = Touchscreen.current;
-            if (screen == null)
-            {
-                aimTouchId = -1;
-                return false;
-            }
-
-            bool held = false;
-            foreach (TouchControl touch in screen.touches)
-            {
-                int id = touch.touchId.ReadValue();
-                if (aimTouchId == -1 && touch.press.wasPressedThisFrame && IsWorldTap(touch.position.ReadValue()))
-                {
-                    aimTouchId = id;
-                    tapBufferedUntil = Time.time + TapBufferSeconds;
-                }
-
-                if (id == aimTouchId && touch.press.isPressed)
-                {
-                    aimTouchPosition = touch.position.ReadValue();
-                    held = true;
-                }
-            }
-
-            if (!held)
-                aimTouchId = -1;
-            return held;
-        }
-
-        // Not a button or panel, not an item to pick up or someone to talk to.
-        private bool IsWorldTap(Vector2 position)
-        {
-            if (TouchMode.IsOverBlocker(position) || IsOverUi(position) || DialogueUI.IsOpen || HoldingInventoryItem())
-                return false;
-            return LootPicker.PickableAt(position) == null && NpcInteractor.TalkableAt(position) == null &&
-                   AreaGate.AtScreen(position) == null;
-        }
-
-        private static bool IsOverUi(Vector2 position)
-        {
-            EventSystem es = EventSystem.current;
-            if (es == null)
-                return false;
-            uiHits.Clear();
-            es.RaycastAll(new PointerEventData(es) { position = position }, uiHits);
-            return uiHits.Count > 0;
-        }
-
-        // Touch aim at the finger: the ground under it, or the nearest living enemy within
-        // TapSnapRadius of that spot (so a slightly-off tap still hits who was meant). A bow shoots
-        // that way even past its range; a melee swing turns that way.
-        private bool TryGetTouchAimPoint(out Vector3 point)
-        {
-            point = Vector3.zero;
-            Camera cam = Camera.main;
-            if (cam == null)
-                return false;
-
-            Ray ray = cam.ScreenPointToRay(aimTouchPosition);
-            if (!new Plane(Vector3.up, transform.position).Raycast(ray, out float enter))
-                return false;
-            point = ray.GetPoint(enter);
-
-            int count = Physics.OverlapSphereNonAlloc(point, TapSnapRadius, hitBuffer);
-            float bestDistanceSq = TapSnapRadius * TapSnapRadius;
-            for (int i = 0; i < count; i++)
-            {
-                EnemyHealth enemy = hitBuffer[i].GetComponentInParent<EnemyHealth>();
-                if (enemy == null || enemy.IsDead)
-                    continue;
-
-                Vector3 offset = enemy.transform.position - point;
-                offset.y = 0f;
-                if (offset.sqrMagnitude <= bestDistanceSq)
-                {
-                    bestDistanceSq = offset.sqrMagnitude;
-                    point = enemy.transform.position;
-                }
-            }
-            return true;
-        }
-
-        // Touch aim: the nearest living enemy the swing can reach. Uses the same centre-distance
-        // test as IsInCone, so the target picked is always one PerformHit will hit once faced.
-        // No target means no aim point, and the swing goes wherever the player already faces.
-        private bool TryGetAutoAimPoint(out Vector3 point)
-        {
-            point = Vector3.zero;
-
-            float range = CharacterAttackAnimator.AttackRange(CurrentWeaponType());
-            int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
-            float bestDistanceSq = range * range;
-            bool found = false;
-
-            for (int i = 0; i < count; i++)
-            {
-                EnemyHealth enemy = hitBuffer[i].GetComponentInParent<EnemyHealth>();
-                if (enemy == null || enemy.IsDead)
-                    continue;
-
-                Vector3 toEnemy = enemy.transform.position - transform.position;
-                toEnemy.y = 0f;
-                if (toEnemy.sqrMagnitude <= bestDistanceSq)
-                {
-                    bestDistanceSq = toEnemy.sqrMagnitude;
-                    point = enemy.transform.position;
-                    found = true;
-                }
-            }
-
-            // Nothing in reach: swing (or shoot) the way the joystick points. Without this a held
-            // attack button kept the character facing wherever it first swung, since the walk turn
-            // waits for swings to finish - so only one direction could ever be attacked.
-            if (!found && controller != null)
-            {
-                Vector3 steer = controller.InputDirection();
-                if (steer.sqrMagnitude > 0.01f)
-                {
-                    point = transform.position + steer.normalized * 2f;
-                    found = true;
-                }
-            }
-
-            return found;
         }
 
         // The stat sheet's PhysicalDamage already covers the unarmed base (PlayerStatsLink sets it
@@ -507,8 +372,8 @@ namespace PoeClone.Player
             float range = CharacterAttackAnimator.AttackRange(CurrentWeaponType());
             int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
 
-            // On touch the "cursor" is the aim target itself (the finger's, or the auto-aim's), so
-            // that is what gets outlined.
+            // On touch the "cursor" is the point the aim stick is pointing at, so that is what
+            // gets outlined.
             Vector2 cursor = touch
                 ? (Vector2)cam.WorldToScreenPoint(aimPoint + Vector3.up)
                 : mouse.position.ReadValue();

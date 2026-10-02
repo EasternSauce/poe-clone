@@ -1,39 +1,7 @@
-version: 2026-10-03b
+version: 2026-10-03c
+<b>Phones</b>
+- Attacking and casting now use a second stick (where the attack button used to be) instead of a button: drag it to aim, hold it off centre to keep attacking or casting that way. Works the same for melee, bows and spells - there's no more auto-aim, so you're always in control of the direction.
+
 <b>Fixes</b>
-- An item's stats no longer stay stuck on screen after you pick it up.
-- Phones: the chat opens over the minimap and quest tracker instead of under them.
-- Phones: holding the attack button with nothing in reach now attacks the way the joystick points (before, you kept facing wherever your first swing went).
-- Phones: Haven runs faster (fewer lights drawn at once, lighter shadows).
-- Spectators stay closer to live on slow connections: the server skips frames instead of queueing seconds of them.
-- Spectators can see whether the player they watch is on a phone or a PC.
-- Putting a weapon down no longer rings like a doorbell.
-- Phones: the stash and trade panels no longer overlap your equipment and bag.
-- iPhone: the game no longer gets pillarboxed with black bars on the sides in landscape.
-
-<b>Sounds</b>
-- Armour, belts and quivers make their old pickup sounds again; swords, axes and maces clang, bows knock like wood. Item sounds are all about equally loud now.
-
-<b>Haven</b>
-- A stash chest stands by the market stalls: click it to store items (12x12). Ctrl+click moves an item straight between your bag and the stash. It's saved with your character.
-- Clicking inside the open inventory no longer swings your weapon at the world behind it.
-
-<b>Uniques and keystones</b>
-- New special stats that change how you play: extra arrows, extra Fire Bolts, spell damage, area of effect, life regeneration, mana regeneration, life leech, Mind over Matter, extra Chain Lightning arcs, chill on hit, Culling Strike and life on kill.
-- Every unique now has at least one: Whisperwind fires 3 arrows, Bonehew leeches life, Ashfall culls, Emberheart boosts spells, Elder's Charm adds a lightning arc, and more.
-- Six new uniques: Rimefletch, Leechfang, Twinflame Loop, Stormcaller's Circlet, Bloodroot Cord and Mantle of the Still Mind.
-- Each arm of the passive tree now ends in a keystone (the diamonds): Executioner, Bloodthirst, Frostbite, Volley, Twin Casting and Mind over Matter.
-- Life now regenerates very slowly on its own. Everyone takes 10% of hits from mana (was 30%); Mind over Matter and some gear add more.
-- The character page lists your special stats.
-
-<b>Minimap</b>
-- The minimap now shows the ground: open paths, trees, rocks, walls and dead ends, with a grainy texture in each area's colour.
-- Fog of war: you only see the parts you've explored, and that's remembered with your character. Monsters show only nearby, in explored ground.
-
-<b>Potions and gold</b>
-- Gold now drops on the ground: walk over it (or click it) to pick it up.
-- Potions drop on the ground too. They go into two potion slots in your inventory, next to your body armour: only potions fit there, they stack up to 10, and they can't be sold. Click a slot (or press 1 / 2) to drink.
-
-<b>Trading</b>
-- Oda and Bram now trade properly: their goods appear beside your bag. Click an item to buy it; Ctrl+click an item in your bag (or drop it on their side) to sell it. Prices show on the tooltips, and what you sell can be bought back.
-- Their stock fits your level and restocks as you grow or after a while.
-- Bram still gambles, now for more gold but with better odds: rare or better half the time, and sometimes a unique.
+- Gold dropping on the ground is much quieter.
+- Items on the ground are easier to click or tap - the target around them is bigger than the icon itself.

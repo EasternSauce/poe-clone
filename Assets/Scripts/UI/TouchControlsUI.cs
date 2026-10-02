@@ -10,7 +10,8 @@ namespace PoeClone.UI
 {
     /// <summary>
     /// On-screen controls for phone/tablet play, shown only in <see cref="TouchMode"/>: a floating
-    /// joystick on the left half of the screen, an attack button (hold to keep swinging) and a run
+    /// joystick on the left half of the screen for movement, an aim stick (drag to aim, hold off
+    /// centre to keep attacking/casting that way - see <see cref="VirtualInput.Aim"/>) and a run
     /// toggle at the bottom right, and a column of buttons at the top right for the bag, the
     /// character page and chat. They feed <see cref="VirtualInput"/>, which the player scripts read
     /// next to the keyboard and mouse. Also asks for landscape when the phone is held upright.
@@ -41,9 +42,11 @@ namespace PoeClone.UI
         private Image joystickKnobImage;
         private int joystickPointer = int.MinValue;
 
-        private Image attackImage;
-        private Image attackIcon;
-        private string attackIconFor;
+        private Image aimBaseImage;
+        private RectTransform aimKnob;
+        private Image aimIcon;
+        private string aimIconFor;
+        private int aimPointer = int.MinValue;
         private Image runImage;
         private GameObject unreadDot;
 
@@ -119,7 +122,7 @@ namespace PoeClone.UI
             // The character page sits where the HUD is drawn (OnGUI draws over uGUI).
             PlayerHUD.SetHiddenBy(this, characterOpen);
 
-            UpdateAttackIcon();
+            UpdateAimIcon();
 
             if (ChatUI.PanelVisible)
                 seenMessages = ChatUI.MessageCount;
@@ -127,18 +130,18 @@ namespace PoeClone.UI
         }
 
         // The equipped weapon's painted icon (a bow for a bow), or the plain sword silhouette unarmed.
-        private void UpdateAttackIcon()
+        private void UpdateAimIcon()
         {
             PlayerInventory inventory = stats != null ? stats.GetComponent<PlayerInventory>() : null;
             ItemData weapon = inventory != null ? inventory.Equipment.Get(EquipSlot.MainHand) : null;
             string id = weapon != null ? weapon.Id : "";
-            if (id == attackIconFor)
+            if (id == aimIconFor)
                 return;
 
-            attackIconFor = id;
+            aimIconFor = id;
             Sprite painted = weapon != null ? ItemArt.PaintedIcon(weapon) : null;
-            attackIcon.sprite = painted != null ? painted : IconFactory.Get(ItemType.Weapon);
-            attackIcon.color = painted != null ? weapon.ArtTint : new Color(0.92f, 0.86f, 0.72f, 0.9f);
+            aimIcon.sprite = painted != null ? painted : IconFactory.Get(ItemType.Weapon);
+            aimIcon.color = painted != null ? weapon.ArtTint : new Color(0.92f, 0.86f, 0.72f, 0.9f);
         }
 
         private void FindGameplay()
@@ -217,7 +220,10 @@ namespace PoeClone.UI
             joystickBase.anchoredPosition = JoystickIdle;
             joystickKnob.anchoredPosition = Vector2.zero;
             SetJoystickActive(false);
-            attackImage.color = ControlColor;
+
+            aimPointer = int.MinValue;
+            aimKnob.anchoredPosition = Vector2.zero;
+            aimBaseImage.color = ControlColor;
         }
 
         // ------------------------------------------------------------------ joystick
@@ -275,6 +281,49 @@ namespace PoeClone.UI
         {
             joystickBaseImage.color = new Color(1f, 1f, 1f, active ? 0.45f : 0.22f);
             joystickKnobImage.color = new Color(1f, 1f, 1f, active ? 0.75f : 0.35f);
+        }
+
+        // ------------------------------------------------------------------ aim stick
+
+        // Fixed in place (unlike the movement joystick, which appears under the thumb) since it
+        // shares the attack button's old spot and shouldn't wander into the skill buttons beside
+        // it. Dragging past its edge still works: once a finger is down on it, the event system
+        // keeps sending drag events to it no matter where the finger goes.
+        private void OnAimDown(PointerEventData e)
+        {
+            if (aimPointer != int.MinValue)
+                return;
+
+            aimPointer = e.pointerId;
+            aimBaseImage.color = ControlPressed;
+            OnAimDrag(e);
+        }
+
+        private void OnAimDrag(PointerEventData e)
+        {
+            if (e.pointerId != aimPointer)
+                return;
+
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(aimBaseImage.rectTransform, e.position, null, out Vector2 local);
+            Vector2 offset = Vector2.ClampMagnitude(local, JoystickRadius);
+            aimKnob.anchoredPosition = offset;
+
+            Vector2 direction = offset / JoystickRadius;
+            bool held = direction.magnitude >= JoystickDeadZone;
+            VirtualInput.Aim = held ? direction : Vector2.zero;
+            VirtualInput.AttackHeld = held;
+        }
+
+        private void OnAimUp(PointerEventData e)
+        {
+            if (e.pointerId != aimPointer)
+                return;
+
+            aimPointer = int.MinValue;
+            VirtualInput.Aim = Vector2.zero;
+            VirtualInput.AttackHeld = false;
+            aimKnob.anchoredPosition = Vector2.zero;
+            aimBaseImage.color = ControlColor;
         }
 
         // ------------------------------------------------------------------ buttons
@@ -337,7 +386,7 @@ namespace PoeClone.UI
             Canvas canvas = NewCanvas("TouchControlsCanvas", 700);
             controlsRoot = canvas.gameObject;
 
-            // Combat: joystick zone on the left, attack + run at the bottom right.
+            // Combat: joystick zone on the left, aim stick + run at the bottom right.
             RectTransform combat = UiKit.NewRect("Combat", canvas.transform);
             UiKit.Stretch(combat, 0f);
             combatRoot = combat.gameObject;
@@ -369,23 +418,25 @@ namespace PoeClone.UI
             stick.Dragged += OnJoystickDrag;
             stick.Up += OnJoystickUp;
 
-            attackImage = NewRoundButton("Attack", combat, new Vector2(1f, 0f), new Vector2(-150f, 150f), 180f, null);
-            attackIcon = UiKit.NewImage("Icon", attackImage.rectTransform, new Color(0.92f, 0.86f, 0.72f, 0.9f));
-            attackIcon.sprite = IconFactory.Get(ItemType.Weapon);
-            attackIcon.preserveAspect = true;
-            Place(attackIcon.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(104f, 104f));
+            // Aim stick: fixed in the attack button's old spot. Dragging it off centre both aims
+            // and attacks/casts that way, repeatedly while held - there's no auto-aim any more, so
+            // this is the only way to hit anything on touch.
+            aimBaseImage = NewRoundButton("Aim", combat, new Vector2(1f, 0f), new Vector2(-150f, 150f), 180f, null);
 
-            TouchPointerRelay attack = attackImage.gameObject.AddComponent<TouchPointerRelay>();
-            attack.Down += _ =>
-            {
-                VirtualInput.AttackHeld = true;
-                attackImage.color = ControlPressed;
-            };
-            attack.Up += _ =>
-            {
-                VirtualInput.AttackHeld = false;
-                attackImage.color = ControlColor;
-            };
+            Image aimKnobImage = UiKit.NewImage("Knob", aimBaseImage.rectTransform, Color.white);
+            aimKnobImage.sprite = UiKit.Disc;
+            aimKnob = aimKnobImage.rectTransform;
+            Place(aimKnob, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(104f, 104f));
+
+            aimIcon = UiKit.NewImage("Icon", aimKnob, new Color(0.92f, 0.86f, 0.72f, 0.9f));
+            aimIcon.sprite = IconFactory.Get(ItemType.Weapon);
+            aimIcon.preserveAspect = true;
+            UiKit.Stretch(aimIcon.rectTransform, 16f);
+
+            TouchPointerRelay aim = aimBaseImage.gameObject.AddComponent<TouchPointerRelay>();
+            aim.Down += OnAimDown;
+            aim.Dragged += OnAimDrag;
+            aim.Up += OnAimUp;
 
             // Skill buttons on an arc around the attack button, in thumb's reach.
             for (int k = 0; k < Skills.SkillBook.SlotCount; k++)
@@ -456,7 +507,7 @@ namespace PoeClone.UI
             unreadDot = dot.gameObject;
 
             // The inventory and item pickup read raw touches, so they must know these buttons sit on top.
-            TouchMode.AddBlocker(attackImage.rectTransform);
+            TouchMode.AddBlocker(aimBaseImage.rectTransform);
             TouchMode.AddBlocker(runImage.rectTransform);
             TouchMode.AddBlocker(bag.rectTransform);
             TouchMode.AddBlocker(character.rectTransform);

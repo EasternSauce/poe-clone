@@ -68,10 +68,15 @@ namespace PoeClone.Audio
 
         public void PlayAtPoint(AudioClip clip, Vector3 position)
         {
+            PlayAtPoint(clip, position, 1f);
+        }
+
+        public void PlayAtPoint(AudioClip clip, Vector3 position, float volumeScale)
+        {
             if (clip == null)
                 return;
 
-            AudioSource.PlayClipAtPoint(clip, position, sfxVolume);
+            AudioSource.PlayClipAtPoint(clip, position, sfxVolume * volumeScale);
         }
 
         public void PlayRandomAtPoint(AudioClip[] clips, Vector3 position)
