@@ -61,6 +61,8 @@ keep in the morning"). It sits on top of `master`, one commit per feature, oldes
 | 25 | Up to 10 players (2026-10-02) | each plays their own game; 11th is queued; spectators watch one player and switch with left/right arrows or the < > buttons by the LIVE badge; server `room.js` + `SpectatorView` |
 | 26-27 | Tap to attack on touch; coloured chat names (2026-10-02) | a finger on the world aims/attacks there (snaps to an enemy within 2.5 m, hold to keep attacking, any finger so the joystick stays usable); chat names coloured per name, role tags tinted, user text escaped |
 | 28 | iPhone full screen (2026-10-02) | Home Screen web app: manifest + Apple meta tags + icons in `Assets/WebGLTemplates/FullWindow/`; the fullscreen button explains Add to Home Screen on iPhone, hides when launched from the Home Screen; canvas avoids the notch |
+| 29 | Upright caster staffs (2026-10-02) | the attack swing tipped the staff so bolts left from near the ground; `UprightStaff` keeps it upright and `EnemyCombat.BoltOrigin` uses the upright orb position |
+| 30 | Bigger irregular areas (2026-10-02) | `AreaShape` blob outlines (~2x area, centres 260 m apart), ground cut to shape with darkness beyond, edge wall, themed borders (forest/river/boulders/lava/ice) and inward ridges in `WorldBuilder.Borders.cs`; scatter, spawners (34-36 enemies), minimap follow the outline |
 
 State: 137/137 EditMode tests pass on the branch (120 on master). A local Web build of the
 branch compiled and was then discarded (the deploy folder was restored to the live build).
@@ -117,15 +119,21 @@ Done (one commit each, tested in Editor Play mode, 137/137 EditMode tests):
   impersonated iPhone; **still to check on a real iPhone, and that the Web build copies the
   template's extra files** (manifest, icons) next to index.html.
 
+- (5, again) The first fix started bolts at the orb, but the claw swing tipped the staff upside down
+  at the strike frame; the staff is now kept upright (`UprightStaff`).
+- (7, first pass) Areas are irregular blobs about twice the area, with natural-looking borders and a
+  few inward ridges (`AreaShape`, `WorldBuilder.Borders.cs`). The user asked for "something quick,
+  more complex later": room-and-corridor / cave layouts are not done. **Not yet checked: frame rate
+  on a phone** (many more border objects; their shadows are off).
+
 Still open (the user wants to confirm before each of these is started):
 - (9) Each area mixes the same 7 base kinds by weight (`WorldBuilder.KindWeights`); only the
   Graveyard/Ruins/Frozen natives differ. Per-area rosters + a few skill-using enemies would fix it.
-- (7) is a rewrite of `WorldBuilder` (layout generators: open field / rooms+corridors / cave),
+- (7, later) The rest of the layout overhaul is a rewrite of `WorldBuilder` (layout generators: open field / rooms+corridors / cave),
   and gates, waystones, spawners, safe spots and the minimap all depend on area bounds
   (currently a 100x100 m square per area, `WorldBuilder.HalfSize`, walls at +-49.5).
 
-Next, in the proposed order: enemy variety (9) -> area layout overhaul (7) as its own task.
-Confirm with the user before starting each.
+Next: enemy variety (9). Confirm with the user before starting.
 
 ## Architecture notes
 
