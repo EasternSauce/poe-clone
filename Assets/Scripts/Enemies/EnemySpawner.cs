@@ -202,6 +202,20 @@ namespace PoeClone.Enemies
             return false;
         }
 
+        /// <summary>
+        /// Parks or resumes this whole area: every enemy it has spawned is its own direct child
+        /// (see <see cref="Spawn"/>), so disabling them stops their AI/animation/physics Updates
+        /// outright instead of leaving them ticking miles away in an area the player isn't in. The
+        /// spawner's own GameObject stays active throughout (other code, like the spectator's puppet
+        /// parenting, holds onto its transform) - only this component and its spawned children toggle.
+        /// </summary>
+        public void SetAreaActive(bool active)
+        {
+            enabled = active;
+            for (int i = 0; i < transform.childCount; i++)
+                transform.GetChild(i).gameObject.SetActive(active);
+        }
+
         private bool TryFindSpawnPoint(Vector3 playerPos, float minDistance, out Vector3 point)
         {
             for (int attempt = 0; attempt < maxAttemptsPerEnemy; attempt++)

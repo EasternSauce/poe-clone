@@ -483,6 +483,7 @@ namespace PoeClone.Inventory
             stashPanel.anchoredPosition = new Vector2(-(30f + panelW + 16f), 0f);
             stashPanel.sizeDelta = new Vector2(gridSize + Pad * 2f, gridSize + Pad * 2f + 34f + NoteHeight);
             UiKit.AddOutline(back, UiKit.BorderColor, 3f);
+            TouchMode.AddBlocker(stashPanel);
 
             sideTitle = UiKit.NewText("Title", stashPanel, "STASH", 24, UiKit.Gold, TextAnchor.UpperCenter);
             UiKit.TopLeft(sideTitle.rectTransform, new Vector2(0f, -12f), new Vector2(stashPanel.sizeDelta.x, 30f));
@@ -715,6 +716,7 @@ private Vector2 CellSize(int w, int h)
             panel.anchoredPosition = new Vector2(-30f, 0f);
             panel.sizeDelta = new Vector2(panelW, panelH);
             UiKit.AddOutline(panelImage, UiKit.BorderColor, 3f);
+            TouchMode.AddBlocker(panel);
 
             // Character preview panel, just to the left of the inventory.
             Image previewBg = UiKit.NewImage("PreviewPanel", canvas.transform, UiKit.PanelColor);
@@ -727,6 +729,7 @@ private Vector2 CellSize(int w, int h)
             previewPanel.anchoredPosition = new Vector2(-(30f + panelW + 16f), 0f);
             previewPanel.sizeDelta = new Vector2(panelH * 0.68f, panelH);
             UiKit.AddOutline(previewBg, UiKit.BorderColor, 3f);
+            TouchMode.AddBlocker(previewPanel);
 
             if (hasPreview)
             {

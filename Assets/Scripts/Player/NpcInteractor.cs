@@ -15,15 +15,24 @@ namespace PoeClone.Player
     [RequireComponent(typeof(PlayerController))]
     public class NpcInteractor : MonoBehaviour
     {
+        // A click only reaches an NPC that's already fairly close, so an NPC rendered small in the
+        // background (behind a menu, or just far off) can't be walked to by a stray or accidental
+        // click; a distant click falls through to movement/attack instead.
+        private const float ClickReach = 10f;
+
         /// <summary>
-        /// The NPC a click/tap here would talk to, unless a living enemy is under the point too,
-        /// which takes the click instead (it gets attacked).
+        /// The NPC a click/tap here would talk to, unless a living enemy is under the point too
+        /// (it gets attacked instead), or the NPC is too far from the player to click at all.
         /// </summary>
         public static Npc TalkableAt(Vector2 screenPoint)
         {
             Npc npc = Npc.AtScreen(screenPoint);
-            return npc != null && !LootPicker.EnemyUnderPointer(screenPoint) ? npc : null;
+            if (npc == null || LootPicker.EnemyUnderPointer(screenPoint))
+                return null;
+            return activeInstance != null && !activeInstance.InReach(npc, ClickReach) ? null : npc;
         }
+
+        private static NpcInteractor activeInstance;
 
         private PlayerController controller;
         private PlayerStats stats;
@@ -35,8 +44,15 @@ namespace PoeClone.Player
             stats = GetComponent<PlayerStats>();
         }
 
+        private void OnEnable()
+        {
+            activeInstance = this;
+        }
+
         private void OnDisable()
         {
+            if (activeInstance == this)
+                activeInstance = null;
             target = null;
         }
 

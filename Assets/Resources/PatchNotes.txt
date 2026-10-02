@@ -1,7 +1,5 @@
-version: 2026-10-03c
-<b>Phones</b>
-- Attacking and casting now use a second stick (where the attack button used to be) instead of a button: drag it to aim, hold it off centre to keep attacking or casting that way. Works the same for melee, bows and spells - there's no more auto-aim, so you're always in control of the direction.
-
+version: 2026-10-03d
 <b>Fixes</b>
-- Gold dropping on the ground is much quieter.
-- Items on the ground are easier to click or tap - the target around them is bigger than the icon itself.
+- Menus (inventory, character page, stash/trading) no longer let a click through to an NPC standing behind them.
+- Clicking an NPC now requires already being reasonably close to them, so an accidental click on a distant/background NPC won't send you walking across the map.
+- Performance: only your current area simulates its enemies now (other areas used to keep running in the background the whole time); mobile rendering was also tuned down (antialiasing, shadow quality), which should help frame rate noticeably, especially on phones.

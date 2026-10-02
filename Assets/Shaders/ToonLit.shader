@@ -147,12 +147,21 @@ Shader "PoeClone/ToonLit"
                     float3 lightPosWS = _ManualLightPosRange[m].xyz;
                     float lightRange = max(_ManualLightPosRange[m].w, 0.001);
                     float3 toLight = lightPosWS - IN.positionWS;
-                    float distSq = max(dot(toLight, toLight), 1e-4);
+                    float distSq = dot(toLight, toLight);
+                    float rangeSq = lightRange * lightRange;
+
+                    // Most fragments on screen sit outside most torches' reach (the manual light
+                    // list is shared globally, not per-object), so skip the sqrt/divide below for
+                    // an out-of-range light entirely rather than paying for it and multiplying by a
+                    // zero falloff - this is the hot loop for every opaque pixel on screen.
+                    if (distSq >= rangeSq)
+                        continue;
+
+                    distSq = max(distSq, 1e-4);
                     float dist = sqrt(distSq);
                     float3 lightDir = toLight / dist;
 
-                    float rangeSq = lightRange * lightRange;
-                    float distFrac = saturate(distSq / rangeSq);
+                    float distFrac = distSq / rangeSq;
                     float distanceAtten = 1.0 - distFrac * distFrac;
                     distanceAtten = distanceAtten * distanceAtten;
                     float invSq = 1.0 / distSq;

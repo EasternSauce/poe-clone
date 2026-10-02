@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using PoeClone.Enemies;
+using PoeClone.Network;
 using PoeClone.Player;
 using PoeClone.Visuals;
 
@@ -182,6 +183,7 @@ namespace PoeClone.World
 
             // Start in town.
             MovePlayer(player, spawnPoints[Haven]);
+            manager.AreaChanged += OnAreaChanged;
             manager.SetAreas(definitions, Haven);
             StarterLoot.PlaceAt(starterSpots, spawnPoints[Haven].position + Vector3.down * 1.1f);
         }
@@ -547,6 +549,8 @@ namespace PoeClone.World
 
         private void SetUpSpawners()
         {
+            spawnersByArea = new EnemySpawner[Centers.Length];
+
             EnemySpawner original = FindAnyObjectByType<EnemySpawner>();
             if (original == null || original.EnemyPrefab == null)
                 return;
@@ -556,6 +560,7 @@ namespace PoeClone.World
             original.SetSafeSpots(SafeSpots(Greenwood));
             AreaShape greenwood = Shape(Greenwood);
             original.SetBounds(p => greenwood.Contains(p, 3f));
+            spawnersByArea[Greenwood] = original;
 
             foreach (int area in new[] { Graveyard, Ruins, Frozen })
             {
@@ -567,6 +572,32 @@ namespace PoeClone.World
                 spawner.SetSafeSpots(SafeSpots(area));
                 AreaShape shape = Shape(area);
                 spawner.SetBounds(p => shape.Contains(p, 3f));
+                spawnersByArea[area] = spawner;
+            }
+        }
+
+        // One EnemySpawner per area (null for Haven, the town), so its enemies can be parked while
+        // the player is elsewhere instead of chasing/animating/physics-ticking miles off screen -
+        // which is most of the areas, most of the time, and was the main cost behind even Haven
+        // (otherwise nearly empty) running slowly on weaker/mobile devices.
+        private EnemySpawner[] spawnersByArea;
+
+        // A spectator's scene mirrors whichever area the real player it's watching is in purely for
+        // display (see SpectatorReplica), but its own EnemySpawners are deliberately and permanently
+        // disabled there (no local respawning of puppet stand-ins) - leave that alone rather than
+        // flipping them back on here.
+        private void OnAreaChanged(int area)
+        {
+            if (spawnersByArea == null)
+                return;
+            if (GameSessionController.Instance != null && GameSessionController.Instance.Role == SessionRole.Spectator)
+                return;
+
+            for (int i = 0; i < spawnersByArea.Length; i++)
+            {
+                EnemySpawner spawner = spawnersByArea[i];
+                if (spawner != null)
+                    spawner.SetAreaActive(i == area);
             }
         }
 

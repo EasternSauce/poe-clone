@@ -143,6 +143,7 @@ namespace PoeClone.Inventory
 
             Image bg = UiKit.NewImage("Panel", canvas.transform, UiKit.PanelColor);
             UiKit.Grain(bg);
+            bg.raycastTarget = true;
             panel = bg.rectTransform;
             panel.anchorMin = new Vector2(0f, 0.5f);
             panel.anchorMax = new Vector2(0f, 0.5f);
@@ -150,6 +151,7 @@ namespace PoeClone.Inventory
             panel.anchoredPosition = new Vector2(30f, 0f);
             panel.sizeDelta = new Vector2(PanelWidth, panelHeight);
             UiKit.AddOutline(bg, UiKit.BorderColor, 3f);
+            TouchMode.AddBlocker(panel);
 
             Text title = UiKit.NewText("Title", panel, "CHARACTER", 26, UiKit.Gold, TextAnchor.UpperCenter);
             UiKit.TopLeft(title.rectTransform, new Vector2(0f, -14f), new Vector2(PanelWidth, 34f));
