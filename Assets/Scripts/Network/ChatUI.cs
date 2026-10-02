@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -27,6 +26,7 @@ namespace PoeClone.Network
 
         private InputField inputField;
         private Text logText;
+        private RectTransform logViewport;
         private Text fieldText;
         private Text placeholderText;
         private Text sendText;
@@ -121,7 +121,7 @@ namespace PoeClone.Network
             float fieldTop = touch ? 50f : 42f;
             fieldRect.offsetMax = new Vector2(0f, fieldTop);
             sendRect.offsetMax = new Vector2(-10f, fieldTop);
-            logText.rectTransform.offsetMin = new Vector2(10f, fieldTop + 4f);
+            logViewport.offsetMin = new Vector2(10f, fieldTop + 4f);
         }
 
         private void Update()
@@ -150,10 +150,13 @@ namespace PoeClone.Network
             while (lines.Count > MaxVisibleMessages)
                 lines.Dequeue();
 
-            var sb = new StringBuilder();
-            foreach (var l in lines)
-                sb.AppendLine(l);
-            logText.text = sb.ToString();
+            logText.text = string.Join("\n", lines);
+            // Drop the oldest messages that no longer fit whole, rather than showing half a line.
+            while (lines.Count > 1 && logText.preferredHeight > logViewport.rect.height)
+            {
+                lines.Dequeue();
+                logText.text = string.Join("\n", lines);
+            }
         }
 
         private static bool StayInChat => GameSessionController.Instance != null && GameSessionController.Instance.Role == SessionRole.Spectator;
@@ -234,8 +237,19 @@ namespace PoeClone.Network
             panelRect.sizeDelta = new Vector2(460f, 220f);
             panelRect.anchoredPosition = new Vector2(-20f, 20f);
 
+            // The log grows upwards from the bottom of a clipping viewport, so when long messages
+            // wrap past the top it is the oldest lines that get cut. (Text's own Truncate always
+            // drops the last lines, which hid the newest message behind the input box.)
+            var viewportGO = new GameObject("LogViewport", typeof(RectTransform), typeof(RectMask2D));
+            viewportGO.transform.SetParent(panelGO.transform, false);
+            logViewport = (RectTransform)viewportGO.transform;
+            logViewport.anchorMin = new Vector2(0f, 0f);
+            logViewport.anchorMax = new Vector2(1f, 1f);
+            logViewport.offsetMin = new Vector2(10f, 46f);
+            logViewport.offsetMax = new Vector2(-10f, -8f);
+
             var logGO = new GameObject("Log");
-            logGO.transform.SetParent(panelGO.transform, false);
+            logGO.transform.SetParent(viewportGO.transform, false);
             logText = logGO.AddComponent<Text>();
             logText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             logText.fontSize = 16;
@@ -243,12 +257,8 @@ namespace PoeClone.Network
             logText.supportRichText = false; // names and messages are user text
             logText.alignment = TextAnchor.LowerLeft;
             logText.horizontalOverflow = HorizontalWrapMode.Wrap;
-            logText.verticalOverflow = VerticalWrapMode.Truncate;
-            var logRect = logText.rectTransform;
-            logRect.anchorMin = new Vector2(0f, 0f);
-            logRect.anchorMax = new Vector2(1f, 1f);
-            logRect.offsetMin = new Vector2(10f, 46f);
-            logRect.offsetMax = new Vector2(-10f, -8f);
+            logText.verticalOverflow = VerticalWrapMode.Overflow;
+            RuntimeUiUtil.StretchFull(logText.rectTransform);
 
             var fieldGO = new GameObject("Input");
             fieldGO.transform.SetParent(panelGO.transform, false);
