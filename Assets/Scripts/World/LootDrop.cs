@@ -181,6 +181,8 @@ namespace PoeClone.World
         private void OnDisable()
         {
             All.Remove(this);
+            if (InventoryUI.GroundHover == Item)
+                InventoryUI.GroundHover = null;
         }
 
         private void Build()

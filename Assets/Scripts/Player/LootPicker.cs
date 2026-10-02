@@ -198,11 +198,13 @@ namespace PoeClone.Player
         // An item is outlined while it's pointed at or being walked to; these keep that in sync.
         private void SetHovered(LootDrop drop)
         {
+            // Every frame, before the early-out: a picked-up (destroyed) drop compares equal to
+            // null, so the early-out alone would leave its tooltip up forever.
+            InventoryUI.GroundHover = drop != null ? drop.Item : null;
             if (drop == hovered)
                 return;
             LootDrop previous = hovered;
             hovered = drop;
-            InventoryUI.GroundHover = drop != null ? drop.Item : null;
             Refresh(previous);
             Refresh(hovered);
         }

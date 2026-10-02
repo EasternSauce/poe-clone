@@ -1,7 +1,6 @@
-version: 2026-10-02c
+version: 2026-10-03
 <b>Fixes</b>
-- Shadows no longer come and go as you move: the browser version only drew them up to 30 m from the camera, which ended right around your character. They now reach 65 m.
-- This window no longer opens underneath the name prompt.
+- An item's stats no longer stay stuck on screen after you pick it up.
 
-<b>Interface</b>
-- Click a skill square on the bar to pick which skill goes there (or empty it). K still opens the full skill list.
+<b>Sounds</b>
+- Armour, belts and quivers make their old pickup sounds again; swords, axes and maces clang, bows knock like wood. Item sounds are all about equally loud now.

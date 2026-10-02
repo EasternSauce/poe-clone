@@ -6,7 +6,9 @@ namespace PoeClone.Inventory
     /// <summary>
     /// Which sound an item makes: landing on the ground (louder and brighter the rarer it is, so a
     /// unique is heard before it's seen) and being picked up or put down (by what it's made of:
-    /// weapons clink, armour thumps, jewellery glimmers). Clips live in Resources/Sfx.
+    /// steel clangs, bows knock like wood, jewellery glimmers; armour, belts and quivers keep the
+    /// plain cloth-and-leather UI clips). Clips live in Resources/Sfx, all about as loud as the UI
+    /// item clips.
     /// </summary>
     public static class ItemSounds
     {
@@ -39,12 +41,14 @@ namespace PoeClone.Inventory
             AudioManager audio = AudioManager.Instance;
             if (audio == null)
                 return null;
-            AudioClip clip = item != null ? audio.Sfx(prefix + Material(item)) : null;
+            string material = item != null ? Material(item) : null;
+            AudioClip clip = material != null ? audio.Sfx(prefix + material) : null;
             if (clip != null)
                 return clip;
             return prefix == "pickup_" ? audio.uiItemPickup : audio.uiItemPlace;
         }
 
+        // Null: the default UI clips.
         private static string Material(ItemData item)
         {
             switch (item.Type)
@@ -53,10 +57,11 @@ namespace PoeClone.Inventory
                 case ItemType.Amulet:
                     return "jewel";
                 case ItemType.Weapon:
+                    return item.WeaponType == WeaponType.Bow ? "bow" : "weapon";
                 case ItemType.Shield:
                     return "weapon";
                 default:
-                    return "armour";
+                    return null;
             }
         }
 
