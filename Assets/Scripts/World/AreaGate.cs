@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using PoeClone.Audio;
 using PoeClone.Player;
@@ -21,9 +22,82 @@ namespace PoeClone.World
         [Tooltip("Where the player appears in the target area (in front of the gate back). Empty = the area's spawn point.")]
         public Transform arrival;
 
+        private static readonly List<AreaGate> all = new List<AreaGate>();
+
         private bool armed = true;
         private Collider box;
         private PlayerController player;
+        private Bounds clickBounds;
+        private bool clickBoundsReady;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            all.Clear();
+        }
+
+        /// <summary>A point in the middle of the gate's trigger, at ground level: walking there goes through.</summary>
+        public Vector3 WalkPoint
+        {
+            get
+            {
+                Vector3 c = box != null ? box.bounds.center : transform.position;
+                return new Vector3(c.x, transform.position.y, c.z);
+            }
+        }
+
+        /// <summary>
+        /// The gate drawn under a screen point (its arch, panel, or the trigger in it), so clicking
+        /// one walks the player through it instead of attacking the air.
+        /// </summary>
+        public static AreaGate AtScreen(Vector2 point)
+        {
+            Camera cam = Camera.main;
+            if (cam == null || all.Count == 0)
+                return null;
+
+            Ray ray = cam.ScreenPointToRay(point);
+            AreaGate best = null;
+            float bestDistance = float.MaxValue;
+            foreach (AreaGate gate in all)
+            {
+                if (gate == null || !gate.isActiveAndEnabled)
+                    continue;
+                if (gate.ClickBounds().IntersectRay(ray, out float distance) && distance < bestDistance)
+                {
+                    best = gate;
+                    bestDistance = distance;
+                }
+            }
+            return best;
+        }
+
+        // Everything the gate draws plus its trigger, measured once (gates don't move).
+        private Bounds ClickBounds()
+        {
+            if (!clickBoundsReady)
+            {
+                clickBounds = box.bounds;
+                foreach (Renderer r in GetComponentsInChildren<Renderer>())
+                {
+                    if (r is MeshRenderer || r is SkinnedMeshRenderer)
+                        clickBounds.Encapsulate(r.bounds);
+                }
+                clickBoundsReady = true;
+            }
+            return clickBounds;
+        }
+
+        private void OnEnable()
+        {
+            if (!all.Contains(this))
+                all.Add(this);
+        }
+
+        private void OnDisable()
+        {
+            all.Remove(this);
+        }
 
         private void Reset()
         {

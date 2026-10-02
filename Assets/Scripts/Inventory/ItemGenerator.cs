@@ -8,7 +8,8 @@ namespace PoeClone.Inventory
     /// Random loot. Every drop is one of the item bases that has art (an icon and a 3D look, keyed by
     /// id like the starter items), with the base's own fixed stats plus random extra stats by rarity:
     /// Normal none, Magic one or two, Rare three or four, rolled stronger as the item level rises.
-    /// Takes a System.Random so tests can make it repeatable.
+    /// The base's own stats vary a little too (a 15 evasion base rolls 12 to 16), so two drops of
+    /// the same base aren't identical. Takes a System.Random so tests can make it repeatable.
     /// </summary>
     public static class ItemGenerator
     {
@@ -27,6 +28,7 @@ namespace PoeClone.Inventory
             public string ArtId;               // null: its own
             public Color ArtTint = Color.white;
             public int MinLevel = 1;           // drops only at this item level and up
+            public float Weight = 1f;          // how often it drops, against the other bases
         }
 
         private sealed class Affix
@@ -69,8 +71,8 @@ namespace PoeClone.Inventory
             Aff(StatType.MaxLife, 8, 25, true, NotWeapon),
             Aff(StatType.MaxMana, 8, 20, true, ItemType.Helmet, ItemType.Gloves, ItemType.Amulet, ItemType.Ring, ItemType.Belt),
             Aff(StatType.Strength, 4, 12, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Belt, ItemType.Amulet, ItemType.Ring, ItemType.Weapon),
-            Aff(StatType.Dexterity, 4, 12, true, ItemType.Gloves, ItemType.Boots, ItemType.Amulet, ItemType.Ring, ItemType.Weapon, ItemType.Quiver),
-            Aff(StatType.Intelligence, 4, 12, true, ItemType.Helmet, ItemType.Gloves, ItemType.Amulet, ItemType.Ring),
+            Aff(StatType.Dexterity, 4, 12, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Boots, ItemType.Belt, ItemType.Amulet, ItemType.Ring, ItemType.Weapon, ItemType.Quiver),
+            Aff(StatType.Intelligence, 4, 12, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Boots, ItemType.Belt, ItemType.Shield, ItemType.Amulet, ItemType.Ring, ItemType.Weapon),
             Aff(StatType.Armour, 10, 40, true, Armour),
             Aff(StatType.Evasion, 10, 40, true, Armour),
             Aff(StatType.BlockChance, 3, 8, false, ItemType.Shield),
@@ -149,12 +151,31 @@ namespace PoeClone.Inventory
         public static ItemData Generate(System.Random rng, int itemLevel, ItemRarity rarity)
         {
             var eligible = new List<ItemBase>();
+            float total = 0f;
             foreach (ItemBase b in All)
             {
                 if (b.MinLevel <= itemLevel)
+                {
                     eligible.Add(b);
+                    total += b.Weight;
+                }
             }
-            return Generate(rng, eligible[rng.Next(eligible.Count)], itemLevel, rarity);
+
+            float roll = (float)rng.NextDouble() * total;
+            foreach (ItemBase b in eligible)
+            {
+                roll -= b.Weight;
+                if (roll < 0f)
+                    return Generate(rng, b, itemLevel, rarity);
+            }
+            return Generate(rng, eligible[eligible.Count - 1], itemLevel, rarity);
+        }
+
+        /// <summary>A base stat rolled within about -20%/+7% of its listed value (15 gives 12 to 16).</summary>
+        public static float RollImplicit(System.Random rng, float value)
+        {
+            float rolled = value * (0.8f + 0.27f * (float)rng.NextDouble());
+            return Mathf.Max(1f, Mathf.Round(rolled));
         }
 
         /// <summary>The item level a base starts dropping at (1 for unknown ids).</summary>
@@ -216,7 +237,9 @@ namespace PoeClone.Inventory
                     candidates.Add(a);
             }
 
-            var mods = new List<StatModifier>(b.Implicits);
+            var mods = new List<StatModifier>();
+            foreach (StatModifier implicitMod in b.Implicits)
+                mods.Add(new StatModifier(implicitMod.Stat, RollImplicit(rng, implicitMod.Value)));
             var rolled = new List<StatType>();
 
             while (rolled.Count < affixCount && candidates.Count > 0)
@@ -298,8 +321,20 @@ namespace PoeClone.Inventory
         private static readonly Color Topaz = new Color(1.0f, 0.95f, 0.45f);
         private static readonly Color Lapis = new Color(0.55f, 0.65f, 1.0f);
 
+        private static readonly Color Pale = new Color(0.92f, 0.86f, 0.74f);
+        private static readonly Color Silk = new Color(0.72f, 0.62f, 1.0f);
+
         private static readonly ItemBase[] Tiers =
         {
+            // Early, common bases for bow users and casters (they were rare next to all the plate).
+            Tier("crude_bow", "Crude Bow", "short_bow", 1, Pale, Mod(StatType.PhysicalDamage, 3), Mod(StatType.AttackSpeed, 5)),
+            Tier("silk_robe", "Silk Robe", "studded_vest", 1, Silk, Mod(StatType.Evasion, 12), Mod(StatType.MaxMana, 15), Mod(StatType.Intelligence, 6)),
+            Tier("silk_gloves", "Silk Gloves", "leather_gloves", 1, Silk, Mod(StatType.MaxMana, 10), Mod(StatType.Intelligence, 5)),
+            Tier("silk_slippers", "Silk Slippers", "leather_boots", 1, Silk, Mod(StatType.Evasion, 8), Mod(StatType.Intelligence, 5)),
+            Tier("sage_circlet", "Sage Circlet", "bronze_helmet", 1, Silk, Mod(StatType.MaxMana, 12), Mod(StatType.Intelligence, 8)),
+            Tier("hunter_hood", "Hunter Hood", "bronze_helmet", 1, new Color(0.55f, 0.85f, 0.55f), Mod(StatType.Evasion, 16), Mod(StatType.Dexterity, 6)),
+            Tier("mystic_robe", "Mystic Robe", "studded_vest", 9, Lapis, Mod(StatType.Evasion, 30), Mod(StatType.MaxMana, 30), Mod(StatType.Intelligence, 14)),
+
             Tier("steel_sword", "Steel Sword", "rusty_sword", 5, Steel, Mod(StatType.PhysicalDamage, 9)),
             Tier("war_axe", "War Axe", "hand_axe", 5, Steel, Mod(StatType.PhysicalDamage, 12)),
             Tier("flanged_mace", "Flanged Mace", "iron_mace", 5, Steel, Mod(StatType.PhysicalDamage, 13)),
@@ -334,6 +369,16 @@ namespace PoeClone.Inventory
                     all = new ItemBase[Bases.Length + Tiers.Length];
                     Bases.CopyTo(all, 0);
                     Tiers.CopyTo(all, Bases.Length);
+
+                    // Bows and quivers are one base among many weapons and off hands; without a
+                    // nudge a bow user waits forever for one.
+                    foreach (ItemBase b in all)
+                    {
+                        if (b.Type == ItemType.Weapon && b.WeaponType == WeaponType.Bow)
+                            b.Weight = 2.5f;
+                        else if (b.Type == ItemType.Quiver)
+                            b.Weight = 1.5f;
+                    }
                 }
                 return all;
             }

@@ -141,6 +141,8 @@ namespace PoeClone.Player
                 gameObject.AddComponent<PlayerPassives>();
             if (GetComponent<TownPortal>() == null)
                 gameObject.AddComponent<TownPortal>();
+            if (GetComponent<PlayerLight>() == null)
+                gameObject.AddComponent<PlayerLight>();
         }
 
 private void Update()
@@ -273,6 +275,19 @@ private void Update()
 
             return input.normalized;
         }
+
+        private static int clickConsumedFrame = -1;
+
+        /// <summary>
+        /// Marks this frame's click as used (an item picked up, someone talked to, a gate walked to),
+        /// so the attack doesn't also fire on it, whichever script happens to run first.
+        /// </summary>
+        public static void ConsumeClick()
+        {
+            clickConsumedFrame = Time.frameCount;
+        }
+
+        public static bool ClickConsumed => clickConsumedFrame == Time.frameCount;
 
         /// <summary>The mouse is over a clickable on-screen panel (skills, chat...), not the world.</summary>
         internal static bool IsPointerOverUi()

@@ -50,6 +50,17 @@ namespace PoeClone.Player
 
         private float cooldownTimer;
         private float pendingDamage;
+        // True between this script starting a swing and its strike frame. Skills replay the same
+        // arm animations (Fire Bolt, Chain Lightning, Cleave), and their strike frames must not
+        // also land a weapon hit or loose an arrow.
+        private bool swingPending;
+
+        // What the swing was aimed at when it started: the outlined enemy if there was one, else
+        // the ground point. A bow re-aims at it when the arrow leaves, since the player may have
+        // moved sideways while drawing (and a parallel shot from the new spot would miss).
+        private EnemyHealth aimEnemy;
+        private Vector3 aimPoint;
+        private bool hasAimPoint;
         private readonly Collider[] hitBuffer = new Collider[16];
 
         private EnemyHealth highlighted;
@@ -112,6 +123,7 @@ namespace PoeClone.Player
         // first, and whoever opens a 1v1 keeps the other locked in stagger.
         private void OnAttackCancelled()
         {
+            swingPending = false;
             cooldownTimer = 0f;
         }
 
@@ -143,8 +155,10 @@ namespace PoeClone.Player
                 // and so does an item on the ground (LootPicker picks it up instead).
                 attackPressed = mouse != null && mouse.leftButton.wasPressedThisFrame && !PlayerController.IsUiFocused() &&
                                 !PlayerController.IsPointerOverUi() &&
+                                !PlayerController.ClickConsumed &&
                                 LootPicker.PickableAt(mouse.position.ReadValue()) == null &&
                                 NpcInteractor.TalkableAt(mouse.position.ReadValue()) == null &&
+                                AreaGate.AtScreen(mouse.position.ReadValue()) == null &&
                                 !UI.DialogueUI.IsOpen &&
                                 !HoldingInventoryItem();
             }
@@ -178,6 +192,8 @@ namespace PoeClone.Player
                 controller.CancelWalk();
 
             FaceAimPoint();
+            aimEnemy = highlighted;
+            hasAimPoint = TryGetAimPoint(out aimPoint);
             tapBufferedUntil = -1f;
 
             pendingDamage = ComputeDamage();
@@ -185,6 +201,7 @@ namespace PoeClone.Player
             float attacksPerSecond = ComputeAttacksPerSecond(weaponType);
             cooldownTimer = attacksPerSecond > 0f ? 1f / attacksPerSecond : 1f;
 
+            swingPending = true;
             attackAnimator.PlayAttack(weaponType);
 
             if (AudioManager.Instance != null)
@@ -269,7 +286,8 @@ namespace PoeClone.Player
         {
             if (TouchMode.IsOverBlocker(position) || IsOverUi(position) || DialogueUI.IsOpen || HoldingInventoryItem())
                 return false;
-            return LootPicker.PickableAt(position) == null && NpcInteractor.TalkableAt(position) == null;
+            return LootPicker.PickableAt(position) == null && NpcInteractor.TalkableAt(position) == null &&
+                   AreaGate.AtScreen(position) == null;
         }
 
         private static bool IsOverUi(Vector2 position)
@@ -371,14 +389,16 @@ namespace PoeClone.Player
         {
             // Disabled while dead, and on a spectator's puppet player: the strike event still fires
             // there (the swing is replayed), but it must not damage anything.
-            if (!enabled)
+            if (!enabled || !swingPending)
                 return;
+            swingPending = false;
 
             WeaponType weaponType = CurrentWeaponType();
             float range = CharacterAttackAnimator.AttackRange(weaponType);
 
             if (CharacterAttackAnimator.IsRanged(weaponType))
             {
+                ReaimAtRelease();
                 PlayerArrow.Launch(transform, range, pendingDamage);
                 return;
             }
@@ -404,6 +424,22 @@ namespace PoeClone.Player
                         Mathf.Max(1, Mathf.RoundToInt(pendingDamage)).ToString(), CombatText.PhysicalColor);
                 }
             }
+        }
+
+        private void ReaimAtRelease()
+        {
+            Vector3 target;
+            if (aimEnemy != null && !aimEnemy.IsDead)
+                target = aimEnemy.transform.position;
+            else if (hasAimPoint)
+                target = aimPoint;
+            else
+                return;
+
+            Vector3 direction = target - transform.position;
+            direction.y = 0f;
+            if (direction.sqrMagnitude > 0.25f)
+                transform.rotation = Quaternion.LookRotation(direction);
         }
 
         private bool IsInCone(Vector3 worldPosition, float range, Vector3 forward)

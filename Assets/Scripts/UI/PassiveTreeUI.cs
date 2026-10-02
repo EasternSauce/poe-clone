@@ -43,6 +43,8 @@ namespace PoeClone.UI
         private readonly List<LinkView> links = new List<LinkView>();
 
         private GameObject panelRoot;
+        private Image badge;
+        private Text badgeText;
         private Text pointsText;
         private Text infoText;
         private Image refundButton;
@@ -98,8 +100,11 @@ namespace PoeClone.UI
             if (passives == null || !passives.enabled || spectator)
             {
                 panelRoot.SetActive(false);
+                badge.gameObject.SetActive(false);
                 return;
             }
+
+            UpdateBadge();
 
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && !UiKit.IsTypingInTextField())
@@ -115,6 +120,28 @@ namespace PoeClone.UI
                 dirty = false;
                 Refresh();
             }
+        }
+
+        // A gently pulsing note above the skill bar while there are points to spend; clicking it
+        // opens the tree.
+        private void UpdateBadge()
+        {
+            int unspent = passives.Unspent;
+            bool show = unspent > 0 && !panelRoot.activeSelf && !passives.GetComponent<PlayerStats>().IsDead;
+            if (badge.gameObject.activeSelf != show)
+                badge.gameObject.SetActive(show);
+            if (!show)
+                return;
+
+            string text = "+" + unspent + " passive point" + (unspent > 1 ? "s" : "") + (TouchMode.Active ? "" : "  (P)");
+            if (badgeText.text != text)
+            {
+                badgeText.text = text;
+                badge.rectTransform.sizeDelta = new Vector2(badgeText.preferredWidth + 36f, 36f);
+            }
+            float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 3f);
+            badgeText.color = Color.Lerp(UiKit.Gold, new Color(1f, 0.95f, 0.7f), pulse);
+            badge.color = new Color(0.12f, 0.09f, 0.04f, 0.75f + 0.15f * pulse);
         }
 
         // ------------------------------------------------------------------ state
@@ -254,6 +281,20 @@ namespace PoeClone.UI
             canvas.gameObject.AddComponent<GraphicRaycaster>();
             group.interactable = true;
             group.blocksRaycasts = true;
+
+            badge = UiKit.NewImage("PointsBadge", canvas.transform, new Color(0.12f, 0.09f, 0.04f, 0.85f));
+            badge.raycastTarget = true;
+            RectTransform br = badge.rectTransform;
+            br.anchorMin = br.anchorMax = new Vector2(0.5f, 0f);
+            br.pivot = new Vector2(0.5f, 0f);
+            br.anchoredPosition = new Vector2(0f, 104f); // just above the skill bar
+            br.sizeDelta = new Vector2(260f, 36f);
+            UiKit.AddOutline(badge, UiKit.Gold, 1.5f);
+            badgeText = UiKit.NewText("Text", br, "", 19, UiKit.Gold, TextAnchor.MiddleCenter);
+            badgeText.fontStyle = FontStyle.Bold;
+            UiKit.Stretch(badgeText.rectTransform, 0f);
+            badge.gameObject.AddComponent<TouchPointerRelay>().Up += _ => SetOpen(true);
+            badge.gameObject.SetActive(false);
 
             Image panel = UiKit.NewImage("PassivePanel", canvas.transform, UiKit.PanelColor);
             UiKit.Grain(panel);

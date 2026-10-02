@@ -9,7 +9,8 @@ namespace PoeClone.Player
     /// <summary>
     /// Talking to townspeople: click (or tap) an NPC. In reach the conversation opens right away,
     /// otherwise the player walks over first; steering away cancels the walk. Walking off mid-
-    /// conversation closes it. Self-added by <see cref="PlayerController"/>.
+    /// conversation closes it. Clicking an area gate walks the player into it the same way.
+    /// Self-added by <see cref="PlayerController"/>.
     /// </summary>
     [RequireComponent(typeof(PlayerController))]
     public class NpcInteractor : MonoBehaviour
@@ -50,9 +51,23 @@ namespace PoeClone.Player
 
             if (!DialogueUI.IsOpen && !PlayerController.IsUiFocused())
             {
-                Npc clicked = TouchMode.Active ? ReadTouch() : ReadMouse();
-                if (clicked != null)
-                    Request(clicked);
+                Vector2? click = TouchMode.Active ? ReadTouch() : ReadMouse();
+                if (click.HasValue)
+                {
+                    Npc npc = TalkableAt(click.Value);
+                    AreaGate gate = npc == null && !LootPicker.EnemyUnderPointer(click.Value) ? AreaGate.AtScreen(click.Value) : null;
+                    if (npc != null)
+                    {
+                        PlayerController.ConsumeClick();
+                        Request(npc);
+                    }
+                    else if (gate != null)
+                    {
+                        PlayerController.ConsumeClick();
+                        target = null;
+                        controller.WalkTo(gate.WalkPoint, 0.15f);
+                    }
+                }
             }
 
             if (DialogueUI.IsOpen && DialogueUI.Speaker != null && !InReach(DialogueUI.Speaker, Npc.TalkReach + 2.5f))
@@ -74,15 +89,16 @@ namespace PoeClone.Player
             }
         }
 
-        private static Npc ReadMouse()
+        // Where the click (or tap) on the world landed this frame, if there was one.
+        private static Vector2? ReadMouse()
         {
             Mouse mouse = Mouse.current;
             if (mouse == null || !mouse.leftButton.wasPressedThisFrame || PlayerController.IsPointerOverUi())
                 return null;
-            return TalkableAt(mouse.position.ReadValue());
+            return mouse.position.ReadValue();
         }
 
-        private static Npc ReadTouch()
+        private static Vector2? ReadTouch()
         {
             Touchscreen screen = Touchscreen.current;
             if (screen == null || !screen.primaryTouch.press.wasPressedThisFrame)
@@ -91,7 +107,7 @@ namespace PoeClone.Player
             Vector2 position = screen.primaryTouch.position.ReadValue();
             if (TouchMode.IsOverBlocker(position))
                 return null;
-            return TalkableAt(position);
+            return position;
         }
 
         public void Request(Npc npc)

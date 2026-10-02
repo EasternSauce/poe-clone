@@ -21,6 +21,8 @@ namespace PoeClone.Network
         private Text buttonText;
         private Action<string> onDone;
 
+        public bool IsShowing => canvasRoot != null && canvasRoot.activeSelf;
+
         private void Awake()
         {
             UiEventSystemBootstrap.EnsureExists();

@@ -36,6 +36,11 @@ Deploying: see `DEPLOYMENT.md`.
   over calling internals.
 - Tests: Unity EditMode tests (`run_tests`), server tests `cd server && npm test`.
 
+## Patch notes
+Players see `Assets/Resources/PatchNotes.txt` once per release (`UI/PatchNotesUI.cs`). Add a line
+there for every player-visible change since the last deploy; when deploying, give the first line
+(`version: ...`) a new value, and start the next release's notes from scratch after that.
+
 ## Before every commit
 Revert Unity noise: `ProjectSettings/ProjectSettings.asset` (`projectName` flips to
 `my-project`), and after Web builds also `Assets/Settings/Build Profiles/Web - Desktop - Release.asset`

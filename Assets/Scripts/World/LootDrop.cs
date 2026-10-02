@@ -19,7 +19,6 @@ namespace PoeClone.World
     {
         private const float LifetimeSeconds = 180f;
         private const float CanvasScale = 0.01f;   // canvas units per metre: 100
-        private const float LabelStackRadius = 3f;
 
         // A fresh drop pops out of the body in a short arc and can't be clicked until it lands
         // (plus a beat), so an attack click aimed at the enemy that just died doesn't grab its loot.
@@ -46,6 +45,8 @@ namespace PoeClone.World
         private RectTransform icon;
         private Image glow;
         private Image labelBack;
+        private RectTransform labelText;
+        private int labelLevel;
         private Image labelFrame;
         private Color glowColor;
         private float bobPhase;
@@ -88,13 +89,10 @@ namespace PoeClone.World
         /// <summary>Pops an item out of a death spot onto the ground nearby.</summary>
         public static void Drop(ItemData item, Vector3 deathPosition)
         {
-            Vector2 scatter = Random.insideUnitCircle * 0.6f;
-            Vector3 at = GroundBelow(deathPosition + new Vector3(scatter.x, 0f, scatter.y));
+            Vector3 at = GroundBelow(FreeSpotNear(deathPosition, 0.6f));
             LootDrop drop = Spawn(item, at, interactive: true, id: 0);
             drop.PopFrom(deathPosition);
-
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlayAtPoint(AudioManager.Instance.lootDrop, at);
+            ItemSounds.PlayDrop(item, at);
         }
 
         /// <summary>
@@ -115,6 +113,55 @@ namespace PoeClone.World
             drop.bobPhase = Random.value * Mathf.PI * 2f;
             drop.Build();
             return drop;
+        }
+
+        // Items closer than this hide each other's icons.
+        private const float IconClearance = 0.85f;
+
+        /// <summary>
+        /// A spot near a point (within the scatter, or further out in rings) with no other drop
+        /// close enough to cover its icon, so a pile of loot shows every item.
+        /// </summary>
+        public static Vector3 FreeSpotNear(Vector3 point, float scatter)
+        {
+            Vector2 first = Random.insideUnitCircle * scatter;
+            Vector3 candidate = point + new Vector3(first.x, 0f, first.y);
+            if (IsClear(candidate))
+                return candidate;
+
+            float startAngle = Random.value * 360f;
+            for (int ring = 1; ring <= 4; ring++)
+            {
+                float radius = ring * IconClearance;
+                int steps = 6 * ring;
+                for (int k = 0; k < steps; k++)
+                {
+                    float angle = (startAngle + k * 360f / steps) * Mathf.Deg2Rad;
+                    candidate = point + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
+                    if (IsClear(candidate) && !Blocked(point, candidate))
+                        return candidate;
+                }
+            }
+            return point + new Vector3(first.x, 0f, first.y);
+        }
+
+        private static bool IsClear(Vector3 at)
+        {
+            foreach (LootDrop other in All)
+            {
+                Vector3 offset = other.transform.position - at;
+                offset.y = 0f;
+                if (offset.sqrMagnitude < IconClearance * IconClearance)
+                    return false;
+            }
+            return true;
+        }
+
+        // Not through a wall or a tree trunk.
+        private static bool Blocked(Vector3 from, Vector3 to)
+        {
+            Vector3 up = Vector3.up * 0.6f;
+            return Physics.Linecast(from + up, to + up, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
         }
 
         /// <summary>The ground under a point (for placing drops), or a metre below it if there's none.</summary>
@@ -168,7 +215,8 @@ namespace PoeClone.World
             Text label = UiKit.NewText("Name", canvasRect, Item.Name, 28, rarityColor, TextAnchor.MiddleCenter);
             label.fontStyle = FontStyle.Bold;
             RectTransform labelRect = label.rectTransform;
-            labelRect.anchoredPosition = new Vector2(0f, 82f + LabelLevel() * LabelLineHeight);
+            labelRect.anchoredPosition = new Vector2(0f, LabelBaseY);
+            labelText = labelRect;
 
             labelBack = UiKit.NewImage("NameBack", canvasRect, new Color(0f, 0f, 0f, 0.85f));
             labelBack.rectTransform.anchoredPosition = labelRect.anchoredPosition;
@@ -181,6 +229,25 @@ namespace PoeClone.World
             labelFrame.rectTransform.sizeDelta = labelBack.rectTransform.sizeDelta + new Vector2(12f, 12f);
             labelFrame.transform.SetSiblingIndex(labelBack.transform.GetSiblingIndex());
             labelFrame.enabled = false;
+
+            // Drawn over the world, so a corpse falling on the item (or a bush) never hides it.
+            foreach (Graphic graphic in canvasGo.GetComponentsInChildren<Graphic>(true))
+                graphic.material = OnTopMaterial;
+        }
+
+        private static Material onTopMaterial;
+
+        private static Material OnTopMaterial
+        {
+            get
+            {
+                if (onTopMaterial == null)
+                {
+                    onTopMaterial = new Material(Canvas.GetDefaultCanvasMaterial()) { name = "LootOnTop" };
+                    onTopMaterial.SetInt("unity_GUIZTestMode", (int)UnityEngine.Rendering.CompareFunction.Always);
+                }
+                return onTopMaterial;
+            }
         }
 
         // Starts the drop's canvas at the dead enemy and arcs it to where the item lands.
@@ -249,7 +316,7 @@ namespace PoeClone.World
             if (inventory.Grid.TryAutoPlace(Item))
             {
                 if (AudioManager.Instance != null)
-                    AudioManager.Instance.PlayUI(AudioManager.Instance.uiItemPickup);
+                    AudioManager.Instance.PlayUI(ItemSounds.Pickup(Item));
                 Destroy(gameObject);
                 return true;
             }
@@ -262,21 +329,69 @@ namespace PoeClone.World
             return false;
         }
 
-        // One line higher for every other drop already lying close by, so a pile of loot reads as a
-        // column of names (PoE does the same) rather than a smear of overlapping text.
-        private int LabelLevel()
+        private const float LabelBaseY = 82f;
+        private static int laidOutFrame = -1;
+        private static readonly List<LootDrop> layoutOrder = new List<LootDrop>();
+        private static readonly List<Rect> placed = new List<Rect>();
+
+        // Name tags never overlap, PoE style: each frame, from the bottom of the screen up, every tag
+        // starts just over its item and moves up a line at a time until it clears the ones already
+        // placed. Measured in the camera's plane (the tags face the camera), in canvas units.
+        private static void LayOutLabels(Camera cam)
         {
-            int level = 0;
-            foreach (LootDrop other in All)
+            if (laidOutFrame == Time.frameCount)
+                return;
+            laidOutFrame = Time.frameCount;
+
+            Vector3 right = cam.transform.right;
+            Vector3 up = cam.transform.up;
+            layoutOrder.Clear();
+            foreach (LootDrop drop in All)
             {
-                if (other == this)
-                    continue;
-                Vector3 offset = other.transform.position - transform.position;
-                offset.y = 0f;
-                if (offset.sqrMagnitude < LabelStackRadius * LabelStackRadius)
-                    level++;
+                if (drop.canvasRect != null && drop.labelText != null)
+                    layoutOrder.Add(drop);
             }
-            return level % 4;
+            layoutOrder.Sort((a, b) => Vector3.Dot(a.canvasRect.position, up).CompareTo(Vector3.Dot(b.canvasRect.position, up)));
+
+            placed.Clear();
+            foreach (LootDrop drop in layoutOrder)
+            {
+                Vector3 p = drop.canvasRect.position / CanvasScale;
+                float x = Vector3.Dot(p, right);
+                float y = Vector3.Dot(p, up) + LabelBaseY;
+                Vector2 size = drop.labelBack.rectTransform.sizeDelta + new Vector2(6f, 4f);
+
+                int level = 0;
+                Rect rect = new Rect(x - size.x * 0.5f, y - size.y * 0.5f, size.x, size.y);
+                while (level < 12 && Overlaps(rect))
+                {
+                    level++;
+                    rect.y += LabelLineHeight;
+                }
+                placed.Add(rect);
+                drop.SetLabelLevel(level);
+            }
+        }
+
+        private static bool Overlaps(Rect rect)
+        {
+            foreach (Rect other in placed)
+            {
+                if (rect.Overlaps(other))
+                    return true;
+            }
+            return false;
+        }
+
+        private void SetLabelLevel(int level)
+        {
+            if (level == labelLevel)
+                return;
+            labelLevel = level;
+            Vector2 at = new Vector2(0f, LabelBaseY + level * LabelLineHeight);
+            labelText.anchoredPosition = at;
+            labelBack.rectTransform.anchoredPosition = at;
+            labelFrame.rectTransform.anchoredPosition = at;
         }
 
         private void Update()
@@ -302,7 +417,10 @@ namespace PoeClone.World
         {
             Camera cam = Camera.main;
             if (cam != null && canvasRect != null)
+            {
                 canvasRect.rotation = cam.transform.rotation;
+                LayOutLabels(cam);
+            }
         }
     }
 }

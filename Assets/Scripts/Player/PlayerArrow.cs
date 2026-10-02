@@ -15,6 +15,8 @@ namespace PoeClone.Player
     {
         private const float Speed = 26f;
         private const float Radius = 0.3f;
+        // Enemies are hit from further off than walls are: a shot that visibly grazes one counts.
+        private const float EnemyRadius = 0.6f;
 
         private static readonly RaycastHit[] Hits = new RaycastHit[16];
 
@@ -89,20 +91,11 @@ namespace PoeClone.Player
                 return;
             }
 
-            // Sweep this frame's stretch of the flight so a fast arrow can't skip through anything.
-            int count = Physics.SphereCastNonAlloc(transform.position, Radius, direction, Hits, step,
-                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
-
+            // Sweep this frame's stretch of the flight so a fast arrow can't skip through anything:
+            // once wide for enemies, once narrow for everything else.
             RaycastHit? nearest = null;
-            for (int k = 0; k < count; k++)
-            {
-                RaycastHit hit = Hits[k];
-                if (owner != null && hit.collider.transform.IsChildOf(owner))
-                    continue;
-                // Starting inside something reports distance 0 at the origin; treat that as a hit too.
-                if (nearest == null || hit.distance < nearest.Value.distance)
-                    nearest = hit;
-            }
+            Sweep(EnemyRadius, step, enemiesOnly: true, ref nearest);
+            Sweep(Radius, step, enemiesOnly: false, ref nearest);
 
             if (nearest != null)
             {
@@ -119,6 +112,28 @@ namespace PoeClone.Player
 
             transform.position += direction * step;
             travelLeft -= step;
+        }
+
+        private void Sweep(float radius, float step, bool enemiesOnly, ref RaycastHit? nearest)
+        {
+            int count = Physics.SphereCastNonAlloc(transform.position, radius, direction, Hits, step,
+                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+
+            for (int k = 0; k < count; k++)
+            {
+                RaycastHit hit = Hits[k];
+                if (owner != null && hit.collider.transform.IsChildOf(owner))
+                    continue;
+                if (enemiesOnly)
+                {
+                    Enemies.EnemyHealth enemy = hit.collider.GetComponentInParent<Enemies.EnemyHealth>();
+                    if (enemy == null || enemy.IsDead)
+                        continue;
+                }
+                // Starting inside something reports distance 0 at the origin; treat that as a hit too.
+                if (nearest == null || hit.distance < nearest.Value.distance)
+                    nearest = hit;
+            }
         }
 
         // Splash damage around the impact (the enemy struck directly already took its share).

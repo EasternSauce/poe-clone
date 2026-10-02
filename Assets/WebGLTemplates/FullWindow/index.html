@@ -142,6 +142,11 @@
       // Clicking the game gives it keyboard focus (and takes it away from the button).
       canvas.addEventListener("pointerdown", function () { canvas.focus(); });
 
+      // Right click is a game button. Unity only blocks the menu on the canvas itself, and
+      // Firefox (just after alt-tabbing back) can send the event to the page instead, so block
+      // it for the whole page, before anything else sees it.
+      document.addEventListener("contextmenu", function (e) { e.preventDefault(); }, true);
+
       // The canvas renders at its CSS size x pixel ratio, and must not exceed the GPU's maximum
       // render size or WebGL silently draws nothing (black screen). Hardened browsers
       // (LibreWolf, Firefox with resistFingerprinting) report a minimal 2048px limit together

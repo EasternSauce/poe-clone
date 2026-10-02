@@ -37,8 +37,16 @@ namespace PoeClone.UI
             AreaManager areas = AreaManager.Instance;
             int here = areas != null ? areas.CurrentAreaIndex : -1;
 
-            var options = new List<DialogueOption>();
+            // Town first, then the wilds in the order they're reached.
+            var order = new List<int> { WorldBuilder.Haven };
             for (int a = 0; a < WorldBuilder.AreaNames.Length; a++)
+            {
+                if (a != WorldBuilder.Haven)
+                    order.Add(a);
+            }
+
+            var options = new List<DialogueOption>();
+            foreach (int a in order)
             {
                 if (a == here)
                     continue;

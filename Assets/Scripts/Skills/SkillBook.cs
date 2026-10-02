@@ -70,7 +70,7 @@ namespace PoeClone.Skills
             {
                 Id = SkillId.ChainLightning, Name = "Chain Lightning", Short = "CL", UnlockLevel = 9,
                 ManaCost = 18f, Cooldown = 2f, Color = new Color(1f, 0.95f, 0.4f),
-                Description = "Lightning strikes the nearest enemy and arcs to two more. Scales with Intelligence."
+                Description = "Lightning strikes the enemy under your cursor (or the nearest one) and arcs to two more. Hits harder aimed straight at an enemy, and harder still up close. Scales with Intelligence."
             },
         };
 
@@ -84,10 +84,10 @@ namespace PoeClone.Skills
             return All[0];
         }
 
-        /// <summary>Spell damage multiplier from Intelligence: +2% per point.</summary>
+        /// <summary>Spell damage multiplier from Intelligence: +1.5% per point.</summary>
         public static float SpellMultiplier(int intelligence)
         {
-            return 1f + intelligence * 0.02f;
+            return 1f + intelligence * 0.015f;
         }
     }
 }

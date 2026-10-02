@@ -266,11 +266,31 @@ namespace PoeClone.Skills
                 Hit(enemy, damage, CombatText.PhysicalColor);
         }
 
+        // How far Chain Lightning reaches for its first target, and how far each arc jumps.
+        private const float ChainReach = 9f;
+        private const float ChainJump = 5f;
+
+        // Rewards aiming: a cast on an enemy under the cursor hits for full damage (more up close,
+        // where the caster is in danger too); a blind cast at whatever is nearest hits for less.
+        // Each arc is weaker than the one before.
         private void ChainLightning(SkillDefinition skill, float damage)
         {
             var struck = new HashSet<EnemyHealth>();
             Vector3 from = transform.position + Vector3.up * 0.4f;
-            EnemyHealth target = Nearest(transform.position, 12f, struck);
+
+            EnemyHealth target = AimedEnemy(ChainReach);
+            if (target == null)
+            {
+                target = Nearest(transform.position, ChainReach, struck);
+                damage *= 0.7f;
+            }
+            else
+            {
+                Vector3 offset = target.transform.position - transform.position;
+                offset.y = 0f;
+                if (offset.magnitude < 3.5f)
+                    damage *= 1.25f;
+            }
 
             if (target == null)
             {
@@ -290,9 +310,9 @@ namespace PoeClone.Skills
                 Hit(target, damage, CombatText.LightningColor);
                 struck.Add(target);
 
-                damage *= 0.8f;
+                damage *= 0.7f;
                 from = to;
-                target = Nearest(target.transform.position, 6f, struck);
+                target = Nearest(target.transform.position, ChainJump, struck);
             }
         }
 
@@ -348,6 +368,39 @@ namespace PoeClone.Skills
                 }
             }
             return best;
+        }
+
+        // The living enemy drawn under the mouse (or within a short distance of the ground point
+        // under it), within reach of the player. On touch: the nearest enemy, as aimed casts go.
+        private EnemyHealth AimedEnemy(float reach)
+        {
+            if (TouchMode.Active)
+                return Nearest(transform.position, reach, new HashSet<EnemyHealth>());
+
+            Mouse mouse = Mouse.current;
+            Camera cam = Camera.main;
+            if (mouse == null || cam == null)
+                return null;
+
+            Ray ray = cam.ScreenPointToRay(mouse.position.ReadValue());
+            if (Physics.Raycast(ray, out RaycastHit hit, 300f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            {
+                EnemyHealth under = hit.collider.GetComponentInParent<EnemyHealth>();
+                if (under != null && !under.IsDead && Within(under, reach))
+                    return under;
+            }
+
+            if (!new Plane(Vector3.up, transform.position).Raycast(ray, out float enter))
+                return null;
+            EnemyHealth near = Nearest(ray.GetPoint(enter), 1.8f, new HashSet<EnemyHealth>());
+            return near != null && Within(near, reach) ? near : null;
+        }
+
+        private bool Within(EnemyHealth enemy, float reach)
+        {
+            Vector3 d = enemy.transform.position - transform.position;
+            d.y = 0f;
+            return d.sqrMagnitude <= reach * reach;
         }
 
         // Where a cast should go: the mouse on desktop; on touch the nearest enemy in range, else

@@ -43,6 +43,19 @@ namespace PoeClone.Audio
         [Range(0f, 1f)] public float inventoryToggleVolume = 0.25f;
 
         private AudioSource uiSource;
+        private readonly System.Collections.Generic.Dictionary<string, AudioClip> loaded =
+            new System.Collections.Generic.Dictionary<string, AudioClip>();
+
+        /// <summary>A clip from Resources/Sfx by file name (cached), or null if there's none.</summary>
+        public AudioClip Sfx(string name)
+        {
+            if (!loaded.TryGetValue(name, out AudioClip clip))
+            {
+                clip = Resources.Load<AudioClip>("Sfx/" + name);
+                loaded[name] = clip;
+            }
+            return clip;
+        }
 
         private void Awake()
         {

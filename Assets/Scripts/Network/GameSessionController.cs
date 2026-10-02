@@ -96,6 +96,7 @@ namespace PoeClone.Network
             gameObject.AddComponent<PoeClone.UI.PassiveTreeUI>();
             gameObject.AddComponent<PoeClone.Player.SaveSystem>();
             namePrompt = gameObject.AddComponent<NamePromptUI>();
+            gameObject.AddComponent<PoeClone.UI.PatchNotesUI>();
 
             stateBroadcaster = gameObject.AddComponent<PlayerStateBroadcaster>();
             stateBroadcaster.enabled = false;

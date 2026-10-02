@@ -35,6 +35,7 @@ namespace PoeClone.World
         private Quaternion homeRotation;
         private Transform player;
         private bool turnsToPlayer = true;
+        private float labelHeight = 2.1f;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
@@ -53,8 +54,9 @@ namespace PoeClone.World
         }
 
         /// <summary>
-        /// The NPC drawn under a screen point: a generous box round their body on screen, so they're
-        /// easy to hit with a finger. The nearest one wins if they overlap.
+        /// The NPC drawn under a screen point: a generous box round their body and name tag on
+        /// screen, so they're easy to hit (a near miss shouldn't swing or shoot at them). The nearest
+        /// one wins if they overlap.
         /// </summary>
         public static Npc AtScreen(Vector2 point)
         {
@@ -70,13 +72,13 @@ namespace PoeClone.World
                     continue;
 
                 Vector3 feet = cam.WorldToScreenPoint(npc.transform.position);
-                Vector3 head = cam.WorldToScreenPoint(npc.transform.position + Vector3.up * 2.1f);
+                Vector3 head = cam.WorldToScreenPoint(npc.transform.position + Vector3.up * (npc.labelHeight + 0.3f));
                 if (feet.z <= 0f)
                     continue;
 
                 float height = Mathf.Abs(head.y - feet.y);
-                float halfWidth = Mathf.Max(height * 0.28f, 24f);
-                bool inside = point.y >= Mathf.Min(feet.y, head.y) - 8f && point.y <= Mathf.Max(feet.y, head.y) + 8f &&
+                float halfWidth = Mathf.Max(height * 0.3f, 36f, npc.DisplayName.Length * 6f);
+                bool inside = point.y >= Mathf.Min(feet.y, head.y) - 16f && point.y <= Mathf.Max(feet.y, head.y) + 10f &&
                               Mathf.Abs(point.x - (feet.x + head.x) * 0.5f) <= halfWidth;
                 if (inside && feet.z < bestDepth)
                 {
@@ -119,7 +121,8 @@ namespace PoeClone.World
             npc.Role = role;
             npc.DisplayName = displayName;
             npc.homeRotation = go.transform.rotation;
-            npc.label = WorldLabel.Create(go.transform, displayName, NameColor, 2.45f, 26);
+            npc.labelHeight = 2.45f;
+            npc.label = WorldLabel.Create(go.transform, displayName, NameColor, npc.labelHeight, 26);
             go.SetActive(true);
             return npc;
         }
@@ -138,6 +141,7 @@ namespace PoeClone.World
             npc.Role = role;
             npc.DisplayName = displayName;
             npc.turnsToPlayer = false;
+            npc.labelHeight = labelHeight;
             npc.homeRotation = go.transform.rotation;
             npc.label = WorldLabel.Create(go.transform, displayName, new Color(0.65f, 0.85f, 1f), labelHeight, 24);
             return npc;

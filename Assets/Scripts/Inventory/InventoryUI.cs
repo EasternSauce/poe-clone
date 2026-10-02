@@ -139,6 +139,9 @@ namespace PoeClone.Inventory
             get { return isOpen; }
         }
 
+        /// <summary>The item lying on the ground under the mouse (set by the player's loot picker), or null.</summary>
+        public static ItemData GroundHover { get; set; }
+
         /// <summary>An item is on the cursor (so a click outside the panel throws it, rather than attacking).</summary>
         public bool IsHoldingItem => cursorItem != null;
 
@@ -219,7 +222,10 @@ namespace PoeClone.Inventory
             }
 
             if (!isOpen)
+            {
+                UpdateGroundTooltip();
                 return;
+            }
 
             if (gridDirty)
                 Refresh();
@@ -242,6 +248,8 @@ namespace PoeClone.Inventory
             Hover hover = Hit(mousePos);
             UpdateHighlights(hover);
             UpdateTooltip(hover, mousePos);
+            if (!tooltipRect.gameObject.activeSelf)
+                UpdateGroundTooltip();
 
             if (mouse.leftButton.wasPressedThisFrame)
                 HandleClick(hover);
@@ -772,22 +780,34 @@ private Vector2 CellSize(int w, int h)
             return sb.ToString();
         }
 
+        // The item lying on the ground under the mouse (see LootPicker) shows its stats too.
+        private void UpdateGroundTooltip()
+        {
+            Mouse mouse = Mouse.current;
+            ItemData item = !TouchMode.Active && mouse != null ? GroundHover : null;
+            if (item == null)
+            {
+                if (tooltipRect.gameObject.activeSelf)
+                    tooltipRect.gameObject.SetActive(false);
+                return;
+            }
+            ShowTooltip(item, mouse.position.ReadValue());
+        }
+
+        // Also while an item is held, so the one it would swap with can be read first.
         private void UpdateTooltip(Hover h, Vector2 mousePos)
         {
             ItemData item = null;
 
-            if (cursorItem == null)
+            if (h.Slot != null)
             {
-                if (h.Slot != null)
-                {
-                    item = inventory.Equipment.Get(h.Slot.Slot);
-                }
-                else if (h.OverGrid)
-                {
-                    PlacedItem p = inventory.Grid.GetAt(Mathf.FloorToInt(h.GridPos.x), Mathf.FloorToInt(h.GridPos.y));
-                    if (p != null)
-                        item = p.Item;
-                }
+                item = inventory.Equipment.Get(h.Slot.Slot);
+            }
+            else if (h.OverGrid)
+            {
+                PlacedItem p = inventory.Grid.GetAt(Mathf.FloorToInt(h.GridPos.x), Mathf.FloorToInt(h.GridPos.y));
+                if (p != null)
+                    item = p.Item;
             }
 
             if (item == null)
@@ -796,6 +816,11 @@ private Vector2 CellSize(int w, int h)
                 return;
             }
 
+            ShowTooltip(item, mousePos);
+        }
+
+        private void ShowTooltip(ItemData item, Vector2 mousePos)
+        {
             // Larger on touch: the text is read on a phone, at arm's length.
             bool touch = TouchMode.Active;
             tooltipText.fontSize = touch ? 22 : 17;
@@ -820,10 +845,15 @@ private Vector2 CellSize(int w, int h)
                 return;
             }
 
-            bool flipX = mousePos.x + 18f + size.x > Screen.width;
+            // Clear of the held item, which hangs centred on the cursor.
+            float gap = 18f;
+            if (cursorItem != null && cursorView != null)
+                gap += cursorView.sizeDelta.x * 0.5f * canvas.scaleFactor;
+
+            bool flipX = mousePos.x + gap + size.x > Screen.width;
             bool flipY = mousePos.y - 18f - size.y < 0f;
             tooltipRect.pivot = new Vector2(flipX ? 1f : 0f, flipY ? 0f : 1f);
-            tooltipRect.position = new Vector2(mousePos.x + (flipX ? -18f : 18f), mousePos.y + (flipY ? 18f : -18f));
+            tooltipRect.position = new Vector2(mousePos.x + (flipX ? -gap : gap), mousePos.y + (flipY ? 18f : -18f));
         }
 
         // ------------------------------------------------------------------ clicking
@@ -861,7 +891,6 @@ private Vector2 CellSize(int w, int h)
             ItemData item = cursorItem;
             cursorItem = null;
             inventory.ThrowAway(item);
-            PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiItemPlace : null);
         }
 
         private void ClickSlot(SlotView s)
@@ -871,7 +900,7 @@ private Vector2 CellSize(int w, int h)
                 // Take off whatever is worn.
                 cursorItem = inventory.Equipment.Unequip(s.Slot);
                 if (cursorItem != null)
-                    PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiItemPickup : null);
+                    PlayUISound(ItemSounds.Pickup(cursorItem));
                 return;
             }
 
@@ -883,7 +912,7 @@ private Vector2 CellSize(int w, int h)
                 return;
             }
 
-            PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiItemPlace : null);
+            PlayUISound(ItemSounds.Place(cursorItem));
             cursorItem = replaced;
         }
 
@@ -895,7 +924,7 @@ private Vector2 CellSize(int w, int h)
                 if (p != null && inventory.Grid.Remove(p.Item))
                 {
                     cursorItem = p.Item;
-                    PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiItemPickup : null);
+                    PlayUISound(ItemSounds.Pickup(cursorItem));
                 }
                 return;
             }
@@ -904,8 +933,8 @@ private Vector2 CellSize(int w, int h)
             ItemData replaced;
             if (inventory.Grid.TryPlaceOrSwap(cursorItem, o.x, o.y, out replaced))
             {
+                PlayUISound(ItemSounds.Place(cursorItem));
                 cursorItem = replaced;
-                PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiItemPlace : null);
             }
             else
             {

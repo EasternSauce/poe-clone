@@ -77,10 +77,9 @@ namespace PoeClone.Player
         // An item thrown out of the bag lands on the ground just in front of the character.
         private void OnItemThrown(ItemData item)
         {
-            Vector3 at = transform.position + transform.forward * 1.3f;
+            Vector3 at = LootDrop.FreeSpotNear(transform.position + transform.forward * 1.3f, 0f);
             LootDrop.Spawn(item, LootDrop.GroundBelow(at), interactive: true, id: 0);
-            if (Audio.AudioManager.Instance != null)
-                Audio.AudioManager.Instance.PlayAtPoint(Audio.AudioManager.Instance.lootDrop, at);
+            ItemSounds.PlayDrop(item, at);
         }
 
         private void OnDisable()
@@ -128,7 +127,10 @@ namespace PoeClone.Player
 
             LootDrop under = PickableAt(mouse.position.ReadValue());
             if (under != null && mouse.leftButton.wasPressedThisFrame)
+            {
+                PlayerController.ConsumeClick();
                 Request(under);
+            }
             return under;
         }
 
@@ -146,7 +148,10 @@ namespace PoeClone.Player
 
             LootDrop under = PickableAt(position);
             if (under != null && screen.primaryTouch.press.wasPressedThisFrame)
+            {
+                PlayerController.ConsumeClick();
                 Request(under);
+            }
             return under;
         }
 
@@ -197,6 +202,7 @@ namespace PoeClone.Player
                 return;
             LootDrop previous = hovered;
             hovered = drop;
+            InventoryUI.GroundHover = drop != null ? drop.Item : null;
             Refresh(previous);
             Refresh(hovered);
         }

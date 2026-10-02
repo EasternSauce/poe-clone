@@ -19,10 +19,18 @@ namespace PoeClone.Network
     ///
     /// Touch: the player's chat sits behind an on-screen button (TouchControlsUI) at the top right,
     /// since the bottom right is taken by the attack button; spectators keep it open where it is.
+    ///
+    /// While nobody is typing, the panel's background goes away and each message stays only for a
+    /// while, so the chat doesn't sit over the game. Focusing the box (or scrolling the mouse wheel
+    /// over it) brings the whole panel back, with the history scrollable. It draws under the
+    /// inventory and its tooltips.
     /// </summary>
     public class ChatUI : MonoBehaviour
     {
-        private const int MaxVisibleMessages = 8;
+        private const int HistoryLimit = 100;
+        private const float MessageSeconds = 12f;   // how long a message shows while the chat is idle
+        private const float PeekSeconds = 4f;       // how long a scroll over the idle chat opens it
+        private static readonly Color PanelColor = new Color(0.08f, 0.07f, 0.06f, 0.65f);
 
         private InputField inputField;
         private Text logText;
@@ -33,7 +41,14 @@ namespace PoeClone.Network
         private RectTransform panelRect;
         private RectTransform fieldRect;
         private RectTransform sendRect;
-        private readonly Queue<string> lines = new Queue<string>();
+        private Image panelImage;
+        private readonly List<string> history = new List<string>();
+        private readonly List<float> historyTimes = new List<float>();
+        private int scrollBack;          // lines scrolled up from the newest
+        private float peekUntil = -1f;
+        private bool shownActive = true;
+        private float nextExpiry = float.MaxValue;
+        private bool dirty = true;
 
         private bool touchPanelOpen;
 
@@ -127,8 +142,17 @@ namespace PoeClone.Network
             logViewport.offsetMin = new Vector2(10f, fieldTop + 4f);
         }
 
+        // Typing, a spectator (always in the chat), the touch chat opened, or a scroll just now.
+        private bool Active => inputField.isFocused || StayInChat || (TouchMode.Active && touchPanelOpen) || Time.unscaledTime < peekUntil;
+
         private void Update()
         {
+            UpdateScroll();
+
+            bool active = Active;
+            if (active != shownActive || dirty || Time.unscaledTime >= nextExpiry)
+                Redraw(active);
+
             var keyboard = Keyboard.current;
             if (keyboard == null || Time.frameCount == EnterHandledFrame) return;
             if (!keyboard.enterKey.wasPressedThisFrame && !keyboard.numpadEnterKey.wasPressedThisFrame) return;
@@ -181,17 +205,75 @@ namespace PoeClone.Network
 
         private void AppendLine(string line)
         {
-            lines.Enqueue(line);
-            while (lines.Count > MaxVisibleMessages)
-                lines.Dequeue();
-
-            logText.text = string.Join("\n", lines);
-            // Drop the oldest messages that no longer fit whole, rather than showing half a line.
-            while (lines.Count > 1 && logText.preferredHeight > logViewport.rect.height)
+            history.Add(line);
+            historyTimes.Add(Time.unscaledTime);
+            if (history.Count > HistoryLimit)
             {
-                lines.Dequeue();
-                logText.text = string.Join("\n", lines);
+                history.RemoveAt(0);
+                historyTimes.RemoveAt(0);
             }
+            if (scrollBack > 0)
+                scrollBack++; // keep the same lines in view while reading back
+            dirty = true;
+        }
+
+        // The mouse wheel over the panel scrolls the history (and opens an idle chat for a moment).
+        private void UpdateScroll()
+        {
+            Mouse mouse = Mouse.current;
+            if (mouse == null || TouchMode.Active || !panelRect.gameObject.activeInHierarchy)
+                return;
+
+            float wheel = mouse.scroll.ReadValue().y;
+            if (Mathf.Abs(wheel) < 0.01f || !RectTransformUtility.RectangleContainsScreenPoint(panelRect, mouse.position.ReadValue(), null))
+                return;
+
+            peekUntil = Time.unscaledTime + PeekSeconds;
+            scrollBack = Mathf.Clamp(scrollBack + (wheel > 0f ? 1 : -1), 0, Mathf.Max(0, history.Count - 1));
+            dirty = true;
+        }
+
+        // Fills the log from the newest line shown upwards, as many whole messages as fit. Idle,
+        // only recent messages show and the panel itself is see-through (and lets clicks through).
+        private void Redraw(bool active)
+        {
+            shownActive = active;
+            dirty = false;
+            nextExpiry = float.MaxValue;
+            if (!active)
+                scrollBack = 0;
+
+            panelImage.color = active ? PanelColor : Color.clear;
+            panelImage.raycastTarget = active;
+
+            string footer = active && scrollBack > 0
+                ? "<color=#8FA3B8><i>(" + scrollBack + " newer below - scroll down)</i></color>"
+                : null;
+            var shown = new List<string>();
+            if (footer != null)
+                shown.Add(footer);
+
+            int newest = history.Count - 1 - scrollBack;
+            for (int k = newest; k >= 0; k--)
+            {
+                if (!active)
+                {
+                    float expires = historyTimes[k] + MessageSeconds;
+                    if (expires <= Time.unscaledTime)
+                        break;
+                    nextExpiry = Mathf.Min(nextExpiry, expires);
+                }
+
+                shown.Insert(0, history[k]);
+                logText.text = string.Join("\n", shown);
+                // Stop before a message that no longer fits whole, rather than showing half a line.
+                if (shown.Count > 1 && logText.preferredHeight > logViewport.rect.height)
+                {
+                    shown.RemoveAt(0);
+                    break;
+                }
+            }
+            logText.text = string.Join("\n", shown);
         }
 
         private static bool StayInChat => GameSessionController.Instance != null && GameSessionController.Instance.Role == SessionRole.Spectator;
@@ -253,7 +335,8 @@ namespace PoeClone.Network
             canvasGO.transform.SetParent(transform, false);
             var canvas = canvasGO.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 800;
+            // Under the inventory (50) and its item tooltips, which share this corner of the screen.
+            canvas.sortingOrder = 30;
 
             var scaler = canvasGO.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -263,8 +346,8 @@ namespace PoeClone.Network
 
             var panelGO = new GameObject("Panel");
             panelGO.transform.SetParent(canvasGO.transform, false);
-            var panelImage = panelGO.AddComponent<Image>();
-            panelImage.color = new Color(0.08f, 0.07f, 0.06f, 0.65f);
+            panelImage = panelGO.AddComponent<Image>();
+            panelImage.color = PanelColor;
             UiKit.Grain(panelImage);
             panelRect = panelImage.rectTransform;
             panelRect.anchorMin = new Vector2(1f, 0f);
@@ -294,6 +377,7 @@ namespace PoeClone.Network
             logText.alignment = TextAnchor.LowerLeft;
             logText.horizontalOverflow = HorizontalWrapMode.Wrap;
             logText.verticalOverflow = VerticalWrapMode.Overflow;
+            logText.raycastTarget = false;
             RuntimeUiUtil.StretchFull(logText.rectTransform);
 
             var fieldGO = new GameObject("Input");
