@@ -112,7 +112,7 @@ namespace PoeClone.UI
             bool characterOpen = characterUI != null && characterUI.IsOpen;
 
             menuRoot.SetActive(!dead);
-            SetCombatShown(!dead && !inventoryOpen && !characterOpen && !SkillBarUI.IsOpen);
+            SetCombatShown(!dead && !inventoryOpen && !characterOpen && !SkillBarUI.IsOpen && !DialogueUI.IsOpen);
             UpdateSkillButtons();
             UpdatePotionButtons();
 
@@ -230,7 +230,7 @@ namespace PoeClone.UI
                 return;
 
             // A tap on an item lying in the joystick area picks it up (LootPicker) instead.
-            if (LootPicker.PickableAt(e.position) != null)
+            if (LootPicker.PickableAt(e.position) != null || World.Npc.AtScreen(e.position) != null)
                 return;
 
             joystickPointer = e.pointerId;
@@ -318,6 +318,7 @@ namespace PoeClone.UI
                 characterUI.SetOpen(false);
             ChatUI.SetPanelOpen(false);
             SkillBarUI.SetOpen(false);
+            DialogueUI.Close();
         }
 
         // ------------------------------------------------------------------ building

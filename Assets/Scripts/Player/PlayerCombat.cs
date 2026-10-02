@@ -128,6 +128,8 @@ namespace PoeClone.Player
                 attackPressed = mouse != null && mouse.leftButton.wasPressedThisFrame && !PlayerController.IsUiFocused() &&
                                 !PlayerController.IsPointerOverUi() &&
                                 LootPicker.PickableAt(mouse.position.ReadValue()) == null &&
+                                World.Npc.AtScreen(mouse.position.ReadValue()) == null &&
+                                !UI.DialogueUI.IsOpen &&
                                 !HoldingInventoryItem();
             }
 

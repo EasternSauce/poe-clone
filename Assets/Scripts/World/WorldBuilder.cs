@@ -129,6 +129,7 @@ namespace PoeClone.World
             OneWayGate(Ruins, new Vector3(0f, 0f, -40f), Haven, spawnPoints[Haven]);
 
             SetUpSpawners();
+            BuildTownsfolk();
 
             var definitions = new AreaDefinition[Centers.Length];
             for (int a = 0; a < Centers.Length; a++)
@@ -409,6 +410,54 @@ namespace PoeClone.World
                 spawner.Configure(prefab, Centers[area], 40f, 24, MonsterLevels[area], KindWeights[area]);
                 spawner.SetSafeSpots(SafeSpots(area));
             }
+        }
+
+        // Haven's people, at their spots: the Elder by the well, the Merchant at the first stall,
+        // the Smith by the forge corner and the Guard at the east gate. Same rig as the monsters.
+        private void BuildTownsfolk()
+        {
+            EnemySpawner spawner = FindAnyObjectByType<EnemySpawner>();
+            if (spawner == null || spawner.EnemyPrefab == null)
+                return;
+
+            Transform t = Group("Townsfolk");
+            Vector3 c = Centers[Haven];
+            AddNpc(spawner.EnemyPrefab, t, NpcRole.Elder, "Elder Maren", c, new EnemyKind
+            {
+                Name = "Elder", Scale = 0.97f, HideHorns = true,
+                Cloth = new Color(0.36f, 0.26f, 0.48f), Pants = new Color(0.25f, 0.20f, 0.30f),
+                Skin = new Color(0.80f, 0.66f, 0.55f), Eyes = new Color(0.15f, 0.15f, 0.2f)
+            });
+            AddNpc(spawner.EnemyPrefab, t, NpcRole.Merchant, "Merchant Oda", c, new EnemyKind
+            {
+                Name = "Merchant", Scale = 1f, HideHorns = true,
+                Cloth = new Color(0.25f, 0.52f, 0.32f), Pants = new Color(0.45f, 0.35f, 0.22f),
+                Skin = new Color(0.62f, 0.46f, 0.34f), Eyes = new Color(0.1f, 0.08f, 0.06f)
+            });
+            AddNpc(spawner.EnemyPrefab, t, NpcRole.Smith, "Smith Bram", c, new EnemyKind
+            {
+                Name = "Smith", Scale = 1.08f, HideHorns = true,
+                Cloth = new Color(0.42f, 0.30f, 0.20f), Pants = new Color(0.22f, 0.20f, 0.19f),
+                Skin = new Color(0.74f, 0.55f, 0.42f), Eyes = new Color(0.1f, 0.08f, 0.06f),
+                Gear = new[] { "iron_mace" }
+            });
+            AddNpc(spawner.EnemyPrefab, t, NpcRole.Guard, "Captain Hale", c, new EnemyKind
+            {
+                Name = "Guard", Scale = 1.04f, HideHorns = true,
+                Cloth = new Color(0.22f, 0.32f, 0.58f), Pants = new Color(0.30f, 0.30f, 0.34f),
+                Skin = new Color(0.78f, 0.62f, 0.50f), Eyes = new Color(0.1f, 0.1f, 0.15f),
+                Gear = new[] { "iron_helmet", "rusty_sword", "wooden_shield" }
+            });
+        }
+
+        private void AddNpc(GameObject prefab, Transform parent, NpcRole role, string name, Vector3 faceTowards, EnemyKind look)
+        {
+            if (!Spots.TryGetValue(role.ToString(), out Vector3 spot))
+                return;
+            Vector3 position = spot + Vector3.up * 1.1f * look.Scale;
+            Vector3 facing = faceTowards - spot;
+            facing.y = 0f;
+            Npc.Create(prefab, role, name, look, position, facing, parent);
         }
 
         // Where players appear in an area (its spawn point and every gate arrival): kept clear of enemies.

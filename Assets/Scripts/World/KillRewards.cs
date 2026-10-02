@@ -17,8 +17,13 @@ namespace PoeClone.World
         private const float HealthPotionChance = 0.12f;
         private const float ManaPotionChance = 0.07f;
 
+        /// <summary>A monster the player killed (quests count these).</summary>
+        public static event System.Action<EnemyKind, int> EnemyKilled;
+
         public static void Grant(EnemyKind kind, int monsterLevel, Vector3 at)
         {
+            EnemyKilled?.Invoke(kind, monsterLevel);
+
             PlayerStats player = Object.FindAnyObjectByType<PlayerStats>();
             if (player == null)
                 return;

@@ -133,6 +133,10 @@ namespace PoeClone.Player
                 gameObject.AddComponent<Skills.PlayerSkills>();
             if (GetComponent<PlayerPotions>() == null)
                 gameObject.AddComponent<PlayerPotions>();
+            if (GetComponent<NpcInteractor>() == null)
+                gameObject.AddComponent<NpcInteractor>();
+            if (GetComponent<Quests.QuestLog>() == null)
+                gameObject.AddComponent<Quests.QuestLog>();
         }
 
 private void Update()

@@ -84,6 +84,12 @@ namespace PoeClone.Visuals
         /// <summary>The right/left arm's rest pitch (0 for the player, more raised for monsters). Shared with CharacterAttackAnimator so its swing offsets land correctly regardless of rig.</summary>
         public float ArmRestAngle => armRestAngle;
 
+        /// <summary>Changes the arms' rest pitch (town NPCs built from the monster rig hold theirs down).</summary>
+        public void SetArmRestAngle(float angle)
+        {
+            armRestAngle = angle;
+        }
+
 public void Configure(
             Transform leftLegPivot,
             Transform rightLegPivot,
