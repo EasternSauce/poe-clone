@@ -64,7 +64,10 @@ namespace PoeClone.Enemies
         public bool IsRanged => Style == EnemyAttackStyle.Ranged;
     }
 
-    /// <summary>The enemy roster: three melee types, an archer and three elemental casters.</summary>
+    /// <summary>
+    /// The enemy roster: three melee types, an archer and three elemental casters found
+    /// everywhere; skeletons, wraiths and ember knights native to the deeper areas; and the bosses.
+    /// </summary>
     public static class EnemyKinds
     {
         public static readonly EnemyKind[] All =
@@ -146,7 +149,41 @@ namespace PoeClone.Enemies
                 DropChance = 0.35f
             },
 
-            // Bosses (index 7 and on): weight 0, so only their lairs place them.
+            // Area natives (weight 0 by default: only areas that list them spawn them).
+            new EnemyKind
+            {
+                Name = "Skeleton", SpawnWeight = 0f,
+                MaxHealth = 24f, Experience = 26,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 6f, AttackCooldown = 1.0f, AttackRange = 2.0f,
+                SpeedRatio = 0.68f, Scale = 0.95f,
+                Cloth = new Color(0.82f, 0.80f, 0.72f), Skin = new Color(0.90f, 0.88f, 0.80f), Pants = new Color(0.32f, 0.30f, 0.27f), Eyes = new Color(1.0f, 0.25f, 0.1f), HideHorns = true,
+                Gear = new[] { "rusty_sword" },
+                DropChance = 0.3f
+            },
+            new EnemyKind
+            {
+                Name = "Wraith", SpawnWeight = 0f,
+                MaxHealth = 34f, Experience = 34,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
+                Damage = 8f, AttackCooldown = 1.5f, AttackRange = 2.2f,
+                SpeedRatio = 0.75f, Scale = 1.05f,
+                Cloth = new Color(0.58f, 0.70f, 0.64f), Skin = new Color(0.80f, 0.95f, 0.90f), Pants = new Color(0.40f, 0.50f, 0.47f), Eyes = new Color(0.4f, 1.0f, 0.7f), HideHorns = true,
+                DropChance = 0.35f
+            },
+            new EnemyKind
+            {
+                Name = "Ember Knight", SpawnWeight = 0f,
+                MaxHealth = 70f, Experience = 50,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
+                Damage = 12f, AttackCooldown = 1.8f, AttackRange = 2.4f,
+                SpeedRatio = 0.5f, Scale = 1.2f,
+                Cloth = new Color(0.36f, 0.12f, 0.06f), Skin = new Color(0.26f, 0.20f, 0.18f), Pants = new Color(0.16f, 0.12f, 0.10f), Eyes = new Color(1.0f, 0.55f, 0.1f), HideHorns = true,
+                Gear = new[] { "iron_helmet", "iron_mace", "wooden_shield" },
+                DropChance = 0.55f, RareBonus = 0.1f
+            },
+
+            // Bosses: weight 0, so only their lairs place them.
             new EnemyKind
             {
                 Name = "Gravelord Mortis", SpawnWeight = 0f,

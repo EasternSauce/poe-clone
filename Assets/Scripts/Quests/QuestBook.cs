@@ -130,6 +130,8 @@ namespace PoeClone.Quests
                 "The fire casters set the grain store alight. Six of them, and I'll pay double the usual."),
             Bounty("bounty_raiders", "Bounty: Raiders", "Raider", 10, "bounty_casters",
                 "Raiders on the roads again. Ten of them, and the merchants will breathe easier."),
+            Bounty("bounty_skeletons", "Bounty: Skeletons", "Skeleton", 12, "bounty_raiders",
+                "The graveyard's bones are walking about in broad daylight now. Twelve skeletons - smash them properly."),
         };
 
         private static QuestDefinition Bounty(string id, string title, string kind, int count, string after, string offer)

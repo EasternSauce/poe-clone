@@ -48,13 +48,14 @@ namespace PoeClone.World
         };
 
         // Per area, one spawn weight per EnemyKinds entry:
-        // Zombie, Raider, Brute, Archer, Fire Caster, Frost Caster, Storm Caster.
+        // Zombie, Raider, Brute, Archer, Fire Caster, Frost Caster, Storm Caster,
+        // Skeleton, Wraith, Ember Knight (missing entries: the kind's own weight, 0 for natives).
         private static readonly float[][] KindWeights =
         {
             new float[] { 30, 20, 6, 22, 8, 8, 6 },
             null,
-            new float[] { 40, 6, 10, 10, 4, 22, 8 },
-            new float[] { 8, 20, 18, 10, 26, 6, 12 }
+            new float[] { 24, 4, 8, 8, 3, 16, 6, 26, 18, 0 },
+            new float[] { 6, 14, 10, 8, 22, 5, 10, 4, 0, 22 }
         };
 
         /// <summary>Named places other features hang things on (NPC stands, the boss arena).</summary>
