@@ -42,6 +42,7 @@ namespace PoeClone.Network
         private RectTransform fieldRect;
         private RectTransform sendRect;
         private Image panelImage;
+        private Canvas chatCanvas;
         private readonly List<string> history = new List<string>();
         private readonly List<float> historyTimes = new List<float>();
         private int scrollBack;          // lines scrolled up from the newest
@@ -122,6 +123,10 @@ namespace PoeClone.Network
             bool touchPlayer = touch && !StayInChat;
 
             panelRect.gameObject.SetActive(!touchPlayer || touchPanelOpen);
+
+            // On a phone the opened chat shares the top right with the minimap and quest tracker:
+            // it goes over them. On a computer it sits under the inventory (which shares its corner).
+            chatCanvas.sortingOrder = touchPlayer ? 800 : 30;
 
             Vector2 corner = touchPlayer ? new Vector2(1f, 1f) : new Vector2(1f, 0f);
             panelRect.anchorMin = corner;
@@ -335,8 +340,10 @@ namespace PoeClone.Network
             canvasGO.transform.SetParent(transform, false);
             var canvas = canvasGO.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            // Under the inventory (50) and its item tooltips, which share this corner of the screen.
+            // Under the inventory (50) and its item tooltips, which share this corner of the screen
+            // (see Relayout for phones).
             canvas.sortingOrder = 30;
+            chatCanvas = canvas;
 
             var scaler = canvasGO.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;

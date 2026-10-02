@@ -213,6 +213,24 @@ namespace PoeClone.Inventory
                     sub.Add(Circle(0.5f, 0.34f, 0.08f));
                     break;
 
+                case ItemType.Potion:
+                    // A round-bottomed flask with a neck and a cork.
+                    add.Add(Circle(0.5f, 0.34f, 0.26f));
+                    add.Add(Rect(0.42f, 0.5f, 0.58f, 0.8f));
+                    add.Add(Rect(0.38f, 0.8f, 0.62f, 0.92f));
+                    sub.Add(Rect(0.3f, 0.4f, 0.7f, 0.46f));
+                    break;
+
+                case ItemType.Gold:
+                    // A little stack of coins.
+                    add.Add(Circle(0.32f, 0.3f, 0.17f));
+                    add.Add(Circle(0.68f, 0.3f, 0.17f));
+                    add.Add(Circle(0.5f, 0.6f, 0.17f));
+                    sub.Add(Circle(0.32f, 0.3f, 0.07f));
+                    sub.Add(Circle(0.68f, 0.3f, 0.07f));
+                    sub.Add(Circle(0.5f, 0.6f, 0.07f));
+                    break;
+
                 case ItemType.Ring:
                     // Band with a diamond gem on top.
                     add.Add(RingShape(0.5f, 0.36f, 0.28f, 0.09f));

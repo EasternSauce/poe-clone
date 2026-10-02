@@ -104,6 +104,7 @@ namespace PoeClone.Network
             var areas = AreaManager.Instance;
             snapshot.area = areas != null ? Mathf.Max(0, areas.CurrentAreaIndex) : 0;
             snapshot.fade = loadingScreen != null && loadingScreen.IsShowing ? 1 : 0;
+            snapshot.dev = TouchMode.Active ? 1 : 0;
 
             Transform pt = stats.transform;
             EntityState p = snapshot.p;

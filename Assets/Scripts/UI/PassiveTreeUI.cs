@@ -20,9 +20,9 @@ namespace PoeClone.UI
     {
         private const float Width = 1000f;
         private const float Height = 780f;
-        private const float SpreadX = 400f;
-        private const float SpreadY = 300f;
-        private static readonly Vector2 TreeCentre = new Vector2(0f, 40f);
+        private const float SpreadX = 360f;
+        private const float SpreadY = 240f;
+        private static readonly Vector2 TreeCentre = new Vector2(0f, 10f);
 
         private static PassiveTreeUI instance;
 
@@ -198,7 +198,7 @@ namespace PoeClone.UI
 
             var sb = new StringBuilder();
             sb.Append("<b><color=#").Append(UiKit.Hex(BranchColor(node.Branch))).Append(">").Append(node.Name)
-                .Append(node.Notable ? "  (notable)" : "").Append("</color></b>   ");
+                .Append(node.Keystone ? "  (keystone)" : node.Notable ? "  (notable)" : "").Append("</color></b>   ");
             if (node.Mods.Length == 0)
                 sb.Append("Where every path starts.");
             for (int k = 0; k < node.Mods.Length; k++)
@@ -352,9 +352,12 @@ namespace PoeClone.UI
 
             foreach (PassiveNode node in PassiveTree.Nodes)
             {
-                float size = node.Notable ? 62f : node.Id == PassiveTree.OriginId ? 56f : 44f;
+                float size = node.Keystone ? 60f : node.Notable ? 62f : node.Id == PassiveTree.OriginId ? 56f : 44f;
                 Image ring = UiKit.NewImage("Node_" + node.Id, pr, Color.white);
-                ring.sprite = UiKit.Disc;
+                // Keystones are diamonds, so they read as different in kind, not just bigger.
+                ring.sprite = node.Keystone ? UiKit.Square : UiKit.Disc;
+                if (node.Keystone)
+                    ring.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f);
                 ring.raycastTarget = true;
                 RectTransform rr = ring.rectTransform;
                 rr.anchorMin = rr.anchorMax = rr.pivot = new Vector2(0.5f, 0.5f);
@@ -362,7 +365,7 @@ namespace PoeClone.UI
                 rr.sizeDelta = new Vector2(size, size);
 
                 Image body = UiKit.NewImage("Body", rr, Color.white);
-                body.sprite = UiKit.Disc;
+                body.sprite = node.Keystone ? UiKit.Square : UiKit.Disc;
                 UiKit.Stretch(body.rectTransform, node.Notable ? 6f : 4f);
 
                 var handler = ring.gameObject.AddComponent<NodeHandler>();

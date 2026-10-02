@@ -77,6 +77,7 @@ namespace PoeClone.Network.Replication
         public int pid;        // player session id, stamped by the server - a change means "new player, reset the replica"
         public int area;
         public int fade;       // 1 = the player's loading screen is up (area switch / revive)
+        public int dev;        // 1 = the player is on a phone/tablet (touch controls), 0 = a computer
         public EntityState p;
         public PlayerHudState hud;
         public string[] eq;    // equipped item id per EquipSlot (by enum order), "" = empty

@@ -195,7 +195,8 @@ namespace PoeClone.Skills
 
         private void Cast(SkillDefinition skill)
         {
-            float spell = SkillBook.SpellMultiplier(stats.Intelligence);
+            float spell = SkillBook.SpellMultiplier(stats.Intelligence) * (1f + Stat(StatType.SpellDamage) / 100f);
+            float area = DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
             int level = stats.Level;
 
             switch (skill.Id)
@@ -208,7 +209,9 @@ namespace PoeClone.Skills
                     Face(AimDirection(16f));
                     if (attackAnimator != null)
                         attackAnimator.PlayAttack(WeaponType.Unarmed);
-                    PlayerArrow.LaunchBolt(transform, 16f, (10f + 4f * level) * spell, skill.Color, 2.2f);
+                    int bolts = 1 + Mathf.Max(0, Mathf.RoundToInt(Stat(StatType.AdditionalSpellProjectiles)));
+                    foreach (Vector3 direction in HitEffects.Spread(transform.forward, bolts, 12f))
+                        PlayerArrow.LaunchBolt(transform, 16f, (10f + 4f * level) * spell, skill.Color, 2.2f * area, direction);
                     break;
 
                 case SkillId.Dash:
@@ -220,11 +223,11 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.FrostNova:
-                    const float novaRadius = 5f;
+                    float novaRadius = 5f * area;
                     SkillEffects.Shockwave(transform.position, novaRadius, skill.Color, 0.4f);
                     foreach (EnemyHealth enemy in EnemiesWithin(transform.position, novaRadius))
                     {
-                        Hit(enemy, (8f + 3f * level) * spell, CombatText.ColdColor);
+                        Hit(enemy, (8f + 3f * level) * spell, CombatText.ColdColor, attack: false);
                         EnemyController ai = enemy.GetComponent<EnemyController>();
                         if (ai != null)
                             ai.Chill(3f);
@@ -258,12 +261,13 @@ namespace PoeClone.Skills
             transform.rotation = Quaternion.Euler(0f, startYaw, 0f);
 
             WeaponType weapon = CurrentWeapon();
-            float reach = Mathf.Max(2.6f, CharacterAttackAnimator.IsRanged(weapon) ? 2.6f : CharacterAttackAnimator.AttackRange(weapon) + 0.6f);
+            float reach = Mathf.Max(2.6f, CharacterAttackAnimator.IsRanged(weapon) ? 2.6f : CharacterAttackAnimator.AttackRange(weapon) + 0.6f) *
+                          DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
             SkillEffects.Shockwave(transform.position, reach, skill.Color, 0.3f);
 
             float damage = WeaponDamage() * 1.4f;
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
-                Hit(enemy, damage, CombatText.PhysicalColor);
+                Hit(enemy, damage, CombatText.PhysicalColor, attack: true);
         }
 
         // How far Chain Lightning reaches for its first target, and how far each arc jumps.
@@ -303,11 +307,12 @@ namespace PoeClone.Skills
             if (attackAnimator != null)
                 attackAnimator.PlayAttack(WeaponType.Unarmed);
 
-            for (int jump = 0; jump < 3 && target != null; jump++)
+            int jumps = 3 + Mathf.Max(0, Mathf.RoundToInt(Stat(StatType.AdditionalChains)));
+            for (int jump = 0; jump < jumps && target != null; jump++)
             {
                 Vector3 to = target.transform.position + Vector3.up * 0.4f * target.transform.localScale.y;
                 SkillEffects.Arc(from, to, skill.Color);
-                Hit(target, damage, CombatText.LightningColor);
+                Hit(target, damage, CombatText.LightningColor, attack: false);
                 struck.Add(target);
 
                 damage *= 0.7f;
@@ -316,11 +321,14 @@ namespace PoeClone.Skills
             }
         }
 
-        private void Hit(EnemyHealth enemy, float damage, Color color)
+        private void Hit(EnemyHealth enemy, float damage, Color color, bool attack)
         {
-            enemy.TakeDamage(damage);
-            CombatText.Show(enemy.transform.position + Vector3.up * 1.6f * enemy.transform.localScale.y,
-                Mathf.Max(1, Mathf.RoundToInt(damage)).ToString(), color);
+            HitEffects.Deal(transform, enemy, damage, attack, color);
+        }
+
+        private float Stat(StatType stat)
+        {
+            return inventory != null && inventory.Stats != null ? inventory.Stats.Total(stat) : 0f;
         }
 
         // ------------------------------------------------------------------ helpers

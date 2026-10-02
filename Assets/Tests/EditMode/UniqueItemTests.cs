@@ -38,6 +38,19 @@ namespace PoeClone.Tests
         }
 
         [Test]
+        public void EveryUniqueHasASpecialStat()
+        {
+            for (int k = 0; k < UniqueItems.Count; k++)
+            {
+                ItemData item = UniqueItems.Create(k);
+                bool special = false;
+                foreach (StatModifier m in item.Modifiers)
+                    special |= StatFormatter.IsSpecial(m.Stat);
+                Assert.IsTrue(special, item.Name);
+            }
+        }
+
+        [Test]
         public void OtherItemsHaveNoFlavour()
         {
             ItemData plain = ItemGenerator.Generate(new System.Random(3), "rusty_sword", 1, ItemRarity.Rare);

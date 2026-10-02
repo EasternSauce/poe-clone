@@ -39,6 +39,50 @@ namespace PoeClone.Tests
             Assert.IsNotNull(UniqueItems.FlavourFor(copy));
         }
 
+        // Edit-mode tests don't run Awake, which builds the grids.
+        private static PlayerInventory NewInventory(GameObject go)
+        {
+            PlayerInventory inventory = go.AddComponent<PlayerInventory>();
+            typeof(PlayerInventory).GetMethod("Awake", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(inventory, null);
+            return inventory;
+        }
+
+        [Test]
+        public void TheStashSurvivesSavingAndLoading()
+        {
+            var go = new GameObject("StashTest");
+            try
+            {
+                PlayerInventory inventory = NewInventory(go);
+                ItemData bow = ItemGenerator.Generate(new System.Random(3), "short_bow", 5, ItemRarity.Magic);
+                Assert.IsTrue(inventory.Stash.TryPlace(bow, 7, 4));
+
+                var data = new SaveData();
+                data.CaptureInventory(inventory);
+                SaveData loaded = JsonUtility.FromJson<SaveData>(JsonUtility.ToJson(data));
+
+                var go2 = new GameObject("StashTest2");
+                try
+                {
+                    PlayerInventory fresh = NewInventory(go2);
+                    Assert.AreEqual(0, loaded.RestoreInventory(fresh).Count);
+                    Assert.AreEqual(0, fresh.Grid.Items.Count);
+                    PlacedItem placed = fresh.Stash.GetAt(7, 4);
+                    Assert.IsNotNull(placed);
+                    Assert.AreEqual(bow.Name, placed.Item.Name);
+                }
+                finally
+                {
+                    Object.DestroyImmediate(go2);
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
+
         [Test]
         public void ListsAndNumbersSurviveTheRoundTrip()
         {

@@ -20,7 +20,22 @@ namespace PoeClone.Inventory
         FireResistance,
         ColdResistance,
         LightningResistance,
-        MovementSpeed
+        MovementSpeed,
+
+        // Special stats: rare on gear (uniques) and on the tree's keystones, each changing how the
+        // character plays rather than adding a bit more of something. Saved by number: add at the end.
+        AdditionalArrows,           // bow attacks loose this many extra arrows in a spread
+        AdditionalSpellProjectiles, // Fire Bolt hurls this many extra bolts
+        SpellDamage,                // % increased spell damage
+        AreaOfEffect,               // % increased area of Frost Nova, Cleave and Fire Bolt's burst
+        LifeRegen,                  // life regenerated per second
+        ManaRegen,                  // % increased mana regeneration
+        LifeLeech,                  // % of attack damage dealt returned as life
+        ManaAbsorb,                 // % more of every hit taken from mana before life (Mind over Matter)
+        AdditionalChains,           // Chain Lightning arcs this many more times
+        ChillOnHit,                 // % chance for attacks to chill
+        CullingStrike,              // 1: hits kill non-boss enemies left under 10% life
+        LifeOnKill                  // life gained for each enemy killed
     }
 
     /// <summary>One line of an item's stats: "+30 Armour" is (Armour, 30).</summary>
@@ -190,8 +205,26 @@ namespace PoeClone.Inventory
                 case StatType.ColdResistance: return "Cold Resistance";
                 case StatType.LightningResistance: return "Lightning Resistance";
                 case StatType.MovementSpeed: return "Movement Speed";
+                case StatType.AdditionalArrows: return "Additional Arrows";
+                case StatType.AdditionalSpellProjectiles: return "Additional Spell Projectiles";
+                case StatType.SpellDamage: return "Spell Damage";
+                case StatType.AreaOfEffect: return "Area of Effect";
+                case StatType.LifeRegen: return "Life Regeneration";
+                case StatType.ManaRegen: return "Mana Regeneration";
+                case StatType.LifeLeech: return "Life Leech";
+                case StatType.ManaAbsorb: return "Damage Taken from Mana";
+                case StatType.AdditionalChains: return "Additional Chains";
+                case StatType.ChillOnHit: return "Chance to Chill";
+                case StatType.CullingStrike: return "Culling Strike";
+                case StatType.LifeOnKill: return "Life on Kill";
                 default: return stat.ToString();
             }
+        }
+
+        /// <summary>The special stats (see the end of StatType), shown in their own list.</summary>
+        public static bool IsSpecial(StatType stat)
+        {
+            return stat >= StatType.AdditionalArrows;
         }
 
         /// <summary>Stats that are shown as a percentage.</summary>
@@ -205,6 +238,12 @@ namespace PoeClone.Inventory
                 case StatType.ColdResistance:
                 case StatType.LightningResistance:
                 case StatType.MovementSpeed:
+                case StatType.SpellDamage:
+                case StatType.AreaOfEffect:
+                case StatType.ManaRegen:
+                case StatType.LifeLeech:
+                case StatType.ManaAbsorb:
+                case StatType.ChillOnHit:
                     return true;
                 default:
                     return false;
@@ -240,6 +279,18 @@ namespace PoeClone.Inventory
                 case StatType.ColdResistance: return sign + n + "% to Cold Resistance";
                 case StatType.LightningResistance: return sign + n + "% to Lightning Resistance";
                 case StatType.MovementSpeed: return n + "% " + (m.Value < 0f ? "reduced" : "increased") + " Movement Speed";
+                case StatType.AdditionalArrows: return "Bow attacks fire " + n + " additional arrow" + (n == "1" ? "" : "s");
+                case StatType.AdditionalSpellProjectiles: return "Fire Bolt hurls " + n + " additional bolt" + (n == "1" ? "" : "s");
+                case StatType.SpellDamage: return n + "% increased Spell Damage";
+                case StatType.AreaOfEffect: return n + "% increased Area of Effect";
+                case StatType.LifeRegen: return "Regenerate " + n + " Life per second";
+                case StatType.ManaRegen: return n + "% increased Mana Regeneration";
+                case StatType.LifeLeech: return n + "% of Attack Damage Leeched as Life";
+                case StatType.ManaAbsorb: return n + "% of Damage is taken from Mana before Life";
+                case StatType.AdditionalChains: return "Chain Lightning arcs " + n + " additional time" + (n == "1" ? "" : "s");
+                case StatType.ChillOnHit: return n + "% chance to Chill enemies with Attacks";
+                case StatType.CullingStrike: return "Culling Strike: kill enemies left below 10% Life";
+                case StatType.LifeOnKill: return "Gain " + n + " Life per enemy killed";
                 default: return sign + n + " " + Label(m.Stat);
             }
         }

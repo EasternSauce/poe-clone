@@ -159,6 +159,8 @@ namespace PoeClone.Player
                     data.questsActive.Add(new QuestRecord { id = pair.Key, progress = pair.Value });
             }
 
+            data.mapSeen = MinimapTerrain.Export();
+
             PlayerPrefs.SetString(Key, JsonUtility.ToJson(data));
             PlayerPrefs.Save();
         }
@@ -235,6 +237,7 @@ namespace PoeClone.Player
                 }
                 log.Import(data.questsDone ?? new List<string>(), active, data.visited ?? new List<int>());
             }
+            MinimapTerrain.Import(data.mapSeen);
 
             // Gear and passives raised the maximums after the level was restored: start full.
             stats.Heal(stats.MaxHealth);

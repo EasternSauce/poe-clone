@@ -18,6 +18,8 @@ namespace PoeClone.Player
     public class LootPicker : MonoBehaviour
     {
         private const float PickupReach = 1.6f;
+        // Gold is collected just by walking over it.
+        private const float GoldWalkReach = 1.1f;
 
         private PlayerController controller;
         private PlayerStats stats;
@@ -97,6 +99,8 @@ namespace PoeClone.Player
                 return;
             }
 
+            CollectGoldUnderfoot();
+
             LootDrop pointed = null;
             if (!PanelOpen() && !PlayerController.IsUiFocused())
                 pointed = TouchMode.Active ? ReadTouch() : ReadMouse();
@@ -116,6 +120,20 @@ namespace PoeClone.Player
             {
                 // The walk was cancelled (steered away, attacked) or gave up.
                 SetTarget(null);
+            }
+        }
+
+        private void CollectGoldUnderfoot()
+        {
+            for (int k = LootDrop.All.Count - 1; k >= 0; k--)
+            {
+                LootDrop drop = LootDrop.All[k];
+                if (drop == null || !drop.IsGold || !drop.IsInteractive)
+                    continue;
+                Vector3 offset = drop.transform.position - transform.position;
+                offset.y = 0f;
+                if (offset.sqrMagnitude <= GoldWalkReach * GoldWalkReach && drop.IsLanded)
+                    drop.TryPickUp(inventory, NoticePoint());
             }
         }
 

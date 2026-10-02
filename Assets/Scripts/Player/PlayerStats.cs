@@ -99,7 +99,11 @@ namespace PoeClone.Player
         {
             if (!dead)
             {
-                currentMana = Mathf.Min(MaxMana, currentMana + DefenceMath.ManaRegenPerSecond(MaxMana, Intelligence) * Time.deltaTime);
+                StatSheet sheet = inventory != null ? inventory.Stats : null;
+                float manaRegen = sheet != null ? sheet.Total(StatType.ManaRegen) : 0f;
+                float lifeRegen = sheet != null ? sheet.Total(StatType.LifeRegen) : 0f;
+                currentMana = Mathf.Min(MaxMana, currentMana + DefenceMath.ManaRegenPerSecond(MaxMana, Intelligence, manaRegen) * Time.deltaTime);
+                currentHealth = Mathf.Min(MaxHealth, currentHealth + DefenceMath.LifeRegenPerSecond(MaxHealth, lifeRegen) * Time.deltaTime);
 
                 if (healOverTimeLeft > 0f)
                 {
@@ -276,7 +280,7 @@ namespace PoeClone.Player
             Color color = type == DamageType.Physical ? CombatText.PlayerHurtColor : CombatText.ColorFor(type);
             CombatText.Show(textAt, Mathf.Max(1, Mathf.RoundToInt(damage)).ToString(), color);
 
-            float absorbed = DefenceMath.ManaAbsorbed(damage, currentMana);
+            float absorbed = DefenceMath.ManaAbsorbed(damage, currentMana, sheet != null ? sheet.Total(StatType.ManaAbsorb) : 0f);
             currentMana -= absorbed;
 
             TakeDamage(damage - absorbed);

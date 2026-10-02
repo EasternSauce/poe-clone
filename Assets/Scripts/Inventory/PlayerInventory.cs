@@ -6,7 +6,8 @@ namespace PoeClone.Inventory
 {
     /// <summary>
     /// Holds the player's bag (a 12x5 grid, empty at the start: the first gear lies on the ground,
-    /// see StarterLoot), worn equipment, and the resulting stat sheet.
+    /// see StarterLoot), the stash in Haven (a 12x12 grid, opened at its chest), worn equipment,
+    /// and the resulting stat sheet.
     /// Whatever drives the character's base stats calls <see cref="SetBaseStats"/>; the sheet is rebuilt
     /// whenever that changes or gear is equipped/unequipped, and <see cref="StatsChanged"/> fires.
     /// </summary>
@@ -17,7 +18,10 @@ namespace PoeClone.Inventory
 
         private BaseStats baseStats = new BaseStats();
 
+        public const int StashSize = 12;
+
         public InventoryGrid Grid { get; private set; }
+        public InventoryGrid Stash { get; private set; }
         public EquipmentSet Equipment { get; private set; }
         public StatSheet Stats { get; private set; }
 
@@ -50,6 +54,61 @@ namespace PoeClone.Inventory
             GoldChanged?.Invoke();
             return true;
         }
+        // ------------------------------------------------------------------ potions
+
+        /// <summary>Most potions of each kind the potion slots hold.</summary>
+        public const int MaxPotions = 10;
+
+        public int HealthPotions { get; private set; } = 3;
+        public int ManaPotions { get; private set; } = 1;
+
+        /// <summary>The potion counts changed (the potion slots redraw).</summary>
+        public event Action PotionsChanged;
+
+        /// <summary>A potion slot was clicked in the inventory: true for health (the player drinks it).</summary>
+        public event Action<bool> PotionSlotClicked;
+
+        public int Potions(bool health) => health ? HealthPotions : ManaPotions;
+
+        public void SetPotions(int health, int mana)
+        {
+            HealthPotions = Math.Max(0, Math.Min(MaxPotions, health));
+            ManaPotions = Math.Max(0, Math.Min(MaxPotions, mana));
+            PotionsChanged?.Invoke();
+        }
+
+        /// <summary>Adds potions (capped); returns how many actually fit.</summary>
+        public int AddPotions(bool health, int count)
+        {
+            int added = Math.Max(0, Math.Min(MaxPotions - Potions(health), count));
+            if (added == 0)
+                return 0;
+            if (health)
+                HealthPotions += added;
+            else
+                ManaPotions += added;
+            PotionsChanged?.Invoke();
+            return added;
+        }
+
+        /// <summary>Takes one potion out of its slot; false if there is none.</summary>
+        public bool UsePotion(bool health)
+        {
+            if (Potions(health) <= 0)
+                return false;
+            if (health)
+                HealthPotions--;
+            else
+                ManaPotions--;
+            PotionsChanged?.Invoke();
+            return true;
+        }
+
+        public void ClickPotionSlot(bool health)
+        {
+            PotionSlotClicked?.Invoke(health);
+        }
+
         public event Action PlayerDied;
         public event Action PlayerRevived;
 
@@ -65,6 +124,7 @@ namespace PoeClone.Inventory
         private void Awake()
         {
             Grid = new InventoryGrid(gridWidth, gridHeight);
+            Stash = new InventoryGrid(StashSize, StashSize);
             Equipment = new EquipmentSet();
             Equipment.Changed += (slot, item) => Recalculate();
             Stats = StatSheet.Build(baseStats, Equipment);

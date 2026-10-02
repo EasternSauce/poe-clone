@@ -31,6 +31,12 @@ namespace PoeClone.Visuals
     {
         public const int MaxLights = 24;
 
+        // Phones: every light is a loop step in the shader for every pixel, and the town has many
+        // lamps; the nearest few are plenty on a small screen.
+        public const int MaxLightsOnTouch = 8;
+
+        private static int Limit => Inventory.TouchMode.Active || Application.isMobilePlatform ? MaxLightsOnTouch : MaxLights;
+
         // Lights whose reach ends further than this from the point the camera looks at are off
         // screen (the view is roughly 40 m across).
         private const float ViewRadius = 32f;
@@ -144,15 +150,16 @@ namespace PoeClone.Visuals
                 if (distance > ViewRadius) continue;
 
                 // Insertion into a short sorted list.
+                int limit = Limit;
                 int at = _nearestDistance.Count;
                 while (at > 0 && _nearestDistance[at - 1] > distance) at--;
-                if (at >= MaxLights) continue;
+                if (at >= limit) continue;
                 _nearest.Insert(at, l);
                 _nearestDistance.Insert(at, distance);
-                if (_nearest.Count > MaxLights)
+                if (_nearest.Count > limit)
                 {
-                    _nearest.RemoveAt(MaxLights);
-                    _nearestDistance.RemoveAt(MaxLights);
+                    _nearest.RemoveAt(limit);
+                    _nearestDistance.RemoveAt(limit);
                 }
             }
         }

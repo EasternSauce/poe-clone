@@ -10,9 +10,11 @@ using PoeClone.World;
 namespace PoeClone.UI
 {
     /// <summary>
-    /// A small map of the current area, top right: gates (gold), the waystone (blue), townsfolk
-    /// (yellow), monsters (red, bosses bigger) and the player (white), turned to match the camera
-    /// so "up" on the map is "up" on screen. Dots only - no second camera, cheap on the web.
+    /// A small map of the current area, top right: the ground the player has explored (see
+    /// <see cref="MinimapTerrain"/>: open ground, obstacles and dead ends, hidden until seen), and on
+    /// it gates (gold), the waystone (blue), townsfolk (yellow), monsters (red, bosses bigger) and
+    /// the player (white), turned to match the camera so "up" on the map is "up" on screen. No
+    /// second camera, cheap on the web.
     /// M hides/shows it. Installed by GameSessionController.
     /// </summary>
     public class MinimapUI : MonoBehaviour
@@ -20,11 +22,14 @@ namespace PoeClone.UI
         public const float Size = 210f;
         private const float AreaSize = AreaShape.MaxRadius * 2f; // the widest any area reaches
         private const float Refresh = 0.25f;
+        private const float MonsterRange = 45f;
 
         private static MinimapUI instance;
 
         private RectTransform frame;
         private RectTransform content;
+        private RawImage terrain;
+        private int terrainArea = -1;
         private Image playerDot;
         private readonly List<Image> pool = new List<Image>();
         private int used;
@@ -57,8 +62,12 @@ namespace PoeClone.UI
             content.anchorMin = content.anchorMax = content.pivot = new Vector2(0.5f, 0.5f);
             content.sizeDelta = new Vector2(Size, Size);
 
-            Image edge = UiKit.NewImage("AreaEdge", content, new Color(1f, 1f, 1f, 0.06f));
-            edge.rectTransform.sizeDelta = new Vector2(Size * 0.96f, Size * 0.96f);
+            var terrainGo = new GameObject("Terrain", typeof(RectTransform), typeof(RawImage));
+            terrainGo.transform.SetParent(content, false);
+            terrain = terrainGo.GetComponent<RawImage>();
+            terrain.raycastTarget = false;
+            terrain.rectTransform.anchorMin = terrain.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            terrain.rectTransform.sizeDelta = new Vector2(Size, Size);
 
             playerDot = UiKit.NewImage("Player", frame, Color.white);
             playerDot.sprite = UiKit.Disc;
@@ -116,7 +125,23 @@ namespace PoeClone.UI
             if (Time.unscaledTime < nextRefresh)
                 return;
             nextRefresh = Time.unscaledTime + Refresh;
+            UpdateTerrain(areas.CurrentAreaIndex);
             Redraw(areas.CurrentAreaIndex, centre);
+        }
+
+        // The explored ground: baked the first time the area is shown (once its colliders are in
+        // place), then revealed around the player as they go. Waits out an area switch.
+        private void UpdateTerrain(int area)
+        {
+            if (AreaManager.Instance != null && AreaManager.Instance.IsSwitching)
+                return;
+            if (terrainArea != area)
+            {
+                Physics.SyncTransforms();
+                terrain.texture = MinimapTerrain.TextureFor(area);
+                terrainArea = area;
+            }
+            MinimapTerrain.Reveal(area, player.transform.position);
         }
 
         private void Redraw(int area, Vector3 centre)
@@ -139,9 +164,16 @@ namespace PoeClone.UI
                     Dot(npc.transform.position, centre, new Color(1f, 0.92f, 0.45f), 9f, square: false);
             }
 
+            // Monsters only where the player has been, and not too far off: the map is a memory of
+            // the ground, not a radar.
+            Vector3 me = player.transform.position;
             foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>())
             {
                 if (enemy.IsDead || !InArea(enemy.transform.position, centre))
+                    continue;
+                Vector3 offset = enemy.transform.position - me;
+                offset.y = 0f;
+                if (offset.sqrMagnitude > MonsterRange * MonsterRange || !MinimapTerrain.IsSeen(area, enemy.transform.position))
                     continue;
                 bool boss = EnemyKinds.Get(enemy.KindIndex).IsBoss;
                 Dot(enemy.transform.position, centre, boss ? new Color(1f, 0.25f, 0.6f) : new Color(0.9f, 0.2f, 0.15f), boss ? 13f : 6f, square: false);

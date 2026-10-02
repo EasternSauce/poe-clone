@@ -46,6 +46,8 @@ namespace PoeClone.Inventory
         private CanvasGroup canvasGroup;
         private RectTransform panel;
         private Text levelText;
+        private Text specialText;
+        private const int SpecialRows = 5;
         private bool isOpen;
         private bool warming;
 
@@ -136,6 +138,7 @@ namespace PoeClone.Inventory
                 lines += 1 + g.Stats.Length;
 
             float headerHeight = 84f;
+            lines += 1 + SpecialRows; // the "Special" list (keystones and uniques)
             float panelHeight = headerHeight + lines * RowHeight + 30f;
 
             Image bg = UiKit.NewImage("Panel", canvas.transform, UiKit.PanelColor);
@@ -174,6 +177,13 @@ namespace PoeClone.Inventory
                     y -= RowHeight;
                 }
             }
+
+            Text specialHeader = UiKit.NewText("Header_Special", panel, "SPECIAL", 15, UiKit.Gold, TextAnchor.MiddleLeft);
+            UiKit.TopLeft(specialHeader.rectTransform, new Vector2(26f, y), new Vector2(PanelWidth - 52f, RowHeight));
+            y -= RowHeight;
+            specialText = UiKit.NewText("Special", panel, "", 15, UiKit.MagicBlue, TextAnchor.UpperLeft);
+            specialText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            UiKit.TopLeft(specialText.rectTransform, new Vector2(40f, y - 4f), new Vector2(PanelWidth - 70f, SpecialRows * RowHeight));
 
             panel.gameObject.SetActive(false);
         }
@@ -222,6 +232,21 @@ namespace PoeClone.Inventory
 
             foreach (KeyValuePair<StatType, Text> pair in labelTexts)
                 pair.Value.text = LabelFor(pair.Key) + Hint(pair.Key, sheet);
+
+            // Special stats only show when something grants them.
+            var special = new System.Text.StringBuilder();
+            foreach (StatType stat in System.Enum.GetValues(typeof(StatType)))
+            {
+                float total = sheet.Total(stat);
+                if (!StatFormatter.IsSpecial(stat) || Mathf.Abs(total) < 0.001f)
+                    continue;
+                if (special.Length > 0)
+                    special.Append('\n');
+                special.Append(StatFormatter.ItemLine(new StatModifier(stat, total)));
+            }
+            specialText.text = special.Length > 0
+                ? special.ToString()
+                : "<color=#" + UiKit.Hex(UiKit.DimText) + ">None yet: keystones and unique items grant these.</color>";
         }
 
         // What a defensive/resource stat actually does right now, shown small and dim after its name.
@@ -238,8 +263,9 @@ namespace PoeClone.Inventory
                     hint = Percent(DefenceMath.EvadeChance(sheet.Total(StatType.Evasion))) + " to evade";
                     break;
                 case StatType.MaxMana:
-                    float regen = DefenceMath.ManaRegenPerSecond(sheet.Total(StatType.MaxMana), sheet.Total(StatType.Intelligence));
-                    hint = Percent(DefenceMath.ManaAbsorbShare) + " of hits, +" +
+                    float regen = DefenceMath.ManaRegenPerSecond(sheet.Total(StatType.MaxMana), sheet.Total(StatType.Intelligence),
+                        sheet.Total(StatType.ManaRegen));
+                    hint = Percent(DefenceMath.TotalManaAbsorbShare(sheet.Total(StatType.ManaAbsorb))) + " of hits, +" +
                            regen.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "/s";
                     break;
                 default:

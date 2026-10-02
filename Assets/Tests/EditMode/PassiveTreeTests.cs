@@ -67,6 +67,32 @@ namespace PoeClone.Tests
         }
 
         [Test]
+        public void EveryNotableLeadsToAKeystoneWithASpecialStat()
+        {
+            int keystones = 0;
+            foreach (PassiveNode node in PassiveTree.Nodes)
+            {
+                if (!node.Keystone)
+                    continue;
+                keystones++;
+                Assert.AreEqual(1, node.Links.Count, node.Name);
+                Assert.IsTrue(PassiveTree.Get(node.Links[0]).Notable, node.Name);
+                bool special = false;
+                foreach (StatModifier m in node.Mods)
+                    special |= StatFormatter.IsSpecial(m.Stat);
+                Assert.IsTrue(special, node.Name);
+            }
+            Assert.AreEqual(6, keystones);
+        }
+
+        [Test]
+        public void ManaAbsorbAddsToTheBaseShare()
+        {
+            Assert.AreEqual(10f * DefenceMath.ManaAbsorbShare, DefenceMath.ManaAbsorbed(10f, 50f), 1e-4f);
+            Assert.AreEqual(10f * (DefenceMath.ManaAbsorbShare + 0.3f), DefenceMath.ManaAbsorbed(10f, 50f, 30f), 1e-4f);
+        }
+
+        [Test]
         public void ResetGivesEverythingBack()
         {
             var allocation = new PassiveAllocation();

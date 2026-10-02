@@ -24,6 +24,7 @@ namespace PoeClone.Network.Replication
             AppendInt(sb, "pid", s.pid);
             AppendInt(sb, "area", s.area, always: true);
             AppendInt(sb, "fade", s.fade);
+            AppendInt(sb, "dev", s.dev);
 
             if (s.p != null)
             {

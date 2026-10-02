@@ -55,6 +55,9 @@ namespace PoeClone.Player
         // also land a weapon hit or loose an arrow.
         private bool swingPending;
 
+        // Degrees between the arrows of a volley (extra arrows fan out round the aim).
+        private const float ArrowSpreadDegrees = 9f;
+
         // What the swing was aimed at when it started: the outlined enemy if there was one, else
         // the ground point. A bow re-aims at it when the arrow leaves, since the player may have
         // moved sideways while drawing (and a parallel shot from the new spot would miss).
@@ -362,6 +365,19 @@ namespace PoeClone.Player
                 }
             }
 
+            // Nothing in reach: swing (or shoot) the way the joystick points. Without this a held
+            // attack button kept the character facing wherever it first swung, since the walk turn
+            // waits for swings to finish - so only one direction could ever be attacked.
+            if (!found && controller != null)
+            {
+                Vector3 steer = controller.InputDirection();
+                if (steer.sqrMagnitude > 0.01f)
+                {
+                    point = transform.position + steer.normalized * 2f;
+                    found = true;
+                }
+            }
+
             return found;
         }
 
@@ -399,7 +415,9 @@ namespace PoeClone.Player
             if (CharacterAttackAnimator.IsRanged(weaponType))
             {
                 ReaimAtRelease();
-                PlayerArrow.Launch(transform, range, pendingDamage);
+                int arrows = 1 + Mathf.Max(0, Mathf.RoundToInt(inventory.Stats.Total(StatType.AdditionalArrows)));
+                foreach (Vector3 direction in HitEffects.Spread(transform.forward, arrows, ArrowSpreadDegrees))
+                    PlayerArrow.Launch(transform, range, pendingDamage, direction);
                 return;
             }
 
@@ -417,6 +435,12 @@ namespace PoeClone.Player
 
                 if (hitAlready.Add(target))
                 {
+                    if (target is EnemyHealth enemy)
+                    {
+                        HitEffects.Deal(transform, enemy, pendingDamage, attack: true, CombatText.PhysicalColor);
+                        continue;
+                    }
+
                     target.TakeDamage(pendingDamage);
 
                     Transform hit = ((Component)target).transform;

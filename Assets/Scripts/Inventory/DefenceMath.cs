@@ -24,10 +24,16 @@ namespace PoeClone.Inventory
 
         /// <summary>
         /// Share of every hit taken from mana instead of life while there is mana to take it from
-        /// (PoE's Mind over Matter). It's what Maximum Mana and Intelligence are for: more mana, and
-        /// faster mana regeneration, soak more damage.
+        /// (a little of PoE's Mind over Matter for everyone; the Mind over Matter keystone and some
+        /// gear add more through StatType.ManaAbsorb). More mana, and faster mana regeneration, soak more.
         /// </summary>
-        public const float ManaAbsorbShare = 0.3f;
+        public const float ManaAbsorbShare = 0.1f;
+
+        /// <summary>Life regenerated per second by everyone, as a share of maximum life: very slow.</summary>
+        public const float LifeRegenFraction = 0.004f;
+
+        /// <summary>Enemies left below this share of their life by a culling hit die.</summary>
+        public const float CullThreshold = 0.1f;
 
         /// <summary>The damage a typical enemy hit deals, used to describe armour on the character page.</summary>
         public const float ReferenceHit = 10f;
@@ -65,16 +71,34 @@ namespace PoeClone.Inventory
         }
 
         /// <summary>How much of a hit (after armour/resistance) the mana pool soaks up.</summary>
-        public static float ManaAbsorbed(float damage, float currentMana)
+        public static float ManaAbsorbed(float damage, float currentMana, float extraPercent = 0f)
         {
             if (damage <= 0f || currentMana <= 0f)
                 return 0f;
-            return Math.Min(currentMana, damage * ManaAbsorbShare);
+            return Math.Min(currentMana, damage * TotalManaAbsorbShare(extraPercent));
         }
 
-        public static float ManaRegenPerSecond(float maxMana, float intelligence)
+        /// <summary>The share (0..0.9) of each hit taken from mana, with the extra from gear and passives in percent.</summary>
+        public static float TotalManaAbsorbShare(float extraPercent)
         {
-            return Math.Max(0f, maxMana * ManaRegenFraction + intelligence * ManaRegenPerIntelligence);
+            return Math.Min(0.9f, ManaAbsorbShare + Math.Max(0f, extraPercent) / 100f);
+        }
+
+        public static float ManaRegenPerSecond(float maxMana, float intelligence, float increasedPercent = 0f)
+        {
+            float regen = maxMana * ManaRegenFraction + intelligence * ManaRegenPerIntelligence;
+            return Math.Max(0f, regen * (1f + increasedPercent / 100f));
+        }
+
+        public static float LifeRegenPerSecond(float maxLife, float flat)
+        {
+            return Math.Max(0f, maxLife * LifeRegenFraction + flat);
+        }
+
+        /// <summary>Radius multiplier for an area bigger by this many percent (area grows with radius squared).</summary>
+        public static float RadiusMultiplier(float areaPercent)
+        {
+            return (float)Math.Sqrt(Math.Max(0.1f, 1f + areaPercent / 100f));
         }
     }
 }

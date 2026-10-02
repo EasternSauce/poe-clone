@@ -17,6 +17,10 @@ namespace PoeClone.Inventory
             AudioManager audio = AudioManager.Instance;
             if (audio == null || item == null)
                 return null;
+            if (item.Type == ItemType.Gold)
+                return audio.Sfx("drop_gold");
+            if (item.Type == ItemType.Potion)
+                return audio.Sfx("drop_potion");
             switch (item.Rarity)
             {
                 case ItemRarity.Unique: return audio.Sfx("drop_unique");
@@ -42,6 +46,9 @@ namespace PoeClone.Inventory
             if (audio == null)
                 return null;
             string material = item != null ? Material(item) : null;
+            // Synthesized steel put down rang like a doorbell: steel lands with the plain UI clip.
+            if (prefix == "place_" && material == "weapon")
+                material = null;
             AudioClip clip = material != null ? audio.Sfx(prefix + material) : null;
             if (clip != null)
                 return clip;
@@ -60,6 +67,10 @@ namespace PoeClone.Inventory
                     return item.WeaponType == WeaponType.Bow ? "bow" : "weapon";
                 case ItemType.Shield:
                     return "weapon";
+                case ItemType.Potion:
+                    return "potion";
+                case ItemType.Gold:
+                    return "gold";
                 default:
                     return null;
             }

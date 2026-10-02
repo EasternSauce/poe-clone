@@ -18,6 +18,7 @@ namespace PoeClone.Inventory
         public string Name;
         public PassiveBranch Branch;
         public bool Notable;
+        public bool Keystone;   // a rule-changer at the very end of an arm (special stats)
         public float X, Y;   // layout, roughly -1..1
         public StatModifier[] Mods;
         public readonly List<string> Links = new List<string>();
@@ -25,8 +26,9 @@ namespace PoeClone.Inventory
 
     /// <summary>
     /// A small passive tree, much simpler than PoE's: from the centre, three branches (Might,
-    /// Grace, Wisdom), each splitting in two and ending in a notable passive. Every level after
-    /// the first gives one point; a passive can be taken once one next to it is.
+    /// Grace, Wisdom), each splitting in two and ending in a notable passive, and past each notable
+    /// a keystone that changes how the character plays (extra arrows, leech, Mind over Matter...).
+    /// Every level after the first gives one point; a passive can be taken once one next to it is.
     /// </summary>
     public static class PassiveTree
     {
@@ -96,6 +98,24 @@ namespace PoeClone.Inventory
                     Node("w7", "Grounding", Mod(StatType.LightningResistance, 15), Mod(StatType.MaxLife, 8)),
                     Notable("w8", "Elemental Ward", Mod(StatType.FireResistance, 15), Mod(StatType.ColdResistance, 15), Mod(StatType.LightningResistance, 15))
                 });
+
+            // Keystones, one past each notable: the reward for walking an arm to its end.
+            Keystone("k_executioner", "Executioner", PassiveBranch.Might, "m5", Mod(StatType.CullingStrike, 1), Mod(StatType.LifeOnKill, 5));
+            Keystone("k_bloodthirst", "Bloodthirst", PassiveBranch.Might, "m8", Mod(StatType.LifeLeech, 2));
+            Keystone("k_frostbite", "Frostbite", PassiveBranch.Grace, "g5", Mod(StatType.ChillOnHit, 20));
+            Keystone("k_volley", "Volley", PassiveBranch.Grace, "g8", Mod(StatType.AdditionalArrows, 1));
+            Keystone("k_twincast", "Twin Casting", PassiveBranch.Wisdom, "w5", Mod(StatType.AdditionalSpellProjectiles, 1), Mod(StatType.SpellDamage, 10));
+            Keystone("k_mom", "Mind over Matter", PassiveBranch.Wisdom, "w8", Mod(StatType.ManaAbsorb, 30));
+        }
+
+        // A keystone further out along the line from the centre through the passive it hangs off.
+        private static void Keystone(string id, string name, PassiveBranch branch, string after, params StatModifier[] mods)
+        {
+            PassiveNode from = byId[after];
+            float scale = 1.25f;
+            PassiveNode node = Add(id, name, branch, true, from.X * scale, from.Y * scale, mods);
+            node.Keystone = true;
+            Link(id, after);
         }
 
         private struct Spec

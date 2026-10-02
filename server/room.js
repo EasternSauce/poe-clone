@@ -29,8 +29,10 @@ const MAX_CHAT_MESSAGE_LENGTH = 300;
 const MAX_NAME_LENGTH = 24;
 const MAX_STATE_BYTES = 32 * 1024;
 // A spectator with more than this already queued on its socket is on a connection too
-// slow for the stream; drop snapshots for it until it catches up.
-const MAX_SPECTATOR_BACKLOG_BYTES = 256 * 1024;
+// slow for the stream; drop snapshots for it until it catches up. Kept to about a second of
+// snapshots: everything queued is that much behind the player, and a bigger queue showed up
+// as several seconds of lag (attacks and gear changes arriving long after they happened).
+const MAX_SPECTATOR_BACKLOG_BYTES = 48 * 1024;
 
 class Room {
   constructor({ now = () => Date.now(), maxPlayers = MAX_PLAYERS } = {}) {

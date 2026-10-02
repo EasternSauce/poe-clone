@@ -311,7 +311,30 @@ namespace PoeClone.Inventory
                 if (b.Id == id)
                     return b;
             }
+            foreach (ItemBase b in Pickups)
+            {
+                if (b.Id == id)
+                    return b;
+            }
             return null;
+        }
+
+        public const string HealthPotionId = "health_potion";
+        public const string ManaPotionId = "mana_potion";
+        public const string GoldId = "gold_coins";
+
+        // Things that lie on the ground like items but never drop as gear or go in the bag.
+        private static readonly ItemBase[] Pickups =
+        {
+            Base(HealthPotionId, "Health Potion", ItemType.Potion, 1, 1, new Color(0.9f, 0.3f, 0.3f)),
+            Base(ManaPotionId, "Mana Potion", ItemType.Potion, 1, 1, new Color(0.35f, 0.45f, 1f)),
+            Base(GoldId, "Gold", ItemType.Gold, 1, 1, new Color(1f, 0.84f, 0.3f)),
+        };
+
+        /// <summary>A potion or gold pile to put on the ground (see LootDrop), with the name shown on it.</summary>
+        public static ItemData Pickup(string id, string name)
+        {
+            return Display(id, name, ItemRarity.Normal);
         }
 
         // Tints for the tiers (over the shared art).

@@ -27,6 +27,7 @@ namespace PoeClone.Player
         private bool harmless;
         private float burstRadius;
         private Color textColor = CombatText.PhysicalColor;
+        private bool isAttack = true;   // an arrow; a bolt is a spell
 
         /// <summary>Where arrows leave the bow: chest height, a little in front.</summary>
         public static Vector3 Origin(Transform shooter)
@@ -34,9 +35,9 @@ namespace PoeClone.Player
             return shooter.position + Vector3.up * 0.3f + shooter.forward * 0.6f;
         }
 
-        public static void Launch(Transform shooter, float range, float damage)
+        public static void Launch(Transform shooter, float range, float damage, Vector3? direction = null)
         {
-            Create(shooter, range, damage, harmless: false);
+            Create(shooter, range, damage, harmless: false, direction: direction);
         }
 
         public static void LaunchVisual(Transform shooter, float range)
@@ -45,16 +46,17 @@ namespace PoeClone.Player
         }
 
         /// <summary>A Fire Bolt: an orb that bursts on impact, hurting everything within the radius.</summary>
-        public static void LaunchBolt(Transform shooter, float range, float damage, Color color, float burstRadius)
+        public static void LaunchBolt(Transform shooter, float range, float damage, Color color, float burstRadius, Vector3? direction = null)
         {
-            PlayerArrow bolt = Create(shooter, range, damage, harmless: false, orb: color);
+            PlayerArrow bolt = Create(shooter, range, damage, harmless: false, orb: color, direction: direction);
             bolt.burstRadius = burstRadius;
             bolt.textColor = CombatText.FireColor;
+            bolt.isAttack = false;
         }
 
-        private static PlayerArrow Create(Transform shooter, float range, float damage, bool harmless, Color? orb = null)
+        private static PlayerArrow Create(Transform shooter, float range, float damage, bool harmless, Color? orb = null, Vector3? direction = null)
         {
-            Vector3 forward = shooter.forward;
+            Vector3 forward = direction ?? shooter.forward;
             forward.y = 0f;
             forward = forward.sqrMagnitude > 0.0001f ? forward.normalized : Vector3.forward;
 
@@ -149,12 +151,7 @@ namespace PoeClone.Player
                 if (target == null || !done.Add(target) || (owner != null && c.transform.IsChildOf(owner)))
                     continue;
                 if (target is Enemies.EnemyHealth enemy && !enemy.IsDead)
-                {
-                    float splash = damage * 0.6f;
-                    enemy.TakeDamage(splash);
-                    CombatText.Show(enemy.transform.position + Vector3.up * 1.6f * enemy.transform.localScale.y,
-                        Mathf.Max(1, Mathf.RoundToInt(splash)).ToString(), textColor);
-                }
+                    HitEffects.Deal(owner, enemy, damage * 0.6f, isAttack, textColor);
             }
         }
 
@@ -166,6 +163,12 @@ namespace PoeClone.Player
             IDamageable target = collider.GetComponentInParent<IDamageable>();
             if (target == null)
                 return;
+
+            if (target is Enemies.EnemyHealth enemy)
+            {
+                HitEffects.Deal(owner, enemy, damage, isAttack, textColor);
+                return;
+            }
 
             target.TakeDamage(damage);
 

@@ -55,6 +55,9 @@ namespace PoeClone.World
 
         public bool IsInteractive => interactive;
 
+        /// <summary>Finished popping out and can be taken.</summary>
+        public bool IsLanded => Time.time >= clickableAt;
+
         /// <summary>Maybe drops something where an enemy died, by its kind's drop chance; tougher kinds drop better items.</summary>
         public static void RollDrop(EnemyKind kind, Vector3 deathPosition, int monsterLevel)
         {
@@ -86,11 +89,33 @@ namespace PoeClone.World
         /// <summary>Any drop has this chance to be a unique instead.</summary>
         public const double UniqueChance = 0.012;
 
+        /// <summary>A pile of gold out of a death spot (walking over it picks it up).</summary>
+        public static void DropGold(int amount, Vector3 deathPosition)
+        {
+            if (amount <= 0)
+                return;
+            Drop(ItemGenerator.Pickup(ItemGenerator.GoldId, amount + " Gold"), deathPosition, amount);
+        }
+
+        public static void DropPotion(bool health, Vector3 deathPosition)
+        {
+            Drop(ItemGenerator.Pickup(health ? ItemGenerator.HealthPotionId : ItemGenerator.ManaPotionId,
+                health ? "Health Potion" : "Mana Potion"), deathPosition);
+        }
+
+        /// <summary>Gold or a potion rather than gear.</summary>
+        public bool IsPickup => Item.Type == ItemType.Gold || Item.Type == ItemType.Potion;
+        public bool IsGold => Item.Type == ItemType.Gold;
+
+        /// <summary>How much gold a gold pile holds.</summary>
+        public int Amount { get; private set; }
+
         /// <summary>Pops an item out of a death spot onto the ground nearby.</summary>
-        public static void Drop(ItemData item, Vector3 deathPosition)
+        public static void Drop(ItemData item, Vector3 deathPosition, int amount = 0)
         {
             Vector3 at = GroundBelow(FreeSpotNear(deathPosition, 0.6f));
             LootDrop drop = Spawn(item, at, interactive: true, id: 0);
+            drop.Amount = amount;
             drop.PopFrom(deathPosition);
             ItemSounds.PlayDrop(item, at);
         }
@@ -197,7 +222,9 @@ namespace PoeClone.World
             canvasRect.localScale = Vector3.one * CanvasScale;
             canvasRect.localPosition = Vector3.up * CanvasHeight;
 
-            Color rarityColor = UiKit.RarityColor(Item.Rarity);
+            Color rarityColor = Item.Type == ItemType.Gold || Item.Type == ItemType.Potion
+                ? Color.Lerp(Item.Tint, Color.white, 0.25f)
+                : UiKit.RarityColor(Item.Rarity);
 
             glowColor = new Color(rarityColor.r, rarityColor.g, rarityColor.b, 0.35f);
             glow = UiKit.NewImage("Glow", canvasRect, glowColor);
@@ -314,6 +341,34 @@ namespace PoeClone.World
         {
             if (inventory == null || !interactive)
                 return false;
+
+            if (IsGold)
+            {
+                inventory.AddGold(Amount);
+                CombatText.Show(noticeAt, "+" + Amount + " gold", KillRewards.GoldColor, 0.7f);
+                if (AudioManager.Instance != null)
+                    AudioManager.Instance.PlayUI(ItemSounds.Pickup(Item));
+                Destroy(gameObject);
+                return true;
+            }
+
+            if (Item.Type == ItemType.Potion)
+            {
+                bool health = Item.Id == ItemGenerator.HealthPotionId;
+                if (inventory.AddPotions(health, 1) > 0)
+                {
+                    if (AudioManager.Instance != null)
+                        AudioManager.Instance.PlayUI(ItemSounds.Pickup(Item));
+                    Destroy(gameObject);
+                    return true;
+                }
+                if (Time.time >= nextFullNotice)
+                {
+                    nextFullNotice = Time.time + 1f;
+                    CombatText.Show(noticeAt, (health ? "Health" : "Mana") + " potions full", CombatText.AvoidColor, 0.8f);
+                }
+                return false;
+            }
 
             if (inventory.Grid.TryAutoPlace(Item))
             {

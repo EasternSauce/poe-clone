@@ -42,6 +42,12 @@ namespace PoeClone.World
             new Vector3(780f, 0f, 0f)
         };
 
+        /// <summary>The colour that stands for an area (gate panels, its minimap ground).</summary>
+        public static Color AreaColor(int area)
+        {
+            return AreaColors[Mathf.Clamp(area, 0, AreaColors.Length - 1)];
+        }
+
         private static readonly Color[] AreaColors =
         {
             new Color(0.55f, 0.75f, 0.55f),
@@ -280,6 +286,9 @@ namespace PoeClone.World
                 if (k == 0)
                     Spots["Merchant"] = p + (c - p).normalized * 2.2f;
             }
+
+            // The stash: a banded chest by the stalls, opened like talking to someone.
+            BuildStashChest(t, c + new Vector3(-7f, 0f, -8.5f), c);
 
             // Lamp posts round the plaza.
             for (int k = 0; k < 8; k++)
@@ -942,6 +951,25 @@ namespace PoeClone.World
         public static Vector3 WaystoneSpot(int area)
         {
             return Center(area) + new Vector3(0f, 0f, -11f);
+        }
+
+        private void BuildStashChest(Transform parent, Vector3 p, Vector3 faceTowards)
+        {
+            var chest = new GameObject("Stash");
+            chest.transform.SetParent(parent, false);
+            chest.transform.position = p;
+            Vector3 d = faceTowards - p;
+            chest.transform.rotation = Quaternion.LookRotation(new Vector3(d.x, 0f, d.z));
+
+            Transform ct = chest.transform;
+            LocalBox(ct, new Vector3(0f, 0.42f, 0f), new Vector3(1.6f, 0.84f, 1f), kit.Mat("Wood"));
+            LocalBox(ct, new Vector3(0f, 0.95f, 0f), new Vector3(1.66f, 0.26f, 1.06f), kit.Mat("Wood"), solid: false);
+            foreach (float x in new[] { -0.55f, 0.55f })
+                LocalBox(ct, new Vector3(x, 0.55f, 0f), new Vector3(0.12f, 1.02f, 1.1f), kit.Mat("Iron"), solid: false);
+            LocalBox(ct, new Vector3(0f, 0.78f, 0.54f), new Vector3(0.22f, 0.26f, 0.06f), kit.Mat("Iron"), solid: false);
+
+            Claim(p, 1.8f);
+            Npc.CreateFixed(chest, NpcRole.Stash, "Stash", 1.7f);
         }
 
         // A dark stone column with a glowing blue crystal on top; talk to it to travel.

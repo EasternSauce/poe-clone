@@ -93,6 +93,7 @@ namespace PoeClone.Network
                 string who = ctrl.WatchingName;
                 int count = ctrl.Players.Count;
                 string text = string.IsNullOrEmpty(who) ? "LIVE" : $"LIVE  ·  {who}";
+                text += replica.WatchedOnTouch ? "  ·  on phone" : "  ·  on PC";
                 if (count > 1)
                     text += $"  ({IndexOfWatched(ctrl) + 1} of {count})";
                 if (liveText.text != text) liveText.text = text;

@@ -11,7 +11,8 @@ namespace PoeClone.World
         Merchant,
         Smith,
         Guard,
-        Waystone   // not a person: the travel stone (see Waystone)
+        Waystone,  // not a person: the travel stone (see Waystone)
+        Stash      // not a person: the storage chest in Haven
     }
 
     /// <summary>

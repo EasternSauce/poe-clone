@@ -92,12 +92,14 @@ namespace PoeClone.Inventory
         public int healthPotions;
         public int manaPotions;
         public List<PlacedRecord> bag = new List<PlacedRecord>();
+        public List<PlacedRecord> stash = new List<PlacedRecord>();
         public List<EquippedRecord> equipped = new List<EquippedRecord>();
         public List<string> passives = new List<string>();
         public List<int> skillSlots = new List<int>();     // SkillId per slot, -1 for empty
         public List<string> questsDone = new List<string>();
         public List<QuestRecord> questsActive = new List<QuestRecord>();
         public List<int> visited = new List<int>();
+        public List<string> mapSeen = new List<string>();  // minimap fog of war, per area (MinimapTerrain)
 
         /// <summary>Copies the bag and worn gear into this save.</summary>
         public void CaptureInventory(PlayerInventory inventory)
@@ -105,6 +107,12 @@ namespace PoeClone.Inventory
             bag.Clear();
             foreach (PlacedItem placed in inventory.Grid.Items)
                 bag.Add(new PlacedRecord { item = ItemRecord.From(placed.Item), x = placed.X, y = placed.Y });
+
+            if (stash == null)
+                stash = new List<PlacedRecord>();
+            stash.Clear();
+            foreach (PlacedItem placed in inventory.Stash.Items)
+                stash.Add(new PlacedRecord { item = ItemRecord.From(placed.Item), x = placed.X, y = placed.Y });
 
             equipped.Clear();
             foreach (EquipSlot slot in SlotRules.AllSlots)
@@ -141,6 +149,16 @@ namespace PoeClone.Inventory
                     if (item == null)
                         continue;
                     if (!inventory.Grid.TryPlace(item, p.x, p.y) && !inventory.Grid.TryAutoPlace(item))
+                        leftOver.Add(item);
+                }
+            }
+
+            if (stash != null)
+            {
+                foreach (PlacedRecord p in stash)
+                {
+                    ItemData item = p.item != null ? p.item.ToItem() : null;
+                    if (item != null && !inventory.Stash.TryPlace(item, p.x, p.y) && !inventory.Stash.TryAutoPlace(item))
                         leftOver.Add(item);
                 }
             }

@@ -16,7 +16,9 @@ namespace PoeClone.Inventory
         Ring,
         Weapon,
         Shield,
-        Quiver   // off hand, worn with a bow
+        Quiver,  // off hand, worn with a bow
+        Potion,  // lies on the ground; picked up into the potion slots, never the bag
+        Gold     // lies on the ground; picked up into the purse
     }
 
     /// <summary>

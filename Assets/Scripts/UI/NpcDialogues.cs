@@ -15,8 +15,8 @@ namespace PoeClone.UI
     public static class NpcDialogues
     {
         private const int PotionPrice = 20;
-        private const int GearPrice = 60;
-        private const int JewelleryPrice = 90;
+        private const int GearPrice = 150;
+        private const int JewelleryPrice = 220;
 
         private static readonly string Dim = "#" + UiKit.Hex(UiKit.DimText);
         private static readonly string GoldHex = "#" + UiKit.Hex(new Color(1f, 0.84f, 0.3f));
@@ -25,8 +25,19 @@ namespace PoeClone.UI
         {
             if (npc.Role == NpcRole.Waystone)
                 WaystonePage(npc);
+            else if (npc.Role == NpcRole.Stash)
+                OpenStash(npc);
             else
                 Main(npc, Greeting(npc.Role));
+        }
+
+        // ------------------------------------------------------------------ stash
+
+        private static void OpenStash(Npc npc)
+        {
+            InventoryUI ui = Object.FindAnyObjectByType<InventoryUI>();
+            if (ui != null && ui.enabled)
+                ui.OpenStash(npc.transform);
         }
 
         // ------------------------------------------------------------------ waystones
@@ -106,10 +117,12 @@ namespace PoeClone.UI
             switch (npc.Role)
             {
                 case NpcRole.Merchant:
-                    options.Add(new DialogueOption("Trade", () => MerchantPage(npc, null)));
+                    options.Add(new DialogueOption("Trade", () => OpenTrade(npc, "Oda's Wares", IsMerchantGoods)));
+                    options.Add(new DialogueOption("Potions, and selling the whole bag", () => MerchantPage(npc, null)));
                     break;
                 case NpcRole.Smith:
-                    options.Add(new DialogueOption("Buy gear", () => SmithPage(npc, null)));
+                    options.Add(new DialogueOption("Trade", () => OpenTrade(npc, "Bram's Forge", IsSmithGoods)));
+                    options.Add(new DialogueOption("Gamble on something special", () => SmithPage(npc, null)));
                     break;
                 case NpcRole.Elder:
                     options.Add(new DialogueOption("<color=" + Dim + ">Start a new life...</color>", () => NewLifePage(npc)));
@@ -280,15 +293,31 @@ namespace PoeClone.UI
             MerchantPage(npc, "Pleasure doing business. <color=" + GoldHex + ">+" + total + " gold</color>");
         }
 
+        // ------------------------------------------------------------------ trading
+
+        // Oda deals in jewellery, belts, quivers and light gear; Bram in weapons, shields and armour.
+        private static bool IsMerchantGoods(ItemType type) =>
+            type == ItemType.Ring || type == ItemType.Amulet || type == ItemType.Belt || type == ItemType.Quiver ||
+            type == ItemType.Gloves || type == ItemType.Boots;
+
+        private static bool IsSmithGoods(ItemType type) =>
+            type == ItemType.Weapon || type == ItemType.Shield || type == ItemType.Helmet || type == ItemType.BodyArmour;
+
+        private static void OpenTrade(Npc npc, string name, System.Func<ItemType, bool> goods)
+        {
+            DialogueUI.Close();
+            InventoryUI ui = Object.FindAnyObjectByType<InventoryUI>();
+            PlayerStats stats = Object.FindAnyObjectByType<PlayerStats>();
+            if (ui == null || !ui.enabled || stats == null)
+                return;
+            var rng = new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
+            VendorStock stock = Vendors.Get(name, stats.Level, goods, Time.unscaledTimeAsDouble, rng);
+            ui.OpenTrade(npc.transform, stock);
+        }
+
         public static int SellValue(ItemData item)
         {
-            switch (item.Rarity)
-            {
-                case ItemRarity.Unique: return 50;
-                case ItemRarity.Rare: return 20;
-                case ItemRarity.Magic: return 8;
-                default: return 3;
-            }
+            return Vendors.SellPrice(item);
         }
 
         // ------------------------------------------------------------------ smith
@@ -299,7 +328,7 @@ namespace PoeClone.UI
             if (inventory == null)
                 return;
 
-            string text = (message != null ? message + "\n\n" : "Every piece is different - magic at least, rare if you're lucky. No refunds.\n\n") +
+            string text = (message != null ? message + "\n\n" : "A gamble: you pick the kind, the fire picks the rest. Rare or better half the time, and once in a while something truly special. No refunds.\n\n") +
                           "<color=" + GoldHex + ">Your gold: " + inventory.Gold + "</color>";
 
             var options = new List<DialogueOption>
@@ -336,15 +365,19 @@ namespace PoeClone.UI
             }
 
             var rng = new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
-            ItemRarity rarity = rng.NextDouble() < 0.25 ? ItemRarity.Rare : ItemRarity.Magic;
-            ItemData item = ItemGenerator.Generate(rng, bases[rng.Next(bases.Count)], level, rarity);
+            double roll = rng.NextDouble();
+            ItemRarity rarity = roll < 0.06 ? ItemRarity.Unique : roll < 0.5 ? ItemRarity.Rare : ItemRarity.Magic;
+            ItemData item = rarity == ItemRarity.Unique
+                ? UniqueItems.Random(rng, kind)
+                : ItemGenerator.Generate(rng, bases[rng.Next(bases.Count)], level, rarity);
 
             bool fits = inventory.Grid.TryAutoPlace(item);
             if (!fits)
                 inventory.ThrowAway(item);
 
             string name = "<color=#" + UiKit.Hex(UiKit.RarityColor(item.Rarity)) + ">" + item.Name + "</color>";
-            SmithPage(npc, (rarity == ItemRarity.Rare ? "Now that's a fine one! " : "Here you go. ") + name +
+            SmithPage(npc, (rarity == ItemRarity.Unique ? "By the old gods... I've never made one like that. " :
+                            rarity == ItemRarity.Rare ? "Now that's a fine one! " : "Here you go. ") + name +
                            (fits ? "" : "\n<color=" + Dim + ">Your bag is full - it's on the ground.</color>"));
         }
     }

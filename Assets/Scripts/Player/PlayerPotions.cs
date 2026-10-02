@@ -8,44 +8,63 @@ using PoeClone.UI;
 namespace PoeClone.Player
 {
     /// <summary>
-    /// Health and mana potions: a count of each (not bag items), drunk with 1 and 2 (or the two
-    /// touch buttons). A health potion heals 40% of life over a couple of seconds; a mana potion
-    /// gives back half the mana pool at once. Enemies sometimes drop more (see KillRewards), and
-    /// the merchant sells them. Self-added by <see cref="PlayerController"/>.
+    /// Health and mana potions: they sit in the inventory's two potion slots (counts kept by
+    /// <see cref="PlayerInventory"/>, never bag items, never sold), drunk with 1 and 2, the two touch
+    /// buttons, or a click on the slot. A health potion heals 40% of life over a couple of seconds;
+    /// a mana potion gives back half the mana pool at once. Enemies drop them on the ground (see
+    /// KillRewards), and the merchant sells them. Self-added by <see cref="PlayerController"/>.
     /// </summary>
     public class PlayerPotions : MonoBehaviour
     {
-        public const int MaxPotions = 10;
+        public const int MaxPotions = PlayerInventory.MaxPotions;
         private const float DrinkCooldown = 1f;
 
         private PlayerStats stats;
+        private PlayerInventory inventory;
         private float readyAt;
 
-        public int HealthPotions { get; private set; } = 3;
-        public int ManaPotions { get; private set; } = 1;
+        public int HealthPotions => inventory != null ? inventory.HealthPotions : 0;
+        public int ManaPotions => inventory != null ? inventory.ManaPotions : 0;
 
         private void Awake()
         {
             stats = GetComponent<PlayerStats>();
+            inventory = GetComponent<PlayerInventory>();
+        }
+
+        private void Start()
+        {
+            if (inventory != null)
+                inventory.PotionSlotClicked += OnSlotClicked;
+        }
+
+        private void OnDestroy()
+        {
+            if (inventory != null)
+                inventory.PotionSlotClicked -= OnSlotClicked;
+        }
+
+        private void OnSlotClicked(bool health)
+        {
+            if (stats == null || stats.IsDead)
+                return;
+            if (health)
+                DrinkHealth();
+            else
+                DrinkMana();
         }
 
         /// <summary>A saved character's potions.</summary>
         public void SetCounts(int health, int mana)
         {
-            HealthPotions = Mathf.Clamp(health, 0, MaxPotions);
-            ManaPotions = Mathf.Clamp(mana, 0, MaxPotions);
+            if (inventory != null)
+                inventory.SetPotions(health, mana);
         }
 
         /// <summary>Adds potions (capped); returns how many actually fit.</summary>
         public int Add(bool health, int count)
         {
-            int current = health ? HealthPotions : ManaPotions;
-            int added = Mathf.Clamp(MaxPotions - current, 0, count);
-            if (health)
-                HealthPotions += added;
-            else
-                ManaPotions += added;
-            return added;
+            return inventory != null ? inventory.AddPotions(health, count) : 0;
         }
 
         private void Update()
@@ -76,10 +95,9 @@ namespace PoeClone.Player
 
         public bool DrinkHealth()
         {
-            if (HealthPotions <= 0 || Time.time < readyAt)
+            if (HealthPotions <= 0 || Time.time < readyAt || !inventory.UsePotion(true))
                 return false;
 
-            HealthPotions--;
             readyAt = Time.time + DrinkCooldown;
             stats.HealOverTime(stats.MaxHealth * 0.4f, 2.5f);
             Feedback(new Color(0.9f, 0.25f, 0.25f));
@@ -88,10 +106,9 @@ namespace PoeClone.Player
 
         public bool DrinkMana()
         {
-            if (ManaPotions <= 0 || Time.time < readyAt)
+            if (ManaPotions <= 0 || Time.time < readyAt || !inventory.UsePotion(false))
                 return false;
 
-            ManaPotions--;
             readyAt = Time.time + DrinkCooldown;
             stats.RestoreMana(stats.MaxMana * 0.5f);
             Feedback(new Color(0.3f, 0.45f, 1f));

@@ -102,6 +102,9 @@ namespace PoeClone.Inventory
             public Vector2 Screen;
             public SlotView Slot;
             public bool OverGrid;
+            public bool OverStash;
+            public int Potion;       // 1 health slot, 2 mana slot, 0 neither
+            public Vector2 StashPos; // in stash cells, origin at its top-left
             public Vector2 GridPos; // in cells, origin at the grid's top-left
         }
 
@@ -112,6 +115,25 @@ namespace PoeClone.Inventory
         private CanvasGroup canvasGroup;
         private RectTransform panel;
         private RectTransform previewPanel;
+        private RectTransform stashPanel;
+        private readonly RectTransform[] potionSlots = new RectTransform[2];
+        private readonly Text[] potionCounts = new Text[2];
+        private readonly Image[] potionOverlays = new Image[2];
+        private RectTransform stashArea;
+        private RectTransform stashItems;
+        private Image stashHighlight;
+        private bool stashOpen;
+        private Transform stashAt;
+        private VendorStock vendor;     // trading: the side panel shows this trader's goods instead of the stash
+        private Text sideTitle;
+        private Text sideNote;
+        private float noteUntil;
+        private const float NoteHeight = 30f;
+
+        // The grid in the side panel: the open trader's goods, or the stash.
+        private InventoryGrid SideGrid => vendor != null ? vendor.Grid : inventory.Stash;
+        private const float StashCell = 44f;
+        private const float StashReach = 5f;
         private RectTransform gridArea;
         private RectTransform gridItems;
         private RectTransform tooltipRect;
@@ -167,6 +189,7 @@ namespace PoeClone.Inventory
 
             inventory.PlayerDied += OnPlayerDied;
             inventory.Grid.Changed += OnGridChanged;
+            inventory.PotionsChanged += OnGridChanged;
         }
 
         private void OnDestroy()
@@ -175,6 +198,7 @@ namespace PoeClone.Inventory
             {
                 inventory.PlayerDied -= OnPlayerDied;
                 inventory.Grid.Changed -= OnGridChanged;
+                inventory.PotionsChanged -= OnGridChanged;
             }
         }
 
@@ -229,6 +253,11 @@ namespace PoeClone.Inventory
 
             if (gridDirty)
                 Refresh();
+
+            if (stashOpen && (stashAt == null || FlatDistance(stashAt.position, inventory.transform.position) > StashReach))
+                CloseStash();
+            if (stashOpen)
+                UpdateNote();
 
             if (TouchMode.Active)
             {
@@ -337,10 +366,16 @@ namespace PoeClone.Inventory
             panel.anchoredPosition = new Vector2(-(touch ? TouchRightInset : DesktopRightInset), 0f);
 
             // No room for the character preview beside the panel on a phone.
-            previewPanel.gameObject.SetActive(open && !touch);
+            if (!open)
+            {
+                stashOpen = false;
+                vendor = null;
+            }
+            previewPanel.gameObject.SetActive(open && !touch && !stashOpen);
+            stashPanel.gameObject.SetActive(open && stashOpen);
 
             if (preview != null)
-                preview.SetActive(open && !touch);
+                preview.SetActive(open && !touch && !stashOpen);
 
             if (cursorView != null)
                 cursorView.gameObject.SetActive(open);
@@ -356,6 +391,271 @@ namespace PoeClone.Inventory
                 AudioClip toggleClip = open ? AudioManager.Instance.uiInventoryOpen : AudioManager.Instance.uiInventoryClose;
                 AudioManager.Instance.PlayUI(toggleClip, AudioManager.Instance.inventoryToggleVolume);
             }
+        }
+
+        // ------------------------------------------------------------------ stash
+
+        /// <summary>
+        /// Opens the stash (the chest in Haven) beside the bag, in place of the character preview.
+        /// It stays open until the bag closes or the player walks away from the chest.
+        /// </summary>
+        public void OpenStash(Transform chest)
+        {
+            if (inventory == null || inventory.IsPlayerDead)
+                return;
+            vendor = null;
+            sideTitle.text = "STASH";
+            stashAt = chest;
+            stashOpen = true;
+            SetNote(null);
+            if (!isOpen)
+                SetOpen(true);
+            else
+                SetOpen(true); // re-applies which side panel shows
+        }
+
+        /// <summary>
+        /// Trading, PoE style: the trader's goods beside the bag. Click one to buy it; Ctrl+click
+        /// something in the bag (or put a held item down on the trader's side) to sell it. Prices
+        /// show on the tooltips. Closes like the stash: with the bag, or by walking away.
+        /// </summary>
+        public void OpenTrade(Transform trader, VendorStock stock)
+        {
+            if (inventory == null || inventory.IsPlayerDead || stock == null)
+                return;
+            vendor = stock;
+            sideTitle.text = stock.Name.ToUpperInvariant();
+            stashAt = trader;
+            stashOpen = true;
+            SetNote(null);
+            SetOpen(true);
+        }
+
+        public bool IsTrading => isOpen && stashOpen && vendor != null;
+
+        public void CloseStash()
+        {
+            if (!stashOpen)
+                return;
+            stashOpen = false;
+            vendor = null;
+            SetOpen(isOpen);
+        }
+
+        public bool IsStashOpen => isOpen && stashOpen;
+
+        private static float FlatDistance(Vector3 a, Vector3 b)
+        {
+            a.y = 0f;
+            b.y = 0f;
+            return Vector3.Distance(a, b);
+        }
+
+        private Vector2 StashCellPos(int col, int row)
+        {
+            return new Vector2(col * StashCell + Gap * 0.5f, -row * StashCell - Gap * 0.5f);
+        }
+
+        private Vector2 StashCellSize(int w, int h)
+        {
+            return new Vector2(w * StashCell - Gap, h * StashCell - Gap);
+        }
+
+        private void BuildStash(float panelW, float panelH)
+        {
+            float gridSize = PlayerInventory.StashSize * StashCell;
+
+            Image back = UiKit.NewImage("StashPanel", canvas.transform, UiKit.PanelColor);
+            UiKit.Grain(back);
+            back.raycastTarget = true;
+            stashPanel = back.rectTransform;
+            stashPanel.anchorMin = new Vector2(1f, 0.5f);
+            stashPanel.anchorMax = new Vector2(1f, 0.5f);
+            stashPanel.pivot = new Vector2(1f, 0.5f);
+            stashPanel.anchoredPosition = new Vector2(-(30f + panelW + 16f), 0f);
+            stashPanel.sizeDelta = new Vector2(gridSize + Pad * 2f, gridSize + Pad * 2f + 34f + NoteHeight);
+            UiKit.AddOutline(back, UiKit.BorderColor, 3f);
+
+            sideTitle = UiKit.NewText("Title", stashPanel, "STASH", 24, UiKit.Gold, TextAnchor.UpperCenter);
+            UiKit.TopLeft(sideTitle.rectTransform, new Vector2(0f, -12f), new Vector2(stashPanel.sizeDelta.x, 30f));
+
+            sideNote = UiKit.NewText("Note", stashPanel, "", 16, UiKit.DimText, TextAnchor.MiddleCenter);
+            sideNote.rectTransform.anchorMin = new Vector2(0f, 0f);
+            sideNote.rectTransform.anchorMax = new Vector2(1f, 0f);
+            sideNote.rectTransform.pivot = new Vector2(0.5f, 0f);
+            sideNote.rectTransform.anchoredPosition = new Vector2(0f, 10f);
+            sideNote.rectTransform.sizeDelta = new Vector2(-20f, NoteHeight);
+
+            stashArea = UiKit.NewRect("StashGrid", stashPanel);
+            stashArea.anchorMin = new Vector2(0.5f, 1f);
+            stashArea.anchorMax = new Vector2(0.5f, 1f);
+            stashArea.pivot = new Vector2(0.5f, 1f);
+            stashArea.anchoredPosition = new Vector2(0f, -(Pad + 34f));
+            stashArea.sizeDelta = new Vector2(gridSize, gridSize);
+
+            Image lines = UiKit.NewImage("GridLines", stashArea, GridLineColor);
+            UiKit.Stretch(lines.rectTransform, -Gap);
+            UiKit.AddOutline(lines, UiKit.BorderColor, 2f);
+            for (int y = 0; y < PlayerInventory.StashSize; y++)
+            {
+                for (int x = 0; x < PlayerInventory.StashSize; x++)
+                {
+                    Image cell = UiKit.NewImage("Cell", stashArea, CellColor);
+                    UiKit.Inset(cell);
+                    UiKit.TopLeft(cell.rectTransform, StashCellPos(x, y), StashCellSize(1, 1));
+                }
+            }
+
+            stashItems = UiKit.NewRect("Items", stashArea);
+            UiKit.Stretch(stashItems, 0f);
+            stashHighlight = UiKit.NewImage("Highlight", stashArea, Color.clear);
+            stashHighlight.enabled = false;
+
+            stashPanel.gameObject.SetActive(false);
+        }
+
+        private void ShowStashHighlight(int x, int y, int w, int h, Color color)
+        {
+            stashHighlight.enabled = true;
+            stashHighlight.color = color;
+            UiKit.TopLeft(stashHighlight.rectTransform, StashCellPos(x, y), StashCellSize(w, h));
+        }
+
+        // The line at the foot of the side panel: a trading message for a few seconds, else the purse.
+        private void SetNote(string message)
+        {
+            noteUntil = message != null ? Time.unscaledTime + 3f : 0f;
+            if (message != null)
+                sideNote.text = message;
+            UpdateNote();
+        }
+
+        private void UpdateNote()
+        {
+            if (sideNote == null || Time.unscaledTime < noteUntil)
+                return;
+            sideNote.text = vendor == null
+                ? "Ctrl+click moves items between the stash and your bag"
+                : "<color=#FFD34D>Gold: " + inventory.Gold + "</color>   Click to buy  -  Ctrl+click or drop here to sell";
+        }
+
+        private static string Coloured(ItemData item)
+        {
+            return "<color=#" + UiKit.Hex(UiKit.RarityColor(item.Rarity)) + ">" + item.Name + "</color>";
+        }
+
+        private void Buy(ItemData item)
+        {
+            int price = Vendors.BuyPrice(item);
+            if (inventory.Gold < price)
+            {
+                PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiDenied : null);
+                SetNote("<color=#FF7060>Not enough gold (" + price + ")</color>");
+                return;
+            }
+            vendor.Grid.Remove(item);
+            if (!inventory.Grid.TryAutoPlace(item))
+            {
+                vendor.Grid.TryAutoPlace(item);
+                PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiDenied : null);
+                SetNote("<color=#FF7060>No room in your bag</color>");
+                return;
+            }
+            inventory.TrySpendGold(price);
+            PlayUISound(ItemSounds.Pickup(item));
+            SetNote("Bought " + Coloured(item) + " for " + price + " gold");
+        }
+
+        // The trader takes it (and keeps it for sale, so a mistake can be bought back).
+        private void Sell(ItemData item)
+        {
+            int price = Vendors.SellPrice(item);
+            inventory.AddGold(price);
+            vendor.Grid.TryAutoPlace(item);
+            PlayUISound(ItemSounds.Place(item));
+            SetNote("Sold " + Coloured(item) + " for " + price + " gold");
+        }
+
+        private void ClickStash(Vector2 pos)
+        {
+            if (vendor != null)
+            {
+                if (cursorItem != null)
+                {
+                    ItemData held = cursorItem;
+                    cursorItem = null;
+                    Sell(held);
+                    return;
+                }
+                PlacedItem forSale = vendor.Grid.GetAt(Mathf.FloorToInt(pos.x), Mathf.FloorToInt(pos.y));
+                if (forSale != null)
+                    Buy(forSale.Item);
+                return;
+            }
+
+            InventoryGrid stash = inventory.Stash;
+            if (cursorItem == null)
+            {
+                PlacedItem p = stash.GetAt(Mathf.FloorToInt(pos.x), Mathf.FloorToInt(pos.y));
+                if (p != null && stash.Remove(p.Item))
+                {
+                    cursorItem = p.Item;
+                    PlayUISound(ItemSounds.Pickup(cursorItem));
+                }
+                return;
+            }
+
+            Vector2Int o = FootprintOrigin(cursorItem, pos, stash);
+            if (stash.TryPlaceOrSwap(cursorItem, o.x, o.y, out ItemData replaced))
+            {
+                PlayUISound(ItemSounds.Place(cursorItem));
+                cursorItem = replaced;
+            }
+            else
+            {
+                PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiDenied : null);
+            }
+        }
+
+        // Ctrl+click: an item jumps straight between the bag and the open stash.
+        private bool TryQuickMove(Hover h)
+        {
+            Keyboard keyboard = Keyboard.current;
+            bool ctrl = keyboard != null && (keyboard.leftCtrlKey.isPressed || keyboard.rightCtrlKey.isPressed);
+            if (!ctrl || !stashOpen || cursorItem != null)
+                return false;
+
+            InventoryGrid from = h.OverGrid ? inventory.Grid : h.OverStash ? SideGrid : null;
+            InventoryGrid to = h.OverGrid ? SideGrid : inventory.Grid;
+            if (from == null)
+                return false;
+            Vector2 pos = h.OverGrid ? h.GridPos : h.StashPos;
+            PlacedItem p = from.GetAt(Mathf.FloorToInt(pos.x), Mathf.FloorToInt(pos.y));
+            if (p == null)
+                return false;
+
+            if (vendor != null)
+            {
+                if (h.OverGrid)
+                {
+                    inventory.Grid.Remove(p.Item);
+                    Sell(p.Item);
+                }
+                else
+                {
+                    Buy(p.Item);
+                }
+                return true;
+            }
+
+            if (!to.TryAutoPlace(p.Item))
+            {
+                PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiDenied : null);
+                return true;
+            }
+            from.Remove(p.Item);
+            PlayUISound(ItemSounds.Place(p.Item));
+            return true;
         }
 
         // ------------------------------------------------------------------ building the UI
@@ -384,6 +684,9 @@ private Vector2 CellSize(int w, int h)
         private void BuildUI(bool hasPreview)
         {
             canvas = UiKit.NewCanvas("InventoryCanvas", transform, 50, out canvasGroup);
+            // The panels catch the pointer, so a click on them never also attacks or walks.
+            canvas.gameObject.AddComponent<GraphicRaycaster>();
+            canvasGroup.blocksRaycasts = true;
 
             float gridW = inventory.Grid.Width * cellSize;
             float gridH = inventory.Grid.Height * cellSize;
@@ -395,6 +698,7 @@ private Vector2 CellSize(int w, int h)
             // Inventory panel on the right side of the screen, like PoE.
             Image panelImage = UiKit.NewImage("Panel", canvas.transform, UiKit.PanelColor);
             UiKit.Grain(panelImage);
+            panelImage.raycastTarget = true;
             panel = panelImage.rectTransform;
             panel.anchorMin = new Vector2(1f, 0.5f);
             panel.anchorMax = new Vector2(1f, 0.5f);
@@ -406,6 +710,7 @@ private Vector2 CellSize(int w, int h)
             // Character preview panel, just to the left of the inventory.
             Image previewBg = UiKit.NewImage("PreviewPanel", canvas.transform, UiKit.PanelColor);
             UiKit.Grain(previewBg);
+            previewBg.raycastTarget = true;
             previewPanel = previewBg.rectTransform;
             previewPanel.anchorMin = new Vector2(1f, 0.5f);
             previewPanel.anchorMax = new Vector2(1f, 0.5f);
@@ -434,6 +739,10 @@ private Vector2 CellSize(int w, int h)
 
             foreach (SlotLayout l in Layout)
                 BuildSlot(equipArea, l);
+
+            // The potion slots, either side of the body armour: only potions go here, and they stack.
+            BuildPotionSlot(equipArea, 0, 2, 2);
+            BuildPotionSlot(equipArea, 1, 5, 2);
 
             // Inventory grid (bottom).
             gridArea = UiKit.NewRect("Grid", panel);
@@ -464,7 +773,55 @@ private Vector2 CellSize(int w, int h)
             gridHighlight = UiKit.NewImage("Highlight", gridArea, Color.clear);
             gridHighlight.enabled = false;
 
+            BuildStash(panelW, panelH);
+
             BuildTooltip();
+        }
+
+        private void BuildPotionSlot(RectTransform parent, int index, int col, int row)
+        {
+            Image bg = UiKit.NewImage(index == 0 ? "HealthPotions" : "ManaPotions", parent, SlotColor);
+            UiKit.Inset(bg);
+            RectTransform rt = bg.rectTransform;
+            UiKit.TopLeft(rt, SlotPos(col, row), SlotSize(1, 1));
+            UiKit.AddOutline(bg, index == 0 ? new Color(0.55f, 0.2f, 0.2f, 1f) : new Color(0.25f, 0.3f, 0.6f, 1f), 1.5f);
+
+            Image icon = UiKit.NewImage("Icon", rt, Color.white);
+            icon.sprite = Resources.Load<Sprite>("ItemIcons/" + (index == 0 ? ItemGenerator.HealthPotionId : ItemGenerator.ManaPotionId));
+            icon.preserveAspect = true;
+            UiKit.Stretch(icon.rectTransform, 2f);
+
+            Text count = UiKit.NewText("Count", rt, "", 15, Color.white, TextAnchor.LowerRight);
+            count.fontStyle = FontStyle.Bold;
+            UiKit.Stretch(count.rectTransform, 3f);
+            UiKit.AddOutline(count, Color.black, 1f);
+
+            Image overlay = UiKit.NewImage("Overlay", rt, Color.clear);
+            UiKit.Stretch(overlay.rectTransform, 0f);
+
+            potionSlots[index] = rt;
+            potionCounts[index] = count;
+            potionOverlays[index] = overlay;
+        }
+
+        private void RefreshPotions()
+        {
+            for (int k = 0; k < 2; k++)
+            {
+                int n = inventory.Potions(k == 0);
+                potionCounts[k].text = n.ToString();
+                potionCounts[k].color = n > 0 ? Color.white : new Color(1f, 1f, 1f, 0.4f);
+                potionSlots[k].Find("Icon").GetComponent<Image>().color = n > 0 ? Color.white : new Color(1f, 1f, 1f, 0.3f);
+            }
+        }
+
+        private static string PotionTooltip(bool health, int count)
+        {
+            string name = health ? "Health Potion" : "Mana Potion";
+            string what = health ? "Heals 40% of your life\nover 2.5 seconds" : "Restores half your mana\nat once";
+            return "<b>" + name + "</b>\n<color=#" + UiKit.Hex(UiKit.DimText) + ">Potion   " + count + " / " + PlayerInventory.MaxPotions +
+                   "</color>\n\n<color=#" + UiKit.Hex(UiKit.MagicBlue) + ">" + what + "</color>\n\n<color=#" + UiKit.Hex(UiKit.DimText) +
+                   ">Click or press " + (health ? "1" : "2") + " to drink.\nOnly potions go here.</color>";
         }
 
         private void BuildSlot(RectTransform parent, SlotLayout l)
@@ -587,6 +944,19 @@ private Vector2 CellSize(int w, int h)
                 itemViews.Add(rt.gameObject);
             }
 
+            RefreshPotions();
+
+            // Items in the stash.
+            if (stashOpen)
+            {
+                foreach (PlacedItem p in SideGrid.Items)
+                {
+                    RectTransform rt = CreateItemView(stashItems, p.Item, StashCellSize(p.Item.Width, p.Item.Height), 1f);
+                    rt.anchoredPosition = StashCellPos(p.X, p.Y);
+                    itemViews.Add(rt.gameObject);
+                }
+            }
+
             // Items being worn.
             foreach (SlotView s in slotViews)
             {
@@ -624,6 +994,15 @@ private Vector2 CellSize(int w, int h)
         {
             Hover h = new Hover { Screen = screenPos };
 
+            for (int k = 0; k < 2; k++)
+            {
+                if (potionSlots[k] != null && RectTransformUtility.RectangleContainsScreenPoint(potionSlots[k], screenPos, null))
+                {
+                    h.Potion = k + 1;
+                    return h;
+                }
+            }
+
             foreach (SlotView s in slotViews)
             {
                 if (RectTransformUtility.RectangleContainsScreenPoint(s.Rect, screenPos, null))
@@ -647,16 +1026,34 @@ private Vector2 CellSize(int w, int h)
                 }
             }
 
+            if (stashOpen && !h.OverGrid &&
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(stashArea, screenPos, null, out local))
+            {
+                Rect r = stashArea.rect;
+                float px = local.x - r.xMin;
+                float py = r.yMax - local.y;
+                if (px >= 0f && py >= 0f && px < r.width && py < r.height)
+                {
+                    h.OverStash = true;
+                    h.StashPos = new Vector2(px / StashCell, py / StashCell);
+                }
+            }
+
             return h;
         }
 
         // Where an item's top-left cell lands when its centre is under the cursor (kept inside the grid).
         private Vector2Int FootprintOrigin(ItemData item, Vector2 pos)
         {
+            return FootprintOrigin(item, pos, inventory.Grid);
+        }
+
+        private static Vector2Int FootprintOrigin(ItemData item, Vector2 pos, InventoryGrid grid)
+        {
             int x = Mathf.RoundToInt(pos.x - item.Width * 0.5f);
             int y = Mathf.RoundToInt(pos.y - item.Height * 0.5f);
-            x = Mathf.Clamp(x, 0, Mathf.Max(0, inventory.Grid.Width - item.Width));
-            y = Mathf.Clamp(y, 0, Mathf.Max(0, inventory.Grid.Height - item.Height));
+            x = Mathf.Clamp(x, 0, Mathf.Max(0, grid.Width - item.Width));
+            y = Mathf.Clamp(y, 0, Mathf.Max(0, grid.Height - item.Height));
             return new Vector2Int(x, y);
         }
 
@@ -682,6 +1079,27 @@ private Vector2 CellSize(int w, int h)
                 }
 
                 s.Overlay.color = c;
+            }
+
+            for (int k = 0; k < 2; k++)
+                potionOverlays[k].color = h.Potion == k + 1 ? (cursorItem != null ? Bad : HoverTint) : Color.clear;
+
+            stashHighlight.enabled = false;
+            if (h.OverStash)
+            {
+                if (cursorItem != null)
+                {
+                    Vector2Int so = FootprintOrigin(cursorItem, h.StashPos, SideGrid);
+                    bool fits = vendor != null || SideGrid.InBounds(cursorItem, so.x, so.y) &&
+                                SideGrid.GetOverlapping(cursorItem, so.x, so.y).Count <= 1;
+                    ShowStashHighlight(so.x, so.y, cursorItem.Width, cursorItem.Height, fits ? GoodStrong : Bad);
+                }
+                else
+                {
+                    PlacedItem sp = SideGrid.GetAt(Mathf.FloorToInt(h.StashPos.x), Mathf.FloorToInt(h.StashPos.y));
+                    if (sp != null)
+                        ShowStashHighlight(sp.X, sp.Y, sp.Item.Width, sp.Item.Height, HoverTint);
+                }
             }
 
             if (!h.OverGrid)
@@ -797,6 +1215,12 @@ private Vector2 CellSize(int w, int h)
         // Also while an item is held, so the one it would swap with can be read first.
         private void UpdateTooltip(Hover h, Vector2 mousePos)
         {
+            if (h.Potion > 0)
+            {
+                ShowTooltipText(PotionTooltip(h.Potion == 1, inventory.Potions(h.Potion == 1)), 8, mousePos);
+                return;
+            }
+
             ItemData item = null;
 
             if (h.Slot != null)
@@ -809,10 +1233,34 @@ private Vector2 CellSize(int w, int h)
                 if (p != null)
                     item = p.Item;
             }
+            else if (h.OverStash)
+            {
+                PlacedItem p = SideGrid.GetAt(Mathf.FloorToInt(h.StashPos.x), Mathf.FloorToInt(h.StashPos.y));
+                if (p != null)
+                    item = p.Item;
+            }
 
             if (item == null)
             {
                 tooltipRect.gameObject.SetActive(false);
+                return;
+            }
+
+            if (vendor != null)
+            {
+                int lines;
+                string text = BuildTooltipText(item, out lines);
+                if (h.OverStash)
+                {
+                    int price = Vendors.BuyPrice(item);
+                    string colour = inventory.Gold >= price ? "FFD34D" : "FF7060";
+                    text += "\n\n<color=#" + colour + ">Price: " + price + " gold</color>";
+                }
+                else
+                {
+                    text += "\n\n<color=#FFD34D>Sells for " + Vendors.SellPrice(item) + " gold</color>";
+                }
+                ShowTooltipText(text, lines + 2, mousePos);
                 return;
             }
 
@@ -821,13 +1269,17 @@ private Vector2 CellSize(int w, int h)
 
         private void ShowTooltip(ItemData item, Vector2 mousePos)
         {
-            // Larger on touch: the text is read on a phone, at arm's length.
+            int lines;
+            string text = BuildTooltipText(item, out lines);
+            ShowTooltipText(text, lines, mousePos);
+        }
+
+        private void ShowTooltipText(string text, int lines, Vector2 mousePos)
+        {
             bool touch = TouchMode.Active;
             tooltipText.fontSize = touch ? 22 : 17;
             float lineHeight = touch ? 26f : 23f;
-
-            int lines;
-            tooltipText.text = BuildTooltipText(item, out lines);
+            tooltipText.text = text;
             tooltipRect.sizeDelta = new Vector2(touch ? 340f : 270f, 24f + lines * lineHeight);
 
             tooltipRect.gameObject.SetActive(true);
@@ -860,10 +1312,22 @@ private Vector2 CellSize(int w, int h)
 
         private void HandleClick(Hover h)
         {
-            if (h.Slot != null)
+            if (TryQuickMove(h))
+            {
+            }
+            else if (h.Potion > 0)
+            {
+                if (cursorItem != null)
+                    PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiDenied : null);
+                else
+                    inventory.ClickPotionSlot(h.Potion == 1);
+            }
+            else if (h.Slot != null)
                 ClickSlot(h.Slot);
             else if (h.OverGrid)
                 ClickGrid(h.GridPos);
+            else if (h.OverStash)
+                ClickStash(h.StashPos);
             else if (cursorItem != null && !OverInventory(h.Screen))
                 ThrowCursorItem();
             else
@@ -877,6 +1341,8 @@ private Vector2 CellSize(int w, int h)
         private bool OverInventory(Vector2 screen)
         {
             if (RectTransformUtility.RectangleContainsScreenPoint(panel, screen, null))
+                return true;
+            if (stashPanel.gameObject.activeSelf && RectTransformUtility.RectangleContainsScreenPoint(stashPanel, screen, null))
                 return true;
             if (previewPanel.gameObject.activeSelf && RectTransformUtility.RectangleContainsScreenPoint(previewPanel, screen, null))
                 return true;

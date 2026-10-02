@@ -77,6 +77,9 @@ namespace PoeClone.Network
 
         public bool IsActive => active;
 
+        /// <summary>The watched player is on a phone or tablet (touch controls).</summary>
+        public bool WatchedOnTouch => timeline.Newest != null && timeline.Newest.dev != 0;
+
         /// <summary>True once at least one snapshot of the current player session is buffered.</summary>
         public bool HasLiveData => timeline.HasData;
 
