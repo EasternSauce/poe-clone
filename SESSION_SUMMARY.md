@@ -1,8 +1,8 @@
-# Session summary: browser play + live spectating (2026-10-01)
+# Session summary / hand-off (updated 2026-10-02)
 
-What was built and fixed in the session that put this game in the browser with a one-player
-lock, a live spectator view and chat. Written so a fresh Claude Code session (or you, later) can
-pick up from here. Hosting setup steps live in `DEPLOYMENT.md`.
+Where this project stands, so a fresh Claude Code session can pick it up. Hosting setup lives
+in `DEPLOYMENT.md`; this file is the current state, the branches, what the user asked for last,
+and how to work on it.
 
 ## Live links
 
@@ -15,94 +15,149 @@ pick up from here. Hosting setup steps live in `DEPLOYMENT.md`.
 | Web build repo (GitHub Pages) | https://github.com/EasternSauce/poe-clone-web (branch `master`) |
 
 - Render's free server sleeps after ~15 min idle; the first visit then takes up to a minute.
-- Browsers pause hidden/minimized tabs, so the player's tab must stay visible (alt-tab to
-  another window is fine - Run In Background is on).
+- Browsers pause hidden/minimized tabs, so the player's tab must stay visible.
 
-## Status (2026-10-01)
+## Branches and what is where
 
-- Everything is pushed: `poe-clone` up to `7b27078` (Render redeploys the server from it; no
-  server code changed) and `poe-clone-web` up to `f3eb8a1` (LibreWolf black-screen fix, live on
-  GitHub Pages).
-- The live web build still shows "my-project" on the loading screen/tab; that only changes
-  with the next Web build (the user asked not to rebuild after the rename).
-- Unity keeps reverting `ProjectSettings.asset` -> `projectName` to `my-project` when the
-  project is reopened. That's the Unity Cloud link name, not what players see
-  (`productName` is `poe-clone`); leave it uncommitted or discard it.
+### `master` = what is live (pushed and deployed)
+`master` is pushed to `origin/master`; the live Web build (`poe-clone-web`, `203d543`) was
+built from `dabea46`. Live features:
+- Browser play with a one-player lock + waiting queue, live spectator view (10 Hz state stream),
+  chat (Enter sends), optional player-name prompt.
+- Mobile touch controls (joystick, attack/run buttons, BAG/CHAR/CHAT menu; `?touch=1` forces them).
+- Combat: armour/evasion/block, elemental resistances, mana absorbs 30% of hits (sprint is free),
+  stagger with attack-cooldown refund.
+- Enemies (one area, Greenwood): Zombie, Raider, Brute (melee), Archer, Fire/Frost/Storm Casters
+  (ranged; retreat only every few attacks); respawn when the player is far away.
+- Loot: random drops (Normal/Magic/Rare), weapons (sword, hand axe, mace, dagger, short bow with
+  a proper draw animation), quivers (bow only; no shield with a bow).
+- Pickup is click/tap with an outline (enemies take priority), no auto-pickup; items can be
+  thrown away by putting them down outside the inventory.
+- New game: empty bag, 3-4 starter items on the ground.
+- Editor menu **PoeClone > Build Web** (and a command-line build).
 
-## Architecture
+### `overnight-features` = experimental, NOT pushed, NOT deployed
+On 2026-10-01/02 the user asked for autonomous feature work ("I will choose which features to
+keep in the morning"). It sits on top of `master`, one commit per feature, oldest first:
+
+| # | Commit subject | What it adds |
+|---|---|---|
+| 1 | Add skills | Cleave, Fire Bolt, Dash, Frost Nova, Rejuvenate, Chain Lightning on Q/E/R/F (round buttons on touch), unlock by level, skill list on K |
+| 2 | Add health/mana potions and gold | potions on 1/2 (HP/MP buttons on touch), gold from kills, potion drops |
+| 3 | Add real areas | Haven (town, start), Haunted Graveyard (lv 4), Ashen Ruins (lv 7), procedural ground textures, themed props, gates, area title banner |
+| 4 | Add Haven's townsfolk, dialogue, quests, merchant and smith | Elder (main quests), Guard (repeating bounties), Merchant (potions, sell bag), Smith (random gear); click/tap to talk; quest tracker |
+| 5 | Add bosses | Gravelord Mortis (crypt) and Ashen Warlord (altar), telegraphed slams/summons/fire rain, boss bar, boss quests |
+| 6 | Add a simple passive tree | P / TREE button, 1 point per level, three branches |
+| 7 | Add unique items | 9 orange uniques with lore; every boss drops one |
+| 8 | Add Skeletons, Wraiths and Ember Knights | area-native enemies, skeleton bounty |
+| 9 | Add waystones and a town portal | waystone per area (travel to visited areas), T / TOWN portal home |
+| 10 | Save the character between visits | PlayerPrefs (browser storage) save/load; Elder "Start a new life" erases |
+| 11 | Add the Frozen Hollow and Rimeheart | level-10 area, frost boss, final quest; HUD gets a dark backing |
+| 12 | Add a minimap and first-quest guidance | M toggles; tracker points new players to the Elder |
+| 13 | Fit the new buttons and panels on phones | second touch-menu column (TREE, TOWN) |
+| 14 | Add higher-tier item bases | 21 tiered bases reusing art via `ItemData.ArtId`/`ArtTint` |
+| 15-17 | Fix commits | gates blocked by scenery; enemy-over-NPC click priority; boss XP; per-frame scene searches; identical reward items (TickCount seeds); skills panel vs passive tree stacking |
+
+State: 137/137 EditMode tests pass on the branch (120 on master). A local Web build of the
+branch compiled and was then discarded (the deploy folder was restored to the live build).
+**Not verified:** a live spectator watching the new content (needs a second client).
+
+**Plan:** the user will pick features from this branch to merge into `master` (then build Web
+and deploy). Later commits build on earlier ones (NPCs/quests need areas; bosses need quests;
+the save system needs passives/quests/skills; the Frozen Hollow needs bosses; tiers touch save
+data), so merge in order or cut off from the end; cherry-picking a later commit alone will
+conflict or not compile. Ask the user which features to keep before merging anything.
+
+## Latest feedback from the user (2026-10-02) - not started yet
+
+The user played the overnight build and reported (their words, lightly condensed):
+1. **Bow aim on mobile** is super hard - "you should be able to attack by clicking on screen?
+   or something"; positioning the character to aim accurately is too fiddly.
+2. **Spectator:** arrows and bows look pink (missing material/shader).
+3. **Chat:** the last message is often (not always) covered by the input text box.
+4. **Fullscreen on Safari** doesn't work - what can we do?
+5. **Mage enemies shoot from the base** (bolts start too low).
+6. **Lighting:** want more light sources than torches; rethink torch placement - some are
+   inside random columns.
+7. **Areas are extremely small and always rectangular.** Want PoE-like variety: sometimes an
+   open layout, sometimes a series of rooms, sometimes a cave with a "terrarium-like" layout -
+   including the town.
+8. **Inventory grid** needs a more distinct colour; it blends in too much.
+9. **Zero enemy diversity** - every area seems to have the same enemies. Add more enemies,
+   some that use a skill from time to time, and cool enemy-only skills.
+10. **Town grass** looks too plastic.
+
+Findings so far (no code changed yet):
+- (5) `EnemyCombat.BoltOrigin` spawns bolts 0.5 m up in front of the body; it should start at
+  the staff's orb (casters get a staff from `EnemyKinds.AddStaff`, socket `Socket_MainHand`).
+- (2) Likely cause: projectiles/bow parts built at runtime (`RuntimePrimitives.Create` uses
+  `GameObject.CreatePrimitive` + property-block colours) get a default material whose shader is
+  stripped from Web builds; the replica path may build them differently from the player's.
+  Confirm in a Web build (spectator) before fixing - e.g. give primitives a project material
+  or add the shader to Always Included Shaders.
+- (4) iPhone Safari has no Fullscreen API for non-video elements (iPad is partial). Practical
+  fix: a web app manifest + `apple-mobile-web-app-capable` meta so "Add to Home Screen" opens
+  the game fullscreen, plus an in-page hint on iOS. The page template is
+  `Assets/WebGLTemplates/FullWindow/index.html`.
+- (9) Each area mixes the same 7 base kinds by weight (`WorldBuilder.KindWeights`); only the
+  Graveyard/Ruins/Frozen natives differ. Per-area rosters + a few skill-using enemies would fix it.
+- (7) is a rewrite of `WorldBuilder` (layout generators: open field / rooms+corridors / cave),
+  and gates, waystones, spawners, safe spots and the minimap all depend on area bounds
+  (currently a 100x100 m square per area, `WorldBuilder.HalfSize`, walls at +-49.5).
+
+Proposed order (the user had not answered yet when the session ended): quick fixes (5, 2, 3,
+8, 10, 6) -> bow tap-to-attack/auto-aim on mobile (1) -> enemy variety (9) -> Safari home-screen
+support (4) -> area layout overhaul (7) as its own task. Also still open: which branch to do
+this on, and which overnight features the user keeps.
+
+## Architecture notes
 
 ```
 Player's browser (Unity Web build)  --WebSocket-->  Render: Node server  --WebSocket-->  Spectator's browser
 PlayerStateBroadcaster (10 Hz)                       server/room.js                       SpectatorReplica + SnapshotTimeline
 ```
 
-### Session server (`server/`, Node + `ws`, hosted on Render free tier)
-- One player slot. A second "player" gets "someone is already playing" and waits in a
-  **queue**; when the player leaves (or their connection dies - heartbeat), the longest-waiting
-  one is promoted automatically.
-- Relays `state` snapshots from the player to spectators: rate-capped (~20/s), max 32 KB,
-  stamped with a server-side player-session id (`pid`), skipped for spectators whose socket
-  is backed up; the latest one is kept for spectators who join mid-game.
-- Chat for everyone, with a short history.
-- Tests: `cd server && npm test` (24 tests). Probe a running server's stream:
-  `node server/test/smoke-spectator.js ws://localhost:8099`.
+- **Session server** (`server/`, Node + `ws`, Render free tier): one player slot + queue,
+  relays `state` snapshots (rate/size capped) and chat. Tests: `cd server && npm test`.
+- **Spectator view:** sender `Assets/Scripts/Network/PlayerStateBroadcaster.cs`; wire format and
+  jitter-buffered playback in `Assets/Scripts/Network/Replication/` (own assembly, unit tested);
+  receiver `Assets/Scripts/Network/SpectatorReplica.cs` (runs the same scene with input, AI,
+  combat and spawning off; enemies are posed from snapshots by kind index).
+- **Web page:** `Assets/WebGLTemplates/FullWindow/index.html` (full-window, own fullscreen
+  button, caps pixel ratio to the GPU limit for LibreWolf). Settings live in the build profile
+  `Assets/Settings/Build Profiles/Web - Desktop - Release.asset`. Web uses the Mobile quality
+  level (`Assets/Settings/Mobile_RPAsset.asset`).
+- The outline shader (`PoeClone/Outline`, `Shader.Find`) must stay in Always Included Shaders.
+- Overnight branch structure (for orientation): world built at runtime by
+  `Assets/Scripts/World/WorldBuilder.cs` (areas, props from `Resources/AreaKit.asset`, built by
+  menu **PoeClone > Build Area Kit**); quests in `Assets/Scripts/Quests/`; dialogue/UI in
+  `Assets/Scripts/UI/`; boss logic `Enemies/BossAbilities.cs` + `World/BossLair.cs`; save
+  `Player/SaveSystem.cs` + `Inventory/SaveData.cs`.
 
-### Spectator live view (replaced the old 2-fps JPEG slideshow)
-- **Sender** - `Assets/Scripts/Network/PlayerStateBroadcaster.cs`: every 0.1 s sends player
-  pose/HUD/gear, area, loading-fade flag, and every enemy within 40 units (pos, yaw, hp,
-  dead, chasing). Swings and hits are *counters* (`atk`, `stg`) so nothing between snapshots is
-  lost; `ap` = which attack animation. ~0.8 KB per snapshot, ~8 KB/s.
-- **Wire format + playback** - `Assets/Scripts/Network/Replication/` (own assembly
-  `PoeClone.Replication`, unit tested): `StateSnapshot.cs`, `SnapshotCodec.cs` (compact JSON),
-  `SnapshotTimeline.cs` (jitter buffer: plays ~0.15-0.2 s behind, interpolates between
-  snapshots, adapts delay to jitter, extrapolates up to 0.25 s then holds, snaps teleports).
-- **Receiver** - `Assets/Scripts/Network/SpectatorReplica.cs`: the spectator runs the same
-  scene with input/AI/combat/spawning off; the player and enemy puppets are posed every frame;
-  swings, staggers, deaths, area changes, fades, HUD and gear are applied when playback
-  reaches them, with the game's own animations and sounds. `SpectatorView.cs` = waiting
-  screen, LIVE badge, "waiting for the player's game" notice on stalls.
-- Small hooks added to game code for this: attack/stagger counters
-  (`CharacterAttackAnimator`, `Stagger`), replica-only setters (`EnemyHealth`, `PlayerStats`),
-  `AreaManager.ApplyAreaImmediate`, `LoadingScreenUI.IsShowing`, `PlayerHUD.SpectatorMode`.
+## How to work on it (important)
 
-### Web page and build
-- Template `Assets/WebGLTemplates/FullWindow/index.html` (selected in the Web build profile):
-  full-window canvas that follows window resizes, no Unity branding, own fullscreen button
-  (top-right; F11 also works), loading bar. It caps the render pixel ratio to the GPU's
-  maximum render size - needed for LibreWolf/hardened Firefox, which report a 2048 px limit with
-  a spoofed devicePixelRatio of 2 (that combination was the black screen).
-- In Unity 6 the platform is called **Web**; settings live in the build profile
-  `Assets/Settings/Build Profiles/Web - Desktop - Release.asset` (it carries its own copy of
-  Player Settings - set things there, not only in Project Settings).
-- Splash screen off, Run In Background on, product name `poe-clone`.
-- Web uses the **Mobile** quality level (`Assets/Settings/Mobile_RPAsset.asset`), tuned to:
-  render scale 1, 4x MSAA, 2048 shadow map, 30 m shadow distance, 2 cascades, soft shadows.
-- Build into `Builds/WebGL` (that folder is the `poe-clone-web` git clone), then from it:
-  `git add -A && git commit -m "Update build" && git push`.
-
-## Bugs fixed along the way
-- **Attacking broken on the web near enemies** (also the real cause of "sprint doesn't work in
-  Firefox"): the enemy-hover outline shader (`PoeClone/Outline`, loaded via `Shader.Find`)
-  was stripped from builds, so it threw every frame once an enemy was in range. Now in
-  Always Included Shaders (`ProjectSettings/GraphicsSettings.asset`).
-- **Blinking shoulder pad**: coarse hard shadows on the web quality level made the hood's
-  shadow edge crawl across the pauldron; with toon shading it flipped light/dark. Fixed by
-  the shadow tuning above plus the pauldron and vest shoulder pads not receiving shadows (also
-  in the editor builders `StylizedWorldBuilder.cs` / `EquipmentBuilder.cs`).
-- "Someone is already playing" never turned into the game -> server-side waiting queue.
-- Wrong server URL in the deployed config (`poeclone-...` vs `poe-clone-...`).
-- HUD controls hint was clipped.
-
-## Testing tips for next time
-- Unity tests: EditMode, 102 total (includes ~30 replication tests in
-  `Assets/Tests/EditMode/ReplicationTests.cs`).
-- Editor as spectator/player against a local server (no browser URL in the Editor): set
-  PlayerPrefs key `PoeClone.DevQuery` to `?role=spectator&server=ws://localhost:8099` (or just
-  `?server=...` to play); delete the key afterwards. In a web build the same values are URL
-  parameters.
-- Local server: `cd server && PORT=8099 node server.js`; serve `Builds/WebGL` with any static
-  file server and open `http://localhost:<port>/?server=ws://localhost:8099`.
-- Browser testing that worked: headless Chrome driven over the DevTools protocol, and headless
-  Firefox over WebDriver BiDi (for LibreWolf behaviour, a profile `user.js` with
-  `user_pref("privacy.resistFingerprinting", true);`). Measure player speed from the state
-  stream (walk = 6.0 units/s, sprint = 10.2).
+- **Test in Editor Play mode, not in Web builds.** A Web build takes ~5 min and blocks the
+  editor; do one at the end before deploying. Deploy = build via **PoeClone > Build Web** into
+  `Builds/WebGL` (a clone of `poe-clone-web`), commit there with `git add -A`, push both repos.
+- **Driving the editor:** the Unity MCP bridge listens on 127.0.0.1:6400 (8-byte big-endian
+  length + JSON; `execute_code`, `manage_editor` play/stop, `manage_scene` screenshot,
+  `read_console`, `refresh_unity`, `run_tests`/`get_test_job`, `execute_menu_item`). Domain reload
+  is off, so statics persist between plays (reset them with
+  `[RuntimeInitializeOnLoadMethod(SubsystemRegistration)]`).
+- **Local session server** so the live slot isn't needed: `cd server && PORT=8099 node server.js`,
+  and in the Editor set PlayerPrefs `PoeClone.DevQuery` = `?server=ws://localhost:8099` (add
+  `&role=spectator` to watch). **Delete that key afterwards**, and on the overnight branch also
+  delete PlayerPrefs `PoeClone.Save.v1` after test sessions (otherwise the user's Editor loads
+  a test character). In a Web build these are URL parameters.
+- Simulated input via the bridge needs InputSystem `backgroundBehavior = IgnoreFocus` and
+  `editorInputBehaviorInPlayMode = AllDeviceInputAlwaysGoesToGameView`; restore the originals
+  (`ResetAndDisableNonBackgroundDevices`, `PointersAndKeyboardsRespectGameViewFocus`) afterwards.
+  Code run through `execute_code` runs in the editor loop (Time values differ); trigger gameplay
+  through `PoeClone.Player.VirtualInput` or queued input events instead.
+- **Before every commit** revert Unity noise: `ProjectSettings/ProjectSettings.asset`
+  (`projectName` flips to `my-project` from the cloud link), after Web builds also the build
+  profile asset and `Data/Plugins/lib_burst_generated.wasm`; delete
+  `Assets/Resources/PerformanceTestRun*.json`.
+- Never use the user's inspiration directory directly; copy what is needed into real assets.
+- Commit/push only when the user asks. Hotfixes for the live game go on `master` (build +
+  deploy), then `git rebase master` on `overnight-features`.

@@ -265,8 +265,9 @@ Code: `Assets/Scripts/Network/PlayerStateBroadcaster.cs` (sender),
 - **The spectator is ~0.2s behind the player.** That buffer is what makes the movement smooth.
 - **If the player's tab goes to the background**, browsers pause it, so the stream pauses too.
   The spectator sees a "Waiting for the player's game..." notice until the player comes back.
-- **No accounts, no persistence.** Closing the player's tab ends the session; nothing is
-  saved server-side between sessions except the current in-memory chat scrollback.
+- **No accounts, no server-side persistence.** Closing the player's tab ends the session;
+  nothing is saved server-side except the current in-memory chat scrollback. (The unmerged
+  `overnight-features` branch adds a browser-local save via PlayerPrefs; see SESSION_SUMMARY.md.)
 - **Crash recovery takes up to ~30 seconds.** If the player's tab crashes or their network
   drops without a clean disconnect, the server notices via a heartbeat check and frees the
   slot within about 15-30 seconds, not instantly.
