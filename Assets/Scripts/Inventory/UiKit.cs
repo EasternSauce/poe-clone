@@ -25,14 +25,16 @@ namespace PoeClone.Inventory
         public static readonly Color BonusGreen = new Color(0.50f, 0.84f, 0.50f, 1f);
         public static readonly Color NormalWhite = new Color(0.90f, 0.88f, 0.84f, 1f);
         public static readonly Color RareYellow = new Color(1f, 1f, 0.47f, 1f);
+        public static readonly Color UniqueOrange = new Color(0.90f, 0.50f, 0.18f, 1f);
 
-        /// <summary>PoE's item name colours: white Normal, blue Magic, yellow Rare.</summary>
+        /// <summary>PoE's item name colours: white Normal, blue Magic, yellow Rare, orange Unique.</summary>
         public static Color RarityColor(ItemRarity rarity)
         {
             switch (rarity)
             {
                 case ItemRarity.Magic: return MagicBlue;
                 case ItemRarity.Rare: return RareYellow;
+                case ItemRarity.Unique: return UniqueOrange;
                 default: return NormalWhite;
             }
         }

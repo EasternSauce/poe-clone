@@ -42,6 +42,7 @@ namespace PoeClone.Inventory
         private static readonly Color PlateBorder = new Color(0.40f, 0.36f, 0.30f, 1f);
         private static readonly Color MagicBorder = new Color(0.42f, 0.42f, 0.85f, 1f);
         private static readonly Color RareBorder = new Color(0.85f, 0.80f, 0.35f, 1f);
+        private static readonly Color UniqueBorder = new Color(0.85f, 0.45f, 0.15f, 1f);
         private static readonly Color GoodSoft = new Color(0.25f, 0.80f, 0.35f, 0.16f);
         private static readonly Color GoodStrong = new Color(0.25f, 0.85f, 0.35f, 0.40f);
         private static readonly Color Bad = new Color(0.90f, 0.20f, 0.20f, 0.40f);
@@ -500,7 +501,7 @@ private Vector2 CellSize(int w, int h)
             if (painted != null)
             {
                 plate = new Color(PlateColor.r, PlateColor.g, PlateColor.b, alpha);
-                border = item.Rarity == ItemRarity.Rare ? RareBorder : item.Rarity == ItemRarity.Magic ? MagicBorder : PlateBorder;
+                border = item.Rarity == ItemRarity.Unique ? UniqueBorder : item.Rarity == ItemRarity.Rare ? RareBorder : item.Rarity == ItemRarity.Magic ? MagicBorder : PlateBorder;
             }
             else
             {
@@ -727,6 +728,32 @@ private Vector2 CellSize(int w, int h)
                     sb.Append("\n<color=#").Append(magic).Append(">").Append(StatFormatter.ItemLine(m)).Append("</color>");
                     lineCount++;
                 }
+            }
+
+            string flavour = UniqueItems.FlavourFor(item);
+            if (flavour != null)
+            {
+                // Wrapped by hand: the tooltip sizes itself to its longest line.
+                sb.Append("\n\n<i><color=#").Append(UiKit.Hex(UiKit.UniqueOrange)).Append(">");
+                lineCount += 2;
+                int column = 0;
+                foreach (string word in flavour.Split(' '))
+                {
+                    if (column > 0 && column + word.Length > 34)
+                    {
+                        sb.Append('\n');
+                        lineCount++;
+                        column = 0;
+                    }
+                    else if (column > 0)
+                    {
+                        sb.Append(' ');
+                        column++;
+                    }
+                    sb.Append(word);
+                    column += word.Length;
+                }
+                sb.Append("</color></i>");
             }
 
             return sb.ToString();

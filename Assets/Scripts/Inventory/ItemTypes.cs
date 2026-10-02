@@ -27,7 +27,8 @@ namespace PoeClone.Inventory
     {
         Normal,
         Magic,
-        Rare
+        Rare,
+        Unique   // hand-made, fixed stats (UniqueItems)
     }
 
     /// <summary>

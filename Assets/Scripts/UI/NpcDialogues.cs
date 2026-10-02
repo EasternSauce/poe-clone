@@ -220,6 +220,7 @@ namespace PoeClone.UI
         {
             switch (item.Rarity)
             {
+                case ItemRarity.Unique: return 50;
                 case ItemRarity.Rare: return 20;
                 case ItemRarity.Magic: return 8;
                 default: return 3;

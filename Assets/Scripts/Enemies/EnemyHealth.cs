@@ -174,6 +174,10 @@ namespace PoeClone.Enemies
             EnemyKind kind = EnemyKinds.Get(KindIndex);
             for (int k = 0; k < Mathf.Max(1, kind.Drops); k++)
                 LootDrop.RollDrop(kind, transform.position, Mathf.Max(MonsterLevel, 1));
+
+            // A boss always leaves one unique behind.
+            if (kind.IsBoss)
+                LootDrop.Drop(Inventory.UniqueItems.Random(new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue))), transform.position);
             KillRewards.Grant(EnemyKinds.Get(KindIndex), MonsterLevel, transform.position);
 
             // foldLowerBody: false -- the root topple below already lies the whole rig on the

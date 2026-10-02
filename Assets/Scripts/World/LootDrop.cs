@@ -61,10 +61,27 @@ namespace PoeClone.World
                 return;
 
             var rng = new System.Random(Random.Range(int.MinValue, int.MaxValue));
-            ItemRarity rarity = ItemGenerator.RollRarity(rng, kind.RareBonus);
-            int itemLevel = playerLevel + Random.Range(0, 3);
-            ItemData item = ItemGenerator.Generate(rng, itemLevel, rarity);
+            ItemData item;
+            if (rng.NextDouble() < UniqueChance)
+            {
+                item = UniqueItems.Random(rng);
+            }
+            else
+            {
+                ItemRarity rarity = ItemGenerator.RollRarity(rng, kind.RareBonus);
+                int itemLevel = playerLevel + Random.Range(0, 3);
+                item = ItemGenerator.Generate(rng, itemLevel, rarity);
+            }
 
+            Drop(item, deathPosition);
+        }
+
+        /// <summary>Any drop has this chance to be a unique instead.</summary>
+        public const double UniqueChance = 0.012;
+
+        /// <summary>Pops an item out of a death spot onto the ground nearby.</summary>
+        public static void Drop(ItemData item, Vector3 deathPosition)
+        {
             Vector2 scatter = Random.insideUnitCircle * 0.6f;
             Vector3 at = GroundBelow(deathPosition + new Vector3(scatter.x, 0f, scatter.y));
             LootDrop drop = Spawn(item, at, interactive: true, id: 0);
