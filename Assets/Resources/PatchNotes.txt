@@ -1,7 +1,7 @@
 version: 2026-10-03f
 <b>Fixes</b>
 - Fixed a bug from the last update that broke dragging items in the inventory on phones.
-- While dragging an item, its stats now stay on screen the whole time; hovering another item while dragging shows both items' stats side by side (PC).
+- While dragging an item, its stats now stay on screen the whole time; hovering another item while dragging shows both items' stats side by side.
 - Gold pickup sound is much quieter again.
 - Gold autocollects from twice as far away.
 - Enemies now aggro if you shoot them from far away, and nearby enemies wake up too when one of them aggroes.

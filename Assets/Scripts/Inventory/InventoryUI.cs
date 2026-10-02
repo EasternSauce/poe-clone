@@ -317,6 +317,11 @@ namespace PoeClone.Inventory
             if (cursorView != null)
                 cursorView.position = lastTouchPos;
 
+            // The held item's own stats stay up the whole time it's on the finger, even between
+            // the "tap to pick up" and "tap to place" of a two-tap move, when nothing is touching
+            // the screen at all - so this runs before the no-touch early-out below.
+            ShowHeldTooltip(lastTouchPos);
+
             if (!touchTracking)
             {
                 UpdateHighlights(new Hover());
@@ -342,13 +347,18 @@ namespace PoeClone.Inventory
                 }
             }
 
-            UpdateHighlights(cursorItem != null && touch.press.isPressed ? Hit(pos) : new Hover());
+            Hover dragHover = cursorItem != null && touch.press.isPressed ? Hit(pos) : new Hover();
+            UpdateHighlights(dragHover);
+            // Whatever the held item would swap with, shown alongside the held tooltip above.
+            if (cursorItem != null && touch.press.isPressed)
+                UpdateTooltip(dragHover, pos);
 
             if (!touch.press.wasReleasedThisFrame && touch.press.isPressed)
                 return;
 
             touchTracking = false;
             tooltipRect.gameObject.SetActive(false);
+            heldTooltipRect.gameObject.SetActive(false);
 
             bool dragPickedUp = touchPickupTried && cursorItem != null;
             bool tap = !moved && !held;
@@ -1308,34 +1318,47 @@ private Vector2 CellSize(int w, int h)
             ShowTooltipText(text, lines, mousePos);
         }
 
-        // The held item's own stats, visible the whole time it's on the cursor - whether it's over
-        // an empty spot or over another item (whose own tooltip is shown separately by
-        // ShowTooltipText/UpdateTooltip), so a drag-swap can be compared at a glance. Desktop only:
-        // touch already has its own, more deliberate hold-to-inspect-then-drag flow.
-        private void ShowHeldTooltip(Vector2 mousePos)
+        // The held item's own stats, visible the whole time it's on the cursor/finger - whether
+        // it's over an empty spot or over another item (whose own tooltip is shown separately by
+        // ShowTooltipText/UpdateTooltip), so a drag-swap can be compared at a glance.
+        private void ShowHeldTooltip(Vector2 pos)
         {
-            if (TouchMode.Active || cursorItem == null)
+            if (cursorItem == null)
             {
                 heldTooltipRect.gameObject.SetActive(false);
                 return;
             }
 
+            bool touch = TouchMode.Active;
             int lines;
+            heldTooltipText.fontSize = touch ? 22 : 17;
+            float lineHeight = touch ? 26f : 23f;
             heldTooltipText.text = BuildTooltipText(cursorItem, out lines);
-            heldTooltipRect.sizeDelta = new Vector2(270f, 24f + lines * 23f);
+            heldTooltipRect.sizeDelta = new Vector2(touch ? 340f : 270f, 24f + lines * lineHeight);
             heldTooltipRect.gameObject.SetActive(true);
             heldTooltipRect.SetAsLastSibling();
 
             Vector2 size = heldTooltipRect.sizeDelta * canvas.scaleFactor;
 
+            if (touch)
+            {
+                // Above the finger - the hovered slot's own tooltip (ShowTooltipText) sits to its
+                // left, so the two can show together without covering each other or the finger.
+                float offset = 40f * canvas.scaleFactor;
+                float x = Mathf.Clamp(pos.x, size.x * 0.5f, Screen.width - size.x * 0.5f);
+                heldTooltipRect.pivot = new Vector2(0.5f, 0f);
+                heldTooltipRect.position = new Vector2(x, Mathf.Min(pos.y + offset, Screen.height - size.y));
+                return;
+            }
+
             // Below the held item icon (the hover tooltip for whatever it's over sits beside the
             // cursor instead, see ShowTooltipText), clamped so it never runs off the bottom.
             float iconHalfHeight = cursorView != null ? cursorView.sizeDelta.y * 0.5f * canvas.scaleFactor : 0f;
             float gap = 18f + iconHalfHeight;
-            bool flipY = mousePos.y - gap - size.y < 0f;
+            bool flipY = pos.y - gap - size.y < 0f;
             heldTooltipRect.pivot = new Vector2(0f, flipY ? 0f : 1f);
-            float x = Mathf.Min(mousePos.x, Screen.width - size.x);
-            heldTooltipRect.position = new Vector2(x, mousePos.y + (flipY ? gap : -gap));
+            float px = Mathf.Min(pos.x, Screen.width - size.x);
+            heldTooltipRect.position = new Vector2(px, pos.y + (flipY ? gap : -gap));
         }
 
         private void ShowTooltipText(string text, int lines, Vector2 mousePos)
