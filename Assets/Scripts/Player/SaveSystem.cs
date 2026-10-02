@@ -26,6 +26,7 @@ namespace PoeClone.Player
         private bool erased;
         private float nextSave;
         private AreaManager areas;
+        private PlayerStats stats;
 
         public static bool HasSave => PlayerPrefs.HasKey(Key);
 
@@ -65,7 +66,8 @@ namespace PoeClone.Player
             if (erased || !Playing())
                 return;
 
-            PlayerStats stats = FindAnyObjectByType<PlayerStats>();
+            if (stats == null)
+                stats = FindAnyObjectByType<PlayerStats>();
             if (stats == null || QuestLog.Instance == null || AreaManager.Instance == null || AreaManager.Instance.CurrentAreaIndex < 0)
                 return;
 
@@ -118,7 +120,6 @@ namespace PoeClone.Player
 
         private void Save()
         {
-            PlayerStats stats = FindAnyObjectByType<PlayerStats>();
             if (stats == null)
                 return;
 

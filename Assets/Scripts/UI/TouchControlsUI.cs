@@ -230,7 +230,7 @@ namespace PoeClone.UI
                 return;
 
             // A tap on an item lying in the joystick area picks it up (LootPicker) instead.
-            if (LootPicker.PickableAt(e.position) != null || World.Npc.AtScreen(e.position) != null)
+            if (LootPicker.PickableAt(e.position) != null || NpcInteractor.TalkableAt(e.position) != null)
                 return;
 
             joystickPointer = e.pointerId;

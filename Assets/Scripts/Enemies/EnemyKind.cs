@@ -188,7 +188,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Gravelord Mortis", SpawnWeight = 0f,
-                MaxHealth = 340f, Experience = 400,
+                MaxHealth = 340f, Experience = 150,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 13f, AttackCooldown = 1.9f, AttackRange = 3.4f,
                 SpeedRatio = 0.5f, Scale = 1.9f,
@@ -200,7 +200,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Ashen Warlord", SpawnWeight = 0f,
-                MaxHealth = 420f, Experience = 700,
+                MaxHealth = 420f, Experience = 220,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
                 Damage = 16f, AttackCooldown = 1.8f, AttackRange = 3.6f,
                 SpeedRatio = 0.55f, Scale = 2.1f,
@@ -212,7 +212,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Rimeheart", SpawnWeight = 0f,
-                MaxHealth = 460f, Experience = 1000,
+                MaxHealth = 460f, Experience = 300,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
                 Damage = 15f, AttackCooldown = 1.6f, AttackRange = 3.4f,
                 SpeedRatio = 0.6f, Scale = 2.0f,

@@ -40,7 +40,7 @@ namespace PoeClone.Player
             return EnemyUnderPointer(screenPoint) ? null : drop;
         }
 
-        private static bool EnemyUnderPointer(Vector2 screenPoint)
+        public static bool EnemyUnderPointer(Vector2 screenPoint)
         {
             Camera cam = Camera.main;
             if (cam == null)

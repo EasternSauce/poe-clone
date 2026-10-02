@@ -14,6 +14,16 @@ namespace PoeClone.Player
     [RequireComponent(typeof(PlayerController))]
     public class NpcInteractor : MonoBehaviour
     {
+        /// <summary>
+        /// The NPC a click/tap here would talk to, unless a living enemy is under the point too,
+        /// which takes the click instead (it gets attacked).
+        /// </summary>
+        public static Npc TalkableAt(Vector2 screenPoint)
+        {
+            Npc npc = Npc.AtScreen(screenPoint);
+            return npc != null && !LootPicker.EnemyUnderPointer(screenPoint) ? npc : null;
+        }
+
         private PlayerController controller;
         private PlayerStats stats;
         private Npc target;
@@ -69,7 +79,7 @@ namespace PoeClone.Player
             Mouse mouse = Mouse.current;
             if (mouse == null || !mouse.leftButton.wasPressedThisFrame || PlayerController.IsPointerOverUi())
                 return null;
-            return Npc.AtScreen(mouse.position.ReadValue());
+            return TalkableAt(mouse.position.ReadValue());
         }
 
         private static Npc ReadTouch()
@@ -81,7 +91,7 @@ namespace PoeClone.Player
             Vector2 position = screen.primaryTouch.position.ReadValue();
             if (TouchMode.IsOverBlocker(position))
                 return null;
-            return Npc.AtScreen(position);
+            return TalkableAt(position);
         }
 
         public void Request(Npc npc)

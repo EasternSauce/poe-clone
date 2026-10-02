@@ -31,6 +31,7 @@ namespace PoeClone.UI
         private float nextRefresh;
         private bool hidden;
 
+        private Player.PlayerStats player;
         private InventoryUI inventoryUI;
         private CharacterPageUI characterUI;
 
@@ -78,7 +79,8 @@ namespace PoeClone.UI
         {
             var session = GameSessionController.Instance;
             AreaManager areas = AreaManager.Instance;
-            Player.PlayerStats player = FindAnyObjectByType<Player.PlayerStats>();
+            if (player == null)
+                player = FindAnyObjectByType<Player.PlayerStats>();
             if (areas == null || areas.CurrentAreaIndex < 0 || player == null || session == null ||
                 (session.Role == SessionRole.Player && !session.PlayGranted))
             {

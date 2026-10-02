@@ -152,6 +152,8 @@ namespace PoeClone.Enemies
             float groundY = GroundY(center);
             var root = new GameObject("BossTelegraph");
             root.transform.position = new Vector3(center.x, groundY, center.z);
+            // Gone even if the boss (and this coroutine) is destroyed mid wind-up.
+            Destroy(root, windUp + 0.5f);
 
             bool cold = type == DamageType.Cold;
             Color fill = cold ? ColdFill : Fill;
