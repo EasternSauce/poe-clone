@@ -82,7 +82,17 @@ namespace PoeClone.Quests
             },
             new QuestDefinition
             {
-                Id = "ruins", Title = "Into the Ashes", Giver = NpcRole.Elder, After = "graves",
+                Id = "gravelord", Title = "The Gravelord", Giver = NpcRole.Elder, After = "graves",
+                Goal = QuestGoal.KillBoss, Target = "Gravelord Mortis", Area = WorldBuilder.Graveyard,
+                Objective = "Slay Gravelord Mortis at the crypt",
+                Offer = "The bells were quiet for one night only. The old keepers' tales speak of Mortis, the Gravelord, sleeping in the crypt at the heart of the graveyard. He is awake.\n\nPut him down for good, and the dead will lie still.",
+                Reminder = "Mortis waits by the crypt in the Haunted Graveyard. He calls the dead to him - don't let them surround you.",
+                Thanks = "The graveyard is silent. Truly silent. Haven owes you its life - take these, and my thanks.",
+                RewardGold = 200, RewardExperience = 600, RewardHealthPotions = 3, RewardItem = ItemRarity.Rare, RewardItemLevel = 5
+            },
+            new QuestDefinition
+            {
+                Id = "ruins", Title = "Into the Ashes", Giver = NpcRole.Elder, After = "gravelord",
                 Goal = QuestGoal.ReachArea, Area = WorldBuilder.Ruins,
                 Objective = "Find the Ashen Ruins",
                 Offer = "The graves were not emptied by chance. The old city burned long ago - the Ashen Ruins, past the graveyard. Smoke rises from it again.\n\nGo and see what waits there. Carefully.",
@@ -99,6 +109,16 @@ namespace PoeClone.Quests
                 Reminder = "Twenty-five of the ruins' host. Bring potions - the casters there burn.",
                 Thanks = "You have done more for Haven than any of us could. Take the finest thing we have.",
                 RewardGold = 300, RewardExperience = 1200, RewardItem = ItemRarity.Rare, RewardItemLevel = 7
+            },
+            new QuestDefinition
+            {
+                Id = "warlord", Title = "The Ashen Warlord", Giver = NpcRole.Elder, After = "embers",
+                Goal = QuestGoal.KillBoss, Target = "Ashen Warlord", Area = WorldBuilder.Ruins,
+                Objective = "Slay the Ashen Warlord at the temple altar",
+                Offer = "Their host is broken, but its master still stands at the altar of the burned temple: the Ashen Warlord, who burned the city once already.\n\nEnd this.",
+                Reminder = "The Warlord stands at the temple altar in the Ashen Ruins. When the ground glows, move.",
+                Thanks = "It's over. The smoke over the ruins is thinning already. Whatever you ask of Haven, it is yours.",
+                RewardGold = 600, RewardExperience = 2500, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 9
             },
 
             // The Guard's bounties: one at a time, round and round.

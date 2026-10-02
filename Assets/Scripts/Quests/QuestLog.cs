@@ -11,8 +11,8 @@ namespace PoeClone.Quests
 {
     /// <summary>
     /// The player's quests: which are taken, how far along they are, and handing them in for the
-    /// reward. Kills come from <see cref="KillRewards.EnemyKilled"/>, arrivals from the
-    /// <see cref="AreaManager"/>, bosses from <see cref="NotifyBossKilled"/>. Self-added by
+    /// reward. Kills (bosses too) come from <see cref="KillRewards.EnemyKilled"/>, arrivals
+    /// from the <see cref="AreaManager"/>. Self-added by
     /// <see cref="PlayerController"/>; lives for the session (nothing is saved).
     /// </summary>
     [RequireComponent(typeof(PlayerStats))]
@@ -214,20 +214,14 @@ namespace PoeClone.Quests
             int area = areas != null ? areas.CurrentAreaIndex : -1;
             Advance(q =>
                 (q.Goal == QuestGoal.KillInArea && (q.Area < 0 || q.Area == area)) ||
-                (q.Goal == QuestGoal.KillKind && q.Target == kind.Name));
+                (q.Goal == QuestGoal.KillKind && q.Target == kind.Name) ||
+                (q.Goal == QuestGoal.KillBoss && q.Target == kind.Name));
         }
 
         private void OnAreaChanged(int index)
         {
             visited.Add(index);
             Advance(q => q.Goal == QuestGoal.ReachArea && q.Area == index);
-        }
-
-        /// <summary>A boss died (called by the boss itself).</summary>
-        public static void NotifyBossKilled(string bossName)
-        {
-            if (Instance != null)
-                Instance.Advance(q => q.Goal == QuestGoal.KillBoss && q.Target == bossName);
         }
 
         private readonly List<string> scratch = new List<string>();

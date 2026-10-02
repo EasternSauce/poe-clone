@@ -11,6 +11,13 @@ namespace PoeClone.Enemies
         Ranged
     }
 
+    public enum BossStyle
+    {
+        None,
+        Gravelord,   // ground slam, raises zombies
+        Warlord      // ground slam, rains fire on the player
+    }
+
     /// <summary>
     /// One type of enemy: its numbers, how it fights, and how it looks. Every type is the same
     /// rigged enemy prefab, told apart by size, recoloured clothes/skin/eyes, and gear on its
@@ -47,6 +54,12 @@ namespace PoeClone.Enemies
 
         public float DropChance;
         public float RareBonus;
+
+        // Bosses: never spawn at random (weight 0), placed by a BossLair; drop several items,
+        // shrug off stagger, and get a BossAbilities set of their own.
+        public bool IsBoss;
+        public int Drops = 1;
+        public BossStyle Boss;
 
         public bool IsRanged => Style == EnemyAttackStyle.Ranged;
     }
@@ -131,6 +144,32 @@ namespace PoeClone.Enemies
                 Cloth = new Color(0.38f, 0.20f, 0.60f), Skin = new Color(0.70f, 0.70f, 0.60f), Eyes = new Color(1.0f, 1.0f, 0.4f), HideHorns = true,
                 StaffOrb = new Color(1.0f, 0.95f, 0.35f),
                 DropChance = 0.35f
+            },
+
+            // Bosses (index 7 and on): weight 0, so only their lairs place them.
+            new EnemyKind
+            {
+                Name = "Gravelord Mortis", SpawnWeight = 0f,
+                MaxHealth = 340f, Experience = 400,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 13f, AttackCooldown = 1.9f, AttackRange = 3.4f,
+                SpeedRatio = 0.5f, Scale = 1.9f,
+                Cloth = new Color(0.16f, 0.18f, 0.16f), Skin = new Color(0.62f, 0.68f, 0.58f), Pants = new Color(0.12f, 0.12f, 0.12f), Eyes = new Color(0.3f, 1.0f, 0.4f),
+                Gear = new[] { "iron_helmet", "hand_axe" },
+                DropChance = 1f, RareBonus = 0.6f, Drops = 3,
+                IsBoss = true, Boss = BossStyle.Gravelord
+            },
+            new EnemyKind
+            {
+                Name = "Ashen Warlord", SpawnWeight = 0f,
+                MaxHealth = 420f, Experience = 700,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
+                Damage = 16f, AttackCooldown = 1.8f, AttackRange = 3.6f,
+                SpeedRatio = 0.55f, Scale = 2.1f,
+                Cloth = new Color(0.30f, 0.06f, 0.04f), Skin = new Color(0.22f, 0.18f, 0.17f), Pants = new Color(0.10f, 0.08f, 0.08f), Eyes = new Color(1.0f, 0.55f, 0.1f),
+                Gear = new[] { "studded_vest", "iron_mace", "wooden_shield" },
+                DropChance = 1f, RareBonus = 0.8f, Drops = 4,
+                IsBoss = true, Boss = BossStyle.Warlord
             },
         };
 

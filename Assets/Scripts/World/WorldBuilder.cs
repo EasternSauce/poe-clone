@@ -130,6 +130,7 @@ namespace PoeClone.World
 
             SetUpSpawners();
             BuildTownsfolk();
+            PlaceBosses();
 
             var definitions = new AreaDefinition[Centers.Length];
             for (int a = 0; a < Centers.Length; a++)
@@ -336,7 +337,7 @@ namespace PoeClone.World
             Transform t = Group("Ruins");
 
             // The temple dais, with a ring of columns (some broken) and an altar.
-            Box(t, c + new Vector3(0f, 0.2f, 8f), new Vector3(20f, 0.4f, 20f), kit.Mat("Sandstone"), solid: false);
+            Box(t, c + new Vector3(0f, 0.07f, 8f), new Vector3(20f, 0.14f, 20f), kit.Mat("Sandstone"), solid: false);
             Vector3 temple = c + new Vector3(0f, 0f, 8f);
             for (int k = 0; k < 10; k++)
             {
@@ -345,11 +346,11 @@ namespace PoeClone.World
                 if (k == 3 || k == 7)
                     FallenColumn(t, p, k * 36f + 70f);
                 else
-                    Prefab(kit.pillar, t, p + Vector3.up * 0.4f, R(0f, 360f), new Vector3(1f, R(0.45f, 1.05f), 1f));
+                    Prefab(kit.pillar, t, p + Vector3.up * 0.14f, R(0f, 360f), new Vector3(1f, R(0.45f, 1.05f), 1f));
             }
-            Box(t, temple + new Vector3(0f, 0.9f, 3f), new Vector3(2.4f, 1f, 1.4f), kit.Mat("Sandstone"));
-            Ball(t, temple + new Vector3(-0.7f, 1.6f, 3f), 0.35f, kit.Mat("Ember"));
-            Ball(t, temple + new Vector3(0.7f, 1.6f, 3f), 0.35f, kit.Mat("Ember"));
+            Box(t, temple + new Vector3(0f, 0.64f, 3f), new Vector3(2.4f, 1f, 1.4f), kit.Mat("Sandstone"));
+            Ball(t, temple + new Vector3(-0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
+            Ball(t, temple + new Vector3(0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
             Claim(temple, 11f);
             Spots["Altar"] = temple;
 
@@ -410,6 +411,30 @@ namespace PoeClone.World
                 spawner.Configure(prefab, Centers[area], 40f, 24, MonsterLevels[area], KindWeights[area]);
                 spawner.SetSafeSpots(SafeSpots(area));
             }
+        }
+
+        // The Gravelord in front of the graveyard's crypt, the Ashen Warlord on the temple altar.
+        private void PlaceBosses()
+        {
+            EnemySpawner spawner = FindAnyObjectByType<EnemySpawner>();
+            if (spawner == null || spawner.EnemyPrefab == null)
+                return;
+
+            Transform t = Group("Bosses");
+            if (Spots.TryGetValue("Crypt", out Vector3 crypt))
+                BossLair.Create(t, Graveyard, BossIndex("Gravelord Mortis"), 5, spawner.EnemyPrefab, crypt, Vector3.back);
+            if (Spots.TryGetValue("Altar", out Vector3 altar))
+                BossLair.Create(t, Ruins, BossIndex("Ashen Warlord"), 8, spawner.EnemyPrefab, altar, Vector3.back);
+        }
+
+        private static int BossIndex(string name)
+        {
+            for (int k = 0; k < EnemyKinds.All.Length; k++)
+            {
+                if (EnemyKinds.All[k].Name == name)
+                    return k;
+            }
+            return 0;
         }
 
         // Haven's people, at their spots: the Elder by the well, the Merchant at the first stall,

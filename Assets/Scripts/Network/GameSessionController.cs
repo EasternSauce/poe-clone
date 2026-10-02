@@ -83,6 +83,7 @@ namespace PoeClone.Network
             gameObject.AddComponent<PoeClone.UI.SkillBarUI>();
             gameObject.AddComponent<PoeClone.UI.DialogueUI>();
             gameObject.AddComponent<PoeClone.UI.QuestTrackerUI>();
+            gameObject.AddComponent<PoeClone.UI.BossBarUI>();
             namePrompt = gameObject.AddComponent<NamePromptUI>();
 
             stateBroadcaster = gameObject.AddComponent<PlayerStateBroadcaster>();

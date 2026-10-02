@@ -77,6 +77,14 @@ namespace PoeClone.Enemies
                 return;
             }
 
+            // Bosses don't flinch.
+            if (EnemyKinds.Get(KindIndex).IsBoss)
+            {
+                if (AudioManager.Instance != null)
+                    AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.meleeHit, transform.position);
+                return;
+            }
+
             Stagger stagger = GetComponent<Stagger>();
             if (stagger == null)
                 stagger = gameObject.AddComponent<Stagger>();
@@ -163,7 +171,9 @@ namespace PoeClone.Enemies
                 player.GainExperience(experienceReward);
 
             // Deeper areas drop better gear: the item level follows the monster level.
-            LootDrop.RollDrop(EnemyKinds.Get(KindIndex), transform.position, Mathf.Max(MonsterLevel, 1));
+            EnemyKind kind = EnemyKinds.Get(KindIndex);
+            for (int k = 0; k < Mathf.Max(1, kind.Drops); k++)
+                LootDrop.RollDrop(kind, transform.position, Mathf.Max(MonsterLevel, 1));
             KillRewards.Grant(EnemyKinds.Get(KindIndex), MonsterLevel, transform.position);
 
             // foldLowerBody: false -- the root topple below already lies the whole rig on the
