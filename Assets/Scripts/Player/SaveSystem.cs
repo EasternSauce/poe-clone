@@ -12,8 +12,8 @@ namespace PoeClone.Player
     /// <summary>
     /// Keeps the character between visits (browser storage via PlayerPrefs): loads the save once
     /// the player is let in, then saves every few seconds while playing, on changing area and when
-    /// the page is hidden or closed. A loaded character starts in Haven without the starter gear
-    /// on the ground. Spectators never load or save. Installed by GameSessionController.
+    /// the page is hidden or closed. A loaded character with gear starts in Haven without the
+    /// starter gear on the ground (one with none keeps it). Spectators never load or save. Installed by GameSessionController.
     /// </summary>
     public class SaveSystem : MonoBehaviour
     {
@@ -183,11 +183,16 @@ namespace PoeClone.Player
             if (data == null || data.version != SaveData.CurrentVersion)
                 return;
 
-            // A returning character brings their own gear: the starter items go.
-            foreach (LootDrop drop in LootDrop.All.ToArray())
+            // A returning character brings their own gear: the starter items go. One saved before
+            // picking anything up keeps them, or it would be left with nothing for good.
+            bool hasGear = (data.bag != null && data.bag.Count > 0) || (data.equipped != null && data.equipped.Count > 0);
+            if (hasGear)
             {
-                if (drop != null)
-                    Destroy(drop.gameObject);
+                foreach (LootDrop drop in LootDrop.All.ToArray())
+                {
+                    if (drop != null)
+                        Destroy(drop.gameObject);
+                }
             }
 
             stats.RestoreProgress(data.level, data.experience);
