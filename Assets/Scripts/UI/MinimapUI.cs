@@ -18,7 +18,7 @@ namespace PoeClone.UI
     public class MinimapUI : MonoBehaviour
     {
         public const float Size = 210f;
-        private const float AreaSize = 100f;
+        private const float AreaSize = AreaShape.MaxRadius * 2f; // the widest any area reaches
         private const float Refresh = 0.25f;
 
         private static MinimapUI instance;

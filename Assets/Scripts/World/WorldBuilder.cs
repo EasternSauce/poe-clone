@@ -20,15 +20,13 @@ namespace PoeClone.World
     /// starter gear on the ground around the player. Named spots (NPC stands, the ruins' altar)
     /// are kept in <see cref="Spots"/> for the features that use them.
     /// </summary>
-    public class WorldBuilder : MonoBehaviour
+    public partial class WorldBuilder : MonoBehaviour
     {
         public const int Greenwood = 0;
         public const int Haven = 1;
         public const int Graveyard = 2;
         public const int Ruins = 3;
         public const int Frozen = 4;
-
-        public const float HalfSize = 48f;
 
         public static WorldBuilder Instance { get; private set; }
 
@@ -38,10 +36,10 @@ namespace PoeClone.World
         private static readonly Vector3[] Centers =
         {
             Vector3.zero,
-            new Vector3(-220f, 0f, 0f),
-            new Vector3(220f, 0f, 0f),
-            new Vector3(440f, 0f, 0f),
-            new Vector3(660f, 0f, 0f)
+            new Vector3(-260f, 0f, 0f),
+            new Vector3(260f, 0f, 0f),
+            new Vector3(520f, 0f, 0f),
+            new Vector3(780f, 0f, 0f)
         };
 
         private static readonly Color[] AreaColors =
@@ -123,14 +121,21 @@ namespace PoeClone.World
             for (int a = 0; a < Centers.Length; a++)
                 spawnPoints[a] = Marker("Spawn_" + AreaNames[a], Centers[a] + new Vector3(0f, 1.1f, -6f), 0f);
 
+            InitShapes();
             for (int a = 1; a < Centers.Length; a++)
                 BuildGround(ground, a);
+            // The scene's own forest gets the same outline; its square walls go.
+            ShapeGround(ground, Greenwood);
+            GameObject sceneBounds = GameObject.Find("WorldBounds");
+            if (sceneBounds != null)
+                sceneBounds.SetActive(false);
 
             BuildHaven();
             BuildGraveyard();
             BuildRuins();
             BuildFrozen();
             BuildGlowshrooms();
+            BuildGreenwoodOutskirts();
             BuildWaystones();
 
             // Gates: Haven - Greenwood - Graveyard - Ruins, and a way home from the Ruins.
@@ -139,6 +144,8 @@ namespace PoeClone.World
             Connect(Graveyard, new Vector3(40f, 0f, 0f), Ruins, new Vector3(-40f, 0f, 0f));
             OneWayGate(Ruins, new Vector3(0f, 0f, -40f), Haven, spawnPoints[Haven]);
             Connect(Ruins, new Vector3(0f, 0f, 40f), Frozen, new Vector3(-40f, 0f, 0f));
+            BuildHavenRoads();
+            BuildBorders();
 
             SetUpSpawners();
             BuildTownsfolk();
@@ -201,13 +208,8 @@ namespace PoeClone.World
             material.SetColor("_BaseColor", Color.white);
             r.sharedMaterial = material;
 
-            // Invisible walls at the edges, like the original area's.
-            var bounds = new GameObject("Bounds_" + AreaNames[area]).transform;
-            bounds.SetParent(root, false);
-            Wall(bounds, c + new Vector3(0f, 5f, 49.5f), new Vector3(100f, 10f, 1f));
-            Wall(bounds, c + new Vector3(0f, 5f, -49.5f), new Vector3(100f, 10f, 1f));
-            Wall(bounds, c + new Vector3(49.5f, 5f, 0f), new Vector3(1f, 10f, 100f));
-            Wall(bounds, c + new Vector3(-49.5f, 5f, 0f), new Vector3(1f, 10f, 100f));
+            // Cut to the area's outline, walled round its edge.
+            ShapeGround(ground, area);
         }
 
         private static Texture2D GroundTexture(int area)
@@ -246,8 +248,7 @@ namespace PoeClone.World
             Box(t, c + new Vector3(0f, 2.9f, 0f), new Vector3(3.2f, 0.25f, 2.2f), kit.Mat("Roof"), euler: new Vector3(0f, 0f, 0f));
             Claim(c, 12f);
 
-            // Dirt road from the plaza to the gate east, and one south.
-            Box(t, c + new Vector3(25f, 0.025f, 0f), new Vector3(28f, 0.05f, 3.6f), kit.Mat("TanDark"), solid: false);
+            // A dirt road south (the one out to the gate is laid with the gate, see BuildHavenRoads).
             Box(t, c + new Vector3(0f, 0.025f, -24f), new Vector3(3.6f, 0.05f, 26f), kit.Mat("TanDark"), solid: false);
 
             // Houses in a ring, facing the well.
@@ -514,8 +515,10 @@ namespace PoeClone.World
                 return;
 
             GameObject prefab = original.EnemyPrefab;
-            original.Configure(prefab, Centers[Greenwood], 40f, 22, MonsterLevels[Greenwood], KindWeights[Greenwood]);
+            original.Configure(prefab, Centers[Greenwood], AreaShape.MaxRadius, 34, MonsterLevels[Greenwood], KindWeights[Greenwood]);
             original.SetSafeSpots(SafeSpots(Greenwood));
+            AreaShape greenwood = Shape(Greenwood);
+            original.SetBounds(p => greenwood.Contains(p, 3f));
 
             foreach (int area in new[] { Graveyard, Ruins, Frozen })
             {
@@ -523,8 +526,10 @@ namespace PoeClone.World
                 go.transform.SetParent(root, false);
                 go.transform.position = Centers[area];
                 var spawner = go.AddComponent<EnemySpawner>();
-                spawner.Configure(prefab, Centers[area], 40f, 24, MonsterLevels[area], KindWeights[area]);
+                spawner.Configure(prefab, Centers[area], AreaShape.MaxRadius, 36, MonsterLevels[area], KindWeights[area]);
                 spawner.SetSafeSpots(SafeSpots(area));
+                AreaShape shape = Shape(area);
+                spawner.SetBounds(p => shape.Contains(p, 3f));
             }
         }
 
@@ -616,11 +621,12 @@ namespace PoeClone.World
 
         // ------------------------------------------------------------------ gates
 
-        // A gate in each area leading to the other; you arrive a few steps in front of the gate back.
+        // A gate in each area leading to the other, at the edge of its outline in the given direction;
+        // you arrive a few steps in front of the gate back.
         private void Connect(int a, Vector3 offsetA, int b, Vector3 offsetB)
         {
-            Vector3 gateA = Centers[a] + offsetA;
-            Vector3 gateB = Centers[b] + offsetB;
+            Vector3 gateA = GatePoint(a, offsetA);
+            Vector3 gateB = GatePoint(b, offsetB);
             Transform arriveInA = Marker("Arrive_" + AreaNames[a] + "_from_" + AreaNames[b], InFront(a, gateA), Yaw(gateA, Centers[a]));
             Transform arriveInB = Marker("Arrive_" + AreaNames[b] + "_from_" + AreaNames[a], InFront(b, gateB), Yaw(gateB, Centers[b]));
             ClearSpot(arriveInA.position, 2f);
@@ -632,11 +638,12 @@ namespace PoeClone.World
 
         private void OneWayGate(int from, Vector3 offset, int to, Transform arrival)
         {
-            Gate(from, Centers[from] + offset, to, arrival);
+            Gate(from, GatePoint(from, offset), to, arrival);
         }
 
         private void Gate(int from, Vector3 position, int to, Transform arrival)
         {
+            gatePoints.Add((from, position));
             ClearSpot(position, 4.5f);
             GameObject gate = Instantiate(gateTemplate, root);
             gate.name = "Gate_" + AreaNames[from] + "_to_" + AreaNames[to];
@@ -684,7 +691,7 @@ namespace PoeClone.World
         // areas' own), which may be cleared away from gates, arrivals and waystones.
         private static readonly HashSet<string> ClearableGroups = new HashSet<string>
         {
-            "Trees", "Rocks", "Bushes", "Haven", "Graveyard", "Ruins", "Frozen"
+            "Trees", "Rocks", "Bushes", "Haven", "Graveyard", "Ruins", "Frozen", "Outskirts", "Glowshrooms"
         };
 
         private static void ClearSpot(Vector3 at, float radius)
@@ -977,10 +984,11 @@ namespace PoeClone.World
             Begin(Greenwood, 505);
             Vector3 c = Centers[Greenwood];
             Transform t = Group("Glowshrooms");
-            for (int k = 0, attempts = 0; k < 10 && attempts < 200; attempts++)
+            AreaShape shape = Shape(Greenwood);
+            for (int k = 0, attempts = 0; k < 18 && attempts < 400; attempts++)
             {
-                Vector3 p = c + Flat(R(-40f, 40f), R(-40f, 40f));
-                if (Vector3.Distance(p, c) < 8f || !Free(p, 6f))
+                Vector3 p = c + Flat(R(-AreaShape.MaxRadius, AreaShape.MaxRadius), R(-AreaShape.MaxRadius, AreaShape.MaxRadius));
+                if (Vector3.Distance(p, c) < 8f || !shape.Contains(p, 6f) || !Free(p, 6f))
                     continue;
                 if (HitsScenery(p + Vector3.up * 1.2f, 1f))
                     continue;
@@ -997,6 +1005,9 @@ namespace PoeClone.World
             foreach (Collider c in Physics.OverlapSphere(p, radius, ~0, QueryTriggerInteraction.Ignore))
             {
                 if (c is CharacterController || c.attachedRigidbody != null || c.GetComponentInParent<EnemyHealth>() != null)
+                    continue;
+                // The floor and the edge's invisible wall aren't scenery in the way.
+                if (c.gameObject.name.StartsWith("Ground") || c.gameObject.name == "Wall")
                     continue;
                 return true;
             }
@@ -1039,23 +1050,26 @@ namespace PoeClone.World
             return m;
         }
 
-        private static void Wall(Transform parent, Vector3 pos, Vector3 size)
-        {
-            var go = new GameObject("Wall");
-            go.transform.SetParent(parent, false);
-            go.transform.position = pos;
-            go.AddComponent<BoxCollider>().size = size;
-        }
-
         // Places up to `count` things at random spots in a ring round the current area's centre.
+        // A ring reaching 40 m or more means "out to the edge": it covers the whole outline instead,
+        // with proportionally more things.
         private void Scatter(Transform t, int count, float minRadius, float maxRadius, System.Func<Vector3, GameObject> place, float radius)
         {
             Vector3 c = Centers[CurrentArea()];
+            bool wide = maxRadius >= 40f;
+            AreaShape shape = Shape(CurrentArea());
+            if (wide)
+            {
+                count = Mathf.RoundToInt(count * ScatterScale);
+                maxRadius = AreaShape.MaxRadius;
+            }
             for (int k = 0, attempts = 0; k < count && attempts < count * 12; attempts++)
             {
                 Vector3 p = c + Flat(R(-maxRadius, maxRadius), R(-maxRadius, maxRadius));
                 float d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(c.x, c.z));
                 if (d < minRadius || d > maxRadius || !Free(p, radius))
+                    continue;
+                if (wide && !shape.Contains(p, 4f))
                     continue;
                 place(p);
                 Claim(p, radius);

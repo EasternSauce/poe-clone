@@ -78,6 +78,14 @@ namespace PoeClone.Enemies
             return false;
         }
 
+        private System.Func<Vector3, bool> inside;
+
+        /// <summary>Limits spawning to the area's outline (the square of half-size is only the search box).</summary>
+        public void SetBounds(System.Func<Vector3, bool> isInside)
+        {
+            inside = isInside;
+        }
+
         public void Configure(GameObject prefab, Vector3 areaCenter, float halfSize, int count, int level, float[] weights)
         {
             enemyPrefab = prefab;
@@ -182,7 +190,8 @@ namespace PoeClone.Enemies
                     Mathf.Clamp(center.z + scatter.y, this.center.z - areaHalfSize, this.center.z + areaHalfSize)
                 );
 
-                if (!NearSafeSpot(candidate) && !Physics.CheckSphere(candidate + Vector3.up * 0.5f, clearanceRadius))
+                if ((inside == null || inside(candidate)) && !NearSafeSpot(candidate) &&
+                    !Physics.CheckSphere(candidate + Vector3.up * 0.5f, clearanceRadius))
                 {
                     point = candidate;
                     return true;
@@ -206,7 +215,7 @@ namespace PoeClone.Enemies
                 Vector3 flatOffset = candidate - playerPos;
                 flatOffset.y = 0f;
 
-                if (flatOffset.magnitude < minDistance || NearSafeSpot(candidate))
+                if (flatOffset.magnitude < minDistance || NearSafeSpot(candidate) || (inside != null && !inside(candidate)))
                     continue;
 
                 // Check a sphere above the ground so the floor itself doesn't count.
