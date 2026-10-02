@@ -50,6 +50,8 @@ namespace PoeClone.UI
         {
             if (instance == null)
                 return;
+            if (open && PassiveTreeUI.IsOpen)
+                PassiveTreeUI.SetOpen(false);
             instance.panelRoot.SetActive(open);
             if (open)
                 instance.RefreshRows();

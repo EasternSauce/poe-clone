@@ -223,7 +223,7 @@ namespace PoeClone.Quests
 
             if (quest.RewardItem != null && inventory != null)
             {
-                var rng = new System.Random(Environment.TickCount);
+                var rng = new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
                 ItemData item = ItemGenerator.Generate(rng, quest.RewardItemLevel, quest.RewardItem.Value);
                 if (item != null)
                 {

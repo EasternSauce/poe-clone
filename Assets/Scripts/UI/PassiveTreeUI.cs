@@ -56,6 +56,9 @@ namespace PoeClone.UI
         {
             if (instance == null)
                 return;
+            // Both panels sit in the middle of the screen: one at a time.
+            if (open)
+                SkillBarUI.SetOpen(false);
             instance.panelRoot.SetActive(open);
             instance.dirty = true;
         }

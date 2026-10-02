@@ -93,6 +93,10 @@ namespace PoeClone.UI
 
         private void Present(Npc who, string text, List<DialogueOption> options)
         {
+            // The middle-of-the-screen panels would sit under the conversation.
+            SkillBarUI.SetOpen(false);
+            PassiveTreeUI.SetOpen(false);
+
             speaker = who;
             current.Clear();
             current.AddRange(options);

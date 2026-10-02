@@ -327,7 +327,7 @@ namespace PoeClone.UI
                 return;
             }
 
-            var rng = new System.Random(System.Environment.TickCount);
+            var rng = new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
             ItemRarity rarity = rng.NextDouble() < 0.25 ? ItemRarity.Rare : ItemRarity.Magic;
             ItemData item = ItemGenerator.Generate(rng, bases[rng.Next(bases.Count)], level, rarity);
 
