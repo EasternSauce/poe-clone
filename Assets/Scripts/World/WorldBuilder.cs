@@ -173,7 +173,7 @@ namespace PoeClone.World
             // Start in town.
             MovePlayer(player, spawnPoints[Haven]);
             manager.SetAreas(definitions, Haven);
-            StarterLoot.PlaceAround(spawnPoints[Haven].position + Vector3.down * 1.1f);
+            StarterLoot.PlaceAt(starterSpots, spawnPoints[Haven].position + Vector3.down * 1.1f);
         }
 
         private static void MovePlayer(PlayerController player, Transform to)
@@ -304,6 +304,30 @@ namespace PoeClone.World
             Spots["Elder"] = c + new Vector3(-3.5f, 0f, 3.5f);
             Spots["Smith"] = c + new Vector3(5.5f, 0f, -7f);
             Spots["Guard"] = c + new Vector3(33f, 0f, 4f);
+
+            // Two benches by the spawn point, side-on to the camera so the names of the things lying
+            // on them don't overlap; a new character's first gear lies on them.
+            Bench(t, c + new Vector3(-4.6f, 0f, -4.4f), 0f);
+            Bench(t, c + new Vector3(4.2f, 0f, -2.6f), 0f);
+        }
+
+        // Where the starter gear goes: two spots along the seat of each of Haven's benches.
+        private readonly List<Vector3> starterSpots = new List<Vector3>();
+
+        // A plain wooden bench: a seat on two slab legs, long side along the yaw.
+        private void Bench(Transform t, Vector3 p, float yaw)
+        {
+            var bench = new GameObject("Bench").transform;
+            bench.SetParent(t, false);
+            bench.SetPositionAndRotation(p, Quaternion.Euler(0f, yaw, 0f));
+            const float seatTop = 0.55f;
+            LocalBox(bench, new Vector3(0f, seatTop - 0.05f, 0f), new Vector3(3f, 0.1f, 0.6f), kit.Mat("Wood"));
+            for (int side = -1; side <= 1; side += 2)
+                LocalBox(bench, new Vector3(side * 1.3f, (seatTop - 0.1f) * 0.5f, 0f), new Vector3(0.12f, seatTop - 0.1f, 0.5f), kit.Mat("Wood"));
+            Claim(p, 1.8f);
+
+            for (int side = -1; side <= 1; side += 2)
+                starterSpots.Add(bench.TransformPoint(new Vector3(side * 1f, seatTop, 0f)));
         }
 
         // The Haunted Graveyard: plots of tombstones behind iron fences, dead trees, a crypt.
