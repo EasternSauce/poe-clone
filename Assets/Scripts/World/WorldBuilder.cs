@@ -212,8 +212,9 @@ namespace PoeClone.World
             switch (area)
             {
                 case Haven:
-                    return GroundTextures.Make(11, new Color(0.30f, 0.45f, 0.22f), new Color(0.50f, 0.60f, 0.30f),
-                        new Color(0.55f, 0.46f, 0.32f), 0.02f, 6f);
+                    // Muted, olive town grass with blades and worn dirt flecks.
+                    return GroundTextures.Make(11, new Color(0.24f, 0.33f, 0.17f), new Color(0.42f, 0.48f, 0.25f),
+                        new Color(0.47f, 0.40f, 0.28f), 0.025f, 6f, grain: 0.14f, blades: 26000);
                 case Graveyard:
                     return GroundTextures.Make(22, new Color(0.17f, 0.20f, 0.17f), new Color(0.31f, 0.33f, 0.27f),
                         new Color(0.40f, 0.40f, 0.36f), 0.015f, 7f);
