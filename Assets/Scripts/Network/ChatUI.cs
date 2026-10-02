@@ -143,8 +143,40 @@ namespace PoeClone.Network
         private void HandleChat(ChatEnvelope msg)
         {
             MessageCount++;
-            string prefix = msg.Role == "player" ? "[Player]" : "[Watching]";
-            AppendLine($"{prefix} {msg.From}: {msg.Text}");
+            AppendLine(FormatLine(msg));
+        }
+
+        // Readable on the dark panel. Each name keeps one colour (picked from its letters), so
+        // who said what is easy to follow; the role tag is gold for players, grey-blue for watchers.
+        private static readonly string[] NameColours =
+        {
+            "F2C14E", "7FD1FF", "9BE37A", "FF9F7A", "D7A2FF",
+            "6FE0C8", "FFD27F", "FF8FB8", "A8C7FF", "C9E86B"
+        };
+        private const string PlayerTagColour = "E0B85A";
+        private const string SpectatorTagColour = "8FA3B8";
+
+        private static string FormatLine(ChatEnvelope msg)
+        {
+            bool player = msg.Role == "player";
+            string tag = player ? "[Player]" : "[Watching]";
+            string tagColour = player ? PlayerTagColour : SpectatorTagColour;
+            return $"<color=#{tagColour}>{tag}</color> <color=#{NameColour(msg.From)}><b>{Escape(msg.From)}</b></color>: {Escape(msg.Text)}";
+        }
+
+        private static string NameColour(string name)
+        {
+            int hash = 0;
+            foreach (char c in name ?? string.Empty)
+                hash = hash * 31 + c;
+            return NameColours[(hash & 0x7fffffff) % NameColours.Length];
+        }
+
+        // Names and messages are user text: a zero-width space after every '<' stops any of it
+        // being read as a rich-text tag.
+        private static string Escape(string text)
+        {
+            return string.IsNullOrEmpty(text) ? text : text.Replace("<", "<\u200B");
         }
 
         private void AppendLine(string line)
@@ -258,7 +290,7 @@ namespace PoeClone.Network
             logText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             logText.fontSize = 16;
             logText.color = Color.white;
-            logText.supportRichText = false; // names and messages are user text
+            logText.supportRichText = true; // user text is escaped (see Escape)
             logText.alignment = TextAnchor.LowerLeft;
             logText.horizontalOverflow = HorizontalWrapMode.Wrap;
             logText.verticalOverflow = VerticalWrapMode.Overflow;
