@@ -8,6 +8,7 @@ version: 2026-10-03b
 - Spectators can see whether the player they watch is on a phone or a PC.
 - Putting a weapon down no longer rings like a doorbell.
 - Phones: the stash and trade panels no longer overlap your equipment and bag.
+- iPhone: the game no longer gets pillarboxed with black bars on the sides in landscape.
 
 <b>Sounds</b>
 - Armour, belts and quivers make their old pickup sounds again; swords, axes and maces clang, bows knock like wood. Item sounds are all about equally loud now.

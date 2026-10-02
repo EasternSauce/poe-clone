@@ -17,12 +17,16 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <style>
       html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
-      /* The canvas always fills the window; Unity matches its render resolution to this size. It
-         stays clear of a phone's notch and rounded corners (env() is 0 everywhere else), so none of
-         the game's buttons or HUD end up under them. */
+      /* The canvas always fills the window; Unity matches its render resolution to this size. Only
+         the top/bottom insets are subtracted (status bar / home indicator, which run the full width
+         and would otherwise sit under the HUD); left/right notch and rounded-corner insets are NOT
+         subtracted in landscape, since iOS reports those symmetrically on both edges even on devices
+         with no real notch there, which used to pillarbox the whole game to recover a strip neither
+         side's actual cutout needs (the cutout itself doesn't reach the top/bottom corners where the
+         game's own buttons sit). */
       #game-canvas { position: fixed; display: block; background: #000; outline: none;
-                     left: env(safe-area-inset-left, 0px); top: env(safe-area-inset-top, 0px);
-                     width: calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+                     left: 0; top: env(safe-area-inset-top, 0px);
+                     width: 100vw;
                      height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
                      height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
       /* Touch: no browser gestures on the game (pinch zoom, double-tap zoom, pull-to-refresh), and
