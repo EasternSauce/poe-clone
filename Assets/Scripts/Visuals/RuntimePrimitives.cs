@@ -4,12 +4,26 @@ namespace PoeClone.Visuals
 {
     /// <summary>
     /// Small props built from Unity primitives at runtime (caster staffs, archer bows, bolts and
-    /// arrows), coloured through a property block so they share the default material.
+    /// arrows), coloured through a property block so they all share one toon material.
+    /// (A primitive's own default material is URP Lit, whose variants the Web build strips:
+    /// it rendered pink there.)
     /// </summary>
     public static class RuntimePrimitives
     {
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int ColorId = Shader.PropertyToID("_Color");
+
+        private static Material material;
+
+        private static Material Material
+        {
+            get
+            {
+                if (material == null)
+                    material = Resources.Load<Material>("RuntimePrimitive");
+                return material;
+            }
+        }
 
         public static GameObject Create(PrimitiveType type, Transform parent, Color color)
         {
@@ -19,6 +33,8 @@ namespace PoeClone.Visuals
             go.transform.SetParent(parent, false);
 
             Renderer r = go.GetComponent<Renderer>();
+            if (Material != null)
+                r.sharedMaterial = Material;
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             var block = new MaterialPropertyBlock();
             block.SetColor(BaseColorId, color);
