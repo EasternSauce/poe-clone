@@ -40,6 +40,7 @@ namespace PoeClone.Network
         public event Action<ChatEnvelope> ChatReceived;
 
         private const string StatePrefix = "{\"type\":\"state\"";
+        private const string GearPrefix = "{\"type\":\"gear\"";
         private const string NamePrefKey = "PoeClone.PlayerName";
 
         private WebSocketClient client;
@@ -182,6 +183,13 @@ namespace PoeClone.Network
             client.Send(json);
         }
 
+        /// <summary>Sends the player's menus' contents (see PlayerStateBroadcaster / GearState).</summary>
+        public void SendGear(string json)
+        {
+            if (!Connected || Role != SessionRole.Player || !PlayGranted) return;
+            client.Send(json);
+        }
+
         private void HandleOpen()
         {
             Connected = true;
@@ -206,6 +214,13 @@ namespace PoeClone.Network
             {
                 if (Role == SessionRole.Spectator)
                     replica.HandleState(json);
+                return;
+            }
+
+            if (json != null && json.StartsWith(GearPrefix, StringComparison.Ordinal))
+            {
+                if (Role == SessionRole.Spectator)
+                    replica.HandleGear(json);
                 return;
             }
 

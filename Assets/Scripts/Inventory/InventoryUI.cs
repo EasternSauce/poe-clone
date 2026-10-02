@@ -159,6 +159,15 @@ namespace PoeClone.Inventory
         private float touchStartTime;
         private Vector2 lastTouchPos;
 
+        // What the pointer was on this frame, reported to spectators (see GetPointerReport).
+        private Hover report;
+        private Vector2 reportPointer;
+
+        // Spectator mirror (see SpectatorMirror): opened by the spectator themselves, and which
+        // side panel is showing.
+        private bool ownOpen;
+        private int mirrorSide;
+
         public bool IsOpen
         {
             get { return isOpen; }
@@ -237,6 +246,13 @@ namespace PoeClone.Inventory
             if (warming)
                 return;
 
+            if (SpectatorMirror.Active)
+            {
+                UpdateMirror();
+                return;
+            }
+
+            report = new Hover();
             bool dead = inventory.IsPlayerDead;
 
             Keyboard keyboard = Keyboard.current;
@@ -278,6 +294,8 @@ namespace PoeClone.Inventory
                 cursorView.position = mousePos;
 
             Hover hover = Hit(mousePos);
+            report = hover;
+            reportPointer = mousePos;
             UpdateHighlights(hover);
             UpdateTooltip(hover, mousePos);
             ShowHeldTooltip(mousePos);
@@ -286,6 +304,190 @@ namespace PoeClone.Inventory
 
             if (mouse.leftButton.wasPressedThisFrame)
                 HandleClick(hover);
+        }
+
+        // ------------------------------------------------------------------ spectators
+
+        /// <summary>
+        /// For the spectator stream: what the pointer is on (a SpectatorMirror.Hover* kind, the
+        /// equip/potion slot, the grid cell) and where it is as a fraction of the screen.
+        /// </summary>
+        public void GetPointerReport(out int kind, out int index, out Vector2 cell, out Vector2 pointer)
+        {
+            kind = SpectatorMirror.HoverNone;
+            index = 0;
+            cell = Vector2.zero;
+            pointer = new Vector2(reportPointer.x / Mathf.Max(1, Screen.width), reportPointer.y / Mathf.Max(1, Screen.height));
+            if (!isOpen)
+                return;
+
+            if (report.Potion > 0)
+            {
+                kind = SpectatorMirror.HoverPotion;
+                index = report.Potion;
+            }
+            else if (report.Slot != null)
+            {
+                kind = SpectatorMirror.HoverSlot;
+                index = (int)report.Slot.Slot;
+            }
+            else if (report.OverGrid)
+            {
+                kind = SpectatorMirror.HoverBag;
+                cell = report.GridPos;
+            }
+            else if (report.OverStash)
+            {
+                kind = SpectatorMirror.HoverSide;
+                cell = report.StashPos;
+            }
+        }
+
+        /// <summary>The item on the cursor, or null.</summary>
+        public ItemData HeldItem => cursorItem;
+
+        /// <summary>Which side panel is showing (SpectatorMirror.Side*), and its goods/contents.</summary>
+        public int SideMode => !isOpen || !stashOpen ? SpectatorMirror.SideNone : vendor != null ? SpectatorMirror.SideTrader : SpectatorMirror.SideStash;
+        public InventoryGrid SideContents => SideMode == SpectatorMirror.SideNone ? null : SideGrid;
+        public string SideName => vendor != null ? vendor.Name : null;
+
+        // A spectator's copy: open while the player has it open (showing the same side panel) or
+        // while the spectator opened it themselves; nothing can be moved; the tooltip follows the
+        // player's pointer until the spectator moves their own (SpectatorMirror.FollowingPlayer).
+        private void UpdateMirror()
+        {
+            bool remote = SpectatorMirror.InventoryOpen;
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && !UiKit.IsTypingInTextField())
+            {
+                if (keyboard.iKey.wasPressedThisFrame && !remote)
+                    ownOpen = !ownOpen;
+                else if (keyboard.escapeKey.wasPressedThisFrame)
+                    ownOpen = false;
+            }
+
+            bool open = remote || ownOpen;
+            int side = remote ? SpectatorMirror.Side : SpectatorMirror.SideNone;
+            VendorStock trader = side == SpectatorMirror.SideTrader ? SpectatorMirror.Trader : null;
+            if (side == SpectatorMirror.SideTrader && trader == null)
+                side = SpectatorMirror.SideNone;
+
+            if (open != isOpen || (open && (side != mirrorSide || trader != vendor)))
+            {
+                stashOpen = side != SpectatorMirror.SideNone;
+                vendor = trader;
+                stashAt = null;
+                if (stashOpen)
+                    sideTitle.text = trader != null ? trader.Name.ToUpperInvariant() : "STASH";
+                SetOpen(open);
+                mirrorSide = open ? side : SpectatorMirror.SideNone;
+            }
+
+            if (cursorItem != SpectatorMirror.Held)
+            {
+                cursorItem = SpectatorMirror.Held;
+                gridDirty = true;
+            }
+
+            if (!isOpen)
+            {
+                tooltipRect.gameObject.SetActive(false);
+                heldTooltipRect.gameObject.SetActive(false);
+                return;
+            }
+
+            if (gridDirty)
+                Refresh();
+            if (stashOpen)
+                UpdateNote();
+
+            Hover remoteHover = RemoteHover();
+            Hover hover = remoteHover;
+            if (!remote || !SpectatorMirror.FollowingPlayer)
+            {
+                Mouse mouse = Mouse.current;
+                Touchscreen touch = Touchscreen.current;
+                if (touch != null && touch.primaryTouch.press.isPressed)
+                    hover = Hit(touch.primaryTouch.position.ReadValue());
+                else if (mouse != null && !TouchMode.Active)
+                    hover = Hit(mouse.position.ReadValue());
+                else
+                    hover = new Hover { Screen = remoteHover.Screen };
+            }
+
+            // The held item stays on the player's pointer, wherever the spectator's is.
+            if (cursorView != null)
+                cursorView.position = remoteHover.Screen;
+
+            UpdateHighlights(hover);
+            UpdateTooltip(hover, hover.Screen);
+            ShowHeldTooltip(remoteHover.Screen);
+        }
+
+        // The player's pointer, in this screen's layout: on the same slot or cell when it's over
+        // the panels (the two screens can be different sizes), else at the same screen fraction.
+        private Hover RemoteHover()
+        {
+            var h = new Hover();
+            Vector2 cell = SpectatorMirror.HoverCell;
+            Vector2 fraction = SpectatorMirror.Pointer;
+            h.Screen = new Vector2(fraction.x * Screen.width, fraction.y * Screen.height);
+            if (!SpectatorMirror.InventoryOpen)
+                return h;
+
+            switch (SpectatorMirror.HoverKind)
+            {
+                case SpectatorMirror.HoverPotion:
+                    int potion = SpectatorMirror.HoverIndex;
+                    if (potion == 1 || potion == 2)
+                    {
+                        h.Potion = potion;
+                        h.Screen = ScreenCentre(potionSlots[potion - 1]);
+                    }
+                    break;
+                case SpectatorMirror.HoverSlot:
+                    foreach (SlotView s in slotViews)
+                    {
+                        if ((int)s.Slot == SpectatorMirror.HoverIndex)
+                        {
+                            h.Slot = s;
+                            h.Screen = ScreenCentre(s.Rect);
+                        }
+                    }
+                    break;
+                case SpectatorMirror.HoverBag:
+                    h.OverGrid = true;
+                    h.GridPos = cell;
+                    h.Screen = GridScreenPoint(gridArea, cell, cellSize);
+                    break;
+                case SpectatorMirror.HoverSide:
+                    if (stashOpen)
+                    {
+                        h.OverStash = true;
+                        h.StashPos = cell;
+                        h.Screen = GridScreenPoint(stashArea, cell, StashCell);
+                    }
+                    break;
+            }
+            return h;
+        }
+
+        private static Vector2 ScreenCentre(RectTransform rt)
+        {
+            return RectTransformUtility.WorldToScreenPoint(null, rt.TransformPoint(rt.rect.center));
+        }
+
+        private static Vector2 GridScreenPoint(RectTransform area, Vector2 cell, float size)
+        {
+            Rect r = area.rect;
+            Vector3 local = new Vector3(r.xMin + cell.x * size, r.yMax - cell.y * size, 0f);
+            return RectTransformUtility.WorldToScreenPoint(null, area.TransformPoint(local));
+        }
+
+        /// <summary>The spectator copy's contents changed (SpectatorReplica): redraw.</summary>
+        public void MarkDirty()
+        {
+            gridDirty = true;
         }
 
         // Follows one finger. With nothing held: a tap picks the item up (it then waits where it
@@ -313,6 +515,7 @@ namespace PoeClone.Inventory
 
             if (touchTracking)
                 lastTouchPos = pos;
+            reportPointer = lastTouchPos;
 
             if (cursorView != null)
                 cursorView.position = lastTouchPos;
@@ -345,9 +548,16 @@ namespace PoeClone.Inventory
                     touchInspecting = true;
                     UpdateTooltip(Hit(touchStart), touchStart);
                 }
+                if (touchInspecting)
+                {
+                    report = Hit(touchStart);
+                    reportPointer = touchStart;
+                }
             }
 
             Hover dragHover = cursorItem != null && touch.press.isPressed ? Hit(pos) : new Hover();
+            if (cursorItem != null && touch.press.isPressed)
+                report = dragHover;
             UpdateHighlights(dragHover);
             // Whatever the held item would swap with, shown alongside the held tooltip above.
             if (cursorItem != null && touch.press.isPressed)

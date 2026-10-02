@@ -17,6 +17,9 @@
 //   which are stamped with that player's session id and relayed to the spectators
 //   watching them, plus kept as that player's `lastState` so a spectator who starts
 //   watching mid-game immediately has a scene to show instead of waiting a tick.
+// - Players also send a "gear" message whenever their inventory, passives or skills change
+//   (the full contents, so a spectator can open the same menus and read the same item
+//   stats). It is relayed the same way and kept as `lastGear`, sent after `lastState`.
 // - Snapshots are disposable (the next one supersedes it), so a spectator whose
 //   socket is backed up simply skips some rather than queueing them forever.
 // - Chat messages from anyone are broadcast to everyone (players + spectators).
@@ -28,6 +31,8 @@ const MAX_CHAT_HISTORY = 50;
 const MAX_CHAT_MESSAGE_LENGTH = 300;
 const MAX_NAME_LENGTH = 24;
 const MAX_STATE_BYTES = 32 * 1024;
+// A full bag, gear and an open 12x12 stash, every item with its stats.
+const MAX_GEAR_BYTES = 60 * 1024;
 // A spectator with more than this already queued on its socket is on a connection too
 // slow for the stream; drop snapshots for it until it catches up. Kept to about a second of
 // snapshots: everything queued is that much behind the player, and a bigger queue showed up
@@ -38,7 +43,7 @@ class Room {
   constructor({ now = () => Date.now(), maxPlayers = MAX_PLAYERS } = {}) {
     this.now = now;
     this.maxPlayers = maxPlayers;
-    this.players = new Map(); // client -> { id, name, joinedAt, lastState }, oldest first
+    this.players = new Map(); // client -> { id, name, joinedAt, lastState, lastGear }, oldest first
     this.spectators = new Map(); // client -> { id, name, joinedAt, watching: player id | null }
     this.waiting = []; // denied player connections, oldest first: { client, id, name }
     this.chatHistory = [];
@@ -81,7 +86,7 @@ class Room {
           reason: `The game is full (${this.maxPlayers} players). You'll join as soon as someone leaves.`,
         };
       }
-      this.players.set(client, { id, name, joinedAt: this.now(), lastState: null });
+      this.players.set(client, { id, name, joinedAt: this.now(), lastState: null, lastGear: null });
       this._onPlayersChanged();
       return { granted: true, id, name };
     }
@@ -122,8 +127,7 @@ class Room {
     if (!spectator || !this._playerById(playerId)) return false;
     spectator.watching = playerId;
     safeSend(client, this.statusMessage(client));
-    const state = this.lastStateFor(playerId);
-    if (state) safeSendRaw(client, state);
+    for (const message of this.catchUpFor(playerId)) safeSendRaw(client, message);
     return true;
   }
 
@@ -131,6 +135,22 @@ class Room {
   lastStateFor(playerId) {
     const player = this._playerById(playerId);
     return player ? player.lastState : null;
+  }
+
+  // The most recent gear message of a player (serialized), or null.
+  lastGearFor(playerId) {
+    const player = this._playerById(playerId);
+    return player ? player.lastGear : null;
+  }
+
+  // Everything a spectator who starts watching a player needs, in sending order.
+  catchUpFor(playerId) {
+    return [this.lastStateFor(playerId), this.lastGearFor(playerId)].filter((m) => m);
+  }
+
+  catchUpForSpectator(client) {
+    const spectator = this.spectators.get(client);
+    return spectator && spectator.watching !== null ? this.catchUpFor(spectator.watching) : [];
   }
 
   // What a (newly joined) spectator should be shown first, or null.
@@ -162,6 +182,25 @@ class Room {
       if (info.watching !== player.id) continue;
       if (typeof spectator.bufferedAmount === 'number' && spectator.bufferedAmount > MAX_SPECTATOR_BACKLOG_BYTES) continue;
       safeSendRaw(spectator, serialized);
+    }
+    return serialized;
+  }
+
+  // Accepts a player's gear message (menus' contents) and relays it like a snapshot, except
+  // that it is never skipped for a backed-up spectator: it only comes when something changed,
+  // so a dropped one would leave the spectator's copy wrong until the next change.
+  submitGear(client, payload, rawLength = 0) {
+    const player = this.players.get(client);
+    if (!player) return null;
+    if (!payload || typeof payload !== 'object') return null;
+    if (rawLength > MAX_GEAR_BYTES) return null;
+
+    const { type, pid, ...rest } = payload;
+    const serialized = JSON.stringify({ type: 'gear', ...rest, pid: player.id });
+
+    player.lastGear = serialized;
+    for (const [spectator, info] of this.spectators) {
+      if (info.watching === player.id) safeSendRaw(spectator, serialized);
     }
     return serialized;
   }
@@ -224,8 +263,7 @@ class Room {
       if (info.watching !== leftId) continue;
       const next = ids.find((id) => id > leftId) ?? ids[0] ?? null;
       info.watching = next;
-      const state = next !== null ? this.lastStateFor(next) : null;
-      if (state) safeSendRaw(client, state);
+      if (next !== null) for (const message of this.catchUpFor(next)) safeSendRaw(client, message);
     }
   }
 
@@ -246,7 +284,7 @@ class Room {
   _promoteNextWaiting() {
     const next = this.waiting.shift();
     if (!next) return null;
-    this.players.set(next.client, { id: next.id, name: next.name, joinedAt: this.now(), lastState: null });
+    this.players.set(next.client, { id: next.id, name: next.name, joinedAt: this.now(), lastState: null, lastGear: null });
     safeSend(next.client, {
       type: 'welcome',
       role: 'player',

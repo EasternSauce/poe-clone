@@ -94,8 +94,33 @@ namespace PoeClone.Network.Replication
                 sb.Append(']');
             }
 
+            if (s.ui != null)
+                AppendUi(sb, s.ui);
+
             sb.Append('}');
             return sb.ToString();
+        }
+
+        // Only what's set: with every menu closed this is just "ui":{}.
+        private static void AppendUi(StringBuilder sb, UiState u)
+        {
+            sb.Append(",\"ui\":{\"inv\":").Append(u.inv.ToString(CultureInfo.InvariantCulture));
+            AppendInt(sb, "side", u.side);
+            AppendInt(sb, "chr", u.chr);
+            AppendInt(sb, "tree", u.tree);
+            AppendInt(sb, "skl", u.skl);
+            AppendInt(sb, "hk", u.hk);
+            AppendInt(sb, "hs", u.hs);
+            AppendFloat(sb, "hx", u.hx, 2);
+            AppendFloat(sb, "hy", u.hy, 2);
+            AppendFloat(sb, "px", u.px, 3);
+            AppendFloat(sb, "py", u.py, 3);
+            if (!string.IsNullOrEmpty(u.tn))
+            {
+                sb.Append(",\"tn\":");
+                AppendString(sb, u.tn);
+            }
+            sb.Append('}');
         }
 
         /// <summary>Parses a state message. Returns null for anything that isn't a usable snapshot.</summary>

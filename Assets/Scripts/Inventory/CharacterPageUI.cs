@@ -50,6 +50,7 @@ namespace PoeClone.Inventory
         private const int SpecialRows = 5;
         private bool isOpen;
         private bool warming;
+        private bool ownOpen; // spectators: opened by the spectator themselves (see SpectatorMirror)
 
         public bool IsOpen
         {
@@ -107,6 +108,12 @@ namespace PoeClone.Inventory
             if (warming)
                 return;
 
+            if (SpectatorMirror.Active)
+            {
+                UpdateMirror();
+                return;
+            }
+
             if (inventory.IsPlayerDead)
                 return;
 
@@ -118,6 +125,25 @@ namespace PoeClone.Inventory
                 SetOpen(!isOpen);
             else if (isOpen && keyboard.escapeKey.wasPressedThisFrame)
                 SetOpen(false);
+        }
+
+        // A spectator's copy of the watched player's page: open while theirs is, or while the
+        // spectator opened it (C) themselves.
+        private void UpdateMirror()
+        {
+            bool remote = SpectatorMirror.CharacterOpen;
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && !UiKit.IsTypingInTextField())
+            {
+                if (keyboard.cKey.wasPressedThisFrame && !remote)
+                    ownOpen = !ownOpen;
+                else if (keyboard.escapeKey.wasPressedThisFrame)
+                    ownOpen = false;
+            }
+
+            bool open = remote || ownOpen;
+            if (open != isOpen)
+                SetOpen(open);
         }
 
         /// <summary>Opens or closes the page (C key, or the on-screen button on touch).</summary>

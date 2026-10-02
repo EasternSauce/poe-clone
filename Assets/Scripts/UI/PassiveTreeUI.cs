@@ -58,14 +58,25 @@ namespace PoeClone.UI
         private Text resetLabel;
         private PlayerPassives passives;
         private PassiveNode selected;
+        private PassiveNode shown;          // the passive the info line describes
+        private PassiveNode mirroredHover;  // spectators: the player's pointed-at passive last shown
+        private bool ownOpen;               // spectators: opened by the spectator themselves
         private bool dirty = true;
 
         public static bool IsOpen => instance != null && instance.panelRoot != null && instance.panelRoot.activeSelf;
+
+        /// <summary>The passive whose details are showing (pointed at, or selected), for spectators; null if none or closed.</summary>
+        public static string ShownId => IsOpen && instance.shown != null ? instance.shown.Id : null;
+
+        // Spectators see the watched player's tree read-only (SpectatorMirror).
+        private static bool Spectating => SpectatorMirror.Active;
 
         public static void SetOpen(bool open)
         {
             if (instance == null)
                 return;
+            if (!open)
+                instance.ownOpen = false;
             // Both panels sit in the middle of the screen: one at a time.
             if (open)
                 SkillBarUI.SetOpen(false);
@@ -118,6 +129,12 @@ namespace PoeClone.UI
                     passives.Changed += MarkDirty;
             }
 
+            if (spectator && passives != null)
+            {
+                UpdateMirror();
+                return;
+            }
+
             if (passives == null || !passives.enabled || spectator)
             {
                 panelRoot.SetActive(false);
@@ -137,6 +154,53 @@ namespace PoeClone.UI
             }
 
             if (panelRoot.activeSelf && dirty)
+            {
+                dirty = false;
+                Refresh();
+            }
+        }
+
+        // A spectator's copy of the watched player's tree: open while theirs is (or while the
+        // spectator opened it with P), showing what the player points at until the spectator
+        // moves their own mouse.
+        private void UpdateMirror()
+        {
+            if (badge.gameObject.activeSelf)
+                badge.gameObject.SetActive(false);
+
+            bool remote = SpectatorMirror.TreeOpen;
+            if (SpectatorMirror.SkillsOpen)
+                ownOpen = false;
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && !UiKit.IsTypingInTextField())
+            {
+                if (keyboard.pKey.wasPressedThisFrame && !remote)
+                    ownOpen = !panelRoot.activeSelf;
+                else if (keyboard.escapeKey.wasPressedThisFrame)
+                    ownOpen = false;
+            }
+
+            bool open = remote || ownOpen;
+            if (panelRoot.activeSelf != open)
+            {
+                panelRoot.SetActive(open);
+                dirty = true;
+            }
+            if (!open)
+                return;
+
+            if (remote && SpectatorMirror.FollowingPlayer)
+            {
+                PassiveNode pointed = SpectatorMirror.TreeHover != null ? PassiveTree.Get(SpectatorMirror.TreeHover) : null;
+                if (pointed != mirroredHover)
+                {
+                    mirroredHover = pointed;
+                    selected = pointed;
+                    dirty = true;
+                }
+            }
+
+            if (dirty)
             {
                 dirty = false;
                 Refresh();
@@ -213,6 +277,7 @@ namespace PoeClone.UI
 
         private void ShowInfo(PassiveNode node)
         {
+            shown = node;
             if (node == null)
             {
                 infoText.text = "<color=#" + UiKit.Hex(UiKit.DimText) + ">Point at a passive to see what it gives. " +
@@ -248,7 +313,7 @@ namespace PoeClone.UI
             sb.Append("</color>");
 
             infoText.text = sb.ToString();
-            refundButton.gameObject.SetActive(taken && allocation.CanRefund(node.Id));
+            refundButton.gameObject.SetActive(taken && allocation.CanRefund(node.Id) && !Spectating);
         }
 
         private void OnHover(PassiveNode node)
@@ -267,6 +332,13 @@ namespace PoeClone.UI
         {
             if (passives == null)
                 return;
+
+            if (Spectating)
+            {
+                selected = node;
+                dirty = true;
+                return;
+            }
 
             if (button == PointerEventData.InputButton.Right)
             {
@@ -289,7 +361,7 @@ namespace PoeClone.UI
 
         private void RefundSelected()
         {
-            if (selected != null && passives != null)
+            if (selected != null && passives != null && !Spectating)
                 passives.Refund(selected.Id);
             dirty = true;
         }
@@ -350,7 +422,7 @@ namespace PoeClone.UI
             resetLabel = resetButton.GetComponentInChildren<Text>();
             resetButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {
-                if (passives != null && passives.ResetAll())
+                if (passives != null && !Spectating && passives.ResetAll())
                 {
                     selected = null;
                     dirty = true;

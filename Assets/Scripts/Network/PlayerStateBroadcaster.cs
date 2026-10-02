@@ -6,6 +6,7 @@ using PoeClone.Enemies;
 using PoeClone.Inventory;
 using PoeClone.Network.Replication;
 using PoeClone.Player;
+using PoeClone.Skills;
 using PoeClone.UI;
 using PoeClone.Visuals;
 using PoeClone.World;
@@ -27,11 +28,18 @@ namespace PoeClone.Network
         [Tooltip("Enemies further than this from the player aren't sent. Comfortably wider than what the follow camera can see.")]
         [SerializeField] private float interestRadius = 40f;
 
+        [Tooltip("How often the menus' contents are checked for changes (and sent if they changed).")]
+        [SerializeField] private float gearInterval = 0.25f;
+
         private PlayerStats stats;
         private PlayerInventory inventory;
         private CharacterAttackAnimator attackAnimator;
         private Stagger stagger;
         private LoadingScreenUI loadingScreen;
+        private InventoryUI inventoryUI;
+        private CharacterPageUI characterPage;
+        private PlayerPassives passives;
+        private PlayerSkills skills;
 
         private readonly List<EnemyHealth> enemies = new List<EnemyHealth>();
         private readonly List<EntityState> enemyStates = new List<EntityState>();
@@ -42,8 +50,13 @@ namespace PoeClone.Network
         {
             p = new EntityState(),
             hud = new PlayerHudState(),
-            eq = new string[SlotRules.AllSlots.Length]
+            eq = new string[SlotRules.AllSlots.Length],
+            ui = new UiState()
         };
+
+        private readonly GearState gear = new GearState();
+        private string lastGearJson;
+        private double nextGearAt;
 
         private double nextSendAt;
         private float nextEnemyScanAt;
@@ -53,6 +66,8 @@ namespace PoeClone.Network
         {
             nextSendAt = 0;
             nextEnemyScanAt = 0f;
+            nextGearAt = 0;
+            lastGearJson = null; // a new session: the server has nothing yet
         }
 
         // LateUpdate: after movement and animation, so each snapshot is the frame as it was drawn.
@@ -75,6 +90,17 @@ namespace PoeClone.Network
                 return;
 
             ctrl.SendState(SnapshotCodec.Serialize(Capture(now)));
+
+            if (now >= nextGearAt)
+            {
+                nextGearAt = now + gearInterval;
+                string json = JsonUtility.ToJson(CaptureGear());
+                if (json != lastGearJson)
+                {
+                    lastGearJson = json;
+                    ctrl.SendGear(json);
+                }
+            }
         }
 
         private bool ResolveReferences()
@@ -87,7 +113,14 @@ namespace PoeClone.Network
                 inventory = stats.GetComponent<PlayerInventory>();
                 attackAnimator = stats.GetComponentInChildren<CharacterAttackAnimator>();
                 stagger = stats.GetComponent<Stagger>();
+                passives = stats.GetComponent<PlayerPassives>();
+                skills = stats.GetComponent<PlayerSkills>();
             }
+
+            if (inventoryUI == null)
+                inventoryUI = FindAnyObjectByType<InventoryUI>();
+            if (characterPage == null)
+                characterPage = FindAnyObjectByType<CharacterPageUI>();
 
             if (stagger == null)
                 stagger = stats.GetComponent<Stagger>();
@@ -140,7 +173,107 @@ namespace PoeClone.Network
 
             CaptureEnemies(pt.position);
             CaptureLoot(pt.position);
+            CaptureUi(snapshot.ui);
             return snapshot;
+        }
+
+        // Which menus are open and what the pointer is on, so spectators can open the same ones.
+        private void CaptureUi(UiState ui)
+        {
+            bool inventoryOpen = inventoryUI != null && inventoryUI.IsOpen;
+            ui.inv = inventoryOpen ? 1 : 0;
+            ui.side = inventoryOpen ? inventoryUI.SideMode : UiState.SideNone;
+            ui.chr = characterPage != null && characterPage.IsOpen ? 1 : 0;
+            ui.tree = PassiveTreeUI.IsOpen ? 1 : 0;
+            ui.skl = SkillBarUI.IsOpen ? 1 : 0;
+            ui.tn = PassiveTreeUI.ShownId ?? string.Empty;
+
+            if (inventoryOpen)
+            {
+                inventoryUI.GetPointerReport(out ui.hk, out ui.hs, out Vector2 cell, out Vector2 pointer);
+                ui.hx = cell.x;
+                ui.hy = cell.y;
+                ui.px = pointer.x;
+                ui.py = pointer.y;
+            }
+            else
+            {
+                ui.hk = UiState.HoverNone;
+                ui.hs = 0;
+                ui.hx = ui.hy = ui.px = ui.py = 0f;
+            }
+        }
+
+        // Everything the menus show: bag, gear, the open stash/trader, the held item, potions,
+        // gold, base stats (for the character page), passives and skill slots.
+        private GearState CaptureGear()
+        {
+            gear.bag = Placed(inventory != null ? inventory.Grid : null);
+
+            var worn = new List<GearItem>();
+            if (inventory != null)
+            {
+                foreach (EquipSlot slot in SlotRules.AllSlots)
+                {
+                    ItemData item = inventory.Equipment.Get(slot);
+                    if (item == null)
+                        continue;
+                    GearItem g = GearCodec.ToWire(item);
+                    g.x = (int)slot;
+                    worn.Add(g);
+                }
+            }
+            gear.eq = worn.ToArray();
+
+            InventoryGrid side = inventoryUI != null ? inventoryUI.SideContents : null;
+            gear.so = side != null ? 1 : 0;
+            gear.side = side != null ? Placed(side) : new GearItem[0];
+            gear.sn = inventoryUI != null ? inventoryUI.SideName ?? string.Empty : string.Empty;
+            ItemData held = inventoryUI != null ? inventoryUI.HeldItem : null;
+            gear.held = held != null ? GearCodec.ToWire(held) : new GearItem();
+
+            gear.gold = inventory != null ? inventory.Gold : 0;
+            gear.hpot = inventory != null ? inventory.HealthPotions : 0;
+            gear.mpot = inventory != null ? inventory.ManaPotions : 0;
+
+            gear.lv = stats.Level;
+            gear.xp = stats.Experience;
+            gear.xpr = stats.ExperienceRequiredForNextLevel();
+            gear.str = stats.BaseStrength;
+            gear.dex = stats.BaseDexterity;
+            gear.itl = stats.BaseIntelligence;
+            gear.life = stats.BaseMaxHealth;
+            gear.mana = stats.BaseMaxMana;
+
+            var taken = new List<string>();
+            if (passives != null)
+                taken.AddRange(passives.Allocation.Taken);
+            gear.pas = taken.ToArray();
+            gear.rc = passives != null ? passives.RespecCharges : 0;
+
+            if (gear.sk == null || gear.sk.Length != SkillBook.SlotCount)
+                gear.sk = new int[SkillBook.SlotCount];
+            for (int k = 0; k < gear.sk.Length; k++)
+            {
+                SkillId? id = skills != null ? skills.Slot(k) : null;
+                gear.sk[k] = id.HasValue ? (int)id.Value : -1;
+            }
+            return gear;
+        }
+
+        private static GearItem[] Placed(InventoryGrid grid)
+        {
+            if (grid == null)
+                return new GearItem[0];
+            var items = new GearItem[grid.Items.Count];
+            for (int k = 0; k < items.Length; k++)
+            {
+                PlacedItem p = grid.Items[k];
+                items[k] = GearCodec.ToWire(p.Item);
+                items[k].x = p.X;
+                items[k].y = p.Y;
+            }
+            return items;
         }
 
         private void CaptureEnemies(Vector3 center)

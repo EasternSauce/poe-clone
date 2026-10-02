@@ -75,6 +75,14 @@ namespace PoeClone.Network
         private string[] appliedEquipment;
         private Dictionary<string, ItemData> itemsById;
 
+        // The player's menus (GearState): the latest one received, and whether it's on show.
+        private GearState latestGear;
+        private bool gearApplied;
+        private int gearPid = int.MinValue;   // the session whose gear is on show (it then drives the worn gear too)
+        private InventoryUI inventoryUI;
+        private PlayerPassives playerPassives;
+        private Skills.PlayerSkills playerSkills;
+
         public bool IsActive => active;
 
         /// <summary>The watched player is on a phone or tablet (touch controls).</summary>
@@ -131,9 +139,15 @@ namespace PoeClone.Network
                     playerAttack.StrikeFrame += OnPlayerStrike;
             }
 
-            // The spectator's own (local, starter) inventory isn't the player's - don't let I/C open it.
-            SetEnabled(FindAnyObjectByType<InventoryUI>(), false);
-            SetEnabled(FindAnyObjectByType<CharacterPageUI>(), false);
+            // The menus show the watched player's (read-only), from the gear messages.
+            SpectatorMirror.Active = true;
+            SpectatorMirror.ClearRemote();
+            inventoryUI = FindAnyObjectByType<InventoryUI>();
+            if (playerStats != null)
+            {
+                playerPassives = playerStats.GetComponent<PlayerPassives>();
+                playerSkills = playerStats.GetComponent<Skills.PlayerSkills>();
+            }
 
             hud = FindAnyObjectByType<PlayerHUD>();
             if (hud != null)
@@ -188,11 +202,37 @@ namespace PoeClone.Network
             timeline.Add(s, Time.realtimeSinceStartupAsDouble);
         }
 
+        /// <summary>Feeds one raw "gear" message (the player's menus) from the server.</summary>
+        public void HandleGear(string json)
+        {
+            if (!active)
+                return;
+
+            GearState g;
+            try
+            {
+                g = JsonUtility.FromJson<GearState>(json);
+            }
+            catch (System.Exception)
+            {
+                return;
+            }
+            if (g == null || g.type != GearState.MessageType)
+                return;
+
+            latestGear = g;
+            gearApplied = false;
+        }
+
         /// <summary>The player left / the connection dropped: clear the stage.</summary>
         public void ResetReplica()
         {
             timeline.Clear();
             currentPid = int.MinValue;
+            gearApplied = false;
+            gearPid = int.MinValue;
+            SpectatorMirror.ClearRemote();
+            ClearMenus();
 
             foreach (var puppet in puppets.Values)
             {
@@ -229,7 +269,14 @@ namespace PoeClone.Network
 
         private void Update()
         {
-            if (!active || !timeline.HasData)
+            if (!active)
+                return;
+
+            // Applied as soon as it arrives (it isn't part of the interpolated motion).
+            if (latestGear != null && !gearApplied && latestGear.pid == currentPid)
+                ApplyGear(latestGear);
+
+            if (!timeline.HasData)
                 return;
 
             timeline.Advance(Time.realtimeSinceStartupAsDouble);
@@ -263,7 +310,9 @@ namespace PoeClone.Network
 
             ApplyFade(s.fade);
             ApplyHud(s.hud);
-            ApplyEquipment(s.eq);
+            if (gearPid != currentPid)
+                ApplyEquipment(s.eq); // a player without gear messages: worn gear by look only
+            ApplyUi(s.ui);
             ApplyPlayerEvents(s.p);
 
             for (int k = 0; k < s.e.Length; k++)
@@ -339,10 +388,184 @@ namespace PoeClone.Network
 
             if (appliedLevel > 0 && h.lv > appliedLevel)
                 PlaySfx(AudioManager.Instance != null ? AudioManager.Instance.playerLevelUp : null, playerStats.transform.position);
+            bool levelChanged = h.lv != appliedLevel;
             appliedLevel = h.lv;
 
             playerStats.ApplyReplicatedState(h.lv, h.xp, h.str, h.dex, h.itl, h.hp, h.mhp, h.mp, h.mmp,
                 h.dead != 0, h.cd, h.rv != 0);
+
+            // Skills can only be slotted once unlocked, which goes by level.
+            if (levelChanged && gearPid == currentPid && latestGear != null)
+                ApplySkills(latestGear.sk);
+        }
+
+        // ---------------------------------------------------------------- the player's menus
+
+        private void ApplyUi(UiState u)
+        {
+            if (u == null)
+                return;
+            SpectatorMirror.InventoryOpen = u.inv != 0;
+            SpectatorMirror.Side = u.side;
+            SpectatorMirror.CharacterOpen = u.chr != 0;
+            SpectatorMirror.TreeOpen = u.tree != 0;
+            SpectatorMirror.SkillsOpen = u.skl != 0;
+            SpectatorMirror.HoverKind = u.hk;
+            SpectatorMirror.HoverIndex = u.hs;
+            SpectatorMirror.HoverCell = new Vector2(u.hx, u.hy);
+            SpectatorMirror.Pointer = new Vector2(u.px, u.py);
+            SpectatorMirror.TreeHover = string.IsNullOrEmpty(u.tn) ? null : u.tn;
+        }
+
+        // The player's bag, gear, open stash/trader, held item, purse, potions, base stats,
+        // passives and skill slots become this tab's (puppet) player's, for the menus to show.
+        private void ApplyGear(GearState g)
+        {
+            gearApplied = true;
+            gearPid = g.pid;
+            if (playerInventory == null)
+                return;
+
+            FillGrid(playerInventory.Grid, g.bag);
+            ApplyWorn(g.eq);
+
+            if (g.so != 0)
+            {
+                if (string.IsNullOrEmpty(g.sn))
+                {
+                    FillGrid(playerInventory.Stash, g.side);
+                }
+                else
+                {
+                    if (SpectatorMirror.Trader == null || SpectatorMirror.Trader.Name != g.sn)
+                        SpectatorMirror.Trader = new VendorStock(g.sn);
+                    FillGrid(SpectatorMirror.Trader.Grid, g.side);
+                }
+            }
+
+            ItemData held = GearCodec.ToItem(g.held);
+            if (GearCodec.Key(held) != GearCodec.Key(SpectatorMirror.Held))
+                SpectatorMirror.Held = held;
+
+            if (g.gold > playerInventory.Gold)
+                playerInventory.AddGold(g.gold - playerInventory.Gold);
+            else if (g.gold < playerInventory.Gold)
+                playerInventory.TrySpendGold(playerInventory.Gold - g.gold);
+            playerInventory.SetPotions(g.hpot, g.mpot);
+
+            var b = new BaseStats();
+            b.Level = Mathf.Max(1, g.lv);
+            b.Experience = g.xp;
+            b.ExperienceRequired = Mathf.Max(1, g.xpr);
+            b.Set(StatType.Strength, g.str);
+            b.Set(StatType.Dexterity, g.dex);
+            b.Set(StatType.Intelligence, g.itl);
+            b.Set(StatType.MaxLife, g.life);
+            b.Set(StatType.MaxMana, g.mana);
+            b.Set(StatType.PhysicalDamage, PlayerStatsLink.BasePhysicalDamage);
+            playerInventory.SetBaseStats(b);
+
+            ApplyPassives(g);
+            ApplySkills(g.sk);
+
+            if (inventoryUI != null)
+                inventoryUI.MarkDirty();
+        }
+
+        private static void FillGrid(InventoryGrid grid, GearItem[] items)
+        {
+            foreach (PlacedItem placed in new List<PlacedItem>(grid.Items))
+                grid.Remove(placed.Item);
+            if (items == null)
+                return;
+            foreach (GearItem g in items)
+            {
+                ItemData item = GearCodec.ToItem(g);
+                if (item != null && !grid.TryPlace(item, g.x, g.y))
+                    grid.TryAutoPlace(item);
+            }
+        }
+
+        // Worn gear with its real stats. Like ApplyEquipment, empties every changed slot before
+        // filling any, so a swap is never refused by the hand rules halfway through.
+        private void ApplyWorn(GearItem[] worn)
+        {
+            EquipSlot[] slots = SlotRules.AllSlots;
+            var wanted = new ItemData[slots.Length];
+            if (worn != null)
+            {
+                foreach (GearItem g in worn)
+                {
+                    int index = System.Array.IndexOf(slots, (EquipSlot)g.x);
+                    if (index >= 0)
+                        wanted[index] = GearCodec.ToItem(g);
+                }
+            }
+
+            EquipmentSet equipment = playerInventory.Equipment;
+            for (int k = 0; k < slots.Length; k++)
+            {
+                if (GearCodec.Key(equipment.Get(slots[k])) != GearCodec.Key(wanted[k]))
+                    equipment.Unequip(slots[k]);
+            }
+            for (int k = 0; k < slots.Length; k++)
+            {
+                if (wanted[k] != null && equipment.Get(slots[k]) == null)
+                    equipment.TryEquip(slots[k], wanted[k], out _);
+            }
+
+            appliedEquipment = null; // ApplyEquipment, if it runs again, starts over
+        }
+
+        private void ApplyPassives(GearState g)
+        {
+            if (playerPassives == null)
+                return;
+
+            PassiveAllocation allocation = playerPassives.Allocation;
+            var wanted = new HashSet<string>(g.pas ?? new string[0]);
+            wanted.Add(PassiveTree.OriginId);
+            if (!wanted.SetEquals(allocation.Taken))
+            {
+                allocation.ResetAll();
+                // Any order: each pass takes whatever now connects (like PlayerPassives.Restore,
+                // but with the player's level from this message, which can arrive before the HUD's).
+                bool progress = true;
+                while (progress)
+                {
+                    progress = false;
+                    foreach (string id in wanted)
+                    {
+                        if (!allocation.Has(id) && allocation.Take(id, Mathf.Max(1, g.lv)))
+                            progress = true;
+                    }
+                }
+            }
+            playerPassives.SetRespecCharges(g.rc);
+        }
+
+        private void ApplySkills(int[] slots)
+        {
+            if (playerSkills == null || slots == null)
+                return;
+            for (int k = 0; k < slots.Length && k < Skills.SkillBook.SlotCount; k++)
+            {
+                if (slots[k] < 0)
+                    playerSkills.ClearSlot(k);
+                else if (playerSkills.Slot(k) != (Skills.SkillId)slots[k])
+                    playerSkills.Assign(k, (Skills.SkillId)slots[k]);
+            }
+        }
+
+        // Nothing of the last player's stays in the menus.
+        private void ClearMenus()
+        {
+            if (playerInventory == null)
+                return;
+            FillGrid(playerInventory.Grid, null);
+            FillGrid(playerInventory.Stash, null);
+            if (inventoryUI != null)
+                inventoryUI.MarkDirty();
         }
 
         private void ApplyEquipment(string[] eq)

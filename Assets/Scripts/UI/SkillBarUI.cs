@@ -49,6 +49,7 @@ namespace PoeClone.UI
         private readonly List<GameObject> pickerRows = new List<GameObject>();
         private int pickerSlot = -1;
         private PlayerSkills skills;
+        private bool ownOpen; // spectators: opened by the spectator themselves (see SpectatorMirror)
 
         public static bool IsOpen => instance != null && instance.panelRoot != null && instance.panelRoot.activeSelf;
 
@@ -59,6 +60,8 @@ namespace PoeClone.UI
         {
             if (instance == null)
                 return;
+            if (!open)
+                instance.ownOpen = false;
             if (open && PassiveTreeUI.IsOpen)
                 PassiveTreeUI.SetOpen(false);
             instance.panelRoot.SetActive(open);
@@ -85,6 +88,12 @@ namespace PoeClone.UI
                     skills.Changed += RefreshRows;
             }
 
+            if (spectator && skills != null)
+            {
+                UpdateMirror();
+                return;
+            }
+
             bool show = skills != null && skills.enabled && !spectator;
             barRoot.SetActive(show && !TouchMode.Active);
             if (!show)
@@ -107,6 +116,35 @@ namespace PoeClone.UI
 
             for (int k = 0; k < slotViews.Count; k++)
                 UpdateSlot(slotViews[k], skills.Slot(k));
+        }
+
+        // A spectator's copy of the watched player's skills panel (read-only): open while theirs
+        // is, or while the spectator opened it with K. The bar itself stays hidden.
+        private void UpdateMirror()
+        {
+            if (barRoot.activeSelf)
+                barRoot.SetActive(false);
+            ClosePicker();
+
+            bool remote = SpectatorMirror.SkillsOpen;
+            if (SpectatorMirror.TreeOpen)
+                ownOpen = false;
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && !UiKit.IsTypingInTextField())
+            {
+                if (keyboard.kKey.wasPressedThisFrame && !remote)
+                    ownOpen = !panelRoot.activeSelf;
+                else if (keyboard.escapeKey.wasPressedThisFrame)
+                    ownOpen = false;
+            }
+
+            bool open = remote || ownOpen;
+            if (panelRoot.activeSelf != open)
+            {
+                panelRoot.SetActive(open);
+                if (open)
+                    RefreshRows();
+            }
         }
 
         // ------------------------------------------------------------------ picker
@@ -380,7 +418,7 @@ namespace PoeClone.UI
                     row.SlotLabels[k] = label;
                     button.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
                     {
-                        if (skills != null)
+                        if (skills != null && !SpectatorMirror.Active)
                             skills.Assign(slot, id);
                     };
                 }

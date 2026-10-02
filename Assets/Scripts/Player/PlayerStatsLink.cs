@@ -15,7 +15,7 @@ namespace PoeClone.Player
     public class PlayerStatsLink : MonoBehaviour
     {
         // Unarmed damage before any weapon.
-        private const float BasePhysicalDamage = 2f;
+        public const float BasePhysicalDamage = 2f;
 
         private PlayerStats stats;
         private PlayerController controller;

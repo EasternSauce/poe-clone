@@ -83,5 +83,6 @@ namespace PoeClone.Network.Replication
         public string[] eq;    // equipped item id per EquipSlot (by enum order), "" = empty
         public EntityState[] e;
         public LootState[] l;  // items on the ground nearby
+        public UiState ui;     // the player's open menus and pointer (see GearState.cs)
     }
 }

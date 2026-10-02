@@ -176,6 +176,34 @@ test('the latest snapshot is retained for spectators who join mid-game', () => {
   assert.equal(JSON.parse(room.lastStateForSpectator(late)).seq, 2);
 });
 
+test('gear messages are relayed, stamped, and kept for spectators who start watching later', () => {
+  const room = new Room();
+  const player = fakeClient();
+  const watcher = fakeClient();
+  const { id } = room.join(player, 'player');
+  room.join(watcher, 'spectator');
+  room.submitState(player, snapshot({ seq: 1 }));
+
+  room.submitGear(player, { type: 'gear', pid: 999, gold: 42 });
+
+  const relayed = watcher.sent.find((m) => m.type === 'gear');
+  assert.ok(relayed);
+  assert.equal(relayed.gold, 42);
+  assert.equal(relayed.pid, id);
+
+  const late = fakeClient();
+  room.join(late, 'spectator');
+  const catchUp = room.catchUpForSpectator(late).map((m) => JSON.parse(m));
+  assert.deepEqual(catchUp.map((m) => m.type), ['state', 'gear']);
+});
+
+test('gear messages from spectators are ignored', () => {
+  const room = new Room();
+  const spectator = fakeClient();
+  room.join(spectator, 'spectator');
+  assert.equal(room.submitGear(spectator, { type: 'gear' }), null);
+});
+
 test('chat messages are broadcast to player and all spectators', () => {
   const room = new Room();
   const player = fakeClient();

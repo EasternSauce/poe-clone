@@ -14,6 +14,8 @@ const HEARTBEAT_MS = 15000;
 const STATE_RATE_LIMIT_MS = 45;
 // Snapshots are a few KB and chat lines are tiny; nothing legitimate comes close to this.
 const MAX_PAYLOAD_BYTES = 64 * 1024;
+// Gear messages come only when a player's inventory changes; this just stops a flood.
+const GEAR_RATE_LIMIT_MS = 100;
 
 const room = new Room();
 
@@ -57,6 +59,7 @@ let debugConnCounter = 0;
 wss.on('connection', (ws) => {
   ws.isAlive = true;
   ws.lastStateAt = 0;
+  ws.lastGearAt = 0;
   ws.role = null;
   ws._debugLabel = `conn#${++debugConnCounter}`;
   if (process.env.DEBUG_ROOM) console.log('connected', ws._debugLabel);
@@ -91,8 +94,7 @@ wss.on('connection', (ws) => {
 
         if (role === 'spectator') {
           safeSend(ws, room.statusMessage(ws));
-          const state = room.lastStateForSpectator(ws);
-          if (state) safeSendRaw(ws, state);
+          for (const message of room.catchUpForSpectator(ws)) safeSendRaw(ws, message);
           for (const chatMsg of room.chatHistory) safeSend(ws, chatMsg);
         }
         break;
@@ -103,6 +105,14 @@ wss.on('connection', (ws) => {
         if (now - ws.lastStateAt < STATE_RATE_LIMIT_MS) return;
         ws.lastStateAt = now;
         room.submitState(ws, msg, Buffer.byteLength(text));
+        break;
+      }
+
+      case 'gear': {
+        const now = Date.now();
+        if (now - ws.lastGearAt < GEAR_RATE_LIMIT_MS) return;
+        ws.lastGearAt = now;
+        room.submitGear(ws, msg, Buffer.byteLength(text));
         break;
       }
 
