@@ -29,6 +29,13 @@ namespace PoeClone.Player
             stats = GetComponent<PlayerStats>();
         }
 
+        /// <summary>A saved character's potions.</summary>
+        public void SetCounts(int health, int mana)
+        {
+            HealthPotions = Mathf.Clamp(health, 0, MaxPotions);
+            ManaPotions = Mathf.Clamp(mana, 0, MaxPotions);
+        }
+
         /// <summary>Adds potions (capped); returns how many actually fit.</summary>
         public int Add(bool health, int count)
         {

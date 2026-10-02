@@ -159,6 +159,9 @@ namespace PoeClone.Inventory
 
         public bool Has(string id) => taken.Contains(id);
 
+        /// <summary>Every passive taken, the origin included.</summary>
+        public IEnumerable<string> Taken => taken;
+
         public static int PointsForLevel(int level) => Math.Max(0, level - 1);
 
         public int Unspent(int level) => PointsForLevel(level) - Spent;

@@ -78,6 +78,33 @@ namespace PoeClone.Quests
             return QuestState.Locked;
         }
 
+        /// <summary>For saving: what's done, what's under way (and how far), where the player has been.</summary>
+        public void Export(List<string> doneIds, Dictionary<string, int> activeProgress, List<int> visitedAreas)
+        {
+            doneIds.AddRange(done);
+            foreach (var pair in active)
+                activeProgress[pair.Key] = pair.Value;
+            visitedAreas.AddRange(visited);
+        }
+
+        /// <summary>A saved character's quests (unknown quest ids are skipped).</summary>
+        public void Import(IEnumerable<string> doneIds, IEnumerable<KeyValuePair<string, int>> activeProgress, IEnumerable<int> visitedAreas)
+        {
+            foreach (string id in doneIds)
+            {
+                if (QuestBook.Get(id) != null)
+                    done.Add(id);
+            }
+            foreach (var pair in activeProgress)
+            {
+                if (QuestBook.Get(pair.Key) != null && !done.Contains(pair.Key))
+                    active[pair.Key] = pair.Value;
+            }
+            foreach (int area in visitedAreas)
+                visited.Add(area);
+            Changed?.Invoke();
+        }
+
         /// <summary>Been to this area this session (waystones only go where the player has been).</summary>
         public bool HasVisited(int area)
         {

@@ -104,6 +104,7 @@ namespace PoeClone.UI
                     options.Add(new DialogueOption("Buy gear", () => SmithPage(npc, null)));
                     break;
                 case NpcRole.Elder:
+                    options.Add(new DialogueOption("<color=" + Dim + ">Start a new life...</color>", () => NewLifePage(npc)));
                     options.Add(new DialogueOption("Ask about Haven", () => Main(npc,
                         "Haven was a waystation once, for caravans bound for the old city. When the city burned, the caravans stopped, and we stayed.\n\n" +
                         "Now the woods are full of the dead, and something in the ruins is calling them.")));
@@ -113,6 +114,22 @@ namespace PoeClone.UI
             options.Add(new DialogueOption("Goodbye", DialogueUI.Close));
             DialogueUI.Show(npc, text, options);
             RefreshMarkers();
+        }
+
+        // Erasing the save: asks first.
+        private static void NewLifePage(Npc npc)
+        {
+            var options = new List<DialogueOption>
+            {
+                new DialogueOption("<color=#FF7060>Yes - forget this character</color>", () =>
+                {
+                    SaveSystem.Erase();
+                    DialogueUI.Show(npc, "Then go with the dawn, and come back new. (Your progress is erased - reload the page to begin again. Until then, nothing more is saved.)",
+                        new List<DialogueOption> { new DialogueOption("Goodbye", DialogueUI.Close) });
+                }),
+                new DialogueOption("No", () => Main(npc, Greeting(npc.Role)))
+            };
+            DialogueUI.Show(npc, "Your progress is kept between visits. Start over as a new traveller - level 1, empty-handed, every quest forgotten? This can't be undone.", options);
         }
 
         // ------------------------------------------------------------------ quests

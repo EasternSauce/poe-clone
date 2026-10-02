@@ -162,7 +162,20 @@ namespace PoeClone.Player
             return level * 100;
         }
 
-private void LevelUp()
+        /// <summary>
+        /// A saved character coming back: levels up quietly (same stat growth, no sound) to the
+        /// saved level, then sets the experience into it. Only from level 1.
+        /// </summary>
+        public void RestoreProgress(int savedLevel, int savedExperience)
+        {
+            while (level < savedLevel)
+                LevelUp(announce: false);
+            experience = Mathf.Clamp(savedExperience, 0, ExperienceRequiredForNextLevel() - 1);
+            currentHealth = MaxHealth;
+            currentMana = MaxMana;
+        }
+
+        private void LevelUp(bool announce = true)
         {
             level++;
 
@@ -176,9 +189,11 @@ private void LevelUp()
             currentHealth = MaxHealth;
             currentMana = MaxMana;
 
-            Debug.Log($"Player reached level {level}");
             LeveledUp?.Invoke(level);
+            if (!announce)
+                return;
 
+            Debug.Log($"Player reached level {level}");
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlayAtPoint(AudioManager.Instance.playerLevelUp, transform.position);
         }

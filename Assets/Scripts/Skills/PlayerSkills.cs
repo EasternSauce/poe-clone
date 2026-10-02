@@ -72,6 +72,15 @@ namespace PoeClone.Skills
             return stats != null && stats.Level >= SkillBook.Get(id).UnlockLevel;
         }
 
+        /// <summary>Empties a slot.</summary>
+        public void ClearSlot(int slot)
+        {
+            if (slot < 0 || slot >= slots.Length || slots[slot] == null)
+                return;
+            slots[slot] = null;
+            Changed?.Invoke();
+        }
+
         /// <summary>Puts an unlocked skill in a slot (taking it out of any other slot).</summary>
         public void Assign(int slot, SkillId id)
         {

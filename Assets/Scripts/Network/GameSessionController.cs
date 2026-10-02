@@ -85,6 +85,7 @@ namespace PoeClone.Network
             gameObject.AddComponent<PoeClone.UI.QuestTrackerUI>();
             gameObject.AddComponent<PoeClone.UI.BossBarUI>();
             gameObject.AddComponent<PoeClone.UI.PassiveTreeUI>();
+            gameObject.AddComponent<PoeClone.Player.SaveSystem>();
             namePrompt = gameObject.AddComponent<NamePromptUI>();
 
             stateBroadcaster = gameObject.AddComponent<PlayerStateBroadcaster>();
