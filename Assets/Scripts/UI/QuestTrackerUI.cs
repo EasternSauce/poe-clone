@@ -28,7 +28,8 @@ namespace PoeClone.UI
         {
             Canvas canvas = UiKit.NewCanvas("QuestTrackerCanvas", transform, 40, out _);
 
-            back = UiKit.NewImage("Tracker", canvas.transform, new Color(0f, 0f, 0f, 0.45f));
+            back = UiKit.NewImage("Tracker", canvas.transform, new Color(0.08f, 0.07f, 0.06f, 0.6f));
+            UiKit.Grain(back);
             RectTransform rt = back.rectTransform;
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 1f);
 

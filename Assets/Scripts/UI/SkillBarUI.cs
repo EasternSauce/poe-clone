@@ -168,6 +168,7 @@ namespace PoeClone.UI
             for (int k = 0; k < SkillBook.SlotCount; k++)
             {
                 Image back = UiKit.NewImage("Slot" + k, bar, Color.black);
+                UiKit.Inset(back);
                 UiKit.TopLeft(back.rectTransform, new Vector2(k * (SlotSize + 8f) + 4f, 0f), new Vector2(SlotSize, SlotSize));
                 UiKit.AddOutline(back, UiKit.BorderColor, 2f);
 
@@ -197,6 +198,7 @@ namespace PoeClone.UI
             float height = 70f + SkillBook.All.Length * (rowHeight + 6f) + 16f;
 
             Image panel = UiKit.NewImage("SkillsPanel", canvas.transform, UiKit.PanelColor);
+            UiKit.Grain(panel);
             panel.raycastTarget = true;
             RectTransform pr = panel.rectTransform;
             pr.anchorMin = pr.anchorMax = new Vector2(0.5f, 0.5f);
@@ -221,6 +223,7 @@ namespace PoeClone.UI
             foreach (SkillDefinition skill in SkillBook.All)
             {
                 Image back = UiKit.NewImage("Row_" + skill.Id, pr, Color.black);
+                UiKit.Grain(back);
                 UiKit.TopLeft(back.rectTransform, new Vector2(16f, y), new Vector2(width - 32f, rowHeight));
 
                 Text text = UiKit.NewText("Text", back.rectTransform, "", 19, UiKit.TextColor, TextAnchor.MiddleLeft);
@@ -233,6 +236,7 @@ namespace PoeClone.UI
                     int slot = k;
                     SkillId id = skill.Id;
                     Image button = UiKit.NewImage("Slot" + k, back.rectTransform, Color.black);
+                    UiKit.Inset(button);
                     button.raycastTarget = true;
                     UiKit.TopLeft(button.rectTransform, new Vector2(width - 32f - 4f * 52f - 4f + k * 52f, -(rowHeight - 44f) * 0.5f), new Vector2(44f, 44f));
                     UiKit.AddOutline(button, UiKit.BorderColor, 1.5f);

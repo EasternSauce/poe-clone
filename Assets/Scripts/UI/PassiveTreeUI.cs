@@ -256,6 +256,7 @@ namespace PoeClone.UI
             group.blocksRaycasts = true;
 
             Image panel = UiKit.NewImage("PassivePanel", canvas.transform, UiKit.PanelColor);
+            UiKit.Grain(panel);
             panel.raycastTarget = true;
             RectTransform pr = panel.rectTransform;
             pr.anchorMin = pr.anchorMax = new Vector2(0.5f, 0.5f);
@@ -346,6 +347,7 @@ namespace PoeClone.UI
         private static Image NewButton(RectTransform parent, string name, string label, Vector2 pos, Vector2 size)
         {
             Image button = UiKit.NewImage(name, parent, new Color(0.18f, 0.14f, 0.10f, 1f));
+            UiKit.Inset(button);
             button.raycastTarget = true;
             UiKit.TopLeft(button.rectTransform, pos, size);
             UiKit.AddOutline(button, UiKit.BorderColor, 1.5f);

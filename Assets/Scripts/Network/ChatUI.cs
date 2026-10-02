@@ -229,7 +229,8 @@ namespace PoeClone.Network
             var panelGO = new GameObject("Panel");
             panelGO.transform.SetParent(canvasGO.transform, false);
             var panelImage = panelGO.AddComponent<Image>();
-            panelImage.color = new Color(0f, 0f, 0f, 0.55f);
+            panelImage.color = new Color(0.08f, 0.07f, 0.06f, 0.65f);
+            UiKit.Grain(panelImage);
             panelRect = panelImage.rectTransform;
             panelRect.anchorMin = new Vector2(1f, 0f);
             panelRect.anchorMax = new Vector2(1f, 0f);

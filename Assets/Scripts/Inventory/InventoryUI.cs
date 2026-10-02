@@ -386,6 +386,7 @@ private Vector2 CellSize(int w, int h)
 
             // Inventory panel on the right side of the screen, like PoE.
             Image panelImage = UiKit.NewImage("Panel", canvas.transform, UiKit.PanelColor);
+            UiKit.Grain(panelImage);
             panel = panelImage.rectTransform;
             panel.anchorMin = new Vector2(1f, 0.5f);
             panel.anchorMax = new Vector2(1f, 0.5f);
@@ -396,6 +397,7 @@ private Vector2 CellSize(int w, int h)
 
             // Character preview panel, just to the left of the inventory.
             Image previewBg = UiKit.NewImage("PreviewPanel", canvas.transform, UiKit.PanelColor);
+            UiKit.Grain(previewBg);
             previewPanel = previewBg.rectTransform;
             previewPanel.anchorMin = new Vector2(1f, 0.5f);
             previewPanel.anchorMax = new Vector2(1f, 0.5f);
@@ -443,6 +445,7 @@ private Vector2 CellSize(int w, int h)
                 for (int x = 0; x < inventory.Grid.Width; x++)
                 {
                     Image cell = UiKit.NewImage("Cell", gridArea, CellColor);
+                    UiKit.Inset(cell);
                     UiKit.TopLeft(cell.rectTransform, CellPos(x, y), CellSize(1, 1));
                 }
             }
@@ -459,6 +462,7 @@ private Vector2 CellSize(int w, int h)
         private void BuildSlot(RectTransform parent, SlotLayout l)
         {
             Image bg = UiKit.NewImage("Slot_" + l.Slot, parent, SlotColor);
+            UiKit.Inset(bg);
             RectTransform rt = bg.rectTransform;
             UiKit.TopLeft(rt, SlotPos(l.Col, l.Row), SlotSize(l.W, l.H));
             UiKit.AddOutline(bg, SlotBorder, 1.5f);
@@ -483,7 +487,8 @@ private Vector2 CellSize(int w, int h)
 
         private void BuildTooltip()
         {
-            Image bg = UiKit.NewImage("Tooltip", canvas.transform, new Color(0.05f, 0.05f, 0.06f, 0.97f));
+            Image bg = UiKit.NewImage("Tooltip", canvas.transform, new Color(0.07f, 0.07f, 0.08f, 0.97f));
+            UiKit.Grain(bg);
             tooltipRect = bg.rectTransform;
             tooltipRect.anchorMin = Vector2.zero;
             tooltipRect.anchorMax = Vector2.zero;

@@ -139,6 +139,7 @@ namespace PoeClone.Inventory
             float panelHeight = headerHeight + lines * RowHeight + 30f;
 
             Image bg = UiKit.NewImage("Panel", canvas.transform, UiKit.PanelColor);
+            UiKit.Grain(bg);
             panel = bg.rectTransform;
             panel.anchorMin = new Vector2(0f, 0.5f);
             panel.anchorMax = new Vector2(0f, 0.5f);

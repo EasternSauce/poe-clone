@@ -62,6 +62,140 @@ namespace PoeClone.Inventory
             }
         }
 
+        private static Sprite panelGrain;
+        private static Sprite slotInset;
+
+        /// <summary>
+        /// A tileable grey grain (scuffed leather / stone) for panel backgrounds: tints like a
+        /// plain Image, see <see cref="Grain"/>.
+        /// </summary>
+        public static Sprite PanelGrain => panelGrain != null ? panelGrain : panelGrain = MakeGrain();
+
+        /// <summary>
+        /// A sliced, recessed slot: grainy middle, shadowed top and left inner edges, a light rim at
+        /// the bottom and right. For item slots, bag cells, skill slots and buttons; see <see cref="Inset"/>.
+        /// </summary>
+        public static Sprite SlotInset => slotInset != null ? slotInset : slotInset = MakeInset();
+
+        /// <summary>Gives a panel the grain texture (its colour still tints it).</summary>
+        public static void Grain(Image image)
+        {
+            image.sprite = PanelGrain;
+            image.type = Image.Type.Tiled;
+        }
+
+        /// <summary>Makes an image a recessed slot (its colour still tints it).</summary>
+        public static void Inset(Image image)
+        {
+            image.sprite = SlotInset;
+            image.type = Image.Type.Sliced;
+        }
+
+        private const int GrainSize = 128;
+        private const int InsetSize = 64;
+        private const int InsetBorder = 12;
+
+        // Brightness 0.4-1: a multiplier, so even the darkest panel colours show it.
+        private static Sprite MakeGrain()
+        {
+            var random = new System.Random(7);
+            var pixels = new Color32[GrainSize * GrainSize];
+            for (int y = 0; y < GrainSize; y++)
+            {
+                for (int x = 0; x < GrainSize; x++)
+                {
+                    float v = GrainValue(x, y, random);
+                    pixels[y * GrainSize + x] = Grey(v);
+                }
+            }
+
+            // A few faint scratches.
+            for (int k = 0; k < 40; k++)
+            {
+                int x = random.Next(GrainSize);
+                int y = random.Next(GrainSize);
+                float angle = (float)random.NextDouble() * Mathf.PI;
+                int length = 6 + random.Next(14);
+                bool light = random.NextDouble() < 0.5;
+                for (int i = 0; i < length; i++)
+                {
+                    int px = ((x + Mathf.RoundToInt(Mathf.Cos(angle) * i)) % GrainSize + GrainSize) % GrainSize;
+                    int py = ((y + Mathf.RoundToInt(Mathf.Sin(angle) * i)) % GrainSize + GrainSize) % GrainSize;
+                    int index = py * GrainSize + px;
+                    float v = pixels[index].r / 255f;
+                    pixels[index] = Grey(light ? Mathf.Min(1f, v + 0.12f) : v - 0.12f);
+                }
+            }
+
+            return MakeSprite(pixels, GrainSize, TextureWrapMode.Repeat, Vector4.zero);
+        }
+
+        private static Sprite MakeInset()
+        {
+            var random = new System.Random(11);
+            var pixels = new Color32[InsetSize * InsetSize];
+            for (int y = 0; y < InsetSize; y++)
+            {
+                for (int x = 0; x < InsetSize; x++)
+                {
+                    // Texture rows run bottom-up: y = 0 is the bottom edge.
+                    float fromLeft = x + 0.5f;
+                    float fromTop = InsetSize - y - 0.5f;
+                    float fromRight = InsetSize - x - 0.5f;
+                    float fromBottom = y + 0.5f;
+
+                    float v = 0.9f + (GrainValue(x, y, random) - 0.72f) * 0.6f;
+                    float shadow = Mathf.Min(fromLeft, fromTop);
+                    if (shadow < InsetBorder)
+                        v *= Mathf.Lerp(0.45f, 1f, Mathf.SmoothStep(0f, 1f, shadow / InsetBorder));
+                    float rim = Mathf.Min(fromRight, fromBottom);
+                    if (rim < 2.5f)
+                        v = Mathf.Lerp(v, 1f, 0.6f * (1f - rim / 2.5f));
+                    pixels[y * InsetSize + x] = Grey(v);
+                }
+            }
+
+            return MakeSprite(pixels, InsetSize, TextureWrapMode.Clamp, Vector4.one * InsetBorder);
+        }
+
+        // Tileable layered noise plus per-pixel grain, around 0.72.
+        private static float GrainValue(int x, int y, System.Random random)
+        {
+            float u = x / (float)GrainSize;
+            float v = y / (float)GrainSize;
+            float n = TileNoise(u, v, 4f, 3.1f) * 0.6f + TileNoise(u, v, 12f, 17.7f) * 0.4f;
+            float speck = (float)random.NextDouble() - 0.5f;
+            return Mathf.Clamp(0.50f + n * 0.45f + speck * 0.16f, 0.40f, 1f);
+        }
+
+        private static float TileNoise(float u, float v, float period, float offset)
+        {
+            float a = Mathf.PerlinNoise(offset + u * period, offset + v * period);
+            float b = Mathf.PerlinNoise(offset + (u - 1f) * period, offset + v * period);
+            float c = Mathf.PerlinNoise(offset + u * period, offset + (v - 1f) * period);
+            float d = Mathf.PerlinNoise(offset + (u - 1f) * period, offset + (v - 1f) * period);
+            return Mathf.Lerp(Mathf.Lerp(a, b, u), Mathf.Lerp(c, d, u), v);
+        }
+
+        private static Color32 Grey(float v)
+        {
+            byte b = (byte)(Mathf.Clamp01(v) * 255f);
+            return new Color32(b, b, b, 255);
+        }
+
+        private static Sprite MakeSprite(Color32[] pixels, int size, TextureWrapMode wrap, Vector4 border)
+        {
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                wrapMode = wrap,
+                filterMode = FilterMode.Bilinear
+            };
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            return Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f, 0,
+                SpriteMeshType.FullRect, border);
+        }
+
         /// <summary>An antialiased white disc, for round buttons and glows.</summary>
         public static Sprite Disc => disc != null ? disc : disc = MakeCircle(128, 0f);
 

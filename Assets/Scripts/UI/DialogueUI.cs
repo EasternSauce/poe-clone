@@ -146,6 +146,7 @@ namespace PoeClone.UI
             group.blocksRaycasts = true;
 
             Image back = UiKit.NewImage("DialoguePanel", canvas.transform, UiKit.PanelColor);
+            UiKit.Grain(back);
             back.raycastTarget = true;
             panel = back.rectTransform;
             panel.anchorMin = panel.anchorMax = new Vector2(0.5f, 0f);
@@ -175,6 +176,7 @@ namespace PoeClone.UI
             {
                 int index = k;
                 Image button = UiKit.NewImage("Option" + k, panel, ButtonColor);
+                UiKit.Inset(button);
                 button.raycastTarget = true;
                 UiKit.TopLeft(button.rectTransform, new Vector2(24f, 0f), new Vector2(Width - 48f, OptionHeight));
                 UiKit.AddOutline(button, new Color(0.40f, 0.31f, 0.16f, 1f), 1.5f);
