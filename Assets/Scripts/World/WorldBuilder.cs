@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using PoeClone.Enemies;
 using PoeClone.Player;
+using PoeClone.Visuals;
 
 namespace PoeClone.World
 {
@@ -129,6 +130,7 @@ namespace PoeClone.World
             BuildGraveyard();
             BuildRuins();
             BuildFrozen();
+            BuildGlowshrooms();
             BuildWaystones();
 
             // Gates: Haven - Greenwood - Graveyard - Ruins, and a way home from the Ruins.
@@ -159,6 +161,7 @@ namespace PoeClone.World
             // Colliders made this frame aren't in the physics world until it syncs; the starter
             // loot below finds the ground by raycast.
             Physics.SyncTransforms();
+            ManualPointLightManager.Refresh();
 
             // Start in town.
             MovePlayer(player, spawnPoints[Haven]);
@@ -321,7 +324,14 @@ namespace PoeClone.World
             Box(t, crypt + new Vector3(0f, 4.4f, 0f), new Vector3(7.8f, 0.8f, 7.8f), kit.Mat("Tombstone"));
             Box(t, crypt + new Vector3(0f, 1.3f, -3.55f), new Vector3(2f, 2.6f, 0.2f), kit.Mat("Charred"), solid: false);
             for (int k = -1; k <= 1; k += 2)
+            {
                 Cyl(t, crypt + new Vector3(k * 2.4f, 1.9f, -4.2f), 0.35f, 3.8f, kit.Mat("Tombstone"));
+                // A ghostly green flame on top of each column.
+                GameObject flame = RuntimePrimitives.Create(PrimitiveType.Sphere, t, SpiritLight);
+                flame.transform.position = crypt + new Vector3(k * 2.4f, 4.05f, -4.2f);
+                flame.transform.localScale = new Vector3(0.35f, 0.55f, 0.35f);
+                Glow(t, crypt + new Vector3(k * 2.4f, 4.3f, -4.2f), SpiritLight, 10f, 5f, flicker: true);
+            }
             Claim(crypt, 7f);
             Spots["Crypt"] = crypt + new Vector3(0f, 0f, -6f);
 
@@ -365,6 +375,7 @@ namespace PoeClone.World
             Box(t, temple + new Vector3(0f, 0.64f, 3f), new Vector3(2.4f, 1f, 1.4f), kit.Mat("Sandstone"));
             Ball(t, temple + new Vector3(-0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
             Ball(t, temple + new Vector3(0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
+            Glow(t, temple + new Vector3(0f, 1.9f, 3f), FireLight, 10f, 5f, flicker: true);
             Claim(temple, 11f);
             Spots["Altar"] = temple;
 
@@ -398,6 +409,8 @@ namespace PoeClone.World
                     continue;
                 Box(t, p + Vector3.up * 0.03f, new Vector3(R(0.25f, 0.5f), 0.05f, R(3f, 8f)), kit.Mat("Lava"), solid: false,
                     euler: new Vector3(0f, R(0f, 180f), 0f));
+                if (k % 2 == 0)
+                    Glow(t, p + Vector3.up * 0.5f, LavaLight, 5.5f, 2.5f, flicker: true);
             }
 
             Scatter(t, 8, 10f, 42f, p => Brazier(t, p), 1f);
@@ -476,6 +489,7 @@ namespace PoeClone.World
                 Vector3 offset = Flat(R(-0.8f, 0.8f), R(-0.8f, 0.8f));
                 IceSpike(group, p + offset, R(0.8f, 2.2f), new Vector3(R(-25f, 25f), R(0f, 360f), R(-25f, 25f)));
             }
+            Glow(group, p + Vector3.up * 1.3f, IceLight, 6.5f, 3f);
             return group.gameObject;
         }
 
@@ -730,6 +744,7 @@ namespace PoeClone.World
             Box(t, p + Vector3.up * 1.4f, new Vector3(0.14f, 2.8f, 0.14f), kit.Mat("Iron"));
             Box(t, p + new Vector3(0f, 2.75f, 0f), new Vector3(0.5f, 0.08f, 0.5f), kit.Mat("Iron"), solid: false);
             Ball(t, p + new Vector3(0f, 2.55f, 0f), 0.22f, kit.Mat("Lantern"), solid: false);
+            Glow(t, p + new Vector3(0f, 2.3f, 0f), LanternLight, 10f, 8f);
             Claim(p, 0.6f);
         }
 
@@ -841,6 +856,7 @@ namespace PoeClone.World
                 LocalCyl(group, o + Vector3.up * h * 0.5f, 0.05f, h, kit.Mat("Candle"), solid: false);
                 LocalBall(group, o + Vector3.up * (h + 0.04f), 0.035f, kit.Mat("Ember"));
             }
+            Glow(group, p + Vector3.up * 0.6f, CandleLight, 4.5f, 2.5f, flicker: true);
             return group.gameObject;
         }
 
@@ -873,6 +889,7 @@ namespace PoeClone.World
             GameObject bowl = Cyl(t, p + Vector3.up * 0.5f, 0.45f, 1f, kit.Mat("Stone"));
             Ball(t, p + Vector3.up * 1.1f, 0.3f, kit.Mat("Ember"), solid: false);
             Ball(t, p + new Vector3(0.12f, 1.3f, 0.05f), 0.16f, kit.Mat("Lantern"), solid: false);
+            Glow(t, p + Vector3.up * 1.6f, FireLight, 9f, 5f, flicker: true);
             return bowl;
         }
 
@@ -908,11 +925,103 @@ namespace PoeClone.World
                 Cyl(stone.transform, p + Vector3.up * 0.12f, 0.85f, 0.24f, kit.Mat("Stone"));
                 Box(stone.transform, p + Vector3.up * 1.3f, new Vector3(0.55f, 2.3f, 0.55f), kit.Mat("TombstoneDark"), euler: new Vector3(0f, 45f, 0f));
                 Ball(stone.transform, p + Vector3.up * 2.75f, 0.38f, kit.Mat("Water"), solid: false);
+                Glow(stone.transform, p + Vector3.up * 1.8f, WaystoneLight, 6.5f, 4.5f);
 
                 Transform arrival = Marker("Arrive_" + AreaNames[a] + "_waystone", p + new Vector3(0f, 1.1f, 2.6f), 0f);
                 Waystone.Attach(stone, a, arrival);
                 Npc.CreateFixed(stone, NpcRole.Waystone, "Waystone", 3.5f);
             }
+        }
+
+        // ------------------------------------------------------------------ light sources
+
+        private static readonly Color LanternLight = new Color(1f, 0.80f, 0.50f);
+        private static readonly Color CandleLight = new Color(1f, 0.68f, 0.35f);
+        private static readonly Color FireLight = new Color(1f, 0.52f, 0.18f);
+        private static readonly Color LavaLight = new Color(1f, 0.32f, 0.08f);
+        private static readonly Color SpiritLight = new Color(0.45f, 1f, 0.55f);
+        private static readonly Color IceLight = new Color(0.45f, 0.85f, 1f);
+        private static readonly Color WaystoneLight = new Color(0.40f, 0.60f, 1f);
+        private static readonly Color ShroomLight = new Color(0.30f, 0.95f, 0.80f);
+
+        /// <summary>
+        /// A point light for the ToonLit shader (see <see cref="ManualPointLightManager"/>, which
+        /// sends it the lights nearest the view); flames flicker.
+        /// </summary>
+        private static Light Glow(Transform parent, Vector3 p, Color color, float range, float intensity, bool flicker = false)
+        {
+            var go = new GameObject("Glow");
+            go.transform.SetParent(parent, false);
+            go.transform.position = p;
+            Light light = go.AddComponent<Light>();
+            light.type = LightType.Point;
+            light.color = color;
+            light.range = range;
+            light.intensity = intensity;
+            light.shadows = LightShadows.None;
+            if (flicker)
+            {
+                TorchFlicker f = go.AddComponent<TorchFlicker>();
+                f.torchLight = light;
+                f.baseIntensity = intensity;
+                f.flickerAmount = intensity * 0.15f;
+                f.flickerSpeed = 6f;
+            }
+            return light;
+        }
+
+        // Greenwood's own light: clusters of glowing mushrooms among its trees (the area is the
+        // scene's original, so spots are checked against its colliders rather than claims).
+        private void BuildGlowshrooms()
+        {
+            Begin(Greenwood, 505);
+            Vector3 c = Centers[Greenwood];
+            Transform t = Group("Glowshrooms");
+            for (int k = 0, attempts = 0; k < 10 && attempts < 200; attempts++)
+            {
+                Vector3 p = c + Flat(R(-40f, 40f), R(-40f, 40f));
+                if (Vector3.Distance(p, c) < 8f || !Free(p, 6f))
+                    continue;
+                if (HitsScenery(p + Vector3.up * 1.2f, 1f))
+                    continue;
+                Glowshrooms(t, p);
+                Claim(p, 6f);
+                k++;
+            }
+        }
+
+        // Static scenery only: characters stand at random spots, which would make the layout
+        // differ between the player and spectators.
+        private static bool HitsScenery(Vector3 p, float radius)
+        {
+            foreach (Collider c in Physics.OverlapSphere(p, radius, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (c is CharacterController || c.attachedRigidbody != null || c.GetComponentInParent<EnemyHealth>() != null)
+                    continue;
+                return true;
+            }
+            return false;
+        }
+
+        private void Glowshrooms(Transform t, Vector3 p)
+        {
+            var group = new GameObject("Glowshroom").transform;
+            group.SetParent(t, false);
+            group.position = p;
+            int n = rng.Next(3, 6);
+            for (int k = 0; k < n; k++)
+            {
+                Vector3 o = new Vector3(R(-0.5f, 0.5f), 0f, R(-0.5f, 0.5f));
+                float h = R(0.15f, 0.4f);
+                GameObject stem = RuntimePrimitives.Create(PrimitiveType.Cylinder, group, new Color(0.85f, 0.88f, 0.80f));
+                stem.transform.localPosition = o + Vector3.up * h * 0.5f;
+                stem.transform.localScale = new Vector3(0.06f, h * 0.5f, 0.06f);
+                GameObject cap = RuntimePrimitives.Create(PrimitiveType.Sphere, group, ShroomLight);
+                float w = R(0.18f, 0.32f);
+                cap.transform.localPosition = o + Vector3.up * h;
+                cap.transform.localScale = new Vector3(w, w * 0.45f, w);
+            }
+            Glow(group, p + Vector3.up * 0.7f, ShroomLight, 5.5f, 2.8f);
         }
 
         private Transform Group(string name)

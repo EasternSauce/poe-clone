@@ -22,10 +22,20 @@ namespace PoeClone.Visuals
     /// same "manual forward-additive lighting" approach used long before
     /// SRPs existed, so it does not depend on any Forward+/clustered-light
     /// keyword matching at all.
+    ///
+    /// The scene can hold more lights than the shader takes (every area lives in one scene), so
+    /// each frame the ones nearest to where the camera looks are sent, and lights out of reach
+    /// of the view are skipped entirely.
     /// </summary>
     public class ManualPointLightManager : MonoBehaviour
     {
         public const int MaxLights = 24;
+
+        // Lights whose reach ends further than this from the point the camera looks at are off
+        // screen (the view is roughly 40 m across).
+        private const float ViewRadius = 32f;
+
+        private static ManualPointLightManager instance;
 
         [Tooltip("Legacy scoping option, kept only for backwards compatibility with existing scenes. Lights are now collected from the whole active scene (see CollectLights), so this is no longer used to restrict the search.")]
         public Transform lightsRoot;
@@ -41,9 +51,20 @@ namespace PoeClone.Visuals
         private readonly Vector4[] _posRange = new Vector4[MaxLights];
         private readonly Vector4[] _colorIntensity = new Vector4[MaxLights];
 
+        private readonly List<Light> _nearest = new List<Light>();
+        private readonly List<float> _nearestDistance = new List<float>();
+
         private void Awake()
         {
+            instance = this;
             CollectLights();
+        }
+
+        /// <summary>Re-scans the scene, for lights added at runtime (e.g. by the WorldBuilder).</summary>
+        public static void Refresh()
+        {
+            if (instance != null)
+                instance.CollectLights();
         }
 
         // Scans the whole scene rather than a single subtree: torches (and any other point/spot
@@ -60,7 +81,6 @@ namespace PoeClone.Visuals
 
             foreach (var l in found)
             {
-                if (_lights.Count >= MaxLights) break;
                 if (l.type == LightType.Point || l.type == LightType.Spot)
                     _lights.Add(l);
             }
@@ -70,12 +90,12 @@ namespace PoeClone.Visuals
         // (set in TorchFlicker.Update) before pushing this frame's values.
         private void LateUpdate()
         {
-            int count = 0;
-            for (int i = 0; i < _lights.Count && count < MaxLights; i++)
-            {
-                var l = _lights[i];
-                if (l == null || !l.isActiveAndEnabled) continue;
+            SelectNearest(ViewFocus());
 
+            int count = 0;
+            for (int i = 0; i < _nearest.Count; i++)
+            {
+                var l = _nearest[i];
                 Vector3 pos = l.transform.position;
                 _posRange[count] = new Vector4(pos.x, pos.y, pos.z, l.range);
                 _colorIntensity[count] = new Vector4(l.color.r, l.color.g, l.color.b, l.intensity);
@@ -93,6 +113,48 @@ namespace PoeClone.Visuals
             Shader.SetGlobalVectorArray(PosRangeId, _posRange);
             Shader.SetGlobalVectorArray(ColorIntensityId, _colorIntensity);
             Shader.SetGlobalInt(CountId, count);
+        }
+
+        // Where the camera's view centre meets the ground (y = 0), or the camera itself.
+        private static Vector3 ViewFocus()
+        {
+            Camera cam = Camera.main;
+            if (cam == null)
+                return Vector3.zero;
+            Vector3 origin = cam.transform.position;
+            Vector3 forward = cam.transform.forward;
+            if (forward.y < -0.01f)
+                return origin + forward * (-origin.y / forward.y);
+            return origin;
+        }
+
+        // Fills _nearest with up to MaxLights active lights that can reach the view, closest first.
+        private void SelectNearest(Vector3 focus)
+        {
+            _nearest.Clear();
+            _nearestDistance.Clear();
+            for (int i = 0; i < _lights.Count; i++)
+            {
+                var l = _lights[i];
+                if (l == null || !l.isActiveAndEnabled) continue;
+
+                Vector3 d = l.transform.position - focus;
+                d.y = 0f;
+                float distance = d.magnitude - l.range;
+                if (distance > ViewRadius) continue;
+
+                // Insertion into a short sorted list.
+                int at = _nearestDistance.Count;
+                while (at > 0 && _nearestDistance[at - 1] > distance) at--;
+                if (at >= MaxLights) continue;
+                _nearest.Insert(at, l);
+                _nearestDistance.Insert(at, distance);
+                if (_nearest.Count > MaxLights)
+                {
+                    _nearest.RemoveAt(MaxLights);
+                    _nearestDistance.RemoveAt(MaxLights);
+                }
+            }
         }
     }
 }
