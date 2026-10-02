@@ -265,8 +265,8 @@ namespace PoeClone.Tests
         {
             foreach (ItemData item in AllBaseItems())
             {
-                Sprite icon = Resources.Load<Sprite>("ItemIcons/" + item.Id);
-                Assert.IsNotNull(icon, item.Name + " has no icon at Resources/ItemIcons/" + item.Id);
+                Sprite icon = Resources.Load<Sprite>("ItemIcons/" + item.ArtId);
+                Assert.IsNotNull(icon, item.Name + " has no icon at Resources/ItemIcons/" + item.ArtId);
 
                 // Icons are drawn at 96 px per cell, so they match the item's footprint exactly.
                 Assert.AreEqual(item.Width * 96, icon.texture.width, item.Name + " icon width");
@@ -279,8 +279,8 @@ namespace PoeClone.Tests
         {
             foreach (ItemData item in AllBaseItems())
             {
-                GameObject prefab = Resources.Load<GameObject>("Equipment/" + item.Id);
-                Assert.IsNotNull(prefab, item.Name + " has no prefab at Resources/Equipment/" + item.Id);
+                GameObject prefab = Resources.Load<GameObject>("Equipment/" + item.ArtId);
+                Assert.IsNotNull(prefab, item.Name + " has no prefab at Resources/Equipment/" + item.ArtId);
 
                 HashSet<string> found = new HashSet<string>();
                 foreach (Transform child in prefab.transform)
@@ -300,7 +300,7 @@ namespace PoeClone.Tests
         {
             foreach (ItemData item in AllBaseItems())
             {
-                GameObject prefab = Resources.Load<GameObject>("Equipment/" + item.Id);
+                GameObject prefab = Resources.Load<GameObject>("Equipment/" + item.ArtId);
                 Assert.IsNotNull(prefab, item.Id);
 
                 foreach (MeshFilter mf in prefab.GetComponentsInChildren<MeshFilter>(true))

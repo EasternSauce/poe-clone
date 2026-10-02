@@ -138,7 +138,7 @@ namespace PoeClone.UI
             attackIconFor = id;
             Sprite painted = weapon != null ? ItemArt.PaintedIcon(weapon) : null;
             attackIcon.sprite = painted != null ? painted : IconFactory.Get(ItemType.Weapon);
-            attackIcon.color = painted != null ? Color.white : new Color(0.92f, 0.86f, 0.72f, 0.9f);
+            attackIcon.color = painted != null ? weapon.ArtTint : new Color(0.92f, 0.86f, 0.72f, 0.9f);
         }
 
         private void FindGameplay()

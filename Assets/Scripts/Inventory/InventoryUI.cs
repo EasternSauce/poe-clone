@@ -524,7 +524,7 @@ private Vector2 CellSize(int w, int h)
             if (painted != null)
             {
                 icon.sprite = painted;
-                icon.color = new Color(1f, 1f, 1f, alpha);
+                icon.color = new Color(item.ArtTint.r, item.ArtTint.g, item.ArtTint.b, alpha);
                 UiKit.Stretch(irt, 3f);
             }
             else

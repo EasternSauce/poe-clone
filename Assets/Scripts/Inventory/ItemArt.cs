@@ -12,11 +12,11 @@ namespace PoeClone.Inventory
 public static Sprite PaintedIcon(ItemData item)
         {
             Sprite sprite;
-            if (Cache.TryGetValue(item.Id, out sprite))
+            if (Cache.TryGetValue(item.ArtId, out sprite))
                 return sprite; // may be null: this item has no painted art
 
-            sprite = Resources.Load<Sprite>("ItemIcons/" + item.Id);
-            Cache[item.Id] = sprite;
+            sprite = Resources.Load<Sprite>("ItemIcons/" + item.ArtId);
+            Cache[item.ArtId] = sprite;
             return sprite;
         }
 

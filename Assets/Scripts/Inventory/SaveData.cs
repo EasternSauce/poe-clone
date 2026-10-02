@@ -48,8 +48,10 @@ namespace PoeClone.Inventory
                 foreach (ModRecord m in mods)
                     modifiers.Add(new StatModifier((StatType)m.stat, m.value));
             }
-            return new ItemData(id, name, (ItemType)type, Math.Max(1, w), Math.Max(1, h), new Color(r, g, b, a), modifiers,
+            var item = new ItemData(id, name, (ItemType)type, Math.Max(1, w), Math.Max(1, h), new Color(r, g, b, a), modifiers,
                 hasCape: cape, weaponType: (WeaponType)weapon, rarity: (ItemRarity)rarity);
+            ItemGenerator.ApplyArt(item);
+            return item;
         }
     }
 

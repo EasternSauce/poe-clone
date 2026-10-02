@@ -90,6 +90,21 @@ namespace PoeClone.Inventory
         /// <summary>Normal / Magic / Rare: the colour of its name and border.</summary>
         public ItemRarity Rarity { get; }
 
+        private string artId;
+
+        /// <summary>
+        /// Which icon and 3D look the item uses (Resources/ItemIcons and Resources/Equipment): its
+        /// own id, or for a higher tier of a base, the base it's drawn like (tinted by ArtTint).
+        /// </summary>
+        public string ArtId
+        {
+            get { return artId ?? Id; }
+            set { artId = value; }
+        }
+
+        /// <summary>Multiplied over the shared art, so tiers of the same look tell apart.</summary>
+        public Color ArtTint { get; set; } = Color.white;
+
         public ItemData(string name, ItemType type, int width, int height, Color tint)
             : this(null, name, type, width, height, tint, null)
         {

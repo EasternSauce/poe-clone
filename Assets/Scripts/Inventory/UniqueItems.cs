@@ -96,8 +96,11 @@ namespace PoeClone.Inventory
         {
             Unique u = All[index % All.Length];
             ItemData shape = ItemGenerator.Display(u.BaseId, u.Name, ItemRarity.Unique);
-            return new ItemData(shape.Id, u.Name, shape.Type, shape.Width, shape.Height, shape.Tint, u.Mods,
+            var item = new ItemData(shape.Id, u.Name, shape.Type, shape.Width, shape.Height, shape.Tint, u.Mods,
                 hasCape: false, weaponType: shape.WeaponType, rarity: ItemRarity.Unique);
+            item.ArtId = shape.ArtId;
+            item.ArtTint = shape.ArtTint;
+            return item;
         }
 
         /// <summary>The unique's line of lore for its tooltip (null for anything else).</summary>

@@ -152,6 +152,8 @@ namespace PoeClone.World
             // The icon keeps the item's proportions (a 1x3 sword is tall and thin).
             Image iconImage = UiKit.NewImage("Icon", canvasRect, Color.white);
             iconImage.sprite = ItemArt.Icon(Item);
+            if (ItemArt.HasPaintedIcon(Item))
+                iconImage.color = Item.ArtTint;
             iconImage.preserveAspect = true;
             icon = iconImage.rectTransform;
             float aspect = (float)Item.Width / Item.Height;

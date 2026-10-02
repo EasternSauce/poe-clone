@@ -114,10 +114,10 @@ namespace PoeClone.Inventory
 
             if (item != null)
             {
-                GameObject prefab = Resources.Load<GameObject>("Equipment/" + item.Id);
+                GameObject prefab = Resources.Load<GameObject>("Equipment/" + item.ArtId);
                 if (prefab == null)
                 {
-                    Debug.LogWarning("EquipmentVisuals: no equipment prefab at Resources/Equipment/" + item.Id);
+                    Debug.LogWarning("EquipmentVisuals: no equipment prefab at Resources/Equipment/" + item.ArtId);
                 }
                 else
                 {
@@ -133,6 +133,8 @@ namespace PoeClone.Inventory
                         instance.transform.localRotation = child.localRotation;
                         instance.transform.localScale = child.localScale;
                         instance.AddComponent<EquipmentVisualInstance>();
+                        if (item.ArtTint != Color.white)
+                            Tint(instance, item.ArtTint);
                         list.Add(instance);
                     }
                 }
@@ -142,6 +144,22 @@ namespace PoeClone.Inventory
         }
 
         // Rings are written once ("Socket_Ring"); the slot decides which hand they go on.
+        // A higher tier of a shared look: its colours multiplied by the tier's tint (property
+        // blocks, so the shared materials stay as they are).
+        private static void Tint(GameObject instance, Color tint)
+        {
+            var block = new MaterialPropertyBlock();
+            foreach (Renderer r in instance.GetComponentsInChildren<Renderer>(true))
+            {
+                Material m = r.sharedMaterial;
+                if (m == null || !m.HasProperty("_BaseColor"))
+                    continue;
+                r.GetPropertyBlock(block);
+                block.SetColor("_BaseColor", m.GetColor("_BaseColor") * tint);
+                r.SetPropertyBlock(block);
+            }
+        }
+
         private static string ResolveSocket(string name, EquipSlot slot)
         {
             if (name == "Socket_Ring")

@@ -310,11 +310,14 @@ namespace PoeClone.UI
 
         private static void BuyGear(Npc npc, PlayerInventory inventory, int price, System.Func<ItemType, bool> kind)
         {
+            PlayerStats stats = inventory.GetComponent<PlayerStats>();
+            int level = Mathf.Clamp(stats != null ? stats.Level : 1, 1, 12);
+
             var bases = new List<string>();
             foreach (string id in ItemGenerator.BaseIds)
             {
                 ItemData sample = ItemGenerator.Display(id, null, ItemRarity.Normal);
-                if (sample != null && kind(sample.Type))
+                if (sample != null && kind(sample.Type) && ItemGenerator.MinLevelOf(id) <= level)
                     bases.Add(id);
             }
 
@@ -325,8 +328,6 @@ namespace PoeClone.UI
             }
 
             var rng = new System.Random(System.Environment.TickCount);
-            PlayerStats stats = inventory.GetComponent<PlayerStats>();
-            int level = Mathf.Clamp(stats != null ? stats.Level : 1, 1, 10);
             ItemRarity rarity = rng.NextDouble() < 0.25 ? ItemRarity.Rare : ItemRarity.Magic;
             ItemData item = ItemGenerator.Generate(rng, bases[rng.Next(bases.Count)], level, rarity);
 

@@ -24,6 +24,9 @@ namespace PoeClone.Inventory
             public Color Tint;
             public WeaponType WeaponType = WeaponType.Sword;
             public StatModifier[] Implicits;
+            public string ArtId;               // null: its own
+            public Color ArtTint = Color.white;
+            public int MinLevel = 1;           // drops only at this item level and up
         }
 
         private sealed class Affix
@@ -125,7 +128,7 @@ namespace PoeClone.Inventory
         {
             get
             {
-                foreach (ItemBase b in Bases)
+                foreach (ItemBase b in All)
                     yield return b.Id;
             }
         }
@@ -142,11 +145,33 @@ namespace PoeClone.Inventory
             return ItemRarity.Normal;
         }
 
-        /// <summary>A random item of a random base.</summary>
+        /// <summary>A random item of a random base (one of those that can drop at this item level).</summary>
         public static ItemData Generate(System.Random rng, int itemLevel, ItemRarity rarity)
         {
-            ItemBase b = Bases[rng.Next(Bases.Length)];
-            return Generate(rng, b, itemLevel, rarity);
+            var eligible = new List<ItemBase>();
+            foreach (ItemBase b in All)
+            {
+                if (b.MinLevel <= itemLevel)
+                    eligible.Add(b);
+            }
+            return Generate(rng, eligible[rng.Next(eligible.Count)], itemLevel, rarity);
+        }
+
+        /// <summary>The item level a base starts dropping at (1 for unknown ids).</summary>
+        public static int MinLevelOf(string baseId)
+        {
+            ItemBase b = Find(baseId);
+            return b != null ? b.MinLevel : 1;
+        }
+
+        /// <summary>Gives an item made from a base id the base's art (for loaded saves).</summary>
+        public static void ApplyArt(ItemData item)
+        {
+            ItemBase b = item != null ? Find(item.Id) : null;
+            if (b == null)
+                return;
+            item.ArtId = b.ArtId;
+            item.ArtTint = b.ArtTint;
         }
 
         /// <summary>A random item of the given base id (null if there is no such base).</summary>
@@ -165,8 +190,11 @@ namespace PoeClone.Inventory
             ItemBase b = Find(baseId);
             if (b == null)
                 return null;
-            return new ItemData(b.Id, string.IsNullOrEmpty(name) ? b.Name : name, b.Type, b.Width, b.Height, b.Tint,
+            var item = new ItemData(b.Id, string.IsNullOrEmpty(name) ? b.Name : name, b.Type, b.Width, b.Height, b.Tint,
                 null, hasCape: false, weaponType: b.WeaponType, rarity: rarity);
+            item.ArtId = b.ArtId;
+            item.ArtTint = b.ArtTint;
+            return item;
         }
 
         private static ItemData Generate(System.Random rng, ItemBase b, int itemLevel, ItemRarity rarity)
@@ -214,8 +242,11 @@ namespace PoeClone.Inventory
                 rarity = ItemRarity.Magic;
 
             string name = NameFor(rng, b, rarity, rolled);
-            return new ItemData(b.Id, name, b.Type, b.Width, b.Height, b.Tint, mods,
+            var item = new ItemData(b.Id, name, b.Type, b.Width, b.Height, b.Tint, mods,
                 hasCape: false, weaponType: b.WeaponType, rarity: rarity);
+            item.ArtId = b.ArtId;
+            item.ArtTint = b.ArtTint;
+            return item;
         }
 
         private static string NameFor(System.Random rng, ItemBase b, ItemRarity rarity, List<StatType> rolled)
@@ -252,12 +283,80 @@ namespace PoeClone.Inventory
 
         private static ItemBase Find(string id)
         {
-            foreach (ItemBase b in Bases)
+            foreach (ItemBase b in All)
             {
                 if (b.Id == id)
                     return b;
             }
             return null;
+        }
+
+        // Tints for the tiers (over the shared art).
+        private static readonly Color Steel = new Color(0.78f, 0.86f, 1.0f);
+        private static readonly Color Dusk = new Color(0.78f, 0.70f, 0.92f);
+        private static readonly Color Gilded = new Color(1.0f, 0.86f, 0.55f);
+        private static readonly Color Topaz = new Color(1.0f, 0.95f, 0.45f);
+        private static readonly Color Lapis = new Color(0.55f, 0.65f, 1.0f);
+
+        private static readonly ItemBase[] Tiers =
+        {
+            Tier("steel_sword", "Steel Sword", "rusty_sword", 5, Steel, Mod(StatType.PhysicalDamage, 9)),
+            Tier("war_axe", "War Axe", "hand_axe", 5, Steel, Mod(StatType.PhysicalDamage, 12)),
+            Tier("flanged_mace", "Flanged Mace", "iron_mace", 5, Steel, Mod(StatType.PhysicalDamage, 13)),
+            Tier("assassin_dagger", "Assassin Dagger", "steel_dagger", 5, Dusk, Mod(StatType.PhysicalDamage, 6), Mod(StatType.AttackSpeed, 5)),
+            Tier("recurve_bow", "Recurve Bow", "short_bow", 5, Dusk, Mod(StatType.PhysicalDamage, 9)),
+            Tier("plate_helm", "Plate Helm", "iron_helmet", 5, Steel, Mod(StatType.Armour, 40)),
+            Tier("scale_vest", "Scale Vest", "studded_vest", 5, Steel, Mod(StatType.Armour, 55), Mod(StatType.Evasion, 25)),
+            Tier("chain_gloves", "Chain Gloves", "leather_gloves", 5, Steel, Mod(StatType.Armour, 12), Mod(StatType.Evasion, 14)),
+            Tier("chain_boots", "Chain Boots", "leather_boots", 5, Steel, Mod(StatType.Armour, 14), Mod(StatType.Evasion, 16)),
+            Tier("heavy_belt", "Heavy Belt", "rope_belt", 5, Dusk, Mod(StatType.MaxLife, 25)),
+            Tier("kite_shield", "Kite Shield", "wooden_shield", 5, Steel, Mod(StatType.Armour, 25), Mod(StatType.BlockChance, 14)),
+            Tier("broadhead_quiver", "Broadhead Quiver", "leather_quiver", 5, Dusk, Mod(StatType.PhysicalDamage, 4)),
+            Tier("topaz_ring", "Topaz Ring", "sapphire_ring", 5, Topaz, Mod(StatType.LightningResistance, 12)),
+            Tier("lapis_amulet", "Lapis Amulet", "jade_amulet", 5, Lapis, Mod(StatType.Intelligence, 10)),
+            Tier("champion_blade", "Champion Blade", "rusty_sword", 9, Gilded, Mod(StatType.PhysicalDamage, 14)),
+            Tier("reaver_axe", "Reaver Axe", "hand_axe", 9, Gilded, Mod(StatType.PhysicalDamage, 18)),
+            Tier("war_hammer", "War Hammer", "iron_mace", 9, Gilded, Mod(StatType.PhysicalDamage, 19)),
+            Tier("long_bow", "Long Bow", "short_bow", 9, Gilded, Mod(StatType.PhysicalDamage, 13)),
+            Tier("great_helm", "Great Helm", "iron_helmet", 9, Gilded, Mod(StatType.Armour, 65)),
+            Tier("full_plate", "Full Plate", "studded_vest", 9, Gilded, Mod(StatType.Armour, 95), Mod(StatType.MaxLife, 20)),
+            Tier("tower_shield", "Tower Shield", "wooden_shield", 9, Gilded, Mod(StatType.Armour, 45), Mod(StatType.BlockChance, 18)),
+        };
+
+        // Every base: the originals, then their tiers.
+        private static ItemBase[] all;
+        private static ItemBase[] All
+        {
+            get
+            {
+                if (all == null)
+                {
+                    all = new ItemBase[Bases.Length + Tiers.Length];
+                    Bases.CopyTo(all, 0);
+                    Tiers.CopyTo(all, Bases.Length);
+                }
+                return all;
+            }
+        }
+
+        // A stronger version of an existing base: same type, size and look (tinted).
+        private static ItemBase Tier(string id, string name, string artFrom, int minLevel, Color artTint, params StatModifier[] implicits)
+        {
+            ItemBase from = null;
+            foreach (ItemBase b in Bases)
+            {
+                if (b.Id == artFrom)
+                    from = b;
+            }
+            if (from == null)
+                throw new ArgumentException("no base " + artFrom);
+
+            ItemBase tier = Base(id, name, from.Type, from.Width, from.Height, from.Tint * artTint, implicits);
+            tier.WeaponType = from.WeaponType;
+            tier.ArtId = from.Id;
+            tier.ArtTint = artTint;
+            tier.MinLevel = minLevel;
+            return tier;
         }
 
         private static ItemBase Base(string id, string name, ItemType type, int w, int h, Color tint, params StatModifier[] implicits)
