@@ -2,12 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <title>{{{ PRODUCT_NAME }}}</title>
+    <!-- iPhone Safari has no fullscreen for web pages, but "Add to Home Screen" opens the game as a
+         full-screen app (no Safari bars). The manifest has no start_url, so the icon opens the
+         address it was added from (a spectator link stays a spectator link). -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PoE Clone">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <style>
       html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
-      /* The canvas always fills the window; Unity matches its render resolution to this size. */
-      #game-canvas { display: block; width: 100vw; height: 100vh; height: 100dvh; background: #000; outline: none; }
+      /* The canvas always fills the window; Unity matches its render resolution to this size. It
+         stays clear of a phone's notch and rounded corners (env() is 0 everywhere else), so none of
+         the game's buttons or HUD end up under them. */
+      #game-canvas { position: fixed; display: block; background: #000; outline: none;
+                     left: env(safe-area-inset-left, 0px); top: env(safe-area-inset-top, 0px);
+                     width: calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+                     height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+                     height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
       /* Touch: no browser gestures on the game (pinch zoom, double-tap zoom, pull-to-refresh), and
          no text selection / iOS callout when a finger is held down (the inventory uses long presses). */
       html, body, #game-canvas { touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none;
@@ -18,12 +35,25 @@
       #bar { width: min(360px, 70vw); height: 8px; border-radius: 4px; background: #2a2622; overflow: hidden; }
       #bar-fill { width: 0; height: 100%; background: #b3412e; transition: width .2s; }
       #error { display: none; max-width: 80vw; color: #f2b8a8; font-weight: 400; font-size: 15px; text-align: center; }
-      #fullscreen { position: fixed; top: 12px; right: 12px; width: 40px; height: 40px; border: 0; border-radius: 6px; cursor: pointer;
+      #fullscreen { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); width: 40px; height: 40px; border: 0; border-radius: 6px; cursor: pointer;
                     background: rgba(0,0,0,.45); color: #fff; opacity: .7; display: none; align-items: center; justify-content: center; }
       #fullscreen:hover, #fullscreen:focus-visible { opacity: 1; background: rgba(0,0,0,.7); }
       #fullscreen svg { width: 22px; height: 22px; }
       /* On phones the top right holds the game's own buttons, so fullscreen moves to the top middle. */
       @media (pointer: coarse) { #fullscreen { right: auto; left: 50%; transform: translateX(-50%); } }
+      /* iPhone: how to get the game full screen (Add to Home Screen). */
+      #ios-hint { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
+                  padding: 16px; background: rgba(0,0,0,.6); font: 16px/1.4 system-ui, sans-serif; color: #e8e2d4; }
+      #ios-hint[hidden] { display: none; }
+      #ios-hint .card { max-width: 380px; padding: 20px 22px; border-radius: 10px; background: #1b1512; border: 2px solid #8c6b37;
+                        box-shadow: 0 8px 30px rgba(0,0,0,.6); }
+      #ios-hint h2 { margin: 0 0 8px; font-size: 20px; color: #dcb86b; }
+      #ios-hint p { margin: 0 0 10px; }
+      #ios-hint ol { margin: 0 0 16px; padding-left: 22px; }
+      #ios-hint li { margin: 6px 0; }
+      #ios-hint svg { width: 18px; height: 18px; vertical-align: -3px; color: #7fb4ff; }
+      #ios-hint button { width: 100%; padding: 10px; border: 0; border-radius: 6px; background: #b3412e; color: #fff;
+                         font: 600 16px system-ui, sans-serif; cursor: pointer; }
     </style>
   </head>
   <body>
@@ -36,6 +66,20 @@
     <button id="fullscreen" type="button" aria-label="Toggle fullscreen" title="Fullscreen (F11 also works)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
     </button>
+    <div id="ios-hint" role="dialog" aria-modal="true" aria-labelledby="ios-hint-title" hidden>
+      <div class="card">
+        <h2 id="ios-hint-title">Play full screen</h2>
+        <p>Safari on iPhone can't make a web page full screen, but the game can run like an app:</p>
+        <ol>
+          <li>Tap <b>Share</b>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1"/></svg>
+            in Safari's toolbar (on newer iPhones it's in the <b>&middot;&middot;&middot;</b> menu).</li>
+          <li>Choose <b>Add to Home Screen</b>.</li>
+          <li>Open the game from its new icon.</li>
+        </ol>
+        <button id="ios-hint-close" type="button">Got it</button>
+      </div>
+    </div>
     <script>
       var canvas = document.getElementById("game-canvas");
       var loading = document.getElementById("loading");
@@ -49,14 +93,51 @@
         loading.classList.remove("done");
       }
 
+      // Fullscreen: desktop browsers, Android and iPad have the Fullscreen API (Safari's is
+      // prefixed); iPhone Safari doesn't, so there the button explains Add to Home Screen instead.
+      // Opened from the Home Screen the game is already full screen, so the button isn't shown.
+      var root = document.documentElement;
+      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      var standalone = navigator.standalone === true ||
+        (window.matchMedia && (window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: fullscreen)").matches));
+      var canFullscreen = !!(root.requestFullscreen || root.webkitRequestFullscreen) &&
+        (document.fullscreenEnabled || document.webkitFullscreenEnabled) === true;
+      var iosHint = document.getElementById("ios-hint");
+
+      function showIosHint() { iosHint.hidden = false; document.getElementById("ios-hint-close").focus(); }
+      document.getElementById("ios-hint-close").addEventListener("click", function () {
+        iosHint.hidden = true;
+        canvas.focus();
+      });
+
       // Fullscreen the whole page rather than the canvas: the canvas is already sized to the
       // page, so it simply grows with it and Unity follows the new size. (Unity's own
       // canvas-fullscreen path is what produced a black screen.)
       fsButton.addEventListener("click", function () {
-        if (document.fullscreenElement) document.exitFullscreen();
-        else document.documentElement.requestFullscreen().catch(function () {});
+        if (!canFullscreen) {
+          showIosHint();
+          return;
+        }
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        } else {
+          var result = (root.requestFullscreen || root.webkitRequestFullscreen).call(root);
+          if (result && result.catch) result.catch(function () {});
+        }
         canvas.focus();
       });
+
+      // On an iPhone in Safari, explain it once without being asked (the button repeats it).
+      function maybeShowIosHintOnce() {
+        if (!isIOS || standalone || canFullscreen) return;
+        try {
+          if (localStorage.getItem("poeclone.iosHintShown")) return;
+          localStorage.setItem("poeclone.iosHintShown", "1");
+        } catch (e) {
+          return; // storage blocked: don't nag on every visit
+        }
+        showIosHint();
+      }
 
       // Clicking the game gives it keyboard focus (and takes it away from the button).
       canvas.addEventListener("pointerdown", function () { canvas.focus(); });
@@ -123,8 +204,9 @@
         }).then(function (instance) {
           unityInstance = instance;
           loading.classList.add("done");
-          fsButton.style.display = "flex";
+          if (!standalone) fsButton.style.display = "flex";
           canvas.focus();
+          maybeShowIosHintOnce();
         }).catch(function (message) {
           showError(String(message));
         });
