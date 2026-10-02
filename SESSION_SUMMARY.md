@@ -64,6 +64,7 @@ keep in the morning"). It sits on top of `master`, one commit per feature, oldes
 | 29 | Upright caster staffs (2026-10-02) | the attack swing tipped the staff so bolts left from near the ground; `UprightStaff` keeps it upright and `EnemyCombat.BoltOrigin` uses the upright orb position |
 | 30 | Bigger irregular areas (2026-10-02) | `AreaShape` blob outlines (~2x area, centres 260 m apart), ground cut to shape with darkness beyond, edge wall, themed borders (forest/river/boulders/lava/ice) and inward ridges in `WorldBuilder.Borders.cs`; scatter, spawners (34-36 enemies), minimap follow the outline |
 | 31-32 | Starter gear (2026-10-02) | a save with no gear keeps the starter items; they lie on two benches by Haven's spawn (`WorldBuilder.Bench`, `StarterLoot.PlaceAt`) |
+| 33 | Enemy variety (2026-10-02) | per-area rosters (`WorldBuilder.KindWeights`), 4 new kinds, `EnemySkills` (charge, slam, volley, strike, blink, war cry, summon), replicated via `sk/sx/sz`. Tested: rosters, slam, strike, charge, blink fire in Editor; not every skill screenshotted, no live spectator test |
 
 State: 137/137 EditMode tests pass on the branch (120 on master). A local Web build of the
 branch compiled and was then discarded (the deploy folder was restored to the live build).
@@ -134,7 +135,7 @@ Still open (the user wants to confirm before each of these is started):
   and gates, waystones, spawners, safe spots and the minimap all depend on area bounds
   (currently a 100x100 m square per area, `WorldBuilder.HalfSize`, walls at +-49.5).
 
-Next: enemy variety (9). Confirm with the user before starting.
+All 10 feedback items have a first pass. Next: a Web build to test on a phone (perf of the bigger areas, iPhone Home Screen, touch aiming), then merge to master when the user says.
 
 ## Architecture notes
 
