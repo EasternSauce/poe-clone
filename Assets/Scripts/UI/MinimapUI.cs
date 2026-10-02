@@ -12,7 +12,7 @@ namespace PoeClone.UI
     /// <summary>
     /// A small map of the current area, top right: the ground the player has explored (see
     /// <see cref="MinimapTerrain"/>: open ground, obstacles and dead ends, hidden until seen), and on
-    /// it gates (gold), the waystone (blue), townsfolk (yellow), monsters (red, bosses bigger) and
+    /// it, once discovered, gates (gold), the waystone (blue), townsfolk (yellow), monsters (red, bosses bigger) and
     /// the player (white), turned to match the camera so "up" on the map is "up" on screen. No
     /// second camera, cheap on the web.
     /// M hides/shows it. Installed by GameSessionController.
@@ -22,7 +22,7 @@ namespace PoeClone.UI
         public const float Size = 210f;
         private const float AreaSize = AreaShape.MaxRadius * 2f; // the widest any area reaches
         private const float Refresh = 0.25f;
-        private const float MonsterRange = 45f;
+        private const float MonsterRange = 18f; // close by only: the map is not a radar
 
         private static MinimapUI instance;
 
@@ -150,21 +150,23 @@ namespace PoeClone.UI
 
             foreach (AreaGate gate in FindObjectsByType<AreaGate>())
             {
-                if (gate.fromAreaIndex == area && gate.gameObject.activeInHierarchy)
+                if (gate.fromAreaIndex == area && gate.gameObject.activeInHierarchy && MinimapTerrain.IsSeen(area, gate.transform.position))
                     Dot(gate.transform.position, centre, new Color(1f, 0.8f, 0.3f), 13f, square: true);
             }
 
             Waystone stone = Waystone.In(area);
-            if (stone != null)
+            if (stone != null && MinimapTerrain.IsSeen(area, stone.transform.position))
                 Dot(stone.transform.position, centre, new Color(0.45f, 0.75f, 1f), 11f, square: true);
 
             foreach (Npc npc in Npc.All)
             {
-                if (npc != null && npc.Role != NpcRole.Waystone && InArea(npc.transform.position, centre))
+                if (npc != null && npc.Role != NpcRole.Waystone && InArea(npc.transform.position, centre) &&
+                    MinimapTerrain.IsSeen(area, npc.transform.position))
                     Dot(npc.transform.position, centre, new Color(1f, 0.92f, 0.45f), 9f, square: false);
             }
 
-            // Monsters only where the player has been, and not too far off: the map is a memory of
+            // Like everything on the map, only what the player has discovered (fog of war).
+            // Monsters only where the player has been, and close by: the map is a memory of
             // the ground, not a radar.
             Vector3 me = player.transform.position;
             foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>())

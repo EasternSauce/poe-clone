@@ -1,3 +1,6 @@
 version: 2026-10-03h
 <b>Balance</b>
 - Leveling is twice as slow: each level now needs twice the experience.
+<b>Minimap</b>
+- The minimap no longer gives away gates, the waystone or townsfolk you haven't discovered yet.
+- Monsters only show on the minimap when they are close by.
