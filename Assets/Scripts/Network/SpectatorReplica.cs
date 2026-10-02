@@ -441,6 +441,9 @@ namespace PoeClone.Network
             if (e.atk > prev.atk && puppet.Attack != null)
                 puppet.Attack.PlayReplicated(e.ap);
 
+            if (e.sk > prev.sk)
+                EnemySkills.PlayVisual(this, EnemyKinds.Get(e.k), puppet.Root.transform, new Vector3(e.sx, puppet.Root.transform.position.y, e.sz));
+
             if (e.stg > prev.stg && puppet.Stagger != null)
             {
                 puppet.Stagger.Trigger();

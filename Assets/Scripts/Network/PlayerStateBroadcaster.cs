@@ -187,6 +187,11 @@ namespace PoeClone.Network
                 var ai = enemy.GetComponent<EnemyController>();
                 e.ch = ai != null && ai.CurrentState == EnemyController.State.Chasing ? 1 : 0;
                 e.k = enemy.KindIndex;
+
+                var skills = enemy.GetComponent<EnemySkills>();
+                e.sk = skills != null ? skills.UseCount : 0;
+                e.sx = skills != null ? skills.LastTarget.x : 0f;
+                e.sz = skills != null ? skills.LastTarget.z : 0f;
             }
 
             if (snapshot.e == null || snapshot.e.Length != count)

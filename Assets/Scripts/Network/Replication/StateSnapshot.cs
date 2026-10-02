@@ -25,6 +25,9 @@ namespace PoeClone.Network.Replication
         public int stg;    // staggers (non-lethal hits taken) so far - same counter trick as atk
         public int ch;     // enemies: 1 = chasing the player (drives the aggro sound)
         public int k;      // enemies: kind (index into EnemyKinds) - decides the look
+        public int sk;     // enemies: special skills used so far (EnemySkills) - same counter trick as atk
+        public float sx;   // ...and where the latest one was aimed
+        public float sz;
 
         public EntityState Clone()
         {

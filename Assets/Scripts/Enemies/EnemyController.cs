@@ -43,6 +43,7 @@ namespace PoeClone.Enemies
         private float lastBlockedTime = -10f;
         private CharacterAttackAnimator attackAnimator;
         private Stagger stagger;
+        private EnemySkills skills;
 
         // How long the enemy sticks to an avoidance side after the direct path was last blocked.
         private const float AvoidCommitTime = 1.0f;
@@ -115,6 +116,7 @@ namespace PoeClone.Enemies
             // Deferred to Start so it runs after EnemyCombat.Awake has had a chance to add the
             // attack animator to the model.
             attackAnimator = GetComponentInChildren<CharacterAttackAnimator>();
+            skills = GetComponent<EnemySkills>();
         }
 
 private void Update()
@@ -128,6 +130,10 @@ private void Update()
             {
                 playerStats = FindAnyObjectByType<PlayerStats>();
             }
+
+            // A skill winding up or charging moves (or holds) the enemy itself.
+            if (skills != null && skills.enabled && skills.Busy)
+                return;
 
             bool staggered = stagger != null && stagger.IsStaggered;
             bool attacking = attackAnimator != null && attackAnimator.IsAttacking;

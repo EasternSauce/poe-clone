@@ -11,6 +11,19 @@ namespace PoeClone.Enemies
         Ranged
     }
 
+    /// <summary>What a (non-boss) enemy does now and then besides its plain attack; see <see cref="EnemySkills"/>.</summary>
+    public enum EnemySkill
+    {
+        None,
+        Slam,     // a blast all round itself, after a glowing wind-up
+        Charge,   // dashes at the player and hits
+        Volley,   // three arrows in a spread
+        Strike,   // a blast where the player stands, after a glowing wind-up (fire, ice or lightning)
+        Blink,    // vanishes and reappears beside the player
+        WarCry,   // heals the enemies round it
+        Summon    // raises skeletons
+    }
+
     public enum BossStyle
     {
         None,
@@ -62,12 +75,18 @@ namespace PoeClone.Enemies
         public int Drops = 1;
         public BossStyle Boss;
 
+        public EnemySkill Skill;
+        public float SkillCooldown = 9f;
+
         public bool IsRanged => Style == EnemyAttackStyle.Ranged;
     }
 
     /// <summary>
-    /// The enemy roster: three melee types, an archer and three elemental casters found
-    /// everywhere; skeletons, wraiths and ember knights native to the deeper areas; and the bosses.
+    /// The enemy roster: three melee types, an archer and three elemental casters; skeletons,
+    /// wraiths and ember knights native to the deeper areas; the bosses; then later additions
+    /// (shaman, necromancer, skeleton archer, frost giant). Each area picks its own mix (the
+    /// WorldBuilder's per-area weights). Kinds are referred to by index (saves don't, but the
+    /// spectator stream and the weights do), so new ones go on the end.
     /// </summary>
     public static class EnemyKinds
     {
@@ -91,6 +110,7 @@ namespace PoeClone.Enemies
                 SpeedRatio = 0.62f, Scale = 0.95f, 
                 Cloth = new Color(0.62f, 0.42f, 0.25f), Skin = new Color(0.78f, 0.60f, 0.45f), Eyes = new Color(0.15f, 0.10f, 0.08f), HideHorns = true,
                 Gear = new[] { "bronze_helmet", "rusty_sword", "wooden_shield" },
+                Skill = EnemySkill.Charge, SkillCooldown = 7f,
                 DropChance = 0.35f
             },
             new EnemyKind
@@ -102,6 +122,7 @@ namespace PoeClone.Enemies
                 SpeedRatio = 0.42f, Scale = 1.35f, 
                 Cloth = new Color(0.22f, 0.22f, 0.25f), Skin = new Color(0.55f, 0.42f, 0.38f), Eyes = new Color(1.0f, 0.2f, 0.1f),
                 Gear = new[] { "studded_vest" },
+                Skill = EnemySkill.Slam, SkillCooldown = 8f,
                 DropChance = 0.7f, RareBonus = 0.15f
             },
             new EnemyKind
@@ -114,6 +135,7 @@ namespace PoeClone.Enemies
                 Cloth = new Color(0.28f, 0.55f, 0.24f), Skin = new Color(0.75f, 0.62f, 0.48f), Pants = new Color(0.42f, 0.33f, 0.20f), Eyes = new Color(0.15f, 0.10f, 0.08f), HideHorns = true,
                 Gear = new[] { "leather_gloves", "leather_boots", "short_bow" },
                 Bow = true,
+                Skill = EnemySkill.Volley, SkillCooldown = 8f,
                 DropChance = 0.35f
             },
             new EnemyKind
@@ -125,6 +147,7 @@ namespace PoeClone.Enemies
                 SpeedRatio = 0.45f, Scale = 0.95f, 
                 Cloth = new Color(0.80f, 0.25f, 0.05f), Skin = new Color(0.55f, 0.35f, 0.30f), Eyes = new Color(1.0f, 0.6f, 0.1f), HideHorns = true,
                 StaffOrb = new Color(1.0f, 0.45f, 0.10f),
+                Skill = EnemySkill.Strike, SkillCooldown = 9f,
                 DropChance = 0.35f
             },
             new EnemyKind
@@ -136,6 +159,7 @@ namespace PoeClone.Enemies
                 SpeedRatio = 0.45f, Scale = 0.95f, 
                 Cloth = new Color(0.15f, 0.35f, 0.80f), Skin = new Color(0.75f, 0.85f, 0.95f), Eyes = new Color(0.5f, 0.95f, 1.0f), HideHorns = true,
                 StaffOrb = new Color(0.55f, 0.85f, 1.0f),
+                Skill = EnemySkill.Strike, SkillCooldown = 9f,
                 DropChance = 0.35f
             },
             new EnemyKind
@@ -147,6 +171,7 @@ namespace PoeClone.Enemies
                 SpeedRatio = 0.5f, Scale = 0.9f, 
                 Cloth = new Color(0.38f, 0.20f, 0.60f), Skin = new Color(0.70f, 0.70f, 0.60f), Eyes = new Color(1.0f, 1.0f, 0.4f), HideHorns = true,
                 StaffOrb = new Color(1.0f, 0.95f, 0.35f),
+                Skill = EnemySkill.Strike, SkillCooldown = 7f,
                 DropChance = 0.35f
             },
 
@@ -170,6 +195,7 @@ namespace PoeClone.Enemies
                 Damage = 8f, AttackCooldown = 1.5f, AttackRange = 2.2f,
                 SpeedRatio = 0.75f, Scale = 1.05f,
                 Cloth = new Color(0.58f, 0.70f, 0.64f), Skin = new Color(0.80f, 0.95f, 0.90f), Pants = new Color(0.40f, 0.50f, 0.47f), Eyes = new Color(0.4f, 1.0f, 0.7f), HideHorns = true,
+                Skill = EnemySkill.Blink, SkillCooldown = 9f,
                 DropChance = 0.35f
             },
             new EnemyKind
@@ -181,6 +207,7 @@ namespace PoeClone.Enemies
                 SpeedRatio = 0.5f, Scale = 1.2f,
                 Cloth = new Color(0.36f, 0.12f, 0.06f), Skin = new Color(0.26f, 0.20f, 0.18f), Pants = new Color(0.16f, 0.12f, 0.10f), Eyes = new Color(1.0f, 0.55f, 0.1f), HideHorns = true,
                 Gear = new[] { "iron_helmet", "iron_mace", "wooden_shield" },
+                Skill = EnemySkill.Slam, SkillCooldown = 8f,
                 DropChance = 0.55f, RareBonus = 0.1f
             },
 
@@ -221,7 +248,64 @@ namespace PoeClone.Enemies
                 DropChance = 1f, RareBonus = 0.9f, Drops = 4,
                 IsBoss = true, Boss = BossStyle.FrostQueen
             },
+
+            // Later additions (weight 0: only the areas that list them spawn them).
+            new EnemyKind
+            {
+                Name = "Forest Shaman", SpawnWeight = 0f,
+                MaxHealth = 30f, Experience = 34,
+                Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Physical,
+                Damage = 6f, AttackCooldown = 2.2f, AttackRange = 9f, ProjectileSpeed = 10f,
+                SpeedRatio = 0.45f, Scale = 0.95f,
+                Cloth = new Color(0.30f, 0.45f, 0.18f), Skin = new Color(0.62f, 0.50f, 0.36f), Pants = new Color(0.36f, 0.26f, 0.14f), Eyes = new Color(0.6f, 1.0f, 0.4f),
+                StaffOrb = new Color(0.45f, 1.0f, 0.45f),
+                Skill = EnemySkill.WarCry, SkillCooldown = 10f,
+                DropChance = 0.4f
+            },
+            new EnemyKind
+            {
+                Name = "Necromancer", SpawnWeight = 0f,
+                MaxHealth = 32f, Experience = 40,
+                Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Cold,
+                Damage = 8f, AttackCooldown = 2.2f, AttackRange = 10f, ProjectileSpeed = 10f,
+                SpeedRatio = 0.42f, Scale = 1.0f,
+                Cloth = new Color(0.18f, 0.12f, 0.22f), Skin = new Color(0.70f, 0.72f, 0.66f), Pants = new Color(0.10f, 0.08f, 0.12f), Eyes = new Color(0.55f, 1.0f, 0.5f), HideHorns = true,
+                StaffOrb = new Color(0.55f, 1.0f, 0.55f),
+                Skill = EnemySkill.Summon, SkillCooldown = 12f,
+                DropChance = 0.45f, RareBonus = 0.05f
+            },
+            new EnemyKind
+            {
+                Name = "Skeleton Archer", SpawnWeight = 0f,
+                MaxHealth = 22f, Experience = 28,
+                Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Physical,
+                Damage = 7f, AttackCooldown = 1.9f, AttackRange = 12f, ProjectileSpeed = 20f,
+                SpeedRatio = 0.6f, Scale = 0.95f,
+                Cloth = new Color(0.82f, 0.80f, 0.72f), Skin = new Color(0.90f, 0.88f, 0.80f), Pants = new Color(0.32f, 0.30f, 0.27f), Eyes = new Color(1.0f, 0.25f, 0.1f), HideHorns = true,
+                Gear = new[] { "short_bow" },
+                Bow = true,
+                Skill = EnemySkill.Volley, SkillCooldown = 9f,
+                DropChance = 0.3f
+            },
+            new EnemyKind
+            {
+                Name = "Frost Giant", SpawnWeight = 0f,
+                MaxHealth = 120f, Experience = 70,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
+                Damage = 16f, AttackCooldown = 2.4f, AttackRange = 3.0f,
+                SpeedRatio = 0.4f, Scale = 1.6f,
+                Cloth = new Color(0.55f, 0.70f, 0.85f), Skin = new Color(0.78f, 0.88f, 0.96f), Pants = new Color(0.30f, 0.38f, 0.50f), Eyes = new Color(0.4f, 0.9f, 1.0f),
+                Gear = new[] { "iron_mace" },
+                Skill = EnemySkill.Slam, SkillCooldown = 7f,
+                DropChance = 0.8f, RareBonus = 0.2f
+            },
         };
+
+        public const int ShamanIndex = 13;
+        public const int NecromancerIndex = 14;
+        public const int SkeletonArcherIndex = 15;
+        public const int FrostGiantIndex = 16;
+        public const int SkeletonIndex = 7;
 
         public static EnemyKind Get(int index)
         {
@@ -266,6 +350,18 @@ namespace PoeClone.Enemies
             enemy.GetComponent<EnemyHealth>()?.Configure(index, kind, level);
             enemy.GetComponent<EnemyController>()?.Configure(kind);
             enemy.GetComponent<EnemyCombat>()?.Configure(kind, level);
+
+            EnemySkills skills = enemy.GetComponent<EnemySkills>();
+            if (kind.Skill != EnemySkill.None && !kind.IsBoss)
+            {
+                if (skills == null)
+                    skills = enemy.AddComponent<EnemySkills>();
+                skills.Configure(kind, level);
+            }
+            else if (skills != null)
+            {
+                skills.enabled = false;
+            }
         }
 
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");

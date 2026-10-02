@@ -147,6 +147,12 @@ namespace PoeClone.Network.Replication
             AppendInt(sb, "stg", e.stg);
             AppendInt(sb, "ch", e.ch);
             AppendInt(sb, "k", e.k);
+            if (e.sk != 0)
+            {
+                AppendInt(sb, "sk", e.sk);
+                AppendFloat(sb, "sx", e.sx, 2);
+                AppendFloat(sb, "sz", e.sz, 2);
+            }
             sb.Append('}');
         }
 

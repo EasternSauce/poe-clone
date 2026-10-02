@@ -23,11 +23,6 @@ namespace PoeClone.Enemies
         private const float TrickEvery = 11f;
         private const int MaxMinions = 4;
 
-        private static readonly Color Warning = new Color(0.35f, 0.05f, 0.03f);
-        private static readonly Color Fill = new Color(1f, 0.45f, 0.1f);
-        private static readonly Color ColdWarning = new Color(0.08f, 0.16f, 0.32f);
-        private static readonly Color ColdFill = new Color(0.55f, 0.85f, 1f);
-
         private EnemyHealth health;
         private EnemyKind kind;
         private int level;
@@ -149,59 +144,19 @@ namespace PoeClone.Enemies
         // A glowing patch that fills in over the wind-up, then hurts the player if they're still on it.
         private IEnumerator Blast(Vector3 center, float radius, float windUp, float damage, DamageType type)
         {
-            float groundY = GroundY(center);
-            var root = new GameObject("BossTelegraph");
-            root.transform.position = new Vector3(center.x, groundY, center.z);
-            // Gone even if the boss (and this coroutine) is destroyed mid wind-up.
-            Destroy(root, windUp + 0.5f);
-
-            bool cold = type == DamageType.Cold;
-            Color fill = cold ? ColdFill : Fill;
-            GameObject outer = RuntimePrimitives.Create(PrimitiveType.Cylinder, root.transform, cold ? ColdWarning : Warning);
-            // Clear of low decor like the temple's dais (which has no collider to find).
-            outer.transform.localPosition = Vector3.up * 0.17f;
-            outer.transform.localScale = new Vector3(radius * 2f, 0.01f, radius * 2f);
-
-            GameObject inner = RuntimePrimitives.Create(PrimitiveType.Cylinder, root.transform, fill);
-            inner.transform.localPosition = Vector3.up * 0.19f;
-
-            float t = 0f;
-            while (t < windUp)
+            return GroundTelegraph.Run(center, radius, windUp, type, at =>
             {
-                t += Time.deltaTime;
-                float f = Mathf.Clamp01(t / windUp);
-                inner.transform.localScale = new Vector3(radius * 2f * f, 0.01f, radius * 2f * f);
-                yield return null;
-            }
-
-            Destroy(root);
-            if (health.IsDead && type != DamageType.Fire)
-                yield break;
-
-            Skills.SkillEffects.Shockwave(center, radius, fill, 0.3f);
-            if (Audio.AudioManager.Instance != null)
-                Audio.AudioManager.Instance.PlayRandomAtPoint(Audio.AudioManager.Instance.meleeHit, center);
-
-            if (player != null && !player.IsDead && Flat(player.transform.position - center).magnitude <= radius)
-                player.TakeHit(damage * EnemyKinds.DamageScale(level), type);
+                if (this == null || (health.IsDead && type != DamageType.Fire))
+                    return;
+                if (player != null && !player.IsDead && Flat(player.transform.position - at).magnitude <= radius)
+                    player.TakeHit(damage * EnemyKinds.DamageScale(level), type);
+            });
         }
 
         private static Vector3 Flat(Vector3 v)
         {
             v.y = 0f;
             return v;
-        }
-
-        private static float GroundY(Vector3 p)
-        {
-            float best = float.MaxValue;
-            foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(p.x, p.y + 5f, p.z), Vector3.down, 20f,
-                         Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-            {
-                if (hit.collider.GetComponentInParent<CharacterController>() == null)
-                    best = Mathf.Min(best, hit.point.y);
-            }
-            return best < float.MaxValue ? best : 0f;
         }
     }
 }

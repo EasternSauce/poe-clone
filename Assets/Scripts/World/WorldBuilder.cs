@@ -51,16 +51,20 @@ namespace PoeClone.World
             new Color(0.80f, 0.88f, 0.95f)
         };
 
-        // Per area, one spawn weight per EnemyKinds entry:
-        // Zombie, Raider, Brute, Archer, Fire Caster, Frost Caster, Storm Caster,
-        // Skeleton, Wraith, Ember Knight (missing entries: the kind's own weight, 0 for natives).
+        // Per area, one spawn weight per EnemyKinds entry, so each area has its own cast:
+        // Zombie, Raider, Brute, Archer, Fire / Frost / Storm Caster, Skeleton, Wraith, Ember Knight,
+        // (three bosses, always 0), Forest Shaman, Necromancer, Skeleton Archer, Frost Giant.
         private static readonly float[][] KindWeights =
         {
-            new float[] { 30, 20, 6, 22, 8, 8, 6 },
+            // Greenwood: the living - zombies, raiders, archers, a few brutes and shamans.
+            new float[] { 28, 24, 8, 22, 0, 0, 3, 0, 0, 0, 0, 0, 0, 12, 0, 0, 0 },
             null,
-            new float[] { 24, 4, 8, 8, 3, 16, 6, 26, 18, 0 },
-            new float[] { 6, 14, 10, 8, 22, 5, 10, 4, 0, 22 },
-            new float[] { 0, 6, 14, 10, 0, 26, 12, 14, 22, 0 }
+            // Graveyard: the dead - skeletons (some with bows), wraiths, necromancers.
+            new float[] { 16, 0, 4, 0, 0, 8, 0, 26, 18, 0, 0, 0, 0, 0, 10, 16, 0 },
+            // Ruins: fire - ember knights and fire casters, with brutes and raiders.
+            new float[] { 0, 12, 14, 4, 24, 0, 10, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0 },
+            // Frozen Hollow: cold - frost casters, wraiths, frost giants.
+            new float[] { 0, 0, 4, 0, 0, 24, 12, 10, 20, 0, 0, 0, 0, 0, 0, 10, 14 }
         };
 
         /// <summary>Named places other features hang things on (NPC stands, the boss arena).</summary>

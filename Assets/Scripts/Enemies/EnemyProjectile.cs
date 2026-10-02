@@ -31,6 +31,14 @@ namespace PoeClone.Enemies
             Create(from, target.transform.position + Vector3.up * AimHeight, kind, damage, target);
         }
 
+        /// <summary>A real bolt aimed at a point (a volley's side arrows), that can still hit the player.</summary>
+        public static void LaunchAt(Vector3 from, Vector3 aimAt, PlayerStats target, EnemyKind kind, float damage)
+        {
+            if (target == null)
+                return;
+            Create(from, new Vector3(aimAt.x, target.transform.position.y + AimHeight, aimAt.z), kind, damage, target);
+        }
+
         /// <summary>A harmless bolt for spectators (the hit itself arrives in the replicated health).</summary>
         public static void LaunchVisual(Vector3 from, Vector3 targetPosition, EnemyKind kind)
         {

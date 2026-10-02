@@ -94,6 +94,14 @@ namespace PoeClone.Enemies
                 AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.meleeHit, transform.position);
         }
 
+        /// <summary>Restores life (a shaman's war cry), up to the maximum.</summary>
+        public void Heal(float amount)
+        {
+            if (dead || amount <= 0f)
+                return;
+            currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+        }
+
         /// <summary>
         /// Spectator replica: mirrors the real enemy's health so the floating bar shows, with none
         /// of the gameplay side effects (no stagger, sound or death here - the replica drives those
