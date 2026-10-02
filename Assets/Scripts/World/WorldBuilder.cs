@@ -608,6 +608,8 @@ namespace PoeClone.World
             Vector3 gateB = Centers[b] + offsetB;
             Transform arriveInA = Marker("Arrive_" + AreaNames[a] + "_from_" + AreaNames[b], InFront(a, gateA), Yaw(gateA, Centers[a]));
             Transform arriveInB = Marker("Arrive_" + AreaNames[b] + "_from_" + AreaNames[a], InFront(b, gateB), Yaw(gateB, Centers[b]));
+            ClearSpot(arriveInA.position, 2f);
+            ClearSpot(arriveInB.position, 2f);
 
             Gate(a, gateA, b, arriveInB);
             Gate(b, gateB, a, arriveInA);
@@ -663,19 +665,32 @@ namespace PoeClone.World
         }
 
         // The original forest has trees everywhere; make room where a gate goes.
+        // Groups whose direct children are loose scenery (the original forest's, and the built
+        // areas' own), which may be cleared away from gates, arrivals and waystones.
+        private static readonly HashSet<string> ClearableGroups = new HashSet<string>
+        {
+            "Trees", "Rocks", "Bushes", "Haven", "Graveyard", "Ruins", "Frozen"
+        };
+
         private static void ClearSpot(Vector3 at, float radius)
         {
-            foreach (Collider c in Physics.OverlapSphere(at + Vector3.up, radius))
+            foreach (Collider c in Physics.OverlapSphere(at + Vector3.up, radius, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {
-                if (c.GetComponentInParent<PlayerController>() != null || c.GetComponentInParent<EnemyHealth>() != null)
+                if (c.GetComponentInParent<PlayerController>() != null || c.GetComponentInParent<EnemyHealth>() != null ||
+                    c.GetComponentInParent<AreaGate>() != null || c.GetComponentInParent<Waystone>() != null || c.GetComponentInParent<Npc>() != null)
                     continue;
-                if (c.gameObject.name.StartsWith("Ground") || c.transform.root.name == "WorldBounds" || c.transform.root.name == "World")
+                if (c.gameObject.name.StartsWith("Ground") || c.gameObject.name == "Wall" || c.transform.root.name == "WorldBounds")
                     continue;
+
                 Transform prop = c.transform;
-                while (prop.parent != null && prop.parent.parent != null && prop.parent.name != "Trees" && prop.parent.name != "Rocks" && prop.parent.name != "Bushes")
+                while (prop.parent != null && !ClearableGroups.Contains(prop.parent.name))
                     prop = prop.parent;
-                if (prop.parent != null && (prop.parent.name == "Trees" || prop.parent.name == "Rocks" || prop.parent.name == "Bushes"))
-                    Destroy(prop.gameObject);
+                if (prop.parent == null)
+                    continue;
+
+                // Off at once (physics and later checks ignore it), gone at the end of the frame.
+                prop.gameObject.SetActive(false);
+                Destroy(prop.gameObject);
             }
         }
 
