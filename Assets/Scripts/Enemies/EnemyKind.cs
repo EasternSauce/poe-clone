@@ -15,7 +15,8 @@ namespace PoeClone.Enemies
     {
         None,
         Gravelord,   // ground slam, raises zombies
-        Warlord      // ground slam, rains fire on the player
+        Warlord,     // ground slam, rains fire on the player
+        FrostQueen   // ground slam, calls down ice that chills
     }
 
     /// <summary>
@@ -207,6 +208,18 @@ namespace PoeClone.Enemies
                 Gear = new[] { "studded_vest", "iron_mace", "wooden_shield" },
                 DropChance = 1f, RareBonus = 0.8f, Drops = 4,
                 IsBoss = true, Boss = BossStyle.Warlord
+            },
+            new EnemyKind
+            {
+                Name = "Rimeheart", SpawnWeight = 0f,
+                MaxHealth = 460f, Experience = 1000,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
+                Damage = 15f, AttackCooldown = 1.6f, AttackRange = 3.4f,
+                SpeedRatio = 0.6f, Scale = 2.0f,
+                Cloth = new Color(0.62f, 0.80f, 0.95f), Skin = new Color(0.82f, 0.92f, 1.0f), Pants = new Color(0.35f, 0.45f, 0.62f), Eyes = new Color(0.3f, 0.9f, 1.0f),
+                Gear = new[] { "iron_helmet", "steel_dagger" },
+                DropChance = 1f, RareBonus = 0.9f, Drops = 4,
+                IsBoss = true, Boss = BossStyle.FrostQueen
             },
         };
 

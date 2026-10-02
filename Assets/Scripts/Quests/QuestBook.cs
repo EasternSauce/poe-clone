@@ -120,6 +120,16 @@ namespace PoeClone.Quests
                 Thanks = "It's over. The smoke over the ruins is thinning already. Whatever you ask of Haven, it is yours.",
                 RewardGold = 600, RewardExperience = 2500, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 9
             },
+            new QuestDefinition
+            {
+                Id = "rimeheart", Title = "The Frost Queen", Giver = NpcRole.Elder, After = "warlord",
+                Goal = QuestGoal.KillBoss, Target = "Rimeheart", Area = WorldBuilder.Frozen,
+                Objective = "Slay Rimeheart in the Frozen Hollow",
+                Offer = "With the Warlord gone, the scouts went further north than anyone has in years. Past the ruins the land freezes over, and something sits on a throne of ice: Rimeheart, they call her.\n\nThe cold is creeping south. This is the last thing I will ask of you.",
+                Reminder = "Through the north gate of the Ashen Ruins lies the Frozen Hollow. Her throne is at its heart. When the frost gathers at your feet, move.",
+                Thanks = "Spring is coming back to Haven. Songs will be sung about you here for as long as there is a Haven to sing them.",
+                RewardGold = 1000, RewardExperience = 4000, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 10
+            },
 
             // The Guard's bounties: one at a time, round and round.
             Bounty("bounty_archers", "Bounty: Archers", "Archer", 8, null,

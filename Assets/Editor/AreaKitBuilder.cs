@@ -46,6 +46,8 @@ namespace PoeClone.EditorTools
             ("Iron", "SteelDark", "#3a3c42"),
             ("Candle", "Bone", "#efe4c4"),
             ("Pumpkin", "Gold", "#d86e1e"),
+            ("Ice", "Steel", "#9fd3ee"),
+            ("Snow", "Stone", "#e9eff4"),
         };
 
         [MenuItem("PoeClone/Build Area Kit")]

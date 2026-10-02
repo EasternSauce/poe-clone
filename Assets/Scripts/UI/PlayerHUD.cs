@@ -174,6 +174,12 @@ namespace PoeClone.UI
 
             DrawAreaTitle(Screen.width);
 
+            // A soft dark backing, so the white text reads over bright ground (snow, the plaza).
+            Color previousColor = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.32f);
+            GUI.DrawTexture(new Rect(10f, 10f, SpectatorMode ? 400f : 750f, SpectatorMode ? 290f : 348f), pixel);
+            GUI.color = previousColor;
+
             GUILayout.BeginArea(
                 new Rect(20f, 20f, 760f, 340f)
             );

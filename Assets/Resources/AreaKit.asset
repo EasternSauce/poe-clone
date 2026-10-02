@@ -103,3 +103,7 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: cbe1ddc1c21f3884ba6e57fc899de3a5, type: 2}
   - name: Pumpkin
     material: {fileID: 2100000, guid: f7dd70765b9192f45b289ac49e4f769a, type: 2}
+  - name: Ice
+    material: {fileID: 2100000, guid: 35f6fb9ea655c82419c7fdd1c10fc6c1, type: 2}
+  - name: Snow
+    material: {fileID: 2100000, guid: b56f697e55add5b448f3e4e37c5dcb46, type: 2}

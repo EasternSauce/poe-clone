@@ -25,6 +25,8 @@ namespace PoeClone.Enemies
 
         private static readonly Color Warning = new Color(0.35f, 0.05f, 0.03f);
         private static readonly Color Fill = new Color(1f, 0.45f, 0.1f);
+        private static readonly Color ColdWarning = new Color(0.08f, 0.16f, 0.32f);
+        private static readonly Color ColdFill = new Color(0.55f, 0.85f, 1f);
 
         private EnemyHealth health;
         private EnemyKind kind;
@@ -107,7 +109,9 @@ namespace PoeClone.Enemies
                 if (kind.Boss == BossStyle.Gravelord)
                     RaiseDead();
                 else if (kind.Boss == BossStyle.Warlord)
-                    RainFire();
+                    RainDown(DamageType.Fire, 4);
+                else if (kind.Boss == BossStyle.FrostQueen)
+                    RainDown(DamageType.Cold, 5);
             }
         }
 
@@ -130,14 +134,15 @@ namespace PoeClone.Enemies
             }
         }
 
-        private void RainFire()
+        // Patches round the player (the first right under them) that burst after a beat.
+        private void RainDown(DamageType type, int count)
         {
             Vector3 target = player.transform.position;
-            for (int k = 0; k < 4; k++)
+            for (int k = 0; k < count; k++)
             {
                 Vector2 scatter = Random.insideUnitCircle * 4f;
                 Vector3 at = k == 0 ? target : target + new Vector3(scatter.x, 0f, scatter.y);
-                StartCoroutine(Blast(at, 2.3f, 1.3f + k * 0.25f, kind.Damage * 1.2f, DamageType.Fire));
+                StartCoroutine(Blast(at, 2.3f, 1.3f + k * 0.25f, kind.Damage * 1.2f, type));
             }
         }
 
@@ -148,12 +153,14 @@ namespace PoeClone.Enemies
             var root = new GameObject("BossTelegraph");
             root.transform.position = new Vector3(center.x, groundY, center.z);
 
-            GameObject outer = RuntimePrimitives.Create(PrimitiveType.Cylinder, root.transform, Warning);
+            bool cold = type == DamageType.Cold;
+            Color fill = cold ? ColdFill : Fill;
+            GameObject outer = RuntimePrimitives.Create(PrimitiveType.Cylinder, root.transform, cold ? ColdWarning : Warning);
             // Clear of low decor like the temple's dais (which has no collider to find).
             outer.transform.localPosition = Vector3.up * 0.17f;
             outer.transform.localScale = new Vector3(radius * 2f, 0.01f, radius * 2f);
 
-            GameObject inner = RuntimePrimitives.Create(PrimitiveType.Cylinder, root.transform, Fill);
+            GameObject inner = RuntimePrimitives.Create(PrimitiveType.Cylinder, root.transform, fill);
             inner.transform.localPosition = Vector3.up * 0.19f;
 
             float t = 0f;
@@ -169,7 +176,7 @@ namespace PoeClone.Enemies
             if (health.IsDead && type != DamageType.Fire)
                 yield break;
 
-            Skills.SkillEffects.Shockwave(center, radius, Fill, 0.3f);
+            Skills.SkillEffects.Shockwave(center, radius, fill, 0.3f);
             if (Audio.AudioManager.Instance != null)
                 Audio.AudioManager.Instance.PlayRandomAtPoint(Audio.AudioManager.Instance.meleeHit, center);
 

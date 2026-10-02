@@ -11,6 +11,8 @@ namespace PoeClone.World
     /// ground, edges, themed props, monster level and gates.
     ///
     ///   Haven (town, safe)  —  Greenwood (lv 1)  —  Haunted Graveyard (lv 4)  —  Ashen Ruins (lv 7)
+    ///                                                                         |
+    ///                                                               Frozen Hollow (lv 10)
     ///
     /// Greenwood is the scene's original forest; the others are dressed from <see cref="AreaKit"/>
     /// using the project's stylized prefabs and materials. The game starts in Haven, with the
@@ -23,20 +25,22 @@ namespace PoeClone.World
         public const int Haven = 1;
         public const int Graveyard = 2;
         public const int Ruins = 3;
+        public const int Frozen = 4;
 
         public const float HalfSize = 48f;
 
         public static WorldBuilder Instance { get; private set; }
 
-        public static readonly string[] AreaNames = { "Greenwood", "Haven", "Haunted Graveyard", "Ashen Ruins" };
-        public static readonly int[] MonsterLevels = { 1, 0, 4, 7 };
+        public static readonly string[] AreaNames = { "Greenwood", "Haven", "Haunted Graveyard", "Ashen Ruins", "Frozen Hollow" };
+        public static readonly int[] MonsterLevels = { 1, 0, 4, 7, 10 };
 
         private static readonly Vector3[] Centers =
         {
             Vector3.zero,
             new Vector3(-220f, 0f, 0f),
             new Vector3(220f, 0f, 0f),
-            new Vector3(440f, 0f, 0f)
+            new Vector3(440f, 0f, 0f),
+            new Vector3(660f, 0f, 0f)
         };
 
         private static readonly Color[] AreaColors =
@@ -44,7 +48,8 @@ namespace PoeClone.World
             new Color(0.55f, 0.75f, 0.55f),
             new Color(0.82f, 0.74f, 0.56f),
             new Color(0.40f, 0.46f, 0.42f),
-            new Color(0.58f, 0.44f, 0.36f)
+            new Color(0.58f, 0.44f, 0.36f),
+            new Color(0.80f, 0.88f, 0.95f)
         };
 
         // Per area, one spawn weight per EnemyKinds entry:
@@ -55,7 +60,8 @@ namespace PoeClone.World
             new float[] { 30, 20, 6, 22, 8, 8, 6 },
             null,
             new float[] { 24, 4, 8, 8, 3, 16, 6, 26, 18, 0 },
-            new float[] { 6, 14, 10, 8, 22, 5, 10, 4, 0, 22 }
+            new float[] { 6, 14, 10, 8, 22, 5, 10, 4, 0, 22 },
+            new float[] { 0, 6, 14, 10, 0, 26, 12, 14, 22, 0 }
         };
 
         /// <summary>Named places other features hang things on (NPC stands, the boss arena).</summary>
@@ -122,6 +128,7 @@ namespace PoeClone.World
             BuildHaven();
             BuildGraveyard();
             BuildRuins();
+            BuildFrozen();
             BuildWaystones();
 
             // Gates: Haven - Greenwood - Graveyard - Ruins, and a way home from the Ruins.
@@ -129,6 +136,7 @@ namespace PoeClone.World
             Connect(Greenwood, new Vector3(40f, 0f, -2f), Graveyard, new Vector3(-40f, 0f, 0f));
             Connect(Graveyard, new Vector3(40f, 0f, 0f), Ruins, new Vector3(-40f, 0f, 0f));
             OneWayGate(Ruins, new Vector3(0f, 0f, -40f), Haven, spawnPoints[Haven]);
+            Connect(Ruins, new Vector3(0f, 0f, 40f), Frozen, new Vector3(-40f, 0f, 0f));
 
             SetUpSpawners();
             BuildTownsfolk();
@@ -209,6 +217,9 @@ namespace PoeClone.World
                 case Graveyard:
                     return GroundTextures.Make(22, new Color(0.17f, 0.20f, 0.17f), new Color(0.31f, 0.33f, 0.27f),
                         new Color(0.40f, 0.40f, 0.36f), 0.015f, 7f);
+                case Frozen:
+                    return GroundTextures.Make(44, new Color(0.78f, 0.84f, 0.90f), new Color(0.93f, 0.96f, 0.98f),
+                        new Color(0.55f, 0.72f, 0.88f), 0.012f, 7f);
                 default:
                     return GroundTextures.Make(33, new Color(0.22f, 0.19f, 0.18f), new Color(0.44f, 0.37f, 0.31f),
                         new Color(0.85f, 0.35f, 0.12f), 0.01f, 8f);
@@ -394,6 +405,93 @@ namespace PoeClone.World
             Scatter(t, 14, 8f, 46f, p => Prefab(kit.rock, t, p, R(0f, 360f), Vector3.one * R(0.8f, 1.5f)), 1.5f);
         }
 
+        // The Frozen Hollow: snow, frosted pines, ice crystals and frozen ponds round the queen's
+        // throne, a ring of ice spikes north of the centre.
+        private void BuildFrozen()
+        {
+            Begin(Frozen, 404);
+            Vector3 c = Centers[Frozen];
+            Transform t = Group("Frozen");
+
+            Vector3 throne = c + new Vector3(0f, 0f, 24f);
+            Cyl(t, throne + Vector3.up * 0.04f, 9f, 0.08f, kit.Mat("Ice"), solid: false);
+            for (int k = 0; k < 12; k++)
+            {
+                float rad = k * 30f * Mathf.Deg2Rad;
+                Vector3 p = throne + new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad)) * 9.5f;
+                if (k == 9)
+                    continue; // the way in, facing south
+                IceSpike(t, p, R(2.2f, 3.6f), new Vector3(R(-8f, 8f), R(0f, 360f), R(-8f, 8f)));
+            }
+            Box(t, throne + new Vector3(0f, 0.9f, 3.2f), new Vector3(2.6f, 1.8f, 1f), kit.Mat("Ice"));
+            Box(t, throne + new Vector3(0f, 0.35f, 2.4f), new Vector3(2.2f, 0.7f, 1.2f), kit.Mat("Ice"));
+            Claim(throne, 11f);
+            Spots["Throne"] = throne;
+
+            // Frozen ponds.
+            for (int k = 0; k < 5; k++)
+            {
+                Vector3 p = c + Flat(R(-38f, 38f), R(-38f, 38f));
+                float radius = R(3f, 6f);
+                if (!Free(p, radius))
+                    continue;
+                Cyl(t, p + Vector3.up * 0.03f, radius, 0.06f, kit.Mat("Ice"), solid: false);
+                Claim(p, radius);
+            }
+
+            Scatter(t, 14, 8f, 46f, p => CrystalCluster(t, p), 1.6f);
+            Scatter(t, 20, 14f, 46f, p => FrostedPine(t, p), 2f);
+            Scatter(t, 14, 6f, 46f, p => Ball(t, p, R(0.7f, 1.5f), kit.Mat("Snow"), flatten: 0.4f, solid: false), 1.2f);
+            Scatter(t, 12, 8f, 46f, p => Prefab(kit.rock, t, p, R(0f, 360f), Vector3.one * R(0.8f, 1.6f)), 1.5f);
+        }
+
+        // A tall cone of ice (a box where the kit has no cone mesh).
+        private GameObject IceSpike(Transform t, Vector3 p, float height, Vector3 euler)
+        {
+            if (kit.cone == null)
+                return Box(t, p + Vector3.up * height * 0.5f, new Vector3(0.6f, height, 0.6f), kit.Mat("Ice"), euler: euler);
+
+            var spike = new GameObject("IceSpike");
+            spike.transform.SetParent(t, false);
+            spike.transform.SetPositionAndRotation(p, Quaternion.Euler(euler));
+            spike.transform.localScale = new Vector3(0.9f, height, 0.9f);
+            spike.AddComponent<MeshFilter>().sharedMesh = kit.cone;
+            spike.AddComponent<MeshRenderer>().sharedMaterial = kit.Mat("Ice");
+            var col = spike.AddComponent<CapsuleCollider>();
+            col.radius = 0.35f;
+            col.height = 1f;
+            col.center = new Vector3(0f, 0.5f, 0f);
+            return spike;
+        }
+
+        private GameObject CrystalCluster(Transform t, Vector3 p)
+        {
+            var group = new GameObject("Crystals").transform;
+            group.SetParent(t, false);
+            group.position = p;
+            int n = rng.Next(2, 5);
+            for (int k = 0; k < n; k++)
+            {
+                Vector3 offset = Flat(R(-0.8f, 0.8f), R(-0.8f, 0.8f));
+                IceSpike(group, p + offset, R(0.8f, 2.2f), new Vector3(R(-25f, 25f), R(0f, 360f), R(-25f, 25f)));
+            }
+            return group.gameObject;
+        }
+
+        // A pine dusted with snow: its own materials, tinted pale.
+        private GameObject FrostedPine(Transform t, Vector3 p)
+        {
+            GameObject pine = Prefab(kit.pine, t, p, R(0f, 360f), Vector3.one * R(0.9f, 1.3f));
+            var block = new MaterialPropertyBlock();
+            foreach (Renderer r in pine.GetComponentsInChildren<Renderer>())
+            {
+                r.GetPropertyBlock(block);
+                block.SetColor("_BaseColor", new Color(0.78f, 0.88f, 0.92f));
+                r.SetPropertyBlock(block);
+            }
+            return pine;
+        }
+
         private void SetUpSpawners()
         {
             EnemySpawner original = FindAnyObjectByType<EnemySpawner>();
@@ -404,7 +502,7 @@ namespace PoeClone.World
             original.Configure(prefab, Centers[Greenwood], 40f, 22, MonsterLevels[Greenwood], KindWeights[Greenwood]);
             original.SetSafeSpots(SafeSpots(Greenwood));
 
-            foreach (int area in new[] { Graveyard, Ruins })
+            foreach (int area in new[] { Graveyard, Ruins, Frozen })
             {
                 var go = new GameObject("Spawner_" + AreaNames[area]);
                 go.transform.SetParent(root, false);
@@ -427,6 +525,8 @@ namespace PoeClone.World
                 BossLair.Create(t, Graveyard, BossIndex("Gravelord Mortis"), 5, spawner.EnemyPrefab, crypt, Vector3.back);
             if (Spots.TryGetValue("Altar", out Vector3 altar))
                 BossLair.Create(t, Ruins, BossIndex("Ashen Warlord"), 8, spawner.EnemyPrefab, altar, Vector3.back);
+            if (Spots.TryGetValue("Throne", out Vector3 throne))
+                BossLair.Create(t, Frozen, BossIndex("Rimeheart"), 11, spawner.EnemyPrefab, throne, Vector3.back);
         }
 
         private static int BossIndex(string name)
