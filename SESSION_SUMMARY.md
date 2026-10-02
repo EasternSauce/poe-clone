@@ -58,10 +58,15 @@ keep in the morning"). It sits on top of `master`, one commit per feature, oldes
 | 14 | Add higher-tier item bases | 21 tiered bases reusing art via `ItemData.ArtId`/`ArtTint` |
 | 15-17 | Fix commits | gates blocked by scenery; enemy-over-NPC click priority; boss XP; per-frame scene searches; identical reward items (TickCount seeds); skills panel vs passive tree stacking |
 | 18-24 | Feedback quick fixes (2026-10-02) | bolts from the staff orb; pink bows/arrows (URP Lit -> ToonLit); chat newest line visible; slate bag grid; textured town grass; light sources in every area + torches out of pillars; textured UI panels and inset slots |
+| 25 | Up to 10 players (2026-10-02) | each plays their own game; 11th is queued; spectators watch one player and switch with left/right arrows or the < > buttons by the LIVE badge; server `room.js` + `SpectatorView` |
 
 State: 137/137 EditMode tests pass on the branch (120 on master). A local Web build of the
 branch compiled and was then discarded (the deploy folder was restored to the live build).
 **Not verified:** a live spectator watching the new content (needs a second client).
+
+**Shipping the multiplayer change:** the server (`server/`, auto-deployed by Render from
+`master`) and the Web build should go out together. Either way round still works (old clients
+on the new server just watch the first player; new clients on the old server can't switch).
 
 **Decided 2026-10-02:** the user keeps all of it. All work, including the feedback below,
 happens on `overnight-features` until the user says to merge it into `master`. Don't merge,
