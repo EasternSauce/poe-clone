@@ -22,6 +22,12 @@ namespace PoeClone.UI
         private const float Height = 780f;
         private const float SpreadX = 360f;
         private const float SpreadY = 240f;
+
+        // The touch canvas is scaled to a fixed TouchMode.ReferenceHeight (660) regardless of the
+        // phone's aspect ratio, so the panel's full 780-tall layout doesn't fit and was getting cut
+        // off top and bottom; everything inside is built relative to this one RectTransform, so
+        // shrinking it uniformly (below) keeps the whole layout intact instead of re-deriving it.
+        private const float TouchScale = 0.75f;
         private static readonly Vector2 TreeCentre = new Vector2(0f, 10f);
 
         private static PassiveTreeUI instance;
@@ -67,15 +73,28 @@ namespace PoeClone.UI
             instance.dirty = true;
         }
 
+        private RectTransform panelRect;
+
         private void Awake()
         {
             instance = this;
             Build();
             panelRoot.SetActive(false);
+
+            // TouchMode.Active can still flip after this component's own Awake (e.g. the ?touch=1
+            // dev override resolves asynchronously), so react to it instead of only reading it once.
+            ApplyTouchScale();
+            TouchMode.Changed += ApplyTouchScale;
+        }
+
+        private void ApplyTouchScale()
+        {
+            panelRect.localScale = Vector3.one * (TouchMode.Active ? TouchScale : 1f);
         }
 
         private void OnDestroy()
         {
+            TouchMode.Changed -= ApplyTouchScale;
             if (passives != null)
                 passives.Changed -= MarkDirty;
             if (instance == this)
@@ -311,6 +330,7 @@ namespace PoeClone.UI
             pr.sizeDelta = new Vector2(Width, Height);
             UiKit.AddOutline(panel, UiKit.BorderColor, 3f);
             panelRoot = panel.gameObject;
+            panelRect = pr;
             TouchMode.AddBlocker(pr);
 
             Text title = UiKit.NewText("Title", pr, "PASSIVES", 26, UiKit.Gold, TextAnchor.UpperCenter);

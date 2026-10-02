@@ -51,6 +51,18 @@ namespace PoeClone.Inventory
             Changed = null;
             blockers.Clear();
             detected = UnityEngine.Device.Application.isMobilePlatform || IsCoarsePointer();
+            ApplyMobileLiteKeyword();
+        }
+
+        // A global shader keyword (ToonLit.shader) so the heaviest per-pixel work - extra texture
+        // samples, rim lighting - is compiled out on the "runs fine, looks plainer" mobile tier
+        // instead of costing every opaque pixel on screen regardless of scene complexity.
+        private static void ApplyMobileLiteKeyword()
+        {
+            if (Active)
+                Shader.EnableKeyword("_MOBILE_LITE");
+            else
+                Shader.DisableKeyword("_MOBILE_LITE");
         }
 
         // iPads report a desktop user agent, so the platform check alone misses them; the
@@ -69,7 +81,10 @@ namespace PoeClone.Inventory
             bool wasActive = Active;
             forced = on;
             if (Active != wasActive)
+            {
+                ApplyMobileLiteKeyword();
                 Changed?.Invoke();
+            }
         }
 
         /// <summary>

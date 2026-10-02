@@ -32,6 +32,11 @@ Shader "PoeClone/ToonLit"
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
             #pragma multi_compile_fog
+            // Global, not per-material: toggled once at startup from TouchMode (see TouchMode.cs).
+            // Mobile here means "runs acceptably", not "looks as good as PC" - this strips the
+            // costliest per-pixel work (extra texture samples, rim power) for every opaque pixel
+            // on screen, independent of scene complexity.
+            #pragma multi_compile _ _MOBILE_LITE
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -97,6 +102,12 @@ Shader "PoeClone/ToonLit"
             half3 SampleTriplanar(float3 positionWS, float3 normalWS, float tileSize)
             {
                 float scale = 1.0 / max(tileSize, 0.001);
+
+                #if defined(_MOBILE_LITE)
+                // One sample instead of three blended ones - visibly flatter on steep surfaces,
+                // but a third of the texture bandwidth on every opaque pixel on screen.
+                return SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, positionWS.xz * scale).rgb;
+                #else
                 float3 blend = abs(normalWS);
                 blend = blend / max(blend.x + blend.y + blend.z, 1e-5);
 
@@ -105,6 +116,7 @@ Shader "PoeClone/ToonLit"
                 half3 texZ = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, positionWS.xy * scale).rgb;
 
                 return texX * blend.x + texY * blend.y + texZ * blend.z;
+                #endif
             }
 
             half4 frag(Varyings IN) : SV_Target
@@ -171,10 +183,12 @@ Shader "PoeClone/ToonLit"
                     color += albedo * mLightColor * mNdotL * invSq * distanceAtten;
                 }
 
+                #if !defined(_MOBILE_LITE)
                 float3 viewDir = normalize(GetCameraPositionWS() - IN.positionWS);
                 float rim = 1.0 - saturate(dot(viewDir, normalWS));
                 rim = pow(rim, _RimPower) * _RimIntensity * band;
                 color += _RimColor.rgb * rim;
+                #endif
 
                 color = MixFog(color, IN.fogCoord);
 

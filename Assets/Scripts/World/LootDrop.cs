@@ -376,8 +376,7 @@ namespace PoeClone.World
             {
                 inventory.AddGold(Amount);
                 CombatText.Show(noticeAt, "+" + Amount + " gold", KillRewards.GoldColor, 0.7f);
-                if (AudioManager.Instance != null)
-                    AudioManager.Instance.PlayUI(ItemSounds.Pickup(Item));
+                ItemSounds.PlayPickup(Item);
                 Destroy(gameObject);
                 return true;
             }

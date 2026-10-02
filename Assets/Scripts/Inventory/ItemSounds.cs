@@ -80,6 +80,10 @@ namespace PoeClone.Inventory
         // at the source than the other drop clips, so it gets turned down on its own.
         private const float GoldDropVolume = 0.3f;
 
+        // Same story for picking it up: the clip is just as hot, and gold is picked up far more
+        // often than anything else in the game (every kill, every walk-over).
+        private const float GoldPickupVolume = 0.3f;
+
         public static void PlayDrop(ItemData item, Vector3 at)
         {
             AudioClip clip = Drop(item);
@@ -88,6 +92,17 @@ namespace PoeClone.Inventory
 
             float volume = item != null && item.Type == ItemType.Gold ? GoldDropVolume : 1f;
             AudioManager.Instance.PlayAtPoint(clip, at, volume);
+        }
+
+        public static void PlayPickup(ItemData item)
+        {
+            AudioManager audio = AudioManager.Instance;
+            AudioClip clip = Pickup(item);
+            if (audio == null || clip == null)
+                return;
+
+            float scale = item != null && item.Type == ItemType.Gold ? GoldPickupVolume : 1f;
+            audio.PlayUI(clip, audio.uiVolume * scale);
         }
     }
 }

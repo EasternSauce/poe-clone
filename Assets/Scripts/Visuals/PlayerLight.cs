@@ -11,8 +11,8 @@ namespace PoeClone.Visuals
     public class PlayerLight : MonoBehaviour
     {
         private const float Height = 3.5f;
-        private const float Range = 12f;
-        private const float Intensity = 7f;
+        private const float Range = 22f;
+        private const float Intensity = 16f;
 
         private void Start()
         {

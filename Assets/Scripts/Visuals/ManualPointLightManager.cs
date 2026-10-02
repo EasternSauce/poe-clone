@@ -31,9 +31,11 @@ namespace PoeClone.Visuals
     {
         public const int MaxLights = 24;
 
-        // Phones: every light is a loop step in the shader for every pixel, and the town has many
-        // lamps; the nearest few are plenty on a small screen.
-        public const int MaxLightsOnTouch = 8;
+        // Phones: every light is a loop step in the shader for every pixel, and town especially
+        // clusters several lamps close together, where none of them are cheaply out of range -
+        // mobile is a "runs fine, looks plainer" tier, not a pretty one, so this stays low: the
+        // player's own light (always nearest, always included) plus one or two nearby torches.
+        public const int MaxLightsOnTouch = 2;
 
         private static int Limit => Inventory.TouchMode.Active || Application.isMobilePlatform ? MaxLightsOnTouch : MaxLights;
 

@@ -1,5 +1,8 @@
-version: 2026-10-03d
+version: 2026-10-03e
+<b>Phones</b>
+- Much bigger mobile performance push: shadows are now off entirely on phones, render resolution is a bit lower, and lighting is simplified (fewer lights, simpler shading). Mobile trades looks for frame rate; PC is untouched.
+- The passive skill tree no longer gets cut off top and bottom on phones.
+
 <b>Fixes</b>
-- Menus (inventory, character page, stash/trading) no longer let a click through to an NPC standing behind them.
-- Clicking an NPC now requires already being reasonably close to them, so an accidental click on a distant/background NPC won't send you walking across the map.
-- Performance: only your current area simulates its enemies now (other areas used to keep running in the background the whole time); mobile rendering was also tuned down (antialiasing, shadow quality), which should help frame rate noticeably, especially on phones.
+- Gold pickup sound (not just the drop sound) is much quieter.
+- Player's own light is bigger and brighter, so nearby things are easier to see in the dark.
