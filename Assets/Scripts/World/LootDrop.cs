@@ -54,22 +54,28 @@ namespace PoeClone.World
 
         public bool IsInteractive => interactive;
 
-        /// <summary>Maybe drops something where an enemy died, by its kind's drop chance.</summary>
-        public static void RollDrop(EnemyKind kind, Vector3 deathPosition, int playerLevel)
+        /// <summary>Maybe drops something where an enemy died, by its kind's drop chance; tougher kinds drop better items.</summary>
+        public static void RollDrop(EnemyKind kind, Vector3 deathPosition, int monsterLevel)
         {
             if (Random.value > kind.DropChance)
                 return;
 
+            // Tougher kinds drop better things: higher item level (so higher-tier bases), more
+            // magic and rare items, more uniques. Toughness is life against a zombie's (30).
+            float toughness = Mathf.Max(1f, kind.MaxHealth / 30f);
+            float steps = Mathf.Log(toughness, 2f); // zombie 0, brute ~1.6, frost giant 2, bosses 3.5+
+
             var rng = new System.Random(Random.Range(int.MinValue, int.MaxValue));
             ItemData item;
-            if (rng.NextDouble() < UniqueChance)
+            if (rng.NextDouble() < UniqueChance * Mathf.Min(4f, toughness))
             {
                 item = UniqueItems.Random(rng);
             }
             else
             {
-                ItemRarity rarity = ItemGenerator.RollRarity(rng, kind.RareBonus);
-                int itemLevel = playerLevel + Random.Range(0, 3);
+                float rareBonus = kind.RareBonus + 0.04f * steps;
+                ItemRarity rarity = ItemGenerator.RollRarity(rng, rareBonus);
+                int itemLevel = monsterLevel + Random.Range(0, 3) + Mathf.Clamp(Mathf.RoundToInt(steps), 0, 3);
                 item = ItemGenerator.Generate(rng, itemLevel, rarity);
             }
 
