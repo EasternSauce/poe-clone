@@ -334,6 +334,14 @@ namespace PoeClone.World
             return false;
         }
 
+        // A quad strip between the previous step's (lo, hi) edge and the current step's, in both
+        // windings - it reads from above whichever way round the arc runs.
+        private static void AddStrip(List<int> triangles, int prevLo, int prevHi, int curLo, int curHi)
+        {
+            triangles.AddRange(new[] { prevLo, curLo, prevHi, prevHi, curLo, curHi });
+            triangles.AddRange(new[] { prevLo, prevHi, curLo, prevHi, curHi, curLo });
+        }
+
         private static bool Near(List<Vector3> spots, Vector3 p, float radius)
         {
             foreach (Vector3 spot in spots)
@@ -347,14 +355,24 @@ namespace PoeClone.World
         }
 
         // A river (or lava, or frozen river) just past the edge, with a far bank of trees or rocks.
+        // Raised rocky banks on both sides of the water (the ground mesh beneath is a single flat
+        // sheet per area with no hole cut for the river, so sinking the water below it would just
+        // hide it) - the water sits low between two levees, reading as a crossing you can't walk
+        // through instead of a flat decal floating on the grass.
         private void River(int area, Transform t, EdgeKind kind, float from, float to)
         {
             AreaShape shape = Shape(area);
             string material = kind == EdgeKind.Lava ? "Lava" : kind == EdgeKind.IceRiver ? "Ice" : "Water";
+            string bankMaterial = kind == EdgeKind.Lava ? "Charred" : "RockDark";
+            const float waterY = 0.04f;
+            const float bankRise = 0.85f;
+            const float bankWidth = 2.2f;
 
             int steps = Mathf.Max(4, Mathf.CeilToInt((to - from) * shape.RadiusAt(from) / 2f));
             var vertices = new List<Vector3>();
-            var triangles = new List<int>();
+            var normals = new List<Vector3>();
+            var bankTriangles = new List<int>();
+            var waterTriangles = new List<int>();
             for (int i = 0; i <= steps; i++)
             {
                 float a = Mathf.Lerp(from, to, i / (float)steps);
@@ -365,29 +383,64 @@ namespace PoeClone.World
                 float inner = r + 0.8f + wobble * 0.5f;
                 float outer = inner + (5.5f + wobble) * ends;
                 Vector3 dir = AreaShape.Direction(a);
-                vertices.Add(shape.Center + dir * inner + Vector3.up * 0.04f);
-                vertices.Add(shape.Center + dir * outer + Vector3.up * 0.04f);
+                float bw = bankWidth * ends;
+                float rise = bankRise * ends;
+
+                // The slopes' normals (ignoring the curve along the river, which the toon shading
+                // hides anyway): tilted up and in the direction the bank descends/ascends.
+                Vector3 normalNear = (dir * rise + Vector3.up * bw).normalized;
+                Vector3 normalFar = (-dir * rise + Vector3.up * bw).normalized;
+
+                // Six vertices per step: bank top, then the water edge duplicated once per side so
+                // each side can keep its own normal (flat for the water, sloped for the bank).
+                vertices.Add(shape.Center + dir * (inner - bw) + Vector3.up * rise);            // 0 bank top, near
+                vertices.Add(shape.Center + dir * inner + Vector3.up * waterY);                 // 1 water edge, near (bank side)
+                vertices.Add(shape.Center + dir * inner + Vector3.up * waterY);                 // 2 water edge, near (water side)
+                vertices.Add(shape.Center + dir * outer + Vector3.up * waterY);                 // 3 water edge, far (water side)
+                vertices.Add(shape.Center + dir * outer + Vector3.up * waterY);                 // 4 water edge, far (bank side)
+                vertices.Add(shape.Center + dir * (outer + bw) + Vector3.up * rise);            // 5 bank top, far
+                normals.Add(normalNear);
+                normals.Add(normalNear);
+                normals.Add(Vector3.up);
+                normals.Add(Vector3.up);
+                normals.Add(normalFar);
+                normals.Add(normalFar);
+
                 if (i > 0)
                 {
-                    int v = vertices.Count - 4;
-                    // Both windings: it reads from above whichever way round the arc runs.
-                    triangles.AddRange(new[] { v, v + 2, v + 1, v + 1, v + 2, v + 3 });
-                    triangles.AddRange(new[] { v, v + 1, v + 2, v + 1, v + 3, v + 2 });
+                    int p = vertices.Count - 12;
+                    int c = vertices.Count - 6;
+                    AddStrip(bankTriangles, p + 0, p + 1, c + 0, c + 1);
+                    AddStrip(waterTriangles, p + 2, p + 3, c + 2, c + 3);
+                    AddStrip(bankTriangles, p + 4, p + 5, c + 4, c + 5);
                 }
             }
 
-            var normals = new Vector3[vertices.Count];
-            for (int i = 0; i < normals.Length; i++)
-                normals[i] = Vector3.up; // flat water, lit from above on both windings
-            var mesh = new Mesh { name = "River", vertices = vertices.ToArray(), normals = normals, triangles = triangles.ToArray() };
+            var mesh = new Mesh { name = "River", vertices = vertices.ToArray(), normals = normals.ToArray() };
+            mesh.subMeshCount = 2;
+            mesh.SetTriangles(bankTriangles, 0);
+            mesh.SetTriangles(waterTriangles, 1);
             mesh.RecalculateBounds();
 
             var river = new GameObject(kind.ToString());
             river.transform.SetParent(t, false);
             river.AddComponent<MeshFilter>().sharedMesh = mesh;
             var renderer = river.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial = kit.Mat(material);
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+
+            // Only a flowing river scrolls; lava and frozen rivers (and anything else sharing these
+            // materials, like ponds and the town well) stay still, so it gets its own material
+            // instance rather than the shared one.
+            if (kind == EdgeKind.River)
+            {
+                var flowing = new Material(kit.Mat(material));
+                renderer.sharedMaterials = new[] { kit.Mat(bankMaterial), flowing };
+                river.AddComponent<RiverFlow>().material = flowing;
+            }
+            else
+            {
+                renderer.sharedMaterials = new[] { kit.Mat(bankMaterial), kit.Mat(material) };
+            }
 
             // Lava glows.
             if (kind == EdgeKind.Lava)
@@ -402,6 +455,19 @@ namespace PoeClone.World
                 Boulders(area, t, false, from, to);
             else
                 Trees(area, t, bank, from, to, rows: 2, spacing: 4f, offset: 8.5f);
+        }
+
+        // Scrolls one river's own water texture so it reads as flowing; attached only to rivers, so
+        // the same material shared by ponds and the town well stays still.
+        private class RiverFlow : MonoBehaviour
+        {
+            public Material material;
+            private static readonly Vector2 Speed = new Vector2(0f, 0.08f);
+
+            private void Update()
+            {
+                material.mainTextureOffset += Speed * Time.deltaTime;
+            }
         }
 
         private static void NoShadows(GameObject go)

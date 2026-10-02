@@ -5,3 +5,4 @@ version: 2026-10-03f
 - Gold pickup sound is much quieter again.
 - Gold autocollects from twice as far away.
 - Enemies now aggro if you shoot them from far away, and nearby enemies wake up too when one of them aggroes.
+- Rivers (and lava/frozen rivers) now have raised banks instead of floating flat on the grass, so it's clear you can't walk into them; rivers also flow.
