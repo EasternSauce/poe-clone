@@ -163,7 +163,7 @@ namespace PoeClone.Player
 
         public int ExperienceRequiredForNextLevel()
         {
-            return level * 100;
+            return level * 200;
         }
 
         /// <summary>

@@ -58,7 +58,7 @@ namespace PoeClone.Inventory
 
         public int Level = 1;
         public int Experience;
-        public int ExperienceRequired = 100;
+        public int ExperienceRequired = 200;
 
         public float Get(StatType stat)
         {

@@ -1,5 +1,3 @@
-version: 2026-10-03g
-<b>Spectating</b>
-- Spectators now see the player's inventory, stash/trader, character page, passive tree and skills panel when the player opens them, and the stats of whatever item the player points at. Move your own mouse to look around yourself; after a moment it goes back to following the player. Spectators can also open these (I, C, P, K) on their own.
-<b>World</b>
-- Rivers (and lava/frozen rivers) now have raised banks instead of floating flat on the grass, so it's clear you can't walk into them; rivers also flow.
+version: 2026-10-03h
+<b>Balance</b>
+- Leveling is twice as slow: each level now needs twice the experience.
