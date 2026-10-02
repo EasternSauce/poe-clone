@@ -56,14 +56,19 @@ namespace PoeClone.Enemies
 
         /// <summary>
         /// Where a bolt or arrow starts: a caster's staff orb, or else in front of the chest,
-        /// scaled with the enemy.
+        /// scaled with the enemy. The orb is placed where <see cref="UprightStaff"/> holds it, worked
+        /// out here rather than read back from the bones, since this runs mid-swing in the attack
+        /// animator's Update, before the staff is straightened for the frame.
         /// </summary>
         public static Vector3 BoltOrigin(Transform enemy)
         {
             foreach (Transform t in enemy.GetComponentsInChildren<Transform>())
             {
-                if (t.name == EnemyKinds.StaffOrbName)
-                    return t.position;
+                if (t.name != EnemyKinds.StaffOrbName)
+                    continue;
+                Transform staff = t.parent;
+                float reach = Vector3.Distance(t.position, staff.position);
+                return staff.position + UprightStaff.Up(enemy) * reach;
             }
 
             float scale = enemy.localScale.y;

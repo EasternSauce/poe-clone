@@ -364,6 +364,7 @@ namespace PoeClone.Enemies
 
             var staff = new GameObject("Staff");
             staff.transform.SetParent(hand, false);
+            staff.AddComponent<UprightStaff>().Bind(model.parent != null ? model.parent : model);
 
             GameObject shaft = RuntimePrimitives.Create(PrimitiveType.Cylinder, staff.transform, new Color(0.35f, 0.24f, 0.14f));
             shaft.transform.localScale = new Vector3(0.09f, 0.8f, 0.09f);
