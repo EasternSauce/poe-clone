@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { Room, MAX_CHAT_HISTORY, MAX_CHAT_MESSAGE_LENGTH, MAX_STATE_BYTES, MAX_SPECTATOR_BACKLOG_BYTES } = require('../room');
+const { Room, MAX_PLAYERS, MAX_CHAT_HISTORY, MAX_CHAT_MESSAGE_LENGTH, MAX_STATE_BYTES, MAX_SPECTATOR_BACKLOG_BYTES } = require('../room');
 
 function fakeClient() {
   const sent = [];
@@ -22,14 +22,19 @@ test('first player join is granted', () => {
   assert.equal(room.playerActive, true);
 });
 
-test('second player join is rejected while the first is active', () => {
+test('up to MAX_PLAYERS players play at once; the next one is told the game is full', () => {
   const room = new Room();
-  const p1 = fakeClient();
-  const p2 = fakeClient();
-  room.join(p1, 'player');
-  const result = room.join(p2, 'player');
+  for (let i = 0; i < MAX_PLAYERS; i++) {
+    assert.equal(room.join(fakeClient(), 'player').granted, true);
+  }
+  assert.equal(room.playerCount, MAX_PLAYERS);
+  const result = room.join(fakeClient(), 'player');
   assert.equal(result.granted, false);
-  assert.match(result.reason, /already/i);
+  assert.match(result.reason, /full/i);
+});
+
+test('MAX_PLAYERS is 10', () => {
+  assert.equal(MAX_PLAYERS, 10);
 });
 
 test('a repeat hello from the client that already holds the slot does not deny itself', () => {
@@ -136,7 +141,7 @@ test('malformed or oversized snapshots are rejected', () => {
   assert.equal(room.submitState(player, snapshot({ p: undefined })), null);
   assert.equal(room.submitState(player, snapshot({ e: 'lots' })), null);
   assert.equal(room.submitState(player, snapshot(), MAX_STATE_BYTES + 1), null);
-  assert.equal(room.lastState, null);
+  assert.equal(room.lastStateFor(room.players.get(player).id), null);
 });
 
 test('spectators with a backed-up socket skip snapshots instead of queueing them', () => {
@@ -159,13 +164,16 @@ test('spectators with a backed-up socket skip snapshots instead of queueing them
 test('the latest snapshot is retained for spectators who join mid-game', () => {
   const room = new Room();
   const player = fakeClient();
-  room.join(player, 'player');
+  const { id } = room.join(player, 'player');
   room.submitState(player, snapshot({ seq: 1 }));
   room.submitState(player, snapshot({ seq: 2, t: 13 }));
 
-  // server.js sends status + lastState explicitly on join; here we just check
-  // the room retains the newest one for that purpose.
-  assert.equal(JSON.parse(room.lastState).seq, 2);
+  // server.js sends status + the watched player's last state explicitly on join; here we
+  // just check the room retains the newest one for that purpose.
+  assert.equal(JSON.parse(room.lastStateFor(id)).seq, 2);
+  const late = fakeClient();
+  room.join(late, 'spectator');
+  assert.equal(JSON.parse(room.lastStateForSpectator(late)).seq, 2);
 });
 
 test('chat messages are broadcast to player and all spectators', () => {
@@ -213,11 +221,14 @@ test('chat history is capped and trimmed from the oldest end', () => {
 test('leaving player clears the last snapshot so new spectators see "no player" state', () => {
   const room = new Room();
   const player = fakeClient();
-  room.join(player, 'player');
+  const { id } = room.join(player, 'player');
   room.submitState(player, snapshot());
   room.leave(player);
-  assert.equal(room.lastState, null);
+  assert.equal(room.lastStateFor(id), null);
   assert.equal(room.playerActive, false);
+  const late = fakeClient();
+  room.join(late, 'spectator');
+  assert.equal(room.lastStateForSpectator(late), null);
 });
 
 test('spectator status broadcast reflects player presence and spectator count', () => {
@@ -234,7 +245,7 @@ test('spectator status broadcast reflects player presence and spectator count', 
 });
 
 test('a denied player is promoted automatically when the player leaves', () => {
-  const room = new Room();
+  const room = new Room({ maxPlayers: 1 });
   const first = fakeClient();
   const second = fakeClient();
   room.join(first, 'player');
@@ -249,7 +260,7 @@ test('a denied player is promoted automatically when the player leaves', () => {
 });
 
 test('waiting players are promoted oldest first, and ones who left are skipped', () => {
-  const room = new Room();
+  const room = new Room({ maxPlayers: 1 });
   const player = fakeClient();
   const gone = fakeClient();
   const next = fakeClient();
@@ -268,7 +279,7 @@ test('waiting players are promoted oldest first, and ones who left are skipped',
 });
 
 test('a repeated hello from a waiting connection does not queue it twice', () => {
-  const room = new Room();
+  const room = new Room({ maxPlayers: 1 });
   room.join(fakeClient(), 'player');
   const waiter = fakeClient();
   room.join(waiter, 'player');
@@ -277,7 +288,7 @@ test('a repeated hello from a waiting connection does not queue it twice', () =>
 });
 
 test('spectators see the player slot stay occupied across a handover', () => {
-  const room = new Room();
+  const room = new Room({ maxPlayers: 1 });
   const first = fakeClient();
   const second = fakeClient();
   const spectator = fakeClient();
@@ -290,4 +301,109 @@ test('spectators see the player slot stay occupied across a handover', () => {
 
   const status = spectator.sent.filter((m) => m.type === 'status').pop();
   assert.equal(status.playerActive, true);
+});
+
+test('each player has their own pid and spectators only get the player they watch', () => {
+  const room = new Room();
+  const alice = fakeClient();
+  const bob = fakeClient();
+  const watcher = fakeClient();
+  const a = room.join(alice, 'player', 'Alice');
+  const b = room.join(bob, 'player', 'Bob');
+  room.join(watcher, 'spectator');
+
+  room.submitState(alice, snapshot({ seq: 1 }));
+  room.submitState(bob, snapshot({ seq: 2 }));
+
+  const states = watcher.sent.filter((m) => m.type === 'state');
+  assert.equal(states.length, 1, 'only the watched player is relayed');
+  assert.equal(states[0].pid, a.id, 'a new spectator watches the longest-playing player');
+  assert.notEqual(a.id, b.id);
+});
+
+test('a spectator can switch to another player and immediately gets their latest snapshot', () => {
+  const room = new Room();
+  const alice = fakeClient();
+  const bob = fakeClient();
+  const watcher = fakeClient();
+  room.join(alice, 'player', 'Alice');
+  const b = room.join(bob, 'player', 'Bob');
+  room.join(watcher, 'spectator');
+  room.submitState(bob, snapshot({ seq: 7 }));
+  watcher.sent.length = 0;
+
+  assert.equal(room.watch(watcher, b.id), true);
+
+  const status = watcher.sent.find((m) => m.type === 'status');
+  assert.equal(status.watching, b.id);
+  const state = watcher.sent.find((m) => m.type === 'state');
+  assert.equal(state.pid, b.id);
+  assert.equal(state.seq, 7);
+
+  room.submitState(alice, snapshot({ seq: 8 }));
+  room.submitState(bob, snapshot({ seq: 9 }));
+  assert.deepEqual(watcher.sent.filter((m) => m.type === 'state').map((m) => m.seq), [7, 9]);
+});
+
+test('watching an unknown player, or watching as a player, does nothing', () => {
+  const room = new Room();
+  const player = fakeClient();
+  const watcher = fakeClient();
+  const { id } = room.join(player, 'player');
+  room.join(watcher, 'spectator');
+  assert.equal(room.watch(watcher, 12345), false);
+  assert.equal(room.watch(player, id), false);
+  assert.equal(room.spectators.get(watcher).watching, id);
+});
+
+test('when the watched player leaves, their spectators move to another player', () => {
+  const room = new Room();
+  const alice = fakeClient();
+  const bob = fakeClient();
+  const watcher = fakeClient();
+  room.join(alice, 'player', 'Alice');
+  const b = room.join(bob, 'player', 'Bob');
+  room.join(watcher, 'spectator');
+  room.submitState(bob, snapshot({ seq: 3 }));
+  watcher.sent.length = 0;
+
+  room.leave(alice);
+
+  assert.equal(room.spectators.get(watcher).watching, b.id);
+  assert.equal(watcher.sent.find((m) => m.type === 'state').pid, b.id);
+  const status = watcher.sent.filter((m) => m.type === 'status').pop();
+  assert.equal(status.watching, b.id);
+  assert.deepEqual(status.players, [{ id: b.id, name: 'Bob' }]);
+});
+
+test('a spectator who joined while no one played picks up the first player to arrive', () => {
+  const room = new Room();
+  const watcher = fakeClient();
+  room.join(watcher, 'spectator');
+  assert.equal(room.spectators.get(watcher).watching, null);
+
+  const player = fakeClient();
+  const { id } = room.join(player, 'player', 'Cat');
+
+  assert.equal(room.spectators.get(watcher).watching, id);
+  const status = watcher.sent.filter((m) => m.type === 'status').pop();
+  assert.equal(status.watching, id);
+  assert.equal(status.playerCount, 1);
+  assert.equal(status.maxPlayers, MAX_PLAYERS);
+  room.submitState(player, snapshot());
+  assert.ok(watcher.sent.some((m) => m.type === 'state' && m.pid === id));
+});
+
+test('chat from one player reaches the other players too', () => {
+  const room = new Room();
+  const alice = fakeClient();
+  const bob = fakeClient();
+  room.join(alice, 'player', 'Alice');
+  room.join(bob, 'player', 'Bob');
+
+  room.submitChat(alice, 'hi bob');
+
+  const got = bob.sent.find((m) => m.type === 'chat');
+  assert.equal(got.from, 'Alice');
+  assert.equal(got.role, 'player');
 });

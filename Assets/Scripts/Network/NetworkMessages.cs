@@ -23,10 +23,21 @@ namespace PoeClone.Network
         public bool granted;
         public string reason;
         public bool playerActive;
+        public int playerCount;
+        public int maxPlayers;
         public int spectatorCount;
+        public PlayerInfo[] players; // status: everyone playing, oldest first
+        public int watching;         // status, spectators only: the player id being watched (0 = nobody)
         public string from;
         public string text;
         public long ts;
+    }
+
+    [Serializable]
+    public class PlayerInfo
+    {
+        public int id;
+        public string name;
     }
 
     [Serializable]
@@ -41,6 +52,14 @@ namespace PoeClone.Network
     public class FrameMessage
     {
         public string type = "frame";
+    }
+
+    /// <summary>A spectator switching to another player's game.</summary>
+    [Serializable]
+    public class WatchMessage
+    {
+        public string type = "watch";
+        public int id;
     }
 
     [Serializable]

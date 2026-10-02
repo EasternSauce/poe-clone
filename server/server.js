@@ -7,9 +7,9 @@ const { Room } = require('./room');
 const PORT = process.env.PORT || 8080;
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
 const HEARTBEAT_MS = 15000;
-// If the player's tab is frozen/crashed without a clean socket close, the ws
+// If a player's tab is frozen/crashed without a clean socket close, the ws
 // heartbeat (below) still reclaims the slot within ~2 missed pings.
-// The player sends ~10 snapshots/s; allow some burstiness from frame timing but cap
+// Each player sends ~10 snapshots/s; allow some burstiness from frame timing but cap
 // at ~20/s so a misbehaving client can't flood spectators.
 const STATE_RATE_LIMIT_MS = 45;
 // Snapshots are a few KB and chat lines are tiny; nothing legitimate comes close to this.
@@ -90,8 +90,9 @@ wss.on('connection', (ws) => {
         });
 
         if (role === 'spectator') {
-          safeSend(ws, room.statusMessage());
-          if (room.lastState) safeSendRaw(ws, room.lastState);
+          safeSend(ws, room.statusMessage(ws));
+          const state = room.lastStateForSpectator(ws);
+          if (state) safeSendRaw(ws, state);
           for (const chatMsg of room.chatHistory) safeSend(ws, chatMsg);
         }
         break;
@@ -102,6 +103,12 @@ wss.on('connection', (ws) => {
         if (now - ws.lastStateAt < STATE_RATE_LIMIT_MS) return;
         ws.lastStateAt = now;
         room.submitState(ws, msg, Buffer.byteLength(text));
+        break;
+      }
+
+      case 'watch': {
+        // A spectator switching to another player's game.
+        room.watch(ws, Number(msg.id));
         break;
       }
 

@@ -46,6 +46,9 @@ namespace PoeClone.Network
         /// <summary>True while the chat box has keyboard focus, so gameplay input can ignore WASD/click while typing.</summary>
         public static bool IsTyping => Instance != null && Instance.inputField != null && Instance.inputField.isFocused;
 
+        /// <summary>True while there's unsent text in the chat box (arrow keys then belong to it).</summary>
+        public static bool HasDraft => Instance != null && Instance.inputField != null && !string.IsNullOrEmpty(Instance.inputField.text);
+
         private static ChatUI Instance;
 
         /// <summary>Frame in which some text field already used the Enter press (so it doesn't also open the chat).</summary>

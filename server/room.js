@@ -4,22 +4,26 @@
 // can be unit tested with plain fake "client" objects ({ id, send(obj) }).
 //
 // Rules:
-// - At most one "player" at a time. A second player connection is rejected
-//   (granted: false) and queued; when the player disconnects or goes stale, the
-//   longest-waiting queued connection is promoted and sent a fresh grant, so the
-//   "someone is already playing" screen turns into the game on its own.
-// - Any number of spectators may connect at any time.
-// - The player pushes ~10Hz "state" snapshots (positions/animation events of the
+// - Up to MAX_PLAYERS players at a time, each playing their own, separate game
+//   (nothing is shared between them but chat). Further player connections are
+//   rejected (granted: false) and queued; when a player disconnects or goes stale,
+//   the longest-waiting queued connection is promoted and sent a fresh grant, so
+//   the "the game is full" screen turns into the game on its own.
+// - Any number of spectators may connect at any time. Each spectator watches one
+//   player at a time (the longest-playing one by default) and can switch with a
+//   "watch" message; when the watched player leaves, they move on to the next one.
+// - Each player pushes ~10Hz "state" snapshots (positions/animation events of the
 //   player and nearby enemies, HUD, gear - see Assets/Scripts/Network/Replication),
-//   which are stamped with the player's session id and relayed to every spectator,
-//   plus kept as `lastState` so a spectator who joins mid-game immediately has a
-//   scene to show instead of waiting for the next tick.
+//   which are stamped with that player's session id and relayed to the spectators
+//   watching them, plus kept as that player's `lastState` so a spectator who starts
+//   watching mid-game immediately has a scene to show instead of waiting a tick.
 // - Snapshots are disposable (the next one supersedes it), so a spectator whose
 //   socket is backed up simply skips some rather than queueing them forever.
-// - Chat messages from anyone are broadcast to everyone (player + spectators).
+// - Chat messages from anyone are broadcast to everyone (players + spectators).
 // - A short rolling chat history is kept so newly joined clients aren't
 //   dropped into a conversation with no context.
 
+const MAX_PLAYERS = 10;
 const MAX_CHAT_HISTORY = 50;
 const MAX_CHAT_MESSAGE_LENGTH = 300;
 const MAX_NAME_LENGTH = 24;
@@ -29,12 +33,12 @@ const MAX_STATE_BYTES = 32 * 1024;
 const MAX_SPECTATOR_BACKLOG_BYTES = 256 * 1024;
 
 class Room {
-  constructor({ now = () => Date.now() } = {}) {
+  constructor({ now = () => Date.now(), maxPlayers = MAX_PLAYERS } = {}) {
     this.now = now;
-    this.player = null; // { client, id, joinedAt }
-    this.spectators = new Map(); // client -> { id, joinedAt }
+    this.maxPlayers = maxPlayers;
+    this.players = new Map(); // client -> { id, name, joinedAt, lastState }, oldest first
+    this.spectators = new Map(); // client -> { id, name, joinedAt, watching: player id | null }
     this.waiting = []; // denied player connections, oldest first: { client, id, name }
-    this.lastState = null; // serialized JSON of the most recent snapshot
     this.chatHistory = [];
     this.nextId = 1;
   }
@@ -44,44 +48,54 @@ class Room {
   }
 
   get playerActive() {
-    return this.player !== null;
+    return this.players.size > 0;
+  }
+
+  get playerCount() {
+    return this.players.size;
   }
 
   get spectatorCount() {
     return this.spectators.size;
   }
 
-  // Returns { granted, id, reason }
+  // Returns { granted, id, name, reason }
   join(client, role, requestedName) {
     const id = this._allocId();
     const name = sanitizeName(requestedName) || (role === 'player' ? 'Player' : `Spectator ${id}`);
 
     if (role === 'player') {
-      // A repeat hello from the connection that already holds the slot (e.g. a client retry)
+      // A repeat hello from a connection that already holds a slot (e.g. a client retry)
       // must not deny itself the slot it's already holding.
-      if (this.player && this.player.client === client) {
-        return { granted: true, id: this.player.id, name: this.player.name };
+      const existing = this.players.get(client);
+      if (existing) {
+        return { granted: true, id: existing.id, name: existing.name };
       }
-      if (this.player) {
+      if (this.players.size >= this.maxPlayers) {
         if (!this.waiting.some((w) => w.client === client)) this.waiting.push({ client, id, name });
-        return { granted: false, id, reason: 'A player is already connected. Try again later.' };
+        return {
+          granted: false,
+          id,
+          reason: `The game is full (${this.maxPlayers} players). You'll join as soon as someone leaves.`,
+        };
       }
-      this.player = { client, id, name, joinedAt: this.now() };
-      this._broadcastStatus();
+      this.players.set(client, { id, name, joinedAt: this.now(), lastState: null });
+      this._onPlayersChanged();
       return { granted: true, id, name };
     }
 
-    // role === 'spectator': always allowed
-    this.spectators.set(client, { id, name, joinedAt: this.now() });
+    // role === 'spectator': always allowed, watching the longest-playing player.
+    this.spectators.set(client, { id, name, joinedAt: this.now(), watching: this._firstPlayerId() });
     return { granted: true, id, name };
   }
 
   leave(client) {
-    if (this.player && this.player.client === client) {
-      this.player = null;
-      this.lastState = null;
+    const player = this.players.get(client);
+    if (player) {
+      this.players.delete(client);
       this._promoteNextWaiting();
-      this._broadcastStatus();
+      this._moveWatchersOff(player.id);
+      this._onPlayersChanged();
       return 'player';
     }
     const waitingIndex = this.waiting.findIndex((w) => w.client === client);
@@ -97,14 +111,38 @@ class Room {
   }
 
   isPlayer(client) {
-    return this.player !== null && this.player.client === client;
+    return this.players.has(client);
   }
 
-  // Accepts a gameplay snapshot from the player and relays it to spectators.
+  // A spectator asks to watch another player. Returns true if it switched.
+  watch(client, playerId) {
+    const spectator = this.spectators.get(client);
+    if (!spectator || !this._playerById(playerId)) return false;
+    spectator.watching = playerId;
+    safeSend(client, this.statusMessage(client));
+    const state = this.lastStateFor(playerId);
+    if (state) safeSendRaw(client, state);
+    return true;
+  }
+
+  // The most recent snapshot of a player (serialized), or null.
+  lastStateFor(playerId) {
+    const player = this._playerById(playerId);
+    return player ? player.lastState : null;
+  }
+
+  // What a (newly joined) spectator should be shown first, or null.
+  lastStateForSpectator(client) {
+    const spectator = this.spectators.get(client);
+    return spectator && spectator.watching !== null ? this.lastStateFor(spectator.watching) : null;
+  }
+
+  // Accepts a gameplay snapshot from a player and relays it to the spectators watching them.
   // `payload` is the parsed message and `rawLength` its size on the wire.
   // Returns the serialized message that was broadcast, or null if rejected.
   submitState(client, payload, rawLength = 0) {
-    if (!this.isPlayer(client)) return null;
+    const player = this.players.get(client);
+    if (!player) return null;
     if (!payload || typeof payload !== 'object') return null;
     if (rawLength > MAX_STATE_BYTES) return null;
     if (typeof payload.t !== 'number' || !Number.isFinite(payload.t)) return null;
@@ -115,28 +153,28 @@ class Room {
     // {"type":"state". pid is server-owned (a change tells spectators "new player, reset"),
     // so whatever the client put there is discarded.
     const { type, pid, ...rest } = payload;
-    const serialized = JSON.stringify({ type: 'state', ...rest, pid: this.player.id });
+    const serialized = JSON.stringify({ type: 'state', ...rest, pid: player.id });
 
-    this.lastState = serialized;
-    for (const spectator of this.spectators.keys()) {
+    player.lastState = serialized;
+    for (const [spectator, info] of this.spectators) {
+      if (info.watching !== player.id) continue;
       if (typeof spectator.bufferedAmount === 'number' && spectator.bufferedAmount > MAX_SPECTATOR_BACKLOG_BYTES) continue;
       safeSendRaw(spectator, serialized);
     }
     return serialized;
   }
 
-  submitChat(client, text, roleHint) {
+  submitChat(client, text) {
     const trimmed = String(text || '').slice(0, MAX_CHAT_MESSAGE_LENGTH).trim();
     if (!trimmed) return null;
 
-    const from = this.isPlayer(client)
-      ? (this.player.name || 'Player')
-      : (this.spectators.get(client)?.name || 'Spectator');
+    const player = this.players.get(client);
+    const from = player ? (player.name || 'Player') : (this.spectators.get(client)?.name || 'Spectator');
 
     const message = {
       type: 'chat',
       from,
-      role: this.isPlayer(client) ? 'player' : 'spectator',
+      role: player ? 'player' : 'spectator',
       text: trimmed,
       ts: this.now(),
     };
@@ -150,18 +188,63 @@ class Room {
     return message;
   }
 
-  statusMessage() {
+  // The status a client sees; for a spectator it includes who they are watching.
+  statusMessage(client) {
+    const spectator = client ? this.spectators.get(client) : undefined;
     return {
       type: 'status',
       playerActive: this.playerActive,
+      playerCount: this.players.size,
+      maxPlayers: this.maxPlayers,
       spectatorCount: this.spectatorCount,
+      players: [...this.players.values()].map((p) => ({ id: p.id, name: p.name })),
+      watching: spectator && spectator.watching !== null ? spectator.watching : 0,
     };
+  }
+
+  _playerById(playerId) {
+    for (const player of this.players.values()) {
+      if (player.id === playerId) return player;
+    }
+    return null;
+  }
+
+  _firstPlayerId() {
+    const first = this.players.values().next();
+    return first.done ? null : first.value.id;
+  }
+
+  // Spectators of a player who left move to the next player in join order (wrapping), or
+  // to nobody; each is sent that player's latest snapshot so the switch is immediate.
+  _moveWatchersOff(leftId) {
+    const ids = [...this.players.values()].map((p) => p.id);
+    for (const [client, info] of this.spectators) {
+      if (info.watching !== leftId) continue;
+      const next = ids.find((id) => id > leftId) ?? ids[0] ?? null;
+      info.watching = next;
+      const state = next !== null ? this.lastStateFor(next) : null;
+      if (state) safeSendRaw(client, state);
+    }
+  }
+
+  // Spectators watching nobody (no one was playing) pick up the first player who appears.
+  _assignIdleWatchers() {
+    const first = this._firstPlayerId();
+    if (first === null) return;
+    for (const info of this.spectators.values()) {
+      if (info.watching === null || !this._playerById(info.watching)) info.watching = first;
+    }
+  }
+
+  _onPlayersChanged() {
+    this._assignIdleWatchers();
+    this._broadcastStatus();
   }
 
   _promoteNextWaiting() {
     const next = this.waiting.shift();
     if (!next) return null;
-    this.player = { client: next.client, id: next.id, name: next.name, joinedAt: this.now() };
+    this.players.set(next.client, { id: next.id, name: next.name, joinedAt: this.now(), lastState: null });
     safeSend(next.client, {
       type: 'welcome',
       role: 'player',
@@ -172,18 +255,14 @@ class Room {
   }
 
   _broadcastStatus() {
-    this._broadcastToSpectators(this.statusMessage());
-  }
-
-  _broadcastToSpectators(message) {
     for (const client of this.spectators.keys()) {
-      safeSend(client, message);
+      safeSend(client, this.statusMessage(client));
     }
   }
 
   _broadcastToAll(message) {
-    if (this.player) safeSend(this.player.client, message);
-    this._broadcastToSpectators(message);
+    for (const client of this.players.keys()) safeSend(client, message);
+    for (const client of this.spectators.keys()) safeSend(client, message);
   }
 }
 
@@ -211,4 +290,12 @@ function sanitizeName(name) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-module.exports = { Room, MAX_CHAT_HISTORY, MAX_CHAT_MESSAGE_LENGTH, MAX_NAME_LENGTH, MAX_STATE_BYTES, MAX_SPECTATOR_BACKLOG_BYTES };
+module.exports = {
+  Room,
+  MAX_PLAYERS,
+  MAX_CHAT_HISTORY,
+  MAX_CHAT_MESSAGE_LENGTH,
+  MAX_NAME_LENGTH,
+  MAX_STATE_BYTES,
+  MAX_SPECTATOR_BACKLOG_BYTES,
+};

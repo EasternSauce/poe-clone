@@ -11,9 +11,10 @@ namespace PoeClone.Network
     /// <see cref="Bootstrap"/>) so nothing needed to be wired up in Game.unity: it figures out
     /// whether this browser tab is the "player" or a "spectator" from the URL, connects to the
     /// session server, and holds the whole world paused (Time.timeScale = 0) until it is either
-    /// granted the single play slot or settles into spectating - so a denied/second player never
-    /// simulates a live, interactable copy of the game locally. Spectators instead get their scene
-    /// turned into a puppet of the real player's game (see <see cref="SpectatorReplica"/>).
+    /// granted one of the play slots (up to 10 people play at once, each in their own game) or
+    /// settles into spectating - so a queued player never simulates a live, interactable copy of
+    /// the game locally. Spectators instead get their scene turned into a puppet of one player's
+    /// game (see <see cref="SpectatorReplica"/>) and can switch between players (<see cref="WatchNext"/>).
     /// </summary>
     public class GameSessionController : MonoBehaviour
     {
@@ -24,6 +25,13 @@ namespace PoeClone.Network
         public bool PlayGranted { get; private set; }
         public bool RemotePlayerActive { get; private set; }
         public int SpectatorCount { get; private set; }
+        public int MaxPlayers { get; private set; }
+        /// <summary>Everyone playing right now, oldest first (from the server's status).</summary>
+        public System.Collections.Generic.IReadOnlyList<PlayerInfo> Players => players;
+        /// <summary>Spectators: the id of the player being watched (0 = nobody).</summary>
+        public int WatchingId { get; private set; }
+
+        private PlayerInfo[] players = new PlayerInfo[0];
         public string DenyReason { get; private set; }
         /// <summary>Display name sent to the server; empty lets the server pick a default.</summary>
         public string PlayerName { get; private set; } = string.Empty;
@@ -134,6 +142,38 @@ namespace PoeClone.Network
             client.Send(JsonUtility.ToJson(new ChatOutMessage { text = text }));
         }
 
+        /// <summary>
+        /// Spectators: switch to the next (+1) or previous (-1) player in the list, wrapping round.
+        /// Shown at once locally; the server confirms with a status and the new player's latest snapshot.
+        /// </summary>
+        public void WatchNext(int step)
+        {
+            if (!Connected || Role != SessionRole.Spectator || players.Length < 2) return;
+
+            int index = Array.FindIndex(players, p => p.id == WatchingId);
+            if (index < 0) index = 0;
+            int next = ((index + step) % players.Length + players.Length) % players.Length;
+            if (players[next].id == WatchingId) return;
+
+            WatchingId = players[next].id;
+            client.Send(JsonUtility.ToJson(new WatchMessage { id = WatchingId }));
+            StateChanged?.Invoke();
+        }
+
+        /// <summary>Name of the player being watched, or null.</summary>
+        public string WatchingName
+        {
+            get
+            {
+                foreach (PlayerInfo p in players)
+                {
+                    if (p.id == WatchingId)
+                        return p.name;
+                }
+                return null;
+            }
+        }
+
         /// <summary>Sends one already-serialized gameplay snapshot (see PlayerStateBroadcaster).</summary>
         public void SendState(string json)
         {
@@ -199,6 +239,9 @@ namespace PoeClone.Network
                         replica.ResetReplica();
                     RemotePlayerActive = msg.playerActive;
                     SpectatorCount = msg.spectatorCount;
+                    MaxPlayers = msg.maxPlayers;
+                    players = msg.players ?? new PlayerInfo[0];
+                    WatchingId = msg.watching;
                     StateChanged?.Invoke();
                     break;
 
@@ -213,6 +256,8 @@ namespace PoeClone.Network
             Connected = false;
             PlayGranted = false;
             RemotePlayerActive = false;
+            players = new PlayerInfo[0];
+            WatchingId = 0;
             stateBroadcaster.enabled = false;
             if (Role == SessionRole.Spectator)
                 replica.ResetReplica(); // the server resends the latest snapshot on reconnect
