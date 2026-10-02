@@ -81,8 +81,9 @@ namespace PoeClone.Inventory
         private const float GoldDropVolume = 0.3f;
 
         // Same story for picking it up: the clip is just as hot, and gold is picked up far more
-        // often than anything else in the game (every kill, every walk-over).
-        private const float GoldPickupVolume = 0.3f;
+        // often than anything else in the game (every kill, every walk-over). Still way too loud
+        // at 0.3 per user feedback - cut to a quarter of that.
+        private const float GoldPickupVolume = 0.075f;
 
         public static void PlayDrop(ItemData item, Vector3 at)
         {

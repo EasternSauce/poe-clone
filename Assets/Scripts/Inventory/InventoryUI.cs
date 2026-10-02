@@ -141,6 +141,8 @@ namespace PoeClone.Inventory
         private RectTransform cursorView;
         private Image gridHighlight;
         private Text tooltipText;
+        private RectTransform heldTooltipRect;
+        private Text heldTooltipText;
         private CharacterPreview preview;
 
         private ItemData cursorItem;
@@ -278,6 +280,7 @@ namespace PoeClone.Inventory
             Hover hover = Hit(mousePos);
             UpdateHighlights(hover);
             UpdateTooltip(hover, mousePos);
+            ShowHeldTooltip(mousePos);
             if (!tooltipRect.gameObject.activeSelf)
                 UpdateGroundTooltip();
 
@@ -378,6 +381,8 @@ namespace PoeClone.Inventory
             {
                 stashOpen = false;
                 vendor = null;
+                tooltipRect.gameObject.SetActive(false);
+                heldTooltipRect.gameObject.SetActive(false);
             }
             previewPanel.gameObject.SetActive(open && !touch && !stashOpen);
             stashPanel.gameObject.SetActive(open && stashOpen);
@@ -483,7 +488,7 @@ namespace PoeClone.Inventory
             stashPanel.anchoredPosition = new Vector2(-(30f + panelW + 16f), 0f);
             stashPanel.sizeDelta = new Vector2(gridSize + Pad * 2f, gridSize + Pad * 2f + 34f + NoteHeight);
             UiKit.AddOutline(back, UiKit.BorderColor, 3f);
-            TouchMode.AddBlocker(stashPanel);
+            TouchMode.AddMenuBlocker(stashPanel);
 
             sideTitle = UiKit.NewText("Title", stashPanel, "STASH", 24, UiKit.Gold, TextAnchor.UpperCenter);
             UiKit.TopLeft(sideTitle.rectTransform, new Vector2(0f, -12f), new Vector2(stashPanel.sizeDelta.x, 30f));
@@ -716,7 +721,7 @@ private Vector2 CellSize(int w, int h)
             panel.anchoredPosition = new Vector2(-30f, 0f);
             panel.sizeDelta = new Vector2(panelW, panelH);
             UiKit.AddOutline(panelImage, UiKit.BorderColor, 3f);
-            TouchMode.AddBlocker(panel);
+            TouchMode.AddMenuBlocker(panel);
 
             // Character preview panel, just to the left of the inventory.
             Image previewBg = UiKit.NewImage("PreviewPanel", canvas.transform, UiKit.PanelColor);
@@ -729,7 +734,7 @@ private Vector2 CellSize(int w, int h)
             previewPanel.anchoredPosition = new Vector2(-(30f + panelW + 16f), 0f);
             previewPanel.sizeDelta = new Vector2(panelH * 0.68f, panelH);
             UiKit.AddOutline(previewBg, UiKit.BorderColor, 3f);
-            TouchMode.AddBlocker(previewPanel);
+            TouchMode.AddMenuBlocker(previewPanel);
 
             if (hasPreview)
             {
@@ -877,6 +882,23 @@ private Vector2 CellSize(int w, int h)
             UiKit.Stretch(tooltipText.rectTransform, 10f);
 
             tooltipRect.gameObject.SetActive(false);
+
+            // The item on the cursor's own stats, shown the whole time it's held (not just while
+            // it's hovering a slot) so a drag-swap can be compared against what's underneath without
+            // covering that slot's own tooltip (see ShowHeldTooltip for where they're kept apart).
+            Image heldBg = UiKit.NewImage("HeldTooltip", canvas.transform, new Color(0.07f, 0.07f, 0.08f, 0.97f));
+            UiKit.Grain(heldBg);
+            heldTooltipRect = heldBg.rectTransform;
+            heldTooltipRect.anchorMin = Vector2.zero;
+            heldTooltipRect.anchorMax = Vector2.zero;
+            heldTooltipRect.pivot = new Vector2(0f, 1f);
+            heldTooltipRect.sizeDelta = new Vector2(270f, 100f);
+            UiKit.AddOutline(heldBg, UiKit.Gold, 1.5f);
+
+            heldTooltipText = UiKit.NewText("Text", heldTooltipRect, "", 17, UiKit.TextColor, TextAnchor.UpperLeft);
+            UiKit.Stretch(heldTooltipText.rectTransform, 10f);
+
+            heldTooltipRect.gameObject.SetActive(false);
         }
 
         // ------------------------------------------------------------------ item views
@@ -1284,6 +1306,36 @@ private Vector2 CellSize(int w, int h)
             int lines;
             string text = BuildTooltipText(item, out lines);
             ShowTooltipText(text, lines, mousePos);
+        }
+
+        // The held item's own stats, visible the whole time it's on the cursor - whether it's over
+        // an empty spot or over another item (whose own tooltip is shown separately by
+        // ShowTooltipText/UpdateTooltip), so a drag-swap can be compared at a glance. Desktop only:
+        // touch already has its own, more deliberate hold-to-inspect-then-drag flow.
+        private void ShowHeldTooltip(Vector2 mousePos)
+        {
+            if (TouchMode.Active || cursorItem == null)
+            {
+                heldTooltipRect.gameObject.SetActive(false);
+                return;
+            }
+
+            int lines;
+            heldTooltipText.text = BuildTooltipText(cursorItem, out lines);
+            heldTooltipRect.sizeDelta = new Vector2(270f, 24f + lines * 23f);
+            heldTooltipRect.gameObject.SetActive(true);
+            heldTooltipRect.SetAsLastSibling();
+
+            Vector2 size = heldTooltipRect.sizeDelta * canvas.scaleFactor;
+
+            // Below the held item icon (the hover tooltip for whatever it's over sits beside the
+            // cursor instead, see ShowTooltipText), clamped so it never runs off the bottom.
+            float iconHalfHeight = cursorView != null ? cursorView.sizeDelta.y * 0.5f * canvas.scaleFactor : 0f;
+            float gap = 18f + iconHalfHeight;
+            bool flipY = mousePos.y - gap - size.y < 0f;
+            heldTooltipRect.pivot = new Vector2(0f, flipY ? 0f : 1f);
+            float x = Mathf.Min(mousePos.x, Screen.width - size.x);
+            heldTooltipRect.position = new Vector2(x, mousePos.y + (flipY ? gap : -gap));
         }
 
         private void ShowTooltipText(string text, int lines, Vector2 mousePos)

@@ -25,6 +25,7 @@ namespace PoeClone.Inventory
         private static bool detected;
         private static bool forced;
         private static readonly List<RectTransform> blockers = new List<RectTransform>();
+        private static readonly List<RectTransform> menuBlockers = new List<RectTransform>();
 
         public static bool Active => detected || forced;
 
@@ -50,6 +51,7 @@ namespace PoeClone.Inventory
             forced = false;
             Changed = null;
             blockers.Clear();
+            menuBlockers.Clear();
             detected = UnityEngine.Device.Application.isMobilePlatform || IsCoarsePointer();
             ApplyMobileLiteKeyword();
         }
@@ -99,7 +101,30 @@ namespace PoeClone.Inventory
 
         public static bool IsOverBlocker(Vector2 screenPos)
         {
-            foreach (RectTransform rect in blockers)
+            return Contains(blockers, screenPos);
+        }
+
+        /// <summary>
+        /// Registers a whole menu panel (inventory, character page, stash/trading...) so a tap
+        /// meant for it doesn't fall through to the world underneath and click an NPC standing
+        /// there. Deliberately a separate list from <see cref="AddBlocker"/>: those panels read raw
+        /// touches themselves to drag/drop their own contents, and would otherwise see every touch
+        /// on their own surface as "over a blocker" and never start a drag at all.
+        /// </summary>
+        public static void AddMenuBlocker(RectTransform rect)
+        {
+            if (rect != null && !menuBlockers.Contains(rect))
+                menuBlockers.Add(rect);
+        }
+
+        public static bool IsOverMenuBlocker(Vector2 screenPos)
+        {
+            return Contains(menuBlockers, screenPos);
+        }
+
+        private static bool Contains(List<RectTransform> rects, Vector2 screenPos)
+        {
+            foreach (RectTransform rect in rects)
             {
                 if (rect != null && rect.gameObject.activeInHierarchy &&
                     RectTransformUtility.RectangleContainsScreenPoint(rect, screenPos, null))

@@ -44,6 +44,12 @@ namespace PoeClone.Enemies
         private CharacterAttackAnimator attackAnimator;
         private Stagger stagger;
         private EnemySkills skills;
+        private EnemyHealth health;
+
+        // How far an aggroing enemy's shout carries to wake up idle neighbours (one hop only - the
+        // neighbours it wakes don't themselves wake further neighbours, so a fight doesn't
+        // eventually summon the whole area).
+        private const float AlertRadius = 10f;
 
         // How long the enemy sticks to an avoidance side after the direct path was last blocked.
         private const float AvoidCommitTime = 1.0f;
@@ -117,6 +123,52 @@ namespace PoeClone.Enemies
             // attack animator to the model.
             attackAnimator = GetComponentInChildren<CharacterAttackAnimator>();
             skills = GetComponent<EnemySkills>();
+
+            health = GetComponent<EnemyHealth>();
+            if (health != null)
+                health.Damaged += OnDamaged;
+        }
+
+        private void OnDestroy()
+        {
+            if (health != null)
+                health.Damaged -= OnDamaged;
+        }
+
+        // A hit always aggroes, even from outside aggroRange (an arrow/spell from off-screen),
+        // instead of only ever noticing the player by proximity.
+        private void OnDamaged()
+        {
+            Aggro();
+        }
+
+        private void Aggro()
+        {
+            if (state == State.Chasing)
+                return;
+            state = State.Chasing;
+            PlayAggroSound();
+            AlertNearby();
+        }
+
+        private void PlayAggroSound()
+        {
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.enemyAggro, transform.position);
+        }
+
+        private void AlertNearby()
+        {
+            Collider[] hits = Physics.OverlapSphere(transform.position, AlertRadius, ~0, QueryTriggerInteraction.Ignore);
+            foreach (Collider hit in hits)
+            {
+                EnemyController other = hit.GetComponentInParent<EnemyController>();
+                if (other != null && other != this && other.state == State.Idle)
+                {
+                    other.state = State.Chasing;
+                    other.PlayAggroSound();
+                }
+            }
         }
 
 private void Update()
@@ -289,10 +341,7 @@ private bool IsBlocked(Vector3 direction)
         {
             if (state == State.Idle && distance <= aggroRange)
             {
-                state = State.Chasing;
-
-                if (AudioManager.Instance != null)
-                    AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.enemyAggro, transform.position);
+                Aggro();
             }
             else if (state == State.Chasing && distance > loseInterestRange)
             {

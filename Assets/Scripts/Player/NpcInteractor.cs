@@ -121,7 +121,7 @@ namespace PoeClone.Player
                 return null;
 
             Vector2 position = screen.primaryTouch.position.ReadValue();
-            if (TouchMode.IsOverBlocker(position))
+            if (TouchMode.IsOverBlocker(position) || TouchMode.IsOverMenuBlocker(position))
                 return null;
             return position;
         }

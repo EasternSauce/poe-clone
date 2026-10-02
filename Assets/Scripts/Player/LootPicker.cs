@@ -19,7 +19,7 @@ namespace PoeClone.Player
     {
         private const float PickupReach = 1.6f;
         // Gold is collected just by walking over it.
-        private const float GoldWalkReach = 1.1f;
+        private const float GoldWalkReach = 2.2f;
 
         private PlayerController controller;
         private PlayerStats stats;
@@ -161,7 +161,7 @@ namespace PoeClone.Player
                 return null;
 
             Vector2 position = screen.primaryTouch.position.ReadValue();
-            if (TouchMode.IsOverBlocker(position))
+            if (TouchMode.IsOverBlocker(position) || TouchMode.IsOverMenuBlocker(position))
                 return null;
 
             LootDrop under = PickableAt(position);
