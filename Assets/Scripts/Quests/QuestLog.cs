@@ -231,6 +231,16 @@ namespace PoeClone.Quests
                     lines.Add("<color=#" + UiKit.Hex(UiKit.RarityColor(item.Rarity)) + ">" + item.Name + "</color>");
                 }
             }
+
+            if (quest.RewardRespec > 0)
+            {
+                PlayerPassives passives = GetComponent<PlayerPassives>();
+                if (passives != null)
+                {
+                    passives.GrantRespec(quest.RewardRespec);
+                    lines.Add("+" + quest.RewardRespec + " full respec" + (quest.RewardRespec > 1 ? "s" : ""));
+                }
+            }
         }
 
         /// <summary>Into the bag if there's room, otherwise onto the ground at the player's feet.</summary>

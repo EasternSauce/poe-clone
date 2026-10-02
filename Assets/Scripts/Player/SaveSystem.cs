@@ -138,7 +138,10 @@ namespace PoeClone.Player
 
             PlayerPassives passives = stats.GetComponent<PlayerPassives>();
             if (passives != null)
+            {
                 data.passives.AddRange(passives.Allocation.Taken);
+                data.respecCharges = passives.RespecCharges;
+            }
 
             PlayerSkills skills = stats.GetComponent<PlayerSkills>();
             if (skills != null)
@@ -212,7 +215,10 @@ namespace PoeClone.Player
 
             PlayerPassives passives = stats.GetComponent<PlayerPassives>();
             if (passives != null && data.passives != null)
+            {
                 passives.Restore(data.passives);
+                passives.SetRespecCharges(data.respecCharges);
+            }
 
             PlayerSkills skills = stats.GetComponent<PlayerSkills>();
             if (skills != null && data.skillSlots != null)

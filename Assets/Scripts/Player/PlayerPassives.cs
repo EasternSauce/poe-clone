@@ -23,6 +23,9 @@ namespace PoeClone.Player
         public int Level => stats != null ? stats.Level : 1;
         public int Unspent => Allocation.Unspent(Level);
 
+        /// <summary>Full tree resets left. Starts at 1; more are earned from major quests.</summary>
+        public int RespecCharges { get; private set; } = 1;
+
         private void Awake()
         {
             stats = GetComponent<PlayerStats>();
@@ -63,7 +66,27 @@ namespace PoeClone.Player
         }
 
         public bool Refund(string id) => Allocation.Refund(id);
-        public void ResetAll() => Allocation.ResetAll();
+
+        /// <summary>Spends a respec charge to clear the whole tree; false (nothing spent) if there's
+        /// nothing to reset or no charges left.</summary>
+        public bool ResetAll()
+        {
+            if (RespecCharges <= 0 || Allocation.Spent <= 0)
+                return false;
+            RespecCharges--;
+            Allocation.ResetAll();
+            return true;
+        }
+
+        /// <summary>A major quest's reward: more full respecs.</summary>
+        public void GrantRespec(int amount)
+        {
+            RespecCharges += amount;
+            Changed?.Invoke();
+        }
+
+        /// <summary>Restoring a save.</summary>
+        public void SetRespecCharges(int value) => RespecCharges = Mathf.Max(0, value);
 
         private void Apply()
         {

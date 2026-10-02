@@ -47,6 +47,7 @@ namespace PoeClone.Quests
         public int RewardHealthPotions;
         public ItemRarity? RewardItem;  // a random item of this rarity at the quest's area level
         public int RewardItemLevel = 1;
+        public int RewardRespec;        // a full passive tree reset, earned from the major boss quests
 
         /// <summary>The tracker line, e.g. "Slay monsters in the Greenwood".</summary>
         public string Objective;
@@ -88,7 +89,8 @@ namespace PoeClone.Quests
                 Offer = "The bells were quiet for one night only. The old keepers' tales speak of Mortis, the Gravelord, sleeping in the crypt at the heart of the graveyard. He is awake.\n\nPut him down for good, and the dead will lie still.",
                 Reminder = "Mortis waits by the crypt in the Haunted Graveyard. He calls the dead to him - don't let them surround you.",
                 Thanks = "The graveyard is silent. Truly silent. Haven owes you its life - take these, and my thanks.",
-                RewardGold = 200, RewardExperience = 600, RewardHealthPotions = 3, RewardItem = ItemRarity.Rare, RewardItemLevel = 5
+                RewardGold = 200, RewardExperience = 600, RewardHealthPotions = 3, RewardItem = ItemRarity.Rare, RewardItemLevel = 5,
+                RewardRespec = 1
             },
             new QuestDefinition
             {
@@ -118,7 +120,8 @@ namespace PoeClone.Quests
                 Offer = "Their host is broken, but its master still stands at the altar of the burned temple: the Ashen Warlord, who burned the city once already.\n\nEnd this.",
                 Reminder = "The Warlord stands at the temple altar in the Ashen Ruins. When the ground glows, move.",
                 Thanks = "It's over. The smoke over the ruins is thinning already. Whatever you ask of Haven, it is yours.",
-                RewardGold = 600, RewardExperience = 2500, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 9
+                RewardGold = 600, RewardExperience = 2500, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 9,
+                RewardRespec = 1
             },
             new QuestDefinition
             {
@@ -128,7 +131,8 @@ namespace PoeClone.Quests
                 Offer = "With the Warlord gone, the scouts went further north than anyone has in years. Past the ruins the land freezes over, and something sits on a throne of ice: Rimeheart, they call her.\n\nThe cold is creeping south. This is the last thing I will ask of you.",
                 Reminder = "Through the north gate of the Ashen Ruins lies the Frozen Hollow. Her throne is at its heart. When the frost gathers at your feet, move.",
                 Thanks = "Spring is coming back to Haven. Songs will be sung about you here for as long as there is a Haven to sing them.",
-                RewardGold = 1000, RewardExperience = 4000, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 10
+                RewardGold = 1000, RewardExperience = 4000, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 10,
+                RewardRespec = 1
             },
 
             // The Guard's bounties: one at a time, round and round.

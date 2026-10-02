@@ -1,4 +1,4 @@
-version: 2026-10-03
+version: 2026-10-03b
 <b>Fixes</b>
 - An item's stats no longer stay stuck on screen after you pick it up.
 - Phones: the chat opens over the minimap and quest tracker instead of under them.
@@ -7,6 +7,7 @@ version: 2026-10-03
 - Spectators stay closer to live on slow connections: the server skips frames instead of queueing seconds of them.
 - Spectators can see whether the player they watch is on a phone or a PC.
 - Putting a weapon down no longer rings like a doorbell.
+- Phones: the stash and trade panels no longer overlap your equipment and bag.
 
 <b>Sounds</b>
 - Armour, belts and quivers make their old pickup sounds again; swords, axes and maces clang, bows knock like wood. Item sounds are all about equally loud now.

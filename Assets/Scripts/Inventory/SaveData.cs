@@ -95,6 +95,7 @@ namespace PoeClone.Inventory
         public List<PlacedRecord> stash = new List<PlacedRecord>();
         public List<EquippedRecord> equipped = new List<EquippedRecord>();
         public List<string> passives = new List<string>();
+        public int respecCharges = 1;
         public List<int> skillSlots = new List<int>();     // SkillId per slot, -1 for empty
         public List<string> questsDone = new List<string>();
         public List<QuestRecord> questsActive = new List<QuestRecord>();

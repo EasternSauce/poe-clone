@@ -48,6 +48,8 @@ namespace PoeClone.UI
         private Text pointsText;
         private Text infoText;
         private Image refundButton;
+        private Image resetButton;
+        private Text resetLabel;
         private PlayerPassives passives;
         private PassiveNode selected;
         private bool dirty = true;
@@ -166,6 +168,11 @@ namespace PoeClone.UI
             pointsText.text = unspent > 0
                 ? "<color=#FFD040>" + unspent + " passive point" + (unspent > 1 ? "s" : "") + " to spend</color>"
                 : "<color=#" + UiKit.Hex(UiKit.DimText) + ">No points to spend - one more each level</color>";
+
+            int charges = passives.RespecCharges;
+            resetLabel.text = "Reset all (" + charges + ")";
+            resetButton.color = charges > 0 ? new Color(0.18f, 0.14f, 0.10f, 1f) : new Color(0.12f, 0.10f, 0.08f, 1f);
+            resetLabel.color = charges > 0 ? UiKit.TextColor : UiKit.DimText;
 
             foreach (NodeView v in views)
             {
@@ -319,13 +326,15 @@ namespace PoeClone.UI
             UiKit.Stretch(x.rectTransform, 0f);
             close.gameObject.AddComponent<TouchPointerRelay>().Up += _ => SetOpen(false);
 
-            Image reset = NewButton(pr, "Reset", "Reset all", new Vector2(16f, -12f), new Vector2(120f, 38f));
-            reset.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
+            resetButton = NewButton(pr, "Reset", "Reset all", new Vector2(16f, -12f), new Vector2(150f, 38f));
+            resetLabel = resetButton.GetComponentInChildren<Text>();
+            resetButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {
-                if (passives != null)
-                    passives.ResetAll();
-                selected = null;
-                dirty = true;
+                if (passives != null && passives.ResetAll())
+                {
+                    selected = null;
+                    dirty = true;
+                }
             };
 
             // Links first, so the circles draw over them.

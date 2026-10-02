@@ -116,6 +116,7 @@ namespace PoeClone.Inventory
         private RectTransform panel;
         private RectTransform previewPanel;
         private RectTransform stashPanel;
+        private float panelWidth;
         private readonly RectTransform[] potionSlots = new RectTransform[2];
         private readonly Text[] potionCounts = new Text[2];
         private readonly Image[] potionOverlays = new Image[2];
@@ -363,7 +364,14 @@ namespace PoeClone.Inventory
             bool touch = TouchMode.Active;
 
             panel.gameObject.SetActive(open);
-            panel.anchoredPosition = new Vector2(-(touch ? TouchRightInset : DesktopRightInset), 0f);
+            float rightInset = touch ? TouchRightInset : DesktopRightInset;
+            panel.anchoredPosition = new Vector2(-rightInset, 0f);
+
+            // The side panel (preview or stash) sits flush against whichever edge the main panel
+            // is using; on touch that's further in, to clear the on-screen button column.
+            float sideX = -(rightInset + panelWidth + 16f);
+            previewPanel.anchoredPosition = new Vector2(sideX, 0f);
+            stashPanel.anchoredPosition = new Vector2(sideX, 0f);
 
             // No room for the character preview beside the panel on a phone.
             if (!open)
@@ -694,6 +702,7 @@ private Vector2 CellSize(int w, int h)
             float equipH = EquipRows * cellSize;
             float panelW = Mathf.Max(gridW, equipW) + Pad * 2f;
             float panelH = equipH + 24f + gridH + Pad * 2f;
+            panelWidth = panelW;
 
             // Inventory panel on the right side of the screen, like PoE.
             Image panelImage = UiKit.NewImage("Panel", canvas.transform, UiKit.PanelColor);
