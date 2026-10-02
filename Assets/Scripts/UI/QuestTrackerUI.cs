@@ -88,12 +88,22 @@ namespace PoeClone.UI
             back.gameObject.SetActive(text.text.Length > 0 && !covered);
 
             // Clear of the touch menu buttons down the right edge.
-            back.rectTransform.anchoredPosition = new Vector2(TouchMode.Active ? -140f : -16f, -16f);
+            back.rectTransform.anchoredPosition = new Vector2(TouchMode.Active ? -140f : -16f, -16f - MinimapUI.Bottom);
         }
 
         private void Rebuild()
         {
             var sb = new StringBuilder();
+
+            // Nothing taken yet and the Elder has work: point the way.
+            QuestDefinition first = log.Taken().Count == 0 ? log.CurrentFrom(NpcRole.Elder) : null;
+            if (first != null && log.State(first) == QuestState.Available)
+            {
+                Npc elder = Npc.Find(NpcRole.Elder);
+                sb.Append("<color=#FFD040>Talk to ").Append(elder != null ? elder.DisplayName : "the Elder")
+                    .Append(" in Haven</color>\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">  look for the ! over her head</color>");
+            }
+
             foreach (QuestDefinition q in log.Taken())
             {
                 if (sb.Length > 0)

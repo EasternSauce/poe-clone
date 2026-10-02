@@ -82,6 +82,7 @@ namespace PoeClone.Network
             gameObject.AddComponent<PoeClone.UI.TouchControlsUI>();
             gameObject.AddComponent<PoeClone.UI.SkillBarUI>();
             gameObject.AddComponent<PoeClone.UI.DialogueUI>();
+            gameObject.AddComponent<PoeClone.UI.MinimapUI>();
             gameObject.AddComponent<PoeClone.UI.QuestTrackerUI>();
             gameObject.AddComponent<PoeClone.UI.BossBarUI>();
             gameObject.AddComponent<PoeClone.UI.PassiveTreeUI>();
