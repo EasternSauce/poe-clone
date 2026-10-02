@@ -54,9 +54,18 @@ namespace PoeClone.Enemies
             attackCooldown = enemyKind.AttackCooldown;
         }
 
-        /// <summary>Where a caster's bolt starts: in front of the chest, scaled with the enemy.</summary>
+        /// <summary>
+        /// Where a bolt or arrow starts: a caster's staff orb, or else in front of the chest,
+        /// scaled with the enemy.
+        /// </summary>
         public static Vector3 BoltOrigin(Transform enemy)
         {
+            foreach (Transform t in enemy.GetComponentsInChildren<Transform>())
+            {
+                if (t.name == EnemyKinds.StaffOrbName)
+                    return t.position;
+            }
+
             float scale = enemy.localScale.y;
             return enemy.position + Vector3.up * 0.5f * scale + enemy.forward * 0.6f * scale;
         }

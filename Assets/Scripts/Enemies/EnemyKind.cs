@@ -353,6 +353,9 @@ namespace PoeClone.Enemies
 
         // A plain shaft with a glowing orb on top, in the caster's element colour, held in the
         // weapon hand. Built from primitives (colliders removed: it must not block hits or movement).
+        /// <summary>Name of the glowing orb on a caster's staff (bolts start there).</summary>
+        public const string StaffOrbName = "StaffOrb";
+
         private static void AddStaff(Transform model, Color orb)
         {
             Transform hand = FindChild(model, "Socket_MainHand") ?? FindChild(model, "Socket_HandR");
@@ -367,6 +370,7 @@ namespace PoeClone.Enemies
             shaft.transform.localPosition = new Vector3(0f, 0.25f, 0f);
 
             GameObject top = RuntimePrimitives.Create(PrimitiveType.Sphere, staff.transform, orb);
+            top.name = StaffOrbName;
             top.transform.localScale = Vector3.one * 0.32f;
             top.transform.localPosition = new Vector3(0f, 1.1f, 0f);
         }
