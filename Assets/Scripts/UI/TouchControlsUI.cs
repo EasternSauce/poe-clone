@@ -462,11 +462,11 @@ namespace PoeClone.UI
             TouchMode.AddBlocker(character.rectTransform);
             TouchMode.AddBlocker(chat.rectTransform);
 
-            Image tree = NewRoundButton("Tree", menu, Vector2.one, new Vector2(-70f, -510f), 96f, "TREE");
+            Image tree = NewRoundButton("Tree", menu, Vector2.one, new Vector2(-180f, -70f), 96f, "TREE");
             tree.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TogglePassives();
             TouchMode.AddBlocker(tree.rectTransform);
 
-            Image town = NewRoundButton("Town", menu, Vector2.one, new Vector2(-70f, -620f), 96f, "TOWN");
+            Image town = NewRoundButton("Town", menu, Vector2.one, new Vector2(-180f, -180f), 96f, "TOWN");
             town.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TownPortal.Pressed = true;
             TouchMode.AddBlocker(town.rectTransform);
 

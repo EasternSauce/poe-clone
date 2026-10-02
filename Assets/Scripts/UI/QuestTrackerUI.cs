@@ -22,6 +22,7 @@ namespace PoeClone.UI
         private CharacterPageUI characterUI;
         private bool dirty = true;
         private int npcCount = -1;
+        private bool laidOutForTouch;
 
         private void Awake()
         {
@@ -65,6 +66,13 @@ namespace PoeClone.UI
                 return;
             }
 
+            // Phone and desktop lay the text out differently.
+            if (TouchMode.Active != laidOutForTouch)
+            {
+                laidOutForTouch = TouchMode.Active;
+                dirty = true;
+            }
+
             // NPCs appear after the world is built; give them their markers once they're there.
             if (Npc.All.Count != npcCount)
             {
@@ -87,8 +95,8 @@ namespace PoeClone.UI
                            SkillBarUI.IsOpen || DialogueUI.IsOpen || PassiveTreeUI.IsOpen;
             back.gameObject.SetActive(text.text.Length > 0 && !covered);
 
-            // Clear of the touch menu buttons down the right edge.
-            back.rectTransform.anchoredPosition = new Vector2(TouchMode.Active ? -140f : -16f, -16f - MinimapUI.Bottom);
+            // Clear of the touch menu buttons (two columns down the right edge).
+            back.rectTransform.anchoredPosition = new Vector2(TouchMode.Active ? -250f : -16f, -16f - MinimapUI.Bottom);
         }
 
         private void Rebuild()
@@ -123,7 +131,8 @@ namespace PoeClone.UI
             }
 
             text.text = sb.ToString();
-            const float width = 440f;
+            float width = TouchMode.Active ? 360f : 440f;
+            text.fontSize = TouchMode.Active ? 16 : 18;
             text.rectTransform.sizeDelta = Vector2.zero;
             back.rectTransform.sizeDelta = new Vector2(width, 0f);
             float height = text.preferredHeight;

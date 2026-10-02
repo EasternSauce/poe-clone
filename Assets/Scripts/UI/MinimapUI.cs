@@ -35,7 +35,10 @@ namespace PoeClone.UI
         private CharacterPageUI characterUI;
 
         /// <summary>How far down from the top the map reaches (others stack below it), 0 when hidden.</summary>
-        public static float Bottom => instance != null && instance.frame != null && instance.frame.gameObject.activeSelf ? Size + 16f : 0f;
+        public static float Bottom => instance != null && instance.frame != null && instance.frame.gameObject.activeSelf ? Size * Scale + 16f : 0f;
+
+        // Smaller on a phone, where the screen is already full of buttons.
+        private static float Scale => TouchMode.Active ? 0.7f : 1f;
 
         private void Awake()
         {
@@ -97,7 +100,8 @@ namespace PoeClone.UI
             if (!frame.gameObject.activeSelf)
                 return;
 
-            frame.anchoredPosition = new Vector2(TouchMode.Active ? -140f : -16f, -16f);
+            frame.anchoredPosition = new Vector2(TouchMode.Active ? -250f : -16f, -16f);
+            frame.localScale = Vector3.one * Scale;
 
             // Turn the map with the camera, so it matches what's on screen.
             Camera cam = Camera.main;

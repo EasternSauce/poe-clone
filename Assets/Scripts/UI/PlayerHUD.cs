@@ -245,7 +245,7 @@ namespace PoeClone.UI
                 GUILayout.Space(20f);
 
                 GUILayout.Label(
-                    "WASD / Arrow Keys - Move | Shift - Sprint | Q E R F - Skills | 1 2 - Potions | T - Town portal\nK - Skill list | P - Passives | I - Inventory | C - Character | Enter - Chat",
+                    "WASD / Arrow Keys - Move | Shift - Sprint | Q E R F - Skills | 1 2 - Potions | T - Town portal\nK - Skill list | P - Passives | I - Inventory | C - Character | M - Map | Enter - Chat",
                     textStyle
                 );
             }
