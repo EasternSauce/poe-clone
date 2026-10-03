@@ -56,6 +56,13 @@ namespace PoeClone.Inventory
         }
     }
 
+    /// <summary>One stash tab's items.</summary>
+    [Serializable]
+    public class StashTabRecord
+    {
+        public List<PlacedRecord> items = new List<PlacedRecord>();
+    }
+
     [Serializable]
     public class PlacedRecord
     {
@@ -93,7 +100,8 @@ namespace PoeClone.Inventory
         public int healthPotions;
         public int manaPotions;
         public List<PlacedRecord> bag = new List<PlacedRecord>();
-        public List<PlacedRecord> stash = new List<PlacedRecord>();
+        public List<PlacedRecord> stash = new List<PlacedRecord>();           // the first stash tab
+        public List<StashTabRecord> stashTabs = new List<StashTabRecord>(); // the other tabs, in order
         public List<EquippedRecord> equipped = new List<EquippedRecord>();
         public List<string> passives = new List<string>();
         public int respecCharges = 1;
@@ -103,6 +111,16 @@ namespace PoeClone.Inventory
         public List<int> visited = new List<int>();
         public List<string> mapSeen = new List<string>();  // minimap fog of war, per area (MinimapTerrain)
         public bool gearSkills;                            // saved since skills come from gear (older characters get a staff once)
+
+        private static void RestoreTab(InventoryGrid tab, List<PlacedRecord> records, List<ItemData> leftOver)
+        {
+            foreach (PlacedRecord p in records)
+            {
+                ItemData item = p != null && p.item != null ? p.item.ToItem() : null;
+                if (item != null && !tab.TryPlace(item, p.x, p.y) && !tab.TryAutoPlace(item))
+                    leftOver.Add(item);
+            }
+        }
 
         /// <summary>Copies the bag and worn gear into this save.</summary>
         public void CaptureInventory(PlayerInventory inventory)
@@ -114,8 +132,16 @@ namespace PoeClone.Inventory
             if (stash == null)
                 stash = new List<PlacedRecord>();
             stash.Clear();
-            foreach (PlacedItem placed in inventory.Stash.Items)
+            foreach (PlacedItem placed in inventory.StashTabs[0].Items)
                 stash.Add(new PlacedRecord { item = ItemRecord.From(placed.Item), x = placed.X, y = placed.Y });
+            stashTabs = new List<StashTabRecord>();
+            for (int k = 1; k < inventory.StashTabs.Length; k++)
+            {
+                var tab = new StashTabRecord();
+                foreach (PlacedItem placed in inventory.StashTabs[k].Items)
+                    tab.items.Add(new PlacedRecord { item = ItemRecord.From(placed.Item), x = placed.X, y = placed.Y });
+                stashTabs.Add(tab);
+            }
 
             equipped.Clear();
             foreach (EquipSlot slot in SlotRules.AllSlots)
@@ -157,12 +183,13 @@ namespace PoeClone.Inventory
             }
 
             if (stash != null)
+                RestoreTab(inventory.StashTabs[0], stash, leftOver);
+            if (stashTabs != null)
             {
-                foreach (PlacedRecord p in stash)
+                for (int k = 0; k < stashTabs.Count && k + 1 < inventory.StashTabs.Length; k++)
                 {
-                    ItemData item = p.item != null ? p.item.ToItem() : null;
-                    if (item != null && !inventory.Stash.TryPlace(item, p.x, p.y) && !inventory.Stash.TryAutoPlace(item))
-                        leftOver.Add(item);
+                    if (stashTabs[k] != null && stashTabs[k].items != null)
+                        RestoreTab(inventory.StashTabs[k + 1], stashTabs[k].items, leftOver);
                 }
             }
 

@@ -21,7 +21,21 @@ namespace PoeClone.Inventory
         public const int StashSize = 12;
 
         public InventoryGrid Grid { get; private set; }
-        public InventoryGrid Stash { get; private set; }
+        /// <summary>How many stash tabs there are (each a StashSize square).</summary>
+        public const int StashTabCount = 6;
+
+        /// <summary>Every stash tab; <see cref="Stash"/> is the one showing.</summary>
+        public InventoryGrid[] StashTabs { get; private set; }
+
+        /// <summary>Which stash tab is showing.</summary>
+        public int StashTab { get; private set; }
+
+        public InventoryGrid Stash => StashTabs[StashTab];
+
+        public void SetStashTab(int tab)
+        {
+            StashTab = Mathf.Clamp(tab, 0, StashTabCount - 1);
+        }
         public EquipmentSet Equipment { get; private set; }
         public StatSheet Stats { get; private set; }
 
@@ -124,7 +138,9 @@ namespace PoeClone.Inventory
         private void Awake()
         {
             Grid = new InventoryGrid(gridWidth, gridHeight);
-            Stash = new InventoryGrid(StashSize, StashSize);
+            StashTabs = new InventoryGrid[StashTabCount];
+            for (int k = 0; k < StashTabCount; k++)
+                StashTabs[k] = new InventoryGrid(StashSize, StashSize);
             Equipment = new EquipmentSet();
             Equipment.Changed += (slot, item) => Recalculate();
             Stats = StatSheet.Build(baseStats, Equipment);

@@ -324,6 +324,13 @@ namespace PoeClone.Inventory
             return rt;
         }
 
+        /// <summary>Calls back when the graphic is clicked or tapped.</summary>
+        public static void OnClick(Graphic graphic, System.Action onClick)
+        {
+            graphic.raycastTarget = true;
+            graphic.gameObject.AddComponent<ClickRelay>().Clicked += onClick;
+        }
+
         private sealed class ClickRelay : MonoBehaviour, IPointerClickHandler
         {
             public event System.Action Clicked;

@@ -134,6 +134,9 @@ namespace PoeClone.Inventory
         // The grid in the side panel: the open trader's goods, or the stash.
         private InventoryGrid SideGrid => vendor != null ? vendor.Grid : inventory.Stash;
         private const float StashCell = 44f;
+        private const float TabRowHeight = 34f;
+        private RectTransform stashTabRow;
+        private Image[] stashTabButtons;
         private const float StashReach = 5f;
         private RectTransform gridArea;
         private RectTransform gridItems;
@@ -615,6 +618,8 @@ namespace PoeClone.Inventory
             }
             previewPanel.gameObject.SetActive(open && !touch && !stashOpen);
             stashPanel.gameObject.SetActive(open && stashOpen);
+            if (stashTabRow != null)
+                stashTabRow.gameObject.SetActive(open && stashOpen && vendor == null);
 
             if (preview != null)
                 preview.SetActive(open && !touch && !stashOpen);
@@ -720,7 +725,7 @@ namespace PoeClone.Inventory
             stashPanel.anchorMax = new Vector2(1f, 0.5f);
             stashPanel.pivot = new Vector2(1f, 0.5f);
             stashPanel.anchoredPosition = new Vector2(-(30f + panelW + 16f), 0f);
-            stashPanel.sizeDelta = new Vector2(gridSize + Pad * 2f, gridSize + Pad * 2f + 34f + NoteHeight);
+            stashPanel.sizeDelta = new Vector2(gridSize + Pad * 2f, gridSize + Pad * 2f + 34f + TabRowHeight + NoteHeight);
             UiKit.AddOutline(back, UiKit.BorderColor, 3f);
             TouchMode.AddMenuBlocker(stashPanel);
             UiKit.CloseButton(stashPanel, () =>
@@ -743,7 +748,31 @@ namespace PoeClone.Inventory
             stashArea.anchorMin = new Vector2(0.5f, 1f);
             stashArea.anchorMax = new Vector2(0.5f, 1f);
             stashArea.pivot = new Vector2(0.5f, 1f);
-            stashArea.anchoredPosition = new Vector2(0f, -(Pad + 34f));
+            stashArea.anchoredPosition = new Vector2(0f, -(Pad + 34f + TabRowHeight));
+
+            // Stash tabs: a row of numbered buttons under the title (hidden for a trader's goods).
+            stashTabRow = UiKit.NewRect("StashTabs", stashPanel);
+            UiKit.TopLeft(stashTabRow, new Vector2(Pad, -(Pad + 30f)), new Vector2(gridSize, TabRowHeight - 4f));
+            float tabWidth = (gridSize - 4f * (PlayerInventory.StashTabCount - 1)) / PlayerInventory.StashTabCount;
+            stashTabButtons = new Image[PlayerInventory.StashTabCount];
+            for (int k = 0; k < PlayerInventory.StashTabCount; k++)
+            {
+                int tab = k;
+                Image button = UiKit.NewImage("Tab" + (k + 1), stashTabRow, CellColor);
+                UiKit.TopLeft(button.rectTransform, new Vector2(k * (tabWidth + 4f), 0f), new Vector2(tabWidth, TabRowHeight - 4f));
+                UiKit.AddOutline(button, UiKit.BorderColor, 1.5f);
+                Text label = UiKit.NewText("Label", button.rectTransform, "Tab " + (k + 1), 16, UiKit.TextColor, TextAnchor.MiddleCenter);
+                UiKit.Stretch(label.rectTransform, 0f);
+                label.raycastTarget = false;
+                UiKit.OnClick(button, () =>
+                {
+                    inventory.SetStashTab(tab);
+                    gridDirty = true;
+                    for (int b = 0; b < stashTabButtons.Length; b++)
+                        stashTabButtons[b].color = b == tab ? UiKit.Gold * 0.6f : CellColor;
+                });
+                stashTabButtons[k] = button;
+            }
             stashArea.sizeDelta = new Vector2(gridSize, gridSize);
 
             Image lines = UiKit.NewImage("GridLines", stashArea, GridLineColor);
