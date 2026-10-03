@@ -1,4 +1,4 @@
-Version: 2026-10-03r
+version: 2026-10-03r
 <b>The Summoner</b>
 - Minions now fight for real: enemies attack a minion that is nearer than you (and always a Bone Golem close to them), and minions have life of their own (a green bar when hurt).
 - Minions don't use your own damage, life or Intelligence. Their life and damage come from the summon's level (steeply, level by level) and from new minion stats: Minion Life, Minion Damage, Minion Speed, Minions take less damage. Without investing in them they fall in a few hits - a summoner who wants an army that holds the line has to build for it.
