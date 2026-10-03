@@ -37,6 +37,7 @@ namespace PoeClone.Enemies
         private EnemyHealth health;
         private CharacterController body;
         private CharacterAttackAnimator attackAnimator;
+        private EnemyController controller;
         private Stagger stagger;
         private PlayerStats player;
         private float nextUse;
@@ -57,6 +58,7 @@ namespace PoeClone.Enemies
             health = GetComponent<EnemyHealth>();
             body = GetComponent<CharacterController>();
             stagger = GetComponent<Stagger>();
+            controller = GetComponent<EnemyController>();
             health.Died += OnDied;
         }
 
@@ -87,6 +89,8 @@ namespace PoeClone.Enemies
                     return;
             }
 
+            TrackPlayer();
+
             if (player.IsDead || Time.time < nextUse || Busy)
                 return;
             if ((stagger != null && stagger.IsStaggered) || (attackAnimator != null && attackAnimator.IsAttacking))
@@ -113,6 +117,7 @@ namespace PoeClone.Enemies
                 case EnemySkill.Blink: return distance > 4f && distance < 14f;
                 case EnemySkill.WarCry: return distance < 14f && AnyHurtAllyNear();
                 case EnemySkill.Summon: return distance < 14f && minions.FindAll(m => m != null && !m.IsDead).Count < MaxMinions;
+                case EnemySkill.Leap: return distance > 3f && distance < LeapMaxDistance - 2f;
                 default: return false;
             }
         }
@@ -125,8 +130,10 @@ namespace PoeClone.Enemies
                 transform.rotation = Quaternion.LookRotation(facing);
 
             UseCount++;
+            if (kind.Skill == EnemySkill.Leap)
+                target = LeapLanding(transform.position, PredictPlayer(LeapCrouch + LeapAir), LeapGap(transform));
             LastTarget = kind.Skill == EnemySkill.Slam ? transform.position : target;
-            float damage = kind.Damage * EnemyKinds.DamageScale(level);
+            float damage = kind.Damage * EnemyKinds.DamageScale(level) * (controller != null ? controller.DamageMultiplier : 1f);
 
             switch (kind.Skill)
             {
@@ -155,7 +162,131 @@ namespace PoeClone.Enemies
                 case EnemySkill.Summon:
                     Summon();
                     break;
+                case EnemySkill.Leap:
+                    StartCoroutine(Leap(target, damage * 1.4f));
+                    break;
             }
+        }
+
+        // Crouches, springs into the air in a fast arc and comes down where the player is heading
+        // (a glow shows where from the moment it crouches), hitting everything round the landing.
+        // Anyone it passes through low on the way is hit too (once: then the landing doesn't).
+        // A stagger while it's still crouched calls the jump off.
+        private IEnumerator Leap(Vector3 landing, float damage)
+        {
+            busyUntil = Time.time + LeapCrouch + LeapAir + 0.3f;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(LeapCrouch);
+
+            bool calledOff = false;
+            bool struck = false;
+            float radius = LeapRadius(transform);
+            StartCoroutine(GroundTelegraph.Run(landing, radius, LeapCrouch + LeapAir, kind.DamageType, center =>
+            {
+                if (calledOff)
+                    return;
+                if (!struck)
+                    HitIfInside(center, radius, damage);
+                SkillEffects.Shockwave(center, radius, DustColor, 0.35f);
+            }));
+
+            for (float t = 0f; t < LeapCrouch; t += Time.deltaTime)
+            {
+                if (health.IsDead || (stagger != null && stagger.IsStaggered))
+                {
+                    calledOff = true;
+                    busyUntil = Time.time;
+                    yield break;
+                }
+                yield return null;
+            }
+
+            Vector3 start = transform.position;
+            landing.y = start.y;
+            Vector3 flat = Flat(landing - start);
+            float height = Mathf.Lerp(1.0f, 2.2f, flat.magnitude / LeapMaxDistance) * Mathf.Max(0.6f, transform.localScale.y);
+            if (flat.sqrMagnitude > 0.01f)
+                transform.rotation = Quaternion.LookRotation(flat);
+            SkillEffects.Shockwave(start, 1.0f * transform.localScale.x, DustColor, 0.3f);
+
+            float gap = LeapGap(transform);
+            for (float t = 0f; t < LeapAir && !health.IsDead; t += Time.deltaTime)
+            {
+                float f = Mathf.Clamp01(t / LeapAir);
+                float rise = height * 4f * f * (1f - f);
+                Vector3 want = Vector3.Lerp(start, landing, f) + Vector3.up * rise;
+                body.Move(KeepClear(want, gap) - transform.position);
+
+                // In the way: still low enough to bowl into the player rather than sail over them.
+                if (!struck && player != null && !player.IsDead && rise < 1.5f &&
+                    Flat(player.transform.position - transform.position).magnitude < gap + 0.3f)
+                {
+                    struck = true;
+                    player.TakeHit(damage, kind.DamageType);
+                    SkillEffects.Shockwave(player.transform.position, 1.2f, DustColor, 0.3f);
+                }
+                yield return null;
+            }
+            if (!health.IsDead)
+                body.Move(KeepClear(landing, gap) - transform.position + Vector3.down * 0.2f);
+        }
+
+        // Never comes down on top of the player (the colliders would overlap and it would end up
+        // standing on their head): wherever the player has moved to, it stays this far off.
+        private Vector3 KeepClear(Vector3 want, float gap)
+        {
+            if (player == null)
+                return want;
+            Vector3 away = Flat(want - player.transform.position);
+            if (away.magnitude >= gap)
+                return want;
+            Vector3 dir = away.sqrMagnitude > 0.0001f ? away.normalized : Flat(transform.position - player.transform.position).normalized;
+            Vector3 p = player.transform.position + dir * gap;
+            return new Vector3(p.x, want.y, p.z);
+        }
+
+        // The player's ground speed, measured from how they move (their controller's own velocity
+        // reads zero), smoothed so a single odd frame doesn't throw the aim.
+        private Vector3 playerVelocity;
+        private Vector3 lastPlayerPosition;
+        private bool trackingPlayer;
+
+        private void TrackPlayer()
+        {
+            Vector3 at = player.transform.position;
+            if (trackingPlayer && Time.deltaTime > 0f)
+            {
+                Vector3 step = Flat(at - lastPlayerPosition) / Time.deltaTime;
+                if (step.magnitude > 30f)
+                    step = Vector3.zero; // a teleport, not a run
+                playerVelocity = Vector3.Lerp(playerVelocity, step, 1f - Mathf.Exp(-10f * Time.deltaTime));
+            }
+            lastPlayerPosition = at;
+            trackingPlayer = true;
+        }
+
+        // Where the player will be in this many seconds if they keep going the way they are.
+        private Vector3 PredictPlayer(float seconds)
+        {
+            Vector3 at = player.transform.position + playerVelocity * seconds;
+
+            // No further than it can jump.
+            Vector3 reach = Flat(at - transform.position);
+            if (reach.magnitude > LeapMaxDistance)
+                at = transform.position + reach.normalized * LeapMaxDistance;
+            at.y = player.transform.position.y;
+            return at;
+        }
+
+        // The player's collider plus its own, with a little room to spare.
+        private static float LeapGap(Transform body) => 0.5f + 0.6f * body.localScale.x + 0.35f;
+
+        // Comes down just short of the player rather than on top of them.
+        private static Vector3 LeapLanding(Vector3 from, Vector3 target, float gap)
+        {
+            Vector3 flat = Flat(target - from);
+            if (flat.magnitude > gap)
+                target -= flat.normalized * gap;
+            return target;
         }
 
         private void HitIfInside(Vector3 center, float radius, float damage)
@@ -268,6 +399,9 @@ namespace PoeClone.Enemies
         // ------------------------------------------------------------------ shared with spectators
 
         private const float SlamWindUp = 0.9f;
+        private const float LeapCrouch = 0.3f;
+        private const float LeapAir = 0.42f;
+        private const float LeapMaxDistance = 14f;
         private const float StrikeRadius = 2.2f;
         private const float WarCryRadius = 8f;
 
@@ -277,6 +411,7 @@ namespace PoeClone.Enemies
         private static readonly Color BlinkColor = new Color(0.55f, 1f, 0.8f);
 
         private static float SlamRadius(EnemyKind kind, Transform body) => 2.6f * body.localScale.y;
+        private static float LeapRadius(Transform body) => 1.7f * Mathf.Max(0.8f, body.localScale.y);
 
         // Lightning comes down faster than fire or ice.
         private static float StrikeWindUp(EnemyKind kind) => kind.DamageType == DamageType.Lightning ? 0.7f : 1.1f;
@@ -328,6 +463,11 @@ namespace PoeClone.Enemies
                     break;
                 case EnemySkill.Summon:
                     SkillEffects.Shockwave(body.position, 2.5f, SummonColor, 0.5f);
+                    break;
+                case EnemySkill.Leap:
+                    float leapRadius = LeapRadius(body);
+                    host.StartCoroutine(GroundTelegraph.Run(target, leapRadius, LeapCrouch + LeapAir, kind.DamageType,
+                        center => SkillEffects.Shockwave(center, leapRadius, DustColor, 0.35f)));
                     break;
             }
         }

@@ -26,6 +26,7 @@ namespace PoeClone.Enemies
 
         private EnemyKind kind = EnemyKinds.Get(0);
         private CharacterAttackAnimator attackAnimator;
+        private EnemyController controller;
         private PlayerStats playerStats;
         private Stagger stagger;
 
@@ -64,6 +65,9 @@ namespace PoeClone.Enemies
         {
             foreach (Transform t in enemy.GetComponentsInChildren<Transform>())
             {
+                // A creature spits from its mouth.
+                if (t.name == CreatureAnimator.MouthName && t.GetComponentInParent<CreatureAnimator>() != null)
+                    return t.position;
                 if (t.name != EnemyKinds.StaffOrbName)
                     continue;
                 Transform staff = t.parent;
@@ -78,6 +82,7 @@ namespace PoeClone.Enemies
         private void Start()
         {
             playerStats = FindAnyObjectByType<PlayerStats>();
+            controller = GetComponent<EnemyController>();
             attackAnimator.StrikeFrame += OnStrikeFrame;
             attackAnimator.AttackCancelled += OnAttackCancelled;
         }
@@ -115,9 +120,13 @@ namespace PoeClone.Enemies
             // Archers draw their bow like the player does; everyone else swipes.
             if (kind.Bow)
                 attackAnimator.PlayAttack(WeaponType.Bow);
+            else if (kind.IsCreature)
+                attackAnimator.PlayCreatureAttack(kind.IsRanged);
             else
                 attackAnimator.PlayClawAttack();
-            cooldownTimer = attackCooldown;
+            if (kind.IsCreature)
+                EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
+            cooldownTimer = attackCooldown / (controller != null ? controller.AttackSpeedMultiplier : 1f);
         }
 
         // Same rule as the player: a swing cut short by a stagger refunds its cooldown.
@@ -145,7 +154,8 @@ namespace PoeClone.Enemies
         private float RollDamage()
         {
             float spread = kind.DamageType == DamageType.Lightning ? 0.6f : 0.15f;
-            return damage * Random.Range(1f - spread, 1f + spread);
+            float rage = controller != null ? controller.DamageMultiplier : 1f;
+            return damage * rage * Random.Range(1f - spread, 1f + spread);
         }
 
         private float DistanceToPlayer()

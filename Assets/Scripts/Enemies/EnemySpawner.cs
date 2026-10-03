@@ -110,14 +110,32 @@ namespace PoeClone.Enemies
 
             player = FindAnyObjectByType<PlayerController>();
 
+            // Pack animals bring the rest of their pack (counted towards the total).
             int spawned = 0;
-            for (int i = 0; i < enemyCount; i++)
+            int misses = 0;
+            while (spawned < enemyCount && misses < enemyCount)
             {
                 Vector3 playerPos = player != null ? player.transform.position : Vector3.zero;
-                if (TryFindSpawnPoint(playerPos, Mathf.Max(minDistanceFromPlayer, StartSafeRadius), out Vector3 point))
+                if (!TryFindSpawnPoint(playerPos, Mathf.Max(minDistanceFromPlayer, StartSafeRadius), out Vector3 point))
                 {
-                    Spawn(point);
-                    spawned++;
+                    misses++;
+                    continue;
+                }
+
+                int kindIndex = EnemyKinds.PickIndex(kindWeights);
+                Spawn(point, kindIndex);
+                spawned++;
+
+                int pack = EnemyKinds.Get(kindIndex).PackSize;
+                if (pack > 0)
+                    pack = Random.Range(1, pack + 1);
+                for (int k = 0; k < pack && spawned < enemyCount; k++)
+                {
+                    if (TryFindSpawnPointNear(point, out Vector3 near) && (near - playerPos).magnitude > StartSafeRadius)
+                    {
+                        Spawn(near, kindIndex);
+                        spawned++;
+                    }
                 }
             }
 
@@ -148,7 +166,7 @@ namespace PoeClone.Enemies
                 // A blocked spot (something moved in) is retried on a later check.
                 if (TryFindSpawnPointNear(v.Position, out Vector3 point))
                 {
-                    Spawn(point);
+                    Spawn(point, EnemyKinds.PickIndex(kindWeights));
                     vacancies.RemoveAt(k);
                 }
             }
@@ -159,10 +177,9 @@ namespace PoeClone.Enemies
             vacancies.Add(new Vacancy { Position = position, DiedAt = Time.time });
         }
 
-        private void Spawn(Vector3 point)
+        private void Spawn(Vector3 point, int kindIndex)
         {
             // Bigger kinds stand taller: lift the pivot so their feet start on the ground, not in it.
-            int kindIndex = EnemyKinds.PickIndex(kindWeights);
             point.y = spawnHeight * EnemyKinds.Get(kindIndex).Scale;
 
             Quaternion rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);

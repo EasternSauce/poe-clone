@@ -13,3 +13,15 @@ version: 2026-10-03h
 - A slain boss returns after two minutes, but only once you are well away from its lair.
 <b>Interface</b>
 - The inventory, stash/trader and character windows have an X button to close them.
+<b>Monsters</b>
+- New creatures roam the wilds: giant spiders, dire wolf packs and bog slimes in Greenwood; grave bat swarms, corpse oozes and crypt spiders in the Graveyard; magma beetles and hellhound packs in the Ashen Ruins; frost wolves and ice crawlers in the Frozen Hollow.
+- Slimes and oozes burst into smaller ones when killed.
+- Spiders, wolves and slimes leap at you, aiming where you are heading: a glow on the ground shows where they will land, and anyone in their path is hit too.
+- Every creature has its own sounds, movement and death.
+- Humanoid monsters (and you) now breathe while standing still and put their whole body into each swing.
+- Monsters move faster, and keep chasing you much further.
+- Hit a monster from a distance and it may become enraged for a few seconds: much faster, hitting harder and attacking quicker.
+- Small creatures like slimelings can now be hit by arrows, spells and melee.
+- The minimap spots monsters further away, even in ground you haven't explored yet.
+<b>World</b>
+- Removed the gate in the Ashen Ruins that led straight back to Haven; use the town portal or a waystone to go home.

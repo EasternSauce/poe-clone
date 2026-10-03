@@ -22,7 +22,7 @@ namespace PoeClone.UI
         public const float Size = 210f;
         private const float AreaSize = AreaShape.MaxRadius * 2f; // the widest any area reaches
         private const float Refresh = 0.25f;
-        private const float MonsterRange = 18f; // close by only: the map is not a radar
+        private const float MonsterRange = 34f; // about twice the screen's reach: you see what's coming
 
         private static MinimapUI instance;
 
@@ -165,9 +165,9 @@ namespace PoeClone.UI
                     Dot(npc.transform.position, centre, new Color(1f, 0.92f, 0.45f), 9f, square: false);
             }
 
-            // Like everything on the map, only what the player has discovered (fog of war).
-            // Monsters only where the player has been, and close by: the map is a memory of
-            // the ground, not a radar.
+            // Monsters within spotting range show even in ground not yet uncovered: spotting
+            // them is the point, a little ahead of when they come on screen. Further off,
+            // nothing: the map is not a radar.
             Vector3 me = player.transform.position;
             foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>())
             {
@@ -175,10 +175,10 @@ namespace PoeClone.UI
                     continue;
                 Vector3 offset = enemy.transform.position - me;
                 offset.y = 0f;
-                if (offset.sqrMagnitude > MonsterRange * MonsterRange || !MinimapTerrain.IsSeen(area, enemy.transform.position))
+                if (offset.sqrMagnitude > MonsterRange * MonsterRange)
                     continue;
                 bool boss = EnemyKinds.Get(enemy.KindIndex).IsBoss;
-                Dot(enemy.transform.position, centre, boss ? new Color(1f, 0.25f, 0.6f) : new Color(0.9f, 0.2f, 0.15f), boss ? 13f : 6f, square: false);
+                Dot(enemy.transform.position, centre, boss ? new Color(1f, 0.25f, 0.6f) : new Color(0.9f, 0.2f, 0.15f), boss ? 13f : 8f, square: false);
             }
 
             for (int k = used; k < pool.Count; k++)

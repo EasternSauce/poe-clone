@@ -4,6 +4,7 @@ using UnityEngine;
 using PoeClone.Audio;
 using PoeClone.Combat;
 using PoeClone.Player;
+using PoeClone.Skills;
 using PoeClone.Visuals;
 using PoeClone.World;
 
@@ -38,6 +39,9 @@ namespace PoeClone.Enemies
 
         /// <summary>How tough this one is (areas deeper in the world spawn higher levels).</summary>
         public int MonsterLevel { get; private set; } = 1;
+
+        /// <summary>How high above the pivot (before scaling) its health bar floats.</summary>
+        public float BarHeight => EnemyKinds.Get(KindIndex).BarHeight;
 
         public event Action Damaged;
         public event Action Died;
@@ -136,7 +140,8 @@ namespace PoeClone.Enemies
             currentHealth = 0f;
             Died?.Invoke();
             DisableLiveBehaviour();
-            CharacterDeathAnimator.PlayOn(transform, foldLowerBody: false);
+            if (PlayDeathPose(instant))
+                return;
 
             if (instant)
             {
@@ -169,8 +174,7 @@ namespace PoeClone.Enemies
             dead = true;
             Died?.Invoke();
 
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.enemyDeath, transform.position);
+            EnemySounds.Play(EnemyKinds.Get(KindIndex), EnemySounds.Event.Death, transform.position);
 
             DisableLiveBehaviour();
 
@@ -188,12 +192,67 @@ namespace PoeClone.Enemies
                 LootDrop.Drop(Inventory.UniqueItems.Random(new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue))), transform.position);
             KillRewards.Grant(EnemyKinds.Get(KindIndex), MonsterLevel, transform.position);
 
-            // foldLowerBody: false -- the root topple below already lies the whole rig on the
-            // ground, so the big local leg/knee/upper-body fold used for the player (who has no
-            // topple) would double up on top of it and bury the legs under the torso.
-            CharacterDeathAnimator.PlayOn(transform, foldLowerBody: false);
+            if (kind.SplitInto >= 0)
+                SplitApart(kind.SplitInto);
+
+            if (PlayDeathPose(instant: false))
+            {
+                StartCoroutine(RemoveCorpse());
+                return;
+            }
 
             StartCoroutine(Collapse(removeCorpse: true));
+        }
+
+        // A creature has a death of its own (it lies where it falls, no topple); a humanoid gets
+        // the limb collapse. foldLowerBody: false -- the root topple (Collapse) already lies the
+        // whole rig on the ground, so the big local leg/knee/upper-body fold used for the player
+        // (who has no topple) would double up on top of it and bury the legs under the torso.
+        // Returns whether it was a creature.
+        private bool PlayDeathPose(bool instant)
+        {
+            CreatureAnimator creature = GetComponentInChildren<CreatureAnimator>();
+            if (creature != null)
+            {
+                creature.PlayDeath(instant);
+                return true;
+            }
+
+            CharacterDeathAnimator.PlayOn(transform, foldLowerBody: false);
+            return false;
+        }
+
+        // A slime bursts into two small ones, which hop out either side already after the player.
+        // Like a necromancer's skeletons they're extras: nothing respawns in their place.
+        private void SplitApart(int kindIndex)
+        {
+            EnemySpawner spawner = GetComponentInParent<EnemySpawner>();
+            if (spawner == null || spawner.EnemyPrefab == null)
+                return;
+
+            float ground = transform.position.y - transform.localScale.y;
+            float childScale = EnemyKinds.Get(kindIndex).Scale;
+            Vector3 side = transform.right;
+            for (int k = -1; k <= 1; k += 2)
+            {
+                Vector3 at = transform.position + side * (k * 0.9f * transform.localScale.x);
+                at.y = ground + childScale;
+                GameObject child = Instantiate(spawner.EnemyPrefab, at, transform.rotation * Quaternion.Euler(0f, k * 50f, 0f), transform.parent);
+                EnemyKinds.Apply(child, kindIndex, MonsterLevel);
+                EnemyController ai = child.GetComponent<EnemyController>();
+                if (ai != null)
+                    ai.Alert();
+            }
+            SkillEffects.Shockwave(transform.position, 1.6f * transform.localScale.x, EnemyKinds.Get(kindIndex).Skin, 0.4f);
+        }
+
+        // A creature's body stays where it fell (its own animation laid it down), then sinks away.
+        private IEnumerator RemoveCorpse()
+        {
+            if (corpseSeconds <= 0f)
+                yield break;
+            yield return new WaitForSeconds(corpseSeconds);
+            yield return SinkAndDestroy();
         }
 
         // Topples the whole root forward (pivoting on the character's own position, roughly hip
@@ -228,7 +287,11 @@ namespace PoeClone.Enemies
                 yield break;
 
             yield return new WaitForSeconds(corpseSeconds);
+            yield return SinkAndDestroy();
+        }
 
+        private IEnumerator SinkAndDestroy()
+        {
             Vector3 lying = transform.position;
             Vector3 buried = lying + Vector3.down * 1.5f;
             const float sinkSeconds = 2f;

@@ -79,6 +79,28 @@ namespace PoeClone.Audio
             AudioSource.PlayClipAtPoint(clip, position, sfxVolume * volumeScale);
         }
 
+        /// <summary>Like PlayClipAtPoint, at a pitch of its own (a throwaway source that removes itself).</summary>
+        public void PlayAtPoint(AudioClip clip, Vector3 position, float volumeScale, float pitch)
+        {
+            if (clip == null)
+                return;
+            if (Mathf.Approximately(pitch, 1f))
+            {
+                PlayAtPoint(clip, position, volumeScale);
+                return;
+            }
+
+            var go = new GameObject("One shot audio");
+            go.transform.position = position;
+            AudioSource source = go.AddComponent<AudioSource>();
+            source.clip = clip;
+            source.spatialBlend = 1f;
+            source.pitch = pitch;
+            source.volume = sfxVolume * volumeScale;
+            source.Play();
+            Destroy(go, clip.length / Mathf.Max(0.1f, pitch) + 0.1f);
+        }
+
         public void PlayRandomAtPoint(AudioClip[] clips, Vector3 position)
         {
             if (clips == null || clips.Length == 0)

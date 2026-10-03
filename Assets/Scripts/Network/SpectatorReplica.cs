@@ -657,15 +657,19 @@ namespace PoeClone.Network
                 // to e's position: the real body may already be part-way through its fall in this
                 // snapshot, and the local collapse would then sink it twice as far.
                 puppet.Health.ApplyReplicatedDeath(instant: false);
-                PlaySfx(AudioManager.Instance != null ? Pick(AudioManager.Instance.enemyDeath) : null, at);
+                EnemySounds.Play(EnemyKinds.Get(e.k), EnemySounds.Event.Death, at);
                 return;
             }
 
             if (e.ch != 0 && prev.ch == 0)
-                PlaySfx(AudioManager.Instance != null ? Pick(AudioManager.Instance.enemyAggro) : null, at);
+                EnemySounds.Play(EnemyKinds.Get(e.k), EnemySounds.Event.Aggro, at);
 
             if (e.atk > prev.atk && puppet.Attack != null)
+            {
                 puppet.Attack.PlayReplicated(e.ap);
+                if (EnemyKinds.Get(e.k).IsCreature)
+                    EnemySounds.Play(EnemyKinds.Get(e.k), EnemySounds.Event.Attack, at);
+            }
 
             if (e.sk > prev.sk)
                 EnemySkills.PlayVisual(this, EnemyKinds.Get(e.k), puppet.Root.transform, new Vector3(e.sx, puppet.Root.transform.position.y, e.sz));

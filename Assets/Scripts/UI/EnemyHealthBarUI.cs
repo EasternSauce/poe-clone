@@ -11,7 +11,6 @@ namespace PoeClone.UI
     [RequireComponent(typeof(EnemyHealth))]
     public class EnemyHealthBarUI : MonoBehaviour
     {
-        [SerializeField] private float heightOffset = 2.3f;
         [SerializeField] private float barWidth = 60f;
         [SerializeField] private float barHeight = 7f;
 
@@ -53,7 +52,7 @@ namespace PoeClone.UI
                 return;
 
             // Bigger kinds are scaled up as a whole; keep the bar above their heads.
-            Vector3 world = transform.position + Vector3.up * heightOffset * transform.localScale.y;
+            Vector3 world = transform.position + Vector3.up * health.BarHeight * transform.localScale.y;
             Vector3 screen = cam.WorldToScreenPoint(world);
 
             if (screen.z <= 0f)

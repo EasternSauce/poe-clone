@@ -21,7 +21,8 @@ namespace PoeClone.Enemies
         Strike,   // a blast where the player stands, after a glowing wind-up (fire, ice or lightning)
         Blink,    // vanishes and reappears beside the player
         WarCry,   // heals the enemies round it
-        Summon    // raises skeletons
+        Summon,   // raises skeletons
+        Leap      // springs through the air and lands on the player (a glow marks where)
     }
 
     public enum BossStyle
@@ -34,8 +35,10 @@ namespace PoeClone.Enemies
 
     /// <summary>
     /// One type of enemy: its numbers, how it fights, and how it looks. Every type is the same
-    /// rigged enemy prefab, told apart by size, recoloured clothes/skin/eyes, and gear on its
-    /// sockets (the player's equipment models, or a caster's staff).
+    /// enemy prefab. Humanoids are its rig, told apart by size, recoloured clothes/skin/eyes, and
+    /// gear on its sockets (the player's equipment models, or a caster's staff); creatures (spiders,
+    /// wolves, slimes, bats, beetles) swap the rig for a body of their own (<see cref="CreatureBuilder"/>),
+    /// coloured Skin (body), Cloth (abdomen/shell/mane/wings), Pants (markings) and Eyes.
     /// </summary>
     public sealed class EnemyKind
     {
@@ -78,13 +81,41 @@ namespace PoeClone.Enemies
         public EnemySkill Skill;
         public float SkillCooldown = 9f;
 
+        public CreatureBody Body = CreatureBody.Humanoid;
+        public EnemySounds.Set Sounds = EnemySounds.Set.Default;
+
+        /// <summary>Slimes: the kind (index) it bursts into when killed, two of them; -1 for none.</summary>
+        public int SplitInto = -1;
+
+        /// <summary>Pack animals: up to this many more of the same kind spawn round it.</summary>
+        public int PackSize;
+
         public bool IsRanged => Style == EnemyAttackStyle.Ranged;
+        public bool IsCreature => Body != CreatureBody.Humanoid;
+
+        /// <summary>How high above its pivot (at scale 1) the floating health bar sits.</summary>
+        public float BarHeight
+        {
+            get
+            {
+                switch (Body)
+                {
+                    case CreatureBody.Spider: return 0.6f;
+                    case CreatureBody.Wolf: return 0.9f;
+                    case CreatureBody.Slime: return 0.7f;
+                    case CreatureBody.Bat: return 1.4f;
+                    case CreatureBody.Beetle: return 0.6f;
+                    default: return 2.3f;
+                }
+            }
+        }
     }
 
     /// <summary>
     /// The enemy roster: three melee types, an archer and three elemental casters; skeletons,
     /// wraiths and ember knights native to the deeper areas; the bosses; then later additions
-    /// (shaman, necromancer, skeleton archer, frost giant). Each area picks its own mix (the
+    /// (shaman, necromancer, skeleton archer, frost giant); then the creatures (spiders, wolves,
+    /// slimes, bats, beetles). Each area picks its own mix (the
     /// WorldBuilder's per-area weights). Kinds are referred to by index (saves don't, but the
     /// spectator stream and the weights do), so new ones go on the end.
     /// </summary>
@@ -98,7 +129,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 30f, Experience = 20,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 6f, AttackCooldown = 1.4f, AttackRange = 2.0f,
-                SpeedRatio = 0.5f,
+                SpeedRatio = 0.58f,
                 DropChance = 0.25f
             },
             new EnemyKind
@@ -107,7 +138,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 42f, Experience = 30,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 5f, AttackCooldown = 0.9f, AttackRange = 2.0f,
-                SpeedRatio = 0.62f, Scale = 0.95f, 
+                SpeedRatio = 0.85f, Scale = 0.95f, 
                 Cloth = new Color(0.62f, 0.42f, 0.25f), Skin = new Color(0.78f, 0.60f, 0.45f), Eyes = new Color(0.15f, 0.10f, 0.08f), HideHorns = true,
                 Gear = new[] { "bronze_helmet", "rusty_sword", "wooden_shield" },
                 Skill = EnemySkill.Charge, SkillCooldown = 7f,
@@ -119,7 +150,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 90f, Experience = 55,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 15f, AttackCooldown = 2.2f, AttackRange = 2.6f,
-                SpeedRatio = 0.42f, Scale = 1.35f, 
+                SpeedRatio = 0.62f, Scale = 1.35f, 
                 Cloth = new Color(0.22f, 0.22f, 0.25f), Skin = new Color(0.55f, 0.42f, 0.38f), Eyes = new Color(1.0f, 0.2f, 0.1f),
                 Gear = new[] { "studded_vest" },
                 Skill = EnemySkill.Slam, SkillCooldown = 8f,
@@ -131,7 +162,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 28f, Experience = 28,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Physical,
                 Damage = 7f, AttackCooldown = 1.8f, AttackRange = 12f, ProjectileSpeed = 20f,
-                SpeedRatio = 0.55f, Scale = 0.95f, 
+                SpeedRatio = 0.72f, Scale = 0.95f, 
                 Cloth = new Color(0.28f, 0.55f, 0.24f), Skin = new Color(0.75f, 0.62f, 0.48f), Pants = new Color(0.42f, 0.33f, 0.20f), Eyes = new Color(0.15f, 0.10f, 0.08f), HideHorns = true,
                 Gear = new[] { "leather_gloves", "leather_boots", "short_bow" },
                 Bow = true,
@@ -144,7 +175,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 26f, Experience = 30,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Fire,
                 Damage = 9f, AttackCooldown = 2.0f, AttackRange = 10f, ProjectileSpeed = 11f,
-                SpeedRatio = 0.45f, Scale = 0.95f, 
+                SpeedRatio = 0.62f, Scale = 0.95f, 
                 Cloth = new Color(0.80f, 0.25f, 0.05f), Skin = new Color(0.55f, 0.35f, 0.30f), Eyes = new Color(1.0f, 0.6f, 0.1f), HideHorns = true,
                 StaffOrb = new Color(1.0f, 0.45f, 0.10f),
                 Skill = EnemySkill.Strike, SkillCooldown = 9f,
@@ -156,7 +187,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 26f, Experience = 30,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Cold,
                 Damage = 7f, AttackCooldown = 2.0f, AttackRange = 10f, ProjectileSpeed = 10f,
-                SpeedRatio = 0.45f, Scale = 0.95f, 
+                SpeedRatio = 0.62f, Scale = 0.95f, 
                 Cloth = new Color(0.15f, 0.35f, 0.80f), Skin = new Color(0.75f, 0.85f, 0.95f), Eyes = new Color(0.5f, 0.95f, 1.0f), HideHorns = true,
                 StaffOrb = new Color(0.55f, 0.85f, 1.0f),
                 Skill = EnemySkill.Strike, SkillCooldown = 9f,
@@ -168,7 +199,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 22f, Experience = 30,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Lightning,
                 Damage = 8f, AttackCooldown = 1.6f, AttackRange = 11f, ProjectileSpeed = 16f,
-                SpeedRatio = 0.5f, Scale = 0.9f, 
+                SpeedRatio = 0.68f, Scale = 0.9f, 
                 Cloth = new Color(0.38f, 0.20f, 0.60f), Skin = new Color(0.70f, 0.70f, 0.60f), Eyes = new Color(1.0f, 1.0f, 0.4f), HideHorns = true,
                 StaffOrb = new Color(1.0f, 0.95f, 0.35f),
                 Skill = EnemySkill.Strike, SkillCooldown = 7f,
@@ -182,7 +213,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 24f, Experience = 26,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 6f, AttackCooldown = 1.0f, AttackRange = 2.0f,
-                SpeedRatio = 0.68f, Scale = 0.95f,
+                SpeedRatio = 0.88f, Scale = 0.95f,
                 Cloth = new Color(0.82f, 0.80f, 0.72f), Skin = new Color(0.90f, 0.88f, 0.80f), Pants = new Color(0.32f, 0.30f, 0.27f), Eyes = new Color(1.0f, 0.25f, 0.1f), HideHorns = true,
                 Gear = new[] { "rusty_sword" },
                 DropChance = 0.3f
@@ -193,7 +224,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 34f, Experience = 34,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
                 Damage = 8f, AttackCooldown = 1.5f, AttackRange = 2.2f,
-                SpeedRatio = 0.75f, Scale = 1.05f,
+                SpeedRatio = 0.95f, Scale = 1.05f,
                 Cloth = new Color(0.58f, 0.70f, 0.64f), Skin = new Color(0.80f, 0.95f, 0.90f), Pants = new Color(0.40f, 0.50f, 0.47f), Eyes = new Color(0.4f, 1.0f, 0.7f), HideHorns = true,
                 Skill = EnemySkill.Blink, SkillCooldown = 9f,
                 DropChance = 0.35f
@@ -204,7 +235,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 70f, Experience = 50,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
                 Damage = 12f, AttackCooldown = 1.8f, AttackRange = 2.4f,
-                SpeedRatio = 0.5f, Scale = 1.2f,
+                SpeedRatio = 0.7f, Scale = 1.2f,
                 Cloth = new Color(0.36f, 0.12f, 0.06f), Skin = new Color(0.26f, 0.20f, 0.18f), Pants = new Color(0.16f, 0.12f, 0.10f), Eyes = new Color(1.0f, 0.55f, 0.1f), HideHorns = true,
                 Gear = new[] { "iron_helmet", "iron_mace", "wooden_shield" },
                 Skill = EnemySkill.Slam, SkillCooldown = 8f,
@@ -218,7 +249,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 340f, Experience = 150,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 13f, AttackCooldown = 1.9f, AttackRange = 3.4f,
-                SpeedRatio = 0.5f, Scale = 1.9f,
+                SpeedRatio = 0.7f, Scale = 1.9f,
                 Cloth = new Color(0.16f, 0.18f, 0.16f), Skin = new Color(0.62f, 0.68f, 0.58f), Pants = new Color(0.12f, 0.12f, 0.12f), Eyes = new Color(0.3f, 1.0f, 0.4f),
                 Gear = new[] { "iron_helmet", "hand_axe" },
                 DropChance = 1f, RareBonus = 0.6f, Drops = 3,
@@ -230,7 +261,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 420f, Experience = 220,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
                 Damage = 16f, AttackCooldown = 1.8f, AttackRange = 3.6f,
-                SpeedRatio = 0.55f, Scale = 2.1f,
+                SpeedRatio = 0.75f, Scale = 2.1f,
                 Cloth = new Color(0.30f, 0.06f, 0.04f), Skin = new Color(0.22f, 0.18f, 0.17f), Pants = new Color(0.10f, 0.08f, 0.08f), Eyes = new Color(1.0f, 0.55f, 0.1f),
                 Gear = new[] { "studded_vest", "iron_mace", "wooden_shield" },
                 DropChance = 1f, RareBonus = 0.8f, Drops = 4,
@@ -242,7 +273,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 460f, Experience = 300,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
                 Damage = 15f, AttackCooldown = 1.6f, AttackRange = 3.4f,
-                SpeedRatio = 0.6f, Scale = 2.0f,
+                SpeedRatio = 0.8f, Scale = 2.0f,
                 Cloth = new Color(0.62f, 0.80f, 0.95f), Skin = new Color(0.82f, 0.92f, 1.0f), Pants = new Color(0.35f, 0.45f, 0.62f), Eyes = new Color(0.3f, 0.9f, 1.0f),
                 Gear = new[] { "iron_helmet", "steel_dagger" },
                 DropChance = 1f, RareBonus = 0.9f, Drops = 4,
@@ -256,7 +287,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 30f, Experience = 34,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Physical,
                 Damage = 6f, AttackCooldown = 2.2f, AttackRange = 9f, ProjectileSpeed = 10f,
-                SpeedRatio = 0.45f, Scale = 0.95f,
+                SpeedRatio = 0.62f, Scale = 0.95f,
                 Cloth = new Color(0.30f, 0.45f, 0.18f), Skin = new Color(0.62f, 0.50f, 0.36f), Pants = new Color(0.36f, 0.26f, 0.14f), Eyes = new Color(0.6f, 1.0f, 0.4f),
                 StaffOrb = new Color(0.45f, 1.0f, 0.45f),
                 Skill = EnemySkill.WarCry, SkillCooldown = 10f,
@@ -268,7 +299,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 32f, Experience = 40,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Cold,
                 Damage = 8f, AttackCooldown = 2.2f, AttackRange = 10f, ProjectileSpeed = 10f,
-                SpeedRatio = 0.42f, Scale = 1.0f,
+                SpeedRatio = 0.6f, Scale = 1.0f,
                 Cloth = new Color(0.18f, 0.12f, 0.22f), Skin = new Color(0.70f, 0.72f, 0.66f), Pants = new Color(0.10f, 0.08f, 0.12f), Eyes = new Color(0.55f, 1.0f, 0.5f), HideHorns = true,
                 StaffOrb = new Color(0.55f, 1.0f, 0.55f),
                 Skill = EnemySkill.Summon, SkillCooldown = 12f,
@@ -280,7 +311,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 22f, Experience = 28,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Physical,
                 Damage = 7f, AttackCooldown = 1.9f, AttackRange = 12f, ProjectileSpeed = 20f,
-                SpeedRatio = 0.6f, Scale = 0.95f,
+                SpeedRatio = 0.75f, Scale = 0.95f,
                 Cloth = new Color(0.82f, 0.80f, 0.72f), Skin = new Color(0.90f, 0.88f, 0.80f), Pants = new Color(0.32f, 0.30f, 0.27f), Eyes = new Color(1.0f, 0.25f, 0.1f), HideHorns = true,
                 Gear = new[] { "short_bow" },
                 Bow = true,
@@ -293,14 +324,161 @@ namespace PoeClone.Enemies
                 MaxHealth = 120f, Experience = 70,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
                 Damage = 16f, AttackCooldown = 2.4f, AttackRange = 3.0f,
-                SpeedRatio = 0.4f, Scale = 1.6f,
+                SpeedRatio = 0.6f, Scale = 1.6f,
                 Cloth = new Color(0.55f, 0.70f, 0.85f), Skin = new Color(0.78f, 0.88f, 0.96f), Pants = new Color(0.30f, 0.38f, 0.50f), Eyes = new Color(0.4f, 0.9f, 1.0f),
                 Gear = new[] { "iron_mace" },
                 Skill = EnemySkill.Slam, SkillCooldown = 7f,
                 DropChance = 0.8f, RareBonus = 0.2f
             },
+
+            // Creatures: bodies of their own instead of the humanoid rig (weight 0: the areas pick them).
+            new EnemyKind
+            {
+                Name = "Giant Spider", SpawnWeight = 0f,
+                MaxHealth = 26f, Experience = 26,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 5f, AttackCooldown = 1.0f, AttackRange = 1.9f,
+                SpeedRatio = 1.0f, Scale = 0.85f,
+                Body = CreatureBody.Spider, Sounds = EnemySounds.Set.Spider,
+                Skin = new Color(0.24f, 0.19f, 0.15f), Cloth = new Color(0.33f, 0.24f, 0.17f), Pants = new Color(0.85f, 0.48f, 0.12f), Eyes = new Color(1.0f, 0.25f, 0.15f),
+                Skill = EnemySkill.Leap, SkillCooldown = 7f,
+                DropChance = 0.3f
+            },
+            new EnemyKind
+            {
+                Name = "Dire Wolf", SpawnWeight = 0f,
+                MaxHealth = 30f, Experience = 28,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 6f, AttackCooldown = 1.1f, AttackRange = 2.0f,
+                SpeedRatio = 1.05f, Scale = 0.95f,
+                Body = CreatureBody.Wolf, Sounds = EnemySounds.Set.Wolf, PackSize = 2,
+                Skin = new Color(0.46f, 0.43f, 0.40f), Cloth = new Color(0.30f, 0.28f, 0.27f), Pants = new Color(0.80f, 0.77f, 0.72f), Eyes = new Color(1.0f, 0.8f, 0.2f),
+                Skill = EnemySkill.Leap, SkillCooldown = 9f,
+                DropChance = 0.3f
+            },
+            new EnemyKind
+            {
+                Name = "Bog Slime", SpawnWeight = 0f,
+                MaxHealth = 38f, Experience = 26,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 7f, AttackCooldown = 1.6f, AttackRange = 1.9f,
+                SpeedRatio = 0.55f, Scale = 1.0f,
+                Body = CreatureBody.Slime, Sounds = EnemySounds.Set.Slime, SplitInto = SlimelingIndex,
+                Skin = new Color(0.46f, 0.74f, 0.26f), Cloth = new Color(0.28f, 0.48f, 0.16f), Pants = new Color(0.60f, 0.45f, 0.25f), Eyes = new Color(0.08f, 0.10f, 0.05f),
+                Skill = EnemySkill.Leap, SkillCooldown = 10f,
+                DropChance = 0.3f
+            },
+            new EnemyKind
+            {
+                Name = "Slimeling", SpawnWeight = 0f,
+                MaxHealth = 11f, Experience = 6,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 3f, AttackCooldown = 1.2f, AttackRange = 1.5f,
+                SpeedRatio = 0.8f, Scale = 0.5f,
+                Body = CreatureBody.Slime, Sounds = EnemySounds.Set.Slime,
+                Skin = new Color(0.46f, 0.74f, 0.26f), Cloth = new Color(0.28f, 0.48f, 0.16f), Pants = new Color(0.60f, 0.45f, 0.25f), Eyes = new Color(0.08f, 0.10f, 0.05f),
+                DropChance = 0.06f
+            },
+            new EnemyKind
+            {
+                Name = "Grave Bat", SpawnWeight = 0f,
+                MaxHealth = 16f, Experience = 16,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 4f, AttackCooldown = 0.9f, AttackRange = 1.9f,
+                SpeedRatio = 1.1f, Scale = 0.8f,
+                Body = CreatureBody.Bat, Sounds = EnemySounds.Set.Bat, PackSize = 2,
+                Skin = new Color(0.22f, 0.18f, 0.20f), Cloth = new Color(0.36f, 0.22f, 0.27f), Pants = new Color(0.55f, 0.42f, 0.44f), Eyes = new Color(1.0f, 0.2f, 0.2f),
+                Skill = EnemySkill.Charge, SkillCooldown = 6f,
+                DropChance = 0.18f
+            },
+            new EnemyKind
+            {
+                Name = "Corpse Ooze", SpawnWeight = 0f,
+                MaxHealth = 44f, Experience = 32,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
+                Damage = 8f, AttackCooldown = 1.6f, AttackRange = 1.9f,
+                SpeedRatio = 0.55f, Scale = 1.05f,
+                Body = CreatureBody.Slime, Sounds = EnemySounds.Set.Slime, SplitInto = OozelingIndex,
+                Skin = new Color(0.52f, 0.36f, 0.60f), Cloth = new Color(0.30f, 0.20f, 0.36f), Pants = new Color(0.90f, 0.88f, 0.80f), Eyes = new Color(0.5f, 1.0f, 0.6f),
+                Skill = EnemySkill.Leap, SkillCooldown = 10f,
+                DropChance = 0.35f
+            },
+            new EnemyKind
+            {
+                Name = "Oozeling", SpawnWeight = 0f,
+                MaxHealth = 13f, Experience = 8,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
+                Damage = 3f, AttackCooldown = 1.2f, AttackRange = 1.5f,
+                SpeedRatio = 0.8f, Scale = 0.52f,
+                Body = CreatureBody.Slime, Sounds = EnemySounds.Set.Slime,
+                Skin = new Color(0.52f, 0.36f, 0.60f), Cloth = new Color(0.30f, 0.20f, 0.36f), Pants = new Color(0.90f, 0.88f, 0.80f), Eyes = new Color(0.5f, 1.0f, 0.6f),
+                DropChance = 0.06f
+            },
+            new EnemyKind
+            {
+                Name = "Crypt Spider", SpawnWeight = 0f,
+                MaxHealth = 32f, Experience = 32,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
+                Damage = 7f, AttackCooldown = 1.1f, AttackRange = 2.0f,
+                SpeedRatio = 0.95f, Scale = 1.0f,
+                Body = CreatureBody.Spider, Sounds = EnemySounds.Set.Spider,
+                Skin = new Color(0.76f, 0.73f, 0.66f), Cloth = new Color(0.30f, 0.27f, 0.36f), Pants = new Color(0.45f, 1.0f, 0.6f), Eyes = new Color(0.45f, 1.0f, 0.6f),
+                Skill = EnemySkill.Leap, SkillCooldown = 7f,
+                DropChance = 0.35f
+            },
+            new EnemyKind
+            {
+                Name = "Magma Beetle", SpawnWeight = 0f,
+                MaxHealth = 55f, Experience = 45,
+                Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Fire,
+                Damage = 9f, AttackCooldown = 2.4f, AttackRange = 9f, ProjectileSpeed = 9f,
+                SpeedRatio = 0.5f, Scale = 1.1f,
+                Body = CreatureBody.Beetle, Sounds = EnemySounds.Set.Beetle,
+                Skin = new Color(0.20f, 0.14f, 0.12f), Cloth = new Color(0.28f, 0.19f, 0.15f), Pants = new Color(1.0f, 0.5f, 0.1f), Eyes = new Color(1.0f, 0.65f, 0.15f),
+                StaffOrb = new Color(1.0f, 0.45f, 0.10f),
+                Skill = EnemySkill.Strike, SkillCooldown = 9f,
+                DropChance = 0.45f, RareBonus = 0.05f
+            },
+            new EnemyKind
+            {
+                Name = "Hellhound", SpawnWeight = 0f,
+                MaxHealth = 46f, Experience = 40,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
+                Damage = 9f, AttackCooldown = 1.1f, AttackRange = 2.1f,
+                SpeedRatio = 1.1f, Scale = 1.05f,
+                Body = CreatureBody.Wolf, Sounds = EnemySounds.Set.Hound, PackSize = 2,
+                Skin = new Color(0.17f, 0.13f, 0.12f), Cloth = new Color(0.38f, 0.12f, 0.06f), Pants = new Color(1.0f, 0.45f, 0.1f), Eyes = new Color(1.0f, 0.5f, 0.1f),
+                Skill = EnemySkill.Leap, SkillCooldown = 8f,
+                DropChance = 0.4f
+            },
+            new EnemyKind
+            {
+                Name = "Frost Wolf", SpawnWeight = 0f,
+                MaxHealth = 50f, Experience = 44,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
+                Damage = 9f, AttackCooldown = 1.1f, AttackRange = 2.1f,
+                SpeedRatio = 1.05f, Scale = 1.05f,
+                Body = CreatureBody.Wolf, Sounds = EnemySounds.Set.Wolf, PackSize = 2,
+                Skin = new Color(0.70f, 0.78f, 0.88f), Cloth = new Color(0.42f, 0.52f, 0.66f), Pants = new Color(0.95f, 0.97f, 1.0f), Eyes = new Color(0.4f, 0.9f, 1.0f),
+                Skill = EnemySkill.Leap, SkillCooldown = 8f,
+                DropChance = 0.4f
+            },
+            new EnemyKind
+            {
+                Name = "Ice Crawler", SpawnWeight = 0f,
+                MaxHealth = 44f, Experience = 40,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
+                Damage = 8f, AttackCooldown = 1.0f, AttackRange = 2.0f,
+                SpeedRatio = 0.95f, Scale = 1.05f,
+                Body = CreatureBody.Spider, Sounds = EnemySounds.Set.Spider,
+                Skin = new Color(0.58f, 0.74f, 0.90f), Cloth = new Color(0.82f, 0.92f, 1.0f), Pants = new Color(0.25f, 0.55f, 0.90f), Eyes = new Color(0.5f, 0.95f, 1.0f),
+                Skill = EnemySkill.Leap, SkillCooldown = 7f,
+                DropChance = 0.4f
+            },
         };
 
+        public const int SlimelingIndex = 20;
+        public const int OozelingIndex = 23;
         public const int ShamanIndex = 13;
         public const int NecromancerIndex = 14;
         public const int SkeletonArcherIndex = 15;
@@ -376,6 +554,12 @@ namespace PoeClone.Enemies
             if (model == null)
                 model = enemy.transform;
 
+            if (kind.IsCreature)
+            {
+                BuildCreature(enemy, model, kind);
+                return;
+            }
+
             // Recolour first, so the gear added below keeps its own colours.
             Recolour(model, kind);
 
@@ -410,6 +594,60 @@ namespace PoeClone.Enemies
             // Archers carry the Short Bow from their gear list; casters get a staff.
             if (kind.IsRanged && !kind.Bow)
                 AddStaff(model, kind.StaffOrb);
+        }
+
+        // The smallest a creature's collider gets, in metres (see BuildCreature).
+        private const float MinHitHeight = 1.8f;
+        private const float MinHitRadius = 0.4f;
+
+        // Replaces the humanoid rig under the model with the kind's own body. The rig's stylised
+        // meshes (the faceted head, the horn cone) are kept for the new body's parts.
+        private static void BuildCreature(GameObject enemy, Transform model, EnemyKind kind)
+        {
+            var meshes = new System.Collections.Generic.Dictionary<string, Mesh>();
+            foreach (MeshFilter mf in model.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (mf.sharedMesh != null && !meshes.ContainsKey(mf.sharedMesh.name))
+                    meshes[mf.sharedMesh.name] = mf.sharedMesh;
+            }
+
+            // Out of the hierarchy at once (Destroy only happens at the end of the frame), so
+            // nothing built this frame - an outline, a renderer list - picks up the old parts.
+            for (int i = model.childCount - 1; i >= 0; i--)
+            {
+                Transform child = model.GetChild(i);
+                child.gameObject.SetActive(false);
+                child.SetParent(null, false);
+                Object.Destroy(child.gameObject);
+            }
+
+            CharacterWalkAnimator walk = model.GetComponent<CharacterWalkAnimator>();
+            if (walk != null)
+                walk.enabled = false;
+
+            CreatureBuilder.Build(model, kind.Body, new CreatureBuilder.Palette
+            {
+                Main = kind.Skin,
+                Second = kind.Cloth,
+                Accent = kind.Pants,
+                Eyes = kind.Eyes
+            }, meshes);
+
+            // Low bodies get a wider collider than the humanoid's (its bottom stays at the feet),
+            // but never a short one: arrows and bolts fly at chest height and melee sweeps from
+            // there too, so even a slimeling's collider stands as tall as a person's chest. A bat
+            // keeps the prefab's, since it hangs in the air where the player swings.
+            CharacterController cc = enemy.GetComponent<CharacterController>();
+            if (cc != null && kind.Body != CreatureBody.Bat)
+            {
+                float scale = Mathf.Max(0.1f, kind.Scale);
+                float height = Mathf.Max(kind.Body == CreatureBody.Wolf ? 1.3f : 1.1f, MinHitHeight / scale);
+                cc.height = height;
+                cc.radius = Mathf.Max(kind.Body == CreatureBody.Slime ? 0.55f : 0.6f, MinHitRadius / scale);
+                cc.center = new Vector3(0f, -1f + height * 0.5f, 0f);
+                // A low, round body would otherwise step right up onto whatever it bumps into.
+                cc.stepOffset = 0.15f;
+            }
         }
 
         // Swaps the colour of each of the rig's own materials (cloth, skin, pants, eyes) for the

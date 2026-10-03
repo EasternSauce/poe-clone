@@ -81,6 +81,10 @@ namespace PoeClone.Visuals
         private AudioSource audioSource;
         private int lastStepIndex;
 
+        // Idle: a slow breath and a little sway, out of step from one character to the next.
+        private float idleSeed;
+        private const float BreathRate = 1.9f;
+
         /// <summary>The right/left arm's rest pitch (0 for the player, more raised for monsters). Shared with CharacterAttackAnimator so its swing offsets land correctly regardless of rig.</summary>
         public float ArmRestAngle => armRestAngle;
 
@@ -122,6 +126,7 @@ public void Configure(
         {
             lastPosition = transform.position;
             baseLocalPosition = transform.localPosition;
+            idleSeed = Random.value * 10f;
             attackAnimator = GetComponent<CharacterAttackAnimator>();
             stagger = GetComponentInParent<Stagger>();
 
@@ -167,15 +172,20 @@ private void LateUpdate()
             float legAmp = Mathf.Lerp(legSwing, runLegSwing, runBlend) * blend;
             float armAmp = Mathf.Lerp(armSwing, runArmSwing, runBlend) * blend;
 
+            // Standing still: breathing lifts the chest and the arms drift with it.
+            float still = 1f - blend;
+            float breath = Mathf.Sin((Time.time + idleSeed) * BreathRate) * still;
+            float sway = Mathf.Sin((Time.time + idleSeed) * BreathRate * 0.5f + 1f) * still;
+
             bool rightArmSuppressed = RightArmSuppressed;
             bool leftArmSuppressed = LeftArmSuppressed;
 
             SetPivot(leftLeg, s * legAmp);
             SetPivot(rightLeg, -s * legAmp);
             if (!leftArmSuppressed)
-                SetPivot(leftArm, armRestAngle - s * armAmp);
+                SetPivot(leftArm, armRestAngle - s * armAmp + breath * 2.5f + sway * 1.5f);
             if (!rightArmSuppressed)
-                SetPivot(rightArm, armRestAngle + s * armAmp);
+                SetPivot(rightArm, armRestAngle + s * armAmp + breath * 2.5f - sway * 1.5f);
 
             // Knees bend while the leg swings forward (more so when running).
             float kneeMax = Mathf.Lerp(walkKneeBend, runKneeBend, runBlend) * blend;
@@ -190,11 +200,19 @@ private void LateUpdate()
                 SetPivot(rightElbow, elbow);
 
             float staggerTilt = stagger != null ? stagger.RecoilFraction * staggerTiltAngle : 0f;
-            SetPivot(upperBody, runLean * runBlend * blend + staggerTilt);
+            float torsoPitch = attackAnimator != null ? attackAnimator.TorsoPitch : 0f;
+            float torsoYaw = attackAnimator != null ? attackAnimator.TorsoYaw : 0f;
+            // Walking, the shoulders counter-rotate against the hips a little.
+            float walkTwist = s * 5f * blend;
+            if (upperBody != null)
+                upperBody.localRotation = Quaternion.Euler(
+                    runLean * runBlend * blend + staggerTilt + torsoPitch - breath * 1.2f,
+                    torsoYaw + walkTwist + sway * 2f, 0f);
 
             float bobAmount = Mathf.Lerp(bobHeight, runBobHeight, runBlend);
             float bob = Mathf.Abs(c) * bobAmount * blend;
-            transform.localPosition = baseLocalPosition + Vector3.up * bob;
+            float lunge = attackAnimator != null ? attackAnimator.Lunge : 0f;
+            transform.localPosition = baseLocalPosition + Vector3.up * bob + Vector3.forward * lunge;
         }
 
         // Called right after a teleport (e.g. an area gate) so the next LateUpdate

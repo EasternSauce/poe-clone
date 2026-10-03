@@ -60,18 +60,24 @@ namespace PoeClone.World
 
         // Per area, one spawn weight per EnemyKinds entry, so each area has its own cast:
         // Zombie, Raider, Brute, Archer, Fire / Frost / Storm Caster, Skeleton, Wraith, Ember Knight,
-        // (three bosses, always 0), Forest Shaman, Necromancer, Skeleton Archer, Frost Giant.
+        // (three bosses, always 0), Forest Shaman, Necromancer, Skeleton Archer, Frost Giant;
+        // creatures: Giant Spider, Dire Wolf, Bog Slime, Slimeling (0: only split off), Grave Bat,
+        // Corpse Ooze, Oozeling (0), Crypt Spider, Magma Beetle, Hellhound, Frost Wolf, Ice Crawler.
+        // Wolves, hounds and bats come in packs, so their weights count for more than they look.
         private static readonly float[][] KindWeights =
         {
-            // Greenwood: the living - zombies, raiders, archers, a few brutes and shamans.
-            new float[] { 28, 24, 8, 22, 0, 0, 3, 0, 0, 0, 0, 0, 0, 12, 0, 0, 0 },
+            // Greenwood: the living - zombies, raiders, archers, a few brutes and shamans; spiders,
+            // wolf packs and bog slimes in the woods.
+            new float[] { 22, 18, 8, 18, 0, 0, 3, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 14, 9, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
             null,
-            // Graveyard: the dead - skeletons (some with bows), wraiths, necromancers.
-            new float[] { 16, 0, 4, 0, 0, 8, 0, 26, 18, 0, 0, 0, 0, 0, 10, 16, 0 },
-            // Ruins: fire - ember knights and fire casters, with brutes and raiders.
-            new float[] { 0, 12, 14, 4, 24, 0, 10, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0 },
-            // Frozen Hollow: cold - frost casters, wraiths, frost giants.
-            new float[] { 0, 0, 4, 0, 0, 24, 12, 10, 20, 0, 0, 0, 0, 0, 0, 10, 14 }
+            // Graveyard: the dead - skeletons (some with bows), wraiths, necromancers; bat swarms,
+            // oozes and crypt spiders.
+            new float[] { 12, 0, 4, 0, 0, 6, 0, 22, 14, 0, 0, 0, 0, 0, 10, 14, 0, 0, 0, 0, 0, 9, 10, 0, 14, 0, 0, 0, 0 },
+            // Ruins: fire - ember knights and fire casters, with brutes and raiders; magma beetles
+            // and hellhound packs.
+            new float[] { 0, 10, 12, 4, 20, 0, 8, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 10, 0, 0 },
+            // Frozen Hollow: cold - frost casters, wraiths, frost giants; frost wolf packs, ice crawlers.
+            new float[] { 0, 0, 4, 0, 0, 20, 10, 8, 16, 0, 0, 0, 0, 0, 0, 8, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 16 }
         };
 
         /// <summary>Named places other features hang things on (NPC stands, the boss arena).</summary>
@@ -149,11 +155,11 @@ namespace PoeClone.World
             BuildGreenwoodOutskirts();
             BuildWaystones();
 
-            // Gates: Haven - Greenwood - Graveyard - Ruins, and a way home from the Ruins.
+            // Gates: Haven - Greenwood - Graveyard - Ruins - Frozen Hollow. The way home is the
+            // town portal or a waystone.
             Connect(Haven, new Vector3(40f, 0f, 0f), Greenwood, new Vector3(-40f, 0f, 2f));
             Connect(Greenwood, new Vector3(40f, 0f, -2f), Graveyard, new Vector3(-40f, 0f, 0f));
             Connect(Graveyard, new Vector3(40f, 0f, 0f), Ruins, new Vector3(-40f, 0f, 0f));
-            OneWayGate(Ruins, new Vector3(0f, 0f, -40f), Haven, spawnPoints[Haven]);
             Connect(Ruins, new Vector3(0f, 0f, 40f), Frozen, new Vector3(-40f, 0f, 0f));
             BuildHavenRoads();
             BuildBorders();
@@ -703,11 +709,6 @@ namespace PoeClone.World
 
             Gate(a, gateA, b, arriveInB);
             Gate(b, gateB, a, arriveInA);
-        }
-
-        private void OneWayGate(int from, Vector3 offset, int to, Transform arrival)
-        {
-            Gate(from, GatePoint(from, offset), to, arrival);
         }
 
         private void Gate(int from, Vector3 position, int to, Transform arrival)

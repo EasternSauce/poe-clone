@@ -189,6 +189,24 @@ namespace PoeClone.Visuals
             Range = 14f
         };
 
+        // Creatures (see CreatureAnimator): no arms to pose, just the timing of a bite or a spit,
+        // which the creature's own animator turns into a lunge.
+        private static readonly AttackProfile BiteProfile = new AttackProfile
+        {
+            Duration = 0.6f,
+            StrikeTime = 0.55f,
+            BaseAttacksPerSecond = 1.0f,
+            Range = 1.8f
+        };
+
+        private static readonly AttackProfile SpitProfile = new AttackProfile
+        {
+            Duration = 0.75f,
+            StrikeTime = 0.6f,
+            BaseAttacksPerSecond = 0.8f,
+            Range = 9f
+        };
+
         // Stable ids for every profile, so a spectator replica can replay exactly the swing the player
         // made (including which random sword variant) - see PlayReplicated. New profiles go at the end.
         private static readonly AttackProfile[] ProfilesById =
@@ -201,7 +219,9 @@ namespace PoeClone.Visuals
             AxeProfile,
             MaceProfile,
             DaggerProfile,
-            BowProfile
+            BowProfile,
+            BiteProfile,
+            SpitProfile
         };
 
         /// <summary>Whether the profile with this id shoots (an arrow) rather than hits.</summary>
@@ -222,6 +242,20 @@ namespace PoeClone.Visuals
         private bool strikeFired;
 
         public bool IsAttacking { get; private set; }
+
+        /// <summary>How far through the current swing (0 to 1); 0 when not attacking.</summary>
+        public float Progress => IsAttacking && activeProfile != null ? Mathf.Clamp01(timer / activeProfile.Duration) : 0f;
+
+        /// <summary>The fraction of the current swing at which it strikes.</summary>
+        public float StrikeFraction => activeProfile != null ? activeProfile.StrikeTime : 0.5f;
+
+        /// <summary>
+        /// The upper body's share of the swing (pitch: lean forward +, yaw: twist), and how far the
+        /// body steps into it, for <see cref="CharacterWalkAnimator"/> to add to its own pose.
+        /// </summary>
+        public float TorsoPitch { get; private set; }
+        public float TorsoYaw { get; private set; }
+        public float Lunge { get; private set; }
 
         /// <summary>True while a two-handed attack is posing the off arm (the walk cycle leaves it alone).</summary>
         public bool DrivesOffArm => IsAttacking && activeProfile != null && activeProfile.UsesOffArm;
@@ -291,6 +325,12 @@ namespace PoeClone.Visuals
             return SwordProfile;
         }
 
+        /// <summary>A creature's bite (or, with spit, the spit it shoots): timing only, see CreatureAnimator.</summary>
+        public void PlayCreatureAttack(bool spit)
+        {
+            Play(spit ? SpitProfile : BiteProfile);
+        }
+
         /// <summary>Enemy claw swipe: a separate profile from player weapons since it's tuned for a different rest pose.</summary>
         public void PlayClawAttack()
         {
@@ -305,6 +345,7 @@ namespace PoeClone.Visuals
 
             bool offArmPosed = activeProfile != null && activeProfile.UsesOffArm;
             IsAttacking = false;
+            TorsoPitch = TorsoYaw = Lunge = 0f;
             Apply(weaponArm, weaponElbow, rest);
             if (offArmPosed)
                 Apply(offArm, offElbow, rest);
@@ -347,7 +388,10 @@ namespace PoeClone.Visuals
         private void Update()
         {
             if (!IsAttacking)
+            {
+                TorsoPitch = TorsoYaw = Lunge = 0f;
                 return;
+            }
 
             timer += Time.deltaTime;
             float f = Mathf.Clamp01(timer / activeProfile.Duration);
@@ -382,8 +426,29 @@ namespace PoeClone.Visuals
             if (p.UsesOffArm)
                 Apply(offArm, offElbow, offPose);
 
+            // The body joins in: it twists with the arm's sweep, leans back into the wind-up and
+            // forward through the blow, and steps into it. Measured from rest, so a swing that
+            // only ever raises the arm (the bow) barely moves the body.
+            Pose fromRest = new Pose(pose.ArmPitch - rest.ArmPitch, pose.ArmYaw - rest.ArmYaw, 0f, 0f);
+            if (p.Absolute)
+            {
+                TorsoPitch = 0f;
+                TorsoYaw = fromRest.ArmYaw * 0.25f;
+                Lunge = 0f;
+            }
+            else
+            {
+                TorsoYaw = fromRest.ArmYaw * 0.35f;
+                TorsoPitch = -fromRest.ArmPitch * 0.14f;
+                float step = f < p.StrikeTime ? -0.3f * EaseOut(f / Mathf.Max(0.01f, p.StrikeTime)) : 1f - (f - p.StrikeTime) / Mathf.Max(0.01f, 1f - p.StrikeTime);
+                Lunge = f < p.StrikeTime ? step * 0.12f : Mathf.Sin(step * Mathf.PI * 0.5f) * 0.16f;
+            }
+
             if (f >= 1f)
+            {
                 IsAttacking = false;
+                TorsoPitch = TorsoYaw = Lunge = 0f;
+            }
         }
 
         private static float EaseOut(float t)

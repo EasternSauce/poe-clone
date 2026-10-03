@@ -2,6 +2,8 @@ using UnityEngine;
 using PoeClone.Audio;
 using PoeClone.Combat;
 using PoeClone.Player;
+using PoeClone.Skills;
+using PoeClone.UI;
 using PoeClone.Visuals;
 
 namespace PoeClone.Enemies
@@ -29,7 +31,7 @@ namespace PoeClone.Enemies
         [SerializeField] private float stopDistance = 1.8f;
 
         [Header("Movement")]
-        [SerializeField, Range(0.1f, 1f)] private float speedRatioToPlayer = 0.5f;
+        [SerializeField, Range(0.1f, 1.5f)] private float speedRatioToPlayer = 0.5f;
         [SerializeField] private float fallbackSpeed = 3f;
         [SerializeField] private float rotationSpeed = 10f;
         [SerializeField] private float gravity = -20f;
@@ -45,6 +47,7 @@ namespace PoeClone.Enemies
         private Stagger stagger;
         private EnemySkills skills;
         private EnemyHealth health;
+        private EnemyKind kind;
 
         // How far an aggroing enemy's shout carries to wake up idle neighbours (one hop only - the
         // neighbours it wakes don't themselves wake further neighbours, so a fight doesn't
@@ -80,7 +83,52 @@ namespace PoeClone.Enemies
         private float MoveSpeed =>
             (player != null
                 ? player.MoveSpeed * speedRatioToPlayer
-                : fallbackSpeed) * (Time.time < chilledUntil ? 0.5f : 1f);
+                : fallbackSpeed) * (Time.time < chilledUntil ? 0.5f : 1f) * (IsEnraged ? EnrageSpeed : 1f);
+
+        // Enrage: hit from a distance (an arrow, a spell), an enemy now and then flies into a
+        // rage - faster and harder-hitting for a while - so standing back and picking things off
+        // while backing away isn't free. Not every hit: once it calms down it can't rage again
+        // for a while.
+        private const float EnrageHitDistance = 6f;
+        private const float EnrageSeconds = 5f;
+        private const float EnrageCooldown = 12f;
+        private const float EnrageSpeed = 1.6f;
+        private const float EnrageDamage = 1.35f;
+        private static readonly Color EnrageColor = new Color(1f, 0.15f, 0.08f);
+
+        private float enragedUntil = -1f;
+        private float nextEnrageAt;
+        private float nextEnragePulse;
+
+        public bool IsEnraged => Time.time < enragedUntil;
+
+        /// <summary>What its hits are multiplied by right now (an enraged enemy hits harder).</summary>
+        public float DamageMultiplier => IsEnraged ? EnrageDamage : 1f;
+
+        /// <summary>How much faster it attacks right now.</summary>
+        public float AttackSpeedMultiplier => IsEnraged ? 1.3f : 1f;
+
+        private void Enrage()
+        {
+            enragedUntil = Time.time + EnrageSeconds;
+            nextEnrageAt = enragedUntil + EnrageCooldown;
+            nextEnragePulse = 0f;
+
+            float size = transform.localScale.y;
+            SkillEffects.Shockwave(transform.position, 2.2f * size, EnrageColor, 0.45f);
+            CombatText.Show(transform.position + Vector3.up * (health != null ? health.BarHeight : 2.3f) * size,
+                "ENRAGED", EnrageColor, 1.2f);
+            EnemySounds.Play(kind ?? EnemyKinds.Get(0), EnemySounds.Event.Aggro, transform.position);
+        }
+
+        // A red pulse at its feet for as long as the rage lasts.
+        private void UpdateEnrage()
+        {
+            if (!IsEnraged || Time.time < nextEnragePulse)
+                return;
+            nextEnragePulse = Time.time + 0.45f;
+            SkillEffects.Shockwave(transform.position, 1.1f * transform.localScale.y, EnrageColor, 0.35f);
+        }
 
         private void Awake()
         {
@@ -97,7 +145,10 @@ namespace PoeClone.Enemies
         /// <summary>Takes on a kind's pace and preferred distance (see <see cref="EnemyKinds.Apply"/>).</summary>
         public void Configure(EnemyKind kind)
         {
+            this.kind = kind;
             speedRatioToPlayer = kind.SpeedRatio;
+            // Backing off isn't enough to shake them: they follow a long way.
+            loseInterestRange = Mathf.Max(loseInterestRange, 26f);
 
             if (kind.IsRanged)
             {
@@ -140,6 +191,19 @@ namespace PoeClone.Enemies
         private void OnDamaged()
         {
             Aggro();
+
+            if (health == null || health.IsDead || player == null || Time.time < nextEnrageAt)
+                return;
+            Vector3 toPlayer = player.transform.position - transform.position;
+            toPlayer.y = 0f;
+            if (toPlayer.magnitude >= EnrageHitDistance)
+                Enrage();
+        }
+
+        /// <summary>Starts chasing the player now (a slime's offspring, born angry).</summary>
+        public void Alert()
+        {
+            Aggro();
         }
 
         private void Aggro()
@@ -153,8 +217,7 @@ namespace PoeClone.Enemies
 
         private void PlayAggroSound()
         {
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.enemyAggro, transform.position);
+            EnemySounds.Play(kind ?? EnemyKinds.Get(0), EnemySounds.Event.Aggro, transform.position);
         }
 
         private void AlertNearby()
@@ -182,6 +245,8 @@ private void Update()
             {
                 playerStats = FindAnyObjectByType<PlayerStats>();
             }
+
+            UpdateEnrage();
 
             // A skill winding up or charging moves (or holds) the enemy itself.
             if (skills != null && skills.enabled && skills.Busy)
@@ -244,7 +309,30 @@ private void Update()
             Vector3 velocity = horizontal * MoveSpeed;
             velocity.y = verticalVelocity;
 
+            // Come down off another character rather than ride on it.
+            velocity += slideOff * SlideOffSpeed;
+            slideOff = Vector3.zero;
+
             controller.Move(velocity * Time.deltaTime);
+        }
+
+        // Standing on another character (a leap that came down on a packmate, or a low creature
+        // that climbed one in a crowd): the way off it, picked up from this frame's move.
+        private Vector3 slideOff;
+        private const float SlideOffSpeed = 4f;
+
+        private void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+            if (hit.normal.y < 0.05f || !(hit.collider is CharacterController) || hit.collider.gameObject == gameObject)
+                return;
+
+            Vector3 away = new Vector3(hit.normal.x, 0f, hit.normal.z);
+            if (away.sqrMagnitude < 0.0025f)
+            {
+                Vector2 r = Random.insideUnitCircle;
+                away = new Vector3(r.x, 0f, r.y);
+            }
+            slideOff = away.normalized;
         }
 
         // Picks a walking direction: straight at the player if the way is clear,
