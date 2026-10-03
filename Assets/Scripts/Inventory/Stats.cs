@@ -25,7 +25,7 @@ namespace PoeClone.Inventory
         // Special stats: rare on gear (uniques) and on the tree's keystones, each changing how the
         // character plays rather than adding a bit more of something. Saved by number: add at the end.
         AdditionalArrows,           // bow attacks loose this many extra arrows in a spread
-        AdditionalSpellProjectiles, // Fire Bolt hurls this many extra bolts
+        AdditionalSpellProjectiles, // Fire Bolt and Ice Shard fire this many extra projectiles
         SpellDamage,                // % increased spell damage
         AreaOfEffect,               // % increased area of Frost Nova, Cleave and Fire Bolt's burst
         LifeRegen,                  // life regenerated per second
@@ -36,7 +36,78 @@ namespace PoeClone.Inventory
         ChillOnHit,                 // % chance for attacks to chill
         CullingStrike,              // 1: hits kill non-boss enemies left under 10% life
         LifeOnKill,                 // life gained for each enemy killed
-        MeleeRange                  // % increased reach of melee attacks and Cleave
+        MeleeRange,                 // % increased reach of melee attacks and Cleave
+
+        // Skills granted by gear (see SkillGrants): the value is the skill's level. A weapon's
+        // staff's first spell becomes its attack. Saved by number like everything above: add at the end.
+        GrantCleave,
+        GrantFireBolt,
+        GrantDash,
+        GrantFrostNova,
+        GrantRejuvenate,
+        GrantChainLightning,
+        GrantIceShard,
+
+        AllSpellLevels,             // +N to the level of every spell granted by gear
+        FireSpellLevels,
+        ColdSpellLevels,
+        LightningSpellLevels,
+        CastSpeed,                  // % increased cast speed (spells used as the attack)
+        CooldownRecovery            // % faster skill cooldowns
+    }
+
+    /// <summary>
+    /// The stats that grant a skill (their value is its level). Pure data, so the item side knows
+    /// which grants exist without knowing the skills themselves (those live in Skills.SkillBook).
+    /// </summary>
+    public static class SkillGrants
+    {
+        /// <summary>Highest level a skill drops at (gear "+N levels" can still push it past this).</summary>
+        public const int MaxDropLevel = 10;
+
+        /// <summary>Spells a staff's attack can be: one always rolls on every staff.</summary>
+        public static readonly StatType[] StaffMain = { StatType.GrantFireBolt, StatType.GrantChainLightning, StatType.GrantIceShard };
+
+        public static bool IsGrant(StatType stat)
+        {
+            return stat >= StatType.GrantCleave && stat <= StatType.GrantIceShard;
+        }
+
+        /// <summary>
+        /// A spammable spell that, on a staff, replaces its plain attack (the first one on the staff
+        /// does; any further one is an ordinary skill for the bar).
+        /// </summary>
+        public static bool IsMain(StatType stat)
+        {
+            return Array.IndexOf(StaffMain, stat) >= 0;
+        }
+
+        public static string SkillName(StatType grant)
+        {
+            switch (grant)
+            {
+                case StatType.GrantCleave: return "Cleave";
+                case StatType.GrantFireBolt: return "Fire Bolt";
+                case StatType.GrantDash: return "Dash";
+                case StatType.GrantFrostNova: return "Frost Nova";
+                case StatType.GrantRejuvenate: return "Rejuvenate";
+                case StatType.GrantChainLightning: return "Chain Lightning";
+                case StatType.GrantIceShard: return "Ice Shard";
+                default: return grant.ToString();
+            }
+        }
+
+        /// <summary>
+        /// The skill level a drop of this item level rolls: up to 1 at item level 1, up to 10 at
+        /// item level 15 (the toughest things in the Frozen Hollow), often a level or two below the top.
+        /// </summary>
+        public static int RollLevel(Random rng, int itemLevel)
+        {
+            int top = Math.Max(1, Math.Min(MaxDropLevel, (int)Math.Round(1 + (itemLevel - 1) * 9.0 / 14.0)));
+            double roll = rng.NextDouble();
+            int below = roll < 0.5 ? 0 : roll < 0.85 ? 1 : 2;
+            return Math.Max(1, top - below);
+        }
     }
 
     /// <summary>One line of an item's stats: "+30 Armour" is (Armour, 30).</summary>
@@ -219,7 +290,16 @@ namespace PoeClone.Inventory
                 case StatType.CullingStrike: return "Culling Strike";
                 case StatType.LifeOnKill: return "Life on Kill";
                 case StatType.MeleeRange: return "Melee Range";
-                default: return stat.ToString();
+                case StatType.AllSpellLevels: return "Spell Levels";
+                case StatType.FireSpellLevels: return "Fire Spell Levels";
+                case StatType.ColdSpellLevels: return "Cold Spell Levels";
+                case StatType.LightningSpellLevels: return "Lightning Spell Levels";
+                case StatType.CastSpeed: return "Cast Speed";
+                case StatType.CooldownRecovery: return "Cooldown Recovery";
+                default:
+                    if (SkillGrants.IsGrant(stat))
+                        return SkillGrants.SkillName(stat);
+                    return stat.ToString();
             }
         }
 
@@ -247,6 +327,8 @@ namespace PoeClone.Inventory
                 case StatType.ManaAbsorb:
                 case StatType.ChillOnHit:
                 case StatType.MeleeRange:
+                case StatType.CastSpeed:
+                case StatType.CooldownRecovery:
                     return true;
                 default:
                     return false;
@@ -283,7 +365,7 @@ namespace PoeClone.Inventory
                 case StatType.LightningResistance: return sign + n + "% to Lightning Resistance";
                 case StatType.MovementSpeed: return n + "% " + (m.Value < 0f ? "reduced" : "increased") + " Movement Speed";
                 case StatType.AdditionalArrows: return "Bow attacks fire " + n + " additional arrow" + (n == "1" ? "" : "s");
-                case StatType.AdditionalSpellProjectiles: return "Fire Bolt hurls " + n + " additional bolt" + (n == "1" ? "" : "s");
+                case StatType.AdditionalSpellProjectiles: return "Fire Bolt and Ice Shard fire " + n + " additional projectile" + (n == "1" ? "" : "s");
                 case StatType.SpellDamage: return n + "% increased Spell Damage";
                 case StatType.AreaOfEffect: return n + "% increased Area of Effect";
                 case StatType.LifeRegen: return "Regenerate " + n + " Life per second";
@@ -295,7 +377,16 @@ namespace PoeClone.Inventory
                 case StatType.CullingStrike: return "Culling Strike: kill enemies left below 10% Life";
                 case StatType.LifeOnKill: return "Gain " + n + " Life per enemy killed";
                 case StatType.MeleeRange: return n + "% increased Melee Range";
-                default: return sign + n + " " + Label(m.Stat);
+                case StatType.AllSpellLevels: return sign + n + " to Level of all Spells";
+                case StatType.FireSpellLevels: return sign + n + " to Level of all Fire Spells";
+                case StatType.ColdSpellLevels: return sign + n + " to Level of all Cold Spells";
+                case StatType.LightningSpellLevels: return sign + n + " to Level of all Lightning Spells";
+                case StatType.CastSpeed: return n + "% increased Cast Speed";
+                case StatType.CooldownRecovery: return n + "% faster Skill Cooldowns";
+                default:
+                    if (SkillGrants.IsGrant(m.Stat))
+                        return "Grants Level " + n + " " + SkillGrants.SkillName(m.Stat);
+                    return sign + n + " " + Label(m.Stat);
             }
         }
 

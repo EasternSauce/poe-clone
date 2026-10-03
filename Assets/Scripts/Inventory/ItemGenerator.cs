@@ -38,6 +38,8 @@ namespace PoeClone.Inventory
             public float Max;
             public bool ScalesWithLevel;
             public ItemType[] On;
+            public WeaponType[] Weapons;   // on a Weapon: only these kinds (null: every kind)
+            public float Weight = 1f;      // how often it rolls, against the item's other candidates
         }
 
         private static readonly ItemBase[] Bases =
@@ -57,6 +59,7 @@ namespace PoeClone.Inventory
             Weapon("iron_mace", "Iron Mace", 1, 3, new Color(0.50f, 0.52f, 0.56f), WeaponType.Mace, Mod(StatType.PhysicalDamage, 8)),
             Weapon("steel_dagger", "Steel Dagger", 1, 2, new Color(0.78f, 0.80f, 0.84f), WeaponType.Dagger, Mod(StatType.PhysicalDamage, 3)),
             Weapon("short_bow", "Short Bow", 2, 3, new Color(0.62f, 0.44f, 0.26f), WeaponType.Bow, Mod(StatType.PhysicalDamage, 5)),
+            Weapon("gnarled_staff", "Gnarled Staff", 1, 4, new Color(0.45f, 0.32f, 0.20f), WeaponType.Staff, Mod(StatType.PhysicalDamage, 4), Mod(StatType.SpellDamage, 10)),
             Base("wooden_shield", "Wooden Shield", ItemType.Shield, 2, 2, new Color(0.60f, 0.42f, 0.25f), Mod(StatType.Armour, 10), Mod(StatType.BlockChance, 10)),
             Base("leather_quiver", "Leather Quiver", ItemType.Quiver, 2, 3, new Color(0.55f, 0.36f, 0.20f), Mod(StatType.PhysicalDamage, 2)),
         };
@@ -66,25 +69,56 @@ namespace PoeClone.Inventory
         private static readonly ItemType[] NotWeapon =
             { ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Boots, ItemType.Shield, ItemType.Amulet, ItemType.Ring, ItemType.Belt, ItemType.Quiver };
 
+        // Weapon kinds that attack with the weapon itself, and the ones that swing it.
+        private static readonly WeaponType[] AttackWeapons = { WeaponType.Sword, WeaponType.Axe, WeaponType.Mace, WeaponType.Dagger, WeaponType.Bow };
+        private static readonly WeaponType[] MeleeWeapons = { WeaponType.Sword, WeaponType.Axe, WeaponType.Mace, WeaponType.Dagger };
+        private static readonly WeaponType[] Staves = { WeaponType.Staff };
+
         private static readonly Affix[] Affixes =
         {
             Aff(StatType.MaxLife, 8, 25, true, NotWeapon),
             Aff(StatType.MaxMana, 8, 20, true, ItemType.Helmet, ItemType.Gloves, ItemType.Amulet, ItemType.Ring, ItemType.Belt),
-            Aff(StatType.Strength, 4, 12, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Belt, ItemType.Amulet, ItemType.Ring, ItemType.Weapon),
-            Aff(StatType.Dexterity, 4, 12, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Boots, ItemType.Belt, ItemType.Amulet, ItemType.Ring, ItemType.Weapon, ItemType.Quiver),
+            Aff(StatType.Strength, 4, 12, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Belt, ItemType.Amulet, ItemType.Ring).Also(ItemType.Weapon, MeleeWeapons),
+            Aff(StatType.Dexterity, 4, 12, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Boots, ItemType.Belt, ItemType.Amulet, ItemType.Ring, ItemType.Quiver).Also(ItemType.Weapon, AttackWeapons),
             Aff(StatType.Intelligence, 4, 12, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Boots, ItemType.Belt, ItemType.Shield, ItemType.Amulet, ItemType.Ring, ItemType.Weapon),
             Aff(StatType.Armour, 10, 40, true, Armour),
             Aff(StatType.Evasion, 10, 40, true, Armour),
             Aff(StatType.BlockChance, 3, 8, false, ItemType.Shield),
             Aff(StatType.PhysicalDamage, 1, 3, true, ItemType.Gloves, ItemType.Ring, ItemType.Amulet, ItemType.Quiver),
-            Aff(StatType.PhysicalDamage, 3, 8, true, ItemType.Weapon),
-            Aff(StatType.AttackSpeed, 3, 10, false, ItemType.Gloves, ItemType.Ring, ItemType.Amulet, ItemType.Weapon, ItemType.Quiver),
+            Aff(StatType.PhysicalDamage, 3, 8, true, ItemType.Weapon).Only(AttackWeapons),
+            Aff(StatType.AttackSpeed, 3, 10, false, ItemType.Gloves, ItemType.Ring, ItemType.Amulet, ItemType.Quiver).Also(ItemType.Weapon, AttackWeapons),
             Aff(StatType.FireResistance, 6, 24, false, NotWeapon),
             Aff(StatType.ColdResistance, 6, 24, false, NotWeapon),
             Aff(StatType.LightningResistance, 6, 24, false, NotWeapon),
             Aff(StatType.MovementSpeed, 5, 15, false, ItemType.Boots),
-            Aff(StatType.AreaOfEffect, 5, 12, false, ItemType.Amulet, ItemType.Helmet),
-            Aff(StatType.MeleeRange, 5, 12, false, ItemType.Gloves, ItemType.Weapon),
+            Aff(StatType.AreaOfEffect, 5, 12, false, ItemType.Amulet, ItemType.Helmet, ItemType.Weapon).Only(Staves),
+            Aff(StatType.MeleeRange, 5, 12, false, ItemType.Gloves).Also(ItemType.Weapon, MeleeWeapons),
+
+            // Caster stats: a staff's own pool, and a little on jewellery.
+            Aff(StatType.SpellDamage, 8, 22, true, ItemType.Weapon).Only(Staves).Weighted(1.6f),
+            Aff(StatType.SpellDamage, 4, 10, true, ItemType.Ring, ItemType.Amulet).Weighted(0.6f),
+            Aff(StatType.MaxMana, 12, 30, true, ItemType.Weapon).Only(Staves),
+            Aff(StatType.ManaRegen, 10, 35, false, ItemType.Weapon, ItemType.Amulet, ItemType.Ring, ItemType.Helmet).Only(Staves),
+            Aff(StatType.CastSpeed, 4, 14, false, ItemType.Weapon).Only(Staves).Weighted(1.2f),
+            Aff(StatType.CastSpeed, 3, 8, false, ItemType.Ring, ItemType.Amulet, ItemType.Gloves).Weighted(0.6f),
+            Aff(StatType.CooldownRecovery, 5, 15, false, ItemType.Weapon).Only(Staves),
+            Aff(StatType.CooldownRecovery, 4, 10, false, ItemType.Amulet, ItemType.Helmet, ItemType.Belt).Weighted(0.6f),
+
+            // "+1 to level of ..." spells: staves, amulets (all spells) and rings (one element).
+            Aff(StatType.AllSpellLevels, 1, 1, false, ItemType.Weapon, ItemType.Amulet).Only(Staves).Weighted(0.3f),
+            Aff(StatType.FireSpellLevels, 1, 1, false, ItemType.Weapon, ItemType.Amulet, ItemType.Ring).Only(Staves).Weighted(0.35f),
+            Aff(StatType.ColdSpellLevels, 1, 1, false, ItemType.Weapon, ItemType.Amulet, ItemType.Ring).Only(Staves).Weighted(0.35f),
+            Aff(StatType.LightningSpellLevels, 1, 1, false, ItemType.Weapon, ItemType.Amulet, ItemType.Ring).Only(Staves).Weighted(0.35f),
+
+            // Skills on gear (the value is the skill's level, rolled by item level). A staff's
+            // second spell is rare (it goes on the skill bar); melee weapons can carry melee skills.
+            Grant(StatType.GrantFireBolt, 0.15f, ItemType.Weapon).Only(Staves),
+            Grant(StatType.GrantChainLightning, 0.15f, ItemType.Weapon).Only(Staves),
+            Grant(StatType.GrantIceShard, 0.15f, ItemType.Weapon).Only(Staves),
+            Grant(StatType.GrantFrostNova, 0.3f, ItemType.Weapon, ItemType.Helmet, ItemType.Gloves).Only(Staves),
+            Grant(StatType.GrantRejuvenate, 0.3f, ItemType.Weapon, ItemType.Amulet, ItemType.Belt).Only(Staves),
+            Grant(StatType.GrantCleave, 0.6f, ItemType.Weapon).Only(MeleeWeapons),
+            Grant(StatType.GrantDash, 0.45f, ItemType.Boots),
         };
 
         // Magic items are named after their first stats, PoE style: "Hale Iron Helmet of the Fox".
@@ -96,6 +130,9 @@ namespace PoeClone.Inventory
             { StatType.Evasion, "Shadowy" },
             { StatType.PhysicalDamage, "Heavy" },
             { StatType.MovementSpeed, "Runner's" },
+            { StatType.SpellDamage, "Apprentice's" },
+            { StatType.GrantDash, "Fleet" },
+            { StatType.GrantCleave, "Sweeping" },
         };
 
         private static readonly Dictionary<StatType, string> Suffixes = new Dictionary<StatType, string>
@@ -110,6 +147,15 @@ namespace PoeClone.Inventory
             { StatType.LightningResistance, "of the Cloud" },
             { StatType.AreaOfEffect, "of Expanse" },
             { StatType.MeleeRange, "of Reach" },
+            { StatType.CastSpeed, "of Talent" },
+            { StatType.CooldownRecovery, "of the Hourglass" },
+            { StatType.AllSpellLevels, "of Mastery" },
+            { StatType.FireSpellLevels, "of Embers" },
+            { StatType.ColdSpellLevels, "of Rime" },
+            { StatType.LightningSpellLevels, "of Sparks" },
+            { StatType.ManaRegen, "of Wisdom" },
+            { StatType.GrantFrostNova, "of Frost" },
+            { StatType.GrantRejuvenate, "of Renewal" },
         };
 
         private static readonly string[] RareFirstWords =
@@ -199,11 +245,20 @@ namespace PoeClone.Inventory
             item.ArtTint = b.ArtTint;
         }
 
-        /// <summary>A random item of the given base id (null if there is no such base).</summary>
-        public static ItemData Generate(System.Random rng, string baseId, int itemLevel, ItemRarity rarity)
+        /// <summary>
+        /// A random item of the given base id (null if there is no such base). For a staff,
+        /// <paramref name="mainSpell"/> picks its spell (else it is random).
+        /// </summary>
+        public static ItemData Generate(System.Random rng, string baseId, int itemLevel, ItemRarity rarity, StatType? mainSpell = null)
         {
             ItemBase b = Find(baseId);
-            return b != null ? Generate(rng, b, itemLevel, rarity) : null;
+            return b != null ? Generate(rng, b, itemLevel, rarity, mainSpell) : null;
+        }
+
+        /// <summary>Whether an item rolled from this base would carry an attack spell (every staff does).</summary>
+        public static bool AlwaysHasMainSpell(ItemData item)
+        {
+            return item != null && item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Staff;
         }
 
         /// <summary>
@@ -222,7 +277,7 @@ namespace PoeClone.Inventory
             return item;
         }
 
-        private static ItemData Generate(System.Random rng, ItemBase b, int itemLevel, ItemRarity rarity)
+        private static ItemData Generate(System.Random rng, ItemBase b, int itemLevel, ItemRarity rarity, StatType? mainSpell = null)
         {
             int level = Math.Max(1, Math.Min(MaxItemLevel, itemLevel));
             float levelScale = 1f + 0.06f * (level - 1);
@@ -237,35 +292,58 @@ namespace PoeClone.Inventory
             var candidates = new List<Affix>();
             foreach (Affix a in Affixes)
             {
-                if (Array.IndexOf(a.On, b.Type) >= 0)
-                    candidates.Add(a);
+                if (Array.IndexOf(a.On, b.Type) < 0)
+                    continue;
+                if (b.Type == ItemType.Weapon && a.Weapons != null && Array.IndexOf(a.Weapons, b.WeaponType) < 0)
+                    continue;
+                candidates.Add(a);
             }
 
             var mods = new List<StatModifier>();
-            foreach (StatModifier implicitMod in b.Implicits)
-                mods.Add(new StatModifier(implicitMod.Stat, RollImplicit(rng, implicitMod.Value)));
             var rolled = new List<StatType>();
 
-            while (rolled.Count < affixCount && candidates.Count > 0)
+            // Every staff carries a spell: its attack. It comes on top of the rarity's stats.
+            if (b.Type == ItemType.Weapon && b.WeaponType == WeaponType.Staff)
             {
-                int pick = rng.Next(candidates.Count);
+                StatType spell = mainSpell ?? SkillGrants.StaffMain[rng.Next(SkillGrants.StaffMain.Length)];
+                mods.Add(new StatModifier(spell, SkillGrants.RollLevel(rng, level)));
+                rolled.Add(spell);
+            }
+
+            foreach (StatModifier implicitMod in b.Implicits)
+                mods.Add(new StatModifier(implicitMod.Stat, RollImplicit(rng, implicitMod.Value)));
+            int fromRarity = 0;
+
+            while (fromRarity < affixCount && candidates.Count > 0)
+            {
+                int pick = WeightedPick(rng, candidates);
                 Affix a = candidates[pick];
                 candidates.RemoveAt(pick);
                 if (rolled.Contains(a.Stat))
                     continue;
 
-                float value = a.Min + (float)rng.NextDouble() * (a.Max - a.Min);
-                if (a.ScalesWithLevel)
-                    value *= levelScale;
+                float value;
+                if (SkillGrants.IsGrant(a.Stat))
+                {
+                    value = SkillGrants.RollLevel(rng, level);
+                }
+                else
+                {
+                    value = a.Min + (float)rng.NextDouble() * (a.Max - a.Min);
+                    if (a.ScalesWithLevel)
+                        value *= levelScale;
+                }
 
+                // (Tooltips list skills first whatever their order here.)
                 mods.Add(new StatModifier(a.Stat, Mathf.Max(1f, Mathf.Round(value))));
                 rolled.Add(a.Stat);
+                fromRarity++;
             }
 
             // The rarity shown matches what actually rolled (a base can run out of stats to give).
-            if (rarity != ItemRarity.Normal && rolled.Count == 0)
+            if (rarity != ItemRarity.Normal && fromRarity == 0)
                 rarity = ItemRarity.Normal;
-            else if (rarity == ItemRarity.Rare && rolled.Count < 3)
+            else if (rarity == ItemRarity.Rare && fromRarity < 3)
                 rarity = ItemRarity.Magic;
 
             string name = NameFor(rng, b, rarity, rolled);
@@ -274,6 +352,21 @@ namespace PoeClone.Inventory
             item.ArtId = b.ArtId;
             item.ArtTint = b.ArtTint;
             return item;
+        }
+
+        private static int WeightedPick(System.Random rng, List<Affix> candidates)
+        {
+            float total = 0f;
+            foreach (Affix a in candidates)
+                total += a.Weight;
+            float roll = (float)rng.NextDouble() * total;
+            for (int k = 0; k < candidates.Count; k++)
+            {
+                roll -= candidates[k].Weight;
+                if (roll < 0f)
+                    return k;
+            }
+            return candidates.Count - 1;
         }
 
         private static string NameFor(System.Random rng, ItemBase b, ItemRarity rarity, List<StatType> rolled)
@@ -383,6 +476,9 @@ namespace PoeClone.Inventory
             Tier("great_helm", "Great Helm", "iron_helmet", 9, Gilded, Mod(StatType.Armour, 65)),
             Tier("full_plate", "Full Plate", "studded_vest", 9, Gilded, Mod(StatType.Armour, 95), Mod(StatType.MaxLife, 20)),
             Tier("tower_shield", "Tower Shield", "wooden_shield", 9, Gilded, Mod(StatType.Armour, 45), Mod(StatType.BlockChance, 18)),
+
+            Tier("runed_staff", "Runed Staff", "gnarled_staff", 5, Lapis, Mod(StatType.PhysicalDamage, 7), Mod(StatType.SpellDamage, 18), Mod(StatType.Intelligence, 8)),
+            Tier("archmage_staff", "Archmage Staff", "gnarled_staff", 9, Gilded, Mod(StatType.PhysicalDamage, 10), Mod(StatType.SpellDamage, 28), Mod(StatType.Intelligence, 14)),
         };
 
         // Every base: the originals, then their tiers.
@@ -402,6 +498,8 @@ namespace PoeClone.Inventory
                     foreach (ItemBase b in all)
                     {
                         if (b.Type == ItemType.Weapon && b.WeaponType == WeaponType.Bow)
+                            b.Weight = 2.5f;
+                        else if (b.Type == ItemType.Weapon && b.WeaponType == WeaponType.Staff)
                             b.Weight = 2.5f;
                         else if (b.Type == ItemType.Quiver)
                             b.Weight = 1.5f;
@@ -446,6 +544,36 @@ namespace PoeClone.Inventory
         private static Affix Aff(StatType stat, float min, float max, bool scales, params ItemType[] on)
         {
             return new Affix { Stat = stat, Min = min, Max = max, ScalesWithLevel = scales, On = on };
+        }
+
+        // A skill on gear: its value is the skill level (see SkillGrants.RollLevel).
+        private static Affix Grant(StatType grant, float weight, params ItemType[] on)
+        {
+            return new Affix { Stat = grant, Min = 1, Max = 1, On = on, Weight = weight };
+        }
+
+        /// <summary>On a weapon, only these kinds roll it (other item types are unaffected).</summary>
+        private static Affix Only(this Affix a, WeaponType[] weapons)
+        {
+            a.Weapons = weapons;
+            return a;
+        }
+
+        /// <summary>Also rolls on this item type; for a weapon, only these kinds.</summary>
+        private static Affix Also(this Affix a, ItemType type, WeaponType[] weapons)
+        {
+            var on = new ItemType[a.On.Length + 1];
+            a.On.CopyTo(on, 0);
+            on[a.On.Length] = type;
+            a.On = on;
+            a.Weapons = weapons;
+            return a;
+        }
+
+        private static Affix Weighted(this Affix a, float weight)
+        {
+            a.Weight = weight;
+            return a;
         }
 
         private static StatModifier Mod(StatType stat, float value)

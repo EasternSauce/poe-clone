@@ -123,7 +123,7 @@ namespace PoeClone.Player
             if (stats == null)
                 return;
 
-            var data = new SaveData { level = stats.Level, experience = stats.Experience };
+            var data = new SaveData { level = stats.Level, experience = stats.Experience, gearSkills = true };
 
             PlayerInventory inventory = stats.GetComponent<PlayerInventory>();
             if (inventory != null)
@@ -207,6 +207,22 @@ namespace PoeClone.Player
             {
                 foreach (ItemData item in data.RestoreInventory(inventory))
                     inventory.ThrowAway(item);
+
+                // Characters from before skills came from gear learned their spells by levelling:
+                // they get a staff with Fire Bolt at about the level they'd have found by now.
+                if (!data.gearSkills)
+                {
+                    int spellLevel = Mathf.Clamp(1 + (data.level - 1) / 4, 1, SkillGrants.MaxDropLevel);
+                    ItemData staff = ItemGenerator.Generate(new System.Random(), "gnarled_staff", 1, ItemRarity.Normal, StatType.GrantFireBolt);
+                    var mods = new List<StatModifier>();
+                    foreach (StatModifier m in staff.Modifiers)
+                        mods.Add(m.Stat == StatType.GrantFireBolt ? new StatModifier(m.Stat, spellLevel) : m);
+                    var gift = new ItemData(staff.Id, staff.Name, staff.Type, staff.Width, staff.Height, staff.Tint, mods,
+                        false, staff.WeaponType, staff.Rarity);
+                    ItemGenerator.ApplyArt(gift);
+                    if (!inventory.Grid.TryAutoPlace(gift))
+                        inventory.ThrowAway(gift);
+                }
             }
 
             PlayerPotions potions = stats.GetComponent<PlayerPotions>();

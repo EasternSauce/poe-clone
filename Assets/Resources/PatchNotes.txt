@@ -1,10 +1,23 @@
-version: 2026-10-03h
+version: 2026-10-03i
+<b>Skills now come from gear</b>
+- You no longer learn skills by levelling. Every skill is found on gear instead, at a level from 1 to 10, and a higher level hits harder, costs a little more and comes back sooner.
+- New weapon: staves (two-handed). Every staff carries a spell that becomes your attack: left click (or the aim stick) casts it instead of swinging. Out of mana, you swing the staff instead.
+- Staff spells: Fire Bolt, Chain Lightning and the new Ice Shard, which flings three chilling shards in a narrow fan.
+- Staves roll caster stats: spell damage, cast speed, faster cooldowns, mana, mana regeneration, area of effect, "+1 to level of spells", and now and then a second skill.
+- Other skills roll where they fit: Cleave on melee weapons, Dash on boots, Frost Nova on helmets and gloves, Rejuvenate on amulets and belts.
+- New stats: "+1 to Level of all Spells" on amulets, "+1 to Level of all Fire/Cold/Lightning Spells" on rings and amulets, Cast Speed and faster Skill Cooldowns on jewellery and other gear.
+- Tougher monsters in later areas drop higher-level skills.
+- A Gnarled Staff with Fire Bolt now lies on the benches in Haven, and the starting boots carry Dash.
+- Characters from before this change find a staff with Fire Bolt in their bag.
+<b>Controls</b>
+- The skill bar has eight slots: Q, E, R, F, and the right, middle and two side mouse buttons. The square on its left shows your attack.
+- The skills panel (K) shows each skill's level and which item it comes from.
+- Bow shots, spells and melee swings now go wherever you are aiming at the moment they leave your hand, not where you aimed when you started.
 <b>Balance</b>
-- Leveling is twice as slow: each level now needs twice the experience.
-<b>Minimap</b>
-- The minimap no longer gives away gates, the waystone or townsfolk you haven't discovered yet.
-- Monsters only show on the minimap when they are close by.
-<b>Gear and skills</b>
+- Life and mana regenerate more slowly.
+- Enraged monsters are much faster, attack 50% faster, and lead their shots and aimed spells to where you are heading.
+- A monster you kill from a distance no longer flashes "ENRAGED" as it dies.
+<b>Gear</b>
 - A Short Bow now lies on the benches in Haven with the rest of the starting gear.
 - Cleave needs a melee weapon: it can no longer be used with a bow.
 - New stat: Melee Range, found on gloves and weapons and on the Brute Force passive.
@@ -13,6 +26,7 @@ version: 2026-10-03h
 - A slain boss returns after two minutes, but only once you are well away from its lair.
 <b>Interface</b>
 - The inventory, stash/trader and character windows have an X button to close them.
+- The character page now shows above the level/life/mana panel instead of under it.
 <b>Monsters</b>
 - New creatures roam the wilds: giant spiders, dire wolf packs and bog slimes in Greenwood; grave bat swarms, corpse oozes and crypt spiders in the Graveyard; magma beetles and hellhound packs in the Ashen Ruins; frost wolves and ice crawlers in the Frozen Hollow.
 - Slimes and oozes burst into smaller ones when killed.

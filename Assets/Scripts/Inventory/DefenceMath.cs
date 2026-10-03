@@ -19,8 +19,8 @@ namespace PoeClone.Inventory
         private const float ArmourPerDamageForHalf = 12f;
 
         // Mana regenerated per second: a share of the pool, plus a little per point of Intelligence.
-        public const float ManaRegenFraction = 0.02f;
-        public const float ManaRegenPerIntelligence = 0.05f;
+        public const float ManaRegenFraction = 0.015f;
+        public const float ManaRegenPerIntelligence = 0.04f;
 
         /// <summary>
         /// Share of every hit taken from mana instead of life while there is mana to take it from
@@ -30,7 +30,7 @@ namespace PoeClone.Inventory
         public const float ManaAbsorbShare = 0.1f;
 
         /// <summary>Life regenerated per second by everyone, as a share of maximum life: very slow.</summary>
-        public const float LifeRegenFraction = 0.004f;
+        public const float LifeRegenFraction = 0.002f;
 
         /// <summary>Enemies left below this share of their life by a culling hit die.</summary>
         public const float CullThreshold = 0.1f;

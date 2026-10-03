@@ -46,7 +46,8 @@ namespace PoeClone.Inventory
         Axe,
         Mace,
         Dagger,
-        Bow
+        Bow,
+        Staff    // two-handed; its spell (see SkillGrants.StaffMain) is its attack
     }
 
     /// <summary>The places gear can be worn. There are two ring slots and one amulet slot.</summary>
@@ -193,13 +194,16 @@ namespace PoeClone.Inventory
 
         /// <summary>
         /// Whether a main-hand and an off-hand item can be worn together. A bow takes both hands:
-        /// no shield with it, only a quiver; and a quiver is only for a bow (or empty hands).
-        /// Either may be null (nothing in that hand).
+        /// no shield with it, only a quiver; and a quiver is only for a bow (or empty hands). A staff
+        /// takes both hands and leaves nothing for the off hand. Either may be null (nothing in that hand).
         /// </summary>
         public static bool HandsCompatible(ItemData mainHand, ItemData offHand)
         {
             bool bow = mainHand != null && mainHand.Type == ItemType.Weapon && mainHand.WeaponType == WeaponType.Bow;
+            bool staff = mainHand != null && mainHand.Type == ItemType.Weapon && mainHand.WeaponType == WeaponType.Staff;
 
+            if (staff)
+                return offHand == null;
             if (bow)
                 return offHand == null || offHand.Type == ItemType.Quiver;
             if (offHand != null && offHand.Type == ItemType.Quiver)

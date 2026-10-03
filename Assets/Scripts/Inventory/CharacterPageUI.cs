@@ -280,7 +280,7 @@ namespace PoeClone.Inventory
             foreach (StatType stat in System.Enum.GetValues(typeof(StatType)))
             {
                 float total = sheet.Total(stat);
-                if (!StatFormatter.IsSpecial(stat) || Mathf.Abs(total) < 0.001f)
+                if (!StatFormatter.IsSpecial(stat) || SkillGrants.IsGrant(stat) || Mathf.Abs(total) < 0.001f)
                     continue;
                 if (special.Length > 0)
                     special.Append('\n');

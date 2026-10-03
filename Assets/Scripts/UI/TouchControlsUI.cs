@@ -173,11 +173,20 @@ namespace PoeClone.UI
                 }
 
                 Skills.SkillDefinition skill = Skills.SkillBook.Get(id.Value);
+                if (skills.Level(skill.Id) <= 0)
+                {
+                    // Slotted but not on the gear worn right now.
+                    button.Back.color = new Color(0.08f, 0.07f, 0.06f, 0.3f);
+                    button.Label.text = "<color=#FFFFFF40>" + skill.Short + "</color>";
+                    button.Cooldown.fillAmount = 0f;
+                    continue;
+                }
                 bool affordable = skills.CanAfford(skill.Id);
                 Color c = affordable ? skill.Color : Color.Lerp(skill.Color, new Color(0.2f, 0.3f, 0.9f), 0.6f);
                 button.Back.color = new Color(c.r * 0.45f, c.g * 0.45f, c.b * 0.45f, 0.8f);
                 button.Label.text = skill.Short;
-                button.Cooldown.fillAmount = skill.Cooldown > 0f ? skills.CooldownLeft(skill.Id) / skill.Cooldown : 0f;
+                float total = skills.CooldownTotal(skill.Id);
+                button.Cooldown.fillAmount = total > 0f ? skills.CooldownLeft(skill.Id) / total : 0f;
             }
         }
 
@@ -439,7 +448,7 @@ namespace PoeClone.UI
             aim.Up += OnAimUp;
 
             // Skill buttons on an arc around the attack button, in thumb's reach.
-            for (int k = 0; k < Skills.SkillBook.SlotCount; k++)
+            for (int k = 0; k < Skills.SkillBook.TouchSlotCount; k++)
             {
                 float angle = (105f + k * 25f) * Mathf.Deg2Rad;
                 Vector2 at = new Vector2(-150f + Mathf.Cos(angle) * 185f, 150f + Mathf.Sin(angle) * 185f);

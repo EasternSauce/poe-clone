@@ -130,6 +130,13 @@ namespace PoeClone.Enemies
                 transform.rotation = Quaternion.LookRotation(facing);
 
             UseCount++;
+            // Enraged, aimed moves lead the player: the blast lands, or the volley flies, where
+            // they're heading rather than where they stand.
+            bool enraged = controller != null && controller.IsEnraged;
+            if (enraged && kind.Skill == EnemySkill.Strike)
+                target = PlayerMotion.Predict(player, StrikeWindUp(kind));
+            else if (enraged && kind.Skill == EnemySkill.Volley)
+                target = PlayerMotion.Intercept(player, EnemyCombat.BoltOrigin(transform), kind.ProjectileSpeed);
             if (kind.Skill == EnemySkill.Leap)
                 target = LeapLanding(transform.position, PredictPlayer(LeapCrouch + LeapAir), LeapGap(transform));
             LastTarget = kind.Skill == EnemySkill.Slam ? transform.position : target;

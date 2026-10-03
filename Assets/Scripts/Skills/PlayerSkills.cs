@@ -12,33 +12,38 @@ using PoeClone.Visuals;
 namespace PoeClone.Skills
 {
     /// <summary>
-    /// The player's skills (see <see cref="SkillBook"/>): four bar slots used with Q, E, R and F
-    /// (or the round touch buttons). Skills unlock as the character levels up and drop into the
-    /// first free slot; the skills panel (K) moves them around. Each costs mana and has a cooldown.
-    /// Aiming works like attacks: the mouse on desktop, <see cref="VirtualInput.Aim"/> (the aim
-    /// stick) on touch - whatever enemy that direction currently lines up with, or a blind cast at
-    /// the nearest enemy (for less damage) if it doesn't line up with anything or isn't held.
-    /// Self-added by <see cref="PlayerController"/>.
+    /// The player's skills (see <see cref="SkillBook"/>). Skills come from worn gear, each at a
+    /// level (the highest any worn item grants, plus "+N to level" gear). A staff's first spell is
+    /// its attack: <see cref="PlayerCombat"/> casts it on left click / the aim stick instead of
+    /// swinging (<see cref="MainSkill"/>, <see cref="TrySpendMain"/>, <see cref="ReleaseMain"/>).
+    /// Every other skill goes in a bar slot: Q, E, R, F, then the right, middle, back and forward
+    /// mouse buttons (touch has round buttons for the first four). A skill that new gear grants
+    /// drops into the first free slot; the skills panel (K) moves them around. Each costs mana and
+    /// has a cooldown. Aiming works like attacks: the mouse on desktop, <see cref="VirtualInput.Aim"/>
+    /// on touch. Self-added by <see cref="PlayerController"/>.
     /// </summary>
     public class PlayerSkills : MonoBehaviour
     {
+        private static readonly string[] SlotLabels = { "Q", "E", "R", "F", "RMB", "MMB", "M4", "M5" };
         private static readonly Key[] SlotKeys = { Key.Q, Key.E, Key.R, Key.F };
 
         private readonly SkillId?[] slots = new SkillId?[SkillBook.SlotCount];
         private readonly Dictionary<SkillId, float> readyAt = new Dictionary<SkillId, float>();
+        private readonly Dictionary<SkillId, float> cooldownOf = new Dictionary<SkillId, float>();
         private readonly Collider[] buffer = new Collider[32];
 
         private PlayerStats stats;
         private PlayerController controller;
         private PlayerInventory inventory;
         private CharacterAttackAnimator attackAnimator;
+        private EquipmentSet boundEquipment;
 
-        /// <summary>Slots or unlocks changed (the bars redraw).</summary>
+        /// <summary>Slots, gear-granted skills or their levels changed (the bars redraw).</summary>
         public event Action Changed;
 
         public static string KeyLabel(int slot)
         {
-            return SlotKeys[slot].ToString();
+            return slot >= 0 && slot < SlotLabels.Length ? SlotLabels[slot] : "?";
         }
 
         private void Awake()
@@ -51,15 +56,127 @@ namespace PoeClone.Skills
 
         private void Start()
         {
-            if (stats != null)
-                stats.LeveledUp += OnLeveledUp;
+            if (inventory != null)
+            {
+                boundEquipment = inventory.Equipment;
+                boundEquipment.Changed += OnGearChanged;
+                inventory.StatsChanged += OnStatsChanged;
+            }
             FillEmptySlots(announce: false);
         }
 
         private void OnDestroy()
         {
-            if (stats != null)
-                stats.LeveledUp -= OnLeveledUp;
+            if (boundEquipment != null)
+                boundEquipment.Changed -= OnGearChanged;
+            if (inventory != null)
+                inventory.StatsChanged -= OnStatsChanged;
+        }
+
+        private void OnGearChanged(EquipSlot slot, ItemData item)
+        {
+            FillEmptySlots(announce: item != null);
+        }
+
+        private void OnStatsChanged()
+        {
+            Changed?.Invoke();
+        }
+
+        // ------------------------------------------------------------------ levels from gear
+
+        /// <summary>
+        /// The skill's level: the highest any worn item grants it at, plus "+N to level" gear for a
+        /// spell. 0 if nothing worn grants it.
+        /// </summary>
+        public int Level(SkillId id)
+        {
+            if (inventory == null)
+                return 0;
+
+            SkillDefinition skill = SkillBook.Get(id);
+            int granted = 0;
+            foreach (EquipSlot slot in SlotRules.AllSlots)
+            {
+                ItemData item = inventory.Equipment.Get(slot);
+                if (item == null)
+                    continue;
+                foreach (StatModifier m in item.Modifiers)
+                {
+                    if (m.Stat == skill.Grant)
+                        granted = Mathf.Max(granted, Mathf.RoundToInt(m.Value));
+                }
+            }
+            if (granted <= 0)
+                return 0;
+
+            int bonus = 0;
+            if (skill.Spell)
+            {
+                bonus += Mathf.RoundToInt(Stat(StatType.AllSpellLevels));
+                if (skill.Element == SkillElement.Fire)
+                    bonus += Mathf.RoundToInt(Stat(StatType.FireSpellLevels));
+                else if (skill.Element == SkillElement.Cold)
+                    bonus += Mathf.RoundToInt(Stat(StatType.ColdSpellLevels));
+                else if (skill.Element == SkillElement.Lightning)
+                    bonus += Mathf.RoundToInt(Stat(StatType.LightningSpellLevels));
+            }
+            return Mathf.Max(1, granted + bonus);
+        }
+
+        /// <summary>
+        /// The staff's attack: the first spell on the weapon that can be one. Null without a staff
+        /// (the plain weapon attack is used).
+        /// </summary>
+        public SkillId? MainSkill
+        {
+            get
+            {
+                ItemData weapon = inventory != null ? inventory.Equipment.Get(EquipSlot.MainHand) : null;
+                if (weapon == null)
+                    return null;
+                foreach (StatModifier m in weapon.Modifiers)
+                {
+                    if (SkillGrants.IsMain(m.Stat))
+                    {
+                        SkillDefinition skill = SkillBook.ForGrant(m.Stat);
+                        if (skill != null)
+                            return skill.Id;
+                    }
+                }
+                return null;
+            }
+        }
+
+        /// <summary>Gear grants it and it isn't the staff's attack: it can go on the bar.</summary>
+        public bool IsUnlocked(SkillId id)
+        {
+            return Level(id) > 0 && MainSkill != id;
+        }
+
+        /// <summary>Which worn item grants the skill (the one at the highest level), for the skills panel.</summary>
+        public ItemData Source(SkillId id)
+        {
+            if (inventory == null)
+                return null;
+            StatType grant = SkillBook.Get(id).Grant;
+            ItemData best = null;
+            float bestLevel = 0f;
+            foreach (EquipSlot slot in SlotRules.AllSlots)
+            {
+                ItemData item = inventory.Equipment.Get(slot);
+                if (item == null)
+                    continue;
+                foreach (StatModifier m in item.Modifiers)
+                {
+                    if (m.Stat == grant && m.Value > bestLevel)
+                    {
+                        bestLevel = m.Value;
+                        best = item;
+                    }
+                }
+            }
+            return best;
         }
 
         // ------------------------------------------------------------------ slots
@@ -67,11 +184,6 @@ namespace PoeClone.Skills
         public SkillId? Slot(int index)
         {
             return index >= 0 && index < slots.Length ? slots[index] : null;
-        }
-
-        public bool IsUnlocked(SkillId id)
-        {
-            return stats != null && stats.Level >= SkillBook.Get(id).UnlockLevel;
         }
 
         /// <summary>Empties a slot.</summary>
@@ -83,10 +195,14 @@ namespace PoeClone.Skills
             Changed?.Invoke();
         }
 
-        /// <summary>Puts an unlocked skill in a slot (taking it out of any other slot).</summary>
+        /// <summary>
+        /// Puts a skill in a slot (taking it out of any other slot). Not the staff's attack. A skill
+        /// the gear doesn't grant right now may still be placed (a loaded save, a spectator's copy):
+        /// it waits there, greyed out, until gear grants it again.
+        /// </summary>
         public void Assign(int slot, SkillId id)
         {
-            if (slot < 0 || slot >= slots.Length || !IsUnlocked(id))
+            if (slot < 0 || slot >= slots.Length || MainSkill == id)
                 return;
 
             for (int k = 0; k < slots.Length; k++)
@@ -98,40 +214,75 @@ namespace PoeClone.Skills
             Changed?.Invoke();
         }
 
+        /// <summary>Cooldown at the skill's current level, after Cooldown Recovery (or the cast interval for the attack spell).</summary>
+        public float Cooldown(SkillId id)
+        {
+            SkillDefinition skill = SkillBook.Get(id);
+            float cooldown = skill.CooldownAt(Mathf.Max(1, Level(id)));
+            if (skill.Main && MainSkill == id)
+                return cooldown / (1f + Mathf.Max(-50f, Stat(StatType.CastSpeed)) / 100f);
+            return cooldown / (1f + Mathf.Max(-50f, Stat(StatType.CooldownRecovery)) / 100f);
+        }
+
         public float CooldownLeft(SkillId id)
         {
             return readyAt.TryGetValue(id, out float at) ? Mathf.Max(0f, at - Time.time) : 0f;
         }
 
+        /// <summary>The full length of the cooldown now running (for the bar's sweep).</summary>
+        public float CooldownTotal(SkillId id)
+        {
+            return cooldownOf.TryGetValue(id, out float total) ? total : Cooldown(id);
+        }
+
+        public float ManaCost(SkillId id)
+        {
+            return SkillBook.Get(id).ManaCostAt(Mathf.Max(1, Level(id)));
+        }
+
         public bool CanAfford(SkillId id)
         {
-            return stats != null && stats.CurrentMana >= SkillBook.Get(id).ManaCost;
+            return stats != null && stats.CurrentMana >= ManaCost(id);
         }
 
-        private void OnLeveledUp(int level)
-        {
-            FillEmptySlots(announce: true);
-        }
-
-        // Newly unlocked skills go into the first free slot, so a new player never has to open
-        // the skills panel to get going.
+        // Newly granted skills go into the first free slot (or one holding a skill no longer
+        // granted), so nobody has to open the skills panel to get going.
         private void FillEmptySlots(bool announce)
         {
+            SkillId? main = MainSkill;
             bool changed = false;
             foreach (SkillDefinition skill in SkillBook.All)
             {
+                if (skill.Id == main)
+                {
+                    // The attack has no bar slot.
+                    int at = Array.IndexOf(slots, (SkillId?)skill.Id);
+                    if (at >= 0)
+                    {
+                        slots[at] = null;
+                        changed = true;
+                    }
+                    continue;
+                }
                 if (!IsUnlocked(skill.Id) || Array.IndexOf(slots, (SkillId?)skill.Id) >= 0)
                     continue;
 
-                bool justUnlocked = stats.Level == skill.UnlockLevel;
-                if (announce && justUnlocked)
-                    CombatText.Show(transform.position + Vector3.up * 2.2f, "New skill: " + skill.Name, skill.Color, 1.1f);
-
                 int free = Array.IndexOf(slots, null);
                 if (free < 0)
+                {
+                    for (int k = 0; k < slots.Length && free < 0; k++)
+                    {
+                        if (!IsUnlocked(slots[k].Value))
+                            free = k;
+                    }
+                }
+                if (free < 0)
                     continue;
+
                 slots[free] = skill.Id;
                 changed = true;
+                if (announce)
+                    CombatText.Show(transform.position + Vector3.up * 2.2f, skill.Name + " (" + KeyLabel(free) + ")", skill.Color, 1.1f);
             }
 
             if (changed || announce)
@@ -151,8 +302,9 @@ namespace PoeClone.Skills
             int pressed = VirtualInput.SkillPressed;
             VirtualInput.SkillPressed = -1;
 
+            bool free = !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused();
             Keyboard keyboard = Keyboard.current;
-            if (pressed < 0 && keyboard != null && !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused())
+            if (pressed < 0 && keyboard != null && free)
             {
                 for (int k = 0; k < SlotKeys.Length; k++)
                 {
@@ -161,11 +313,22 @@ namespace PoeClone.Skills
                 }
             }
 
+            // The spare mouse buttons (the left one attacks). Not over a window, and not on touch,
+            // where browsers turn taps into mouse clicks.
+            Mouse mouse = Mouse.current;
+            if (pressed < 0 && mouse != null && free && !TouchMode.Active && !PlayerController.IsPointerOverUi() && !DialogueUI.IsOpen)
+            {
+                if (mouse.rightButton.wasPressedThisFrame) pressed = 4;
+                else if (mouse.middleButton.wasPressedThisFrame) pressed = 5;
+                else if (mouse.backButton.wasPressedThisFrame) pressed = 6;
+                else if (mouse.forwardButton.wasPressedThisFrame) pressed = 7;
+            }
+
             if (pressed >= 0)
                 TryUse(pressed);
         }
 
-        /// <summary>Uses the skill in a slot if it's ready and affordable.</summary>
+        /// <summary>Uses the skill in a slot if gear grants it and it's ready and affordable.</summary>
         public bool TryUse(int slot)
         {
             SkillId? id = Slot(slot);
@@ -173,11 +336,17 @@ namespace PoeClone.Skills
                 return false;
 
             SkillDefinition skill = SkillBook.Get(id.Value);
+            int level = Level(skill.Id);
+            if (level <= 0 || MainSkill == skill.Id)
+            {
+                CombatText.Show(transform.position + Vector3.up * 2f, skill.Name + ": not on your gear", UiKit.DimText, 0.8f);
+                return false;
+            }
             if (CooldownLeft(skill.Id) > 0f || controller.IsDashing)
                 return false;
 
             // Swinging skills wait for the current swing; Dash and Rejuvenate can cut in.
-            bool usesArms = skill.Id == SkillId.Cleave || skill.Id == SkillId.FireBolt || skill.Id == SkillId.ChainLightning;
+            bool usesArms = skill.Id != SkillId.Dash && skill.Id != SkillId.Rejuvenate;
             if (usesArms && attackAnimator != null && attackAnimator.IsAttacking)
                 return false;
 
@@ -188,39 +357,108 @@ namespace PoeClone.Skills
                 return false;
             }
 
-            if (!stats.TrySpendMana(skill.ManaCost))
+            if (!stats.TrySpendMana(ManaCost(skill.Id)))
             {
                 CombatText.Show(transform.position + Vector3.up * 2f, "Not enough mana", CombatText.ColdColor, 0.8f);
                 return false;
             }
 
-            readyAt[skill.Id] = Time.time + skill.Cooldown;
+            StartCooldown(skill.Id);
             controller.CancelWalk();
-            Cast(skill);
+            Cast(skill, level);
             return true;
+        }
+
+        private void StartCooldown(SkillId id)
+        {
+            float cooldown = Cooldown(id);
+            cooldownOf[id] = cooldown;
+            readyAt[id] = Time.time + cooldown;
+        }
+
+        // ------------------------------------------------------------------ the staff's attack
+
+        /// <summary>
+        /// Pays for one cast of the staff's attack spell (PlayerCombat starts the cast animation
+        /// when this succeeds, and calls <see cref="ReleaseMain"/> at its strike frame). False
+        /// without the mana for it: the staff is swung instead.
+        /// </summary>
+        public bool TrySpendMain()
+        {
+            SkillId? main = MainSkill;
+            if (main == null || stats == null)
+                return false;
+            if (!stats.TrySpendMana(ManaCost(main.Value)))
+                return false;
+            StartCooldown(main.Value);
+            return true;
+        }
+
+        /// <summary>Seconds between casts of the attack spell (its level and Cast Speed shorten it).</summary>
+        public float MainInterval()
+        {
+            SkillId? main = MainSkill;
+            return main != null ? Cooldown(main.Value) : 1f;
+        }
+
+        /// <summary>The attack spell leaves the staff, the way the player is facing right now.</summary>
+        public void ReleaseMain()
+        {
+            SkillId? main = MainSkill;
+            if (main == null)
+                return;
+            Cast(SkillBook.Get(main.Value), Mathf.Max(1, Level(main.Value)), asAttack: true);
+        }
+
+        /// <summary>How far the attack spell reaches (for PlayerCombat's aim highlight).</summary>
+        public float MainReach()
+        {
+            SkillId? main = MainSkill;
+            if (main == SkillId.ChainLightning)
+                return ChainReach;
+            return main == SkillId.IceShard ? ShardRange : BoltRange;
         }
 
         // ------------------------------------------------------------------ the skills
 
-        private void Cast(SkillDefinition skill)
+        private const float BoltRange = 16f;
+        private const float ShardRange = 12f;
+
+        // asAttack: cast as the staff's attack, already facing where it should go (PlayerCombat
+        // turned the player at the moment of release); from the bar it aims itself.
+        private void Cast(SkillDefinition skill, int level, bool asAttack = false)
         {
             float spell = SkillBook.SpellMultiplier(stats.Intelligence) * (1f + Stat(StatType.SpellDamage) / 100f);
             float area = DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
-            int level = stats.Level;
+            float damage = skill.DamageAt(level) * spell;
+            int extraProjectiles = Mathf.Max(0, Mathf.RoundToInt(Stat(StatType.AdditionalSpellProjectiles)));
 
             switch (skill.Id)
             {
                 case SkillId.Cleave:
-                    StartCoroutine(Spin(skill));
+                    StartCoroutine(Spin(skill, level));
                     break;
 
                 case SkillId.FireBolt:
-                    Face(AimDirection());
-                    if (attackAnimator != null)
-                        attackAnimator.PlayAttack(WeaponType.Unarmed);
-                    int bolts = 1 + Mathf.Max(0, Mathf.RoundToInt(Stat(StatType.AdditionalSpellProjectiles)));
-                    foreach (Vector3 direction in HitEffects.Spread(transform.forward, bolts, 12f))
-                        PlayerArrow.LaunchBolt(transform, 16f, (10f + 4f * level) * spell, skill.Color, 2.2f * area, direction);
+                    if (!asAttack)
+                    {
+                        Face(AimDirection());
+                        if (attackAnimator != null)
+                            attackAnimator.PlayAttack(WeaponType.Unarmed);
+                    }
+                    foreach (Vector3 direction in HitEffects.Spread(transform.forward, 1 + extraProjectiles, 12f))
+                        PlayerArrow.LaunchBolt(transform, BoltRange, damage, skill.Color, 2.2f * area, direction);
+                    break;
+
+                case SkillId.IceShard:
+                    if (!asAttack)
+                    {
+                        Face(AimDirection());
+                        if (attackAnimator != null)
+                            attackAnimator.PlayAttack(WeaponType.Unarmed);
+                    }
+                    foreach (Vector3 direction in HitEffects.Spread(transform.forward, 3 + extraProjectiles, 7f))
+                        PlayerArrow.LaunchShard(transform, ShardRange, damage * 0.45f, skill.Color, 1.5f + 0.1f * level, direction);
                     break;
 
                 case SkillId.Dash:
@@ -228,34 +466,34 @@ namespace PoeClone.Skills
                     if (dir.sqrMagnitude < 0.01f)
                         dir = AimDirection();
                     SkillEffects.Shockwave(transform.position, 1.2f, skill.Color, 0.25f);
-                    controller.Dash(dir, 7f, 0.18f);
+                    controller.Dash(dir, 7f + 0.35f * (level - 1), 0.18f);
                     break;
 
                 case SkillId.FrostNova:
-                    float novaRadius = 5f * area;
+                    float novaRadius = 5f * (1f + 0.03f * (level - 1)) * area;
                     SkillEffects.Shockwave(transform.position, novaRadius, skill.Color, 0.4f);
                     foreach (EnemyHealth enemy in EnemiesWithin(transform.position, novaRadius))
                     {
-                        Hit(enemy, (8f + 3f * level) * spell, CombatText.ColdColor, attack: false);
+                        Hit(enemy, damage, CombatText.ColdColor, attack: false);
                         EnemyController ai = enemy.GetComponent<EnemyController>();
                         if (ai != null)
-                            ai.Chill(3f);
+                            ai.Chill(3f + 0.2f * (level - 1));
                     }
                     break;
 
                 case SkillId.Rejuvenate:
-                    stats.HealOverTime(stats.MaxHealth * 0.35f, 3f);
+                    stats.HealOverTime(stats.MaxHealth * (0.35f + 0.025f * (level - 1)), 3f);
                     SkillEffects.Rise(transform, skill.Color);
                     break;
 
                 case SkillId.ChainLightning:
-                    ChainLightning(skill, (12f + 4f * level) * spell);
+                    ChainLightning(skill, damage, level, asAttack);
                     break;
             }
         }
 
         // A full turn on the spot, then everything in reach takes the blow.
-        private IEnumerator Spin(SkillDefinition skill)
+        private IEnumerator Spin(SkillDefinition skill, int level)
         {
             if (attackAnimator != null)
                 attackAnimator.PlayAttack(WeaponType.Axe);
@@ -275,7 +513,7 @@ namespace PoeClone.Skills
                           DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
             SkillEffects.Shockwave(transform.position, reach, skill.Color, 0.3f);
 
-            float damage = WeaponDamage() * 1.4f;
+            float damage = WeaponDamage() * (1.4f + 0.1f * (level - 1));
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
                 Hit(enemy, damage, CombatText.PhysicalColor, attack: true);
         }
@@ -287,7 +525,7 @@ namespace PoeClone.Skills
         // Rewards aiming: a cast on an enemy under the cursor hits for full damage (more up close,
         // where the caster is in danger too); a blind cast at whatever is nearest hits for less.
         // Each arc is weaker than the one before.
-        private void ChainLightning(SkillDefinition skill, float damage)
+        private void ChainLightning(SkillDefinition skill, float damage, int level, bool asAttack)
         {
             var struck = new HashSet<EnemyHealth>();
             Vector3 from = transform.position + Vector3.up * 0.4f;
@@ -314,10 +552,10 @@ namespace PoeClone.Skills
             }
 
             Face(target.transform.position - transform.position);
-            if (attackAnimator != null)
+            if (!asAttack && attackAnimator != null)
                 attackAnimator.PlayAttack(WeaponType.Unarmed);
 
-            int jumps = 3 + Mathf.Max(0, Mathf.RoundToInt(Stat(StatType.AdditionalChains)));
+            int jumps = 3 + (level >= 5 ? 1 : 0) + (level >= 9 ? 1 : 0) + Mathf.Max(0, Mathf.RoundToInt(Stat(StatType.AdditionalChains)));
             for (int jump = 0; jump < jumps && target != null; jump++)
             {
                 Vector3 to = target.transform.position + Vector3.up * 0.4f * target.transform.localScale.y;

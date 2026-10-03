@@ -6,7 +6,8 @@ namespace PoeClone.Enemies
     /// Keeps a caster's staff held upright (leaning a little forward), the way a mage carries one,
     /// whatever the arm is doing. The attack swing swings the arm forwards and down, which used to
     /// tip the staff over so the orb - and the bolt fired from it - ended up near the ground.
-    /// Runs after the walk and attack animators have posed the arm.
+    /// Runs after the walk and attack animators have posed the arm. Also on the player's staff
+    /// (the equipment prefab carries it), where it finds the character it is held by itself.
     /// </summary>
     [DefaultExecutionOrder(1000)]
     public class UprightStaff : MonoBehaviour
@@ -27,7 +28,12 @@ namespace PoeClone.Enemies
         private void LateUpdate()
         {
             if (body == null)
-                return;
+            {
+                CharacterController holder = GetComponentInParent<CharacterController>();
+                body = holder != null ? holder.transform : transform.root;
+                if (body == transform)
+                    return;
+            }
             // The shaft is the staff's local +Y; its +Z goes at right angles to it, still facing forward.
             Vector3 up = Up(body);
             transform.rotation = Quaternion.LookRotation(Vector3.Cross(body.right, up), up);

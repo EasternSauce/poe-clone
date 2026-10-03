@@ -243,6 +243,9 @@ namespace PoeClone.Visuals
 
         public bool IsAttacking { get; private set; }
 
+        /// <summary>How fast swings play (an enraged enemy swings faster). 1 is normal.</summary>
+        public float PlaybackSpeed { get; set; } = 1f;
+
         /// <summary>How far through the current swing (0 to 1); 0 when not attacking.</summary>
         public float Progress => IsAttacking && activeProfile != null ? Mathf.Clamp01(timer / activeProfile.Duration) : 0f;
 
@@ -381,6 +384,7 @@ namespace PoeClone.Visuals
                 case WeaponType.Mace: return MaceProfile;
                 case WeaponType.Dagger: return DaggerProfile;
                 case WeaponType.Bow: return BowProfile;
+                case WeaponType.Staff: return MaceProfile; // swung two-handed when there's no mana to cast
                 default: return UnarmedProfile;
             }
         }
@@ -393,7 +397,7 @@ namespace PoeClone.Visuals
                 return;
             }
 
-            timer += Time.deltaTime;
+            timer += Time.deltaTime * PlaybackSpeed;
             float f = Mathf.Clamp01(timer / activeProfile.Duration);
 
             AttackProfile p = activeProfile;

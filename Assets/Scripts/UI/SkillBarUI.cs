@@ -9,17 +9,19 @@ using PoeClone.Skills;
 namespace PoeClone.UI
 {
     /// <summary>
-    /// The skill bar (desktop: four squares at the bottom of the screen labelled Q E R F, with the
-    /// cooldown sweeping down over them and a blue tint when there isn't enough mana) and the skills
-    /// panel (K, or the SKL button on touch), which lists every skill and where it's slotted, with a
-    /// button per slot to put it there. Clicking a square on the bar opens a short list of the
-    /// unlocked skills above it, to bind one there directly. On touch the bar itself is
-    /// TouchControlsUI's round buttons.
+    /// The skill bar (desktop: squares at the bottom of the screen - first the attack (left click:
+    /// the staff's spell, or the weapon's icon), then Q E R F and the right, middle and side mouse
+    /// buttons - with the cooldown sweeping down over them and a blue tint when there isn't enough
+    /// mana) and the skills panel (K, or the SKL button on touch), which lists every skill, its
+    /// level and the gear it comes from, and where it's slotted, with a button per slot to put it
+    /// there. Clicking a square on the bar opens a short list of the skills the gear grants above it,
+    /// to bind one there directly. On touch the bar itself is TouchControlsUI's round buttons.
     /// Installed by <see cref="GameSessionController"/>; built at runtime.
     /// </summary>
     public class SkillBarUI : MonoBehaviour
     {
-        private const float SlotSize = 72f;
+        private const float SlotSize = 64f;
+        private const float AttackGap = 18f;   // between the attack square and the skill slots
 
         private static SkillBarUI instance;
 
@@ -40,6 +42,8 @@ namespace PoeClone.UI
         }
 
         private readonly List<SlotView> slotViews = new List<SlotView>();
+        private SlotView attackView;
+        private Image attackIcon;
         private readonly List<Row> rows = new List<Row>();
 
         private GameObject barRoot;
@@ -116,6 +120,41 @@ namespace PoeClone.UI
 
             for (int k = 0; k < slotViews.Count; k++)
                 UpdateSlot(slotViews[k], skills.Slot(k));
+            UpdateAttack();
+        }
+
+        // The attack square: the staff's spell, else the icon of whatever is in the main hand.
+        private void UpdateAttack()
+        {
+            SkillId? main = skills.MainSkill;
+            if (main != null)
+            {
+                attackIcon.enabled = false;
+                UpdateSlot(attackView, main);
+                return;
+            }
+
+            attackView.Cooldown.fillAmount = 0f;
+            attackView.NoMana.enabled = false;
+            attackView.Back.color = new Color(0.10f, 0.09f, 0.08f, 0.9f);
+            ItemData weapon = skills.GetComponent<PlayerInventory>()?.Equipment.Get(EquipSlot.MainHand);
+            if (weapon != null)
+            {
+                attackIcon.enabled = true;
+                attackIcon.sprite = ItemArt.Icon(weapon);
+                attackIcon.color = weapon.ArtTint;
+                attackView.Name.text = "";
+            }
+            else
+            {
+                attackIcon.enabled = false;
+                attackView.Name.text = "<size=13>FIST</size>";
+            }
+        }
+
+        private float SlotX(int slot)
+        {
+            return SlotSize + AttackGap + slot * (SlotSize + 8f) + 4f;
         }
 
         // A spectator's copy of the watched player's skills panel (read-only): open while theirs
@@ -168,6 +207,12 @@ namespace PoeClone.UI
             {
                 // The last row is "(empty)"; the others follow SkillBook.All.
                 bool visible = k == pickerRows.Count - 1 || skills.IsUnlocked(SkillBook.All[k].Id);
+                if (k < SkillBook.All.Length && visible)
+                {
+                    SkillDefinition s = SkillBook.All[k];
+                    pickerRows[k].GetComponentInChildren<Text>().text = "<color=#" + UiKit.Hex(s.Color) + "><b>" + s.Short + "</b></color>  " + s.Name +
+                        "  <size=14><color=#" + UiKit.Hex(UiKit.DimText) + ">level " + skills.Level(s.Id) + "</color></size>";
+                }
                 pickerRows[k].SetActive(visible);
                 if (!visible)
                     continue;
@@ -181,7 +226,7 @@ namespace PoeClone.UI
 
             picker.sizeDelta = new Vector2(PickerWidth, shown * PickerRowHeight + 8f);
             // Above the clicked square.
-            float slotCentre = slot * (SlotSize + 8f) + 4f + SlotSize * 0.5f - barRect.sizeDelta.x * 0.5f;
+            float slotCentre = SlotX(slot) + SlotSize * 0.5f - barRect.sizeDelta.x * 0.5f;
             picker.anchoredPosition = new Vector2(slotCentre, 18f + SlotSize + 10f);
             picker.gameObject.SetActive(true);
         }
@@ -276,10 +321,22 @@ namespace PoeClone.UI
             }
 
             SkillDefinition skill = SkillBook.Get(id.Value);
+            int level = skills.Level(skill.Id);
+            if (level <= 0)
+            {
+                // Slotted, but no worn gear grants it right now: waits there, greyed out.
+                view.Back.color = new Color(0.10f, 0.09f, 0.08f, 0.8f);
+                view.Name.text = "<color=#" + UiKit.Hex(new Color(1f, 1f, 1f, 0.25f)) + ">" + skill.Short + "</color>";
+                view.Cooldown.fillAmount = 0f;
+                view.NoMana.enabled = false;
+                return;
+            }
+
             view.Back.color = new Color(skill.Color.r * 0.45f, skill.Color.g * 0.45f, skill.Color.b * 0.45f, 0.95f);
-            view.Name.text = skill.Short;
+            view.Name.text = skill.Short + "\n<size=12>" + level + "</size>";
             float left = skills.CooldownLeft(skill.Id);
-            view.Cooldown.fillAmount = skill.Cooldown > 0f ? left / skill.Cooldown : 0f;
+            float total = skills.CooldownTotal(skill.Id);
+            view.Cooldown.fillAmount = total > 0f ? left / total : 0f;
             view.NoMana.enabled = !skills.CanAfford(skill.Id);
         }
 
@@ -288,16 +345,30 @@ namespace PoeClone.UI
             if (skills == null)
                 return;
 
+            SkillId? main = skills.MainSkill;
             foreach (Row row in rows)
             {
                 SkillDefinition skill = SkillBook.Get(row.Id);
                 bool unlocked = skills.IsUnlocked(row.Id);
-                row.Back.color = unlocked ? new Color(0.14f, 0.12f, 0.10f, 1f) : new Color(0.08f, 0.07f, 0.07f, 1f);
-                row.Title.text = unlocked
-                    ? "<color=#" + UiKit.Hex(skill.Color) + "><b>" + skill.Name + "</b></color>   <size=15><color=#" + UiKit.Hex(UiKit.DimText) + ">" +
-                      Num(skill.ManaCost) + " mana · " + Num(skill.Cooldown) + "s cooldown</color></size>\n<size=15>" + skill.Description + "</size>"
-                    : "<color=#" + UiKit.Hex(UiKit.DimText) + "><b>" + skill.Name + "</b>   <size=15>unlocks at level " + skill.UnlockLevel +
-                      "</size>\n<size=15>" + skill.Description + "</size></color>";
+                bool isAttack = main == row.Id;
+                int level = skills.Level(row.Id);
+                string dim = UiKit.Hex(UiKit.DimText);
+                row.Back.color = unlocked || isAttack ? new Color(0.14f, 0.12f, 0.10f, 1f) : new Color(0.08f, 0.07f, 0.07f, 1f);
+
+                if (level > 0)
+                {
+                    ItemData source = skills.Source(row.Id);
+                    string from = source != null && !isAttack ? " · from " + source.Name : "";
+                    string timing = isAttack ? Num(skills.Cooldown(row.Id)) + "s per cast" : Num(skills.Cooldown(row.Id)) + "s cooldown";
+                    row.Title.text = "<color=#" + UiKit.Hex(skill.Color) + "><b>" + skill.Name + "</b></color>  <color=#" + UiKit.Hex(UiKit.Gold) + ">Level " + level +
+                                     (isAttack ? " · your attack" : "") + "</color>   <size=14><color=#" + dim + ">" +
+                                     Num(skills.ManaCost(row.Id)) + " mana · " + timing + from + "</color></size>\n<size=14>" + skill.Description + "</size>";
+                }
+                else
+                {
+                    row.Title.text = "<color=#" + dim + "><b>" + skill.Name + "</b>   <size=14>not on your gear · rolls on " + skill.RollsOn +
+                                     "</size>\n<size=14>" + skill.Description + "</size></color>";
+                }
 
                 for (int k = 0; k < row.SlotLabels.Length; k++)
                 {
@@ -317,6 +388,37 @@ namespace PoeClone.UI
 
         // ------------------------------------------------------------------ building
 
+        // One square on the bar: name, the no-mana tint, the cooldown sweep and its key in the corner.
+        private SlotView NewSlotView(RectTransform bar, string name, float x, string keyLabel, System.Action onClick)
+        {
+            Image back = UiKit.NewImage(name, bar, Color.black);
+            UiKit.Inset(back);
+            back.raycastTarget = onClick != null;
+            if (onClick != null)
+                back.gameObject.AddComponent<TouchPointerRelay>().Up += _ => onClick();
+            UiKit.TopLeft(back.rectTransform, new Vector2(x, 0f), new Vector2(SlotSize, SlotSize));
+            UiKit.AddOutline(back, onClick != null ? UiKit.BorderColor : UiKit.Gold, 2f);
+
+            Text label = UiKit.NewText("Name", back.rectTransform, "", 19, UiKit.TextColor, TextAnchor.MiddleCenter);
+            label.fontStyle = FontStyle.Bold;
+            UiKit.Stretch(label.rectTransform, 0f);
+
+            Image noMana = UiKit.NewImage("NoMana", back.rectTransform, new Color(0.1f, 0.2f, 0.7f, 0.45f));
+            UiKit.Stretch(noMana.rectTransform, 0f);
+
+            Image cooldown = UiKit.NewImage("Cooldown", back.rectTransform, new Color(0f, 0f, 0f, 0.65f));
+            cooldown.sprite = UiKit.Square;
+            cooldown.type = Image.Type.Filled;
+            cooldown.fillMethod = Image.FillMethod.Vertical;
+            cooldown.fillOrigin = (int)Image.OriginVertical.Top;
+            UiKit.Stretch(cooldown.rectTransform, 0f);
+
+            Text key = UiKit.NewText("Key", back.rectTransform, keyLabel, keyLabel.Length > 1 ? 11 : 14, UiKit.Gold, TextAnchor.UpperLeft);
+            UiKit.Stretch(key.rectTransform, 4f);
+
+            return new SlotView { Back = back, Cooldown = cooldown, NoMana = noMana, Name = label };
+        }
+
         private void Build()
         {
             Canvas canvas = UiKit.NewCanvas("SkillCanvas", transform, 60, out CanvasGroup group);
@@ -329,45 +431,30 @@ namespace PoeClone.UI
             bar.anchorMin = bar.anchorMax = new Vector2(0.5f, 0f);
             bar.pivot = new Vector2(0.5f, 0f);
             bar.anchoredPosition = new Vector2(0f, 18f);
-            bar.sizeDelta = new Vector2(SkillBook.SlotCount * (SlotSize + 8f), SlotSize);
+            bar.sizeDelta = new Vector2(SlotX(SkillBook.SlotCount), SlotSize);
             barRoot = bar.gameObject;
             barRect = bar;
 
+            attackView = NewSlotView(bar, "Attack", 4f, "LMB", null);
+            attackIcon = UiKit.NewImage("Icon", attackView.Back.rectTransform, Color.white);
+            attackIcon.preserveAspect = true;
+            attackIcon.raycastTarget = false;
+            UiKit.Stretch(attackIcon.rectTransform, 8f);
+            attackIcon.transform.SetSiblingIndex(0);
+            attackIcon.enabled = false;
+
             for (int k = 0; k < SkillBook.SlotCount; k++)
             {
-                Image back = UiKit.NewImage("Slot" + k, bar, Color.black);
-                UiKit.Inset(back);
-                back.raycastTarget = true;
                 int clicked = k;
-                back.gameObject.AddComponent<TouchPointerRelay>().Up += _ => OpenPicker(clicked);
-                UiKit.TopLeft(back.rectTransform, new Vector2(k * (SlotSize + 8f) + 4f, 0f), new Vector2(SlotSize, SlotSize));
-                UiKit.AddOutline(back, UiKit.BorderColor, 2f);
-
-                Text name = UiKit.NewText("Name", back.rectTransform, "", 20, UiKit.TextColor, TextAnchor.MiddleCenter);
-                name.fontStyle = FontStyle.Bold;
-                UiKit.Stretch(name.rectTransform, 0f);
-
-                Image noMana = UiKit.NewImage("NoMana", back.rectTransform, new Color(0.1f, 0.2f, 0.7f, 0.45f));
-                UiKit.Stretch(noMana.rectTransform, 0f);
-
-                Image cooldown = UiKit.NewImage("Cooldown", back.rectTransform, new Color(0f, 0f, 0f, 0.65f));
-                cooldown.sprite = UiKit.Square;
-                cooldown.type = Image.Type.Filled;
-                cooldown.fillMethod = Image.FillMethod.Vertical;
-                cooldown.fillOrigin = (int)Image.OriginVertical.Top;
-                UiKit.Stretch(cooldown.rectTransform, 0f);
-
-                Text key = UiKit.NewText("Key", back.rectTransform, PlayerSkills.KeyLabel(k), 14, UiKit.Gold, TextAnchor.UpperLeft);
-                UiKit.Stretch(key.rectTransform, 5f);
-
-                slotViews.Add(new SlotView { Back = back, Cooldown = cooldown, NoMana = noMana, Name = name });
+                slotViews.Add(NewSlotView(bar, "Slot" + k, SlotX(k), PlayerSkills.KeyLabel(k), () => OpenPicker(clicked)));
             }
 
             BuildPicker(canvas.transform);
 
             // The panel: centred list, one row per skill.
             const float rowHeight = 74f;
-            const float width = 760f;
+            const float slotButton = 46f;
+            const float width = 980f;
             float height = 70f + SkillBook.All.Length * (rowHeight + 6f) + 16f;
 
             Image panel = UiKit.NewImage("SkillsPanel", canvas.transform, UiKit.PanelColor);
@@ -399,9 +486,10 @@ namespace PoeClone.UI
                 UiKit.Grain(back);
                 UiKit.TopLeft(back.rectTransform, new Vector2(16f, y), new Vector2(width - 32f, rowHeight));
 
-                Text text = UiKit.NewText("Text", back.rectTransform, "", 19, UiKit.TextColor, TextAnchor.MiddleLeft);
+                Text text = UiKit.NewText("Text", back.rectTransform, "", 18, UiKit.TextColor, TextAnchor.MiddleLeft);
                 text.horizontalOverflow = HorizontalWrapMode.Wrap;
-                UiKit.TopLeft(text.rectTransform, new Vector2(12f, 0f), new Vector2(width - 32f - 12f - 4f * 52f - 8f, rowHeight));
+                float buttonsWidth = SkillBook.SlotCount * (slotButton + 4f);
+                UiKit.TopLeft(text.rectTransform, new Vector2(12f, 0f), new Vector2(width - 32f - 12f - buttonsWidth - 8f, rowHeight));
 
                 var row = new Row { Id = skill.Id, Back = back, Title = text, SlotLabels = new Text[SkillBook.SlotCount] };
                 for (int k = 0; k < SkillBook.SlotCount; k++)
@@ -411,14 +499,14 @@ namespace PoeClone.UI
                     Image button = UiKit.NewImage("Slot" + k, back.rectTransform, Color.black);
                     UiKit.Inset(button);
                     button.raycastTarget = true;
-                    UiKit.TopLeft(button.rectTransform, new Vector2(width - 32f - 4f * 52f - 4f + k * 52f, -(rowHeight - 44f) * 0.5f), new Vector2(44f, 44f));
+                    UiKit.TopLeft(button.rectTransform, new Vector2(width - 32f - buttonsWidth - 4f + k * (slotButton + 4f), -(rowHeight - slotButton) * 0.5f), new Vector2(slotButton, slotButton));
                     UiKit.AddOutline(button, UiKit.BorderColor, 1.5f);
-                    Text label = UiKit.NewText("Key", button.rectTransform, PlayerSkills.KeyLabel(k), 18, UiKit.TextColor, TextAnchor.MiddleCenter);
+                    Text label = UiKit.NewText("Key", button.rectTransform, PlayerSkills.KeyLabel(k), k < SkillBook.TouchSlotCount ? 18 : 13, UiKit.TextColor, TextAnchor.MiddleCenter);
                     UiKit.Stretch(label.rectTransform, 0f);
                     row.SlotLabels[k] = label;
                     button.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
                     {
-                        if (skills != null && !SpectatorMirror.Active)
+                        if (skills != null && !SpectatorMirror.Active && skills.IsUnlocked(id))
                             skills.Assign(slot, id);
                     };
                 }

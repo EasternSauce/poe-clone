@@ -28,6 +28,7 @@ namespace PoeClone.Player
         private float burstRadius;
         private Color textColor = CombatText.PhysicalColor;
         private bool isAttack = true;   // an arrow; a bolt is a spell
+        private float chillSeconds;     // an ice shard slows what it hits
 
         /// <summary>Where arrows leave the bow: chest height, a little in front.</summary>
         public static Vector3 Origin(Transform shooter)
@@ -52,6 +53,16 @@ namespace PoeClone.Player
             bolt.burstRadius = burstRadius;
             bolt.textColor = CombatText.FireColor;
             bolt.isAttack = false;
+        }
+
+        /// <summary>An Ice Shard: a small, quick shard that chills the enemy it hits.</summary>
+        public static void LaunchShard(Transform shooter, float range, float damage, Color color, float chillSeconds, Vector3 direction)
+        {
+            PlayerArrow shard = Create(shooter, range, damage, harmless: false, orb: color, direction: direction);
+            shard.transform.localScale = Vector3.one * 0.6f;
+            shard.textColor = CombatText.ColdColor;
+            shard.isAttack = false;
+            shard.chillSeconds = chillSeconds;
         }
 
         private static PlayerArrow Create(Transform shooter, float range, float damage, bool harmless, Color? orb = null, Vector3? direction = null)
@@ -167,6 +178,12 @@ namespace PoeClone.Player
             if (target is Enemies.EnemyHealth enemy)
             {
                 HitEffects.Deal(owner, enemy, damage, isAttack, textColor);
+                if (chillSeconds > 0f && !enemy.IsDead)
+                {
+                    Enemies.EnemyController ai = enemy.GetComponent<Enemies.EnemyController>();
+                    if (ai != null)
+                        ai.Chill(chillSeconds);
+                }
                 return;
             }
 

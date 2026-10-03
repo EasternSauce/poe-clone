@@ -1418,6 +1418,8 @@ private Vector2 CellSize(int w, int h)
             string handNote = null;
             if (item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Bow)
                 handNote = "Two-handed: no shield (a quiver goes in the off hand)";
+            else if (item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Staff)
+                handNote = "Two-handed: nothing in the off hand";
             else if (item.Type == ItemType.Quiver)
                 handNote = "Off hand, worn with a bow";
             if (handNote != null)
@@ -1431,8 +1433,27 @@ private Vector2 CellSize(int w, int h)
                 sb.Append("\n");
                 lineCount++;
 
+                // Skills first, in gold: they decide how the item plays. A weapon's first main skill
+                // is what its attack does.
+                bool attackTaken = false;
                 foreach (StatModifier m in item.Modifiers)
                 {
+                    if (!SkillGrants.IsGrant(m.Stat))
+                        continue;
+                    string line = StatFormatter.ItemLine(m);
+                    if (item.Type == ItemType.Weapon && SkillGrants.IsMain(m.Stat) && !attackTaken)
+                    {
+                        attackTaken = true;
+                        line += " <size=14>(your attack)</size>";
+                    }
+                    sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.Gold)).Append(">").Append(line).Append("</color>");
+                    lineCount++;
+                }
+
+                foreach (StatModifier m in item.Modifiers)
+                {
+                    if (SkillGrants.IsGrant(m.Stat))
+                        continue;
                     sb.Append("\n<color=#").Append(magic).Append(">").Append(StatFormatter.ItemLine(m)).Append("</color>");
                     lineCount++;
                 }

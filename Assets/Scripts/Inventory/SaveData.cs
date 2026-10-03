@@ -101,6 +101,7 @@ namespace PoeClone.Inventory
         public List<QuestRecord> questsActive = new List<QuestRecord>();
         public List<int> visited = new List<int>();
         public List<string> mapSeen = new List<string>();  // minimap fog of war, per area (MinimapTerrain)
+        public bool gearSkills;                            // saved since skills come from gear (older characters get a staff once)
 
         /// <summary>Copies the bag and worn gear into this save.</summary>
         public void CaptureInventory(PlayerInventory inventory)

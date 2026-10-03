@@ -29,7 +29,11 @@ namespace PoeClone.Player
     /// automatic targeting.
     ///
     /// A bow shoots instead (<see cref="PlayerArrow"/>, no ammo); its "reach" is how far arrows fly,
-    /// so the same aiming and highlighting work for it unchanged.
+    /// so the same aiming and highlighting work for it unchanged. A staff casts its spell instead
+    /// (<see cref="PoeClone.Skills.PlayerSkills.MainSkill"/>), or is swung like a mace when there's no mana for it.
+    ///
+    /// Where a shot or swing goes is decided when it leaves - the strike frame - not when the
+    /// wind-up starts: the player turns to the cursor (or the aim stick) at that moment.
     /// </summary>
     [RequireComponent(typeof(PlayerStats))]
     [RequireComponent(typeof(PlayerInventory))]
@@ -45,6 +49,7 @@ namespace PoeClone.Player
         private PlayerInventory inventory;
         private CharacterAttackAnimator attackAnimator;
         private PlayerController controller;
+        private PoeClone.Skills.PlayerSkills skills;
 
         private float cooldownTimer;
         private float pendingDamage;
@@ -52,6 +57,8 @@ namespace PoeClone.Player
         // arm animations (Fire Bolt, Chain Lightning, Cleave), and their strike frames must not
         // also land a weapon hit or loose an arrow.
         private bool swingPending;
+        // The pending swing is the staff's spell rather than a weapon blow.
+        private bool castPending;
 
         // Degrees between the arrows of a volley (extra arrows fan out round the aim).
         private const float ArrowSpreadDegrees = 9f;
@@ -73,6 +80,19 @@ namespace PoeClone.Player
             controller = GetComponent<PlayerController>();
             attackAnimator = GetComponentInChildren<CharacterAttackAnimator>();
         }
+
+        private PoeClone.Skills.PlayerSkills SkillSet
+        {
+            get
+            {
+                if (skills == null)
+                    skills = GetComponent<PoeClone.Skills.PlayerSkills>();
+                return skills;
+            }
+        }
+
+        // The staff's spell, when there is one: the attack casts it.
+        private bool HasMainSkill => SkillSet != null && SkillSet.MainSkill != null;
 
         private void Start()
         {
@@ -115,6 +135,7 @@ namespace PoeClone.Player
         private void OnAttackCancelled()
         {
             swingPending = false;
+            castPending = false;
             cooldownTimer = 0f;
         }
 
@@ -178,9 +199,12 @@ namespace PoeClone.Player
             return weapon != null ? weapon.WeaponType : WeaponType.Unarmed;
         }
 
-        // How far an attack reaches: the weapon's range, longer for melee with increased Melee Range.
+        // How far an attack reaches: the weapon's range, longer for melee with increased Melee Range;
+        // for a staff with its spell, how far the spell flies.
         private float Reach(WeaponType weaponType)
         {
+            if (HasMainSkill)
+                return SkillSet.MainReach();
             float range = CharacterAttackAnimator.AttackRange(weaponType);
             if (CharacterAttackAnimator.IsRanged(weaponType))
                 return range;
@@ -200,6 +224,18 @@ namespace PoeClone.Player
             hasAimPoint = TryGetAimPoint(out aimPoint);
 
             pendingDamage = ComputeDamage();
+
+            // A staff casts its spell; without the mana for it, it's swung instead.
+            castPending = HasMainSkill && SkillSet.TrySpendMain();
+            if (castPending)
+            {
+                cooldownTimer = SkillSet.MainInterval();
+                swingPending = true;
+                attackAnimator.PlayAttack(WeaponType.Unarmed);
+                return;
+            }
+            if (HasMainSkill)
+                CombatText.Show(transform.position + Vector3.up * 2f, "Not enough mana", CombatText.ColdColor, 0.6f);
 
             float attacksPerSecond = ComputeAttacksPerSecond(weaponType);
             cooldownTimer = attacksPerSecond > 0f ? 1f / attacksPerSecond : 1f;
@@ -283,12 +319,21 @@ namespace PoeClone.Player
                 return;
             swingPending = false;
 
+            // Aimed now, as it leaves: wherever the cursor (or aim stick) points at this moment.
+            ReaimAtRelease();
+
+            if (castPending)
+            {
+                castPending = false;
+                SkillSet.ReleaseMain();
+                return;
+            }
+
             WeaponType weaponType = CurrentWeaponType();
             float range = Reach(weaponType);
 
             if (CharacterAttackAnimator.IsRanged(weaponType))
             {
-                ReaimAtRelease();
                 int arrows = 1 + Mathf.Max(0, Mathf.RoundToInt(inventory.Stats.Total(StatType.AdditionalArrows)));
                 foreach (Vector3 direction in HitEffects.Spread(transform.forward, arrows, ArrowSpreadDegrees))
                     PlayerArrow.Launch(transform, range, pendingDamage, direction);
@@ -324,10 +369,14 @@ namespace PoeClone.Player
             }
         }
 
+        // Turns to wherever the player is aiming right now. On touch, with the aim stick already let
+        // go, it falls back to what was aimed at when the swing started (the enemy, else the point).
         private void ReaimAtRelease()
         {
             Vector3 target;
-            if (aimEnemy != null && !aimEnemy.IsDead)
+            if (TryGetAimPoint(out Vector3 now))
+                target = now;
+            else if (aimEnemy != null && !aimEnemy.IsDead)
                 target = aimEnemy.transform.position;
             else if (hasAimPoint)
                 target = aimPoint;

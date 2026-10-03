@@ -109,6 +109,7 @@ namespace PoeClone.Enemies
 
             if (playerStats.IsDead)
                 return;
+            PlayerMotion.Track(playerStats);
 
             if (cooldownTimer > 0f || attackAnimator.IsAttacking || stagger.IsStaggered)
                 return;
@@ -117,6 +118,7 @@ namespace PoeClone.Enemies
                 return;
 
             FacePlayer();
+            attackAnimator.PlaybackSpeed = controller != null ? controller.AttackSpeedMultiplier : 1f;
             // Archers draw their bow like the player does; everyone else swipes.
             if (kind.Bow)
                 attackAnimator.PlayAttack(WeaponType.Bow);
@@ -142,7 +144,12 @@ namespace PoeClone.Enemies
 
             if (kind.IsRanged)
             {
-                EnemyProjectile.Launch(BoltOrigin(transform), playerStats, kind, RollDamage());
+                // Enraged, it leads its shot: aims where the player will be when the bolt gets there.
+                Vector3 from = BoltOrigin(transform);
+                if (controller != null && controller.IsEnraged)
+                    EnemyProjectile.LaunchAt(from, PlayerMotion.Intercept(playerStats, from, kind.ProjectileSpeed), playerStats, kind, RollDamage());
+                else
+                    EnemyProjectile.Launch(from, playerStats, kind, RollDamage());
                 return;
             }
 

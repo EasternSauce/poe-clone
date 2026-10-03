@@ -92,7 +92,7 @@ namespace PoeClone.Enemies
         private const float EnrageHitDistance = 6f;
         private const float EnrageSeconds = 5f;
         private const float EnrageCooldown = 12f;
-        private const float EnrageSpeed = 1.6f;
+        private const float EnrageSpeed = 2.4f;
         private const float EnrageDamage = 1.35f;
         private static readonly Color EnrageColor = new Color(1f, 0.15f, 0.08f);
 
@@ -106,7 +106,7 @@ namespace PoeClone.Enemies
         public float DamageMultiplier => IsEnraged ? EnrageDamage : 1f;
 
         /// <summary>How much faster it attacks right now.</summary>
-        public float AttackSpeedMultiplier => IsEnraged ? 1.3f : 1f;
+        public float AttackSpeedMultiplier => IsEnraged ? 1.5f : 1f;
 
         private void Enrage()
         {
@@ -192,7 +192,8 @@ namespace PoeClone.Enemies
         {
             Aggro();
 
-            if (health == null || health.IsDead || player == null || Time.time < nextEnrageAt)
+            // Damaged fires before the death itself: a killing blow mustn't enrage the corpse.
+            if (health == null || health.IsDead || health.CurrentHealth <= 0f || player == null || Time.time < nextEnrageAt)
                 return;
             Vector3 toPlayer = player.transform.position - transform.position;
             toPlayer.y = 0f;

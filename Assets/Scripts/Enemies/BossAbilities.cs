@@ -132,7 +132,11 @@ namespace PoeClone.Enemies
         // Patches round the player (the first right under them) that burst after a beat.
         private void RainDown(DamageType type, int count)
         {
-            Vector3 target = player.transform.position;
+            // Enraged, the first patch comes down where the player is heading.
+            EnemyController controller = GetComponent<EnemyController>();
+            Vector3 target = controller != null && controller.IsEnraged
+                ? PlayerMotion.Predict(player, 1.0f)
+                : player.transform.position;
             for (int k = 0; k < count; k++)
             {
                 Vector2 scatter = Random.insideUnitCircle * 4f;

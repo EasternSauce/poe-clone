@@ -163,6 +163,14 @@ namespace PoeClone.UI
                 titleShownAt = Time.unscaledTime;
             }
 
+            // OnGUI draws over every uGUI window, so the sheet steps aside while the character
+            // page (which sits in the same corner) is open.
+            if (CharacterPageOpen())
+            {
+                DrawAreaTitle(TouchMode.Active ? Screen.width / TouchMode.GuiScale : Screen.width);
+                return;
+            }
+
             if (TouchMode.Active)
             {
                 DrawTouchHud();
@@ -245,12 +253,21 @@ namespace PoeClone.UI
                 GUILayout.Space(20f);
 
                 GUILayout.Label(
-                    "WASD / Arrow Keys - Move | Shift - Sprint | Q E R F - Skills | 1 2 - Potions | T - Town portal\nK - Skill list | P - Passives | I - Inventory | C - Character | M - Map | Enter - Chat",
+                    "WASD - Move | Shift - Sprint | Left click - Attack | Q E R F, spare mouse buttons - Skills\n1 2 - Potions | T - Town portal | K - Skill list | P - Passives | I - Inventory | C - Character | M - Map | Enter - Chat",
                     textStyle
                 );
             }
 
             GUILayout.EndArea();
+        }
+
+        private CharacterPageUI characterPage;
+
+        private bool CharacterPageOpen()
+        {
+            if (characterPage == null)
+                characterPage = FindAnyObjectByType<CharacterPageUI>();
+            return characterPage != null && characterPage.IsOpen;
         }
 
         // Phone layout: just the bars, scaled up from raw screen pixels (see TouchMode.GuiScale).
