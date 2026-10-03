@@ -15,9 +15,17 @@ namespace PoeClone.Skills
     {
         public static readonly List<Minion> All = new List<Minion>();
 
+        /// <summary>Spectator stream ids for minions start here, clear of the enemies' small ids.</summary>
+        public const int ReplicationIdBase = 1000000;
+        private static int nextId;
+
+        /// <summary>Stable for this skeleton's life (its spectator copy is keyed by it).</summary>
+        public int Id { get; private set; }
+
         private const float FollowRadius = 2.5f;
-        private const float EngageRadius = 9f;
-        private const float Leash = 14f;
+        private const float EngageRadius = 8f;
+        private const float Leash = 9f;          // only enemies this close to the owner are fought
+        private const float TeleportDistance = 10f; // about half the screen: past this it blinks back to the owner
         private const float AttackRange = 2.1f;
         private const float AttackCooldown = 1.1f;
 
@@ -76,6 +84,7 @@ namespace PoeClone.Skills
             Transform model = go.transform.Find("Model") ?? go.transform;
             var minion = go.AddComponent<Minion>();
             minion.owner = owner;
+            minion.Id = ++nextId;
             minion.body = go.GetComponent<CharacterController>();
             minion.attack = model.GetComponent<CharacterAttackAnimator>() ?? model.gameObject.AddComponent<CharacterAttackAnimator>();
             minion.damage = (4f + 1.6f * (level - 1)) * damageMultiplier;
@@ -124,11 +133,14 @@ namespace PoeClone.Skills
             }
 
             Vector3 toOwner = Flat(owner.position - transform.position);
-            if (toOwner.magnitude > 30f)
+            if (toOwner.magnitude > TeleportDistance)
             {
+                SkillEffects.Shockwave(transform.position, 1f, new Color(0.5f, 1f, 0.6f), 0.3f);
                 body.enabled = false;
                 transform.position = owner.position + slot;
                 body.enabled = true;
+                target = null;
+                SkillEffects.Shockwave(transform.position, 1f, new Color(0.5f, 1f, 0.6f), 0.3f);
                 return;
             }
 
@@ -160,9 +172,10 @@ namespace PoeClone.Skills
             else
             {
                 Vector3 toSlot = Flat(owner.position + slot - transform.position);
-                if (toSlot.magnitude > 0.8f)
+                if (toSlot.magnitude > 0.6f)
                 {
-                    move = toSlot.normalized * (toSlot.magnitude > 6f ? 1.5f : 1f);
+                    // Catching up: the further behind, the faster (up to twice the pace).
+                    move = toSlot.normalized * Mathf.Lerp(1f, 2f, Mathf.InverseLerp(2f, 7f, toSlot.magnitude));
                     face = toSlot;
                 }
             }
