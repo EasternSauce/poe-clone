@@ -13,7 +13,8 @@ namespace PoeClone.Skills
         Rejuvenate,
         ChainLightning,
         IceShard,
-        Teleport
+        Teleport,
+        RaiseSkeletons
     }
 
     /// <summary>The element a spell belongs to, for "+1 to level of all Fire Spells" and the like.</summary>
@@ -137,6 +138,12 @@ namespace PoeClone.Skills
                 Id = SkillId.Teleport, Name = "Teleport", Short = "TP", Grant = StatType.GrantTeleport, RollsOn = "amulets, rings, gloves",
                 Spell = true, ManaCost = 18f, Cooldown = 0.6f, Color = new Color(0.75f, 0.45f, 1f),
                 Description = "Vanish and reappear where you aim, up to half a screen away - straight through walls, trees and enemies. Costly in mana, but ready again almost at once."
+            },
+            new SkillDefinition
+            {
+                Id = SkillId.RaiseSkeletons, Name = "Raise Skeletons", Short = "SKL", Grant = StatType.GrantRaiseSkeletons, RollsOn = "helmets, amulets, staves",
+                Spell = true, ManaCost = 14f, Cooldown = 4f, Color = new Color(0.55f, 1f, 0.6f),
+                Description = "Raise two skeleton warriors that fight beside you for about half a minute. At most 2 at a time (+1 at levels 4, 7 and 10). Their blows grow with the skill's level, Intelligence and Spell Damage."
             },
         };
 

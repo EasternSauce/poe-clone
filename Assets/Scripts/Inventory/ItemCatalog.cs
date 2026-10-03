@@ -22,6 +22,8 @@ namespace PoeClone.Inventory
                 ItemData item = ItemGenerator.Generate(rng, id, 1, ItemRarity.Normal, StatType.GrantFireBolt);
                 if (id == "leather_boots")
                     item = WithSkill(item, StatType.GrantDash, 1);
+                if (id == "iron_helmet")
+                    item = WithSkill(item, StatType.GrantRaiseSkeletons, 1);
                 items.Add(item);
             }
             return items;

@@ -80,7 +80,8 @@ namespace PoeClone.Inventory
         SecondWind,                 // 1: Rejuvenate also refills mana and grants Onslaught
         Stormblade,                 // % chance for an attack critical strike to arc lightning to nearby enemies
 
-        GrantTeleport               // a skill grant like the ones above (added later, so it sits here)
+        GrantTeleport,              // a skill grant like the ones above (added later, so it sits here)
+        GrantRaiseSkeletons
     }
 
     /// <summary>
@@ -97,7 +98,7 @@ namespace PoeClone.Inventory
 
         public static bool IsGrant(StatType stat)
         {
-            return (stat >= StatType.GrantCleave && stat <= StatType.GrantIceShard) || stat == StatType.GrantTeleport;
+            return (stat >= StatType.GrantCleave && stat <= StatType.GrantIceShard) || stat == StatType.GrantTeleport || stat == StatType.GrantRaiseSkeletons;
         }
 
         /// <summary>
@@ -121,6 +122,7 @@ namespace PoeClone.Inventory
                 case StatType.GrantChainLightning: return "Chain Lightning";
                 case StatType.GrantIceShard: return "Ice Shard";
                 case StatType.GrantTeleport: return "Teleport";
+                case StatType.GrantRaiseSkeletons: return "Raise Skeletons";
                 default: return grant.ToString();
             }
         }

@@ -1,5 +1,9 @@
-version: 2026-10-03p
+version: 2026-10-03q
 <b>Spectators</b>
 - The chat now always draws over everything else for spectators (skill tree, inventory, every other window), and Enter always brings you back to the chat box.
 - New buttons over the chat (Bag, Character, Tree, Skills) open the player's menus for you, whatever the player has open.
 - You can close a menu the player opened - just for yourself; it stays open for them, and shows again the next time they open it.
+<b>First summoner skill: Raise Skeletons</b>
+- A new bar skill raises two skeleton warriors that follow you and attack enemies nearby for about half a minute (at most 2 at a time, one more at levels 4, 7 and 10). They hit harder with the skill's level, Intelligence and Spell Damage.
+- It rolls on helmets, amulets and staves, and the starting Iron Helmet carries it at level 1.
+- Early version: enemies don't fight back against the skeletons yet, and spectators can't see them yet.

@@ -139,6 +139,10 @@ namespace PoeClone.Skills
                     SkillEffects.Rise(caster, skill.Color);
                     break;
 
+                case SkillId.RaiseSkeletons:
+                    SkillEffects.Shockwave(cast.At, 1.6f, skill.Color, 0.4f);
+                    break;
+
                 case SkillId.ChainLightning:
                     if (cast.Points != null)
                     {
@@ -617,6 +621,13 @@ namespace PoeClone.Skills
 
                 case SkillId.Teleport:
                     Teleport(skill, level);
+                    break;
+
+                case SkillId.RaiseSkeletons:
+                    if (attackAnimator != null)
+                        attackAnimator.PlayAttack(WeaponType.Unarmed);
+                    Minion.Raise(transform, level, spell);
+                    Record(skill, level, 1.3f);
                     break;
             }
         }
