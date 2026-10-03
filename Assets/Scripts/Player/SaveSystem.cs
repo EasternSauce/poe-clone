@@ -169,6 +169,7 @@ namespace PoeClone.Player
                 var active = new Dictionary<string, int>();
                 log.Export(data.questsDone, active, data.visited, data.questProps);
                 data.questBook = QuestBook.Version;
+                data.waystonesReset = true;
                 foreach (var pair in active)
                     data.questsActive.Add(new QuestRecord { id = pair.Key, progress = pair.Value });
             }
@@ -261,6 +262,7 @@ namespace PoeClone.Player
 
             QuestLog log = QuestLog.Instance;
             // Quests saved under an older quest book start over (the places visited are kept).
+            // Saves from before the one-time waystone reset forget the places visited (once).
             bool questsCurrent = data.questBook == QuestBook.Version;
             if (log != null)
             {
@@ -271,7 +273,7 @@ namespace PoeClone.Player
                         active.Add(new KeyValuePair<string, int>(q.id, q.progress));
                 }
                 log.Import(questsCurrent && data.questsDone != null ? data.questsDone : new List<string>(), active,
-                    data.visited ?? new List<int>(), questsCurrent && data.questProps != null ? data.questProps : new List<string>());
+                    data.waystonesReset && data.visited != null ? data.visited : new List<int>(), questsCurrent && data.questProps != null ? data.questProps : new List<string>());
             }
             MinimapTerrain.Import(data.mapSeen);
 

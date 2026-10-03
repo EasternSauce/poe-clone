@@ -1,20 +1,3 @@
-version: 2026-10-03s
-<b>Quests: the story so far</b>
-- Every quest line is now a storyline, all leading to the same dark secret in the north. Quests start over for existing characters (levels, gear and waystones are kept).
-- New people to meet out in the wilds: Tobias the Gravekeeper, in a candle-warded hut in the Haunted Graveyard, and the Emberwatch - a palisade camp deep in the Ashen Ruins with Commander Varek and Seer Ysolde. Monsters won't follow you into either; Varek's quartermaster sells potions and buys loot.
-- People send you to each other: Maren to Tobias, Tobias back to Maren, Maren on to the Emberwatch, Hale to Bram, Oda to her brother Varek.
-- Quests ask more than "kill this many": smash bone totems, break Mortis's reliquaries, recover supply caches and lost crates, take badges and journals from fallen scouts (each with its own story), wake three sunstones to melt the ice sealing the way to the Frozen Hollow, and hold a rite at the Ashen Shrine against waves of the Warlord's host. Many of these call an ambush down on you.
-- What a quest wants you to find shows on the minimap as an orange square.
-- Captain Hale and Merchant Oda have their own storylines: The Lost Patrol and The Lost Caravan. Hale's bounty board opens after his.
-- The story ends at a door beneath the ice. What sleeps behind it is still asleep... for now.
-<b>Bow skills</b>
-- Four bow skills that roll on bows and quivers: Split Shot (a wide fan of arrows), Piercing Shot (a heavy shot through every enemy in a line), Rain of Arrows (arrows rain down where you aim) and Burning Arrow (fire arrows that burst and can set enemies burning).
-- They go on Q E R F like other skills, but pressing one toggles it: while it's on, your bow attack is that skill, with its own draw animation. One at a time; press it again to turn it off. A spinning ring marks the one that's on. No mana, no cooldown.
-- They are attacks: Additional Arrows, attack speed and attack damage all improve them.
-- They roll at any level from 1 to 10; stronger monsters drop the high levels far more often.
-- The Short Bow on Haven's benches now carries Split Shot.
-- New rare stat on bows and quivers: a chance for bow attacks to fire an additional arrow.
-<b>Other</b>
-- Rejuvenate rolls on gear twice as often.
-- The attack square on the skill bar shows an arrow for a bow (or the bow skill that's on) instead of the bow.
-- The skills list (K) scrolls now that there are more skills than fit on screen.
+version: 2026-10-04
+<b>Waystones reset</b>
+- Waystone travel has been reset once for every character: visit the areas again to unlock their waystones. Levels, gear, passives and quests are kept.
