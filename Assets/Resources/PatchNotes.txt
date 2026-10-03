@@ -4,3 +4,12 @@ version: 2026-10-03h
 <b>Minimap</b>
 - The minimap no longer gives away gates, the waystone or townsfolk you haven't discovered yet.
 - Monsters only show on the minimap when they are close by.
+<b>Gear and skills</b>
+- A Short Bow now lies on the benches in Haven with the rest of the starting gear.
+- Cleave needs a melee weapon: it can no longer be used with a bow.
+- New stat: Melee Range, found on gloves and weapons and on the Brute Force passive.
+- Area of Effect can now roll on amulets and helmets, and the Arcane Mind passive grants it.
+<b>Bosses</b>
+- A slain boss returns after two minutes, but only once you are well away from its lair.
+<b>Interface</b>
+- The inventory, stash/trader and character windows have an X button to close them.

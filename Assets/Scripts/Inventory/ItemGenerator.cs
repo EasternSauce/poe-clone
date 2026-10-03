@@ -83,6 +83,8 @@ namespace PoeClone.Inventory
             Aff(StatType.ColdResistance, 6, 24, false, NotWeapon),
             Aff(StatType.LightningResistance, 6, 24, false, NotWeapon),
             Aff(StatType.MovementSpeed, 5, 15, false, ItemType.Boots),
+            Aff(StatType.AreaOfEffect, 5, 12, false, ItemType.Amulet, ItemType.Helmet),
+            Aff(StatType.MeleeRange, 5, 12, false, ItemType.Gloves, ItemType.Weapon),
         };
 
         // Magic items are named after their first stats, PoE style: "Hale Iron Helmet of the Fox".
@@ -106,6 +108,8 @@ namespace PoeClone.Inventory
             { StatType.FireResistance, "of the Whelpling" },
             { StatType.ColdResistance, "of the Seal" },
             { StatType.LightningResistance, "of the Cloud" },
+            { StatType.AreaOfEffect, "of Expanse" },
+            { StatType.MeleeRange, "of Reach" },
         };
 
         private static readonly string[] RareFirstWords =

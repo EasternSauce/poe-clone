@@ -62,7 +62,7 @@ namespace PoeClone.Inventory
                 {
                     Node("m6", "Heavy Hands", Mod(StatType.PhysicalDamage, 2)),
                     Node("m7", "Power", Mod(StatType.Strength, 8)),
-                    Notable("m8", "Brute Force", Mod(StatType.PhysicalDamage, 6), Mod(StatType.Strength, 10))
+                    Notable("m8", "Brute Force", Mod(StatType.PhysicalDamage, 6), Mod(StatType.Strength, 10), Mod(StatType.MeleeRange, 15))
                 });
 
             // Grace: down-right.
@@ -90,7 +90,7 @@ namespace PoeClone.Inventory
                 {
                     Node("w3", "Spellcraft", Mod(StatType.Intelligence, 8)),
                     Node("w4", "Deep Well", Mod(StatType.MaxMana, 20)),
-                    Notable("w5", "Arcane Mind", Mod(StatType.Intelligence, 15), Mod(StatType.MaxMana, 30))
+                    Notable("w5", "Arcane Mind", Mod(StatType.Intelligence, 15), Mod(StatType.MaxMana, 30), Mod(StatType.AreaOfEffect, 12))
                 },
                 new[]
                 {

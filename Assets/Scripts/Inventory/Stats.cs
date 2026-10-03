@@ -35,7 +35,8 @@ namespace PoeClone.Inventory
         AdditionalChains,           // Chain Lightning arcs this many more times
         ChillOnHit,                 // % chance for attacks to chill
         CullingStrike,              // 1: hits kill non-boss enemies left under 10% life
-        LifeOnKill                  // life gained for each enemy killed
+        LifeOnKill,                 // life gained for each enemy killed
+        MeleeRange                  // % increased reach of melee attacks and Cleave
     }
 
     /// <summary>One line of an item's stats: "+30 Armour" is (Armour, 30).</summary>
@@ -217,6 +218,7 @@ namespace PoeClone.Inventory
                 case StatType.ChillOnHit: return "Chance to Chill";
                 case StatType.CullingStrike: return "Culling Strike";
                 case StatType.LifeOnKill: return "Life on Kill";
+                case StatType.MeleeRange: return "Melee Range";
                 default: return stat.ToString();
             }
         }
@@ -244,6 +246,7 @@ namespace PoeClone.Inventory
                 case StatType.LifeLeech:
                 case StatType.ManaAbsorb:
                 case StatType.ChillOnHit:
+                case StatType.MeleeRange:
                     return true;
                 default:
                     return false;
@@ -291,6 +294,7 @@ namespace PoeClone.Inventory
                 case StatType.ChillOnHit: return n + "% chance to Chill enemies with Attacks";
                 case StatType.CullingStrike: return "Culling Strike: kill enemies left below 10% Life";
                 case StatType.LifeOnKill: return "Gain " + n + " Life per enemy killed";
+                case StatType.MeleeRange: return n + "% increased Melee Range";
                 default: return sign + n + " " + Label(m.Stat);
             }
         }

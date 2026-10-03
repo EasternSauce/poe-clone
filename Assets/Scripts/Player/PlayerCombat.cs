@@ -178,6 +178,15 @@ namespace PoeClone.Player
             return weapon != null ? weapon.WeaponType : WeaponType.Unarmed;
         }
 
+        // How far an attack reaches: the weapon's range, longer for melee with increased Melee Range.
+        private float Reach(WeaponType weaponType)
+        {
+            float range = CharacterAttackAnimator.AttackRange(weaponType);
+            if (CharacterAttackAnimator.IsRanged(weaponType))
+                return range;
+            return range * (1f + Mathf.Max(0f, inventory.Stats.Total(StatType.MeleeRange)) / 100f);
+        }
+
         private void StartAttack()
         {
             WeaponType weaponType = CurrentWeaponType();
@@ -275,7 +284,7 @@ namespace PoeClone.Player
             swingPending = false;
 
             WeaponType weaponType = CurrentWeaponType();
-            float range = CharacterAttackAnimator.AttackRange(weaponType);
+            float range = Reach(weaponType);
 
             if (CharacterAttackAnimator.IsRanged(weaponType))
             {
@@ -369,7 +378,7 @@ namespace PoeClone.Player
             aimDirection.y = 0f;
             aimDirection = aimDirection.sqrMagnitude > 0.0001f ? aimDirection.normalized : transform.forward;
 
-            float range = CharacterAttackAnimator.AttackRange(CurrentWeaponType());
+            float range = Reach(CurrentWeaponType());
             int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
 
             // On touch the "cursor" is the point the aim stick is pointing at, so that is what

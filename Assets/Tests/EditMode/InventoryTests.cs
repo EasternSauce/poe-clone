@@ -488,12 +488,13 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void StarterItems_AreThreeOrFourBasicItems_IncludingAWeapon()
+        public void StarterItems_AreAFewBasicItems_IncludingAMeleeWeaponAndABow()
         {
             List<ItemData> items = ItemCatalog.CreateStarterItems();
 
-            Assert.That(items.Count, Is.InRange(3, 4));
-            Assert.IsTrue(items.Exists(i => i.Type == ItemType.Weapon), "no starter weapon");
+            Assert.That(items.Count, Is.InRange(3, 6));
+            Assert.IsTrue(items.Exists(i => i.Type == ItemType.Weapon && i.WeaponType != WeaponType.Bow), "no starter melee weapon");
+            Assert.IsTrue(items.Exists(i => i.WeaponType == WeaponType.Bow), "no starter bow");
             foreach (ItemData item in items)
                 Assert.AreEqual(ItemRarity.Normal, item.Rarity, item.Name);
         }

@@ -181,6 +181,13 @@ namespace PoeClone.Skills
             if (usesArms && attackAnimator != null && attackAnimator.IsAttacking)
                 return false;
 
+            // Cleave is a melee swing: it can't be done with a bow in hand.
+            if (skill.Id == SkillId.Cleave && CharacterAttackAnimator.IsRanged(CurrentWeapon()))
+            {
+                CombatText.Show(transform.position + Vector3.up * 2f, "Needs a melee weapon", CombatText.PhysicalColor, 0.8f);
+                return false;
+            }
+
             if (!stats.TrySpendMana(skill.ManaCost))
             {
                 CombatText.Show(transform.position + Vector3.up * 2f, "Not enough mana", CombatText.ColdColor, 0.8f);
@@ -263,7 +270,8 @@ namespace PoeClone.Skills
             transform.rotation = Quaternion.Euler(0f, startYaw, 0f);
 
             WeaponType weapon = CurrentWeapon();
-            float reach = Mathf.Max(2.6f, CharacterAttackAnimator.IsRanged(weapon) ? 2.6f : CharacterAttackAnimator.AttackRange(weapon) + 0.6f) *
+            float melee = 1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f;
+            float reach = Mathf.Max(2.6f, CharacterAttackAnimator.IsRanged(weapon) ? 2.6f : (CharacterAttackAnimator.AttackRange(weapon) + 0.6f) * melee) *
                           DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
             SkillEffects.Shockwave(transform.position, reach, skill.Color, 0.3f);
 

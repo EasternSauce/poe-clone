@@ -146,6 +146,15 @@ namespace PoeClone.Inventory
                 SetOpen(open);
         }
 
+        // The panel's X: a spectator closes only the copy they opened themselves.
+        private void Close()
+        {
+            if (SpectatorMirror.Active)
+                ownOpen = false;
+            else
+                SetOpen(false);
+        }
+
         /// <summary>Opens or closes the page (C key, or the on-screen button on touch).</summary>
         public void SetOpen(bool open)
         {
@@ -158,6 +167,9 @@ namespace PoeClone.Inventory
         private void BuildUI()
         {
             canvas = UiKit.NewCanvas("CharacterCanvas", transform, 49, out canvasGroup);
+            // The panel catches the pointer, so a click on it never also attacks or walks.
+            canvas.gameObject.AddComponent<GraphicRaycaster>();
+            canvasGroup.blocksRaycasts = true;
 
             int lines = 0;
             foreach (Group g in Groups)
@@ -181,6 +193,8 @@ namespace PoeClone.Inventory
 
             Text title = UiKit.NewText("Title", panel, "CHARACTER", 26, UiKit.Gold, TextAnchor.UpperCenter);
             UiKit.TopLeft(title.rectTransform, new Vector2(0f, -14f), new Vector2(PanelWidth, 34f));
+
+            UiKit.CloseButton(panel, Close);
 
             levelText = UiKit.NewText("Level", panel, "", 18, UiKit.DimText, TextAnchor.UpperCenter);
             UiKit.TopLeft(levelText.rectTransform, new Vector2(0f, -48f), new Vector2(PanelWidth, 26f));

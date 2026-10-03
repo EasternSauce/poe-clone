@@ -580,6 +580,15 @@ namespace PoeClone.Inventory
         // ------------------------------------------------------------------ open / close
 
         /// <summary>Opens or closes the panel (I key, or the on-screen bag button on touch).</summary>
+        // The panel's X: a spectator closes only the copy they opened themselves.
+        private void Close()
+        {
+            if (SpectatorMirror.Active)
+                ownOpen = false;
+            else
+                SetOpen(false);
+        }
+
         public void SetOpen(bool open)
         {
             isOpen = open;
@@ -709,6 +718,11 @@ namespace PoeClone.Inventory
             stashPanel.sizeDelta = new Vector2(gridSize + Pad * 2f, gridSize + Pad * 2f + 34f + NoteHeight);
             UiKit.AddOutline(back, UiKit.BorderColor, 3f);
             TouchMode.AddMenuBlocker(stashPanel);
+            UiKit.CloseButton(stashPanel, () =>
+            {
+                if (!SpectatorMirror.Active)
+                    CloseStash();
+            });
 
             sideTitle = UiKit.NewText("Title", stashPanel, "STASH", 24, UiKit.Gold, TextAnchor.UpperCenter);
             UiKit.TopLeft(sideTitle.rectTransform, new Vector2(0f, -12f), new Vector2(stashPanel.sizeDelta.x, 30f));
@@ -942,6 +956,7 @@ private Vector2 CellSize(int w, int h)
             panel.sizeDelta = new Vector2(panelW, panelH);
             UiKit.AddOutline(panelImage, UiKit.BorderColor, 3f);
             TouchMode.AddMenuBlocker(panel);
+            UiKit.CloseButton(panel, Close);
 
             // Character preview panel, just to the left of the inventory.
             Image previewBg = UiKit.NewImage("PreviewPanel", canvas.transform, UiKit.PanelColor);

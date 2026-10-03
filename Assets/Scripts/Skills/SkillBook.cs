@@ -40,7 +40,7 @@ namespace PoeClone.Skills
             {
                 Id = SkillId.Cleave, Name = "Cleave", Short = "CLV", UnlockLevel = 1,
                 ManaCost = 8f, Cooldown = 2.5f, Color = new Color(0.85f, 0.75f, 0.55f),
-                Description = "Swing all around you, hitting every enemy in reach for 140% weapon damage."
+                Description = "Swing all around you, hitting every enemy in reach for 140% weapon damage. Needs a melee weapon (not a bow)."
             },
             new SkillDefinition
             {

@@ -302,6 +302,38 @@ namespace PoeClone.Inventory
             rt.offsetMax = new Vector2(-inset, -inset);
         }
 
+        /// <summary>
+        /// An "X" in a panel's top-right corner that calls <paramref name="onClose"/> when clicked
+        /// or tapped. Registered as a touch blocker so a tap on it isn't also read as a tap on the panel.
+        /// </summary>
+        public static RectTransform CloseButton(RectTransform panel, System.Action onClose)
+        {
+            Image close = NewImage("Close", panel, new Color(0.25f, 0.1f, 0.08f, 1f));
+            close.raycastTarget = true;
+            RectTransform rt = close.rectTransform;
+            rt.anchorMin = Vector2.one;
+            rt.anchorMax = Vector2.one;
+            rt.pivot = Vector2.one;
+            rt.anchoredPosition = new Vector2(-12f, -12f);
+            rt.sizeDelta = new Vector2(38f, 38f);
+            AddOutline(close, BorderColor, 1.5f);
+            Text x = NewText("X", rt, "X", 20, TextColor, TextAnchor.MiddleCenter);
+            Stretch(x.rectTransform, 0f);
+            close.gameObject.AddComponent<ClickRelay>().Clicked += onClose;
+            TouchMode.AddBlocker(rt);
+            return rt;
+        }
+
+        private sealed class ClickRelay : MonoBehaviour, IPointerClickHandler
+        {
+            public event System.Action Clicked;
+
+            public void OnPointerClick(PointerEventData eventData)
+            {
+                Clicked?.Invoke();
+            }
+        }
+
         public static void AddOutline(Graphic g, Color color, float distance)
         {
             Outline o = g.gameObject.AddComponent<Outline>();
