@@ -57,6 +57,13 @@ namespace PoeClone.Enemies
         private CreatureAnimator creature;
 
         private float nextMove;
+        private float nextLeap;
+
+        // The boss's tempo (EnemyKind.Tempo): every wind-up, flight and pause is divided by it.
+        private float T => kind != null ? Mathf.Max(0.1f, kind.Tempo) : 1f;
+
+        // Leaping (the bosses' way of closing in) has its own, shorter timer than the other moves.
+        private const float LeapEvery = 3.5f;
         private bool busy;
         private bool secondPhase;
         private Move last = Move.Rain;
@@ -105,7 +112,8 @@ namespace PoeClone.Enemies
         private void OnEnable()
         {
             // The first move comes a little after the fight starts, not on the first frame.
-            nextMove = Time.time + 3.5f;
+            nextMove = Time.time + 3.5f / T;
+            nextLeap = Time.time + 2f / T;
         }
 
         private void OnDestroy()
@@ -133,7 +141,8 @@ namespace PoeClone.Enemies
             if (player.IsDead || distance > EngageRange)
             {
                 // Out of the fight: the timer waits.
-                nextMove = Mathf.Max(nextMove, Time.time + 2f);
+                nextMove = Mathf.Max(nextMove, Time.time + 2f / T);
+                nextLeap = Mathf.Max(nextLeap, Time.time + 1f / T);
                 return;
             }
 
@@ -145,12 +154,20 @@ namespace PoeClone.Enemies
             }
 
             // Its plain blow finishes first.
-            if (Time.time < nextMove || (attackAnimator != null && attackAnimator.IsAttacking && !kind.IsCreature))
+            if (Time.time < Mathf.Min(nextMove, distance > 4.5f ? nextLeap : float.MaxValue) || (attackAnimator != null && attackAnimator.IsAttacking && !kind.IsCreature))
                 return;
+
+            // Out of reach: it leaps after the player on its own timer.
+            if (distance > 4.5f && Time.time >= nextLeap && kind.Boss != BossStyle.None)
+            {
+                nextLeap = Time.time + LeapEvery / T;
+                StartCoroutine(LeapSlam());
+                return;
+            }
 
             Move move = PickMove(distance);
             last = move;
-            nextMove = Time.time + (secondPhase ? MoveEveryEnraged : MoveEvery);
+            nextMove = Time.time + (secondPhase ? MoveEveryEnraged : MoveEvery) / T;
             StartCoroutine(Run(move));
         }
 
@@ -161,9 +178,9 @@ namespace PoeClone.Enemies
             Move[] set;
             switch (kind.Boss)
             {
-                case BossStyle.Gravelord: set = new[] { Move.Leap, Move.Spin, Move.RaiseDead }; break;
-                case BossStyle.Warlord: set = new[] { Move.Fissure, Move.Leap, Move.Rain }; break;
-                default: set = new[] { Move.Leap, Move.Nova, Move.Brood, Move.Rain }; break;
+                case BossStyle.Gravelord: set = new[] { Move.Spin, Move.RaiseDead }; break;
+                case BossStyle.Warlord: set = new[] { Move.Fissure, Move.Rain }; break;
+                default: set = new[] { Move.Nova, Move.Brood, Move.Rain }; break;
             }
 
             var fitting = new List<Move>();
@@ -205,18 +222,19 @@ namespace PoeClone.Enemies
         private IEnumerator LeapSlam()
         {
             busy = true;
-            const float gather = 0.4f;
-            const float air = 0.55f;
+            float gather = 0.4f / T;
+            float air = 0.55f / T;
             float scale = transform.localScale.x;
             float radius = 3.0f + 0.6f * scale;
             float gap = (body != null ? body.radius * scale : 1f) + 0.6f;
 
             Vector3 start = transform.position;
-            // Aims past where the player is heading, so running straight on doesn't clear it.
-            Vector3 landing = PlayerMotion.Predict(player, (gather + air) * 1.3f);
+            // Aims where the player is heading - a beat past it, so running straight on doesn't
+            // clear the landing.
+            Vector3 landing = PlayerMotion.Predict(player, gather + air + 0.35f);
             Vector3 jump = Flat(landing - start);
-            if (jump.magnitude > 14f)
-                landing = start + jump.normalized * 14f;
+            if (jump.magnitude > 18f)
+                landing = start + jump.normalized * 18f;
             landing.y = start.y;
             Face(landing - start);
 
@@ -263,11 +281,12 @@ namespace PoeClone.Enemies
             MoveTo(KeepClear(landing, gap) + Vector3.down * 0.2f);
 
             // Hold the landing crouch a beat, then rise.
-            for (float t = 0f; t < 0.3f; t += Time.deltaTime)
+            float recover = 0.3f / T;
+            for (float t = 0f; t < recover; t += Time.deltaTime)
             {
                 if (health.IsDead)
                     yield break;
-                SetCrouch(Mathf.Lerp(landed ? 0.8f : 0.5f, 0f, t / 0.3f));
+                SetCrouch(Mathf.Lerp(landed ? 0.8f : 0.5f, 0f, t / recover));
                 yield return null;
             }
             SetCrouch(0f);
@@ -281,7 +300,7 @@ namespace PoeClone.Enemies
             if (kind.Boss == BossStyle.Gravelord && secondPhase)
                 StartCoroutine(RaiseDead(1));
             else if (kind.Boss == BossStyle.Warlord)
-                Ring(at, 4.2f + transform.localScale.x, secondPhase ? 10 : 8, 0.9f, 1.0f, DamageType.Fire);
+                Ring(at, 4.2f + transform.localScale.x, secondPhase ? 10 : 8, 0.9f, 1.0f / T, DamageType.Fire);
             else if (kind.Boss == BossStyle.FrostQueen && player != null && Flat(player.transform.position - at).magnitude < 5f)
                 player.GetComponent<PlayerController>()?.Chill(2f);
         }
@@ -290,7 +309,7 @@ namespace PoeClone.Enemies
         private IEnumerator ReapingSpin()
         {
             busy = true;
-            const float windUp = 0.8f;
+            float windUp = 0.8f / T;
             float radius = 4.6f + 0.7f * transform.localScale.x;
 
             if (attackAnimator != null)
@@ -316,7 +335,7 @@ namespace PoeClone.Enemies
             }
 
             float yaw = transform.eulerAngles.y;
-            const float spin = 0.4f;
+            float spin = 0.4f / T;
             for (float t = 0f; t < spin; t += Time.deltaTime)
             {
                 if (health.IsDead)
@@ -336,7 +355,7 @@ namespace PoeClone.Enemies
         private IEnumerator Fissure()
         {
             busy = true;
-            const float windUp = 0.7f;
+            float windUp = 0.7f / T;
             Vector3 toPlayer = Flat(PlayerMotion.Predict(player, windUp + 0.4f) - transform.position);
             Vector3 dir = toPlayer.sqrMagnitude > 0.01f ? toPlayer.normalized : transform.forward;
             Face(dir);
@@ -351,12 +370,12 @@ namespace PoeClone.Enemies
             {
                 Vector3 at = origin + dir * step * k;
                 // A second phase splits into a fork on either side of the main line.
-                StartCoroutine(Eruption(at, 1.7f, windUp + k * 0.07f, DamageType.Fire, 1.2f, once));
+                StartCoroutine(Eruption(at, 1.7f, windUp + k * 0.07f / T, DamageType.Fire, 1.2f, once));
                 if (secondPhase && k > 1 && k % 2 == 0)
                 {
                     Vector3 side = Vector3.Cross(Vector3.up, dir) * (0.35f * step * k);
-                    StartCoroutine(Eruption(at + side, 1.1f, windUp + k * 0.11f + 0.1f, DamageType.Fire, 1.0f, once));
-                    StartCoroutine(Eruption(at - side, 1.1f, windUp + k * 0.11f + 0.1f, DamageType.Fire, 1.0f, once));
+                    StartCoroutine(Eruption(at + side, 1.1f, windUp + (k * 0.07f + 0.1f) / T, DamageType.Fire, 1.0f, once));
+                    StartCoroutine(Eruption(at - side, 1.1f, windUp + (k * 0.07f + 0.1f) / T, DamageType.Fire, 1.0f, once));
                 }
             }
 
@@ -378,7 +397,7 @@ namespace PoeClone.Enemies
         private IEnumerator FrostBurst(float radius)
         {
             busy = true;
-            const float windUp = 0.85f;
+            float windUp = 0.85f / T;
             if (creature != null)
                 creature.Crouch(windUp);
             StartCoroutine(GroundTelegraph.Run(transform.position, radius, windUp, DamageType.Cold, at =>
@@ -390,14 +409,14 @@ namespace PoeClone.Enemies
                 SkillEffects.Shockwave(at, radius, GroundTelegraph.FillColor(DamageType.Cold), 0.5f);
                 CameraSystem.CameraFollow.Shake(0.15f, 0.3f);
             }));
-            yield return Pause(windUp + 0.3f);
+            yield return Pause(0.85f + 0.3f);
             busy = false;
         }
 
         private IEnumerator RaiseDead(int count)
         {
             if (kind.Weapon != WeaponType.Unarmed)
-                SwingTimed(0.6f);
+                SwingTimed(0.6f / T);
             yield return Pause(0.6f);
             if (health.IsDead)
                 yield break;
@@ -410,7 +429,7 @@ namespace PoeClone.Enemies
         {
             busy = true;
             if (creature != null)
-                creature.Crouch(0.8f);
+                creature.Crouch(0.8f / T);
             yield return Pause(0.8f);
             if (!health.IsDead)
                 Summon(EnemyKinds.IndexOf("Ice Crawler"), count, GroundTelegraph.FillColor(DamageType.Cold));
@@ -424,7 +443,7 @@ namespace PoeClone.Enemies
             // Each patch comes down where the player will be when it lands, scattered round that.
             for (int k = 0; k < count; k++)
             {
-                float windUp = 0.9f + k * 0.15f;
+                float windUp = (0.9f + k * 0.15f) / T;
                 Vector3 target = PlayerMotion.Predict(player, windUp);
                 Vector2 scatter = Random.insideUnitCircle * 3f;
                 Vector3 at = k == 0 ? target : target + new Vector3(scatter.x, 0f, scatter.y);
@@ -442,14 +461,15 @@ namespace PoeClone.Enemies
             EnemySounds.Play(kind, EnemySounds.Event.Aggro, transform.position);
             CameraSystem.CameraFollow.Shake(0.3f, 0.9f);
             if (creature != null)
-                creature.Crouch(1.2f);
+                creature.Crouch(1.2f / T);
 
-            for (float t = 0f; t < 1.2f; t += Time.deltaTime)
+            float roar = 1.2f / T;
+            for (float t = 0f; t < roar; t += Time.deltaTime)
             {
                 if (health.IsDead)
                     yield break;
                 // Rears back then hunches, roaring.
-                SetCrouch(Mathf.Sin(t / 1.2f * Mathf.PI) * 0.8f);
+                SetCrouch(Mathf.Sin(t / roar * Mathf.PI) * 0.8f);
                 if (Mathf.Repeat(t, 0.3f) < Time.deltaTime)
                     SkillEffects.Shockwave(transform.position, 2f + 4f * t, GroundTelegraph.FillColor(kind.DamageType), 0.35f);
                 yield return null;
@@ -459,10 +479,10 @@ namespace PoeClone.Enemies
             switch (kind.Boss)
             {
                 case BossStyle.Gravelord: Summon(0, 3, new Color(0.3f, 0.9f, 0.4f)); break;
-                case BossStyle.Warlord: Ring(transform.position, 5f + transform.localScale.x, 10, 0.9f, 1.5f, DamageType.Fire); break;
+                case BossStyle.Warlord: Ring(transform.position, 5f + transform.localScale.x, 10, 0.9f, 1.5f / T, DamageType.Fire); break;
                 default: Summon(EnemyKinds.IndexOf("Ice Crawler"), 3, GroundTelegraph.FillColor(DamageType.Cold)); break;
             }
-            nextMove = Time.time + 1.5f;
+            nextMove = Time.time + 1.5f / T;
             busy = false;
         }
 
@@ -573,8 +593,10 @@ namespace PoeClone.Enemies
                 transform.rotation = Quaternion.LookRotation(direction);
         }
 
-        private static IEnumerator Pause(float seconds)
+        // Waits this long at the boss's tempo.
+        private IEnumerator Pause(float seconds)
         {
+            seconds /= T;
             for (float t = 0f; t < seconds; t += Time.deltaTime)
                 yield return null;
         }

@@ -129,7 +129,7 @@ namespace PoeClone.Enemies
                 return;
 
             FacePlayer();
-            attackAnimator.PlaybackSpeed = controller != null ? controller.AttackSpeedMultiplier : 1f;
+            attackAnimator.PlaybackSpeed = (controller != null ? controller.AttackSpeedMultiplier : 1f) * kind.Tempo;
             // Archers draw their bow like the player does; armed brutes swing their weapon;
             // everyone else swipes.
             swingPending = true;
@@ -143,7 +143,7 @@ namespace PoeClone.Enemies
                 attackAnimator.PlayClawAttack();
             if (kind.IsCreature)
                 EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
-            cooldownTimer = attackCooldown / (controller != null ? controller.AttackSpeedMultiplier : 1f);
+            cooldownTimer = attackCooldown / ((controller != null ? controller.AttackSpeedMultiplier : 1f) * kind.Tempo);
         }
 
         // Same rule as the player: a swing cut short by a stagger refunds its cooldown.

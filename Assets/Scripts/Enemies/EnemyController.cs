@@ -147,7 +147,7 @@ namespace PoeClone.Enemies
         public void Configure(EnemyKind kind)
         {
             this.kind = kind;
-            speedRatioToPlayer = kind.SpeedRatio;
+            speedRatioToPlayer = kind.SpeedRatio * kind.Tempo;
             // Backing off isn't enough to shake them: they follow a long way.
             loseInterestRange = Mathf.Max(loseInterestRange, 26f);
 

@@ -1,12 +1,4 @@
-version: 2026-10-03l
-<b>Mana</b>
-- Spells cost far more mana as they level up (+40% per skill level): casting nonstop now empties your mana in about ten seconds unless you have mana regeneration gear. Bring mana potions.
-<b>Updates</b>
-- When a new version of the game goes live, the page saves your character and reloads onto it by itself within about a minute.
-<b>Spectators</b>
-- Bolts, shards and arrows now stop and burst on the monsters they hit, instead of flying straight through them.
-<b>Items</b>
-- Items from older versions are brought up to date when you log in: a stat that can no longer appear on that item is removed, values outside today's range are brought into it, a doubled stat keeps one line, and uniques get their current stats.
-- Item levels top out at 20 (traders stocked better than anything that drops for high-level characters).
-<b>Fixes</b>
-- Clicking the stash or a trader no longer picks up whatever item the window opens under your cursor.
+version: 2026-10-03m
+<b>Bosses at double speed</b>
+- Bosses now do everything twice as fast: they walk twice as fast, swing twice as fast, and every big move winds up and recovers in half the time.
+- Bosses leap after you on their own, much shorter timer whenever you get out of reach, and land where you're heading rather than where you were.

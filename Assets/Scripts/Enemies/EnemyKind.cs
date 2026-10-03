@@ -58,6 +58,12 @@ namespace PoeClone.Enemies
         public float SpeedRatio;
         public float Scale = 1f;
 
+        /// <summary>
+        /// How fast everything about it runs: walking, attack rate and swing animations, and (for a
+        /// boss) every move's wind-up and recovery. Bosses run at double.
+        /// </summary>
+        public float Tempo = 1f;
+
         // Replacement colours for the prefab's own materials; clear keeps the original (the zombie).
         public Color Cloth = Color.clear;
         public Color Skin = Color.clear;
@@ -251,7 +257,7 @@ namespace PoeClone.Enemies
             // Bosses: weight 0, so only their lairs place them.
             new EnemyKind
             {
-                Name = "Gravelord Mortis", SpawnWeight = 0f,
+                Name = "Gravelord Mortis", SpawnWeight = 0f, Tempo = 2f,
                 MaxHealth = 340f, Experience = 150,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 21f, AttackCooldown = 1.4f, AttackRange = 4.2f,
@@ -263,7 +269,7 @@ namespace PoeClone.Enemies
             },
             new EnemyKind
             {
-                Name = "Ashen Warlord", SpawnWeight = 0f,
+                Name = "Ashen Warlord", SpawnWeight = 0f, Tempo = 2f,
                 MaxHealth = 420f, Experience = 220,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
                 Damage = 25f, AttackCooldown = 1.5f, AttackRange = 4.4f,
@@ -276,7 +282,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 // The brood-queen of the Hollow's ice crawlers: a spider the size of a house.
-                Name = "Rimeheart", SpawnWeight = 0f,
+                Name = "Rimeheart", SpawnWeight = 0f, Tempo = 2f,
                 MaxHealth = 460f, Experience = 300,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
                 Damage = 21f, AttackCooldown = 1.0f, AttackRange = 4.0f,
