@@ -129,6 +129,20 @@ namespace PoeClone.Player
             Sweep(EnemyRadius, step, enemiesOnly: true, ref nearest);
             Sweep(Radius, step, enemiesOnly: false, ref nearest);
 
+            // A spectator's copy: its enemies have no colliders, so it stops (and bursts) at the
+            // first one it passes close to, the way the player's real one did.
+            if (harmless && nearest == null)
+            {
+                Vector3 at;
+                if (PassesEnemy(step, out at))
+                {
+                    if (burstRadius > 0f)
+                        Skills.SkillEffects.Shockwave(at, burstRadius, textColor, 0.25f);
+                    Destroy(gameObject);
+                    return;
+                }
+            }
+
             if (nearest != null)
             {
                 Strike(nearest.Value.collider);
@@ -147,6 +161,30 @@ namespace PoeClone.Player
 
             transform.position += direction * step;
             travelLeft -= step;
+        }
+
+        private bool PassesEnemy(float step, out Vector3 at)
+        {
+            at = Vector3.zero;
+            float best = float.MaxValue;
+            Vector3 from = transform.position;
+            foreach (Enemies.EnemyHealth enemy in Enemies.EnemyHealth.Active)
+            {
+                if (enemy == null || enemy.IsDead)
+                    continue;
+                Vector3 to = enemy.transform.position - from;
+                to.y = 0f;
+                float along = Vector3.Dot(to, direction);
+                if (along < 0f || along > step)
+                    continue;
+                float reach = EnemyRadius + 0.4f * enemy.transform.localScale.x;
+                if ((to - direction * along).sqrMagnitude <= reach * reach && along < best)
+                {
+                    best = along;
+                    at = from + direction * along;
+                }
+            }
+            return best < float.MaxValue;
         }
 
         private void Sweep(float radius, float step, bool enemiesOnly, ref RaycastHit? nearest)

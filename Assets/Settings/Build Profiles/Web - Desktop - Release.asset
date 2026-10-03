@@ -865,7 +865,7 @@ MonoBehaviour:
     - line: '|   scriptingBackend:'
     - line: '|     Android: 1'
     - line: '|   il2cppCompilerConfiguration:'
-    - line: '|     WebGL: 2'
+    - line: '|     WebGL: 1'
     - line: '|   il2cppCodeGeneration:'
     - line: '|     WebGL: 1'
     - line: '|   il2cppLTOMode: {}'
@@ -1002,7 +1002,7 @@ MonoBehaviour:
         m_InsightsSettingsContainer:
           m_BuildProfileEngineDiagnosticsState: 2
         m_AdaptivePerformanceEnabled: 0
-        m_CodeOptimization: 3
+        m_CodeOptimization: 0
         m_WebGLClientBrowserPath: 
         m_WebGLClientBrowserType: 0
         m_WebGLTextureSubtarget: 0

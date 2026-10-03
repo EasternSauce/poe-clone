@@ -70,6 +70,45 @@ namespace PoeClone.Tests
             }
         }
 
+        [Test]
+        public void FreshItems_AreAlreadyLegal()
+        {
+            var rng = new System.Random(21);
+            for (int k = 0; k < 2000; k++)
+            {
+                ItemData item = ItemGenerator.Generate(rng, 1 + k % ItemGenerator.MaxItemLevel, ItemRarity.Rare);
+                Assert.AreSame(item, ItemGenerator.Legalize(item), item.Name + " (" + item.Id + ") was changed");
+            }
+            foreach (ItemData starter in ItemCatalog.CreateStarterItems())
+                Assert.AreSame(starter, ItemGenerator.Legalize(starter), starter.Name);
+        }
+
+        [Test]
+        public void OutdatedItems_AreFixedOnLoad()
+        {
+            // An old plate helm: Armour above today's range, a second Armour line, Spell Damage
+            // (never on helmets) and a skill at level 14.
+            var old = new ItemData("iron_helmet", "Old Helm", ItemType.Helmet, 2, 2, UnityEngine.Color.white, new[]
+            {
+                new StatModifier(StatType.Armour, 500f),
+                new StatModifier(StatType.Armour, 30f),
+                new StatModifier(StatType.SpellDamage, 40f),
+                new StatModifier(StatType.GrantFrostNova, 14f),
+            }, rarity: ItemRarity.Rare);
+
+            ItemData loaded = ItemRecord.From(old).ToItem();
+
+            Assert.AreEqual(1, Count(loaded, StatType.Armour));
+            Assert.LessOrEqual(loaded.Modifiers[0].Value, 22f);
+            Assert.AreEqual(0, Count(loaded, StatType.SpellDamage));
+            Assert.AreEqual(1, Count(loaded, StatType.GrantFrostNova));
+            foreach (StatModifier m in loaded.Modifiers)
+            {
+                if (m.Stat == StatType.GrantFrostNova)
+                    Assert.AreEqual(10f, m.Value);
+            }
+        }
+
         private static int Count(ItemData item, StatType stat)
         {
             int n = 0;

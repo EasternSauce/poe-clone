@@ -154,6 +154,17 @@ namespace PoeClone.Inventory
             return item;
         }
 
+        /// <summary>The unique with this name as it is designed today, or null if there's none.</summary>
+        public static ItemData Current(string name)
+        {
+            for (int k = 0; k < All.Length; k++)
+            {
+                if (All[k].Name == name)
+                    return Create(k);
+            }
+            return null;
+        }
+
         /// <summary>The unique's line of lore for its tooltip (null for anything else).</summary>
         public static string FlavourFor(ItemData item)
         {

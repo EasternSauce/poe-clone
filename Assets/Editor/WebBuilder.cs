@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Profile;
 using UnityEditor.Build.Reporting;
@@ -45,7 +47,29 @@ public static class WebBuilder
             return false;
         }
 
-        Debug.Log($"Build Web: succeeded in {summary.totalTime}, {summary.totalSize / (1024 * 1024)} MB at {OutputPath}");
+        string buildId = StampBuild();
+        Debug.Log($"Build Web: succeeded in {summary.totalTime}, {summary.totalSize / (1024 * 1024)} MB at {OutputPath} (build {buildId})");
         return true;
+    }
+
+    // Gives the published page this build's id (the patch notes version plus the time) and writes
+    // it to version.json beside it: open pages poll that file and reload when it changes, and the
+    // id on the build files' URLs keeps browsers from mixing in cached files of the old build.
+    private static string StampBuild()
+    {
+        string version = "dev";
+        string notes = Path.Combine("Assets", "Resources", "PatchNotes.txt");
+        if (File.Exists(notes))
+        {
+            string first = File.ReadAllLines(notes)[0];
+            if (first.StartsWith("version:"))
+                version = first.Substring("version:".Length).Trim();
+        }
+        string buildId = version + "-" + DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+
+        string index = Path.Combine(OutputPath, "index.html");
+        File.WriteAllText(index, File.ReadAllText(index).Replace("__BUILD_ID__", buildId));
+        File.WriteAllText(Path.Combine(OutputPath, "version.json"), "{\"build\":\"" + buildId + "\"}");
+        return buildId;
     }
 }

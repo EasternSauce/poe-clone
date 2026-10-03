@@ -302,7 +302,9 @@ namespace PoeClone.Inventory
             if (!tooltipRect.gameObject.activeSelf)
                 UpdateGroundTooltip();
 
-            if (mouse.leftButton.wasPressedThisFrame)
+            // The click that opened the stash or a trader (on the chest, the NPC) isn't also a
+            // click on whatever item the window happens to open under the cursor.
+            if (mouse.leftButton.wasPressedThisFrame && Time.frameCount != sideOpenedFrame)
                 HandleClick(hover);
         }
 
@@ -505,7 +507,7 @@ namespace PoeClone.Inventory
 
             if (touch.press.wasPressedThisFrame)
             {
-                touchTracking = !TouchMode.IsOverBlocker(pos);
+                touchTracking = !TouchMode.IsOverBlocker(pos) && Time.frameCount != sideOpenedFrame;
                 touchHadItem = cursorItem != null;
                 touchPickupTried = false;
                 touchInspecting = false;
@@ -649,6 +651,7 @@ namespace PoeClone.Inventory
             sideTitle.text = "STASH";
             stashAt = chest;
             stashOpen = true;
+            sideOpenedFrame = Time.frameCount;
             SetNote(null);
             if (!isOpen)
                 SetOpen(true);
@@ -669,11 +672,15 @@ namespace PoeClone.Inventory
             sideTitle.text = stock.Name.ToUpperInvariant();
             stashAt = trader;
             stashOpen = true;
+            sideOpenedFrame = Time.frameCount;
             SetNote(null);
             SetOpen(true);
         }
 
         public bool IsTrading => isOpen && stashOpen && vendor != null;
+
+        // The frame the stash or trader window last opened (its opening click is ignored).
+        private int sideOpenedFrame = -1;
 
         public void CloseStash()
         {

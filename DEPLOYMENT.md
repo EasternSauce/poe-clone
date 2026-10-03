@@ -21,6 +21,14 @@ Hosting is set up and live; this is only how to ship an update.
 4. Revert the Unity noise in `poe-clone` (see `SESSION_SUMMARY.md`).
 
 ## Facts worth knowing
+- Every build is stamped with an id (the patch notes version + UTC time): `WebBuilder` writes it
+  into the published `index.html` and into `version.json`. Open pages check `version.json` once a
+  minute; when it changes they save the character, show a notice and reload, so everyone moves to
+  the new version within about a minute of the push. The id is also added to the build files'
+  URLs (`?v=`), so a reload never mixes in cached files from the old build.
+- The Web profile builds without link-time optimisation and with IL2CPP "Release" (not "Master"),
+  which cuts the build time; Unity reuses compiled code for unchanged scripts (Library/Bee). Brotli
+  compression is still on (smaller downloads); switching to Gzip would save a little more build time.
 - The server URL is baked in from `Assets/StreamingAssets/network-config.json`
   (`wss://poe-clone-session-server.onrender.com`); it can also be edited in the hosted
   `StreamingAssets/network-config.json` without rebuilding.

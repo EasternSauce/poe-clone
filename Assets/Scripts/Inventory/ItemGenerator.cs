@@ -13,7 +13,9 @@ namespace PoeClone.Inventory
     /// </summary>
     public static class ItemGenerator
     {
-        public const int MaxItemLevel = 40;
+        // The highest item level anything rolls at (deep drops reach about 15, traders stock at the
+        // player's level). Also the top of the range a stat may have when old items are checked.
+        public const int MaxItemLevel = 20;
 
         // Which kind of character a base is made for. Its random stats lean that way (a silk robe
         // rolls caster stats more often, plate rolls Strength and Armour), so a build finds gear
@@ -578,6 +580,92 @@ namespace PoeClone.Inventory
         private static string GroupKey(ItemBase b)
         {
             return b.Type == ItemType.Weapon ? "Weapon." + b.WeaponType : b.Type.ToString();
+        }
+
+        /// <summary>
+        /// Brings an item in line with today's rules, for items made under older ones (saved
+        /// characters, their stash): every stat its base no longer allows is removed, every value
+        /// outside today's range is pulled into it, a stat listed twice keeps only its first line,
+        /// and a unique gets its current design. Returns the item itself if nothing needed fixing.
+        /// </summary>
+        public static ItemData Legalize(ItemData item)
+        {
+            if (item == null)
+                return null;
+            if (item.Rarity == ItemRarity.Unique)
+                return UniqueItems.Current(item.Name) ?? item;
+
+            ItemBase b = Find(item.Id);
+            if (b == null || b.Type == ItemType.Potion || b.Type == ItemType.Gold)
+                return item;
+
+            var mods = new List<StatModifier>();
+            var seen = new HashSet<StatType>();
+            bool changed = false;
+            foreach (StatModifier m in item.Modifiers)
+            {
+                if (!seen.Add(m.Stat))
+                {
+                    changed = true;
+                    continue;
+                }
+                float? legal = LegalValue(b, m.Stat, m.Value);
+                if (legal == null)
+                {
+                    changed = true;
+                    continue;
+                }
+                if (!Mathf.Approximately(legal.Value, m.Value))
+                    changed = true;
+                mods.Add(new StatModifier(m.Stat, legal.Value));
+            }
+
+            if (!changed)
+                return item;
+
+            var fixedItem = new ItemData(item.Id, item.Name, item.Type, item.Width, item.Height, item.Tint, mods,
+                item.HasCape, item.WeaponType, item.Rarity);
+            fixedItem.ArtId = item.ArtId;
+            fixedItem.ArtTint = item.ArtTint;
+            return fixedItem;
+        }
+
+        // The value a stat may have on this base today (the given one if it's in range), or null if
+        // the base can't have the stat at all.
+        private static float? LegalValue(ItemBase b, StatType stat, float value)
+        {
+            // A base stat: within what a fresh roll of it gives.
+            foreach (StatModifier implicitMod in b.Implicits)
+            {
+                if (implicitMod.Stat == stat)
+                {
+                    float low = Mathf.Max(1f, Mathf.Round(implicitMod.Value * 0.8f));
+                    float high = Mathf.Max(1f, Mathf.Round(implicitMod.Value * 1.07f));
+                    return Mathf.Clamp(value, low, high);
+                }
+            }
+
+            // A staff's attack spell.
+            if (b.Type == ItemType.Weapon && b.WeaponType == WeaponType.Staff && SkillGrants.IsMain(stat))
+                return Mathf.Clamp(Mathf.Round(value), 1f, SkillGrants.MaxDropLevel);
+
+            // A random stat: the widest range any of today's affixes for it gives this base.
+            float? min = null, max = null;
+            float topScale = 1f + 0.06f * (MaxItemLevel - 1);
+            foreach (Affix a in Affixes)
+            {
+                if (a.Stat != stat || Array.IndexOf(a.On, b.Type) < 0)
+                    continue;
+                if (b.Type == ItemType.Weapon && a.Weapons != null && Array.IndexOf(a.Weapons, b.WeaponType) < 0)
+                    continue;
+                float aMin = Mathf.Max(1f, a.Min);
+                float aMax = SkillGrants.IsGrant(stat) ? SkillGrants.MaxDropLevel : Mathf.Max(1f, Mathf.Round(a.ScalesWithLevel ? a.Max * topScale : a.Max));
+                min = min == null ? aMin : Mathf.Min(min.Value, aMin);
+                max = max == null ? aMax : Mathf.Max(max.Value, aMax);
+            }
+            if (min == null)
+                return null;
+            return Mathf.Clamp(value, min.Value, max.Value);
         }
 
         /// <summary>The family a base belongs to (its tiers share it); null for unknown ids.</summary>

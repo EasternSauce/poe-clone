@@ -51,7 +51,8 @@ namespace PoeClone.Inventory
             var item = new ItemData(id, name, (ItemType)type, Math.Max(1, w), Math.Max(1, h), new Color(r, g, b, a), modifiers,
                 hasCape: cape, weaponType: (WeaponType)weapon, rarity: (ItemRarity)rarity);
             ItemGenerator.ApplyArt(item);
-            return item;
+            // Made under older rules? Stats no longer allowed are fixed or removed.
+            return ItemGenerator.Legalize(item);
         }
     }
 

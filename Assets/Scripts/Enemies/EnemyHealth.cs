@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using PoeClone.Audio;
 using PoeClone.Combat;
@@ -45,6 +46,22 @@ namespace PoeClone.Enemies
 
         public event Action Damaged;
         public event Action Died;
+
+        /// <summary>
+        /// Every enemy in the scene. A spectator's enemies have no colliders (they're placed
+        /// directly from the stream), so its visual-only projectiles look them up here.
+        /// </summary>
+        public static readonly List<EnemyHealth> Active = new List<EnemyHealth>();
+
+        private void OnEnable()
+        {
+            Active.Add(this);
+        }
+
+        private void OnDisable()
+        {
+            Active.Remove(this);
+        }
 
         private void Awake()
         {

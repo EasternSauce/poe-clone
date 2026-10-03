@@ -1,16 +1,12 @@
-version: 2026-10-03k
-<b>Projectiles</b>
-- Projectiles fired together now hit each target only once: Ice Shard's fan, extra arrows, extra Fire Bolts (and their bursts). The first one to reach an enemy hurts it, the rest pass it by. Spread shots are for crowds now, not for stacking on one enemy.
-- Ice Shard's shards hit harder to make up for it.
-- Monster archers' three-arrow volleys hurt you once at most.
+version: 2026-10-03l
+<b>Mana</b>
+- Spells cost far more mana as they level up (+40% per skill level): casting nonstop now empties your mana in about ten seconds unless you have mana regeneration gear. Bring mana potions.
+<b>Updates</b>
+- When a new version of the game goes live, the page saves your character and reloads onto it by itself within about a minute.
+<b>Spectators</b>
+- Bolts, shards and arrows now stop and burst on the monsters they hit, instead of flying straight through them.
 <b>Items</b>
-- An item never rolls a stat it already has: no extra Armour on a plate helm, no second life line on a belt.
-<b>Spells nerfed hard</b>
-- Spell damage is much lower: base damage cut by about 40%, and each skill level adds 35% instead of 75% (a level 10 spell does about 4x a level 1, not 7.75x).
-- Intelligence adds 0.6% spell damage per point (was 1.2%). Spell Damage on staves and jewellery is roughly halved.
-- Fire Bolt's burst is smaller and splashes for less; Chain Lightning loses more damage with each arc. Staff spells cast a little slower.
-<b>World</b>
-- The charred woods round the Ashen Ruins (and the dead woods of the Graveyard) are much thicker, with rubble between the trees, so it's clear you can't walk through.
-<b>Bosses are deadlier</b>
-- Bosses move as fast as you (Rimeheart faster), hit about 40% harder and attack about 50% faster.
-- Their big moves come more often and wind up much faster, cover more ground, and aim where you're heading: leaps land past where you're running, the Warlord's fissure follows your path, and falling fire and ice lead you.
+- Items from older versions are brought up to date when you log in: a stat that can no longer appear on that item is removed, values outside today's range are brought into it, a doubled stat keeps one line, and uniques get their current stats.
+- Item levels top out at 20 (traders stocked better than anything that drops for high-level characters).
+<b>Fixes</b>
+- Clicking the stash or a trader no longer picks up whatever item the window opens under your cursor.

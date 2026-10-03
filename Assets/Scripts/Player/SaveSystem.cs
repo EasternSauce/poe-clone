@@ -110,6 +110,16 @@ namespace PoeClone.Player
                 Save();
         }
 
+        /// <summary>
+        /// Saves right now. Called by the web page (SendMessage to the GameSessionController
+        /// object) just before it reloads for a new version of the game.
+        /// </summary>
+        public void SaveForUpdate()
+        {
+            if (loaded && !erased && Playing())
+                Save();
+        }
+
         private void OnApplicationQuit()
         {
             if (loaded && !erased && Playing())
