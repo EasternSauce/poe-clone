@@ -58,6 +58,8 @@ namespace PoeClone.Inventory
         {
             Active = false;
             ClearRemote();
+            for (int k = 0; k < MenuCount; k++)
+                own[k] = dismissed[k] = wasRemote[k] = false;
             hasMouse = false;
             lastMoveAt = float.NegativeInfinity;
             polledFrame = -1;
@@ -75,6 +77,108 @@ namespace PoeClone.Inventory
             Pointer = new Vector2(0.5f, 0.5f);
             TreeHover = null;
             Held = null;
+        }
+
+        // ------------------------------------------------------------------ the spectator's own say
+
+        /// <summary>The four mirrored menus, for <see cref="Shown"/>, <see cref="Toggle"/> and <see cref="Close"/>.</summary>
+        public enum Menu
+        {
+            Inventory,
+            Character,
+            Tree,
+            Skills
+        }
+
+        private const int MenuCount = 4;
+
+        // Per menu: opened by the spectator themselves; the player's open copy shut by the spectator
+        // (for them only - it stays open for the player); whether the player had it open last frame.
+        private static readonly bool[] own = new bool[MenuCount];
+        private static readonly bool[] dismissed = new bool[MenuCount];
+        private static readonly bool[] wasRemote = new bool[MenuCount];
+
+        private static bool Remote(Menu menu)
+        {
+            switch (menu)
+            {
+                case Menu.Inventory: return InventoryOpen;
+                case Menu.Character: return CharacterOpen;
+                case Menu.Tree: return TreeOpen;
+                default: return SkillsOpen;
+            }
+        }
+
+        /// <summary>
+        /// Whether the spectator's copy of a menu shows: the player has it open (unless the spectator
+        /// shut it - until the player opens it again), or the spectator opened it themselves.
+        /// The tree and the skills panel share the middle of the screen, so one hides the other.
+        /// </summary>
+        public static bool Shown(Menu menu)
+        {
+            int k = (int)menu;
+            bool remote = Remote(menu);
+            if (remote != wasRemote[k])
+            {
+                // The player just opened it (show it again) or shut it (nothing left to dismiss).
+                dismissed[k] = false;
+                wasRemote[k] = remote;
+            }
+            if (!ShownRaw(menu))
+                return false;
+
+            // Both middle panels wanted (the player opened one while the spectator had the other
+            // up): the spectator's own choice wins, else the skills panel.
+            if (menu == Menu.Tree && ShownRaw(Menu.Skills))
+                return own[(int)Menu.Tree];
+            if (menu == Menu.Skills && ShownRaw(Menu.Tree))
+                return !own[(int)Menu.Tree];
+            return true;
+        }
+
+        private static bool ShownRaw(Menu menu)
+        {
+            int k = (int)menu;
+            return (Remote(menu) && !dismissed[k]) || own[k];
+        }
+
+        /// <summary>Whether what shows is the player's copy (it follows their pointer), not one the spectator opened.</summary>
+        public static bool ShowsRemote(Menu menu)
+        {
+            return Remote(menu) && !dismissed[(int)menu];
+        }
+
+        /// <summary>The spectator's button or key for a menu: shows it if hidden, hides it if showing.</summary>
+        public static void Toggle(Menu menu)
+        {
+            if (Shown(menu))
+            {
+                Close(menu);
+                return;
+            }
+            int k = (int)menu;
+            own[k] = true;
+            dismissed[k] = false;
+            // One panel in the middle at a time.
+            if (menu == Menu.Tree)
+                Close(Menu.Skills);
+            else if (menu == Menu.Skills)
+                Close(Menu.Tree);
+        }
+
+        /// <summary>Hides the spectator's copy (the panel's X, Escape); the player's stays open for them.</summary>
+        public static void Close(Menu menu)
+        {
+            int k = (int)menu;
+            own[k] = false;
+            if (Remote(menu))
+                dismissed[k] = true;
+        }
+
+        public static void CloseAll()
+        {
+            for (int k = 0; k < MenuCount; k++)
+                Close((Menu)k);
         }
 
         /// <summary>

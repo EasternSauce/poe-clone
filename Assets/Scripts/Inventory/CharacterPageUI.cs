@@ -50,7 +50,6 @@ namespace PoeClone.Inventory
         private const int SpecialRows = 5;
         private bool isOpen;
         private bool warming;
-        private bool ownOpen; // spectators: opened by the spectator themselves (see SpectatorMirror)
 
         public bool IsOpen
         {
@@ -131,17 +130,16 @@ namespace PoeClone.Inventory
         // spectator opened it (C) themselves.
         private void UpdateMirror()
         {
-            bool remote = SpectatorMirror.CharacterOpen;
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && !UiKit.IsTypingInTextField())
             {
-                if (keyboard.cKey.wasPressedThisFrame && !remote)
-                    ownOpen = !ownOpen;
+                if (keyboard.cKey.wasPressedThisFrame)
+                    SpectatorMirror.Toggle(SpectatorMirror.Menu.Character);
                 else if (keyboard.escapeKey.wasPressedThisFrame)
-                    ownOpen = false;
+                    SpectatorMirror.Close(SpectatorMirror.Menu.Character);
             }
 
-            bool open = remote || ownOpen;
+            bool open = SpectatorMirror.Shown(SpectatorMirror.Menu.Character);
             if (open != isOpen)
                 SetOpen(open);
         }
@@ -150,7 +148,7 @@ namespace PoeClone.Inventory
         private void Close()
         {
             if (SpectatorMirror.Active)
-                ownOpen = false;
+                SpectatorMirror.Close(SpectatorMirror.Menu.Character);
             else
                 SetOpen(false);
         }

@@ -1,19 +1,5 @@
-version: 2026-10-03o
-<b>A much bigger passive tree</b>
-- The tree has grown from 25 passives to 94, in six sectors: Might, Grace and Wisdom, and between them three new hybrids - Fury (attacks, critical strikes, Onslaught), Storm (lightning and cold, cast speed, cooldowns) and Zeal (fire, burning, regeneration).
-- Each sector has its own shape - a wheel, a figure of eight, a long loop, a spiral, a trident, a star with a crown - and bridges join neighbouring sectors at the rim, so a build can cut across instead of walking back to the centre.
-- Devotion passives grow with every passive you take in their own sector: going deep pays off more than taking a bit of everything.
-- 14 keystones, several of them tying skills together: Glacial Step (Dash ends in a Frost Nova), Second Wind (Rejuvenate refills mana and grants Onslaught), Stormblade (attack crits arc lightning), Thunderlord (shock), Frostbite (chilled enemies shatter), Avatar of Fire (corpses explode, but other elements weaken), Pain Attunement, Relentless and more.
-- New effects: critical strikes, ignite (burning), shock (enemies take 25% more damage), shatter, corpse explosions, Onslaught (faster attacks, casts and movement), fire/cold/lightning damage, damage against chilled enemies, damage on low life, % life and mana, % life regeneration, mana on kill.
-- The tree now fills the screen: drag to look around, scroll (or +/-) to zoom, Centre to fit it all.
-- Your passives were kept where they still exist; any that moved come back as points to spend.
-<b>New skill: Teleport</b>
-- Rolls on amulets, rings and gloves. Blink to where you aim, up to half a screen away, straight through walls and trees. Costs a lot of mana but is ready again almost at once.
-<b>Harder fights</b>
-- Armour and evasion protect much less than before.
-- Ordinary enemies hit three times as hard, bosses twice as hard.
-<b>Updates</b>
-- When a new version goes live you get a 10-second countdown (with a Reload now button) before the page reloads, so you can get somewhere safe first. Your character is saved either way.
-- Press H to hide the list of controls (and the how-to line on the passive tree); it stays hidden until you show it again.
-<b>Fixes</b>
-- Item tooltips grow to fit their text, so long stat lines no longer spill out of the box.
+version: 2026-10-03p
+<b>Spectators</b>
+- The chat now always draws over everything else for spectators (skill tree, inventory, every other window), and Enter always brings you back to the chat box.
+- New buttons over the chat (Bag, Character, Tree, Skills) open the player's menus for you, whatever the player has open.
+- You can close a menu the player opened - just for yourself; it stays open for them, and shows again the next time they open it.

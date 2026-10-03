@@ -126,7 +126,10 @@ namespace PoeClone.Network
 
             // On a phone the opened chat shares the top right with the minimap and quest tracker:
             // it goes over them. On a computer it sits under the inventory (which shares its corner).
-            chatCanvas.sortingOrder = touchPlayer ? 800 : 30;
+            // A spectator's chat is their main control, so it stays over every menu and overlay
+            // (the mirrored skill tree, inventory, touch buttons, patch notes) - only the name
+            // prompt (950) and the loading screen draw above it.
+            chatCanvas.sortingOrder = StayInChat ? 945 : touchPlayer ? 800 : 30;
 
             Vector2 corner = touchPlayer ? new Vector2(1f, 1f) : new Vector2(1f, 0f);
             panelRect.anchorMin = corner;
@@ -163,7 +166,11 @@ namespace PoeClone.Network
             if (!keyboard.enterKey.wasPressedThisFrame && !keyboard.numpadEnterKey.wasPressedThisFrame) return;
 
             // Only when nothing else has the UI focus (e.g. not while a menu button is selected).
-            if (EventSystem.current == null || EventSystem.current.currentSelectedGameObject != null) return;
+            // A spectator has nothing else to type into, so Enter always comes back to the chat.
+            var es = EventSystem.current;
+            if (es == null) return;
+            GameObject selected = es.currentSelectedGameObject;
+            if (selected != null && !(StayInChat && selected.GetComponent<InputField>() == null)) return;
 
             inputField.Select();
             inputField.ActivateInputField();

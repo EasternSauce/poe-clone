@@ -53,7 +53,6 @@ namespace PoeClone.UI
         private readonly List<GameObject> pickerRows = new List<GameObject>();
         private int pickerSlot = -1;
         private PlayerSkills skills;
-        private bool ownOpen; // spectators: opened by the spectator themselves (see SpectatorMirror)
 
         public static bool IsOpen => instance != null && instance.panelRoot != null && instance.panelRoot.activeSelf;
 
@@ -64,8 +63,6 @@ namespace PoeClone.UI
         {
             if (instance == null)
                 return;
-            if (!open)
-                instance.ownOpen = false;
             if (open && PassiveTreeUI.IsOpen)
                 PassiveTreeUI.SetOpen(false);
             instance.panelRoot.SetActive(open);
@@ -165,19 +162,16 @@ namespace PoeClone.UI
                 barRoot.SetActive(false);
             ClosePicker();
 
-            bool remote = SpectatorMirror.SkillsOpen;
-            if (SpectatorMirror.TreeOpen)
-                ownOpen = false;
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && !UiKit.IsTypingInTextField())
             {
-                if (keyboard.kKey.wasPressedThisFrame && !remote)
-                    ownOpen = !panelRoot.activeSelf;
+                if (keyboard.kKey.wasPressedThisFrame)
+                    SpectatorMirror.Toggle(SpectatorMirror.Menu.Skills);
                 else if (keyboard.escapeKey.wasPressedThisFrame)
-                    ownOpen = false;
+                    SpectatorMirror.Close(SpectatorMirror.Menu.Skills);
             }
 
-            bool open = remote || ownOpen;
+            bool open = SpectatorMirror.Shown(SpectatorMirror.Menu.Skills);
             if (panelRoot.activeSelf != open)
             {
                 panelRoot.SetActive(open);
@@ -477,7 +471,14 @@ namespace PoeClone.UI
             UiKit.TopLeft(close.rectTransform, new Vector2(width - 50f, -12f), new Vector2(38f, 38f));
             Text x = UiKit.NewText("X", close.rectTransform, "X", 20, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(x.rectTransform, 0f);
-            close.gameObject.AddComponent<TouchPointerRelay>().Up += _ => SetOpen(false);
+            // A spectator shuts only their own copy (the player's stays open for the player).
+            close.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
+            {
+                if (SpectatorMirror.Active)
+                    SpectatorMirror.Close(SpectatorMirror.Menu.Skills);
+                else
+                    SetOpen(false);
+            };
 
             float y = -70f;
             foreach (SkillDefinition skill in SkillBook.All)

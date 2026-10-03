@@ -163,9 +163,7 @@ namespace PoeClone.Inventory
         private Hover report;
         private Vector2 reportPointer;
 
-        // Spectator mirror (see SpectatorMirror): opened by the spectator themselves, and which
-        // side panel is showing.
-        private bool ownOpen;
+        // Spectator mirror (see SpectatorMirror): which side panel is showing.
         private int mirrorSide;
 
         public bool IsOpen
@@ -358,17 +356,17 @@ namespace PoeClone.Inventory
         // player's pointer until the spectator moves their own (SpectatorMirror.FollowingPlayer).
         private void UpdateMirror()
         {
-            bool remote = SpectatorMirror.InventoryOpen;
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && !UiKit.IsTypingInTextField())
             {
-                if (keyboard.iKey.wasPressedThisFrame && !remote)
-                    ownOpen = !ownOpen;
+                if (keyboard.iKey.wasPressedThisFrame)
+                    SpectatorMirror.Toggle(SpectatorMirror.Menu.Inventory);
                 else if (keyboard.escapeKey.wasPressedThisFrame)
-                    ownOpen = false;
+                    SpectatorMirror.Close(SpectatorMirror.Menu.Inventory);
             }
 
-            bool open = remote || ownOpen;
+            bool open = SpectatorMirror.Shown(SpectatorMirror.Menu.Inventory);
+            bool remote = SpectatorMirror.ShowsRemote(SpectatorMirror.Menu.Inventory);
             int side = remote ? SpectatorMirror.Side : SpectatorMirror.SideNone;
             VendorStock trader = side == SpectatorMirror.SideTrader ? SpectatorMirror.Trader : null;
             if (side == SpectatorMirror.SideTrader && trader == null)
@@ -586,7 +584,7 @@ namespace PoeClone.Inventory
         private void Close()
         {
             if (SpectatorMirror.Active)
-                ownOpen = false;
+                SpectatorMirror.Close(SpectatorMirror.Menu.Inventory);
             else
                 SetOpen(false);
         }

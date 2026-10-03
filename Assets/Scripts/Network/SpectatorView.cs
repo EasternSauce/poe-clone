@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using PoeClone.Inventory;
 
 namespace PoeClone.Network
 {
@@ -10,7 +11,8 @@ namespace PoeClone.Network
     /// playing" screen until there's something to watch, then shows a small LIVE badge naming the
     /// player being watched, and a notice if the stream stalls. With several people playing, the
     /// left/right arrow keys (or the arrow buttons beside the badge, for touch) switch between
-    /// them. Built at runtime the same way as the rest of this project's UI (see LoadingScreenUI).
+    /// them. A row of buttons over the chat opens the player's menus for the spectator (the
+    /// I, C, P and K keys do the same while the chat box isn't being typed in). Built at runtime the same way as the rest of this project's UI (see LoadingScreenUI).
     /// </summary>
     public class SpectatorView : MonoBehaviour
     {
@@ -28,6 +30,14 @@ namespace PoeClone.Network
         private GameObject nextButton;
         private GameObject stallNotice;
         private Text stallText;
+        private GameObject menuBar;
+        private readonly Image[] menuButtons = new Image[4];
+        private readonly Text[] menuLabels = new Text[4];
+
+        private static readonly string[] MenuNames = { "Bag", "Character", "Tree", "Skills" };
+        private static readonly string[] MenuKeys = { "I", "C", "P", "K" };
+        private static readonly Color MenuIdle = new Color(0.12f, 0.1f, 0.08f, 0.88f);
+        private static readonly Color MenuShown = new Color(0.45f, 0.33f, 0.12f, 0.95f);
 
         private void Awake()
         {
@@ -84,6 +94,9 @@ namespace PoeClone.Network
 
             SetActive(waitingRoot, !watching);
             SetActive(liveBadge, watching);
+            SetActive(menuBar, watching);
+            if (watching)
+                RefreshMenuBar();
 
             if (watching)
             {
@@ -129,6 +142,25 @@ namespace PoeClone.Network
                     : "No one is playing right now.\nYou'll see the game as soon as someone starts.";
 
             if (waitingText.text != message) waitingText.text = message;
+        }
+
+        // Lit while that menu shows; on a phone just the names (there are no keys to press).
+        private void RefreshMenuBar()
+        {
+            bool touch = TouchMode.Active;
+            for (int k = 0; k < menuButtons.Length; k++)
+            {
+                Color colour = SpectatorMirror.Shown((SpectatorMirror.Menu)k) ? MenuShown : MenuIdle;
+                if (menuButtons[k].color != colour)
+                    menuButtons[k].color = colour;
+                string label = touch ? MenuNames[k] : MenuNames[k] + " (" + MenuKeys[k] + ")";
+                if (menuLabels[k].text != label)
+                    menuLabels[k].text = label;
+            }
+            var rect = (RectTransform)menuBar.transform;
+            Vector2 at = touch ? new Vector2(-20f, 300f) : new Vector2(-20f, 262f);
+            if (rect.anchoredPosition != at)
+                rect.anchoredPosition = at;
         }
 
         private static int IndexOfWatched(GameSessionController ctrl)
@@ -250,6 +282,45 @@ namespace PoeClone.Network
             stallText.text = "Waiting for the player's game...\n(their tab may be in the background)";
             RuntimeUiUtil.StretchFull(stallText.rectTransform);
             stallNotice.SetActive(false);
+
+            // The menu buttons: a row just over the chat (bottom right), clear of the menus' own
+            // close buttons. This canvas draws over the menus, so the row stays clickable.
+            menuBar = new GameObject("MenuBar", typeof(RectTransform));
+            menuBar.transform.SetParent(canvasGO.transform, false);
+            var barRect = (RectTransform)menuBar.transform;
+            barRect.anchorMin = barRect.anchorMax = barRect.pivot = new Vector2(1f, 0f);
+            barRect.anchoredPosition = new Vector2(-20f, 262f);
+            const float buttonWidth = 128f;
+            const float gap = 6f;
+            barRect.sizeDelta = new Vector2(4f * buttonWidth + 3f * gap, 40f);
+            for (int k = 0; k < 4; k++)
+            {
+                var menu = (SpectatorMirror.Menu)k;
+                var go = new GameObject(MenuNames[k] + "Button");
+                go.transform.SetParent(menuBar.transform, false);
+                var image = go.AddComponent<Image>();
+                image.color = MenuIdle;
+                var rect = image.rectTransform;
+                rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0f, 0.5f);
+                rect.anchoredPosition = new Vector2(k * (buttonWidth + gap), 0f);
+                rect.sizeDelta = new Vector2(buttonWidth, 40f);
+                go.AddComponent<Outline>().effectColor = new Color(0.55f, 0.45f, 0.28f, 0.9f);
+                go.AddComponent<Button>().onClick.AddListener(() => SpectatorMirror.Toggle(menu));
+                menuButtons[k] = image;
+
+                var textGO = new GameObject("Text");
+                textGO.transform.SetParent(go.transform, false);
+                var text = textGO.AddComponent<Text>();
+                text.font = font;
+                text.fontSize = 19;
+                text.alignment = TextAnchor.MiddleCenter;
+                text.color = new Color(0.95f, 0.88f, 0.7f);
+                text.raycastTarget = false;
+                text.horizontalOverflow = HorizontalWrapMode.Overflow;
+                RuntimeUiUtil.StretchFull(text.rectTransform);
+                menuLabels[k] = text;
+            }
+            menuBar.SetActive(false);
         }
 
         // A square button on the badge's left (-1) or right (+1) edge that switches player.

@@ -61,7 +61,6 @@ namespace PoeClone.UI
         private PassiveNode selected;
         private PassiveNode shown;          // the passive the info line describes
         private PassiveNode mirroredHover;  // spectators: the player's pointed-at passive last shown
-        private bool ownOpen;               // spectators: opened by the spectator themselves
         private bool dirty = true;
 
         public static bool IsOpen => instance != null && instance.panelRoot != null && instance.panelRoot.activeSelf;
@@ -76,8 +75,6 @@ namespace PoeClone.UI
         {
             if (instance == null)
                 return;
-            if (!open)
-                instance.ownOpen = false;
             // Both panels sit in the middle of the screen: one at a time.
             if (open)
                 SkillBarUI.SetOpen(false);
@@ -169,19 +166,17 @@ namespace PoeClone.UI
             if (badge.gameObject.activeSelf)
                 badge.gameObject.SetActive(false);
 
-            bool remote = SpectatorMirror.TreeOpen;
-            if (SpectatorMirror.SkillsOpen)
-                ownOpen = false;
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && !UiKit.IsTypingInTextField())
             {
-                if (keyboard.pKey.wasPressedThisFrame && !remote)
-                    ownOpen = !panelRoot.activeSelf;
+                if (keyboard.pKey.wasPressedThisFrame)
+                    SpectatorMirror.Toggle(SpectatorMirror.Menu.Tree);
                 else if (keyboard.escapeKey.wasPressedThisFrame)
-                    ownOpen = false;
+                    SpectatorMirror.Close(SpectatorMirror.Menu.Tree);
             }
 
-            bool open = remote || ownOpen;
+            bool open = SpectatorMirror.Shown(SpectatorMirror.Menu.Tree);
+            bool remote = SpectatorMirror.ShowsRemote(SpectatorMirror.Menu.Tree);
             if (panelRoot.activeSelf != open)
             {
                 panelRoot.SetActive(open);
@@ -503,7 +498,14 @@ namespace PoeClone.UI
             TopRight(close.rectTransform, new Vector2(12f, -12f), new Vector2(38f, 38f));
             Text x = UiKit.NewText("X", close.rectTransform, "X", 20, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(x.rectTransform, 0f);
-            close.gameObject.AddComponent<TouchPointerRelay>().Up += _ => SetOpen(false);
+            // A spectator shuts only their own copy (the player's stays open for the player).
+            close.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
+            {
+                if (Spectating)
+                    SpectatorMirror.Close(SpectatorMirror.Menu.Tree);
+                else
+                    SetOpen(false);
+            };
 
             resetButton = NewButton(pr, "Reset", "Reset all", new Vector2(16f, -12f), new Vector2(150f, 38f));
             resetLabel = resetButton.GetComponentInChildren<Text>();
