@@ -69,7 +69,7 @@ namespace PoeClone.Player
         private EnemyHealth aimEnemy;
         private Vector3 aimPoint;
         private bool hasAimPoint;
-        private readonly Collider[] hitBuffer = new Collider[16];
+        private readonly Collider[] hitBuffer = new Collider[256]; // roomy: scenery shares it with the enemies
 
         private EnemyHealth highlighted;
 
@@ -354,6 +354,10 @@ namespace PoeClone.Player
             int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
             var hitAlready = new HashSet<IDamageable>();
 
+            // A sceptre's blow puts Death Mark on what it strikes (the aimed enemy if it's among them).
+            bool marks = weaponType == WeaponType.Sceptre;
+            EnemyHealth toMark = null;
+
             for (int i = 0; i < count; i++)
             {
                 IDamageable target = hitBuffer[i].GetComponentInParent<IDamageable>();
@@ -368,6 +372,8 @@ namespace PoeClone.Player
                     if (target is EnemyHealth enemy)
                     {
                         HitEffects.Deal(transform, enemy, pendingDamage, attack: true, CombatText.PhysicalColor);
+                        if (marks && !enemy.IsDead && (toMark == null || enemy == aimEnemy))
+                            toMark = enemy;
                         continue;
                     }
 
@@ -378,6 +384,9 @@ namespace PoeClone.Player
                         Mathf.Max(1, Mathf.RoundToInt(pendingDamage)).ToString(), CombatText.PhysicalColor);
                 }
             }
+
+            if (toMark != null)
+                PoeClone.Skills.Minion.Mark(toMark, transform);
         }
 
         // Turns to wherever the player is aiming right now. On touch, with the aim stick already let

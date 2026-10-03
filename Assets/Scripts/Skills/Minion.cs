@@ -1,15 +1,36 @@
 using System.Collections.Generic;
 using UnityEngine;
+using PoeClone.Combat;
 using PoeClone.Enemies;
+using PoeClone.Inventory;
+using PoeClone.Player;
 using PoeClone.UI;
 using PoeClone.Visuals;
 
 namespace PoeClone.Skills
 {
+    /// <summary>The four kinds of minion the summon skills raise.</summary>
+    public enum MinionKind
+    {
+        Warrior,    // Raise Skeletons: permanent, capped, melee
+        Mage,       // Skeleton Mages: permanent, capped, hangs back and casts bolts
+        Wolf,       // Spirit Wolves: a temporary pack, fast, enemies can't target them
+        Golem       // Bone Golem: one, temporary, big, taunts the enemies round it
+    }
+
     /// <summary>
-    /// A raised skeleton (Raise Skeletons): a first, simple minion. It wears the Skeleton enemy's
-    /// body with the enemy scripts stripped off, follows its owner, and swings at the nearest enemy
-    /// close by. Temporary; enemies don't target it yet, and spectators don't see it yet.
+    /// A summoner's minion. It wears an enemy body (the enemy prefab with its enemy scripts
+    /// stripped off, dressed as one of the minion kinds at the end of <see cref="EnemyKinds"/>),
+    /// follows its owner, and fights the nearest enemy close by - or the one under Death Mark.
+    /// <para>
+    /// Enemies fight back: they go for a minion that is nearer than the player (and always for a
+    /// Bone Golem close to them), so minions take the heat off the player - but only as long as
+    /// they last. Their life and damage come from the summon's level (steeply: about 18% more life
+    /// and 16% more damage per level) and the minion stats (Minion Life / Damage / Speed, Bone
+    /// Armour); never from the player's own life, armour or damage. Without investment they're
+    /// flimsy, and they fall in a few hits: a build that wants an army that holds the line has to
+    /// commit to it (summon levels on sceptres, grimoires and jewellery, the Necromancy passives).
+    /// </para>
     /// </summary>
     public class Minion : MonoBehaviour
     {
@@ -19,15 +40,42 @@ namespace PoeClone.Skills
         public const int ReplicationIdBase = 1000000;
         private static int nextId;
 
-        /// <summary>Stable for this skeleton's life (its spectator copy is keyed by it).</summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            All.Clear();
+            nextId = 0;
+            marked = null;
+            markOwner = null;
+        }
+
+        /// <summary>Stable for this minion's life (its spectator copy is keyed by it).</summary>
         public int Id { get; private set; }
+
+        public MinionKind Kind { get; private set; }
+        public float Life { get; private set; }
+        public float MaxLife { get; private set; }
+        public bool IsDead => dead;
+
+        /// <summary>Enemies can attack it (everything but the spirit wolves).</summary>
+        public bool Targetable => !dead && Kind != MinionKind.Wolf;
+
+        /// <summary>The golem: enemies close to it go for it, whoever else is near.</summary>
+        public bool Taunts => !dead && Kind == MinionKind.Golem;
+
+        /// <summary>Which enemy kind (index) it looks like, for the spectator stream.</summary>
+        public int LookIndex { get; private set; }
+
+        // Every enemy blow is three times its kind's base damage (see EnemyKinds.DamageScale), tuned
+        // against the player's armour, resistances and potions; minions have none of those, so they
+        // take a share of it.
+        public const float DamageTakenFactor = 0.4f;
 
         private const float FollowRadius = 2.5f;
         private const float EngageRadius = 8f;
-        private const float Leash = 9f;          // only enemies this close to the owner are fought
+        private const float Leash = 9f;             // only enemies this close to the owner are fought...
+        private const float MarkLeash = 16f;        // ...or the marked one, a good deal further off
         private const float TeleportDistance = 10f; // about half the screen: past this it blinks back to the owner
-        private const float AttackRange = 2.1f;
-        private const float AttackCooldown = 1.1f;
 
         private Transform owner;
         private CharacterController body;
@@ -35,48 +83,158 @@ namespace PoeClone.Skills
         private float damage;
         private float expiresAt;
         private float speed;
+        private float attackCooldown;
+        private float attackRange;
         private float cooldown;
         private float verticalVelocity;
         private EnemyHealth target;
         private EnemyHealth striking;
         private Vector3 slot;
         private float retargetAt;
+        private float damagedAt = float.NegativeInfinity;
+        private bool dead;
+        private float soulBond;
 
-        /// <summary>Raises up to the cap for this level around the owner; the oldest go first past it.</summary>
-        public static void Raise(Transform owner, int level, float damageMultiplier)
+        // ------------------------------------------------------------------ numbers
+
+        private struct Profile
         {
-            EnemySpawner spawner = FindAnyObjectByType<EnemySpawner>();
-            if (spawner == null || spawner.EnemyPrefab == null)
-                return;
+            public float Life;          // at level 1
+            public float Damage;        // per hit at level 1
+            public float Cooldown;      // seconds between attacks
+            public float Range;
+            public float Speed;
+            public string Look;         // the EnemyKind it wears
+        }
 
-            int cap = 2 + (level - 1) / 3;
-            int count = Mathf.Min(2, cap);
-            for (int k = 0; k < count; k++)
+        private static Profile ProfileOf(MinionKind kind)
+        {
+            switch (kind)
             {
-                All.RemoveAll(m => m == null);
-                if (All.Count >= cap)
-                    All[0].Crumble();
-
-                Vector2 r = Random.insideUnitCircle.normalized * 1.6f;
-                Vector3 at = owner.position + new Vector3(r.x, 0.3f, r.y);
-                Create(spawner.EnemyPrefab, owner, at, level, damageMultiplier);
+                case MinionKind.Mage:
+                    return new Profile { Life = 14f, Damage = 5f, Cooldown = 1.6f, Range = 8.5f, Speed = 6f, Look = "Skeleton Mage" };
+                case MinionKind.Wolf:
+                    return new Profile { Life = 30f, Damage = 5.5f, Cooldown = 0.8f, Range = 2f, Speed = 9f, Look = "Spirit Wolf" };
+                case MinionKind.Golem:
+                    return new Profile { Life = 85f, Damage = 9f, Cooldown = 1.5f, Range = 2.6f, Speed = 5.5f, Look = "Bone Golem" };
+                default:
+                    return new Profile { Life = 24f, Damage = 5f, Cooldown = 1.1f, Range = 2.1f, Speed = 6.5f, Look = "Skeleton Warrior" };
             }
         }
 
-        private static void Create(GameObject prefab, Transform owner, Vector3 at, int level, float damageMultiplier)
+        /// <summary>Life at a summon level, before Minion Life: about 18% more each level (4.4x at 10, 7.3x at 13).</summary>
+        public static float LifeAt(MinionKind kind, int level) => ProfileOf(kind).Life * Mathf.Pow(1.18f, Mathf.Max(1, level) - 1);
+
+        /// <summary>Damage per hit at a summon level, before Minion Damage: about 16% more each level.</summary>
+        public static float DamageAt(MinionKind kind, int level) => ProfileOf(kind).Damage * Mathf.Pow(1.16f, Mathf.Max(1, level) - 1);
+
+        /// <summary>The most of a kind at once at this level (warriors and mages also get Extra Skeletons).</summary>
+        public static int Cap(MinionKind kind, int level, StatSheet sheet)
         {
+            int extra = sheet != null ? Mathf.RoundToInt(Mathf.Max(0f, sheet.Total(StatType.AdditionalSkeletons))) : 0;
+            switch (kind)
+            {
+                case MinionKind.Warrior: return 2 + (level >= 7 ? 1 : 0) + (level >= 12 ? 1 : 0) + extra;
+                case MinionKind.Mage: return 1 + (level >= 8 ? 1 : 0) + (level >= 13 ? 1 : 0) + extra;
+                case MinionKind.Wolf: return 2 + (level >= 8 ? 1 : 0);
+                default: return 1;
+            }
+        }
+
+        /// <summary>How long a temporary minion lasts (0: until destroyed).</summary>
+        public static float Duration(MinionKind kind, int level, StatSheet sheet)
+        {
+            float more = 1f + (sheet != null ? Mathf.Max(0f, sheet.Total(StatType.MinionDuration)) : 0f) / 100f;
+            switch (kind)
+            {
+                case MinionKind.Wolf: return (12f + 0.5f * (level - 1)) * more;
+                case MinionKind.Golem: return (18f + 1f * (level - 1)) * more;
+                default: return 0f;
+            }
+        }
+
+        private static float Stat(StatSheet sheet, StatType stat) => sheet != null ? sheet.Total(stat) : 0f;
+
+        /// <summary>Life with the owner's Minion Life, for the skills panel.</summary>
+        public static float LifeFor(MinionKind kind, int level, StatSheet sheet) =>
+            LifeAt(kind, level) * (1f + Mathf.Max(-50f, Stat(sheet, StatType.MinionLife)) / 100f);
+
+        /// <summary>Damage per hit with the owner's Minion Damage, for the skills panel.</summary>
+        public static float DamageFor(MinionKind kind, int level, StatSheet sheet) =>
+            DamageAt(kind, level) * (1f + Mathf.Max(-50f, Stat(sheet, StatType.MinionDamage)) / 100f);
+
+        /// <summary>The share of every blow a minion still takes after Bone Armour (at most 60% less).</summary>
+        public static float TakenFor(StatSheet sheet) =>
+            DamageTakenFactor * (1f - Mathf.Clamp(Stat(sheet, StatType.BoneArmour), 0f, 60f) / 100f);
+
+        // ------------------------------------------------------------------ summoning
+
+        /// <summary>
+        /// Raises minions of a kind round the owner. Warriors and mages fill up to their cap (two
+        /// warriors, one mage per cast); at the cap the most battered one is replaced, so a recast
+        /// also mends the army. Wolves and the golem come all at once and replace the last ones.
+        /// </summary>
+        public static void Summon(Transform owner, MinionKind kind, int level)
+        {
+            EnemySpawner spawner = FindAnyObjectByType<EnemySpawner>();
+            if (spawner == null || spawner.EnemyPrefab == null || owner == null)
+                return;
+
+            PlayerInventory inventory = owner.GetComponent<PlayerInventory>();
+            StatSheet sheet = inventory != null ? inventory.Stats : null;
+            int cap = Cap(kind, level, sheet);
+
+            All.RemoveAll(m => m == null);
+            if (kind == MinionKind.Wolf || kind == MinionKind.Golem)
+            {
+                foreach (Minion old in All.FindAll(m => m.Kind == kind))
+                    old.Crumble();
+            }
+
+            int count = kind == MinionKind.Warrior ? 2 : kind == MinionKind.Mage ? 1 : cap;
+            count = Mathf.Min(count, cap);
+            for (int k = 0; k < count; k++)
+            {
+                List<Minion> same = All.FindAll(m => m.Kind == kind && !m.dead);
+                if (same.Count >= cap)
+                {
+                    Minion weakest = same[0];
+                    foreach (Minion m in same)
+                    {
+                        if (m.Life / m.MaxLife < weakest.Life / weakest.MaxLife)
+                            weakest = m;
+                    }
+                    // Nothing to mend: the army is full and whole.
+                    if (weakest.Life >= weakest.MaxLife && kind != MinionKind.Wolf)
+                        break;
+                    weakest.Crumble();
+                }
+
+                Vector2 r = Random.insideUnitCircle.normalized * 1.6f;
+                Vector3 at = owner.position + new Vector3(r.x, 0.3f, r.y);
+                Create(spawner.EnemyPrefab, owner, kind, at, level, sheet);
+            }
+        }
+
+        private static void Create(GameObject prefab, Transform owner, MinionKind kind, Vector3 at, int level, StatSheet sheet)
+        {
+            Profile profile = ProfileOf(kind);
+            int look = EnemyKinds.IndexOf(profile.Look);
+            if (look < 0)
+                look = EnemyKinds.SkeletonIndex;
+
             // Built under an inactive holder so none of the enemy scripts wake up before they go.
             var holder = new GameObject("MinionHolder");
             holder.SetActive(false);
             GameObject go = Instantiate(prefab, at, owner.rotation, holder.transform);
-            go.name = "Skeleton Minion";
+            go.name = profile.Look + " (Minion)";
             foreach (System.Type t in new[] { typeof(EnemyHealthBarUI), typeof(EnemySkills), typeof(EnemyCombat), typeof(EnemyController), typeof(EnemyHealth) })
             {
                 Component c = go.GetComponent(t);
                 if (c != null)
                     DestroyImmediate(c);
             }
-            EnemyKinds.ApplyLook(go, EnemyKinds.Get(EnemyKinds.SkeletonIndex));
+            EnemyKinds.ApplyLook(go, EnemyKinds.Get(look));
 
             // Out of the way of the player's shots and clicks, and of the player's own body.
             foreach (Transform t in go.GetComponentsInChildren<Transform>(true))
@@ -84,28 +242,221 @@ namespace PoeClone.Skills
             Transform model = go.transform.Find("Model") ?? go.transform;
             var minion = go.AddComponent<Minion>();
             minion.owner = owner;
+            minion.Kind = kind;
+            minion.LookIndex = look;
             minion.Id = ++nextId;
             minion.body = go.GetComponent<CharacterController>();
             minion.attack = model.GetComponent<CharacterAttackAnimator>() ?? model.gameObject.AddComponent<CharacterAttackAnimator>();
-            minion.damage = (4f + 1.6f * (level - 1)) * damageMultiplier;
-            minion.expiresAt = Time.time + 25f + 1.5f * level;
-            minion.speed = 6.5f;
+
+            float haste = 1f + Mathf.Clamp(Stat(sheet, StatType.MinionSpeed), -50f, 100f) / 100f;
+            minion.MaxLife = Mathf.Max(1f, LifeFor(kind, level, sheet));
+            minion.Life = minion.MaxLife;
+            minion.damage = DamageFor(kind, level, sheet);
+            minion.attackCooldown = profile.Cooldown / haste;
+            minion.attackRange = profile.Range;
+            minion.speed = profile.Speed * haste;
+            minion.attack.PlaybackSpeed = haste;
+            minion.soulBond = Mathf.Max(0f, Stat(sheet, StatType.SoulBond));
+            float duration = Duration(kind, level, sheet);
+            minion.expiresAt = duration > 0f ? Time.time + duration : float.PositiveInfinity;
+
             CharacterController ownerBody = owner.GetComponent<CharacterController>();
             if (ownerBody != null && minion.body != null)
                 Physics.IgnoreCollision(ownerBody, minion.body);
+            // Minions don't jostle each other off their feet either.
+            foreach (Minion other in All)
+            {
+                if (other != null && other.body != null && minion.body != null)
+                    Physics.IgnoreCollision(other.body, minion.body);
+            }
 
             go.transform.SetParent(null, true);
             Destroy(holder);
             go.SetActive(true);
             All.Add(minion);
-            SkillEffects.Shockwave(at, 1.3f, new Color(0.5f, 1f, 0.6f), 0.4f);
+            SkillEffects.Shockwave(at, kind == MinionKind.Golem ? 2f : 1.3f, new Color(0.5f, 1f, 0.6f), 0.4f);
         }
+
+        // ------------------------------------------------------------------ what enemies see
+
+        /// <summary>How close a minion has to be to draw an enemy away from the player.</summary>
+        private const float DrawRange = 9f;
+
+        /// <summary>A golem pulls every enemy this close to it onto itself.</summary>
+        private const float TauntRadius = 6.5f;
+
+        /// <summary>
+        /// The minion an enemy standing here should attack instead of the player, or null for the
+        /// player: a Bone Golem close by, else a minion clearly nearer than the player is.
+        /// </summary>
+        public static Minion TargetFor(Vector3 enemy, Vector3 player)
+        {
+            if (All.Count == 0)
+                return null;
+
+            float toPlayer = Flat(player - enemy).magnitude;
+            Minion best = null;
+            float bestDistance = DrawRange;
+            foreach (Minion m in All)
+            {
+                if (m == null || !m.Targetable)
+                    continue;
+                float d = Flat(m.transform.position - enemy).magnitude;
+                if (m.Taunts && d < TauntRadius)
+                    return m;
+                if (d < bestDistance && d + 0.75f < toPlayer)
+                {
+                    bestDistance = d;
+                    best = m;
+                }
+            }
+            return best;
+        }
+
+        /// <summary>An enemy's blow (or bolt) lands on this minion.</summary>
+        public void TakeHit(float amount, DamageType type)
+        {
+            if (dead || amount <= 0f)
+                return;
+            PlayerInventory inventory = owner != null ? owner.GetComponent<PlayerInventory>() : null;
+            amount *= TakenFor(inventory != null ? inventory.Stats : null);
+            Life -= amount;
+            damagedAt = Time.time;
+            Color color = type == DamageType.Physical ? new Color(1f, 0.55f, 0.45f) : CombatText.ColorFor(type);
+            CombatText.Show(transform.position + Vector3.up * 1.4f * transform.localScale.y,
+                Mathf.Max(1, Mathf.RoundToInt(amount)).ToString(), color, 0.7f);
+            if (Life <= 0f)
+                Crumble();
+        }
+
+        // ------------------------------------------------------------------ Death Mark
+
+        private static EnemyHealth marked;
+        private static Transform markOwner;
+        private static float markUntil;
+        private static GameObject markVisual;
+        private static readonly Color MarkColor = new Color(0.55f, 1f, 0.45f);
+
+        public const float MarkSeconds = 6f;
+
+        /// <summary>The enemy under Death Mark right now, or null.</summary>
+        public static EnemyHealth Marked => marked != null && !marked.IsDead && Time.time < markUntil ? marked : null;
+
+        /// <summary>
+        /// Puts Death Mark on an enemy (a grimoire's bolt, a sceptre's blow): the minions go for it
+        /// and hit it harder. One mark at a time; a new one moves it.
+        /// </summary>
+        public static void Mark(EnemyHealth enemy, Transform owner)
+        {
+            if (enemy == null || enemy.IsDead)
+                return;
+            bool fresh = Marked != enemy;
+            if (fresh)
+            {
+                Unmark();
+                marked = enemy;
+                enemy.Died += OnMarkedDied;
+                markVisual = BuildMarkVisual(enemy);
+                SkillEffects.Shockwave(enemy.transform.position, 1.2f * enemy.transform.localScale.x, MarkColor, 0.3f);
+            }
+            markOwner = owner;
+            markUntil = Time.time + MarkSeconds;
+        }
+
+        private static void Unmark()
+        {
+            if (marked != null)
+                marked.Died -= OnMarkedDied;
+            marked = null;
+            if (markVisual != null)
+                Destroy(markVisual);
+            markVisual = null;
+        }
+
+        /// <summary>How much harder minions hit the marked enemy: 30% more, raised by Death Mark Effect.</summary>
+        public static float MarkMultiplier(Transform owner)
+        {
+            PlayerInventory inventory = owner != null ? owner.GetComponent<PlayerInventory>() : null;
+            float effect = 1f + Mathf.Max(-100f, Stat(inventory != null ? inventory.Stats : null, StatType.MarkEffect)) / 100f;
+            return 1f + 0.3f * effect;
+        }
+
+        // Death's Herald: a marked enemy that dies bursts for a fifth of its life round it, and the
+        // mark leaps on to the nearest enemy.
+        private static void OnMarkedDied()
+        {
+            EnemyHealth dying = marked;
+            Transform owner = markOwner;
+            Unmark();
+            if (dying == null || owner == null)
+                return;
+            PlayerInventory inventory = owner.GetComponent<PlayerInventory>();
+            if (Stat(inventory != null ? inventory.Stats : null, StatType.DeathsHerald) <= 0f)
+                return;
+
+            Vector3 at = dying.transform.position;
+            SkillEffects.Shockwave(at, 3.5f, MarkColor, 0.45f);
+            float burst = dying.MaxHealth * 0.2f;
+            EnemyHealth next = null;
+            float nextDistance = 8f;
+            foreach (EnemyHealth e in EnemyHealth.Active.ToArray())
+            {
+                if (e == null || e.IsDead || e == dying)
+                    continue;
+                float d = Flat(e.transform.position - at).magnitude;
+                if (d <= 3.5f)
+                {
+                    e.TakeDamage(burst);
+                    CombatText.Show(e.transform.position + Vector3.up * 1.6f * e.transform.localScale.y,
+                        Mathf.Max(1, Mathf.RoundToInt(burst)).ToString(), MarkColor, 0.9f);
+                }
+                if (!e.IsDead && d < nextDistance)
+                {
+                    nextDistance = d;
+                    next = e;
+                }
+            }
+            if (next != null)
+                Mark(next, owner);
+        }
+
+        // A slowly turning ring of grave-light over the marked enemy's head.
+        private static GameObject BuildMarkVisual(EnemyHealth enemy)
+        {
+            var root = new GameObject("DeathMark");
+            root.transform.SetParent(enemy.transform, false);
+            root.transform.localPosition = Vector3.up * (enemy.BarHeight + 0.25f);
+            for (int k = 0; k < 6; k++)
+            {
+                float a = k * Mathf.PI * 2f / 6f;
+                GameObject bead = RuntimePrimitives.Create(PrimitiveType.Sphere, root.transform, MarkColor);
+                bead.transform.localScale = Vector3.one * 0.13f;
+                bead.transform.localPosition = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * 0.38f;
+            }
+            GameObject core = RuntimePrimitives.Create(PrimitiveType.Sphere, root.transform, new Color(0.2f, 0.5f, 0.2f));
+            core.transform.localScale = new Vector3(0.22f, 0.3f, 0.22f);
+            root.AddComponent<Spin>();
+            return root;
+        }
+
+        private class Spin : MonoBehaviour
+        {
+            private void Update()
+            {
+                transform.Rotate(0f, 120f * Time.deltaTime, 0f, Space.Self);
+                if (Marked == null)
+                    Destroy(gameObject);
+            }
+        }
+
+        // ------------------------------------------------------------------ life
 
         private void Start()
         {
             attack.StrikeFrame += OnStrike;
             float a = Random.value * Mathf.PI * 2f;
-            slot = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * FollowRadius;
+            // Mages keep a step further back than the melee minions.
+            slot = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * (Kind == MinionKind.Mage ? FollowRadius + 1f : FollowRadius);
         }
 
         private void OnDestroy()
@@ -115,11 +466,15 @@ namespace PoeClone.Skills
                 attack.StrikeFrame -= OnStrike;
         }
 
-        /// <summary>Falls apart (time's up, the owner died, or a newer skeleton took its place).</summary>
+        /// <summary>Falls apart (destroyed, time's up, the owner died, or a fresh one took its place).</summary>
         public void Crumble()
         {
+            if (dead)
+                return;
+            dead = true;
             All.Remove(this);
-            SkillEffects.Shockwave(transform.position, 1.2f, new Color(0.85f, 0.83f, 0.75f), 0.35f);
+            Color dust = Kind == MinionKind.Wolf ? new Color(0.6f, 0.9f, 1f) : new Color(0.85f, 0.83f, 0.75f);
+            SkillEffects.Shockwave(transform.position, Kind == MinionKind.Golem ? 2f : 1.2f, dust, 0.35f);
             Destroy(gameObject);
         }
 
@@ -133,7 +488,7 @@ namespace PoeClone.Skills
             }
 
             Vector3 toOwner = Flat(owner.position - transform.position);
-            if (toOwner.magnitude > TeleportDistance)
+            if (toOwner.magnitude > TeleportDistance && (target == null || Flat(target.transform.position - owner.position).magnitude > MarkLeash))
             {
                 SkillEffects.Shockwave(transform.position, 1f, new Color(0.5f, 1f, 0.6f), 0.3f);
                 body.enabled = false;
@@ -144,7 +499,7 @@ namespace PoeClone.Skills
                 return;
             }
 
-            if (Time.time >= retargetAt)
+            if (Time.time >= retargetAt || (target != null && target.IsDead))
             {
                 retargetAt = Time.time + 0.3f;
                 target = PickTarget();
@@ -156,7 +511,8 @@ namespace PoeClone.Skills
             {
                 Vector3 toTarget = Flat(target.transform.position - transform.position);
                 face = toTarget;
-                float reach = AttackRange + 0.4f * target.transform.localScale.x;
+                float reach = Reach(target);
+                // A mage closes to a little inside its range; the rest walk up to swing.
                 if (toTarget.magnitude > reach * 0.9f)
                 {
                     if (!attack.IsAttacking)
@@ -164,9 +520,9 @@ namespace PoeClone.Skills
                 }
                 else if (cooldown <= 0f && !attack.IsAttacking)
                 {
-                    cooldown = AttackCooldown;
+                    cooldown = attackCooldown;
                     striking = target;
-                    attack.PlayAttack(Inventory.WeaponType.Sword);
+                    PlaySwing();
                 }
             }
             else
@@ -192,11 +548,40 @@ namespace PoeClone.Skills
             body.Move(velocity * Time.deltaTime);
         }
 
-        // The nearest living enemy close to the skeleton that isn't too far from its owner.
+        private float Reach(EnemyHealth enemy)
+        {
+            return attackRange + 0.4f * enemy.transform.localScale.x;
+        }
+
+        private void PlaySwing()
+        {
+            switch (Kind)
+            {
+                case MinionKind.Wolf:
+                    attack.PlayCreatureAttack(false);
+                    break;
+                case MinionKind.Mage:
+                    attack.PlayAttack(WeaponType.Unarmed);
+                    break;
+                case MinionKind.Golem:
+                    attack.PlayClawAttack();
+                    break;
+                default:
+                    attack.PlayAttack(WeaponType.Sword);
+                    break;
+            }
+        }
+
+        // The marked enemy if it isn't too far from the owner; else the nearest living enemy close
+        // to the minion that isn't too far from its owner.
         private EnemyHealth PickTarget()
         {
+            EnemyHealth mark = Marked;
+            if (mark != null && Flat(mark.transform.position - owner.position).magnitude <= MarkLeash)
+                return mark;
+
             EnemyHealth best = null;
-            float bestDistance = EngageRadius;
+            float bestDistance = Kind == MinionKind.Mage ? EngageRadius + 2f : EngageRadius;
             foreach (EnemyHealth e in EnemyHealth.Active)
             {
                 if (e == null || e.IsDead)
@@ -217,20 +602,137 @@ namespace PoeClone.Skills
         {
             EnemyHealth hit = striking;
             striking = null;
-            if (hit == null || hit.IsDead)
+            if (hit == null || hit.IsDead || dead)
                 return;
-            if (Flat(hit.transform.position - transform.position).magnitude > (AttackRange + 0.4f * hit.transform.localScale.x) * 1.2f)
+
+            if (Kind == MinionKind.Mage)
+            {
+                MinionBolt.Launch(this, hit);
                 return;
-            float amount = damage * Random.Range(0.85f, 1.15f);
-            hit.TakeDamage(amount);
-            CombatText.Show(hit.transform.position + Vector3.up * 1.6f * hit.transform.localScale.y,
+            }
+
+            if (Flat(hit.transform.position - transform.position).magnitude > Reach(hit) * 1.2f)
+                return;
+
+            if (Kind == MinionKind.Golem)
+            {
+                // A two-fisted slam: the target and whatever stands right by it.
+                Vector3 at = hit.transform.position;
+                SkillEffects.Shockwave(at, 2f, new Color(0.85f, 0.8f, 0.65f), 0.3f);
+                foreach (EnemyHealth e in EnemyHealth.Active.ToArray())
+                {
+                    if (e != null && !e.IsDead && (e == hit || Flat(e.transform.position - at).magnitude <= 2f))
+                        Deal(e, e == hit ? 1f : 0.6f);
+                }
+                return;
+            }
+            Deal(hit, 1f);
+        }
+
+        /// <summary>One of this minion's hits landing (the mage's bolts call this when they arrive).</summary>
+        public void Deal(EnemyHealth enemy, float share)
+        {
+            if (enemy == null || enemy.IsDead)
+                return;
+            float amount = damage * share * Random.Range(0.85f, 1.15f);
+            if (enemy == Marked)
+                amount *= MarkMultiplier(owner);
+            if (enemy.IsShocked)
+                amount *= HitEffects.ShockedMore;
+            amount *= Curse.TakenMultiplier(enemy);
+            enemy.TakeDamage(amount);
+            CombatText.Show(enemy.transform.position + Vector3.up * 1.6f * enemy.transform.localScale.y,
                 Mathf.Max(1, Mathf.RoundToInt(amount)).ToString(), new Color(0.6f, 1f, 0.65f), 0.85f);
+
+            if (soulBond > 0f && owner != null)
+            {
+                Player.PlayerStats stats = owner.GetComponent<Player.PlayerStats>();
+                if (stats != null && !stats.IsDead)
+                    stats.Heal(amount * soulBond / 100f);
+            }
+        }
+
+        // A small green bar over a minion that has been hurt (like the enemies' red ones).
+        private static Texture2D pixel;
+
+        private void OnGUI()
+        {
+            if (dead || Time.time - damagedAt > 6f || Event.current.type != EventType.Repaint)
+                return;
+            Camera cam = Camera.main;
+            if (cam == null)
+                return;
+            float height = Kind == MinionKind.Wolf ? 1.2f : 2.3f;
+            Vector3 screen = cam.WorldToScreenPoint(transform.position + Vector3.up * height * transform.localScale.y);
+            if (screen.z <= 0f)
+                return;
+            if (pixel == null)
+            {
+                pixel = new Texture2D(1, 1);
+                pixel.SetPixel(0, 0, Color.white);
+                pixel.Apply();
+            }
+            float scale = TouchMode.GuiScale;
+            float w = 44f * scale, h = 5f * scale;
+            var rect = new Rect(screen.x - w * 0.5f, Screen.height - screen.y, w, h);
+            Color previous = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.6f);
+            GUI.DrawTexture(rect, pixel);
+            GUI.color = new Color(0.3f, 0.85f, 0.35f);
+            GUI.DrawTexture(new Rect(rect.x, rect.y, rect.width * Mathf.Clamp01(Life / MaxLife), rect.height), pixel);
+            GUI.color = previous;
         }
 
         private static Vector3 Flat(Vector3 v)
         {
             v.y = 0f;
             return v;
+        }
+
+        /// <summary>A skeleton mage's bolt: flies to its target and lands the mage's hit.</summary>
+        private class MinionBolt : MonoBehaviour
+        {
+            private Minion caster;
+            private EnemyHealth target;
+            private float life = 2f;
+            private const float Speed = 14f;
+
+            public static void Launch(Minion caster, EnemyHealth target)
+            {
+                var root = new GameObject("Minion Bolt");
+                root.transform.position = caster.transform.position + Vector3.up * 1.1f * caster.transform.localScale.y + caster.transform.forward * 0.5f;
+                GameObject core = RuntimePrimitives.Create(PrimitiveType.Sphere, root.transform, new Color(0.5f, 0.85f, 1f));
+                core.transform.localScale = Vector3.one * 0.26f;
+                GameObject spark = RuntimePrimitives.Create(PrimitiveType.Sphere, root.transform, new Color(0.85f, 0.95f, 1f));
+                spark.transform.localScale = Vector3.one * 0.12f;
+                spark.transform.localPosition = new Vector3(0.16f, 0f, 0f);
+                var bolt = root.AddComponent<MinionBolt>();
+                bolt.caster = caster;
+                bolt.target = target;
+            }
+
+            private void Update()
+            {
+                life -= Time.deltaTime;
+                if (target == null || target.IsDead || life <= 0f)
+                {
+                    Destroy(gameObject);
+                    return;
+                }
+                Vector3 aim = target.transform.position + Vector3.up * 0.4f * target.transform.localScale.y;
+                Vector3 to = aim - transform.position;
+                float step = Speed * Time.deltaTime;
+                transform.Rotate(400f * Time.deltaTime, 280f * Time.deltaTime, 0f);
+                if (to.magnitude <= step + 0.3f)
+                {
+                    if (caster != null)
+                        caster.Deal(target, 1f);
+                    SkillEffects.Shockwave(aim, 0.7f, new Color(0.5f, 0.85f, 1f), 0.2f);
+                    Destroy(gameObject);
+                    return;
+                }
+                transform.position += to.normalized * step;
+            }
         }
     }
 }

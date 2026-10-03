@@ -31,7 +31,9 @@ namespace PoeClone.Skills
         private readonly SkillId?[] slots = new SkillId?[SkillBook.SlotCount];
         private readonly Dictionary<SkillId, float> readyAt = new Dictionary<SkillId, float>();
         private readonly Dictionary<SkillId, float> cooldownOf = new Dictionary<SkillId, float>();
-        private readonly Collider[] buffer = new Collider[32];
+        // Roomy: in a cluttered spot (Haven's plaza, a ruin) the scenery alone can fill a small
+        // buffer and push the enemies out of it.
+        private readonly Collider[] buffer = new Collider[256];
 
         private PlayerStats stats;
         private PlayerController controller;
@@ -140,7 +142,23 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.RaiseSkeletons:
+                case SkillId.SkeletonMages:
+                case SkillId.SpiritWolves:
+                case SkillId.BoneGolem:
                     SkillEffects.Shockwave(cast.At, 1.6f, skill.Color, 0.4f);
+                    break;
+
+                case SkillId.GraveRot:
+                    if (cast.Points != null && cast.Points.Length > 0)
+                        SkillEffects.Shockwave(cast.Points[0], cast.Size, skill.Color, 0.5f);
+                    break;
+
+                case SkillId.DeathMark:
+                    if (cast.Points != null && cast.Points.Length > 1)
+                    {
+                        SkillEffects.Arc(cast.Points[0], cast.Points[1], skill.Color, 0.25f);
+                        SkillEffects.Shockwave(cast.Points[1], 1.1f, skill.Color, 0.3f);
+                    }
                     break;
 
                 case SkillId.ChainLightning:
@@ -223,7 +241,15 @@ namespace PoeClone.Skills
                 return 0;
 
             int bonus = 0;
-            if (skill.Spell)
+            if (skill.Summon)
+            {
+                // Summons only grow with summon levels (never "+N to level of all Spells").
+                bonus += Mathf.RoundToInt(Stat(StatType.MinionLevels));
+                StatType? own = SkillGrants.SummonLevelStat(skill.Grant);
+                if (own.HasValue)
+                    bonus += Mathf.RoundToInt(Stat(own.Value));
+            }
+            else if (skill.Spell)
             {
                 bonus += Mathf.RoundToInt(Stat(StatType.AllSpellLevels));
                 if (skill.Element == SkillElement.Fire)
@@ -237,27 +263,38 @@ namespace PoeClone.Skills
         }
 
         /// <summary>
-        /// The staff's attack: the first spell on the weapon that can be one. Null without a staff
-        /// (the plain weapon attack is used).
+        /// The attack spell: the first spell on the staff that can be one, or a grimoire's Death
+        /// Mark (in the off hand, with a one-handed weapon or none). Null without either (the
+        /// plain weapon attack is used).
         /// </summary>
         public SkillId? MainSkill
         {
             get
             {
-                ItemData weapon = inventory != null ? inventory.Equipment.Get(EquipSlot.MainHand) : null;
-                if (weapon == null)
+                if (inventory == null)
                     return null;
-                foreach (StatModifier m in weapon.Modifiers)
-                {
-                    if (SkillGrants.IsMain(m.Stat))
-                    {
-                        SkillDefinition skill = SkillBook.ForGrant(m.Stat);
-                        if (skill != null)
-                            return skill.Id;
-                    }
-                }
-                return null;
+                SkillId? main = MainOn(inventory.Equipment.Get(EquipSlot.MainHand));
+                if (main != null)
+                    return main;
+                ItemData offHand = inventory.Equipment.Get(EquipSlot.OffHand);
+                return offHand != null && offHand.Type == ItemType.Grimoire ? MainOn(offHand) : null;
             }
+        }
+
+        private static SkillId? MainOn(ItemData item)
+        {
+            if (item == null)
+                return null;
+            foreach (StatModifier m in item.Modifiers)
+            {
+                if (SkillGrants.IsMain(m.Stat))
+                {
+                    SkillDefinition skill = SkillBook.ForGrant(m.Stat);
+                    if (skill != null)
+                        return skill.Id;
+                }
+            }
+            return null;
         }
 
         /// <summary>Gear grants it and it isn't the staff's attack: it can go on the bar.</summary>
@@ -529,6 +566,8 @@ namespace PoeClone.Skills
             SkillId? main = MainSkill;
             if (main == SkillId.ChainLightning)
                 return ChainReach;
+            if (main == SkillId.DeathMark)
+                return MarkReach;
             return main == SkillId.IceShard ? ShardRange : BoltRange;
         }
 
@@ -624,10 +663,21 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.RaiseSkeletons:
+                case SkillId.SkeletonMages:
+                case SkillId.SpiritWolves:
+                case SkillId.BoneGolem:
                     if (attackAnimator != null)
                         attackAnimator.PlayAttack(WeaponType.Unarmed);
-                    Minion.Raise(transform, level, spell);
+                    Minion.Summon(transform, MinionKindOf(skill.Id), level);
                     Record(skill, level, 1.3f);
+                    break;
+
+                case SkillId.DeathMark:
+                    DeathMark(skill, damage, level, asAttack);
+                    break;
+
+                case SkillId.GraveRot:
+                    GraveRot(skill, level, area);
                     break;
             }
         }
@@ -657,6 +707,89 @@ namespace PoeClone.Skills
             float damage = WeaponDamage() * (1.4f + 0.1f * (level - 1));
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
                 Hit(enemy, damage, CombatText.PhysicalColor, attack: true);
+        }
+
+        /// <summary>
+        /// A summon's minions as they'd come out now ("max 2 · 97 life · 19 per hit"), so the
+        /// skills panel shows what summon levels and minion stats buy. Null for other skills.
+        /// </summary>
+        public string MinionSummary(SkillId id)
+        {
+            SkillDefinition skill = SkillBook.Get(id);
+            int level = Level(id);
+            if (!skill.Summon || level <= 0)
+                return null;
+            MinionKind kind = MinionKindOf(id);
+            StatSheet sheet = inventory != null ? inventory.Stats : null;
+            string summary = "max " + Minion.Cap(kind, level, sheet) + " · " +
+                             Mathf.RoundToInt(Minion.LifeFor(kind, level, sheet)) + " life · " +
+                             Mathf.RoundToInt(Minion.DamageFor(kind, level, sheet)) + " per hit";
+            float duration = Minion.Duration(kind, level, sheet);
+            if (duration > 0f)
+                summary += " · " + Mathf.RoundToInt(duration) + "s";
+            return summary;
+        }
+
+        private static MinionKind MinionKindOf(SkillId id)
+        {
+            switch (id)
+            {
+                case SkillId.SkeletonMages: return MinionKind.Mage;
+                case SkillId.SpiritWolves: return MinionKind.Wolf;
+                case SkillId.BoneGolem: return MinionKind.Golem;
+                default: return MinionKind.Warrior;
+            }
+        }
+
+        // Where the player aims, up to a dozen paces off: everything within reach of it is cursed.
+        // Centred on the enemy aimed at if there is one (on touch: the nearest the aim stick
+        // points at), so a quick cast on a crowd lands on it.
+        private void GraveRot(SkillDefinition skill, int level, float area)
+        {
+            Vector3 direction = AimDirection();
+            EnemyHealth aimed = AimedEnemy(12f) ?? (TouchMode.Active ? EnemyInDirection(direction, 12f) : null);
+            float distance = Mathf.Clamp(AimDistance() ?? 7f, 0f, 12f);
+            Vector3 at = aimed != null ? aimed.transform.position : transform.position + direction * distance;
+            float radius = 3.5f * area;
+            Face(direction);
+            if (attackAnimator != null)
+                attackAnimator.PlayAttack(WeaponType.Unarmed);
+            SkillEffects.Shockwave(at, radius, skill.Color, 0.5f);
+
+            float seconds = 6f + 0.3f * (level - 1);
+            float less = Mathf.Min(0.4f, 0.2f + 0.01f * (level - 1));
+            float more = 0.15f + 0.015f * (level - 1);
+            foreach (EnemyHealth enemy in EnemiesWithin(at, radius))
+                Curse.Apply(enemy, seconds, less, more);
+            Record(skill, level, radius, 0, new[] { at });
+        }
+
+        // How far Death Mark reaches.
+        private const float MarkReach = 14f;
+
+        // A bolt of grave-light that marks what it strikes: the aimed enemy, else the nearest one
+        // the cast points at, else the nearest one at all. It barely hurts; the mark is the point.
+        private void DeathMark(SkillDefinition skill, float damage, int level, bool asAttack)
+        {
+            Vector3 from = transform.position + Vector3.up * 0.9f;
+            EnemyHealth target = AimedEnemy(MarkReach) ?? EnemyInDirection(asAttack ? transform.forward : AimDirection(), MarkReach) ??
+                                 Nearest(transform.position, MarkReach * 0.6f, new HashSet<EnemyHealth>());
+            if (target == null)
+            {
+                Vector3 to = from + transform.forward * 4f;
+                SkillEffects.Arc(from, to, skill.Color, 0.2f);
+                Record(skill, level, 0f, 0, new[] { from, to });
+                return;
+            }
+
+            Face(target.transform.position - transform.position);
+            if (!asAttack && attackAnimator != null)
+                attackAnimator.PlayAttack(WeaponType.Unarmed);
+            Vector3 hitAt = target.transform.position + Vector3.up * 0.5f * target.transform.localScale.y;
+            SkillEffects.Arc(from, hitAt, skill.Color, 0.25f);
+            Minion.Mark(target, transform);
+            Hit(target, damage, skill.Color, attack: false);
+            Record(skill, level, 0f, 0, new[] { from, hitAt });
         }
 
         // How far Chain Lightning reaches for its first target, and how far each arc jumps.

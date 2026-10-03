@@ -65,6 +65,7 @@ namespace PoeClone.Player
             }
             if (enemy.IsShocked)
                 damage *= ShockedMore;
+            damage *= Skills.Curse.TakenMultiplier(enemy);
 
             Vector3 at = enemy.transform.position;
             float scale = enemy.transform.localScale.y;

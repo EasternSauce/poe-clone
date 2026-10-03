@@ -2,6 +2,7 @@ using UnityEngine;
 using PoeClone.Combat;
 using PoeClone.Inventory;
 using PoeClone.Player;
+using PoeClone.Skills;
 using PoeClone.Visuals;
 
 namespace PoeClone.Enemies
@@ -36,6 +37,9 @@ namespace PoeClone.Enemies
         // True from this script starting a swing to its strike: a boss's own moves play swings on
         // the same animator, and those strikes are theirs to resolve, not a plain blow's.
         private bool swingPending;
+
+        // The player's minion the swing was aimed at (the enemy went for it instead of the player).
+        private Minion swingAtMinion;
 
         private void Awake()
         {
@@ -125,10 +129,13 @@ namespace PoeClone.Enemies
             if (boss != null && boss.Busy)
                 return;
 
-            if (DistanceToPlayer() > attackRange)
+            Minion minion = controller != null ? controller.TargetMinion : null;
+            Vector3 targetAt = minion != null ? minion.transform.position : playerStats.transform.position;
+            if (DistanceTo(targetAt) > attackRange + (minion != null ? 0.3f * minion.transform.localScale.x : 0f))
                 return;
 
-            FacePlayer();
+            Face(targetAt);
+            swingAtMinion = minion;
             attackAnimator.PlaybackSpeed = (controller != null ? controller.AttackSpeedMultiplier : 1f) * kind.Tempo;
             // Archers draw their bow like the player does; armed brutes swing their weapon;
             // everyone else swipes.
@@ -163,6 +170,19 @@ namespace PoeClone.Enemies
             if (playerStats == null || playerStats.IsDead)
                 return;
 
+            Minion minion = swingAtMinion;
+            swingAtMinion = null;
+            if (minion != null)
+            {
+                if (minion.IsDead)
+                    return;
+                if (kind.IsRanged)
+                    EnemyProjectile.LaunchAt(BoltOrigin(transform), minion, kind, RollDamage());
+                else if (DistanceTo(minion.transform.position) <= (attackRange + 0.3f * minion.transform.localScale.x) * ReachSlack)
+                    minion.TakeHit(RollDamage(), kind.DamageType);
+                return;
+            }
+
             if (kind.IsRanged)
             {
                 // Enraged, it leads its shot: aims where the player will be when the bolt gets there.
@@ -191,23 +211,28 @@ namespace PoeClone.Enemies
         {
             float spread = kind.DamageType == DamageType.Lightning ? 0.6f : 0.15f;
             float rage = controller != null ? controller.DamageMultiplier : 1f;
-            return damage * rage * Random.Range(1f - spread, 1f + spread);
+            return damage * rage * Curse.DealtMultiplier(this) * Random.Range(1f - spread, 1f + spread);
         }
 
         private float DistanceToPlayer()
         {
-            Vector3 toPlayer = playerStats.transform.position - transform.position;
-            toPlayer.y = 0f;
-            return toPlayer.magnitude;
+            return DistanceTo(playerStats.transform.position);
         }
 
-        private void FacePlayer()
+        private float DistanceTo(Vector3 position)
         {
-            Vector3 toPlayer = playerStats.transform.position - transform.position;
-            toPlayer.y = 0f;
+            Vector3 to = position - transform.position;
+            to.y = 0f;
+            return to.magnitude;
+        }
 
-            if (toPlayer.sqrMagnitude > 0.0001f)
-                transform.rotation = Quaternion.LookRotation(toPlayer);
+        private void Face(Vector3 position)
+        {
+            Vector3 to = position - transform.position;
+            to.y = 0f;
+
+            if (to.sqrMagnitude > 0.0001f)
+                transform.rotation = Quaternion.LookRotation(to);
         }
     }
 }

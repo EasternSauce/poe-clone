@@ -868,8 +868,18 @@ namespace PoeClone.Network
             if (puppet.Stagger == null)
                 puppet.Stagger = go.AddComponent<Stagger>();
 
+            // The player's own minions: a green bar like the player sees, and a mage's bolt isn't
+            // aimed at the player.
+            bool minion = e.i >= PoeClone.Skills.Minion.ReplicationIdBase;
+            if (minion)
+            {
+                var bar = go.GetComponent<EnemyHealthBarUI>();
+                if (bar != null)
+                    bar.Friendly = true;
+            }
+
             // A caster's or archer's replayed attack sends a harmless bolt/arrow at the player.
-            if (kind.IsRanged && puppet.Attack != null)
+            if (kind.IsRanged && puppet.Attack != null && !minion)
             {
                 Transform body = go.transform;
                 puppet.Attack.StrikeFrame += () =>

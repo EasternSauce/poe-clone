@@ -1,6 +1,7 @@
 using UnityEngine;
 using PoeClone.Combat;
 using PoeClone.Player;
+using PoeClone.Skills;
 using PoeClone.Visuals;
 
 namespace PoeClone.Enemies
@@ -19,7 +20,8 @@ namespace PoeClone.Enemies
         private float travelLeft;
         private float damage;
         private DamageType damageType;
-        private PlayerStats target;   // null = visual only
+        private PlayerStats target;   // null = visual only (or aimed at a minion)
+        private Minion minion;        // aimed at one of the player's minions instead
         private bool spins;
         private float spin;
         private bool[] volleyHit;     // shared by arrows loosed together: only the first to land hurts
@@ -38,6 +40,16 @@ namespace PoeClone.Enemies
             if (target == null)
                 return;
             Create(from, new Vector3(aimAt.x, target.transform.position.y + AimHeight, aimAt.z), kind, damage, target).volleyHit = volleyHit;
+        }
+
+        /// <summary>A real bolt at one of the player's minions (an enemy drawn off the player by it).</summary>
+        public static void LaunchAt(Vector3 from, Minion target, EnemyKind kind, float damage)
+        {
+            if (target == null)
+                return;
+            EnemyProjectile bolt = Create(from, target.transform.position + Vector3.up * AimHeight, kind, damage, null);
+            bolt.minion = target;
+            bolt.travelLeft = kind.AttackRange * 1.6f;
         }
 
         /// <summary>A harmless bolt for spectators (the hit itself arrives in the replicated health).</summary>
@@ -105,6 +117,17 @@ namespace PoeClone.Enemies
                         target.TakeHit(damage, damageType);
                     if (volleyHit != null)
                         volleyHit[0] = true;
+                    Destroy(gameObject);
+                    return;
+                }
+            }
+
+            if (minion != null && !minion.IsDead)
+            {
+                Vector3 toMinion = minion.transform.position + Vector3.up * AimHeight - transform.position;
+                if (toMinion.sqrMagnitude <= HitRadius * HitRadius * 1.4f)
+                {
+                    minion.TakeHit(damage, damageType);
                     Destroy(gameObject);
                     return;
                 }

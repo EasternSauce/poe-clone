@@ -11,7 +11,8 @@ namespace PoeClone.Inventory
         Wisdom,    // intelligence: mana, spells, resistances
         Fury,      // between Might and Grace: attacks, critical strikes, Onslaught
         Storm,     // between Grace and Wisdom: lightning and cold, cast speed, cooldowns, Dash
-        Zeal       // between Wisdom and Might: fire, burning, regeneration, Rejuvenate
+        Zeal,      // between Wisdom and Might: fire, burning, regeneration, Rejuvenate
+        Necromancy // out past Fire Ward, between Wisdom and Zeal: minions and Death Mark
     }
 
     /// <summary>One passive: its stats, where it's drawn, and which passives it connects to.</summary>
@@ -79,6 +80,37 @@ namespace PoeClone.Inventory
             Bridge("b_surge", "Arcane Surge", "s_sp5", "w_l3", Mod(StatType.CastSpeed, 5), Mod(StatType.ManaRegen, 15));
             Bridge("b_fireward", "Fire Ward", "w_r3", "z_t1", Mod(StatType.FireResistance, 12), Mod(StatType.FireDamage, 8));
             Bridge("b_ironfaith", "Iron Faith", "z_t4", "m5", Mod(StatType.Armour, 25), Mod(StatType.LifeRegen, 2));
+
+            // Out past Fire Ward: the summoner's cluster (needs the bridge, so it's a commitment).
+            BuildNecromancy();
+        }
+
+        // Necromancy (up-left, out at the rim between Wisdom and Zeal): a diamond round Lord of
+        // Bones, four keystones off its far side. Nothing here helps the player's own damage or
+        // defences: it all goes into the minions, so a summoner who wants an army that holds the
+        // line spends their points here instead of on their own life.
+        private static void BuildNecromancy()
+        {
+            Sector(PassiveBranch.Necromancy, 117f);
+            N("n1", "Grave Whispers", 2.6f, 0f, Mod(StatType.MinionLife, 12));
+            N("n2", "Bone Servants", 2.9f, -0.35f, Mod(StatType.MinionDamage, 12));
+            N("n3", "Ossuary", 2.9f, 0.35f, Mod(StatType.MinionLife, 12), Mod(StatType.BoneArmour, 5));
+            Nt("n_lord", "Lord of Bones", 3.2f, 0f, Mod(StatType.MinionLevels, 1), Mod(StatType.MinionLife, 15));
+            Devotion("n_lord", Mod(StatType.MinionLife, 2), Mod(StatType.MinionDamage, 2));
+            N("n4", "Death's Grip", 3.2f, -0.62f, Mod(StatType.MarkEffect, 20), Mod(StatType.MinionDamage, 6));
+            N("n5", "Pack Leader", 3.2f, 0.62f, Mod(StatType.MinionSpeed, 8), Mod(StatType.MinionDuration, 15));
+            Chain("b_fireward", "n1");
+            Chain("n1", "n2", "n_lord", "n3", "n1");
+            Chain("n2", "n4", "n_lord", "n5", "n3");
+
+            Ks("k_legion", "Bone Legion", 3.6f, -0.28f, Mod(StatType.AdditionalSkeletons, 1), Mod(StatType.MinionDamage, -10));
+            Chain("n_lord", "k_legion");
+            Ks("k_soulbond", "Soul Bond", 3.6f, 0.28f, Mod(StatType.SoulBond, 3), Mod(StatType.IncreasedLife, -8));
+            Chain("n_lord", "k_soulbond");
+            Ks("k_herald", "Death's Herald", 3.5f, -0.95f, Mod(StatType.DeathsHerald, 1), Mod(StatType.MarkEffect, 15));
+            Chain("n4", "k_herald");
+            Ks("k_spiritpact", "Spirit Pact", 3.5f, 0.95f, Mod(StatType.MinionDuration, 40), Mod(StatType.SpiritWolvesLevels, 1));
+            Chain("n5", "k_spiritpact");
         }
 
         // ------------------------------------------------------------------ the sectors

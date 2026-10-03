@@ -23,7 +23,7 @@ namespace PoeClone.EditorTools
             "iron_helmet", "bronze_helmet", "studded_vest", "leather_gloves", "leather_boots", "rope_belt",
             "jade_amulet", "iron_ring", "ruby_ring", "sapphire_ring", "rusty_sword", "wooden_shield",
             "hand_axe", "iron_mace", "steel_dagger", "short_bow", "leather_quiver",
-            "sage_circlet", "bastard_sword", "woodsplitter", "great_mallet"
+            "sage_circlet", "bastard_sword", "woodsplitter", "great_mallet", "bone_sceptre", "grimoire"
         };
 
         private static readonly Dictionary<string, Material> Mats = new Dictionary<string, Material>();
@@ -51,6 +51,7 @@ namespace PoeClone.EditorTools
             WoodenShield();
             WeaponModels();
             VarietyModels();
+            SummonerModels();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -509,6 +510,70 @@ namespace PoeClone.EditorTools
             Shape(maul, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 1.27f, 0f), new Vector3(0.08f, 0.08f, 0.08f));
 
             Save(root, "great_mallet");
+        }
+
+        /// <summary>Just the summoner's sceptre and grimoire, leaving every other prefab untouched.</summary>
+        [MenuItem("PoeClone/Build Summoner Equipment")]
+        public static void BuildSummoner()
+        {
+            EnsureFolder("Assets/Resources");
+            EnsureFolder(OutDir);
+            LoadMeshes();
+            MakeMaterials();
+            SummonerModels();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            foreach (string id in new[] { "bone_sceptre", "grimoire" })
+                AssetDatabase.ImportAsset(OutDir + "/" + id + ".prefab", ImportAssetOptions.ForceUpdate);
+            Debug.Log("EquipmentBuilder: built the summoner's sceptre and grimoire");
+        }
+
+        private static void SummonerModels()
+        {
+            BoneSceptre();
+            Grimoire();
+        }
+
+        // A short rod of bone topped with a little horned skull, a green gem for an eye.
+        private static void BoneSceptre()
+        {
+            GameObject root = NewRoot("bone_sceptre");
+            Transform rod = Node(root, "Socket_MainHand", new Vector3(0f, 0f, 0.03f), new Vector3(112f, 0f, 0f));
+
+            Cube(rod, "Shaft", "BowString", new Vector3(0f, 0.28f, 0f), new Vector3(0.05f, 0.62f, 0.05f));
+            Cube(rod, "Wrap", "Leather", new Vector3(0f, 0.06f, 0f), new Vector3(0.062f, 0.20f, 0.062f));
+            Shape(rod, "Knuckle", "IcoHead", "BowString", new Vector3(0f, -0.06f, 0f), new Vector3(0.08f, 0.08f, 0.08f));
+            Cube(rod, "Collar", "Gold", new Vector3(0f, 0.58f, 0f), new Vector3(0.09f, 0.05f, 0.09f));
+            Shape(rod, "Skull", "IcoHead", "BowString", new Vector3(0f, 0.71f, 0f), new Vector3(0.20f, 0.21f, 0.22f));
+            Cube(rod, "Jaw", "TanLight", new Vector3(0f, 0.63f, 0.03f), new Vector3(0.12f, 0.05f, 0.12f));
+            Shape(rod, "EyeL", "IcoHead", "GemGreen", new Vector3(-0.045f, 0.73f, 0.095f), new Vector3(0.05f, 0.05f, 0.03f));
+            Shape(rod, "EyeR", "IcoHead", "GemGreen", new Vector3(0.045f, 0.73f, 0.095f), new Vector3(0.05f, 0.05f, 0.03f));
+            Shape(rod, "HornL", "Cone", "TanLight", new Vector3(-0.10f, 0.83f, -0.01f), new Vector3(0.035f, 0.12f, 0.035f), new Vector3(0f, 0f, 30f));
+            Shape(rod, "HornR", "Cone", "TanLight", new Vector3(0.10f, 0.83f, -0.01f), new Vector3(0.035f, 0.12f, 0.035f), new Vector3(0f, 0f, -30f));
+
+            Save(root, "bone_sceptre");
+        }
+
+        // A thick leather-bound tome held at the side: bone-white page edges, gold corners and
+        // clasp, a green gem set in the cover.
+        private static void Grimoire()
+        {
+            GameObject root = NewRoot("grimoire");
+            Transform book = Node(root, "Socket_OffHand", Vector3.zero, new Vector3(0f, -40f, 0f));
+
+            Cube(book, "Pages", "BowString", new Vector3(0f, 0.24f, 0.14f), new Vector3(0.30f, 0.40f, 0.10f));
+            Cube(book, "CoverFront", "Leather", new Vector3(0f, 0.24f, 0.20f), new Vector3(0.34f, 0.44f, 0.025f));
+            Cube(book, "CoverBack", "Leather", new Vector3(0f, 0.24f, 0.08f), new Vector3(0.34f, 0.44f, 0.025f));
+            Cube(book, "Spine", "Leather", new Vector3(-0.16f, 0.24f, 0.14f), new Vector3(0.04f, 0.44f, 0.14f));
+            Cube(book, "Band", "Gold", new Vector3(-0.16f, 0.36f, 0.14f), new Vector3(0.045f, 0.03f, 0.145f));
+            Cube(book, "Band2", "Gold", new Vector3(-0.16f, 0.12f, 0.14f), new Vector3(0.045f, 0.03f, 0.145f));
+            Cube(book, "Clasp", "Gold", new Vector3(0.17f, 0.24f, 0.14f), new Vector3(0.03f, 0.07f, 0.15f));
+            Cube(book, "CornerA", "Gold", new Vector3(0.15f, 0.44f, 0.21f), new Vector3(0.05f, 0.05f, 0.01f));
+            Cube(book, "CornerB", "Gold", new Vector3(0.15f, 0.04f, 0.21f), new Vector3(0.05f, 0.05f, 0.01f));
+            Shape(book, "Sigil", "IcoHead", "TanLight", new Vector3(0f, 0.26f, 0.215f), new Vector3(0.12f, 0.13f, 0.02f));
+            Shape(book, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.26f, 0.225f), new Vector3(0.06f, 0.06f, 0.03f));
+
+            Save(root, "grimoire");
         }
 
         private static void WeaponModels()

@@ -18,7 +18,8 @@ namespace PoeClone.Inventory
         Shield,
         Quiver,  // off hand, worn with a bow
         Potion,  // lies on the ground; picked up into the potion slots, never the bag
-        Gold     // lies on the ground; picked up into the purse
+        Gold,    // lies on the ground; picked up into the purse
+        Grimoire // off hand: a necromancer's tome, whose Death Mark is the attack (see SkillGrants.GrimoireMain)
     }
 
     /// <summary>
@@ -50,7 +51,8 @@ namespace PoeClone.Inventory
         Staff,   // two-handed; its spell (see SkillGrants.StaffMain) is its attack
         Greatsword, // two-handed melee: slower, harder hitting, longer reach (see SlotRules.IsTwoHanded)
         Greataxe,
-        Maul
+        Maul,
+        Sceptre     // one-handed: a summoner's mace, its blows mark enemies for the minions
     }
 
     /// <summary>The places gear can be worn. There are two ring slots and one amulet slot.</summary>
@@ -168,7 +170,7 @@ namespace PoeClone.Inventory
         public static ItemType[] AcceptedTypes(EquipSlot slot)
         {
             if (slot == EquipSlot.OffHand)
-                return new[] { ItemType.Shield, ItemType.Quiver };
+                return new[] { ItemType.Shield, ItemType.Quiver, ItemType.Grimoire };
             return new[] { AcceptedType(slot) };
         }
 

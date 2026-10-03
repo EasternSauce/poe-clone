@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using PoeClone.Inventory;
@@ -62,10 +63,48 @@ namespace PoeClone.Tests
                     if (m.Stat == StatType.GrantCleave)
                         Assert.IsTrue(item.Type == ItemType.Weapon && item.WeaponType != WeaponType.Bow && item.WeaponType != WeaponType.Staff,
                             "Cleave on " + item.Type + " " + item.WeaponType);
-                    if (SkillGrants.IsMain(m.Stat))
+                    if (Array.IndexOf(SkillGrants.StaffMain, m.Stat) >= 0)
                         Assert.AreEqual(WeaponType.Staff, item.WeaponType, m.Stat + " on " + item.Type);
+                    if (Array.IndexOf(SkillGrants.GrimoireMain, m.Stat) >= 0)
+                        Assert.AreEqual(ItemType.Grimoire, item.Type, m.Stat + " on " + item.Type);
+                    if (SkillGrants.IsSummon(m.Stat) && item.Type == ItemType.Weapon)
+                        Assert.AreEqual(WeaponType.Sceptre, item.WeaponType, m.Stat + " on " + item.WeaponType);
                 }
             }
+        }
+
+        [Test]
+        public void EveryGrimoire_CarriesDeathMark()
+        {
+            var rng = new System.Random(5);
+            int grimoires = 0;
+            for (int k = 0; k < 3000; k++)
+            {
+                ItemData item = ItemGenerator.Generate(rng, 8, ItemRarity.Magic);
+                if (item.Type != ItemType.Grimoire)
+                    continue;
+                grimoires++;
+                Assert.AreEqual(StatType.GrantDeathMark, Grants(item)[0].Stat, item.Name);
+            }
+            Assert.Greater(grimoires, 10);
+        }
+
+        [Test]
+        public void StarterGear_HasASceptre_WithRaiseSkeletons()
+        {
+            ItemData sceptre = ItemCatalog.CreateStarterItems().Find(i => i.Type == ItemType.Weapon && i.WeaponType == WeaponType.Sceptre);
+            Assert.IsNotNull(sceptre);
+            Assert.AreEqual(StatType.GrantRaiseSkeletons, Grants(sceptre)[0].Stat);
+            Assert.IsFalse(SlotRules.IsTwoHanded(sceptre));
+        }
+
+        [Test]
+        public void SummonLevels_ComeOnlyFromSummonStats()
+        {
+            Assert.AreEqual(StatType.RaiseSkeletonsLevels, SkillGrants.SummonLevelStat(StatType.GrantRaiseSkeletons));
+            Assert.AreEqual(StatType.BoneGolemLevels, SkillGrants.SummonLevelStat(StatType.GrantBoneGolem));
+            Assert.IsNull(SkillGrants.SummonLevelStat(StatType.GrantFireBolt));
+            Assert.IsFalse(SkillGrants.IsSummon(StatType.GrantDeathMark));
         }
 
         [Test]

@@ -492,7 +492,7 @@ namespace PoeClone.Tests
         {
             List<ItemData> items = ItemCatalog.CreateStarterItems();
 
-            Assert.That(items.Count, Is.InRange(3, 6));
+            Assert.That(items.Count, Is.InRange(3, 8)); // Haven has four benches, two spots each
             Assert.IsTrue(items.Exists(i => i.Type == ItemType.Weapon && i.WeaponType != WeaponType.Bow), "no starter melee weapon");
             Assert.IsTrue(items.Exists(i => i.WeaponType == WeaponType.Bow), "no starter bow");
             foreach (ItemData item in items)

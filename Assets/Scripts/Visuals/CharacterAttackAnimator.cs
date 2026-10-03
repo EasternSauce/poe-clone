@@ -469,6 +469,7 @@ namespace PoeClone.Visuals
                 case WeaponType.Greatsword: return GreatswordProfile;
                 case WeaponType.Greataxe: return GreataxeProfile;
                 case WeaponType.Maul: return MaulProfile;
+                case WeaponType.Sceptre: return MaceProfile;
                 default: return UnarmedProfile;
             }
         }

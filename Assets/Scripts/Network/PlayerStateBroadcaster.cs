@@ -365,8 +365,8 @@ namespace PoeClone.Network
                 e.sz = skills != null ? skills.LastTarget.z : 0f;
             }
 
-            // The player's raised skeletons go out as skeletons too (ids of their own, never an
-            // enemy's), so spectators see them fight alongside.
+            // The player's minions go out as entities too (ids of their own, never an enemy's, and
+            // the minion kinds at the end of EnemyKinds), so spectators see them fight alongside.
             foreach (Minion minion in Minion.All)
             {
                 if (minion == null)
@@ -381,15 +381,15 @@ namespace PoeClone.Network
                 EntityState e = enemyStates[count++];
                 WritePose(e, minion.transform);
                 e.i = Minion.ReplicationIdBase + minion.Id;
-                e.hp = 1f;
-                e.mhp = 1f;
+                e.hp = minion.Life;
+                e.mhp = minion.MaxLife;
                 e.d = 0;
                 var attack = minion.GetComponentInChildren<CharacterAttackAnimator>();
                 e.atk = attack != null ? attack.AttackCount : 0;
                 e.ap = attack != null ? attack.ProfileId : 0;
                 e.stg = 0;
                 e.ch = 0;
-                e.k = EnemyKinds.SkeletonIndex;
+                e.k = minion.LookIndex;
                 e.sk = 0;
                 e.sx = 0f;
                 e.sz = 0f;

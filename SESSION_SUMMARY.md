@@ -8,6 +8,9 @@ Deploying: see `DEPLOYMENT.md`.
 - Commit only when the user asks; push and deploy only when the user asks.
 
 ## Testing: in the Editor, not in Web builds
+- **Start with the `unity-playtest` skill** (`.claude/skills/unity-playtest/SKILL.md`): the cheap way to
+  compile, test and play-test, built on the one-line helpers in `Assets/Editor/DevTest.cs`
+  (Begin/Ready/God/Equip/Spawn/Use/Status/Clear/End). Extend DevTest instead of re-pasting setup C#.
 - Iterate in Editor Play mode. A Web build takes ~5 min and blocks the Editor; make one only
   when deploying (or for something web-only: the page template, browser quirks).
 - **Driving the Editor:** the Unity MCP bridge listens on 127.0.0.1:6400. Protocol: on connect

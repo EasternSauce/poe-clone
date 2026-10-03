@@ -28,7 +28,7 @@ namespace PoeClone.UI
 
         // The panel fills the screen but for this margin, so the tree gets all the room there is.
         private const float Margin = 20f;
-        private const float TreeExtent = 3.45f;   // tree units from the centre to the furthest passive's edge
+        private const float TreeExtent = 3.8f;    // tree units from the centre to the furthest passive's edge
 
         private static PassiveTreeUI instance;
 
@@ -239,6 +239,7 @@ namespace PoeClone.UI
                 case PassiveBranch.Fury: return new Color(0.95f, 0.60f, 0.22f);
                 case PassiveBranch.Storm: return new Color(0.30f, 0.82f, 0.90f);
                 case PassiveBranch.Zeal: return new Color(0.80f, 0.42f, 0.88f);
+                case PassiveBranch.Necromancy: return new Color(0.78f, 0.92f, 0.52f);
                 default: return UiKit.Gold;
             }
         }
@@ -421,7 +422,7 @@ namespace PoeClone.UI
         // Keeps some of the tree in the window however far it is dragged.
         private void ClampContent()
         {
-            float reach = 3.4f * UnitPixels * content.localScale.x;
+            float reach = 3.75f * UnitPixels * content.localScale.x;
             Vector2 half = viewRect.rect.size * 0.5f;
             Vector2 p = content.anchoredPosition;
             float limitX = Mathf.Max(0f, reach - half.x * 0.5f);

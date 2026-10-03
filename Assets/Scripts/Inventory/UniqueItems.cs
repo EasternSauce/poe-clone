@@ -112,6 +112,18 @@ namespace PoeClone.Inventory
                 Flavour = "Pain is a rumour. Mana is the truth.",
                 Mods = new[] { Mod(StatType.Evasion, 40), Mod(StatType.MaxMana, 60), Mod(StatType.ManaAbsorb, 20), Mod(StatType.ManaRegen, 40) }
             },
+            new Unique
+            {
+                BaseId = "grimoire", Name = "The Ossuary Codex",
+                Flavour = "Every page a name. Every name still answers.",
+                Mods = new[] { Mod(StatType.GrantDeathMark, 8), Mod(StatType.MinionLevels, 1), Mod(StatType.AdditionalSkeletons, 1), Mod(StatType.MinionLife, 25), Mod(StatType.Intelligence, 12) }
+            },
+            new Unique
+            {
+                BaseId = "bone_sceptre", Name = "Gravewarden's Rod",
+                Flavour = "The dead keep the watch now. They never sleep on it.",
+                Mods = new[] { Mod(StatType.PhysicalDamage, 9), Mod(StatType.GrantRaiseSkeletons, 6), Mod(StatType.RaiseSkeletonsLevels, 2), Mod(StatType.MinionDamage, 30), Mod(StatType.SoulBond, 2) }
+            },
         };
 
         private static readonly Dictionary<string, string> flavourByName = new Dictionary<string, string>();

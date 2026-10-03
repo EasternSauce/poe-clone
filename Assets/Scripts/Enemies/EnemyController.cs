@@ -73,6 +73,13 @@ namespace PoeClone.Enemies
 
         public State CurrentState => state;
 
+        // The player's minion it's going for instead of the player (see Minion.TargetFor), or null.
+        private Minion targetMinion;
+        private float retargetAt;
+
+        /// <summary>The minion this enemy is fighting instead of the player, or null.</summary>
+        public Minion TargetMinion => targetMinion != null && !targetMinion.IsDead ? targetMinion : null;
+
         private float chilledUntil = -1f;
 
         /// <summary>Slowed to half speed for a while (frost skills).</summary>
@@ -271,7 +278,14 @@ private void Update()
             // treated the same as no target: stop chasing/facing rather than stand there tracking a corpse.
             if (player != null && !staggered && !playerDead)
             {
-                Vector3 toPlayer = player.transform.position - transform.position;
+                // A minion nearer than the player (or a taunting golem) draws it off the player.
+                if (Time.time >= retargetAt)
+                {
+                    retargetAt = Time.time + 0.35f;
+                    targetMinion = Minion.TargetFor(transform.position, player.transform.position);
+                }
+                Minion minion = TargetMinion;
+                Vector3 toPlayer = (minion != null ? minion.transform.position : player.transform.position) - transform.position;
                 toPlayer.y = 0f;
                 float distance = toPlayer.magnitude;
 

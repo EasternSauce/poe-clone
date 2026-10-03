@@ -253,6 +253,14 @@ namespace PoeClone.Inventory
                     top.Add(Circle(0.5f, 0.56f, 0.1f));
                     break;
 
+                case ItemType.Grimoire:
+                    // A closed book: cover, spine, page edge and a clasp.
+                    add.Add(Rect(0.2f, 0.12f, 0.8f, 0.88f));
+                    sub.Add(Rect(0.72f, 0.18f, 0.76f, 0.82f));
+                    top.Add(Rect(0.2f, 0.12f, 0.28f, 0.88f));
+                    top.Add(Circle(0.5f, 0.5f, 0.1f));
+                    break;
+
                 case ItemType.Quiver:
                     // A tall tube with three fletched arrows standing out of the top.
                     add.Add(Rect(0.32f, 0.08f, 0.62f, 0.66f));

@@ -326,11 +326,12 @@ namespace PoeClone.World
             Spots["Smith"] = c + new Vector3(5.5f, 0f, -7f);
             Spots["Guard"] = c + new Vector3(33f, 0f, 4f);
 
-            // Three benches by the spawn point, side-on to the camera so the names of the things lying
+            // Four benches by the spawn point, side-on to the camera so the names of the things lying
             // on them don't overlap; a new character's first gear lies on them.
             Bench(t, c + new Vector3(-4.6f, 0f, -4.4f), 0f);
             Bench(t, c + new Vector3(4.2f, 0f, -2.6f), 0f);
             Bench(t, c + new Vector3(-5.4f, 0f, -0.8f), 0f);
+            Bench(t, c + new Vector3(5.0f, 0f, 1.0f), 0f);
         }
 
         // Where the starter gear goes: two spots along the seat of each of Haven's benches.

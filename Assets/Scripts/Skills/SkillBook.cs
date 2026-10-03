@@ -14,7 +14,12 @@ namespace PoeClone.Skills
         ChainLightning,
         IceShard,
         Teleport,
-        RaiseSkeletons
+        RaiseSkeletons,
+        DeathMark,
+        SkeletonMages,
+        SpiritWolves,
+        BoneGolem,
+        GraveRot
     }
 
     /// <summary>The element a spell belongs to, for "+1 to level of all Fire Spells" and the like.</summary>
@@ -44,6 +49,13 @@ namespace PoeClone.Skills
 
         /// <summary>A staff spell: on the staff it is the attack (left click / the aim stick).</summary>
         public bool Main => SkillGrants.IsMain(Grant);
+
+        /// <summary>
+        /// Raises minions. Its level only grows with summon levels ("+1 to level of all Summon
+        /// Skills", "+1 to level of Raise Skeletons"), not with spell levels, and its minions never
+        /// use the player's own damage stats (see <see cref="Minion"/>).
+        /// </summary>
+        public bool Summon => SkillGrants.IsSummon(Grant);
 
         /// <summary>
         /// Mana per use: 40% more each level (4.6x at level 10), so the cost keeps pace with a
@@ -141,9 +153,39 @@ namespace PoeClone.Skills
             },
             new SkillDefinition
             {
-                Id = SkillId.RaiseSkeletons, Name = "Raise Skeletons", Short = "SKL", Grant = StatType.GrantRaiseSkeletons, RollsOn = "helmets, amulets, staves",
+                Id = SkillId.RaiseSkeletons, Name = "Raise Skeletons", Short = "SKL", Grant = StatType.GrantRaiseSkeletons, RollsOn = "sceptres, grimoires, helmets",
                 Spell = true, ManaCost = 14f, Cooldown = 4f, Color = new Color(0.55f, 1f, 0.6f),
-                Description = "Raise two skeleton warriors that fight beside you for about half a minute. At most 2 at a time (+1 at levels 4, 7 and 10). Their blows grow with the skill's level, Intelligence and Spell Damage."
+                Description = "Raise two skeleton warriors that stay until they are destroyed. At most 2 (+1 at levels 7 and 12). Enemies fight them: their life and blows grow steeply with the skill's level, Minion Life and Minion Damage - without those they fall apart quickly."
+            },
+            new SkillDefinition
+            {
+                Id = SkillId.DeathMark, Name = "Death Mark", Short = "DM", Grant = StatType.GrantDeathMark, RollsOn = "grimoires",
+                Spell = true, BaseDamage = 3f, ManaCost = 2.5f, Cooldown = 0.8f, Color = new Color(0.55f, 1f, 0.45f),
+                Description = "A grimoire's attack: a bolt of grave-light that marks the enemy it strikes. Your minions rush the marked enemy and deal 30% more damage to it (more with Death Mark Effect). The bolt itself barely hurts."
+            },
+            new SkillDefinition
+            {
+                Id = SkillId.SkeletonMages, Name = "Skeleton Mages", Short = "SKM", Grant = StatType.GrantSkeletonMages, RollsOn = "sceptres, grimoires, gloves",
+                Spell = true, ManaCost = 18f, Cooldown = 5f, Color = new Color(0.5f, 0.85f, 1f),
+                Description = "Raise a skeleton mage that hangs back and hurls bolts. At most 1 (+1 at levels 8 and 13). Frail: even more than the warriors it needs Minion Life and levels to last."
+            },
+            new SkillDefinition
+            {
+                Id = SkillId.SpiritWolves, Name = "Spirit Wolves", Short = "WLF", Grant = StatType.GrantSpiritWolves, RollsOn = "sceptres, grimoires, boots, amulets",
+                Spell = true, ManaCost = 24f, Cooldown = 18f, Color = new Color(0.6f, 0.9f, 1f),
+                Description = "Call two ghostly wolves (three from level 8) that hunt for 12 seconds (+0.5s per level). Enemies can't touch them, but they don't hold anything off either."
+            },
+            new SkillDefinition
+            {
+                Id = SkillId.BoneGolem, Name = "Bone Golem", Short = "GLM", Grant = StatType.GrantBoneGolem, RollsOn = "sceptres, grimoires, body armour, belts",
+                Spell = true, ManaCost = 30f, Cooldown = 30f, Color = new Color(0.92f, 0.88f, 0.7f),
+                Description = "Raise a hulking golem of bone for 18 seconds (+1s per level) that taunts the enemies round it into attacking it. Only as sturdy as your investment in minions: an unsupported golem crumbles fast."
+            },
+            new SkillDefinition
+            {
+                Id = SkillId.GraveRot, Name = "Grave Rot", Short = "ROT", Grant = StatType.GrantGraveRot, RollsOn = "grimoires, helmets",
+                Spell = true, ManaCost = 16f, Cooldown = 6f, Color = Curse.RotColor,
+                Description = "Curse the ground where you aim: every enemy there rots for 6 seconds (+0.3s per level), dealing 20% less damage (+1% per level, to you and your minions) and taking 15% more damage from every hit (+1.5% per level)."
             },
         };
 

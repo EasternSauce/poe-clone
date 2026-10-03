@@ -354,6 +354,9 @@ namespace PoeClone.UI
                     ItemData source = skills.Source(row.Id);
                     string from = source != null && !isAttack ? " · from " + source.Name : "";
                     string timing = isAttack ? Num(skills.Cooldown(row.Id)) + "s per cast" : Num(skills.Cooldown(row.Id)) + "s cooldown";
+                    string minions = skills.MinionSummary(row.Id);
+                    if (minions != null)
+                        timing += " · " + minions;
                     row.Title.text = "<color=#" + UiKit.Hex(skill.Color) + "><b>" + skill.Name + "</b></color>  <color=#" + UiKit.Hex(UiKit.Gold) + ">Level " + level +
                                      (isAttack ? " · your attack" : "") + "</color>   <size=14><color=#" + dim + ">" +
                                      Num(skills.ManaCost(row.Id)) + " mana · " + timing + from + "</color></size>\n<size=14>" + skill.Description + "</size>";

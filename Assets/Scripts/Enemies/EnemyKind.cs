@@ -488,6 +488,36 @@ namespace PoeClone.Enemies
                 Skill = EnemySkill.Leap, SkillCooldown = 7f,
                 DropChance = 0.4f
             },
+
+            // The player's minions (see Skills.Minion): never spawned as enemies. Only their look
+            // is used here (on the player's side and for spectators); their numbers are the minion's.
+            new EnemyKind
+            {
+                Name = "Skeleton Warrior", SpawnWeight = 0f,
+                MaxHealth = 24f, Style = EnemyAttackStyle.Melee, AttackRange = 2.1f, SpeedRatio = 0.9f, Scale = 0.95f,
+                Cloth = new Color(0.62f, 0.78f, 0.62f), Skin = new Color(0.92f, 0.90f, 0.82f), Pants = new Color(0.22f, 0.30f, 0.24f), Eyes = new Color(0.45f, 1.0f, 0.5f), HideHorns = true,
+                Gear = new[] { "rusty_sword", "wooden_shield" }
+            },
+            new EnemyKind
+            {
+                Name = "Skeleton Mage", SpawnWeight = 0f,
+                MaxHealth = 14f, Style = EnemyAttackStyle.Ranged, AttackRange = 8.5f, ProjectileSpeed = 14f, SpeedRatio = 0.85f, Scale = 0.92f,
+                Cloth = new Color(0.25f, 0.32f, 0.55f), Skin = new Color(0.92f, 0.90f, 0.82f), Pants = new Color(0.16f, 0.18f, 0.30f), Eyes = new Color(0.5f, 0.85f, 1.0f), HideHorns = true,
+                StaffOrb = new Color(0.5f, 0.85f, 1.0f)
+            },
+            new EnemyKind
+            {
+                Name = "Spirit Wolf", SpawnWeight = 0f,
+                MaxHealth = 30f, Style = EnemyAttackStyle.Melee, AttackRange = 2f, SpeedRatio = 1.2f, Scale = 0.9f,
+                Body = CreatureBody.Wolf, Sounds = EnemySounds.Set.Wolf,
+                Skin = new Color(0.62f, 0.85f, 1.0f), Cloth = new Color(0.82f, 0.95f, 1.0f), Pants = new Color(0.40f, 0.65f, 0.95f), Eyes = new Color(0.85f, 1.0f, 1.0f)
+            },
+            new EnemyKind
+            {
+                Name = "Bone Golem", SpawnWeight = 0f,
+                MaxHealth = 85f, Style = EnemyAttackStyle.Melee, AttackRange = 2.6f, SpeedRatio = 0.7f, Scale = 1.55f,
+                Cloth = new Color(0.78f, 0.74f, 0.62f), Skin = new Color(0.94f, 0.91f, 0.80f), Pants = new Color(0.55f, 0.50f, 0.40f), Eyes = new Color(0.45f, 1.0f, 0.5f)
+            },
         };
 
         public const int SlimelingIndex = 20;

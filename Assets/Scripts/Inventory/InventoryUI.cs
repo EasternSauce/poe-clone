@@ -1456,6 +1456,10 @@ private Vector2 CellSize(int w, int h)
                 handNote = "Two-handed: nothing in the off hand";
             else if (item.Type == ItemType.Quiver)
                 handNote = "Off hand, worn with a bow";
+            else if (item.Type == ItemType.Grimoire)
+                handNote = "Off hand, with a one-handed weapon or none";
+            else if (item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Sceptre)
+                handNote = "Its blows put Death Mark on what they strike";
             if (handNote != null)
             {
                 sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append("><size=14>").Append(handNote).Append("</size></color>");
@@ -1475,7 +1479,7 @@ private Vector2 CellSize(int w, int h)
                     if (!SkillGrants.IsGrant(m.Stat))
                         continue;
                     string line = StatFormatter.ItemLine(m);
-                    if (item.Type == ItemType.Weapon && SkillGrants.IsMain(m.Stat) && !attackTaken)
+                    if ((item.Type == ItemType.Weapon || item.Type == ItemType.Grimoire) && SkillGrants.IsMain(m.Stat) && !attackTaken)
                     {
                         attackTaken = true;
                         line += " <size=14>(your attack)</size>";

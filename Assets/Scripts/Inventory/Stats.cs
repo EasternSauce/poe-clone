@@ -81,7 +81,31 @@ namespace PoeClone.Inventory
         Stormblade,                 // % chance for an attack critical strike to arc lightning to nearby enemies
 
         GrantTeleport,              // a skill grant like the ones above (added later, so it sits here)
-        GrantRaiseSkeletons
+        GrantRaiseSkeletons,
+
+        // The summoner (see Skills.Minion): a grimoire's Death Mark, the summons, and what makes
+        // minions stronger. Minions only care about these minion stats, never the player's own
+        // damage stats, so a summoner build has to commit to them: without them minions are
+        // flimsy helpers, not a wall to hide behind.
+        GrantDeathMark,             // a grimoire's attack: marks an enemy for the minions
+        GrantSkeletonMages,
+        GrantSpiritWolves,
+        GrantBoneGolem,
+        MinionDamage,               // % increased minion damage
+        MinionLife,                 // % increased minion life
+        MinionSpeed,                // % increased minion attack and movement speed
+        MinionLevels,               // +N to the level of every summon skill
+        RaiseSkeletonsLevels,       // +N to the level of Raise Skeletons
+        SkeletonMagesLevels,
+        SpiritWolvesLevels,
+        BoneGolemLevels,
+        AdditionalSkeletons,        // +N to the most Skeleton Warriors and Skeleton Mages each
+        MarkEffect,                 // % increased effect of Death Mark (the extra damage minions deal to it)
+        MinionDuration,             // % increased duration of Spirit Wolves and the Bone Golem
+        SoulBond,                   // % of minion damage dealt returned to the player as life
+        DeathsHerald,               // 1: a marked enemy that dies bursts and passes the mark on
+        BoneArmour,                 // % less damage taken by minions
+        GrantGraveRot               // a grimoire's curse (a bar skill)
     }
 
     /// <summary>
@@ -98,7 +122,31 @@ namespace PoeClone.Inventory
 
         public static bool IsGrant(StatType stat)
         {
-            return (stat >= StatType.GrantCleave && stat <= StatType.GrantIceShard) || stat == StatType.GrantTeleport || stat == StatType.GrantRaiseSkeletons;
+            return (stat >= StatType.GrantCleave && stat <= StatType.GrantIceShard) || stat == StatType.GrantTeleport ||
+                   stat == StatType.GrantRaiseSkeletons || (stat >= StatType.GrantDeathMark && stat <= StatType.GrantBoneGolem) ||
+                   stat == StatType.GrantGraveRot;
+        }
+
+        /// <summary>The attack spells a grimoire carries (one always rolls on every grimoire).</summary>
+        public static readonly StatType[] GrimoireMain = { StatType.GrantDeathMark };
+
+        /// <summary>The summon skills (bar skills that raise minions).</summary>
+        public static bool IsSummon(StatType stat)
+        {
+            return stat == StatType.GrantRaiseSkeletons || (stat >= StatType.GrantSkeletonMages && stat <= StatType.GrantBoneGolem);
+        }
+
+        /// <summary>The "+N to level of this summon" stat for a summon grant (null for anything else).</summary>
+        public static StatType? SummonLevelStat(StatType grant)
+        {
+            switch (grant)
+            {
+                case StatType.GrantRaiseSkeletons: return StatType.RaiseSkeletonsLevels;
+                case StatType.GrantSkeletonMages: return StatType.SkeletonMagesLevels;
+                case StatType.GrantSpiritWolves: return StatType.SpiritWolvesLevels;
+                case StatType.GrantBoneGolem: return StatType.BoneGolemLevels;
+                default: return null;
+            }
         }
 
         /// <summary>
@@ -107,7 +155,7 @@ namespace PoeClone.Inventory
         /// </summary>
         public static bool IsMain(StatType stat)
         {
-            return Array.IndexOf(StaffMain, stat) >= 0;
+            return Array.IndexOf(StaffMain, stat) >= 0 || Array.IndexOf(GrimoireMain, stat) >= 0;
         }
 
         public static string SkillName(StatType grant)
@@ -123,6 +171,11 @@ namespace PoeClone.Inventory
                 case StatType.GrantIceShard: return "Ice Shard";
                 case StatType.GrantTeleport: return "Teleport";
                 case StatType.GrantRaiseSkeletons: return "Raise Skeletons";
+                case StatType.GrantDeathMark: return "Death Mark";
+                case StatType.GrantSkeletonMages: return "Skeleton Mages";
+                case StatType.GrantSpiritWolves: return "Spirit Wolves";
+                case StatType.GrantBoneGolem: return "Bone Golem";
+                case StatType.GrantGraveRot: return "Grave Rot";
                 default: return grant.ToString();
             }
         }
@@ -361,6 +414,20 @@ namespace PoeClone.Inventory
                 case StatType.Shatter: return "Shatter";
                 case StatType.SecondWind: return "Second Wind";
                 case StatType.Stormblade: return "Stormblade";
+                case StatType.MinionDamage: return "Minion Damage";
+                case StatType.MinionLife: return "Minion Life";
+                case StatType.MinionSpeed: return "Minion Speed";
+                case StatType.MinionLevels: return "Summon Levels";
+                case StatType.RaiseSkeletonsLevels: return "Raise Skeletons Levels";
+                case StatType.SkeletonMagesLevels: return "Skeleton Mages Levels";
+                case StatType.SpiritWolvesLevels: return "Spirit Wolves Levels";
+                case StatType.BoneGolemLevels: return "Bone Golem Levels";
+                case StatType.AdditionalSkeletons: return "Extra Skeletons";
+                case StatType.MarkEffect: return "Death Mark Effect";
+                case StatType.MinionDuration: return "Minion Duration";
+                case StatType.SoulBond: return "Soul Bond";
+                case StatType.DeathsHerald: return "Death's Herald";
+                case StatType.BoneArmour: return "Minion Damage Taken";
                 default:
                     if (SkillGrants.IsGrant(stat))
                         return SkillGrants.SkillName(stat);
@@ -412,6 +479,13 @@ namespace PoeClone.Inventory
                 case StatType.ExplodeOnKill:
                 case StatType.Shatter:
                 case StatType.Stormblade:
+                case StatType.MinionDamage:
+                case StatType.MinionLife:
+                case StatType.MinionSpeed:
+                case StatType.MarkEffect:
+                case StatType.MinionDuration:
+                case StatType.SoulBond:
+                case StatType.BoneArmour:
                     return true;
                 default:
                     return false;
@@ -487,6 +561,20 @@ namespace PoeClone.Inventory
                 case StatType.Shatter: return n + "% chance for Chilled enemies you kill to Shatter, dealing Cold damage and chilling those nearby";
                 case StatType.SecondWind: return "Rejuvenate also restores a third of your Mana and grants Onslaught";
                 case StatType.Stormblade: return n + "% chance for Attack Critical Strikes to arc Lightning to 3 nearby enemies";
+                case StatType.MinionDamage: return Increased(m, "Minion Damage");
+                case StatType.MinionLife: return Increased(m, "Minion Life");
+                case StatType.MinionSpeed: return Increased(m, "Minion Attack and Movement Speed");
+                case StatType.MinionLevels: return sign + n + " to Level of all Summon Skills";
+                case StatType.RaiseSkeletonsLevels: return sign + n + " to Level of Raise Skeletons";
+                case StatType.SkeletonMagesLevels: return sign + n + " to Level of Skeleton Mages";
+                case StatType.SpiritWolvesLevels: return sign + n + " to Level of Spirit Wolves";
+                case StatType.BoneGolemLevels: return sign + n + " to Level of Bone Golem";
+                case StatType.AdditionalSkeletons: return sign + n + " to maximum Skeleton Warriors and Skeleton Mages";
+                case StatType.MarkEffect: return Increased(m, "effect of Death Mark");
+                case StatType.MinionDuration: return Increased(m, "duration of Spirit Wolves and the Bone Golem");
+                case StatType.SoulBond: return n + "% of Minion Damage is returned to you as Life";
+                case StatType.DeathsHerald: return "A Marked enemy that dies bursts for a fifth of its life, and the Mark leaps to the nearest enemy";
+                case StatType.BoneArmour: return "Minions take " + n + "% " + (m.Value < 0f ? "more" : "less") + " damage";
                 default:
                     if (SkillGrants.IsGrant(m.Stat))
                         return "Grants Level " + n + " " + SkillGrants.SkillName(m.Stat);

@@ -15,6 +15,9 @@ namespace PoeClone.UI
         [SerializeField] private float barHeight = 7f;
 
         private EnemyHealth health;
+
+        /// <summary>One of the player's minions (a spectator's copy of it): green, not red.</summary>
+        public bool Friendly { get; set; }
         private bool everDamaged;
         private static Texture2D pixel;
 
@@ -68,7 +71,7 @@ namespace PoeClone.UI
 
             float fraction = health.MaxHealth > 0f ? health.CurrentHealth / health.MaxHealth : 0f;
 
-            DrawBar(new Rect(x, y, width, height), fraction, new Color(0.75f, 0.15f, 0.15f));
+            DrawBar(new Rect(x, y, width, height), fraction, Friendly ? new Color(0.3f, 0.85f, 0.35f) : new Color(0.75f, 0.15f, 0.15f));
         }
 
         private static void DrawBar(Rect rect, float fraction, Color fillColor)

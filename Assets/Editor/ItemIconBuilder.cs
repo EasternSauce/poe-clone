@@ -66,6 +66,7 @@ namespace PoeClone.EditorTools
 
             MakeAmulet();
             VarietyIcons();
+            SummonerIcons();
 
             AssetDatabase.Refresh();
             Debug.Log("ItemIconBuilder: icons written to " + OutDir);
@@ -89,6 +90,125 @@ namespace PoeClone.EditorTools
             VarietyIcons();
             AssetDatabase.Refresh();
             Debug.Log("ItemIconBuilder: variety icons written to " + OutDir);
+        }
+
+        /// <summary>Just the summoner's sceptre and grimoire.</summary>
+        [MenuItem("PoeClone/Build Summoner Icons")]
+        public static void BuildSummonerIcons()
+        {
+            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), OutDir));
+            SummonerIcons();
+            AssetDatabase.Refresh();
+            Debug.Log("ItemIconBuilder: summoner icons written to " + OutDir);
+        }
+
+        // The sceptre is the wand art turned to old bone (its green gem kept); the grimoire is painted.
+        private static void SummonerIcons()
+        {
+            Make("bone_sceptre", "Weapons/512x512/magic_wand_03.png", 1, 3, b => Bone(b), 45f);
+            MakeGrimoire();
+        }
+
+        // Everything but the green gem takes on a warm, aged-bone colour.
+        private static Bitmap Bone(Bitmap b)
+        {
+            Color bone = new Color(1.0f, 0.90f, 0.72f);
+            for (int i = 0; i < b.P.Length; i++)
+            {
+                Color c = b.P[i];
+                if (c.a <= 0f)
+                    continue;
+                bool gem = c.g > c.r * 1.2f && c.g > c.b * 1.15f;
+                if (gem)
+                    continue;
+                float a = c.a;
+                c = new Color(c.r * bone.r, c.g * bone.g, c.b * bone.b);
+                c.a = a;
+                b.P[i] = c;
+            }
+            return b;
+        }
+
+        // A thick tome seen from the front: dark leather cover with a raised spine, bone-white page
+        // edges along the side and bottom, gold corners and clasp, and a green gem in a bone sigil.
+        private static void MakeGrimoire()
+        {
+            const int w = 400;
+            const int h = 440;
+            Bitmap canvas = new Bitmap(w, h);
+            const float left = 60f, right = 340f, bottom = 40f, top = 400f;
+            Vector2 light = new Vector2(-0.6f, 0.8f).normalized;
+
+            // Pages showing under and beside the cover.
+            for (int y = (int)bottom - 18; y < (int)top - 10; y++)
+            {
+                for (int x = (int)left + 20; x < (int)right + 16; x++)
+                {
+                    float stripe = 0.86f + 0.14f * Mathf.Sin(y * 1.3f);
+                    Color col = new Color(0.93f, 0.89f, 0.78f) * stripe;
+                    col.a = 1f;
+                    canvas.P[y * w + x] = col;
+                }
+            }
+
+            for (int y = (int)bottom; y < (int)top; y++)
+            {
+                for (int x = (int)left; x < (int)right; x++)
+                {
+                    float u = (x - left) / (right - left);
+                    float v = (y - bottom) / (top - bottom);
+                    float edge = Mathf.Min(Mathf.Min(u, 1f - u), Mathf.Min(v, 1f - v));
+                    float lit = Mathf.Clamp01(0.55f + 0.5f * ((u - 0.5f) * light.x + (v - 0.5f) * light.y));
+                    float grain = 0.85f + 0.3f * Fbm(x * 0.05f, y * 0.05f, 11);
+                    Color col = Color.Lerp(new Color(0.16f, 0.08f, 0.10f), new Color(0.45f, 0.22f, 0.24f), lit) * grain;
+
+                    // Raised spine on the left, with gold bands across it.
+                    if (u < 0.12f)
+                    {
+                        col = Color.Lerp(new Color(0.12f, 0.06f, 0.07f), new Color(0.38f, 0.18f, 0.2f), Mathf.Sin(u / 0.12f * Mathf.PI)) * grain;
+                        if (Mathf.Abs(v - 0.2f) < 0.025f || Mathf.Abs(v - 0.8f) < 0.025f)
+                            col = Color.Lerp(new Color(0.45f, 0.32f, 0.08f), new Color(0.98f, 0.82f, 0.40f), lit);
+                    }
+
+                    // A tooled border.
+                    if (edge > 0.06f && edge < 0.075f && u > 0.12f)
+                        col = new Color(0.62f, 0.46f, 0.22f) * (0.8f + 0.3f * lit);
+
+                    // Gold corners.
+                    bool corner = (u > 0.86f || u < 0.2f && u > 0.12f) && (v > 0.88f || v < 0.12f) && u > 0.12f;
+                    if (corner)
+                        col = Color.Lerp(new Color(0.45f, 0.32f, 0.08f), new Color(0.98f, 0.82f, 0.40f), lit);
+
+                    // Clasp on the right edge.
+                    if (u > 0.93f && Mathf.Abs(v - 0.5f) < 0.07f)
+                        col = Color.Lerp(new Color(0.45f, 0.32f, 0.08f), new Color(0.98f, 0.82f, 0.40f), lit);
+
+                    // A bone sigil (a ring) with a green gem in the middle.
+                    float dx = (u - 0.56f) * (right - left);
+                    float dy = (v - 0.52f) * (top - bottom);
+                    float r = Mathf.Sqrt(dx * dx + dy * dy);
+                    if (r > 52f && r < 66f)
+                        col = Color.Lerp(new Color(0.55f, 0.50f, 0.40f), new Color(0.96f, 0.92f, 0.80f), lit);
+                    for (int k = 0; k < 4; k++)
+                    {
+                        float a = k * Mathf.PI * 0.5f + Mathf.PI * 0.25f;
+                        float px = Mathf.Cos(a) * 80f, py = Mathf.Sin(a) * 80f;
+                        if ((dx - px) * (dx - px) + (dy - py) * (dy - py) < 12f * 12f)
+                            col = Color.Lerp(new Color(0.55f, 0.50f, 0.40f), new Color(0.96f, 0.92f, 0.80f), lit);
+                    }
+                    if (r < 34f)
+                    {
+                        float shine = Mathf.Clamp01(1f - Vector2.Distance(new Vector2(dx, dy), new Vector2(-10f, 12f)) / 34f);
+                        col = Color.Lerp(new Color(0.08f, 0.42f, 0.18f), new Color(0.65f, 1.0f, 0.7f), shine);
+                    }
+
+                    col.a = 1f;
+                    canvas.P[y * w + x] = col;
+                }
+            }
+
+            Bitmap b = Rotate(canvas, -10f);
+            Finish("grimoire", Trim(b), 2, 2);
         }
 
         // Heavy art for the Strength lines, light (cloth) art for the Intelligence lines, and the

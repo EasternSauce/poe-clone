@@ -297,7 +297,7 @@ namespace PoeClone.UI
 
         // Oda deals in jewellery, belts, quivers and light gear; Bram in weapons, shields and armour.
         private static bool IsMerchantGoods(ItemType type) =>
-            type == ItemType.Ring || type == ItemType.Amulet || type == ItemType.Belt || type == ItemType.Quiver ||
+            type == ItemType.Ring || type == ItemType.Amulet || type == ItemType.Belt || type == ItemType.Quiver || type == ItemType.Grimoire ||
             type == ItemType.Gloves || type == ItemType.Boots;
 
         private static bool IsSmithGoods(ItemType type) =>
