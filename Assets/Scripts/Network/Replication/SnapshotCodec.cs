@@ -94,6 +94,39 @@ namespace PoeClone.Network.Replication
                 sb.Append(']');
             }
 
+            if (s.sc != null && s.sc.Length > 0)
+            {
+                sb.Append(",\"sc\":[");
+                for (int k = 0; k < s.sc.Length; k++)
+                {
+                    SkillCastState c = s.sc[k];
+                    if (k > 0) sb.Append(',');
+                    sb.Append("{\"n\":").Append(c.n.ToString(CultureInfo.InvariantCulture));
+                    AppendInt(sb, "s", c.s);
+                    AppendInt(sb, "lv", c.lv);
+                    AppendFloat(sb, "x", c.x, 2);
+                    AppendFloat(sb, "y", c.y, 2);
+                    AppendFloat(sb, "z", c.z, 2);
+                    AppendFloat(sb, "dx", c.dx, 3);
+                    AppendFloat(sb, "dz", c.dz, 3);
+                    AppendFloat(sb, "sz", c.sz, 2);
+                    AppendInt(sb, "c", c.c);
+                    if (c.pts != null && c.pts.Length > 0)
+                    {
+                        sb.Append(",\"pts\":[");
+                        for (int p = 0; p < c.pts.Length; p++)
+                        {
+                            if (p > 0) sb.Append(',');
+                            float v = float.IsNaN(c.pts[p]) || float.IsInfinity(c.pts[p]) ? 0f : c.pts[p];
+                            sb.Append(v.ToString("0.##", CultureInfo.InvariantCulture));
+                        }
+                        sb.Append(']');
+                    }
+                    sb.Append('}');
+                }
+                sb.Append(']');
+            }
+
             if (s.ui != null)
                 AppendUi(sb, s.ui);
 
@@ -154,6 +187,8 @@ namespace PoeClone.Network.Replication
                 s.e = new EntityState[0];
             if (s.l == null)
                 s.l = new LootState[0];
+            if (s.sc == null)
+                s.sc = new SkillCastState[0];
 
             return s;
         }

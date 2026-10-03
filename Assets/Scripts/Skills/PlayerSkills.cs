@@ -41,6 +41,107 @@ namespace PoeClone.Skills
         /// <summary>Slots, gear-granted skills or their levels changed (the bars redraw).</summary>
         public event Action Changed;
 
+        /// <summary>
+        /// One use of a skill, as spectators need it to draw the same effect (see
+        /// <see cref="PlayVisual"/>): where, which way, how big, and Chain Lightning's arc.
+        /// </summary>
+        public struct CastRecord
+        {
+            public int Number;
+            public SkillId Skill;
+            public int Level;
+            public Vector3 At;
+            public Vector3 Facing;
+            public float Size;
+            public int Count;
+            public Vector3[] Points;
+            public float Time;
+        }
+
+        private const int RecentCastCount = 8;
+        private readonly CastRecord[] recentCasts = new CastRecord[RecentCastCount];
+
+        /// <summary>Casts made so far (counts up; the newest has this number).</summary>
+        public int CastCount { get; private set; }
+
+        /// <summary>The latest casts, oldest first, made within the last <paramref name="seconds"/>.</summary>
+        public List<CastRecord> RecentCasts(float seconds)
+        {
+            var list = new List<CastRecord>();
+            for (int n = Mathf.Max(1, CastCount - RecentCastCount + 1); n <= CastCount; n++)
+            {
+                CastRecord r = recentCasts[n % RecentCastCount];
+                if (r.Number == n && Time.time - r.Time <= seconds)
+                    list.Add(r);
+            }
+            return list;
+        }
+
+        private void Record(SkillDefinition skill, int level, float size = 0f, int count = 0, Vector3[] points = null)
+        {
+            CastCount++;
+            recentCasts[CastCount % RecentCastCount] = new CastRecord
+            {
+                Number = CastCount,
+                Skill = skill.Id,
+                Level = level,
+                At = transform.position,
+                Facing = transform.forward,
+                Size = size,
+                Count = count,
+                Points = points,
+                Time = Time.time
+            };
+        }
+
+        /// <summary>
+        /// Draws a cast's effect without any of its gameplay: harmless bolts and shards, the rings,
+        /// the glow, the lightning. For a spectator's copy of the player, whose own skills are off.
+        /// </summary>
+        public static void PlayVisual(CastRecord cast, Transform caster)
+        {
+            SkillDefinition skill = SkillBook.Get(cast.Skill);
+            Vector3 facing = cast.Facing;
+            facing.y = 0f;
+            if (facing.sqrMagnitude < 0.0001f)
+                facing = caster.forward;
+            facing.Normalize();
+
+            switch (cast.Skill)
+            {
+                case SkillId.FireBolt:
+                    foreach (Vector3 direction in HitEffects.Spread(facing, Mathf.Max(1, cast.Count), 12f))
+                        PlayerArrow.LaunchBolt(caster, BoltRange, 0f, skill.Color, cast.Size, direction, harmless: true);
+                    break;
+
+                case SkillId.IceShard:
+                    foreach (Vector3 direction in HitEffects.Spread(facing, Mathf.Max(1, cast.Count), 7f))
+                        PlayerArrow.LaunchShard(caster, ShardRange, 0f, skill.Color, 0f, direction, harmless: true);
+                    break;
+
+                case SkillId.Dash:
+                    SkillEffects.Shockwave(cast.At, 1.2f, skill.Color, 0.25f);
+                    break;
+
+                case SkillId.FrostNova:
+                case SkillId.Cleave:
+                    SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, cast.Skill == SkillId.Cleave ? 0.3f : 0.4f);
+                    break;
+
+                case SkillId.Rejuvenate:
+                    SkillEffects.Rise(caster, skill.Color);
+                    break;
+
+                case SkillId.ChainLightning:
+                    if (cast.Points != null)
+                    {
+                        for (int k = 0; k + 1 < cast.Points.Length; k++)
+                            SkillEffects.Arc(cast.Points[k], cast.Points[k + 1], skill.Color);
+                    }
+                    break;
+            }
+        }
+
         public static string KeyLabel(int slot)
         {
             return slot >= 0 && slot < SlotLabels.Length ? SlotLabels[slot] : "?";
@@ -448,6 +549,7 @@ namespace PoeClone.Skills
                     }
                     foreach (Vector3 direction in HitEffects.Spread(transform.forward, 1 + extraProjectiles, 12f))
                         PlayerArrow.LaunchBolt(transform, BoltRange, damage, skill.Color, 2.2f * area, direction);
+                    Record(skill, level, 2.2f * area, 1 + extraProjectiles);
                     break;
 
                 case SkillId.IceShard:
@@ -459,6 +561,7 @@ namespace PoeClone.Skills
                     }
                     foreach (Vector3 direction in HitEffects.Spread(transform.forward, 3 + extraProjectiles, 7f))
                         PlayerArrow.LaunchShard(transform, ShardRange, damage * 0.45f, skill.Color, 1.5f + 0.1f * level, direction);
+                    Record(skill, level, 0f, 3 + extraProjectiles);
                     break;
 
                 case SkillId.Dash:
@@ -466,12 +569,14 @@ namespace PoeClone.Skills
                     if (dir.sqrMagnitude < 0.01f)
                         dir = AimDirection();
                     SkillEffects.Shockwave(transform.position, 1.2f, skill.Color, 0.25f);
+                    Record(skill, level);
                     controller.Dash(dir, 7f + 0.35f * (level - 1), 0.18f);
                     break;
 
                 case SkillId.FrostNova:
                     float novaRadius = 5f * (1f + 0.03f * (level - 1)) * area;
                     SkillEffects.Shockwave(transform.position, novaRadius, skill.Color, 0.4f);
+                    Record(skill, level, novaRadius);
                     foreach (EnemyHealth enemy in EnemiesWithin(transform.position, novaRadius))
                     {
                         Hit(enemy, damage, CombatText.ColdColor, attack: false);
@@ -484,6 +589,7 @@ namespace PoeClone.Skills
                 case SkillId.Rejuvenate:
                     stats.HealOverTime(stats.MaxHealth * (0.35f + 0.025f * (level - 1)), 3f);
                     SkillEffects.Rise(transform, skill.Color);
+                    Record(skill, level);
                     break;
 
                 case SkillId.ChainLightning:
@@ -512,6 +618,7 @@ namespace PoeClone.Skills
             float reach = Mathf.Max(2.6f, CharacterAttackAnimator.IsRanged(weapon) ? 2.6f : (CharacterAttackAnimator.AttackRange(weapon) + 0.6f) * melee) *
                           DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
             SkillEffects.Shockwave(transform.position, reach, skill.Color, 0.3f);
+            Record(skill, level, reach);
 
             float damage = WeaponDamage() * (1.4f + 0.1f * (level - 1));
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
@@ -548,6 +655,7 @@ namespace PoeClone.Skills
             {
                 // Nothing to strike: a short fizzle so the cast doesn't feel swallowed.
                 SkillEffects.Arc(from, from + transform.forward * 3f, skill.Color);
+                Record(skill, level, 0f, 0, new[] { from, from + transform.forward * 3f });
                 return;
             }
 
@@ -556,10 +664,12 @@ namespace PoeClone.Skills
                 attackAnimator.PlayAttack(WeaponType.Unarmed);
 
             int jumps = 3 + (level >= 5 ? 1 : 0) + (level >= 9 ? 1 : 0) + Mathf.Max(0, Mathf.RoundToInt(Stat(StatType.AdditionalChains)));
+            var arc = new List<Vector3> { from };
             for (int jump = 0; jump < jumps && target != null; jump++)
             {
                 Vector3 to = target.transform.position + Vector3.up * 0.4f * target.transform.localScale.y;
                 SkillEffects.Arc(from, to, skill.Color);
+                arc.Add(to);
                 Hit(target, damage, CombatText.LightningColor, attack: false);
                 struck.Add(target);
 
@@ -567,6 +677,7 @@ namespace PoeClone.Skills
                 from = to;
                 target = Nearest(target.transform.position, ChainJump, struck);
             }
+            Record(skill, level, 0f, 0, arc.ToArray());
         }
 
         private void Hit(EnemyHealth enemy, float damage, Color color, bool attack)

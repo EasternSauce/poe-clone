@@ -31,6 +31,11 @@ namespace PoeClone.Enemies
         private Stagger stagger;
 
         private float cooldownTimer;
+        private BossAbilities boss;
+
+        // True from this script starting a swing to its strike: a boss's own moves play swings on
+        // the same animator, and those strikes are theirs to resolve, not a plain blow's.
+        private bool swingPending;
 
         private void Awake()
         {
@@ -83,6 +88,7 @@ namespace PoeClone.Enemies
         {
             playerStats = FindAnyObjectByType<PlayerStats>();
             controller = GetComponent<EnemyController>();
+            boss = GetComponent<BossAbilities>();
             attackAnimator.StrikeFrame += OnStrikeFrame;
             attackAnimator.AttackCancelled += OnAttackCancelled;
         }
@@ -114,14 +120,23 @@ namespace PoeClone.Enemies
             if (cooldownTimer > 0f || attackAnimator.IsAttacking || stagger.IsStaggered)
                 return;
 
+            if (boss == null)
+                boss = GetComponent<BossAbilities>();
+            if (boss != null && boss.Busy)
+                return;
+
             if (DistanceToPlayer() > attackRange)
                 return;
 
             FacePlayer();
             attackAnimator.PlaybackSpeed = controller != null ? controller.AttackSpeedMultiplier : 1f;
-            // Archers draw their bow like the player does; everyone else swipes.
+            // Archers draw their bow like the player does; armed brutes swing their weapon;
+            // everyone else swipes.
+            swingPending = true;
             if (kind.Bow)
                 attackAnimator.PlayAttack(WeaponType.Bow);
+            else if (kind.Weapon != WeaponType.Unarmed && !kind.IsCreature)
+                attackAnimator.PlayAttack(kind.Weapon);
             else if (kind.IsCreature)
                 attackAnimator.PlayCreatureAttack(kind.IsRanged);
             else
@@ -134,11 +149,17 @@ namespace PoeClone.Enemies
         // Same rule as the player: a swing cut short by a stagger refunds its cooldown.
         private void OnAttackCancelled()
         {
+            if (!swingPending)
+                return;
+            swingPending = false;
             cooldownTimer = 0f;
         }
 
         private void OnStrikeFrame()
         {
+            if (!swingPending)
+                return;
+            swingPending = false;
             if (playerStats == null || playerStats.IsDead)
                 return;
 
@@ -151,6 +172,14 @@ namespace PoeClone.Enemies
                 else
                     EnemyProjectile.Launch(from, playerStats, kind, RollDamage());
                 return;
+            }
+
+            // A great weapon comes down with weight: dust where it lands, and a jolt.
+            if (SlotRules.IsTwoHandedMelee(kind.Weapon))
+            {
+                Vector3 impact = transform.position + transform.forward * attackRange * 0.75f;
+                Skills.SkillEffects.Shockwave(impact, 1.2f * transform.localScale.x, new Color(0.72f, 0.64f, 0.5f, 1f), 0.35f);
+                CameraSystem.CameraFollow.Shake(0.1f, 0.2f);
             }
 
             if (DistanceToPlayer() <= attackRange * ReachSlack)

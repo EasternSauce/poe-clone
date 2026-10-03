@@ -67,6 +67,7 @@ namespace PoeClone.Network
         private Transform puppetParent;
 
         private EntityState playerApplied;
+        private int castsApplied = -1;   // the player's newest skill cast drawn so far (-1: not joined yet)
         private bool playerHasPose;
         private Vector3 playerLastPosition;
         private int appliedLevel;
@@ -252,6 +253,7 @@ namespace PoeClone.Network
                 CharacterDeathAnimator.ResetOn(playerStats.transform);
 
             playerApplied = null;
+            castsApplied = -1;
             playerHasPose = false;
             appliedLevel = 0;
             appliedEquipment = null;
@@ -314,6 +316,7 @@ namespace PoeClone.Network
                 ApplyEquipment(s.eq); // a player without gear messages: worn gear by look only
             ApplyUi(s.ui);
             ApplyPlayerEvents(s.p);
+            ApplyCasts(s.sc, s.p);
 
             for (int k = 0; k < s.e.Length; k++)
             {
@@ -361,6 +364,54 @@ namespace PoeClone.Network
                     Destroy(loot[id].gameObject);
                 loot.Remove(id);
             }
+        }
+
+        // The player's skills: each new cast's look (harmless bolts, rings, lightning) drawn on this
+        // tab's copy of the player. Joining mid-fight skips the casts already under way.
+        private void ApplyCasts(SkillCastState[] casts, EntityState p)
+        {
+            if (casts == null || playerStats == null)
+                return;
+
+            int newest = castsApplied;
+            foreach (SkillCastState c in casts)
+            {
+                if (c != null && c.n > newest)
+                    newest = c.n;
+            }
+
+            if (castsApplied < 0 || (p != null && p.d != 0))
+            {
+                castsApplied = Mathf.Max(0, Mathf.Max(castsApplied, newest));
+                return;
+            }
+
+            foreach (SkillCastState c in casts)
+            {
+                if (c == null || c.n <= castsApplied)
+                    continue;
+
+                Vector3[] points = null;
+                if (c.pts != null && c.pts.Length >= 6)
+                {
+                    points = new Vector3[c.pts.Length / 3];
+                    for (int k = 0; k < points.Length; k++)
+                        points[k] = new Vector3(c.pts[k * 3], c.pts[k * 3 + 1], c.pts[k * 3 + 2]);
+                }
+
+                Skills.PlayerSkills.PlayVisual(new Skills.PlayerSkills.CastRecord
+                {
+                    Number = c.n,
+                    Skill = (Skills.SkillId)c.s,
+                    Level = c.lv,
+                    At = new Vector3(c.x, c.y, c.z),
+                    Facing = new Vector3(c.dx, 0f, c.dz),
+                    Size = c.sz,
+                    Count = c.c,
+                    Points = points
+                }, playerStats.transform);
+            }
+            castsApplied = newest;
         }
 
         private void OnPlayerStrike()

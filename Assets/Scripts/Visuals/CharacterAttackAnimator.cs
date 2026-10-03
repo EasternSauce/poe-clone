@@ -70,6 +70,13 @@ namespace PoeClone.Visuals
             public bool UsesOffArm;
             public Pose OffWindup;
             public Pose OffStrike;
+
+            // Both hands on one weapon: the off arm copies the weapon arm, turned in so the hands
+            // meet on the grip (see GripPose).
+            public bool TwoHandGrip;
+
+            // Half-angle of the cone the blow reaches (0: the attacker's own default).
+            public float ConeHalfAngle;
         }
 
         private static readonly AttackProfile UnarmedProfile = new AttackProfile
@@ -171,6 +178,60 @@ namespace PoeClone.Visuals
             Range = 1.7f
         };
 
+        // The great weapons: both hands on the grip, slower and heavier than their one-handed
+        // cousins, with more reach. The greatsword sweeps wide and flat across the front; the
+        // greataxe chops down from high over the head; the maul is hauled up behind the head and
+        // slammed into the ground (its strike is late: the whole body goes into it).
+        // Elbows stay nearly straight: the weapon models already point forward of the hand, so a
+        // bent elbow would tip the head down behind the back in the wind-up.
+        private static readonly AttackProfile GreatswordProfile = new AttackProfile
+        {
+            Duration = 0.8f,
+            StrikeTime = 0.5f,
+            WindupOffset = new Pose(-35f, -95f, -30f, 0f),
+            StrikeOffset = new Pose(-45f, 70f, 35f, 0f),
+            BaseAttacksPerSecond = 0.85f,
+            Range = 2.9f,
+            TwoHandGrip = true,
+            ConeHalfAngle = 70f
+        };
+
+        private static readonly AttackProfile GreatswordBackhandProfile = new AttackProfile
+        {
+            Duration = GreatswordProfile.Duration,
+            StrikeTime = GreatswordProfile.StrikeTime,
+            WindupOffset = new Pose(-35f, 80f, 30f, 0f),
+            StrikeOffset = new Pose(-45f, -70f, -35f, 0f),
+            BaseAttacksPerSecond = GreatswordProfile.BaseAttacksPerSecond,
+            Range = GreatswordProfile.Range,
+            TwoHandGrip = true,
+            ConeHalfAngle = GreatswordProfile.ConeHalfAngle
+        };
+
+        private static readonly AttackProfile GreataxeProfile = new AttackProfile
+        {
+            Duration = 0.85f,
+            StrikeTime = 0.55f,
+            WindupOffset = new Pose(-150f, -10f, 0f, 10f),
+            StrikeOffset = new Pose(-8f, 5f, 0f, 0f),
+            BaseAttacksPerSecond = 0.8f,
+            Range = 2.8f,
+            TwoHandGrip = true,
+            ConeHalfAngle = 45f
+        };
+
+        private static readonly AttackProfile MaulProfile = new AttackProfile
+        {
+            Duration = 0.95f,
+            StrikeTime = 0.62f,
+            WindupOffset = new Pose(-160f, 0f, 0f, 0f),
+            StrikeOffset = new Pose(-2f, 0f, 0f, 0f),
+            BaseAttacksPerSecond = 0.72f,
+            Range = 2.7f,
+            TwoHandGrip = true,
+            ConeHalfAngle = 55f
+        };
+
         // Aim and loose: the off (left) arm raises the bow straight at the target, while the
         // weapon (right) arm comes up across the body and draws the string back to the chin with
         // the elbow sharply bent; at the release the drawing hand snaps back. The "strike" is the
@@ -221,7 +282,11 @@ namespace PoeClone.Visuals
             DaggerProfile,
             BowProfile,
             BiteProfile,
-            SpitProfile
+            SpitProfile,
+            GreatswordProfile,
+            GreatswordBackhandProfile,
+            GreataxeProfile,
+            MaulProfile
         };
 
         /// <summary>Whether the profile with this id shoots (an arrow) rather than hits.</summary>
@@ -231,6 +296,13 @@ namespace PoeClone.Visuals
         }
 
         /// <summary>Whether a weapon type shoots instead of hitting what's in reach.</summary>
+        /// <summary>Seconds from the start of a swing with this weapon to its strike, at normal speed.</summary>
+        public static float StrikeSeconds(WeaponType weaponType)
+        {
+            AttackProfile p = ProfileFor(weaponType);
+            return p.Duration * p.StrikeTime;
+        }
+
         public static bool IsRanged(WeaponType weaponType)
         {
             return weaponType == WeaponType.Bow;
@@ -261,7 +333,7 @@ namespace PoeClone.Visuals
         public float Lunge { get; private set; }
 
         /// <summary>True while a two-handed attack is posing the off arm (the walk cycle leaves it alone).</summary>
-        public bool DrivesOffArm => IsAttacking && activeProfile != null && activeProfile.UsesOffArm;
+        public bool DrivesOffArm => IsAttacking && activeProfile != null && (activeProfile.UsesOffArm || activeProfile.TwoHandGrip);
 
         /// <summary>Swings started so far. Only ever increases, so an observer sampling it periodically can't miss a swing.</summary>
         public int AttackCount { get; private set; }
@@ -300,6 +372,12 @@ namespace PoeClone.Visuals
             return ProfileFor(weaponType).BaseAttacksPerSecond;
         }
 
+        /// <summary>Half-angle of the cone this weapon type's swing reaches, or 0 for the attacker's default.</summary>
+        public static float ConeHalfAngle(WeaponType weaponType)
+        {
+            return ProfileFor(weaponType).ConeHalfAngle;
+        }
+
         /// <summary>How far this weapon type's swing reaches, for both the melee hit check and aim-highlight queries.</summary>
         public static float AttackRange(WeaponType weaponType)
         {
@@ -316,6 +394,9 @@ namespace PoeClone.Visuals
         // flicker between variants.
         private static AttackProfile PickProfile(WeaponType weaponType)
         {
+            // Big sweeps alternate sides at random, like the sword's slashes.
+            if (weaponType == WeaponType.Greatsword)
+                return UnityEngine.Random.value < 0.5f ? GreatswordProfile : GreatswordBackhandProfile;
             if (weaponType != WeaponType.Sword)
                 return ProfileFor(weaponType);
 
@@ -346,7 +427,7 @@ namespace PoeClone.Visuals
             if (!IsAttacking)
                 return;
 
-            bool offArmPosed = activeProfile != null && activeProfile.UsesOffArm;
+            bool offArmPosed = activeProfile != null && (activeProfile.UsesOffArm || activeProfile.TwoHandGrip);
             IsAttacking = false;
             TorsoPitch = TorsoYaw = Lunge = 0f;
             Apply(weaponArm, weaponElbow, rest);
@@ -385,6 +466,9 @@ namespace PoeClone.Visuals
                 case WeaponType.Dagger: return DaggerProfile;
                 case WeaponType.Bow: return BowProfile;
                 case WeaponType.Staff: return MaceProfile; // swung two-handed when there's no mana to cast
+                case WeaponType.Greatsword: return GreatswordProfile;
+                case WeaponType.Greataxe: return GreataxeProfile;
+                case WeaponType.Maul: return MaulProfile;
                 default: return UnarmedProfile;
             }
         }
@@ -401,8 +485,11 @@ namespace PoeClone.Visuals
             float f = Mathf.Clamp01(timer / activeProfile.Duration);
 
             AttackProfile p = activeProfile;
-            Pose windup = p.Absolute ? p.WindupOffset : rest + p.WindupOffset;
-            Pose strike = p.Absolute ? p.StrikeOffset : rest + p.StrikeOffset;
+            // A great weapon's swing is the same whatever the arms' rest: the poses are real angles
+            // (a big enemy whose arms rest raised still hauls the maul up and over the same way).
+            bool absolute = p.Absolute || p.TwoHandGrip;
+            Pose windup = absolute ? p.WindupOffset : rest + p.WindupOffset;
+            Pose strike = absolute ? p.StrikeOffset : rest + p.StrikeOffset;
 
             Pose pose;
             Pose offPose = rest;
@@ -429,6 +516,8 @@ namespace PoeClone.Visuals
             Apply(weaponArm, weaponElbow, pose);
             if (p.UsesOffArm)
                 Apply(offArm, offElbow, offPose);
+            else if (p.TwoHandGrip)
+                Apply(offArm, offElbow, GripPose(pose));
 
             // The body joins in: it twists with the arm's sweep, leans back into the wind-up and
             // forward through the blow, and steps into it. Measured from rest, so a swing that
@@ -446,6 +535,15 @@ namespace PoeClone.Visuals
                 TorsoPitch = -fromRest.ArmPitch * 0.14f;
                 float step = f < p.StrikeTime ? -0.3f * EaseOut(f / Mathf.Max(0.01f, p.StrikeTime)) : 1f - (f - p.StrikeTime) / Mathf.Max(0.01f, 1f - p.StrikeTime);
                 Lunge = f < p.StrikeTime ? step * 0.12f : Mathf.Sin(step * Mathf.PI * 0.5f) * 0.16f;
+
+                // A great weapon carries the whole body: it rears back while hauling the weapon up
+                // (whichever way the arm goes) and folds forward over the blow.
+                if (p.TwoHandGrip)
+                {
+                    TorsoYaw = fromRest.ArmYaw * 0.45f;
+                    TorsoPitch = f < p.StrikeTime ? -12f * EaseOut(f / Mathf.Max(0.01f, p.StrikeTime)) : 22f * step;
+                    Lunge *= 1.6f;
+                }
             }
 
             if (f >= 1f)
@@ -453,6 +551,17 @@ namespace PoeClone.Visuals
                 IsAttacking = false;
                 TorsoPitch = TorsoYaw = Lunge = 0f;
             }
+        }
+
+        // The off arm on a two-handed grip: the weapon arm's pose turned in towards it (yaw and
+        // roll) so the two hands meet on the haft, with the elbow a little more bent since the
+        // off hand holds higher up the grip.
+        private const float GripTurnIn = 38f;
+
+        private Pose GripPose(Pose weapon)
+        {
+            float raised = Mathf.Clamp01(-(weapon.ArmPitch - rest.ArmPitch) / 60f);
+            return new Pose(weapon.ArmPitch, weapon.ArmYaw + GripTurnIn * raised, -weapon.ArmRoll * 0.5f, weapon.ElbowBend + 15f);
         }
 
         private static float EaseOut(float t)
@@ -463,7 +572,7 @@ namespace PoeClone.Visuals
         private static Pose Lerp(Pose a, Pose b, float t)
         {
             return new Pose(
-                Mathf.LerpAngle(a.ArmPitch, b.ArmPitch, t),
+                Mathf.Lerp(a.ArmPitch, b.ArmPitch, t), // plain: overhead wind-ups go past 180 from rest
                 Mathf.LerpAngle(a.ArmYaw, b.ArmYaw, t),
                 Mathf.LerpAngle(a.ArmRoll, b.ArmRoll, t),
                 Mathf.Lerp(a.ElbowBend, b.ElbowBend, t));

@@ -88,6 +88,12 @@ namespace PoeClone.Visuals
         /// <summary>The right/left arm's rest pitch (0 for the player, more raised for monsters). Shared with CharacterAttackAnimator so its swing offsets land correctly regardless of rig.</summary>
         public float ArmRestAngle => armRestAngle;
 
+        /// <summary>
+        /// How far the body is crouched (0 standing, 1 deep): knees bent, hips dropped and the chest
+        /// leaning in, for gathering into a leap or bracing a slam. Set by whoever drives the move.
+        /// </summary>
+        public float Crouch { get; set; }
+
         /// <summary>Changes the arms' rest pitch (town NPCs built from the monster rig hold theirs down).</summary>
         public void SetArmRestAngle(float angle)
         {
@@ -180,8 +186,9 @@ private void LateUpdate()
             bool rightArmSuppressed = RightArmSuppressed;
             bool leftArmSuppressed = LeftArmSuppressed;
 
-            SetPivot(leftLeg, s * legAmp);
-            SetPivot(rightLeg, -s * legAmp);
+            float crouch = Mathf.Clamp01(Crouch);
+            SetPivot(leftLeg, s * legAmp - 35f * crouch);
+            SetPivot(rightLeg, -s * legAmp - 35f * crouch);
             if (!leftArmSuppressed)
                 SetPivot(leftArm, armRestAngle - s * armAmp + breath * 2.5f + sway * 1.5f);
             if (!rightArmSuppressed)
@@ -189,8 +196,8 @@ private void LateUpdate()
 
             // Knees bend while the leg swings forward (more so when running).
             float kneeMax = Mathf.Lerp(walkKneeBend, runKneeBend, runBlend) * blend;
-            SetPivot(leftKnee, Mathf.Max(0f, -c) * kneeMax);
-            SetPivot(rightKnee, Mathf.Max(0f, c) * kneeMax);
+            SetPivot(leftKnee, Mathf.Max(0f, -c) * kneeMax + 70f * crouch);
+            SetPivot(rightKnee, Mathf.Max(0f, c) * kneeMax + 70f * crouch);
 
             // Elbows bend forward; running holds the arms sharply bent.
             float elbow = -Mathf.Lerp(walkElbowBend, runElbowBend, runBlend) * blend;
@@ -206,13 +213,13 @@ private void LateUpdate()
             float walkTwist = s * 5f * blend;
             if (upperBody != null)
                 upperBody.localRotation = Quaternion.Euler(
-                    runLean * runBlend * blend + staggerTilt + torsoPitch - breath * 1.2f,
+                    runLean * runBlend * blend + staggerTilt + torsoPitch - breath * 1.2f + 25f * crouch,
                     torsoYaw + walkTwist + sway * 2f, 0f);
 
             float bobAmount = Mathf.Lerp(bobHeight, runBobHeight, runBlend);
             float bob = Mathf.Abs(c) * bobAmount * blend;
             float lunge = attackAnimator != null ? attackAnimator.Lunge : 0f;
-            transform.localPosition = baseLocalPosition + Vector3.up * bob + Vector3.forward * lunge;
+            transform.localPosition = baseLocalPosition + Vector3.up * (bob - 0.28f * crouch) + Vector3.forward * lunge;
         }
 
         // Called right after a teleport (e.g. an area gate) so the next LateUpdate

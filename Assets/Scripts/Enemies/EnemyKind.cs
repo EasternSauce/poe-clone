@@ -28,9 +28,9 @@ namespace PoeClone.Enemies
     public enum BossStyle
     {
         None,
-        Gravelord,   // ground slam, raises zombies
-        Warlord,     // ground slam, rains fire on the player
-        FrostQueen   // ground slam, calls down ice that chills
+        Gravelord,   // greataxe: leaps onto the player, spins its axe all round, raises zombies
+        Warlord,     // maul: slams a line of eruptions at the player, quake-leaps, rains fire
+        FrostQueen   // a giant frost spider: pounces, hatches ice crawlers, bursts frost, calls down ice
     }
 
     /// <summary>
@@ -68,6 +68,12 @@ namespace PoeClone.Enemies
         public string[] Gear = new string[0];
         public Color StaffOrb;   // casters: the orb on the staff and the colour of their bolts
         public bool Bow;         // archers: shoots arrows instead of bolts (the bow itself is in Gear)
+
+        /// <summary>
+        /// A humanoid that swings a real weapon (the one in its Gear) with that weapon's own
+        /// animation, instead of clawing. Unarmed: the claw swipe.
+        /// </summary>
+        public WeaponType Weapon = WeaponType.Unarmed;
 
         public float DropChance;
         public float RareBonus;
@@ -248,10 +254,10 @@ namespace PoeClone.Enemies
                 Name = "Gravelord Mortis", SpawnWeight = 0f,
                 MaxHealth = 340f, Experience = 150,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
-                Damage = 13f, AttackCooldown = 1.9f, AttackRange = 3.4f,
+                Damage = 15f, AttackCooldown = 2.2f, AttackRange = 4.2f,
                 SpeedRatio = 0.7f, Scale = 1.9f,
                 Cloth = new Color(0.16f, 0.18f, 0.16f), Skin = new Color(0.62f, 0.68f, 0.58f), Pants = new Color(0.12f, 0.12f, 0.12f), Eyes = new Color(0.3f, 1.0f, 0.4f),
-                Gear = new[] { "iron_helmet", "hand_axe" },
+                Gear = new[] { "great_helm", "executioner_axe" }, Weapon = WeaponType.Greataxe,
                 DropChance = 1f, RareBonus = 0.6f, Drops = 3,
                 IsBoss = true, Boss = BossStyle.Gravelord
             },
@@ -260,22 +266,23 @@ namespace PoeClone.Enemies
                 Name = "Ashen Warlord", SpawnWeight = 0f,
                 MaxHealth = 420f, Experience = 220,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
-                Damage = 16f, AttackCooldown = 1.8f, AttackRange = 3.6f,
+                Damage = 18f, AttackCooldown = 2.3f, AttackRange = 4.4f,
                 SpeedRatio = 0.75f, Scale = 2.1f,
                 Cloth = new Color(0.30f, 0.06f, 0.04f), Skin = new Color(0.22f, 0.18f, 0.17f), Pants = new Color(0.10f, 0.08f, 0.08f), Eyes = new Color(1.0f, 0.55f, 0.1f),
-                Gear = new[] { "studded_vest", "iron_mace", "wooden_shield" },
+                Gear = new[] { "warlord_plate", "warlord_helm", "earthbreaker" }, Weapon = WeaponType.Maul,
                 DropChance = 1f, RareBonus = 0.8f, Drops = 4,
                 IsBoss = true, Boss = BossStyle.Warlord
             },
             new EnemyKind
             {
+                // The brood-queen of the Hollow's ice crawlers: a spider the size of a house.
                 Name = "Rimeheart", SpawnWeight = 0f,
                 MaxHealth = 460f, Experience = 300,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
-                Damage = 15f, AttackCooldown = 1.6f, AttackRange = 3.4f,
-                SpeedRatio = 0.8f, Scale = 2.0f,
-                Cloth = new Color(0.62f, 0.80f, 0.95f), Skin = new Color(0.82f, 0.92f, 1.0f), Pants = new Color(0.35f, 0.45f, 0.62f), Eyes = new Color(0.3f, 0.9f, 1.0f),
-                Gear = new[] { "iron_helmet", "steel_dagger" },
+                Damage = 15f, AttackCooldown = 1.5f, AttackRange = 4.0f,
+                SpeedRatio = 0.85f, Scale = 2.6f,
+                Body = CreatureBody.Spider, Sounds = EnemySounds.Set.Spider,
+                Skin = new Color(0.62f, 0.80f, 0.96f), Cloth = new Color(0.86f, 0.95f, 1.0f), Pants = new Color(0.20f, 0.50f, 0.95f), Eyes = new Color(0.4f, 1.0f, 1.0f),
                 DropChance = 1f, RareBonus = 0.9f, Drops = 4,
                 IsBoss = true, Boss = BossStyle.FrostQueen
             },
@@ -484,6 +491,17 @@ namespace PoeClone.Enemies
         public const int SkeletonArcherIndex = 15;
         public const int FrostGiantIndex = 16;
         public const int SkeletonIndex = 7;
+
+        /// <summary>The index of the kind with this name, or -1.</summary>
+        public static int IndexOf(string name)
+        {
+            for (int k = 0; k < All.Length; k++)
+            {
+                if (All[k].Name == name)
+                    return k;
+            }
+            return -1;
+        }
 
         public static EnemyKind Get(int index)
         {

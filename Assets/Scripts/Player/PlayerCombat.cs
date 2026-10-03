@@ -340,6 +340,15 @@ namespace PoeClone.Player
                 return;
             }
 
+            // Great weapons land with weight: a burst of dust where the head comes down, and a jolt.
+            if (SlotRules.IsTwoHandedMelee(weaponType))
+            {
+                bool slam = weaponType != WeaponType.Greatsword;
+                Vector3 impact = transform.position + transform.forward * range * (slam ? 0.7f : 0.5f);
+                PoeClone.Skills.SkillEffects.Shockwave(impact, slam ? 1.5f : range * 0.9f, new Color(0.72f, 0.64f, 0.5f, 1f), 0.3f);
+                CameraSystem.CameraFollow.Shake(slam ? 0.12f : 0.05f, 0.18f);
+            }
+
             int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
             var hitAlready = new HashSet<IDamageable>();
 
@@ -401,7 +410,8 @@ namespace PoeClone.Player
             if (distance <= 0.001f)
                 return true;
 
-            return Vector3.Angle(forward, toTarget) <= coneHalfAngle;
+            float cone = CharacterAttackAnimator.ConeHalfAngle(CurrentWeaponType());
+            return Vector3.Angle(forward, toTarget) <= (cone > 0f ? cone : coneHalfAngle);
         }
 
         // Pure aiming feedback: highlights whichever in-range enemy is closest to the cursor on

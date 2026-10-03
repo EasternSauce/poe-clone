@@ -47,7 +47,10 @@ namespace PoeClone.Inventory
         Mace,
         Dagger,
         Bow,
-        Staff    // two-handed; its spell (see SkillGrants.StaffMain) is its attack
+        Staff,   // two-handed; its spell (see SkillGrants.StaffMain) is its attack
+        Greatsword, // two-handed melee: slower, harder hitting, longer reach (see SlotRules.IsTwoHanded)
+        Greataxe,
+        Maul
     }
 
     /// <summary>The places gear can be worn. There are two ring slots and one amulet slot.</summary>
@@ -192,17 +195,35 @@ namespace PoeClone.Inventory
             return item != null && Array.IndexOf(AcceptedTypes(slot), item.Type) >= 0;
         }
 
+        /// <summary>A weapon held in both hands: bows, staves and the great melee weapons.</summary>
+        public static bool IsTwoHanded(ItemData item)
+        {
+            return item != null && item.Type == ItemType.Weapon && IsTwoHanded(item.WeaponType);
+        }
+
+        public static bool IsTwoHanded(WeaponType weaponType)
+        {
+            return weaponType == WeaponType.Bow || weaponType == WeaponType.Staff || IsTwoHandedMelee(weaponType);
+        }
+
+        /// <summary>Greatsword, greataxe and maul: swung with both hands, nothing in the off hand.</summary>
+        public static bool IsTwoHandedMelee(WeaponType weaponType)
+        {
+            return weaponType == WeaponType.Greatsword || weaponType == WeaponType.Greataxe || weaponType == WeaponType.Maul;
+        }
+
         /// <summary>
         /// Whether a main-hand and an off-hand item can be worn together. A bow takes both hands:
         /// no shield with it, only a quiver; and a quiver is only for a bow (or empty hands). A staff
-        /// takes both hands and leaves nothing for the off hand. Either may be null (nothing in that hand).
+        /// or a great melee weapon takes both hands and leaves nothing for the off hand. Either may
+        /// be null (nothing in that hand).
         /// </summary>
         public static bool HandsCompatible(ItemData mainHand, ItemData offHand)
         {
             bool bow = mainHand != null && mainHand.Type == ItemType.Weapon && mainHand.WeaponType == WeaponType.Bow;
-            bool staff = mainHand != null && mainHand.Type == ItemType.Weapon && mainHand.WeaponType == WeaponType.Staff;
+            bool bothHands = IsTwoHanded(mainHand) && !bow;
 
-            if (staff)
+            if (bothHands)
                 return offHand == null;
             if (bow)
                 return offHand == null || offHand.Type == ItemType.Quiver;

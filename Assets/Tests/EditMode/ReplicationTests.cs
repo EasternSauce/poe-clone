@@ -6,6 +6,35 @@ namespace PoeClone.Tests
 {
     public class SnapshotCodecTests
     {
+        [Test]
+        public void SkillCasts_SurviveTheRoundTrip()
+        {
+            StateSnapshot s = Sample();
+            s.sc = new[]
+            {
+                new SkillCastState { n = 7, s = 6, lv = 3, x = 1.5f, y = 1f, z = -2.25f, dx = 0.6f, dz = 0.8f, sz = 2.2f, c = 2 },
+                new SkillCastState { n = 8, s = 5, pts = new[] { 1f, 2f, 3f, 4.5f, 5f, 6f } }
+            };
+
+            StateSnapshot back = SnapshotCodec.Deserialize(SnapshotCodec.Serialize(s));
+
+            Assert.AreEqual(2, back.sc.Length);
+            Assert.AreEqual(7, back.sc[0].n);
+            Assert.AreEqual(6, back.sc[0].s);
+            Assert.AreEqual(2, back.sc[0].c);
+            Assert.AreEqual(2.2f, back.sc[0].sz, 0.01f);
+            Assert.AreEqual(0.8f, back.sc[0].dz, 0.001f);
+            CollectionAssert.AreEqual(new[] { 1f, 2f, 3f, 4.5f, 5f, 6f }, back.sc[1].pts);
+        }
+
+        [Test]
+        public void NoSkillCasts_ReadsAsAnEmptyList()
+        {
+            StateSnapshot back = SnapshotCodec.Deserialize(SnapshotCodec.Serialize(Sample()));
+            Assert.IsNotNull(back.sc);
+            Assert.AreEqual(0, back.sc.Length);
+        }
+
         private static StateSnapshot Sample()
         {
             return new StateSnapshot

@@ -61,7 +61,10 @@ namespace PoeClone.World
         /// <summary>Maybe drops something where an enemy died, by its kind's drop chance; tougher kinds drop better items.</summary>
         public static void RollDrop(EnemyKind kind, Vector3 deathPosition, int monsterLevel)
         {
-            if (Random.value > kind.DropChance)
+            // Ordinary monsters drop gear at a fraction of their kind's listed chance (bosses
+            // still always drop theirs); gold and potions are rolled separately (KillRewards).
+            float chance = kind.IsBoss ? kind.DropChance : kind.DropChance * GearDropScale;
+            if (Random.value > chance)
                 return;
 
             // Tougher kinds drop better things: higher item level (so higher-tier bases), more
@@ -85,6 +88,9 @@ namespace PoeClone.World
 
             Drop(item, deathPosition);
         }
+
+        /// <summary>How much of a non-boss kind's drop chance actually turns into gear.</summary>
+        public const float GearDropScale = 0.55f;
 
         /// <summary>Any drop has this chance to be a unique instead.</summary>
         public const double UniqueChance = 0.012;

@@ -43,23 +43,26 @@ namespace PoeClone.Skills
         /// <summary>A staff spell: on the staff it is the attack (left click / the aim stick).</summary>
         public bool Main => SkillGrants.IsMain(Grant);
 
-        /// <summary>Mana per use: a little more each level.</summary>
+        /// <summary>
+        /// Mana per use: 15% more each level, so a high-level spell drains mana much faster than
+        /// regeneration refills it (casters lean on mana potions in a long fight).
+        /// </summary>
         public float ManaCostAt(int level)
         {
-            return ManaCost * (1f + 0.08f * (Mathf.Max(1, level) - 1));
+            return ManaCost * (1f + 0.15f * (Mathf.Max(1, level) - 1));
         }
 
         /// <summary>Cooldown (or time between casts for an attack spell): a little shorter each level.</summary>
         public float CooldownAt(int level)
         {
-            float perLevel = Main ? 0.02f : 0.035f;
+            float perLevel = Main ? 0.01f : 0.025f;
             return Cooldown * Mathf.Max(0.4f, 1f - perLevel * (Mathf.Max(1, level) - 1));
         }
 
-        /// <summary>A spell's damage at this level before Intelligence and Spell Damage (about 11x from level 1 to 10).</summary>
+        /// <summary>A spell's damage at this level before Intelligence and Spell Damage (about 7.75x from level 1 to 10).</summary>
         public float DamageAt(int level)
         {
-            return BaseDamage * (1f + 1.1f * (Mathf.Max(1, level) - 1));
+            return BaseDamage * (1f + 0.75f * (Mathf.Max(1, level) - 1));
         }
     }
 
@@ -84,47 +87,47 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.Cleave, Name = "Cleave", Short = "CLV", Grant = StatType.GrantCleave, RollsOn = "melee weapons",
-                ManaCost = 8f, Cooldown = 2.5f, Color = new Color(0.85f, 0.75f, 0.55f),
+                ManaCost = 10f, Cooldown = 3f, Color = new Color(0.85f, 0.75f, 0.55f),
                 Description = "Swing all around you, hitting every enemy in reach for 140% weapon damage (+10% per level). Needs a melee weapon."
             },
             new SkillDefinition
             {
                 Id = SkillId.FireBolt, Name = "Fire Bolt", Short = "FB", Grant = StatType.GrantFireBolt, RollsOn = "staves",
-                Spell = true, Element = SkillElement.Fire, BaseDamage = 14f,
-                ManaCost = 4f, Cooldown = 0.75f, Color = new Color(1f, 0.5f, 0.15f),
+                Spell = true, Element = SkillElement.Fire, BaseDamage = 11f,
+                ManaCost = 6f, Cooldown = 0.9f, Color = new Color(1f, 0.5f, 0.15f),
                 Description = "Hurl a bolt of fire that bursts on the first enemy it hits."
             },
             new SkillDefinition
             {
                 Id = SkillId.Dash, Name = "Dash", Short = "DSH", Grant = StatType.GrantDash, RollsOn = "boots",
-                ManaCost = 6f, Cooldown = 3f, Color = new Color(0.7f, 0.9f, 0.7f),
+                ManaCost = 8f, Cooldown = 3.5f, Color = new Color(0.7f, 0.9f, 0.7f),
                 Description = "Dart forward a short distance, out of trouble or into the fight. Goes further each level."
             },
             new SkillDefinition
             {
                 Id = SkillId.FrostNova, Name = "Frost Nova", Short = "FN", Grant = StatType.GrantFrostNova, RollsOn = "staves, helmets, gloves",
-                Spell = true, Element = SkillElement.Cold, BaseDamage = 11f,
-                ManaCost = 16f, Cooldown = 6f, Color = new Color(0.55f, 0.85f, 1f),
+                Spell = true, Element = SkillElement.Cold, BaseDamage = 9f,
+                ManaCost = 22f, Cooldown = 8f, Color = new Color(0.55f, 0.85f, 1f),
                 Description = "A ring of frost bursts from you, damaging and slowing nearby enemies."
             },
             new SkillDefinition
             {
                 Id = SkillId.Rejuvenate, Name = "Rejuvenate", Short = "REJ", Grant = StatType.GrantRejuvenate, RollsOn = "staves, amulets, belts",
-                Spell = true, ManaCost = 20f, Cooldown = 14f, Color = new Color(0.45f, 0.95f, 0.45f),
+                Spell = true, ManaCost = 26f, Cooldown = 18f, Color = new Color(0.45f, 0.95f, 0.45f),
                 Description = "Restore 35% of your life (+2.5% per level) over three seconds."
             },
             new SkillDefinition
             {
                 Id = SkillId.ChainLightning, Name = "Chain Lightning", Short = "CL", Grant = StatType.GrantChainLightning, RollsOn = "staves",
-                Spell = true, Element = SkillElement.Lightning, BaseDamage = 16f,
-                ManaCost = 5f, Cooldown = 0.85f, Color = new Color(1f, 0.95f, 0.4f),
+                Spell = true, Element = SkillElement.Lightning, BaseDamage = 13f,
+                ManaCost = 8f, Cooldown = 1.0f, Color = new Color(1f, 0.95f, 0.4f),
                 Description = "Strikes the enemy under your cursor (or the nearest) and arcs on to others, one more arc at levels 5 and 9. Hits harder when aimed, and up close."
             },
             new SkillDefinition
             {
                 Id = SkillId.IceShard, Name = "Ice Shard", Short = "IS", Grant = StatType.GrantIceShard, RollsOn = "staves",
-                Spell = true, Element = SkillElement.Cold, BaseDamage = 12f,
-                ManaCost = 3f, Cooldown = 0.6f, Color = new Color(0.6f, 0.9f, 1f),
+                Spell = true, Element = SkillElement.Cold, BaseDamage = 10f,
+                ManaCost = 5f, Cooldown = 0.75f, Color = new Color(0.6f, 0.9f, 1f),
                 Description = "Fling three chilling shards of ice in a narrow fan. Best up close, where all three land."
             },
         };
@@ -150,10 +153,10 @@ namespace PoeClone.Skills
             return null;
         }
 
-        /// <summary>Spell damage multiplier from Intelligence: +1.5% per point.</summary>
+        /// <summary>Spell damage multiplier from Intelligence: +1.2% per point.</summary>
         public static float SpellMultiplier(int intelligence)
         {
-            return 1f + intelligence * 0.015f;
+            return 1f + intelligence * 0.012f;
         }
     }
 }

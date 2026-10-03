@@ -19,7 +19,7 @@ namespace PoeClone.Inventory
         private const float ArmourPerDamageForHalf = 12f;
 
         // Mana regenerated per second: a share of the pool, plus a little per point of Intelligence.
-        public const float ManaRegenFraction = 0.015f;
+        public const float ManaRegenFraction = 0.01f;
         public const float ManaRegenPerIntelligence = 0.04f;
 
         /// <summary>

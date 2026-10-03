@@ -1,41 +1,24 @@
-version: 2026-10-03i
-<b>Skills now come from gear</b>
-- You no longer learn skills by levelling. Every skill is found on gear instead, at a level from 1 to 10, and a higher level hits harder, costs a little more and comes back sooner.
-- New weapon: staves (two-handed). Every staff carries a spell that becomes your attack: left click (or the aim stick) casts it instead of swinging. Out of mana, you swing the staff instead.
-- Staff spells: Fire Bolt, Chain Lightning and the new Ice Shard, which flings three chilling shards in a narrow fan.
-- Staves roll caster stats: spell damage, cast speed, faster cooldowns, mana, mana regeneration, area of effect, "+1 to level of spells", and now and then a second skill.
-- Other skills roll where they fit: Cleave on melee weapons, Dash on boots, Frost Nova on helmets and gloves, Rejuvenate on amulets and belts.
-- New stats: "+1 to Level of all Spells" on amulets, "+1 to Level of all Fire/Cold/Lightning Spells" on rings and amulets, Cast Speed and faster Skill Cooldowns on jewellery and other gear.
-- Tougher monsters in later areas drop higher-level skills.
-- A Gnarled Staff with Fire Bolt now lies on the benches in Haven, and the starting boots carry Dash.
-- Characters from before this change find a staff with Fire Bolt in their bag.
-<b>Controls</b>
-- The skill bar has eight slots: Q, E, R, F, and the right, middle and two side mouse buttons. The square on its left shows your attack.
-- The skills panel (K) shows each skill's level and which item it comes from.
-- Bow shots, spells and melee swings now go wherever you are aiming at the moment they leave your hand, not where you aimed when you started.
-<b>Balance</b>
-- Life and mana regenerate more slowly.
-- Enraged monsters are much faster, attack 50% faster, and lead their shots and aimed spells to where you are heading.
-- A monster you kill from a distance no longer flashes "ENRAGED" as it dies.
-<b>Gear</b>
-- A Short Bow now lies on the benches in Haven with the rest of the starting gear.
-- Cleave needs a melee weapon: it can no longer be used with a bow.
-- New stat: Melee Range, found on gloves and weapons and on the Brute Force passive.
-- Area of Effect can now roll on amulets and helmets, and the Arcane Mind passive grants it.
-<b>Bosses</b>
-- A slain boss returns after two minutes, but only once you are well away from its lair.
-<b>Interface</b>
-- The inventory, stash/trader and character windows have an X button to close them.
-- The character page now shows above the level/life/mana panel instead of under it.
-<b>Monsters</b>
-- New creatures roam the wilds: giant spiders, dire wolf packs and bog slimes in Greenwood; grave bat swarms, corpse oozes and crypt spiders in the Graveyard; magma beetles and hellhound packs in the Ashen Ruins; frost wolves and ice crawlers in the Frozen Hollow.
-- Slimes and oozes burst into smaller ones when killed.
-- Spiders, wolves and slimes leap at you, aiming where you are heading: a glow on the ground shows where they will land, and anyone in their path is hit too.
-- Every creature has its own sounds, movement and death.
-- Humanoid monsters (and you) now breathe while standing still and put their whole body into each swing.
-- Monsters move faster, and keep chasing you much further.
-- Hit a monster from a distance and it may become enraged for a few seconds: much faster, hitting harder and attacking quicker.
-- Small creatures like slimelings can now be hit by arrows, spells and melee.
-- The minimap spots monsters further away, even in ground you haven't explored yet.
-<b>World</b>
-- Removed the gate in the Ashen Ruins that led straight back to Haven; use the town portal or a waystone to go home.
+version: 2026-10-03j
+<b>Loot</b>
+- Monsters drop gear about half as often (bosses still always drop theirs). Gold and potions are unchanged.
+<b>Spell balance</b>
+- Spells cost more mana (and 15% more per skill level), recover a little slower and hit a little less hard, especially at high levels. Intelligence adds a bit less spell damage.
+- Mana regenerates more slowly from a large mana pool. Casting nonstop now drains your mana: bring mana potions.
+<b>Spectators</b>
+- Spectators now see your spells: staff bolts and shards, Chain Lightning, Frost Nova, Cleave, Dash and Rejuvenate.
+<b>The bosses, reworked</b>
+- Gravelord Mortis now wields a huge executioner's axe: he leaps across the crypt and buries it where you stand, whirls it all round himself, and raises the dead.
+- The Ashen Warlord swings a two-handed maul: he slams it down and the ground cracks open towards you in a line of fire, quake-leaps onto you, and rains fire.
+- Rimeheart is now a giant frost spider, queen of the ice crawlers: she pounces, bursts frost all round her (it chills), hatches her brood, and calls down ice.
+- Every big move glows on the ground before it lands. At half life each boss roars into a second phase and attacks faster.
+- Heavy blows now shake the screen.
+<b>Two-handed weapons</b>
+- New weapons: greatswords, greataxes and mauls. They take both hands (no shield), swing slower, but hit far harder, reach further and sweep a wider arc.
+- The greatsword sweeps wide from side to side, the greataxe chops down from overhead, and the maul is hauled over the head and slammed into the ground with a jolt.
+- Equipping a two-handed weapon (or a bow) puts your shield back in your bag if there's room.
+<b>More item variety</b>
+- Every kind of gear now has lines for Strength (heavy plate and gauntlets), Dexterity (leather and hoods) and Intelligence (silk robes, circlets, sashes), each with four tiers.
+- Deeper areas and tougher monsters drop the newer tiers much more often; the early ones fade out as you go.
+- Gear made for a kind of character rolls that kind's stats more often: a silk robe tends to roll mana and Intelligence, plate rolls Strength and Armour.
+- New bases: bucklers, kite shields, leather belts, cloth sashes, moonstone rings (mana), amber amulets (Strength), and higher tiers of every ring and amulet.
+- New random stats: life regeneration on armour and jewellery, life leech on melee weapons, gloves and rings, and life on kill on attack weapons, gloves, rings and quivers.

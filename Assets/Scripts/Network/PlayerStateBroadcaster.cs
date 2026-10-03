@@ -173,8 +173,45 @@ namespace PoeClone.Network
 
             CaptureEnemies(pt.position);
             CaptureLoot(pt.position);
+            CaptureCasts();
             CaptureUi(snapshot.ui);
             return snapshot;
+        }
+
+        // The player's last few skill casts (the last couple of seconds), so spectators draw them
+        // too. Several snapshots repeat a cast; the spectator plays each number once.
+        private void CaptureCasts()
+        {
+            List<PlayerSkills.CastRecord> casts = skills != null ? skills.RecentCasts(2f) : null;
+            if (casts == null || casts.Count == 0)
+            {
+                snapshot.sc = null;
+                return;
+            }
+
+            snapshot.sc = new SkillCastState[casts.Count];
+            for (int k = 0; k < casts.Count; k++)
+            {
+                PlayerSkills.CastRecord c = casts[k];
+                float[] pts = null;
+                if (c.Points != null)
+                {
+                    pts = new float[c.Points.Length * 3];
+                    for (int p = 0; p < c.Points.Length; p++)
+                    {
+                        pts[p * 3] = c.Points[p].x;
+                        pts[p * 3 + 1] = c.Points[p].y;
+                        pts[p * 3 + 2] = c.Points[p].z;
+                    }
+                }
+                snapshot.sc[k] = new SkillCastState
+                {
+                    n = c.Number, s = (int)c.Skill, lv = c.Level,
+                    x = c.At.x, y = c.At.y, z = c.At.z,
+                    dx = c.Facing.x, dz = c.Facing.z,
+                    sz = c.Size, c = c.Count, pts = pts
+                };
+            }
         }
 
         // Which menus are open and what the pointer is on, so spectators can open the same ones.

@@ -22,7 +22,8 @@ namespace PoeClone.EditorTools
         {
             "iron_helmet", "bronze_helmet", "studded_vest", "leather_gloves", "leather_boots", "rope_belt",
             "jade_amulet", "iron_ring", "ruby_ring", "sapphire_ring", "rusty_sword", "wooden_shield",
-            "hand_axe", "iron_mace", "steel_dagger", "short_bow", "leather_quiver"
+            "hand_axe", "iron_mace", "steel_dagger", "short_bow", "leather_quiver",
+            "sage_circlet", "bastard_sword", "woodsplitter", "great_mallet"
         };
 
         private static readonly Dictionary<string, Material> Mats = new Dictionary<string, Material>();
@@ -49,6 +50,7 @@ namespace PoeClone.EditorTools
             RustySword();
             WoodenShield();
             WeaponModels();
+            VarietyModels();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -412,6 +414,101 @@ namespace PoeClone.EditorTools
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("EquipmentBuilder: built the weapon prefabs");
+        }
+
+        /// <summary>The circlet and the great (two-handed) weapons, leaving the other prefabs untouched.</summary>
+        [MenuItem("PoeClone/Build Great Weapons")]
+        public static void BuildVariety()
+        {
+            EnsureFolder(OutDir);
+            LoadMeshes();
+            MakeMaterials();
+            VarietyModels();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("EquipmentBuilder: built the circlet and great weapon prefabs");
+        }
+
+        private static void VarietyModels()
+        {
+            SageCirclet();
+            BastardSword();
+            Woodsplitter();
+            GreatMallet();
+        }
+
+        // A thin gold band around the brow with a gem over the forehead and three small points.
+        private static void SageCirclet()
+        {
+            GameObject root = NewRoot("sage_circlet");
+            Transform head = Node(root, "Socket_Head", Vector3.zero, Vector3.zero);
+
+            Shape(head, "Band", "Cylinder", "Gold", new Vector3(0f, 0.11f, -0.04f), new Vector3(0.57f, 0.035f, 0.57f));
+            Shape(head, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.13f, 0.245f), new Vector3(0.07f, 0.08f, 0.04f));
+            Shape(head, "PointC", "Cone", "Gold", new Vector3(0f, 0.20f, 0.235f), new Vector3(0.035f, 0.09f, 0.02f));
+            Shape(head, "PointL", "Cone", "Gold", new Vector3(-0.12f, 0.16f, 0.21f), new Vector3(0.025f, 0.06f, 0.02f), new Vector3(0f, -30f, 12f));
+            Shape(head, "PointR", "Cone", "Gold", new Vector3(0.12f, 0.16f, 0.21f), new Vector3(0.025f, 0.06f, 0.02f), new Vector3(0f, 30f, -12f));
+
+            Save(root, "sage_circlet");
+        }
+
+        // Great weapons are built like the one-handed ones (along +y from the hand), with a grip long
+        // enough for both hands and much more weapon past it.
+        private static readonly Vector3 GreatGrip = new Vector3(108f, 0f, 0f);
+
+        private static void BastardSword()
+        {
+            GameObject root = NewRoot("bastard_sword");
+            Transform sword = Node(root, "Socket_MainHand", new Vector3(0f, 0f, 0.03f), GreatGrip);
+
+            Cube(sword, "Grip", "Leather", new Vector3(0f, 0.08f, 0f), new Vector3(0.065f, 0.40f, 0.065f));
+            Shape(sword, "Pommel", "IcoHead", "Gold", new Vector3(0f, -0.15f, 0f), new Vector3(0.11f, 0.11f, 0.11f));
+            Cube(sword, "Guard", "Gold", new Vector3(0f, 0.30f, 0f), new Vector3(0.48f, 0.06f, 0.10f));
+            Shape(sword, "GuardGemL", "IcoHead", "GemGreen", new Vector3(-0.25f, 0.30f, 0f), new Vector3(0.07f, 0.07f, 0.07f));
+            Shape(sword, "GuardGemR", "IcoHead", "GemGreen", new Vector3(0.25f, 0.30f, 0f), new Vector3(0.07f, 0.07f, 0.07f));
+            Cube(sword, "Ricasso", "Steel", new Vector3(0f, 0.40f, 0f), new Vector3(0.11f, 0.14f, 0.04f));
+            Cube(sword, "Blade", "Silver", new Vector3(0f, 0.97f, 0f), new Vector3(0.15f, 1.02f, 0.03f));
+            Cube(sword, "Fuller", "SteelDark", new Vector3(0f, 0.92f, 0f), new Vector3(0.035f, 0.85f, 0.034f));
+            Shape(sword, "Tip", "Cone", "Silver", new Vector3(0f, 1.56f, 0f), new Vector3(0.075f, 0.17f, 0.015f));
+
+            Save(root, "bastard_sword");
+        }
+
+        private static void Woodsplitter()
+        {
+            GameObject root = NewRoot("woodsplitter");
+            Transform axe = Node(root, "Socket_MainHand", new Vector3(0f, 0f, 0.03f), GreatGrip);
+
+            Cube(axe, "Haft", "PaleWood", new Vector3(0f, 0.48f, 0f), new Vector3(0.07f, 1.40f, 0.07f));
+            Cube(axe, "Wrap", "Leather", new Vector3(0f, 0.10f, 0f), new Vector3(0.078f, 0.36f, 0.078f));
+            Shape(axe, "Pommel", "IcoHead", "Gold", new Vector3(0f, -0.24f, 0f), new Vector3(0.10f, 0.10f, 0.10f));
+            Cube(axe, "Collar", "Gold", new Vector3(0f, 1.02f, 0f), new Vector3(0.12f, 0.16f, 0.10f));
+            Cube(axe, "BladeR", "Silver", new Vector3(0.19f, 1.02f, 0f), new Vector3(0.28f, 0.26f, 0.035f));
+            Cube(axe, "EdgeR", "Steel", new Vector3(0.35f, 1.02f, 0f), new Vector3(0.07f, 0.48f, 0.037f));
+            Cube(axe, "BladeL", "Silver", new Vector3(-0.19f, 1.02f, 0f), new Vector3(0.28f, 0.26f, 0.035f));
+            Cube(axe, "EdgeL", "Steel", new Vector3(-0.35f, 1.02f, 0f), new Vector3(0.07f, 0.48f, 0.037f));
+            Shape(axe, "Spike", "Cone", "Silver", new Vector3(0f, 1.24f, 0f), new Vector3(0.05f, 0.18f, 0.05f));
+            Shape(axe, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 1.02f, 0.055f), new Vector3(0.07f, 0.07f, 0.04f));
+
+            Save(root, "woodsplitter");
+        }
+
+        private static void GreatMallet()
+        {
+            GameObject root = NewRoot("great_mallet");
+            Transform maul = Node(root, "Socket_MainHand", new Vector3(0f, 0f, 0.03f), GreatGrip);
+
+            Cube(maul, "Haft", "PaleWood", new Vector3(0f, 0.42f, 0f), new Vector3(0.075f, 1.28f, 0.075f));
+            Cube(maul, "Wrap", "Leather", new Vector3(0f, 0.08f, 0f), new Vector3(0.085f, 0.34f, 0.085f));
+            Shape(maul, "Pommel", "IcoHead", "Gold", new Vector3(0f, -0.24f, 0f), new Vector3(0.11f, 0.11f, 0.11f));
+            Cube(maul, "Head", "SteelDark", new Vector3(0f, 1.12f, 0f), new Vector3(0.50f, 0.28f, 0.28f));
+            Cube(maul, "FaceR", "Steel", new Vector3(0.26f, 1.12f, 0f), new Vector3(0.05f, 0.34f, 0.34f));
+            Cube(maul, "FaceL", "Steel", new Vector3(-0.26f, 1.12f, 0f), new Vector3(0.05f, 0.34f, 0.34f));
+            Cube(maul, "BandA", "Gold", new Vector3(0.11f, 1.12f, 0f), new Vector3(0.04f, 0.30f, 0.30f));
+            Cube(maul, "BandB", "Gold", new Vector3(-0.11f, 1.12f, 0f), new Vector3(0.04f, 0.30f, 0.30f));
+            Shape(maul, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 1.27f, 0f), new Vector3(0.08f, 0.08f, 0.08f));
+
+            Save(root, "great_mallet");
         }
 
         private static void WeaponModels()

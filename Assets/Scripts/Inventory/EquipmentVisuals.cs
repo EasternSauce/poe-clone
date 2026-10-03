@@ -114,10 +114,12 @@ namespace PoeClone.Inventory
 
             if (item != null)
             {
-                GameObject prefab = Resources.Load<GameObject>("Equipment/" + item.ArtId);
+                string model = ItemGenerator.ModelFor(item.ArtId, out Color modelTint);
+                Color tint = item.ArtTint * modelTint;
+                GameObject prefab = Resources.Load<GameObject>("Equipment/" + model);
                 if (prefab == null)
                 {
-                    Debug.LogWarning("EquipmentVisuals: no equipment prefab at Resources/Equipment/" + item.ArtId);
+                    Debug.LogWarning("EquipmentVisuals: no equipment prefab at Resources/Equipment/" + model);
                 }
                 else
                 {
@@ -133,8 +135,8 @@ namespace PoeClone.Inventory
                         instance.transform.localRotation = child.localRotation;
                         instance.transform.localScale = child.localScale;
                         instance.AddComponent<EquipmentVisualInstance>();
-                        if (item.ArtTint != Color.white)
-                            Tint(instance, item.ArtTint);
+                        if (tint != Color.white)
+                            Tint(instance, tint);
                         list.Add(instance);
                     }
                 }

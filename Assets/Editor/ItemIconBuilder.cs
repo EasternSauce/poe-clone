@@ -65,6 +65,7 @@ namespace PoeClone.EditorTools
             Make("sapphire_ring", "Armor/512x512/heavy_belt_03.png", 1, 1, b => ShiftGem(b, 0.60f, 1.0f, 1.0f, 1.0f));
 
             MakeAmulet();
+            VarietyIcons();
 
             AssetDatabase.Refresh();
             Debug.Log("ItemIconBuilder: icons written to " + OutDir);
@@ -78,6 +79,36 @@ namespace PoeClone.EditorTools
             WeaponIcons();
             AssetDatabase.Refresh();
             Debug.Log("ItemIconBuilder: weapon icons written to " + OutDir);
+        }
+
+        /// <summary>The art for the Strength / Intelligence gear lines and the great weapons.</summary>
+        [MenuItem("PoeClone/Build Variety Icons")]
+        public static void BuildVarietyIcons()
+        {
+            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), OutDir));
+            VarietyIcons();
+            AssetDatabase.Refresh();
+            Debug.Log("ItemIconBuilder: variety icons written to " + OutDir);
+        }
+
+        // Heavy art for the Strength lines, light (cloth) art for the Intelligence lines, and the
+        // two-handed weapons (diagonal like the other weapons, stood upright).
+        private static void VarietyIcons()
+        {
+            Make("chain_hauberk", "Armor/512x512/heavy_body_armor_03.png", 2, 3, b => b);
+            Make("iron_gauntlets", "Armor/512x512/heavy_hand_armor_03.png", 2, 2, b => b);
+            Make("iron_greaves", "Armor/512x512/heavy_foot_armor_03.png", 2, 2, b => b);
+            Make("kite_shield", "Armor/512x512/heavy_shield_03.png", 2, 2, b => b);
+            Make("buckler", "Armor/512x512/medium_shield_03.png", 2, 2, b => b);
+            Make("leather_belt", "Armor/512x512/medium_belt_03.png", 2, 1, b => b);
+            Make("sage_circlet", "Armor/512x512/light_head_armor_03.png", 2, 2, b => b);
+            Make("silk_robe", "Armor/512x512/light_body_armor_03.png", 2, 3, b => b);
+            Make("silk_gloves", "Armor/512x512/light_hand_armor_03.png", 2, 2, b => b);
+            Make("silk_slippers", "Armor/512x512/light_foot_armor_03.png", 2, 2, b => b);
+            Make("cloth_sash", "Armor/512x512/light_belt_03.png", 2, 1, b => b);
+            Make("bastard_sword", "Weapons/512x512/two-handed_sword_03.png", 1, 4, b => b, 45f);
+            Make("woodsplitter", "Weapons/512x512/two-handed_battle_axe_03.png", 2, 4, b => b, 45f);
+            Make("great_mallet", "Weapons/512x512/war_hammer_03.png", 2, 4, b => b, 45f);
         }
 
         // These lie diagonally like the sword art; stood upright to match.

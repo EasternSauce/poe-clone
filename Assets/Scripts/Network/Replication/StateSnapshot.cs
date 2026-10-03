@@ -53,6 +53,26 @@ namespace PoeClone.Network.Replication
         public int rv;     // 1 = countdown finished, waiting for the player to press a key to revive
     }
 
+    /// <summary>
+    /// One skill the player used (a staff's spell, a bar skill), for spectators to replay its
+    /// visuals. Snapshots carry the last few, numbered, so a cast between two snapshots is never lost.
+    /// </summary>
+    [Serializable]
+    public class SkillCastState
+    {
+        public int n;        // cast number (counts up; only ones newer than the last seen are played)
+        public int s;        // SkillId
+        public int lv;       // skill level (sizes some effects)
+        public float x;      // where it was cast from (the player's feet)
+        public float y;
+        public float z;
+        public float dx;     // which way it went (flat)
+        public float dz;
+        public float sz;     // size: a burst's or nova's radius
+        public int c;        // projectiles fired
+        public float[] pts;  // Chain Lightning: the arc's points, x,y,z per point
+    }
+
     /// <summary>An item lying on the ground near the player.</summary>
     [Serializable]
     public class LootState
@@ -83,6 +103,7 @@ namespace PoeClone.Network.Replication
         public string[] eq;    // equipped item id per EquipSlot (by enum order), "" = empty
         public EntityState[] e;
         public LootState[] l;  // items on the ground nearby
+        public SkillCastState[] sc; // the player's latest skill casts (see SkillCastState)
         public UiState ui;     // the player's open menus and pointer (see GearState.cs)
     }
 }

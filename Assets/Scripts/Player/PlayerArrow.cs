@@ -47,18 +47,18 @@ namespace PoeClone.Player
         }
 
         /// <summary>A Fire Bolt: an orb that bursts on impact, hurting everything within the radius.</summary>
-        public static void LaunchBolt(Transform shooter, float range, float damage, Color color, float burstRadius, Vector3? direction = null)
+        public static void LaunchBolt(Transform shooter, float range, float damage, Color color, float burstRadius, Vector3? direction = null, bool harmless = false)
         {
-            PlayerArrow bolt = Create(shooter, range, damage, harmless: false, orb: color, direction: direction);
+            PlayerArrow bolt = Create(shooter, range, damage, harmless, orb: color, direction: direction);
             bolt.burstRadius = burstRadius;
             bolt.textColor = CombatText.FireColor;
             bolt.isAttack = false;
         }
 
         /// <summary>An Ice Shard: a small, quick shard that chills the enemy it hits.</summary>
-        public static void LaunchShard(Transform shooter, float range, float damage, Color color, float chillSeconds, Vector3 direction)
+        public static void LaunchShard(Transform shooter, float range, float damage, Color color, float chillSeconds, Vector3 direction, bool harmless = false)
         {
-            PlayerArrow shard = Create(shooter, range, damage, harmless: false, orb: color, direction: direction);
+            PlayerArrow shard = Create(shooter, range, damage, harmless, orb: color, direction: direction);
             shard.transform.localScale = Vector3.one * 0.6f;
             shard.textColor = CombatText.ColdColor;
             shard.isAttack = false;
@@ -113,11 +113,14 @@ namespace PoeClone.Player
             if (nearest != null)
             {
                 Strike(nearest.Value.collider);
-                if (burstRadius > 0f && !harmless)
+                if (burstRadius > 0f)
                 {
                     // A hit reported at distance 0 (started inside it) has no contact point.
                     Vector3 at = nearest.Value.distance > 0f ? nearest.Value.point : transform.position;
-                    Burst(at, nearest.Value.collider);
+                    if (harmless)
+                        Skills.SkillEffects.Shockwave(at, burstRadius, textColor, 0.25f); // a spectator's copy: just the look
+                    else
+                        Burst(at, nearest.Value.collider);
                 }
                 Destroy(gameObject);
                 return;

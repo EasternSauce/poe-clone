@@ -67,7 +67,7 @@ namespace PoeClone.Tests
             {
                 string art = ItemGenerator.Display(id, null, ItemRarity.Normal).ArtId;
                 Assert.IsNotNull(Resources.Load<Sprite>("ItemIcons/" + art), "no icon for " + id);
-                Assert.IsNotNull(Resources.Load<GameObject>("Equipment/" + art), "no 3D look for " + id);
+                Assert.IsNotNull(Resources.Load<GameObject>("Equipment/" + ItemGenerator.ModelFor(art, out _)), "no 3D look for " + id);
             }
         }
 

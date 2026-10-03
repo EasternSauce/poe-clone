@@ -46,6 +46,7 @@ namespace PoeClone.Enemies
         private CharacterAttackAnimator attackAnimator;
         private Stagger stagger;
         private EnemySkills skills;
+        private BossAbilities bossMoves;
         private EnemyHealth health;
         private EnemyKind kind;
 
@@ -249,8 +250,12 @@ private void Update()
 
             UpdateEnrage();
 
-            // A skill winding up or charging moves (or holds) the enemy itself.
+            // A skill winding up or charging moves (or holds) the enemy itself; so does a boss's move.
             if (skills != null && skills.enabled && skills.Busy)
+                return;
+            if (bossMoves == null)
+                bossMoves = GetComponent<BossAbilities>();
+            if (bossMoves != null && bossMoves.Busy)
                 return;
 
             bool staggered = stagger != null && stagger.IsStaggered;

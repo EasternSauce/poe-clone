@@ -279,8 +279,9 @@ namespace PoeClone.Tests
         {
             foreach (ItemData item in AllBaseItems())
             {
-                GameObject prefab = Resources.Load<GameObject>("Equipment/" + item.ArtId);
-                Assert.IsNotNull(prefab, item.Name + " has no prefab at Resources/Equipment/" + item.ArtId);
+                string model = ItemGenerator.ModelFor(item.ArtId, out _);
+                GameObject prefab = Resources.Load<GameObject>("Equipment/" + model);
+                Assert.IsNotNull(prefab, item.Name + " has no prefab at Resources/Equipment/" + model);
 
                 HashSet<string> found = new HashSet<string>();
                 foreach (Transform child in prefab.transform)
@@ -300,7 +301,7 @@ namespace PoeClone.Tests
         {
             foreach (ItemData item in AllBaseItems())
             {
-                GameObject prefab = Resources.Load<GameObject>("Equipment/" + item.ArtId);
+                GameObject prefab = Resources.Load<GameObject>("Equipment/" + ItemGenerator.ModelFor(item.ArtId, out _));
                 Assert.IsNotNull(prefab, item.Id);
 
                 foreach (MeshFilter mf in prefab.GetComponentsInChildren<MeshFilter>(true))

@@ -1418,7 +1418,7 @@ private Vector2 CellSize(int w, int h)
             string handNote = null;
             if (item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Bow)
                 handNote = "Two-handed: no shield (a quiver goes in the off hand)";
-            else if (item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Staff)
+            else if (SlotRules.IsTwoHanded(item))
                 handNote = "Two-handed: nothing in the off hand";
             else if (item.Type == ItemType.Quiver)
                 handNote = "Off hand, worn with a bow";
@@ -1701,6 +1701,15 @@ private Vector2 CellSize(int w, int h)
                 if (cursorItem != null)
                     PlayUISound(ItemSounds.Pickup(cursorItem));
                 return;
+            }
+
+            // A two-handed weapon pushes whatever is in the off hand into the bag (if there's room).
+            if (s.Slot == EquipSlot.MainHand && SlotRules.Accepts(s.Slot, cursorItem) &&
+                !inventory.Equipment.CanEquip(s.Slot, cursorItem))
+            {
+                ItemData off = inventory.Equipment.Get(EquipSlot.OffHand);
+                if (off != null && !SlotRules.HandsCompatible(cursorItem, off) && inventory.Grid.TryAutoPlace(off))
+                    inventory.Equipment.Unequip(EquipSlot.OffHand);
             }
 
             // Only the matching type of gear fits this slot.
