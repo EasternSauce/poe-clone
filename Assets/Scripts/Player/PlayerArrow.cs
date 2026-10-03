@@ -31,6 +31,8 @@ namespace PoeClone.Player
         private bool isAttack = true;   // an arrow; a bolt is a spell
         private Combat.DamageType damageType = Combat.DamageType.Physical;
         private float chillSeconds;     // an ice shard slows what it hits
+        private float igniteBonus;      // a burning arrow's own chance to ignite
+        private HashSet<Enemies.EnemyHealth> pierced; // a piercing arrow flies on through these
 
         // Projectiles loosed together (Ice Shard's fan, extra arrows or bolts) share this: each
         // target is hurt by the first of them to reach it, and the rest do nothing to it.
@@ -59,9 +61,47 @@ namespace PoeClone.Player
             Create(shooter, range, damage, harmless: false, direction: direction).volley = volley;
         }
 
-        public static void LaunchVisual(Transform shooter, float range)
+        public static void LaunchVisual(Transform shooter, float range, Vector3? direction = null)
         {
-            Create(shooter, range, 0f, harmless: true);
+            Create(shooter, range, 0f, harmless: true, direction: direction);
+        }
+
+        /// <summary>
+        /// A bow skill's arrow (see PlayerSkills.ReleaseBow). Make it pierce or burn with
+        /// <see cref="Piercing"/> and <see cref="Burning"/>. Harmless: a spectator's copy.
+        /// </summary>
+        public static PlayerArrow LaunchArrow(Transform shooter, float range, float damage, Vector3 direction, HashSet<IDamageable> volley, bool harmless = false)
+        {
+            PlayerArrow arrow = Create(shooter, range, damage, harmless, direction: direction);
+            arrow.volley = volley;
+            return arrow;
+        }
+
+        /// <summary>Flies on through every enemy in its path (walls and trees still stop it).</summary>
+        public PlayerArrow Piercing(Color glow)
+        {
+            pierced = new HashSet<Enemies.EnemyHealth>();
+            transform.localScale = new Vector3(1.2f, 1.2f, 1.5f);
+            GameObject streak = RuntimePrimitives.Create(PrimitiveType.Sphere, transform, glow);
+            streak.transform.localScale = new Vector3(0.12f, 0.12f, 0.9f);
+            streak.transform.localPosition = new Vector3(0f, 0f, -0.35f);
+            return this;
+        }
+
+        /// <summary>Deals fire, bursts round what it hits, and may set it burning.</summary>
+        public PlayerArrow Burning(Color flame, float radius, float igniteChance)
+        {
+            textColor = CombatText.FireColor;
+            damageType = Combat.DamageType.Fire;
+            burstRadius = radius;
+            igniteBonus = igniteChance;
+            GameObject fire = RuntimePrimitives.Create(PrimitiveType.Sphere, transform, flame);
+            fire.transform.localScale = Vector3.one * 0.3f;
+            fire.transform.localPosition = new Vector3(0f, 0f, 0.35f);
+            GameObject glow = RuntimePrimitives.Create(PrimitiveType.Sphere, transform, Color.Lerp(flame, Color.yellow, 0.5f));
+            glow.transform.localScale = Vector3.one * 0.17f;
+            glow.transform.localPosition = new Vector3(0f, 0f, 0.1f);
+            return this;
         }
 
         /// <summary>A Fire Bolt: an orb that bursts on impact, hurting everything within the radius.</summary>
@@ -134,7 +174,7 @@ namespace PoeClone.Player
 
             // A spectator's copy: its enemies have no colliders, so it stops (and bursts) at the
             // first one it passes close to, the way the player's real one did.
-            if (harmless && nearest == null)
+            if (harmless && nearest == null && pierced == null)
             {
                 Vector3 at;
                 if (PassesEnemy(step, out at))
@@ -142,6 +182,19 @@ namespace PoeClone.Player
                     if (burstRadius > 0f)
                         Skills.SkillEffects.Shockwave(at, burstRadius, textColor, 0.25f);
                     Destroy(gameObject);
+                    return;
+                }
+            }
+
+            // A piercing arrow strikes the enemy and keeps going (it sweeps on from here next frame,
+            // past that enemy).
+            if (nearest != null && pierced != null)
+            {
+                Enemies.EnemyHealth through = nearest.Value.collider.GetComponentInParent<Enemies.EnemyHealth>();
+                if (through != null && !through.IsDead)
+                {
+                    pierced.Add(through);
+                    Strike(nearest.Value.collider);
                     return;
                 }
             }
@@ -200,6 +253,12 @@ namespace PoeClone.Player
                 RaycastHit hit = Hits[k];
                 if (owner != null && hit.collider.transform.IsChildOf(owner))
                     continue;
+                if (pierced != null && pierced.Count > 0)
+                {
+                    Enemies.EnemyHealth passed = hit.collider.GetComponentInParent<Enemies.EnemyHealth>();
+                    if (passed != null && (passed.IsDead || pierced.Contains(passed)))
+                        continue;
+                }
                 if (enemiesOnly)
                 {
                     Enemies.EnemyHealth enemy = hit.collider.GetComponentInParent<Enemies.EnemyHealth>();
@@ -225,7 +284,7 @@ namespace PoeClone.Player
                 if (target == null || !done.Add(target) || (owner != null && c.transform.IsChildOf(owner)))
                     continue;
                 if (target is Enemies.EnemyHealth enemy && !enemy.IsDead && FirstVolleyHit(target))
-                    HitEffects.Deal(owner, enemy, damage * 0.4f, isAttack, textColor, damageType);
+                    HitEffects.Deal(owner, enemy, damage * 0.4f, isAttack, textColor, damageType, igniteBonus: igniteBonus);
             }
         }
 
@@ -247,7 +306,7 @@ namespace PoeClone.Player
                     if (ai != null)
                         ai.Chill(chillSeconds);
                 }
-                HitEffects.Deal(owner, enemy, damage, isAttack, textColor, damageType);
+                HitEffects.Deal(owner, enemy, damage, isAttack, textColor, damageType, igniteBonus: igniteBonus);
                 return;
             }
 

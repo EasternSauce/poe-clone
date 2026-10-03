@@ -103,7 +103,12 @@ namespace PoeClone.Player
 
             LootDrop pointed = null;
             if (!PanelOpen() && !PlayerController.IsUiFocused())
+            {
                 pointed = TouchMode.Active ? ReadTouch() : ReadMouse();
+                // No mouse to hover with on a phone: the item nearest the player shows its tooltip.
+                if (pointed == null && TouchMode.Active)
+                    pointed = NearestItem();
+            }
             SetHovered(pointed);
 
             if (target == null)
@@ -135,6 +140,27 @@ namespace PoeClone.Player
                 if (offset.sqrMagnitude <= GoldWalkReach * GoldWalkReach && drop.IsLanded)
                     drop.TryPickUp(inventory, NoticePoint());
             }
+        }
+
+        private const float NearbyTooltipRange = 2.5f;
+
+        private LootDrop NearestItem()
+        {
+            LootDrop best = null;
+            float bestSq = NearbyTooltipRange * NearbyTooltipRange;
+            foreach (LootDrop drop in LootDrop.All)
+            {
+                if (drop == null || drop.IsGold || !drop.IsInteractive)
+                    continue;
+                Vector3 offset = drop.transform.position - transform.position;
+                offset.y = 0f;
+                if (offset.sqrMagnitude < bestSq)
+                {
+                    bestSq = offset.sqrMagnitude;
+                    best = drop;
+                }
+            }
+            return best;
         }
 
         private LootDrop ReadMouse()
@@ -219,6 +245,8 @@ namespace PoeClone.Player
             // Every frame, before the early-out: a picked-up (destroyed) drop compares equal to
             // null, so the early-out alone would leave its tooltip up forever.
             InventoryUI.GroundHover = drop != null ? drop.Item : null;
+            if (drop != null)
+                InventoryUI.GroundHoverAt = drop.transform.position;
             if (drop == hovered)
                 return;
             LootDrop previous = hovered;

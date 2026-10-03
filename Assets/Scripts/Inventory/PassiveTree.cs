@@ -168,6 +168,7 @@ namespace PoeClone.Inventory
             N("f1", "Battle Rhythm", 0.55f, 0f, Mod(StatType.AttackSpeed, 3), Mod(StatType.PhysicalDamage, 1));
             N("f2", "Sharpened Edges", 0.9f, 0f, Mod(StatType.CriticalChance, 3));
             Chain("f1", "f2");
+            LifeSpur("f_life", "Battle Scars", "f2");
 
             N("f_a1", "Keen Eye", 1.2f, -0.3f, Mod(StatType.CriticalChance, 4));
             N("f_a2", "Fervour", 1.2f, 0.3f, Mod(StatType.AttackDamage, 8));
@@ -202,6 +203,7 @@ namespace PoeClone.Inventory
             N("g1", "Nimble", 0.55f, 0f, Mod(StatType.Evasion, 20));
             N("g2", "Agility", 0.9f, 0f, Mod(StatType.Dexterity, 6));
             Chain("g1", "g2");
+            LifeSpur("g_life", "Hardy", "g2");
 
             N("g3", "Light Step", 1.2f, -0.25f, Mod(StatType.MovementSpeed, 4));
             N("g4", "Dodge", 1.5f, -0.35f, Mod(StatType.Evasion, 30));
@@ -237,6 +239,7 @@ namespace PoeClone.Inventory
             N("s1", "Quickened Mind", 0.55f, 0f, Mod(StatType.CastSpeed, 4));
             N("s2", "Static", 0.9f, 0f, Mod(StatType.LightningDamage, 8));
             Chain("s1", "s2");
+            LifeSpur("s_life", "Grounded Body", "s2");
 
             N("s_sp1", "Spark", 1.3f, 0f, Mod(StatType.LightningDamage, 8));
             N("s_sp2", "Rime", 1.49f, -0.45f, Mod(StatType.ColdDamage, 8), Mod(StatType.DamageVsChilled, 6));
@@ -265,6 +268,7 @@ namespace PoeClone.Inventory
             N("w2", "Insight", 0.9f, 0f, Mod(StatType.Intelligence, 6));
             N("w3", "Spellcraft", 1.2f, 0f, Mod(StatType.SpellDamage, 6));
             Chain("w1", "w2", "w3");
+            LifeSpur("w_life", "Sound Body", "w2");
 
             // Mind: mana, ending in Mind over Matter.
             N("w4", "Deep Well", 1.5f, -0.45f, Mod(StatType.MaxMana, 20));
@@ -303,6 +307,7 @@ namespace PoeClone.Inventory
             Nt("z_hub", "Sacred Flame", 1.65f, 0f, Mod(StatType.FireDamage, 12), Mod(StatType.IgniteChance, 10));
             Devotion("z_hub", Mod(StatType.FireDamage, 1));
             Chain("z1", "z2", "z3", "z_hub");
+            LifeSpur("z_life", "Warm Blood", "z2");
 
             N("z_s1", "Smoulder", 1.93f, -0.48f, Mod(StatType.IgniteChance, 8));
             N("z_s2", "Combustion", 2.17f, -0.19f, Mod(StatType.ExplodeOnKill, 6));
@@ -351,6 +356,14 @@ namespace PoeClone.Inventory
             PassiveNode node = Place(id, name, true, u, v, mods);
             node.Keystone = true;
             return node;
+        }
+
+        // A lone life passive just off a sector's second step, in the gap on its clockwise side:
+        // every sector offers a little life without walking into a tanky branch for it.
+        private static void LifeSpur(string id, string name, string from)
+        {
+            N(id, name, 0.85f, -0.45f, Mod(StatType.IncreasedLife, 5));
+            Chain(from, id);
         }
 
         private static void Devotion(string id, params StatModifier[] perPassive)

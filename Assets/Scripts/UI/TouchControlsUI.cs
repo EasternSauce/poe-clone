@@ -45,6 +45,7 @@ namespace PoeClone.UI
         private Image aimBaseImage;
         private RectTransform aimKnob;
         private Image aimIcon;
+        private Text aimLabel;
         private string aimIconFor;
         private int aimPointer = int.MinValue;
         private Image runImage;
@@ -55,6 +56,7 @@ namespace PoeClone.UI
             public Image Back;
             public Image Cooldown;
             public Text Label;
+            public Image Ring;   // spins round a bow skill that's toggled on
         }
 
         private readonly List<SkillButton> skillButtons = new List<SkillButton>();
@@ -129,16 +131,34 @@ namespace PoeClone.UI
             unreadDot.SetActive(ChatUI.MessageCount > seenMessages);
         }
 
-        // The equipped weapon's painted icon (a bow for a bow), or the plain sword silhouette unarmed.
+        // The equipped weapon's painted icon, or the plain sword silhouette unarmed. A bow shows an
+        // arrow, or the letters of the bow skill that's on.
         private void UpdateAimIcon()
         {
             PlayerInventory inventory = stats != null ? stats.GetComponent<PlayerInventory>() : null;
             ItemData weapon = inventory != null ? inventory.Equipment.Get(EquipSlot.MainHand) : null;
-            string id = weapon != null ? weapon.Id : "";
+            Skills.SkillId? bowSkill = skills != null ? skills.ActiveBowSkill : null;
+            string id = (weapon != null ? weapon.Id : "") + "|" + bowSkill;
             if (id == aimIconFor)
                 return;
 
             aimIconFor = id;
+            aimLabel.text = "";
+            aimIcon.enabled = true;
+            if (bowSkill != null)
+            {
+                Skills.SkillDefinition skill = Skills.SkillBook.Get(bowSkill.Value);
+                aimIcon.enabled = false;
+                aimLabel.text = skill.Short;
+                aimLabel.color = new Color(skill.Color.r * 0.55f, skill.Color.g * 0.55f, skill.Color.b * 0.55f, 1f); // dark enough to read on the pale knob
+                return;
+            }
+            if (weapon != null && weapon.WeaponType == WeaponType.Bow)
+            {
+                aimIcon.sprite = IconFactory.Arrow;
+                aimIcon.color = new Color(0.92f, 0.86f, 0.72f, 0.9f);
+                return;
+            }
             Sprite painted = weapon != null ? ItemArt.PaintedIcon(weapon) : null;
             aimIcon.sprite = painted != null ? painted : IconFactory.Get(ItemType.Weapon);
             aimIcon.color = painted != null ? weapon.ArtTint : new Color(0.92f, 0.86f, 0.72f, 0.9f);
@@ -164,6 +184,10 @@ namespace PoeClone.UI
             {
                 SkillButton button = skillButtons[k];
                 Skills.SkillId? id = skills != null ? skills.Slot(k) : null;
+                bool on = id != null && skills.IsToggledOn(id.Value);
+                button.Ring.enabled = on;
+                if (on)
+                    SkillBarUI.SpinRing(button.Ring, Skills.SkillBook.Get(id.Value).Color);
                 if (id == null)
                 {
                     button.Back.color = new Color(0.08f, 0.07f, 0.06f, 0.3f);
@@ -441,6 +465,9 @@ namespace PoeClone.UI
             aimIcon.sprite = IconFactory.Get(ItemType.Weapon);
             aimIcon.preserveAspect = true;
             UiKit.Stretch(aimIcon.rectTransform, 16f);
+            aimLabel = UiKit.NewText("Label", aimKnob, "", 22, UiKit.TextColor, TextAnchor.MiddleCenter);
+            aimLabel.fontStyle = FontStyle.Bold;
+            UiKit.Stretch(aimLabel.rectTransform, 0f);
 
             TouchPointerRelay aim = aimBaseImage.gameObject.AddComponent<TouchPointerRelay>();
             aim.Down += OnAimDown;
@@ -469,7 +496,8 @@ namespace PoeClone.UI
                 int slot = k;
                 back.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.SkillPressed = slot;
                 TouchMode.AddBlocker(back.rectTransform);
-                skillButtons.Add(new SkillButton { Back = back, Cooldown = cooldown, Label = label });
+                Image ring = SkillBarUI.NewRing(back.rectTransform, 6f);
+                skillButtons.Add(new SkillButton { Back = back, Cooldown = cooldown, Label = label, Ring = ring });
             }
 
             // Potions: two small buttons along the bottom, between the run and skill buttons.

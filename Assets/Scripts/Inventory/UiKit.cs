@@ -13,6 +13,9 @@ namespace PoeClone.Inventory
         public static readonly Color TextColor = new Color(0.90f, 0.86f, 0.76f, 1f);
 
         /// <summary>True while a text field (e.g. the chat box) has keyboard focus, so hotkeys must not fire.</summary>
+        /// <summary>Frame in which a text box already used the Enter press (so the chat doesn't open on it).</summary>
+        public static int EnterHandledFrame = -1;
+
         public static bool IsTypingInTextField()
         {
             GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;

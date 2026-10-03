@@ -69,6 +69,8 @@ namespace PoeClone.Tests
                         Assert.AreEqual(ItemType.Grimoire, item.Type, m.Stat + " on " + item.Type);
                     if (SkillGrants.IsSummon(m.Stat) && item.Type == ItemType.Weapon)
                         Assert.AreEqual(WeaponType.Sceptre, item.WeaponType, m.Stat + " on " + item.WeaponType);
+                    if (SkillGrants.IsBowSkill(m.Stat))
+                        Assert.IsTrue(item.Type == ItemType.Quiver || item.WeaponType == WeaponType.Bow, m.Stat + " on " + item.Type + " " + item.WeaponType);
                 }
             }
         }
@@ -126,6 +128,39 @@ namespace PoeClone.Tests
             ItemData shield = ItemGenerator.Generate(new System.Random(1), "wooden_shield", 1, ItemRarity.Normal);
             Assert.IsFalse(SlotRules.HandsCompatible(staff, shield));
             Assert.IsTrue(SlotRules.HandsCompatible(staff, null));
+        }
+
+        [Test]
+        public void BowSkillLevels_SpanOneToTen_AndFavourTheTopFromStrongMonsters()
+        {
+            var rng = new System.Random(3);
+            int lowSum = 0, highSum = 0, lowTens = 0, highTens = 0;
+            var seen = new HashSet<int>();
+            for (int k = 0; k < 4000; k++)
+            {
+                int low = SkillGrants.RollBowLevel(rng, 1);
+                int high = SkillGrants.RollBowLevel(rng, 15);
+                Assert.That(low, Is.InRange(1, SkillGrants.MaxDropLevel));
+                Assert.That(high, Is.InRange(1, SkillGrants.MaxDropLevel));
+                seen.Add(low);
+                lowSum += low;
+                highSum += high;
+                if (low == 10) lowTens++;
+                if (high == 10) highTens++;
+            }
+            Assert.AreEqual(10, seen.Count, "every level should be possible even from weak monsters");
+            Assert.Greater(highSum, lowSum * 1.6);
+            Assert.Greater(highTens, lowTens * 2);
+        }
+
+        [Test]
+        public void StarterBow_CarriesSplitShot_AndBowSkillsAreNotTheAttack()
+        {
+            ItemData bow = ItemCatalog.CreateStarterItems().Find(i => i.Type == ItemType.Weapon && i.WeaponType == WeaponType.Bow);
+            Assert.IsNotNull(bow);
+            Assert.AreEqual(StatType.GrantSplitShot, Grants(bow)[0].Stat);
+            foreach (StatType grant in SkillGrants.BowSkills)
+                Assert.IsFalse(SkillGrants.IsMain(grant), grant + " must not be an attack spell");
         }
 
         [Test]

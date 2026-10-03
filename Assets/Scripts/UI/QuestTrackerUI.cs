@@ -120,9 +120,8 @@ namespace PoeClone.UI
                 sb.Append("<b>").Append(q.Title).Append("</b>\n");
                 if (log.State(q) == QuestState.Complete)
                 {
-                    Npc giver = Npc.Find(q.Giver);
-                    sb.Append("<color=#FFD040>  Return to ").Append(giver != null ? giver.DisplayName : q.Giver.ToString())
-                        .Append(" in Haven</color>");
+                    string line = NpcDialogues.ReturnLine(q);
+                    sb.Append("<color=#FFD040>  ").Append(char.ToUpperInvariant(line[0])).Append(line.Substring(1)).Append("</color>");
                 }
                 else
                 {

@@ -91,7 +91,7 @@ namespace PoeClone.Enemies
 
             TrackPlayer();
 
-            if (player.IsDead || Time.time < nextUse || Busy)
+            if (player.IsDead || Time.time < nextUse || Busy || Sanctuary.Contains(player.transform.position, 1f))
                 return;
             if ((stagger != null && stagger.IsStaggered) || (attackAnimator != null && attackAnimator.IsAttacking))
                 return;

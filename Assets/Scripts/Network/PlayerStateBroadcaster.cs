@@ -164,6 +164,7 @@ namespace PoeClone.Network
             hud.dead = stats.IsDead ? 1 : 0;
             hud.cd = stats.IsDead ? stats.CountdownSecondsRemaining : 0f;
             hud.rv = stats.IsAwaitingRevive ? 1 : 0;
+            hud.arw = inventory != null ? Mathf.Max(0, Mathf.RoundToInt(inventory.Stats.Total(StatType.AdditionalArrows))) : 0;
 
             for (int k = 0; k < snapshot.eq.Length; k++)
             {
@@ -266,8 +267,14 @@ namespace PoeClone.Network
             gear.so = side != null ? 1 : 0;
             gear.side = side != null ? Placed(side) : new GearItem[0];
             gear.sn = inventoryUI != null ? inventoryUI.SideName ?? string.Empty : string.Empty;
+            gear.st = inventory != null ? inventory.StashTab : 0;
+            if (gear.stn == null || gear.stn.Length != PlayerInventory.StashTabCount)
+                gear.stn = new string[PlayerInventory.StashTabCount];
+            for (int k = 0; k < gear.stn.Length; k++)
+                gear.stn[k] = inventory != null ? inventory.StashTabCustomName(k) : string.Empty;
             ItemData held = inventoryUI != null ? inventoryUI.HeldItem : null;
             gear.held = held != null ? GearCodec.ToWire(held) : new GearItem();
+            gear.gnd = GroundItems(pt: stats.transform.position);
 
             gear.gold = inventory != null ? inventory.Gold : 0;
             gear.hpot = inventory != null ? inventory.HealthPotions : 0;
@@ -357,6 +364,7 @@ namespace PoeClone.Network
 
                 var ai = enemy.GetComponent<EnemyController>();
                 e.ch = ai != null && ai.CurrentState == EnemyController.State.Chasing ? 1 : 0;
+                e.en = ai != null && ai.IsEnraged ? 1 : 0;
                 e.k = enemy.KindIndex;
 
                 var skills = enemy.GetComponent<EnemySkills>();
@@ -389,6 +397,7 @@ namespace PoeClone.Network
                 e.ap = attack != null ? attack.ProfileId : 0;
                 e.stg = 0;
                 e.ch = 0;
+                e.en = 0;
                 e.k = minion.LookIndex;
                 e.sk = 0;
                 e.sx = 0f;
@@ -402,6 +411,26 @@ namespace PoeClone.Network
         }
 
         // Loot never moves, so this is cheap; the list is short (drops expire, pickups remove them).
+        // The same items CaptureLoot lists, with all their stats. Gold has nothing to read.
+        private GearItem[] GroundItems(Vector3 pt)
+        {
+            float radiusSq = interestRadius * interestRadius;
+            var list = new List<GearItem>();
+            foreach (LootDrop drop in LootDrop.All)
+            {
+                if (drop == null || drop.IsGold)
+                    continue;
+                Vector3 offset = drop.transform.position - pt;
+                offset.y = 0f;
+                if (offset.sqrMagnitude > radiusSq)
+                    continue;
+                GearItem g = GearCodec.ToWire(drop.Item);
+                g.x = drop.Id;
+                list.Add(g);
+            }
+            return list.ToArray();
+        }
+
         private void CaptureLoot(Vector3 center)
         {
             float radiusSq = interestRadius * interestRadius;

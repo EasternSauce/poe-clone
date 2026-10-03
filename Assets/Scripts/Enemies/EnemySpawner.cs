@@ -68,6 +68,8 @@ namespace PoeClone.Enemies
 
         private bool NearSafeSpot(Vector3 p)
         {
+            if (Sanctuary.Contains(p, 4f))
+                return true;
             foreach (Vector3 s in safeSpots)
             {
                 float dx = s.x - p.x;
@@ -177,7 +179,35 @@ namespace PoeClone.Enemies
             vacancies.Add(new Vacancy { Position = position, DiedAt = Time.time });
         }
 
-        private void Spawn(Vector3 point, int kindIndex)
+        /// <summary>
+        /// A quest ambush: this many of a kind (by name) round a spot, already hunting the player.
+        /// They don't come back once killed (their spots aren't refilled).
+        /// </summary>
+        public void SpawnAmbush(Vector3 near, string kindName, int count, float minRadius = 5f, float maxRadius = 9f)
+        {
+            int kindIndex = EnemyKinds.IndexOf(kindName);
+            if (kindIndex < 0 || enemyPrefab == null)
+                return;
+            for (int k = 0; k < count; k++)
+            {
+                for (int attempt = 0; attempt < maxAttemptsPerEnemy; attempt++)
+                {
+                    float angle = Random.Range(0f, Mathf.PI * 2f);
+                    float radius = Random.Range(minRadius, maxRadius);
+                    Vector3 candidate = new Vector3(near.x + Mathf.Cos(angle) * radius, spawnHeight, near.z + Mathf.Sin(angle) * radius);
+                    if ((inside != null && !inside(candidate)) || Sanctuary.Contains(candidate, 2f) ||
+                        Physics.CheckSphere(candidate + Vector3.up * 0.5f, clearanceRadius))
+                        continue;
+                    GameObject enemy = Spawn(candidate, kindIndex, refills: false);
+                    EnemyController ai = enemy.GetComponent<EnemyController>();
+                    if (ai != null)
+                        ai.Alert();
+                    break;
+                }
+            }
+        }
+
+        private GameObject Spawn(Vector3 point, int kindIndex, bool refills = true)
         {
             // Bigger kinds stand taller: lift the pivot so their feet start on the ground, not in it.
             point.y = spawnHeight * EnemyKinds.Get(kindIndex).Scale;
@@ -187,13 +217,14 @@ namespace PoeClone.Enemies
             EnemyKinds.Apply(enemy, kindIndex, monsterLevel);
 
             EnemyHealth health = enemy.GetComponent<EnemyHealth>();
-            if (health != null)
+            if (health != null && refills)
             {
                 Transform body = enemy.transform;
                 Vector3 home = point;
                 // Where it stood when it died; its spawn point if the body is already gone.
                 health.Died += () => OnEnemyDied(body != null ? body.position : home);
             }
+            return enemy;
         }
 
         private bool TryFindSpawnPointNear(Vector3 center, out Vector3 point)

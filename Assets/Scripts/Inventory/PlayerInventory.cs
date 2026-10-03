@@ -36,6 +36,41 @@ namespace PoeClone.Inventory
         {
             StashTab = Mathf.Clamp(tab, 0, StashTabCount - 1);
         }
+
+        /// <summary>The longest name a stash tab takes.</summary>
+        public const int StashTabNameLimit = 14;
+
+        private readonly string[] stashTabNames = new string[StashTabCount];
+
+        /// <summary>Raised when a stash tab is renamed.</summary>
+        public event Action StashTabNamesChanged;
+
+        /// <summary>The name the player gave a stash tab, or "" for none.</summary>
+        public string StashTabCustomName(int tab)
+        {
+            return tab >= 0 && tab < StashTabCount ? stashTabNames[tab] ?? string.Empty : string.Empty;
+        }
+
+        /// <summary>What a stash tab's button shows: its own name, or "Tab N".</summary>
+        public string StashTabName(int tab)
+        {
+            string name = StashTabCustomName(tab);
+            return name.Length > 0 ? name : "Tab " + (tab + 1);
+        }
+
+        /// <summary>Names a stash tab ("" or blank goes back to "Tab N").</summary>
+        public void RenameStashTab(int tab, string name)
+        {
+            if (tab < 0 || tab >= StashTabCount)
+                return;
+            name = (name ?? string.Empty).Trim();
+            if (name.Length > StashTabNameLimit)
+                name = name.Substring(0, StashTabNameLimit);
+            if (name == StashTabCustomName(tab))
+                return;
+            stashTabNames[tab] = name;
+            StashTabNamesChanged?.Invoke();
+        }
         public EquipmentSet Equipment { get; private set; }
         public StatSheet Stats { get; private set; }
 

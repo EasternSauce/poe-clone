@@ -105,7 +105,16 @@ namespace PoeClone.Inventory
         SoulBond,                   // % of minion damage dealt returned to the player as life
         DeathsHerald,               // 1: a marked enemy that dies bursts and passes the mark on
         BoneArmour,                 // % less damage taken by minions
-        GrantGraveRot               // a grimoire's curse (a bar skill)
+        GrantGraveRot,              // a grimoire's curse (a bar skill)
+
+        // Bow skills (see SkillGrants.BowSkills): on bows and quivers, toggled on the bar, and while
+        // one is on it is what the bow shoots. They are attacks: everything that improves bow
+        // attacks (Additional Arrows, attack speed and damage) improves them too.
+        GrantSplitShot,
+        GrantPiercingShot,
+        GrantRainOfArrows,
+        GrantBurningArrow,
+        ExtraArrowChance            // % chance for a bow attack to fire one more arrow
     }
 
     /// <summary>
@@ -124,7 +133,16 @@ namespace PoeClone.Inventory
         {
             return (stat >= StatType.GrantCleave && stat <= StatType.GrantIceShard) || stat == StatType.GrantTeleport ||
                    stat == StatType.GrantRaiseSkeletons || (stat >= StatType.GrantDeathMark && stat <= StatType.GrantBoneGolem) ||
-                   stat == StatType.GrantGraveRot;
+                   stat == StatType.GrantGraveRot || IsBowSkill(stat);
+        }
+
+        /// <summary>The bow skills: they roll on bows and quivers (never as the attack) and are toggled from the bar.</summary>
+        public static readonly StatType[] BowSkills =
+            { StatType.GrantSplitShot, StatType.GrantPiercingShot, StatType.GrantRainOfArrows, StatType.GrantBurningArrow };
+
+        public static bool IsBowSkill(StatType stat)
+        {
+            return Array.IndexOf(BowSkills, stat) >= 0;
         }
 
         /// <summary>The attack spells a grimoire carries (one always rolls on every grimoire).</summary>
@@ -176,6 +194,10 @@ namespace PoeClone.Inventory
                 case StatType.GrantSpiritWolves: return "Spirit Wolves";
                 case StatType.GrantBoneGolem: return "Bone Golem";
                 case StatType.GrantGraveRot: return "Grave Rot";
+                case StatType.GrantSplitShot: return "Split Shot";
+                case StatType.GrantPiercingShot: return "Piercing Shot";
+                case StatType.GrantRainOfArrows: return "Rain of Arrows";
+                case StatType.GrantBurningArrow: return "Burning Arrow";
                 default: return grant.ToString();
             }
         }
@@ -190,6 +212,19 @@ namespace PoeClone.Inventory
             double roll = rng.NextDouble();
             int below = roll < 0.5 ? 0 : roll < 0.85 ? 1 : 2;
             return Math.Max(1, top - below);
+        }
+
+        /// <summary>
+        /// A bow skill's level: any of 1 to 10 at every item level, but low levels are common from
+        /// weak monsters and the top ones far likelier from strong ones (item level 1: about 4% for
+        /// level 10 and a median of 2; item level 15: about 17% for level 10 and a median of 7).
+        /// </summary>
+        public static int RollBowLevel(Random rng, int itemLevel)
+        {
+            double t = Math.Max(0.0, Math.Min(1.0, (itemLevel - 1) / 14.0));
+            double skew = 2.5 + (0.55 - 2.5) * t;
+            int level = 1 + (int)Math.Floor(MaxDropLevel * Math.Pow(rng.NextDouble(), skew));
+            return Math.Max(1, Math.Min(MaxDropLevel, level));
         }
     }
 
@@ -428,6 +463,7 @@ namespace PoeClone.Inventory
                 case StatType.SoulBond: return "Soul Bond";
                 case StatType.DeathsHerald: return "Death's Herald";
                 case StatType.BoneArmour: return "Minion Damage Taken";
+                case StatType.ExtraArrowChance: return "Extra Arrow Chance";
                 default:
                     if (SkillGrants.IsGrant(stat))
                         return SkillGrants.SkillName(stat);
@@ -486,6 +522,7 @@ namespace PoeClone.Inventory
                 case StatType.MinionDuration:
                 case StatType.SoulBond:
                 case StatType.BoneArmour:
+                case StatType.ExtraArrowChance:
                     return true;
                 default:
                     return false;
@@ -574,6 +611,7 @@ namespace PoeClone.Inventory
                 case StatType.MinionDuration: return Increased(m, "duration of Spirit Wolves and the Bone Golem");
                 case StatType.SoulBond: return n + "% of Minion Damage is returned to you as Life";
                 case StatType.DeathsHerald: return "A Marked enemy that dies bursts for a fifth of its life, and the Mark leaps to the nearest enemy";
+                case StatType.ExtraArrowChance: return n + "% chance for Bow Attacks to fire an additional arrow";
                 case StatType.BoneArmour: return "Minions take " + n + "% " + (m.Value < 0f ? "more" : "less") + " damage";
                 default:
                     if (SkillGrants.IsGrant(m.Stat))

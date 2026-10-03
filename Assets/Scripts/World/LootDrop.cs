@@ -318,7 +318,7 @@ namespace PoeClone.World
         /// this screen point - the nearest to the camera if they overlap, or null. Only interactive
         /// drops that have landed count.
         /// </summary>
-        public static LootDrop FindAtScreen(Vector2 screenPoint)
+        public static LootDrop FindAtScreen(Vector2 screenPoint, bool displayOnly = false)
         {
             Camera cam = Camera.main;
             if (cam == null)
@@ -330,7 +330,7 @@ namespace PoeClone.World
 
             foreach (LootDrop drop in All)
             {
-                if (!drop.interactive || drop.icon == null || Time.time < drop.clickableAt)
+                if ((!drop.interactive && !displayOnly) || drop.icon == null || Time.time < drop.clickableAt)
                     continue;
 
                 bool hit = PaddedRectContainsScreenPoint(drop.labelBack.rectTransform, cam, screenPoint, padding) ||

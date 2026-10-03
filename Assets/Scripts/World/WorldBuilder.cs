@@ -154,6 +154,7 @@ namespace PoeClone.World
             BuildGlowshrooms();
             BuildGreenwoodOutskirts();
             BuildWaystones();
+            BuildOutposts();
 
             // Gates: Haven - Greenwood - Graveyard - Ruins - Frozen Hollow. The way home is the
             // town portal or a waystone.
@@ -163,6 +164,7 @@ namespace PoeClone.World
             Connect(Ruins, new Vector3(0f, 0f, 40f), Frozen, new Vector3(-40f, 0f, 0f));
             BuildHavenRoads();
             BuildBorders();
+            BuildQuestSites();
 
             SetUpSpawners();
             BuildTownsfolk();
@@ -671,6 +673,8 @@ namespace PoeClone.World
                 Skin = new Color(0.78f, 0.62f, 0.50f), Eyes = new Color(0.1f, 0.1f, 0.15f),
                 Gear = new[] { "iron_helmet", "rusty_sword", "wooden_shield" }
             });
+
+            BuildOutpostFolk(spawner.EnemyPrefab);
         }
 
         private void AddNpc(GameObject prefab, Transform parent, NpcRole role, string name, Vector3 faceTowards, EnemyKind look)
@@ -687,6 +691,16 @@ namespace PoeClone.World
         private List<Vector3> SafeSpots(int area)
         {
             var spots = new List<Vector3> { spawnPoints[area].position };
+            // Quest props shouldn't have a monster standing on them when the player gets there.
+            Transform sites = root.Find("QuestSites");
+            if (sites != null)
+            {
+                foreach (Transform site in sites)
+                {
+                    if (Shape(area).Contains(site.position))
+                        spots.Add(site.position);
+                }
+            }
             foreach (Transform child in root)
             {
                 if (child.name.StartsWith("Arrive_" + AreaNames[area] + "_"))

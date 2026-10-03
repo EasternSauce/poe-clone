@@ -19,7 +19,11 @@ namespace PoeClone.Skills
         SkeletonMages,
         SpiritWolves,
         BoneGolem,
-        GraveRot
+        GraveRot,
+        SplitShot,
+        PiercingShot,
+        RainOfArrows,
+        BurningArrow
     }
 
     /// <summary>The element a spell belongs to, for "+1 to level of all Fire Spells" and the like.</summary>
@@ -56,6 +60,12 @@ namespace PoeClone.Skills
         /// use the player's own damage stats (see <see cref="Minion"/>).
         /// </summary>
         public bool Summon => SkillGrants.IsSummon(Grant);
+
+        /// <summary>
+        /// A bow skill: toggled on and off from the bar (one at a time, no mana, no cooldown), and
+        /// while it's on, the bow's attack is this skill (see PlayerSkills.ReleaseBow).
+        /// </summary>
+        public bool Bow => SkillGrants.IsBowSkill(Grant);
 
         /// <summary>
         /// Mana per use: 40% more each level (4.6x at level 10), so the cost keeps pace with a
@@ -186,6 +196,30 @@ namespace PoeClone.Skills
                 Id = SkillId.GraveRot, Name = "Grave Rot", Short = "ROT", Grant = StatType.GrantGraveRot, RollsOn = "grimoires, helmets",
                 Spell = true, ManaCost = 16f, Cooldown = 6f, Color = Curse.RotColor,
                 Description = "Curse the ground where you aim: every enemy there rots for 6 seconds (+0.3s per level), dealing 20% less damage (+1% per level, to you and your minions) and taking 15% more damage from every hit (+1.5% per level)."
+            },
+            new SkillDefinition
+            {
+                Id = SkillId.SplitShot, Name = "Split Shot", Short = "SPL", Grant = StatType.GrantSplitShot, RollsOn = "bows, quivers",
+                Color = new Color(0.75f, 0.95f, 0.5f),
+                Description = "Bow skill (toggle): each shot splits into a wide fan, 2 more arrows (+1 at levels 4 and 8) for 75% damage each (+2.5% per level). Each enemy is hit by one arrow at most."
+            },
+            new SkillDefinition
+            {
+                Id = SkillId.PiercingShot, Name = "Piercing Shot", Short = "PRC", Grant = StatType.GrantPiercingShot, RollsOn = "bows, quivers",
+                Color = new Color(0.85f, 0.9f, 1f),
+                Description = "Bow skill (toggle): a heavy draw that looses an arrow through every enemy in its path, flying 30% further for 110% damage (+5% per level). 10% slower."
+            },
+            new SkillDefinition
+            {
+                Id = SkillId.RainOfArrows, Name = "Rain of Arrows", Short = "RAIN", Grant = StatType.GrantRainOfArrows, RollsOn = "bows, quivers",
+                Color = new Color(0.95f, 0.8f, 0.45f),
+                Description = "Bow skill (toggle): shoot into the sky and 6 arrows (+1 at levels 4 and 8, +2 per extra arrow) rain down where you aim, each hitting what it lands near for 45% damage (+2.5% per level). 15% slower."
+            },
+            new SkillDefinition
+            {
+                Id = SkillId.BurningArrow, Name = "Burning Arrow", Short = "BRN", Grant = StatType.GrantBurningArrow, RollsOn = "bows, quivers",
+                Color = new Color(1f, 0.5f, 0.2f),
+                Description = "Bow skill (toggle): arrows of fire for 100% damage (+4% per level) as Fire, bursting to scorch those around the target, with a 20% chance (+2% per level) to set it burning."
             },
         };
 

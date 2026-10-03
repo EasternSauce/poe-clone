@@ -48,6 +48,7 @@ namespace PoeClone.Network.Replication
                 AppendInt(sb, "dead", h.dead);
                 AppendFloat(sb, "cd", h.cd, 2);
                 AppendInt(sb, "rv", h.rv);
+                AppendInt(sb, "arw", h.arw);
                 sb.Append('}');
             }
 
@@ -208,6 +209,7 @@ namespace PoeClone.Network.Replication
             AppendInt(sb, "stg", e.stg);
             AppendInt(sb, "ch", e.ch);
             AppendInt(sb, "k", e.k);
+            AppendInt(sb, "en", e.en);
             if (e.sk != 0)
             {
                 AppendInt(sb, "sk", e.sk);

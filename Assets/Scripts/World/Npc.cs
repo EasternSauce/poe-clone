@@ -12,7 +12,11 @@ namespace PoeClone.World
         Smith,
         Guard,
         Waystone,  // not a person: the travel stone (see Waystone)
-        Stash      // not a person: the storage chest in Haven
+        Stash,     // not a person: the storage chest in Haven
+        Gravekeeper,
+        Commander,
+        Seer,
+        QuestProp  // not a person: something a quest has the player use (see Quests.QuestProp)
     }
 
     /// <summary>
@@ -159,6 +163,21 @@ namespace PoeClone.World
             marker = text;
             label.SetText(string.IsNullOrEmpty(text) ? DisplayName : text + "  " + DisplayName + "  " + text,
                 string.IsNullOrEmpty(text) ? NameColor : MarkerColor);
+        }
+
+        /// <summary>Shows or hides the name tag (a quest prop's, while there's nothing to do with it).</summary>
+        public void SetLabelVisible(bool visible)
+        {
+            if (label != null)
+                label.gameObject.SetActive(visible);
+        }
+
+        /// <summary>Changes the name on the tag (keeping any marker).</summary>
+        public void Rename(string displayName, Color color)
+        {
+            DisplayName = displayName;
+            if (label != null)
+                label.SetText(displayName, color);
         }
 
         private void OnEnable()

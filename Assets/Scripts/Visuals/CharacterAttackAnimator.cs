@@ -77,6 +77,9 @@ namespace PoeClone.Visuals
 
             // Half-angle of the cone the blow reaches (0: the attacker's own default).
             public float ConeHalfAngle;
+
+            // An absolute (bow) pose's lean: how far the body tips over the draw (forward +).
+            public float Lean;
         }
 
         private static readonly AttackProfile UnarmedProfile = new AttackProfile
@@ -250,6 +253,79 @@ namespace PoeClone.Visuals
             Range = 14f
         };
 
+        // Bow skills' draws (see BowStyle): each replaces the plain shot while its skill is on.
+        // Split Shot sweeps the bow across the body as it looses, so the fan reads as thrown wide.
+        private static readonly AttackProfile BowFanProfile = new AttackProfile
+        {
+            Duration = 0.6f,
+            StrikeTime = 0.62f,
+            Absolute = true,
+            WindupOffset = new Pose(-80f, -55f, 0f, 125f),
+            StrikeOffset = new Pose(-80f, 20f, 0f, 95f),
+            UsesOffArm = true,
+            OffWindup = new Pose(-90f, -38f, 0f, 0f),
+            OffStrike = new Pose(-90f, 30f, 0f, 0f),
+            BaseAttacksPerSecond = BowProfile.BaseAttacksPerSecond,
+            Range = BowProfile.Range
+        };
+
+        // Rain of Arrows: both arms high, bow pointed at the sky, leaning back into the draw.
+        private static readonly AttackProfile BowSkyProfile = new AttackProfile
+        {
+            Duration = 0.65f,
+            StrikeTime = 0.62f,
+            Absolute = true,
+            WindupOffset = new Pose(-150f, -24f, 0f, 125f),
+            StrikeOffset = new Pose(-152f, -8f, 0f, 85f),
+            UsesOffArm = true,
+            OffWindup = new Pose(-158f, -4f, 0f, 0f),
+            OffStrike = new Pose(-160f, -4f, 0f, 0f),
+            Lean = -14f,
+            BaseAttacksPerSecond = BowProfile.BaseAttacksPerSecond,
+            Range = BowProfile.Range
+        };
+
+        // Piercing Shot: a long, deep draw past the chin, leaning into it, then a hard snap back.
+        private static readonly AttackProfile BowHeavyProfile = new AttackProfile
+        {
+            Duration = 0.72f,
+            StrikeTime = 0.72f,
+            Absolute = true,
+            WindupOffset = new Pose(-84f, -40f, 0f, 150f),
+            StrikeOffset = new Pose(-70f, -2f, 0f, 70f),
+            UsesOffArm = true,
+            OffWindup = new Pose(-92f, -6f, 0f, 0f),
+            OffStrike = new Pose(-88f, -2f, 0f, 0f),
+            Lean = 8f,
+            BaseAttacksPerSecond = BowProfile.BaseAttacksPerSecond,
+            Range = BowProfile.Range
+        };
+
+        // Burning Arrow: the bow canted on its side, drawn low and loosed with a flick upward.
+        private static readonly AttackProfile BowCantedProfile = new AttackProfile
+        {
+            Duration = 0.6f,
+            StrikeTime = 0.65f,
+            Absolute = true,
+            WindupOffset = new Pose(-68f, -30f, 40f, 125f),
+            StrikeOffset = new Pose(-88f, -10f, 30f, 95f),
+            UsesOffArm = true,
+            OffWindup = new Pose(-78f, -4f, 45f, 0f),
+            OffStrike = new Pose(-96f, -4f, 35f, 0f),
+            BaseAttacksPerSecond = BowProfile.BaseAttacksPerSecond,
+            Range = BowProfile.Range
+        };
+
+        /// <summary>The draw a bow skill replaces the plain shot with.</summary>
+        public enum BowStyle
+        {
+            Plain,
+            Fan,
+            Sky,
+            Heavy,
+            Canted
+        }
+
         // Creatures (see CreatureAnimator): no arms to pose, just the timing of a bite or a spit,
         // which the creature's own animator turns into a lunge.
         private static readonly AttackProfile BiteProfile = new AttackProfile
@@ -286,7 +362,11 @@ namespace PoeClone.Visuals
             GreatswordProfile,
             GreatswordBackhandProfile,
             GreataxeProfile,
-            MaulProfile
+            MaulProfile,
+            BowFanProfile,
+            BowSkyProfile,
+            BowHeavyProfile,
+            BowCantedProfile
         };
 
         /// <summary>Whether the profile with this id shoots (an arrow) rather than hits.</summary>
@@ -387,6 +467,19 @@ namespace PoeClone.Visuals
         public void PlayAttack(WeaponType weaponType)
         {
             Play(PickProfile(weaponType));
+        }
+
+        /// <summary>A bow shot drawn the way a bow skill draws it (Plain: the ordinary shot).</summary>
+        public void PlayBow(BowStyle style)
+        {
+            switch (style)
+            {
+                case BowStyle.Fan: Play(BowFanProfile); break;
+                case BowStyle.Sky: Play(BowSkyProfile); break;
+                case BowStyle.Heavy: Play(BowHeavyProfile); break;
+                case BowStyle.Canted: Play(BowCantedProfile); break;
+                default: Play(BowProfile); break;
+            }
         }
 
         // Picks which animation actually plays. Independent of ProfileFor, which stays the
@@ -526,7 +619,8 @@ namespace PoeClone.Visuals
             Pose fromRest = new Pose(pose.ArmPitch - rest.ArmPitch, pose.ArmYaw - rest.ArmYaw, 0f, 0f);
             if (p.Absolute)
             {
-                TorsoPitch = 0f;
+                // Leans in over the draw and straightens up through the recovery.
+                TorsoPitch = p.Lean * (f < p.StrikeTime ? EaseOut(f / Mathf.Max(0.01f, p.StrikeTime)) : 1f - (f - p.StrikeTime) / Mathf.Max(0.01f, 1f - p.StrikeTime));
                 TorsoYaw = fromRest.ArmYaw * 0.25f;
                 Lunge = 0f;
             }

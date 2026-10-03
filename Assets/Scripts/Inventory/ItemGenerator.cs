@@ -373,6 +373,7 @@ namespace PoeClone.Inventory
         private static readonly WeaponType[] GreatWeapons = { WeaponType.Greatsword, WeaponType.Greataxe, WeaponType.Maul };
         private static readonly WeaponType[] Staves = { WeaponType.Staff };
         private static readonly WeaponType[] Sceptres = { WeaponType.Sceptre };
+        private static readonly WeaponType[] Bows = { WeaponType.Bow };
 
         private static readonly Affix[] Affixes =
         {
@@ -423,7 +424,7 @@ namespace PoeClone.Inventory
             Grant(StatType.GrantChainLightning, 0.15f, ItemType.Weapon).Only(Staves),
             Grant(StatType.GrantIceShard, 0.15f, ItemType.Weapon).Only(Staves),
             Grant(StatType.GrantFrostNova, 0.3f, ItemType.Weapon, ItemType.Helmet, ItemType.Gloves).Only(Staves),
-            Grant(StatType.GrantRejuvenate, 0.3f, ItemType.Weapon, ItemType.Amulet, ItemType.Belt).Only(Staves),
+            Grant(StatType.GrantRejuvenate, 0.6f, ItemType.Weapon, ItemType.Amulet, ItemType.Belt).Only(Staves),
             Grant(StatType.GrantCleave, 0.6f, ItemType.Weapon).Only(MeleeWeapons),
             Grant(StatType.GrantDash, 0.45f, ItemType.Boots),
             Grant(StatType.GrantTeleport, 0.5f, ItemType.Amulet, ItemType.Ring, ItemType.Gloves),
@@ -449,6 +450,15 @@ namespace PoeClone.Inventory
             Grant(StatType.GrantBoneGolem, 0.45f, ItemType.Grimoire, ItemType.Weapon, ItemType.BodyArmour, ItemType.Belt).Only(Sceptres),
             Grant(StatType.GrantGraveRot, 0.8f, ItemType.Grimoire),
             Grant(StatType.GrantGraveRot, 0.15f, ItemType.Helmet),
+
+            // The archer: bow skills on bows and quivers (any level from 1 to 10, the high ones
+            // likelier from strong monsters, see SkillGrants.RollBowLevel), and now and then a
+            // chance to loose one more arrow.
+            Grant(StatType.GrantSplitShot, 0.45f, ItemType.Weapon, ItemType.Quiver).Only(Bows),
+            Grant(StatType.GrantPiercingShot, 0.4f, ItemType.Weapon, ItemType.Quiver).Only(Bows),
+            Grant(StatType.GrantRainOfArrows, 0.4f, ItemType.Weapon, ItemType.Quiver).Only(Bows),
+            Grant(StatType.GrantBurningArrow, 0.4f, ItemType.Weapon, ItemType.Quiver).Only(Bows),
+            Aff(StatType.ExtraArrowChance, 5, 15, false, ItemType.Weapon, ItemType.Quiver).Only(Bows).Weighted(0.25f),
         };
 
         // Magic items are named after their first stats, PoE style: "Hale Iron Helmet of the Fox".
@@ -468,6 +478,9 @@ namespace PoeClone.Inventory
             { StatType.MinionLife, "Bonebound" },
             { StatType.GrantRaiseSkeletons, "Gravecaller's" },
             { StatType.GrantSkeletonMages, "Lichbound" },
+            { StatType.GrantSplitShot, "Splitting" },
+            { StatType.GrantPiercingShot, "Piercing" },
+            { StatType.GrantBurningArrow, "Smouldering" },
         };
 
         private static readonly Dictionary<StatType, string> Suffixes = new Dictionary<StatType, string>
@@ -499,6 +512,8 @@ namespace PoeClone.Inventory
             { StatType.MinionLevels, "of the Necromancer" },
             { StatType.GrantSpiritWolves, "of the Pack" },
             { StatType.GrantBoneGolem, "of the Ossuary" },
+            { StatType.GrantRainOfArrows, "of the Downpour" },
+            { StatType.ExtraArrowChance, "of Volleys" },
         };
 
         private static readonly string[] RareFirstWords =
@@ -848,7 +863,11 @@ namespace PoeClone.Inventory
                     continue;
 
                 float value;
-                if (SkillGrants.IsGrant(a.Stat))
+                if (SkillGrants.IsBowSkill(a.Stat))
+                {
+                    value = SkillGrants.RollBowLevel(rng, level);
+                }
+                else if (SkillGrants.IsGrant(a.Stat))
                 {
                     value = SkillGrants.RollLevel(rng, level);
                 }
@@ -923,6 +942,11 @@ namespace PoeClone.Inventory
                 case StatType.MovementSpeed:
                 case StatType.LifeOnKill:
                 case StatType.GrantDash:
+                case StatType.GrantSplitShot:
+                case StatType.GrantPiercingShot:
+                case StatType.GrantRainOfArrows:
+                case StatType.GrantBurningArrow:
+                case StatType.ExtraArrowChance:
                     return Leaning.Dex;
                 case StatType.Intelligence:
                 case StatType.MaxMana:

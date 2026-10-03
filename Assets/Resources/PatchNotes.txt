@@ -1,16 +1,20 @@
-version: 2026-10-03r
-<b>The Summoner</b>
-- Minions now fight for real: enemies attack a minion that is nearer than you (and always a Bone Golem close to them), and minions have life of their own (a green bar when hurt).
-- Minions don't use your own damage, life or Intelligence. Their life and damage come from the summon's level (steeply, level by level) and from new minion stats: Minion Life, Minion Damage, Minion Speed, Minions take less damage. Without investing in them they fall in a few hits - a summoner who wants an army that holds the line has to build for it.
-- Summon levels: new "+1 to Level of all Summon Skills" and "+1/+2 to Level of Raise Skeletons / Skeleton Mages / Spirit Wolves / Bone Golem" stats on sceptres, grimoires, helmets, gloves, boots, body armour, amulets and rings. "+1 to all Spells" doesn't raise summons.
-- Raise Skeletons: skeleton warriors now stay until destroyed. At most 2 (one more at levels 7 and 12); casting again at the cap replaces the most battered one.
-- New summons: Skeleton Mages (hang back and cast bolts, frail), Spirit Wolves (a fast pack for 12 seconds that enemies can't touch) and Bone Golem (a big temporary brute that taunts enemies round it).
-- New one-handed weapon: the Sceptre. Its blows put Death Mark on what they hit. A Bone Sceptre carrying Raise Skeletons now lies on the benches in Haven at the start (Raise Skeletons is no longer on the starting helmet).
-- New off-hand: the Grimoire, for a one-handed weapon or empty hand. Its attack is Death Mark, a bolt that marks an enemy: your minions rush it and hit it 30% harder.
-- Grave Rot, a curse that rolls on grimoires (and now and then helmets): enemies where you aim deal 20% less damage and take 15% more for 6 seconds, more with each level.
-- A Necromancy cluster on the passive tree, out past Fire Ward between Wisdom and Zeal: minion life and damage, Lord of Bones (+1 to all summons) and four keystones - Bone Legion, Soul Bond, Death's Herald, Spirit Pact.
-- Two new uniques: The Ossuary Codex (grimoire) and Gravewarden's Rod (sceptre).
-- Spectators see every minion, with green bars.
+version: 2026-10-03s
+<b>Quests: the story so far</b>
+- Every quest line is now a storyline, all leading to the same dark secret in the north. Quests start over for existing characters (levels, gear and waystones are kept).
+- New people to meet out in the wilds: Tobias the Gravekeeper, in a candle-warded hut in the Haunted Graveyard, and the Emberwatch - a palisade camp deep in the Ashen Ruins with Commander Varek and Seer Ysolde. Monsters won't follow you into either; Varek's quartermaster sells potions and buys loot.
+- People send you to each other: Maren to Tobias, Tobias back to Maren, Maren on to the Emberwatch, Hale to Bram, Oda to her brother Varek.
+- Quests ask more than "kill this many": smash bone totems, break Mortis's reliquaries, recover supply caches and lost crates, take badges and journals from fallen scouts (each with its own story), wake three sunstones to melt the ice sealing the way to the Frozen Hollow, and hold a rite at the Ashen Shrine against waves of the Warlord's host. Many of these call an ambush down on you.
+- What a quest wants you to find shows on the minimap as an orange square.
+- Captain Hale and Merchant Oda have their own storylines: The Lost Patrol and The Lost Caravan. Hale's bounty board opens after his.
+- The story ends at a door beneath the ice. What sleeps behind it is still asleep... for now.
+<b>Bow skills</b>
+- Four bow skills that roll on bows and quivers: Split Shot (a wide fan of arrows), Piercing Shot (a heavy shot through every enemy in a line), Rain of Arrows (arrows rain down where you aim) and Burning Arrow (fire arrows that burst and can set enemies burning).
+- They go on Q E R F like other skills, but pressing one toggles it: while it's on, your bow attack is that skill, with its own draw animation. One at a time; press it again to turn it off. A spinning ring marks the one that's on. No mana, no cooldown.
+- They are attacks: Additional Arrows, attack speed and attack damage all improve them.
+- They roll at any level from 1 to 10; stronger monsters drop the high levels far more often.
+- The Short Bow on Haven's benches now carries Split Shot.
+- New rare stat on bows and quivers: a chance for bow attacks to fire an additional arrow.
 <b>Other</b>
-- Teleport rolls on gear twice as often.
-- Fixed area skills (Frost Nova, Cleave, Chain Lightning...) and melee blows sometimes missing enemies in cluttered places like Haven's plaza.
+- Rejuvenate rolls on gear twice as often.
+- The attack square on the skill bar shows an arrow for a bow (or the bow skill that's on) instead of the bow.
+- The skills list (K) scrolls now that there are more skills than fit on screen.

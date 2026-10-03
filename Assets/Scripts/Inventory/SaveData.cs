@@ -102,12 +102,15 @@ namespace PoeClone.Inventory
         public List<PlacedRecord> bag = new List<PlacedRecord>();
         public List<PlacedRecord> stash = new List<PlacedRecord>();           // the first stash tab
         public List<StashTabRecord> stashTabs = new List<StashTabRecord>(); // the other tabs, in order
+        public List<string> stashTabNames = new List<string>();             // every tab's own name, "" = none
         public List<EquippedRecord> equipped = new List<EquippedRecord>();
         public List<string> passives = new List<string>();
         public int respecCharges = 1;
         public List<int> skillSlots = new List<int>();     // SkillId per slot, -1 for empty
         public List<string> questsDone = new List<string>();
         public List<QuestRecord> questsActive = new List<QuestRecord>();
+        public List<string> questProps = new List<string>(); // quest props used (Quests.QuestProp ids)
+        public int questBook;                                 // Quests.QuestBook.Version the quests were saved under (0: before the storylines)
         public List<int> visited = new List<int>();
         public List<string> mapSeen = new List<string>();  // minimap fog of war, per area (MinimapTerrain)
         public bool gearSkills;                            // saved since skills come from gear (older characters get a staff once)
@@ -142,6 +145,9 @@ namespace PoeClone.Inventory
                     tab.items.Add(new PlacedRecord { item = ItemRecord.From(placed.Item), x = placed.X, y = placed.Y });
                 stashTabs.Add(tab);
             }
+            stashTabNames = new List<string>();
+            for (int k = 0; k < inventory.StashTabs.Length; k++)
+                stashTabNames.Add(inventory.StashTabCustomName(k));
 
             equipped.Clear();
             foreach (EquipSlot slot in SlotRules.AllSlots)
@@ -191,6 +197,11 @@ namespace PoeClone.Inventory
                     if (stashTabs[k] != null && stashTabs[k].items != null)
                         RestoreTab(inventory.StashTabs[k + 1], stashTabs[k].items, leftOver);
                 }
+            }
+            if (stashTabNames != null)
+            {
+                for (int k = 0; k < stashTabNames.Count && k < inventory.StashTabs.Length; k++)
+                    inventory.RenameStashTab(k, stashTabNames[k]);
             }
 
             var result = new List<ItemData>();

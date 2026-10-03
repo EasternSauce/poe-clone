@@ -8,9 +8,10 @@ using PoeClone.World;
 namespace PoeClone.UI
 {
     /// <summary>
-    /// What Haven's people say and do. Everyone can give quests (the Elder the main story, the
-    /// Guard bounties); the Merchant sells potions and buys the bag's contents, the Smith sells
-    /// random gear. Each page is shown in <see cref="DialogueUI"/>.
+    /// What people say and do. Everyone can give quests (see QuestBook's storylines) and take back
+    /// messages others sent the player with; the Merchant sells potions and buys the bag's contents
+    /// (so does the Emberwatch commander's quartermaster), the Smith sells random gear. Quest props
+    /// out in the world open here too. Each page is shown in <see cref="DialogueUI"/>.
     /// </summary>
     public static class NpcDialogues
     {
@@ -27,8 +28,19 @@ namespace PoeClone.UI
                 WaystonePage(npc);
             else if (npc.Role == NpcRole.Stash)
                 OpenStash(npc);
+            else if (npc.Role == NpcRole.QuestProp)
+            {
+                QuestProp prop = npc.GetComponent<QuestProp>();
+                if (prop != null)
+                    prop.Interact(npc);
+            }
             else
+            {
+                // Any message someone sent the player to deliver here arrives.
+                if (QuestLog.Instance != null)
+                    QuestLog.Instance.TalkedTo(npc.Role);
                 Main(npc, Greeting(npc.Role));
+            }
         }
 
         // ------------------------------------------------------------------ stash
@@ -94,6 +106,12 @@ namespace PoeClone.UI
                     return "Potions, fresh today! And if your pack is heavy, I'll take whatever's in it - for a fair price.";
                 case NpcRole.Smith:
                     return "Steel's steel, but some of it comes out of the fire better than others. Want to try your luck?";
+                case NpcRole.Gravekeeper:
+                    return "Mind the candles, friend. Inside them you're safe - outside them you're mine to bury.";
+                case NpcRole.Commander:
+                    return "Emberwatch holds. What do you need?";
+                case NpcRole.Seer:
+                    return "The fire is restless tonight. Sit, if you like.";
                 default:
                     return "Keep your blade sharp past this gate. I pay a bounty on certain heads.";
             }
@@ -104,14 +122,18 @@ namespace PoeClone.UI
             var options = new List<DialogueOption>();
             QuestLog log = QuestLog.Instance;
 
-            QuestDefinition quest = log != null ? log.CurrentFrom(npc.Role) : null;
-            if (quest != null)
+            if (log != null)
             {
-                QuestState state = log.State(quest);
-                string label = state == QuestState.Complete ? "<b>Hand in:</b> " + quest.Title
-                    : state == QuestState.Available ? "<b>Quest:</b> " + quest.Title + "  <color=#FFD040>(new)</color>"
-                    : "<b>Quest:</b> " + quest.Title;
-                options.Add(new DialogueOption(label, () => QuestPage(npc, quest)));
+                foreach (QuestDefinition quest in log.At(npc.Role))
+                {
+                    QuestState state = log.State(quest);
+                    bool handIn = state == QuestState.Complete && quest.ReturnTo == npc.Role;
+                    string label = handIn ? (quest.Goal == QuestGoal.Talk ? "<b>Deliver:</b> " : "<b>Hand in:</b> ") + quest.Title
+                        : state == QuestState.Available ? "<b>Quest:</b> " + quest.Title + "  <color=#FFD040>(new)</color>"
+                        : "<b>Quest:</b> " + quest.Title;
+                    QuestDefinition q = quest;
+                    options.Add(new DialogueOption(label, () => QuestPage(npc, q)));
+                }
             }
 
             switch (npc.Role)
@@ -128,7 +150,25 @@ namespace PoeClone.UI
                     options.Add(new DialogueOption("<color=" + Dim + ">Start a new life...</color>", () => NewLifePage(npc)));
                     options.Add(new DialogueOption("Ask about Haven", () => Main(npc,
                         "Haven was a waystation once, for caravans bound for the old city. When the city burned, the caravans stopped, and we stayed.\n\n" +
-                        "Now the woods are full of the dead, and something in the ruins is calling them.")));
+                        "Now the woods are full of the dead, and something is calling them.")));
+                    options.Add(new DialogueOption("Ask about the old story", () => Main(npc,
+                        "My grandmother's story? Children's stuff. Far in the north, under the ice, sleeps a stag as big as a hill, with antlers like a dead forest. " +
+                        "When it dreams, the dead get up and walk north, to carry it the living.\n\n" +
+                        "She used to say three wardens keep its door shut. I asked her who. She said: pray you never need to know.")));
+                    break;
+                case NpcRole.Gravekeeper:
+                    options.Add(new DialogueOption("Ask about the wards", () => Main(npc,
+                        "Candles of rendered grave-wax and a word my master taught me. The dead won't cross them, and they won't follow the living in. " +
+                        "Rest here as long as you like. Out there, keep moving.")));
+                    break;
+                case NpcRole.Commander:
+                    options.Add(new DialogueOption("Potions from the quartermaster", () => MerchantPage(npc, "My quartermaster sells at Haven prices - and buys whatever you've dragged back, if it'll keep the camp fed.")));
+                    options.Add(new DialogueOption("Ask about the Emberwatch", () => Main(npc,
+                        "We watch the south's borders against what comes out of the old places. Mostly that's bandits and wolves. " +
+                        "This spring the fires on our watchtowers burned green, and every seer in the south said the same word: north. So here we are.")));
+                    break;
+                case NpcRole.Seer:
+                    options.Add(new DialogueOption("Ask what she sees in the fire", () => Main(npc, SeerVision())));
                     break;
             }
 
@@ -166,7 +206,8 @@ namespace PoeClone.UI
             switch (log.State(quest))
             {
                 case QuestState.Available:
-                    text = quest.Offer + "\n\n<color=" + Dim + ">Reward: " + RewardSummary(quest) + "</color>";
+                    text = (quest.Story != null ? "<color=" + Dim + "><i>" + quest.Story + "</i></color>\n" : "") +
+                           quest.Offer + "\n\n<color=" + Dim + ">Reward: " + RewardSummary(quest) + "</color>";
                     options.Add(new DialogueOption("<b>Accept</b>", () =>
                     {
                         log.Accept(quest);
@@ -181,8 +222,14 @@ namespace PoeClone.UI
                     break;
 
                 case QuestState.Complete:
-                    text = "You're back, and it's done?";
-                    options.Add(new DialogueOption("<b>Hand in:</b> " + quest.Title, () =>
+                    if (quest.ReturnTo != npc.Role)
+                    {
+                        text = quest.Reminder + "\n\n<color=" + Dim + ">Done - " + ReturnLine(quest) + "</color>";
+                        options.Add(new DialogueOption("Back", () => Main(npc, Greeting(npc.Role))));
+                        break;
+                    }
+                    text = quest.Goal == QuestGoal.Talk ? "<color=" + Dim + "><i>You pass on what you were asked to bring.</i></color>" : "You're back, and it's done?";
+                    options.Add(new DialogueOption((quest.Goal == QuestGoal.Talk ? "<b>Deliver:</b> " : "<b>Hand in:</b> ") + quest.Title, () =>
                     {
                         List<string> got = log.HandIn(quest);
                         Main(npc, quest.Thanks + "\n\n<color=" + GoldHex + ">Received: " + string.Join(", ", got) + "</color>");
@@ -195,6 +242,27 @@ namespace PoeClone.UI
             }
 
             DialogueUI.Show(npc, text, options);
+        }
+
+        /// <summary>"return to Seer Ysolde at the Emberwatch camp".</summary>
+        public static string ReturnLine(QuestDefinition quest)
+        {
+            Npc who = Npc.Find(quest.ReturnTo);
+            return "return to " + (who != null ? who.DisplayName : quest.ReturnTo.ToString()) + " " + QuestBook.Whereabouts(quest.ReturnTo);
+        }
+
+        // What Ysolde sees depends on how far the story has come.
+        private static string SeerVision()
+        {
+            QuestLog log = QuestLog.Instance;
+            bool Done(string id) => log != null && log.State(QuestBook.Get(id)) == QuestState.Done;
+            if (Done("stag"))
+                return "A door in the ice. It is still shut. Behind it, something turns over in its sleep, and every fire in the camp leans north.\n\nNot yet. But soon.";
+            if (Done("rimeheart"))
+                return "Three crowns lying in the snow: bone, ash and ice. And a fourth, made of antlers, that nobody wears yet.";
+            if (Done("warlord"))
+                return "Ice. A queen with too many legs, singing to the dead as they pass her by. And behind her, a door.";
+            return "Antlers, branching across the whole sky like a dead forest. And under them, a crown of ash on a man who will not fall while his ward stands.";
         }
 
         public static string ProgressText(QuestLog log, QuestDefinition quest)
@@ -211,6 +279,7 @@ namespace PoeClone.UI
             if (quest.RewardExperience > 0) parts.Add(quest.RewardExperience + " experience");
             if (quest.RewardHealthPotions > 0) parts.Add(quest.RewardHealthPotions + " Health Potions");
             if (quest.RewardItem != null) parts.Add("a " + quest.RewardItem.Value.ToString().ToLowerInvariant() + " item");
+            if (quest.RewardRespec > 0) parts.Add("a full respec");
             return string.Join(", ", parts);
         }
 
@@ -220,9 +289,26 @@ namespace PoeClone.UI
             QuestLog log = QuestLog.Instance;
             foreach (Npc npc in Npc.All)
             {
-                QuestDefinition q = log != null ? log.CurrentFrom(npc.Role) : null;
-                QuestState s = q != null ? log.State(q) : QuestState.Locked;
-                npc.SetMarker(s == QuestState.Available ? "!" : s == QuestState.Complete ? "?" : "");
+                if (npc.Role == NpcRole.Waystone || npc.Role == NpcRole.Stash || npc.Role == NpcRole.QuestProp)
+                    continue;
+                string marker = "";
+                if (log != null)
+                {
+                    foreach (QuestDefinition q in log.At(npc.Role))
+                    {
+                        QuestState s = log.State(q);
+                        bool forThem = (s == QuestState.Complete && q.ReturnTo == npc.Role) ||
+                                       (s == QuestState.Active && q.Goal == QuestGoal.Talk && q.TalkTo == npc.Role);
+                        if (forThem)
+                        {
+                            marker = "?";
+                            break;
+                        }
+                        if (s == QuestState.Available)
+                            marker = "!";
+                    }
+                }
+                npc.SetMarker(marker);
             }
         }
 

@@ -31,6 +31,7 @@ namespace PoeClone.UI
             public Image Cooldown;
             public Image NoMana;
             public Text Name;
+            public Image Ring;   // spins round a bow skill that's toggled on
         }
 
         private class Row
@@ -120,22 +121,32 @@ namespace PoeClone.UI
             UpdateAttack();
         }
 
-        // The attack square: the staff's spell, else the icon of whatever is in the main hand.
+        // The attack square: the staff's spell, the bow skill that's on, an arrow for a plain bow,
+        // else the icon of whatever is in the main hand.
         private void UpdateAttack()
         {
-            SkillId? main = skills.MainSkill;
+            SkillId? main = skills.MainSkill ?? skills.ActiveBowSkill;
             if (main != null)
             {
                 attackIcon.enabled = false;
                 UpdateSlot(attackView, main);
+                attackView.Ring.enabled = false;
                 return;
             }
 
             attackView.Cooldown.fillAmount = 0f;
             attackView.NoMana.enabled = false;
+            attackView.Ring.enabled = false;
             attackView.Back.color = new Color(0.10f, 0.09f, 0.08f, 0.9f);
             ItemData weapon = skills.GetComponent<PlayerInventory>()?.Equipment.Get(EquipSlot.MainHand);
-            if (weapon != null)
+            if (weapon != null && weapon.WeaponType == WeaponType.Bow)
+            {
+                attackIcon.enabled = true;
+                attackIcon.sprite = IconFactory.Arrow;
+                attackIcon.color = new Color(0.92f, 0.86f, 0.72f, 1f);
+                attackView.Name.text = "";
+            }
+            else if (weapon != null)
             {
                 attackIcon.enabled = true;
                 attackIcon.sprite = ItemArt.Icon(weapon);
@@ -305,6 +316,7 @@ namespace PoeClone.UI
 
         private void UpdateSlot(SlotView view, SkillId? id)
         {
+            view.Ring.enabled = false;
             if (id == null)
             {
                 view.Back.color = new Color(0.08f, 0.07f, 0.06f, 0.8f);
@@ -315,6 +327,11 @@ namespace PoeClone.UI
             }
 
             SkillDefinition skill = SkillBook.Get(id.Value);
+            if (skills.IsToggledOn(skill.Id))
+            {
+                view.Ring.enabled = true;
+                SpinRing(view.Ring, skill.Color);
+            }
             int level = skills.Level(skill.Id);
             if (level <= 0)
             {
@@ -332,6 +349,30 @@ namespace PoeClone.UI
             float total = skills.CooldownTotal(skill.Id);
             view.Cooldown.fillAmount = total > 0f ? left / total : 0f;
             view.NoMana.enabled = !skills.CanAfford(skill.Id);
+        }
+
+        /// <summary>A bow skill's "on" ring: a broken circle turning round the button, gently pulsing.</summary>
+        public static void SpinRing(Image ring, Color color)
+        {
+            float t = Time.unscaledTime;
+            ring.rectTransform.localEulerAngles = new Vector3(0f, 0f, -t * 220f);
+            Color c = Color.Lerp(color, Color.white, 0.35f);
+            c.a = 0.75f + 0.25f * Mathf.Sin(t * 6f);
+            ring.color = c;
+        }
+
+        /// <summary>The ring itself (see <see cref="SpinRing"/>), this far outside the button's edge.</summary>
+        public static Image NewRing(RectTransform button, float margin)
+        {
+            Image ring = UiKit.NewImage("BowSkillOn", button, Color.white);
+            ring.sprite = UiKit.Ring;
+            ring.type = Image.Type.Filled;
+            ring.fillMethod = Image.FillMethod.Radial360;
+            ring.fillAmount = 0.72f;
+            ring.raycastTarget = false;
+            UiKit.Stretch(ring.rectTransform, -margin);
+            ring.enabled = false;
+            return ring;
         }
 
         private void RefreshRows()
@@ -357,9 +398,10 @@ namespace PoeClone.UI
                     string minions = skills.MinionSummary(row.Id);
                     if (minions != null)
                         timing += " · " + minions;
+                    string cost = skill.Bow ? "toggle · no mana" + (skills.IsToggledOn(row.Id) ? " · ON" : "") : Num(skills.ManaCost(row.Id)) + " mana · " + timing;
                     row.Title.text = "<color=#" + UiKit.Hex(skill.Color) + "><b>" + skill.Name + "</b></color>  <color=#" + UiKit.Hex(UiKit.Gold) + ">Level " + level +
                                      (isAttack ? " · your attack" : "") + "</color>   <size=14><color=#" + dim + ">" +
-                                     Num(skills.ManaCost(row.Id)) + " mana · " + timing + from + "</color></size>\n<size=14>" + skill.Description + "</size>";
+                                     cost + from + "</color></size>\n<size=14>" + skill.Description + "</size>";
                 }
                 else
                 {
@@ -413,7 +455,9 @@ namespace PoeClone.UI
             Text key = UiKit.NewText("Key", back.rectTransform, keyLabel, keyLabel.Length > 1 ? 11 : 14, UiKit.Gold, TextAnchor.UpperLeft);
             UiKit.Stretch(key.rectTransform, 4f);
 
-            return new SlotView { Back = back, Cooldown = cooldown, NoMana = noMana, Name = label };
+            Image ring = NewRing(back.rectTransform, -3f);
+
+            return new SlotView { Back = back, Cooldown = cooldown, NoMana = noMana, Name = label, Ring = ring };
         }
 
         private void Build()
@@ -452,7 +496,9 @@ namespace PoeClone.UI
             const float rowHeight = 74f;
             const float slotButton = 46f;
             const float width = 980f;
-            float height = 70f + SkillBook.All.Length * (rowHeight + 6f) + 16f;
+            float rowsHeight = SkillBook.All.Length * (rowHeight + 6f);
+            // Taller than the screen once there are many skills: the rows scroll.
+            float height = Mathf.Min(1000f, 70f + rowsHeight + 16f);
 
             Image panel = UiKit.NewImage("SkillsPanel", canvas.transform, UiKit.PanelColor);
             UiKit.Grain(panel);
@@ -483,10 +529,30 @@ namespace PoeClone.UI
                     SetOpen(false);
             };
 
-            float y = -70f;
+            RectTransform viewport = UiKit.NewRect("Viewport", pr);
+            viewport.gameObject.AddComponent<RectMask2D>();
+            Image catcher = viewport.gameObject.AddComponent<Image>();
+            catcher.color = Color.clear; // lets the wheel and drags reach the scroll view
+            UiKit.TopLeft(viewport, new Vector2(0f, -70f), new Vector2(width, height - 70f - 16f));
+
+            RectTransform content = UiKit.NewRect("Content", viewport);
+            content.anchorMin = new Vector2(0f, 1f);
+            content.anchorMax = new Vector2(1f, 1f);
+            content.pivot = new Vector2(0.5f, 1f);
+            content.anchoredPosition = Vector2.zero;
+            content.sizeDelta = new Vector2(0f, rowsHeight);
+
+            ScrollRect scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            scroll.content = content;
+            scroll.viewport = viewport;
+            scroll.horizontal = false;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 40f;
+
+            float y = 0f;
             foreach (SkillDefinition skill in SkillBook.All)
             {
-                Image back = UiKit.NewImage("Row_" + skill.Id, pr, Color.black);
+                Image back = UiKit.NewImage("Row_" + skill.Id, content, Color.black);
                 UiKit.Grain(back);
                 UiKit.TopLeft(back.rectTransform, new Vector2(16f, y), new Vector2(width - 32f, rowHeight));
 

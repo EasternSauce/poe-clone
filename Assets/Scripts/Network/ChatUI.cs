@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using PoeClone.Inventory;
+using PoeClone.UI;
 
 namespace PoeClone.Network
 {
@@ -52,6 +53,8 @@ namespace PoeClone.Network
         private bool dirty = true;
 
         private bool touchPanelOpen;
+        private InventoryUI inventoryUI;
+        private CharacterPageUI characterUI;
 
         /// <summary>Messages received so far, for the touch chat button's unread dot.</summary>
         public static int MessageCount { get; private set; }
@@ -129,7 +132,7 @@ namespace PoeClone.Network
             // A spectator's chat is their main control, so it stays over every menu and overlay
             // (the mirrored skill tree, inventory, touch buttons, patch notes) - only the name
             // prompt (950) and the loading screen draw above it.
-            chatCanvas.sortingOrder = StayInChat ? 945 : touchPlayer ? 800 : 30;
+            chatCanvas.sortingOrder = SortingOrder;
 
             Vector2 corner = touchPlayer ? new Vector2(1f, 1f) : new Vector2(1f, 0f);
             panelRect.anchorMin = corner;
@@ -153,16 +156,38 @@ namespace PoeClone.Network
         // Typing, a spectator (always in the chat), the touch chat opened, or a scroll just now.
         private bool Active => inputField.isFocused || StayInChat || (TouchMode.Active && touchPanelOpen) || Time.unscaledTime < peekUntil;
 
+        // A spectator's chat is over everything; a phone player's opened chat over the minimap.
+        // On a computer it sits under the inventory - until a window covers it (the inventory, the
+        // character page, the skill tree, the skills panel): then it comes up over them so the
+        // latest messages can still be read (idle, it's only the lines, no panel, no clicks).
+        private int SortingOrder
+        {
+            get
+            {
+                if (StayInChat) return 945;
+                if (TouchMode.Active) return 800;
+                if (inventoryUI == null) inventoryUI = FindAnyObjectByType<InventoryUI>();
+                if (characterUI == null) characterUI = FindAnyObjectByType<CharacterPageUI>();
+                bool covered = (inventoryUI != null && inventoryUI.IsOpen) || (characterUI != null && characterUI.IsOpen) ||
+                               PassiveTreeUI.IsOpen || SkillBarUI.IsOpen;
+                return covered ? 70 : 30;
+            }
+        }
+
         private void Update()
         {
             UpdateScroll();
+
+            int order = SortingOrder;
+            if (chatCanvas.sortingOrder != order)
+                chatCanvas.sortingOrder = order;
 
             bool active = Active;
             if (active != shownActive || dirty || Time.unscaledTime >= nextExpiry)
                 Redraw(active);
 
             var keyboard = Keyboard.current;
-            if (keyboard == null || Time.frameCount == EnterHandledFrame) return;
+            if (keyboard == null || Time.frameCount == EnterHandledFrame || Time.frameCount == UiKit.EnterHandledFrame) return;
             if (!keyboard.enterKey.wasPressedThisFrame && !keyboard.numpadEnterKey.wasPressedThisFrame) return;
 
             // Only when nothing else has the UI focus (e.g. not while a menu button is selected).

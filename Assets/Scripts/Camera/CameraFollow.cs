@@ -1,3 +1,4 @@
+using PoeClone.Inventory;
 using UnityEngine;
 
 namespace PoeClone.CameraSystem
@@ -13,6 +14,9 @@ namespace PoeClone.CameraSystem
         [Header("Framing")]
         [SerializeField] private float distance = 22f;
         [SerializeField] private float fieldOfView = 30f;
+        // Phones sit closer in: less of the area on screen, but characters and item names
+        // (world-space labels) come out big enough to read on a small screen.
+        [SerializeField] private float touchDistanceScale = 0.7f;
 
         [SerializeField]
         private float followSpeed = 10f;
@@ -77,7 +81,8 @@ private void LateUpdate()
         private Vector3 DesiredPosition()
         {
             Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
-            return target.position + rotation * new Vector3(0f, 0f, -distance);
+            float d = TouchMode.Active ? distance * touchDistanceScale : distance;
+            return target.position + rotation * new Vector3(0f, 0f, -d);
         }
 
         private void ApplyLens()

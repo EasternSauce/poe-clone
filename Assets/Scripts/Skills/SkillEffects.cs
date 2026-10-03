@@ -44,6 +44,53 @@ namespace PoeClone.Skills
             Destroy(go, seconds);
         }
 
+        /// <summary>
+        /// An arrow dropping out of the sky onto a spot (Rain of Arrows): it appears after the delay,
+        /// plunges, kicks up a small ring where it lands (then <paramref name="landed"/> runs, for
+        /// the damage) and stays stuck in the ground for a moment.
+        /// </summary>
+        public static void FallingArrow(Vector3 at, float delay, float radius, Color color, System.Action<Vector3> landed = null)
+        {
+            var go = new GameObject("Falling Arrow");
+            at.y = GroundY(at);
+            go.transform.SetPositionAndRotation(at + new Vector3(-1.2f, 9f, 0f), Quaternion.LookRotation(new Vector3(0.13f, -1f, 0f)));
+            RuntimePrimitives.BuildArrow(go.transform);
+            go.transform.localScale = Vector3.one * 1.3f;
+            go.SetActive(false);
+            // The coroutine runs on a host that is never hidden.
+            var host = new GameObject("Falling Arrow Host").AddComponent<SkillEffects>();
+            host.StartCoroutine(Fall(host.gameObject, go, at, delay, radius, color, landed));
+        }
+
+        private static IEnumerator Fall(GameObject host, GameObject arrow, Vector3 at, float delay, float radius, Color color, System.Action<Vector3> landed)
+        {
+            yield return new WaitForSeconds(delay);
+            arrow.SetActive(true);
+            Vector3 from = arrow.transform.position;
+            Vector3 to = at + new Vector3(0f, 0.35f, 0f);
+            const float fall = 0.16f;
+            for (float t = 0f; t < fall; t += Time.deltaTime)
+            {
+                arrow.transform.position = Vector3.Lerp(from, to, t / fall);
+                yield return null;
+            }
+            arrow.transform.position = to;
+            Shockwave(at, radius, color, 0.22f);
+            landed?.Invoke(at);
+            Destroy(arrow, 1.2f);
+            Destroy(host, 1.2f);
+        }
+
+        /// <summary>A ball that bursts out to the radius and collapses again (an explosion).</summary>
+        public static void Blast(Vector3 center, float radius, Color color, float seconds = 0.3f)
+        {
+            var go = new GameObject("Blast");
+            go.transform.position = center;
+            GameObject ball = RuntimePrimitives.Create(PrimitiveType.Sphere, go.transform, color);
+            ball.transform.localScale = Vector3.zero;
+            go.AddComponent<SkillEffects>().StartCoroutine(Pop(go, ball.transform, radius, seconds));
+        }
+
         /// <summary>A ring of small orbs rising around a character (healing, level-ups).</summary>
         public static void Rise(Transform around, Color color, float seconds = 0.9f)
         {
@@ -67,6 +114,19 @@ namespace PoeClone.Skills
                 float d = Mathf.Lerp(0.2f, radius * 2f, Mathf.Sqrt(f));
                 disc.localScale = new Vector3(d, 0.02f, d);
                 disc.localPosition = Vector3.down * (0.1f * f);
+                yield return null;
+            }
+            Destroy(root);
+        }
+
+        private static IEnumerator Pop(GameObject root, Transform ball, float radius, float seconds)
+        {
+            for (float t = 0f; t < seconds; t += Time.deltaTime)
+            {
+                float f = t / seconds;
+                // Out fast, then shrinks away.
+                float d = radius * 2f * (f < 0.35f ? Mathf.Sqrt(f / 0.35f) : 1f - (f - 0.35f) / 0.65f);
+                ball.localScale = Vector3.one * d;
                 yield return null;
             }
             Destroy(root);

@@ -37,7 +37,10 @@ namespace PoeClone.Network.Replication
         public int so;           // 1 = the stash / trader panel is open (side is its contents)
         public GearItem[] side;  // the stash or the trader's goods, while that panel is open
         public string sn;        // the side panel's title (trader name)
+        public int st;           // stash tab showing
+        public string[] stn;     // stash tab names ("" = the default "Tab N")
         public GearItem held;    // the item on the player's cursor (n empty = none)
+        public GearItem[] gnd;   // items on the ground near the player, x = drop id (for spectators' tooltips)
         public int gold;
         public int hpot;
         public int mpot;

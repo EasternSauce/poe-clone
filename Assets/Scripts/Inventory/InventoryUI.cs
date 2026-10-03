@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.UI;
@@ -137,6 +138,9 @@ namespace PoeClone.Inventory
         private const float TabRowHeight = 34f;
         private RectTransform stashTabRow;
         private Image[] stashTabButtons;
+        private Text[] stashTabLabels;
+        private InputField tabNameField;
+        private int renamingTab = -1;
         private const float StashReach = 5f;
         private RectTransform gridArea;
         private RectTransform gridItems;
@@ -177,6 +181,9 @@ namespace PoeClone.Inventory
         /// <summary>The item lying on the ground under the mouse (set by the player's loot picker), or null.</summary>
         public static ItemData GroundHover { get; set; }
 
+        /// <summary>Where <see cref="GroundHover"/> lies (a phone's tooltip sits beside the item, not a finger).</summary>
+        public static Vector3 GroundHoverAt { get; set; }
+
         /// <summary>An item is on the cursor (so a click outside the panel throws it, rather than attacking).</summary>
         public bool IsHoldingItem => cursorItem != null;
 
@@ -203,6 +210,7 @@ namespace PoeClone.Inventory
             inventory.PlayerDied += OnPlayerDied;
             inventory.Grid.Changed += OnGridChanged;
             inventory.PotionsChanged += OnGridChanged;
+            inventory.StashTabNamesChanged += RefreshStashTabs;
         }
 
         private void OnDestroy()
@@ -212,6 +220,7 @@ namespace PoeClone.Inventory
                 inventory.PlayerDied -= OnPlayerDied;
                 inventory.Grid.Changed -= OnGridChanged;
                 inventory.PotionsChanged -= OnGridChanged;
+                inventory.StashTabNamesChanged -= RefreshStashTabs;
             }
         }
 
@@ -359,6 +368,10 @@ namespace PoeClone.Inventory
         // player's pointer until the spectator moves their own (SpectatorMirror.FollowingPlayer).
         private void UpdateMirror()
         {
+            // The player may switch to a tab that looks the same (both empty): keep the highlight on theirs.
+            if (stashOpen)
+                RefreshStashTabs();
+
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && !UiKit.IsTypingInTextField())
             {
@@ -394,8 +407,8 @@ namespace PoeClone.Inventory
 
             if (!isOpen)
             {
-                tooltipRect.gameObject.SetActive(false);
                 heldTooltipRect.gameObject.SetActive(false);
+                UpdateGroundTooltip(); // the spectator's own pointer on an item on the ground
                 return;
             }
 
@@ -425,6 +438,8 @@ namespace PoeClone.Inventory
             UpdateHighlights(hover);
             UpdateTooltip(hover, hover.Screen);
             ShowHeldTooltip(remoteHover.Screen);
+            if (!tooltipRect.gameObject.activeSelf)
+                UpdateGroundTooltip();
         }
 
         // The player's pointer, in this screen's layout: on the same slot or cell when it's over
@@ -620,6 +635,8 @@ namespace PoeClone.Inventory
             stashPanel.gameObject.SetActive(open && stashOpen);
             if (stashTabRow != null)
                 stashTabRow.gameObject.SetActive(open && stashOpen && vendor == null);
+            if (tabNameField != null && !(open && stashOpen) && renamingTab >= 0)
+                EndRenameTab(tabNameField.text);
 
             if (preview != null)
                 preview.SetActive(open && !touch && !stashOpen);
@@ -750,29 +767,47 @@ namespace PoeClone.Inventory
             stashArea.pivot = new Vector2(0.5f, 1f);
             stashArea.anchoredPosition = new Vector2(0f, -(Pad + 34f + TabRowHeight));
 
-            // Stash tabs: a row of numbered buttons under the title (hidden for a trader's goods).
+            // Stash tabs: a row of buttons under the title (hidden for a trader's goods). Clicking
+            // the tab that's already showing renames it.
             stashTabRow = UiKit.NewRect("StashTabs", stashPanel);
             UiKit.TopLeft(stashTabRow, new Vector2(Pad, -(Pad + 30f)), new Vector2(gridSize, TabRowHeight - 4f));
             float tabWidth = (gridSize - 4f * (PlayerInventory.StashTabCount - 1)) / PlayerInventory.StashTabCount;
             stashTabButtons = new Image[PlayerInventory.StashTabCount];
+            stashTabLabels = new Text[PlayerInventory.StashTabCount];
             for (int k = 0; k < PlayerInventory.StashTabCount; k++)
             {
                 int tab = k;
                 Image button = UiKit.NewImage("Tab" + (k + 1), stashTabRow, CellColor);
                 UiKit.TopLeft(button.rectTransform, new Vector2(k * (tabWidth + 4f), 0f), new Vector2(tabWidth, TabRowHeight - 4f));
                 UiKit.AddOutline(button, UiKit.BorderColor, 1.5f);
-                Text label = UiKit.NewText("Label", button.rectTransform, "Tab " + (k + 1), 16, UiKit.TextColor, TextAnchor.MiddleCenter);
-                UiKit.Stretch(label.rectTransform, 0f);
+                Text label = UiKit.NewText("Label", button.rectTransform, inventory.StashTabName(k), 16, UiKit.TextColor, TextAnchor.MiddleCenter);
+                UiKit.Stretch(label.rectTransform, 2f);
+                // A long name shrinks (and wraps to two lines) to stay inside its button.
+                label.horizontalOverflow = HorizontalWrapMode.Wrap;
+                label.verticalOverflow = VerticalWrapMode.Truncate;
+                label.resizeTextForBestFit = true;
+                label.resizeTextMinSize = 10;
+                label.resizeTextMaxSize = 16;
                 label.raycastTarget = false;
                 UiKit.OnClick(button, () =>
                 {
+                    // A spectator sees whichever tab the player has open.
+                    if (SpectatorMirror.Active)
+                        return;
+                    if (tab == inventory.StashTab)
+                    {
+                        BeginRenameTab(tab);
+                        return;
+                    }
                     inventory.SetStashTab(tab);
                     gridDirty = true;
-                    for (int b = 0; b < stashTabButtons.Length; b++)
-                        stashTabButtons[b].color = b == tab ? UiKit.Gold * 0.6f : CellColor;
+                    RefreshStashTabs();
                 });
                 stashTabButtons[k] = button;
+                stashTabLabels[k] = label;
             }
+            BuildTabNameField(tabWidth);
+            RefreshStashTabs();
             stashArea.sizeDelta = new Vector2(gridSize, gridSize);
 
             Image lines = UiKit.NewImage("GridLines", stashArea, GridLineColor);
@@ -794,6 +829,63 @@ namespace PoeClone.Inventory
             stashHighlight.enabled = false;
 
             stashPanel.gameObject.SetActive(false);
+        }
+
+        // Tab names and which one is showing (a spectator's follow the player's).
+        private void RefreshStashTabs()
+        {
+            if (stashTabButtons == null || inventory == null)
+                return;
+            for (int k = 0; k < stashTabButtons.Length; k++)
+            {
+                stashTabButtons[k].color = k == inventory.StashTab ? UiKit.Gold * 0.6f : CellColor;
+                stashTabLabels[k].text = inventory.StashTabName(k);
+            }
+        }
+
+        // One text box, moved over whichever tab is being renamed.
+        private void BuildTabNameField(float tabWidth)
+        {
+            Image back = UiKit.NewImage("TabName", stashTabRow, new Color(1f, 1f, 1f, 0.92f));
+            UiKit.TopLeft(back.rectTransform, Vector2.zero, new Vector2(tabWidth, TabRowHeight - 4f));
+            back.raycastTarget = true;
+
+            Text text = UiKit.NewText("Text", back.rectTransform, "", 16, Color.black, TextAnchor.MiddleCenter);
+            UiKit.Stretch(text.rectTransform, 3f);
+            text.supportRichText = false;
+
+            tabNameField = back.gameObject.AddComponent<InputField>();
+            tabNameField.textComponent = text;
+            tabNameField.lineType = InputField.LineType.SingleLine;
+            tabNameField.characterLimit = PlayerInventory.StashTabNameLimit;
+            // Enter, Escape (which puts the old text back) or a click elsewhere all end it here.
+            tabNameField.onEndEdit.AddListener(EndRenameTab);
+            back.gameObject.SetActive(false);
+        }
+
+        private void BeginRenameTab(int tab)
+        {
+            renamingTab = tab;
+            RectTransform field = (RectTransform)tabNameField.transform;
+            field.anchoredPosition = stashTabButtons[tab].rectTransform.anchoredPosition;
+            tabNameField.gameObject.SetActive(true);
+            tabNameField.text = inventory.StashTabCustomName(tab);
+            tabNameField.Select();
+            tabNameField.ActivateInputField();
+        }
+
+        private void EndRenameTab(string name)
+        {
+            if (renamingTab < 0)
+                return;
+            int tab = renamingTab;
+            renamingTab = -1;
+            UiKit.EnterHandledFrame = Time.frameCount; // the Enter that finished it mustn't open the chat
+            inventory.RenameStashTab(tab, name);
+            if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == tabNameField.gameObject)
+                EventSystem.current.SetSelectedGameObject(null);
+            tabNameField.gameObject.SetActive(false);
+            RefreshStashTabs();
         }
 
         private void ShowStashHighlight(int x, int y, int w, int h, Color color)
@@ -1147,7 +1239,11 @@ private Vector2 CellSize(int w, int h)
             tooltipRect.sizeDelta = new Vector2(270f, 100f);
             UiKit.AddOutline(bg, UiKit.BorderColor, 1.5f);
 
+            // Only to read: a tooltip beside an item on the ground mustn't swallow taps on the world.
+            bg.raycastTarget = false;
+
             tooltipText = UiKit.NewText("Text", tooltipRect, "", 17, UiKit.TextColor, TextAnchor.UpperLeft);
+            tooltipText.raycastTarget = false;
             UiKit.Stretch(tooltipText.rectTransform, 10f);
 
             tooltipRect.gameObject.SetActive(false);
@@ -1234,6 +1330,7 @@ private Vector2 CellSize(int w, int h)
         private void Refresh()
         {
             gridDirty = false;
+            RefreshStashTabs();
 
             foreach (GameObject go in itemViews)
                 Destroy(go);
@@ -1526,18 +1623,34 @@ private Vector2 CellSize(int w, int h)
             return sb.ToString();
         }
 
-        // The item lying on the ground under the mouse (see LootPicker) shows its stats too.
+        // The item lying on the ground under the mouse shows its stats too; on a phone, the item
+        // nearest the player does, beside it (see LootPicker) - no holding a finger on it.
         private void UpdateGroundTooltip()
         {
+            ItemData item = GroundHover;
             Mouse mouse = Mouse.current;
-            ItemData item = !TouchMode.Active && mouse != null ? GroundHover : null;
-            if (item == null)
+            Vector2 at = Vector2.zero;
+            bool show = false;
+            if (item != null && TouchMode.Active)
+            {
+                Camera cam = Camera.main;
+                Vector3 screen = cam != null ? cam.WorldToScreenPoint(GroundHoverAt + Vector3.up * 0.6f) : Vector3.back;
+                show = screen.z > 0f;
+                at = screen;
+            }
+            else if (item != null && mouse != null)
+            {
+                show = true;
+                at = mouse.position.ReadValue();
+            }
+
+            if (!show)
             {
                 if (tooltipRect.gameObject.activeSelf)
                     tooltipRect.gameObject.SetActive(false);
                 return;
             }
-            ShowTooltip(item, mouse.position.ReadValue());
+            ShowTooltip(item, at);
         }
 
         // Also while an item is held, so the one it would swap with can be read first.

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using PoeClone.Audio;
 using PoeClone.Combat;
 using PoeClone.Enemies;
 using PoeClone.Inventory;
@@ -39,9 +40,10 @@ namespace PoeClone.Player
         /// Damages the enemy, shows the number, and applies the attacker's on-hit stats.
         /// secondary: the hit is itself a passive's effect (an explosion, an arc), so it can't set
         /// off more of them (otherwise one kill could chain through a whole pack forever).
+        /// igniteBonus: % chance to ignite on top of the attacker's own (a fire hit's skill, e.g. Burning Arrow).
         /// </summary>
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
-            DamageType type = DamageType.Physical, bool secondary = false)
+            DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f)
         {
             if (enemy == null || enemy.IsDead)
                 return;
@@ -93,7 +95,7 @@ namespace PoeClone.Player
 
             if (!enemy.IsDead)
             {
-                if (type == DamageType.Fire && Roll(sheet, StatType.IgniteChance))
+                if (type == DamageType.Fire && Random.value * 100f < sheet.Total(StatType.IgniteChance) + igniteBonus)
                 {
                     if (!enemy.IsBurning)
                         CombatText.Show(at + Vector3.up * 2.1f * scale, "Ignited", CombatText.FireColor, 0.7f);
@@ -164,18 +166,34 @@ namespace PoeClone.Player
                 return;
 
             if (Roll(sheet, StatType.ExplodeOnKill))
-                Burst(attacker, enemy, at, ExplosionRadius, enemyMaxLife * ExplosionShare, DamageType.Fire, ExplosionColor, null);
+                Burst(attacker, enemy, at, ExplosionRadius, enemyMaxLife * ExplosionShare, DamageType.Fire, ExplosionColor);
             else if (chilled && Roll(sheet, StatType.Shatter))
-                Burst(attacker, enemy, at, ShatterRadius, enemyMaxLife * ShatterShare, DamageType.Cold, CombatText.ColdColor, "Shatter");
+                Burst(attacker, enemy, at, ShatterRadius, enemyMaxLife * ShatterShare, DamageType.Cold, CombatText.ColdColor);
+        }
+
+        /// <summary>A corpse explosion's (or shatter's) look and sound, without the damage.</summary>
+        public static void PlayBurstVisual(Vector3 at, float radius, bool shatter)
+        {
+            Color color = shatter ? CombatText.ColdColor : ExplosionColor;
+            SkillEffects.Shockwave(at, radius, color, 0.35f);
+            SkillEffects.Blast(at + Vector3.up * 0.7f, radius * 0.4f, color, 0.3f);
+            if (shatter)
+                CombatText.Show(at + Vector3.up * 2.2f, "Shatter", color, 0.9f);
+            AudioManager audio = AudioManager.Instance;
+            if (audio != null)
+                audio.PlayAtPoint(audio.Sfx(shatter ? "shatter" : "corpse_explosion"), at, 0.35f, Random.Range(0.92f, 1.08f));
         }
 
         // A corpse explosion or a shatter: damages everything around the dead enemy (and a shatter chills it).
         private static void Burst(Transform attacker, EnemyHealth dead, Vector3 at, float radius, float damage,
-            DamageType type, Color color, string label)
+            DamageType type, Color color)
         {
-            SkillEffects.Shockwave(at, radius, color, 0.35f);
-            if (label != null)
-                CombatText.Show(at + Vector3.up * 2.2f, label, color, 0.9f);
+            bool shatter = type == DamageType.Cold;
+            PlayBurstVisual(at, radius, shatter);
+            // Logged with the skill casts, so spectators see (and hear) it too.
+            PlayerSkills skills = attacker != null ? attacker.GetComponent<PlayerSkills>() : null;
+            if (skills != null)
+                skills.RecordBurst(shatter ? PlayerSkills.ShatterCast : PlayerSkills.CorpseExplosionCast, at, radius);
 
             foreach (EnemyHealth other in EnemiesNear(at, radius, dead))
             {

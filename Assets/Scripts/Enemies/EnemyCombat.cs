@@ -131,6 +131,8 @@ namespace PoeClone.Enemies
 
             Minion minion = controller != null ? controller.TargetMinion : null;
             Vector3 targetAt = minion != null ? minion.transform.position : playerStats.transform.position;
+            if (minion == null && Sanctuary.Contains(targetAt, 1f))
+                return;
             if (DistanceTo(targetAt) > attackRange + (minion != null ? 0.3f * minion.transform.localScale.x : 0f))
                 return;
 

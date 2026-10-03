@@ -39,11 +39,16 @@ namespace PoeClone.Network
             public bool HasPose;
             public Vector3 LastPosition;
             public float LastSeen;
+            public float NextEnragePulse;
         }
 
         private readonly SnapshotTimeline timeline = new SnapshotTimeline();
         private readonly Dictionary<int, Puppet> puppets = new Dictionary<int, Puppet>();
         private readonly Dictionary<int, LootDrop> loot = new Dictionary<int, LootDrop>();
+        private readonly Dictionary<int, GearItem> groundItems = new Dictionary<int, GearItem>(); // full stats by drop id
+        private LootDrop pointedLoot;
+        private int pointedLootId = -1;
+        private ItemData pointedLootItem;
         private readonly HashSet<int> lootSeen = new HashSet<int>();
         private readonly List<int> lootGone = new List<int>();
         private readonly List<StateSnapshot> due = new List<StateSnapshot>();
@@ -61,6 +66,7 @@ namespace PoeClone.Network
         private CharacterWalkAnimator playerWalk;
         private Stagger playerStagger;
         private PlayerHUD hud;
+        private int extraArrows;    // the watched player's extra arrows per bow shot
         private CameraFollow cameraFollow;
         private LoadingScreenUI loadingScreen;
         private GameObject enemyPrefab;
@@ -274,6 +280,8 @@ namespace PoeClone.Network
             if (!active)
                 return;
 
+            UpdateLootPointer();
+
             // Applied as soon as it arrives (it isn't part of the interpolated motion).
             if (latestGear != null && !gearApplied && latestGear.pid == currentPid)
                 ApplyGear(latestGear);
@@ -366,6 +374,46 @@ namespace PoeClone.Network
             }
         }
 
+        // The spectator's own mouse on an item on the ground: outlined, and its tooltip (with the
+        // stats from the gear message) shown by InventoryUI, like the player's own hover.
+        private void UpdateLootPointer()
+        {
+            LootDrop drop = null;
+            var mouse = UnityEngine.InputSystem.Mouse.current;
+            if (mouse != null && !TouchMode.Active && !PlayerController.IsPointerOverUi())
+            {
+                Vector2 at = mouse.position.ReadValue();
+                drop = LootDrop.FindAtScreen(at, displayOnly: true);
+                if (drop != null && LootPicker.EnemyUnderPointer(at))
+                    drop = null;
+            }
+
+            if (drop != pointedLoot)
+            {
+                if (pointedLoot != null)
+                    pointedLoot.SetHighlighted(false);
+                if (drop != null)
+                    drop.SetHighlighted(true);
+                pointedLoot = drop;
+                pointedLootId = -1;
+            }
+
+            if (drop == null)
+            {
+                InventoryUI.GroundHover = null;
+                return;
+            }
+
+            // Its full stats once the gear message has them (only the name and look before that).
+            if (pointedLootId != drop.Id || pointedLootItem == null)
+            {
+                pointedLootId = drop.Id;
+                pointedLootItem = groundItems.TryGetValue(drop.Id, out GearItem full) ? GearCodec.ToItem(full) : null;
+            }
+            InventoryUI.GroundHover = pointedLootItem ?? drop.Item;
+            InventoryUI.GroundHoverAt = drop.transform.position;
+        }
+
         // The player's skills: each new cast's look (harmless bolts, rings, lightning) drawn on this
         // tab's copy of the player. Joining mid-fight skips the casts already under way.
         private void ApplyCasts(SkillCastState[] casts, EntityState p)
@@ -418,7 +466,12 @@ namespace PoeClone.Network
         {
             if (active && playerStats != null && playerAttack != null &&
                 CharacterAttackAnimator.IsRangedProfile(playerAttack.ProfileId))
-                PlayerArrow.LaunchVisual(playerStats.transform, CharacterAttackAnimator.AttackRange(WeaponType.Bow));
+            {
+                Transform shooter = playerStats.transform;
+                float range = CharacterAttackAnimator.AttackRange(WeaponType.Bow);
+                foreach (Vector3 direction in HitEffects.Spread(shooter.forward, 1 + extraArrows, PlayerCombat.ArrowSpreadDegrees))
+                    PlayerArrow.LaunchVisual(shooter, range, direction);
+            }
         }
 
         private void ApplyFade(int fade)
@@ -436,6 +489,8 @@ namespace PoeClone.Network
         {
             if (h == null || playerStats == null)
                 return;
+
+            extraArrows = h.arw;
 
             if (appliedLevel > 0 && h.lv > appliedLevel)
                 PlaySfx(AudioManager.Instance != null ? AudioManager.Instance.playerLevelUp : null, playerStats.transform.position);
@@ -480,6 +535,14 @@ namespace PoeClone.Network
             FillGrid(playerInventory.Grid, g.bag);
             ApplyWorn(g.eq);
 
+            // The stash shows the player's tab names, on the tab they're looking at.
+            if (g.stn != null)
+            {
+                for (int k = 0; k < g.stn.Length; k++)
+                    playerInventory.RenameStashTab(k, g.stn[k]);
+            }
+            playerInventory.SetStashTab(g.st);
+
             if (g.so != 0)
             {
                 if (string.IsNullOrEmpty(g.sn))
@@ -491,6 +554,17 @@ namespace PoeClone.Network
                     if (SpectatorMirror.Trader == null || SpectatorMirror.Trader.Name != g.sn)
                         SpectatorMirror.Trader = new VendorStock(g.sn);
                     FillGrid(SpectatorMirror.Trader.Grid, g.side);
+                }
+            }
+
+            groundItems.Clear();
+            pointedLootItem = null; // re-read on the next frame, in case its stats just arrived
+            if (g.gnd != null)
+            {
+                foreach (GearItem item in g.gnd)
+                {
+                    if (item != null)
+                        groundItems[item.x] = item;
                 }
             }
 
@@ -714,6 +788,17 @@ namespace PoeClone.Network
 
             if (e.ch != 0 && prev.ch == 0)
                 EnemySounds.Play(EnemyKinds.Get(e.k), EnemySounds.Event.Aggro, at);
+
+            if (e.en != 0 && prev.en == 0)
+            {
+                EnemyController.PlayEnrageStart(puppet.Root.transform, EnemyKinds.Get(e.k), puppet.Health.BarHeight);
+                puppet.NextEnragePulse = Time.time;
+            }
+            if (e.en != 0 && Time.time >= puppet.NextEnragePulse)
+            {
+                puppet.NextEnragePulse = Time.time + EnemyController.EnragePulseEvery;
+                EnemyController.PlayEnragePulse(puppet.Root.transform);
+            }
 
             if (e.atk > prev.atk && puppet.Attack != null)
             {

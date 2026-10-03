@@ -12,8 +12,9 @@ namespace PoeClone.Quests
     /// <summary>
     /// The player's quests: which are taken, how far along they are, and handing them in for the
     /// reward. Kills (bosses too) come from <see cref="KillRewards.EnemyKilled"/>, arrivals
-    /// from the <see cref="AreaManager"/>. Self-added by
-    /// <see cref="PlayerController"/>; lives for the session (nothing is saved).
+    /// from the <see cref="AreaManager"/>, quest props from <see cref="QuestProp"/>, messages
+    /// delivered from <see cref="NpcDialogues"/>. Self-added by <see cref="PlayerController"/>;
+    /// saved by Player.SaveSystem.
     /// </summary>
     [RequireComponent(typeof(PlayerStats))]
     public class QuestLog : MonoBehaviour
@@ -23,6 +24,7 @@ namespace PoeClone.Quests
         private readonly HashSet<string> done = new HashSet<string>();
         private readonly Dictionary<string, int> active = new Dictionary<string, int>(); // id -> progress
         private readonly HashSet<int> visited = new HashSet<int>();
+        private readonly HashSet<string> usedProps = new HashSet<string>(); // QuestProp ids already smashed/lit/taken
 
         private PlayerStats stats;
         private AreaManager areas;
@@ -78,18 +80,22 @@ namespace PoeClone.Quests
             return QuestState.Locked;
         }
 
-        /// <summary>For saving: what's done, what's under way (and how far), where the player has been.</summary>
-        public void Export(List<string> doneIds, Dictionary<string, int> activeProgress, List<int> visitedAreas)
+        /// <summary>For saving: what's done, what's under way (and how far), where the player has been, which quest props are used.</summary>
+        public void Export(List<string> doneIds, Dictionary<string, int> activeProgress, List<int> visitedAreas, List<string> props)
         {
             doneIds.AddRange(done);
             foreach (var pair in active)
                 activeProgress[pair.Key] = pair.Value;
             visitedAreas.AddRange(visited);
+            props.AddRange(usedProps);
         }
 
         /// <summary>A saved character's quests (unknown quest ids are skipped).</summary>
-        public void Import(IEnumerable<string> doneIds, IEnumerable<KeyValuePair<string, int>> activeProgress, IEnumerable<int> visitedAreas)
+        public void Import(IEnumerable<string> doneIds, IEnumerable<KeyValuePair<string, int>> activeProgress, IEnumerable<int> visitedAreas,
+            IEnumerable<string> props)
         {
+            foreach (string id in props)
+                usedProps.Add(id);
             foreach (string id in doneIds)
             {
                 if (QuestBook.Get(id) != null)
@@ -111,32 +117,82 @@ namespace PoeClone.Quests
             return visited.Contains(area);
         }
 
+        /// <summary>Whether a quest prop has been used already (it stays smashed, lit or taken).</summary>
+        public bool PropUsed(string propId)
+        {
+            return usedProps.Contains(propId);
+        }
+
         public int Progress(QuestDefinition quest)
         {
             return active.TryGetValue(quest.Id, out int progress) ? Mathf.Min(progress, quest.Count) : 0;
         }
 
         /// <summary>
-        /// What this NPC has for the player right now, most pressing first: a finished quest to hand
-        /// in, one under way, or a new one to offer. Null if they have nothing.
+        /// The most pressing thing this NPC has for the player (see <see cref="At"/>), or null.
         /// </summary>
-        public QuestDefinition CurrentFrom(NpcRole giver)
+        public QuestDefinition CurrentFrom(NpcRole role)
         {
-            QuestDefinition underWay = null;
-            QuestDefinition offer = null;
+            List<QuestDefinition> list = At(role);
+            return list.Count > 0 ? list[0] : null;
+        }
+
+        /// <summary>
+        /// Everything this NPC has for the player right now, most pressing first: finished quests to
+        /// hand in to them (including messages someone sent the player to deliver), their own quests
+        /// under way, then new ones to offer.
+        /// </summary>
+        public List<QuestDefinition> At(NpcRole role)
+        {
+            var handIns = new List<QuestDefinition>();
+            var underWay = new List<QuestDefinition>();
+            var offers = new List<QuestDefinition>();
             foreach (QuestDefinition q in QuestBook.All)
             {
-                if (q.Giver != giver)
-                    continue;
                 QuestState s = State(q);
-                if (s == QuestState.Complete)
-                    return q;
-                if (s == QuestState.Active && underWay == null)
-                    underWay = q;
-                else if (s == QuestState.Available && offer == null)
-                    offer = q;
+                if (s == QuestState.Complete && q.ReturnTo == role)
+                    handIns.Add(q);
+                else if (s == QuestState.Active && q.Goal == QuestGoal.Talk && q.TalkTo == role)
+                    handIns.Add(q);
+                else if (s == QuestState.Active && q.Giver == role)
+                    underWay.Add(q);
+                else if (s == QuestState.Available && q.Giver == role)
+                    offers.Add(q);
             }
-            return underWay ?? offer;
+            handIns.AddRange(underWay);
+            handIns.AddRange(offers);
+            return handIns;
+        }
+
+        /// <summary>The player spoke to someone: any message for them is delivered.</summary>
+        public void TalkedTo(NpcRole role)
+        {
+            scratch.Clear();
+            scratch.AddRange(active.Keys);
+            bool changed = false;
+            foreach (string id in scratch)
+            {
+                QuestDefinition q = QuestBook.Get(id);
+                if (q != null && q.Goal == QuestGoal.Talk && q.TalkTo == role && active[id] < q.Count)
+                {
+                    active[id] = q.Count;
+                    changed = true;
+                }
+            }
+            if (changed)
+                Changed?.Invoke();
+        }
+
+        /// <summary>A quest prop was used (smashed, lit, taken, its rite held): counts once per prop.</summary>
+        public void UseProp(QuestDefinition quest, string propId)
+        {
+            if (quest == null || State(quest) != QuestState.Active || !usedProps.Add(propId))
+                return;
+            int progress = active[quest.Id] + 1;
+            active[quest.Id] = progress;
+            if (progress >= quest.Count)
+                Announce(quest);
+            Changed?.Invoke();
         }
 
         /// <summary>The quests taken and not handed in yet, in book order.</summary>
@@ -278,7 +334,7 @@ namespace PoeClone.Quests
             {
                 QuestDefinition q = QuestBook.Get(id);
                 int progress = active[id];
-                if (q == null || progress >= q.Count || !counts(q))
+                if (q == null || progress >= q.Count || q.Goal == QuestGoal.Use || q.Goal == QuestGoal.Talk || !counts(q))
                     continue;
 
                 active[id] = progress + 1;
@@ -293,8 +349,8 @@ namespace PoeClone.Quests
 
         private void Announce(QuestDefinition quest)
         {
-            Npc giver = Npc.Find(quest.Giver);
-            string who = giver != null ? giver.DisplayName : quest.Giver.ToString();
+            Npc giver = Npc.Find(quest.ReturnTo);
+            string who = giver != null ? giver.DisplayName : quest.ReturnTo.ToString();
             CombatText.Show(transform.position + Vector3.up * 2.4f, quest.Title + " complete - return to " + who,
                 new Color(1f, 0.85f, 0.35f), 0.9f);
             if (Audio.AudioManager.Instance != null)

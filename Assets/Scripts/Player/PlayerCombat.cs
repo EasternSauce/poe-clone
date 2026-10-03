@@ -59,9 +59,11 @@ namespace PoeClone.Player
         private bool swingPending;
         // The pending swing is the staff's spell rather than a weapon blow.
         private bool castPending;
+        // The bow skill the pending shot is (the one on when the draw started), if any.
+        private PoeClone.Skills.SkillId? bowSkillPending;
 
         // Degrees between the arrows of a volley (extra arrows fan out round the aim).
-        private const float ArrowSpreadDegrees = 9f;
+        public const float ArrowSpreadDegrees = 9f;
 
         // What the swing was aimed at when it started: the outlined enemy if there was one, else
         // the ground point. A bow re-aims at it when the arrow leaves, since the player may have
@@ -136,6 +138,7 @@ namespace PoeClone.Player
         {
             swingPending = false;
             castPending = false;
+            bowSkillPending = null;
             cooldownTimer = 0f;
         }
 
@@ -237,11 +240,19 @@ namespace PoeClone.Player
             if (HasMainSkill)
                 CombatText.Show(transform.position + Vector3.up * 2f, "Not enough mana", CombatText.ColdColor, 0.6f);
 
+            // A bow skill that's on replaces the plain shot: its own draw, and its own pace.
+            bowSkillPending = CharacterAttackAnimator.IsRanged(weaponType) && SkillSet != null ? SkillSet.ActiveBowSkill : null;
+
             float attacksPerSecond = ComputeAttacksPerSecond(weaponType);
+            if (bowSkillPending != null)
+                attacksPerSecond *= PoeClone.Skills.PlayerSkills.BowSpeed(bowSkillPending.Value);
             cooldownTimer = attacksPerSecond > 0f ? 1f / attacksPerSecond : 1f;
 
             swingPending = true;
-            attackAnimator.PlayAttack(weaponType);
+            if (bowSkillPending != null)
+                attackAnimator.PlayBow(PoeClone.Skills.PlayerSkills.BowStyleOf(bowSkillPending.Value));
+            else
+                attackAnimator.PlayAttack(weaponType);
 
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.playerSwing, transform.position);
@@ -335,7 +346,13 @@ namespace PoeClone.Player
 
             if (CharacterAttackAnimator.IsRanged(weaponType))
             {
-                int arrows = 1 + Mathf.Max(0, Mathf.RoundToInt(inventory.Stats.Total(StatType.AdditionalArrows)));
+                int arrows = ArrowCount();
+                if (bowSkillPending != null && SkillSet != null)
+                {
+                    SkillSet.ReleaseBow(bowSkillPending.Value, pendingDamage, range, arrows, BowTarget(range));
+                    bowSkillPending = null;
+                    return;
+                }
                 var volley = PlayerArrow.NewVolley();
                 foreach (Vector3 direction in HitEffects.Spread(transform.forward, arrows, ArrowSpreadDegrees))
                     PlayerArrow.Launch(transform, range, pendingDamage, direction, volley);
@@ -387,6 +404,38 @@ namespace PoeClone.Player
 
             if (toMark != null)
                 PoeClone.Skills.Minion.Mark(toMark, transform);
+        }
+
+        // Arrows in a bow shot: one, plus Additional Arrows, plus maybe one more from the
+        // extra-arrow chance (bows and quivers).
+        private int ArrowCount()
+        {
+            int arrows = 1 + Mathf.Max(0, Mathf.RoundToInt(inventory.Stats.Total(StatType.AdditionalArrows)));
+            float chance = inventory.Stats.Total(StatType.ExtraArrowChance);
+            if (chance > 0f && Random.value * 100f < chance)
+                arrows++;
+            return arrows;
+        }
+
+        // Where a shot aimed at a spot (Rain of Arrows) comes down: the cursor on desktop; on touch
+        // the aimed enemy, else a little ahead. Never further than the bow reaches.
+        private Vector3 BowTarget(float range)
+        {
+            Vector3 target;
+            if (!TouchMode.Active && TryGetAimPoint(out Vector3 cursor))
+                target = cursor;
+            else if (highlighted != null && !highlighted.IsDead)
+                target = highlighted.transform.position;
+            else if (aimEnemy != null && !aimEnemy.IsDead)
+                target = aimEnemy.transform.position;
+            else
+                target = transform.position + transform.forward * range * 0.6f;
+
+            Vector3 offset = target - transform.position;
+            offset.y = 0f;
+            if (offset.magnitude > range)
+                offset = offset.normalized * range;
+            return transform.position + offset;
         }
 
         // Turns to wherever the player is aiming right now. On touch, with the aim stick already let

@@ -124,11 +124,7 @@ namespace PoeClone.Enemies
             nextEnrageAt = enragedUntil + EnrageCooldown;
             nextEnragePulse = 0f;
 
-            float size = transform.localScale.y;
-            SkillEffects.Shockwave(transform.position, 2.2f * size, EnrageColor, 0.45f);
-            CombatText.Show(transform.position + Vector3.up * (health != null ? health.BarHeight : 2.3f) * size,
-                "ENRAGED", EnrageColor, 1.2f);
-            EnemySounds.Play(kind ?? EnemyKinds.Get(0), EnemySounds.Event.Aggro, transform.position);
+            PlayEnrageStart(transform, kind ?? EnemyKinds.Get(0), health != null ? health.BarHeight : 2.3f);
         }
 
         // A red pulse at its feet for as long as the rage lasts.
@@ -136,8 +132,25 @@ namespace PoeClone.Enemies
         {
             if (!IsEnraged || Time.time < nextEnragePulse)
                 return;
-            nextEnragePulse = Time.time + 0.45f;
-            SkillEffects.Shockwave(transform.position, 1.1f * transform.localScale.y, EnrageColor, 0.35f);
+            nextEnragePulse = Time.time + EnragePulseEvery;
+            PlayEnragePulse(transform);
+        }
+
+        public const float EnragePulseEvery = 0.45f;
+
+        /// <summary>The burst, "ENRAGED" and roar as the rage starts (also replayed for spectators).</summary>
+        public static void PlayEnrageStart(Transform body, EnemyKind kind, float barHeight)
+        {
+            float size = body.localScale.y;
+            SkillEffects.Shockwave(body.position, 2.2f * size, EnrageColor, 0.45f);
+            CombatText.Show(body.position + Vector3.up * barHeight * size, "ENRAGED", EnrageColor, 1.2f);
+            EnemySounds.Play(kind, EnemySounds.Event.Aggro, body.position);
+        }
+
+        /// <summary>One of the red pulses at its feet while it rages.</summary>
+        public static void PlayEnragePulse(Transform body)
+        {
+            SkillEffects.Shockwave(body.position, 1.1f * body.localScale.y, EnrageColor, 0.35f);
         }
 
         private void Awake()
@@ -207,7 +220,10 @@ namespace PoeClone.Enemies
                 return;
             Vector3 toPlayer = player.transform.position - transform.position;
             toPlayer.y = 0f;
-            if (toPlayer.magnitude >= EnrageHitDistance)
+            // Measured from its edge, not its middle: a big boss is wide, and a player at its
+            // feet is not "far away".
+            float edge = controller != null ? controller.radius * transform.localScale.x : 0f;
+            if (toPlayer.magnitude - edge >= EnrageHitDistance)
                 Enrage();
         }
 
@@ -289,7 +305,11 @@ private void Update()
                 toPlayer.y = 0f;
                 float distance = toPlayer.magnitude;
 
-                UpdateState(distance);
+                // A player on warded ground can't be followed in (a minion out here still can).
+                if (minion == null && Sanctuary.Contains(player.transform.position, 1f))
+                    state = State.Idle;
+                else
+                    UpdateState(distance);
 
                 if (state == State.Chasing)
                 {
@@ -309,6 +329,14 @@ private void Update()
                         facing = horizontal;
                     }
                 }
+            }
+
+            // Wandered onto warded ground: back out the way it came.
+            Vector3 wayOut = Sanctuary.WayOut(transform.position);
+            if (wayOut != Vector3.zero && !staggered)
+            {
+                horizontal = Steer(wayOut);
+                facing = horizontal;
             }
 
             if (facing.sqrMagnitude > 0.001f)

@@ -167,7 +167,8 @@ namespace PoeClone.Player
             if (log != null)
             {
                 var active = new Dictionary<string, int>();
-                log.Export(data.questsDone, active, data.visited);
+                log.Export(data.questsDone, active, data.visited, data.questProps);
+                data.questBook = QuestBook.Version;
                 foreach (var pair in active)
                     data.questsActive.Add(new QuestRecord { id = pair.Key, progress = pair.Value });
             }
@@ -259,15 +260,18 @@ namespace PoeClone.Player
             }
 
             QuestLog log = QuestLog.Instance;
+            // Quests saved under an older quest book start over (the places visited are kept).
+            bool questsCurrent = data.questBook == QuestBook.Version;
             if (log != null)
             {
                 var active = new List<KeyValuePair<string, int>>();
-                if (data.questsActive != null)
+                if (questsCurrent && data.questsActive != null)
                 {
                     foreach (QuestRecord q in data.questsActive)
                         active.Add(new KeyValuePair<string, int>(q.id, q.progress));
                 }
-                log.Import(data.questsDone ?? new List<string>(), active, data.visited ?? new List<int>());
+                log.Import(questsCurrent && data.questsDone != null ? data.questsDone : new List<string>(), active,
+                    data.visited ?? new List<int>(), questsCurrent && data.questProps != null ? data.questProps : new List<string>());
             }
             MinimapTerrain.Import(data.mapSeen);
 
@@ -275,7 +279,9 @@ namespace PoeClone.Player
             stats.Heal(stats.MaxHealth);
             stats.RestoreMana(stats.MaxMana);
 
-            CombatText.Show(stats.transform.position + Vector3.up * 2.4f, "Welcome back", new Color(1f, 0.85f, 0.4f), 1f);
+            CombatText.Show(stats.transform.position + Vector3.up * 2.4f,
+                questsCurrent ? "Welcome back" : "Welcome back - the story begins anew: talk to Elder Maren",
+                new Color(1f, 0.85f, 0.4f), 1f);
         }
     }
 }

@@ -22,7 +22,14 @@ namespace PoeClone.World
         [Tooltip("Where the player appears in the target area (in front of the gate back). Empty = the area's spawn point.")]
         public Transform arrival;
 
+        /// <summary>While this says so, the gate doesn't work (sealed until a quest opens it; see Quests.QuestBarrier).</summary>
+        public System.Func<bool> Locked;
+
+        /// <summary>What the player is told walking into a locked gate.</summary>
+        public string LockedMessage = "The way is sealed";
+
         private static readonly List<AreaGate> all = new List<AreaGate>();
+        private float lockedToldAt = -10f;
 
         private bool armed = true;
         private Collider box;
@@ -132,6 +139,16 @@ namespace PoeClone.World
 
             if (!armed)
                 return;
+
+            if (Locked != null && Locked())
+            {
+                if (Time.time - lockedToldAt > 3f)
+                {
+                    lockedToldAt = Time.time;
+                    UI.CombatText.Show(player.transform.position + Vector3.up * 2.4f, LockedMessage, new Color(0.7f, 0.85f, 1f), 0.85f);
+                }
+                return;
+            }
 
             var manager = AreaManager.Instance;
             if (manager == null || manager.IsSwitching || manager.CurrentAreaIndex == targetAreaIndex)

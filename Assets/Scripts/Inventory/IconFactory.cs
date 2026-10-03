@@ -27,6 +27,28 @@ namespace PoeClone.Inventory
             return sprite;
         }
 
+        private static Sprite arrow;
+
+        /// <summary>A single arrow, pointing up and to the right: the bow's plain attack on the skill bar.</summary>
+        public static Sprite Arrow
+        {
+            get
+            {
+                if (arrow != null)
+                    return arrow;
+                var add = new List<Shape>
+                {
+                    // Shaft, a broad head at the top right, and two fletching vanes at the bottom left.
+                    Capsule(0.2f, 0.2f, 0.72f, 0.72f, 0.06f),
+                    Poly(0.88f, 0.88f, 0.58f, 0.78f, 0.78f, 0.58f),
+                    Poly(0.12f, 0.36f, 0.2f, 0.2f, 0.32f, 0.32f, 0.22f, 0.44f),
+                    Poly(0.36f, 0.12f, 0.2f, 0.2f, 0.32f, 0.32f, 0.44f, 0.22f),
+                };
+                arrow = Rasterise("Icon_Arrow", add, new List<Shape>(), new List<Shape>());
+                return arrow;
+            }
+        }
+
         /// <summary>Fraction of the icon's pixels that are opaque. Used by tests to catch empty/degenerate icons.</summary>
         public static float Coverage(Sprite sprite)
         {
@@ -48,9 +70,13 @@ namespace PoeClone.Inventory
             List<Shape> subtract = new List<Shape>();
             List<Shape> top = new List<Shape>();
             Describe(type, add, subtract, top);
+            return Rasterise("Icon_" + type, add, subtract, top);
+        }
 
+        private static Sprite Rasterise(string name, List<Shape> add, List<Shape> subtract, List<Shape> top)
+        {
             Texture2D tex = new Texture2D(Size, Size, TextureFormat.RGBA32, false);
-            tex.name = "Icon_" + type;
+            tex.name = name;
             tex.filterMode = FilterMode.Bilinear;
             tex.wrapMode = TextureWrapMode.Clamp;
 

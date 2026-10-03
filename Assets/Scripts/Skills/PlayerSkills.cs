@@ -20,10 +20,10 @@ namespace PoeClone.Skills
     /// Every other skill goes in a bar slot: Q, E, R, F, then the right, middle, back and forward
     /// mouse buttons (touch has round buttons for the first four). A skill that new gear grants
     /// drops into the first free slot; the skills panel (K) moves them around. Each costs mana and
-    /// has a cooldown. Aiming works like attacks: the mouse on desktop, <see cref="VirtualInput.Aim"/>
+    /// has a cooldown, except bow skills, which are toggled (see PlayerSkills.Bow.cs). Aiming works like attacks: the mouse on desktop, <see cref="VirtualInput.Aim"/>
     /// on touch. Self-added by <see cref="PlayerController"/>.
     /// </summary>
-    public class PlayerSkills : MonoBehaviour
+    public partial class PlayerSkills : MonoBehaviour
     {
         private static readonly string[] SlotLabels = { "Q", "E", "R", "F", "RMB", "MMB", "M4", "M5" };
         private static readonly Key[] SlotKeys = { Key.Q, Key.E, Key.R, Key.F };
@@ -80,6 +80,25 @@ namespace PoeClone.Skills
             return list;
         }
 
+        // Not skills, but replayed for spectators through the same log (see HitEffects.Burst).
+        public const SkillId CorpseExplosionCast = (SkillId)(-1);
+        public const SkillId ShatterCast = (SkillId)(-2);
+
+        /// <summary>Logs a kill burst (a corpse explosion or shatter) where it went off.</summary>
+        public void RecordBurst(SkillId burst, Vector3 at, float radius)
+        {
+            CastCount++;
+            recentCasts[CastCount % RecentCastCount] = new CastRecord
+            {
+                Number = CastCount,
+                Skill = burst,
+                At = at,
+                Facing = transform.forward,
+                Size = radius,
+                Time = Time.time
+            };
+        }
+
         private void Record(SkillDefinition skill, int level, float size = 0f, int count = 0, Vector3[] points = null)
         {
             CastCount++;
@@ -103,12 +122,24 @@ namespace PoeClone.Skills
         /// </summary>
         public static void PlayVisual(CastRecord cast, Transform caster)
         {
+            if (cast.Skill == CorpseExplosionCast || cast.Skill == ShatterCast)
+            {
+                HitEffects.PlayBurstVisual(cast.At, cast.Size, cast.Skill == ShatterCast);
+                return;
+            }
+
             SkillDefinition skill = SkillBook.Get(cast.Skill);
             Vector3 facing = cast.Facing;
             facing.y = 0f;
             if (facing.sqrMagnitude < 0.0001f)
                 facing = caster.forward;
             facing.Normalize();
+
+            if (skill.Bow)
+            {
+                PlayBowVisual(cast, skill, caster, facing);
+                return;
+            }
 
             switch (cast.Skill)
             {
@@ -205,6 +236,7 @@ namespace PoeClone.Skills
 
         private void OnGearChanged(EquipSlot slot, ItemData item)
         {
+            CheckBowToggle();
             FillEmptySlots(announce: item != null);
         }
 
@@ -367,6 +399,8 @@ namespace PoeClone.Skills
         public float Cooldown(SkillId id)
         {
             SkillDefinition skill = SkillBook.Get(id);
+            if (skill.Bow)
+                return 0f;
             float cooldown = skill.CooldownAt(Mathf.Max(1, Level(id)));
             float onslaught = controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f;
             if (skill.Main && MainSkill == id)
@@ -492,6 +526,8 @@ namespace PoeClone.Skills
                 CombatText.Show(transform.position + Vector3.up * 2f, skill.Name + ": not on your gear", UiKit.DimText, 0.8f);
                 return false;
             }
+            if (skill.Bow)
+                return ToggleBow(skill);
             if (CooldownLeft(skill.Id) > 0f || controller.IsDashing)
                 return false;
 

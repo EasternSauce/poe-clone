@@ -457,7 +457,7 @@ namespace PoeClone.Enemies
         {
             busy = true;
             CombatText.Show(transform.position + Vector3.up * health.BarHeight * transform.localScale.y,
-                kind.Name + " is enraged!", CombatText.ColorFor(kind.DamageType), 1.4f);
+                kind.Name + " grows furious!", CombatText.ColorFor(kind.DamageType), 1.4f);
             EnemySounds.Play(kind, EnemySounds.Event.Aggro, transform.position);
             CameraSystem.CameraFollow.Shake(0.3f, 0.9f);
             if (creature != null)

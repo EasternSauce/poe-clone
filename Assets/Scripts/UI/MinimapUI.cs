@@ -160,7 +160,10 @@ namespace PoeClone.UI
 
             foreach (Npc npc in Npc.All)
             {
-                if (npc != null && npc.Role != NpcRole.Waystone && InArea(npc.transform.position, centre) &&
+                // Something a quest wants used shows even in ground not uncovered yet: that's where to go.
+                if (npc != null && npc.Role == NpcRole.QuestProp && InArea(npc.transform.position, centre))
+                    Dot(npc.transform.position, centre, Quests.QuestProp.LabelColor, 12f, square: true);
+                else if (npc != null && npc.Role != NpcRole.Waystone && InArea(npc.transform.position, centre) &&
                     MinimapTerrain.IsSeen(area, npc.transform.position))
                     Dot(npc.transform.position, centre, new Color(1f, 0.92f, 0.45f), 9f, square: false);
             }

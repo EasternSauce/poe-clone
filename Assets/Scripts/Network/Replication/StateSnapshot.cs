@@ -28,6 +28,7 @@ namespace PoeClone.Network.Replication
         public int sk;     // enemies: special skills used so far (EnemySkills) - same counter trick as atk
         public float sx;   // ...and where the latest one was aimed
         public float sz;
+        public int en;     // enemies: 1 = enraged
 
         public EntityState Clone()
         {
@@ -51,6 +52,7 @@ namespace PoeClone.Network.Replication
         public int dead;
         public float cd;   // seconds left on the death countdown
         public int rv;     // 1 = countdown finished, waiting for the player to press a key to revive
+        public int arw;    // extra arrows each bow shot looses (so the spectator's replay fans out the same)
     }
 
     /// <summary>

@@ -234,6 +234,46 @@ namespace PoeClone.EditorTools
             return (used ? "used " : "did NOT use ") + skills.Slot(slot) + (aim ? " at " + target.name : "");
         }
 
+        private static double attackUntil;
+
+        /// <summary>
+        /// Holds the attack (touch aim stick) at the nearest enemy for a few real seconds, re-aiming
+        /// every editor tick, then lets go. Bow skills that are on shoot instead of the plain shot.
+        /// </summary>
+        public static string Attack(float seconds = 2f)
+        {
+            PlayerStats ps = Stats();
+            if (ps == null || Nearest(ps.transform.position) == null)
+                return "no player or no enemy";
+            attackUntil = EditorApplication.timeSinceStartup + seconds;
+            EditorApplication.update -= HoldAttack;
+            EditorApplication.update += HoldAttack;
+            HoldAttack();
+            return "attacking for " + seconds + "s at " + Nearest(ps.transform.position).name;
+        }
+
+        private static void HoldAttack()
+        {
+            FieldInfo forced = typeof(TouchMode).GetField("forced", Any);
+            PlayerStats ps = Stats();
+            EnemyHealth target = ps != null ? Nearest(ps.transform.position) : null;
+            if (!EditorApplication.isPlaying || EditorApplication.timeSinceStartup > attackUntil || target == null || Camera.main == null)
+            {
+                EditorApplication.update -= HoldAttack;
+                VirtualInput.AttackHeld = false;
+                VirtualInput.Aim = Vector2.zero;
+                if (forced != null)
+                    forced.SetValue(null, false);
+                return;
+            }
+            if (forced != null)
+                forced.SetValue(null, true);
+            Vector3 a = Camera.main.WorldToScreenPoint(ps.transform.position);
+            Vector3 b = Camera.main.WorldToScreenPoint(target.transform.position);
+            VirtualInput.Aim = new Vector2(b.x - a.x, b.y - a.y).normalized;
+            VirtualInput.AttackHeld = true;
+        }
+
         // ------------------------------------------------------------------ the world
 
         /// <summary>Spawns enemies of a kind (name or index) at an offset from the player.</summary>
@@ -298,6 +338,154 @@ namespace PoeClone.EditorTools
                 }
             }
             return "killed " + killed;
+        }
+
+        // ------------------------------------------------------------------ quests
+
+        /// <summary>
+        /// Skips ahead to a quest: everything before it in its chain (and their chains) counts as
+        /// handed in, and the quest itself is taken. "complete" also reaches its goal.
+        /// </summary>
+        public static string Quest(string id, bool complete = false)
+        {
+            var log = Quests.QuestLog.Instance;
+            var quest = Quests.QuestBook.Get(id);
+            if (log == null || quest == null)
+                return "no quest log / no quest " + id;
+            var done = (HashSet<string>)typeof(Quests.QuestLog).GetField("done", Any).GetValue(log);
+            var active = (Dictionary<string, int>)typeof(Quests.QuestLog).GetField("active", Any).GetValue(log);
+            for (string before = quest.After; before != null; )
+            {
+                done.Add(before);
+                active.Remove(before);
+                var b = Quests.QuestBook.Get(before);
+                before = b != null ? b.After : null;
+            }
+            done.Remove(id);
+            active[id] = complete ? quest.Count : 0;
+            var changed = (MulticastDelegate)typeof(Quests.QuestLog).GetField("Changed", Any).GetValue(log);
+            if (changed != null)
+                changed.DynamicInvoke();
+            return id + ": " + log.State(quest);
+        }
+
+        /// <summary>Goes to an area (by index: Greenwood 0, Haven 1, Graveyard 2, Ruins 3, Frozen 4).</summary>
+        public static string Area(int area)
+        {
+            var areas = World.AreaManager.Instance;
+            if (areas == null)
+                return "no area manager";
+            areas.EnterArea(area, null);
+            return "entering " + World.WorldBuilder.AreaNames[area];
+        }
+
+        /// <summary>
+        /// Puts the player next to something in the current area: a WorldBuilder spot ("Seer"),
+        /// a quest's first unused prop ("prop:totems"), or "x,z".
+        /// </summary>
+        public static string Warp(string target, float back = 2.5f)
+        {
+            PlayerStats ps = Stats();
+            if (ps == null)
+                return "no player";
+            Vector3 at;
+            if (target.StartsWith("prop:"))
+            {
+                string questId = target.Substring(5);
+                Quests.QuestProp found = null;
+                foreach (var prop in UnityEngine.Object.FindObjectsByType<Quests.QuestProp>(FindObjectsSortMode.None))
+                {
+                    if (prop.QuestId == questId && (Quests.QuestLog.Instance == null || !Quests.QuestLog.Instance.PropUsed(prop.PropId)))
+                    {
+                        found = prop;
+                        break;
+                    }
+                }
+                if (found == null)
+                    return "no unused prop for " + questId;
+                at = found.transform.position;
+            }
+            else if (target.Contains(","))
+            {
+                string[] xz = target.Split(',');
+                at = new Vector3(float.Parse(xz[0]), 0f, float.Parse(xz[1]));
+            }
+            else if (!World.WorldBuilder.Instance.Spots.TryGetValue(target, out at))
+            {
+                return "no spot " + target;
+            }
+            Vector3 p = at + Vector3.back * back;
+            p.y = 1.1f;
+            var cc = ps.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+            ps.transform.position = p;
+            if (cc != null) cc.enabled = true;
+            Physics.SyncTransforms();
+            var cam = Camera.main != null ? Camera.main.GetComponent<CameraSystem.CameraFollow>() : null;
+            if (cam != null)
+                cam.SnapToTarget();
+            return "at " + p;
+        }
+
+        /// <summary>Talks to someone (or uses a quest prop) as if clicked in reach; returns the page.</summary>
+        public static string Talk(string role)
+        {
+            World.NpcRole r = (World.NpcRole)Enum.Parse(typeof(World.NpcRole), role);
+            World.Npc npc = null;
+            if (r == World.NpcRole.QuestProp)
+            {
+                PlayerStats ps = Stats();
+                float best = float.MaxValue;
+                foreach (World.Npc n in World.Npc.All)
+                {
+                    float d = n.Role == r && ps != null ? Vector3.Distance(n.transform.position, ps.transform.position) : float.MaxValue;
+                    if (d < best) { best = d; npc = n; }
+                }
+            }
+            else
+            {
+                npc = World.Npc.Find(r);
+            }
+            if (npc == null)
+                return "nobody: " + role;
+            UI.NpcDialogues.Open(npc);
+            return Page();
+        }
+
+        /// <summary>The open conversation: speaker, text and numbered options.</summary>
+        public static string Page()
+        {
+            var ui = UnityEngine.Object.FindAnyObjectByType<UI.DialogueUI>();
+            if (!UI.DialogueUI.IsOpen || ui == null)
+                return "(no dialogue)";
+            var body = (UnityEngine.UI.Text)typeof(UI.DialogueUI).GetField("body", Any).GetValue(ui);
+            var options = (List<UI.DialogueOption>)typeof(UI.DialogueUI).GetField("current", Any).GetValue(ui);
+            var sb = new StringBuilder((UI.DialogueUI.Speaker != null ? UI.DialogueUI.Speaker.DisplayName : "?") + ": " + body.text);
+            for (int k = 0; k < options.Count; k++)
+                sb.Append(" [").Append(k).Append("] ").Append(options[k].Label).Append(options[k].Enabled ? "" : " (off)");
+            return sb.ToString();
+        }
+
+        /// <summary>Picks a dialogue option by number; returns the next page.</summary>
+        public static string Pick(int index)
+        {
+            var ui = UnityEngine.Object.FindAnyObjectByType<UI.DialogueUI>();
+            if (ui == null)
+                return "no dialogue ui";
+            typeof(UI.DialogueUI).GetMethod("Pick", Any).Invoke(ui, new object[] { index });
+            return Page();
+        }
+
+        /// <summary>The quests under way, with state and progress.</summary>
+        public static string QuestStatus()
+        {
+            var log = Quests.QuestLog.Instance;
+            if (log == null)
+                return "no log";
+            var sb = new StringBuilder();
+            foreach (var q in log.Taken())
+                sb.Append(q.Id).Append(' ').Append(log.State(q)).Append(' ').Append(log.Progress(q)).Append('/').Append(q.Count).Append("; ");
+            return sb.Length > 0 ? sb.ToString() : "(none taken)";
         }
 
         private static EnemyHealth Nearest(Vector3 from)
