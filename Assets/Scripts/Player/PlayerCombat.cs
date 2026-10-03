@@ -305,7 +305,8 @@ namespace PoeClone.Player
         {
             float baseAttacksPerSecond = CharacterAttackAnimator.BaseAttackSpeed(weaponType);
             float increasedPercent = inventory.Stats.Total(StatType.AttackSpeed);
-            return baseAttacksPerSecond * (1f + increasedPercent / 100f);
+            float onslaught = controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f;
+            return baseAttacksPerSecond * (1f + increasedPercent / 100f) * onslaught;
         }
 
         // Damages everything the weapon actually reaches: a forward cone out to the weapon's

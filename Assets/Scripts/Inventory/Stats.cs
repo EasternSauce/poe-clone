@@ -53,7 +53,34 @@ namespace PoeClone.Inventory
         ColdSpellLevels,
         LightningSpellLevels,
         CastSpeed,                  // % increased cast speed (spells used as the attack)
-        CooldownRecovery            // % faster skill cooldowns
+        CooldownRecovery,           // % faster skill cooldowns
+
+        // Mostly from the passive tree (see HitEffects for what each does in a fight).
+        FireDamage,                 // % increased fire damage
+        ColdDamage,                 // % increased cold damage
+        LightningDamage,            // % increased lightning damage
+        IgniteChance,               // % chance for fire hits to set the enemy burning
+        ShockChance,                // % chance for lightning hits to shock (takes more damage for a while)
+        DamageVsChilled,            // % increased damage against chilled enemies
+        CriticalChance,             // % chance for a hit to be critical
+        CriticalMultiplier,         // % added to the critical damage multiplier
+        AttackDamage,               // % increased damage with attacks
+        Damage,                     // % increased damage of every kind
+        DamageWhileLowLife,         // % increased damage while under half life
+        IncreasedLife,              // % increased maximum life
+        IncreasedMana,              // % increased maximum mana
+        PercentLifeRegen,           // % of maximum life regenerated per second
+        ManaOnKill,                 // mana gained for each enemy killed
+        OnslaughtOnKill,            // % chance on kill to gain Onslaught (faster attacks, casts and movement)
+        ExplodeOnKill,              // % chance for a killed enemy to explode, burning those around it
+
+        // Skill synergies (keystones): each makes two of the game's skills or effects work together.
+        GlacialStep,                // 1: Dash ends in a Frost Nova
+        Shatter,                    // % chance for a chilled enemy killed to burst into ice, chilling and hurting those near
+        SecondWind,                 // 1: Rejuvenate also refills mana and grants Onslaught
+        Stormblade,                 // % chance for an attack critical strike to arc lightning to nearby enemies
+
+        GrantTeleport               // a skill grant like the ones above (added later, so it sits here)
     }
 
     /// <summary>
@@ -70,7 +97,7 @@ namespace PoeClone.Inventory
 
         public static bool IsGrant(StatType stat)
         {
-            return stat >= StatType.GrantCleave && stat <= StatType.GrantIceShard;
+            return (stat >= StatType.GrantCleave && stat <= StatType.GrantIceShard) || stat == StatType.GrantTeleport;
         }
 
         /// <summary>
@@ -93,6 +120,7 @@ namespace PoeClone.Inventory
                 case StatType.GrantRejuvenate: return "Rejuvenate";
                 case StatType.GrantChainLightning: return "Chain Lightning";
                 case StatType.GrantIceShard: return "Ice Shard";
+                case StatType.GrantTeleport: return "Teleport";
                 default: return grant.ToString();
             }
         }
@@ -203,6 +231,20 @@ namespace PoeClone.Inventory
             derived[(int)StatType.MaxLife] = (float)Math.Floor(gear[(int)StatType.Strength] * LifePerStrength);
             derived[(int)StatType.MaxMana] = (float)Math.Floor(gear[(int)StatType.Intelligence] * ManaPerIntelligence);
             derived[(int)StatType.Evasion] = (float)Math.Floor(gear[(int)StatType.Dexterity] * EvasionPerDexterity);
+
+            // "% increased" life and mana scale the whole pool, the character's own included; the
+            // extra counts as coming from gear so the character picks it up with the rest.
+            Increase(StatType.MaxLife, StatType.IncreasedLife);
+            Increase(StatType.MaxMana, StatType.IncreasedMana);
+        }
+
+        private void Increase(StatType pool, StatType percent)
+        {
+            float increased = baseValues[(int)percent] + gear[(int)percent];
+            if (increased == 0f)
+                return;
+            float whole = baseValues[(int)pool] + gear[(int)pool] + derived[(int)pool];
+            derived[(int)pool] += (float)Math.Floor(whole * Math.Max(-0.9f, increased / 100f));
         }
 
         public static StatSheet Build(BaseStats baseStats, EquipmentSet equipment, IEnumerable<StatModifier> extra = null)
@@ -296,6 +338,27 @@ namespace PoeClone.Inventory
                 case StatType.LightningSpellLevels: return "Lightning Spell Levels";
                 case StatType.CastSpeed: return "Cast Speed";
                 case StatType.CooldownRecovery: return "Cooldown Recovery";
+                case StatType.FireDamage: return "Fire Damage";
+                case StatType.ColdDamage: return "Cold Damage";
+                case StatType.LightningDamage: return "Lightning Damage";
+                case StatType.IgniteChance: return "Chance to Ignite";
+                case StatType.ShockChance: return "Chance to Shock";
+                case StatType.DamageVsChilled: return "Damage vs Chilled";
+                case StatType.CriticalChance: return "Critical Strike Chance";
+                case StatType.CriticalMultiplier: return "Critical Multiplier";
+                case StatType.AttackDamage: return "Attack Damage";
+                case StatType.Damage: return "Damage";
+                case StatType.DamageWhileLowLife: return "Damage on Low Life";
+                case StatType.IncreasedLife: return "Increased Life";
+                case StatType.IncreasedMana: return "Increased Mana";
+                case StatType.PercentLifeRegen: return "Life Regen (% of max)";
+                case StatType.ManaOnKill: return "Mana on Kill";
+                case StatType.OnslaughtOnKill: return "Onslaught on Kill";
+                case StatType.ExplodeOnKill: return "Corpse Explosion";
+                case StatType.GlacialStep: return "Glacial Step";
+                case StatType.Shatter: return "Shatter";
+                case StatType.SecondWind: return "Second Wind";
+                case StatType.Stormblade: return "Stormblade";
                 default:
                     if (SkillGrants.IsGrant(stat))
                         return SkillGrants.SkillName(stat);
@@ -329,6 +392,24 @@ namespace PoeClone.Inventory
                 case StatType.MeleeRange:
                 case StatType.CastSpeed:
                 case StatType.CooldownRecovery:
+                case StatType.FireDamage:
+                case StatType.ColdDamage:
+                case StatType.LightningDamage:
+                case StatType.IgniteChance:
+                case StatType.ShockChance:
+                case StatType.DamageVsChilled:
+                case StatType.CriticalChance:
+                case StatType.CriticalMultiplier:
+                case StatType.AttackDamage:
+                case StatType.Damage:
+                case StatType.DamageWhileLowLife:
+                case StatType.IncreasedLife:
+                case StatType.IncreasedMana:
+                case StatType.PercentLifeRegen:
+                case StatType.OnslaughtOnKill:
+                case StatType.ExplodeOnKill:
+                case StatType.Shatter:
+                case StatType.Stormblade:
                     return true;
                 default:
                     return false;
@@ -383,11 +464,37 @@ namespace PoeClone.Inventory
                 case StatType.LightningSpellLevels: return sign + n + " to Level of all Lightning Spells";
                 case StatType.CastSpeed: return n + "% increased Cast Speed";
                 case StatType.CooldownRecovery: return n + "% faster Skill Cooldowns";
+                case StatType.FireDamage: return Increased(m, "Fire Damage");
+                case StatType.ColdDamage: return Increased(m, "Cold Damage");
+                case StatType.LightningDamage: return Increased(m, "Lightning Damage");
+                case StatType.IgniteChance: return n + "% chance to Ignite with Fire hits (burns for 60% of the hit over 3s)";
+                case StatType.ShockChance: return n + "% chance to Shock with Lightning hits (shocked enemies take 25% more damage)";
+                case StatType.DamageVsChilled: return Increased(m, "Damage against Chilled enemies");
+                case StatType.CriticalChance: return n + "% chance to deal a Critical Strike";
+                case StatType.CriticalMultiplier: return sign + n + "% to Critical Strike Multiplier";
+                case StatType.AttackDamage: return Increased(m, "Attack Damage");
+                case StatType.Damage: return Increased(m, "Damage");
+                case StatType.DamageWhileLowLife: return Increased(m, "Damage while on Low Life (under half)");
+                case StatType.IncreasedLife: return Increased(m, "Maximum Life");
+                case StatType.IncreasedMana: return Increased(m, "Maximum Mana");
+                case StatType.PercentLifeRegen: return "Regenerate " + n + "% of Maximum Life per second";
+                case StatType.ManaOnKill: return "Gain " + n + " Mana per enemy killed";
+                case StatType.OnslaughtOnKill: return n + "% chance on kill to gain Onslaught (20% faster attacks, casts and movement for 4s)";
+                case StatType.ExplodeOnKill: return n + "% chance for enemies you kill to explode, dealing a sixth of their life as Fire damage around them";
+                case StatType.GlacialStep: return "Dash ends in a Frost Nova that chills everything around you";
+                case StatType.Shatter: return n + "% chance for Chilled enemies you kill to Shatter, dealing Cold damage and chilling those nearby";
+                case StatType.SecondWind: return "Rejuvenate also restores a third of your Mana and grants Onslaught";
+                case StatType.Stormblade: return n + "% chance for Attack Critical Strikes to arc Lightning to 3 nearby enemies";
                 default:
                     if (SkillGrants.IsGrant(m.Stat))
                         return "Grants Level " + n + " " + SkillGrants.SkillName(m.Stat);
                     return sign + n + " " + Label(m.Stat);
             }
+        }
+
+        private static string Increased(StatModifier m, string what)
+        {
+            return Number(Math.Abs(m.Value)) + "% " + (m.Value < 0f ? "reduced " : "increased ") + what;
         }
 
         /// <summary>A final value on the character page ("42", "20%").</summary>

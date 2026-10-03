@@ -98,6 +98,9 @@ namespace PoeClone.Enemies
                 return;
             }
 
+            if (noFlinch)
+                return;
+
             // Bosses don't flinch.
             if (EnemyKinds.Get(KindIndex).IsBoss)
             {
@@ -113,6 +116,55 @@ namespace PoeClone.Enemies
 
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.meleeHit, transform.position);
+        }
+
+        // ------------------------------------------------------------------ ailments (player passives)
+
+        private float shockedUntil = -1f;
+        private float burnPerSecond;
+        private float burnUntil = -1f;
+        private Coroutine burning;
+        private bool noFlinch;   // burn ticks hurt without staggering
+
+        /// <summary>Shocked: takes more damage from the player for a while (see HitEffects).</summary>
+        public bool IsShocked => !dead && Time.time < shockedUntil;
+        public bool IsBurning => !dead && Time.time < burnUntil;
+
+        public void Shock(float seconds)
+        {
+            shockedUntil = Mathf.Max(shockedUntil, Time.time + seconds);
+        }
+
+        /// <summary>Burns for this much damage over the time given; a stronger burn replaces a weaker one.</summary>
+        public void Ignite(float totalDamage, float seconds)
+        {
+            if (dead || totalDamage <= 0f || seconds <= 0f)
+                return;
+            float perSecond = totalDamage / seconds;
+            if (IsBurning && perSecond < burnPerSecond)
+                return;
+            burnPerSecond = perSecond;
+            burnUntil = Time.time + seconds;
+            if (burning == null)
+                burning = StartCoroutine(Burn());
+        }
+
+        private IEnumerator Burn()
+        {
+            const float tick = 0.5f;
+            while (!dead && Time.time < burnUntil)
+            {
+                yield return new WaitForSeconds(tick);
+                if (dead)
+                    break;
+                float amount = burnPerSecond * tick;
+                UI.CombatText.Show(transform.position + Vector3.up * 1.3f * transform.localScale.y,
+                    Mathf.Max(1, Mathf.RoundToInt(amount)).ToString(), UI.CombatText.FireColor, 0.6f);
+                noFlinch = true;
+                TakeDamage(amount);
+                noFlinch = false;
+            }
+            burning = null;
         }
 
         /// <summary>Restores life (a shaman's war cry), up to the maximum.</summary>

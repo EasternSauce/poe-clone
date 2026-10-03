@@ -59,8 +59,38 @@ namespace PoeClone.UI
         private bool titlePending;
         private PoeClone.World.AreaManager subscribedAreas;
 
+        // The key list under the attributes (and the passive tree's how-to line) can be hidden
+        // (H, or its button); remembered between plays.
+        private const string ControlsHiddenKey = "PoeClone.HudControlsHidden";
+        private static bool controlsHidden;
+        private static bool controlsLoaded;
+
+        public static bool ControlsHidden
+        {
+            get
+            {
+                if (!controlsLoaded)
+                {
+                    controlsLoaded = true;
+                    controlsHidden = PlayerPrefs.GetInt(ControlsHiddenKey, 0) == 1;
+                }
+                return controlsHidden;
+            }
+            set
+            {
+                controlsHidden = value;
+                controlsLoaded = true;
+                PlayerPrefs.SetInt(ControlsHiddenKey, value ? 1 : 0);
+                PlayerPrefs.Save();
+            }
+        }
+
         private void Update()
         {
+            UnityEngine.InputSystem.Keyboard keyboard = UnityEngine.InputSystem.Keyboard.current;
+            if (!SpectatorMode && keyboard != null && keyboard.hKey.wasPressedThisFrame && !UiKit.IsTypingInTextField())
+                ControlsHidden = !ControlsHidden;
+
             var areas = PoeClone.World.AreaManager.Instance;
             if (areas != null && areas != subscribedAreas)
             {
@@ -163,6 +193,10 @@ namespace PoeClone.UI
                 titleShownAt = Time.unscaledTime;
             }
 
+            // The passive tree fills the screen: nothing of the HUD shows over it.
+            if (PassiveTreeUI.IsOpen && !stats.IsDead)
+                return;
+
             // OnGUI draws over every uGUI window, so the sheet steps aside while the character
             // page (which sits in the same corner) is open.
             if (CharacterPageOpen())
@@ -185,11 +219,12 @@ namespace PoeClone.UI
             // A soft dark backing, so the white text reads over bright ground (snow, the plaza).
             Color previousColor = GUI.color;
             GUI.color = new Color(0f, 0f, 0f, 0.32f);
-            GUI.DrawTexture(new Rect(10f, 10f, SpectatorMode ? 400f : 750f, SpectatorMode ? 290f : 348f), pixel);
+            bool showControls = !SpectatorMode && !ControlsHidden;
+            GUI.DrawTexture(new Rect(10f, 10f, showControls ? 750f : 400f, SpectatorMode ? 290f : showControls ? 368f : 316f), pixel);
             GUI.color = previousColor;
 
             GUILayout.BeginArea(
-                new Rect(20f, 20f, 760f, 340f)
+                new Rect(20f, 20f, 760f, 360f)
             );
 
             GUILayout.Label(
@@ -248,14 +283,20 @@ namespace PoeClone.UI
             if (!SpectatorMode)
                 GUILayout.Label(PurseLine(), textStyle);
 
-            if (!SpectatorMode)
+            if (showControls)
             {
                 GUILayout.Space(20f);
 
                 GUILayout.Label(
-                    "WASD - Move | Shift - Sprint | Left click - Attack | Q E R F, spare mouse buttons - Skills\n1 2 - Potions | T - Town portal | K - Skill list | P - Passives | I - Inventory | C - Character | M - Map | Enter - Chat",
+                    "WASD - Move | Shift - Sprint | Left click - Attack | Q E R F, spare mouse buttons - Skills\n1 2 - Potions | T - Town portal | K - Skill list | P - Passives | I - Inventory\nC - Character | M - Map | Enter - Chat | H - Hide this",
                     textStyle
                 );
+            }
+            else if (!SpectatorMode)
+            {
+                GUILayout.Space(6f);
+                if (GUILayout.Button("Show controls (H)", GUILayout.Width(170f)))
+                    ControlsHidden = false;
             }
 
             GUILayout.EndArea();

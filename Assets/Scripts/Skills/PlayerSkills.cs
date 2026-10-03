@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using PoeClone.Combat;
 using PoeClone.Enemies;
 using PoeClone.Inventory;
 using PoeClone.Player;
@@ -121,6 +122,12 @@ namespace PoeClone.Skills
 
                 case SkillId.Dash:
                     SkillEffects.Shockwave(cast.At, 1.2f, skill.Color, 0.25f);
+                    break;
+
+                case SkillId.Teleport:
+                    SkillEffects.Shockwave(cast.At, 1.4f, skill.Color, 0.3f);
+                    if (cast.Points != null && cast.Points.Length > 0)
+                        SkillEffects.Shockwave(cast.Points[0], 1.6f, skill.Color, 0.35f);
                     break;
 
                 case SkillId.FrostNova:
@@ -320,8 +327,9 @@ namespace PoeClone.Skills
         {
             SkillDefinition skill = SkillBook.Get(id);
             float cooldown = skill.CooldownAt(Mathf.Max(1, Level(id)));
+            float onslaught = controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f;
             if (skill.Main && MainSkill == id)
-                return cooldown / (1f + Mathf.Max(-50f, Stat(StatType.CastSpeed)) / 100f);
+                return cooldown / ((1f + Mathf.Max(-50f, Stat(StatType.CastSpeed)) / 100f) * onslaught);
             return cooldown / (1f + Mathf.Max(-50f, Stat(StatType.CooldownRecovery)) / 100f);
         }
 
@@ -575,6 +583,8 @@ namespace PoeClone.Skills
                     SkillEffects.Shockwave(transform.position, 1.2f, skill.Color, 0.25f);
                     Record(skill, level);
                     controller.Dash(dir, 7f + 0.35f * (level - 1), 0.18f);
+                    if (Stat(StatType.GlacialStep) > 0f)
+                        StartCoroutine(GlacialStep(0.18f, level, spell, area));
                     break;
 
                 case SkillId.FrostNova:
@@ -583,21 +593,30 @@ namespace PoeClone.Skills
                     Record(skill, level, novaRadius);
                     foreach (EnemyHealth enemy in EnemiesWithin(transform.position, novaRadius))
                     {
-                        Hit(enemy, damage, CombatText.ColdColor, attack: false);
                         EnemyController ai = enemy.GetComponent<EnemyController>();
                         if (ai != null)
                             ai.Chill(3f + 0.2f * (level - 1));
+                        Hit(enemy, damage, CombatText.ColdColor, attack: false, DamageType.Cold);
                     }
                     break;
 
                 case SkillId.Rejuvenate:
                     stats.HealOverTime(stats.MaxHealth * (0.35f + 0.025f * (level - 1)), 3f);
                     SkillEffects.Rise(transform, skill.Color);
+                    if (Stat(StatType.SecondWind) > 0f)
+                    {
+                        stats.RestoreMana(stats.MaxMana / 3f);
+                        controller.GrantOnslaught(HitEffects.OnslaughtSeconds + 2f);
+                    }
                     Record(skill, level);
                     break;
 
                 case SkillId.ChainLightning:
                     ChainLightning(skill, damage, level, asAttack);
+                    break;
+
+                case SkillId.Teleport:
+                    Teleport(skill, level);
                     break;
             }
         }
@@ -674,7 +693,7 @@ namespace PoeClone.Skills
                 Vector3 to = target.transform.position + Vector3.up * 0.4f * target.transform.localScale.y;
                 SkillEffects.Arc(from, to, skill.Color);
                 arc.Add(to);
-                Hit(target, damage, CombatText.LightningColor, attack: false);
+                Hit(target, damage, CombatText.LightningColor, attack: false, DamageType.Lightning);
                 struck.Add(target);
 
                 damage *= 0.6f;
@@ -684,9 +703,143 @@ namespace PoeClone.Skills
             Record(skill, level, 0f, 0, arc.ToArray());
         }
 
-        private void Hit(EnemyHealth enemy, float damage, Color color, bool attack)
+        private void Hit(EnemyHealth enemy, float damage, Color color, bool attack, DamageType type = DamageType.Physical)
         {
-            HitEffects.Deal(transform, enemy, damage, attack, color);
+            HitEffects.Deal(transform, enemy, damage, attack, color, type);
+        }
+
+        // ------------------------------------------------------------------ teleport
+
+        /// <summary>How far Teleport reaches: about half the screen, a little further each level.</summary>
+        public static float TeleportRange(int level) => 9f + 0.3f * (Mathf.Max(1, level) - 1);
+
+        // To the aimed point (or as far as it reaches that way), through anything in between. The
+        // landing spot has to be open ground inside the current area: if it isn't, the jump comes
+        // up short, back toward the player, until it is.
+        private void Teleport(SkillDefinition skill, int level)
+        {
+            Vector3 start = transform.position;
+            Vector3 direction = AimDirection();
+            float distance = TeleportRange(level);
+            float? aimed = AimDistance();
+            if (aimed.HasValue)
+                distance = Mathf.Clamp(aimed.Value, 1.5f, distance);
+
+            Vector3? landing = null;
+            for (float d = distance; d >= 1f; d -= 0.5f)
+            {
+                Vector3? spot = OpenGround(start + direction * d);
+                if (spot.HasValue)
+                {
+                    landing = spot;
+                    break;
+                }
+            }
+            if (landing == null)
+            {
+                SkillEffects.Shockwave(start, 0.8f, skill.Color, 0.2f);
+                Record(skill, level, 0f, 0, new[] { start });
+                return;
+            }
+
+            SkillEffects.Shockwave(start, 1.4f, skill.Color, 0.3f);
+            Face(direction);
+            CharacterController body = GetComponent<CharacterController>();
+            bool wasEnabled = body != null && body.enabled;
+            if (body != null)
+                body.enabled = false;
+            transform.position = landing.Value;
+            if (body != null)
+                body.enabled = wasEnabled;
+            Physics.SyncTransforms();
+            SkillEffects.Shockwave(landing.Value, 1.6f, skill.Color, 0.35f);
+            Record(skill, level, 0f, 0, new[] { landing.Value });
+            if (Audio.AudioManager.Instance != null)
+                Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.uiItemPlace, 0.25f);
+        }
+
+        // How far the mouse points from the player on the ground (null on touch: full range).
+        private float? AimDistance()
+        {
+            if (TouchMode.Active)
+                return null;
+            Mouse mouse = Mouse.current;
+            Camera cam = Camera.main;
+            if (mouse == null || cam == null)
+                return null;
+            Ray ray = cam.ScreenPointToRay(mouse.position.ReadValue());
+            if (!new Plane(Vector3.up, transform.position).Raycast(ray, out float enter))
+                return null;
+            Vector3 offset = ray.GetPoint(enter) - transform.position;
+            offset.y = 0f;
+            return offset.magnitude;
+        }
+
+        private static readonly Collider[] landingBuffer = new Collider[16];
+
+        // Ground about level with the player at this spot, with room to stand and inside the area.
+        private Vector3? OpenGround(Vector3 at)
+        {
+            var areas = World.AreaManager.Instance;
+            if (areas != null && areas.CurrentAreaIndex >= 0 &&
+                !World.WorldBuilder.Shape(areas.CurrentAreaIndex).Contains(at, 2.5f))
+                return null;
+
+            float y = transform.position.y;
+            float floor = GroundBelowPlayer();
+            if (!Physics.Raycast(new Vector3(at.x, floor + 2f, at.z), Vector3.down, out RaycastHit ground, 3.5f, ~0, QueryTriggerInteraction.Ignore))
+                return null;
+            if (Mathf.Abs(ground.point.y - floor) > 1.2f || ground.normal.y < 0.7f)
+                return null;
+
+            CharacterController body = GetComponent<CharacterController>();
+            float radius = body != null ? body.radius : 0.4f;
+            float height = body != null ? body.height : 2f;
+            Vector3 feet = new Vector3(at.x, ground.point.y, at.z);
+            Vector3 bottom = feet + Vector3.up * (radius + 0.15f);
+            Vector3 top = feet + Vector3.up * Mathf.Max(radius + 0.2f, height - radius);
+            int count = Physics.OverlapCapsuleNonAlloc(bottom, top, radius, landingBuffer, ~0, QueryTriggerInteraction.Ignore);
+            for (int k = 0; k < count; k++)
+            {
+                Collider c = landingBuffer[k];
+                if (c == ground.collider || c.transform.IsChildOf(transform))
+                    continue;
+                return null;
+            }
+            // The player's pivot stands at the same height over this ground as over its own.
+            return new Vector3(at.x, y + (ground.point.y - floor), at.z);
+        }
+
+        private float GroundBelowPlayer()
+        {
+            Vector3 p = transform.position;
+            float best = float.MaxValue;
+            float y = p.y;
+            foreach (RaycastHit hit in Physics.RaycastAll(p + Vector3.up * 1.5f, Vector3.down, 5f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.collider.transform.IsChildOf(transform) || hit.distance >= best)
+                    continue;
+                best = hit.distance;
+                y = hit.point.y;
+            }
+            return y;
+        }
+
+        // Glacial Step: where the Dash ends, a Frost Nova (a smaller one, scaled by the Dash's level).
+        private IEnumerator GlacialStep(float after, int level, float spell, float area)
+        {
+            yield return new WaitForSeconds(after);
+            float radius = 3.5f * area;
+            Color cold = CombatText.ColdColor;
+            SkillEffects.Shockwave(transform.position, radius, cold, 0.4f);
+            float damage = (4f + 1.2f * (level - 1)) * spell;
+            foreach (EnemyHealth enemy in EnemiesWithin(transform.position, radius))
+            {
+                EnemyController ai = enemy.GetComponent<EnemyController>();
+                if (ai != null)
+                    ai.Chill(2.5f);
+                Hit(enemy, damage, cold, attack: false, DamageType.Cold);
+            }
         }
 
         private float Stat(StatType stat)

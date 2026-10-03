@@ -12,7 +12,8 @@ namespace PoeClone.Skills
         FrostNova,
         Rejuvenate,
         ChainLightning,
-        IceShard
+        IceShard,
+        Teleport
     }
 
     /// <summary>The element a spell belongs to, for "+1 to level of all Fire Spells" and the like.</summary>
@@ -130,6 +131,12 @@ namespace PoeClone.Skills
                 Spell = true, Element = SkillElement.Cold, BaseDamage = 6f,
                 ManaCost = 5.5f, Cooldown = 0.85f, Color = new Color(0.6f, 0.9f, 1f),
                 Description = "Fling three chilling shards of ice in a narrow fan. Each enemy is hit by one shard at most, so the fan is for crowds."
+            },
+            new SkillDefinition
+            {
+                Id = SkillId.Teleport, Name = "Teleport", Short = "TP", Grant = StatType.GrantTeleport, RollsOn = "amulets, rings, gloves",
+                Spell = true, ManaCost = 18f, Cooldown = 0.6f, Color = new Color(0.75f, 0.45f, 1f),
+                Description = "Vanish and reappear where you aim, up to half a screen away - straight through walls, trees and enemies. Costly in mana, but ready again almost at once."
             },
         };
 

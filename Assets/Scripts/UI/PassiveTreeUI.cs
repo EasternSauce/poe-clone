@@ -14,21 +14,21 @@ namespace PoeClone.UI
     /// The passive tree panel (P, or the TREE button on touch): every passive as a circle, linked
     /// to its neighbours. Click/tap one that can be taken to take it; select a taken one at the end
     /// of a path to give it back. Hovering (or tapping) shows what a passive gives at the bottom.
+    /// The tree is bigger than the panel: drag to move around it, scroll (or the +/- buttons) to zoom.
     /// Installed by GameSessionController.
     /// </summary>
     public class PassiveTreeUI : MonoBehaviour
     {
-        private const float Width = 1000f;
-        private const float Height = 780f;
-        private const float SpreadX = 360f;
-        private const float SpreadY = 240f;
+        private const float UnitPixels = 200f;   // one tree unit (PassiveNode.X/Y) at zoom 1
+        private const float MinZoom = 0.4f;
+        private const float MaxZoom = 1.5f;
+        private const float StartZoom = 0.75f;
+        private const float ViewTop = 76f;       // the tree's window inside the panel, below the title
+        private const float ViewBottom = 104f;   // and above the info strip
 
-        // The touch canvas is scaled to a fixed TouchMode.ReferenceHeight (660) regardless of the
-        // phone's aspect ratio, so the panel's full 780-tall layout doesn't fit and was getting cut
-        // off top and bottom; everything inside is built relative to this one RectTransform, so
-        // shrinking it uniformly (below) keeps the whole layout intact instead of re-deriving it.
-        private const float TouchScale = 0.75f;
-        private static readonly Vector2 TreeCentre = new Vector2(0f, 10f);
+        // The panel fills the screen but for this margin, so the tree gets all the room there is.
+        private const float Margin = 20f;
+        private const float TreeExtent = 3.45f;   // tree units from the centre to the furthest passive's edge
 
         private static PassiveTreeUI instance;
 
@@ -37,6 +37,7 @@ namespace PoeClone.UI
             public PassiveNode Node;
             public Image Ring;
             public Image Body;
+            public Text Label;
         }
 
         private class LinkView
@@ -82,9 +83,19 @@ namespace PoeClone.UI
                 SkillBarUI.SetOpen(false);
             instance.panelRoot.SetActive(open);
             instance.dirty = true;
+            if (open && !instance.viewFitted)
+            {
+                // The window's size is only known once the canvas has laid it out.
+                Canvas.ForceUpdateCanvases();
+                instance.ResetView();
+                instance.viewFitted = true;
+            }
         }
 
         private RectTransform panelRect;
+        private RectTransform viewRect;
+        private bool viewFitted;
+        private RectTransform content;
 
         private void Awake()
         {
@@ -92,20 +103,10 @@ namespace PoeClone.UI
             Build();
             panelRoot.SetActive(false);
 
-            // TouchMode.Active can still flip after this component's own Awake (e.g. the ?touch=1
-            // dev override resolves asynchronously), so react to it instead of only reading it once.
-            ApplyTouchScale();
-            TouchMode.Changed += ApplyTouchScale;
-        }
-
-        private void ApplyTouchScale()
-        {
-            panelRect.localScale = Vector3.one * (TouchMode.Active ? TouchScale : 1f);
         }
 
         private void OnDestroy()
         {
-            TouchMode.Changed -= ApplyTouchScale;
             if (passives != null)
                 passives.Changed -= MarkDirty;
             if (instance == this)
@@ -240,6 +241,9 @@ namespace PoeClone.UI
                 case PassiveBranch.Might: return new Color(0.85f, 0.30f, 0.25f);
                 case PassiveBranch.Grace: return new Color(0.35f, 0.80f, 0.40f);
                 case PassiveBranch.Wisdom: return new Color(0.40f, 0.55f, 1.00f);
+                case PassiveBranch.Fury: return new Color(0.95f, 0.60f, 0.22f);
+                case PassiveBranch.Storm: return new Color(0.30f, 0.82f, 0.90f);
+                case PassiveBranch.Zeal: return new Color(0.80f, 0.42f, 0.88f);
                 default: return UiKit.Gold;
             }
         }
@@ -264,6 +268,8 @@ namespace PoeClone.UI
                 Color c = BranchColor(v.Node.Branch);
                 v.Body.color = taken ? c : available ? Color.Lerp(Locked, c, 0.35f) : Locked;
                 v.Ring.color = taken ? UiKit.Gold : available ? new Color(1f, 0.85f, 0.4f, 0.9f) : new Color(0.35f, 0.32f, 0.28f, 1f);
+                if (v.Label != null)
+                    v.Label.color = taken ? UiKit.Gold : available ? UiKit.TextColor : UiKit.DimText;
             }
 
             foreach (LinkView l in links)
@@ -280,9 +286,12 @@ namespace PoeClone.UI
             shown = node;
             if (node == null)
             {
-                infoText.text = "<color=#" + UiKit.Hex(UiKit.DimText) + ">Point at a passive to see what it gives. " +
-                                (TouchMode.Active ? "Tap one next to a taken passive to take it." : "Click one next to a taken passive to take it; right-click a taken one at the end of a path to give it back.") +
-                                "</color>";
+                infoText.text = PlayerHUD.ControlsHidden ? "" :
+                    "<color=#" + UiKit.Hex(UiKit.DimText) + ">Point at a passive to see what it gives. " +
+                    (TouchMode.Active
+                        ? "Tap one next to a taken passive to take it. Drag to look around, +/- to zoom."
+                        : "Click one next to a taken passive to take it; right-click a taken one at the end of a path to give it back. Drag to look around, scroll to zoom. (H hides this.)") +
+                    "</color>";
                 refundButton.gameObject.SetActive(false);
                 return;
             }
@@ -300,6 +309,20 @@ namespace PoeClone.UI
             }
 
             PassiveAllocation allocation = passives.Allocation;
+            if (node.PerBranchMods.Length > 0)
+            {
+                int count = allocation.CountIn(node.Branch) + (allocation.Has(node.Id) ? 0 : 1);
+                sb.Append("\n<color=#").Append(UiKit.Hex(BranchColor(node.Branch))).Append(">Devotion, per ").Append(node.Branch).Append(" passive taken: ");
+                for (int k = 0; k < node.PerBranchMods.Length; k++)
+                {
+                    StatModifier m = node.PerBranchMods[k];
+                    if (k > 0)
+                        sb.Append(",  ");
+                    sb.Append(StatFormatter.ItemLine(m)).Append(" (").Append(allocation.Has(node.Id) ? "now " : "would be ")
+                        .Append(StatFormatter.Value(m.Stat, m.Value * count)).Append(")");
+                }
+                sb.Append("</color>");
+            }
             bool taken = allocation.Has(node.Id);
             sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">");
             if (node.Id == PassiveTree.OriginId)
@@ -370,7 +393,72 @@ namespace PoeClone.UI
 
         private Vector2 NodePosition(PassiveNode node)
         {
-            return TreeCentre + new Vector2(node.X * SpreadX, node.Y * SpreadY);
+            return new Vector2(node.X, node.Y) * UnitPixels;
+        }
+
+        // ------------------------------------------------------------------ moving around
+
+        private void Pan(Vector2 screenDelta)
+        {
+            // Screen pixels to the panel's own units (the canvas and touch scaling in between).
+            float scale = viewRect.lossyScale.x > 0f ? viewRect.lossyScale.x : 1f;
+            content.anchoredPosition += screenDelta / scale;
+            ClampContent();
+        }
+
+        // Zooms keeping the point under the pointer (or the middle of the window) where it is.
+        private void Zoom(float factor, Vector2? screenPoint)
+        {
+            float before = content.localScale.x;
+            float after = Mathf.Clamp(before * factor, MinZoom, MaxZoom);
+            if (Mathf.Approximately(before, after))
+                return;
+
+            Vector2 pivot = Vector2.zero;
+            if (screenPoint.HasValue)
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(viewRect, screenPoint.Value, null, out pivot);
+            Vector2 treePoint = (pivot - content.anchoredPosition) / before;
+            content.localScale = Vector3.one * after;
+            content.anchoredPosition = pivot - treePoint * after;
+            ClampContent();
+        }
+
+        // Keeps some of the tree in the window however far it is dragged.
+        private void ClampContent()
+        {
+            float reach = 3.4f * UnitPixels * content.localScale.x;
+            Vector2 half = viewRect.rect.size * 0.5f;
+            Vector2 p = content.anchoredPosition;
+            float limitX = Mathf.Max(0f, reach - half.x * 0.5f);
+            float limitY = Mathf.Max(0f, reach - half.y * 0.5f);
+            p.x = Mathf.Clamp(p.x, -limitX, limitX);
+            p.y = Mathf.Clamp(p.y, -limitY, limitY);
+            content.anchoredPosition = p;
+        }
+
+        // The whole tree, as big as fits the window.
+        private void ResetView()
+        {
+            Vector2 size = viewRect.rect.size;
+            float fit = Mathf.Min(size.x, size.y) / (2f * TreeExtent * UnitPixels);
+            content.localScale = Vector3.one * (fit > 0.01f ? Mathf.Clamp(fit, MinZoom, MaxZoom) : StartZoom);
+            content.anchoredPosition = Vector2.zero;
+        }
+
+        private static void TopRight(RectTransform rt, Vector2 fromCorner, Vector2 size)
+        {
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 1f);
+            rt.anchoredPosition = new Vector2(-fromCorner.x, fromCorner.y);
+            rt.sizeDelta = size;
+        }
+
+        private static void TopStrip(RectTransform rt, float y, float height)
+        {
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(1f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0f, y);
+            rt.sizeDelta = new Vector2(0f, height);
         }
 
         private void Build()
@@ -398,22 +486,21 @@ namespace PoeClone.UI
             UiKit.Grain(panel);
             panel.raycastTarget = true;
             RectTransform pr = panel.rectTransform;
-            pr.anchorMin = pr.anchorMax = new Vector2(0.5f, 0.5f);
-            pr.sizeDelta = new Vector2(Width, Height);
+            UiKit.Stretch(pr, Margin);
             UiKit.AddOutline(panel, UiKit.BorderColor, 3f);
             panelRoot = panel.gameObject;
             panelRect = pr;
             TouchMode.AddBlocker(pr);
 
             Text title = UiKit.NewText("Title", pr, "PASSIVES", 26, UiKit.Gold, TextAnchor.UpperCenter);
-            UiKit.TopLeft(title.rectTransform, new Vector2(0f, -14f), new Vector2(Width, 34f));
+            TopStrip(title.rectTransform, -14f, 34f);
 
             pointsText = UiKit.NewText("Points", pr, "", 18, UiKit.TextColor, TextAnchor.UpperCenter);
-            UiKit.TopLeft(pointsText.rectTransform, new Vector2(0f, -46f), new Vector2(Width, 24f));
+            TopStrip(pointsText.rectTransform, -46f, 24f);
 
             Image close = UiKit.NewImage("Close", pr, new Color(0.25f, 0.1f, 0.08f, 1f));
             close.raycastTarget = true;
-            UiKit.TopLeft(close.rectTransform, new Vector2(Width - 50f, -12f), new Vector2(38f, 38f));
+            TopRight(close.rectTransform, new Vector2(12f, -12f), new Vector2(38f, 38f));
             Text x = UiKit.NewText("X", close.rectTransform, "X", 20, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(x.rectTransform, 0f);
             close.gameObject.AddComponent<TouchPointerRelay>().Up += _ => SetOpen(false);
@@ -429,6 +516,37 @@ namespace PoeClone.UI
                 }
             };
 
+            // The window the tree is seen through: drag to pan, scroll to zoom.
+            Image view = UiKit.NewImage("TreeView", pr, new Color(0f, 0f, 0f, 0.18f));
+            view.raycastTarget = true;
+            RectTransform vr = view.rectTransform;
+            vr.anchorMin = Vector2.zero;
+            vr.anchorMax = Vector2.one;
+            vr.offsetMin = new Vector2(16f, ViewBottom);
+            vr.offsetMax = new Vector2(-16f, -ViewTop);
+            view.gameObject.AddComponent<RectMask2D>();
+            viewRect = view.rectTransform;
+            var nav = view.gameObject.AddComponent<ViewHandler>();
+            nav.Drag = Pan;
+            nav.Scroll = (amount, at) => Zoom(amount > 0f ? 1.15f : 1f / 1.15f, at);
+
+            var contentGo = new GameObject("TreeContent", typeof(RectTransform));
+            content = (RectTransform)contentGo.transform;
+            content.SetParent(viewRect, false);
+            content.anchorMin = content.anchorMax = content.pivot = new Vector2(0.5f, 0.5f);
+            content.sizeDelta = Vector2.zero;
+            ResetView();
+
+            Image zoomIn = NewButton(pr, "ZoomIn", "+", Vector2.zero, new Vector2(38f, 38f));
+            TopRight(zoomIn.rectTransform, new Vector2(12f + 2f * 46f, -12f), new Vector2(38f, 38f));
+            zoomIn.gameObject.AddComponent<TouchPointerRelay>().Up += _ => Zoom(1.25f, null);
+            Image zoomOut = NewButton(pr, "ZoomOut", "-", Vector2.zero, new Vector2(38f, 38f));
+            TopRight(zoomOut.rectTransform, new Vector2(12f + 46f, -12f), new Vector2(38f, 38f));
+            zoomOut.gameObject.AddComponent<TouchPointerRelay>().Up += _ => Zoom(1f / 1.25f, null);
+            Image centre = NewButton(pr, "Centre", "Centre", Vector2.zero, new Vector2(88f, 38f));
+            TopRight(centre.rectTransform, new Vector2(12f + 3f * 46f, -12f), new Vector2(88f, 38f));
+            centre.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ResetView();
+
             // Links first, so the circles draw over them.
             var linked = new HashSet<string>();
             foreach (PassiveNode node in PassiveTree.Nodes)
@@ -441,7 +559,7 @@ namespace PoeClone.UI
 
                     Vector2 a = NodePosition(node);
                     Vector2 b = NodePosition(PassiveTree.Get(other));
-                    Image line = UiKit.NewImage("Link", pr, Color.gray);
+                    Image line = UiKit.NewImage("Link", content, Color.gray);
                     RectTransform lr = line.rectTransform;
                     lr.anchorMin = lr.anchorMax = lr.pivot = new Vector2(0.5f, 0.5f);
                     lr.anchoredPosition = (a + b) * 0.5f;
@@ -454,7 +572,7 @@ namespace PoeClone.UI
             foreach (PassiveNode node in PassiveTree.Nodes)
             {
                 float size = node.Keystone ? 60f : node.Notable ? 62f : node.Id == PassiveTree.OriginId ? 56f : 44f;
-                Image ring = UiKit.NewImage("Node_" + node.Id, pr, Color.white);
+                Image ring = UiKit.NewImage("Node_" + node.Id, content, Color.white);
                 // Keystones are diamonds, so they read as different in kind, not just bigger.
                 ring.sprite = node.Keystone ? UiKit.Square : UiKit.Disc;
                 if (node.Keystone)
@@ -478,14 +596,41 @@ namespace PoeClone.UI
                 views.Add(new NodeView { Node = node, Ring = ring, Body = body });
             }
 
+            // Notables and keystones are named on the tree, so it reads at a glance (after the
+            // circles, so no circle covers a name).
+            foreach (NodeView v in views)
+            {
+                if (!v.Node.Notable)
+                    continue;
+                float size = v.Ring.rectTransform.sizeDelta.x;
+                Text label = UiKit.NewText("Label_" + v.Node.Id, content, v.Node.Name, 15, UiKit.DimText, TextAnchor.UpperCenter);
+                label.raycastTarget = false;
+                RectTransform tr = label.rectTransform;
+                tr.anchorMin = tr.anchorMax = new Vector2(0.5f, 0.5f);
+                tr.pivot = new Vector2(0.5f, 1f);
+                tr.anchoredPosition = NodePosition(v.Node) - new Vector2(0f, size * (v.Node.Keystone ? 0.72f : 0.5f) + 2f);
+                tr.sizeDelta = new Vector2(150f, 20f);
+                v.Label = label;
+            }
+
             // What the pointed-at passive gives, along the bottom.
             Image info = UiKit.NewImage("Info", pr, new Color(0f, 0f, 0f, 0.35f));
-            UiKit.TopLeft(info.rectTransform, new Vector2(16f, -(Height - 96f)), new Vector2(Width - 32f, 80f));
+            RectTransform ir = info.rectTransform;
+            ir.anchorMin = new Vector2(0f, 0f);
+            ir.anchorMax = new Vector2(1f, 0f);
+            ir.pivot = new Vector2(0.5f, 0f);
+            ir.offsetMin = new Vector2(16f, 16f);
+            ir.offsetMax = new Vector2(-16f, 96f);
             infoText = UiKit.NewText("Text", info.rectTransform, "", 18, UiKit.TextColor, TextAnchor.MiddleLeft);
             infoText.horizontalOverflow = HorizontalWrapMode.Wrap;
-            UiKit.TopLeft(infoText.rectTransform, new Vector2(12f, 0f), new Vector2(Width - 32f - 180f, 80f));
+            RectTransform tr0 = infoText.rectTransform;
+            tr0.anchorMin = Vector2.zero;
+            tr0.anchorMax = Vector2.one;
+            tr0.offsetMin = new Vector2(12f, 0f);
+            tr0.offsetMax = new Vector2(-170f, 0f);
 
-            refundButton = NewButton(info.rectTransform, "Refund", "Give back", new Vector2(Width - 32f - 150f, -20f), new Vector2(140f, 40f));
+            refundButton = NewButton(info.rectTransform, "Refund", "Give back", Vector2.zero, new Vector2(140f, 40f));
+            TopRight(refundButton.rectTransform, new Vector2(12f, -20f), new Vector2(140f, 40f));
             refundButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => RefundSelected();
         }
 
@@ -499,6 +644,16 @@ namespace PoeClone.UI
             Text text = UiKit.NewText("Label", button.rectTransform, label, 17, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(text.rectTransform, 0f);
             return button;
+        }
+
+        private class ViewHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IScrollHandler
+        {
+            public System.Action<Vector2> Drag;
+            public System.Action<float, Vector2> Scroll;
+
+            public void OnBeginDrag(PointerEventData eventData) { }
+            public void OnDrag(PointerEventData eventData) => Drag?.Invoke(eventData.delta);
+            public void OnScroll(PointerEventData eventData) => Scroll?.Invoke(eventData.scrollDelta.y, eventData.position);
         }
 
         private class NodeHandler : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler

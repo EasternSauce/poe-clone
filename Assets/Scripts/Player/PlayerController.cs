@@ -108,6 +108,19 @@ namespace PoeClone.Player
 
         public float SpeedMultiplier => speedMultiplier;
 
+        // Onslaught (a passive's reward for kills): faster attacks, casts and movement for a while.
+        public const float OnslaughtMore = 1.2f;
+        private float onslaughtUntil = -1f;
+
+        public bool HasOnslaught => Time.time < onslaughtUntil;
+
+        public void GrantOnslaught(float seconds)
+        {
+            if (!HasOnslaught)
+                UI.CombatText.Show(transform.position + Vector3.up * 2.2f, "Onslaught", new Color(1f, 0.75f, 0.3f), 0.8f);
+            onslaughtUntil = Mathf.Max(onslaughtUntil, Time.time + seconds);
+        }
+
         public bool IsChilled => Time.time < chilledUntil;
 
         /// <summary>Slowed for a moment by a cold hit (PoE's chill).</summary>
@@ -197,7 +210,7 @@ private void Update()
             if (staggered)
                 movement = Vector3.zero;
 
-            float speed = (IsSprinting() ? moveSpeed * sprintMultiplier : moveSpeed) * speedMultiplier;
+            float speed = (IsSprinting() ? moveSpeed * sprintMultiplier : moveSpeed) * speedMultiplier * (HasOnslaught ? OnslaughtMore : 1f);
             if (IsChilled)
                 speed *= chilledSpeed;
 

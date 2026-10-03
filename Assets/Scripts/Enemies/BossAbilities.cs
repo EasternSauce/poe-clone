@@ -554,7 +554,7 @@ namespace PoeClone.Enemies
         {
             if (player == null || player.IsDead || Flat(player.transform.position - center).magnitude > radius)
                 return false;
-            player.TakeHit(kind.Damage * damageMultiplier * EnemyKinds.DamageScale(level), type ?? kind.DamageType);
+            player.TakeHit(kind.Damage * damageMultiplier * EnemyKinds.DamageScale(level, kind), type ?? kind.DamageType);
             return true;
         }
 

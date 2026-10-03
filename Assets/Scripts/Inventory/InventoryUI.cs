@@ -1587,7 +1587,7 @@ private Vector2 CellSize(int w, int h)
             heldTooltipText.fontSize = touch ? 22 : 17;
             float lineHeight = touch ? 26f : 23f;
             heldTooltipText.text = BuildTooltipText(cursorItem, out lines);
-            heldTooltipRect.sizeDelta = new Vector2(touch ? 340f : 270f, 24f + lines * lineHeight);
+            heldTooltipRect.sizeDelta = FitTooltip(heldTooltipText, touch ? 340f : 270f, 24f + lines * lineHeight);
             heldTooltipRect.gameObject.SetActive(true);
             heldTooltipRect.SetAsLastSibling();
 
@@ -1614,13 +1614,23 @@ private Vector2 CellSize(int w, int h)
             heldTooltipRect.position = new Vector2(px, pos.y + (flipY ? gap : -gap));
         }
 
+        // A tooltip's size for its text: this width, and as tall as the text really lays out (long
+        // stat lines wrap, which a count of lines misses), never less than the estimate. The text
+        // sits 10 px in from every edge (see BuildTooltip).
+        private static Vector2 FitTooltip(Text text, float width, float estimatedHeight)
+        {
+            TextGenerationSettings settings = text.GetGenerationSettings(new Vector2(width - 20f, 0f));
+            float laidOut = text.cachedTextGeneratorForLayout.GetPreferredHeight(text.text, settings) / Mathf.Max(0.01f, text.pixelsPerUnit);
+            return new Vector2(width, Mathf.Max(estimatedHeight * 0.6f, laidOut + 26f));
+        }
+
         private void ShowTooltipText(string text, int lines, Vector2 mousePos)
         {
             bool touch = TouchMode.Active;
             tooltipText.fontSize = touch ? 22 : 17;
             float lineHeight = touch ? 26f : 23f;
             tooltipText.text = text;
-            tooltipRect.sizeDelta = new Vector2(touch ? 340f : 270f, 24f + lines * lineHeight);
+            tooltipRect.sizeDelta = FitTooltip(tooltipText, touch ? 340f : 270f, 24f + lines * lineHeight);
 
             tooltipRect.gameObject.SetActive(true);
             tooltipRect.SetAsLastSibling();

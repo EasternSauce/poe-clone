@@ -56,7 +56,7 @@ namespace PoeClone.Enemies
         {
             kind = enemyKind;
             attackRange = enemyKind.AttackRange;
-            damage = enemyKind.Damage * EnemyKinds.DamageScale(level);
+            damage = enemyKind.Damage * EnemyKinds.DamageScale(level, enemyKind);
             attackCooldown = enemyKind.AttackCooldown;
         }
 

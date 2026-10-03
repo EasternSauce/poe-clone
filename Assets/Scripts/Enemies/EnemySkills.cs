@@ -140,7 +140,7 @@ namespace PoeClone.Enemies
             if (kind.Skill == EnemySkill.Leap)
                 target = LeapLanding(transform.position, PredictPlayer(LeapCrouch + LeapAir), LeapGap(transform));
             LastTarget = kind.Skill == EnemySkill.Slam ? transform.position : target;
-            float damage = kind.Damage * EnemyKinds.DamageScale(level) * (controller != null ? controller.DamageMultiplier : 1f);
+            float damage = kind.Damage * EnemyKinds.DamageScale(level, kind) * (controller != null ? controller.DamageMultiplier : 1f);
 
             switch (kind.Skill)
             {

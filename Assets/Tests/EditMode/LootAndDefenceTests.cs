@@ -9,10 +9,10 @@ namespace PoeClone.Tests
     public class DefenceMathTests
     {
         [Test]
-        public void Evasion_TwoHundredGivesHalf_AndIsCapped()
+        public void Evasion_SixHundredGivesHalf_AndIsCapped()
         {
             Assert.AreEqual(0f, DefenceMath.EvadeChance(0f));
-            Assert.AreEqual(0.5f, DefenceMath.EvadeChance(200f), 1e-4f);
+            Assert.AreEqual(0.5f, DefenceMath.EvadeChance(600f), 1e-4f);
             Assert.AreEqual(DefenceMath.MaxEvadeChance, DefenceMath.EvadeChance(100000f), 1e-4f);
         }
 

@@ -240,18 +240,43 @@
         }, 60000);
       }
 
+      // Ten seconds' warning to get somewhere safe, counting down; the character is saved right
+      // before the reload (and once at the start, in case the tab is closed meanwhile).
       var updating = false;
+      function saveGame() {
+        try { if (unityInstance) unityInstance.SendMessage("GameSessionController", "SaveForUpdate"); } catch (e) { }
+      }
       function reloadForUpdate() {
         if (updating) return;
         updating = true;
-        try { if (unityInstance) unityInstance.SendMessage("GameSessionController", "SaveForUpdate"); } catch (e) { }
+        saveGame();
+
         var note = document.createElement("div");
-        note.textContent = "A new version of the game is out. Your character is saved; reloading in a few seconds...";
         note.style.cssText = "position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:1000;" +
           "background:rgba(20,14,8,0.92);color:#f0d9a0;border:1px solid #a07a3a;border-radius:6px;" +
           "padding:10px 16px;font:15px sans-serif;max-width:90vw;text-align:center";
+        var text = document.createElement("span");
+        var now = document.createElement("button");
+        now.textContent = "Reload now";
+        now.style.cssText = "margin-left:12px;background:#a07a3a;color:#1a120a;border:0;border-radius:4px;" +
+          "padding:4px 10px;font:bold 14px sans-serif;cursor:pointer";
+        note.appendChild(text);
+        note.appendChild(now);
         document.body.appendChild(note);
-        setTimeout(function () { location.reload(); }, 5000);
+
+        var left = 10;
+        function reloadNow() {
+          saveGame();
+          setTimeout(function () { location.reload(); }, 300); // a moment for the save to land
+        }
+        function tick() {
+          text.textContent = "A new version of the game is out. Reloading in " + left + "...";
+          if (left <= 0) { reloadNow(); return; }
+          left--;
+          setTimeout(tick, 1000);
+        }
+        now.onclick = function () { left = 0; now.disabled = true; reloadNow(); };
+        tick();
       }
 
       script.onerror = function () { showError("The game files failed to load. Try reloading the page."); };

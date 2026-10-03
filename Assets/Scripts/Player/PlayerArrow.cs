@@ -29,6 +29,7 @@ namespace PoeClone.Player
         private float burstRadius;
         private Color textColor = CombatText.PhysicalColor;
         private bool isAttack = true;   // an arrow; a bolt is a spell
+        private Combat.DamageType damageType = Combat.DamageType.Physical;
         private float chillSeconds;     // an ice shard slows what it hits
 
         // Projectiles loosed together (Ice Shard's fan, extra arrows or bolts) share this: each
@@ -71,6 +72,7 @@ namespace PoeClone.Player
             bolt.burstRadius = burstRadius;
             bolt.textColor = CombatText.FireColor;
             bolt.isAttack = false;
+            bolt.damageType = Combat.DamageType.Fire;
         }
 
         /// <summary>An Ice Shard: a small, quick shard that chills the enemy it hits.</summary>
@@ -81,6 +83,7 @@ namespace PoeClone.Player
             shard.transform.localScale = Vector3.one * 0.6f;
             shard.textColor = CombatText.ColdColor;
             shard.isAttack = false;
+            shard.damageType = Combat.DamageType.Cold;
             shard.chillSeconds = chillSeconds;
         }
 
@@ -222,7 +225,7 @@ namespace PoeClone.Player
                 if (target == null || !done.Add(target) || (owner != null && c.transform.IsChildOf(owner)))
                     continue;
                 if (target is Enemies.EnemyHealth enemy && !enemy.IsDead && FirstVolleyHit(target))
-                    HitEffects.Deal(owner, enemy, damage * 0.4f, isAttack, textColor);
+                    HitEffects.Deal(owner, enemy, damage * 0.4f, isAttack, textColor, damageType);
             }
         }
 
@@ -237,13 +240,14 @@ namespace PoeClone.Player
 
             if (target is Enemies.EnemyHealth enemy)
             {
-                HitEffects.Deal(owner, enemy, damage, isAttack, textColor);
-                if (chillSeconds > 0f && !enemy.IsDead)
+                // Chilled before the hit lands, so "against chilled enemies" and Shatter count it.
+                if (chillSeconds > 0f)
                 {
                     Enemies.EnemyController ai = enemy.GetComponent<Enemies.EnemyController>();
                     if (ai != null)
                         ai.Chill(chillSeconds);
                 }
+                HitEffects.Deal(owner, enemy, damage, isAttack, textColor, damageType);
                 return;
             }
 

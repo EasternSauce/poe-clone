@@ -81,6 +81,8 @@ namespace PoeClone.Enemies
             chilledUntil = Mathf.Max(chilledUntil, Time.time + seconds);
         }
 
+        public bool IsChilled => Time.time < chilledUntil;
+
         private float MoveSpeed =>
             (player != null
                 ? player.MoveSpeed * speedRatioToPlayer

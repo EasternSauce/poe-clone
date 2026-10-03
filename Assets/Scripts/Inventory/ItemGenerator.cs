@@ -409,6 +409,7 @@ namespace PoeClone.Inventory
             Grant(StatType.GrantRejuvenate, 0.3f, ItemType.Weapon, ItemType.Amulet, ItemType.Belt).Only(Staves),
             Grant(StatType.GrantCleave, 0.6f, ItemType.Weapon).Only(MeleeWeapons),
             Grant(StatType.GrantDash, 0.45f, ItemType.Boots),
+            Grant(StatType.GrantTeleport, 0.25f, ItemType.Amulet, ItemType.Ring, ItemType.Gloves),
         };
 
         // Magic items are named after their first stats, PoE style: "Hale Iron Helmet of the Fox".
@@ -874,6 +875,7 @@ namespace PoeClone.Inventory
                 case StatType.GrantFireBolt:
                 case StatType.GrantChainLightning:
                 case StatType.GrantIceShard:
+                case StatType.GrantTeleport:
                 case StatType.GrantFrostNova:
                 case StatType.GrantRejuvenate:
                     return Leaning.Int;

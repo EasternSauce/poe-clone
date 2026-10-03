@@ -540,7 +540,12 @@ namespace PoeClone.Enemies
         /// How much tougher each monster level makes an enemy: life, damage and the experience it's worth.
         /// </summary>
         public static float LifeScale(int level) => 1f + 0.35f * (Mathf.Max(1, level) - 1);
-        public static float DamageScale(int level) => 1f + 0.22f * (Mathf.Max(1, level) - 1);
+        public static float DamageScale(int level, EnemyKind kind) =>
+            (kind != null && kind.IsBoss ? BossDamageMultiplier : RegularDamageMultiplier) * (1f + 0.22f * (Mathf.Max(1, level) - 1));
+
+        /// <summary>Every enemy hit (2026-10-03, with much weaker armour/evasion): ordinary enemies x3, bosses x2.</summary>
+        public const float RegularDamageMultiplier = 3f;
+        public const float BossDamageMultiplier = 2f;
         public static float ExperienceScale(int level) => 1f + 0.4f * (Mathf.Max(1, level) - 1);
 
         /// <summary>Makes a freshly spawned enemy this kind and level: its look and all its gameplay numbers.</summary>

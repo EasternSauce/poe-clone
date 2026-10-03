@@ -9,14 +9,14 @@ namespace PoeClone.Inventory
     /// </summary>
     public static class DefenceMath
     {
-        public const float MaxEvadeChance = 0.75f;
-        public const float MaxArmourReduction = 0.9f;
+        public const float MaxEvadeChance = 0.6f;
+        public const float MaxArmourReduction = 0.75f;
 
         // Evasion needed for a 50% chance to evade.
-        private const float EvasionForHalf = 200f;
+        private const float EvasionForHalf = 600f;
 
         // Armour equal to this many times a hit's damage stops half of that hit.
-        private const float ArmourPerDamageForHalf = 12f;
+        private const float ArmourPerDamageForHalf = 40f;
 
         // Mana regenerated per second: a share of the pool, plus a little per point of Intelligence.
         public const float ManaRegenFraction = 0.01f;
@@ -90,9 +90,9 @@ namespace PoeClone.Inventory
             return Math.Max(0f, regen * (1f + increasedPercent / 100f));
         }
 
-        public static float LifeRegenPerSecond(float maxLife, float flat)
+        public static float LifeRegenPerSecond(float maxLife, float flat, float percentOfMax = 0f)
         {
-            return Math.Max(0f, maxLife * LifeRegenFraction + flat);
+            return Math.Max(0f, maxLife * (LifeRegenFraction + percentOfMax / 100f) + flat);
         }
 
         /// <summary>Radius multiplier for an area bigger by this many percent (area grows with radius squared).</summary>
