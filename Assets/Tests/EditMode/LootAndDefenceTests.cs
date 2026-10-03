@@ -122,8 +122,9 @@ namespace PoeClone.Tests
             var rngHigh = new System.Random(3);
             for (int k = 0; k < 300; k++)
             {
-                low += SumLife(ItemGenerator.Generate(rngLow, "rope_belt", 1, ItemRarity.Rare));
-                high += SumLife(ItemGenerator.Generate(rngHigh, "rope_belt", 30, ItemRarity.Rare));
+                // A ring: life is one of its random stats (a belt's life is its base stat, which never rolls again).
+                low += SumLife(ItemGenerator.Generate(rngLow, "iron_ring", 1, ItemRarity.Rare));
+                high += SumLife(ItemGenerator.Generate(rngHigh, "iron_ring", 30, ItemRarity.Rare));
             }
             Assert.Greater(high, low);
         }

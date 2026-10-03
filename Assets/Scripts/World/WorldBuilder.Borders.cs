@@ -172,9 +172,13 @@ namespace PoeClone.World
             switch (kind)
             {
                 case EdgeKind.Forest:
-                case EdgeKind.DeadForest:
                 case EdgeKind.FrostForest:
                     Trees(area, t, kind, from, to, rows: 3, spacing: 3.2f, offset: 0f);
+                    break;
+                case EdgeKind.DeadForest:
+                    // Bare trunks hide nothing, so a dead wood needs far more of them (and rubble
+                    // between) to read as a wall rather than a few sticks to walk between.
+                    Trees(area, t, kind, from, to, rows: 4, spacing: 1.9f, offset: 0f);
                     break;
                 case EdgeKind.Rocks:
                 case EdgeKind.IceRocks:
@@ -204,6 +208,18 @@ namespace PoeClone.World
                         continue;
                     PlaceTree(area, t, kind, p);
                 }
+                // Charred stumps and rubble fill the gaps along the front of a dead wood.
+                if (kind == EdgeKind.DeadForest && kit.rock != null)
+                {
+                    Vector3 p = shape.Center + AreaShape.Direction(a + R(-0.5f, 0.5f) * spacing / r) * (r + offset + R(-0.5f, 2.5f));
+                    if (!NearGate(area, p, GateGap))
+                    {
+                        GameObject rubble = Prefab(kit.rock, t, p, R(0f, 360f), new Vector3(R(1.0f, 1.8f), R(0.6f, 1.2f), R(1.0f, 1.8f)));
+                        Tint(rubble, area == Ruins ? new Color(0.30f, 0.26f, 0.24f) : new Color(0.45f, 0.45f, 0.48f));
+                        NoShadows(rubble);
+                    }
+                }
+
                 // A few bushes in front soften the line.
                 if (kind == EdgeKind.Forest && rng.NextDouble() < 0.35)
                 {
@@ -312,8 +328,11 @@ namespace PoeClone.World
                     else
                     {
                         PlaceTree(area, t, kind, p + jitter);
-                        // Two trees wide, so it reads as a belt of woods.
-                        PlaceTree(area, t, kind, p + Vector3.Cross(heading, Vector3.up) * R(1.8f, 2.6f) + jitter);
+                        // Two trees wide, so it reads as a belt of woods (three for bare dead trees).
+                        Vector3 side = Vector3.Cross(heading, Vector3.up);
+                        PlaceTree(area, t, kind, p + side * R(1.8f, 2.6f) + jitter);
+                        if (kind == EdgeKind.DeadForest)
+                            PlaceTree(area, t, kind, p - side * R(1.2f, 1.8f) + jitter);
                     }
                 }
                 s++;

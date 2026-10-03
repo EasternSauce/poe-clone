@@ -22,6 +22,7 @@ namespace PoeClone.Enemies
         private PlayerStats target;   // null = visual only
         private bool spins;
         private float spin;
+        private bool[] volleyHit;     // shared by arrows loosed together: only the first to land hurts
 
         /// <summary>A real bolt that can hit the player.</summary>
         public static void Launch(Vector3 from, PlayerStats target, EnemyKind kind, float damage)
@@ -32,11 +33,11 @@ namespace PoeClone.Enemies
         }
 
         /// <summary>A real bolt aimed at a point (a volley's side arrows), that can still hit the player.</summary>
-        public static void LaunchAt(Vector3 from, Vector3 aimAt, PlayerStats target, EnemyKind kind, float damage)
+        public static void LaunchAt(Vector3 from, Vector3 aimAt, PlayerStats target, EnemyKind kind, float damage, bool[] volleyHit = null)
         {
             if (target == null)
                 return;
-            Create(from, new Vector3(aimAt.x, target.transform.position.y + AimHeight, aimAt.z), kind, damage, target);
+            Create(from, new Vector3(aimAt.x, target.transform.position.y + AimHeight, aimAt.z), kind, damage, target).volleyHit = volleyHit;
         }
 
         /// <summary>A harmless bolt for spectators (the hit itself arrives in the replicated health).</summary>
@@ -45,7 +46,7 @@ namespace PoeClone.Enemies
             Create(from, targetPosition + Vector3.up * AimHeight, kind, 0f, null);
         }
 
-        private static void Create(Vector3 from, Vector3 aimAt, EnemyKind kind, float damage, PlayerStats target)
+        private static EnemyProjectile Create(Vector3 from, Vector3 aimAt, EnemyKind kind, float damage, PlayerStats target)
         {
             Vector3 direction = aimAt - from;
             if (direction.sqrMagnitude < 0.0001f)
@@ -80,6 +81,7 @@ namespace PoeClone.Enemies
             bolt.damage = damage;
             bolt.damageType = kind.DamageType;
             bolt.target = target;
+            return bolt;
         }
 
         private void Update()
@@ -99,7 +101,10 @@ namespace PoeClone.Enemies
                 Vector3 toTarget = target.transform.position + Vector3.up * AimHeight - transform.position;
                 if (toTarget.sqrMagnitude <= HitRadius * HitRadius)
                 {
-                    target.TakeHit(damage, damageType);
+                    if (volleyHit == null || !volleyHit[0])
+                        target.TakeHit(damage, damageType);
+                    if (volleyHit != null)
+                        volleyHit[0] = true;
                     Destroy(gameObject);
                     return;
                 }

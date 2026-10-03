@@ -1,24 +1,16 @@
-version: 2026-10-03j
-<b>Loot</b>
-- Monsters drop gear about half as often (bosses still always drop theirs). Gold and potions are unchanged.
-<b>Spell balance</b>
-- Spells cost more mana (and 15% more per skill level), recover a little slower and hit a little less hard, especially at high levels. Intelligence adds a bit less spell damage.
-- Mana regenerates more slowly from a large mana pool. Casting nonstop now drains your mana: bring mana potions.
-<b>Spectators</b>
-- Spectators now see your spells: staff bolts and shards, Chain Lightning, Frost Nova, Cleave, Dash and Rejuvenate.
-<b>The bosses, reworked</b>
-- Gravelord Mortis now wields a huge executioner's axe: he leaps across the crypt and buries it where you stand, whirls it all round himself, and raises the dead.
-- The Ashen Warlord swings a two-handed maul: he slams it down and the ground cracks open towards you in a line of fire, quake-leaps onto you, and rains fire.
-- Rimeheart is now a giant frost spider, queen of the ice crawlers: she pounces, bursts frost all round her (it chills), hatches her brood, and calls down ice.
-- Every big move glows on the ground before it lands. At half life each boss roars into a second phase and attacks faster.
-- Heavy blows now shake the screen.
-<b>Two-handed weapons</b>
-- New weapons: greatswords, greataxes and mauls. They take both hands (no shield), swing slower, but hit far harder, reach further and sweep a wider arc.
-- The greatsword sweeps wide from side to side, the greataxe chops down from overhead, and the maul is hauled over the head and slammed into the ground with a jolt.
-- Equipping a two-handed weapon (or a bow) puts your shield back in your bag if there's room.
-<b>More item variety</b>
-- Every kind of gear now has lines for Strength (heavy plate and gauntlets), Dexterity (leather and hoods) and Intelligence (silk robes, circlets, sashes), each with four tiers.
-- Deeper areas and tougher monsters drop the newer tiers much more often; the early ones fade out as you go.
-- Gear made for a kind of character rolls that kind's stats more often: a silk robe tends to roll mana and Intelligence, plate rolls Strength and Armour.
-- New bases: bucklers, kite shields, leather belts, cloth sashes, moonstone rings (mana), amber amulets (Strength), and higher tiers of every ring and amulet.
-- New random stats: life regeneration on armour and jewellery, life leech on melee weapons, gloves and rings, and life on kill on attack weapons, gloves, rings and quivers.
+version: 2026-10-03k
+<b>Projectiles</b>
+- Projectiles fired together now hit each target only once: Ice Shard's fan, extra arrows, extra Fire Bolts (and their bursts). The first one to reach an enemy hurts it, the rest pass it by. Spread shots are for crowds now, not for stacking on one enemy.
+- Ice Shard's shards hit harder to make up for it.
+- Monster archers' three-arrow volleys hurt you once at most.
+<b>Items</b>
+- An item never rolls a stat it already has: no extra Armour on a plate helm, no second life line on a belt.
+<b>Spells nerfed hard</b>
+- Spell damage is much lower: base damage cut by about 40%, and each skill level adds 35% instead of 75% (a level 10 spell does about 4x a level 1, not 7.75x).
+- Intelligence adds 0.6% spell damage per point (was 1.2%). Spell Damage on staves and jewellery is roughly halved.
+- Fire Bolt's burst is smaller and splashes for less; Chain Lightning loses more damage with each arc. Staff spells cast a little slower.
+<b>World</b>
+- The charred woods round the Ashen Ruins (and the dead woods of the Graveyard) are much thicker, with rubble between the trees, so it's clear you can't walk through.
+<b>Bosses are deadlier</b>
+- Bosses move as fast as you (Rimeheart faster), hit about 40% harder and attack about 50% faster.
+- Their big moves come more often and wind up much faster, cover more ground, and aim where you're heading: leaps land past where you're running, the Warlord's fissure follows your path, and falling fire and ice lead you.

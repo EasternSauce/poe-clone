@@ -335,8 +335,9 @@ namespace PoeClone.Player
             if (CharacterAttackAnimator.IsRanged(weaponType))
             {
                 int arrows = 1 + Mathf.Max(0, Mathf.RoundToInt(inventory.Stats.Total(StatType.AdditionalArrows)));
+                var volley = PlayerArrow.NewVolley();
                 foreach (Vector3 direction in HitEffects.Spread(transform.forward, arrows, ArrowSpreadDegrees))
-                    PlayerArrow.Launch(transform, range, pendingDamage, direction);
+                    PlayerArrow.Launch(transform, range, pendingDamage, direction, volley);
                 return;
             }
 

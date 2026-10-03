@@ -29,8 +29,8 @@ namespace PoeClone.Enemies
     public class BossAbilities : MonoBehaviour
     {
         private const float EngageRange = 18f;
-        private const float MoveEvery = 4.2f;
-        private const float MoveEveryEnraged = 2.9f;
+        private const float MoveEvery = 3.0f;
+        private const float MoveEveryEnraged = 2.0f;
         private const int MaxMinions = 5;
 
         private enum Move
@@ -192,8 +192,8 @@ namespace PoeClone.Enemies
                 case Move.Spin: return ReapingSpin();
                 case Move.RaiseDead: return RaiseDead(2);
                 case Move.Fissure: return Fissure();
-                case Move.Rain: return RainDown(kind.Boss == BossStyle.Warlord ? DamageType.Fire : DamageType.Cold, secondPhase ? 7 : 5);
-                case Move.Nova: return FrostBurst(6f);
+                case Move.Rain: return RainDown(kind.Boss == BossStyle.Warlord ? DamageType.Fire : DamageType.Cold, secondPhase ? 9 : 7);
+                case Move.Nova: return FrostBurst(7.5f);
                 default: return Brood(secondPhase ? 3 : 2);
             }
         }
@@ -205,14 +205,15 @@ namespace PoeClone.Enemies
         private IEnumerator LeapSlam()
         {
             busy = true;
-            const float gather = 0.65f;
-            const float air = 0.75f;
+            const float gather = 0.4f;
+            const float air = 0.55f;
             float scale = transform.localScale.x;
-            float radius = 2.4f + 0.5f * scale;
+            float radius = 3.0f + 0.6f * scale;
             float gap = (body != null ? body.radius * scale : 1f) + 0.6f;
 
             Vector3 start = transform.position;
-            Vector3 landing = PlayerMotion.Predict(player, gather + air);
+            // Aims past where the player is heading, so running straight on doesn't clear it.
+            Vector3 landing = PlayerMotion.Predict(player, (gather + air) * 1.3f);
             Vector3 jump = Flat(landing - start);
             if (jump.magnitude > 14f)
                 landing = start + jump.normalized * 14f;
@@ -262,11 +263,11 @@ namespace PoeClone.Enemies
             MoveTo(KeepClear(landing, gap) + Vector3.down * 0.2f);
 
             // Hold the landing crouch a beat, then rise.
-            for (float t = 0f; t < 0.5f; t += Time.deltaTime)
+            for (float t = 0f; t < 0.3f; t += Time.deltaTime)
             {
                 if (health.IsDead)
                     yield break;
-                SetCrouch(Mathf.Lerp(landed ? 0.8f : 0.5f, 0f, t / 0.5f));
+                SetCrouch(Mathf.Lerp(landed ? 0.8f : 0.5f, 0f, t / 0.3f));
                 yield return null;
             }
             SetCrouch(0f);
@@ -280,7 +281,7 @@ namespace PoeClone.Enemies
             if (kind.Boss == BossStyle.Gravelord && secondPhase)
                 StartCoroutine(RaiseDead(1));
             else if (kind.Boss == BossStyle.Warlord)
-                Ring(at, 4.2f + transform.localScale.x, secondPhase ? 8 : 6, 0.7f, 1.4f, DamageType.Fire);
+                Ring(at, 4.2f + transform.localScale.x, secondPhase ? 10 : 8, 0.9f, 1.0f, DamageType.Fire);
             else if (kind.Boss == BossStyle.FrostQueen && player != null && Flat(player.transform.position - at).magnitude < 5f)
                 player.GetComponent<PlayerController>()?.Chill(2f);
         }
@@ -289,8 +290,8 @@ namespace PoeClone.Enemies
         private IEnumerator ReapingSpin()
         {
             busy = true;
-            const float windUp = 1.15f;
-            float radius = 3.8f + 0.6f * transform.localScale.x;
+            const float windUp = 0.8f;
+            float radius = 4.6f + 0.7f * transform.localScale.x;
 
             if (attackAnimator != null)
             {
@@ -326,7 +327,7 @@ namespace PoeClone.Enemies
             }
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             SetCrouch(0f);
-            yield return Pause(0.35f);
+            yield return Pause(0.15f);
             busy = false;
         }
 
@@ -335,8 +336,8 @@ namespace PoeClone.Enemies
         private IEnumerator Fissure()
         {
             busy = true;
-            const float windUp = 1.0f;
-            Vector3 toPlayer = Flat(player.transform.position - transform.position);
+            const float windUp = 0.7f;
+            Vector3 toPlayer = Flat(PlayerMotion.Predict(player, windUp + 0.4f) - transform.position);
             Vector3 dir = toPlayer.sqrMagnitude > 0.01f ? toPlayer.normalized : transform.forward;
             Face(dir);
 
@@ -350,7 +351,7 @@ namespace PoeClone.Enemies
             {
                 Vector3 at = origin + dir * step * k;
                 // A second phase splits into a fork on either side of the main line.
-                StartCoroutine(Eruption(at, 1.3f, windUp + k * 0.11f, DamageType.Fire, 1.2f, once));
+                StartCoroutine(Eruption(at, 1.7f, windUp + k * 0.07f, DamageType.Fire, 1.2f, once));
                 if (secondPhase && k > 1 && k % 2 == 0)
                 {
                     Vector3 side = Vector3.Cross(Vector3.up, dir) * (0.35f * step * k);
@@ -368,7 +369,7 @@ namespace PoeClone.Enemies
             }
             CameraSystem.CameraFollow.Shake(0.3f, 0.4f);
             SkillEffects.Shockwave(origin, 1.8f, Dust, 0.35f);
-            yield return Pause(0.5f);
+            yield return Pause(0.25f);
             SetCrouch(0f);
             busy = false;
         }
@@ -377,7 +378,7 @@ namespace PoeClone.Enemies
         private IEnumerator FrostBurst(float radius)
         {
             busy = true;
-            const float windUp = 1.2f;
+            const float windUp = 0.85f;
             if (creature != null)
                 creature.Crouch(windUp);
             StartCoroutine(GroundTelegraph.Run(transform.position, radius, windUp, DamageType.Cold, at =>
@@ -420,12 +421,14 @@ namespace PoeClone.Enemies
         // second phase) that burst after a beat.
         private IEnumerator RainDown(DamageType type, int count)
         {
-            Vector3 target = secondPhase ? PlayerMotion.Predict(player, 1.0f) : player.transform.position;
+            // Each patch comes down where the player will be when it lands, scattered round that.
             for (int k = 0; k < count; k++)
             {
-                Vector2 scatter = Random.insideUnitCircle * 4f;
+                float windUp = 0.9f + k * 0.15f;
+                Vector3 target = PlayerMotion.Predict(player, windUp);
+                Vector2 scatter = Random.insideUnitCircle * 3f;
                 Vector3 at = k == 0 ? target : target + new Vector3(scatter.x, 0f, scatter.y);
-                StartCoroutine(Eruption(at, 2.3f, 1.3f + k * 0.25f, type, 1.2f));
+                StartCoroutine(Eruption(at, 2.7f, windUp, type, 1.2f));
             }
             yield break;
         }

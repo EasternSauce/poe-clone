@@ -44,27 +44,38 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void CasterBases_RollCasterStatsMoreOften()
+        public void StrengthBases_RollStrengthMoreOften()
         {
             var rng = new System.Random(5);
-            int robeCaster = 0, plateCaster = 0;
+            int plate = 0, robe = 0;
             for (int k = 0; k < 400; k++)
             {
-                robeCaster += CasterStats(ItemGenerator.Generate(rng, "silk_robe", 8, ItemRarity.Rare));
-                plateCaster += CasterStats(ItemGenerator.Generate(rng, "chain_hauberk", 8, ItemRarity.Rare));
+                plate += Count(ItemGenerator.Generate(rng, "chain_hauberk", 8, ItemRarity.Rare), StatType.Strength);
+                robe += Count(ItemGenerator.Generate(rng, "silk_robe", 8, ItemRarity.Rare), StatType.Strength);
             }
-            Assert.Greater(robeCaster, plateCaster * 2);
+            Assert.Greater(plate, robe * 2);
         }
 
-        private static int CasterStats(ItemData item)
+        [Test]
+        public void AStatTheBaseHas_NeverRollsAgain()
         {
-            // Only the random stats: the robe's own base stats are caster stats too.
-            ItemData plain = ItemGenerator.Generate(new System.Random(1), item.Id, 8, ItemRarity.Normal);
-            int n = 0;
-            for (int k = plain.Modifiers.Count; k < item.Modifiers.Count; k++)
+            var rng = new System.Random(9);
+            for (int k = 0; k < 300; k++)
             {
-                StatType s = item.Modifiers[k].Stat;
-                if (s == StatType.Intelligence || s == StatType.MaxMana)
+                Assert.AreEqual(1, Count(ItemGenerator.Generate(rng, "iron_helmet", 12, ItemRarity.Rare), StatType.Armour));
+                ItemData any = ItemGenerator.Generate(rng, 12, ItemRarity.Rare);
+                var seen = new HashSet<StatType>();
+                foreach (StatModifier m in any.Modifiers)
+                    Assert.IsTrue(seen.Add(m.Stat), any.Name + " has two " + m.Stat + " lines");
+            }
+        }
+
+        private static int Count(ItemData item, StatType stat)
+        {
+            int n = 0;
+            foreach (StatModifier m in item.Modifiers)
+            {
+                if (m.Stat == stat)
                     n++;
             }
             return n;

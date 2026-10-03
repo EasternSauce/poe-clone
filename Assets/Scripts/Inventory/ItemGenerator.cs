@@ -264,10 +264,10 @@ namespace PoeClone.Inventory
             Arm("bow", Leaning.Dex, "recurve_bow", "Recurve Bow", WeaponType.Bow, 2, 3, 4, "short_bow", Dusk, Mod(StatType.PhysicalDamage, 9)),
             Arm("bow", Leaning.Dex, "long_bow", "Long Bow", WeaponType.Bow, 2, 3, 8, "short_bow", Gilded, Mod(StatType.PhysicalDamage, 13)),
             Arm("bow", Leaning.Dex, "imperial_bow", "Imperial Bow", WeaponType.Bow, 2, 3, 12, "short_bow", Royal, Mod(StatType.PhysicalDamage, 19)),
-            Arm("staff", Leaning.Int, "gnarled_staff", "Gnarled Staff", WeaponType.Staff, 1, 4, 1, null, Plain, Mod(StatType.PhysicalDamage, 4), Mod(StatType.SpellDamage, 10)),
-            Arm("staff", Leaning.Int, "runed_staff", "Runed Staff", WeaponType.Staff, 1, 4, 4, "gnarled_staff", Lapis, Mod(StatType.PhysicalDamage, 7), Mod(StatType.SpellDamage, 18), Mod(StatType.Intelligence, 8)),
-            Arm("staff", Leaning.Int, "archmage_staff", "Archmage Staff", WeaponType.Staff, 1, 4, 8, "gnarled_staff", Gilded, Mod(StatType.PhysicalDamage, 10), Mod(StatType.SpellDamage, 28), Mod(StatType.Intelligence, 14)),
-            Arm("staff", Leaning.Int, "eldritch_staff", "Eldritch Staff", WeaponType.Staff, 1, 4, 12, "gnarled_staff", Royal, Mod(StatType.PhysicalDamage, 14), Mod(StatType.SpellDamage, 38), Mod(StatType.Intelligence, 20)),
+            Arm("staff", Leaning.Int, "gnarled_staff", "Gnarled Staff", WeaponType.Staff, 1, 4, 1, null, Plain, Mod(StatType.PhysicalDamage, 4), Mod(StatType.SpellDamage, 6)),
+            Arm("staff", Leaning.Int, "runed_staff", "Runed Staff", WeaponType.Staff, 1, 4, 4, "gnarled_staff", Lapis, Mod(StatType.PhysicalDamage, 7), Mod(StatType.SpellDamage, 10), Mod(StatType.Intelligence, 8)),
+            Arm("staff", Leaning.Int, "archmage_staff", "Archmage Staff", WeaponType.Staff, 1, 4, 8, "gnarled_staff", Gilded, Mod(StatType.PhysicalDamage, 10), Mod(StatType.SpellDamage, 15), Mod(StatType.Intelligence, 14)),
+            Arm("staff", Leaning.Int, "eldritch_staff", "Eldritch Staff", WeaponType.Staff, 1, 4, 12, "gnarled_staff", Royal, Mod(StatType.PhysicalDamage, 14), Mod(StatType.SpellDamage, 20), Mod(StatType.Intelligence, 20)),
 
             // ---- Great weapons: both hands, no shield; slower, but they hit much harder, reach
             // further and sweep a wider arc (see CharacterAttackAnimator).
@@ -383,8 +383,8 @@ namespace PoeClone.Inventory
             Aff(StatType.LifeOnKill, 2, 5, true, ItemType.Gloves, ItemType.Ring, ItemType.Quiver).Also(ItemType.Weapon, AttackWeapons).Weighted(0.5f),
 
             // Caster stats: a staff's own pool, and a little on jewellery.
-            Aff(StatType.SpellDamage, 8, 22, true, ItemType.Weapon).Only(Staves).Weighted(1.6f),
-            Aff(StatType.SpellDamage, 4, 10, true, ItemType.Ring, ItemType.Amulet).Weighted(0.6f),
+            Aff(StatType.SpellDamage, 4, 10, true, ItemType.Weapon).Only(Staves).Weighted(1.6f),
+            Aff(StatType.SpellDamage, 2, 5, true, ItemType.Ring, ItemType.Amulet).Weighted(0.6f),
             Aff(StatType.MaxMana, 12, 30, true, ItemType.Weapon).Only(Staves),
             Aff(StatType.ManaRegen, 10, 35, false, ItemType.Weapon, ItemType.Amulet, ItemType.Ring, ItemType.Helmet).Only(Staves),
             Aff(StatType.CastSpeed, 4, 14, false, ItemType.Weapon).Only(Staves).Weighted(1.2f),
@@ -669,6 +669,7 @@ namespace PoeClone.Inventory
 
             var mods = new List<StatModifier>();
             var rolled = new List<StatType>();
+            var baseStats = new HashSet<StatType>();
 
             // Every staff carries a spell: its attack. It comes on top of the rarity's stats.
             if (b.Type == ItemType.Weapon && b.WeaponType == WeaponType.Staff)
@@ -678,8 +679,12 @@ namespace PoeClone.Inventory
                 rolled.Add(spell);
             }
 
+            // A stat the base already has never rolls again as an extra (no second Armour line on plate).
             foreach (StatModifier implicitMod in b.Implicits)
+            {
                 mods.Add(new StatModifier(implicitMod.Stat, RollImplicit(rng, implicitMod.Value)));
+                baseStats.Add(implicitMod.Stat);
+            }
             int fromRarity = 0;
 
             while (fromRarity < affixCount && candidates.Count > 0)
@@ -688,7 +693,7 @@ namespace PoeClone.Inventory
                 Affix a = candidates[pick];
                 candidates.RemoveAt(pick);
                 candidateWeights.RemoveAt(pick);
-                if (rolled.Contains(a.Stat))
+                if (rolled.Contains(a.Stat) || baseStats.Contains(a.Stat))
                     continue;
 
                 float value;

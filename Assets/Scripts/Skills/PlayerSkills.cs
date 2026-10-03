@@ -547,9 +547,10 @@ namespace PoeClone.Skills
                         if (attackAnimator != null)
                             attackAnimator.PlayAttack(WeaponType.Unarmed);
                     }
+                    var bolts = PlayerArrow.NewVolley();
                     foreach (Vector3 direction in HitEffects.Spread(transform.forward, 1 + extraProjectiles, 12f))
-                        PlayerArrow.LaunchBolt(transform, BoltRange, damage, skill.Color, 2.2f * area, direction);
-                    Record(skill, level, 2.2f * area, 1 + extraProjectiles);
+                        PlayerArrow.LaunchBolt(transform, BoltRange, damage, skill.Color, 1.6f * area, direction, volley: bolts);
+                    Record(skill, level, 1.6f * area, 1 + extraProjectiles);
                     break;
 
                 case SkillId.IceShard:
@@ -559,8 +560,11 @@ namespace PoeClone.Skills
                         if (attackAnimator != null)
                             attackAnimator.PlayAttack(WeaponType.Unarmed);
                     }
+                    // Each enemy is hurt by one shard of the fan: the spread covers more of them,
+                    // it doesn't stack on one.
+                    var shards = PlayerArrow.NewVolley();
                     foreach (Vector3 direction in HitEffects.Spread(transform.forward, 3 + extraProjectiles, 7f))
-                        PlayerArrow.LaunchShard(transform, ShardRange, damage * 0.45f, skill.Color, 1.5f + 0.1f * level, direction);
+                        PlayerArrow.LaunchShard(transform, ShardRange, damage * 0.8f, skill.Color, 1.5f + 0.1f * level, direction, volley: shards);
                     Record(skill, level, 0f, 3 + extraProjectiles);
                     break;
 
@@ -673,7 +677,7 @@ namespace PoeClone.Skills
                 Hit(target, damage, CombatText.LightningColor, attack: false);
                 struck.Add(target);
 
-                damage *= 0.7f;
+                damage *= 0.6f;
                 from = to;
                 target = Nearest(target.transform.position, ChainJump, struck);
             }

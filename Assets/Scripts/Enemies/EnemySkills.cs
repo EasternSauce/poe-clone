@@ -432,11 +432,12 @@ namespace PoeClone.Enemies
         private static void Volley(Transform body, EnemyKind kind, Vector3 target, PlayerStats hit, float damage)
         {
             Vector3 from = EnemyCombat.BoltOrigin(body);
+            var volleyHit = new bool[1]; // the player is hurt by one arrow of the three at most
             for (int k = -1; k <= 1; k++)
             {
                 Vector3 aim = from + Quaternion.AngleAxis(k * 14f, Vector3.up) * (target - from);
                 if (hit != null)
-                    EnemyProjectile.LaunchAt(from, aim, hit, kind, damage);
+                    EnemyProjectile.LaunchAt(from, aim, hit, kind, damage, volleyHit);
                 else
                     EnemyProjectile.LaunchVisual(from, aim, kind);
             }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using PoeClone.Combat;
 using PoeClone.UI;
@@ -30,15 +31,31 @@ namespace PoeClone.Player
         private bool isAttack = true;   // an arrow; a bolt is a spell
         private float chillSeconds;     // an ice shard slows what it hits
 
+        // Projectiles loosed together (Ice Shard's fan, extra arrows or bolts) share this: each
+        // target is hurt by the first of them to reach it, and the rest do nothing to it.
+        private HashSet<IDamageable> volley;
+
+        /// <summary>A shared record for projectiles loosed together (see the volley parameters).</summary>
+        public static HashSet<IDamageable> NewVolley()
+        {
+            return new HashSet<IDamageable>();
+        }
+
+        // The first hit on this target from this projectile's volley (always true without one).
+        private bool FirstVolleyHit(IDamageable target)
+        {
+            return volley == null || volley.Add(target);
+        }
+
         /// <summary>Where arrows leave the bow: chest height, a little in front.</summary>
         public static Vector3 Origin(Transform shooter)
         {
             return shooter.position + Vector3.up * 0.3f + shooter.forward * 0.6f;
         }
 
-        public static void Launch(Transform shooter, float range, float damage, Vector3? direction = null)
+        public static void Launch(Transform shooter, float range, float damage, Vector3? direction = null, HashSet<IDamageable> volley = null)
         {
-            Create(shooter, range, damage, harmless: false, direction: direction);
+            Create(shooter, range, damage, harmless: false, direction: direction).volley = volley;
         }
 
         public static void LaunchVisual(Transform shooter, float range)
@@ -47,18 +64,20 @@ namespace PoeClone.Player
         }
 
         /// <summary>A Fire Bolt: an orb that bursts on impact, hurting everything within the radius.</summary>
-        public static void LaunchBolt(Transform shooter, float range, float damage, Color color, float burstRadius, Vector3? direction = null, bool harmless = false)
+        public static void LaunchBolt(Transform shooter, float range, float damage, Color color, float burstRadius, Vector3? direction = null, bool harmless = false, HashSet<IDamageable> volley = null)
         {
             PlayerArrow bolt = Create(shooter, range, damage, harmless, orb: color, direction: direction);
+            bolt.volley = volley;
             bolt.burstRadius = burstRadius;
             bolt.textColor = CombatText.FireColor;
             bolt.isAttack = false;
         }
 
         /// <summary>An Ice Shard: a small, quick shard that chills the enemy it hits.</summary>
-        public static void LaunchShard(Transform shooter, float range, float damage, Color color, float chillSeconds, Vector3 direction, bool harmless = false)
+        public static void LaunchShard(Transform shooter, float range, float damage, Color color, float chillSeconds, Vector3 direction, bool harmless = false, HashSet<IDamageable> volley = null)
         {
             PlayerArrow shard = Create(shooter, range, damage, harmless, orb: color, direction: direction);
+            shard.volley = volley;
             shard.transform.localScale = Vector3.one * 0.6f;
             shard.textColor = CombatText.ColdColor;
             shard.isAttack = false;
@@ -164,8 +183,8 @@ namespace PoeClone.Player
                 IDamageable target = c.GetComponentInParent<IDamageable>();
                 if (target == null || !done.Add(target) || (owner != null && c.transform.IsChildOf(owner)))
                     continue;
-                if (target is Enemies.EnemyHealth enemy && !enemy.IsDead)
-                    HitEffects.Deal(owner, enemy, damage * 0.6f, isAttack, textColor);
+                if (target is Enemies.EnemyHealth enemy && !enemy.IsDead && FirstVolleyHit(target))
+                    HitEffects.Deal(owner, enemy, damage * 0.4f, isAttack, textColor);
             }
         }
 
@@ -175,7 +194,7 @@ namespace PoeClone.Player
                 return;
 
             IDamageable target = collider.GetComponentInParent<IDamageable>();
-            if (target == null)
+            if (target == null || !FirstVolleyHit(target))
                 return;
 
             if (target is Enemies.EnemyHealth enemy)

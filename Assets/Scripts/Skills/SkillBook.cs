@@ -59,10 +59,10 @@ namespace PoeClone.Skills
             return Cooldown * Mathf.Max(0.4f, 1f - perLevel * (Mathf.Max(1, level) - 1));
         }
 
-        /// <summary>A spell's damage at this level before Intelligence and Spell Damage (about 7.75x from level 1 to 10).</summary>
+        /// <summary>A spell's damage at this level before Intelligence and Spell Damage (about 4x from level 1 to 10).</summary>
         public float DamageAt(int level)
         {
-            return BaseDamage * (1f + 0.75f * (Mathf.Max(1, level) - 1));
+            return BaseDamage * (1f + 0.35f * (Mathf.Max(1, level) - 1));
         }
     }
 
@@ -93,8 +93,8 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.FireBolt, Name = "Fire Bolt", Short = "FB", Grant = StatType.GrantFireBolt, RollsOn = "staves",
-                Spell = true, Element = SkillElement.Fire, BaseDamage = 11f,
-                ManaCost = 6f, Cooldown = 0.9f, Color = new Color(1f, 0.5f, 0.15f),
+                Spell = true, Element = SkillElement.Fire, BaseDamage = 7f,
+                ManaCost = 6f, Cooldown = 1.0f, Color = new Color(1f, 0.5f, 0.15f),
                 Description = "Hurl a bolt of fire that bursts on the first enemy it hits."
             },
             new SkillDefinition
@@ -106,7 +106,7 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.FrostNova, Name = "Frost Nova", Short = "FN", Grant = StatType.GrantFrostNova, RollsOn = "staves, helmets, gloves",
-                Spell = true, Element = SkillElement.Cold, BaseDamage = 9f,
+                Spell = true, Element = SkillElement.Cold, BaseDamage = 6f,
                 ManaCost = 22f, Cooldown = 8f, Color = new Color(0.55f, 0.85f, 1f),
                 Description = "A ring of frost bursts from you, damaging and slowing nearby enemies."
             },
@@ -119,16 +119,16 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.ChainLightning, Name = "Chain Lightning", Short = "CL", Grant = StatType.GrantChainLightning, RollsOn = "staves",
-                Spell = true, Element = SkillElement.Lightning, BaseDamage = 13f,
-                ManaCost = 8f, Cooldown = 1.0f, Color = new Color(1f, 0.95f, 0.4f),
+                Spell = true, Element = SkillElement.Lightning, BaseDamage = 8f,
+                ManaCost = 8f, Cooldown = 1.1f, Color = new Color(1f, 0.95f, 0.4f),
                 Description = "Strikes the enemy under your cursor (or the nearest) and arcs on to others, one more arc at levels 5 and 9. Hits harder when aimed, and up close."
             },
             new SkillDefinition
             {
                 Id = SkillId.IceShard, Name = "Ice Shard", Short = "IS", Grant = StatType.GrantIceShard, RollsOn = "staves",
-                Spell = true, Element = SkillElement.Cold, BaseDamage = 10f,
-                ManaCost = 5f, Cooldown = 0.75f, Color = new Color(0.6f, 0.9f, 1f),
-                Description = "Fling three chilling shards of ice in a narrow fan. Best up close, where all three land."
+                Spell = true, Element = SkillElement.Cold, BaseDamage = 6f,
+                ManaCost = 5f, Cooldown = 0.85f, Color = new Color(0.6f, 0.9f, 1f),
+                Description = "Fling three chilling shards of ice in a narrow fan. Each enemy is hit by one shard at most, so the fan is for crowds."
             },
         };
 
@@ -153,10 +153,10 @@ namespace PoeClone.Skills
             return null;
         }
 
-        /// <summary>Spell damage multiplier from Intelligence: +1.2% per point.</summary>
+        /// <summary>Spell damage multiplier from Intelligence: +0.6% per point.</summary>
         public static float SpellMultiplier(int intelligence)
         {
-            return 1f + intelligence * 0.012f;
+            return 1f + intelligence * 0.006f;
         }
     }
 }
