@@ -42,9 +42,10 @@ there for every player-visible change since the last deploy; when deploying, giv
 (`version: ...`) a new value, and start the next release's notes from scratch after that.
 
 ## Before every commit
-Revert Unity noise: `ProjectSettings/ProjectSettings.asset` (`projectName` flips to
-`my-project`), and after Web builds also `Assets/Settings/Build Profiles/Web - Desktop - Release.asset`
-and `Data/Plugins/lib_burst_generated.wasm`; delete `Assets/Resources/PerformanceTestRun*.json`.
+Revert Unity noise: after Web builds `Assets/Settings/Build Profiles/Web - Desktop - Release.asset`
+(if the diff is only a settings snapshot) and `Data/Plugins/lib_burst_generated.wasm`; delete
+`Assets/Resources/PerformanceTestRun*.json`. The project is unlinked from Unity Cloud (2026-10-03),
+so `ProjectSettings.asset` no longer flips `projectName` to `my-project`; don't relink it.
 Never use the user's inspiration directory directly; copy what is needed into real assets.
 Many files have CRLF line endings: edit them keeping their endings.
 
