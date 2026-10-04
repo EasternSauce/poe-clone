@@ -11,7 +11,7 @@ namespace PoeClone.Inventory
     {
         private const int Width = 512;
         private const int Height = 768;
-        private static readonly Vector3 StagePosition = new Vector3(4000f, 0f, 4000f);
+        private static int nextStage;
 
         private static readonly string[] PoseNames = { "LegL", "LegR", "Knee", "ArmL", "ArmR", "Elbow", "UpperBody" };
 
@@ -31,7 +31,9 @@ namespace PoeClone.Inventory
                 return false;
 
             stage = new GameObject("CharacterPreviewStage");
-            stage.transform.position = StagePosition;
+            // Several portraits can be visible on character select at once. Give each camera
+            // its own stage so the models cannot appear in one another's render textures.
+            stage.transform.position = new Vector3(4000f + 100f * nextStage++, 0f, 4000f);
 
             GameObject model = Instantiate(source.gameObject, stage.transform);
             model.name = "PreviewModel";
@@ -84,6 +86,11 @@ namespace PoeClone.Inventory
         {
             if (previewCamera != null)
                 previewCamera.enabled = active;
+        }
+
+        private void OnDisable()
+        {
+            SetActive(false);
         }
 
         private void OnDestroy()

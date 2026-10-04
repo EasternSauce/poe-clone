@@ -25,8 +25,8 @@ namespace PoeClone.Skills
     /// </summary>
     public partial class PlayerSkills : MonoBehaviour
     {
-        private static readonly string[] SlotLabels = { "Q", "E", "R", "F", "RMB", "MMB", "M4", "M5" };
-        private static readonly Key[] SlotKeys = { Key.Q, Key.E, Key.R, Key.F };
+        private static readonly string[] SlotLabels = { "Q", "E", "R", "F", "RMB", "MMB", "M4", "M5", "1", "2", "3", "4" };
+        private static readonly Key[] SlotKeys = { Key.Q, Key.E, Key.R, Key.F, Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4 };
 
         private readonly SkillId?[] slots = new SkillId?[SkillBook.SlotCount];
         private readonly Dictionary<SkillId, float> readyAt = new Dictionary<SkillId, float>();
@@ -427,6 +427,9 @@ namespace PoeClone.Skills
             if (slot < 0 || slot >= slots.Length || MainSkill == id)
                 return;
 
+            int binding = slot < 4 ? slot + 4 : slot < 8 ? slot + 4 : slot - 8;
+            if (enabled) PlayerPotions.ClearBindingAt(binding);
+
             for (int k = 0; k < slots.Length; k++)
             {
                 if (slots[k] == id)
@@ -492,12 +495,18 @@ namespace PoeClone.Skills
                 if (!IsUnlocked(skill.Id) || Array.IndexOf(slots, (SkillId?)skill.Id) >= 0)
                     continue;
 
-                int free = Array.IndexOf(slots, null);
+                int free = -1;
+                for (int k = 0; k < slots.Length; k++)
+                {
+                    int binding = k < 4 ? k + 4 : k < 8 ? k + 4 : k - 8;
+                    if (slots[k] == null && !PlayerPotions.IsBoundTo(binding)) { free = k; break; }
+                }
                 if (free < 0)
                 {
                     for (int k = 0; k < slots.Length && free < 0; k++)
                     {
-                        if (!IsUnlocked(slots[k].Value))
+                        int binding = k < 4 ? k + 4 : k < 8 ? k + 4 : k - 8;
+                        if (!PlayerPotions.IsBoundTo(binding) && slots[k] != null && !IsUnlocked(slots[k].Value))
                             free = k;
                     }
                 }
@@ -533,8 +542,10 @@ namespace PoeClone.Skills
             {
                 for (int k = 0; k < SlotKeys.Length; k++)
                 {
-                    if (!PlayerPotions.IsBoundTo(k + 4) && keyboard[SlotKeys[k]].wasPressedThisFrame)
-                        pressed = k;
+                    int slot = k < 4 ? k : k + 4;
+                    int binding = k < 4 ? k + 4 : k - 4;
+                    if (!PlayerPotions.IsBoundTo(binding) && keyboard[SlotKeys[k]].wasPressedThisFrame)
+                        pressed = slot;
                 }
             }
 
@@ -812,7 +823,7 @@ namespace PoeClone.Skills
             SkillEffects.Shockwave(transform.position, reach, skill.Color, 0.3f);
             Record(skill, level, reach);
 
-            float damage = WeaponDamage() * (1.4f + 0.1f * (level - 1));
+            float damage = WeaponDamage() * (1.68f + 0.12f * (level - 1));
             PlaySkillSound(skill.Id, transform.position);
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
                 Hit(enemy, damage, CombatText.PhysicalColor, attack: true);
@@ -901,7 +912,7 @@ namespace PoeClone.Skills
             // Match the impact treatment of a basic maul slam: ground burst plus a brief camera jolt.
             PoeClone.CameraSystem.CameraFollow.Shake(0.12f, 0.18f);
             Record(skill, level, radius);
-            float damage = WeaponDamage() * (2.6f + 0.18f * (level - 1));
+            float damage = WeaponDamage() * (3.12f + 0.216f * (level - 1));
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, radius))
                 Hit(enemy, damage, CombatText.PhysicalColor, attack: true);
         }
@@ -909,7 +920,7 @@ namespace PoeClone.Skills
         private void ReapingArc(SkillDefinition skill, int level)
         {
             float reach = 4.6f * (1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f);
-            float damage = WeaponDamage() * (2.2f + 0.15f * (level - 1));
+            float damage = WeaponDamage() * (2.64f + 0.18f * (level - 1));
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
             {
                 Vector3 to = enemy.transform.position - transform.position;
@@ -924,7 +935,7 @@ namespace PoeClone.Skills
         private void LungingThrust(SkillDefinition skill, int level)
         {
             float reach = 3f * (1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f);
-            float damage = WeaponDamage() * (2.4f + 0.16f * (level - 1));
+            float damage = WeaponDamage() * (2.88f + 0.192f * (level - 1));
             EnemyHealth target = AimedEnemy(reach) ?? EnemyInDirection(transform.forward, reach);
             SkillEffects.Arc(transform.position + Vector3.up, transform.position + Vector3.up + transform.forward * reach, skill.Color, 0.25f);
             if (target != null)
@@ -939,8 +950,8 @@ namespace PoeClone.Skills
             Record(skill, level, reach);
             if (target != null)
             {
-                Hit(target, WeaponDamage() * (1.3f + 0.08f * (level - 1)), skill.Color, true);
-                WeaponVenom.Apply(transform, target, WeaponDamage(), 150f + 15f * (level - 1), 0f, inventory.Stats);
+                Hit(target, WeaponDamage() * (1.56f + 0.096f * (level - 1)), skill.Color, true);
+                WeaponVenom.Apply(transform, target, WeaponDamage() * 1.2f, 150f + 15f * (level - 1), 0f, inventory.Stats);
             }
         }
 
@@ -958,6 +969,8 @@ namespace PoeClone.Skills
             StatSheet sheet = inventory != null ? inventory.Stats : null;
             string summary = "army max " + Minion.GlobalCap(transform) + " · this skill max " + Minion.KindCap(kind, sheet) + " · " +
                              Mathf.RoundToInt(Minion.LifeFor(kind, level, sheet)) + " life · " +
+                             Mathf.RoundToInt(Minion.ArmourFor(sheet)) + " armour · " +
+                             Mathf.RoundToInt(Minion.ResistanceFor(sheet)) + "% elemental/poison res · " +
                              Mathf.RoundToInt(Minion.DamageFor(kind, level, sheet)) + " per hit";
             float duration = Minion.Duration(kind, level, sheet);
             if (duration > 0f)

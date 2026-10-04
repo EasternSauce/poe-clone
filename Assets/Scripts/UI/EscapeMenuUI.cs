@@ -15,7 +15,9 @@ namespace PoeClone.UI
         [Serializable] private class Archive { public Entry[] entries; }
         private const float W = 760f, H = 620f;
         private GameObject root;
-        private RectTransform viewport, content;
+        private RectTransform viewport, content, notesViewport, notesContent;
+        private ScrollRect listScroll, notesScroll;
+        private GameObject settingsButton;
         private Text title, body;
         private Entry[] entries = Array.Empty<Entry>();
         private int selected;
@@ -78,26 +80,29 @@ namespace PoeClone.UI
             Image panel = UiKit.NewImage("Panel", canvas.transform, UiKit.PanelColor); UiKit.Grain(panel); panel.raycastTarget = true;
             RectTransform pr=panel.rectTransform; pr.anchorMin=pr.anchorMax=new Vector2(.5f,.5f); pr.sizeDelta=new Vector2(W,H); UiKit.AddOutline(panel,UiKit.BorderColor,3f); TouchMode.AddBlocker(pr);
             title=UiKit.NewText("Title",pr,"MENU",28,UiKit.Gold,TextAnchor.UpperCenter); UiKit.TopLeft(title.rectTransform,new Vector2(0,-16),new Vector2(W,40));
-            Button("Settings",pr,"Settings",new Vector2(30,-68),new Vector2(150,42),ShowSettings);
+            settingsButton=Button("Settings",pr,"Settings",new Vector2(30,-68),new Vector2(150,42),ShowSettings);
             Button("History",pr,"Patch History",new Vector2(190,-68),new Vector2(180,42),ShowHistory);
-            Button("Close",pr,"Close",new Vector2(-150,18),new Vector2(120,42),()=>root.SetActive(false),true);
             viewport=UiKit.NewRect("Viewport",pr); viewport.gameObject.AddComponent<RectMask2D>(); Image catcher=viewport.gameObject.AddComponent<Image>(); catcher.color=Color.clear;
             UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(W-60,H-152));
             content=UiKit.NewRect("Content",viewport); content.anchorMin=new Vector2(0,1); content.anchorMax=new Vector2(1,1); content.pivot=new Vector2(.5f,1); content.anchoredPosition=Vector2.zero;
-            ScrollRect scroll=viewport.gameObject.AddComponent<ScrollRect>(); scroll.content=content; scroll.viewport=viewport; scroll.horizontal=false; scroll.movementType=ScrollRect.MovementType.Clamped; scroll.scrollSensitivity=30;
-            body=UiKit.NewText("Body",content,"",18,UiKit.TextColor,TextAnchor.UpperLeft); body.horizontalOverflow=HorizontalWrapMode.Wrap; body.verticalOverflow=VerticalWrapMode.Overflow; UiKit.Stretch(body.rectTransform,0);
-            body.raycastTarget=false;
+            listScroll=viewport.gameObject.AddComponent<ScrollRect>(); listScroll.content=content; listScroll.viewport=viewport; listScroll.horizontal=false; listScroll.movementType=ScrollRect.MovementType.Clamped; listScroll.scrollSensitivity=30;
+            notesViewport=UiKit.NewRect("NotesViewport",pr); notesViewport.gameObject.AddComponent<RectMask2D>(); Image notesCatcher=notesViewport.gameObject.AddComponent<Image>(); notesCatcher.color=Color.clear;
+            UiKit.TopLeft(notesViewport,new Vector2(300,-126),new Vector2(W-330,H-152));
+            notesContent=UiKit.NewRect("NotesContent",notesViewport); notesContent.anchorMin=new Vector2(0,1); notesContent.anchorMax=new Vector2(1,1); notesContent.pivot=new Vector2(.5f,1); notesContent.anchoredPosition=Vector2.zero;
+            notesScroll=notesViewport.gameObject.AddComponent<ScrollRect>(); notesScroll.content=notesContent; notesScroll.viewport=notesViewport; notesScroll.horizontal=false; notesScroll.movementType=ScrollRect.MovementType.Clamped; notesScroll.scrollSensitivity=30;
+            body=UiKit.NewText("Body",notesContent,"",18,UiKit.TextColor,TextAnchor.UpperLeft); body.horizontalOverflow=HorizontalWrapMode.Wrap; body.verticalOverflow=VerticalWrapMode.Overflow; body.raycastTarget=false;
+            UiKit.TopLeft(body.rectTransform,new Vector2(8,-4),new Vector2(W-350,0));
+            Button("Close",pr,"Close",new Vector2(W-150,-68),new Vector2(120,42),()=>root.SetActive(false));
         }
 
         private void ShowSettings()
         {
-            title.text="SETTINGS"; ClearEntries();
+            title.text="SETTINGS"; ClearEntries(); settingsButton.SetActive(false); notesViewport.gameObject.SetActive(false);
+            body.transform.SetParent(content,false); UiKit.TopLeft(body.rectTransform,new Vector2(0,-4),new Vector2(W-80,0));
+            UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(W-60,H-152));
             body.text="Chat\n\nShow chat messages and chat controls";
             Button("ChatToggle",content,"Chat: "+(ChatUI.Enabled?"ON":"OFF"),new Vector2(0,-100),new Vector2(220,48),()=>{ChatUI.SetEnabled(!ChatUI.Enabled);ShowSettings();});
-            Button("HealthPotionKey",content,"Health potion: "+PlayerPotions.HealthPotionKeyLabel,new Vector2(0,-164),new Vector2(300,48),()=>{PlayerPotions.CyclePotionKey(true);ShowSettings();});
-            Button("ManaPotionKey",content,"Mana potion: "+PlayerPotions.ManaPotionKeyLabel,new Vector2(0,-222),new Vector2(300,48),()=>{PlayerPotions.CyclePotionKey(false);ShowSettings();});
-            Button("SettingsHint",content,"Press ESC to close this menu",new Vector2(0,-286),new Vector2(300,42),()=>root.SetActive(false));
-            ResizeBody(360);
+            ResizeBody(180);
         }
         private void ShowHistory()
         {
@@ -105,38 +110,41 @@ namespace PoeClone.UI
             AddArchive(combined, Resources.Load<TextAsset>("PatchNotesHistory")?.text);
             AddArchive(combined, PlayerPrefs.GetString("PoeClone.PatchNotesArchive", ""));
             entries = combined.ToArray();
-            title.text="PATCH HISTORY"; ClearEntries();
+            title.text="PATCH HISTORY"; ClearEntries(); settingsButton.SetActive(true); notesViewport.gameObject.SetActive(true);
+            body.transform.SetParent(notesContent,false); UiKit.TopLeft(body.rectTransform,new Vector2(8,-4),new Vector2(W-350,0));
+            UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(250,H-152));
             float y=-4;
             if(entries.Length==0) body.text="No patch history is available.";
             for(int i=0;i<entries.Length;i++) { int index=i; Button("Release"+i,content,entries[i].version,new Vector2(0,y),new Vector2(250,38),()=>SelectEntry(index)); y-=44; }
             if(entries.Length>0) SelectEntry(selected);
-            ResizeBody(Mathf.Max(100,-y+10));
+            content.sizeDelta=new Vector2(0,Mathf.Max(100,-y+10)); listScroll.verticalNormalizedPosition=1;
         }
         private void SelectEntry(int index)
         {
             selected=Mathf.Clamp(index,0,entries.Length-1); if(entries.Length==0)return;
             body.text="<b>"+Escape(entries[selected].version)+"</b>\n\n"+entries[selected].notes;
-            body.rectTransform.anchorMin=body.rectTransform.anchorMax=new Vector2(0,1); body.rectTransform.pivot=new Vector2(0,1);
-            body.rectTransform.anchoredPosition=new Vector2(270,-4); body.rectTransform.sizeDelta=new Vector2(370,0);
-            ResizeBody(Mathf.Max(520,entries.Length*44+20));
+            Canvas.ForceUpdateCanvases();
+            notesContent.sizeDelta=new Vector2(0,Mathf.Max(notesViewport.rect.height,body.preferredHeight+12));
+            notesScroll.verticalNormalizedPosition=1;
         }
         private void ClearEntries()
         {
+            body.transform.SetParent(notesContent,false);
             for(int i=content.childCount-1;i>=0;i--) Destroy(content.GetChild(i).gameObject);
-            body=UiKit.NewText("Body",content,"",18,UiKit.TextColor,TextAnchor.UpperLeft); body.supportRichText=true; body.raycastTarget=false; body.horizontalOverflow=HorizontalWrapMode.Wrap; body.verticalOverflow=VerticalWrapMode.Overflow;
-            UiKit.TopLeft(body.rectTransform,new Vector2(0,-4),new Vector2(W-80,0));
+            body.text="";
         }
         private void ResizeBody(float height)
         {
-            Canvas.ForceUpdateCanvases(); content.sizeDelta=new Vector2(0,Mathf.Max(height,body.preferredHeight+16));
+            content.sizeDelta=new Vector2(0,height);
         }
-        private void Button(string name,Transform parent,string label,Vector2 pos,Vector2 size,Action action,bool bottom=false)
+        private GameObject Button(string name,Transform parent,string label,Vector2 pos,Vector2 size,Action action)
         {
             Image image=UiKit.NewImage(name,parent,new Color(.25f,.19f,.11f,1)); image.raycastTarget=true; RectTransform r=image.rectTransform;
-            if(bottom){r.anchorMin=r.anchorMax=new Vector2(.5f,0);r.pivot=new Vector2(.5f,0);} else {r.anchorMin=r.anchorMax=new Vector2(0,1);r.pivot=new Vector2(0,1);}
+            r.anchorMin=r.anchorMax=new Vector2(0,1);r.pivot=new Vector2(0,1);
             r.anchoredPosition=pos;r.sizeDelta=size;UiKit.AddOutline(image,UiKit.Gold,1.5f);
             Text t=UiKit.NewText("Label",r,label,18,UiKit.TextColor,TextAnchor.MiddleCenter);UiKit.Stretch(t.rectTransform,0);
             UnityEngine.UI.Button b=image.gameObject.AddComponent<UnityEngine.UI.Button>();b.targetGraphic=image;b.onClick.AddListener(()=>action());
+            return image.gameObject;
         }
         private static string Escape(string s) => (s??"").Replace("&","&amp;").Replace("<","&lt;").Replace(">","&gt;");
     }

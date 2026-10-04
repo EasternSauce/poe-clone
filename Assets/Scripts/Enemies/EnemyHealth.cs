@@ -59,6 +59,8 @@ namespace PoeClone.Enemies
         public float BarHeight => EnemyKinds.Get(KindIndex).BarHeight;
 
         public event Action Damaged;
+        /// <summary>Damage after this enemy's defences, before the life pool clamps it.</summary>
+        public event Action<float> DamageApplied;
         public event Action Died;
 
         /// <summary>
@@ -146,6 +148,7 @@ namespace PoeClone.Enemies
                     amount *= 1f - DefenceMath.ArmourReduction(effectiveArmour, amount);
                     break;
             }
+            DamageApplied?.Invoke(amount);
             float least = Mathf.Max(0f, Floor);
             currentHealth = Mathf.Max(least, currentHealth - amount);
             Damaged?.Invoke();

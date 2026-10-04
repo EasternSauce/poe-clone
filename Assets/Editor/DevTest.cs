@@ -17,6 +17,10 @@ namespace PoeClone.EditorTools
     /// session doesn't paste the same twenty lines of setup C# again and again. Every method returns
     /// a short string to read back. Typical session (see .claude/skills/unity-playtest):
     /// <code>
+    /// return PoeClone.EditorTools.DevTest.QuickStart();     // edit mode: play, skip UI, god mode, sandbox
+    /// (stop Play to restore preferences automatically)
+    ///
+    /// Or, for startup UI testing, use the manual sequence:
     /// return PoeClone.EditorTools.DevTest.Begin();          // edit mode: back up prefs, point at ws://localhost:8099
     /// (manage_editor play)
     /// return PoeClone.EditorTools.DevTest.Ready();          // until it says "running": name prompt, patch notes
@@ -39,6 +43,93 @@ namespace PoeClone.EditorTools
         private static readonly string BackupPath = Path.Combine("Library", "DevTestPrefsBackup.txt");
         private const string None = "<<NONE>>";
         private const BindingFlags Any = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+        private static bool quickSession;
+        private static bool quickSandbox;
+        private static double nextReadyAt;
+        private static double quickDeadline;
+        private static string quickState = "idle";
+
+        [InitializeOnLoadMethod]
+        private static void InstallQuickSessionCleanup()
+        {
+            EditorApplication.playModeStateChanged -= OnQuickPlayModeChanged;
+            EditorApplication.playModeStateChanged += OnQuickPlayModeChanged;
+        }
+
+        private static void OnQuickPlayModeChanged(PlayModeStateChange state)
+        {
+            if (state != PlayModeStateChange.EnteredEditMode || !quickSession) return;
+            EditorApplication.update -= AdvanceQuickSession;
+            quickSession = false;
+            quickState = End();
+            Debug.Log("DevTest QuickStart: " + quickState);
+        }
+
+        /// <summary>
+        /// One-call Editor Play setup. Requires the local session server on port 8099. Selects the
+        /// temporary DevTest character, dismisses startup UI, gives god mode, then moves to a quiet
+        /// flat floor by default. Stop Play to restore the user's character and preferences.
+        /// </summary>
+        public static string QuickStart(bool sandbox = true)
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                return "stop Play before QuickStart";
+            string begin = Begin();
+            quickSession = true;
+            quickSandbox = sandbox;
+            quickState = "starting Play";
+            quickDeadline = EditorApplication.timeSinceStartup + 45;
+            nextReadyAt = 0;
+            InstallQuickSessionCleanup();
+            EditorApplication.update -= AdvanceQuickSession;
+            EditorApplication.update += AdvanceQuickSession;
+            EditorApplication.isPlaying = true;
+            return begin + "; automatic startup pending (QuickStatus for progress)";
+        }
+
+        [MenuItem("PoeClone/Test/Quick Start (Sandbox)")]
+        private static void QuickStartMenu() => Debug.Log("DevTest QuickStart: " + QuickStart());
+
+        private static void AdvanceQuickSession()
+        {
+            if (!quickSession || !EditorApplication.isPlaying) return;
+            double now = EditorApplication.timeSinceStartup;
+            if (now < nextReadyAt) return;
+            if (now > quickDeadline)
+            {
+                quickState = "timed out waiting for local server; stop Play to restore prefs";
+                Debug.LogWarning("DevTest QuickStart: " + quickState);
+                EditorApplication.update -= AdvanceQuickSession;
+                return;
+            }
+            nextReadyAt = now + 2;
+            string ready = Ready();
+            quickState = ready;
+            if (Time.timeScale <= 0f) return;
+            string setup = God();
+            if (quickSandbox) setup += " || " + Sandbox();
+            quickState = ready + " || " + setup;
+            EditorApplication.update -= AdvanceQuickSession;
+            Debug.Log("DevTest QuickStart: " + quickState);
+        }
+
+        /// <summary>Last QuickStart result; useful for a single MCP check after Play begins.</summary>
+        public static string QuickStatus() => quickState;
+
+        /// <summary>Move to a quiet, flat Play-only floor for repeatable combat and visual checks.</summary>
+        public static string Sandbox()
+        {
+            if (!Application.isPlaying || Stats() == null) return "call Sandbox in Play";
+            GameObject floor = GameObject.Find("DevTestSandboxFloor");
+            if (floor == null)
+            {
+                floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                floor.name = "DevTestSandboxFloor";
+                floor.transform.position = new Vector3(500f, -0.5f, 500f);
+                floor.transform.localScale = new Vector3(120f, 1f, 120f);
+            }
+            return Warp("500,500", 0f) + "; sandbox ready";
+        }
 
         // ------------------------------------------------------------------ session
 

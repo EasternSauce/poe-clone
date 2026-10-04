@@ -18,6 +18,7 @@ namespace PoeClone.Player
     public class SaveSystem : MonoBehaviour
     {
         private const string LegacyKey = "PoeClone.Save.v1";
+        private const string LegacyProfileSaveKey = "PoeClone.CharacterSave.legacy";
         private const string ProfilesKey = "PoeClone.CharacterProfiles.v1";
         private const string ActiveProfileKey = "PoeClone.ActiveCharacter.v1";
         private static string Key => "PoeClone.CharacterSave." + ActiveProfileId;
@@ -35,10 +36,12 @@ namespace PoeClone.Player
             if (list.profiles == null) list.profiles = new List<Profile>();
             bool hasLegacy = false;
             foreach (Profile p in list.profiles) if (p != null && p.id == "legacy") hasLegacy = true;
-            if (!hasLegacy && PlayerPrefs.HasKey(LegacyKey))
+            // The first multi-character release copied the old save to this key. Recover its
+            // profile even if the original key has since disappeared or the roster was reset.
+            if (!hasLegacy && (PlayerPrefs.HasKey(LegacyKey) || PlayerPrefs.HasKey(LegacyProfileSaveKey)))
             {
-                string old = PlayerPrefs.GetString(LegacyKey);
-                PlayerPrefs.SetString("PoeClone.CharacterSave.legacy", old);
+                if (!PlayerPrefs.HasKey(LegacyProfileSaveKey))
+                    PlayerPrefs.SetString(LegacyProfileSaveKey, PlayerPrefs.GetString(LegacyKey));
                 list.profiles.Insert(0, new Profile { id = "legacy", name = PlayerPrefs.GetString("PoeClone.PlayerName", "Wanderer") });
                 PlayerPrefs.SetString(ProfilesKey, JsonUtility.ToJson(list)); PlayerPrefs.Save();
             }
@@ -62,17 +65,16 @@ namespace PoeClone.Player
 
         public static int ProfileLevel(Profile p)
         {
-            string key = p.id == "legacy" ? "PoeClone.CharacterSave.legacy" : "PoeClone.CharacterSave." + p.id;
-            try { var d = JsonUtility.FromJson<SaveData>(PlayerPrefs.GetString(key, "")); return d != null ? Mathf.Max(1, d.level) : 1; } catch { return 1; }
+            var d = ProfileSave(p);
+            return d != null ? Mathf.Max(1, d.level) : 1;
         }
 
-        public static string ProfileAppearance(Profile p)
+        public static SaveData ProfileSave(Profile p)
         {
             string key = "PoeClone.CharacterSave." + p.id;
-            try { var d = JsonUtility.FromJson<SaveData>(PlayerPrefs.GetString(key, ""));
-                if (d != null && d.equipped != null && d.equipped.Count > 0) return d.equipped[0].item.name;
-            } catch { }
-            return "Starter attire";
+            if (p.id == "legacy" && !PlayerPrefs.HasKey(key)) key = LegacyKey;
+            try { return JsonUtility.FromJson<SaveData>(PlayerPrefs.GetString(key, "")); }
+            catch { return null; }
         }
         private const float SaveEvery = 10f;
 
@@ -106,6 +108,7 @@ namespace PoeClone.Player
         public static void Erase()
         {
             PlayerPrefs.DeleteKey(Key);
+            if (ActiveProfileId == "legacy") PlayerPrefs.DeleteKey(LegacyKey);
             PlayerPrefs.Save();
             if (instance != null)
                 instance.erased = true;

@@ -288,7 +288,7 @@ namespace PoeClone.UI
                 GUILayout.Space(20f);
 
                 GUILayout.Label(
-                    "WASD - Move | Shift - Sprint | Left click - Attack | Q E R F, spare mouse buttons - Skills\n1 2 - Potions | T - Town portal | K - Skill list | P - Passives | I - Inventory\nC - Character | M - Map | Enter - Chat | H - Hide this",
+                    "WASD - Move | Shift - Sprint | Left click - Attack | Q E R F, 1 2 3 4, spare mouse buttons - Skills\n1 2 - Potions by default | T - Town portal | K - Skills and potion keys | P - Passives | I - Inventory\nC - Character | M - Map | Enter - Chat | H - Hide this",
                     textStyle
                 );
             }
@@ -360,8 +360,8 @@ namespace PoeClone.UI
             int health = potions != null ? potions.HealthPotions : 0;
             int mana = potions != null ? potions.ManaPotions : 0;
 
-            string keys1 = TouchMode.Active ? "" : "[1] ";
-            string keys2 = TouchMode.Active ? "" : "[2] ";
+            string keys1 = TouchMode.Active ? "" : "[" + PlayerPotions.HealthPotionKeyLabel + "] ";
+            string keys2 = TouchMode.Active ? "" : "[" + PlayerPotions.ManaPotionKeyLabel + "] ";
             string line = $"<color=#ff7a70>{keys1}Health x{health}</color>   <color=#8fa2ff>{keys2}Mana x{mana}</color>   <color=#ffd34d>Gold {gold}</color>";
 
             var passives = stats.GetComponent<PlayerPassives>();

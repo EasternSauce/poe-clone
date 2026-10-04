@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using PoeClone.Inventory;
 using PoeClone.UI;
 
 namespace PoeClone.Network
@@ -27,24 +28,30 @@ namespace PoeClone.Network
             afterCharacter = done;
             canvasRoot.SetActive(true);
             PlayerHUD.SetHiddenBy(this, true);
-            // Replace the name form with the profile list. Rows show saved level and a compact
-            // equipment summary, which reflects the character's current in game appearance.
+            // Replace the name form with saved characters and their equipped models.
             foreach (Transform child in canvasRoot.transform)
                 if (child.name != "Background") Destroy(child.gameObject);
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            Text title = MakeText("Choose Character", font, 34, new Vector2(0, 330), new Vector2(1000, 60));
+            MakeText("Choose Character", font, 34, new Vector2(0, 330), new Vector2(1000, 60));
             var profiles = PoeClone.Player.SaveSystem.Profiles();
+            var inventory = FindAnyObjectByType<PlayerInventory>();
+            var source = inventory != null ? inventory.GetComponentInChildren<EquipmentVisuals>(true) : null;
             float y = 220;
             foreach (var profile in profiles)
             {
                 string id = profile.id;
-                MakeButton(profile.name + "   ·   Level " + PoeClone.Player.SaveSystem.ProfileLevel(profile) + "\n" + PoeClone.Player.SaveSystem.ProfileAppearance(profile), font, new Vector2(0, y), new Vector2(560, 82), () =>
+                var row = MakeButton(profile.name + "   ·   Level " + PoeClone.Player.SaveSystem.ProfileLevel(profile), font, new Vector2(0, y), new Vector2(560, 112), () =>
                 {
                     PoeClone.Player.SaveSystem.SelectProfile(id);
                     PlayerName = PoeClone.Player.SaveSystem.ActiveCharacterName;
                     FinishCharacters();
                 });
-                y -= 96;
+                var label = row.transform.Find("Label").GetComponent<Text>();
+                label.alignment = TextAnchor.MiddleLeft;
+                label.rectTransform.offsetMin = new Vector2(116, 0);
+                if (source != null)
+                    AddPortrait(row.transform, source, PoeClone.Player.SaveSystem.ProfileSave(profile));
+                y -= 126;
             }
             MakeButton("Create New Character", font, new Vector2(0, y - 8), new Vector2(300, 54), () => ShowCreateCharacter(font));
         }
@@ -83,10 +90,39 @@ namespace PoeClone.Network
             var r = t.rectTransform; r.anchorMin = r.anchorMax = new Vector2(.5f, .5f); r.anchoredPosition = at; r.sizeDelta = dimensions; return t;
         }
 
-        private void MakeButton(string label, Font font, Vector2 at, Vector2 dimensions, Action click)
+        private void AddPortrait(Transform row, EquipmentVisuals source, SaveData save)
+        {
+            var equipment = new EquipmentSet();
+            if (save != null && save.equipped != null)
+            {
+                foreach (var record in save.equipped)
+                {
+                    if (record == null || record.item == null) continue;
+                    try { equipment.TryEquip((EquipSlot)record.slot, record.item.ToItem(), out _); }
+                    catch (Exception e) { Debug.LogWarning("Character portrait: skipped invalid gear. " + e.Message); }
+                }
+            }
+            var portrait = new GameObject("CharacterPortrait", typeof(RectTransform), typeof(RawImage));
+            portrait.transform.SetParent(row, false);
+            portrait.GetComponent<RawImage>().raycastTarget = false;
+            var rect = portrait.GetComponent<RectTransform>();
+            rect.anchorMin = rect.anchorMax = new Vector2(0f, .5f);
+            rect.pivot = new Vector2(0f, .5f);
+            rect.anchoredPosition = new Vector2(12f, 0f);
+            rect.sizeDelta = new Vector2(88f, 108f);
+            var preview = portrait.AddComponent<CharacterPreview>();
+            if (preview.Build(source, equipment))
+            {
+                portrait.GetComponent<RawImage>().texture = preview.Texture;
+                preview.SetActive(true);
+            }
+        }
+
+        private GameObject MakeButton(string label, Font font, Vector2 at, Vector2 dimensions, Action click)
         {
             var go = new GameObject("ProfileButton"); go.transform.SetParent(canvasRoot.transform, false); var image = go.AddComponent<Image>(); image.color = new Color(.2f, .4f, .65f, .98f); var r = image.rectTransform; r.anchorMin = r.anchorMax = new Vector2(.5f, .5f); r.anchoredPosition = at; r.sizeDelta = dimensions;
             var b = go.AddComponent<Button>(); b.onClick.AddListener(() => click()); var tgo = new GameObject("Label"); tgo.transform.SetParent(go.transform, false); var t = tgo.AddComponent<Text>(); t.font = font; t.fontSize = 22; t.color = Color.white; t.alignment = TextAnchor.MiddleCenter; t.text = label; RuntimeUiUtil.StretchFull(t.rectTransform);
+            return go;
         }
 
         private void FinishCharacters()

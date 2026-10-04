@@ -86,20 +86,20 @@ namespace PoeClone.Inventory
             BuildVenom();
         }
 
-        // Necromancy (up-left, out at the rim between Wisdom and Zeal): a diamond round Lord of
-        // Bones, four keystones off its far side. Nothing here helps the player's own damage or
-        // defences: it all goes into the minions, so a summoner who wants an army that holds the
-        // line spends their points here instead of on their own life.
+        // Necromancy: the first ward branches from Wisdom so a level-four summoner can invest in
+        // survival. The rest of the cluster still costs several dedicated passive points.
         private static void BuildNecromancy()
         {
             Sector(PassiveBranch.Necromancy, 117f);
-            N("n1", "Grave Whispers", 2.6f, 0f, Mod(StatType.MinionLife, 12), Mod(StatType.AdditionalMinions, 1));
+            N("n_ward", "Grave Ward", 1.6f, 0.3f, Mod(StatType.MinionLife, 25), Mod(StatType.MinionArmour, 80));
+            N("n1", "Grave Whispers", 2.6f, 0f, Mod(StatType.MinionLife, 12), Mod(StatType.MinionArmour, 200), Mod(StatType.MinionResistances, 10), Mod(StatType.AdditionalMinions, 1));
             N("n2", "Bone Servants", 2.9f, -0.35f, Mod(StatType.MinionDamage, 7));
-            N("n3", "Ossuary", 2.9f, 0.35f, Mod(StatType.MinionLife, 12), Mod(StatType.BoneArmour, 5));
-            Nt("n_lord", "Lord of Bones", 3.2f, 0f, Mod(StatType.MinionLevels, 1), Mod(StatType.MinionLife, 15));
+            N("n3", "Ossuary", 2.9f, 0.35f, Mod(StatType.MinionLife, 25), Mod(StatType.MinionArmour, 400), Mod(StatType.MinionResistances, 10));
+            Nt("n_lord", "Lord of Bones", 3.2f, 0f, Mod(StatType.MinionLevels, 1), Mod(StatType.MinionLife, 20));
             Devotion("n_lord", Mod(StatType.MinionLife, 2), Mod(StatType.MinionDamage, 1));
             N("n4", "Death's Grip", 3.2f, -0.62f, Mod(StatType.MarkEffect, 20), Mod(StatType.MinionDamage, 4));
             N("n5", "Pack Leader", 3.2f, 0.62f, Mod(StatType.MinionSpeed, 8), Mod(StatType.MinionDuration, 15));
+            Chain("w2", "n_ward");
             Chain("b_fireward", "n1");
             Chain("n1", "n2", "n_lord", "n3", "n1");
             Chain("n2", "n4", "n_lord", "n5", "n3");
@@ -231,11 +231,14 @@ namespace PoeClone.Inventory
             Nt("g8", "Flurry", 1.8f, 0.55f, Mod(StatType.AttackSpeed, 12), Mod(StatType.PhysicalDamage, 3));
             Chain("g2", "g6", "g7", "g8", "g10");
 
-            Nt("g_deadeye", "Deadeye", 2.6f, 0.3f, Mod(StatType.AttackDamage, 10), Mod(StatType.CriticalChance, 4));
+            Nt("g_deadeye", "Deadeye", 2.6f, 0.3f, Mod(StatType.AttackDamage, 10), Mod(StatType.CriticalChance, 4), Mod(StatType.BowDamage, 5));
             Devotion("g_deadeye", Mod(StatType.AttackSpeed, 0.5f));
             Chain("g10", "g_deadeye");
-            Ks("k_volley", "Volley", 3.0f, 0.35f, Mod(StatType.AdditionalArrows, 1));
+            Ks("k_volley", "Volley", 3.0f, 0.35f, Mod(StatType.AdditionalArrows, 1), Mod(StatType.BowDamage, 5));
             Chain("g_deadeye", "k_volley");
+            N("g_shaft", "True Shaft", 3.3f, 0.62f, Mod(StatType.BowDamage, 5));
+            Nt("g_longshot", "Longshot", 3.6f, 0.78f, Mod(StatType.BowDamage, 5));
+            Chain("g_deadeye", "g_shaft", "g_longshot");
 
             Nt("g_phase", "Phase Run", 2.4f, -0.2f, Mod(StatType.MovementSpeed, 6), Mod(StatType.OnslaughtOnKill, 10), Mod(StatType.Evasion, 40));
             Chain("g9", "g_phase");

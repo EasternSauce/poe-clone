@@ -75,13 +75,16 @@ namespace PoeClone.Skills
         public bool Bow => SkillGrants.IsBowSkill(Grant);
 
         /// <summary>
-        /// Mana per use: 40% more each level (4.6x at level 10), so the cost keeps pace with a
-        /// growing mana pool. Casting nonstop empties the pool in about ten seconds without mana
-        /// regeneration gear, at any stage: casters live on mana potions and regen.
+        /// Mana per use: 40% more each level (4.6x at level 10). Summons get a low-level
+        /// discount so a new summoner can replace an early army without exhausting the entire
+        /// mana pool; the discount fades out by skill level 10.
         /// </summary>
         public float ManaCostAt(int level)
         {
-            return ManaCost * (1f + 0.4f * (Mathf.Max(1, level) - 1));
+            float cost = ManaCost * (1f + 0.4f * (Mathf.Max(1, level) - 1));
+            if (Summon)
+                cost *= Mathf.Lerp(0.6f, 1f, Mathf.Clamp01((level - 1) / 9f));
+            return cost;
         }
 
         /// <summary>Cooldown (or time between casts for an attack spell): a little shorter each level.</summary>
@@ -108,8 +111,8 @@ namespace PoeClone.Skills
     /// </summary>
     public static class SkillBook
     {
-        /// <summary>Bar slots: Q E R F, then right, middle, back and forward mouse buttons.</summary>
-        public const int SlotCount = 8;
+        /// <summary>Bar slots: Q E R F, mouse buttons, then 1 2 3 4 (appended to preserve saves).</summary>
+        public const int SlotCount = 12;
 
         /// <summary>The slots the touch layout has round buttons for (the first four).</summary>
         public const int TouchSlotCount = 4;
@@ -120,7 +123,7 @@ namespace PoeClone.Skills
             {
                 Id = SkillId.Cleave, Name = "Cleave", Short = "CLV", Grant = StatType.GrantCleave, RollsOn = "melee weapons",
                 ManaCost = 8f, Cooldown = 3f, Color = new Color(0.85f, 0.75f, 0.55f),
-                Description = "Plant your feet for a brief windup, then swing all around you, hitting every enemy in reach for 140% weapon damage (+10% per level). Needs a melee weapon."
+                Description = "Plant your feet for a brief windup, then swing all around you, hitting every enemy in reach for 168% weapon damage (+12% per level). Needs a melee weapon."
             },
             new SkillDefinition
             {
@@ -228,13 +231,13 @@ namespace PoeClone.Skills
                 Color = new Color(1f, 0.5f, 0.2f),
                 Description = "Bow skill (toggle): arrows of fire for 100% damage (+4% per level) as Fire, bursting to scorch those around the target, with a 20% chance (+2% per level) to set it burning."
             },
-            new SkillDefinition { Id = SkillId.FangStrike, Name = "Fang Strike", Short = "FNG", Grant = StatType.GrantFangStrike, RollsOn = "daggers", ManaCost = 7f, Cooldown = 2f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Strike the aimed enemy for weapon damage and inflict a potent poison over 3 seconds." },
+            new SkillDefinition { Id = SkillId.FangStrike, Name = "Fang Strike", Short = "FNG", Grant = StatType.GrantFangStrike, RollsOn = "daggers", ManaCost = 7f, Cooldown = 2f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Strike the aimed enemy for 156% weapon damage (+9.6% per level) and inflict a potent poison over 3 seconds." },
             new SkillDefinition { Id = SkillId.VenomArrow, Name = "Venom Arrow", Short = "VNM", Grant = StatType.GrantVenomArrow, RollsOn = "bows, quivers", Color = new Color(0.48f, 0.9f, 0.22f), Description = "Bow skill (toggle): attacks inflict a stronger poison and leave a brief venom cloud." },
             new SkillDefinition { Id = SkillId.VenomSpout, Name = "Venom Spout", Short = "SPT", Grant = StatType.GrantVenomSpout, RollsOn = "staves, Shepherd sceptre", Spell = true, BaseDamage = 5f, ManaCost = 14f, Cooldown = 5f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Erupt poison beneath your target, damaging and poisoning enemies in the area." },
             new SkillDefinition { Id = SkillId.SummonViper, Name = "Summon Viper", Short = "VIP", Grant = StatType.GrantSummonViper, RollsOn = "grimoires, sceptres", Spell = true, ManaCost = 50f, Cooldown = 12f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Call a viper spirit to fight at your side. It shares the global army limit with every other summon skill." },
-            new SkillDefinition { Id = SkillId.Pulverize, Name = "Pulverize", Short = "PVL", Grant = StatType.GrantPulverize, RollsOn = "maces and mauls", ManaCost = 12f, Cooldown = 4.5f, Color = new Color(0.95f, 0.65f, 0.28f), Description = "Plant your feet and bring a mace down in a crushing slam after a heavy windup, dealing 260% weapon damage (+18% per level) in a broad area. Maces and mauls only." },
-            new SkillDefinition { Id = SkillId.ReapingArc, Name = "Reaping Arc", Short = "RPA", Grant = StatType.GrantReapingArc, RollsOn = "axes", ManaCost = 10f, Cooldown = 3.4f, Color = new Color(0.9f, 0.48f, 0.3f), Description = "Commit to a broad, forward axe sweep. After a deliberate windup, hit enemies in a wide arc for 220% weapon damage (+15% per level). Axes only." },
-            new SkillDefinition { Id = SkillId.LungingThrust, Name = "Lunging Thrust", Short = "LTH", Grant = StatType.GrantLungingThrust, RollsOn = "swords", ManaCost = 9f, Cooldown = 2.8f, Color = new Color(0.85f, 0.82f, 0.65f), Description = "Brace, then drive a sword forward in a committed thrust for 240% weapon damage (+16% per level). Swords only." },
+            new SkillDefinition { Id = SkillId.Pulverize, Name = "Pulverize", Short = "PVL", Grant = StatType.GrantPulverize, RollsOn = "maces and mauls", ManaCost = 12f, Cooldown = 4.5f, Color = new Color(0.95f, 0.65f, 0.28f), Description = "Plant your feet and bring a mace down in a crushing slam after a heavy windup, dealing 312% weapon damage (+21.6% per level) in a broad area. Maces and mauls only." },
+            new SkillDefinition { Id = SkillId.ReapingArc, Name = "Reaping Arc", Short = "RPA", Grant = StatType.GrantReapingArc, RollsOn = "axes", ManaCost = 10f, Cooldown = 3.4f, Color = new Color(0.9f, 0.48f, 0.3f), Description = "Commit to a broad, forward axe sweep. After a deliberate windup, hit enemies in a wide arc for 264% weapon damage (+18% per level). Axes only." },
+            new SkillDefinition { Id = SkillId.LungingThrust, Name = "Lunging Thrust", Short = "LTH", Grant = StatType.GrantLungingThrust, RollsOn = "swords", ManaCost = 9f, Cooldown = 2.8f, Color = new Color(0.85f, 0.82f, 0.65f), Description = "Brace, then drive a sword forward in a committed thrust for 288% weapon damage (+19.2% per level). Swords only." },
         };
 
         public static SkillDefinition Get(SkillId id)

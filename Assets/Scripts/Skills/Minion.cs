@@ -25,12 +25,9 @@ namespace PoeClone.Skills
     /// follows its owner, and fights the nearest enemy close by - or the one under Death Mark.
     /// <para>
     /// Enemies fight back: they go for a minion that is nearer than the player (and always for a
-    /// Bone Golem close to them), so minions take the heat off the player - but only as long as
-    /// they last. Their life and damage come from the summon's level (steeply: about 18% more life
-    /// and 16% more damage per level) and the minion stats (Minion Life / Damage / Speed, Bone
-    /// Armour); never from the player's own life, armour or damage. Without investment they're
-    /// flimsy, and they fall in a few hits: a build that wants an army that holds the line has to
-    /// commit to it (summon levels on sceptres, grimoires and jewellery, the Necromancy passives).
+    /// Bone Golem close to them), so minions take the heat off the player only while they last.
+    /// Minions take full enemy hits, mitigated by their own armour and resistances. Life grows
+    /// modestly with summon level; a durable army needs minion defence from gear and passives.
     /// </para>
     /// </summary>
     public class Minion : MonoBehaviour
@@ -67,10 +64,8 @@ namespace PoeClone.Skills
         /// <summary>Which enemy kind (index) it looks like, for the spectator stream.</summary>
         public int LookIndex { get; private set; }
 
-        // Every enemy blow is three times its kind's base damage (see EnemyKinds.DamageScale), tuned
-        // against the player's armour, resistances and potions; minions have none of those, so they
-        // take a share of it.
-        public const float DamageTakenFactor = 0.4f;
+        public const float BaseArmour = 60f;
+        public const float BaseResistance = 10f;
 
         private const float FollowRadius = 2.5f;
         private const float EngageRadius = 8f;
@@ -113,20 +108,20 @@ namespace PoeClone.Skills
             switch (kind)
             {
                 case MinionKind.Mage:
-                    return new Profile { Life = 14f, Damage = 2.5f, Cooldown = 1.6f, Range = 8.5f, Speed = 6f, Look = "Skeleton Mage" };
+                    return new Profile { Life = 41f, Damage = 2.5f, Cooldown = 1.6f, Range = 8.5f, Speed = 6f, Look = "Skeleton Mage" };
                 case MinionKind.Wolf:
-                    return new Profile { Life = 30f, Damage = 2.75f, Cooldown = 0.8f, Range = 2f, Speed = 9f, Look = "Spirit Wolf" };
+                    return new Profile { Life = 88f, Damage = 2.75f, Cooldown = 0.8f, Range = 2f, Speed = 9f, Look = "Spirit Wolf" };
                 case MinionKind.Golem:
-                    return new Profile { Life = 85f, Damage = 4.5f, Cooldown = 1.5f, Range = 2.6f, Speed = 5.5f, Look = "Bone Golem" };
+                    return new Profile { Life = 248f, Damage = 4.5f, Cooldown = 1.5f, Range = 2.6f, Speed = 5.5f, Look = "Bone Golem" };
                 case MinionKind.Viper:
-                    return new Profile { Life = 32f, Damage = 3.5f, Cooldown = 1.15f, Range = 2.2f, Speed = 8f, Look = "Giant Spider" };
+                    return new Profile { Life = 93f, Damage = 3.5f, Cooldown = 1.15f, Range = 2.2f, Speed = 8f, Look = "Giant Spider" };
                 default:
-                    return new Profile { Life = 24f, Damage = 2.5f, Cooldown = 1.1f, Range = 2.1f, Speed = 6.5f, Look = "Skeleton Warrior" };
+                    return new Profile { Life = 70f, Damage = 2.5f, Cooldown = 1.1f, Range = 2.1f, Speed = 6.5f, Look = "Skeleton Warrior" };
             }
         }
 
-        /// <summary>Life at a summon level, before Minion Life: about 18% more each level (4.4x at 10, 7.3x at 13).</summary>
-        public static float LifeAt(MinionKind kind, int level) => ProfileOf(kind).Life * Mathf.Pow(1.18f, Mathf.Max(1, level) - 1);
+        /// <summary>Life at a summon level, before Minion Life: 5% more each level.</summary>
+        public static float LifeAt(MinionKind kind, int level) => ProfileOf(kind).Life * Mathf.Pow(1.05f, Mathf.Max(1, level) - 1);
 
         /// <summary>Damage per hit at a summon level, before Minion Damage: about 16% more each level.</summary>
         public static float DamageAt(MinionKind kind, int level) => ProfileOf(kind).Damage * Mathf.Pow(1.16f, Mathf.Max(1, level) - 1);
@@ -178,9 +173,21 @@ namespace PoeClone.Skills
             return Mathf.Max(1, BaseGlobalCap + (sheet != null ? Mathf.RoundToInt(sheet.Total(StatType.AdditionalMinions)) : 0));
         }
 
-        /// <summary>The share of every blow a minion still takes after Bone Armour (at most 60% less).</summary>
-        public static float TakenFor(StatSheet sheet) =>
-            DamageTakenFactor * (1f - Mathf.Clamp(Stat(sheet, StatType.BoneArmour), 0f, 60f) / 100f);
+        public static float ArmourFor(StatSheet sheet) =>
+            Mathf.Max(0f, BaseArmour + Stat(sheet, StatType.MinionArmour));
+
+        public static float ResistanceFor(StatSheet sheet) =>
+            Mathf.Min(StatSheet.ResistanceCap, BaseResistance + Stat(sheet, StatType.MinionResistances));
+
+        /// <summary>Damage after the minion's own armour or resistance and Bone Armour.</summary>
+        public static float DamageTaken(float amount, DamageType type, StatSheet sheet)
+        {
+            if (type == DamageType.Physical)
+                amount *= 1f - DefenceMath.ArmourReduction(ArmourFor(sheet), amount);
+            else
+                amount = DefenceMath.AfterResistance(amount, ResistanceFor(sheet));
+            return amount * (1f - Mathf.Clamp(Stat(sheet, StatType.BoneArmour), 0f, 60f) / 100f);
+        }
 
         // ------------------------------------------------------------------ summoning
 
@@ -354,7 +361,7 @@ namespace PoeClone.Skills
             if (dead || amount <= 0f)
                 return;
             PlayerInventory inventory = owner != null ? owner.GetComponent<PlayerInventory>() : null;
-            amount *= TakenFor(inventory != null ? inventory.Stats : null);
+            amount = DamageTaken(amount, type, inventory != null ? inventory.Stats : null);
             Life -= amount;
             damagedAt = Time.time;
             Color color = type == DamageType.Physical ? new Color(1f, 0.55f, 0.45f) : CombatText.ColorFor(type);

@@ -34,6 +34,19 @@ don't ask for `include_details` (it lists all 160+ passing tests).
 
 Each step is a one-line `execute_code` body. Read DevTest's doc comments for the parameters.
 **Extend DevTest** whenever you catch yourself writing the same setup C# twice.
+For ordinary interactive tests, start the local server, then use **one** Edit-mode call:
+`return PoeClone.EditorTools.DevTest.QuickStart();`. It enters Play, chooses the temporary
+character, closes patch notes, grants god mode, and moves to a flat sandbox. After it reports
+`sandbox ready` in the Console (or `QuickStatus()`), use the other helpers below. Stopping Play
+automatically calls `End()` for a QuickStart session. `QuickStart(false)` stays in the normal
+starting area. See `TESTING.md` for the complete quick path.
+
+Use the manual sequence below only for startup UI, spectator, or alternate-server tests:
+
+For repeatable combat balance checks, use `DevBalance.Benchmark(build, tier, defence)` in
+`Assets/Editor/DevBalance.cs` and read `BenchmarkStatus()` after the sample. It has early/mid/late
+melee, bow, caster, and minion loadouts plus neutral and Shepherd-defence dummies. See `TESTING.md`.
+When changing early balance, rerun a late boss sample to catch unintended late damage changes.
 
 ```
 # Bash, background: local server, note the PID it prints (stop it by PID later, never by image name)

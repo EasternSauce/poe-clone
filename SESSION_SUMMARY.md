@@ -11,6 +11,10 @@ Deploying: see `DEPLOYMENT.md`.
 - **Start with the `unity-playtest` skill** (`.claude/skills/unity-playtest/SKILL.md`): the cheap way to
   compile, test and play-test, built on the one-line helpers in `Assets/Editor/DevTest.cs`
   (Begin/Ready/God/Equip/Spawn/Use/Status/Clear/End). Extend DevTest instead of re-pasting setup C#.
+- For the quickest interactive setup, use `DevTest.QuickStart()` or the Editor menu
+  **PoeClone > Test > Quick Start (Sandbox)**. See `TESTING.md` for setup and cleanup.
+- `DevBalance.Benchmark(build, tier, defence)` provides saved early/mid/late combat loadouts and
+  damage-counting dummies. Commands are in `TESTING.md`; the first comparison is `BALANCE_DPS.md`.
 - Iterate in Editor Play mode. A Web build takes ~5 min and blocks the Editor; make one only
   when deploying (or for something web-only: the page template, browser quirks).
 - **Driving the Editor:** the Unity MCP bridge listens on 127.0.0.1:6400. Protocol: on connect

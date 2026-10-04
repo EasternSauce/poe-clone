@@ -20,17 +20,29 @@ namespace PoeClone.Player
         private static readonly string[] PotionKeyLabels = { "1", "2", "3", "4", "Q", "E", "R", "F", "RMB", "MMB", "M4", "M5" };
         private const string HealthKeyPref = "PoeClone.HealthPotionKey";
         private const string ManaKeyPref = "PoeClone.ManaPotionKey";
-        public static string HealthPotionKeyLabel => PotionKeyLabels[Mathf.Clamp(PlayerPrefs.GetInt(HealthKeyPref, 0), 0, PotionKeyLabels.Length - 1)];
-        public static string ManaPotionKeyLabel => PotionKeyLabels[Mathf.Clamp(PlayerPrefs.GetInt(ManaKeyPref, 1), 0, PotionKeyLabels.Length - 1)];
-        public static bool IsBoundTo(int binding) =>
-            PlayerPrefs.GetInt(HealthKeyPref, 0) == binding || PlayerPrefs.GetInt(ManaKeyPref, 1) == binding;
-        public static void CyclePotionKey(bool health)
+        public static string HealthPotionKeyLabel => Label(Binding(true));
+        public static string ManaPotionKeyLabel => Label(Binding(false));
+        private static string Label(int binding) => binding >= 0 ? PotionKeyLabels[binding] : "Unbound";
+        public static bool IsBoundTo(int binding) => binding >= 0 && (Binding(true) == binding || Binding(false) == binding);
+        public static int Binding(bool health)
         {
+            int value = PlayerPrefs.GetInt(health ? HealthKeyPref : ManaKeyPref, health ? 0 : 1);
+            return value >= 0 && value < PotionKeyLabels.Length ? value : -1;
+        }
+        public static void ClearBindingAt(int binding)
+        {
+            if (Binding(true) == binding) PlayerPrefs.SetInt(HealthKeyPref, -1);
+            if (Binding(false) == binding) PlayerPrefs.SetInt(ManaKeyPref, -1);
+            PlayerPrefs.Save();
+        }
+        public static void SetBinding(bool health, int binding)
+        {
+            if (binding < 0 || binding >= PotionKeyLabels.Length) return;
             string pref = health ? HealthKeyPref : ManaKeyPref;
-            int other = PlayerPrefs.GetInt(health ? ManaKeyPref : HealthKeyPref, health ? 1 : 0);
-            int next = PlayerPrefs.GetInt(pref, health ? 0 : 1);
-            do { next = (next + 1) % PotionKeyLabels.Length; } while (next == other);
-            PlayerPrefs.SetInt(pref, next);
+            string other = health ? ManaKeyPref : HealthKeyPref;
+            int old = Binding(health);
+            if (Binding(!health) == binding) PlayerPrefs.SetInt(other, old);
+            PlayerPrefs.SetInt(pref, binding);
             PlayerPrefs.Save();
         }
         public const int MaxPotions = PlayerInventory.MaxPotions;
@@ -98,8 +110,8 @@ namespace PoeClone.Player
             Keyboard keyboard = Keyboard.current;
             if (pressed < 0 && keyboard != null && !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused())
             {
-                int healthKey = Mathf.Clamp(PlayerPrefs.GetInt(HealthKeyPref, 0), 0, PotionKeyLabels.Length - 1);
-                int manaKey = Mathf.Clamp(PlayerPrefs.GetInt(ManaKeyPref, 1), 0, PotionKeyLabels.Length - 1);
+                int healthKey = Binding(true);
+                int manaKey = Binding(false);
                 if (KeyPressed(keyboard, healthKey))
                     pressed = 0;
                 else if (KeyPressed(keyboard, manaKey))
@@ -109,8 +121,8 @@ namespace PoeClone.Player
             Mouse mouse = Mouse.current;
             if (pressed < 0 && mouse != null && !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused() && !TouchMode.Active && !PlayerController.IsPointerOverUi())
             {
-                int healthKey = Mathf.Clamp(PlayerPrefs.GetInt(HealthKeyPref, 0), 0, PotionKeyLabels.Length - 1);
-                int manaKey = Mathf.Clamp(PlayerPrefs.GetInt(ManaKeyPref, 1), 0, PotionKeyLabels.Length - 1);
+                int healthKey = Binding(true);
+                int manaKey = Binding(false);
                 if (MousePressed(mouse, healthKey)) pressed = 0;
                 else if (MousePressed(mouse, manaKey)) pressed = 1;
             }
@@ -123,7 +135,7 @@ namespace PoeClone.Player
 
         private static bool KeyPressed(Keyboard keyboard, int binding)
         {
-            return binding < PotionKeys.Length && keyboard[PotionKeys[binding]].wasPressedThisFrame;
+            return binding >= 0 && binding < PotionKeys.Length && keyboard[PotionKeys[binding]].wasPressedThisFrame;
         }
 
         private static bool MousePressed(Mouse mouse, int binding)

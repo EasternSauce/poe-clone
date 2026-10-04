@@ -1,14 +1,23 @@
-version: 2026-10-04-melee-skill-presentation
+version: 2026-10-05-controls-settings
+<b>Character selection</b>
+- Character rows now show portraits of the saved character model wearing its equipped gear.
+- Existing single-character saves are recovered into the character list, including saves already copied by the first multi-character release.
+<b>Combat balance</b>
+- Cleave, Pulverize, Reaping Arc, Lunging Thrust, and Fang Strike each deal 20% more damage at every skill level; Fang Strike's poison damage also rises 20%.
+- Dedicated Grace bow passives now grant up to 20% more bow damage, applying to basic shots and all bow skills. Deadeye and Volley grant 5% each; new True Shaft and Longshot passives add another 5% each deeper in the branch.
 <b>Melee skills</b>
 - Cleave now roots you through a short windup and sweeping strike. Added Pulverize for maces and mauls, Reaping Arc for axes, and Lunging Thrust for swords; each has its own procedural attack pose, weapon-family drop pool, and swing cue at impact. Lunging Thrust drives the character forward before its hit, and Fang Strike stays within dagger reach. Heavy hammer impacts carry a ground burst and camera jolt.
 <b>Summoning</b>
-- All summon skills now share one global army limit, increased by Necromancy passives and ordinary gear; fully rolled ordinary capacity reaches about seven minions. The Ossuary Codex raises that to about eight and Book of Shed Skin to about nine, with final 20% and 30% less minion damage multipliers applied after outgoing hit modifiers. Specific skeleton capacity is unique-only. Summon mana costs are 2.5 times higher. Minion base damage values are halved, Intelligence adds 0.5% minion damage per point, and the actual Minion Damage values on passives and gear are reduced by about 40%. Minion life and damage taken are unchanged.
+- Minions now take full enemy hits through their own armour and fire, cold, lightning, or poison resistance. Their skill details show these defences. Summon life starts higher but grows 5% per level instead of 18%; an early Grave Ward passive and stronger Grave Whispers/Ossuary defences reward summoner investment. Minion damage is unchanged.
+- Low-level summon mana costs are reduced so a new summoner can replace fallen minions more readily; the discount fades by summon skill level 10.
+- All summon skills now share one global army limit, increased by Necromancy passives and ordinary gear; fully rolled ordinary capacity reaches about seven minions. The Ossuary Codex raises that to about eight and Book of Shed Skin to about nine, with final 20% and 30% less minion damage multipliers applied after outgoing hit modifiers. Specific skeleton capacity is unique-only. Summon mana costs are 2.5 times higher. Minion base damage values are halved, Intelligence adds 0.5% minion damage per point, and the actual Minion Damage values on passives and gear are reduced by about 40%.
 <b>Controls</b>
-- Skill bindings remain Q/E/R/F and the spare mouse buttons. Health and mana potions use 1 and 2 by default; each can be cycled through available keyboard and mouse bindings in Settings. A potion binding takes priority if it shares a skill key.
+- Skills can now use 1, 2, 3, and 4 as well as Q/E/R/F and mouse buttons. The bottom bar shows those number slots beside Q/E/R/F. Health and mana potion keys are selected in the skills menu; they still default to 1 and 2. Each key holds one skill or potion.
 - Unassigned spare mouse buttons no longer appear on the bottom skill bar.
 <b>Settings and history</b>
+- Chat is off by default for new settings. The Settings page has one working Close button. Patch history has separate scrolling for releases and their notes.
 - ESC now opens Settings and the complete patch history. Recovered 24 earlier releases from repository history; future releases are also saved to this device.
-- Chat visibility can be turned off in Settings and is on by default.
+- Chat visibility can be turned on in Settings.
 <b>UI and boss pacing</b>
 - Bosses now have armor and elemental resistance. Field bosses have 500 armor and 20% fire, cold and lightning resistance; the Shepherd has 1200 armor and 30% resistances. The Shepherd and Carrion Saint move, attack, and hit twice as hard, and the Shepherd has four times its previous life. Burrow Snatch hits much harder; phase transition timing is unchanged.
 - Stash tabs now have a visible Rename button; editing selects the current name for quick replacement.

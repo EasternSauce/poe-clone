@@ -134,7 +134,10 @@ namespace PoeClone.Inventory
         MinionDamagePenalty,
         GrantPulverize,
         GrantReapingArc,
-        GrantLungingThrust
+        GrantLungingThrust,
+        MinionArmour,               // flat armour for minions against physical hits
+        MinionResistances,          // fire, cold, lightning and poison resistance for minions
+        BowDamage                   // % more bow attack damage, from dedicated Grace passives
     }
 
     /// <summary>
@@ -476,6 +479,7 @@ namespace PoeClone.Inventory
                 case StatType.CriticalChance: return "Critical Strike Chance";
                 case StatType.CriticalMultiplier: return "Critical Multiplier";
                 case StatType.AttackDamage: return "Attack Damage";
+                case StatType.BowDamage: return "Bow Damage";
                 case StatType.Damage: return "Damage";
                 case StatType.DamageWhileLowLife: return "Damage on Low Life";
                 case StatType.IncreasedLife: return "Increased Life";
@@ -490,6 +494,8 @@ namespace PoeClone.Inventory
                 case StatType.Stormblade: return "Stormblade";
                 case StatType.MinionDamage: return "Minion Damage";
                 case StatType.MinionLife: return "Minion Life";
+                case StatType.MinionArmour: return "Minion Armour";
+                case StatType.MinionResistances: return "Minion Resistances";
                 case StatType.MinionSpeed: return "Minion Speed";
                 case StatType.MinionLevels: return "Summon Levels";
                 case StatType.RaiseSkeletonsLevels: return "Raise Skeletons Levels";
@@ -558,6 +564,7 @@ namespace PoeClone.Inventory
                 case StatType.CriticalChance:
                 case StatType.CriticalMultiplier:
                 case StatType.AttackDamage:
+                case StatType.BowDamage:
                 case StatType.Damage:
                 case StatType.DamageWhileLowLife:
                 case StatType.IncreasedLife:
@@ -570,6 +577,7 @@ namespace PoeClone.Inventory
                 case StatType.MinionDamage:
                 case StatType.MinionDamagePenalty:
                 case StatType.MinionLife:
+                case StatType.MinionResistances:
                 case StatType.MinionSpeed:
                 case StatType.MarkEffect:
                 case StatType.MinionDuration:
@@ -643,6 +651,7 @@ namespace PoeClone.Inventory
                 case StatType.CriticalChance: return n + "% chance to deal a Critical Strike";
                 case StatType.CriticalMultiplier: return sign + n + "% to Critical Strike Multiplier";
                 case StatType.AttackDamage: return Increased(m, "Attack Damage");
+                case StatType.BowDamage: return n + "% more Bow Damage";
                 case StatType.Damage: return Increased(m, "Damage");
                 case StatType.DamageWhileLowLife: return Increased(m, "Damage while on Low Life (under half)");
                 case StatType.IncreasedLife: return Increased(m, "Maximum Life");
@@ -657,6 +666,8 @@ namespace PoeClone.Inventory
                 case StatType.Stormblade: return n + "% chance for Attack Critical Strikes to arc Lightning to 3 nearby enemies";
                 case StatType.MinionDamage: return Increased(m, "Minion Damage");
                 case StatType.MinionLife: return Increased(m, "Minion Life");
+                case StatType.MinionArmour: return sign + n + " to Minion Armour";
+                case StatType.MinionResistances: return sign + n + "% to Minion Fire, Cold, Lightning and Poison Resistances";
                 case StatType.MinionSpeed: return Increased(m, "Minion Attack and Movement Speed");
                 case StatType.MinionLevels: return sign + n + " to Level of all Summon Skills";
                 case StatType.RaiseSkeletonsLevels: return sign + n + " to Level of Raise Skeletons";

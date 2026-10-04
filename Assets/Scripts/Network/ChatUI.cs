@@ -61,7 +61,7 @@ namespace PoeClone.Network
 
         /// <summary>Whether the panel is showing (always true outside the touch player layout).</summary>
         public static bool PanelVisible => Instance != null && Instance.panelRect != null && Instance.panelRect.gameObject.activeSelf;
-        public static bool Enabled => PlayerPrefs.GetInt("PoeClone.ChatEnabled", 1) != 0;
+        public static bool Enabled => PlayerPrefs.GetInt("PoeClone.ChatEnabled", 0) != 0;
         public static void SetEnabled(bool enabled)
         {
             PlayerPrefs.SetInt("PoeClone.ChatEnabled", enabled ? 1 : 0);

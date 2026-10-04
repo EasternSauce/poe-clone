@@ -227,6 +227,8 @@ namespace PoeClone.Player
             hasAimPoint = TryGetAimPoint(out aimPoint);
 
             pendingDamage = ComputeDamage();
+            if (weaponType == WeaponType.Bow)
+                pendingDamage *= 1f + inventory.Stats.Total(StatType.BowDamage) / 100f;
 
             // A staff casts its spell; without the mana for it, it's swung instead.
             castPending = HasMainSkill && SkillSet.TrySpendMain();
