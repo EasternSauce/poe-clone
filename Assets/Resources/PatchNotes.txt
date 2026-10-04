@@ -1,9 +1,3 @@
-version: 2026-10-04-shepherd
-<b>The Shepherd</b>
-- His first-phase charge is much wider and travels farther.
-- The main quest now opens the Shed Sanctuary: defeat the Shepherd and his final form, Carrion Saint.
-- His colossal serpent pursues you and leaves a dangerous body along its route. Bait it carefully to keep an escape path.
-- The act boss drops one of two exclusive poison weapons: Shepherd's Fang (dagger) or Widow's Choir (bow).
-- The act boss returns after five minutes. Rare Shed Hearts drop from Act I enemies; click one in your bag to reawaken a defeated boss immediately.
-<b>Waystones reset</b>
-- Waystone travel has been reset once for every character: visit the areas again to unlock their waystones. Levels, gear, passives and quests are kept.
+version: 2026-10-04-shed-heart-controls
+<b>Shed Heart controls</b>
+- Click or tap Shed Hearts to move them like other items. To reawaken the act boss, right-click a heart in your bag, or hold it for one second and release on touch.

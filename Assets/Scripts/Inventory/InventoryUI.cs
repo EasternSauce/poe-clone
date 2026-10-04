@@ -316,6 +316,8 @@ namespace PoeClone.Inventory
             // click on whatever item the window happens to open under the cursor.
             if (mouse.leftButton.wasPressedThisFrame && Time.frameCount != sideOpenedFrame)
                 HandleClick(hover);
+            else if (mouse.rightButton.wasPressedThisFrame)
+                UseConsumable(hover);
         }
 
         // ------------------------------------------------------------------ spectators
@@ -591,7 +593,9 @@ namespace PoeClone.Inventory
             bool dragPickedUp = touchPickupTried && cursorItem != null;
             bool tap = !moved && !held;
 
-            if (touchHadItem || dragPickedUp || (tap && !touchInspecting))
+            if (!touchHadItem && !touchPickupTried && !moved && Time.unscaledTime - touchStartTime >= 1f)
+                UseConsumable(Hit(touchStart));
+            else if (touchHadItem || dragPickedUp || (tap && !touchInspecting))
                 HandleClick(Hit(pos));
         }
 
@@ -1885,18 +1889,22 @@ private Vector2 CellSize(int w, int h)
             cursorItem = replaced;
         }
 
+        private void UseConsumable(Hover h)
+        {
+            if (cursorItem != null || !h.OverGrid) return;
+            PlacedItem p = inventory.Grid.GetAt(Mathf.FloorToInt(h.GridPos.x), Mathf.FloorToInt(h.GridPos.y));
+            if (p == null || p.Item.Type != ItemType.Consumable) return;
+            bool used = inventory.UseConsumable != null && inventory.UseConsumable(p.Item);
+            if (used) inventory.Grid.Remove(p.Item);
+            else PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiDenied : null);
+            Refresh();
+        }
+
         private void ClickGrid(Vector2 pos)
         {
             if (cursorItem == null)
             {
                 PlacedItem p = inventory.Grid.GetAt(Mathf.FloorToInt(pos.x), Mathf.FloorToInt(pos.y));
-                if (p != null && p.Item.Type == ItemType.Consumable)
-                {
-                    bool used = inventory.UseConsumable != null && inventory.UseConsumable(p.Item);
-                    if (used) inventory.Grid.Remove(p.Item);
-                    else PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiDenied : null);
-                    return;
-                }
                 if (p != null && inventory.Grid.Remove(p.Item))
                 {
                     cursorItem = p.Item;
