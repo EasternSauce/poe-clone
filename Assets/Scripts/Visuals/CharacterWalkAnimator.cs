@@ -94,6 +94,9 @@ namespace PoeClone.Visuals
         /// </summary>
         public float Crouch { get; set; }
 
+        /// <summary>A standing forward lean of the upper body, in degrees, on top of everything else (a stooped old man).</summary>
+        public float Hunch { get; set; }
+
         /// <summary>Changes the arms' rest pitch (town NPCs built from the monster rig hold theirs down).</summary>
         public void SetArmRestAngle(float angle)
         {
@@ -213,7 +216,7 @@ private void LateUpdate()
             float walkTwist = s * 5f * blend;
             if (upperBody != null)
                 upperBody.localRotation = Quaternion.Euler(
-                    runLean * runBlend * blend + staggerTilt + torsoPitch - breath * 1.2f + 25f * crouch,
+                    runLean * runBlend * blend + staggerTilt + torsoPitch - breath * 1.2f + 25f * crouch + Hunch,
                     torsoYaw + walkTwist + sway * 2f, 0f);
 
             float bobAmount = Mathf.Lerp(bobHeight, runBobHeight, runBlend);

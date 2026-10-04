@@ -98,8 +98,9 @@ namespace PoeClone.Enemies
         // Enrage: hit from a distance (an arrow, a spell), an enemy now and then flies into a
         // rage - faster and harder-hitting for a while - so standing back and picking things off
         // while backing away isn't free. Not every hit: once it calms down it can't rage again
-        // for a while.
-        private const float EnrageHitDistance = 6f;
+        // for a while. The rage spreads: everything near it is roused and enraged with it.
+        private const float EnrageHitDistance = 3f;
+        private const float EnrageSpreadRadius = 8f;
         private const float EnrageSeconds = 5f;
         private const float EnrageCooldown = 12f;
         private const float EnrageSpeed = 2.4f;
@@ -118,13 +119,28 @@ namespace PoeClone.Enemies
         /// <summary>How much faster it attacks right now.</summary>
         public float AttackSpeedMultiplier => IsEnraged ? 1.5f : 1f;
 
-        private void Enrage()
+        // spread: also rouses and enrages every living enemy within EnrageSpreadRadius (those
+        // don't spread it further, so it can't run across the whole map).
+        private void Enrage(bool spread = true)
         {
             enragedUntil = Time.time + EnrageSeconds;
             nextEnrageAt = enragedUntil + EnrageCooldown;
             nextEnragePulse = 0f;
 
             PlayEnrageStart(transform, kind ?? EnemyKinds.Get(0), health != null ? health.BarHeight : 2.3f);
+
+            if (!spread)
+                return;
+            foreach (Collider hit in Physics.OverlapSphere(transform.position, EnrageSpreadRadius, ~0, QueryTriggerInteraction.Ignore))
+            {
+                EnemyController other = hit.GetComponentInParent<EnemyController>();
+                if (other == null || other == this || other.IsEnraged || !other.isActiveAndEnabled)
+                    continue;
+                if (other.health != null && other.health.IsDead)
+                    continue;
+                other.Aggro();
+                other.Enrage(false);
+            }
         }
 
         // A red pulse at its feet for as long as the rage lasts.
@@ -164,6 +180,16 @@ namespace PoeClone.Enemies
             if (GetComponent<EnemyCombat>() == null)
                 gameObject.AddComponent<EnemyCombat>();
         }
+
+        /// <summary>
+        /// When above 0, how close it walks up to its target instead of its kind's own stop
+        /// distance: a boss whose reach changes with its phase sets this as it goes.
+        /// </summary>
+        public float StandOff { get; set; }
+
+        // However far it would walk in, never so far that its body ends up over the target's.
+        private float StopAt => Mathf.Max(StandOff > 0f ? StandOff : stopDistance,
+            (controller != null ? controller.radius * transform.localScale.x : 0f) + 0.8f);
 
         /// <summary>Takes on a kind's pace and preferred distance (see <see cref="EnemyKinds.Apply"/>).</summary>
         public void Configure(EnemyKind kind)
@@ -323,7 +349,7 @@ private void Update()
                         facing = horizontal;
                     }
                     // Still allowed to face the player mid-swing, just not to keep closing in.
-                    else if (distance > stopDistance && !attacking)
+                    else if (distance > StopAt && !attacking)
                     {
                         horizontal = Steer(toPlayer / distance);
                         facing = horizontal;

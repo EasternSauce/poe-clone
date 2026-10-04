@@ -10,7 +10,8 @@ namespace PoeClone.Visuals
     /// siblings of the renderer they copy, so they automatically follow whatever pivot animates
     /// that part (walk, attack, stagger) with no extra code. Built lazily on first use and
     /// self-provisioned by whoever wants to highlight this character (GetComponent-or-AddComponent),
-    /// so no prefab wiring is required.
+    /// so no prefab wiring is required. A clone only shows while the part it copies is itself shown
+    /// (hidden horns, a dropped disguise); a character that changes shape calls <see cref="Rebuild"/>.
     /// </summary>
     public class Outline : MonoBehaviour
     {
@@ -19,15 +20,52 @@ namespace PoeClone.Visuals
         private static Material sharedMaterial;
 
         private readonly List<GameObject> clones = new List<GameObject>();
+        private readonly List<Renderer> sources = new List<Renderer>();
         private bool built;
+        private bool highlighted;
 
         public void SetHighlighted(bool on)
         {
             if (on && !built)
                 Build();
+            highlighted = on;
+            Sync();
+        }
 
+        /// <summary>The body changed (parts added or swapped): the clones are made again on next use.</summary>
+        public void Rebuild()
+        {
+            foreach (GameObject clone in clones)
+            {
+                if (clone != null)
+                    Destroy(clone);
+            }
+            clones.Clear();
+            sources.Clear();
+            built = false;
+            if (highlighted)
+                Build();
+            Sync();
+        }
+
+        private void LateUpdate()
+        {
+            if (highlighted)
+                Sync();
+        }
+
+        // Each clone shows only while highlighted and while the part it copies is shown.
+        private void Sync()
+        {
             for (int i = 0; i < clones.Count; i++)
-                clones[i].SetActive(on);
+            {
+                if (clones[i] == null)
+                    continue;
+                Renderer source = sources[i];
+                bool show = highlighted && source != null && source.enabled && source.gameObject.activeInHierarchy;
+                if (clones[i].activeSelf != show)
+                    clones[i].SetActive(show);
+            }
         }
 
         private void Build()
@@ -37,6 +75,8 @@ namespace PoeClone.Visuals
 
             foreach (MeshRenderer sourceRenderer in GetComponentsInChildren<MeshRenderer>(true))
             {
+                if (sourceRenderer.sharedMaterial == sharedMaterial)
+                    continue;
                 MeshFilter sourceFilter = sourceRenderer.GetComponent<MeshFilter>();
                 if (sourceFilter == null || sourceFilter.sharedMesh == null)
                     continue;
@@ -59,6 +99,7 @@ namespace PoeClone.Visuals
 
                 clone.SetActive(false);
                 clones.Add(clone);
+                sources.Add(sourceRenderer);
             }
         }
 

@@ -36,6 +36,7 @@ namespace PoeClone.World
         /// <summary>An area's outline.</summary>
         public static AreaShape Shape(int area)
         {
+            if (area == ActArena) return new AreaShape(ActArenaCenter, 40f, 705);
             if (shapes == null)
                 InitShapes();
             return shapes[Mathf.Clamp(area, 0, shapes.Length - 1)];

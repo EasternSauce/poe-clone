@@ -548,7 +548,7 @@ namespace PoeClone.World
             prop.SetLooks(book.gameObject, null, null);
         }
 
-        // The Hollow Stag's door, north of Rimeheart's throne: shut, warm, waiting (the act boss beyond is still to come).
+        // The Shepherd's door, north of Rimeheart's throne: shut, warm, waiting (the act boss beyond is still to come).
         private void StagDoor(Transform t, Vector3 p)
         {
             ClearSite(Frozen, p, 8f);
@@ -558,7 +558,8 @@ namespace PoeClone.World
             for (int s = -1; s <= 1; s += 2)
                 LocalBox(site, new Vector3(s * 4.2f, 4.5f, 0f), new Vector3(1.6f, 9f, 1.8f), kit.Mat("TombstoneDark"));
             LocalBox(site, new Vector3(0f, 9.4f, 0f), new Vector3(10.4f, 1.4f, 2f), kit.Mat("TombstoneDark"));
-            LocalBox(site, new Vector3(0f, 4.4f, 0.1f), new Vector3(6.8f, 8.8f, 1f), kit.Mat("Tombstone"));
+            GameObject slab = LocalBox(site, new Vector3(0f, 4.4f, 0.1f), new Vector3(6.8f, 8.8f, 1f), kit.Mat("Tombstone"));
+            slab.AddComponent<ActBossDoor>();
             LocalBox(site, new Vector3(0f, 4.4f, -0.42f), new Vector3(0.1f, 8.6f, 0.1f), kit.Mat("RockDark"), solid: false);
             // Antlers carved over the lintel: a great branching rack, rimed with frost.
             for (int s = -1; s <= 1; s += 2)
@@ -584,8 +585,8 @@ namespace PoeClone.World
 
             // Read from the foot of the steps (its tag would be lost inside the stone).
             Transform reading = Holder(site, "Inscription", p + new Vector3(0f, 0f, -2.6f), Quaternion.identity);
-            QuestProp prop = QuestProp.Attach(reading.gameObject, "door", 0, PropAction.Read, "Door of the Hollow Stag",
-                "A door taller than a house, cut from one block of black stone. Antlers branch across the lintel, carved, rimed with frost. Yet the stone is warm under your hand, and from somewhere behind it comes a slow, enormous breath.\n\nWords are cut down the seam, in a script older than Haven:\n\n<i>HERE SLEEPS THE HOLLOW STAG, FATHER OF THE DEAD.\nTHREE WARDENS HOLD HIS DOOR: THE PRIEST, THE KING, THE QUEEN.\nWHEN THE LAST WARDEN FALLS, HE WAKES.</i>",
+            QuestProp prop = QuestProp.Attach(reading.gameObject, "door", 0, PropAction.Read, "Door of the Shepherd",
+                "A door taller than a house, cut from one block of black stone. Antlers branch across the lintel, carved, rimed with frost. Yet the stone is warm under your hand, and from somewhere behind it comes a slow, enormous breath.\n\nWords are cut down the seam, in a script older than Haven:\n\n<i>HERE SLEEPS THE SHEPHERD, FATHER OF THE DEAD.\nTHREE WARDENS HOLD HIS DOOR: THE PRIEST, THE KING, THE QUEEN.\nWHEN THE LAST WARDEN FALLS, HE WAKES.</i>",
                 "Copy the inscription", "Behind the door, something shifts in its sleep.", 3.2f);
             prop.SetLooks(null, null, null);
         }

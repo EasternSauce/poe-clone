@@ -19,7 +19,8 @@ namespace PoeClone.Inventory
         Quiver,  // off hand, worn with a bow
         Potion,  // lies on the ground; picked up into the potion slots, never the bag
         Gold,    // lies on the ground; picked up into the purse
-        Grimoire // off hand: a necromancer's tome, whose Death Mark is the attack (see SkillGrants.GrimoireMain)
+        Grimoire, // off hand: a necromancer's tome, whose Death Mark is the attack (see SkillGrants.GrimoireMain)
+        Consumable
     }
 
     /// <summary>
@@ -76,6 +77,9 @@ namespace PoeClone.Inventory
     /// </summary>
     public sealed class ItemData
     {
+        public const string ReawakeningId = "shed_heart";
+        public static ItemData ReawakeningItem() => new ItemData(ReawakeningId, "Shed Heart - click to reawaken the act boss", ItemType.Consumable, 1, 1,
+            new Color(0.4f, 0.75f, 0.2f), null, rarity: ItemRarity.Magic) { ArtId = "ruby_ring", ArtTint = new Color(0.5f, 1f, 0.35f) };
         private static readonly IReadOnlyList<StatModifier> NoModifiers = new StatModifier[0];
 
         public string Id { get; }

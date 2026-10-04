@@ -1890,6 +1890,13 @@ private Vector2 CellSize(int w, int h)
             if (cursorItem == null)
             {
                 PlacedItem p = inventory.Grid.GetAt(Mathf.FloorToInt(pos.x), Mathf.FloorToInt(pos.y));
+                if (p != null && p.Item.Type == ItemType.Consumable)
+                {
+                    bool used = inventory.UseConsumable != null && inventory.UseConsumable(p.Item);
+                    if (used) inventory.Grid.Remove(p.Item);
+                    else PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiDenied : null);
+                    return;
+                }
                 if (p != null && inventory.Grid.Remove(p.Item))
                 {
                     cursorItem = p.Item;

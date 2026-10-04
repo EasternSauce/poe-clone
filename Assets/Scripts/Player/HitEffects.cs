@@ -79,6 +79,9 @@ namespace PoeClone.Player
             if (sheet == null)
                 return;
 
+            if (attack && !secondary && !enemy.Immune)
+                WeaponVenom.Apply(attacker, enemy, damage, sheet.Total(StatType.PoisonOnHit), sheet.Total(StatType.VenomCloudOnHit));
+
             if (attack)
             {
                 float leech = sheet.Total(StatType.LifeLeech);

@@ -63,13 +63,13 @@ namespace PoeClone.UI
                 boss = focus != null ? NearestBoss(focus.position) : null;
             }
 
-            bool show = boss != null && !boss.IsDead && focus != null &&
+            bool show = boss != null && !boss.IsDead && !boss.HideBossBar && focus != null &&
                         (boss.transform.position - focus.position).sqrMagnitude <= ShowRange * ShowRange;
             root.SetActive(show);
             if (!show)
                 return;
 
-            title.text = EnemyKinds.Get(boss.KindIndex).Name;
+            title.text = boss.DisplayName;
             fill.fillAmount = boss.MaxHealth > 0f ? boss.CurrentHealth / boss.MaxHealth : 0f;
         }
 

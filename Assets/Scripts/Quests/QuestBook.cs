@@ -65,7 +65,7 @@ namespace PoeClone.Quests
 
     /// <summary>
     /// Every quest, in storylines. The thread through all of them: the dead are rising because
-    /// something old is calling them - the Hollow Stag, sleeping under the ice in the north (the
+    /// something old is calling them - the Shepherd, sleeping under the ice in the north (the
     /// act's final boss, still to come). Each chain hands the player on to the next person:
     ///
     ///   Elder Maren (Haven)       The Hollow Call: woods, bone totems, then off to the Gravekeeper
@@ -154,7 +154,7 @@ namespace PoeClone.Quests
                 Objective = "Slay Gravelord Mortis at the crypt",
                 Offer = "Now finish him. He's at the crypt doors, calling his dead to him. Don't let them surround you.",
                 Reminder = "Mortis waits by the crypt, north of the path. He calls the dead - keep moving.",
-                Thanks = "Gone. Truly gone, I can feel it in the ground.\n\nBut... you say he spoke before the end? \"The Stag wakes, and the dead go home to him.\" The Stag. Gods. That's no priest's ravings, that's the oldest story there is.",
+                Thanks = "Gone. Truly gone, I can feel it in the ground.\n\nBut... you say he spoke before the end? \"The Shepherd wakes, and the dead go home to him.\" The Shepherd. Gods. That's no priest's ravings, that's the oldest story there is.",
                 RewardGold = 200, RewardExperience = 600, RewardHealthPotions = 3, RewardItem = ItemRarity.Rare, RewardItemLevel = 5,
                 RewardRespec = 1
             },
@@ -163,9 +163,9 @@ namespace PoeClone.Quests
                 Id = "news", Story = Gravelord, Title = "Word for Haven", Giver = NpcRole.Gravekeeper, After = "gravelord",
                 Goal = QuestGoal.Talk, TalkTo = NpcRole.Elder,
                 Objective = "Bring Tobias's warning to Elder Maren in Haven",
-                Offer = "Maren has to hear this, and I can't leave my graves. Tell her Mortis was only a servant. Tell her the Hollow Stag is waking.\n\nShe'll know the name. Every grandmother in the valley knows it.",
+                Offer = "Maren has to hear this, and I can't leave my graves. Tell her Mortis was only a servant. Tell her the Shepherd is waking.\n\nShe'll know the name. Every grandmother in the valley knows it.",
                 Reminder = "Take the warning to Maren in Haven.",
-                Thanks = "The Hollow Stag. The great beast under the ice, whose call raises the dead, so the dead can carry it the living... Tobias would not say it if he did not believe it.\n\nThen we must find where the call is coming from.",
+                Thanks = "The Shepherd. The great beast under the ice, whose call raises the dead, so the dead can carry it the living... Tobias would not say it if he did not believe it.\n\nThen we must find where the call is coming from.",
                 RewardGold = 100, RewardExperience = 300
             },
 
@@ -252,7 +252,7 @@ namespace PoeClone.Quests
                 Objective = "Find the lost Emberwatch scouts in the Frozen Hollow",
                 Offer = "Before the ice closed, Varek sent three scouts north. None came back. I don't need the fire to tell me they're dead.\n\nFind them. They kept journals - every Emberwatch scout does. Whatever they saw in the Hollow, I need to know it before you face what lives there.",
                 Reminder = "Three scouts, somewhere in the Frozen Hollow, beyond the north gate. Bring back their journals.",
-                Thanks = "\"Spiders the size of carts.\" \"A queen on a throne of ice.\" \"A door, north of the throne, taller than a house, with antlers cut into the stone.\"\n\nThe Hollow Stag's door. She is not its queen. She is its doorkeeper.",
+                Thanks = "\"Spiders the size of carts.\" \"A queen on a throne of ice.\" \"A door, north of the throne, taller than a house, with antlers cut into the stone.\"\n\nThe Shepherd's door. She is not its queen. She is its doorkeeper.",
                 RewardGold = 350, RewardExperience = 1800, RewardItem = ItemRarity.Rare, RewardItemLevel = 10
             },
             new QuestDefinition
@@ -260,7 +260,7 @@ namespace PoeClone.Quests
                 Id = "rimeheart", Story = FrozenSeal, Title = "The Frost Queen", Giver = NpcRole.Seer, After = "scouts",
                 Goal = QuestGoal.KillBoss, Target = "Rimeheart", Area = WorldBuilder.Frozen,
                 Objective = "Slay Rimeheart in the Frozen Hollow",
-                Offer = "Rimeheart. Many-legged, a brood of crawlers at her feet, and the cold of the deep north in her. She keeps the door shut from the outside, and she keeps the Stag fed with the dead.\n\nKill her, and we can see what she's been keeping.",
+                Offer = "Rimeheart. Many-legged, a brood of crawlers at her feet, and the cold of the deep north in her. She keeps the door shut from the outside, and she keeps the Shepherd fed with the dead.\n\nKill her, and we can see what she's been keeping.",
                 Reminder = "Her throne is at the heart of the Frozen Hollow. When the frost gathers at your feet, move.",
                 Thanks = "She's dead. The cold is already lifting off the camp; Varek's men are singing.\n\nBut I keep seeing that door. And it is warmer than it was.",
                 RewardGold = 1000, RewardExperience = 4000, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 10,
@@ -278,13 +278,24 @@ namespace PoeClone.Quests
             },
             new QuestDefinition
             {
-                Id = "stag", Story = FrozenSeal, Title = "The Hollow Stag", Giver = NpcRole.Seer, After = "door",
+                Id = "stag", Story = FrozenSeal, Title = "The Shepherd Wakes", Giver = NpcRole.Seer, After = "door",
                 Goal = QuestGoal.Talk, TalkTo = NpcRole.Elder,
-                Objective = "Take the news of the Hollow Stag to Elder Maren",
+                Objective = "Warn Elder Maren about the Shepherd",
                 Offer = "Go home. Tell Maren everything. Haven must be ready, and so must you - when he comes through that door, he will come for the valley.\n\nI will watch the fire. When he stirs, I'll know.",
                 Reminder = "Back to Haven, to Maren.",
-                Thanks = "So my grandmother's story was true, every word of it. The Stag sleeps under the ice, and we have woken him.\n\nNo - not woken. Not yet. The scouts said the door still held. Then we have time, and time is a weapon too. Rest, grow strong, and when that door opens, Haven will stand with you. Take these. You will need every one.",
+                Thanks = "The Shepherd has been calling our dead. His wardens are gone, and the seal can finally be broken.\n\nThe door beneath the ice is open to you now. Take these supplies. End his call before Haven becomes his flock.",
                 RewardGold = 800, RewardExperience = 3000, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 11
+            },
+
+            new QuestDefinition
+            {
+                Id = "shepherd", Story = FrozenSeal, Title = "Silence the Shepherd", Giver = NpcRole.Elder, After = "stag",
+                Goal = QuestGoal.KillBoss, Target = "The Shepherd", Area = WorldBuilder.ActArena, Count = 1,
+                Objective = "Defeat the Shepherd beyond the door beneath the ice",
+                Offer = "The door north of Rimeheart's throne leads to the Shed Sanctuary. The Shepherd waits inside. Whatever hides beneath his robes, destroy it. End the call.",
+                Reminder = "Enter the Shed Sanctuary through the door in the Frozen Hollow and defeat the Shepherd.",
+                Thanks = "The call is gone. Our dead can rest, and Haven can live. You faced the Carrion Saint and returned. We will remember.",
+                RewardGold = 1200, RewardExperience = 5000, RewardHealthPotions = 5
             },
 
             // ---------------------------------------------------------------- The Lost Patrol (Hale)

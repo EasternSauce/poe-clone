@@ -296,6 +296,466 @@ namespace PoeClone.EditorTools
             return "spawned " + count + "x " + EnemyKinds.Get(index).Name + " L" + level;
         }
 
+        /// <summary>
+        /// The act boss (The Shepherd), set up for a test in one call: spawned <paramref name="distance"/>
+        /// ahead of the player and facing them, at the player's level unless <paramref name="level"/>
+        /// is given. Clears other enemies nearby first. Once the boss has its arena this warps there.
+        /// </summary>
+        public static string Boss(float distance = 7f, int level = 0)
+        {
+            EnemySpawner spawner = UnityEngine.Object.FindAnyObjectByType<EnemySpawner>();
+            PlayerStats ps = Stats();
+            if (spawner == null || ps == null)
+                return "no spawner/player";
+            Clear();
+            // A Shepherd left over from an earlier test (dead ones lie around under the same name).
+            foreach (EnemyHealth old in UnityEngine.Object.FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None))
+            {
+                if (old.name == "The Shepherd")
+                    UnityEngine.Object.DestroyImmediate(old.gameObject);
+            }
+            int index = EnemyKinds.IndexOf("The Shepherd");
+            EnemyKind kind = EnemyKinds.Get(index);
+            if (level <= 0)
+                level = Mathf.Max(1, ps.Level);
+            Vector3 forward = ps.transform.forward;
+            forward.y = 0f;
+            forward = forward.sqrMagnitude > 0.01f ? forward.normalized : Vector3.forward;
+            Vector3 at = ps.transform.position + forward * distance;
+            at.y = ps.transform.position.y + 0.5f;
+            GameObject go = UnityEngine.Object.Instantiate(spawner.EnemyPrefab, at, Quaternion.LookRotation(-forward));
+            go.name = kind.Name;
+            EnemyKinds.Apply(go, index, level);
+            go.AddComponent<BossAbilities>().Configure(kind, level, spawner.EnemyPrefab);
+            Physics.SyncTransforms();
+            return "spawned " + kind.Name + " L" + level + " at " + at.ToString("0.0");
+        }
+
+        /// <summary>Stops (or restarts) the boss's own AI, so it stands still for looking at or for a clip.</summary>
+        public static string BossHold(bool hold = true)
+        {
+            GameObject b = GameObject.Find("The Shepherd");
+            if (b == null)
+                return "no boss (DevTest.Boss first)";
+            foreach (MonoBehaviour m in b.GetComponents<MonoBehaviour>())
+            {
+                if (m is EnemyController || m is EnemyCombat || m is BossAbilities || m is ShepherdFight)
+                    m.enabled = !hold;
+            }
+            return hold ? "boss held" : "boss released";
+        }
+
+        /// <summary>Plays the boss's change into phase 2 (the graft), as at two thirds of his life.</summary>
+        public static string BossTransition()
+        {
+            GameObject b = GameObject.Find("The Shepherd");
+            ShepherdFight fight = b != null ? b.GetComponent<ShepherdFight>() : null;
+            if (fight == null)
+                return "no boss (DevTest.Boss first)";
+            if (fight.Phase >= 2)
+                return "already in phase 2";
+            fight.Manual = false;
+            fight.BeginPhase2();
+            return "grafting";
+        }
+
+        /// <summary>Repeats the reveal then all phase-three clips on a clear test floor for user review.</summary>
+        public static string BossReview3(bool skyOnly = false)
+        {
+            if (!Application.isPlaying || Stats() == null) return "call in a running Play session";
+            GameObject old = GameObject.Find("SaintReviewFloor");
+            if (old != null) UnityEngine.Object.DestroyImmediate(old);
+            GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            floor.name = "SaintReviewFloor";
+            floor.transform.position = new Vector3(500f, -0.5f, 500f);
+            floor.transform.localScale = new Vector3(120f, 1f, 120f);
+            Warp("500,500", 0f);
+            Stats().transform.rotation = Quaternion.identity;
+            God();
+            Time.timeScale = 1f;
+            float cycleAt = -100f, frameAt = 0f;
+            float replayAt = 0f;
+            int stage = 0;
+            string lastClip = "";
+            EditorApplication.CallbackFunction review = null;
+            review = () =>
+            {
+                if (!EditorApplication.isPlaying)
+                {
+                    EditorApplication.update -= review;
+                    End();
+                    return;
+                }
+                float elapsed = Time.time - cycleAt;
+                if (elapsed > 24f && (!skyOnly || stage < 3))
+                {
+                    Boss(7f);
+                    BossHold();
+                    var fight = GameObject.Find("The Shepherd").GetComponent<ShepherdFight>();
+                    fight.Manual = true;
+                    fight.enabled = true; // Allow Start before the instant phase-two setup.
+                    cycleAt = Time.time;
+                    stage = 0;
+                    lastClip = "";
+                    return;
+                }
+                if (stage == 0 && elapsed > 0.35f) { BossPhase(2); BossHold(); stage = 1; }
+                if (stage == 1 && elapsed > 0.65f) { BossReveal3(); stage = 2; }
+                if (stage == 2 && elapsed > 4.3f) { BossLook3View(); BossAnim3(skyOnly ? "SkyBite" : "demo"); stage = 3; }
+                if (stage != 3) return;
+                var boss = GameObject.Find("The Shepherd");
+                var animator = boss != null ? boss.GetComponentInChildren<CarrionSaintAnimator>() : null;
+                if (animator == null) return;
+                string current = animator.Current ?? "";
+                if (skyOnly && current == "")
+                {
+                    if (replayAt == 0f) replayAt = Time.time + 0.85f;
+                    if (Time.time >= replayAt) { BossAnim3("SkyBite"); replayAt = 0f; lastClip = ""; }
+                    return; // Hold the wide view between sky bites.
+                }
+                if (current != lastClip) { frameAt = Time.time + (lastClip == "SkyBite" && current == "" ? 0.55f : 0.06f); lastClip = current; }
+                if (frameAt > 0f && Time.time >= frameAt)
+                {
+                    BossLook3View(current == "SkyBite", true);
+                    frameAt = 0f;
+                }
+            };
+            EditorApplication.update += review;
+            return skyOnly ? "isolated sky-bite review; Stop Play restores your save"
+                : "review repeats fake death/reveal and phase-three animations every 24s; Stop Play restores your save";
+        }
+
+        /// <summary>Plays the phase-three fake death/reveal and holds the result for animation review.</summary>
+        public static string BossReveal3()
+        {
+            GameObject boss = GameObject.Find("The Shepherd");
+            var fight = boss != null ? boss.GetComponent<ShepherdFight>() : null;
+            if (fight == null) return "no boss";
+            if (fight.Phase != 2) return "use BossPhase(2) first";
+            Time.timeScale = 1f;
+            fight.Manual = true;
+            fight.BeginPhase3();
+            var cam = UnityEngine.Camera.main;
+            if (cam != null)
+            {
+                var follow = cam.GetComponent<CameraSystem.CameraFollow>();
+                if (follow != null) follow.enabled = false;
+                Quaternion angle = boss.transform.rotation * Quaternion.Euler(24f, 145f, 0f);
+                cam.transform.SetPositionAndRotation(boss.transform.position + Vector3.up * 0.8f + angle * Vector3.back * 27f, angle);
+            }
+            return "phase-three reveal started; result held immune for review";
+        }
+
+        public static string BossAnim3(string clip = "demo")
+        {
+            GameObject boss = GameObject.Find("The Shepherd");
+            var animator = boss != null ? boss.GetComponentInChildren<CarrionSaintAnimator>() : null;
+            if (animator == null) return "use BossReveal3 or BossPhase(3) first";
+            Time.timeScale = 1f;
+            if (clip == "stop") { animator.Demo = false; animator.Stop(); return "phase-three demo stopped"; }
+            if (clip == "demo") { animator.Demo = true; return "phase-three animation demo looping"; }
+            animator.Demo = false;
+            return animator.Play(clip) ? "playing " + clip : "no phase-three clip " + clip;
+        }
+
+        public static string BossState3()
+        {
+            GameObject boss = GameObject.Find("The Shepherd");
+            if (boss == null) return "no boss";
+            var health = boss.GetComponent<EnemyHealth>();
+            var reveal = boss.GetComponent<CarrionSaintReveal>();
+            var animator = boss.GetComponentInChildren<CarrionSaintAnimator>();
+            return health.DisplayName + " life=" + health.CurrentHealth + "/" + health.MaxHealth
+                + " dead=" + health.IsDead + " immune=" + health.Immune + " bar hidden=" + health.HideBossBar
+                + " stage=" + (reveal != null ? reveal.Stage : "preview")
+                + " clip=" + (animator != null ? animator.Current : "none");
+        }
+
+        /// <summary>Switches the boss to phase 2, or holds the visual-only phase-3 preview.</summary>
+        public static string BossPhase(int phase)
+        {
+            GameObject b = GameObject.Find("The Shepherd");
+            if (b == null)
+                return "no boss (DevTest.Boss first)";
+            if (phase == 3)
+            {
+                BossHold();
+                b.GetComponent<EnemyHealth>().Immune = true;
+                CarrionSaintLook.Build(b.transform);
+                return BossLook3View();
+            }
+            if (phase != 2)
+                return "no phase " + phase + " yet";
+            ShepherdFight fight = b.GetComponent<ShepherdFight>();
+            if (fight != null)
+                fight.EnterPhase2();
+            else
+                ShepherdLook.ToPhase2(b.transform);
+            Physics.SyncTransforms();
+            return "boss in phase " + phase;
+        }
+
+        /// <summary>Frames the phase-3 body or its colossal attack snakes. Visual review, no combat.</summary>
+        public static string BossLook3View(bool serpents = false, bool smooth = false)
+        {
+            GameObject boss = GameObject.Find("The Shepherd");
+            Transform rig = boss != null ? boss.transform.Find("Model/" + CarrionSaintLook.RigName) : null;
+            if (rig == null) return "use BossPhase(3) first";
+            CarrionSaintLook.ShowSerpents(boss.transform, serpents);
+            foreach (var loot in UnityEngine.Object.FindObjectsByType<World.LootDrop>(FindObjectsSortMode.None))
+                loot.gameObject.SetActive(false);
+            UnityEngine.Camera cam = UnityEngine.Camera.main;
+            if (cam == null) return "no camera";
+            var follow = cam.GetComponent<PoeClone.CameraSystem.CameraFollow>();
+            if (follow != null) follow.enabled = false;
+            // Include both the creature and player as a scale reference.
+            Bounds bounds = new Bounds(rig.position + Vector3.up * 3f, Vector3.zero);
+            foreach (Renderer r in rig.GetComponentsInChildren<Renderer>())
+                if (r.enabled && !r.name.StartsWith("Outline_")) bounds.Encapsulate(r.bounds);
+            PlayerStats player = Stats();
+            if (player != null) bounds.Encapsulate(player.transform.position);
+            float halfAngle = cam.fieldOfView * Mathf.Deg2Rad * 0.5f;
+            float fit = bounds.extents.magnitude / Mathf.Sin(halfAngle) * 1.15f;
+            Quaternion angle = boss.transform.rotation * Quaternion.Euler(28f, 155f, 0f);
+            Vector3 destination = bounds.center + angle * Vector3.back * fit;
+            if (!smooth) cam.transform.SetPositionAndRotation(destination, angle);
+            else
+            {
+                Vector3 from = cam.transform.position;
+                Quaternion rotation = cam.transform.rotation;
+                float started = Time.unscaledTime;
+                EditorApplication.CallbackFunction frame = null;
+                frame = () =>
+                {
+                    if (!EditorApplication.isPlaying || cam == null) { EditorApplication.update -= frame; return; }
+                    float f = Mathf.Clamp01((Time.unscaledTime - started) / 0.5f);
+                    float ease = Mathf.SmoothStep(0f, 1f, f);
+                    cam.transform.SetPositionAndRotation(Vector3.Lerp(from, destination, ease), Quaternion.Slerp(rotation, angle, ease));
+                    if (f >= 1f) EditorApplication.update -= frame;
+                };
+                EditorApplication.update += frame;
+            }
+            return serpents ? "phase-3 serpent scale preview (7.2m thick, 48m long each)" : "phase-3 body preview; combat held";
+        }
+
+        private static string bossMotionResult;
+
+        /// <summary>Repeatable root-motion/damage check on an isolated floor. Read BossMotionResult after 2s.
+        /// Scenarios: clear, wall, inside, outside, beyond, bite. No production arena changes.</summary>
+        public static string BossMotionCheck(string scenario = "clear")
+        {
+            PlayerStats ps = Stats();
+            if (ps == null) return "no player";
+            GameObject old = GameObject.Find("BossMotionTest");
+            if (old != null) UnityEngine.Object.DestroyImmediate(old);
+            var stage = new GameObject("BossMotionTest");
+            var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            floor.transform.SetParent(stage.transform);
+            floor.transform.position = new Vector3(500f, -0.5f, 500f);
+            floor.transform.localScale = new Vector3(80f, 1f, 80f);
+            Warp("500,500", 0f);
+            ps.transform.rotation = Quaternion.identity;
+            Boss(10f);
+            BossHold();
+            GameObject boss = GameObject.Find("The Shepherd");
+            Vector3 start = new Vector3(500f, 1.6f, 510f);
+            var fight = boss.GetComponent<ShepherdFight>();
+            fight.Manual = true;
+            fight.enabled = true;
+            var cc = boss.GetComponent<CharacterController>();
+            cc.enabled = false;
+            boss.transform.position = start;
+            cc.enabled = true;
+            if (scenario == "wall")
+            {
+                var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                wall.transform.SetParent(stage.transform);
+                wall.transform.position = new Vector3(500f, 4f, 505f);
+                wall.transform.localScale = new Vector3(15f, 8f, 0.5f);
+            }
+            God();
+            Physics.SyncTransforms();
+            bossMotionResult = "pending " + scenario;
+            // Let Start initialize the newly spawned rig, then force its real move.
+            float beginAt = Time.time + 0.15f;
+            float finishAt = beginAt + 1.5f;
+            bool started = false;
+            float life = ps.CurrentHealth;
+            bool statsEnabled = ps.enabled;
+            string warning = "";
+            EditorApplication.CallbackFunction measure = null;
+            measure = () =>
+            {
+                if (!EditorApplication.isPlaying || boss == null)
+                {
+                    EditorApplication.update -= measure;
+                    if (ps != null) ps.enabled = statsEnabled;
+                    return;
+                }
+                if (!started && Time.time >= beginAt)
+                {
+                    started = true;
+                    var anim = boss.GetComponentInChildren<ShepherdAnimator>();
+                    anim.Target = ps.transform;
+                    anim.MinGap = 0.5f * boss.transform.localScale.x + 2f;
+                    if (scenario == "bite") BossPhase(2);
+                    boss.GetComponent<ShepherdFight>().Manual = true;
+                    BossMove(scenario == "bite" ? "Bite" : "CobraLunge");
+                    // Direction is committed. Move the player to the chosen point before the hit.
+                    float lateral = scenario == "inside" ? 2.1f : scenario == "outside" ? 3.2f : 10f;
+                    float along = scenario == "beyond" ? 14.5f : 10f;
+                    if (scenario == "beyond" || scenario == "bite") lateral = 0f;
+                    if (scenario == "bite") along = 3.2f;
+                    var pc = ps.GetComponent<CharacterController>();
+                    pc.enabled = false;
+                    ps.transform.position = new Vector3(500f + lateral, 1.1f, 510f - along);
+                    pc.enabled = true;
+                    Physics.SyncTransforms();
+                    var strip = GameObject.Find("LineTelegraph");
+                    if (strip != null) warning = strip.transform.GetChild(0).localScale.ToString("0.00");
+                    life = ps.CurrentHealth;
+                    ps.enabled = false; // Keep the large God-mode regen from erasing a test hit.
+                }
+                if (started && Time.time >= finishAt)
+                {
+                    Vector3 delta = boss.transform.position - start;
+                    delta.y = 0f;
+                    Vector3 gap = ps.transform.position - boss.transform.position;
+                    gap.y = 0f;
+                    bossMotionResult = scenario + ": travel=" + delta.magnitude.ToString("0.00")
+                        + " gap=" + gap.magnitude.ToString("0.00") + " damage=" + (life - ps.CurrentHealth).ToString("0.00")
+                        + " warning=" + warning;
+                    EditorApplication.update -= measure;
+                    ps.enabled = statsEnabled;
+                }
+            };
+            EditorApplication.update += measure;
+            return bossMotionResult;
+        }
+
+        public static string BossMotionResult() => bossMotionResult ?? "no check yet";
+
+        /// <summary>Holds the boss and plays one of its clips (ShepherdAnimator.Clips: Sweep, Jab, Slam, HookPull, CobraLunge, SerpentCall).</summary>
+        public static string BossAnim(string clip, float speed = 1f)
+        {
+            GameObject b = GameObject.Find("The Shepherd");
+            ShepherdAnimator anim = b != null ? b.GetComponentInChildren<ShepherdAnimator>() : null;
+            if (anim == null)
+                return "no boss (DevTest.Boss first)";
+            ShepherdAnimator.Clip c = ShepherdAnimator.Find(clip);
+            if (c == null)
+                return "no clip " + clip;
+            BossHold();
+            anim.Demo = false;
+            anim.Play(c, speed);
+            return "playing " + c.Name + " (" + c.Duration.ToString("0.00") + "s)";
+        }
+
+        /// <summary>
+        /// Makes the boss do one of its moves now, with its warnings and damage. From then on he
+        /// only does forced moves (he still walks) until BossMove("auto") hands him back his own choices.
+        /// <paramref name="freezeAt"/> &gt; 0 pauses the game that many seconds in, for a screenshot
+        /// (Time.timeScale = 0: BossMove("resume") or any later BossMove lets it run again).
+        /// </summary>
+        public static string BossMove(string move, float freezeAt = 0f)
+        {
+            GameObject b = GameObject.Find("The Shepherd");
+            ShepherdFight fight = b != null ? b.GetComponent<ShepherdFight>() : null;
+            if (fight == null)
+                return "no boss (DevTest.Boss first)";
+            Time.timeScale = 1f;
+            if (move == "resume")
+                return "resumed";
+            if (move == "auto")
+            {
+                fight.Manual = false;
+                return "boss picks his own moves again";
+            }
+            fight.Manual = true;
+            if (!fight.Force(move))
+                return "no move " + move;
+            if (freezeAt > 0f)
+            {
+                float at = Time.time + freezeAt;
+                EditorApplication.CallbackFunction pause = null;
+                pause = () =>
+                {
+                    if (!EditorApplication.isPlaying || Time.time >= at)
+                    {
+                        EditorApplication.update -= pause;
+                        if (EditorApplication.isPlaying)
+                            Time.timeScale = 0f;
+                    }
+                };
+                EditorApplication.update += pause;
+            }
+            return "doing " + move + (freezeAt > 0f ? ", pausing " + freezeAt + "s in" : "");
+        }
+
+        /// <summary>Holds the boss frozen <paramref name="at"/> seconds into a clip, for judging a pose.</summary>
+        public static string BossPose(string clip, float at)
+        {
+            GameObject b = GameObject.Find("The Shepherd");
+            ShepherdAnimator anim = b != null ? b.GetComponentInChildren<ShepherdAnimator>() : null;
+            ShepherdAnimator.Clip c = ShepherdAnimator.Find(clip);
+            if (anim == null || c == null)
+                return "no boss or clip";
+            BossHold();
+            anim.Demo = false;
+            anim.Freeze(c, at);
+            return "frozen " + c.Name + " @" + at;
+        }
+
+        /// <summary>
+        /// Judging poses in one picture: a row of frozen Shepherds, one per "Clip@seconds" in
+        /// <paramref name="spec"/> (comma separated), 3.4 m apart along +X starting at the player
+        /// plus (<paramref name="dx"/>, <paramref name="dz"/>), all facing +X (seen side-on from -Z).
+        /// Returns a camera position and target for a positioned screenshot. Remove with Clear().
+        /// </summary>
+        public static string BossLineup(string spec, float dx = -8f, float dz = -14f)
+        {
+            EnemySpawner spawner = UnityEngine.Object.FindAnyObjectByType<EnemySpawner>();
+            PlayerStats ps = Stats();
+            if (spawner == null || ps == null)
+                return "no spawner/player";
+            int index = EnemyKinds.IndexOf("The Shepherd");
+            string[] items = spec.Split(',');
+            Vector3 start = ps.transform.position + new Vector3(dx, 0.5f, dz);
+            for (int i = 0; i < items.Length; i++)
+            {
+                string[] parts = items[i].Trim().Split('@');
+                ShepherdAnimator.Clip c = ShepherdAnimator.Find(parts[0]);
+                if (c == null)
+                    return "no clip " + parts[0];
+                float at = parts.Length > 1 ? float.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture) : c.Duration * 0.5f;
+                GameObject go = UnityEngine.Object.Instantiate(spawner.EnemyPrefab, start + Vector3.right * (3.4f * i), Quaternion.LookRotation(Vector3.right));
+                go.name = "Lineup " + c.Name;
+                EnemyKinds.Apply(go, index, 1);
+                foreach (MonoBehaviour m in go.GetComponents<MonoBehaviour>())
+                {
+                    if (m is EnemyController || m is EnemyCombat)
+                        m.enabled = false;
+                }
+                go.GetComponentInChildren<ShepherdAnimator>().Freeze(c, at);
+            }
+            Physics.SyncTransforms();
+            Vector3 mid = start + Vector3.right * (3.4f * (items.Length - 1) * 0.5f);
+            Vector3 cam = mid + new Vector3(0f, 2.5f, -4f - 1.9f * items.Length);
+            return "lineup of " + items.Length + "; camera " + cam.ToString("0.0") + " -> " + (mid + Vector3.up * 0.6f).ToString("0.0");
+        }
+
+        /// <summary>Holds the boss and loops all its clips, a second apart, each name shown overhead. Off with on=false.</summary>
+        public static string BossDemo(bool on = true)
+        {
+            GameObject b = GameObject.Find("The Shepherd");
+            ShepherdAnimator anim = b != null ? b.GetComponentInChildren<ShepherdAnimator>() : null;
+            if (anim == null)
+                return "no boss (DevTest.Boss first)";
+            BossHold(on);
+            anim.Demo = on;
+            return on ? "demo looping " + ShepherdAnimator.Clips.Length + " clips" : "demo off";
+        }
+
         /// <summary>The player, every minion and every living enemy, briefly.</summary>
         public static string Status()
         {
@@ -333,6 +793,8 @@ namespace PoeClone.EditorTools
             {
                 if (e != null && !e.IsDead && ps != null && Vector3.Distance(ps.transform.position, e.transform.position) <= radius)
                 {
+                    e.Immune = false;
+                    e.Floor = 0f;
                     e.TakeDamage(e.CurrentHealth + 1f);
                     killed++;
                 }
@@ -376,7 +838,44 @@ namespace PoeClone.EditorTools
             if (areas == null)
                 return "no area manager";
             areas.EnterArea(area, null);
-            return "entering " + World.WorldBuilder.AreaNames[area];
+            return "entering " + areas.areas[area].areaName;
+        }
+
+        /// <summary>First-release boss check: unlock the storyline gate and enter the real arena.</summary>
+        public static string BossArena()
+        {
+            Quest("stag", true);
+            Quest("shepherd");
+            var inventory = UnityEngine.Object.FindAnyObjectByType<Inventory.PlayerInventory>();
+            if (inventory != null)
+            {
+                inventory.Grid.TryAutoPlace(Inventory.UniqueItems.Current("Shepherd's Fang"));
+                inventory.Grid.TryAutoPlace(Inventory.UniqueItems.Current("Widow's Choir"));
+                inventory.Grid.TryAutoPlace(Inventory.ItemData.ReawakeningItem());
+            }
+            return God() + " || " + Area(World.WorldBuilder.ActArena);
+        }
+
+        public static string BossArenaHit()
+        {
+            var arena = World.ActBossArena.Instance;
+            if (arena == null || arena.Boss == null) return "no arena boss";
+            arena.Boss.TakeDamage(arena.Boss.MaxHealth * 10f);
+            return BossArenaStatus();
+        }
+
+        public static string BossArenaStatus()
+        {
+            var arena = World.ActBossArena.Instance;
+            if (arena == null) return "no arena";
+            var health = arena.Boss;
+            if (health == null) return "boss absent; respawn=" + arena.RespawnRemaining;
+            var fight = health.GetComponent<Enemies.ShepherdFight>();
+            var chase = UnityEngine.Object.FindAnyObjectByType<Enemies.SerpentPursuit>();
+            return "area=" + World.AreaManager.Instance.CurrentAreaIndex + " door=" + World.ActBossArena.DoorOpen
+                + " phase=" + (fight != null ? fight.Phase : 0) + " name=" + health.DisplayName
+                + " life=" + health.CurrentHealth + "/" + health.MaxHealth + " dead=" + health.IsDead + " immune=" + health.Immune
+                + " route=" + (chase != null ? chase.RoutePoints : 0) + " respawn=" + arena.RespawnRemaining;
         }
 
         /// <summary>

@@ -16,6 +16,7 @@ namespace PoeClone.Inventory
             public string Name;
             public string Flavour;
             public StatModifier[] Mods;
+            public bool ShepherdOnly;
         }
 
         private static StatModifier Mod(StatType stat, float value) => new StatModifier(stat, value);
@@ -124,6 +125,18 @@ namespace PoeClone.Inventory
                 Flavour = "The dead keep the watch now. They never sleep on it.",
                 Mods = new[] { Mod(StatType.PhysicalDamage, 9), Mod(StatType.GrantRaiseSkeletons, 6), Mod(StatType.RaiseSkeletonsLevels, 2), Mod(StatType.MinionDamage, 30), Mod(StatType.SoulBond, 2) }
             },
+            new Unique
+            {
+                BaseId = "steel_dagger", Name = "Shepherd's Fang", ShepherdOnly = true,
+                Flavour = "A little of the saint still lives in every wound.",
+                Mods = new[] { Mod(StatType.PhysicalDamage, 15), Mod(StatType.AttackSpeed, 18), Mod(StatType.PoisonOnHit, 100), Mod(StatType.Dexterity, 15) }
+            },
+            new Unique
+            {
+                BaseId = "short_bow", Name = "Widow's Choir", ShepherdOnly = true,
+                Flavour = "Where its arrows fall, the air remembers his breath.",
+                Mods = new[] { Mod(StatType.PhysicalDamage, 18), Mod(StatType.GrantPiercingShot, 7), Mod(StatType.VenomCloudOnHit, 35), Mod(StatType.Dexterity, 20) }
+            },
         };
 
         private static readonly Dictionary<string, string> flavourByName = new Dictionary<string, string>();
@@ -139,8 +152,10 @@ namespace PoeClone.Inventory
         /// <summary>A random unique item.</summary>
         public static ItemData Random(System.Random rng)
         {
-            return Create(rng.Next(All.Length));
+            return Create(rng.Next(All.Length - 2));
         }
+
+        public static ItemData ShepherdReward(System.Random rng) => Create(All.Length - 2 + rng.Next(2));
 
         /// <summary>A random unique of a kind the filter accepts (any unique if none fits).</summary>
         public static ItemData Random(System.Random rng, System.Func<ItemType, bool> kind)
@@ -148,6 +163,7 @@ namespace PoeClone.Inventory
             var fitting = new List<ItemData>();
             for (int k = 0; k < All.Length; k++)
             {
+                if (All[k].ShepherdOnly) continue;
                 ItemData item = Create(k);
                 if (kind(item.Type))
                     fitting.Add(item);

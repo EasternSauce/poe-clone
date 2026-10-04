@@ -114,7 +114,9 @@ namespace PoeClone.Inventory
         GrantPiercingShot,
         GrantRainOfArrows,
         GrantBurningArrow,
-        ExtraArrowChance            // % chance for a bow attack to fire one more arrow
+        ExtraArrowChance,           // % chance for a bow attack to fire one more arrow
+        PoisonOnHit,               // % of attack damage dealt again as poison over three seconds
+        VenomCloudOnHit             // % of attack damage per second in a venom cloud
     }
 
     /// <summary>
@@ -464,6 +466,8 @@ namespace PoeClone.Inventory
                 case StatType.DeathsHerald: return "Death's Herald";
                 case StatType.BoneArmour: return "Minion Damage Taken";
                 case StatType.ExtraArrowChance: return "Extra Arrow Chance";
+                case StatType.PoisonOnHit: return "Poison on Hit";
+                case StatType.VenomCloudOnHit: return "Venom Clouds";
                 default:
                     if (SkillGrants.IsGrant(stat))
                         return SkillGrants.SkillName(stat);
@@ -612,6 +616,8 @@ namespace PoeClone.Inventory
                 case StatType.SoulBond: return n + "% of Minion Damage is returned to you as Life";
                 case StatType.DeathsHerald: return "A Marked enemy that dies bursts for a fifth of its life, and the Mark leaps to the nearest enemy";
                 case StatType.ExtraArrowChance: return n + "% chance for Bow Attacks to fire an additional arrow";
+                case StatType.PoisonOnHit: return "Attacks deal " + n + "% of hit damage as Poison over 3 seconds";
+                case StatType.VenomCloudOnHit: return "Attacks create Venom Clouds dealing " + n + "% of hit damage per second (1 second cooldown)";
                 case StatType.BoneArmour: return "Minions take " + n + "% " + (m.Value < 0f ? "more" : "less") + " damage";
                 default:
                     if (SkillGrants.IsGrant(m.Stat))

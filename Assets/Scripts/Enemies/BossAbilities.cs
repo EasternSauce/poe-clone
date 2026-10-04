@@ -70,7 +70,10 @@ namespace PoeClone.Enemies
         private readonly List<EnemyHealth> minions = new List<EnemyHealth>();
 
         /// <summary>A move is playing: the boss's controller and its plain attacks wait.</summary>
-        public bool Busy => busy;
+        public bool Busy => busy || (shepherd != null && shepherd.IsPlaying);
+
+        // The act boss's own animator: its clips count as moves (see ShepherdFight).
+        private ShepherdAnimator shepherd;
 
         /// <summary>Past half life: roared, and moving faster.</summary>
         public bool InSecondPhase => secondPhase;
@@ -80,6 +83,8 @@ namespace PoeClone.Enemies
             kind = bossKind;
             level = monsterLevel;
             minionPrefab = enemyPrefab;
+            if (kind.Boss == BossStyle.Shepherd && GetComponent<ShepherdFight>() == null)
+                gameObject.AddComponent<ShepherdFight>().Configure(kind, level);
         }
 
         private void Awake()
@@ -94,6 +99,7 @@ namespace PoeClone.Enemies
             attackAnimator = GetComponentInChildren<CharacterAttackAnimator>();
             walk = GetComponentInChildren<CharacterWalkAnimator>();
             creature = GetComponentInChildren<CreatureAnimator>();
+            shepherd = GetComponentInChildren<ShepherdAnimator>();
         }
 
         // The raised dead and the brood fall with their master.
@@ -128,6 +134,9 @@ namespace PoeClone.Enemies
         private void Update()
         {
             if (kind == null || health.IsDead || busy)
+                return;
+            // The act boss fights its own fight (ShepherdFight), not the field bosses' moves.
+            if (kind.Boss == BossStyle.Shepherd)
                 return;
 
             if (player == null)

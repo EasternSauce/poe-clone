@@ -30,7 +30,8 @@ namespace PoeClone.Enemies
         None,
         Gravelord,   // greataxe: leaps onto the player, spins its axe all round, raises zombies
         Warlord,     // maul: slams a line of eruptions at the player, quake-leaps, rains fire
-        FrostQueen   // a giant frost spider: pounces, hatches ice crawlers, bursts frost, calls down ice
+        FrostQueen,  // a giant frost spider: pounces, hatches ice crawlers, bursts frost, calls down ice
+        Shepherd     // the act boss: a hooded shepherd with a snake crook and a lantern (ShepherdLook); three phases
     }
 
     /// <summary>
@@ -518,6 +519,20 @@ namespace PoeClone.Enemies
                 MaxHealth = 85f, Style = EnemyAttackStyle.Melee, AttackRange = 2.6f, SpeedRatio = 0.7f, Scale = 1.55f,
                 Cloth = new Color(0.78f, 0.74f, 0.62f), Skin = new Color(0.94f, 0.91f, 0.80f), Pants = new Color(0.55f, 0.50f, 0.40f), Eyes = new Color(0.45f, 1.0f, 0.5f)
             },
+            new EnemyKind
+            {
+                // The act boss, in its first phase: a stooped, hooded old man with a crook and a
+                // lantern. Numbers are placeholders until the fight itself is in.
+                Name = "The Shepherd", SpawnWeight = 0f, Tempo = 2f,
+                MaxHealth = 600f, Experience = 400,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 22f, AttackCooldown = 1.4f, AttackRange = 3.6f,
+                SpeedRatio = 1.05f, Scale = 1.5f,
+                Cloth = new Color(0.36f, 0.35f, 0.33f), Skin = new Color(0.55f, 0.58f, 0.50f), Pants = new Color(0.30f, 0.29f, 0.27f), Eyes = new Color(0.9f, 0.8f, 0.4f),
+                HideHorns = true,
+                DropChance = 1f, RareBonus = 1f, Drops = 5,
+                IsBoss = true, Boss = BossStyle.Shepherd
+            },
         };
 
         public const int SlimelingIndex = 20;
@@ -630,6 +645,9 @@ namespace PoeClone.Enemies
                         t.gameObject.SetActive(false);
                 }
             }
+
+            if (kind.Boss == BossStyle.Shepherd)
+                ShepherdLook.Build(model);
 
             if (kind.Gear.Length > 0)
             {

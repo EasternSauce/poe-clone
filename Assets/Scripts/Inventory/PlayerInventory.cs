@@ -13,6 +13,7 @@ namespace PoeClone.Inventory
     /// </summary>
     public class PlayerInventory : MonoBehaviour
     {
+        public System.Func<ItemData, bool> UseConsumable;
         [SerializeField] private int gridWidth = 12;
         [SerializeField] private int gridHeight = 5;
 

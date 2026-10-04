@@ -28,6 +28,15 @@ namespace PoeClone.CameraSystem
 
         private Vector3 appliedShake;
 
+        /// <summary>
+        /// How far the view pulls back (1 = normal), for a fight against something too big to fit
+        /// otherwise (the Shepherd's giant form). Whoever sets it puts it back to 1 when done; the
+        /// camera eases between the two.
+        /// </summary>
+        public static float Zoom = 1f;
+
+        private float zoom = 1f;
+
         /// <summary>Shakes the view for a moment. A stronger shake overrides a weaker one already running.</summary>
         public static void Shake(float strength, float seconds)
         {
@@ -43,6 +52,7 @@ namespace PoeClone.CameraSystem
         private static void ResetStatics()
         {
             shakeLeft = 0f;
+            Zoom = 1f;
         }
 
 private void LateUpdate()
@@ -52,6 +62,7 @@ private void LateUpdate()
 
             // Rotation is fixed; only the position follows the player.
             transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
+            zoom = Mathf.MoveTowards(zoom, Mathf.Max(0.5f, Zoom), 0.8f * Time.deltaTime);
 
             // The shake rides on top of the follow and is taken off again next frame, so it never
             // drags the camera away from where it should be.
@@ -81,7 +92,7 @@ private void LateUpdate()
         private Vector3 DesiredPosition()
         {
             Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
-            float d = TouchMode.Active ? distance * touchDistanceScale : distance;
+            float d = (TouchMode.Active ? distance * touchDistanceScale : distance) * zoom;
             return target.position + rotation * new Vector3(0f, 0f, -d);
         }
 

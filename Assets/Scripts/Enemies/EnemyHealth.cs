@@ -34,6 +34,19 @@ namespace PoeClone.Enemies
         public float MaxHealth => maxHealth;
         public float CurrentHealth => currentHealth;
         public bool IsDead => dead;
+        /// <summary>A phase can reveal a new identity without changing the saved enemy kind.</summary>
+        public string BossName { get; set; }
+        public bool HideBossBar { get; set; }
+        public string DisplayName => string.IsNullOrEmpty(BossName) ? EnemyKinds.Get(KindIndex).Name : BossName;
+
+        public void RevealBossHealth(string name)
+        {
+            if (dead) return;
+            BossName = name;
+            currentHealth = maxHealth;
+            HideBossBar = false;
+            Damaged?.Invoke();
+        }
 
         /// <summary>Which <see cref="EnemyKinds"/> entry this is (replicated, and decides loot).</summary>
         public int KindIndex { get; private set; }
@@ -84,16 +97,45 @@ namespace PoeClone.Enemies
             KindIndex = kindIndex;
         }
 
+        /// <summary>Takes no damage while set (a boss changing phase); hits show "Immune".</summary>
+        public bool Immune { get; set; }
+
+        /// <summary>
+        /// Above 0: damage stops here. A boss holds at its next phase's threshold until it has
+        /// changed phase, so a big hit can't skip the change.
+        /// </summary>
+        public float Floor { get; set; }
+
+        private float immuneShownAt;
+
         public void TakeDamage(float amount)
         {
             if (dead || amount <= 0f)
                 return;
 
-            currentHealth = Mathf.Max(0f, currentHealth - amount);
+            if (Immune)
+            {
+                if (Time.time >= immuneShownAt)
+                {
+                    immuneShownAt = Time.time + 0.4f;
+                    UI.CombatText.Show(transform.position + Vector3.up * 1.5f * transform.localScale.y, "Immune", UI.CombatText.AvoidColor, 0.8f);
+                }
+                return;
+            }
+
+            float least = Mathf.Max(0f, Floor);
+            currentHealth = Mathf.Max(least, currentHealth - amount);
             Damaged?.Invoke();
 
             if (currentHealth <= 0f)
             {
+                ShepherdFight shepherd = GetComponent<ShepherdFight>();
+                if (shepherd != null && shepherd.Phase == 2)
+                {
+                    Immune = true;
+                    shepherd.BeginPhase3();
+                    return;
+                }
                 Die();
                 return;
             }
@@ -258,7 +300,13 @@ namespace PoeClone.Enemies
 
             // A boss always leaves one unique behind.
             if (kind.IsBoss)
-                LootDrop.Drop(Inventory.UniqueItems.Random(new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue))), transform.position);
+            {
+                var rng = new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
+                LootDrop.Drop(kind.Boss == BossStyle.Shepherd ? Inventory.UniqueItems.ShepherdReward(rng) : Inventory.UniqueItems.Random(rng), transform.position);
+            }
+            var area = World.AreaManager.Instance;
+            if (area != null && area.CurrentAreaIndex >= 0 && area.CurrentAreaIndex <= World.WorldBuilder.ActArena && UnityEngine.Random.value < 0.008f)
+                LootDrop.Drop(World.ActBossArena.ReawakeningItem(), transform.position);
             KillRewards.Grant(EnemyKinds.Get(KindIndex), MonsterLevel, transform.position);
 
             if (kind.SplitInto >= 0)

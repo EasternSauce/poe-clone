@@ -79,6 +79,38 @@ namespace PoeClone.Enemies
             burst?.Invoke(center);
         }
 
+        /// <summary>
+        /// A strip on the ground from <paramref name="start"/> along <paramref name="direction"/> that
+        /// fills from the start end over the wind-up (a charge's path), then calls <paramref name="burst"/>.
+        /// </summary>
+        public static IEnumerator RunLine(Vector3 start, Vector3 direction, float length, float width, float windUp, DamageType type, Action burst)
+        {
+            direction.y = 0f;
+            direction = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.forward;
+            var root = new GameObject("LineTelegraph");
+            root.transform.position = new Vector3(start.x, GroundY(start), start.z);
+            root.transform.rotation = Quaternion.LookRotation(direction);
+            UnityEngine.Object.Destroy(root, windUp + 0.5f);
+
+            GameObject outer = RuntimePrimitives.Create(PrimitiveType.Cube, root.transform, WarningColor(type));
+            outer.transform.localPosition = new Vector3(0f, 0.17f, length * 0.5f);
+            outer.transform.localScale = new Vector3(width, 0.01f, length);
+
+            GameObject inner = RuntimePrimitives.Create(PrimitiveType.Cube, root.transform, FillColor(type));
+            float t = 0f;
+            while (t < windUp)
+            {
+                t += Time.deltaTime;
+                float filled = length * Mathf.Clamp01(t / windUp);
+                inner.transform.localPosition = new Vector3(0f, 0.19f, filled * 0.5f);
+                inner.transform.localScale = new Vector3(width, 0.01f, filled);
+                yield return null;
+            }
+
+            UnityEngine.Object.Destroy(root);
+            burst?.Invoke();
+        }
+
         private static float GroundY(Vector3 p)
         {
             float best = float.MaxValue;

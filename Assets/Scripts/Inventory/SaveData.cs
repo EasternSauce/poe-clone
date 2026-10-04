@@ -42,6 +42,7 @@ namespace PoeClone.Inventory
 
         public ItemData ToItem()
         {
+            if (id == ItemData.ReawakeningId) return ItemData.ReawakeningItem();
             var modifiers = new List<StatModifier>();
             if (mods != null)
             {

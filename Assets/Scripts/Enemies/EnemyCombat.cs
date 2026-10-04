@@ -128,6 +128,9 @@ namespace PoeClone.Enemies
                 boss = GetComponent<BossAbilities>();
             if (boss != null && boss.Busy)
                 return;
+            // The act boss's every blow is one of its own moves (ShepherdFight).
+            if (kind.Boss == BossStyle.Shepherd)
+                return;
 
             Minion minion = controller != null ? controller.TargetMinion : null;
             Vector3 targetAt = minion != null ? minion.transform.position : playerStats.transform.position;

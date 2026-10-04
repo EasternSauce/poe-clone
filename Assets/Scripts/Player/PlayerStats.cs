@@ -95,8 +95,66 @@ namespace PoeClone.Player
             spawnRotation = transform.rotation;
         }
 
+        // Poison: each stack deals its damage evenly over its duration; stacks add up. Nothing
+        // mitigates it (no armour, no resistance) - it has already got past them.
+        private struct PoisonStack
+        {
+            public float PerSecond;
+            public float Until;
+        }
+
+        private const int MaxPoisonStacks = 12;
+        private readonly System.Collections.Generic.List<PoisonStack> poison = new System.Collections.Generic.List<PoisonStack>();
+        private float poisonShown;
+        private float poisonShowAt;
+
+        public bool IsPoisoned => poison.Count > 0;
+
+        /// <summary>Adds a stack of poison dealing <paramref name="damage"/> over <paramref name="seconds"/>.</summary>
+        public void Poison(float damage, float seconds)
+        {
+            if (dead || damage <= 0f || seconds <= 0f)
+                return;
+            if (poison.Count == 0)
+                CombatText.Show(transform.position + Vector3.up * 1.6f, "Poisoned", CombatText.PoisonColor, 0.7f);
+            if (poison.Count >= MaxPoisonStacks)
+                poison.RemoveAt(0);
+            poison.Add(new PoisonStack { PerSecond = damage / seconds, Until = Time.time + seconds });
+        }
+
+        // The stacks wear off as they run out; what they deal is shown as one green number a second.
+        private void TickPoison()
+        {
+            float perSecond = 0f;
+            for (int i = poison.Count - 1; i >= 0; i--)
+            {
+                if (Time.time >= poison[i].Until)
+                    poison.RemoveAt(i);
+                else
+                    perSecond += poison[i].PerSecond;
+            }
+            if (perSecond <= 0f)
+                return;
+
+            float dealt = perSecond * Time.deltaTime;
+            poisonShown += dealt;
+            if (Time.time >= poisonShowAt)
+            {
+                poisonShowAt = Time.time + 1f;
+                if (poisonShown >= 0.5f)
+                    CombatText.Show(transform.position + Vector3.up * 1.2f, Mathf.RoundToInt(poisonShown).ToString(), CombatText.PoisonColor, 0.8f);
+                poisonShown = 0f;
+            }
+
+            currentHealth -= dealt;
+            if (currentHealth <= 0f)
+                Die();
+        }
+
         private void Update()
         {
+            if (!dead)
+                TickPoison();
             if (!dead)
             {
                 StatSheet sheet = inventory != null ? inventory.Stats : null;
@@ -244,10 +302,11 @@ namespace PoeClone.Player
             spawnRotation = rotation;
         }
 
-        public void TakeHit(float damage, DamageType type)
+        /// <summary>A blow from an enemy: evasion and block first, then mitigation. False if it never landed.</summary>
+        public bool TakeHit(float damage, DamageType type)
         {
             if (dead || damage <= 0f)
-                return;
+                return false;
 
             Vector3 textAt = transform.position + Vector3.up * 1.2f;
             StatSheet sheet = inventory != null ? inventory.Stats : null;
@@ -257,7 +316,7 @@ namespace PoeClone.Player
                 if (UnityEngine.Random.value < DefenceMath.EvadeChance(sheet.Total(StatType.Evasion)))
                 {
                     CombatText.Show(textAt, "Evaded", CombatText.AvoidColor, 0.8f);
-                    return;
+                    return false;
                 }
 
                 if (UnityEngine.Random.value < DefenceMath.BlockChance(sheet.Total(StatType.BlockChance)))
@@ -265,7 +324,7 @@ namespace PoeClone.Player
                     CombatText.Show(textAt, "Blocked", CombatText.BlockColor, 0.8f);
                     if (AudioManager.Instance != null)
                         AudioManager.Instance.PlayAtPoint(AudioManager.Instance.combatBlock, transform.position);
-                    return;
+                    return false;
                 }
 
                 damage = Mitigate(sheet, damage, type);
@@ -285,6 +344,7 @@ namespace PoeClone.Player
             currentMana -= absorbed;
 
             TakeDamage(damage - absorbed);
+            return true;
         }
 
         private static float Mitigate(StatSheet sheet, float damage, DamageType type)
@@ -346,6 +406,7 @@ public void Heal(float amount)
         {
             dead = true;
             currentHealth = 0f;
+            poison.Clear();
             respawnPhase = RespawnPhase.Countdown;
             countdownTimer = reviveCountdown;
             Died?.Invoke();

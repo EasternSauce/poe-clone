@@ -22,6 +22,7 @@ namespace PoeClone.UI
         public static readonly Color PlayerHurtColor = new Color(1f, 0.35f, 0.3f);
         public static readonly Color AvoidColor = new Color(0.85f, 0.85f, 0.85f);
         public static readonly Color BlockColor = new Color(0.95f, 0.8f, 0.4f);
+        public static readonly Color PoisonColor = new Color(0.55f, 0.95f, 0.3f);
 
         private struct Entry
         {

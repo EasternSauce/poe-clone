@@ -92,6 +92,7 @@ namespace PoeClone.World
 
         public static Vector3 Center(int area)
         {
+            if (area == ActArena) return ActArenaCenter;
             return Centers[Mathf.Clamp(area, 0, Centers.Length - 1)];
         }
 
@@ -170,7 +171,7 @@ namespace PoeClone.World
             BuildTownsfolk();
             PlaceBosses();
 
-            var definitions = new AreaDefinition[Centers.Length];
+            var definitions = new AreaDefinition[Centers.Length + 1];
             for (int a = 0; a < Centers.Length; a++)
             {
                 definitions[a] = new AreaDefinition
@@ -183,6 +184,8 @@ namespace PoeClone.World
                     tintsSharedGround = a == Greenwood
                 };
             }
+
+            definitions[ActArena] = BuildActArena();
 
             // Colliders made this frame aren't in the physics world until it syncs; the starter
             // loot below finds the ground by raycast.

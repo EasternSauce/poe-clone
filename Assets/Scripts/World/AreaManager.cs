@@ -150,7 +150,11 @@ private IEnumerator SwitchRoutine(int index, Transform arrival)
                 if (controller != null) controller.enabled = false;
                 player.position = target.position;
                 player.rotation = target.rotation;
-                if (controller != null) controller.enabled = true;
+                if (controller != null)
+                {
+                    var alive = player.GetComponent<PoeClone.Player.PlayerStats>();
+                    controller.enabled = alive == null || !alive.IsDead;
+                }
 
                 var walkAnim = player.GetComponentInChildren<PoeClone.Visuals.CharacterWalkAnimator>();
                 if (walkAnim != null)
