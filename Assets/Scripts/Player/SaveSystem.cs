@@ -17,7 +17,63 @@ namespace PoeClone.Player
     /// </summary>
     public class SaveSystem : MonoBehaviour
     {
-        private const string Key = "PoeClone.Save.v1";
+        private const string LegacyKey = "PoeClone.Save.v1";
+        private const string ProfilesKey = "PoeClone.CharacterProfiles.v1";
+        private const string ActiveProfileKey = "PoeClone.ActiveCharacter.v1";
+        private static string Key => "PoeClone.CharacterSave." + ActiveProfileId;
+        public static string ActiveProfileId { get; private set; } = "legacy";
+        public static string ActiveCharacterName { get; private set; } = "";
+
+        [System.Serializable] private class ProfileList { public List<Profile> profiles = new List<Profile>(); }
+        [System.Serializable] public class Profile { public string id; public string name; }
+
+        public static List<Profile> Profiles()
+        {
+            ProfileList list = null;
+            try { if (PlayerPrefs.HasKey(ProfilesKey)) list = JsonUtility.FromJson<ProfileList>(PlayerPrefs.GetString(ProfilesKey)); } catch { }
+            if (list == null) list = new ProfileList();
+            if (list.profiles == null) list.profiles = new List<Profile>();
+            bool hasLegacy = false;
+            foreach (Profile p in list.profiles) if (p != null && p.id == "legacy") hasLegacy = true;
+            if (!hasLegacy && PlayerPrefs.HasKey(LegacyKey))
+            {
+                string old = PlayerPrefs.GetString(LegacyKey);
+                PlayerPrefs.SetString("PoeClone.CharacterSave.legacy", old);
+                list.profiles.Insert(0, new Profile { id = "legacy", name = PlayerPrefs.GetString("PoeClone.PlayerName", "Wanderer") });
+                PlayerPrefs.SetString(ProfilesKey, JsonUtility.ToJson(list)); PlayerPrefs.Save();
+            }
+            return list.profiles;
+        }
+
+        public static void SelectProfile(string id)
+        {
+            foreach (Profile p in Profiles()) if (p.id == id) { ActiveProfileId = p.id; ActiveCharacterName = p.name; PlayerPrefs.SetString(ActiveProfileKey, id); return; }
+        }
+
+        public static void CreateProfile(string name)
+        {
+            var profiles = Profiles();
+            string id = System.Guid.NewGuid().ToString("N");
+            profiles.Add(new Profile { id = id, name = name.Trim() });
+            PlayerPrefs.SetString(ProfilesKey, JsonUtility.ToJson(new ProfileList { profiles = profiles }));
+            PlayerPrefs.SetString(ActiveProfileKey, id); PlayerPrefs.Save();
+            ActiveProfileId = id; ActiveCharacterName = name.Trim();
+        }
+
+        public static int ProfileLevel(Profile p)
+        {
+            string key = p.id == "legacy" ? "PoeClone.CharacterSave.legacy" : "PoeClone.CharacterSave." + p.id;
+            try { var d = JsonUtility.FromJson<SaveData>(PlayerPrefs.GetString(key, "")); return d != null ? Mathf.Max(1, d.level) : 1; } catch { return 1; }
+        }
+
+        public static string ProfileAppearance(Profile p)
+        {
+            string key = "PoeClone.CharacterSave." + p.id;
+            try { var d = JsonUtility.FromJson<SaveData>(PlayerPrefs.GetString(key, ""));
+                if (d != null && d.equipped != null && d.equipped.Count > 0) return d.equipped[0].item.name;
+            } catch { }
+            return "Starter attire";
+        }
         private const float SaveEvery = 10f;
 
         private static SaveSystem instance;
@@ -28,7 +84,7 @@ namespace PoeClone.Player
         private AreaManager areas;
         private PlayerStats stats;
 
-        public static bool HasSave => PlayerPrefs.HasKey(Key);
+        public static bool HasSave => PlayerPrefs.HasKey(Key) || (ActiveProfileId == "legacy" && PlayerPrefs.HasKey(LegacyKey));
 
         private void Awake()
         {
@@ -184,6 +240,8 @@ namespace PoeClone.Player
 
         private void Load(PlayerStats stats)
         {
+            if (!PlayerPrefs.HasKey(Key) && ActiveProfileId == "legacy" && PlayerPrefs.HasKey(LegacyKey))
+                PlayerPrefs.SetString(Key, PlayerPrefs.GetString(LegacyKey));
             if (!PlayerPrefs.HasKey(Key))
                 return;
 

@@ -12,7 +12,7 @@ User explicitly prioritized playable access/full fight over appearance and short
 - Player death returns to Frozen Hollow outside door and removes live boss; re-entry starts full phase one. Walking out similarly resets an unfinished attempt.
 - Smoke verified in Editor: zero errors, real arena entry, phase 1 threshold (1940/2910), phase 2 fake death alive/immune, phase 3 Carrion Saint 2910/2910 immune false, pursuit route growing, final death quest Complete 1/1 and Shepherd's Fang loot, inventory-click heart consumed + full phase-one respawn, living-boss heart retained, dagger hit100 plus poison100, death moved player to area4 doorway (780,1.1,43) and removed boss.
 - Small final fixes after smoke: hold health floor across multiple same-frame hits, auto-accept available boss quest on entry, reject repeat hearts when respawn already queued outside arena, clean cloud visuals on owner destruction. Final compile check passed with zero errors; DevTest.End restored user preferences/save; local test server PID 77060 stopped. Editor stopped.
-- User will do most testing. Known shortcuts: sparse arena, reused item art, basic phase-three moves, balance/animation rough; spectator boss phase-three rig/identity replication not integrated yet. No Web build/commit/deploy performed.
+- User will do most testing. Known shortcuts: sparse arena, reused item art, basic phase-three moves, balance/animation rough. Spectators now receive the boss phase, scale, animation clip/timing, phase-three reveal, and phase-two snake strikes; Unity compile check passed with zero errors. No live spectator play-through, Web build, commit, or deploy performed.
 - New helpers: DevTest.BossArena() (fresh God test character, quest unlock, two weapons + heart, real arena), BossArenaHit(), BossArenaStatus(). Area(5) now supported. For normal quest access use real character, return to Maren after door inscription/story.
 
 ## Previous handoff - phase-three animation review, 2026-10-04
@@ -34,13 +34,13 @@ DevTest.BossReview3() repeats fake death/reveal and all seven clips every 24s on
 
 ### Final user scope and budget direction
 - Focus on shipping, practical shortcuts, no extra polish. User most recently reported 36% remaining five-hour usage.
-- Four boss-only poison uniques: bow, dagger, staff, summoner grimoire. NO two-handed poison weapon; dagger covers melee.
+- Five Shepherd-only uniques: bow, dagger, staff, summoner grimoire and poison-focused amulet. No two-handed poison weapon; dagger covers melee.
 - Distinct procedural serpent sanctuary arena connected to main quest. Boss door stays locked until preceding questline fulfilled. Replace old Hollow Stag quest text with Shepherd story.
 - Death returns player outside entrance and fully resets boss.
 - Boss respawns five minutes after defeat. Somewhat rare Act I drop from any enemy, clicked in inventory, instantly respawns dead act boss; consume only when successful, cannot reset an active living fight.
 
 ### Next
-Get animation/reveal review, then build minimal playable phase three. Afterwards arena/quest/reset integration and four poison uniques + respawn consumable. Remember spectator replication of phase-three identity/appearance when integrating production combat. Update release patch notes as the fight becomes production-accessible. User must authorize deploy/commit.
+Get animation/reveal review, then build minimal playable phase three. Afterwards arena/quest/reset integration and four poison uniques + respawn consumable. Spectator boss phase, reveal, and snake animation replication is now integrated. Update release patch notes as the fight becomes production-accessible. User must authorize deploy/commit.
 
 ## Previous handoff - Codex continuation, 2026-10-04
 
@@ -79,12 +79,13 @@ Main-quest integration required: the door stays locked until the preceding quest
 A ruined serpent sanctuary beyond the existing story door: circular cracked dark-stone floor, colossal fossil ribs/coiled serpent remains framing the perimeter, broken shrine at the far end, sickly green pools outside the fighting floor, restrained hanging lanterns. Clear playable centre, readable telegraphs; procedural geometry and existing materials. Quest-gated entrance, death returns outside and resets the complete fight. Update the old Hollow Stag story/door text to match the Shepherd.
 
 ### Proposed rewards (names/details provisional)
-Guarantee one random item from a small Shepherd-only pool on full final-phase victory. Exclude these from ordinary unique rolls and other bosses; no rewards for fake death. Reuse one player-to-enemy poison implementation and existing attack/projectile/summon paths rather than building unrelated skill systems.
+Guarantee one random item from a five-item Shepherd-only pool on full final-phase victory. Exclude these from ordinary unique rolls and other bosses; no rewards for fake death. The completed pool consists of skill-granting bow, dagger, staff and grimoire rewards plus a poison-focused amulet.
 - Bow, Widow's Choir: exclusive Venom Arrow, piercing shot leaving a small poison cloud.
 - Dagger, Shepherd's Fang: exclusive Fang Strike, quick melee strike with stronger poison.
 - No two-handed poison weapon: user explicitly removed it; dagger covers melee.
 - Staff, Crook of the Last Shepherd: exclusive Venom Spout, targeted poison eruption using the boss's existing visual language.
 - Grimoire, Book of Shed Skin: exclusive Summon Viper, small serpent minion applying poison; compatible with existing minion investment.
+- Amulet, Widow's Brood: poison damage, damage over time, poison resistance and penetration, plus venom clouds.
 
 Boss poison currently targets PlayerStats. Player poison against enemies and boss-only unique pooling still need implementation; these are not already supported. Balance/item names are not finalized. Reuse gear art and green tint for first ship; custom icons/models can wait.
 

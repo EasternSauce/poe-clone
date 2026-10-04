@@ -82,7 +82,7 @@ namespace PoeClone.World
             Boss.Died += BossDied;
             slain = false; respawnAt = -1f;
         }
-        private void BossDied() { slain = true; respawnAt = Time.time + 300f; }
+        private void BossDied() { slain = true; respawnAt = Time.time + 600f; }
         public bool Reawaken()
         {
             if (!slain || Time.time >= respawnAt || (Boss != null && !Boss.IsDead)) return false;

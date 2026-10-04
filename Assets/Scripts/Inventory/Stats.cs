@@ -99,7 +99,7 @@ namespace PoeClone.Inventory
         SkeletonMagesLevels,
         SpiritWolvesLevels,
         BoneGolemLevels,
-        AdditionalSkeletons,        // +N to the most Skeleton Warriors and Skeleton Mages each
+        AdditionalSkeletons,        // rare unique: +N to per-type cap for warriors and mages
         MarkEffect,                 // % increased effect of Death Mark (the extra damage minions deal to it)
         MinionDuration,             // % increased duration of Spirit Wolves and the Bone Golem
         SoulBond,                   // % of minion damage dealt returned to the player as life
@@ -116,7 +116,25 @@ namespace PoeClone.Inventory
         GrantBurningArrow,
         ExtraArrowChance,           // % chance for a bow attack to fire one more arrow
         PoisonOnHit,               // % of attack damage dealt again as poison over three seconds
-        VenomCloudOnHit             // % of attack damage per second in a venom cloud
+        VenomCloudOnHit,            // % of attack damage per second in a venom cloud
+        FirePenetration,            // percentage points subtracted from enemy fire resistance
+        ColdPenetration,            // percentage points subtracted from enemy cold resistance
+        LightningPenetration,        // percentage points subtracted from enemy lightning resistance
+        ElementalPenetration,        // percentage points subtracted from all elemental resistances
+        ArmourPenetration,           // % of enemy armour ignored by physical hits
+        PoisonResistance,
+        PoisonPenetration,
+        PoisonDamage,
+        DamageOverTime,
+        GrantFangStrike,
+        GrantVenomArrow,
+        GrantVenomSpout,
+        GrantSummonViper,
+        AdditionalMinions,
+        MinionDamagePenalty,
+        GrantPulverize,
+        GrantReapingArc,
+        GrantLungingThrust
     }
 
     /// <summary>
@@ -135,7 +153,9 @@ namespace PoeClone.Inventory
         {
             return (stat >= StatType.GrantCleave && stat <= StatType.GrantIceShard) || stat == StatType.GrantTeleport ||
                    stat == StatType.GrantRaiseSkeletons || (stat >= StatType.GrantDeathMark && stat <= StatType.GrantBoneGolem) ||
-                   stat == StatType.GrantGraveRot || IsBowSkill(stat);
+                   stat == StatType.GrantGraveRot || IsBowSkill(stat) ||
+                   (stat >= StatType.GrantFangStrike && stat <= StatType.GrantSummonViper) ||
+                   (stat >= StatType.GrantPulverize && stat <= StatType.GrantLungingThrust);
         }
 
         /// <summary>The bow skills: they roll on bows and quivers (never as the attack) and are toggled from the bar.</summary>
@@ -144,7 +164,7 @@ namespace PoeClone.Inventory
 
         public static bool IsBowSkill(StatType stat)
         {
-            return Array.IndexOf(BowSkills, stat) >= 0;
+            return Array.IndexOf(BowSkills, stat) >= 0 || stat == StatType.GrantVenomArrow;
         }
 
         /// <summary>The attack spells a grimoire carries (one always rolls on every grimoire).</summary>
@@ -153,7 +173,7 @@ namespace PoeClone.Inventory
         /// <summary>The summon skills (bar skills that raise minions).</summary>
         public static bool IsSummon(StatType stat)
         {
-            return stat == StatType.GrantRaiseSkeletons || (stat >= StatType.GrantSkeletonMages && stat <= StatType.GrantBoneGolem);
+            return stat == StatType.GrantRaiseSkeletons || (stat >= StatType.GrantSkeletonMages && stat <= StatType.GrantBoneGolem) || stat == StatType.GrantSummonViper;
         }
 
         /// <summary>The "+N to level of this summon" stat for a summon grant (null for anything else).</summary>
@@ -200,6 +220,13 @@ namespace PoeClone.Inventory
                 case StatType.GrantPiercingShot: return "Piercing Shot";
                 case StatType.GrantRainOfArrows: return "Rain of Arrows";
                 case StatType.GrantBurningArrow: return "Burning Arrow";
+                case StatType.GrantFangStrike: return "Fang Strike";
+                case StatType.GrantVenomArrow: return "Venom Arrow";
+                case StatType.GrantVenomSpout: return "Venom Spout";
+                case StatType.GrantSummonViper: return "Summon Viper";
+                case StatType.GrantPulverize: return "Pulverize";
+                case StatType.GrantReapingArc: return "Reaping Arc";
+                case StatType.GrantLungingThrust: return "Lunging Thrust";
                 default: return grant.ToString();
             }
         }
@@ -381,6 +408,7 @@ namespace PoeClone.Inventory
                 case StatType.FireResistance:
                 case StatType.ColdResistance:
                 case StatType.LightningResistance:
+                case StatType.PoisonResistance:
                     return Math.Min(ResistanceCap, total);
                 case StatType.BlockChance:
                     return Math.Min(BlockCap, total);
@@ -410,6 +438,15 @@ namespace PoeClone.Inventory
                 case StatType.FireResistance: return "Fire Resistance";
                 case StatType.ColdResistance: return "Cold Resistance";
                 case StatType.LightningResistance: return "Lightning Resistance";
+                case StatType.PoisonResistance: return "Poison Resistance";
+                case StatType.PoisonPenetration: return "Poison Penetration";
+                case StatType.PoisonDamage: return "Poison Damage";
+                case StatType.DamageOverTime: return "Damage over Time";
+                case StatType.FirePenetration: return "Fire Penetration";
+                case StatType.ColdPenetration: return "Cold Penetration";
+                case StatType.LightningPenetration: return "Lightning Penetration";
+                case StatType.ElementalPenetration: return "Elemental Penetration";
+                case StatType.ArmourPenetration: return "Armour Penetration";
                 case StatType.MovementSpeed: return "Movement Speed";
                 case StatType.AdditionalArrows: return "Additional Arrows";
                 case StatType.AdditionalSpellProjectiles: return "Additional Spell Projectiles";
@@ -460,6 +497,8 @@ namespace PoeClone.Inventory
                 case StatType.SpiritWolvesLevels: return "Spirit Wolves Levels";
                 case StatType.BoneGolemLevels: return "Bone Golem Levels";
                 case StatType.AdditionalSkeletons: return "Extra Skeletons";
+                case StatType.AdditionalMinions: return "Maximum Minions";
+                case StatType.MinionDamagePenalty: return "Minion Damage Penalty";
                 case StatType.MarkEffect: return "Death Mark Effect";
                 case StatType.MinionDuration: return "Minion Duration";
                 case StatType.SoulBond: return "Soul Bond";
@@ -491,6 +530,15 @@ namespace PoeClone.Inventory
                 case StatType.FireResistance:
                 case StatType.ColdResistance:
                 case StatType.LightningResistance:
+                case StatType.PoisonResistance:
+                case StatType.FirePenetration:
+                case StatType.ColdPenetration:
+                case StatType.LightningPenetration:
+                case StatType.ElementalPenetration:
+                case StatType.ArmourPenetration:
+                case StatType.PoisonPenetration:
+                case StatType.PoisonDamage:
+                case StatType.DamageOverTime:
                 case StatType.MovementSpeed:
                 case StatType.SpellDamage:
                 case StatType.AreaOfEffect:
@@ -520,6 +568,7 @@ namespace PoeClone.Inventory
                 case StatType.Shatter:
                 case StatType.Stormblade:
                 case StatType.MinionDamage:
+                case StatType.MinionDamagePenalty:
                 case StatType.MinionLife:
                 case StatType.MinionSpeed:
                 case StatType.MarkEffect:
@@ -561,6 +610,10 @@ namespace PoeClone.Inventory
                 case StatType.FireResistance: return sign + n + "% to Fire Resistance";
                 case StatType.ColdResistance: return sign + n + "% to Cold Resistance";
                 case StatType.LightningResistance: return sign + n + "% to Lightning Resistance";
+                case StatType.PoisonResistance: return sign + n + "% to Poison Resistance";
+                case StatType.PoisonPenetration: return n + "% Poison Penetration";
+                case StatType.PoisonDamage: return n + "% increased Poison Damage";
+                case StatType.DamageOverTime: return n + "% increased Damage over Time";
                 case StatType.MovementSpeed: return n + "% " + (m.Value < 0f ? "reduced" : "increased") + " Movement Speed";
                 case StatType.AdditionalArrows: return "Bow attacks fire " + n + " additional arrow" + (n == "1" ? "" : "s");
                 case StatType.AdditionalSpellProjectiles: return "Fire Bolt and Ice Shard fire " + n + " additional projectile" + (n == "1" ? "" : "s");
@@ -611,13 +664,24 @@ namespace PoeClone.Inventory
                 case StatType.SpiritWolvesLevels: return sign + n + " to Level of Spirit Wolves";
                 case StatType.BoneGolemLevels: return sign + n + " to Level of Bone Golem";
                 case StatType.AdditionalSkeletons: return sign + n + " to maximum Skeleton Warriors and Skeleton Mages";
+                case StatType.AdditionalMinions: return sign + n + " to maximum number of Minions";
+                case StatType.MinionDamagePenalty: return "Minions deal " + n + "% less Damage";
                 case StatType.MarkEffect: return Increased(m, "effect of Death Mark");
                 case StatType.MinionDuration: return Increased(m, "duration of Spirit Wolves and the Bone Golem");
                 case StatType.SoulBond: return n + "% of Minion Damage is returned to you as Life";
                 case StatType.DeathsHerald: return "A Marked enemy that dies bursts for a fifth of its life, and the Mark leaps to the nearest enemy";
                 case StatType.ExtraArrowChance: return n + "% chance for Bow Attacks to fire an additional arrow";
                 case StatType.PoisonOnHit: return "Attacks deal " + n + "% of hit damage as Poison over 3 seconds";
+                case StatType.GrantFangStrike: return "Grants Fang Strike (Level " + n + ")";
+                case StatType.GrantVenomArrow: return "Grants Venom Arrow (Level " + n + ")";
+                case StatType.GrantVenomSpout: return "Grants Venom Spout (Level " + n + ")";
+                case StatType.GrantSummonViper: return "Grants Summon Viper (Level " + n + ")";
                 case StatType.VenomCloudOnHit: return "Attacks create Venom Clouds dealing " + n + "% of hit damage per second (1 second cooldown)";
+                case StatType.FirePenetration: return n + "% Fire Penetration (lowers enemy Fire Resistance)";
+                case StatType.ColdPenetration: return n + "% Cold Penetration (lowers enemy Cold Resistance)";
+                case StatType.LightningPenetration: return n + "% Lightning Penetration (lowers enemy Lightning Resistance)";
+                case StatType.ElementalPenetration: return n + "% Elemental Penetration (lowers enemy elemental resistances)";
+                case StatType.ArmourPenetration: return n + "% Armour Penetration (ignores enemy Armour)";
                 case StatType.BoneArmour: return "Minions take " + n + "% " + (m.Value < 0f ? "more" : "less") + " damage";
                 default:
                     if (SkillGrants.IsGrant(m.Stat))

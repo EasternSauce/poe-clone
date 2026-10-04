@@ -28,6 +28,8 @@ namespace PoeClone.Player
         // steers or attacks, or it gives up (stuck behind something).
         private const float WalkTimeout = 6f;
         private bool walking;
+        private bool skillCommitted;
+        public bool IsSkillCommitted => skillCommitted;
         private Vector3 walkTarget;
         private float walkArriveDistance;
         private float walkGiveUpAt;
@@ -167,7 +169,7 @@ namespace PoeClone.Player
                 gameObject.AddComponent<PlayerLight>();
         }
 
-private void Update()
+        private void Update()
         {
             if (dashTimeLeft > 0f)
             {
@@ -177,7 +179,9 @@ private void Update()
                 return;
             }
 
-            Vector2 input = ReadMovementInput();
+            Vector2 input = skillCommitted ? Vector2.zero : ReadMovementInput();
+            if (skillCommitted)
+                walking = false;
 
             // Move relative to the camera so W is always "up the screen",
             // no matter what yaw the camera has.
@@ -238,6 +242,14 @@ private void Update()
             }
 
             ApplyGravity();
+        }
+
+        /// <summary>Roots the player during a deliberate melee skill windup and strike.</summary>
+        public void SetSkillCommit(bool committed)
+        {
+            skillCommitted = committed;
+            if (committed)
+                CancelWalk();
         }
 
         private Vector3 WalkDirection()

@@ -371,6 +371,45 @@ namespace PoeClone.Network
                 e.sk = skills != null ? skills.UseCount : 0;
                 e.sx = skills != null ? skills.LastTarget.x : 0f;
                 e.sz = skills != null ? skills.LastTarget.z : 0f;
+
+                if (EnemyKinds.Get(e.k).Boss == BossStyle.Shepherd)
+                {
+                    e.bs = enemy.transform.localScale.x;
+                    ShepherdFight fight = enemy.GetComponent<ShepherdFight>();
+                    CarrionSaintReveal reveal = enemy.GetComponent<CarrionSaintReveal>();
+                    e.bp = reveal != null && reveal.IsRevealing ? 3 : (fight != null ? fight.Phase : 1);
+                    ShepherdAnimator shepherd = enemy.GetComponentInChildren<ShepherdAnimator>();
+                    CarrionSaintAnimator saint = enemy.GetComponentInChildren<CarrionSaintAnimator>();
+                    if (saint != null)
+                    {
+                        e.bm = 10000 + saint.PlayCount;
+                        e.ba = string.IsNullOrEmpty(saint.Current) ? 0 : 100 + Array.IndexOf(CarrionSaintAnimator.Clips, saint.Current) + 1;
+                        e.bt = saint.Elapsed;
+                    }
+                    else if (shepherd != null)
+                    {
+                        e.bm = shepherd.PlayCount;
+                        e.ba = shepherd.Current == null ? 0 : Array.IndexOf(ShepherdAnimator.Clips, shepherd.Current) + 1;
+                        e.bt = shepherd.Elapsed;
+                    }
+                    if (e.bp < 3)
+                    {
+                        SnakeLimb[] limbs = enemy.GetComponentsInChildren<SnakeLimb>();
+                        if (limbs.Length > 0)
+                        {
+                            e.bl = new BossLimbState[limbs.Length];
+                            for (int n = 0; n < limbs.Length; n++)
+                            {
+                                SnakeLimb limb = limbs[n];
+                                e.bl[n] = new BossLimbState { c = limb.StrikeCount, a = limb.IsStriking ? 1 : 0,
+                                    s = limb.transform.localScale.x,
+                                    x = limb.StrikeTarget.x, y = limb.StrikeTarget.y, z = limb.StrikeTarget.z,
+                                    w = limb.StrikeWindUp, l = limb.StrikeLunge, h = limb.StrikeHold, r = limb.StrikeRecover,
+                                    t = limb.StrikeElapsed };
+                            }
+                        }
+                    }
+                }
             }
 
             // The player's minions go out as entities too (ids of their own, never an enemy's, and

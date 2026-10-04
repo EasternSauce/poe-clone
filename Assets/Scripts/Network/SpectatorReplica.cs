@@ -40,6 +40,7 @@ namespace PoeClone.Network
             public Vector3 LastPosition;
             public float LastSeen;
             public float NextEnragePulse;
+            public int BossLookPhase = 1;
         }
 
         private readonly SnapshotTimeline timeline = new SnapshotTimeline();
@@ -815,6 +816,87 @@ namespace PoeClone.Network
                 puppet.Stagger.Trigger();
                 PlaySfx(AudioManager.Instance != null ? Pick(AudioManager.Instance.meleeHit) : null, at);
             }
+
+            ApplyBossVisual(puppet, e, prev, false);
+        }
+
+        private static void ApplyBossVisual(Puppet puppet, EntityState state, EntityState previous, bool created)
+        {
+            if (puppet == null || puppet.Root == null || state == null || state.bp <= 0 ||
+                EnemyKinds.Get(state.k).Boss != BossStyle.Shepherd)
+                return;
+
+            Transform root = puppet.Root.transform;
+            Transform model = root.Find("Model") ?? root;
+            Transform saintRig = model.Find(CarrionSaintLook.RigName);
+            int oldPhase = previous != null ? previous.bp : 1;
+
+            bool phaseTwoAppearance = state.bp >= 2 || state.bs > ShepherdLook.BaseScale + 0.02f;
+            if (phaseTwoAppearance && puppet.BossLookPhase < 2 && saintRig == null)
+            {
+                ShepherdLook.ToPhase2(root);
+                puppet.BossLookPhase = 2;
+            }
+
+            if (state.bp >= 3 && saintRig == null)
+            {
+                bool replayReveal = !created && oldPhase < 3;
+                saintRig = CarrionSaintLook.Build(root);
+                puppet.BossLookPhase = 3;
+                var saintAnimator = saintRig.GetComponent<CarrionSaintAnimator>();
+                if (replayReveal)
+                {
+                    CarrionSaintReveal reveal = root.GetComponent<CarrionSaintReveal>();
+                    if (reveal == null) reveal = root.gameObject.AddComponent<CarrionSaintReveal>();
+                    reveal.BeginReplica();
+                }
+                else if (saintAnimator != null)
+                    saintAnimator.Reveal = 1f;
+                puppet.Health?.RevealBossHealth("Carrion Saint");
+            }
+
+            if (state.bp < 3)
+            {
+                ShepherdAnimator animator = model.GetComponent<ShepherdAnimator>();
+                if (animator != null)
+                {
+                    if (state.ba > 0 && state.ba <= ShepherdAnimator.Clips.Length)
+                        animator.Freeze(ShepherdAnimator.Clips[state.ba - 1], state.bt);
+                    else if (animator.IsPlaying)
+                        animator.Stop();
+                }
+
+                if (state.bl != null)
+                {
+                    SnakeLimb[] limbs = root.GetComponentsInChildren<SnakeLimb>();
+                    for (int i = 0; i < state.bl.Length && i < limbs.Length; i++)
+                    {
+                        BossLimbState strike = state.bl[i];
+                        if (strike != null)
+                            limbs[i].transform.localScale = Vector3.one * strike.s;
+                        int oldCount = previous != null && previous.bl != null && i < previous.bl.Length ? previous.bl[i].c : 0;
+                        if (strike != null && strike.a != 0 && (created || strike.c != oldCount))
+                            limbs[i].ReplayStrike(new Vector3(strike.x, strike.y, strike.z), strike.w, strike.l,
+                                strike.h, strike.r, strike.t);
+                    }
+                }
+            }
+            else
+            {
+                CarrionSaintAnimator animator = model.GetComponentInChildren<CarrionSaintAnimator>();
+                if (animator != null)
+                {
+                    int clipId = state.ba - 100;
+                    if (clipId > 0 && clipId <= CarrionSaintAnimator.Clips.Length)
+                    {
+                        if (previous == null || state.bm != previous.bm || animator.Current != CarrionSaintAnimator.Clips[clipId - 1])
+                            animator.Play(CarrionSaintAnimator.Clips[clipId - 1]);
+                        animator.SeekReplicated(state.bt);
+                    }
+                    else if (animator.Current != null)
+                        animator.Stop();
+                }
+            }
         }
 
         // ---------------------------------------------------------------- continuous poses
@@ -872,6 +954,8 @@ namespace PoeClone.Network
                                   SnapshotTimeline.TeleportDistance * SnapshotTimeline.TeleportDistance;
 
                 puppet.Root.transform.SetPositionAndRotation(target, Quaternion.Euler(0f, scratch.r, 0f));
+                if (scratch.bs > 0f)
+                    puppet.Root.transform.localScale = Vector3.one * scratch.bs;
                 puppet.LastPosition = target;
                 puppet.HasPose = true;
 
@@ -934,6 +1018,9 @@ namespace PoeClone.Network
             // everything that would think for itself before it gets the chance.
             SetEnabled(go.GetComponent<EnemyController>(), false);
             SetEnabled(go.GetComponent<EnemyCombat>(), false);
+            SetEnabled(go.GetComponent<BossAbilities>(), false);
+            SetEnabled(go.GetComponent<ShepherdFight>(), false);
+            SetEnabled(go.GetComponent<CarrionSaintFight>(), false);
             var cc = go.GetComponent<CharacterController>();
             if (cc != null)
                 cc.enabled = false;
@@ -980,6 +1067,8 @@ namespace PoeClone.Network
                 if (e.d != 0)
                     puppet.Health.ApplyReplicatedDeath(instant: true);
             }
+
+            ApplyBossVisual(puppet, e, null, true);
 
             puppets[e.i] = puppet;
             return puppet;

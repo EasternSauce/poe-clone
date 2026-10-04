@@ -47,6 +47,8 @@ namespace PoeClone.Enemies
         public float SpawnWeight;
 
         public float MaxHealth;
+        public float Armour;
+        public float FireResistance, ColdResistance, LightningResistance, PoisonResistance;
         public int Experience;
 
         public EnemyAttackStyle Style;
@@ -259,7 +261,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Gravelord Mortis", SpawnWeight = 0f, Tempo = 2f,
-                MaxHealth = 340f, Experience = 150,
+                MaxHealth = 340f, Armour = 500f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 150,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 21f, AttackCooldown = 1.4f, AttackRange = 4.2f,
                 SpeedRatio = 1.05f, Scale = 1.9f,
@@ -271,7 +273,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Ashen Warlord", SpawnWeight = 0f, Tempo = 2f,
-                MaxHealth = 420f, Experience = 220,
+                MaxHealth = 420f, Armour = 500f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 220,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
                 Damage = 25f, AttackCooldown = 1.5f, AttackRange = 4.4f,
                 SpeedRatio = 1.05f, Scale = 2.1f,
@@ -284,7 +286,7 @@ namespace PoeClone.Enemies
             {
                 // The brood-queen of the Hollow's ice crawlers: a spider the size of a house.
                 Name = "Rimeheart", SpawnWeight = 0f, Tempo = 2f,
-                MaxHealth = 460f, Experience = 300,
+                MaxHealth = 460f, Armour = 500f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 300,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
                 Damage = 21f, AttackCooldown = 1.0f, AttackRange = 4.0f,
                 SpeedRatio = 1.2f, Scale = 2.6f,
@@ -523,10 +525,11 @@ namespace PoeClone.Enemies
             {
                 // The act boss, in its first phase: a stooped, hooded old man with a crook and a
                 // lantern. Numbers are placeholders until the fight itself is in.
-                Name = "The Shepherd", SpawnWeight = 0f, Tempo = 2f,
-                MaxHealth = 600f, Experience = 400,
+                Name = "The Shepherd", SpawnWeight = 0f, Tempo = 4f,
+                MaxHealth = 2400f, Armour = 1200f,
+                FireResistance = 30f, ColdResistance = 30f, LightningResistance = 30f, Experience = 400,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
-                Damage = 22f, AttackCooldown = 1.4f, AttackRange = 3.6f,
+                Damage = 44f, AttackCooldown = 1.4f, AttackRange = 3.6f,
                 SpeedRatio = 1.05f, Scale = 1.5f,
                 Cloth = new Color(0.36f, 0.35f, 0.33f), Skin = new Color(0.55f, 0.58f, 0.50f), Pants = new Color(0.30f, 0.29f, 0.27f), Eyes = new Color(0.9f, 0.8f, 0.4f),
                 HideHorns = true,

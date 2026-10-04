@@ -8,6 +8,7 @@ using PoeClone.Player;
 using PoeClone.Skills;
 using PoeClone.Visuals;
 using PoeClone.World;
+using PoeClone.Inventory;
 
 namespace PoeClone.Enemies
 {
@@ -110,8 +111,18 @@ namespace PoeClone.Enemies
 
         public void TakeDamage(float amount)
         {
+            TakeDamage(amount, DamageType.Physical, 0f, 0f);
+        }
+
+        public void TakeDamage(float amount, DamageType type)
+        {
+            TakeDamage(amount, type, 0f, 0f);
+        }
+
+        public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration)
+        {
             if (dead || amount <= 0f)
-                return;
+                return 0f;
 
             if (Immune)
             {
@@ -120,9 +131,21 @@ namespace PoeClone.Enemies
                     immuneShownAt = Time.time + 0.4f;
                     UI.CombatText.Show(transform.position + Vector3.up * 1.5f * transform.localScale.y, "Immune", UI.CombatText.AvoidColor, 0.8f);
                 }
-                return;
+                return 0f;
             }
 
+            EnemyKind kind = EnemyKinds.Get(KindIndex);
+            switch (type)
+            {
+                case DamageType.Fire: amount = DefenceMath.AfterResistance(amount, kind.FireResistance - elementalPenetration); break;
+                case DamageType.Cold: amount = DefenceMath.AfterResistance(amount, kind.ColdResistance - elementalPenetration); break;
+                case DamageType.Lightning: amount = DefenceMath.AfterResistance(amount, kind.LightningResistance - elementalPenetration); break;
+                case DamageType.Poison: amount = DefenceMath.AfterResistance(amount, kind.PoisonResistance - elementalPenetration); break;
+                default:
+                    float effectiveArmour = kind.Armour * (1f - Mathf.Clamp(armourPenetration, 0f, 100f) / 100f);
+                    amount *= 1f - DefenceMath.ArmourReduction(effectiveArmour, amount);
+                    break;
+            }
             float least = Mathf.Max(0f, Floor);
             currentHealth = Mathf.Max(least, currentHealth - amount);
             Damaged?.Invoke();
@@ -134,21 +157,21 @@ namespace PoeClone.Enemies
                 {
                     Immune = true;
                     shepherd.BeginPhase3();
-                    return;
+                    return amount;
                 }
                 Die();
-                return;
+                return amount;
             }
 
             if (noFlinch)
-                return;
+                return amount;
 
             // Bosses don't flinch.
             if (EnemyKinds.Get(KindIndex).IsBoss)
             {
                 if (AudioManager.Instance != null)
                     AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.meleeHit, transform.position);
-                return;
+                return amount;
             }
 
             Stagger stagger = GetComponent<Stagger>();
@@ -158,6 +181,7 @@ namespace PoeClone.Enemies
 
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.meleeHit, transform.position);
+            return amount;
         }
 
         // ------------------------------------------------------------------ ailments (player passives)
@@ -203,7 +227,7 @@ namespace PoeClone.Enemies
                 UI.CombatText.Show(transform.position + Vector3.up * 1.3f * transform.localScale.y,
                     Mathf.Max(1, Mathf.RoundToInt(amount)).ToString(), UI.CombatText.FireColor, 0.6f);
                 noFlinch = true;
-                TakeDamage(amount);
+                TakeDamage(amount, DamageType.Fire);
                 noFlinch = false;
             }
             burning = null;
@@ -305,7 +329,7 @@ namespace PoeClone.Enemies
                 LootDrop.Drop(kind.Boss == BossStyle.Shepherd ? Inventory.UniqueItems.ShepherdReward(rng) : Inventory.UniqueItems.Random(rng), transform.position);
             }
             var area = World.AreaManager.Instance;
-            if (area != null && area.CurrentAreaIndex >= 0 && area.CurrentAreaIndex <= World.WorldBuilder.ActArena && UnityEngine.Random.value < 0.008f)
+            if (area != null && area.CurrentAreaIndex >= World.WorldBuilder.Ruins && area.CurrentAreaIndex <= World.WorldBuilder.Frozen && UnityEngine.Random.value < 0.008f)
                 LootDrop.Drop(World.ActBossArena.ReawakeningItem(), transform.position);
             KillRewards.Grant(EnemyKinds.Get(KindIndex), MonsterLevel, transform.position);
 

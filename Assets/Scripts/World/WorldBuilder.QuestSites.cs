@@ -221,7 +221,6 @@ namespace PoeClone.World
             Spots["Seer"] = site - toCentre * 1.2f - side * 2.6f;
             Spots["CampFire"] = site;
             Sanctuary.Add(site, CampWard);
-            WorldLabel.Create(t, "Emberwatch", new Color(1f, 0.62f, 0.35f), 0f, 34).transform.position = site + toCentre * wallRadius + Vector3.up * 4.4f;
         }
 
         // A ridge tent: two cloth slopes over a dark floor, open at the front.

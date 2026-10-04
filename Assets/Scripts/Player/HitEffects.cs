@@ -68,11 +68,23 @@ namespace PoeClone.Player
             if (enemy.IsShocked)
                 damage *= ShockedMore;
             damage *= Skills.Curse.TakenMultiplier(enemy);
+            float ailmentBaseDamage = damage;
 
             Vector3 at = enemy.transform.position;
             float scale = enemy.transform.localScale.y;
             float enemyMaxLife = enemy.MaxHealth;
-            enemy.TakeDamage(damage);
+            float armourPenetration = sheet != null ? sheet.Total(StatType.ArmourPenetration) : 0f;
+            float elementalPenetration = sheet != null ? sheet.Total(StatType.ElementalPenetration) : 0f;
+            if (sheet != null)
+            {
+                if (type == DamageType.Fire) elementalPenetration += sheet.Total(StatType.FirePenetration);
+                else if (type == DamageType.Cold) elementalPenetration += sheet.Total(StatType.ColdPenetration);
+                else if (type == DamageType.Lightning) elementalPenetration += sheet.Total(StatType.LightningPenetration);
+                else if (type == DamageType.Poison) elementalPenetration += sheet.Total(StatType.PoisonPenetration);
+                if (type == DamageType.Poison)
+                    damage *= 1f + (sheet.Total(StatType.PoisonDamage) + sheet.Total(StatType.DamageOverTime)) / 100f;
+            }
+            damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration);
             string number = Mathf.Max(1, Mathf.RoundToInt(damage)).ToString();
             CombatText.Show(at + Vector3.up * 1.6f * scale, crit ? number + "!" : number, crit ? CritColor : color, crit ? 1.35f : 1f);
 
@@ -80,7 +92,17 @@ namespace PoeClone.Player
                 return;
 
             if (attack && !secondary && !enemy.Immune)
-                WeaponVenom.Apply(attacker, enemy, damage, sheet.Total(StatType.PoisonOnHit), sheet.Total(StatType.VenomCloudOnHit));
+            {
+                float poison = sheet.Total(StatType.PoisonOnHit);
+                float cloud = sheet.Total(StatType.VenomCloudOnHit);
+                PlayerSkills skills = attacker.GetComponent<PlayerSkills>();
+                if (skills != null && skills.ActiveBowSkill == SkillId.VenomArrow)
+                {
+                    poison += 90f + 5f * (skills.Level(SkillId.VenomArrow) - 1);
+                    cloud += 25f;
+                }
+                WeaponVenom.Apply(attacker, enemy, damage, poison, cloud, sheet);
+            }
 
             if (attack)
             {
@@ -102,7 +124,7 @@ namespace PoeClone.Player
                 {
                     if (!enemy.IsBurning)
                         CombatText.Show(at + Vector3.up * 2.1f * scale, "Ignited", CombatText.FireColor, 0.7f);
-                    enemy.Ignite(damage * IgniteShare, IgniteSeconds);
+                    enemy.Ignite(ailmentBaseDamage * IgniteShare, IgniteSeconds);
                 }
                 if (type == DamageType.Lightning && Roll(sheet, StatType.ShockChance))
                 {

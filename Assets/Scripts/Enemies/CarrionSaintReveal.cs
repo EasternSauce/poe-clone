@@ -11,6 +11,7 @@ namespace PoeClone.Enemies
     {
         public bool IsRevealing { get; private set; }
         public string Stage { get; private set; } = "not started";
+        private bool visualReplica;
         private readonly List<AudioSource> pausedMusic = new List<AudioSource>();
 
         public void Begin(Action complete)
@@ -19,15 +20,24 @@ namespace PoeClone.Enemies
             StartCoroutine(Reveal(complete));
         }
 
+        public void BeginReplica()
+        {
+            visualReplica = true;
+            Begin(null);
+        }
+
         private IEnumerator Reveal(Action complete)
         {
             IsRevealing = true;
             Stage = "fake death";
             EnemyHealth health = GetComponent<EnemyHealth>();
-            health.Immune = true;
-            health.Floor = 0f;
-            // Empty the bar without actual death, rewards, corpse removal or quest credit.
-            health.ApplyReplicatedHealth(0f, health.MaxHealth);
+            if (!visualReplica)
+            {
+                health.Immune = true;
+                health.Floor = 0f;
+                // Empty the bar without actual death, rewards, corpse removal or quest credit.
+                health.ApplyReplicatedHealth(0f, health.MaxHealth);
+            }
             foreach (MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
                 if (behaviour is EnemyController || behaviour is EnemyCombat || behaviour is BossAbilities)
                     behaviour.enabled = false;
@@ -50,7 +60,7 @@ namespace PoeClone.Enemies
                 yield return null;
             }
             model.localRotation = restRotation * Quaternion.Euler(72f, 0f, 12f);
-            health.HideBossBar = true;
+            if (!visualReplica) health.HideBossBar = true;
             Stage = "silence";
             yield return new WaitForSeconds(1.05f);
             Stage = "shudder";
@@ -68,7 +78,7 @@ namespace PoeClone.Enemies
             animator.Reveal = 0f;
             CameraSystem.CameraFollow.Shake(0.45f, 0.45f);
             Skills.SkillEffects.Shockwave(transform.position, 5f, new Color(0.38f, 0.55f, 0.15f), 0.5f);
-            health.RevealBossHealth("Carrion Saint");
+            if (!visualReplica) health.RevealBossHealth("Carrion Saint");
             Stage = "unfold";
             for (float t = 0f; t < 0.9f; t += Time.deltaTime)
             {

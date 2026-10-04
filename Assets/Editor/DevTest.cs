@@ -32,6 +32,8 @@ namespace PoeClone.EditorTools
     public static class DevTest
     {
         private const string SaveKey = "PoeClone.Save.v1";
+        private const string ProfilesKey = "PoeClone.CharacterProfiles.v1";
+        private const string ActiveProfileKey = "PoeClone.ActiveCharacter.v1";
         private const string DevQueryKey = "PoeClone.DevQuery";
         private const string SeenKey = "PoeClone.PatchNotesSeen";
         private static readonly string BackupPath = Path.Combine("Library", "DevTestPrefsBackup.txt");
@@ -47,10 +49,15 @@ namespace PoeClone.EditorTools
         /// </summary>
         public static string Begin(string server = "ws://localhost:8099", bool freshCharacter = true)
         {
-            if (!File.Exists(BackupPath))
-                File.WriteAllText(BackupPath, Get(SaveKey) + "\n<<SPLIT>>\n" + Get(SeenKey));
-            if (freshCharacter)
-                PlayerPrefs.DeleteKey(SaveKey);
+            bool firstBegin = !File.Exists(BackupPath);
+            if (firstBegin)
+                File.WriteAllText(BackupPath, string.Join("\n<<SPLIT>>\n", new[] { Get(SaveKey), Get(SeenKey), Get(ProfilesKey), Get(ActiveProfileKey) }));
+            if (freshCharacter && firstBegin)
+            {
+                SaveSystem.CreateProfile("DevTest");
+                PlayerPrefs.DeleteKey("PoeClone.CharacterSave." + SaveSystem.ActiveProfileId);
+                File.AppendAllText(BackupPath, "\n<<SPLIT>>\n" + SaveSystem.ActiveProfileId);
+            }
             PlayerPrefs.SetString(DevQueryKey, "?server=" + server);
             PlayerPrefs.Save();
             return "backed up to " + BackupPath + "; DevQuery=" + server + (freshCharacter ? "; fresh character" : "");
@@ -66,6 +73,13 @@ namespace PoeClone.EditorTools
                 string[] parts = File.ReadAllText(BackupPath).Split(new[] { "\n<<SPLIT>>\n" }, StringSplitOptions.None);
                 Put(SaveKey, parts[0]);
                 Put(SeenKey, parts.Length > 1 ? parts[1] : None);
+                if (parts.Length > 2) Put(ProfilesKey, parts[2]);
+                if (parts.Length > 3)
+                {
+                    Put(ActiveProfileKey, parts[3]);
+                    if (parts.Length > 4) PlayerPrefs.DeleteKey("PoeClone.CharacterSave." + parts[4]);
+                    if (parts[3] != None) SaveSystem.SelectProfile(parts[3]);
+                }
                 File.Delete(BackupPath);
                 result += "; save restored (" + (parts[0] == None ? "none" : parts[0].Length + " chars") + ")";
             }
@@ -101,8 +115,16 @@ namespace PoeClone.EditorTools
             UnityEngine.Object ui = prompt != null ? UnityEngine.Object.FindAnyObjectByType(prompt) : null;
             if (ui != null && ((Component)ui).gameObject.activeInHierarchy && Time.timeScale == 0f)
             {
-                prompt.GetMethod("Confirm", Any)?.Invoke(ui, null);
-                sb.Append("confirmed name; ");
+                if (prompt.GetField("afterCharacter", Any)?.GetValue(ui) != null)
+                {
+                    prompt.GetMethod("FinishCharacters", Any)?.Invoke(ui, null);
+                    sb.Append("selected character; ");
+                }
+                else
+                {
+                    prompt.GetMethod("Confirm", Any)?.Invoke(ui, null);
+                    sb.Append("confirmed name; ");
+                }
             }
             Type notes = Type.GetType("PoeClone.UI.PatchNotesUI, Assembly-CSharp");
             UnityEngine.Object pn = notes != null ? UnityEngine.Object.FindAnyObjectByType(notes) : null;

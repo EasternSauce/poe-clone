@@ -10,7 +10,6 @@ namespace PoeClone.Inventory
     public static class DefenceMath
     {
         public const float MaxEvadeChance = 0.6f;
-        public const float MaxArmourReduction = 0.75f;
 
         // Evasion needed for a 50% chance to evade.
         private const float EvasionForHalf = 600f;
@@ -54,7 +53,7 @@ namespace PoeClone.Inventory
         {
             if (armour <= 0f || hitDamage <= 0f)
                 return 0f;
-            return Math.Min(MaxArmourReduction, armour / (armour + ArmourPerDamageForHalf * hitDamage));
+            return armour / (armour + ArmourPerDamageForHalf * hitDamage);
         }
 
         /// <summary>Chance (0..1) to block a hit entirely, from the (already capped) block stat in percent.</summary>

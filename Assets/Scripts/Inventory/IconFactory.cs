@@ -298,6 +298,14 @@ namespace PoeClone.Inventory
                     add.Add(Poly(0.62f, 0.86f, 0.72f, 0.86f, 0.66f, 0.96f));
                     sub.Add(Rect(0.32f, 0.56f, 0.62f, 0.6f));
                     break;
+
+                case ItemType.Consumable:
+                    // The Shed Heart: two rounded lobes taper to a point, with a small cleft.
+                    add.Add(Circle(0.35f, 0.66f, 0.19f));
+                    add.Add(Circle(0.65f, 0.66f, 0.19f));
+                    add.Add(Poly(0.16f, 0.63f, 0.84f, 0.63f, 0.5f, 0.12f));
+                    sub.Add(Poly(0.45f, 0.85f, 0.55f, 0.85f, 0.5f, 0.74f));
+                    break;
             }
         }
     }

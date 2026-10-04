@@ -31,7 +31,8 @@ namespace PoeClone.Enemies
         private const float EngageRange = 18f;
         private const float MoveEvery = 3.0f;
         private const float MoveEveryEnraged = 2.0f;
-        private const int MaxMinions = 5;
+        private const int CalmMaxMinions = 2;
+        private const int EnragedMaxMinions = 4;
 
         private enum Move
         {
@@ -201,7 +202,7 @@ namespace PoeClone.Enemies
                     continue;
                 if ((m == Move.Spin || m == Move.Nova) && distance > 7f)
                     continue;
-                if ((m == Move.RaiseDead || m == Move.Brood) && LiveMinions() >= MaxMinions)
+                if ((m == Move.RaiseDead || m == Move.Brood) && LiveMinions() >= CurrentMaxMinions)
                     continue;
                 fitting.Add(m);
             }
@@ -216,11 +217,11 @@ namespace PoeClone.Enemies
             {
                 case Move.Leap: return LeapSlam();
                 case Move.Spin: return ReapingSpin();
-                case Move.RaiseDead: return RaiseDead(2);
+                case Move.RaiseDead: return RaiseDead(secondPhase ? 2 : 1);
                 case Move.Fissure: return Fissure();
                 case Move.Rain: return RainDown(kind.Boss == BossStyle.Warlord ? DamageType.Fire : DamageType.Cold, secondPhase ? 9 : 7);
                 case Move.Nova: return FrostBurst(7.5f);
-                default: return Brood(secondPhase ? 3 : 2);
+                default: return Brood(secondPhase ? 2 : 1);
             }
         }
 
@@ -528,7 +529,7 @@ namespace PoeClone.Enemies
         private void Summon(int kindIndex, int count, Color glow)
         {
             minions.RemoveAll(m => m == null || m.IsDead);
-            count = Mathf.Min(count, MaxMinions - minions.Count);
+            count = Mathf.Min(count, CurrentMaxMinions - minions.Count);
             if (minionPrefab == null || kindIndex < 0 || count <= 0)
                 return;
 
@@ -549,6 +550,10 @@ namespace PoeClone.Enemies
             minions.RemoveAll(m => m == null || m.IsDead);
             return minions.Count;
         }
+
+        private int CurrentMaxMinions => kind.Boss == BossStyle.FrostQueen
+            ? (secondPhase ? 3 : CalmMaxMinions)
+            : (secondPhase ? EnragedMaxMinions : CalmMaxMinions);
 
         // Plays the boss's weapon swing so its blow lands after the given time.
         private void SwingTimed(float seconds)

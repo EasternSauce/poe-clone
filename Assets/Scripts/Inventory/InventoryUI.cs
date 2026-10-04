@@ -113,6 +113,7 @@ namespace PoeClone.Inventory
         private readonly List<GameObject> itemViews = new List<GameObject>();
 
         private Canvas canvas;
+        private Canvas tooltipCanvas;
         private CanvasGroup canvasGroup;
         private RectTransform panel;
         private RectTransform previewPanel;
@@ -253,6 +254,7 @@ namespace PoeClone.Inventory
 
         private void Update()
         {
+            UpdateTooltipCanvasOrder();
             if (warming)
                 return;
 
@@ -318,6 +320,20 @@ namespace PoeClone.Inventory
                 HandleClick(hover);
             else if (mouse.rightButton.wasPressedThisFrame)
                 UseConsumable(hover);
+        }
+
+        private void UpdateTooltipCanvasOrder()
+        {
+            if (tooltipCanvas == null) return;
+
+            int order = 80; // Above desktop chat, including when it rises over an open menu.
+            if (SpectatorMirror.Active)
+                order = 946; // Spectator chat is 945; name prompt and loading UI stay above this.
+            else if (TouchMode.Active)
+                order = 810; // Open touch chat is 800.
+
+            if (tooltipCanvas.sortingOrder != order)
+                tooltipCanvas.sortingOrder = order;
         }
 
         // ------------------------------------------------------------------ spectators
@@ -786,6 +802,7 @@ namespace PoeClone.Inventory
                 UiKit.AddOutline(button, UiKit.BorderColor, 1.5f);
                 Text label = UiKit.NewText("Label", button.rectTransform, inventory.StashTabName(k), 16, UiKit.TextColor, TextAnchor.MiddleCenter);
                 UiKit.Stretch(label.rectTransform, 2f);
+                label.rectTransform.offsetMax = new Vector2(-36f, label.rectTransform.offsetMax.y);
                 // A long name shrinks (and wraps to two lines) to stay inside its button.
                 label.horizontalOverflow = HorizontalWrapMode.Wrap;
                 label.verticalOverflow = VerticalWrapMode.Truncate;
@@ -798,14 +815,27 @@ namespace PoeClone.Inventory
                     // A spectator sees whichever tab the player has open.
                     if (SpectatorMirror.Active)
                         return;
-                    if (tab == inventory.StashTab)
-                    {
-                        BeginRenameTab(tab);
-                        return;
-                    }
                     inventory.SetStashTab(tab);
                     gridDirty = true;
                     RefreshStashTabs();
+                });
+                Image rename = UiKit.NewImage("Rename", button.transform, new Color(0.30f, 0.27f, 0.20f, 1f));
+                rename.rectTransform.anchorMin = new Vector2(1f, 0.5f);
+                rename.rectTransform.anchorMax = new Vector2(1f, 0.5f);
+                rename.rectTransform.pivot = new Vector2(1f, 0.5f);
+                rename.rectTransform.anchoredPosition = new Vector2(-3f, 0f);
+                rename.rectTransform.sizeDelta = new Vector2(34f, 22f);
+                Text renameLabel = UiKit.NewText("RenameLabel", rename.rectTransform, "Edit", 10, UiKit.Gold, TextAnchor.MiddleCenter);
+                UiKit.Stretch(renameLabel.rectTransform, 0f);
+                renameLabel.raycastTarget = false;
+                UiKit.OnClick(rename, () =>
+                {
+                    if (SpectatorMirror.Active)
+                        return;
+                    inventory.SetStashTab(tab);
+                    gridDirty = true;
+                    RefreshStashTabs();
+                    BeginRenameTab(tab);
                 });
                 stashTabButtons[k] = button;
                 stashTabLabels[k] = label;
@@ -876,6 +906,8 @@ namespace PoeClone.Inventory
             tabNameField.text = inventory.StashTabCustomName(tab);
             tabNameField.Select();
             tabNameField.ActivateInputField();
+            tabNameField.selectionAnchorPosition = 0;
+            tabNameField.selectionFocusPosition = tabNameField.text.Length;
         }
 
         private void EndRenameTab(string name)
@@ -1234,7 +1266,11 @@ private Vector2 CellSize(int w, int h)
 
         private void BuildTooltip()
         {
-            Image bg = UiKit.NewImage("Tooltip", canvas.transform, new Color(0.07f, 0.07f, 0.08f, 0.97f));
+            CanvasGroup unusedGroup;
+            tooltipCanvas = UiKit.NewCanvas("InventoryTooltipCanvas", transform, 80, out unusedGroup);
+            tooltipCanvas.overrideSorting = true;
+
+            Image bg = UiKit.NewImage("Tooltip", tooltipCanvas.transform, new Color(0.07f, 0.07f, 0.08f, 0.97f));
             UiKit.Grain(bg);
             tooltipRect = bg.rectTransform;
             tooltipRect.anchorMin = Vector2.zero;
@@ -1255,7 +1291,7 @@ private Vector2 CellSize(int w, int h)
             // The item on the cursor's own stats, shown the whole time it's held (not just while
             // it's hovering a slot) so a drag-swap can be compared against what's underneath without
             // covering that slot's own tooltip (see ShowHeldTooltip for where they're kept apart).
-            Image heldBg = UiKit.NewImage("HeldTooltip", canvas.transform, new Color(0.07f, 0.07f, 0.08f, 0.97f));
+            Image heldBg = UiKit.NewImage("HeldTooltip", tooltipCanvas.transform, new Color(0.07f, 0.07f, 0.08f, 0.97f));
             UiKit.Grain(heldBg);
             heldTooltipRect = heldBg.rectTransform;
             heldTooltipRect.anchorMin = Vector2.zero;

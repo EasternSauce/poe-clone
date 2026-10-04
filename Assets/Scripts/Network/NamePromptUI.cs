@@ -20,6 +20,81 @@ namespace PoeClone.Network
         private InputField inputField;
         private Text buttonText;
         private Action<string> onDone;
+        private Action afterCharacter;
+
+        public void ShowCharacters(Action done)
+        {
+            afterCharacter = done;
+            canvasRoot.SetActive(true);
+            PlayerHUD.SetHiddenBy(this, true);
+            // Replace the name form with the profile list. Rows show saved level and a compact
+            // equipment summary, which reflects the character's current in game appearance.
+            foreach (Transform child in canvasRoot.transform)
+                if (child.name != "Background") Destroy(child.gameObject);
+            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            Text title = MakeText("Choose Character", font, 34, new Vector2(0, 330), new Vector2(1000, 60));
+            var profiles = PoeClone.Player.SaveSystem.Profiles();
+            float y = 220;
+            foreach (var profile in profiles)
+            {
+                string id = profile.id;
+                MakeButton(profile.name + "   ·   Level " + PoeClone.Player.SaveSystem.ProfileLevel(profile) + "\n" + PoeClone.Player.SaveSystem.ProfileAppearance(profile), font, new Vector2(0, y), new Vector2(560, 82), () =>
+                {
+                    PoeClone.Player.SaveSystem.SelectProfile(id);
+                    PlayerName = PoeClone.Player.SaveSystem.ActiveCharacterName;
+                    FinishCharacters();
+                });
+                y -= 96;
+            }
+            MakeButton("Create New Character", font, new Vector2(0, y - 8), new Vector2(300, 54), () => ShowCreateCharacter(font));
+        }
+
+        private string PlayerName;
+        private void ShowCreateCharacter(Font font)
+        {
+            foreach (Transform child in canvasRoot.transform) if (child.name != "Background") Destroy(child.gameObject);
+            MakeText("Name your character", font, 30, new Vector2(0, 100), new Vector2(800, 60));
+            inputField = MakeInput(font);
+            inputField.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 10);
+            MakeButton("Create and Play", font, new Vector2(0, -70), new Vector2(240, 54), () =>
+            {
+                string name = inputField.text.Trim();
+                if (name.Length == 0) return;
+                PoeClone.Player.SaveSystem.CreateProfile(name);
+                PlayerName = name;
+                FinishCharacters();
+            });
+            MakeButton("Back", font, new Vector2(0, -140), new Vector2(140, 44), () => ShowCharacters(afterCharacter));
+        }
+
+        private InputField MakeInput(Font font)
+        {
+            var go = new GameObject("CharacterName"); go.transform.SetParent(canvasRoot.transform, false);
+            var image = go.AddComponent<Image>(); image.color = Color.white;
+            var rect = image.rectTransform; rect.anchorMin = rect.anchorMax = new Vector2(.5f, .5f); rect.sizeDelta = new Vector2(420, 52);
+            var field = go.AddComponent<InputField>(); field.characterLimit = MaxNameLength; field.lineType = InputField.LineType.SingleLine;
+            var textGo = new GameObject("Text"); textGo.transform.SetParent(go.transform, false); var text = textGo.AddComponent<Text>(); text.font = font; text.fontSize = 24; text.color = Color.black; text.alignment = TextAnchor.MiddleLeft; RuntimeUiUtil.StretchFull(text.rectTransform); text.rectTransform.offsetMin = new Vector2(12, 4); text.rectTransform.offsetMax = new Vector2(-12, -4); field.textComponent = text;
+            return field;
+        }
+
+        private Text MakeText(string value, Font font, int size, Vector2 at, Vector2 dimensions)
+        {
+            var go = new GameObject(value); go.transform.SetParent(canvasRoot.transform, false); var t = go.AddComponent<Text>(); t.font = font; t.fontSize = size; t.color = Color.white; t.alignment = TextAnchor.MiddleCenter; t.text = value;
+            var r = t.rectTransform; r.anchorMin = r.anchorMax = new Vector2(.5f, .5f); r.anchoredPosition = at; r.sizeDelta = dimensions; return t;
+        }
+
+        private void MakeButton(string label, Font font, Vector2 at, Vector2 dimensions, Action click)
+        {
+            var go = new GameObject("ProfileButton"); go.transform.SetParent(canvasRoot.transform, false); var image = go.AddComponent<Image>(); image.color = new Color(.2f, .4f, .65f, .98f); var r = image.rectTransform; r.anchorMin = r.anchorMax = new Vector2(.5f, .5f); r.anchoredPosition = at; r.sizeDelta = dimensions;
+            var b = go.AddComponent<Button>(); b.onClick.AddListener(() => click()); var tgo = new GameObject("Label"); tgo.transform.SetParent(go.transform, false); var t = tgo.AddComponent<Text>(); t.font = font; t.fontSize = 22; t.color = Color.white; t.alignment = TextAnchor.MiddleCenter; t.text = label; RuntimeUiUtil.StretchFull(t.rectTransform);
+        }
+
+        private void FinishCharacters()
+        {
+            canvasRoot.SetActive(false); HasConfirmed = true; PlayerHUD.SetHiddenBy(this, false);
+            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+            var done = afterCharacter; afterCharacter = null; done?.Invoke();
+        }
 
         public bool IsShowing => canvasRoot != null && canvasRoot.activeSelf;
 

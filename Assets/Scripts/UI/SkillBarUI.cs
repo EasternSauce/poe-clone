@@ -117,7 +117,12 @@ namespace PoeClone.UI
             }
 
             for (int k = 0; k < slotViews.Count; k++)
+            {
+                bool mouseBind = k >= 4 && k < 8;
+                bool used = skills.Slot(k) != null;
+                slotViews[k].Back.gameObject.SetActive(!mouseBind || used);
                 UpdateSlot(slotViews[k], skills.Slot(k));
+            }
             UpdateAttack();
         }
 

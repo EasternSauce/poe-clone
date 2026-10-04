@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using PoeClone.Inventory;
+using PoeClone.Skills;
 
 namespace PoeClone.Visuals
 {
@@ -153,8 +154,9 @@ namespace PoeClone.Visuals
         {
             Duration = 0.65f,
             StrikeTime = 0.5f,
-            WindupOffset = new Pose(70f, -12f, 0f, 75f),
-            StrikeOffset = new Pose(-65f, 6f, 0f, 15f),
+            // Keep the haft pointed into the target at impact so the axe edge leads the chop.
+            WindupOffset = new Pose(70f, 0f, 0f, 75f),
+            StrikeOffset = new Pose(-10f, 0f, 0f, 15f),
             BaseAttacksPerSecond = 1.0f,
             Range = 2.3f
         };
@@ -164,8 +166,9 @@ namespace PoeClone.Visuals
         {
             Duration = 0.7f,
             StrikeTime = 0.55f,
-            WindupOffset = new Pose(45f, -45f, -25f, 60f),
-            StrikeOffset = new Pose(-50f, 40f, 30f, 25f),
+            // Drive the hammer head forward at the strike instead of sweeping its side across.
+            WindupOffset = new Pose(70f, 0f, 0f, 60f),
+            StrikeOffset = new Pose(-10f, 0f, 0f, 20f),
             BaseAttacksPerSecond = 0.9f,
             Range = 2.2f
         };
@@ -233,6 +236,80 @@ namespace PoeClone.Visuals
             Range = 2.7f,
             TwoHandGrip = true,
             ConeHalfAngle = 55f
+        };
+
+        // Skill attacks have their own readable silhouettes and slower release frames, separate
+        // from the ordinary weapon swing. Skill timing below matches PlayerSkills' windups.
+        private static readonly AttackProfile CleaveSkillProfile = new AttackProfile
+        {
+            Duration = 0.98f, StrikeTime = 0.93f,
+            WindupOffset = new Pose(55f, -105f, -25f, 65f),
+            StrikeOffset = new Pose(-60f, 100f, 20f, 0f),
+            BaseAttacksPerSecond = 1f, Range = 3f
+        };
+
+        private static readonly AttackProfile CleaveGreatSkillProfile = new AttackProfile
+        {
+            Duration = 0.98f, StrikeTime = 0.93f, TwoHandGrip = true,
+            WindupOffset = new Pose(-55f, -105f, -25f, 0f),
+            StrikeOffset = new Pose(-28f, 100f, 20f, 0f),
+            BaseAttacksPerSecond = 0.8f, Range = 3.3f, ConeHalfAngle = 75f
+        };
+
+        private static readonly AttackProfile PulverizeMaceProfile = new AttackProfile
+        {
+            Duration = 0.9f, StrikeTime = 0.8f,
+            WindupOffset = new Pose(78f, -4f, -8f, 55f),
+            StrikeOffset = new Pose(-55f, 2f, 0f, -20f),
+            BaseAttacksPerSecond = 0.8f, Range = 2.5f
+        };
+
+        private static readonly AttackProfile PulverizeMaulProfile = new AttackProfile
+        {
+            Duration = 0.9f, StrikeTime = 0.8f, TwoHandGrip = true,
+            WindupOffset = new Pose(-165f, 0f, 0f, 0f),
+            StrikeOffset = new Pose(-2f, 0f, 0f, 0f),
+            BaseAttacksPerSecond = 0.72f, Range = 2.7f
+        };
+
+        private static readonly AttackProfile ReapingAxeProfile = new AttackProfile
+        {
+            Duration = 0.82f, StrikeTime = 0.71f,
+            WindupOffset = new Pose(22f, -78f, -35f, 60f),
+            StrikeOffset = new Pose(-28f, 82f, 35f, 20f),
+            BaseAttacksPerSecond = 0.85f, Range = 3f
+        };
+
+        private static readonly AttackProfile ReapingGreataxeProfile = new AttackProfile
+        {
+            Duration = 0.82f, StrikeTime = 0.71f, TwoHandGrip = true,
+            WindupOffset = new Pose(-45f, -85f, -22f, 0f),
+            StrikeOffset = new Pose(-35f, 88f, 22f, 0f),
+            BaseAttacksPerSecond = 0.8f, Range = 3.2f, ConeHalfAngle = 72f
+        };
+
+        private static readonly AttackProfile LungingSwordProfile = new AttackProfile
+        {
+            Duration = 0.75f, StrikeTime = 0.67f,
+            WindupOffset = new Pose(55f, -7f, -4f, 100f),
+            StrikeOffset = new Pose(-105f, 2f, 0f, -43f),
+            BaseAttacksPerSecond = 0.9f, Range = 3.2f
+        };
+
+        private static readonly AttackProfile LungingGreatswordProfile = new AttackProfile
+        {
+            Duration = 0.75f, StrikeTime = 0.67f, TwoHandGrip = true,
+            WindupOffset = new Pose(-100f, -12f, -5f, 0f),
+            StrikeOffset = new Pose(-112f, 4f, 0f, 0f),
+            BaseAttacksPerSecond = 0.82f, Range = 3.6f
+        };
+
+        private static readonly AttackProfile FangStrikeProfile = new AttackProfile
+        {
+            Duration = 0.3f, StrikeTime = 0.4f,
+            WindupOffset = new Pose(22f, -2f, -2f, 65f),
+            StrikeOffset = new Pose(-105f, 1f, 0f, -43f),
+            BaseAttacksPerSecond = 2.2f, Range = 1.9f
         };
 
         // Aim and loose: the off (left) arm raises the bow straight at the target, while the
@@ -366,7 +443,16 @@ namespace PoeClone.Visuals
             BowFanProfile,
             BowSkyProfile,
             BowHeavyProfile,
-            BowCantedProfile
+            BowCantedProfile,
+            CleaveSkillProfile,
+            CleaveGreatSkillProfile,
+            PulverizeMaceProfile,
+            PulverizeMaulProfile,
+            ReapingAxeProfile,
+            ReapingGreataxeProfile,
+            LungingSwordProfile,
+            LungingGreatswordProfile,
+            FangStrikeProfile
         };
 
         /// <summary>Whether the profile with this id shoots (an arrow) rather than hits.</summary>
@@ -467,6 +553,20 @@ namespace PoeClone.Visuals
         public void PlayAttack(WeaponType weaponType)
         {
             Play(PickProfile(weaponType));
+        }
+
+        /// <summary>Plays the dedicated procedural pose for a committed melee skill.</summary>
+        public void PlaySkillAttack(SkillId skill, WeaponType weaponType)
+        {
+            switch (skill)
+            {
+                case SkillId.Cleave: Play(SlotRules.IsTwoHandedMelee(weaponType) ? CleaveGreatSkillProfile : CleaveSkillProfile); break;
+                case SkillId.Pulverize: Play(weaponType == WeaponType.Maul ? PulverizeMaulProfile : PulverizeMaceProfile); break;
+                case SkillId.ReapingArc: Play(weaponType == WeaponType.Greataxe ? ReapingGreataxeProfile : ReapingAxeProfile); break;
+                case SkillId.LungingThrust: Play(weaponType == WeaponType.Greatsword ? LungingGreatswordProfile : LungingSwordProfile); break;
+                case SkillId.FangStrike: Play(FangStrikeProfile); break;
+                default: Play(PickProfile(weaponType)); break;
+            }
         }
 
         /// <summary>A bow shot drawn the way a bow skill draws it (Plain: the ordinary shot).</summary>

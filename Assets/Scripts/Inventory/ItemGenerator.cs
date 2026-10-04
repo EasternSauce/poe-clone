@@ -241,8 +241,8 @@ namespace PoeClone.Inventory
             // ---- Grimoires: the summoner's off hand. Death Mark (its attack) always rolls on one.
             Gear("grimoire", Leaning.Int, "grimoire", "Bone Grimoire", ItemType.Grimoire, 2, 2, 1, null, Plain, Mod(StatType.MinionLife, 10)),
             Gear("grimoire", Leaning.Int, "crypt_grimoire", "Crypt Grimoire", ItemType.Grimoire, 2, 2, 4, "grimoire", Verdant, Mod(StatType.MinionLife, 15), Mod(StatType.Intelligence, 8)),
-            Gear("grimoire", Leaning.Int, "lich_codex", "Lich Codex", ItemType.Grimoire, 2, 2, 8, "grimoire", Shadow, Mod(StatType.MinionLife, 20), Mod(StatType.Intelligence, 12), Mod(StatType.MinionDamage, 10)),
-            Gear("grimoire", Leaning.Int, "necronomicon", "Necronomicon", ItemType.Grimoire, 2, 2, 12, "grimoire", Royal, Mod(StatType.MinionLife, 28), Mod(StatType.Intelligence, 16), Mod(StatType.MinionDamage, 15)),
+            Gear("grimoire", Leaning.Int, "lich_codex", "Lich Codex", ItemType.Grimoire, 2, 2, 8, "grimoire", Shadow, Mod(StatType.MinionLife, 20), Mod(StatType.Intelligence, 12), Mod(StatType.MinionDamage, 6)),
+            Gear("grimoire", Leaning.Int, "necronomicon", "Necronomicon", ItemType.Grimoire, 2, 2, 12, "grimoire", Royal, Mod(StatType.MinionLife, 28), Mod(StatType.Intelligence, 16), Mod(StatType.MinionDamage, 9)),
 
             // ---- Quivers
             Gear("quiver", Leaning.Dex, "leather_quiver", "Leather Quiver", ItemType.Quiver, 2, 3, 1, null, Plain, Mod(StatType.PhysicalDamage, 2)),
@@ -269,10 +269,10 @@ namespace PoeClone.Inventory
             Arm("dagger", Leaning.Dex, "shadow_fang", "Shadow Fang", WeaponType.Dagger, 1, 2, 12, "steel_dagger", Dark, Mod(StatType.PhysicalDamage, 13), Mod(StatType.AttackSpeed, 8)),
             // Sceptres: a summoner's one-handed mace. Its blows mark enemies for the minions, and it
             // rolls minion stats and summons; it pairs with a grimoire or a shield.
-            Arm("sceptre", Leaning.Int, "bone_sceptre", "Bone Sceptre", WeaponType.Sceptre, 1, 3, 1, null, Plain, Mod(StatType.PhysicalDamage, 4), Mod(StatType.MinionDamage, 8)),
-            Arm("sceptre", Leaning.Int, "grave_sceptre", "Grave Sceptre", WeaponType.Sceptre, 1, 3, 4, "bone_sceptre", Verdant, Mod(StatType.PhysicalDamage, 7), Mod(StatType.MinionDamage, 12)),
-            Arm("sceptre", Leaning.Int, "lich_sceptre", "Lich Sceptre", WeaponType.Sceptre, 1, 3, 8, "bone_sceptre", Shadow, Mod(StatType.PhysicalDamage, 10), Mod(StatType.MinionDamage, 16), Mod(StatType.MinionLife, 10)),
-            Arm("sceptre", Leaning.Int, "deathlord_sceptre", "Deathlord Sceptre", WeaponType.Sceptre, 1, 3, 12, "bone_sceptre", Royal, Mod(StatType.PhysicalDamage, 14), Mod(StatType.MinionDamage, 22), Mod(StatType.MinionLife, 15)),
+            Arm("sceptre", Leaning.Int, "bone_sceptre", "Bone Sceptre", WeaponType.Sceptre, 1, 3, 1, null, Plain, Mod(StatType.PhysicalDamage, 4), Mod(StatType.MinionDamage, 5)),
+            Arm("sceptre", Leaning.Int, "grave_sceptre", "Grave Sceptre", WeaponType.Sceptre, 1, 3, 4, "bone_sceptre", Verdant, Mod(StatType.PhysicalDamage, 7), Mod(StatType.MinionDamage, 7)),
+            Arm("sceptre", Leaning.Int, "lich_sceptre", "Lich Sceptre", WeaponType.Sceptre, 1, 3, 8, "bone_sceptre", Shadow, Mod(StatType.PhysicalDamage, 10), Mod(StatType.MinionDamage, 10), Mod(StatType.MinionLife, 10)),
+            Arm("sceptre", Leaning.Int, "deathlord_sceptre", "Deathlord Sceptre", WeaponType.Sceptre, 1, 3, 12, "bone_sceptre", Royal, Mod(StatType.PhysicalDamage, 14), Mod(StatType.MinionDamage, 13), Mod(StatType.MinionLife, 15)),
 
             // ---- Bows and staves (two-handed)
             Arm("bow", Leaning.Dex, "short_bow", "Short Bow", WeaponType.Bow, 2, 3, 1, null, Plain, Mod(StatType.PhysicalDamage, 5)),
@@ -374,6 +374,10 @@ namespace PoeClone.Inventory
         private static readonly WeaponType[] Staves = { WeaponType.Staff };
         private static readonly WeaponType[] Sceptres = { WeaponType.Sceptre };
         private static readonly WeaponType[] Bows = { WeaponType.Bow };
+        private static readonly WeaponType[] Daggers = { WeaponType.Dagger };
+        private static readonly WeaponType[] Maces = { WeaponType.Mace, WeaponType.Maul };
+        private static readonly WeaponType[] Axes = { WeaponType.Axe, WeaponType.Greataxe };
+        private static readonly WeaponType[] Swords = { WeaponType.Sword, WeaponType.Greatsword };
 
         private static readonly Affix[] Affixes =
         {
@@ -392,6 +396,16 @@ namespace PoeClone.Inventory
             Aff(StatType.FireResistance, 6, 24, false, NotWeapon),
             Aff(StatType.ColdResistance, 6, 24, false, NotWeapon),
             Aff(StatType.LightningResistance, 6, 24, false, NotWeapon),
+            Aff(StatType.PoisonResistance, 6, 24, false, NotWeapon).Weighted(0.55f),
+            Aff(StatType.PoisonDamage, 5, 15, true, ItemType.Weapon, ItemType.Gloves, ItemType.Ring, ItemType.Amulet).Weighted(0.35f),
+            Aff(StatType.DamageOverTime, 4, 12, true, ItemType.Weapon, ItemType.Gloves, ItemType.Ring, ItemType.Amulet).Weighted(0.3f),
+            Aff(StatType.PoisonPenetration, 3, 10, false, ItemType.Weapon, ItemType.Gloves, ItemType.Ring, ItemType.Amulet).Weighted(0.3f),
+            Aff(StatType.PoisonDamage, 5, 14, true, ItemType.Grimoire, ItemType.Weapon).Only(Staves).Weighted(0.35f),
+            Aff(StatType.ArmourPenetration, 4, 12, false, ItemType.Gloves, ItemType.Ring).Also(ItemType.Weapon, AttackWeapons).Weighted(0.55f),
+            Aff(StatType.FirePenetration, 4, 12, false, ItemType.Weapon, ItemType.Gloves, ItemType.Ring, ItemType.Amulet).Weighted(0.45f),
+            Aff(StatType.ColdPenetration, 4, 12, false, ItemType.Weapon, ItemType.Gloves, ItemType.Ring, ItemType.Amulet).Weighted(0.45f),
+            Aff(StatType.LightningPenetration, 4, 12, false, ItemType.Weapon, ItemType.Gloves, ItemType.Ring, ItemType.Amulet).Weighted(0.45f),
+            Aff(StatType.ElementalPenetration, 3, 8, false, ItemType.Weapon, ItemType.Ring, ItemType.Amulet).Only(Staves).Weighted(0.35f),
             Aff(StatType.MovementSpeed, 5, 15, false, ItemType.Boots),
             Aff(StatType.AreaOfEffect, 5, 12, false, ItemType.Amulet, ItemType.Helmet, ItemType.Weapon).Only(Staves),
             Aff(StatType.MeleeRange, 5, 12, false, ItemType.Gloves).Also(ItemType.Weapon, MeleeWeapons),
@@ -426,6 +440,10 @@ namespace PoeClone.Inventory
             Grant(StatType.GrantFrostNova, 0.3f, ItemType.Weapon, ItemType.Helmet, ItemType.Gloves).Only(Staves),
             Grant(StatType.GrantRejuvenate, 0.6f, ItemType.Weapon, ItemType.Amulet, ItemType.Belt).Only(Staves),
             Grant(StatType.GrantCleave, 0.6f, ItemType.Weapon).Only(MeleeWeapons),
+            Grant(StatType.GrantFangStrike, 0.28f, ItemType.Weapon).Only(Daggers),
+            Grant(StatType.GrantPulverize, 0.38f, ItemType.Weapon).Only(Maces),
+            Grant(StatType.GrantReapingArc, 0.38f, ItemType.Weapon).Only(Axes),
+            Grant(StatType.GrantLungingThrust, 0.38f, ItemType.Weapon).Only(Swords),
             Grant(StatType.GrantDash, 0.45f, ItemType.Boots),
             Grant(StatType.GrantTeleport, 0.5f, ItemType.Amulet, ItemType.Ring, ItemType.Gloves),
 
@@ -433,8 +451,9 @@ namespace PoeClone.Inventory
             // the other weapons); the summons themselves mostly on grimoires and sceptres, now and
             // then on armour and jewellery. Summon levels are the big lever: a minion's life and
             // damage climb steeply with its level, so "+1 to level" gear is what makes them sturdy.
-            Aff(StatType.MinionDamage, 6, 16, true, ItemType.Grimoire, ItemType.Weapon, ItemType.Amulet, ItemType.Gloves).Only(Sceptres).Weighted(1.4f),
+            Aff(StatType.MinionDamage, 4, 10, true, ItemType.Grimoire, ItemType.Weapon, ItemType.Amulet, ItemType.Gloves).Only(Sceptres).Weighted(1.4f),
             Aff(StatType.MinionLife, 6, 16, true, ItemType.Grimoire, ItemType.Weapon, ItemType.Helmet, ItemType.BodyArmour, ItemType.Belt, ItemType.Shield).Only(Sceptres).Weighted(1.2f),
+            Aff(StatType.AdditionalMinions, 1, 1, false, ItemType.Grimoire, ItemType.Amulet, ItemType.Helmet).Weighted(0.65f),
             Aff(StatType.MinionSpeed, 4, 12, false, ItemType.Grimoire, ItemType.Gloves, ItemType.Boots, ItemType.Weapon).Only(Sceptres).Weighted(0.8f),
             Aff(StatType.MinionLevels, 1, 1, false, ItemType.Grimoire, ItemType.Weapon, ItemType.Amulet, ItemType.Helmet).Only(Sceptres).Weighted(0.3f),
             Aff(StatType.RaiseSkeletonsLevels, 1, 2, false, ItemType.Grimoire, ItemType.Weapon, ItemType.Helmet, ItemType.Ring).Only(Sceptres).Weighted(0.4f),
@@ -458,6 +477,9 @@ namespace PoeClone.Inventory
             Grant(StatType.GrantPiercingShot, 0.4f, ItemType.Weapon, ItemType.Quiver).Only(Bows),
             Grant(StatType.GrantRainOfArrows, 0.4f, ItemType.Weapon, ItemType.Quiver).Only(Bows),
             Grant(StatType.GrantBurningArrow, 0.4f, ItemType.Weapon, ItemType.Quiver).Only(Bows),
+            Grant(StatType.GrantVenomArrow, 0.28f, ItemType.Weapon, ItemType.Quiver).Only(Bows),
+            Grant(StatType.GrantVenomSpout, 0.2f, ItemType.Weapon).Only(Staves),
+            Grant(StatType.GrantSummonViper, 0.2f, ItemType.Grimoire, ItemType.Weapon).Only(Sceptres),
             Aff(StatType.ExtraArrowChance, 5, 15, false, ItemType.Weapon, ItemType.Quiver).Only(Bows).Weighted(0.25f),
         };
 
@@ -469,6 +491,14 @@ namespace PoeClone.Inventory
             { StatType.Armour, "Reinforced" },
             { StatType.Evasion, "Shadowy" },
             { StatType.PhysicalDamage, "Heavy" },
+            { StatType.ArmourPenetration, "Piercing" },
+            { StatType.PoisonPenetration, "Virulent" },
+            { StatType.PoisonDamage, "Toxic" },
+            { StatType.DamageOverTime, "Lingering" },
+            { StatType.FirePenetration, "Searing" },
+            { StatType.ColdPenetration, "Rimeforged" },
+            { StatType.LightningPenetration, "Stormcharged" },
+            { StatType.ElementalPenetration, "Spellbreaking" },
             { StatType.MovementSpeed, "Runner's" },
             { StatType.SpellDamage, "Apprentice's" },
             { StatType.GrantDash, "Fleet" },
@@ -476,6 +506,7 @@ namespace PoeClone.Inventory
             { StatType.LifeOnKill, "Ravenous" },
             { StatType.MinionDamage, "Commanding" },
             { StatType.MinionLife, "Bonebound" },
+            { StatType.AdditionalMinions, "Graveward's" },
             { StatType.GrantRaiseSkeletons, "Gravecaller's" },
             { StatType.GrantSkeletonMages, "Lichbound" },
             { StatType.GrantSplitShot, "Splitting" },
@@ -493,6 +524,11 @@ namespace PoeClone.Inventory
             { StatType.FireResistance, "of the Whelpling" },
             { StatType.ColdResistance, "of the Seal" },
             { StatType.LightningResistance, "of the Cloud" },
+            { StatType.FirePenetration, "of Cinders" },
+            { StatType.ColdPenetration, "of Rime" },
+            { StatType.LightningPenetration, "of the Storm" },
+            { StatType.ElementalPenetration, "of Ruin" },
+            { StatType.ArmourPenetration, "of Breaching" },
             { StatType.AreaOfEffect, "of Expanse" },
             { StatType.MeleeRange, "of Reach" },
             { StatType.CastSpeed, "of Talent" },
@@ -510,6 +546,7 @@ namespace PoeClone.Inventory
             { StatType.MarkEffect, "of Doom" },
             { StatType.MinionDuration, "of Binding" },
             { StatType.MinionLevels, "of the Necromancer" },
+            { StatType.AdditionalMinions, "of the Legion" },
             { StatType.GrantSpiritWolves, "of the Pack" },
             { StatType.GrantBoneGolem, "of the Ossuary" },
             { StatType.GrantRainOfArrows, "of the Downpour" },
@@ -931,6 +968,7 @@ namespace PoeClone.Inventory
             {
                 case StatType.Strength:
                 case StatType.Armour:
+                case StatType.ArmourPenetration:
                 case StatType.BlockChance:
                 case StatType.MeleeRange:
                 case StatType.LifeLeech:
@@ -969,6 +1007,7 @@ namespace PoeClone.Inventory
                 case StatType.MinionLife:
                 case StatType.MinionSpeed:
                 case StatType.MinionLevels:
+                case StatType.AdditionalMinions:
                 case StatType.MarkEffect:
                 case StatType.MinionDuration:
                 case StatType.GrantDeathMark:
@@ -981,6 +1020,10 @@ namespace PoeClone.Inventory
                 case StatType.SpiritWolvesLevels:
                 case StatType.BoneGolemLevels:
                 case StatType.BoneArmour:
+                case StatType.FirePenetration:
+                case StatType.ColdPenetration:
+                case StatType.LightningPenetration:
+                case StatType.ElementalPenetration:
                     return Leaning.Int;
                 default:
                     return Leaning.None;

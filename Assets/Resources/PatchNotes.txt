@@ -1,3 +1,35 @@
-version: 2026-10-04-quest-click-minion-weapon-camera-fix
+version: 2026-10-04-melee-skill-presentation
+<b>Melee skills</b>
+- Cleave now roots you through a short windup and sweeping strike. Added Pulverize for maces and mauls, Reaping Arc for axes, and Lunging Thrust for swords; each has its own procedural attack pose, weapon-family drop pool, and swing cue at impact. Lunging Thrust drives the character forward before its hit, and Fang Strike stays within dagger reach. Heavy hammer impacts carry a ground burst and camera jolt.
+<b>Summoning</b>
+- All summon skills now share one global army limit, increased by Necromancy passives and ordinary gear; fully rolled ordinary capacity reaches about seven minions. The Ossuary Codex raises that to about eight and Book of Shed Skin to about nine, with final 20% and 30% less minion damage multipliers applied after outgoing hit modifiers. Specific skeleton capacity is unique-only. Summon mana costs are 2.5 times higher. Minion base damage values are halved, Intelligence adds 0.5% minion damage per point, and the actual Minion Damage values on passives and gear are reduced by about 40%. Minion life and damage taken are unchanged.
+<b>Controls</b>
+- Skill bindings remain Q/E/R/F and the spare mouse buttons. Health and mana potions use 1 and 2 by default; each can be cycled through available keyboard and mouse bindings in Settings. A potion binding takes priority if it shares a skill key.
+- Unassigned spare mouse buttons no longer appear on the bottom skill bar.
+<b>Settings and history</b>
+- ESC now opens Settings and the complete patch history. Recovered 24 earlier releases from repository history; future releases are also saved to this device.
+- Chat visibility can be turned off in Settings and is on by default.
+<b>UI and boss pacing</b>
+- Bosses now have armor and elemental resistance. Field bosses have 500 armor and 20% fire, cold and lightning resistance; the Shepherd has 1200 armor and 30% resistances. The Shepherd and Carrion Saint move, attack, and hit twice as hard, and the Shepherd has four times its previous life. Burrow Snatch hits much harder; phase transition timing is unchanged.
+- Stash tabs now have a visible Rename button; editing selects the current name for quick replacement.
+- Shed Heart drops now come from level 7+ areas.
+- Shed Heart now has its own heart icon instead of borrowing a ring icon.
+- Item tooltips now stay readable above chat for players and spectators.
+- Choose an existing character or create a named character at startup. Each character keeps separate progress, gear, quests and map discovery.
+- Minion health bars no longer overlay the spectator inventory and stash. Removed the permanent Emberwatch ground label and increased the act boss respawn timer to ten minutes.
 <b>Quest props and summons</b>
 - Fixed quest body clicks being stolen by NPC hit boxes that balloon when their labels cross the camera plane. Removing or replacing a summoning sceptre dismisses its summoned minions.
+<b>Combat</b>
+- Added fire, cold, lightning, elemental and armour penetration to magic affixes, themed uniques and connected passive-tree paths. Penetration lowers the matching defense; elemental resistance below zero increases damage taken.
+- Fire, cold and lightning resistance cap at 75%. Armour now keeps scaling with diminishing returns, so very high physical damage reduction takes a large armour investment.
+- Summoning bosses now raise fewer enemies before enraging; their enraged phase can build a larger pack. The spider queen's enraged cap is three crawlers.
+- Death interrupts skills still in their animation or channel.
+- Axe and hammer strikes now lead with the weapon head. Changing either hand weapon dismisses your minions.
+- Final boss phase changes, growth, reveal, and attacks, including phase-two snake strikes, now replicate to spectators.
+
+
+<b>Poison builds</b>
+- Poison is now a damage type. Poison resistance mitigates poison damage and damage over time; poison penetration lowers enemy poison resistance.
+- Added poison damage and damage-over-time affixes, plus connected Grace-tree poison branches and Viper's Kiss.
+- Added Fang Strike, Venom Arrow, Venom Spout and Summon Viper to gear skill drops. The Viper is a temporary minion whose venom scales with minion and poison investment.
+- The Shepherd now rewards one of five exclusive poison uniques, including skill-granting dagger, bow, sceptre and grimoire rewards.

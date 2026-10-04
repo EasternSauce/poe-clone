@@ -115,6 +115,9 @@ namespace PoeClone.Player
         {
             if (dead || damage <= 0f || seconds <= 0f)
                 return;
+            StatSheet defensiveSheet = inventory != null ? inventory.Stats : null;
+            if (defensiveSheet != null)
+                damage = DefenceMath.AfterResistance(damage, defensiveSheet.Total(StatType.PoisonResistance));
             if (poison.Count == 0)
                 CombatText.Show(transform.position + Vector3.up * 1.6f, "Poisoned", CombatText.PoisonColor, 0.7f);
             if (poison.Count >= MaxPoisonStacks)
@@ -357,6 +360,8 @@ namespace PoeClone.Player
                     return DefenceMath.AfterResistance(damage, sheet.Total(StatType.ColdResistance));
                 case DamageType.Lightning:
                     return DefenceMath.AfterResistance(damage, sheet.Total(StatType.LightningResistance));
+                case DamageType.Poison:
+                    return DefenceMath.AfterResistance(damage, sheet.Total(StatType.PoisonResistance));
                 default:
                     return damage * (1f - DefenceMath.ArmourReduction(sheet.Total(StatType.Armour), damage));
             }

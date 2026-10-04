@@ -61,6 +61,13 @@ namespace PoeClone.Network
 
         /// <summary>Whether the panel is showing (always true outside the touch player layout).</summary>
         public static bool PanelVisible => Instance != null && Instance.panelRect != null && Instance.panelRect.gameObject.activeSelf;
+        public static bool Enabled => PlayerPrefs.GetInt("PoeClone.ChatEnabled", 1) != 0;
+        public static void SetEnabled(bool enabled)
+        {
+            PlayerPrefs.SetInt("PoeClone.ChatEnabled", enabled ? 1 : 0);
+            PlayerPrefs.Save();
+            if (Instance != null) Instance.Relayout();
+        }
 
         /// <summary>True while the chat box has keyboard focus, so gameplay input can ignore WASD/click while typing.</summary>
         public static bool IsTyping => Instance != null && Instance.inputField != null && Instance.inputField.isFocused;
@@ -125,7 +132,7 @@ namespace PoeClone.Network
             bool touch = TouchMode.Active;
             bool touchPlayer = touch && !StayInChat;
 
-            panelRect.gameObject.SetActive(!touchPlayer || touchPanelOpen);
+            panelRect.gameObject.SetActive(Enabled && (!touchPlayer || touchPanelOpen));
 
             // On a phone the opened chat shares the top right with the minimap and quest tracker:
             // it goes over them. On a computer it sits under the inventory (which shares its corner).
@@ -177,6 +184,8 @@ namespace PoeClone.Network
         private void Update()
         {
             UpdateScroll();
+
+            if (!Enabled) return;
 
             int order = SortingOrder;
             if (chatCanvas.sortingOrder != order)

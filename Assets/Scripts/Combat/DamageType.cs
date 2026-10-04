@@ -8,6 +8,7 @@ namespace PoeClone.Combat
         Physical,
         Fire,
         Cold,
-        Lightning
+        Lightning,
+        Poison
     }
 }

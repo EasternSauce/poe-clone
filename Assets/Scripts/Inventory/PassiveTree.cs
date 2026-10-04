@@ -83,6 +83,7 @@ namespace PoeClone.Inventory
 
             // Out past Fire Ward: the summoner's cluster (needs the bridge, so it's a commitment).
             BuildNecromancy();
+            BuildVenom();
         }
 
         // Necromancy (up-left, out at the rim between Wisdom and Zeal): a diamond round Lord of
@@ -92,18 +93,18 @@ namespace PoeClone.Inventory
         private static void BuildNecromancy()
         {
             Sector(PassiveBranch.Necromancy, 117f);
-            N("n1", "Grave Whispers", 2.6f, 0f, Mod(StatType.MinionLife, 12));
-            N("n2", "Bone Servants", 2.9f, -0.35f, Mod(StatType.MinionDamage, 12));
+            N("n1", "Grave Whispers", 2.6f, 0f, Mod(StatType.MinionLife, 12), Mod(StatType.AdditionalMinions, 1));
+            N("n2", "Bone Servants", 2.9f, -0.35f, Mod(StatType.MinionDamage, 7));
             N("n3", "Ossuary", 2.9f, 0.35f, Mod(StatType.MinionLife, 12), Mod(StatType.BoneArmour, 5));
             Nt("n_lord", "Lord of Bones", 3.2f, 0f, Mod(StatType.MinionLevels, 1), Mod(StatType.MinionLife, 15));
-            Devotion("n_lord", Mod(StatType.MinionLife, 2), Mod(StatType.MinionDamage, 2));
-            N("n4", "Death's Grip", 3.2f, -0.62f, Mod(StatType.MarkEffect, 20), Mod(StatType.MinionDamage, 6));
+            Devotion("n_lord", Mod(StatType.MinionLife, 2), Mod(StatType.MinionDamage, 1));
+            N("n4", "Death's Grip", 3.2f, -0.62f, Mod(StatType.MarkEffect, 20), Mod(StatType.MinionDamage, 4));
             N("n5", "Pack Leader", 3.2f, 0.62f, Mod(StatType.MinionSpeed, 8), Mod(StatType.MinionDuration, 15));
             Chain("b_fireward", "n1");
             Chain("n1", "n2", "n_lord", "n3", "n1");
             Chain("n2", "n4", "n_lord", "n5", "n3");
 
-            Ks("k_legion", "Bone Legion", 3.6f, -0.28f, Mod(StatType.AdditionalSkeletons, 1), Mod(StatType.MinionDamage, -10));
+            Ks("k_legion", "Bone Legion", 3.6f, -0.28f, Mod(StatType.AdditionalMinions, 1), Mod(StatType.MinionDamage, -6));
             Chain("n_lord", "k_legion");
             Ks("k_soulbond", "Soul Bond", 3.6f, 0.28f, Mod(StatType.SoulBond, 3), Mod(StatType.IncreasedLife, -8));
             Chain("n_lord", "k_soulbond");
@@ -111,6 +112,19 @@ namespace PoeClone.Inventory
             Chain("n4", "k_herald");
             Ks("k_spiritpact", "Spirit Pact", 3.5f, 0.95f, Mod(StatType.MinionDuration, 40), Mod(StatType.SpiritWolvesLevels, 1));
             Chain("n5", "k_spiritpact");
+        }
+
+        private static void BuildVenom()
+        {
+            Sector(PassiveBranch.Grace, 315f);
+            N("v1", "Toxic Blades", 2.1f, 0.65f, Mod(StatType.PoisonDamage, 10), Mod(StatType.DamageOverTime, 6));
+            N("v2", "Venomous Wounds", 2.4f, 0.78f, Mod(StatType.PoisonPenetration, 6), Mod(StatType.PoisonDamage, 8));
+            Nt("v3", "Path of Venom", 2.7f, 0.92f, Mod(StatType.PoisonDamage, 18), Mod(StatType.DamageOverTime, 12), Mod(StatType.PoisonPenetration, 8));
+            Ks("k_viper", "Viper's Kiss", 3.0f, 1.08f, Mod(StatType.PoisonDamage, 30), Mod(StatType.DamageOverTime, 20), Mod(StatType.PoisonResistance, 15));
+            Chain("g10", "v1", "v2", "v3", "k_viper");
+            N("v4", "Caustic Blood", 2.4f, 0.38f, Mod(StatType.PoisonResistance, 12), Mod(StatType.LifeRegen, 2));
+            N("v5", "Lingering Toxin", 2.7f, 0.42f, Mod(StatType.DamageOverTime, 10), Mod(StatType.PoisonPenetration, 5));
+            Chain("g_deadeye", "v4", "v5", "v3");
         }
 
         // ------------------------------------------------------------------ the sectors
@@ -132,9 +146,9 @@ namespace PoeClone.Inventory
             Chain("m2", "m3", "m4", "m5");
 
             // Right arm: offence.
-            N("m6", "Heavy Hands", 1.2f, 0.3f, Mod(StatType.PhysicalDamage, 2));
+            N("m6", "Heavy Hands", 1.2f, 0.3f, Mod(StatType.PhysicalDamage, 2), Mod(StatType.ArmourPenetration, 3));
             N("m7", "Power", 1.5f, 0.45f, Mod(StatType.Strength, 8));
-            Nt("m8", "Brute Force", 1.85f, 0.55f, Mod(StatType.PhysicalDamage, 6), Mod(StatType.Strength, 10), Mod(StatType.MeleeRange, 15));
+            Nt("m8", "Brute Force", 1.85f, 0.55f, Mod(StatType.PhysicalDamage, 6), Mod(StatType.Strength, 10), Mod(StatType.MeleeRange, 15), Mod(StatType.ArmourPenetration, 8));
             Chain("m2", "m6", "m7", "m8");
 
             // Straight up the middle.
@@ -177,7 +191,7 @@ namespace PoeClone.Inventory
 
             N("f_b1", "Assassin's Mark", 1.85f, -0.35f, Mod(StatType.CriticalMultiplier, 15));
             N("f_b2", "Momentum", 1.85f, 0.35f, Mod(StatType.OnslaughtOnKill, 10));
-            Nt("f_precision", "Deadly Precision", 2.2f, 0f, Mod(StatType.CriticalChance, 6), Mod(StatType.CriticalMultiplier, 20));
+            Nt("f_precision", "Deadly Precision", 2.2f, 0f, Mod(StatType.CriticalChance, 6), Mod(StatType.CriticalMultiplier, 20), Mod(StatType.ArmourPenetration, 5));
             Devotion("f_precision", Mod(StatType.CriticalMultiplier, 2));
             Chain("f_dancer", "f_b1", "f_precision", "f_b2", "f_dancer");
 
@@ -237,14 +251,14 @@ namespace PoeClone.Inventory
         {
             Sector(PassiveBranch.Storm, 30f);
             N("s1", "Quickened Mind", 0.55f, 0f, Mod(StatType.CastSpeed, 4));
-            N("s2", "Static", 0.9f, 0f, Mod(StatType.LightningDamage, 8));
+            N("s2", "Static", 0.9f, 0f, Mod(StatType.LightningDamage, 8), Mod(StatType.LightningPenetration, 4));
             Chain("s1", "s2");
             LifeSpur("s_life", "Grounded Body", "s2");
 
             N("s_sp1", "Spark", 1.3f, 0f, Mod(StatType.LightningDamage, 8));
-            N("s_sp2", "Rime", 1.49f, -0.45f, Mod(StatType.ColdDamage, 8), Mod(StatType.DamageVsChilled, 6));
+            N("s_sp2", "Rime", 1.49f, -0.45f, Mod(StatType.ColdDamage, 8), Mod(StatType.DamageVsChilled, 6), Mod(StatType.ColdPenetration, 4));
             N("s_sp3", "Overcharge", 2.05f, -0.51f, Mod(StatType.ShockChance, 10));
-            Nt("s_conductor", "Conductor", 2.41f, 0f, Mod(StatType.LightningDamage, 15), Mod(StatType.AdditionalChains, 1));
+            Nt("s_conductor", "Conductor", 2.41f, 0f, Mod(StatType.LightningDamage, 15), Mod(StatType.AdditionalChains, 1), Mod(StatType.LightningPenetration, 8));
             N("s_sp5", "Haste", 2.12f, 0.63f, Mod(StatType.CastSpeed, 5));
             N("s_sp6", "Flow", 1.4f, 0.69f, Mod(StatType.CooldownRecovery, 6));
             Nt("s_eye", "Eye of the Storm", 1.8f, 0.05f, Mod(StatType.CastSpeed, 8), Mod(StatType.CooldownRecovery, 8), Mod(StatType.ManaRegen, 20));
@@ -254,7 +268,7 @@ namespace PoeClone.Inventory
             Ks("k_thunderlord", "Thunderlord", 2.85f, 0f, Mod(StatType.ShockChance, 25), Mod(StatType.AdditionalChains, 1));
             Chain("s_conductor", "k_thunderlord");
 
-            Nt("s_stride", "Frozen Stride", 2.3f, -0.95f, Mod(StatType.ColdDamage, 10), Mod(StatType.MovementSpeed, 5), Mod(StatType.CooldownRecovery, 5));
+            Nt("s_stride", "Frozen Stride", 2.3f, -0.95f, Mod(StatType.ColdDamage, 10), Mod(StatType.MovementSpeed, 5), Mod(StatType.CooldownRecovery, 5), Mod(StatType.ColdPenetration, 6));
             Chain("s_sp3", "s_stride");
             Ks("k_glacial", "Glacial Step", 2.75f, -1.15f, Mod(StatType.GlacialStep, 1), Mod(StatType.CooldownRecovery, 10));
             Chain("s_stride", "k_glacial");
@@ -281,7 +295,7 @@ namespace PoeClone.Inventory
             // Power: spell damage, ending in Twin Casting.
             N("w_m1", "Potency", 1.55f, 0f, Mod(StatType.SpellDamage, 8));
             N("w_m2", "Sorcery", 1.9f, 0f, Mod(StatType.SpellDamage, 6), Mod(StatType.Intelligence, 4));
-            Nt("w_archmage", "Archmage", 2.25f, 0f, Mod(StatType.SpellDamage, 15), Mod(StatType.AreaOfEffect, 12));
+            Nt("w_archmage", "Archmage", 2.25f, 0f, Mod(StatType.SpellDamage, 15), Mod(StatType.AreaOfEffect, 12), Mod(StatType.ElementalPenetration, 5));
             Devotion("w_archmage", Mod(StatType.SpellDamage, 1));
             Chain("w3", "w_m1", "w_m2", "w_archmage");
             Ks("k_twincast", "Twin Casting", 2.7f, 0f, Mod(StatType.AdditionalSpellProjectiles, 1), Mod(StatType.SpellDamage, 10));
@@ -303,7 +317,7 @@ namespace PoeClone.Inventory
             Sector(PassiveBranch.Zeal, 150f);
             N("z1", "Kindling", 0.55f, 0f, Mod(StatType.FireDamage, 6));
             N("z2", "Vigour", 0.9f, 0f, Mod(StatType.MaxLife, 10), Mod(StatType.LifeRegen, 1));
-            N("z3", "Hearth", 1.25f, 0f, Mod(StatType.FireDamage, 8));
+            N("z3", "Hearth", 1.25f, 0f, Mod(StatType.FireDamage, 8), Mod(StatType.FirePenetration, 4));
             Nt("z_hub", "Sacred Flame", 1.65f, 0f, Mod(StatType.FireDamage, 12), Mod(StatType.IgniteChance, 10));
             Devotion("z_hub", Mod(StatType.FireDamage, 1));
             Chain("z1", "z2", "z3", "z_hub");
@@ -313,7 +327,7 @@ namespace PoeClone.Inventory
             N("z_s2", "Combustion", 2.17f, -0.19f, Mod(StatType.ExplodeOnKill, 6));
             N("z_s3", "Renewal", 2.17f, 0.19f, Mod(StatType.PercentLifeRegen, 0.3f));
             N("z_s4", "Fervent Heart", 1.93f, 0.48f, Mod(StatType.MaxLife, 15));
-            Nt("z_t1", "Wildfire", 2.15f, -0.9f, Mod(StatType.IgniteChance, 15), Mod(StatType.FireDamage, 12));
+            Nt("z_t1", "Wildfire", 2.15f, -0.9f, Mod(StatType.IgniteChance, 15), Mod(StatType.FireDamage, 12), Mod(StatType.FirePenetration, 8));
             Nt("z_t2", "Funeral Pyre", 2.6f, -0.34f, Mod(StatType.ExplodeOnKill, 12), Mod(StatType.FireDamage, 6));
             Nt("z_t3", "Lifeblood", 2.6f, 0.34f, Mod(StatType.PercentLifeRegen, 0.6f), Mod(StatType.IncreasedLife, 6));
             Nt("z_t4", "Zealot's Vigour", 2.15f, 0.9f, Mod(StatType.LifeRegen, 4), Mod(StatType.MaxLife, 25));

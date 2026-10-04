@@ -16,6 +16,23 @@ namespace PoeClone.Player
     /// </summary>
     public class PlayerPotions : MonoBehaviour
     {
+        private static readonly Key[] PotionKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Q, Key.E, Key.R, Key.F };
+        private static readonly string[] PotionKeyLabels = { "1", "2", "3", "4", "Q", "E", "R", "F", "RMB", "MMB", "M4", "M5" };
+        private const string HealthKeyPref = "PoeClone.HealthPotionKey";
+        private const string ManaKeyPref = "PoeClone.ManaPotionKey";
+        public static string HealthPotionKeyLabel => PotionKeyLabels[Mathf.Clamp(PlayerPrefs.GetInt(HealthKeyPref, 0), 0, PotionKeyLabels.Length - 1)];
+        public static string ManaPotionKeyLabel => PotionKeyLabels[Mathf.Clamp(PlayerPrefs.GetInt(ManaKeyPref, 1), 0, PotionKeyLabels.Length - 1)];
+        public static bool IsBoundTo(int binding) =>
+            PlayerPrefs.GetInt(HealthKeyPref, 0) == binding || PlayerPrefs.GetInt(ManaKeyPref, 1) == binding;
+        public static void CyclePotionKey(bool health)
+        {
+            string pref = health ? HealthKeyPref : ManaKeyPref;
+            int other = PlayerPrefs.GetInt(health ? ManaKeyPref : HealthKeyPref, health ? 1 : 0);
+            int next = PlayerPrefs.GetInt(pref, health ? 0 : 1);
+            do { next = (next + 1) % PotionKeyLabels.Length; } while (next == other);
+            PlayerPrefs.SetInt(pref, next);
+            PlayerPrefs.Save();
+        }
         public const int MaxPotions = PlayerInventory.MaxPotions;
         private const float DrinkCooldown = 1f;
 
@@ -81,16 +98,44 @@ namespace PoeClone.Player
             Keyboard keyboard = Keyboard.current;
             if (pressed < 0 && keyboard != null && !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused())
             {
-                if (keyboard.digit1Key.wasPressedThisFrame)
+                int healthKey = Mathf.Clamp(PlayerPrefs.GetInt(HealthKeyPref, 0), 0, PotionKeyLabels.Length - 1);
+                int manaKey = Mathf.Clamp(PlayerPrefs.GetInt(ManaKeyPref, 1), 0, PotionKeyLabels.Length - 1);
+                if (KeyPressed(keyboard, healthKey))
                     pressed = 0;
-                else if (keyboard.digit2Key.wasPressedThisFrame)
+                else if (KeyPressed(keyboard, manaKey))
                     pressed = 1;
+            }
+
+            Mouse mouse = Mouse.current;
+            if (pressed < 0 && mouse != null && !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused() && !TouchMode.Active && !PlayerController.IsPointerOverUi())
+            {
+                int healthKey = Mathf.Clamp(PlayerPrefs.GetInt(HealthKeyPref, 0), 0, PotionKeyLabels.Length - 1);
+                int manaKey = Mathf.Clamp(PlayerPrefs.GetInt(ManaKeyPref, 1), 0, PotionKeyLabels.Length - 1);
+                if (MousePressed(mouse, healthKey)) pressed = 0;
+                else if (MousePressed(mouse, manaKey)) pressed = 1;
             }
 
             if (pressed == 0)
                 DrinkHealth();
             else if (pressed == 1)
                 DrinkMana();
+        }
+
+        private static bool KeyPressed(Keyboard keyboard, int binding)
+        {
+            return binding < PotionKeys.Length && keyboard[PotionKeys[binding]].wasPressedThisFrame;
+        }
+
+        private static bool MousePressed(Mouse mouse, int binding)
+        {
+            switch (binding)
+            {
+                case 8: return mouse.rightButton.wasPressedThisFrame;
+                case 9: return mouse.middleButton.wasPressedThisFrame;
+                case 10: return mouse.backButton.wasPressedThisFrame;
+                case 11: return mouse.forwardButton.wasPressedThisFrame;
+                default: return false;
+            }
         }
 
         public bool DrinkHealth()

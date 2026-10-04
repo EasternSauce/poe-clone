@@ -39,6 +39,7 @@ namespace PoeClone.Enemies
 
         // The strike in progress, if any.
         private bool striking;
+        private int strikeCount;
         private Vector3 target;
         private float t, windUp, lunge, hold, recover;
         private bool bitten;
@@ -50,6 +51,13 @@ namespace PoeClone.Enemies
         public float Length => step * (joints != null ? joints.Length : 0) * transform.lossyScale.y;
 
         public bool IsStriking => striking;
+        public int StrikeCount => strikeCount;
+        public Vector3 StrikeTarget => target;
+        public float StrikeElapsed => t;
+        public float StrikeWindUp => windUp;
+        public float StrikeLunge => lunge;
+        public float StrikeHold => hold;
+        public float StrikeRecover => recover;
 
         /// <summary>Where its mouth is now (for spitting from).</summary>
         public Vector3 MouthPosition => head != null
@@ -213,6 +221,7 @@ namespace PoeClone.Enemies
         /// </summary>
         public void Strike(Vector3 at, float coil, float shoot, float stay, float back, Action<Vector3> bite)
         {
+            strikeCount++;
             striking = true;
             target = at;
             t = 0f;
@@ -224,6 +233,12 @@ namespace PoeClone.Enemies
             onBite = bite;
             strikeFrom = Tip();
             strikeHeight = 0f;
+        }
+
+        public void ReplayStrike(Vector3 at, float coil, float shoot, float stay, float back, float elapsed)
+        {
+            Strike(at, coil, shoot, stay, back, null);
+            t = Mathf.Clamp(elapsed, 0f, windUp + lunge + hold + recover);
         }
 
         /// <summary>Colossal sky bite: rear over the marked target, then drop vertically.</summary>

@@ -23,7 +23,14 @@ namespace PoeClone.Skills
         SplitShot,
         PiercingShot,
         RainOfArrows,
-        BurningArrow
+        BurningArrow,
+        FangStrike,
+        VenomArrow,
+        VenomSpout,
+        SummonViper,
+        Pulverize,
+        ReapingArc,
+        LungingThrust
     }
 
     /// <summary>The element a spell belongs to, for "+1 to level of all Fire Spells" and the like.</summary>
@@ -113,7 +120,7 @@ namespace PoeClone.Skills
             {
                 Id = SkillId.Cleave, Name = "Cleave", Short = "CLV", Grant = StatType.GrantCleave, RollsOn = "melee weapons",
                 ManaCost = 8f, Cooldown = 3f, Color = new Color(0.85f, 0.75f, 0.55f),
-                Description = "Swing all around you, hitting every enemy in reach for 140% weapon damage (+10% per level). Needs a melee weapon."
+                Description = "Plant your feet for a brief windup, then swing all around you, hitting every enemy in reach for 140% weapon damage (+10% per level). Needs a melee weapon."
             },
             new SkillDefinition
             {
@@ -164,8 +171,8 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.RaiseSkeletons, Name = "Raise Skeletons", Short = "SKL", Grant = StatType.GrantRaiseSkeletons, RollsOn = "sceptres, grimoires, helmets",
-                Spell = true, ManaCost = 14f, Cooldown = 4f, Color = new Color(0.55f, 1f, 0.6f),
-                Description = "Raise two skeleton warriors that stay until they are destroyed. At most 2 (+1 at levels 7 and 12). Enemies fight them: their life and blows grow steeply with the skill's level, Minion Life and Minion Damage - without those they fall apart quickly."
+                Spell = true, ManaCost = 35f, Cooldown = 4f, Color = new Color(0.55f, 1f, 0.6f),
+                Description = "Raise two skeleton warriors that stay until destroyed. All summon skills share one army limit, increased by summoner passives and gear. Summon levels improve their strength, not their count."
             },
             new SkillDefinition
             {
@@ -176,20 +183,20 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.SkeletonMages, Name = "Skeleton Mages", Short = "SKM", Grant = StatType.GrantSkeletonMages, RollsOn = "sceptres, grimoires, gloves",
-                Spell = true, ManaCost = 18f, Cooldown = 5f, Color = new Color(0.5f, 0.85f, 1f),
-                Description = "Raise a skeleton mage that hangs back and hurls bolts. At most 1 (+1 at levels 8 and 13). Frail: even more than the warriors it needs Minion Life and levels to last."
+                Spell = true, ManaCost = 45f, Cooldown = 5f, Color = new Color(0.5f, 0.85f, 1f),
+                Description = "Raise a skeleton mage that hangs back and hurls bolts. All summon skills share one army limit, increased by summoner passives and gear. Summon levels improve its strength, not its count."
             },
             new SkillDefinition
             {
                 Id = SkillId.SpiritWolves, Name = "Spirit Wolves", Short = "WLF", Grant = StatType.GrantSpiritWolves, RollsOn = "sceptres, grimoires, boots, amulets",
-                Spell = true, ManaCost = 24f, Cooldown = 18f, Color = new Color(0.6f, 0.9f, 1f),
-                Description = "Call two ghostly wolves (three from level 8) that hunt for 12 seconds (+0.5s per level). Enemies can't touch them, but they don't hold anything off either."
+                Spell = true, ManaCost = 60f, Cooldown = 18f, Color = new Color(0.6f, 0.9f, 1f),
+                Description = "Call a pack of ghostly wolves that hunt briefly. All summon skills share one army limit, increased by summoner passives and gear. Wolves cannot be targeted."
             },
             new SkillDefinition
             {
                 Id = SkillId.BoneGolem, Name = "Bone Golem", Short = "GLM", Grant = StatType.GrantBoneGolem, RollsOn = "sceptres, grimoires, body armour, belts",
-                Spell = true, ManaCost = 30f, Cooldown = 30f, Color = new Color(0.92f, 0.88f, 0.7f),
-                Description = "Raise a hulking golem of bone for 18 seconds (+1s per level) that taunts the enemies round it into attacking it. Only as sturdy as your investment in minions: an unsupported golem crumbles fast."
+                Spell = true, ManaCost = 75f, Cooldown = 30f, Color = new Color(0.92f, 0.88f, 0.7f),
+                Description = "Raise a hulking golem of bone that taunts nearby enemies. It shares the global army limit with every other summon skill."
             },
             new SkillDefinition
             {
@@ -221,6 +228,13 @@ namespace PoeClone.Skills
                 Color = new Color(1f, 0.5f, 0.2f),
                 Description = "Bow skill (toggle): arrows of fire for 100% damage (+4% per level) as Fire, bursting to scorch those around the target, with a 20% chance (+2% per level) to set it burning."
             },
+            new SkillDefinition { Id = SkillId.FangStrike, Name = "Fang Strike", Short = "FNG", Grant = StatType.GrantFangStrike, RollsOn = "daggers", ManaCost = 7f, Cooldown = 2f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Strike the aimed enemy for weapon damage and inflict a potent poison over 3 seconds." },
+            new SkillDefinition { Id = SkillId.VenomArrow, Name = "Venom Arrow", Short = "VNM", Grant = StatType.GrantVenomArrow, RollsOn = "bows, quivers", Color = new Color(0.48f, 0.9f, 0.22f), Description = "Bow skill (toggle): attacks inflict a stronger poison and leave a brief venom cloud." },
+            new SkillDefinition { Id = SkillId.VenomSpout, Name = "Venom Spout", Short = "SPT", Grant = StatType.GrantVenomSpout, RollsOn = "staves, Shepherd sceptre", Spell = true, BaseDamage = 5f, ManaCost = 14f, Cooldown = 5f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Erupt poison beneath your target, damaging and poisoning enemies in the area." },
+            new SkillDefinition { Id = SkillId.SummonViper, Name = "Summon Viper", Short = "VIP", Grant = StatType.GrantSummonViper, RollsOn = "grimoires, sceptres", Spell = true, ManaCost = 50f, Cooldown = 12f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Call a viper spirit to fight at your side. It shares the global army limit with every other summon skill." },
+            new SkillDefinition { Id = SkillId.Pulverize, Name = "Pulverize", Short = "PVL", Grant = StatType.GrantPulverize, RollsOn = "maces and mauls", ManaCost = 12f, Cooldown = 4.5f, Color = new Color(0.95f, 0.65f, 0.28f), Description = "Plant your feet and bring a mace down in a crushing slam after a heavy windup, dealing 260% weapon damage (+18% per level) in a broad area. Maces and mauls only." },
+            new SkillDefinition { Id = SkillId.ReapingArc, Name = "Reaping Arc", Short = "RPA", Grant = StatType.GrantReapingArc, RollsOn = "axes", ManaCost = 10f, Cooldown = 3.4f, Color = new Color(0.9f, 0.48f, 0.3f), Description = "Commit to a broad, forward axe sweep. After a deliberate windup, hit enemies in a wide arc for 220% weapon damage (+15% per level). Axes only." },
+            new SkillDefinition { Id = SkillId.LungingThrust, Name = "Lunging Thrust", Short = "LTH", Grant = StatType.GrantLungingThrust, RollsOn = "swords", ManaCost = 9f, Cooldown = 2.8f, Color = new Color(0.85f, 0.82f, 0.65f), Description = "Brace, then drive a sword forward in a committed thrust for 240% weapon damage (+16% per level). Swords only." },
         };
 
         public static SkillDefinition Get(SkillId id)

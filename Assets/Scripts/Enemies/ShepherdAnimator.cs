@@ -238,6 +238,8 @@ namespace PoeClone.Enemies
 
         public bool IsPlaying => clip != null;
         public Clip Current => clip;
+        public float Elapsed => time;
+        public int PlayCount { get; private set; }
 
         private const float BlendIn = 0.12f;
         private const float BlendOut = 0.15f;
@@ -260,6 +262,7 @@ namespace PoeClone.Enemies
                 return;
             clip = c;
             time = 0f;
+            PlayCount++;
             speed = Mathf.Max(0.05f, playbackSpeed);
             lastAdvance = 0f;
         }
@@ -271,6 +274,7 @@ namespace PoeClone.Enemies
                 return;
             clip = c;
             time = Mathf.Clamp(at, 0f, c.Duration - 0.01f);
+            PlayCount++;
             speed = 0f;
             lastAdvance = Sample(c, time).Advance;
         }

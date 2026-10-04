@@ -27,19 +27,19 @@ namespace PoeClone.Inventory
             {
                 BaseId = "hand_axe", Name = "Bonehew",
                 Flavour = "Mortis swung it for a thousand years. It remembers every one.",
-                Mods = new[] { Mod(StatType.PhysicalDamage, 16), Mod(StatType.AttackSpeed, 10), Mod(StatType.MaxLife, 20), Mod(StatType.LifeLeech, 3) }
+                Mods = new[] { Mod(StatType.PhysicalDamage, 16), Mod(StatType.AttackSpeed, 10), Mod(StatType.MaxLife, 20), Mod(StatType.LifeLeech, 3), Mod(StatType.ArmourPenetration, 10) }
             },
             new Unique
             {
                 BaseId = "short_bow", Name = "Whisperwind",
                 Flavour = "The arrow arrives before the sound.",
-                Mods = new[] { Mod(StatType.PhysicalDamage, 9), Mod(StatType.AttackSpeed, 15), Mod(StatType.Dexterity, 15), Mod(StatType.AdditionalArrows, 2) }
+                Mods = new[] { Mod(StatType.PhysicalDamage, 9), Mod(StatType.AttackSpeed, 15), Mod(StatType.Dexterity, 15), Mod(StatType.AdditionalArrows, 2), Mod(StatType.ArmourPenetration, 8) }
             },
             new Unique
             {
                 BaseId = "iron_mace", Name = "Ashfall",
                 Flavour = "What the fire left, the mace finishes.",
-                Mods = new[] { Mod(StatType.PhysicalDamage, 18), Mod(StatType.Strength, 15), Mod(StatType.FireResistance, 20), Mod(StatType.CullingStrike, 1) }
+                Mods = new[] { Mod(StatType.PhysicalDamage, 18), Mod(StatType.Strength, 15), Mod(StatType.FireResistance, 20), Mod(StatType.CullingStrike, 1), Mod(StatType.FirePenetration, 12) }
             },
             new Unique
             {
@@ -69,7 +69,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "ruby_ring", Name = "Emberheart",
                 Flavour = "It beats, faintly.",
-                Mods = new[] { Mod(StatType.FireResistance, 30), Mod(StatType.Intelligence, 12), Mod(StatType.SpellDamage, 25) }
+                Mods = new[] { Mod(StatType.FireResistance, 30), Mod(StatType.Intelligence, 12), Mod(StatType.SpellDamage, 25), Mod(StatType.FirePenetration, 12) }
             },
             new Unique
             {
@@ -81,25 +81,25 @@ namespace PoeClone.Inventory
             {
                 BaseId = "leather_quiver", Name = "Rimefletch",
                 Flavour = "Feathered with frost that never melts.",
-                Mods = new[] { Mod(StatType.PhysicalDamage, 5), Mod(StatType.ColdResistance, 20), Mod(StatType.ChillOnHit, 30) }
+                Mods = new[] { Mod(StatType.PhysicalDamage, 5), Mod(StatType.ColdResistance, 20), Mod(StatType.ChillOnHit, 30), Mod(StatType.ColdPenetration, 12) }
             },
             new Unique
             {
                 BaseId = "steel_dagger", Name = "Leechfang",
                 Flavour = "It drinks first. You drink after.",
-                Mods = new[] { Mod(StatType.PhysicalDamage, 8), Mod(StatType.AttackSpeed, 15), Mod(StatType.LifeLeech, 4), Mod(StatType.LifeOnKill, 4) }
+                Mods = new[] { Mod(StatType.PhysicalDamage, 8), Mod(StatType.AttackSpeed, 15), Mod(StatType.LifeLeech, 4), Mod(StatType.LifeOnKill, 4), Mod(StatType.ArmourPenetration, 15) }
             },
             new Unique
             {
                 BaseId = "sapphire_ring", Name = "Twinflame Loop",
                 Flavour = "Every spark it touches is born a twin.",
-                Mods = new[] { Mod(StatType.Intelligence, 10), Mod(StatType.MaxMana, 20), Mod(StatType.AdditionalSpellProjectiles, 2) }
+                Mods = new[] { Mod(StatType.Intelligence, 10), Mod(StatType.MaxMana, 20), Mod(StatType.AdditionalSpellProjectiles, 2), Mod(StatType.ElementalPenetration, 10) }
             },
             new Unique
             {
                 BaseId = "sage_circlet", Name = "Stormcaller's Circlet",
                 Flavour = "The sky listens to whoever wears it, and answers twice.",
-                Mods = new[] { Mod(StatType.Intelligence, 15), Mod(StatType.MaxMana, 25), Mod(StatType.AdditionalChains, 2), Mod(StatType.LightningResistance, 15) }
+                Mods = new[] { Mod(StatType.Intelligence, 15), Mod(StatType.MaxMana, 25), Mod(StatType.AdditionalChains, 2), Mod(StatType.LightningResistance, 15), Mod(StatType.LightningPenetration, 12) }
             },
             new Unique
             {
@@ -117,29 +117,45 @@ namespace PoeClone.Inventory
             {
                 BaseId = "grimoire", Name = "The Ossuary Codex",
                 Flavour = "Every page a name. Every name still answers.",
-                Mods = new[] { Mod(StatType.GrantDeathMark, 8), Mod(StatType.MinionLevels, 1), Mod(StatType.AdditionalSkeletons, 1), Mod(StatType.MinionLife, 25), Mod(StatType.Intelligence, 12) }
+                Mods = new[] { Mod(StatType.GrantDeathMark, 8), Mod(StatType.MinionLevels, 1), Mod(StatType.AdditionalMinions, 2), Mod(StatType.AdditionalSkeletons, 1), Mod(StatType.MinionDamagePenalty, 20), Mod(StatType.MinionLife, 25), Mod(StatType.Intelligence, 12) }
             },
             new Unique
             {
                 BaseId = "bone_sceptre", Name = "Gravewarden's Rod",
                 Flavour = "The dead keep the watch now. They never sleep on it.",
-                Mods = new[] { Mod(StatType.PhysicalDamage, 9), Mod(StatType.GrantRaiseSkeletons, 6), Mod(StatType.RaiseSkeletonsLevels, 2), Mod(StatType.MinionDamage, 30), Mod(StatType.SoulBond, 2) }
+                Mods = new[] { Mod(StatType.PhysicalDamage, 9), Mod(StatType.GrantRaiseSkeletons, 6), Mod(StatType.RaiseSkeletonsLevels, 2), Mod(StatType.MinionDamage, 18), Mod(StatType.SoulBond, 2) }
             },
             new Unique
             {
                 BaseId = "steel_dagger", Name = "Shepherd's Fang", ShepherdOnly = true,
                 Flavour = "A little of the saint still lives in every wound.",
-                Mods = new[] { Mod(StatType.PhysicalDamage, 15), Mod(StatType.AttackSpeed, 18), Mod(StatType.PoisonOnHit, 100), Mod(StatType.Dexterity, 15) }
+                Mods = new[] { Mod(StatType.PhysicalDamage, 15), Mod(StatType.AttackSpeed, 18), Mod(StatType.GrantFangStrike, 7), Mod(StatType.Dexterity, 15), Mod(StatType.PoisonPenetration, 20) }
             },
             new Unique
             {
                 BaseId = "short_bow", Name = "Widow's Choir", ShepherdOnly = true,
                 Flavour = "Where its arrows fall, the air remembers his breath.",
-                Mods = new[] { Mod(StatType.PhysicalDamage, 18), Mod(StatType.GrantPiercingShot, 7), Mod(StatType.VenomCloudOnHit, 35), Mod(StatType.Dexterity, 20) }
+                Mods = new[] { Mod(StatType.PhysicalDamage, 18), Mod(StatType.GrantVenomArrow, 7), Mod(StatType.Dexterity, 20), Mod(StatType.PoisonPenetration, 15) }
             },
+            new Unique { BaseId = "bone_sceptre", Name = "Crook of the Last Shepherd", ShepherdOnly = true,
+                Flavour = "It taught the roots to hunger.", Mods = new[] { Mod(StatType.GrantVenomSpout, 7), Mod(StatType.SpellDamage, 30), Mod(StatType.PoisonDamage, 25), Mod(StatType.PoisonPenetration, 12) } },
+            new Unique { BaseId = "grimoire", Name = "Book of Shed Skin", ShepherdOnly = true,
+                Flavour = "Something small coils between every page.", Mods = new[] { Mod(StatType.GrantSummonViper, 7), Mod(StatType.MinionLevels, 1), Mod(StatType.AdditionalMinions, 3), Mod(StatType.MinionDamagePenalty, 30), Mod(StatType.MinionLife, 20), Mod(StatType.PoisonDamage, 15) } },
+            new Unique { BaseId = "jade_amulet", Name = "Widow's Brood", ShepherdOnly = true,
+                Flavour = "The venom passes from mother to daughter.", Mods = new[] { Mod(StatType.PoisonDamage, 35), Mod(StatType.DamageOverTime, 25), Mod(StatType.PoisonResistance, 25), Mod(StatType.PoisonPenetration, 15), Mod(StatType.VenomCloudOnHit, 30) } },
         };
 
         private static readonly Dictionary<string, string> flavourByName = new Dictionary<string, string>();
+        private static readonly int[] OrdinaryPool = BuildPool(false);
+        private static readonly int[] ShepherdPool = BuildPool(true);
+
+        private static int[] BuildPool(bool shepherdOnly)
+        {
+            var indices = new List<int>();
+            for (int i = 0; i < All.Length; i++)
+                if (All[i].ShepherdOnly == shepherdOnly) indices.Add(i);
+            return indices.ToArray();
+        }
 
         static UniqueItems()
         {
@@ -152,10 +168,10 @@ namespace PoeClone.Inventory
         /// <summary>A random unique item.</summary>
         public static ItemData Random(System.Random rng)
         {
-            return Create(rng.Next(All.Length - 2));
+            return Create(OrdinaryPool[rng.Next(OrdinaryPool.Length)]);
         }
 
-        public static ItemData ShepherdReward(System.Random rng) => Create(All.Length - 2 + rng.Next(2));
+        public static ItemData ShepherdReward(System.Random rng) => Create(ShepherdPool[rng.Next(ShepherdPool.Length)]);
 
         /// <summary>A random unique of a kind the filter accepts (any unique if none fits).</summary>
         public static ItemData Random(System.Random rng, System.Func<ItemType, bool> kind)

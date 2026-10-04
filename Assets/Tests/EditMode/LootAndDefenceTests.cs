@@ -17,13 +17,15 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void Armour_StopsMoreOfSmallHitsThanBigOnes_AndIsCapped()
+        public void Armour_StopsMoreOfSmallHitsThanBigOnes_WithDiminishingReturns()
         {
             float small = DefenceMath.ArmourReduction(120f, 5f);
             float big = DefenceMath.ArmourReduction(120f, 30f);
             Assert.Greater(small, big);
             Assert.AreEqual(0f, DefenceMath.ArmourReduction(0f, 10f));
-            Assert.AreEqual(DefenceMath.MaxArmourReduction, DefenceMath.ArmourReduction(1e7f, 1f), 1e-4f);
+            float extreme = DefenceMath.ArmourReduction(1e7f, 1f);
+            Assert.Greater(extreme, 0.99f);
+            Assert.Less(extreme, 1f);
         }
 
         [Test]

@@ -210,6 +210,31 @@ namespace PoeClone.Network.Replication
             AppendInt(sb, "ch", e.ch);
             AppendInt(sb, "k", e.k);
             AppendInt(sb, "en", e.en);
+            AppendFloat(sb, "bs", e.bs, 2);
+            AppendInt(sb, "bp", e.bp);
+            AppendInt(sb, "bm", e.bm);
+            AppendInt(sb, "ba", e.ba);
+            AppendFloat(sb, "bt", e.bt, 2);
+            if (e.bl != null && e.bl.Length > 0)
+            {
+                sb.Append(",\"bl\":[");
+                for (int k = 0; k < e.bl.Length; k++)
+                {
+                    if (k > 0) sb.Append(',');
+                    BossLimbState limb = e.bl[k];
+                    sb.Append("{\"c\":").Append(limb.c.ToString(CultureInfo.InvariantCulture));
+                    AppendInt(sb, "a", limb.a);
+                    AppendFloat(sb, "s", limb.s, 2);
+                    if (limb.c > 0)
+                    {
+                        AppendFloat(sb, "x", limb.x, 2); AppendFloat(sb, "y", limb.y, 2); AppendFloat(sb, "z", limb.z, 2);
+                        AppendFloat(sb, "w", limb.w, 2); AppendFloat(sb, "l", limb.l, 2);
+                        AppendFloat(sb, "h", limb.h, 2); AppendFloat(sb, "r", limb.r, 2); AppendFloat(sb, "t", limb.t, 2);
+                    }
+                    sb.Append('}');
+                }
+                sb.Append(']');
+            }
             if (e.sk != 0)
             {
                 AppendInt(sb, "sk", e.sk);

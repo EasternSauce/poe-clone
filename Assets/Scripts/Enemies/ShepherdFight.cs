@@ -25,12 +25,12 @@ namespace PoeClone.Enemies
         private const float EngageRange = 24f;
         // How fast every clip plays (and so every wind-up and warning): the player dashes and
         // teleports, so he has to be quick.
-        public const float Pace = 1.6f;
-        private const float Breather = 0.15f;
+        public const float Pace = 3.2f;
+        private const float Breather = 0.075f;
 
-        private const float HookEvery = 4.5f;
-        private const float LungeEvery = 6f;
-        private const float CallEvery = 8f;
+        private const float HookEvery = 2.25f;
+        private const float LungeEvery = 3f;
+        private const float CallEvery = 4f;
         private const float SnakeWindUp = 0.45f;
 
         // Where his moves reach, at scale 1 (they grow with him).
@@ -56,11 +56,11 @@ namespace PoeClone.Enemies
         private readonly System.Collections.Generic.List<SnakeLimb> backSnakes = new System.Collections.Generic.List<SnakeLimb>();
 
         // Phase 2's specials, each on its own timer, never two straight after one another.
-        private const float VolleyEvery = 6f;
-        private const float SpoutsEvery = 9f;
-        private const float SnatchEvery = 8f;
-        private const float DiveEvery = 11f;
-        private const float SpecialGap = 1.2f;
+        private const float VolleyEvery = 3f;
+        private const float SpoutsEvery = 4.5f;
+        private const float SnatchEvery = 4f;
+        private const float DiveEvery = 5.5f;
+        private const float SpecialGap = 0.6f;
         private float nextVolley, nextSpouts, nextSnatch, nextDive, nextSpecial;
         private EnemyController walker;
 
@@ -105,10 +105,10 @@ namespace PoeClone.Enemies
             // Phase 1 can't be skipped past: damage holds at the threshold until he has changed.
             if (health != null)
                 health.Floor = health.MaxHealth * PhaseTwoAt;
-            nextSwing = Time.time + 1f;
-            nextHook = Time.time + 3f;
-            nextLunge = Time.time + 4f;
-            nextCall = Time.time + 7f;
+            nextSwing = Time.time + 0.5f;
+            nextHook = Time.time + 1.5f;
+            nextLunge = Time.time + 2f;
+            nextCall = Time.time + 3.5f;
         }
 
         private void OnDestroy()
@@ -269,11 +269,11 @@ namespace PoeClone.Enemies
         private void StartPhaseTwoTimers()
         {
             float now = Time.time;
-            nextVolley = now + 1.5f;
-            nextSnatch = now + 3.5f;
-            nextSpouts = now + 6.5f;
-            nextDive = now + 9.5f;
-            nextSpecial = now + 1f;
+            nextVolley = now + 0.75f;
+            nextSnatch = now + 1.75f;
+            nextSpouts = now + 3.25f;
+            nextDive = now + 4.75f;
+            nextSpecial = now + 0.5f;
         }
 
         // Phase 2: the specials on their timers (a gap after each), and in reach the bites.
@@ -429,7 +429,7 @@ namespace PoeClone.Enemies
 
             GroundSnake.Spawn(at, transform.position - at, 3.2f * ShepherdLook.BaseScale * Mathf.Sqrt(Grow) * 1.15f, 0.4f);
             CameraSystem.CameraFollow.Shake(0.35f, 0.35f);
-            HitInside(at, radius + 0.3f, 1.6f);
+            HitInside(at, radius + 0.3f, 4f);
         }
 
         // Serpent Dive: a huge snake bursts from the ground on one side of the player, arcs over

@@ -24,6 +24,7 @@ namespace PoeClone.UI
         private string version;
         private bool decided;
         private NamePromptUI namePrompt;
+        public static bool IsShowing { get; private set; }
 
         private void Start()
         {
@@ -44,7 +45,11 @@ namespace PoeClone.UI
             }
 
             version = header.Substring("version:".Length).Trim();
-            Build(firstBreak >= 0 ? text.Substring(firstBreak + 1).Trim() : "");
+            string releaseNotes = firstBreak >= 0 ? text.Substring(firstBreak + 1).Trim() : "";
+            PlayerPrefs.SetString("PoeClone.PatchNotes." + version, releaseNotes);
+            EscapeMenuUI.StoreRelease(version, releaseNotes);
+            PlayerPrefs.Save();
+            Build(releaseNotes);
             root.SetActive(false);
             namePrompt = GetComponent<NamePromptUI>();
         }
@@ -61,6 +66,7 @@ namespace PoeClone.UI
                 if (PlayerPrefs.GetString(SeenKey, "") != version)
                 {
                     root.SetActive(true);
+                    IsShowing = true;
                     // Tall enough for the wrapped notes, now that the panel has its real width.
                     Canvas.ForceUpdateCanvases();
                     content.sizeDelta = new Vector2(0f, body.preferredHeight + 12f);
@@ -79,6 +85,7 @@ namespace PoeClone.UI
         private void Close()
         {
             root.SetActive(false);
+            IsShowing = false;
             PlayerPrefs.SetString(SeenKey, version);
             PlayerPrefs.Save();
         }

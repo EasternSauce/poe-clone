@@ -17,7 +17,7 @@ namespace PoeClone.Enemies
             damage = hit; health = GetComponent<EnemyHealth>();
             anim = GetComponentInChildren<CarrionSaintAnimator>();
             anim.Hit += Hit;
-            nextAttack = Time.time + 1f; nextPursuit = Time.time + 4f;
+            nextAttack = Time.time + 0.5f; nextPursuit = Time.time + 2f;
         }
         private void Update()
         {
@@ -32,21 +32,21 @@ namespace PoeClone.Enemies
             if (Time.time >= nextPursuit)
             {
                 pursuit = SerpentPursuit.Spawn(health, player, damage);
-                nextPursuit = Time.time + 25f;
-                nextAttack = Time.time + 1f;
+                nextPursuit = Time.time + 12.5f;
+                nextAttack = Time.time + 0.5f;
                 return;
             }
             if (to.magnitude > 8f)
             {
                 var cc = GetComponent<CharacterController>();
-                Vector3 move = to.normalized * 8f * Time.deltaTime;
+                Vector3 move = to.normalized * 16f * Time.deltaTime;
                 if (cc != null && cc.enabled) cc.Move(move); else transform.position += move;
                 return;
             }
             string clip = last == "MawBite" ? "RearSlam" : "MawBite";
             if (Random.value < 0.25f) clip = "TentacleLash";
-            last = clip; anim.Play(clip, 1.3f);
-            nextAttack = Time.time + CarrionSaintAnimator.Duration(clip) / 1.3f + 0.35f;
+            last = clip; anim.Play(clip, 2.6f);
+            nextAttack = Time.time + (CarrionSaintAnimator.Duration(clip) / 1.3f + 0.35f) * 0.5f;
         }
         private void Hit(string clip)
         {

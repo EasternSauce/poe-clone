@@ -29,11 +29,28 @@ namespace PoeClone.Network.Replication
         public float sx;   // ...and where the latest one was aimed
         public float sz;
         public int en;     // enemies: 1 = enraged
+        public float bs;   // boss visual scale
+        public int bp;     // Shepherd phase (0 for other entities)
+        public int bm;     // boss animation sequence counter
+        public int ba;     // boss animation id (ShepherdAnimator / CarrionSaintAnimator)
+        public float bt;   // elapsed seconds in the current boss animation
+        public BossLimbState[] bl; // phase-two snake strikes
 
         public EntityState Clone()
         {
             return (EntityState)MemberwiseClone();
         }
+    }
+
+    [Serializable]
+    public class BossLimbState
+    {
+        public int c;      // strike counter
+        public int a;      // 1 = currently striking
+        public float s;    // animated local limb scale during the phase-two unfold
+        public float x, y, z;
+        public float w, l, h, r; // wind-up, lunge, hold, recovery
+        public float t;    // elapsed strike time
     }
 
     /// <summary>What the player's own HUD shows, so the spectator can draw the same one.</summary>

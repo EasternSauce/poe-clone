@@ -230,6 +230,7 @@ namespace PoeClone.Network.Replication
             result.y = a.y + dy * alpha;
             result.z = a.z + dz * alpha;
             result.r = a.r + Mathf.DeltaAngle(a.r, b.r) * alpha;
+            result.bs = a.bs + (b.bs - a.bs) * alpha;
         }
 
         public static EntityState FindEnemy(StateSnapshot s, int id)
@@ -258,6 +259,12 @@ namespace PoeClone.Network.Replication
             dst.ap = src.ap;
             dst.stg = src.stg;
             dst.ch = src.ch;
+            dst.bs = src.bs;
+            dst.bp = src.bp;
+            dst.bm = src.bm;
+            dst.ba = src.ba;
+            dst.bt = src.bt;
+            dst.bl = src.bl;
         }
 
         // Keeps a second of history (plus the snapshot RenderTime is currently interpolating from)

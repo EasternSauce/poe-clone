@@ -14,6 +14,8 @@ namespace PoeClone.Enemies
         public bool RootMotion;
         public bool IsPlaying => Current != null;
         public string Current { get; private set; }
+        public float Elapsed => time;
+        public int PlayCount { get; private set; }
         public float Reveal = 1f;
 
         private struct Rest
@@ -84,6 +86,7 @@ namespace PoeClone.Enemies
             if (Duration(clip) == 0f) return false;
             Current = clip;
             time = advance = 0f;
+            PlayCount++;
             speed = Mathf.Max(0.05f, playbackSpeed);
             hit = false;
             skyStarted = false;
@@ -104,6 +107,12 @@ namespace PoeClone.Enemies
             CarrionSaintLook.ShowSerpents(owner, false);
             Transform group = transform.Find(CarrionSaintLook.SerpentsName);
             if (group != null) foreach (Transform snake in group) snake.gameObject.SetActive(true);
+        }
+
+        public void SeekReplicated(float elapsed)
+        {
+            if (Current != null)
+                time = Mathf.Clamp(elapsed, 0f, Duration(Current) - 0.001f);
         }
 
         private void Pose(string name, Vector3 rotation, Vector3 offset = default(Vector3), float size = 1f)

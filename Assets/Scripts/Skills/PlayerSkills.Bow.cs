@@ -85,6 +85,7 @@ namespace PoeClone.Skills
                 case SkillId.PiercingShot: return CharacterAttackAnimator.BowStyle.Heavy;
                 case SkillId.RainOfArrows: return CharacterAttackAnimator.BowStyle.Sky;
                 case SkillId.BurningArrow: return CharacterAttackAnimator.BowStyle.Canted;
+                case SkillId.VenomArrow: return CharacterAttackAnimator.BowStyle.Canted;
                 default: return CharacterAttackAnimator.BowStyle.Plain;
             }
         }
@@ -165,6 +166,15 @@ namespace PoeClone.Skills
                     break;
                 }
 
+                case SkillId.VenomArrow:
+                {
+                    var volley = PlayerArrow.NewVolley();
+                    foreach (Vector3 direction in HitEffects.Spread(forward, arrows, PierceSpread))
+                        PlayerArrow.LaunchArrow(transform, range, damage * (0.9f + 0.04f * (level - 1)), direction, volley);
+                    Record(skill, level, range, arrows);
+                    break;
+                }
+
                 case SkillId.RainOfArrows:
                 {
                     int count = RainCount(level, arrows);
@@ -216,6 +226,10 @@ namespace PoeClone.Skills
                 case SkillId.BurningArrow:
                     foreach (Vector3 direction in HitEffects.Spread(facing, count, PlayerCombat.ArrowSpreadDegrees))
                         PlayerArrow.LaunchArrow(caster, bowRange, 0f, direction, null, harmless: true).Burning(skill.Color, cast.Size, 0f);
+                    break;
+                case SkillId.VenomArrow:
+                    foreach (Vector3 direction in HitEffects.Spread(facing, count, PierceSpread))
+                        PlayerArrow.LaunchArrow(caster, cast.Size > 0f ? cast.Size : bowRange, 0f, direction, null, harmless: true);
                     break;
 
                 case SkillId.RainOfArrows:

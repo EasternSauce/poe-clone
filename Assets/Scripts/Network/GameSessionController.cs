@@ -98,6 +98,7 @@ namespace PoeClone.Network
             gameObject.AddComponent<PoeClone.Player.SaveSystem>();
             namePrompt = gameObject.AddComponent<NamePromptUI>();
             gameObject.AddComponent<PoeClone.UI.PatchNotesUI>();
+            gameObject.AddComponent<PoeClone.UI.EscapeMenuUI>();
 
             stateBroadcaster = gameObject.AddComponent<PlayerStateBroadcaster>();
             stateBroadcaster.enabled = false;
@@ -128,6 +129,14 @@ namespace PoeClone.Network
                 StateChanged?.Invoke();
 
                 string confirmLabel = Role == SessionRole.Spectator ? "Watch" : "Play";
+                if (Role == SessionRole.Player)
+                {
+                    PoeClone.Player.SaveSystem.Profiles();
+                    string savedId = PlayerPrefs.GetString("PoeClone.ActiveCharacter.v1", "");
+                    if (!string.IsNullOrEmpty(savedId)) PoeClone.Player.SaveSystem.SelectProfile(savedId);
+                    namePrompt.ShowCharacters(() => { PlayerName = PoeClone.Player.SaveSystem.ActiveCharacterName; client.Connect(serverUrl); });
+                    return;
+                }
                 namePrompt.Show(PlayerPrefs.GetString(NamePrefKey, string.Empty), confirmLabel, name =>
                 {
                     PlayerName = name;

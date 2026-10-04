@@ -130,6 +130,7 @@ namespace PoeClone.Skills
             }
 
             SkillDefinition skill = SkillBook.Get(cast.Skill);
+            PlaySkillSound(cast.Skill, caster.position);
             Vector3 facing = cast.Facing;
             facing.y = 0f;
             if (facing.sqrMagnitude < 0.0001f)
@@ -166,7 +167,20 @@ namespace PoeClone.Skills
 
                 case SkillId.FrostNova:
                 case SkillId.Cleave:
+                case SkillId.Pulverize:
                     SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, cast.Skill == SkillId.Cleave ? 0.3f : 0.4f);
+                    break;
+
+                case SkillId.ReapingArc:
+                    SkillEffects.Shockwave(cast.At + facing * 1.8f, 2.8f, skill.Color, 0.34f);
+                    break;
+
+                case SkillId.LungingThrust:
+                    SkillEffects.Arc(cast.At + Vector3.up, cast.At + Vector3.up + facing * cast.Size, skill.Color, 0.25f);
+                    break;
+
+                case SkillId.FangStrike:
+                    SkillEffects.Arc(cast.At + Vector3.up * 0.8f, cast.At + Vector3.up * 0.8f + facing * cast.Size, skill.Color, 0.18f);
                     break;
 
                 case SkillId.Rejuvenate:
@@ -177,6 +191,7 @@ namespace PoeClone.Skills
                 case SkillId.SkeletonMages:
                 case SkillId.SpiritWolves:
                 case SkillId.BoneGolem:
+                case SkillId.SummonViper:
                     SkillEffects.Shockwave(cast.At, 1.6f, skill.Color, 0.4f);
                     break;
 
@@ -214,6 +229,8 @@ namespace PoeClone.Skills
             controller = GetComponent<PlayerController>();
             inventory = GetComponent<PlayerInventory>();
             attackAnimator = GetComponentInChildren<CharacterAttackAnimator>();
+            if (stats != null)
+                stats.Died += OnPlayerDied;
         }
 
         private void Start()
@@ -230,19 +247,34 @@ namespace PoeClone.Skills
 
         private void OnDestroy()
         {
+            if (stats != null)
+                stats.Died -= OnPlayerDied;
             if (boundEquipment != null)
                 boundEquipment.Changed -= OnGearChanged;
             if (inventory != null)
                 inventory.StatsChanged -= OnStatsChanged;
         }
 
+        private void OnPlayerDied()
+        {
+            StopAllCoroutines();
+            if (controller != null)
+                controller.SetSkillCommit(false);
+            if (attackAnimator != null)
+                attackAnimator.CancelAttack();
+        }
+
         private void OnGearChanged(EquipSlot slot, ItemData item)
         {
+            if (slot == EquipSlot.MainHand || slot == EquipSlot.OffHand)
+            {
+                // Summons are built for their current summoner loadout. A weapon swap must not
+                // let the player keep those minions while changing to a different damage setup.
+                if (boundEquipment != null && (slot == EquipSlot.OffHand || boundMainHand != item))
+                    Minion.Desummon(transform);
+            }
             if (slot == EquipSlot.MainHand)
             {
-                if (boundMainHand != null && boundMainHand.WeaponType == WeaponType.Sceptre &&
-                    (item == null || item.WeaponType != WeaponType.Sceptre))
-                    Minion.Desummon(transform);
                 boundMainHand = item;
             }
             CheckBowToggle();
@@ -501,7 +533,7 @@ namespace PoeClone.Skills
             {
                 for (int k = 0; k < SlotKeys.Length; k++)
                 {
-                    if (keyboard[SlotKeys[k]].wasPressedThisFrame)
+                    if (!PlayerPotions.IsBoundTo(k + 4) && keyboard[SlotKeys[k]].wasPressedThisFrame)
                         pressed = k;
                 }
             }
@@ -511,10 +543,10 @@ namespace PoeClone.Skills
             Mouse mouse = Mouse.current;
             if (pressed < 0 && mouse != null && free && !TouchMode.Active && !PlayerController.IsPointerOverUi() && !DialogueUI.IsOpen)
             {
-                if (mouse.rightButton.wasPressedThisFrame) pressed = 4;
-                else if (mouse.middleButton.wasPressedThisFrame) pressed = 5;
-                else if (mouse.backButton.wasPressedThisFrame) pressed = 6;
-                else if (mouse.forwardButton.wasPressedThisFrame) pressed = 7;
+                if (!PlayerPotions.IsBoundTo(8) && mouse.rightButton.wasPressedThisFrame) pressed = 4;
+                else if (!PlayerPotions.IsBoundTo(9) && mouse.middleButton.wasPressedThisFrame) pressed = 5;
+                else if (!PlayerPotions.IsBoundTo(10) && mouse.backButton.wasPressedThisFrame) pressed = 6;
+                else if (!PlayerPotions.IsBoundTo(11) && mouse.forwardButton.wasPressedThisFrame) pressed = 7;
             }
 
             if (pressed >= 0)
@@ -537,7 +569,7 @@ namespace PoeClone.Skills
             }
             if (skill.Bow)
                 return ToggleBow(skill);
-            if (CooldownLeft(skill.Id) > 0f || controller.IsDashing)
+            if (CooldownLeft(skill.Id) > 0f || controller.IsDashing || controller.IsSkillCommitted)
                 return false;
 
             // Swinging skills wait for the current swing; Dash and Rejuvenate can cut in.
@@ -545,10 +577,10 @@ namespace PoeClone.Skills
             if (usesArms && attackAnimator != null && attackAnimator.IsAttacking)
                 return false;
 
-            // Cleave is a melee swing: it can't be done with a bow in hand.
-            if (skill.Id == SkillId.Cleave && CharacterAttackAnimator.IsRanged(CurrentWeapon()))
+            // Melee skills belong to a weapon family; never let a bow or another weapon use them.
+            if (!CanUseWithWeapon(skill.Id, CurrentWeapon()))
             {
-                CombatText.Show(transform.position + Vector3.up * 2f, "Needs a melee weapon", CombatText.PhysicalColor, 0.8f);
+                CombatText.Show(transform.position + Vector3.up * 2f, RequiredWeaponText(skill.Id), CombatText.PhysicalColor, 0.8f);
                 return false;
             }
 
@@ -635,6 +667,15 @@ namespace PoeClone.Skills
                 case SkillId.Cleave:
                     StartCoroutine(Spin(skill, level));
                     break;
+                case SkillId.Pulverize:
+                    StartCoroutine(CommittedStrike(skill.Id, 0.72f, CurrentWeapon(), () => Pulverize(skill, level)));
+                    break;
+                case SkillId.ReapingArc:
+                    StartCoroutine(CommittedStrike(skill.Id, 0.58f, CurrentWeapon(), () => ReapingArc(skill, level)));
+                    break;
+                case SkillId.LungingThrust:
+                    StartCoroutine(Lunge(skill, level));
+                    break;
 
                 case SkillId.FireBolt:
                     if (!asAttack)
@@ -711,6 +752,7 @@ namespace PoeClone.Skills
                 case SkillId.SkeletonMages:
                 case SkillId.SpiritWolves:
                 case SkillId.BoneGolem:
+                case SkillId.SummonViper:
                     if (attackAnimator != null)
                         attackAnimator.PlayAttack(WeaponType.Unarmed);
                     Minion.Summon(transform, MinionKindOf(skill.Id), level);
@@ -724,16 +766,37 @@ namespace PoeClone.Skills
                 case SkillId.GraveRot:
                     GraveRot(skill, level, area);
                     break;
+
+                case SkillId.FangStrike:
+                    StartCoroutine(CommittedStrike(skill.Id, 0.12f, WeaponType.Dagger, () => FangStrike(skill, level)));
+                    break;
+                case SkillId.VenomSpout:
+                {
+                    Vector3 direction = AimDirection();
+                    EnemyHealth aimed = AimedEnemy(12f) ?? (TouchMode.Active ? EnemyInDirection(direction, 12f) : null);
+                    Vector3 at = aimed != null ? aimed.transform.position : transform.position + direction * Mathf.Clamp(AimDistance() ?? 7f, 0f, 12f);
+                    float radius = 2.6f * area;
+                    SkillEffects.Shockwave(at, radius, skill.Color, 0.45f);
+                    Record(skill, level, radius, 0, new[] { at });
+                    foreach (EnemyHealth target in EnemiesWithin(at, radius))
+                    {
+                        Hit(target, damage * (1f + 0.12f * (level - 1)), skill.Color, false, DamageType.Poison);
+                        WeaponVenom.Apply(transform, target, damage, 100f + 10f * (level - 1), 0f, inventory.Stats);
+                    }
+                    break;
+                }
             }
         }
 
         // A full turn on the spot, then everything in reach takes the blow.
         private IEnumerator Spin(SkillDefinition skill, int level)
         {
-            if (attackAnimator != null)
-                attackAnimator.PlayAttack(WeaponType.Axe);
+            controller.SetSkillCommit(true);
+            Face(AimDirection());
+            PlaySkillAnimation(skill.Id, CurrentWeapon());
+            yield return new WaitForSeconds(0.65f);
 
-            const float seconds = 0.28f;
+            const float seconds = 0.26f;
             float startYaw = transform.eulerAngles.y;
             for (float t = 0f; t < seconds; t += Time.deltaTime)
             {
@@ -750,8 +813,135 @@ namespace PoeClone.Skills
             Record(skill, level, reach);
 
             float damage = WeaponDamage() * (1.4f + 0.1f * (level - 1));
+            PlaySkillSound(skill.Id, transform.position);
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
                 Hit(enemy, damage, CombatText.PhysicalColor, attack: true);
+            controller.SetSkillCommit(false);
+        }
+
+        private IEnumerator CommittedStrike(SkillId skill, float windup, WeaponType animationWeapon, Action release)
+        {
+            controller.SetSkillCommit(true);
+            Face(AimDirection());
+            PlaySkillAnimation(skill, animationWeapon);
+            yield return new WaitForSeconds(windup);
+            PlaySkillSound(skill, transform.position);
+            release();
+            yield return new WaitForSeconds(0.18f);
+            controller.SetSkillCommit(false);
+        }
+
+        private IEnumerator Lunge(SkillDefinition skill, int level)
+        {
+            controller.SetSkillCommit(true);
+            Face(AimDirection());
+            PlaySkillAnimation(skill.Id, CurrentWeapon());
+            yield return new WaitForSeconds(0.34f);
+            controller.Dash(transform.forward, 2.4f, 0.16f);
+            yield return new WaitForSeconds(0.16f);
+            PlaySkillSound(skill.Id, transform.position);
+            LungingThrust(skill, level);
+            yield return new WaitForSeconds(0.16f);
+            controller.SetSkillCommit(false);
+        }
+
+        private void PlaySkillAnimation(SkillId skill, WeaponType weapon)
+        {
+            if (attackAnimator != null)
+                attackAnimator.PlaySkillAttack(skill, weapon);
+        }
+
+        private static void PlaySkillSound(SkillId skill, Vector3 at)
+        {
+            string sound;
+            switch (skill)
+            {
+                case SkillId.Cleave: sound = "skill_cleave"; break;
+                case SkillId.Pulverize: sound = "skill_pulverize"; break;
+                case SkillId.ReapingArc: sound = "skill_reaping_arc"; break;
+                case SkillId.LungingThrust: sound = "skill_lunging_thrust"; break;
+                case SkillId.FangStrike: sound = "skill_fang_strike"; break;
+                default: return;
+            }
+
+            PoeClone.Audio.AudioManager audio = PoeClone.Audio.AudioManager.Instance;
+            if (audio != null)
+                audio.PlayAtPoint(audio.Sfx(sound), at, 0.75f);
+        }
+
+        private static bool CanUseWithWeapon(SkillId id, WeaponType weapon)
+        {
+            switch (id)
+            {
+                case SkillId.Cleave: return !CharacterAttackAnimator.IsRanged(weapon);
+                case SkillId.Pulverize: return weapon == WeaponType.Mace || weapon == WeaponType.Maul;
+                case SkillId.ReapingArc: return weapon == WeaponType.Axe || weapon == WeaponType.Greataxe;
+                case SkillId.LungingThrust: return weapon == WeaponType.Sword || weapon == WeaponType.Greatsword;
+                case SkillId.FangStrike: return weapon == WeaponType.Dagger;
+                default: return true;
+            }
+        }
+
+        private static string RequiredWeaponText(SkillId id)
+        {
+            switch (id)
+            {
+                case SkillId.Pulverize: return "Needs a mace or maul";
+                case SkillId.ReapingArc: return "Needs an axe";
+                case SkillId.LungingThrust: return "Needs a sword";
+                case SkillId.FangStrike: return "Needs a dagger";
+                default: return "Needs a melee weapon";
+            }
+        }
+
+        private void Pulverize(SkillDefinition skill, int level)
+        {
+            float radius = 3.6f * DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
+            SkillEffects.Shockwave(transform.position, radius, skill.Color, 0.42f);
+            // Match the impact treatment of a basic maul slam: ground burst plus a brief camera jolt.
+            PoeClone.CameraSystem.CameraFollow.Shake(0.12f, 0.18f);
+            Record(skill, level, radius);
+            float damage = WeaponDamage() * (2.6f + 0.18f * (level - 1));
+            foreach (EnemyHealth enemy in EnemiesWithin(transform.position, radius))
+                Hit(enemy, damage, CombatText.PhysicalColor, attack: true);
+        }
+
+        private void ReapingArc(SkillDefinition skill, int level)
+        {
+            float reach = 4.6f * (1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f);
+            float damage = WeaponDamage() * (2.2f + 0.15f * (level - 1));
+            foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
+            {
+                Vector3 to = enemy.transform.position - transform.position;
+                to.y = 0f;
+                if (to.sqrMagnitude > 0.01f && Vector3.Angle(transform.forward, to) <= 72f)
+                    Hit(enemy, damage, CombatText.PhysicalColor, attack: true);
+            }
+            SkillEffects.Shockwave(transform.position + transform.forward * 1.8f, 2.8f, skill.Color, 0.34f);
+            Record(skill, level, reach);
+        }
+
+        private void LungingThrust(SkillDefinition skill, int level)
+        {
+            float reach = 3f * (1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f);
+            float damage = WeaponDamage() * (2.4f + 0.16f * (level - 1));
+            EnemyHealth target = AimedEnemy(reach) ?? EnemyInDirection(transform.forward, reach);
+            SkillEffects.Arc(transform.position + Vector3.up, transform.position + Vector3.up + transform.forward * reach, skill.Color, 0.25f);
+            if (target != null)
+                Hit(target, damage, CombatText.PhysicalColor, attack: true);
+            Record(skill, level, reach);
+        }
+
+        private void FangStrike(SkillDefinition skill, int level)
+        {
+            float reach = 2.4f * (1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f);
+            EnemyHealth target = AimedEnemy(reach) ?? EnemyInDirection(transform.forward, reach);
+            Record(skill, level, reach);
+            if (target != null)
+            {
+                Hit(target, WeaponDamage() * (1.3f + 0.08f * (level - 1)), skill.Color, true);
+                WeaponVenom.Apply(transform, target, WeaponDamage(), 150f + 15f * (level - 1), 0f, inventory.Stats);
+            }
         }
 
         /// <summary>
@@ -766,7 +956,7 @@ namespace PoeClone.Skills
                 return null;
             MinionKind kind = MinionKindOf(id);
             StatSheet sheet = inventory != null ? inventory.Stats : null;
-            string summary = "max " + Minion.Cap(kind, level, sheet) + " · " +
+            string summary = "army max " + Minion.GlobalCap(transform) + " · this skill max " + Minion.KindCap(kind, sheet) + " · " +
                              Mathf.RoundToInt(Minion.LifeFor(kind, level, sheet)) + " life · " +
                              Mathf.RoundToInt(Minion.DamageFor(kind, level, sheet)) + " per hit";
             float duration = Minion.Duration(kind, level, sheet);
@@ -782,6 +972,7 @@ namespace PoeClone.Skills
                 case SkillId.SkeletonMages: return MinionKind.Mage;
                 case SkillId.SpiritWolves: return MinionKind.Wolf;
                 case SkillId.BoneGolem: return MinionKind.Golem;
+                case SkillId.SummonViper: return MinionKind.Viper;
                 default: return MinionKind.Warrior;
             }
         }
