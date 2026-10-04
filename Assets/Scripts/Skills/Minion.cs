@@ -216,6 +216,15 @@ namespace PoeClone.Skills
             }
         }
 
+        /// <summary>Dismiss this owner's living summons, for example when their summoning weapon is removed.</summary>
+        public static void Desummon(Transform owner)
+        {
+            if (owner == null)
+                return;
+            foreach (Minion minion in All.FindAll(m => m != null && m.owner == owner))
+                minion.Crumble();
+        }
+
         private static void Create(GameObject prefab, Transform owner, MinionKind kind, Vector3 at, int level, StatSheet sheet)
         {
             Profile profile = ProfileOf(kind);

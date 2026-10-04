@@ -78,12 +78,18 @@ namespace PoeClone.World
 
                 Vector3 feet = cam.WorldToScreenPoint(npc.transform.position);
                 Vector3 head = cam.WorldToScreenPoint(npc.transform.position + Vector3.up * (npc.labelHeight + 0.3f));
-                if (feet.z <= 0f)
+                // A projected point just in front of the camera plane can be thousands of pixels
+                // away; if the NPC's label crosses that plane, its screen-space hit box balloons
+                // and can steal clicks from visible props elsewhere on screen.
+                if (feet.z <= cam.nearClipPlane || head.z <= cam.nearClipPlane)
                     continue;
 
                 float height = Mathf.Abs(head.y - feet.y);
-                float halfWidth = Mathf.Max(height * 0.3f, 36f, npc.DisplayName.Length * 6f);
-                bool inside = point.y >= Mathf.Min(feet.y, head.y) - 16f && point.y <= Mathf.Max(feet.y, head.y) + 10f &&
+                float halfWidth = Mathf.Max(height * 0.3f, npc.Role == NpcRole.QuestProp ? 64f : 36f, npc.DisplayName.Length * 6f);
+                // Quest props include low objects such as prone bodies. Their interaction target
+                // is the ground-level prop origin, so include a generous area below the label box.
+                float lowerReach = npc.Role == NpcRole.QuestProp ? 64f : 16f;
+                bool inside = point.y >= Mathf.Min(feet.y, head.y) - lowerReach && point.y <= Mathf.Max(feet.y, head.y) + 10f &&
                               Mathf.Abs(point.x - (feet.x + head.x) * 0.5f) <= halfWidth;
                 if (inside && feet.z < bestDepth)
                 {

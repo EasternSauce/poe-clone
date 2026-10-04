@@ -40,6 +40,7 @@ namespace PoeClone.Skills
         private PlayerInventory inventory;
         private CharacterAttackAnimator attackAnimator;
         private EquipmentSet boundEquipment;
+        private ItemData boundMainHand;
 
         /// <summary>Slots, gear-granted skills or their levels changed (the bars redraw).</summary>
         public event Action Changed;
@@ -220,6 +221,7 @@ namespace PoeClone.Skills
             if (inventory != null)
             {
                 boundEquipment = inventory.Equipment;
+                boundMainHand = boundEquipment.Get(EquipSlot.MainHand);
                 boundEquipment.Changed += OnGearChanged;
                 inventory.StatsChanged += OnStatsChanged;
             }
@@ -236,6 +238,13 @@ namespace PoeClone.Skills
 
         private void OnGearChanged(EquipSlot slot, ItemData item)
         {
+            if (slot == EquipSlot.MainHand)
+            {
+                if (boundMainHand != null && boundMainHand.WeaponType == WeaponType.Sceptre &&
+                    (item == null || item.WeaponType != WeaponType.Sceptre))
+                    Minion.Desummon(transform);
+                boundMainHand = item;
+            }
             CheckBowToggle();
             FillEmptySlots(announce: item != null);
         }
