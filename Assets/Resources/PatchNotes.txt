@@ -1,4 +1,4 @@
-version: 2026-10-05-patch-history-latest
+version: 2026-10-05-character-selection-polish
 <b>Patch history</b>
 - Patch History now opens on the newest release, including notes saved on this device.
 <b>Spectating</b>
@@ -46,6 +46,9 @@ version: 2026-10-05-patch-history-latest
 - Halved attack tempo for the act bosses, including The Shepherd and Carrion Saint.
 
 <b>Character selection</b>
+- The scene player stays inactive during character choice and becomes active after the chosen save loads.
+- Connecting now has a solid black background and stays visible until the selected character has loaded.
+- Saved characters can be removed from the character choice screen after a confirmation.
 - Character rows now show portraits of the saved character model wearing its equipped gear.
 - Existing single-character saves are recovered into the character list, including saves already copied by the first multi-character release.
 <b>Combat balance</b>

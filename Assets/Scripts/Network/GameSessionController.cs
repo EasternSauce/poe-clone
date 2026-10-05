@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using PoeClone.Inventory;
+using PoeClone.Player;
 
 namespace PoeClone.Network
 {
@@ -47,6 +48,7 @@ namespace PoeClone.Network
         private PlayerStateBroadcaster stateBroadcaster;
         private SpectatorReplica replica;
         private NamePromptUI namePrompt;
+        private GameObject scenePlayer;
 
         public SpectatorReplica Replica => replica;
         private string serverUrl;
@@ -107,6 +109,16 @@ namespace PoeClone.Network
 
         private IEnumerator Start()
         {
+            // The scene's player is needed while the world wires its references on startup.
+            // After that frame it stays inactive until the chosen save has been applied.
+            yield return null;
+            var player = FindAnyObjectByType<PlayerStats>();
+            if (player != null)
+            {
+                scenePlayer = player.gameObject;
+                if (!PlayGranted) scenePlayer.SetActive(false);
+            }
+
             yield return NetworkConfig.Load(cfg => serverUrl = cfg.serverUrl);
 
             client.RequestLocationSearch(search =>
@@ -121,6 +133,7 @@ namespace PoeClone.Network
 
                 if (Role == SessionRole.Spectator)
                 {
+                    if (scenePlayer != null) scenePlayer.SetActive(true);
                     // Spectators run the world (so puppets animate and sounds play) but with every
                     // gameplay system switched off by the replica.
                     replica.Enter();
@@ -254,6 +267,9 @@ namespace PoeClone.Network
                     DenyReason = msg.reason;
                     if (Role == SessionRole.Player)
                     {
+                        // Apply the chosen save before the first unpaused frame whenever the
+                        // scene is ready. SaveSystem retries if its scene dependencies are late.
+                        if (msg.granted) PoeClone.Player.SaveSystem.LoadSelectedProfile();
                         SetWorldActive(msg.granted);
                         stateBroadcaster.enabled = msg.granted;
                     }
@@ -302,6 +318,13 @@ namespace PoeClone.Network
         private void HandleError(string message)
         {
             Debug.LogWarning($"GameSessionController: socket error: {message}");
+        }
+
+        public void NotifyCharacterLoaded()
+        {
+            if (scenePlayer != null && Role == SessionRole.Player)
+                scenePlayer.SetActive(true);
+            StateChanged?.Invoke();
         }
 
         private void ScheduleReconnect()

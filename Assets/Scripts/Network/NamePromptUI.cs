@@ -34,13 +34,14 @@ namespace PoeClone.Network
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             MakeText("Choose Character", font, 34, new Vector2(0, 330), new Vector2(1000, 60));
             var profiles = PoeClone.Player.SaveSystem.Profiles();
-            var inventory = FindAnyObjectByType<PlayerInventory>();
+            var inventories = FindObjectsByType<PlayerInventory>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var inventory = inventories.Length > 0 ? inventories[0] : null;
             var source = inventory != null ? inventory.GetComponentInChildren<EquipmentVisuals>(true) : null;
             float y = 220;
             foreach (var profile in profiles)
             {
                 string id = profile.id;
-                var row = MakeButton(profile.name + "   ·   Level " + PoeClone.Player.SaveSystem.ProfileLevel(profile), font, new Vector2(0, y), new Vector2(560, 112), () =>
+                var row = MakeButton(profile.name + "   ·   Level " + PoeClone.Player.SaveSystem.ProfileLevel(profile), font, new Vector2(-70, y), new Vector2(560, 112), () =>
                 {
                     PoeClone.Player.SaveSystem.SelectProfile(id);
                     PlayerName = PoeClone.Player.SaveSystem.ActiveCharacterName;
@@ -51,9 +52,26 @@ namespace PoeClone.Network
                 label.rectTransform.offsetMin = new Vector2(116, 0);
                 if (source != null)
                     AddPortrait(row.transform, source, PoeClone.Player.SaveSystem.ProfileSave(profile));
+                var remove = MakeButton("Remove", font, new Vector2(300, y), new Vector2(140, 64), () => ShowRemoveConfirmation(id, profile.name, font));
+                remove.GetComponent<Image>().color = new Color(.55f, .2f, .2f, .98f);
                 y -= 126;
             }
             MakeButton("Create New Character", font, new Vector2(0, y - 8), new Vector2(300, 54), () => ShowCreateCharacter(font));
+        }
+
+        private void ShowRemoveConfirmation(string id, string name, Font font)
+        {
+            foreach (Transform child in canvasRoot.transform)
+                if (child.name != "Background") Destroy(child.gameObject);
+            MakeText("Remove " + name + "?", font, 32, new Vector2(0, 100), new Vector2(900, 70));
+            MakeText("This permanently deletes this character and its saved progress.", font, 22, new Vector2(0, 20), new Vector2(1000, 60));
+            var remove = MakeButton("Remove Character", font, new Vector2(-130, -90), new Vector2(240, 54), () =>
+            {
+                PoeClone.Player.SaveSystem.DeleteProfile(id);
+                ShowCharacters(afterCharacter);
+            });
+            remove.GetComponent<Image>().color = new Color(.55f, .2f, .2f, .98f);
+            MakeButton("Cancel", font, new Vector2(130, -90), new Vector2(180, 54), () => ShowCharacters(afterCharacter));
         }
 
         private string PlayerName;

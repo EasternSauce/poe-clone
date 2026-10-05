@@ -63,6 +63,31 @@ namespace PoeClone.Player
             ActiveProfileId = id; ActiveCharacterName = name.Trim();
         }
 
+        public static bool DeleteProfile(string id)
+        {
+            var profiles = Profiles();
+            int index = profiles.FindIndex(p => p != null && p.id == id);
+            if (index < 0) return false;
+
+            profiles.RemoveAt(index);
+            PlayerPrefs.DeleteKey("PoeClone.CharacterSave." + id);
+            if (id == "legacy")
+            {
+                PlayerPrefs.DeleteKey(LegacyKey);
+                PlayerPrefs.DeleteKey(LegacyProfileSaveKey);
+            }
+            PlayerPrefs.SetString(ProfilesKey, JsonUtility.ToJson(new ProfileList { profiles = profiles }));
+            if (PlayerPrefs.GetString(ActiveProfileKey, "") == id)
+                PlayerPrefs.DeleteKey(ActiveProfileKey);
+            if (ActiveProfileId == id)
+            {
+                ActiveProfileId = "";
+                ActiveCharacterName = "";
+            }
+            PlayerPrefs.Save();
+            return true;
+        }
+
         public static int ProfileLevel(Profile p)
         {
             var d = ProfileSave(p);
@@ -79,6 +104,12 @@ namespace PoeClone.Player
         private const float SaveEvery = 10f;
 
         private static SaveSystem instance;
+        public static bool CharacterLoaded => instance != null && instance.loaded;
+
+        public static void LoadSelectedProfile()
+        {
+            if (instance != null) instance.TryLoadSelectedProfile();
+        }
 
         private bool loaded;
         private bool erased;
@@ -125,10 +156,28 @@ namespace PoeClone.Player
             if (erased || !Playing())
                 return;
 
-            if (stats == null)
-                stats = FindAnyObjectByType<PlayerStats>();
-            if (stats == null || QuestLog.Instance == null || AreaManager.Instance == null || AreaManager.Instance.CurrentAreaIndex < 0)
+            if (!loaded && !TryLoadSelectedProfile())
                 return;
+
+            if (Time.unscaledTime >= nextSave)
+            {
+                nextSave = Time.unscaledTime + SaveEvery;
+                Save();
+            }
+        }
+
+        private bool TryLoadSelectedProfile()
+        {
+            if (loaded) return true;
+            if (!Playing()) return false;
+
+            if (stats == null)
+            {
+                var players = FindObjectsByType<PlayerStats>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                if (players.Length > 0) stats = players[0];
+            }
+            if (stats == null || QuestLog.Instance == null || AreaManager.Instance == null || AreaManager.Instance.CurrentAreaIndex < 0)
+                return false;
 
             if (areas == null)
             {
@@ -136,19 +185,11 @@ namespace PoeClone.Player
                 areas.AreaChanged += OnAreaChanged;
             }
 
-            if (!loaded)
-            {
-                loaded = true;
-                Load(stats);
-                nextSave = Time.unscaledTime + SaveEvery;
-                return;
-            }
-
-            if (Time.unscaledTime >= nextSave)
-            {
-                nextSave = Time.unscaledTime + SaveEvery;
-                Save();
-            }
+            Load(stats);
+            loaded = true;
+            nextSave = Time.unscaledTime + SaveEvery;
+            GameSessionController.Instance?.NotifyCharacterLoaded();
+            return true;
         }
 
         private void OnAreaChanged(int index)

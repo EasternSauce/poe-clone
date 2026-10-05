@@ -38,7 +38,8 @@ namespace PoeClone.Network
         {
             var ctrl = GameSessionController.Instance;
 
-            bool shouldShow = ctrl != null && ctrl.Role == SessionRole.Player && !(ctrl.Connected && ctrl.PlayGranted);
+            bool shouldShow = ctrl != null && ctrl.Role == SessionRole.Player &&
+                !(ctrl.Connected && ctrl.PlayGranted && PoeClone.Player.SaveSystem.CharacterLoaded);
 
             canvasGroup.alpha = shouldShow ? 1f : 0f;
             canvasGroup.blocksRaycasts = shouldShow;
@@ -73,7 +74,7 @@ namespace PoeClone.Network
             var bgGO = new GameObject("Background");
             bgGO.transform.SetParent(canvasGO.transform, false);
             var bg = bgGO.AddComponent<Image>();
-            bg.color = new Color(0f, 0f, 0f, 0.92f);
+            bg.color = Color.black;
             RuntimeUiUtil.StretchFull(bg.rectTransform);
 
             var textGO = new GameObject("Message");
