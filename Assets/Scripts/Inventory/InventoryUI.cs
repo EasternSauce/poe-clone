@@ -326,7 +326,7 @@ namespace PoeClone.Inventory
         {
             if (tooltipCanvas == null) return;
 
-            int order = 80; // Above desktop chat, including when it rises over an open menu.
+            int order = 820; // Above loot, menus, and desktop chat.
             if (SpectatorMirror.Active)
                 order = 946; // Spectator chat is 945; name prompt and loading UI stay above this.
             else if (TouchMode.Active)
@@ -1093,7 +1093,7 @@ private Vector2 CellSize(int w, int h)
 
         private void BuildUI(bool hasPreview)
         {
-            canvas = UiKit.NewCanvas("InventoryCanvas", transform, 50, out canvasGroup);
+            canvas = UiKit.NewCanvas("InventoryCanvas", transform, 800, out canvasGroup);
             // The panels catch the pointer, so a click on them never also attacks or walks.
             canvas.gameObject.AddComponent<GraphicRaycaster>();
             canvasGroup.blocksRaycasts = true;
@@ -1267,7 +1267,7 @@ private Vector2 CellSize(int w, int h)
         private void BuildTooltip()
         {
             CanvasGroup unusedGroup;
-            tooltipCanvas = UiKit.NewCanvas("InventoryTooltipCanvas", transform, 80, out unusedGroup);
+            tooltipCanvas = UiKit.NewCanvas("InventoryTooltipCanvas", transform, 820, out unusedGroup);
             tooltipCanvas.overrideSorting = true;
 
             Image bg = UiKit.NewImage("Tooltip", tooltipCanvas.transform, new Color(0.07f, 0.07f, 0.08f, 0.97f));

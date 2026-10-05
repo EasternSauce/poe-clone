@@ -104,7 +104,10 @@ namespace PoeClone.Enemies
                 anim.Hit += OnHit;
             // Phase 1 can't be skipped past: damage holds at the threshold until he has changed.
             if (health != null)
+            {
                 health.Floor = health.MaxHealth * PhaseTwoAt;
+                health.Died += OnDied;
+            }
             nextSwing = Time.time + 0.5f;
             nextHook = Time.time + 1.5f;
             nextLunge = Time.time + 2f;
@@ -115,6 +118,8 @@ namespace PoeClone.Enemies
         {
             if (anim != null)
                 anim.Hit -= OnHit;
+            if (health != null)
+                health.Died -= OnDied;
             ZoomOut(false);
             foreach (GameObject left in leftBehind)
             {
@@ -135,6 +140,8 @@ namespace PoeClone.Enemies
         private const float GiantZoom = 1.5f;
         private bool zoomed;
 
+        private void OnDied() { ZoomOut(false); }
+
         private void ZoomOut(bool on)
         {
             if (on == zoomed)
@@ -148,7 +155,7 @@ namespace PoeClone.Enemies
             bool dead = health != null && health.IsDead;
             bool insideActArena = World.AreaManager.Instance != null
                 && World.AreaManager.Instance.CurrentAreaIndex == World.WorldBuilder.ActArena;
-            bool phaseThreeArenaView = Phase >= 3 && insideActArena;
+            bool phaseThreeArenaView = Phase >= 3 && insideActArena && !dead;
             bool nearGiant = Grow > 1.01f && player != null
                 && Flat(player.transform.position - transform.position).magnitude < EngageRange * Grow;
             ZoomOut(phaseThreeArenaView || (!dead && player != null && !player.IsDead && nearGiant));
@@ -321,6 +328,25 @@ namespace PoeClone.Enemies
                 Begin(lastMove == "DoubleBite" || Random.value < 0.6f ? "Bite" : "DoubleBite");
         }
 
+        /// <summary>Phase three keeps the arena snake attacks while the old body rig is hidden.</summary>
+        public void PhaseThreeArenaSpecial(int choice)
+        {
+            if (Phase != 3 || health == null || health.IsDead) return;
+            if (player == null) player = FindAnyObjectByType<PlayerStats>();
+            if (player == null || player.IsDead) return;
+            switch (choice % 4)
+            {
+                case 0: Spouts(); break;
+                case 1: StartCoroutine(Snatch()); break;
+                case 2: SerpentDive(); break;
+                default:
+                    // The phase-two back snakes are hidden; venom comes from the new body.
+                    for (int i = -1; i <= 1; i += 2)
+                        Spit(transform.TransformPoint(new Vector3(i * 0.8f, 2.1f, 1.0f)), 1.5f * Grow);
+                    break;
+            }
+        }
+
         // Moves that play another move's clip.
         private static string ClipFor(string move)
         {
@@ -345,8 +371,8 @@ namespace PoeClone.Enemies
             if (player == null)
                 return;
             Vector3 at = player.transform.position + Flat(Random.insideUnitSphere) * spread;
-            float radius = 1.6f * Grow;
-            VenomGlob.Lob(mouth, at, 0.55f, 0.35f * Grow, radius, 4f,
+            float radius = 1.6f * Grow * (Phase >= 3 ? 1.25f : 1f);
+            VenomGlob.Lob(mouth, at, 0.55f, 0.35f * Grow * (Phase >= 3 ? 1.25f : 1f), radius, 4f,
                 spot => HitInside(spot, radius + 0.2f, 0.7f),
                 (centre, r) =>
                 {
@@ -391,7 +417,7 @@ namespace PoeClone.Enemies
             yield return new WaitForSeconds(delay);
             if (player == null)
                 yield break;
-            float height = 3.2f * ShepherdLook.BaseScale * Mathf.Sqrt(Grow) * 0.8f;
+            float height = 3.2f * ShepherdLook.BaseScale * Mathf.Sqrt(Grow) * (Phase >= 3 ? 1.1f : 0.8f);
             GroundSnake snake = GroundSnake.Spawn(spot, player.transform.position - spot, height, 1.6f);
             for (int k = 0; k < 2; k++)
             {
@@ -408,7 +434,7 @@ namespace PoeClone.Enemies
         {
             const float Track = 0.8f;
             const float Lock = 0.35f;
-            float radius = 1.3f * Grow;
+            float radius = 1.3f * Grow * (Phase >= 3 ? 1.3f : 1f);
             var ring = new GameObject("SnatchWarning");
             GameObject outer = RuntimePrimitives.Create(PrimitiveType.Cylinder, ring.transform, new Color(0.22f, 0.16f, 0.10f));
             outer.transform.localScale = new Vector3(radius * 2f, 0.01f, radius * 2f);
@@ -434,7 +460,7 @@ namespace PoeClone.Enemies
             if (player == null || health == null || health.IsDead)
                 yield break;
 
-            GroundSnake.Spawn(at, transform.position - at, 3.2f * ShepherdLook.BaseScale * Mathf.Sqrt(Grow) * 1.15f, 0.4f);
+            GroundSnake.Spawn(at, transform.position - at, 3.2f * ShepherdLook.BaseScale * Mathf.Sqrt(Grow) * (Phase >= 3 ? 1.4f : 1.15f), 0.4f);
             CameraSystem.CameraFollow.Shake(0.35f, 0.35f);
             HitInside(at, radius + 0.3f, 4f);
         }
@@ -456,11 +482,11 @@ namespace PoeClone.Enemies
             Vector3 to = centre + across * length * 0.5f;
             from.y = Debris.GroundBelow(from + Vector3.up * 3f);
             to.y = Debris.GroundBelow(to + Vector3.up * 3f);
-            float width = 2.2f * Grow;
+            float width = 2.2f * Grow * (Phase >= 3 ? 1.3f : 1f);
             const float Flight = 0.9f;
             StartCoroutine(GroundTelegraph.RunLine(from, across, length, width, 0.7f, DamageType.Physical, () =>
             {
-                DivingSerpent.Launch(from, to, 4.5f * Grow, 0.9f * Grow, Flight);
+                DivingSerpent.Launch(from, to, 4.5f * Grow * (Phase >= 3 ? 1.2f : 1f), 0.9f * Grow * (Phase >= 3 ? 1.3f : 1f), Flight);
                 StartCoroutine(After(Flight * 0.5f, () => HitAlong(from, across, length, width * 0.5f + 0.3f, 1.5f)));
             }));
         }

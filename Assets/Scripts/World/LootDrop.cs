@@ -12,13 +12,12 @@ namespace PoeClone.World
     /// An item lying on the ground: its icon over a glow in its rarity colour, with its name above,
     /// PoE style. Clicking or tapping it picks it up (see LootPicker, which walks the player over
     /// first if needed) into the first free spot in the bag; a full bag says so and leaves it there.
-    /// Outlined while pointed at or being walked to. Drawn as a small world-space canvas that always
-    /// faces the camera, so it uses the UI shader every build already includes.
+    /// Outlined while pointed at or being walked to. Drawn in an overlay canvas at the projected
+    /// ground position, above gameplay UI and below menus and tooltips.
     /// </summary>
     public class LootDrop : MonoBehaviour
     {
         private const float LifetimeSeconds = 180f;
-        private const float CanvasScale = 0.01f;   // canvas units per metre: 100
 
         // A fresh drop pops out of the body in a short arc and can't be clicked until it lands
         // (plus a beat), so an attack click aimed at the enemy that just died doesn't grab its loot.
@@ -42,6 +41,7 @@ namespace PoeClone.World
         private bool popping;
         private Vector3 popFrom;
         private RectTransform canvasRect;
+        private Vector3 displayWorld;
         private RectTransform icon;
         private Image glow;
         private Image labelBack;
@@ -142,6 +142,7 @@ namespace PoeClone.World
             drop.bornAt = Time.time;
             drop.clickableAt = Time.time;
             drop.bobPhase = Random.value * Mathf.PI * 2f;
+            drop.displayWorld = groundPoint + Vector3.up * CanvasHeight;
             drop.Build();
             return drop;
         }
@@ -221,12 +222,15 @@ namespace PoeClone.World
             var canvasGo = new GameObject("Canvas", typeof(RectTransform));
             canvasGo.transform.SetParent(transform, false);
             Canvas canvas = canvasGo.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = 750;
 
-            canvasRect = (RectTransform)canvasGo.transform;
+            var visual = new GameObject("DropVisual", typeof(RectTransform));
+            visual.transform.SetParent(canvasGo.transform, false);
+            canvasRect = (RectTransform)visual.transform;
             canvasRect.sizeDelta = new Vector2(200f, 200f);
-            canvasRect.localScale = Vector3.one * CanvasScale;
-            canvasRect.localPosition = Vector3.up * CanvasHeight;
+            canvasRect.localScale = Vector3.one * 0.5f;
 
             Color rarityColor = Item.Type == ItemType.Gold || Item.Type == ItemType.Potion
                 ? Color.Lerp(Item.Tint, Color.white, 0.25f)
@@ -265,24 +269,6 @@ namespace PoeClone.World
             labelFrame.transform.SetSiblingIndex(labelBack.transform.GetSiblingIndex());
             labelFrame.enabled = false;
 
-            // Drawn over the world, so a corpse falling on the item (or a bush) never hides it.
-            foreach (Graphic graphic in canvasGo.GetComponentsInChildren<Graphic>(true))
-                graphic.material = OnTopMaterial;
-        }
-
-        private static Material onTopMaterial;
-
-        private static Material OnTopMaterial
-        {
-            get
-            {
-                if (onTopMaterial == null)
-                {
-                    onTopMaterial = new Material(Canvas.GetDefaultCanvasMaterial()) { name = "LootOnTop" };
-                    onTopMaterial.SetInt("unity_GUIZTestMode", (int)UnityEngine.Rendering.CompareFunction.Always);
-                }
-                return onTopMaterial;
-            }
         }
 
         // Starts the drop's canvas at the dead enemy and arcs it to where the item lands.
@@ -291,8 +277,7 @@ namespace PoeClone.World
             popping = true;
             popFrom = from;
             clickableAt = Time.time + ClickDelay;
-            if (canvasRect != null)
-                canvasRect.position = from;
+            displayWorld = from;
         }
 
         /// <summary>White outline, brighter glow and a slightly bigger icon: "this is the one".</summary>
@@ -330,7 +315,8 @@ namespace PoeClone.World
 
             foreach (LootDrop drop in All)
             {
-                if ((!drop.interactive && !displayOnly) || drop.icon == null || Time.time < drop.clickableAt)
+                if ((!drop.interactive && !displayOnly) || drop.icon == null ||
+                    drop.canvasRect == null || !drop.canvasRect.gameObject.activeSelf || Time.time < drop.clickableAt)
                     continue;
 
                 bool hit = PaddedRectContainsScreenPoint(drop.labelBack.rectTransform, cam, screenPoint, padding) ||
@@ -358,11 +344,11 @@ namespace PoeClone.World
             Vector3[] corners = cornerBuffer;
             rect.GetWorldCorners(corners);
 
-            Vector2 min = cam.WorldToScreenPoint(corners[0]);
+            Vector2 min = corners[0];
             Vector2 max = min;
             for (int i = 1; i < 4; i++)
             {
-                Vector2 p = cam.WorldToScreenPoint(corners[i]);
+                Vector2 p = corners[i];
                 min = Vector2.Min(min, p);
                 max = Vector2.Max(max, p);
             }
@@ -435,30 +421,28 @@ namespace PoeClone.World
                 return;
             laidOutFrame = Time.frameCount;
 
-            Vector3 right = cam.transform.right;
-            Vector3 up = cam.transform.up;
             layoutOrder.Clear();
             foreach (LootDrop drop in All)
             {
-                if (drop.canvasRect != null && drop.labelText != null)
+                if (drop.canvasRect != null && drop.labelText != null && cam.WorldToScreenPoint(drop.displayWorld).z > 0f)
                     layoutOrder.Add(drop);
             }
-            layoutOrder.Sort((a, b) => Vector3.Dot(a.canvasRect.position, up).CompareTo(Vector3.Dot(b.canvasRect.position, up)));
+            layoutOrder.Sort((a, b) => cam.WorldToScreenPoint(a.displayWorld).y.CompareTo(cam.WorldToScreenPoint(b.displayWorld).y));
 
             placed.Clear();
             foreach (LootDrop drop in layoutOrder)
             {
-                Vector3 p = drop.canvasRect.position / CanvasScale;
-                float x = Vector3.Dot(p, right);
-                float y = Vector3.Dot(p, up) + LabelBaseY;
-                Vector2 size = drop.labelBack.rectTransform.sizeDelta + new Vector2(6f, 4f);
+                Vector3 p = cam.WorldToScreenPoint(drop.displayWorld);
+                float x = p.x;
+                float y = p.y + LabelBaseY * 0.5f;
+                Vector2 size = (drop.labelBack.rectTransform.sizeDelta + new Vector2(6f, 4f)) * 0.5f;
 
                 int level = 0;
                 Rect rect = new Rect(x - size.x * 0.5f, y - size.y * 0.5f, size.x, size.y);
                 while (level < 12 && Overlaps(rect))
                 {
                     level++;
-                    rect.y += LabelLineHeight;
+                    rect.y += LabelLineHeight * 0.5f;
                 }
                 placed.Add(rect);
                 drop.SetLabelLevel(level);
@@ -495,7 +479,7 @@ namespace PoeClone.World
             {
                 float t = Mathf.Clamp01((Time.time - bornAt) / PopSeconds);
                 Vector3 landed = transform.position + Vector3.up * CanvasHeight;
-                canvasRect.position = Vector3.Lerp(popFrom, landed, t) + Vector3.up * (PopHeight * 4f * t * (1f - t));
+                displayWorld = Vector3.Lerp(popFrom, landed, t) + Vector3.up * (PopHeight * 4f * t * (1f - t));
                 if (t >= 1f)
                     popping = false;
             }
@@ -504,13 +488,17 @@ namespace PoeClone.World
                 Destroy(gameObject);
         }
 
-        // Always face the camera (a billboard), after the camera has moved this frame.
+        // Follow the world drop in screen space after the camera has moved this frame.
         private void LateUpdate()
         {
             Camera cam = Camera.main;
             if (cam != null && canvasRect != null)
             {
-                canvasRect.rotation = cam.transform.rotation;
+                if (!popping) displayWorld = transform.position + Vector3.up * CanvasHeight;
+                Vector3 screen = cam.WorldToScreenPoint(displayWorld);
+                canvasRect.gameObject.SetActive(screen.z > 0f);
+                screen.z = 0f;
+                canvasRect.position = screen;
                 LayOutLabels(cam);
             }
         }

@@ -1,6 +1,18 @@
 version: 2026-10-05-archer-snake-dash
+<b>Mobile controls</b>
+- Added a Settings button to the touch menu.
+<b>Final boss arena and drops</b>
+- The Shepherd waits immune and still on entry, speaks when approached, then begins the fight. Its health bar remains visible across the arena; phase-three zoom ends on death.
+- The Carrion Saint's front arms attach to its torso. Its wider charge starts sooner, travels toward the player for up to 40 metres, and recovers immediately. It closes farther for basic attacks, which also reach farther.
+- Death in the arena leaves the body where it fell until the revive button is pressed.
+- Ground drops and labels render above gameplay and spectator controls, with menus and tooltips above them.
+<b>Final boss phase three</b>
+- Phase three now uses venom spouts, burrow snatch, serpent dive and venom volleys, including while the pursuing head is out. Its arena snakes and hit areas are larger.
+- The Carrion Saint's charge warning and hit area fit its full body width, and its nearby attacks reach farther.
+- During the pursuing serpent attack, the body is immune and the exposed head takes 150% damage. Damage numbers appear over the head.
 <b>Final boss polish</b>
-- The large serpent now emerges behind Carrion Saint, turns for a one-second warning, then pursues. Its head uses the visible jaw bounds to stay above the floor, with smaller jaw hinges and a head shake while swallowing.
+- Carrion Saint's pursuing serpent now makes a visible 1.75-second U-turn behind the boss before chasing the player. It reaches its maximum approach speed after five seconds and stops accelerating.
+- The large serpent emerges behind Carrion Saint. Its head uses the visible jaw bounds to stay above the floor, with smaller jaw hinges and a head shake while swallowing.
 - Carrion Saint closes to bite range before choosing a melee attack.
 - Carrion Saint's bite now matches its animation reach. The pursuing serpent weaves, stays clear of the floor, opens its jaws, and tips its head back to swallow; its 20-second cooldown begins after the attack ends.
 - Poison globs leave the snake mouths. Hits on the pursuing head show the damage dealt to the boss over that head. The third-phase body carries visible living snakes between attacks.

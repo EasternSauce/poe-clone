@@ -54,8 +54,8 @@ namespace PoeClone.Enemies
             for (int side = -1; side <= 1; side += 2)
             {
                 HindLeg(rig, side);
-                HumanArm(rig, side, 0, 0.68f);
-                HumanArm(rig, side, 1, -0.42f);
+                HumanArm(trunk, side, 0, 0.68f);
+                HumanArm(trunk, side, 1, -0.42f);
                 // Pulled-open ribs flank the vertical belly mouth.
                 for (int i = 0; i < 5; i++)
                     Link(trunk, "Rib" + side + "_" + i, Bone,
@@ -103,7 +103,7 @@ namespace PoeClone.Enemies
 
         private static void HumanArm(Transform rig, int side, int index, float z)
         {
-            Transform shoulder = Joint(rig, "VictimArm" + side + "_" + index, new Vector3(side * 0.56f, 1.38f, z));
+            Transform shoulder = Joint(rig, "VictimArm" + side + "_" + index, new Vector3(side * 0.56f, 0.16f, z + 0.22f));
             Part(shoulder, "GraftScar", Wound, Vector3.zero, new Vector3(0.36f, 0.39f, 0.38f));
             Vector3 elbow = new Vector3(side * (0.55f + index * 0.12f), -0.45f, -0.18f);
             Link(shoulder, "UpperArm", Skin, Vector3.zero, elbow, 0.22f);

@@ -12,8 +12,8 @@ namespace PoeClone.UI
     /// On-screen controls for phone/tablet play, shown only in <see cref="TouchMode"/>: a floating
     /// joystick on the left half of the screen for movement, an aim stick (drag to aim, hold off
     /// centre to keep attacking/casting that way - see <see cref="VirtualInput.Aim"/>) and a run
-    /// toggle at the bottom right, and a column of buttons at the top right for the bag, the
-    /// character page and chat. They feed <see cref="VirtualInput"/>, which the player scripts read
+    /// toggle at the bottom right, and buttons at the top right for menus and settings.
+    /// They feed <see cref="VirtualInput"/>, which the player scripts read
     /// next to the keyboard and mouse. Also asks for landscape when the phone is held upright.
     ///
     /// Spectators only get chat, which <see cref="ChatUI"/> keeps open for them. Installed by
@@ -69,6 +69,7 @@ namespace PoeClone.UI
         private PlayerStats stats;
         private InventoryUI inventoryUI;
         private CharacterPageUI characterUI;
+        private EscapeMenuUI settingsMenu;
         private int seenMessages;
         private bool combatShown;
 
@@ -117,7 +118,9 @@ namespace PoeClone.UI
             bool characterOpen = characterUI != null && characterUI.IsOpen;
 
             menuRoot.SetActive(!dead);
-            SetCombatShown(!dead && !inventoryOpen && !characterOpen && !SkillBarUI.IsOpen && !DialogueUI.IsOpen && !PassiveTreeUI.IsOpen);
+            if (settingsMenu == null)
+                settingsMenu = FindAnyObjectByType<EscapeMenuUI>();
+            SetCombatShown(!dead && !inventoryOpen && !characterOpen && !SkillBarUI.IsOpen && !DialogueUI.IsOpen && !PassiveTreeUI.IsOpen && (settingsMenu == null || !settingsMenu.IsOpen));
             UpdateSkillButtons();
             UpdatePotionButtons();
 
@@ -557,6 +560,17 @@ namespace PoeClone.UI
             Image town = NewRoundButton("Town", menu, Vector2.one, new Vector2(-180f, -180f), 96f, "TOWN");
             town.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TownPortal.Pressed = true;
             TouchMode.AddBlocker(town.rectTransform);
+
+            Image settings = NewRoundButton("Settings", canvas.transform, Vector2.one, new Vector2(-180f, -290f), 96f, "SETTINGS");
+            settings.GetComponentInChildren<Text>().fontSize = 16;
+            settings.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
+            {
+                CloseOthers();
+                if (settingsMenu == null)
+                    settingsMenu = FindAnyObjectByType<EscapeMenuUI>();
+                settingsMenu?.OpenSettings();
+            };
+            TouchMode.AddBlocker(settings.rectTransform);
 
             // Portrait warning, above everything (name prompt included), swallowing touches.
             Canvas rotateCanvas = NewCanvas("RotateDeviceCanvas", 1000);

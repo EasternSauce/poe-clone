@@ -22,6 +22,8 @@ namespace PoeClone.UI
         private Entry[] entries = Array.Empty<Entry>();
         private int selected;
 
+        public bool IsOpen => root != null && root.activeSelf;
+
         public static void StoreRelease(string version, string notes)
         {
             var merged = new System.Collections.Generic.List<Entry>();
@@ -70,6 +72,13 @@ namespace PoeClone.UI
             if (PatchNotesUI.IsShowing) return;
             root.SetActive(!root.activeSelf);
             if (root.activeSelf) ShowSettings();
+        }
+
+        public void OpenSettings()
+        {
+            if (PatchNotesUI.IsShowing) return;
+            ShowSettings();
+            root.SetActive(true);
         }
 
         private void Build()

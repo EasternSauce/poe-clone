@@ -459,7 +459,7 @@ namespace PoeClone.UI
 
         private void Build()
         {
-            Canvas canvas = UiKit.NewCanvas("PassiveCanvas", transform, 65, out CanvasGroup group);
+            Canvas canvas = UiKit.NewCanvas("PassiveCanvas", transform, 800, out CanvasGroup group);
             canvas.gameObject.AddComponent<GraphicRaycaster>();
             group.interactable = true;
             group.blocksRaycasts = true;

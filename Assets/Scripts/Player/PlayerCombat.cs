@@ -401,7 +401,7 @@ namespace PoeClone.Player
 
                     Transform hit = ((Component)target).transform;
                     if (target is SerpentPursuit serpent)
-                        CombatText.Show(serpent.MouthPosition + Vector3.up * 0.8f,
+                        CombatText.Show(serpent.MouthPosition,
                             Mathf.Max(1, Mathf.RoundToInt(serpent.LastSharedDamage)).ToString(), CombatText.PhysicalColor);
                     else
                         CombatText.Show(hit.position + Vector3.up * 1.6f * hit.localScale.y,

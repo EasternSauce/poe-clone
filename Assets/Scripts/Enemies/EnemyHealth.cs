@@ -122,12 +122,12 @@ namespace PoeClone.Enemies
             TakeDamage(amount, type, 0f, 0f);
         }
 
-        public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration)
+        public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration, bool throughExposedHead = false)
         {
             if (dead || amount <= 0f)
                 return 0f;
 
-            if (Immune)
+            if (Immune && !throughExposedHead)
             {
                 if (Time.time >= immuneShownAt)
                 {

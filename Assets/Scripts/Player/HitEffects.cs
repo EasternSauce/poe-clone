@@ -43,7 +43,8 @@ namespace PoeClone.Player
         /// igniteBonus: % chance to ignite on top of the attacker's own (a fire hit's skill, e.g. Burning Arrow).
         /// </summary>
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
-            DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null)
+            DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null,
+            bool throughExposedHead = false)
         {
             if (enemy == null || enemy.IsDead)
                 return;
@@ -84,14 +85,14 @@ namespace PoeClone.Player
                 if (type == DamageType.Poison)
                     damage *= 1f + (sheet.Total(StatType.PoisonDamage) + sheet.Total(StatType.DamageOverTime)) / 100f;
             }
-            damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration);
+            damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration, throughExposedHead);
             string number = Mathf.Max(1, Mathf.RoundToInt(damage)).ToString();
             CombatText.Show(displayAt ?? (at + Vector3.up * 1.6f * scale), crit ? number + "!" : number, crit ? CritColor : color, crit ? 1.35f : 1f);
 
             if (sheet == null)
                 return;
 
-            if (attack && !secondary && !enemy.Immune)
+            if (attack && !secondary && (!enemy.Immune || throughExposedHead))
             {
                 float poison = sheet.Total(StatType.PoisonOnHit);
                 float cloud = sheet.Total(StatType.VenomCloudOnHit);

@@ -164,7 +164,7 @@ namespace PoeClone.Inventory
 
         private void BuildUI()
         {
-            canvas = UiKit.NewCanvas("CharacterCanvas", transform, 49, out canvasGroup);
+            canvas = UiKit.NewCanvas("CharacterCanvas", transform, 800, out canvasGroup);
             // The panel catches the pointer, so a click on it never also attacks or walks.
             canvas.gameObject.AddComponent<GraphicRaycaster>();
             canvasGroup.blocksRaycasts = true;

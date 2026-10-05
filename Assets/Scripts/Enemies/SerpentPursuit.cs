@@ -10,9 +10,14 @@ namespace PoeClone.Enemies
     public class SerpentPursuit : MonoBehaviour, IDamageable
     {
         private const float Radius = 1.5f;
-        private const float Speed = 10f;
+        private const float StartSpeed = 10f;
+        private const float EndSpeed = 13.5f;
+        private const float SpeedRampSeconds = 5f;
+        private const float TurnDegreesPerSecond = 75f;
+        private const float UTurnSeconds = 1.75f;
+        private const float UTurnSpeed = 5.5f;
         private const float ChaseSeconds = 12f;
-        private const float RearTellSeconds = 1.1f;
+        private const float RearTellSeconds = 0.3f;
         private const float PursuitOpenDegrees = 26f;
         private readonly List<Vector3> route = new List<Vector3>();
         private EnemyHealth owner;
@@ -22,6 +27,7 @@ namespace PoeClone.Enemies
         private GameObject emergenceWarning;
         private Mesh mesh;
         private Vector3 nose, direction, rearDirection;
+        private float turnSign;
         private float age, endedAt = -1f, capturedAt = -1f, nextSkinHit, damage;
         private float headReach;
         private float floorY;
@@ -33,11 +39,12 @@ namespace PoeClone.Enemies
         private Vector3 modelScale;
         private bool modelVisible;
         private bool firstBite, secondBite;
+        private bool previousImmunity;
         public bool IsFinished => endedAt >= 0f;
         public bool Captured => capturedAt >= 0f;
         public int RoutePoints => route.Count;
         public float LastSharedDamage { get; private set; }
-        public Vector3 MouthPosition => Mouth;
+        public Vector3 MouthPosition => head != null ? head.position + Vector3.up * 1.5f : nose + Vector3.up * 1.5f;
 
         public static SerpentPursuit Spawn(EnemyHealth boss, PlayerStats target, float hitDamage)
         {
@@ -48,11 +55,14 @@ namespace PoeClone.Enemies
             var go = new GameObject("Pursuing colossal serpent");
             var pursuit = go.AddComponent<SerpentPursuit>();
             pursuit.owner = boss; pursuit.player = target; pursuit.damage = hitDamage;
+            pursuit.previousImmunity = boss.Immune;
+            boss.Immune = true;
             // Emerge from the very rear of the chimera, facing away from the player.
-            // The head turns in place before it begins to pursue.
             pursuit.rearDirection = -boss.transform.forward;
             pursuit.direction = pursuit.rearDirection;
             Vector3 anchor = boss.transform.TransformPoint(new Vector3(0f, 1.35f, -2.15f));
+            Vector3 towardPlayer = target.transform.position - anchor; towardPlayer.y = 0f;
+            pursuit.turnSign = Vector3.SignedAngle(pursuit.rearDirection, towardPlayer, Vector3.up) >= 0f ? 1f : -1f;
             pursuit.floorY = Debris.GroundBelow(anchor + Vector3.up * 5f);
             Vector3 ground = anchor; ground.y = pursuit.floorY + Radius + 0.15f;
             pursuit.route.Add(anchor); pursuit.route.Add(ground);
@@ -83,12 +93,12 @@ namespace PoeClone.Enemies
             return pursuit;
         }
 
-        /// <summary>Player attacks can strike the exposed head; half of its hit is shared with the boss.</summary>
+        /// <summary>Player attacks can strike the exposed head for 150% damage to the boss.</summary>
         public void TakeDamage(float amount)
         {
             if (owner != null && !owner.IsDead && amount > 0f)
             {
-                LastSharedDamage = owner.TakeDamage(amount * 0.5f, Combat.DamageType.Physical, 0f, 0f);
+                LastSharedDamage = owner.TakeDamage(amount * 1.5f, Combat.DamageType.Physical, 0f, 0f, true);
             }
         }
 
@@ -96,9 +106,9 @@ namespace PoeClone.Enemies
         {
             if (owner == null || owner.IsDead || amount <= 0f)
                 return;
-            LastSharedDamage = amount * 0.5f;
+            LastSharedDamage = amount * 1.5f;
             HitEffects.Deal(attacker, owner, LastSharedDamage, attack, color, type, igniteBonus: igniteBonus,
-                displayAt: Mouth + Vector3.up * 0.8f);
+                displayAt: MouthPosition, throughExposedHead: true);
         }
 
         private Vector3 Mouth => head != null ? head.position + head.up * headReach : nose + direction * headReach;
@@ -124,8 +134,6 @@ namespace PoeClone.Enemies
             }
             if (age < RearTellSeconds)
             {
-                float turn = Mathf.SmoothStep(0f, 180f, Mathf.Clamp01(age / RearTellSeconds));
-                direction = Quaternion.AngleAxis(turn, Vector3.up) * rearDirection;
                 if (emergenceWarning != null)
                     emergenceWarning.transform.localScale = new Vector3(4.2f + Mathf.Sin(age * 12f) * 0.3f, 0.02f,
                         4.2f + Mathf.Sin(age * 12f) * 0.3f);
@@ -133,17 +141,33 @@ namespace PoeClone.Enemies
             else
             {
                 if (emergenceWarning != null) { Destroy(emergenceWarning); emergenceWarning = null; }
-                Vector3 to = player.transform.position - Mouth; to.y = 0f;
-                if (to.sqrMagnitude > 0.01f)
-                    direction = Vector3.RotateTowards(direction, to.normalized, 2.5f * Time.deltaTime, 0f).normalized;
+                float turnAge = age - RearTellSeconds;
+                bool turning = turnAge < UTurnSeconds;
+                float speed;
+                if (turning)
+                {
+                    // Move through the full arc rather than yawing in place. At 5.5 m/s,
+                    // the 180-degree turn has a roughly 3 m radius and remains readable.
+                    direction = Quaternion.AngleAxis(180f * turnSign * turnAge / UTurnSeconds, Vector3.up) * rearDirection;
+                    speed = UTurnSpeed;
+                }
+                else
+                {
+                    Vector3 to = player.transform.position - Mouth; to.y = 0f;
+                    if (to.sqrMagnitude > 0.01f)
+                        direction = Vector3.RotateTowards(direction, to.normalized,
+                            TurnDegreesPerSecond * Mathf.Deg2Rad * Time.deltaTime, 0f).normalized;
+                    float chaseAge = turnAge - UTurnSeconds;
+                    speed = Mathf.Lerp(StartSpeed, EndSpeed, Mathf.Clamp01(chaseAge / SpeedRampSeconds));
+                }
                 // A travelling lateral wave makes the head weave, and the retained route
                 // records the same curves instead of drawing a straight tube.
                 Vector3 side = Vector3.Cross(Vector3.up, direction).normalized;
-                nose += (direction * Speed + side * Mathf.Sin(age * 5.5f) * 3.2f) * Time.deltaTime;
+                nose += (direction * speed + (turning ? Vector3.zero : side * Mathf.Sin(age * 5.5f) * 3.2f)) * Time.deltaTime;
                 nose.y = floorY + Radius + 0.15f;
                 if ((nose - route[route.Count - 1]).sqrMagnitude >= 0.8f * 0.8f) route.Add(nose);
-                if (Horizontal(player.transform.position - Mouth).magnitude < 2.3f) Capture();
-                else if (age > RearTellSeconds + ChaseSeconds) endedAt = Time.time;
+                if (!turning && Horizontal(player.transform.position - Mouth).magnitude < 2.3f) Capture();
+                else if (turnAge > UTurnSeconds + ChaseSeconds) endedAt = Time.time;
                 if (!Captured && Time.time >= nextSkinHit)
                 {
                     for (int i = 1; i < route.Count; i++)
@@ -268,6 +292,6 @@ namespace PoeClone.Enemies
             float t = segment.sqrMagnitude > 0.001f ? Mathf.Clamp01(Vector3.Dot(offset, segment) / segment.sqrMagnitude) : 0f;
             return (offset - segment * t).magnitude;
         }
-        private void OnDestroy() { Release(); if (mesh != null) Destroy(mesh); if (emergenceWarning != null) Destroy(emergenceWarning); }
+        private void OnDestroy() { Release(); if (owner != null && !owner.IsDead) owner.Immune = previousImmunity; if (mesh != null) Destroy(mesh); if (emergenceWarning != null) Destroy(emergenceWarning); }
     }
 }

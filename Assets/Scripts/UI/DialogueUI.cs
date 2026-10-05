@@ -140,7 +140,7 @@ namespace PoeClone.UI
 
         private void Build()
         {
-            canvas = UiKit.NewCanvas("DialogueCanvas", transform, 80, out CanvasGroup group);
+            canvas = UiKit.NewCanvas("DialogueCanvas", transform, 800, out CanvasGroup group);
             canvas.gameObject.AddComponent<GraphicRaycaster>();
             group.interactable = true;
             group.blocksRaycasts = true;

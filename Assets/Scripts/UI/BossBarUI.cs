@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using PoeClone.Enemies;
 using PoeClone.Inventory;
+using PoeClone.World;
 
 namespace PoeClone.UI
 {
@@ -63,8 +64,10 @@ namespace PoeClone.UI
                 boss = focus != null ? NearestBoss(focus.position) : null;
             }
 
-            bool show = boss != null && !boss.IsDead && !boss.HideBossBar && focus != null &&
-                        (boss.transform.position - focus.position).sqrMagnitude <= ShowRange * ShowRange;
+            bool actArena = AreaManager.Instance != null && AreaManager.Instance.CurrentAreaIndex == WorldBuilder.ActArena;
+            bool show = boss != null && !boss.IsDead && focus != null &&
+                        (actArena && EnemyKinds.Get(boss.KindIndex).Boss == BossStyle.Shepherd ||
+                         !boss.HideBossBar && (boss.transform.position - focus.position).sqrMagnitude <= ShowRange * ShowRange);
             root.SetActive(show);
             if (!show)
                 return;
@@ -88,10 +91,15 @@ namespace PoeClone.UI
         private static EnemyHealth NearestBoss(Vector3 from)
         {
             EnemyHealth best = null;
-            float bestDistance = ShowRange * ShowRange;
+            bool actArena = AreaManager.Instance != null && AreaManager.Instance.CurrentAreaIndex == WorldBuilder.ActArena;
+            EnemyHealth arenaBoss = actArena && ActBossArena.Instance != null ? ActBossArena.Instance.Boss : null;
+            if (arenaBoss != null && !arenaBoss.IsDead) return arenaBoss;
+            float bestDistance = actArena ? float.MaxValue : ShowRange * ShowRange;
             foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>())
             {
                 if (enemy.IsDead || !EnemyKinds.Get(enemy.KindIndex).IsBoss)
+                    continue;
+                if (actArena && EnemyKinds.Get(enemy.KindIndex).Boss != BossStyle.Shepherd)
                     continue;
                 float d = (enemy.transform.position - from).sqrMagnitude;
                 if (d <= bestDistance)

@@ -12,6 +12,7 @@ namespace PoeClone.Enemies
         public event Action<string> Hit;
         public bool Demo;
         public bool RootMotion;
+        public float ChargeDistance = 10f;
         public bool IsPlaying => Current != null;
         public string Current { get; private set; }
         public float Elapsed => time;
@@ -174,7 +175,7 @@ namespace PoeClone.Enemies
                         crouch = Pulse(time, 0f, 0.20f, 0.80f);
                         if (RootMotion)
                         {
-                            float next = Ramp(time, 0.22f, 0.48f) * 10f;
+                            float next = Ramp(time, 0.22f, 0.48f) * ChargeDistance;
                             Vector3 step = owner.forward * (next - advance);
                             if (body != null && body.enabled) body.Move(step); else owner.position += step;
                             advance = next;
