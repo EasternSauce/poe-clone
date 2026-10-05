@@ -21,6 +21,7 @@ namespace PoeClone.Player
         private const string LegacyProfileSaveKey = "PoeClone.CharacterSave.legacy";
         private const string ProfilesKey = "PoeClone.CharacterProfiles.v1";
         private const string ActiveProfileKey = "PoeClone.ActiveCharacter.v1";
+        private const string SharedStashKey = "PoeClone.SharedStash.v1";
         private static string Key => "PoeClone.CharacterSave." + ActiveProfileId;
         public static string ActiveProfileId { get; private set; } = "legacy";
         public static string ActiveCharacterName { get; private set; } = "";
@@ -109,6 +110,12 @@ namespace PoeClone.Player
         public static void LoadSelectedProfile()
         {
             if (instance != null) instance.TryLoadSelectedProfile();
+        }
+
+        public static void SaveBeforeCharacterSwitch()
+        {
+            if (instance != null && instance.loaded && !instance.erased)
+                instance.Save();
         }
 
         private bool loaded;
@@ -237,7 +244,16 @@ namespace PoeClone.Player
 
             PlayerInventory inventory = stats.GetComponent<PlayerInventory>();
             if (inventory != null)
+            {
                 data.CaptureInventory(inventory);
+                var shared = new SaveData();
+                shared.CaptureStash(inventory);
+                PlayerPrefs.SetString(SharedStashKey, JsonUtility.ToJson(shared));
+                // Stash belongs to the account; character saves contain only personal gear and bag.
+                data.stash.Clear();
+                data.stashTabs.Clear();
+                data.stashTabNames.Clear();
+            }
 
             PlayerPotions potions = stats.GetComponent<PlayerPotions>();
             if (potions != null)
@@ -287,7 +303,10 @@ namespace PoeClone.Player
             if (!PlayerPrefs.HasKey(Key) && ActiveProfileId == "legacy" && PlayerPrefs.HasKey(LegacyKey))
                 PlayerPrefs.SetString(Key, PlayerPrefs.GetString(LegacyKey));
             if (!PlayerPrefs.HasKey(Key))
+            {
+                RestoreSharedStash(stats.GetComponent<PlayerInventory>());
                 return;
+            }
 
             SaveData data;
             try
@@ -300,7 +319,10 @@ namespace PoeClone.Player
                 return;
             }
             if (data == null || data.version != SaveData.CurrentVersion)
+            {
+                RestoreSharedStash(stats.GetComponent<PlayerInventory>());
                 return;
+            }
 
             // A returning character brings their own gear: the starter items go. One saved before
             // picking anything up keeps them, or it would be left with nothing for good.
@@ -319,8 +341,9 @@ namespace PoeClone.Player
             PlayerInventory inventory = stats.GetComponent<PlayerInventory>();
             if (inventory != null)
             {
-                foreach (ItemData item in data.RestoreInventory(inventory))
+                foreach (ItemData item in data.RestoreInventory(inventory, false))
                     inventory.ThrowAway(item);
+                RestoreSharedStash(inventory, data);
 
                 // Characters from before skills came from gear learned their spells by levelling:
                 // they get a staff with Fire Bolt at about the level they'd have found by now.
@@ -391,6 +414,67 @@ namespace PoeClone.Player
             CombatText.Show(stats.transform.position + Vector3.up * 2.4f,
                 questsCurrent ? "Welcome back" : "Welcome back - the story begins anew: talk to Elder Maren",
                 new Color(1f, 0.85f, 0.4f), 1f);
+        }
+
+        private static void RestoreSharedStash(PlayerInventory inventory, SaveData oldCharacter = null)
+        {
+            if (inventory == null) return;
+            SaveData shared = null;
+            if (PlayerPrefs.HasKey(SharedStashKey))
+            {
+                try { shared = JsonUtility.FromJson<SaveData>(PlayerPrefs.GetString(SharedStashKey)); }
+                catch (System.Exception e) { Debug.LogWarning("Shared stash could not be read: " + e.Message); }
+            }
+            else
+            {
+                // Recover stash contents from existing character saves the first time this version runs.
+                shared = oldCharacter ?? new SaveData();
+                if (shared.stash == null) shared.stash = new List<PlacedRecord>();
+                if (shared.stashTabs == null) shared.stashTabs = new List<StashTabRecord>();
+                while (shared.stashTabs.Count < PlayerInventory.StashTabCount - 1)
+                    shared.stashTabs.Add(new StashTabRecord());
+                for (int tab = 0; tab < shared.stashTabs.Count; tab++)
+                {
+                    if (shared.stashTabs[tab] == null) shared.stashTabs[tab] = new StashTabRecord();
+                    if (shared.stashTabs[tab].items == null) shared.stashTabs[tab].items = new List<PlacedRecord>();
+                }
+                if (shared.stashTabNames == null) shared.stashTabNames = new List<string>();
+                while (shared.stashTabNames.Count < PlayerInventory.StashTabCount)
+                    shared.stashTabNames.Add("");
+                foreach (Profile profile in Profiles())
+                {
+                    if (profile.id == ActiveProfileId) continue;
+                    SaveData other = ProfileSave(profile);
+                    if (other == null) continue;
+                    for (int tab = 0; tab < PlayerInventory.StashTabCount; tab++)
+                    {
+                        List<PlacedRecord> source = tab == 0 ? other.stash :
+                            other.stashTabs != null && tab - 1 < other.stashTabs.Count ? other.stashTabs[tab - 1]?.items : null;
+                        if (source == null) continue;
+                        List<PlacedRecord> target = tab == 0 ? shared.stash : shared.stashTabs[tab - 1].items;
+                        foreach (PlacedRecord item in source)
+                            if (item != null) target.Add(item);
+                        if (other.stashTabNames != null && tab < other.stashTabNames.Count &&
+                            !string.IsNullOrEmpty(other.stashTabNames[tab]) && string.IsNullOrEmpty(shared.stashTabNames[tab]))
+                            shared.stashTabNames[tab] = other.stashTabNames[tab];
+                    }
+                }
+            }
+            if (shared == null) return;
+            List<ItemData> overflow = shared.RestoreStash(inventory);
+            foreach (ItemData item in overflow)
+            {
+                bool stored = false;
+                foreach (InventoryGrid tab in inventory.StashTabs)
+                    if (tab.TryAutoPlace(item)) { stored = true; break; }
+                if (!stored) inventory.ThrowAway(item);
+            }
+            if (!PlayerPrefs.HasKey(SharedStashKey))
+            {
+                shared.CaptureStash(inventory);
+                PlayerPrefs.SetString(SharedStashKey, JsonUtility.ToJson(shared));
+                PlayerPrefs.Save();
+            }
         }
     }
 }

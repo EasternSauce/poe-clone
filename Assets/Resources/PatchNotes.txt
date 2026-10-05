@@ -1,4 +1,9 @@
-version: 2026-10-05-passive-points-hud
+version: 2026-10-05-shared-stash-and-character-switch
+- Settings can return to character selection without refreshing the page; switching saves the current character first.
+- Stash storage and tab names are shared between characters. Existing character stashes are gathered on first load.
+- Double-click a stash tab to rename it. The active tab changes colour; Enter confirms, and long names stay within the tab.
+- The stash and bag now open as one joined window without the equipment board or character preview.
+- Escape closes open windows first; pressing it again opens Settings.
 - The unspent passive points button now sits below the level and health HUD, clear of the skill keys.
 <b>Patch history</b>
 - Patch History now opens on the newest release, including notes saved on this device.

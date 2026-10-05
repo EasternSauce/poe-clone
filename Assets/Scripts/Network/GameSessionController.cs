@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 using PoeClone.Inventory;
 using PoeClone.Player;
 
@@ -54,6 +55,7 @@ namespace PoeClone.Network
         private string serverUrl;
         private float reconnectDelay = 2f;
         private Coroutine reconnectRoutine;
+        private bool returningToCharacters;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
@@ -297,6 +299,7 @@ namespace PoeClone.Network
 
         private void HandleClose()
         {
+            if (returningToCharacters) return;
             Connected = false;
             PlayGranted = false;
             RemotePlayerActive = false;
@@ -331,6 +334,27 @@ namespace PoeClone.Network
         {
             if (reconnectRoutine != null) StopCoroutine(reconnectRoutine);
             reconnectRoutine = StartCoroutine(ReconnectAfterDelay());
+        }
+
+        public void ReturnToCharacters()
+        {
+            if (Role != SessionRole.Player || returningToCharacters) return;
+            SaveSystem.SaveBeforeCharacterSwitch();
+            returningToCharacters = true;
+            if (reconnectRoutine != null) StopCoroutine(reconnectRoutine);
+            stateBroadcaster.enabled = false;
+            client.Close();
+            SetWorldActive(false);
+            SceneManager.sceneLoaded += RestartAfterCharacterSwitch;
+            Instance = null;
+            Destroy(gameObject);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        private static void RestartAfterCharacterSwitch(Scene scene, LoadSceneMode mode)
+        {
+            SceneManager.sceneLoaded -= RestartAfterCharacterSwitch;
+            new GameObject("GameSessionController").AddComponent<GameSessionController>();
         }
 
         private IEnumerator ReconnectAfterDelay()

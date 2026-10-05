@@ -116,6 +116,9 @@ namespace PoeClone.Inventory
         private Canvas tooltipCanvas;
         private CanvasGroup canvasGroup;
         private RectTransform panel;
+        private RectTransform equipmentArea;
+        private Text stashBagTitle;
+        private float regularPanelHeight;
         private RectTransform previewPanel;
         private RectTransform stashPanel;
         private float panelWidth;
@@ -633,17 +636,6 @@ namespace PoeClone.Inventory
             touchTracking = false;
             bool touch = TouchMode.Active;
 
-            panel.gameObject.SetActive(open);
-            float rightInset = touch ? TouchRightInset : DesktopRightInset;
-            panel.anchoredPosition = new Vector2(-rightInset, 0f);
-
-            // The side panel (preview or stash) sits flush against whichever edge the main panel
-            // is using; on touch that's further in, to clear the on-screen button column.
-            float sideX = -(rightInset + panelWidth + 16f);
-            previewPanel.anchoredPosition = new Vector2(sideX, 0f);
-            stashPanel.anchoredPosition = new Vector2(sideX, 0f);
-
-            // No room for the character preview beside the panel on a phone.
             if (!open)
             {
                 stashOpen = false;
@@ -651,6 +643,24 @@ namespace PoeClone.Inventory
                 tooltipRect.gameObject.SetActive(false);
                 heldTooltipRect.gameObject.SetActive(false);
             }
+
+            panel.gameObject.SetActive(open);
+            float rightInset = touch ? TouchRightInset : DesktopRightInset;
+            panel.anchoredPosition = new Vector2(-rightInset, 0f);
+            panel.sizeDelta = new Vector2(panelWidth, stashOpen ? stashPanel.sizeDelta.y : regularPanelHeight);
+            if (equipmentArea != null) equipmentArea.gameObject.SetActive(!stashOpen);
+            if (stashBagTitle != null) stashBagTitle.gameObject.SetActive(stashOpen);
+            if (gridArea != null)
+                gridArea.anchoredPosition = new Vector2(0f, stashOpen ?
+                    (panel.sizeDelta.y - gridArea.sizeDelta.y) * 0.5f : Pad);
+
+            // The side panel (preview or stash) sits flush against whichever edge the main panel
+            // is using; on touch that's further in, to clear the on-screen button column.
+            float sideX = -(rightInset + panelWidth + (stashOpen ? 0f : 16f));
+            previewPanel.anchoredPosition = new Vector2(sideX, 0f);
+            stashPanel.anchoredPosition = new Vector2(sideX, 0f);
+
+            // No room for the character preview beside the panel on a phone.
             previewPanel.gameObject.SetActive(open && !touch && !stashOpen);
             stashPanel.gameObject.SetActive(open && stashOpen);
             if (stashTabRow != null)
@@ -801,14 +811,10 @@ namespace PoeClone.Inventory
                 UiKit.TopLeft(button.rectTransform, new Vector2(k * (tabWidth + 4f), 0f), new Vector2(tabWidth, TabRowHeight - 4f));
                 UiKit.AddOutline(button, UiKit.BorderColor, 1.5f);
                 Text label = UiKit.NewText("Label", button.rectTransform, inventory.StashTabName(k), 16, UiKit.TextColor, TextAnchor.MiddleCenter);
-                UiKit.Stretch(label.rectTransform, 2f);
-                label.rectTransform.offsetMax = new Vector2(-36f, label.rectTransform.offsetMax.y);
-                // A long name shrinks (and wraps to two lines) to stay inside its button.
-                label.horizontalOverflow = HorizontalWrapMode.Wrap;
+                UiKit.Stretch(label.rectTransform, 3f);
+                button.gameObject.AddComponent<RectMask2D>();
+                label.horizontalOverflow = HorizontalWrapMode.Overflow;
                 label.verticalOverflow = VerticalWrapMode.Truncate;
-                label.resizeTextForBestFit = true;
-                label.resizeTextMinSize = 10;
-                label.resizeTextMaxSize = 16;
                 label.raycastTarget = false;
                 UiKit.OnClick(button, () =>
                 {
@@ -819,24 +825,10 @@ namespace PoeClone.Inventory
                     gridDirty = true;
                     RefreshStashTabs();
                 });
-                Image rename = UiKit.NewImage("Rename", button.transform, new Color(0.30f, 0.27f, 0.20f, 1f));
-                rename.rectTransform.anchorMin = new Vector2(1f, 0.5f);
-                rename.rectTransform.anchorMax = new Vector2(1f, 0.5f);
-                rename.rectTransform.pivot = new Vector2(1f, 0.5f);
-                rename.rectTransform.anchoredPosition = new Vector2(-3f, 0f);
-                rename.rectTransform.sizeDelta = new Vector2(34f, 22f);
-                Text renameLabel = UiKit.NewText("RenameLabel", rename.rectTransform, "Edit", 10, UiKit.Gold, TextAnchor.MiddleCenter);
-                UiKit.Stretch(renameLabel.rectTransform, 0f);
-                renameLabel.raycastTarget = false;
-                UiKit.OnClick(rename, () =>
+                button.gameObject.AddComponent<StashTabDoubleClick>().OnDoubleClick = () =>
                 {
-                    if (SpectatorMirror.Active)
-                        return;
-                    inventory.SetStashTab(tab);
-                    gridDirty = true;
-                    RefreshStashTabs();
-                    BeginRenameTab(tab);
-                });
+                    if (!SpectatorMirror.Active) BeginRenameTab(tab);
+                };
                 stashTabButtons[k] = button;
                 stashTabLabels[k] = label;
             }
@@ -872,21 +864,25 @@ namespace PoeClone.Inventory
                 return;
             for (int k = 0; k < stashTabButtons.Length; k++)
             {
-                stashTabButtons[k].color = k == inventory.StashTab ? UiKit.Gold * 0.6f : CellColor;
-                stashTabLabels[k].text = inventory.StashTabName(k);
+                stashTabButtons[k].color = k == renamingTab ? new Color(.28f,.57f,.56f,1f) :
+                    k == inventory.StashTab ? UiKit.Gold * 0.6f : CellColor;
+                string name = inventory.StashTabName(k);
+                stashTabLabels[k].text = name.Length > 6 ? name.Substring(0, 6) + "…" : name;
             }
         }
 
         // One text box, moved over whichever tab is being renamed.
         private void BuildTabNameField(float tabWidth)
         {
-            Image back = UiKit.NewImage("TabName", stashTabRow, new Color(1f, 1f, 1f, 0.92f));
+            Image back = UiKit.NewImage("TabName", stashTabRow, new Color(.28f,.57f,.56f,1f));
             UiKit.TopLeft(back.rectTransform, Vector2.zero, new Vector2(tabWidth, TabRowHeight - 4f));
             back.raycastTarget = true;
+            back.gameObject.AddComponent<RectMask2D>();
 
-            Text text = UiKit.NewText("Text", back.rectTransform, "", 16, Color.black, TextAnchor.MiddleCenter);
+            Text text = UiKit.NewText("Text", back.rectTransform, "", 16, Color.white, TextAnchor.MiddleLeft);
             UiKit.Stretch(text.rectTransform, 3f);
             text.supportRichText = false;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             tabNameField = back.gameObject.AddComponent<InputField>();
             tabNameField.textComponent = text;
@@ -900,14 +896,14 @@ namespace PoeClone.Inventory
         private void BeginRenameTab(int tab)
         {
             renamingTab = tab;
+            RefreshStashTabs();
             RectTransform field = (RectTransform)tabNameField.transform;
             field.anchoredPosition = stashTabButtons[tab].rectTransform.anchoredPosition;
             tabNameField.gameObject.SetActive(true);
-            tabNameField.text = inventory.StashTabCustomName(tab);
+            tabNameField.text = inventory.StashTabName(tab);
             tabNameField.Select();
             tabNameField.ActivateInputField();
-            tabNameField.selectionAnchorPosition = 0;
-            tabNameField.selectionFocusPosition = tabNameField.text.Length;
+            tabNameField.caretPosition = tabNameField.text.Length;
         }
 
         private void EndRenameTab(string name)
@@ -917,6 +913,7 @@ namespace PoeClone.Inventory
             int tab = renamingTab;
             renamingTab = -1;
             UiKit.EnterHandledFrame = Time.frameCount; // the Enter that finished it mustn't open the chat
+            UiKit.TextEditEndedFrame = Time.frameCount;
             inventory.RenameStashTab(tab, name);
             if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == tabNameField.gameObject)
                 EventSystem.current.SetSelectedGameObject(null);
@@ -1105,6 +1102,7 @@ private Vector2 CellSize(int w, int h)
             float panelW = Mathf.Max(gridW, equipW) + Pad * 2f;
             float panelH = equipH + 24f + gridH + Pad * 2f;
             panelWidth = panelW;
+            regularPanelHeight = panelH;
 
             // Inventory panel on the right side of the screen, like PoE.
             Image panelImage = UiKit.NewImage("Panel", canvas.transform, UiKit.PanelColor);
@@ -1145,6 +1143,7 @@ private Vector2 CellSize(int w, int h)
 
             // Equipment board (top).
             RectTransform equipArea = UiKit.NewRect("Equipment", panel);
+            equipmentArea = equipArea;
             equipArea.anchorMin = new Vector2(0.5f, 1f);
             equipArea.anchorMax = new Vector2(0.5f, 1f);
             equipArea.pivot = new Vector2(0.5f, 1f);
@@ -1153,6 +1152,10 @@ private Vector2 CellSize(int w, int h)
 
             foreach (SlotLayout l in Layout)
                 BuildSlot(equipArea, l);
+
+            stashBagTitle = UiKit.NewText("StashBagTitle", panel, "INVENTORY", 24, UiKit.Gold, TextAnchor.UpperCenter);
+            UiKit.TopLeft(stashBagTitle.rectTransform, new Vector2(0f, -12f), new Vector2(panelW, 30f));
+            stashBagTitle.gameObject.SetActive(false);
 
             // The potion slots, either side of the body armour: only potions go here, and they stack.
             BuildPotionSlot(equipArea, 0, 2, 2);
@@ -1443,7 +1446,8 @@ private Vector2 CellSize(int w, int h)
 
             for (int k = 0; k < 2; k++)
             {
-                if (potionSlots[k] != null && RectTransformUtility.RectangleContainsScreenPoint(potionSlots[k], screenPos, null))
+                if (potionSlots[k] != null && potionSlots[k].gameObject.activeInHierarchy &&
+                    RectTransformUtility.RectangleContainsScreenPoint(potionSlots[k], screenPos, null))
                 {
                     h.Potion = k + 1;
                     return h;
@@ -1452,7 +1456,7 @@ private Vector2 CellSize(int w, int h)
 
             foreach (SlotView s in slotViews)
             {
-                if (RectTransformUtility.RectangleContainsScreenPoint(s.Rect, screenPos, null))
+                if (s.Rect.gameObject.activeInHierarchy && RectTransformUtility.RectangleContainsScreenPoint(s.Rect, screenPos, null))
                 {
                     h.Slot = s;
                     return h;
@@ -1993,6 +1997,17 @@ private Vector2 CellSize(int w, int h)
         {
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlayUI(clip);
+        }
+    }
+
+    public sealed class StashTabDoubleClick : MonoBehaviour, IPointerClickHandler
+    {
+        public System.Action OnDoubleClick;
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData.button == PointerEventData.InputButton.Left && eventData.clickCount == 2)
+                OnDoubleClick?.Invoke();
         }
     }
 }

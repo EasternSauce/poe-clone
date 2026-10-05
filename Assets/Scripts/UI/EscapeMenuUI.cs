@@ -10,6 +10,7 @@ using PoeClone.Skills;
 namespace PoeClone.UI
 {
     /// <summary>ESC settings and a browsable, bundled archive of every recovered patch note release.</summary>
+    [DefaultExecutionOrder(-1000)]
     public class EscapeMenuUI : MonoBehaviour
     {
         [Serializable] private class Entry { public string version; public string notes; }
@@ -71,8 +72,21 @@ namespace PoeClone.UI
             Keyboard kb = Keyboard.current;
             if (kb == null || !kb.escapeKey.wasPressedThisFrame || UiKit.IsTypingInTextField()) return;
             if (PatchNotesUI.IsShowing) return;
-            root.SetActive(!root.activeSelf);
-            if (root.activeSelf) ShowSettings();
+            if (root.activeSelf) { root.SetActive(false); return; }
+            if (GetComponent<NamePromptUI>()?.IsShowing == true) return;
+            if (DialogueUI.IsOpen || PassiveTreeUI.IsOpen || SkillBarUI.IsOpen || SkillBarUI.PickerOpen ||
+                AnyOpen<InventoryUI>() || AnyOpen<CharacterPageUI>()) return;
+            OpenSettings();
+        }
+
+        private static bool AnyOpen<T>() where T : MonoBehaviour
+        {
+            foreach (T component in FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (component is InventoryUI inventory && inventory.IsOpen) return true;
+                if (component is CharacterPageUI character && character.IsOpen) return true;
+            }
+            return false;
         }
 
         public void OpenSettings()
@@ -119,6 +133,12 @@ namespace PoeClone.UI
                 ResizeBody(250);
             }
             else ResizeBody(180);
+            var session = GameSessionController.Instance;
+            if (session != null && session.Role == SessionRole.Player && session.PlayGranted)
+            {
+                Button("Characters",content,"Character Selection",new Vector2(0,-240),new Vector2(240,48),()=>session.ReturnToCharacters());
+                ResizeBody(330);
+            }
         }
         private void ShowHistory()
         {

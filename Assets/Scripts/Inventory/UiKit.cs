@@ -16,8 +16,11 @@ namespace PoeClone.Inventory
         /// <summary>Frame in which a text box already used the Enter press (so the chat doesn't open on it).</summary>
         public static int EnterHandledFrame = -1;
 
+        public static int TextEditEndedFrame = -1;
+
         public static bool IsTypingInTextField()
         {
+            if (TextEditEndedFrame == Time.frameCount) return true;
             GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
             if (selected == null) return false;
             var field = selected.GetComponent<InputField>();

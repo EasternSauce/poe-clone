@@ -141,6 +141,20 @@ namespace PoeClone.Inventory
             foreach (PlacedItem placed in inventory.Grid.Items)
                 bag.Add(new PlacedRecord { item = ItemRecord.From(placed.Item), x = placed.X, y = placed.Y });
 
+            CaptureStash(inventory);
+
+            equipped.Clear();
+            foreach (EquipSlot slot in SlotRules.AllSlots)
+            {
+                ItemData item = inventory.Equipment.Get(slot);
+                if (item != null)
+                    equipped.Add(new EquippedRecord { slot = (int)slot, item = ItemRecord.From(item) });
+            }
+            gold = inventory.Gold;
+        }
+
+        public void CaptureStash(PlayerInventory inventory)
+        {
             if (stash == null)
                 stash = new List<PlacedRecord>();
             stash.Clear();
@@ -157,22 +171,13 @@ namespace PoeClone.Inventory
             stashTabNames = new List<string>();
             for (int k = 0; k < inventory.StashTabs.Length; k++)
                 stashTabNames.Add(inventory.StashTabCustomName(k));
-
-            equipped.Clear();
-            foreach (EquipSlot slot in SlotRules.AllSlots)
-            {
-                ItemData item = inventory.Equipment.Get(slot);
-                if (item != null)
-                    equipped.Add(new EquippedRecord { slot = (int)slot, item = ItemRecord.From(item) });
-            }
-            gold = inventory.Gold;
         }
 
         /// <summary>
         /// Puts the saved bag and gear on an empty inventory. An item that no longer fits where it
         /// was goes anywhere else in the bag; if even that fails it is returned (to be dropped).
         /// </summary>
-        public List<ItemData> RestoreInventory(PlayerInventory inventory)
+        public List<ItemData> RestoreInventory(PlayerInventory inventory, bool restoreStash = true)
         {
             var leftOver = new List<ItemData>();
             if (equipped != null)
@@ -197,21 +202,8 @@ namespace PoeClone.Inventory
                 }
             }
 
-            if (stash != null)
-                RestoreTab(inventory.StashTabs[0], stash, leftOver);
-            if (stashTabs != null)
-            {
-                for (int k = 0; k < stashTabs.Count && k + 1 < inventory.StashTabs.Length; k++)
-                {
-                    if (stashTabs[k] != null && stashTabs[k].items != null)
-                        RestoreTab(inventory.StashTabs[k + 1], stashTabs[k].items, leftOver);
-                }
-            }
-            if (stashTabNames != null)
-            {
-                for (int k = 0; k < stashTabNames.Count && k < inventory.StashTabs.Length; k++)
-                    inventory.RenameStashTab(k, stashTabNames[k]);
-            }
+            if (restoreStash)
+                leftOver.AddRange(RestoreStash(inventory));
 
             var result = new List<ItemData>();
             foreach (ItemData item in leftOver)
@@ -219,10 +211,26 @@ namespace PoeClone.Inventory
                 if (!inventory.Grid.TryAutoPlace(item))
                     result.Add(item);
             }
-
             if (gold > inventory.Gold)
                 inventory.AddGold(gold - inventory.Gold);
             return result;
+        }
+
+        public List<ItemData> RestoreStash(PlayerInventory inventory)
+        {
+            var leftOver = new List<ItemData>();
+            if (stash != null)
+                RestoreTab(inventory.StashTabs[0], stash, leftOver);
+            if (stashTabs != null)
+                for (int k = 0; k < stashTabs.Count && k + 1 < inventory.StashTabs.Length; k++)
+                    if (stashTabs[k] != null && stashTabs[k].items != null)
+                        RestoreTab(inventory.StashTabs[k + 1], stashTabs[k].items, leftOver);
+            if (stashTabNames != null)
+            {
+                for (int k = 0; k < stashTabNames.Count && k < inventory.StashTabs.Length; k++)
+                    inventory.RenameStashTab(k, stashTabNames[k]);
+            }
+            return leftOver;
         }
     }
 }
