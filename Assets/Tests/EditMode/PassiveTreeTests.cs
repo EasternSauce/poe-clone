@@ -86,6 +86,28 @@ namespace PoeClone.Tests
         }
 
         [Test]
+        public void EveryKeystoneRequiresThreeTravelPassivesOnItsOnlyApproach()
+        {
+            foreach (PassiveNode keystone in PassiveTree.Nodes)
+            {
+                if (!keystone.Keystone)
+                    continue;
+
+                PassiveNode current = keystone;
+                string towardKeystone = null;
+                for (int step = 0; step < 3; step++)
+                {
+                    Assert.AreEqual(step == 0 ? 1 : 2, current.Links.Count, current.Name + " has another way in");
+                    string next = current.Links[0] == towardKeystone ? current.Links[1] : current.Links[0];
+                    PassiveNode travel = PassiveTree.Get(next);
+                    Assert.IsTrue(travel.Id.StartsWith("travel_"), keystone.Name + " is missing travel point " + (step + 1));
+                    towardKeystone = current.Id;
+                    current = travel;
+                }
+            }
+        }
+
+        [Test]
         public void EveryPassiveCanBeReachedFromTheOrigin()
         {
             var reached = new HashSet<string> { PassiveTree.OriginId };

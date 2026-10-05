@@ -1,8 +1,9 @@
-version: 2026-10-05-melee-polish-and-world-travel
+version: 2026-10-05-passive-tree-expansion
+- Spread the passive tree outward so existing nodes and travel routes have more room. Outer keystones now sit beyond three required travel passives on their only approach.
 - Gloves, rings, amulets and quivers roll 2.5x added physical damage early on, tapering to 1.5x by Frozen Hollow drops.
 - Clicking a gate walks through the current area's gate without carrying movement into the next area or bouncing back through its arrival gate.
 - Equipped item pictures keep their bag size inside larger equipment slots.
-- Held weapons face the corrected direction while their grips stay in the character's hands.
+- Held weapons turn 180 degrees around the hand without flipping their grips; blades still point downward.
 - Axes and greataxes now sweep through visible cuts on ordinary and Reaping Arc attacks.
 - Might defence passives and some armour, belts and shields now offer small chances to avoid stun without avoiding damage.
 - Drinking a potion plays a gulp copied into the game's sound assets.

@@ -85,6 +85,8 @@ namespace PoeClone.Inventory
             BuildNecromancy();
             BuildVenom();
             AddTravelNodes();
+            AddKeystoneApproaches();
+            ExpandLayout();
         }
 
         // Necromancy: the first ward branches from Wisdom so a level-four summoner can invest in
@@ -440,6 +442,43 @@ namespace PoeClone.Inventory
                 new[] { "n2", "n_lord" }, new[] { "v2", "v3" }
             })
                 InsertTravel(edge[0], edge[1], 1);
+        }
+
+        // Keystones are the strongest rewards at the rim. Each has one approach, with three
+        // travel points that must be bought before the keystone itself can be taken.
+        private static void AddKeystoneApproaches()
+        {
+            foreach (PassiveNode keystone in nodes.ToArray())
+            {
+                if (!keystone.Keystone)
+                    continue;
+                if (keystone.Links.Count != 1)
+                    throw new InvalidOperationException("Keystone must have one approach: " + keystone.Id);
+
+                PassiveNode from = byId[keystone.Links[0]];
+                float dx = keystone.X - from.X;
+                float dy = keystone.Y - from.Y;
+                float length = (float)Math.Sqrt(dx * dx + dy * dy);
+                if (length < 0.001f)
+                    throw new InvalidOperationException("Keystone overlaps its approach: " + keystone.Id);
+
+                const float approachLength = 1.45f;
+                keystone.X = from.X + dx / length * approachLength;
+                keystone.Y = from.Y + dy / length * approachLength;
+                InsertTravel(from.Id, keystone.Id, 3);
+            }
+        }
+
+        // Spread every existing node, including the new travel points, without changing the
+        // graph or saved passive IDs. The UI keeps node glyphs the same size at a given zoom.
+        private static void ExpandLayout()
+        {
+            const float spacing = 2.2f;
+            foreach (PassiveNode node in nodes)
+            {
+                node.X *= spacing;
+                node.Y *= spacing;
+            }
         }
 
         private static void InsertTravel(string a, string b, int count)

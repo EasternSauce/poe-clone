@@ -21,16 +21,14 @@ namespace PoeClone.UI
     public class PassiveTreeUI : MonoBehaviour
     {
         private const float UnitPixels = 200f;   // one tree unit (PassiveNode.X/Y) at zoom 1
-        private const float MinZoom = 0.4f;
+        private const float MinZoom = 0.2f;
         private const float MaxZoom = 1.5f;
-        private const float StartZoom = 0.75f;
+        private const float StartZoom = 0.4f;
         private const float ViewTop = 76f;       // the tree's window inside the panel, below the title
         private const float ViewBottom = 104f;   // and above the info strip
 
         // The panel fills the screen but for this margin, so the tree gets all the room there is.
         private const float Margin = 20f;
-        private const float TreeExtent = 4.3f;    // includes the outer Venom keystone and its label
-
         private static PassiveTreeUI instance;
 
         private class NodeView
@@ -524,22 +522,33 @@ namespace PoeClone.UI
         // Keeps some of the tree in the window however far it is dragged.
         private void ClampContent()
         {
-            float reach = 3.75f * UnitPixels * content.localScale.x;
+            float reachX = 0f, reachY = 0f;
+            foreach (PassiveNode node in PassiveTree.Nodes)
+            {
+                reachX = Mathf.Max(reachX, Mathf.Abs(node.X));
+                reachY = Mathf.Max(reachY, Mathf.Abs(node.Y));
+            }
+            reachX *= UnitPixels * content.localScale.x;
+            reachY *= UnitPixels * content.localScale.y;
             Vector2 half = viewRect.rect.size * 0.5f;
             Vector2 p = content.anchoredPosition;
-            float limitX = Mathf.Max(0f, reach - half.x * 0.5f);
-            float limitY = Mathf.Max(0f, reach - half.y * 0.5f);
+            // Leave room for the outer node and its label at the edge of the window.
+            float limitX = Mathf.Max(0f, reachX - half.x + 90f);
+            float limitY = Mathf.Max(0f, reachY - half.y + 90f);
             p.x = Mathf.Clamp(p.x, -limitX, limitX);
             p.y = Mathf.Clamp(p.y, -limitY, limitY);
             content.anchoredPosition = p;
         }
 
-        // The whole tree, as big as fits the window.
+        // Start with readable spacing near the origin; zooming out can show the full tree.
         private void ResetView()
         {
             Vector2 size = viewRect.rect.size;
-            float fit = Mathf.Min(size.x, size.y) / (2f * TreeExtent * UnitPixels);
-            content.localScale = Vector3.one * (fit > 0.01f ? Mathf.Clamp(fit, MinZoom, MaxZoom) : StartZoom);
+            float extent = 0f;
+            foreach (PassiveNode node in PassiveTree.Nodes)
+                extent = Mathf.Max(extent, Mathf.Abs(node.X), Mathf.Abs(node.Y));
+            float fit = Mathf.Min(size.x, size.y) / (2f * (extent + 0.5f) * UnitPixels);
+            content.localScale = Vector3.one * Mathf.Clamp(Mathf.Max(StartZoom, fit), MinZoom, MaxZoom);
             content.anchoredPosition = Vector2.zero;
         }
 
