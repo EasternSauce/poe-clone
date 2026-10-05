@@ -141,9 +141,6 @@ namespace PoeClone.Inventory
         private RectTransform stashTabRow;
         private Image[] stashTabButtons;
         private Text[] stashTabLabels;
-        private InputField tabNameField;
-        private bool tabNameFocusPending;
-        private int renamingTab = -1;
         private const float StashReach = 5f;
         private RectTransform gridArea;
         private RectTransform gridItems;
@@ -258,6 +255,9 @@ namespace PoeClone.Inventory
         {
             UpdateTooltipCanvasOrder();
             if (warming)
+                return;
+
+            if (UiKit.IsStashNamePromptOpen)
                 return;
 
             if (SpectatorMirror.Active)
@@ -661,8 +661,6 @@ namespace PoeClone.Inventory
             stashPanel.gameObject.SetActive(open && stashOpen);
             if (stashTabRow != null)
                 stashTabRow.gameObject.SetActive(open && stashOpen && vendor == null);
-            if (tabNameField != null && !(open && stashOpen) && renamingTab >= 0)
-                EndRenameTab(tabNameField.text);
 
             if (preview != null)
                 preview.SetActive(open && !touch && !stashOpen);
@@ -796,8 +794,7 @@ namespace PoeClone.Inventory
             stashArea.pivot = new Vector2(0.5f, 1f);
             stashArea.anchoredPosition = new Vector2(0f, -(Pad + 34f + TabRowHeight));
 
-            // Stash tabs: a row of buttons under the title (hidden for a trader's goods). Clicking
-            // the tab that's already showing renames it.
+            // Stash tabs: a row of buttons under the title (hidden for a trader's goods).
             stashTabRow = UiKit.NewRect("StashTabs", stashPanel);
             UiKit.TopLeft(stashTabRow, new Vector2(Pad, -(Pad + 30f)), new Vector2(gridSize, TabRowHeight - 4f));
             float tabWidth = (gridSize - 4f * (PlayerInventory.StashTabCount - 1)) / PlayerInventory.StashTabCount;
@@ -831,7 +828,6 @@ namespace PoeClone.Inventory
                 stashTabButtons[k] = button;
                 stashTabLabels[k] = label;
             }
-            BuildTabNameField(tabWidth);
             RefreshStashTabs();
             stashArea.sizeDelta = new Vector2(gridSize, gridSize);
 
@@ -863,76 +859,17 @@ namespace PoeClone.Inventory
                 return;
             for (int k = 0; k < stashTabButtons.Length; k++)
             {
-                stashTabButtons[k].color = k == renamingTab ? new Color(.28f,.57f,.56f,1f) :
-                    k == inventory.StashTab ? UiKit.Gold * 0.6f : CellColor;
+                stashTabButtons[k].color = k == inventory.StashTab ? UiKit.Gold * 0.6f : CellColor;
                 string name = inventory.StashTabName(k);
                 stashTabLabels[k].text = name.Length > 6 ? name.Substring(0, 6) + "…" : name;
             }
         }
 
-        // One text box, moved over whichever tab is being renamed.
-        private void BuildTabNameField(float tabWidth)
-        {
-            Image back = UiKit.NewImage("TabName", stashTabRow, new Color(.28f,.57f,.56f,1f));
-            UiKit.TopLeft(back.rectTransform, Vector2.zero, new Vector2(tabWidth, TabRowHeight - 4f));
-            back.raycastTarget = true;
-            back.gameObject.AddComponent<RectMask2D>();
-
-            Text text = UiKit.NewText("Text", back.rectTransform, "", 16, Color.white, TextAnchor.MiddleLeft);
-            UiKit.Stretch(text.rectTransform, 3f);
-            text.supportRichText = false;
-            text.horizontalOverflow = HorizontalWrapMode.Overflow;
-
-            tabNameField = back.gameObject.AddComponent<InputField>();
-            tabNameField.textComponent = text;
-            tabNameField.lineType = InputField.LineType.SingleLine;
-            tabNameField.characterLimit = PlayerInventory.StashTabNameLimit;
-            // Enter, Escape (which puts the old text back) or a click elsewhere all end it here.
-            tabNameField.onEndEdit.AddListener(EndRenameTab);
-            back.gameObject.SetActive(false);
-        }
-
         private void BeginRenameTab(int tab)
         {
-            if (renamingTab >= 0)
-                EndRenameTab(tabNameField.text);
-            renamingTab = tab;
-            tabNameFocusPending = true;
-            RefreshStashTabs();
-            RectTransform field = (RectTransform)tabNameField.transform;
-            field.anchoredPosition = stashTabButtons[tab].rectTransform.anchoredPosition;
-            tabNameField.gameObject.SetActive(true);
-            tabNameField.text = inventory.StashTabName(tab);
-            // The button is still handling the double-click. Let its pointer event finish before
-            // selecting the field, otherwise the button can take focus straight back.
-            StartCoroutine(FocusTabNameField(tab));
-        }
-
-        private IEnumerator FocusTabNameField(int tab)
-        {
-            yield return null;
-            if (renamingTab != tab || !tabNameField.gameObject.activeInHierarchy)
-                yield break;
-            tabNameField.Select();
-            tabNameField.ActivateInputField();
-            tabNameField.caretPosition = tabNameField.text.Length;
-            tabNameFocusPending = false;
-        }
-
-        private void EndRenameTab(string name)
-        {
-            if (renamingTab < 0 || (tabNameFocusPending && tabNameField.gameObject.activeInHierarchy))
+            if (!isOpen || !stashOpen || vendor != null || UiKit.IsStashNamePromptOpen)
                 return;
-            int tab = renamingTab;
-            renamingTab = -1;
-            tabNameFocusPending = false;
-            UiKit.EnterHandledFrame = Time.frameCount; // the Enter that finished it mustn't open the chat
-            UiKit.TextEditEndedFrame = Time.frameCount;
-            inventory.RenameStashTab(tab, name);
-            if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == tabNameField.gameObject)
-                EventSystem.current.SetSelectedGameObject(null);
-            tabNameField.gameObject.SetActive(false);
-            RefreshStashTabs();
+            UiKit.StashTabNamePrompt?.Invoke(inventory.StashTabCustomName(tab), name => inventory.RenameStashTab(tab, name));
         }
 
         private void ShowStashHighlight(int x, int y, int w, int h, Color color)
@@ -2021,11 +1958,19 @@ private Vector2 CellSize(int w, int h)
     public sealed class StashTabDoubleClick : MonoBehaviour, IPointerClickHandler
     {
         public System.Action OnDoubleClick;
+        private float lastClickAt = -1f;
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (eventData.button == PointerEventData.InputButton.Left && eventData.clickCount == 2)
+            if (eventData.button != PointerEventData.InputButton.Left) return;
+            float now = Time.unscaledTime;
+            if (eventData.clickCount == 2 || (lastClickAt >= 0f && now - lastClickAt <= 0.35f))
+            {
+                lastClickAt = -1f;
                 OnDoubleClick?.Invoke();
+            }
+            else
+                lastClickAt = now;
         }
     }
 }

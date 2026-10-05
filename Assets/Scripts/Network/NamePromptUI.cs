@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -22,6 +23,73 @@ namespace PoeClone.Network
         private Text buttonText;
         private Action<string> onDone;
         private Action afterCharacter;
+        private float timeScaleBeforeStashRename;
+
+        /// <summary>Use the character creation input as a full-screen, required stash tab name form.</summary>
+        public void ShowStashTabRename(string currentName, Action<string> done)
+        {
+            if (IsShowing || UiKit.IsStashNamePromptOpen) return;
+
+            foreach (Transform child in canvasRoot.transform)
+                if (child.name != "Background") child.gameObject.SetActive(false);
+            foreach (Transform child in canvasRoot.transform)
+                if (child.name != "Background") Destroy(child.gameObject);
+
+            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            MakeText("Name your stash tab", font, 30, new Vector2(0, 100), new Vector2(800, 60));
+            inputField = MakeInput(font);
+            inputField.characterLimit = PlayerInventory.StashTabNameLimit;
+            inputField.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 10);
+            inputField.text = currentName ?? string.Empty;
+
+            Action confirm = () =>
+            {
+                string name = inputField.text.Trim();
+                if (name.Length == 0)
+                {
+                    StartCoroutine(FocusStashNameInput());
+                    return;
+                }
+                UiKit.IsStashNamePromptOpen = false;
+                Time.timeScale = timeScaleBeforeStashRename;
+                canvasRoot.SetActive(false);
+                PlayerHUD.SetHiddenBy(this, false);
+                UiKit.EnterHandledFrame = Time.frameCount;
+                UiKit.TextEditEndedFrame = Time.frameCount;
+                if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+                done?.Invoke(name);
+            };
+            inputField.onSubmit.AddListener(_ => confirm());
+            MakeButton("Confirm", font, new Vector2(0, -70), new Vector2(240, 54), confirm);
+
+            timeScaleBeforeStashRename = Time.timeScale;
+            UiKit.IsStashNamePromptOpen = true;
+            canvasRoot.SetActive(true);
+            PlayerHUD.SetHiddenBy(this, true);
+            Time.timeScale = 0f;
+            StartCoroutine(FocusStashNameInput());
+        }
+
+        private IEnumerator FocusStashNameInput()
+        {
+            // The tab's double-click must finish before this field claims keyboard focus.
+            yield return null;
+            if (!UiKit.IsStashNamePromptOpen) yield break;
+            inputField.Select();
+            inputField.ActivateInputField();
+            inputField.selectionAnchorPosition = 0;
+            inputField.selectionFocusPosition = inputField.text.Length;
+        }
+
+        private void OnDestroy()
+        {
+            UiKit.StashTabNamePrompt = null;
+            if (UiKit.IsStashNamePromptOpen)
+            {
+                UiKit.IsStashNamePromptOpen = false;
+                Time.timeScale = timeScaleBeforeStashRename;
+            }
+        }
 
         public void ShowCharacters(Action done)
         {
@@ -160,6 +228,7 @@ namespace PoeClone.Network
             UiEventSystemBootstrap.EnsureExists();
             Build();
             canvasRoot.SetActive(false);
+            UiKit.StashTabNamePrompt = ShowStashTabRename;
         }
 
         public void Show(string initialName, string confirmLabel, Action<string> done)

@@ -196,7 +196,7 @@ namespace PoeClone.Network
                 Redraw(active);
 
             var keyboard = Keyboard.current;
-            if (keyboard == null || Time.frameCount == EnterHandledFrame || Time.frameCount == UiKit.EnterHandledFrame) return;
+            if (keyboard == null || UiKit.IsStashNamePromptOpen || Time.frameCount == EnterHandledFrame || Time.frameCount == UiKit.EnterHandledFrame) return;
             if (!keyboard.enterKey.wasPressedThisFrame && !keyboard.numpadEnterKey.wasPressedThisFrame) return;
 
             // Only when nothing else has the UI focus (e.g. not while a menu button is selected).

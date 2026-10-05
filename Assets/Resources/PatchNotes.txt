@@ -1,9 +1,9 @@
-version: 2026-10-05-stash-window-and-rename
+version: 2026-10-05-character-style-stash-rename
 - Removed the old Area A/B/C scene objects and their editor builder; the real world now creates its own gates.
 - Returning to character selection now rebuilds the full world when a new character starts, instead of leaving the prototype Area A/B/C scene active.
 - Settings can return to character selection without refreshing the page; switching saves the current character first.
 - Stash storage and tab names are shared between characters. Existing character stashes are gathered on first load.
-- Double-click a stash tab to rename it. The text box receives keyboard focus after the click finishes, avoiding the button taking focus back; Enter confirms.
+- Double-click a stash tab to open the full-screen character-style name form. The game pauses until a nonempty name is confirmed.
 - Clicking the stash opens a single Stash window: the stash on the left, your equipment and bag on the right, and one X that closes it all. The character preview stays hidden.
 - Escape closes open windows first; pressing it again opens Settings.
 - The unspent passive points button now sits below the level and health HUD, clear of the skill keys.

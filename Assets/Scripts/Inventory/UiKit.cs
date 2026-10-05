@@ -18,8 +18,20 @@ namespace PoeClone.Inventory
 
         public static int TextEditEndedFrame = -1;
 
+        // The full-screen name prompt is supplied by the session UI (a separate assembly).
+        public static System.Action<string, System.Action<string>> StashTabNamePrompt;
+        public static bool IsStashNamePromptOpen;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStashNamePrompt()
+        {
+            StashTabNamePrompt = null;
+            IsStashNamePromptOpen = false;
+        }
+
         public static bool IsTypingInTextField()
         {
+            if (IsStashNamePromptOpen) return true;
             if (TextEditEndedFrame == Time.frameCount) return true;
             GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
             if (selected == null) return false;
