@@ -149,15 +149,14 @@ namespace PoeClone.Visuals
             Range = 1.8f
         };
 
-        // An overhead chop: big pull back, then straight down through the target. Slower than the
-        // sword, a little more reach.
+        // A broad axe cut: draw the head across the shoulder, then sweep its edge through the target.
         private static readonly AttackProfile AxeProfile = new AttackProfile
         {
             Duration = 0.65f,
             StrikeTime = 0.5f,
-            // Keep the haft pointed into the target at impact so the axe edge leads the chop.
-            WindupOffset = new Pose(70f, 0f, 0f, 75f),
-            StrikeOffset = new Pose(-10f, 0f, 0f, 15f),
+            SwingStart = 0.27f,
+            WindupOffset = new Pose(35f, -70f, -35f, 60f),
+            StrikeOffset = new Pose(-40f, 65f, 35f, 20f),
             BaseAttacksPerSecond = 1.0f,
             Range = 2.3f
         };
@@ -219,8 +218,9 @@ namespace PoeClone.Visuals
         {
             Duration = 0.85f,
             StrikeTime = 0.55f,
-            WindupOffset = new Pose(-150f, -10f, 0f, 10f),
-            StrikeOffset = new Pose(-8f, 5f, 0f, 0f),
+            SwingStart = 0.32f,
+            WindupOffset = new Pose(-85f, -75f, -30f, 10f),
+            StrikeOffset = new Pose(-35f, 65f, 25f, 0f),
             BaseAttacksPerSecond = 0.8f,
             Range = 2.8f,
             TwoHandGrip = true,
@@ -275,7 +275,7 @@ namespace PoeClone.Visuals
 
         private static readonly AttackProfile ReapingAxeProfile = new AttackProfile
         {
-            Duration = 0.82f, StrikeTime = 0.71f,
+            Duration = 0.82f, StrikeTime = 0.71f, SwingStart = 0.46f,
             WindupOffset = new Pose(22f, -78f, -35f, 60f),
             StrikeOffset = new Pose(-28f, 82f, 35f, 20f),
             BaseAttacksPerSecond = 0.85f, Range = 3f
@@ -283,7 +283,7 @@ namespace PoeClone.Visuals
 
         private static readonly AttackProfile ReapingGreataxeProfile = new AttackProfile
         {
-            Duration = 0.82f, StrikeTime = 0.71f, TwoHandGrip = true,
+            Duration = 0.82f, StrikeTime = 0.71f, SwingStart = 0.46f, TwoHandGrip = true,
             WindupOffset = new Pose(-45f, -85f, -22f, 0f),
             StrikeOffset = new Pose(-35f, 88f, 22f, 0f),
             BaseAttacksPerSecond = 0.8f, Range = 3.2f, ConeHalfAngle = 72f

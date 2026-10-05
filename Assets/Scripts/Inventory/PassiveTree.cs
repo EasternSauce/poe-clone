@@ -84,6 +84,7 @@ namespace PoeClone.Inventory
             // Out past Fire Ward: the summoner's cluster (needs the bridge, so it's a commitment).
             BuildNecromancy();
             BuildVenom();
+            AddTravelNodes();
         }
 
         // Necromancy: the first ward branches from Wisdom so a level-four summoner can invest in
@@ -142,9 +143,9 @@ namespace PoeClone.Inventory
             Chain("m1", "m2");
 
             // Left arm: defence.
-            N("m3", "Iron Skin", 1.2f, -0.3f, Mod(StatType.Armour, 25));
-            N("m4", "Thick Hide", 1.5f, -0.45f, Mod(StatType.MaxLife, 15), Mod(StatType.Armour, 15));
-            Nt("m5", "Juggernaut", 1.85f, -0.55f, Mod(StatType.MaxLife, 30), Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 5));
+            N("m3", "Iron Skin", 1.2f, -0.3f, Mod(StatType.Armour, 25), Mod(StatType.AvoidStun, 3));
+            N("m4", "Thick Hide", 1.5f, -0.45f, Mod(StatType.MaxLife, 15), Mod(StatType.Armour, 15), Mod(StatType.AvoidStun, 4));
+            Nt("m5", "Juggernaut", 1.85f, -0.55f, Mod(StatType.MaxLife, 30), Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 5), Mod(StatType.AvoidStun, 8));
             Chain("m2", "m3", "m4", "m5");
 
             // Right arm: offence.
@@ -416,6 +417,54 @@ namespace PoeClone.Inventory
             Chain(a, id, b);
         }
 
+        // Crossing sectors and reaching the outer notables should cost points. Saved allocations
+        // are restored separately so an existing character keeps its already bought passives.
+        private static void AddTravelNodes()
+        {
+            foreach (string bridge in new[] { "b_bloodrage", "b_skirmisher", "b_arctic", "b_surge", "b_fireward", "b_ironfaith" })
+            {
+                string[] ends = byId[bridge].Links.ToArray();
+                for (int k = 0; k < ends.Length; k++)
+                    InsertTravel(bridge, ends[k], 2);
+            }
+
+            foreach (string[] edge in new[]
+            {
+                new[] { "m4", "m5" }, new[] { "m7", "m8" },
+                new[] { "f_b1", "f_berserk" }, new[] { "f_b2", "f_frenzy" },
+                new[] { "g10", "g_deadeye" }, new[] { "g9", "g_phase" },
+                new[] { "s_sp3", "s_conductor" }, new[] { "s_sp3", "s_stride" },
+                new[] { "w_l2", "w_l3" }, new[] { "w7", "w_r3" },
+                new[] { "z_s1", "z_t1" }, new[] { "z_s2", "z_t2" },
+                new[] { "z_s3", "z_t3" }, new[] { "z_s4", "z_t4" },
+                new[] { "n2", "n_lord" }, new[] { "v2", "v3" }
+            })
+                InsertTravel(edge[0], edge[1], 1);
+        }
+
+        private static void InsertTravel(string a, string b, int count)
+        {
+            PassiveNode from = byId[a], to = byId[b];
+            if (!from.Links.Remove(b) || !to.Links.Remove(a))
+                throw new InvalidOperationException("Missing travel link " + a + " - " + b);
+
+            string previous = a;
+            for (int k = 1; k <= count; k++)
+            {
+                float t = (float)k / (count + 1);
+                string id = "travel_" + a + "_" + b + "_" + k;
+                // One attribute per point is deliberately much weaker than a sector passive.
+                StatType stat = from.Branch == PassiveBranch.Might || from.Branch == PassiveBranch.Zeal
+                    ? StatType.Strength : from.Branch == PassiveBranch.Grace || from.Branch == PassiveBranch.Fury
+                    ? StatType.Dexterity : StatType.Intelligence;
+                Add(id, "Travel", from.Branch, false,
+                    from.X + (to.X - from.X) * t, from.Y + (to.Y - from.Y) * t, Mod(stat, 1));
+                Link(previous, id);
+                previous = id;
+            }
+            Link(previous, b);
+        }
+
         private static void Chain(params string[] ids)
         {
             for (int k = 1; k < ids.Length; k++)
@@ -487,6 +536,18 @@ namespace PoeClone.Inventory
             return true;
         }
 
+        /// <summary>Restore previously bought nodes after a tree layout change, without charging
+        /// the character for new travel points between them.</summary>
+        public void RestoreSaved(IEnumerable<string> ids, int level)
+        {
+            foreach (string id in ids)
+            {
+                if (id != PassiveTree.OriginId && PassiveTree.Get(id) != null && !taken.Contains(id) && Spent < PointsForLevel(level))
+                    taken.Add(id);
+            }
+            Changed?.Invoke();
+        }
+
         /// <summary>
         /// Gives a passive back, if everything else taken stays connected to the origin without it
         /// (so only the ends of a path can be given back).
@@ -496,6 +557,16 @@ namespace PoeClone.Inventory
             if (id == PassiveTree.OriginId || !taken.Contains(id))
                 return false;
 
+            HashSet<string> connectedBefore = ReachableFromOrigin(null);
+            HashSet<string> connectedAfter = ReachableFromOrigin(id);
+            foreach (string node in connectedBefore)
+                if (node != id && !connectedAfter.Contains(node))
+                    return false;
+            return true;
+        }
+
+        private HashSet<string> ReachableFromOrigin(string excluded)
+        {
             var reached = new HashSet<string> { PassiveTree.OriginId };
             var open = new Stack<string>();
             open.Push(PassiveTree.OriginId);
@@ -503,11 +574,11 @@ namespace PoeClone.Inventory
             {
                 foreach (string link in PassiveTree.Get(open.Pop()).Links)
                 {
-                    if (link != id && taken.Contains(link) && reached.Add(link))
+                    if (link != excluded && taken.Contains(link) && reached.Add(link))
                         open.Push(link);
                 }
             }
-            return reached.Count == taken.Count - 1;
+            return reached;
         }
 
         public bool Refund(string id)

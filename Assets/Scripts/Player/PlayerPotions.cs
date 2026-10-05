@@ -168,7 +168,7 @@ namespace PoeClone.Player
         {
             SkillEffects.Rise(transform, color, 0.6f);
             if (AudioManager.Instance != null)
-                AudioManager.Instance.PlayUI(AudioManager.Instance.Sfx("pickup_potion") ?? AudioManager.Instance.uiItemPlace);
+                AudioManager.Instance.PlayUI(AudioManager.Instance.Sfx("potion_drink"));
         }
     }
 }

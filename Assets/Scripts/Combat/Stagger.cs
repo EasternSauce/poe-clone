@@ -32,7 +32,10 @@ namespace PoeClone.Combat
             IsStaggered = true;
 
             CharacterAttackAnimator attackAnimator = GetComponentInChildren<CharacterAttackAnimator>();
-            if (attackAnimator != null)
+            // A committed melee skill still lands after a hit. Keep its pose running to the strike.
+            // Basic attacks retain their interrupt and cooldown refund.
+            bool committedSkill = GetComponent<PoeClone.Player.PlayerController>()?.IsSkillCommitted ?? false;
+            if (attackAnimator != null && !committedSkill)
                 attackAnimator.CancelAttack();
         }
 

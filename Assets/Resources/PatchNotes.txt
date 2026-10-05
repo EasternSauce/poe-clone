@@ -1,4 +1,17 @@
-version: 2026-10-05-skill-bindings-and-melee
+version: 2026-10-05-melee-polish-and-world-travel
+- Gloves, rings, amulets and quivers roll 2.5x added physical damage early on, tapering to 1.5x by Frozen Hollow drops.
+- Clicking a gate walks through the current area's gate without carrying movement into the next area or bouncing back through its arrival gate.
+- Equipped item pictures keep their bag size inside larger equipment slots.
+- Held weapons face the corrected direction while their grips stay in the character's hands.
+- Axes and greataxes now sweep through visible cuts on ordinary and Reaping Arc attacks.
+- Might defence passives and some armour, belts and shields now offer small chances to avoid stun without avoiding damage.
+- Drinking a potion plays a gulp copied into the game's sound assets.
+- Background browser tabs have more time to answer server heartbeats, and a disconnected tab resumes reconnecting when focused.
+- The skill picker shows every equipped grant with its level. Number keys now use their displayed slots, preventing potions from also firing mouse skills.
+- Swords and greatswords have higher base physical damage to compensate for their slower attacks.
+- Added weak travel nodes along outer passive routes and sector crossings, making distant strong nodes cost more points.
+- Walking away from storage closes the whole stash and inventory window.
+- Taking a hit no longer cuts off a committed melee skill's animation; ordinary attacks can still be interrupted.
 - Skill bindings now belong to the specific equipped item and grant level. Each item shows a separate skill entry, even when another item grants the same skill. Removing that item clears only its bindings.
 - Selecting a character clears saved skill bindings that its current gear or weapon cannot use. New characters receive bindings only from gear they equip.
 - The minimap player marker now points in the direction the character faces.

@@ -730,9 +730,8 @@ namespace PoeClone.Inventory
         {
             if (!stashOpen)
                 return;
-            stashOpen = false;
-            vendor = null;
-            SetOpen(isOpen);
+            // The side panel and bag are one window. Leaving its interaction range closes both.
+            SetOpen(false);
         }
 
         public bool IsStashOpen => isOpen && stashOpen;
@@ -1266,7 +1265,7 @@ private Vector2 CellSize(int w, int h)
 
         // ------------------------------------------------------------------ item views
 
-        private RectTransform CreateItemView(Transform parent, ItemData item, Vector2 size, float alpha)
+        private RectTransform CreateItemView(Transform parent, ItemData item, Vector2 size, float alpha, Vector2? iconLimit = null)
         {
             Sprite painted = ItemArt.PaintedIcon(item);
             Color tint = item.Tint;
@@ -1300,7 +1299,14 @@ private Vector2 CellSize(int w, int h)
             {
                 icon.sprite = painted;
                 icon.color = new Color(item.ArtTint.r, item.ArtTint.g, item.ArtTint.b, alpha);
-                UiKit.Stretch(irt, 3f);
+                if (iconLimit.HasValue)
+                {
+                    irt.anchorMin = irt.anchorMax = irt.pivot = new Vector2(0.5f, 0.5f);
+                    irt.anchoredPosition = Vector2.zero;
+                    irt.sizeDelta = Vector2.Min(size - new Vector2(6f, 6f), iconLimit.Value - new Vector2(6f, 6f));
+                }
+                else
+                    UiKit.Stretch(irt, 3f);
             }
             else
             {
@@ -1311,7 +1317,8 @@ private Vector2 CellSize(int w, int h)
                 irt.anchorMax = new Vector2(0.5f, 0.5f);
                 irt.pivot = new Vector2(0.5f, 0.5f);
                 irt.anchoredPosition = Vector2.zero;
-                float s = Mathf.Min(size.x, size.y) * 0.78f;
+                Vector2 visibleSize = iconLimit.HasValue ? Vector2.Min(size, iconLimit.Value) : size;
+                float s = Mathf.Min(visibleSize.x, visibleSize.y) * 0.78f;
                 irt.sizeDelta = new Vector2(s, s);
             }
 
@@ -1371,7 +1378,7 @@ private Vector2 CellSize(int w, int h)
                 if (item != null)
                 {
                     Vector2 size = s.Rect.sizeDelta - new Vector2(4f, 4f);
-                    RectTransform rt = CreateItemView(s.Rect, item, size, 1f);
+                    RectTransform rt = CreateItemView(s.Rect, item, size, 1f, CellSize(item.Width, item.Height));
                     rt.anchoredPosition = new Vector2(2f, -2f);
                     itemViews.Add(rt.gameObject);
                 }

@@ -126,6 +126,10 @@ private IEnumerator SwitchRoutine(int index, Transform arrival)
 
             if (player != null && target != null)
             {
+                // A click-to-walk command aimed at the old gate must not keep moving after arrival.
+                var playerController = player.GetComponent<PoeClone.Player.PlayerController>();
+                if (playerController != null)
+                    playerController.CancelWalk();
                 var controller = player.GetComponent<CharacterController>();
                 if (controller != null) controller.enabled = false;
                 player.position = target.position;
@@ -153,6 +157,8 @@ private IEnumerator SwitchRoutine(int index, Transform arrival)
             if (def.tintsSharedGround)
                 ApplyGroundColor(def.groundColor);
             CurrentAreaIndex = index;
+            if (player != null)
+                AreaGate.DisarmAtArrival(index, player.position);
             AreaChanged?.Invoke(index);
 
             if (simulatedLoadSeconds > 0f)

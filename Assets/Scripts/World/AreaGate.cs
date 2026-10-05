@@ -62,13 +62,16 @@ namespace PoeClone.World
             Camera cam = Camera.main;
             if (cam == null || all.Count == 0)
                 return null;
+            AreaManager manager = AreaManager.Instance;
+            if (manager == null || manager.IsSwitching)
+                return null;
 
             Ray ray = cam.ScreenPointToRay(point);
             AreaGate best = null;
             float bestDistance = float.MaxValue;
             foreach (AreaGate gate in all)
             {
-                if (gate == null || !gate.isActiveAndEnabled)
+                if (gate == null || !gate.isActiveAndEnabled || gate.fromAreaIndex != manager.CurrentAreaIndex)
                     continue;
                 if (gate.ClickBounds().IntersectRay(ray, out float distance) && distance < bestDistance)
                 {
@@ -77,6 +80,17 @@ namespace PoeClone.World
                 }
             }
             return best;
+        }
+
+        /// <summary>Require the player to leave a gate they landed inside before it can transfer them.</summary>
+        public static void DisarmAtArrival(int areaIndex, Vector3 position)
+        {
+            foreach (AreaGate gate in all)
+            {
+                if (gate != null && gate.fromAreaIndex == areaIndex && gate.box != null &&
+                    gate.box.bounds.Contains(position))
+                    gate.armed = false;
+            }
         }
 
         // Everything the gate draws plus its trigger, measured once (gates don't move).
@@ -151,7 +165,7 @@ namespace PoeClone.World
             }
 
             var manager = AreaManager.Instance;
-            if (manager == null || manager.IsSwitching || manager.CurrentAreaIndex == targetAreaIndex)
+            if (manager == null || manager.IsSwitching || manager.CurrentAreaIndex != fromAreaIndex)
                 return;
 
             armed = false;

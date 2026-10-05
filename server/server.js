@@ -141,11 +141,12 @@ wss.on('connection', (ws) => {
   });
 });
 
-// Reclaim slots held by clients that vanished without a clean close
-// (crashed tab, network drop, laptop sleep).
+// Browsers can throttle a background tab long enough to miss several ping responses.
+// Give it two minutes to resume before reclaiming its player slot.
 const heartbeat = setInterval(() => {
   for (const ws of wss.clients) {
-    if (ws.isAlive === false) {
+    ws.missedPongs = ws.isAlive === false ? (ws.missedPongs || 0) + 1 : 0;
+    if (ws.missedPongs >= 8) {
       ws.terminate();
       continue;
     }

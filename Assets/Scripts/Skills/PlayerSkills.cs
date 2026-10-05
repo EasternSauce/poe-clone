@@ -378,12 +378,7 @@ namespace PoeClone.Skills
                         continue;
                     int grantLevel = Mathf.RoundToInt(mod.Value);
                     if (grantLevel > 0)
-                    {
-                        int existing = grants.FindIndex(g => g.Id == skill.Id && g.Item == item);
-                        var grant = new SkillGrant { Id = skill.Id, Source = source, GrantLevel = grantLevel, Item = item };
-                        if (existing < 0) grants.Add(grant);
-                        else if (grantLevel > grants[existing].GrantLevel) grants[existing] = grant;
-                    }
+                        grants.Add(new SkillGrant { Id = skill.Id, Source = source, GrantLevel = grantLevel, Item = item });
                 }
             }
             return grants;
@@ -698,7 +693,7 @@ namespace PoeClone.Skills
             {
                 for (int k = 0; k < SlotKeys.Length; k++)
                 {
-                    int slot = k < 4 ? k : k + 4;
+                    int slot = k;
                     if (slots[slot] != null && keyboard[SlotKeys[k]].wasPressedThisFrame)
                         pressed = slot;
                 }

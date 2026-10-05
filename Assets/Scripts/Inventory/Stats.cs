@@ -137,7 +137,8 @@ namespace PoeClone.Inventory
         GrantLungingThrust,
         MinionArmour,               // flat armour for minions against physical hits
         MinionResistances,          // fire, cold, lightning and poison resistance for minions
-        BowDamage                   // % more bow attack damage, from dedicated Grace passives
+        BowDamage,                  // % more bow attack damage, from dedicated Grace passives
+        AvoidStun                   // % chance to take a hit without being staggered
     }
 
     /// <summary>
@@ -436,6 +437,7 @@ namespace PoeClone.Inventory
                 case StatType.Armour: return "Armour";
                 case StatType.Evasion: return "Evasion";
                 case StatType.BlockChance: return "Chance to Block";
+                case StatType.AvoidStun: return "Chance to Avoid Stun";
                 case StatType.PhysicalDamage: return "Physical Damage";
                 case StatType.AttackSpeed: return "Attack Speed";
                 case StatType.FireResistance: return "Fire Resistance";
@@ -532,6 +534,7 @@ namespace PoeClone.Inventory
             switch (stat)
             {
                 case StatType.BlockChance:
+                case StatType.AvoidStun:
                 case StatType.AttackSpeed:
                 case StatType.FireResistance:
                 case StatType.ColdResistance:
@@ -613,6 +616,7 @@ namespace PoeClone.Inventory
                 case StatType.Armour: return sign + n + " to Armour";
                 case StatType.Evasion: return sign + n + " to Evasion";
                 case StatType.BlockChance: return sign + n + "% Chance to Block";
+                case StatType.AvoidStun: return sign + n + "% Chance to Avoid Stun";
                 case StatType.PhysicalDamage: return "Adds " + n + " Physical Damage";
                 case StatType.AttackSpeed: return n + "% " + (m.Value < 0f ? "reduced" : "increased") + " Attack Speed";
                 case StatType.FireResistance: return sign + n + "% to Fire Resistance";

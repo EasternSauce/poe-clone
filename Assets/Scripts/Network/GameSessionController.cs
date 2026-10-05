@@ -337,6 +337,15 @@ namespace PoeClone.Network
             reconnectRoutine = StartCoroutine(ReconnectAfterDelay());
         }
 
+        private void OnApplicationFocus(bool focused)
+        {
+            // A background tab may have suspended its reconnect timer. Resume promptly when the
+            // browser gives the game focus again; a healthy socket needs no new connection.
+            if (focused && !Connected && reconnectRoutine != null && !returningToCharacters && !string.IsNullOrEmpty(serverUrl) &&
+                !string.IsNullOrEmpty(PlayerName))
+                ScheduleReconnect();
+        }
+
         public void ReturnToCharacters()
         {
             if (Role != SessionRole.Player || returningToCharacters) return;

@@ -136,9 +136,13 @@ namespace PoeClone.Inventory
                         bool turnHead = slot == EquipSlot.MainHand && (item.WeaponType == WeaponType.Axe ||
                             item.WeaponType == WeaponType.Greataxe || item.WeaponType == WeaponType.Mace ||
                             item.WeaponType == WeaponType.Maul);
-                        instance.transform.localRotation = turnHead
-                            ? child.localRotation * Quaternion.Euler(0f, 90f, 0f)
+                        // Rotate the held model around its grip; its position stays in the hand.
+                        Quaternion heldRotation = slot == EquipSlot.MainHand
+                            ? child.localRotation * Quaternion.Euler(180f, 0f, 0f)
                             : child.localRotation;
+                        instance.transform.localRotation = turnHead
+                            ? heldRotation * Quaternion.Euler(0f, 90f, 0f)
+                            : heldRotation;
                         instance.transform.localScale = child.localScale;
                         instance.AddComponent<EquipmentVisualInstance>();
                         if (tint != Color.white)

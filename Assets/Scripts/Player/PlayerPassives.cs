@@ -50,19 +50,10 @@ namespace PoeClone.Player
 
         public bool Take(string id) => Allocation.Take(id, Level);
 
-        /// <summary>A saved character's passives (in any order: each pass takes what connects).</summary>
+        /// <summary>Restore bought passives, including paths predating added travel nodes.</summary>
         public void Restore(System.Collections.Generic.IList<string> ids)
         {
-            bool progress = true;
-            while (progress)
-            {
-                progress = false;
-                foreach (string id in ids)
-                {
-                    if (!Allocation.Has(id) && Allocation.Take(id, Level))
-                        progress = true;
-                }
-            }
+            Allocation.RestoreSaved(ids, Level);
         }
 
         public bool Refund(string id) => Allocation.Refund(id);

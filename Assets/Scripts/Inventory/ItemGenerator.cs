@@ -251,10 +251,10 @@ namespace PoeClone.Inventory
             Gear("quiver", Leaning.Dex, "barbed_quiver", "Barbed Quiver", ItemType.Quiver, 2, 3, 12, "leather_quiver", Dark, Mod(StatType.PhysicalDamage, 8), Mod(StatType.AttackSpeed, 5)),
 
             // ---- One-handed weapons
-            Arm("sword", Leaning.None, "rusty_sword", "Rusty Sword", WeaponType.Sword, 1, 3, 1, null, Plain, Mod(StatType.PhysicalDamage, 5)),
-            Arm("sword", Leaning.None, "steel_sword", "Steel Sword", WeaponType.Sword, 1, 3, 4, "rusty_sword", Steel, Mod(StatType.PhysicalDamage, 9)),
-            Arm("sword", Leaning.None, "champion_blade", "Champion Blade", WeaponType.Sword, 1, 3, 8, "rusty_sword", Gilded, Mod(StatType.PhysicalDamage, 14)),
-            Arm("sword", Leaning.None, "royal_blade", "Royal Blade", WeaponType.Sword, 1, 3, 12, "rusty_sword", Royal, Mod(StatType.PhysicalDamage, 20)),
+            Arm("sword", Leaning.None, "rusty_sword", "Rusty Sword", WeaponType.Sword, 1, 3, 1, null, Plain, Mod(StatType.PhysicalDamage, 8)),
+            Arm("sword", Leaning.None, "steel_sword", "Steel Sword", WeaponType.Sword, 1, 3, 4, "rusty_sword", Steel, Mod(StatType.PhysicalDamage, 13)),
+            Arm("sword", Leaning.None, "champion_blade", "Champion Blade", WeaponType.Sword, 1, 3, 8, "rusty_sword", Gilded, Mod(StatType.PhysicalDamage, 20)),
+            Arm("sword", Leaning.None, "royal_blade", "Royal Blade", WeaponType.Sword, 1, 3, 12, "rusty_sword", Royal, Mod(StatType.PhysicalDamage, 29)),
             Arm("axe", Leaning.Str, "hand_axe", "Hand Axe", WeaponType.Axe, 2, 3, 1, null, Plain, Mod(StatType.PhysicalDamage, 7)),
             Arm("axe", Leaning.Str, "war_axe", "War Axe", WeaponType.Axe, 2, 3, 4, "hand_axe", Steel, Mod(StatType.PhysicalDamage, 12)),
             Arm("axe", Leaning.Str, "reaver_axe", "Reaver Axe", WeaponType.Axe, 2, 3, 8, "hand_axe", Gilded, Mod(StatType.PhysicalDamage, 18)),
@@ -287,10 +287,10 @@ namespace PoeClone.Inventory
 
             // ---- Great weapons: both hands, no shield; slower, but they hit much harder, reach
             // further and sweep a wider arc (see CharacterAttackAnimator).
-            Arm("greatsword", Leaning.Str, "bastard_sword", "Bastard Sword", WeaponType.Greatsword, 1, 4, 1, null, Plain, Mod(StatType.PhysicalDamage, 10)),
-            Arm("greatsword", Leaning.Str, "claymore", "Claymore", WeaponType.Greatsword, 1, 4, 4, "bastard_sword", Steel, Mod(StatType.PhysicalDamage, 17)),
-            Arm("greatsword", Leaning.Str, "zweihander", "Zweihander", WeaponType.Greatsword, 1, 4, 8, "bastard_sword", Gilded, Mod(StatType.PhysicalDamage, 26)),
-            Arm("greatsword", Leaning.Str, "colossus_blade", "Colossus Blade", WeaponType.Greatsword, 1, 4, 12, "bastard_sword", Royal, Mod(StatType.PhysicalDamage, 37)),
+            Arm("greatsword", Leaning.Str, "bastard_sword", "Bastard Sword", WeaponType.Greatsword, 1, 4, 1, null, Plain, Mod(StatType.PhysicalDamage, 14)),
+            Arm("greatsword", Leaning.Str, "claymore", "Claymore", WeaponType.Greatsword, 1, 4, 4, "bastard_sword", Steel, Mod(StatType.PhysicalDamage, 23)),
+            Arm("greatsword", Leaning.Str, "zweihander", "Zweihander", WeaponType.Greatsword, 1, 4, 8, "bastard_sword", Gilded, Mod(StatType.PhysicalDamage, 35)),
+            Arm("greatsword", Leaning.Str, "colossus_blade", "Colossus Blade", WeaponType.Greatsword, 1, 4, 12, "bastard_sword", Royal, Mod(StatType.PhysicalDamage, 50)),
             Arm("greataxe", Leaning.Str, "woodsplitter", "Woodsplitter", WeaponType.Greataxe, 2, 4, 1, null, Plain, Mod(StatType.PhysicalDamage, 12)),
             Arm("greataxe", Leaning.Str, "double_axe", "Double Axe", WeaponType.Greataxe, 2, 4, 4, "woodsplitter", Steel, Mod(StatType.PhysicalDamage, 20)),
             Arm("greataxe", Leaning.Str, "headsman_axe", "Headsman Axe", WeaponType.Greataxe, 2, 4, 8, "woodsplitter", Gilded, Mod(StatType.PhysicalDamage, 30)),
@@ -389,6 +389,9 @@ namespace PoeClone.Inventory
             Aff(StatType.Armour, 10, 40, true, Armour),
             Aff(StatType.Evasion, 10, 40, true, Armour),
             Aff(StatType.BlockChance, 3, 8, false, ItemType.Shield),
+            Aff(StatType.AvoidStun, 3, 7, false, ItemType.Helmet, ItemType.BodyArmour, ItemType.Belt, ItemType.Shield).Weighted(0.55f),
+            // Early accessory rolls need to matter beside weapon base damage; the bonus tapers
+            // from 2.5x at item level 1 to 1.5x by Frozen Hollow's level 10 drops.
             Aff(StatType.PhysicalDamage, 1, 3, true, ItemType.Gloves, ItemType.Ring, ItemType.Amulet, ItemType.Quiver),
             Aff(StatType.PhysicalDamage, 3, 8, true, ItemType.Weapon).Only(LightWeapons),
             Aff(StatType.PhysicalDamage, 6, 15, true, ItemType.Weapon).Only(GreatWeapons),
@@ -763,7 +766,10 @@ namespace PoeClone.Inventory
                 if (b.Type == ItemType.Weapon && a.Weapons != null && Array.IndexOf(a.Weapons, b.WeaponType) < 0)
                     continue;
                 float aMin = Mathf.Max(1f, a.Min);
-                float aMax = SkillGrants.IsGrant(stat) ? SkillGrants.MaxDropLevel : Mathf.Max(1f, Mathf.Round(a.ScalesWithLevel ? a.Max * topScale : a.Max));
+                float maxScale = a.ScalesWithLevel ? topScale : 1f;
+                if (a.Stat == StatType.PhysicalDamage && b.Type != ItemType.Weapon)
+                    maxScale *= 1.5f;
+                float aMax = SkillGrants.IsGrant(stat) ? SkillGrants.MaxDropLevel : Mathf.Max(1f, Mathf.Round(a.Max * maxScale));
                 min = min == null ? aMin : Mathf.Min(min.Value, aMin);
                 max = max == null ? aMax : Mathf.Max(max.Value, aMax);
             }
@@ -913,6 +919,8 @@ namespace PoeClone.Inventory
                     value = a.Min + (float)rng.NextDouble() * (a.Max - a.Min);
                     if (a.ScalesWithLevel)
                         value *= levelScale;
+                    if (a.Stat == StatType.PhysicalDamage && b.Type != ItemType.Weapon)
+                        value *= 2.5f - Mathf.Min(1f, (level - 1f) / 9f);
                 }
 
                 // (Tooltips list skills first whatever their order here.)
