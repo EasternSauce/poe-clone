@@ -523,7 +523,7 @@ namespace PoeClone.UI
                 runImage.color = VirtualInput.Sprint ? RunOnColor : ControlColor;
             };
 
-            // Menu: a column at the top right. The inventory panel shifts left to clear it.
+            // Menus stay at the edges, clear of the combat buttons and the left HUD.
             RectTransform menu = UiKit.NewRect("Menu", canvas.transform);
             UiKit.Stretch(menu, 0f);
             menuRoot = menu.gameObject;
@@ -531,14 +531,14 @@ namespace PoeClone.UI
             Image bag = NewRoundButton("Bag", menu, Vector2.one, new Vector2(-70f, -70f), 96f, "BAG");
             bag.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ToggleInventory();
 
-            Image character = NewRoundButton("Character", menu, Vector2.one, new Vector2(-70f, -180f), 96f, "CHAR");
+            Image character = NewRoundButton("Character", menu, Vector2.one, new Vector2(-180f, -70f), 96f, "CHAR");
             character.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ToggleCharacter();
 
-            Image skillsButton = NewRoundButton("Skills", menu, Vector2.one, new Vector2(-70f, -290f), 96f, "SKL");
+            Image skillsButton = NewRoundButton("Skills", menu, Vector2.one, new Vector2(-70f, -180f), 96f, "SKL");
             skillsButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ToggleSkills();
             TouchMode.AddBlocker(skillsButton.rectTransform);
 
-            Image chat = NewRoundButton("Chat", menu, Vector2.one, new Vector2(-70f, -400f), 96f, "CHAT");
+            Image chat = NewRoundButton("Chat", menu, Vector2.one, new Vector2(-180f, -180f), 96f, "CHAT");
             chat.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ToggleChat();
 
             Image dot = UiKit.NewImage("Unread", chat.rectTransform, UnreadColor);
@@ -553,15 +553,15 @@ namespace PoeClone.UI
             TouchMode.AddBlocker(character.rectTransform);
             TouchMode.AddBlocker(chat.rectTransform);
 
-            Image tree = NewRoundButton("Tree", menu, Vector2.one, new Vector2(-180f, -70f), 96f, "TREE");
+            Image tree = NewRoundButton("Tree", menu, new Vector2(0f, 1f), new Vector2(350f, -58f), 96f, "TREE");
             tree.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TogglePassives();
             TouchMode.AddBlocker(tree.rectTransform);
 
-            Image town = NewRoundButton("Town", menu, Vector2.one, new Vector2(-180f, -180f), 96f, "TOWN");
+            Image town = NewRoundButton("Town", menu, new Vector2(0f, 1f), new Vector2(460f, -58f), 96f, "TOWN");
             town.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TownPortal.Pressed = true;
             TouchMode.AddBlocker(town.rectTransform);
 
-            Image settings = NewRoundButton("Settings", canvas.transform, Vector2.one, new Vector2(-180f, -290f), 96f, "SETTINGS");
+            Image settings = NewRoundButton("Settings", canvas.transform, new Vector2(0f, 1f), new Vector2(570f, -58f), 96f, "SETTINGS");
             settings.GetComponentInChildren<Text>().fontSize = 16;
             settings.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {

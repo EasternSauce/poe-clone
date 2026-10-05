@@ -52,7 +52,7 @@ namespace PoeClone.UI
 
         private void Update()
         {
-            if (log == null && QuestLog.Instance != null && QuestLog.Instance.enabled)
+            if (log == null && QuestLog.Instance != null)
             {
                 log = QuestLog.Instance;
                 log.Changed += MarkDirty;
@@ -61,7 +61,7 @@ namespace PoeClone.UI
 
             var session = GameSessionController.Instance;
             bool spectator = session != null && session.Role == SessionRole.Spectator;
-            if (log == null || spectator)
+            if (log == null || (spectator && !log.HasReplicaState))
             {
                 back.gameObject.SetActive(false);
                 return;
@@ -96,7 +96,7 @@ namespace PoeClone.UI
                            SkillBarUI.IsOpen || DialogueUI.IsOpen || PassiveTreeUI.IsOpen;
             back.gameObject.SetActive(text.text.Length > 0 && !covered);
 
-            // Clear of the touch menu buttons (two columns down the right edge).
+            // Clear of the touch menu buttons along the right edge.
             back.rectTransform.anchoredPosition = new Vector2(TouchMode.Active ? -250f : -16f, -16f - MinimapUI.Bottom);
         }
 

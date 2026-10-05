@@ -4,6 +4,7 @@ using UnityEngine;
 using PoeClone.Enemies;
 using PoeClone.Inventory;
 using PoeClone.Player;
+using PoeClone.Network.Replication;
 using PoeClone.UI;
 using PoeClone.World;
 
@@ -31,6 +32,7 @@ namespace PoeClone.Quests
 
         /// <summary>Any quest taken, advanced, completed or handed in.</summary>
         public event Action Changed;
+        public bool HasReplicaState { get; private set; }
 
         private void Awake()
         {
@@ -108,6 +110,23 @@ namespace PoeClone.Quests
             }
             foreach (int area in visitedAreas)
                 visited.Add(area);
+            Changed?.Invoke();
+        }
+
+        /// <summary>Replace this disabled spectator log with the watched player's quest progress.</summary>
+        public void ApplyReplicaState(string[] doneIds, QuestProgressState[] activeProgress)
+        {
+            done.Clear();
+            active.Clear();
+            HasReplicaState = doneIds != null && activeProgress != null;
+            if (HasReplicaState)
+            {
+                foreach (string id in doneIds)
+                    if (QuestBook.Get(id) != null) done.Add(id);
+                foreach (QuestProgressState entry in activeProgress)
+                    if (entry != null && QuestBook.Get(entry.id) != null && !done.Contains(entry.id))
+                        active[entry.id] = entry.progress;
+            }
             Changed?.Invoke();
         }
 

@@ -239,6 +239,7 @@ namespace PoeClone.Network
             currentPid = int.MinValue;
             gearApplied = false;
             gearPid = int.MinValue;
+            playerStats?.GetComponent<Quests.QuestLog>()?.ApplyReplicaState(null, null);
             SpectatorMirror.ClearRemote();
             ClearMenus();
 
@@ -530,6 +531,7 @@ namespace PoeClone.Network
         {
             gearApplied = true;
             gearPid = g.pid;
+            playerStats?.GetComponent<Quests.QuestLog>()?.ApplyReplicaState(g.qdone, g.qactive);
             if (playerInventory == null)
                 return;
 

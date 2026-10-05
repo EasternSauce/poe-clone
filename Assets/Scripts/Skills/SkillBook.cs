@@ -112,7 +112,7 @@ namespace PoeClone.Skills
     public static class SkillBook
     {
         /// <summary>Bar slots: Q E R F, mouse buttons, then 1 2 3 4 (appended to preserve saves).</summary>
-        public const int SlotCount = 12;
+        public const int SlotCount = 11;
 
         /// <summary>The slots the touch layout has round buttons for (the first four).</summary>
         public const int TouchSlotCount = 4;

@@ -372,7 +372,7 @@ namespace PoeClone.World
             Claim(c + new Vector3(30f, 0f, 0f), 3f);
 
             // The crypt, north of the path.
-            Vector3 crypt = c + new Vector3(0f, 0f, 20f);
+            Vector3 crypt = c + new Vector3(0f, 0f, 30f);
             Box(t, crypt + new Vector3(0f, 2f, 0f), new Vector3(7f, 4f, 7f), kit.Mat("TombstoneDark"));
             Box(t, crypt + new Vector3(0f, 4.4f, 0f), new Vector3(7.8f, 0.8f, 7.8f), kit.Mat("Tombstone"));
             Box(t, crypt + new Vector3(0f, 1.3f, -3.55f), new Vector3(2f, 2.6f, 0.2f), kit.Mat("Charred"), solid: false);
@@ -414,8 +414,9 @@ namespace PoeClone.World
             Transform t = Group("Ruins");
 
             // The temple dais, with a ring of columns (some broken) and an altar.
-            Box(t, c + new Vector3(0f, 0.07f, 8f), new Vector3(20f, 0.14f, 20f), kit.Mat("Sandstone"), solid: false);
-            Vector3 temple = c + new Vector3(0f, 0f, 8f);
+            // Keep the Warlord's dais well beyond the waystone arrival and its aggro range.
+            Vector3 temple = c + new Vector3(0f, 0f, 22f);
+            Box(t, temple + new Vector3(0f, 0.07f, 0f), new Vector3(20f, 0.14f, 20f), kit.Mat("Sandstone"), solid: false);
             for (int k = 0; k < 10; k++)
             {
                 float rad = k * 36f * Mathf.Deg2Rad;
@@ -480,7 +481,7 @@ namespace PoeClone.World
             Vector3 c = Centers[Frozen];
             Transform t = Group("Frozen");
 
-            Vector3 throne = c + new Vector3(0f, 0f, 24f);
+            Vector3 throne = c + new Vector3(0f, 0f, 28f);
             Cyl(t, throne + Vector3.up * 0.04f, 9f, 0.08f, kit.Mat("Ice"), solid: false);
             for (int k = 0; k < 12; k++)
             {

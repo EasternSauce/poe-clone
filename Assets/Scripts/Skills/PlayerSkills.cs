@@ -17,15 +17,22 @@ namespace PoeClone.Skills
     /// level (the highest any worn item grants, plus "+N to level" gear). A staff's first spell is
     /// its attack: <see cref="PlayerCombat"/> casts it on left click / the aim stick instead of
     /// swinging (<see cref="MainSkill"/>, <see cref="TrySpendMain"/>, <see cref="ReleaseMain"/>).
-    /// Every other skill goes in a bar slot: Q, E, R, F, then the right, middle, back and forward
-    /// mouse buttons (touch has round buttons for the first four). A skill that new gear grants
-    /// drops into the first free slot; the skills panel (K) moves them around. Each costs mana and
+    /// Every other skill goes in a bar slot: Q, E, R, F, 1-4, then right, back and forward mouse
+    /// buttons (touch has round buttons for the first four). A skill that new gear grants
+    /// drops into the first free slot; the bar picker moves them around. Each costs mana and
     /// has a cooldown, except bow skills, which are toggled (see PlayerSkills.Bow.cs). Aiming works like attacks: the mouse on desktop, <see cref="VirtualInput.Aim"/>
     /// on touch. Self-added by <see cref="PlayerController"/>.
     /// </summary>
     public partial class PlayerSkills : MonoBehaviour
     {
-        private static readonly string[] SlotLabels = { "Q", "E", "R", "F", "RMB", "MMB", "M4", "M5", "1", "2", "3", "4" };
+        private const string DashTowardsCursorKey = "PoeClone.DashTowardsCursor";
+        public static bool DashTowardsCursor
+        {
+            get => PlayerPrefs.GetInt(DashTowardsCursorKey, 1) != 0;
+            set { PlayerPrefs.SetInt(DashTowardsCursorKey, value ? 1 : 0); PlayerPrefs.Save(); }
+        }
+
+        private static readonly string[] SlotLabels = { "Q", "E", "R", "F", "1", "2", "3", "4", "RMB", "M4", "M5" };
         private static readonly Key[] SlotKeys = { Key.Q, Key.E, Key.R, Key.F, Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4 };
 
         private readonly SkillId?[] slots = new SkillId?[SkillBook.SlotCount];
@@ -418,7 +425,7 @@ namespace PoeClone.Skills
         }
 
         /// <summary>
-        /// Puts a skill in a slot (taking it out of any other slot). Not the staff's attack. A skill
+        /// Puts a skill in a slot. Not the staff's attack. A skill
         /// the gear doesn't grant right now may still be placed (a loaded save, a spectator's copy):
         /// it waits there, greyed out, until gear grants it again.
         /// </summary>
@@ -427,14 +434,8 @@ namespace PoeClone.Skills
             if (slot < 0 || slot >= slots.Length || MainSkill == id)
                 return;
 
-            int binding = slot < 4 ? slot + 4 : slot < 8 ? slot + 4 : slot - 8;
-            if (enabled) PlayerPotions.ClearBindingAt(binding);
+            if (enabled) PlayerPotions.SetPotionAt(slot, 0);
 
-            for (int k = 0; k < slots.Length; k++)
-            {
-                if (slots[k] == id)
-                    slots[k] = null;
-            }
             slots[slot] = id;
             Changed?.Invoke();
         }
@@ -498,15 +499,13 @@ namespace PoeClone.Skills
                 int free = -1;
                 for (int k = 0; k < slots.Length; k++)
                 {
-                    int binding = k < 4 ? k + 4 : k < 8 ? k + 4 : k - 8;
-                    if (slots[k] == null && !PlayerPotions.IsBoundTo(binding)) { free = k; break; }
+                    if (slots[k] == null && PlayerPotions.PotionAt(k) == 0) { free = k; break; }
                 }
                 if (free < 0)
                 {
                     for (int k = 0; k < slots.Length && free < 0; k++)
                     {
-                        int binding = k < 4 ? k + 4 : k < 8 ? k + 4 : k - 8;
-                        if (!PlayerPotions.IsBoundTo(binding) && slots[k] != null && !IsUnlocked(slots[k].Value))
+                        if (PlayerPotions.PotionAt(k) == 0 && slots[k] != null && !IsUnlocked(slots[k].Value))
                             free = k;
                     }
                 }
@@ -543,8 +542,7 @@ namespace PoeClone.Skills
                 for (int k = 0; k < SlotKeys.Length; k++)
                 {
                     int slot = k < 4 ? k : k + 4;
-                    int binding = k < 4 ? k + 4 : k - 4;
-                    if (!PlayerPotions.IsBoundTo(binding) && keyboard[SlotKeys[k]].wasPressedThisFrame)
+                    if (PlayerPotions.PotionAt(slot) == 0 && keyboard[SlotKeys[k]].wasPressedThisFrame)
                         pressed = slot;
                 }
             }
@@ -554,10 +552,9 @@ namespace PoeClone.Skills
             Mouse mouse = Mouse.current;
             if (pressed < 0 && mouse != null && free && !TouchMode.Active && !PlayerController.IsPointerOverUi() && !DialogueUI.IsOpen)
             {
-                if (!PlayerPotions.IsBoundTo(8) && mouse.rightButton.wasPressedThisFrame) pressed = 4;
-                else if (!PlayerPotions.IsBoundTo(9) && mouse.middleButton.wasPressedThisFrame) pressed = 5;
-                else if (!PlayerPotions.IsBoundTo(10) && mouse.backButton.wasPressedThisFrame) pressed = 6;
-                else if (!PlayerPotions.IsBoundTo(11) && mouse.forwardButton.wasPressedThisFrame) pressed = 7;
+                if (PlayerPotions.PotionAt(8) == 0 && mouse.rightButton.wasPressedThisFrame) pressed = 8;
+                else if (PlayerPotions.PotionAt(9) == 0 && mouse.backButton.wasPressedThisFrame) pressed = 9;
+                else if (PlayerPotions.PotionAt(10) == 0 && mouse.forwardButton.wasPressedThisFrame) pressed = 10;
             }
 
             if (pressed >= 0)
@@ -717,9 +714,9 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.Dash:
-                    Vector3 dir = TouchMode.Active ? controller.InputDirection() : AimDirection();
+                    Vector3 dir = TouchMode.Active || !DashTowardsCursor ? controller.InputDirection() : AimDirection();
                     if (dir.sqrMagnitude < 0.01f)
-                        dir = AimDirection();
+                        dir = TouchMode.Active || DashTowardsCursor ? AimDirection() : transform.forward;
                     SkillEffects.Shockwave(transform.position, 1.2f, skill.Color, 0.25f);
                     Record(skill, level);
                     controller.Dash(dir, 7f + 0.35f * (level - 1), 0.18f);
@@ -766,7 +763,9 @@ namespace PoeClone.Skills
                 case SkillId.SummonViper:
                     if (attackAnimator != null)
                         attackAnimator.PlayAttack(WeaponType.Unarmed);
-                    Minion.Summon(transform, MinionKindOf(skill.Id), level);
+                    float summonDistance = TouchMode.Active ? 3f : AimDistance() ?? 3f;
+                    Minion.Summon(transform, MinionKindOf(skill.Id), level,
+                        transform.position + AimDirection() * summonDistance);
                     Record(skill, level, 1.3f);
                     break;
 

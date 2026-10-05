@@ -25,6 +25,8 @@ namespace PoeClone.CameraSystem
         private static float shakeStrength;
         private static float shakeSeconds;
         private static float shakeLeft;
+        /// <summary>Steady camera tremor while a large encounter hazard is present.</summary>
+        public static float SustainedShake;
 
         private Vector3 appliedShake;
 
@@ -52,6 +54,7 @@ namespace PoeClone.CameraSystem
         private static void ResetStatics()
         {
             shakeLeft = 0f;
+            SustainedShake = 0f;
             Zoom = 1f;
         }
 
@@ -74,10 +77,14 @@ private void LateUpdate()
             );
 
             appliedShake = Vector3.zero;
+            float amount = Mathf.Max(0f, SustainedShake);
             if (shakeLeft > 0f)
             {
                 shakeLeft -= Time.deltaTime;
-                float amount = shakeStrength * Mathf.Clamp01(shakeLeft / shakeSeconds);
+                amount += shakeStrength * Mathf.Clamp01(shakeLeft / shakeSeconds);
+            }
+            if (amount > 0f)
+            {
                 appliedShake = transform.rotation * new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * amount;
                 transform.position += appliedShake;
             }

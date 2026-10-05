@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using PoeClone.Inventory;
 using PoeClone.Network;
 using PoeClone.Player;
+using PoeClone.Skills;
 
 namespace PoeClone.UI
 {
@@ -111,7 +112,13 @@ namespace PoeClone.UI
             UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(W-60,H-152));
             body.text="Chat\n\nShow chat messages and chat controls";
             Button("ChatToggle",content,"Chat: "+(ChatUI.Enabled?"ON":"OFF"),new Vector2(0,-100),new Vector2(220,48),()=>{ChatUI.SetEnabled(!ChatUI.Enabled);ShowSettings();});
-            ResizeBody(180);
+            if (!TouchMode.Active)
+            {
+                Button("DashDirection",content,"Dash: "+(PlayerSkills.DashTowardsCursor ? "Cursor" : "Movement"),
+                    new Vector2(0,-170),new Vector2(240,48),()=>{PlayerSkills.DashTowardsCursor=!PlayerSkills.DashTowardsCursor;ShowSettings();});
+                ResizeBody(250);
+            }
+            else ResizeBody(180);
         }
         private void ShowHistory()
         {
@@ -133,7 +140,9 @@ namespace PoeClone.UI
             selected=Mathf.Clamp(index,0,entries.Length-1); if(entries.Length==0)return;
             body.text="<b>"+Escape(entries[selected].version)+"</b>\n\n"+entries[selected].notes;
             Canvas.ForceUpdateCanvases();
-            notesContent.sizeDelta=new Vector2(0,Mathf.Max(notesViewport.rect.height,body.preferredHeight+12));
+            float textHeight=body.preferredHeight;
+            body.rectTransform.sizeDelta=new Vector2(body.rectTransform.sizeDelta.x,textHeight);
+            notesContent.sizeDelta=new Vector2(0,Mathf.Max(notesViewport.rect.height,textHeight+12));
             notesScroll.verticalNormalizedPosition=1;
         }
         private void ClearEntries()

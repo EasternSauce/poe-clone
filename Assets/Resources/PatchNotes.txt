@@ -1,6 +1,24 @@
 version: 2026-10-05-archer-snake-dash
+<b>Spectating</b>
+- Spectators see the watched player's current quests, objectives, and progress. Switching players updates the tracker.
+- The player switcher moves below the boss health bar while a boss bar is visible.
+<b>Shed Heart and field bosses</b>
+- Shed Heart has its own hand-drawn anatomical heart icon, a short item name with use instructions in its description, and stacks of up to 100. Drag one stack onto another to combine them; extra hearts stay on the cursor. Using one consumes a single heart.
+- The Graveyard, Ashen Ruins, and Frozen Hollow field bosses stand farther from their waystone arrivals.
+<b>Controls</b>
+- Desktop skill keys sit above their icons, with 1-4 above Q/E/R/F. PC Settings can switch Dash between cursor and movement direction.
+- Summons appear toward the cursor, up to six metres away, and stop on the near side of walls.
+- PC skill bar slots now show Q/E/R/F, then 1-4, then right mouse, mouse button 4 and mouse button 5. Middle mouse is no longer a skill binding.
+- Click any PC bar slot to assign any gear-granted skill, a health potion, a mana potion, or leave it empty. Skills and potions can each occupy multiple slots. The K screen no longer opens on PC; existing assignments carry over to the reordered bar.
+<b>Boss, summons, and settings</b>
+- The camera trembles for the full duration of the pursuing colossal serpent in phase three.
+- Skeleton mages gain a little attack speed with summon level. Summoning at an army or kind limit replaces the oldest minion.
+- Patch history notes remain visible while scrolling over them in Settings.
 <b>Mobile controls</b>
 - Added a Settings button to the touch menu.
+- The passive tree now zooms with a two-finger pinch; its +/- buttons are hidden on mobile.
+- Tree, Town, and Settings now sit along the upper edge, clear of the combat skills.
+- Bag, Character, Skills, and Chat form a compact 2x2 group in the upper right.
 <b>Final boss arena and drops</b>
 - The Shepherd waits immune and still on entry, speaks when approached, then begins the fight. Its health bar remains visible across the arena; phase-three zoom ends on death.
 - The Carrion Saint's front arms attach to its torso. Its wider charge starts sooner, travels toward the player for up to 40 metres, and recovers immediately. It closes farther for basic attacks, which also reach farther.

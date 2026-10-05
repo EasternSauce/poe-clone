@@ -22,6 +22,7 @@ namespace PoeClone.Network
             {
                 i = item.Id,
                 n = item.Name,
+                ct = item.StackCount,
                 t = (int)item.Type,
                 w = item.Width,
                 h = item.Height,
@@ -44,7 +45,7 @@ namespace PoeClone.Network
 
             var record = new ItemRecord
             {
-                id = g.i, name = g.n, type = g.t, w = g.w, h = g.h, weapon = g.wp, rarity = g.q, cape = g.c != 0,
+                id = g.i, name = g.n, count = g.ct, type = g.t, w = g.w, h = g.h, weapon = g.wp, rarity = g.q, cape = g.c != 0,
                 r = tint.r, g = tint.g, b = tint.b, a = tint.a,
                 mods = new List<ModRecord>()
             };
@@ -61,7 +62,7 @@ namespace PoeClone.Network
         {
             if (item == null)
                 return string.Empty;
-            var sb = new System.Text.StringBuilder(item.Id).Append('|').Append(item.Name);
+            var sb = new System.Text.StringBuilder(item.Id).Append('|').Append(item.Name).Append('|').Append(item.StackCount);
             foreach (StatModifier m in item.Modifiers)
                 sb.Append('|').Append((int)m.Stat).Append(':').Append(m.Value.ToString(CultureInfo.InvariantCulture));
             return sb.ToString();

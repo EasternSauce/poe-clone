@@ -13,6 +13,7 @@ namespace PoeClone.Network.Replication
     {
         public string i;    // base id (icon / look)
         public string n;    // name
+        public int ct;      // stack count
         public int t;       // ItemType
         public int w;
         public int h;
@@ -23,6 +24,13 @@ namespace PoeClone.Network.Replication
         public float[] m;   // modifiers as (stat, value) pairs
         public int x;       // grid position, or the EquipSlot for worn gear
         public int y;
+    }
+
+    [Serializable]
+    public class QuestProgressState
+    {
+        public string id;
+        public int progress;
     }
 
     [Serializable]
@@ -58,6 +66,8 @@ namespace PoeClone.Network.Replication
         public string[] pas;     // passives taken
         public int rc;           // passive respec charges
         public int[] sk;         // skill per slot (SkillId), -1 = empty
+        public string[] qdone;   // quests handed in
+        public QuestProgressState[] qactive; // quests taken, including those ready to hand in
     }
 
     /// <summary>

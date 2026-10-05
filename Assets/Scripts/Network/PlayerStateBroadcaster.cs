@@ -6,6 +6,7 @@ using PoeClone.Enemies;
 using PoeClone.Inventory;
 using PoeClone.Network.Replication;
 using PoeClone.Player;
+using PoeClone.Quests;
 using PoeClone.Skills;
 using PoeClone.UI;
 using PoeClone.Visuals;
@@ -40,6 +41,7 @@ namespace PoeClone.Network
         private CharacterPageUI characterPage;
         private PlayerPassives passives;
         private PlayerSkills skills;
+        private QuestLog quests;
 
         private readonly List<EnemyHealth> enemies = new List<EnemyHealth>();
         private readonly List<EntityState> enemyStates = new List<EntityState>();
@@ -115,6 +117,7 @@ namespace PoeClone.Network
                 stagger = stats.GetComponent<Stagger>();
                 passives = stats.GetComponent<PlayerPassives>();
                 skills = stats.GetComponent<PlayerSkills>();
+                quests = stats.GetComponent<QuestLog>();
             }
 
             if (inventoryUI == null)
@@ -302,6 +305,15 @@ namespace PoeClone.Network
                 SkillId? id = skills != null ? skills.Slot(k) : null;
                 gear.sk[k] = id.HasValue ? (int)id.Value : -1;
             }
+            var done = new List<string>();
+            var active = new Dictionary<string, int>();
+            if (quests != null)
+                quests.Export(done, active, new List<int>(), new List<string>());
+            gear.qdone = done.ToArray();
+            var progress = new List<QuestProgressState>();
+            foreach (var pair in active)
+                progress.Add(new QuestProgressState { id = pair.Key, progress = pair.Value });
+            gear.qactive = progress.ToArray();
             return gear;
         }
 

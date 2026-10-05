@@ -96,6 +96,34 @@ namespace PoeClone.Inventory
             if (item == null || Contains(item))
                 return false;
 
+            if (item.MaxStack > 1)
+            {
+                int room = 0;
+                foreach (PlacedItem p in placed)
+                    if (p.Item.Id == item.Id)
+                        room += p.Item.MaxStack - p.Item.StackCount;
+                bool freeCell = false;
+                for (int y = 0; y <= Height - item.Height && !freeCell; y++)
+                    for (int x = 0; x <= Width - item.Width && !freeCell; x++)
+                        freeCell = InBounds(item, x, y) && GetOverlapping(item, x, y).Count == 0;
+                if (room + (freeCell ? item.MaxStack : 0) < item.StackCount)
+                    return false;
+
+                foreach (PlacedItem p in placed)
+                {
+                    if (p.Item.Id != item.Id) continue;
+                    int moved = Math.Min(item.StackCount, p.Item.MaxStack - p.Item.StackCount);
+                    p.Item.StackCount += moved;
+                    item.StackCount -= moved;
+                    if (item.StackCount == 0)
+                    {
+                        Changed?.Invoke();
+                        return true;
+                    }
+                }
+                if (room > 0) Changed?.Invoke();
+            }
+
             for (int y = 0; y <= Height - item.Height; y++)
             {
                 for (int x = 0; x <= Width - item.Width; x++)
@@ -124,6 +152,16 @@ namespace PoeClone.Inventory
 
             if (overlapping.Count == 1)
             {
+                ItemData target = overlapping[0].Item;
+                if (item.MaxStack > 1 && target.Id == item.Id && target.StackCount < target.MaxStack)
+                {
+                    int moved = Math.Min(item.StackCount, target.MaxStack - target.StackCount);
+                    target.StackCount += moved;
+                    item.StackCount -= moved;
+                    replaced = item.StackCount > 0 ? item : null;
+                    Changed?.Invoke();
+                    return true;
+                }
                 replaced = overlapping[0].Item;
                 placed.Remove(overlapping[0]);
             }
@@ -157,5 +195,7 @@ namespace PoeClone.Inventory
             }
             return false;
         }
+
+        public void NotifyChanged() => Changed?.Invoke();
     }
 }

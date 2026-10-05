@@ -3,6 +3,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 using UnityEngine.UI;
 using PoeClone.Inventory;
 using PoeClone.Network;
@@ -14,7 +15,7 @@ namespace PoeClone.UI
     /// The passive tree panel (P, or the TREE button on touch): every passive as a circle, linked
     /// to its neighbours. Click/tap one that can be taken to take it; select a taken one at the end
     /// of a path to give it back. Hovering (or tapping) shows what a passive gives at the bottom.
-    /// The tree is bigger than the panel: drag to move around it, scroll (or the +/- buttons) to zoom.
+    /// The tree is bigger than the panel: drag to move around it, scroll or pinch to zoom.
     /// Installed by GameSessionController.
     /// </summary>
     public class PassiveTreeUI : MonoBehaviour
@@ -56,6 +57,9 @@ namespace PoeClone.UI
         private Text infoText;
         private Image refundButton;
         private Image resetButton;
+        private Image zoomInButton;
+        private Image zoomOutButton;
+        private Image centreButton;
         private Text resetLabel;
         private PlayerPassives passives;
         private PassiveNode selected;
@@ -79,6 +83,8 @@ namespace PoeClone.UI
             if (open)
                 SkillBarUI.SetOpen(false);
             instance.panelRoot.SetActive(open);
+            if (!open)
+                instance.ResetPinch();
             instance.dirty = true;
             if (open && !instance.viewFitted)
             {
@@ -93,11 +99,18 @@ namespace PoeClone.UI
         private RectTransform viewRect;
         private bool viewFitted;
         private RectTransform content;
+        private bool pinching;
+        private bool suppressPinchClicks;
+        private int pinchEndedFrame = -100;
+        private int pinchIdA, pinchIdB;
+        private Vector2 pinchMiddle;
+        private float pinchDistance;
 
         private void Awake()
         {
             instance = this;
             Build();
+            TouchMode.Changed += UpdateZoomButtons;
             panelRoot.SetActive(false);
 
         }
@@ -106,6 +119,7 @@ namespace PoeClone.UI
         {
             if (passives != null)
                 passives.Changed -= MarkDirty;
+            TouchMode.Changed -= UpdateZoomButtons;
             if (instance == this)
                 instance = null;
         }
@@ -141,6 +155,9 @@ namespace PoeClone.UI
             }
 
             UpdateBadge();
+
+            if (panelRoot.activeSelf)
+                UpdatePinch();
 
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && !UiKit.IsTypingInTextField())
@@ -183,7 +200,12 @@ namespace PoeClone.UI
                 dirty = true;
             }
             if (!open)
+            {
+                ResetPinch();
                 return;
+            }
+
+            UpdatePinch();
 
             if (remote && SpectatorMirror.FollowingPlayer)
             {
@@ -285,7 +307,7 @@ namespace PoeClone.UI
                 infoText.text = PlayerHUD.ControlsHidden ? "" :
                     "<color=#" + UiKit.Hex(UiKit.DimText) + ">Point at a passive to see what it gives. " +
                     (TouchMode.Active
-                        ? "Tap one next to a taken passive to take it. Drag to look around, +/- to zoom."
+                        ? "Tap one next to a taken passive to take it. Drag to look around, pinch to zoom."
                         : "Click one next to a taken passive to take it; right-click a taken one at the end of a path to give it back. Drag to look around, scroll to zoom. (H hides this.)") +
                     "</color>";
                 refundButton.gameObject.SetActive(false);
@@ -349,7 +371,8 @@ namespace PoeClone.UI
 
         private void OnClick(PassiveNode node, PointerEventData.InputButton button)
         {
-            if (passives == null)
+            if (passives == null || (TouchMode.Active &&
+                (suppressPinchClicks || Time.frameCount <= pinchEndedFrame + 1)))
                 return;
 
             if (Spectating)
@@ -400,6 +423,79 @@ namespace PoeClone.UI
             float scale = viewRect.lossyScale.x > 0f ? viewRect.lossyScale.x : 1f;
             content.anchoredPosition += screenDelta / scale;
             ClampContent();
+        }
+
+        private void UpdatePinch()
+        {
+            if (!TouchMode.Active || Touchscreen.current == null)
+                return;
+
+            TouchControl first = null, second = null;
+            foreach (TouchControl touch in Touchscreen.current.touches)
+            {
+                if (!touch.press.isPressed)
+                    continue;
+                if (first == null) first = touch;
+                else { second = touch; break; }
+            }
+
+            if (second == null)
+            {
+                pinching = false;
+                if (first == null && suppressPinchClicks)
+                {
+                    suppressPinchClicks = false;
+                    pinchEndedFrame = Time.frameCount;
+                }
+                return;
+            }
+
+            Vector2 a = first.position.ReadValue();
+            Vector2 b = second.position.ReadValue();
+            if (!pinching)
+            {
+                if (!RectTransformUtility.RectangleContainsScreenPoint(viewRect, a) ||
+                    !RectTransformUtility.RectangleContainsScreenPoint(viewRect, b))
+                    return;
+                pinching = true;
+                suppressPinchClicks = true;
+                pinchIdA = first.touchId.ReadValue();
+                pinchIdB = second.touchId.ReadValue();
+                pinchMiddle = (a + b) * 0.5f;
+                pinchDistance = Vector2.Distance(a, b);
+                return;
+            }
+
+            if (first.touchId.ReadValue() != pinchIdA || second.touchId.ReadValue() != pinchIdB)
+            {
+                pinching = false;
+                return;
+            }
+
+            Vector2 middle = (a + b) * 0.5f;
+            float distance = Vector2.Distance(a, b);
+            if (pinchDistance > 0f && distance > 0f)
+                Zoom(distance / pinchDistance, pinchMiddle);
+            Pan(middle - pinchMiddle);
+            pinchMiddle = middle;
+            pinchDistance = distance;
+        }
+
+        private void ResetPinch()
+        {
+            if (pinching || suppressPinchClicks)
+                pinchEndedFrame = Time.frameCount;
+            pinching = false;
+            suppressPinchClicks = false;
+        }
+
+        private void UpdateZoomButtons()
+        {
+            bool touch = TouchMode.Active;
+            zoomInButton.gameObject.SetActive(!touch);
+            zoomOutButton.gameObject.SetActive(!touch);
+            TopRight(centreButton.rectTransform, new Vector2(touch ? 12f + 46f : 12f + 3f * 46f, -12f),
+                new Vector2(88f, 38f));
         }
 
         // Zooms keeping the point under the pointer (or the middle of the window) where it is.
@@ -519,7 +615,7 @@ namespace PoeClone.UI
                 }
             };
 
-            // The window the tree is seen through: drag to pan, scroll to zoom.
+            // The window the tree is seen through: drag to pan, scroll or pinch to zoom.
             Image view = UiKit.NewImage("TreeView", pr, new Color(0f, 0f, 0f, 0.18f));
             view.raycastTarget = true;
             RectTransform vr = view.rectTransform;
@@ -530,7 +626,7 @@ namespace PoeClone.UI
             view.gameObject.AddComponent<RectMask2D>();
             viewRect = view.rectTransform;
             var nav = view.gameObject.AddComponent<ViewHandler>();
-            nav.Drag = Pan;
+            nav.Drag = delta => { if (!suppressPinchClicks) Pan(delta); };
             nav.Scroll = (amount, at) => Zoom(amount > 0f ? 1.15f : 1f / 1.15f, at);
 
             var contentGo = new GameObject("TreeContent", typeof(RectTransform));
@@ -540,15 +636,15 @@ namespace PoeClone.UI
             content.sizeDelta = Vector2.zero;
             ResetView();
 
-            Image zoomIn = NewButton(pr, "ZoomIn", "+", Vector2.zero, new Vector2(38f, 38f));
-            TopRight(zoomIn.rectTransform, new Vector2(12f + 2f * 46f, -12f), new Vector2(38f, 38f));
-            zoomIn.gameObject.AddComponent<TouchPointerRelay>().Up += _ => Zoom(1.25f, null);
-            Image zoomOut = NewButton(pr, "ZoomOut", "-", Vector2.zero, new Vector2(38f, 38f));
-            TopRight(zoomOut.rectTransform, new Vector2(12f + 46f, -12f), new Vector2(38f, 38f));
-            zoomOut.gameObject.AddComponent<TouchPointerRelay>().Up += _ => Zoom(1f / 1.25f, null);
-            Image centre = NewButton(pr, "Centre", "Centre", Vector2.zero, new Vector2(88f, 38f));
-            TopRight(centre.rectTransform, new Vector2(12f + 3f * 46f, -12f), new Vector2(88f, 38f));
-            centre.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ResetView();
+            zoomInButton = NewButton(pr, "ZoomIn", "+", Vector2.zero, new Vector2(38f, 38f));
+            TopRight(zoomInButton.rectTransform, new Vector2(12f + 2f * 46f, -12f), new Vector2(38f, 38f));
+            zoomInButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => Zoom(1.25f, null);
+            zoomOutButton = NewButton(pr, "ZoomOut", "-", Vector2.zero, new Vector2(38f, 38f));
+            TopRight(zoomOutButton.rectTransform, new Vector2(12f + 46f, -12f), new Vector2(38f, 38f));
+            zoomOutButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => Zoom(1f / 1.25f, null);
+            centreButton = NewButton(pr, "Centre", "Centre", Vector2.zero, new Vector2(88f, 38f));
+            centreButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ResetView();
+            UpdateZoomButtons();
 
             // Links first, so the circles draw over them.
             var linked = new HashSet<string>();

@@ -90,6 +90,7 @@ namespace PoeClone.Enemies
             pursuit.emergenceWarning.transform.position = new Vector3(ground.x, pursuit.floorY + 0.08f, ground.z);
             pursuit.emergenceWarning.transform.localScale = new Vector3(4.2f, 0.02f, 4.2f);
             pursuit.UpdateHead(0.01f);
+            CameraSystem.CameraFollow.SustainedShake = 0.12f;
             return pursuit;
         }
 
@@ -292,6 +293,6 @@ namespace PoeClone.Enemies
             float t = segment.sqrMagnitude > 0.001f ? Mathf.Clamp01(Vector3.Dot(offset, segment) / segment.sqrMagnitude) : 0f;
             return (offset - segment * t).magnitude;
         }
-        private void OnDestroy() { Release(); if (owner != null && !owner.IsDead) owner.Immune = previousImmunity; if (mesh != null) Destroy(mesh); if (emergenceWarning != null) Destroy(emergenceWarning); }
+        private void OnDestroy() { CameraSystem.CameraFollow.SustainedShake = 0f; Release(); if (owner != null && !owner.IsDead) owner.Immune = previousImmunity; if (mesh != null) Destroy(mesh); if (emergenceWarning != null) Destroy(emergenceWarning); }
     }
 }

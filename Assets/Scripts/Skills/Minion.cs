@@ -192,11 +192,12 @@ namespace PoeClone.Skills
         // ------------------------------------------------------------------ summoning
 
         /// <summary>
-        /// Raises minions of a kind round the owner. Warriors and mages add to their type's limit
-        /// until the shared army limit is reached; then the most battered minion is replaced.
+        /// Raises minions toward a chosen point, at most six metres from the owner.
+        /// Warriors and mages add to their type's limit
+        /// until the shared army limit is reached; then the oldest minion is replaced.
         /// Wolves, the golem and viper replace their previous summon when recast.
         /// </summary>
-        public static void Summon(Transform owner, MinionKind kind, int level)
+        public static void Summon(Transform owner, MinionKind kind, int level, Vector3 target)
         {
             EnemySpawner spawner = FindAnyObjectByType<EnemySpawner>();
             if (spawner == null || spawner.EnemyPrefab == null || owner == null)
@@ -218,35 +219,53 @@ namespace PoeClone.Skills
             count = Mathf.Min(count, cap);
             for (int k = 0; k < count; k++)
             {
-                List<Minion> owned = All.FindAll(m => m.owner == owner && !m.dead);
-                if (owned.Count >= globalCap)
-                {
-                    Minion weakestArmyMember = owned[0];
-                    foreach (Minion m in owned)
-                        if (m.Life / m.MaxLife < weakestArmyMember.Life / weakestArmyMember.MaxLife)
-                            weakestArmyMember = m;
-                    weakestArmyMember.Crumble();
-                }
-
                 List<Minion> same = All.FindAll(m => m.owner == owner && m.Kind == kind && !m.dead);
                 if (same.Count >= cap)
                 {
-                    Minion weakest = same[0];
-                    foreach (Minion m in same)
-                    {
-                        if (m.Life / m.MaxLife < weakest.Life / weakest.MaxLife)
-                            weakest = m;
-                    }
-                    // Nothing to mend: the army is full and whole.
-                    if (weakest.Life >= weakest.MaxLife && kind != MinionKind.Wolf)
-                        break;
-                    weakest.Crumble();
+                    Oldest(same).Crumble();
                 }
+                List<Minion> owned = All.FindAll(m => m.owner == owner && !m.dead);
+                if (owned.Count >= globalCap)
+                    Oldest(owned).Crumble();
 
-                Vector2 r = Random.insideUnitCircle.normalized * 1.6f;
-                Vector3 at = owner.position + new Vector3(r.x, 0.3f, r.y);
+                Vector3 forward = target - owner.position;
+                forward.y = 0f;
+                float distance = Mathf.Clamp(forward.magnitude, 1.6f, 6f);
+                forward = forward.sqrMagnitude > 0.001f ? forward.normalized : owner.forward;
+                Vector3 side = new Vector3(-forward.z, 0f, forward.x);
+                float offset = count == 1 ? 0f : (k - (count - 1) * 0.5f) * 1.1f;
+                Vector3 desired = owner.position + Vector3.ClampMagnitude(forward * distance + side * offset, 6f);
+                Vector3 at = ClearSummonPoint(owner, desired) + Vector3.up * 0.3f;
                 Create(spawner.EnemyPrefab, owner, kind, at, level, sheet);
             }
+        }
+
+        private static Vector3 ClearSummonPoint(Transform owner, Vector3 desired)
+        {
+            Vector3 from = owner.position + Vector3.up;
+            Vector3 to = new Vector3(desired.x, owner.position.y + 1f, desired.z);
+            Vector3 path = to - from;
+            float distance = path.magnitude;
+            float clear = distance;
+            foreach (RaycastHit hit in Physics.SphereCastAll(from, 0.35f, path.normalized, distance,
+                         Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.collider.transform.IsChildOf(owner) || hit.collider.GetComponentInParent<EnemyHealth>() != null ||
+                    hit.collider.GetComponentInParent<Minion>() != null || hit.normal.y > 0.6f)
+                    continue;
+                clear = Mathf.Min(clear, Mathf.Max(0.8f, hit.distance - 0.6f));
+            }
+            Vector3 at = from + path.normalized * clear;
+            at.y = owner.position.y;
+            return at;
+        }
+
+        private static Minion Oldest(List<Minion> minions)
+        {
+            Minion oldest = minions[0];
+            foreach (Minion minion in minions)
+                if (minion.Id < oldest.Id) oldest = minion;
+            return oldest;
         }
 
         /// <summary>Dismiss this owner's living summons, for example when their summoning weapon is removed.</summary>
@@ -291,13 +310,15 @@ namespace PoeClone.Skills
             minion.attack = model.GetComponent<CharacterAttackAnimator>() ?? model.gameObject.AddComponent<CharacterAttackAnimator>();
 
             float haste = 1f + Mathf.Clamp(Stat(sheet, StatType.MinionSpeed), -50f, 100f) / 100f;
+            float attackHaste = haste * (kind == MinionKind.Mage
+                ? 1f + Mathf.Min(0.3f, 0.02f * (Mathf.Max(1, level) - 1)) : 1f);
             minion.MaxLife = Mathf.Max(1f, LifeFor(kind, level, sheet));
             minion.Life = minion.MaxLife;
             minion.damage = DamageFor(kind, level, sheet);
-            minion.attackCooldown = profile.Cooldown / haste;
+            minion.attackCooldown = profile.Cooldown / attackHaste;
             minion.attackRange = profile.Range;
             minion.speed = profile.Speed * haste;
-            minion.attack.PlaybackSpeed = haste;
+            minion.attack.PlaybackSpeed = attackHaste;
             minion.soulBond = Mathf.Max(0f, Stat(sheet, StatType.SoulBond));
             float duration = Duration(kind, level, sheet);
             minion.expiresAt = duration > 0f ? Time.time + duration : float.PositiveInfinity;

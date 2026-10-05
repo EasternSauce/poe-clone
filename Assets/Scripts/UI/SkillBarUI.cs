@@ -10,20 +10,22 @@ namespace PoeClone.UI
 {
     /// <summary>
     /// The skill bar (desktop: squares at the bottom of the screen - first the attack (left click:
-    /// the staff's spell, or the weapon's icon), then Q E R F and the right, middle and side mouse
+    /// the staff's spell, or the weapon's icon), then Q E R F, 1-4, right and side mouse
     /// buttons - with the cooldown sweeping down over them and a blue tint when there isn't enough
-    /// mana) and the skills panel (K, or the SKL button on touch), which lists every skill, its
+    /// mana) and the skills panel (SKL button on touch), which lists every skill, its
     /// level and the gear it comes from, and where it's slotted, with a button per slot to put it
-    /// there. Clicking a square on the bar opens a short list of the skills the gear grants above it,
-    /// to bind one there directly. On touch the bar itself is TouchControlsUI's round buttons.
+    /// there. Clicking a square on the desktop bar opens a list of skills and potions above it.
+    /// On touch the bar itself is TouchControlsUI's round buttons.
     /// Installed by <see cref="GameSessionController"/>; built at runtime.
     /// </summary>
     public class SkillBarUI : MonoBehaviour
     {
         private const float SlotSize = 52f;
         private const float AttackGap = 12f;
-        private static readonly string[] PotionKeys = { "1", "2", "3", "4", "Q", "E", "R", "F", "RMB", "MMB", "M4", "M5" };
-        private readonly Text[,] potionButtons = new Text[2,12];
+        private const float TopRowY = -24f;
+        private const float BottomRowY = -100f;
+        private const float BarHeight = 152f;
+        private readonly Text[,] potionButtons = new Text[2, SkillBook.SlotCount];
 
         private static SkillBarUI instance;
 
@@ -53,6 +55,8 @@ namespace PoeClone.UI
         private GameObject panelRoot;
         private RectTransform barRect;
         private RectTransform picker;
+        private RectTransform pickerContent;
+        private ScrollRect pickerScroll;
         private readonly List<GameObject> pickerRows = new List<GameObject>();
         private int pickerSlot = -1;
         private PlayerSkills skills;
@@ -66,6 +70,8 @@ namespace PoeClone.UI
         {
             if (instance == null)
                 return;
+            if (!TouchMode.Active)
+                open = false;
             if (open && PassiveTreeUI.IsOpen)
                 PassiveTreeUI.SetOpen(false);
             instance.panelRoot.SetActive(open);
@@ -100,6 +106,8 @@ namespace PoeClone.UI
 
             bool show = skills != null && skills.enabled && !spectator;
             barRoot.SetActive(show && !TouchMode.Active);
+            if (!TouchMode.Active && panelRoot.activeSelf)
+                panelRoot.SetActive(false);
             if (!show)
             {
                 panelRoot.SetActive(false);
@@ -112,7 +120,7 @@ namespace PoeClone.UI
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && !UiKit.IsTypingInTextField())
             {
-                if (keyboard.kKey.wasPressedThisFrame)
+                if (TouchMode.Active && keyboard.kKey.wasPressedThisFrame)
                     SetOpen(!panelRoot.activeSelf);
                 else if (panelRoot.activeSelf && keyboard.escapeKey.wasPressedThisFrame)
                     SetOpen(false);
@@ -120,13 +128,11 @@ namespace PoeClone.UI
 
             for (int k = 0; k < slotViews.Count; k++)
             {
-                bool mouseBind = k >= 4 && k < 8;
-                bool used = skills.Slot(k) != null;
-                slotViews[k].Back.gameObject.SetActive(!mouseBind || used);
+                slotViews[k].Back.gameObject.SetActive(true);
                 UpdateSlot(slotViews[k], skills.Slot(k));
-                int binding = k < 4 ? k + 4 : k < 8 ? k + 4 : k - 8;
-                if (Player.PlayerPotions.Binding(true) == binding || Player.PlayerPotions.Binding(false) == binding)
-                    UpdatePotionSlot(slotViews[k], Player.PlayerPotions.Binding(true) == binding);
+                int potion = Player.PlayerPotions.PotionAt(k);
+                if (potion != 0)
+                    UpdatePotionSlot(slotViews[k], potion == 1);
             }
             UpdateAttack();
         }
@@ -172,14 +178,12 @@ namespace PoeClone.UI
 
         private float SlotX(int slot)
         {
-            if (slot == SkillBook.SlotCount)
-                return SlotSize + AttackGap + slot * (SlotSize + 6f) + 4f;
-            int visual = slot < 4 ? slot : slot < 8 ? slot + 4 : slot - 4;
-            return SlotSize + AttackGap + visual * (SlotSize + 6f) + 4f;
+            int column = slot >= 8 ? slot - 4 : slot % 4;
+            return SlotSize + AttackGap + column * (SlotSize + 6f) + 4f;
         }
 
         // A spectator's copy of the watched player's skills panel (read-only): open while theirs
-        // is, or while the spectator opened it with K. The bar itself stays hidden.
+        // is, or while the spectator opened it on touch. The bar itself stays hidden.
         private void UpdateMirror()
         {
             if (barRoot.activeSelf)
@@ -189,13 +193,13 @@ namespace PoeClone.UI
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && !UiKit.IsTypingInTextField())
             {
-                if (keyboard.kKey.wasPressedThisFrame)
+                if (TouchMode.Active && keyboard.kKey.wasPressedThisFrame)
                     SpectatorMirror.Toggle(SpectatorMirror.Menu.Skills);
                 else if (keyboard.escapeKey.wasPressedThisFrame)
                     SpectatorMirror.Close(SpectatorMirror.Menu.Skills);
             }
 
-            bool open = SpectatorMirror.Shown(SpectatorMirror.Menu.Skills);
+            bool open = TouchMode.Active && SpectatorMirror.Shown(SpectatorMirror.Menu.Skills);
             if (panelRoot.activeSelf != open)
             {
                 panelRoot.SetActive(open);
@@ -223,8 +227,9 @@ namespace PoeClone.UI
             int shown = 0;
             for (int k = 0; k < pickerRows.Count; k++)
             {
-                // The last row is "(empty)"; the others follow SkillBook.All.
-                bool visible = k == pickerRows.Count - 1 || skills.IsUnlocked(SkillBook.All[k].Id);
+                // Skills first, then both potions and the empty option.
+                bool visible = k >= SkillBook.All.Length ||
+                    (skills.IsUnlocked(SkillBook.All[k].Id) && skills.MainSkill != SkillBook.All[k].Id);
                 if (k < SkillBook.All.Length && visible)
                 {
                     SkillDefinition s = SkillBook.All[k];
@@ -237,15 +242,21 @@ namespace PoeClone.UI
 
                 var rt = (RectTransform)pickerRows[k].transform;
                 UiKit.TopLeft(rt, new Vector2(4f, -4f - shown * PickerRowHeight), new Vector2(PickerWidth - 8f, PickerRowHeight - 4f));
-                bool here = k < SkillBook.All.Length && skills.Slot(slot) == SkillBook.All[k].Id;
+                bool here = k < SkillBook.All.Length ? skills.Slot(slot) == SkillBook.All[k].Id :
+                    k == SkillBook.All.Length ? Player.PlayerPotions.PotionAt(slot) == 1 :
+                    k == SkillBook.All.Length + 1 ? Player.PlayerPotions.PotionAt(slot) == 2 :
+                    skills.Slot(slot) == null && Player.PlayerPotions.PotionAt(slot) == 0;
                 pickerRows[k].GetComponent<Image>().color = here ? new Color(0.45f, 0.35f, 0.15f, 1f) : new Color(0.12f, 0.10f, 0.09f, 1f);
                 shown++;
             }
 
-            picker.sizeDelta = new Vector2(PickerWidth, shown * PickerRowHeight + 8f);
+            picker.sizeDelta = new Vector2(PickerWidth, Mathf.Min(440f, shown * PickerRowHeight + 8f));
+            pickerContent.sizeDelta = new Vector2(0f, shown * PickerRowHeight + 8f);
+            pickerScroll.verticalNormalizedPosition = 1f;
             // Above the clicked square.
             float slotCentre = SlotX(slot) + SlotSize * 0.5f - barRect.sizeDelta.x * 0.5f;
-            picker.anchoredPosition = new Vector2(slotCentre, 18f + SlotSize + 10f);
+            float maxX = Mathf.Max(0f, (Screen.width / picker.GetComponentInParent<Canvas>().scaleFactor - PickerWidth) * 0.5f - 8f);
+            picker.anchoredPosition = new Vector2(Mathf.Clamp(slotCentre, -maxX, maxX), 18f + BarHeight + 10f);
             picker.gameObject.SetActive(true);
         }
 
@@ -286,7 +297,11 @@ namespace PoeClone.UI
             if (row < SkillBook.All.Length)
                 skills.Assign(pickerSlot, SkillBook.All[row].Id);
             else
+            {
                 skills.ClearSlot(pickerSlot);
+                Player.PlayerPotions.SetPotionAt(pickerSlot, row == SkillBook.All.Length ? 1 :
+                    row == SkillBook.All.Length + 1 ? 2 : 0);
+            }
             if (Audio.AudioManager.Instance != null)
                 Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.uiItemPlace, 0.4f);
             ClosePicker();
@@ -302,7 +317,24 @@ namespace PoeClone.UI
             picker.pivot = new Vector2(0.5f, 0f);
             UiKit.AddOutline(back, UiKit.BorderColor, 2f);
 
-            for (int k = 0; k <= SkillBook.All.Length; k++)
+            RectTransform viewport = UiKit.NewRect("Viewport", picker);
+            UiKit.Stretch(viewport, 4f);
+            viewport.gameObject.AddComponent<RectMask2D>();
+            Image catcher = viewport.gameObject.AddComponent<Image>();
+            catcher.color = Color.clear;
+            pickerContent = UiKit.NewRect("Content", viewport);
+            pickerContent.anchorMin = new Vector2(0f, 1f);
+            pickerContent.anchorMax = new Vector2(1f, 1f);
+            pickerContent.pivot = new Vector2(0.5f, 1f);
+            pickerContent.anchoredPosition = Vector2.zero;
+            pickerScroll = viewport.gameObject.AddComponent<ScrollRect>();
+            pickerScroll.content = pickerContent;
+            pickerScroll.viewport = viewport;
+            pickerScroll.horizontal = false;
+            pickerScroll.movementType = ScrollRect.MovementType.Clamped;
+            pickerScroll.scrollSensitivity = 32f;
+
+            for (int k = 0; k < SkillBook.All.Length + 3; k++)
             {
                 int row = k;
                 string label;
@@ -311,12 +343,16 @@ namespace PoeClone.UI
                     SkillDefinition skill = SkillBook.All[k];
                     label = "<color=#" + UiKit.Hex(skill.Color) + "><b>" + skill.Short + "</b></color>  " + skill.Name;
                 }
+                else if (k == SkillBook.All.Length)
+                    label = "<color=#ff7777><b>HP</b></color>  Health Potion";
+                else if (k == SkillBook.All.Length + 1)
+                    label = "<color=#809aff><b>MP</b></color>  Mana Potion";
                 else
                 {
                     label = "<color=#" + UiKit.Hex(UiKit.DimText) + ">(empty)</color>";
                 }
 
-                Image item = UiKit.NewImage("Pick_" + k, picker, Color.black);
+                Image item = UiKit.NewImage("Pick_" + k, pickerContent, Color.black);
                 item.raycastTarget = true;
                 Text text = UiKit.NewText("Text", item.rectTransform, label, 18, UiKit.TextColor, TextAnchor.MiddleLeft);
                 UiKit.Stretch(text.rectTransform, 10f);
@@ -405,11 +441,11 @@ namespace PoeClone.UI
                 return;
 
             for (int potion = 0; potion < 2; potion++)
-                for (int binding = 0; binding < PotionKeys.Length; binding++)
+                for (int binding = 0; binding < SkillBook.SlotCount; binding++)
                 {
                     Text label = potionButtons[potion,binding];
                     if (label == null) continue;
-                    bool assigned = Player.PlayerPotions.Binding(potion == 0) == binding;
+                    bool assigned = Player.PlayerPotions.PotionAt(binding) == potion + 1;
                     label.color = assigned ? UiKit.Gold : UiKit.TextColor;
                     label.transform.parent.GetComponent<Image>().color = assigned
                         ? new Color(.45f,.35f,.15f,1f) : new Color(.10f,.09f,.08f,1f);
@@ -462,15 +498,15 @@ namespace PoeClone.UI
 
         // ------------------------------------------------------------------ building
 
-        // One square on the bar: name, the no-mana tint, the cooldown sweep and its key in the corner.
-        private SlotView NewSlotView(RectTransform bar, string name, float x, string keyLabel, System.Action onClick)
+        // One square on the bar: name, the no-mana tint, the cooldown sweep and its key above.
+        private SlotView NewSlotView(RectTransform bar, string name, float x, float y, string keyLabel, System.Action onClick)
         {
             Image back = UiKit.NewImage(name, bar, Color.black);
             UiKit.Inset(back);
             back.raycastTarget = onClick != null;
             if (onClick != null)
                 back.gameObject.AddComponent<TouchPointerRelay>().Up += _ => onClick();
-            UiKit.TopLeft(back.rectTransform, new Vector2(x, 0f), new Vector2(SlotSize, SlotSize));
+            UiKit.TopLeft(back.rectTransform, new Vector2(x, y), new Vector2(SlotSize, SlotSize));
             UiKit.AddOutline(back, onClick != null ? UiKit.BorderColor : UiKit.Gold, 2f);
 
             Text label = UiKit.NewText("Name", back.rectTransform, "", 19, UiKit.TextColor, TextAnchor.MiddleCenter);
@@ -487,8 +523,9 @@ namespace PoeClone.UI
             cooldown.fillOrigin = (int)Image.OriginVertical.Top;
             UiKit.Stretch(cooldown.rectTransform, 0f);
 
-            Text key = UiKit.NewText("Key", back.rectTransform, keyLabel, keyLabel.Length > 1 ? 11 : 14, UiKit.Gold, TextAnchor.UpperLeft);
-            UiKit.Stretch(key.rectTransform, 4f);
+            Text key = UiKit.NewText("Key", bar, keyLabel, keyLabel.Length > 1 ? 11 : 14, UiKit.Gold, TextAnchor.MiddleCenter);
+            UiKit.TopLeft(key.rectTransform, new Vector2(x, y + 20f), new Vector2(SlotSize, 18f));
+            key.raycastTarget = false;
 
             Image ring = NewRing(back.rectTransform, -3f);
 
@@ -507,11 +544,11 @@ namespace PoeClone.UI
             bar.anchorMin = bar.anchorMax = new Vector2(0.5f, 0f);
             bar.pivot = new Vector2(0.5f, 0f);
             bar.anchoredPosition = new Vector2(0f, 18f);
-            bar.sizeDelta = new Vector2(SlotX(SkillBook.SlotCount), SlotSize);
+            bar.sizeDelta = new Vector2(SlotX(7), BarHeight);
             barRoot = bar.gameObject;
             barRect = bar;
 
-            attackView = NewSlotView(bar, "Attack", 4f, "LMB", null);
+            attackView = NewSlotView(bar, "Attack", 4f, BottomRowY, "LMB", null);
             attackIcon = UiKit.NewImage("Icon", attackView.Back.rectTransform, Color.white);
             attackIcon.preserveAspect = true;
             attackIcon.raycastTarget = false;
@@ -522,7 +559,8 @@ namespace PoeClone.UI
             for (int k = 0; k < SkillBook.SlotCount; k++)
             {
                 int clicked = k;
-                slotViews.Add(NewSlotView(bar, "Slot" + k, SlotX(k), PlayerSkills.KeyLabel(k), () => OpenPicker(clicked)));
+                float slotY = k >= 4 && k < 8 ? TopRowY : BottomRowY;
+                slotViews.Add(NewSlotView(bar, "Slot" + k, SlotX(k), slotY, PlayerSkills.KeyLabel(k), () => OpenPicker(clicked)));
             }
 
             BuildPicker(canvas.transform);
@@ -570,21 +608,20 @@ namespace PoeClone.UI
                 float top = -78f - potion * 44f;
                 Text heading = UiKit.NewText(health ? "HealthBinding" : "ManaBinding",pr,health ? "Health potion" : "Mana potion",17,UiKit.TextColor,TextAnchor.MiddleLeft);
                 UiKit.TopLeft(heading.rectTransform,new Vector2(18f,top),new Vector2(170f,36f));
-                for (int binding = 0; binding < PotionKeys.Length; binding++)
+                for (int binding = 0; binding < SkillBook.SlotCount; binding++)
                 {
                     int selectedBinding = binding;
                     Image button = UiKit.NewImage("PotionKey"+potion+"_"+binding,pr,Color.black);
                     button.raycastTarget=true;
                     UiKit.TopLeft(button.rectTransform,new Vector2(196f+binding*48f,top),new Vector2(45f,36f));
-                    Text label=UiKit.NewText("Key",button.rectTransform,PotionKeys[binding],13,UiKit.TextColor,TextAnchor.MiddleCenter);
+                    Text label=UiKit.NewText("Key",button.rectTransform,PlayerSkills.KeyLabel(binding),13,UiKit.TextColor,TextAnchor.MiddleCenter);
                     UiKit.Stretch(label.rectTransform,0f);
                     potionButtons[potion,binding]=label;
                     button.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
                     {
                         if (SpectatorMirror.Active) return;
-                        int slot = selectedBinding < 4 ? selectedBinding + 8 : selectedBinding < 8 ? selectedBinding - 4 : selectedBinding - 4;
-                        if (skills != null) skills.ClearSlot(slot);
-                        Player.PlayerPotions.SetBinding(health,selectedBinding);
+                        if (skills != null) skills.ClearSlot(selectedBinding);
+                        Player.PlayerPotions.SetPotionAt(selectedBinding, health ? 1 : 2);
                         RefreshRows();
                     };
                 }

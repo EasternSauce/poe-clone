@@ -9,40 +9,43 @@ namespace PoeClone.Player
 {
     /// <summary>
     /// Health and mana potions: they sit in the inventory's two potion slots (counts kept by
-    /// <see cref="PlayerInventory"/>, never bag items, never sold), drunk with 1 and 2, the two touch
+    /// <see cref="PlayerInventory"/>, never bag items, never sold), drunk with assigned bar keys, the two touch
     /// buttons, or a click on the slot. A health potion heals 40% of life over a couple of seconds;
     /// a mana potion gives back half the mana pool at once. Enemies drop them on the ground (see
     /// KillRewards), and the merchant sells them. Self-added by <see cref="PlayerController"/>.
     /// </summary>
     public class PlayerPotions : MonoBehaviour
     {
-        private static readonly Key[] PotionKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Q, Key.E, Key.R, Key.F };
-        private static readonly string[] PotionKeyLabels = { "1", "2", "3", "4", "Q", "E", "R", "F", "RMB", "MMB", "M4", "M5" };
+        private static readonly Key[] PotionKeys = { Key.Q, Key.E, Key.R, Key.F, Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4 };
         private const string HealthKeyPref = "PoeClone.HealthPotionKey";
         private const string ManaKeyPref = "PoeClone.ManaPotionKey";
-        public static string HealthPotionKeyLabel => Label(Binding(true));
-        public static string ManaPotionKeyLabel => Label(Binding(false));
-        private static string Label(int binding) => binding >= 0 ? PotionKeyLabels[binding] : "Unbound";
-        public static bool IsBoundTo(int binding) => binding >= 0 && (Binding(true) == binding || Binding(false) == binding);
-        public static int Binding(bool health)
+        private const string SlotPref = "PoeClone.PotionSlot.";
+        public static string HealthPotionKeyLabel => FirstLabel(1);
+        public static string ManaPotionKeyLabel => FirstLabel(2);
+
+        private static string FirstLabel(int potion)
         {
-            int value = PlayerPrefs.GetInt(health ? HealthKeyPref : ManaKeyPref, health ? 0 : 1);
-            return value >= 0 && value < PotionKeyLabels.Length ? value : -1;
+            for (int slot = 0; slot < SkillBook.SlotCount; slot++)
+                if (PotionAt(slot) == potion) return PlayerSkills.KeyLabel(slot);
+            return "Unbound";
         }
-        public static void ClearBindingAt(int binding)
+
+        // Existing installs stored one key per potion. Read those defaults until a slot is edited.
+        public static int PotionAt(int slot)
         {
-            if (Binding(true) == binding) PlayerPrefs.SetInt(HealthKeyPref, -1);
-            if (Binding(false) == binding) PlayerPrefs.SetInt(ManaKeyPref, -1);
-            PlayerPrefs.Save();
+            if (slot < 0 || slot >= SkillBook.SlotCount) return 0;
+            string key = SlotPref + slot;
+            if (PlayerPrefs.HasKey(key)) return Mathf.Clamp(PlayerPrefs.GetInt(key), 0, 2);
+            int oldBinding = slot < 4 ? slot + 4 : slot < 8 ? slot - 4 : slot == 8 ? 8 : slot + 1;
+            if (PlayerPrefs.GetInt(HealthKeyPref, 0) == oldBinding) return 1;
+            if (PlayerPrefs.GetInt(ManaKeyPref, 1) == oldBinding) return 2;
+            return 0;
         }
-        public static void SetBinding(bool health, int binding)
+
+        public static void SetPotionAt(int slot, int potion)
         {
-            if (binding < 0 || binding >= PotionKeyLabels.Length) return;
-            string pref = health ? HealthKeyPref : ManaKeyPref;
-            string other = health ? ManaKeyPref : HealthKeyPref;
-            int old = Binding(health);
-            if (Binding(!health) == binding) PlayerPrefs.SetInt(other, old);
-            PlayerPrefs.SetInt(pref, binding);
+            if (slot < 0 || slot >= SkillBook.SlotCount || potion < 0 || potion > 2) return;
+            PlayerPrefs.SetInt(SlotPref + slot, potion);
             PlayerPrefs.Save();
         }
         public const int MaxPotions = PlayerInventory.MaxPotions;
@@ -110,44 +113,23 @@ namespace PoeClone.Player
             Keyboard keyboard = Keyboard.current;
             if (pressed < 0 && keyboard != null && !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused())
             {
-                int healthKey = Binding(true);
-                int manaKey = Binding(false);
-                if (KeyPressed(keyboard, healthKey))
-                    pressed = 0;
-                else if (KeyPressed(keyboard, manaKey))
-                    pressed = 1;
+                for (int slot = 0; slot < PotionKeys.Length && pressed < 0; slot++)
+                    if (keyboard[PotionKeys[slot]].wasPressedThisFrame && PotionAt(slot) > 0)
+                        pressed = PotionAt(slot) - 1;
             }
 
             Mouse mouse = Mouse.current;
             if (pressed < 0 && mouse != null && !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused() && !TouchMode.Active && !PlayerController.IsPointerOverUi())
             {
-                int healthKey = Binding(true);
-                int manaKey = Binding(false);
-                if (MousePressed(mouse, healthKey)) pressed = 0;
-                else if (MousePressed(mouse, manaKey)) pressed = 1;
+                if (mouse.rightButton.wasPressedThisFrame && PotionAt(8) > 0) pressed = PotionAt(8) - 1;
+                else if (mouse.backButton.wasPressedThisFrame && PotionAt(9) > 0) pressed = PotionAt(9) - 1;
+                else if (mouse.forwardButton.wasPressedThisFrame && PotionAt(10) > 0) pressed = PotionAt(10) - 1;
             }
 
             if (pressed == 0)
                 DrinkHealth();
             else if (pressed == 1)
                 DrinkMana();
-        }
-
-        private static bool KeyPressed(Keyboard keyboard, int binding)
-        {
-            return binding >= 0 && binding < PotionKeys.Length && keyboard[PotionKeys[binding]].wasPressedThisFrame;
-        }
-
-        private static bool MousePressed(Mouse mouse, int binding)
-        {
-            switch (binding)
-            {
-                case 8: return mouse.rightButton.wasPressedThisFrame;
-                case 9: return mouse.middleButton.wasPressedThisFrame;
-                case 10: return mouse.backButton.wasPressedThisFrame;
-                case 11: return mouse.forwardButton.wasPressedThisFrame;
-                default: return false;
-            }
         }
 
         public bool DrinkHealth()

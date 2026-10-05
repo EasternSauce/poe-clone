@@ -167,6 +167,7 @@ namespace PoeClone.Network
             if (players[next].id == WatchingId) return;
 
             WatchingId = players[next].id;
+            replica.ResetReplica();
             client.Send(JsonUtility.ToJson(new WatchMessage { id = WatchingId }));
             StateChanged?.Invoke();
         }
@@ -261,6 +262,8 @@ namespace PoeClone.Network
 
                 case "status":
                     if (!msg.playerActive && Role == SessionRole.Spectator)
+                        replica.ResetReplica();
+                    else if (Role == SessionRole.Spectator && WatchingId != 0 && WatchingId != msg.watching)
                         replica.ResetReplica();
                     RemotePlayerActive = msg.playerActive;
                     SpectatorCount = msg.spectatorCount;

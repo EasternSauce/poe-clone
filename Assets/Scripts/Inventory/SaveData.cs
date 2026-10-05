@@ -18,6 +18,7 @@ namespace PoeClone.Inventory
     {
         public string id;
         public string name;
+        public int count;
         public int type;
         public int w;
         public int h;
@@ -31,7 +32,7 @@ namespace PoeClone.Inventory
         {
             var record = new ItemRecord
             {
-                id = item.Id, name = item.Name, type = (int)item.Type, w = item.Width, h = item.Height,
+                id = item.Id, name = item.Name, count = item.StackCount, type = (int)item.Type, w = item.Width, h = item.Height,
                 weapon = (int)item.WeaponType, rarity = (int)item.Rarity, cape = item.HasCape,
                 r = item.Tint.r, g = item.Tint.g, b = item.Tint.b, a = item.Tint.a
             };
@@ -42,7 +43,12 @@ namespace PoeClone.Inventory
 
         public ItemData ToItem()
         {
-            if (id == ItemData.ReawakeningId) return ItemData.ReawakeningItem();
+            if (id == ItemData.ReawakeningId)
+            {
+                ItemData heart = ItemData.ReawakeningItem();
+                heart.StackCount = Math.Max(1, Math.Min(heart.MaxStack, count));
+                return heart;
+            }
             var modifiers = new List<StatModifier>();
             if (mods != null)
             {
@@ -108,6 +114,7 @@ namespace PoeClone.Inventory
         public List<string> passives = new List<string>();
         public int respecCharges = 1;
         public List<int> skillSlots = new List<int>();     // SkillId per slot, -1 for empty
+        public int barLayoutVersion;                         // 0: old mouse-first order; 1: current bar order
         public List<string> questsDone = new List<string>();
         public List<QuestRecord> questsActive = new List<QuestRecord>();
         public List<string> questProps = new List<string>(); // quest props used (Quests.QuestProp ids)

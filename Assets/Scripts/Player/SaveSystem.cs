@@ -192,7 +192,7 @@ namespace PoeClone.Player
             if (stats == null)
                 return;
 
-            var data = new SaveData { level = stats.Level, experience = stats.Experience, gearSkills = true };
+            var data = new SaveData { level = stats.Level, experience = stats.Experience, gearSkills = true, barLayoutVersion = 1 };
 
             PlayerInventory inventory = stats.GetComponent<PlayerInventory>();
             if (inventory != null)
@@ -312,12 +312,17 @@ namespace PoeClone.Player
             PlayerSkills skills = stats.GetComponent<PlayerSkills>();
             if (skills != null && data.skillSlots != null)
             {
-                for (int k = 0; k < data.skillSlots.Count && k < SkillBook.SlotCount; k++)
+                for (int k = 0; k < data.skillSlots.Count; k++)
                 {
+                    // Earlier saves used Q/E/R/F, RMB/MMB/M4/M5, then 1-4.
+                    int slot = data.barLayoutVersion == 0 && data.skillSlots.Count == 12
+                        ? (k < 4 ? k : k == 4 ? 8 : k == 5 ? -1 : k == 6 ? 9 : k == 7 ? 10 : k - 4)
+                        : k;
+                    if (slot < 0 || slot >= SkillBook.SlotCount) continue;
                     if (data.skillSlots[k] < 0)
-                        skills.ClearSlot(k);
+                        skills.ClearSlot(slot);
                     else
-                        skills.Assign(k, (SkillId)data.skillSlots[k]);
+                        skills.Assign(slot, (SkillId)data.skillSlots[k]);
                 }
             }
 

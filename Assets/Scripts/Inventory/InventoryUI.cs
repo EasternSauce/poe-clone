@@ -1357,6 +1357,13 @@ private Vector2 CellSize(int w, int h)
                 irt.sizeDelta = new Vector2(s, s);
             }
 
+            if (item.StackCount > 1)
+            {
+                Text count = UiKit.NewText("StackCount", rt, item.StackCount.ToString(), 16, Color.white, TextAnchor.LowerRight);
+                UiKit.Stretch(count.rectTransform, 3f);
+                count.raycastTarget = false;
+            }
+
             return rt;
         }
 
@@ -1584,6 +1591,18 @@ private Vector2 CellSize(int w, int h)
             sb.Append("<b><color=#").Append(UiKit.Hex(UiKit.RarityColor(item.Rarity))).Append(">").Append(item.Name).Append("</color></b>\n");
             sb.Append("<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">").Append(type).Append("</color>");
             lineCount = 2;
+            if (item.StackCount > 1)
+            {
+                sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">Stack: ")
+                    .Append(item.StackCount).Append("/").Append(item.MaxStack).Append("</color>");
+                lineCount++;
+            }
+            if (!string.IsNullOrEmpty(item.Description))
+            {
+                sb.Append("\n\n<color=#").Append(UiKit.Hex(UiKit.TextColor)).Append(">")
+                    .Append(item.Description).Append("</color>");
+                lineCount += 3;
+            }
 
             // Which hands it takes, for the gear where that limits what else can be worn.
             string handNote = null;
@@ -1931,7 +1950,15 @@ private Vector2 CellSize(int w, int h)
             PlacedItem p = inventory.Grid.GetAt(Mathf.FloorToInt(h.GridPos.x), Mathf.FloorToInt(h.GridPos.y));
             if (p == null || p.Item.Type != ItemType.Consumable) return;
             bool used = inventory.UseConsumable != null && inventory.UseConsumable(p.Item);
-            if (used) inventory.Grid.Remove(p.Item);
+            if (used)
+            {
+                if (p.Item.StackCount > 1)
+                {
+                    p.Item.StackCount--;
+                    inventory.Grid.NotifyChanged();
+                }
+                else inventory.Grid.Remove(p.Item);
+            }
             else PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiDenied : null);
             Refresh();
         }

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using PoeClone.Inventory;
+using PoeClone.UI;
 
 namespace PoeClone.Network
 {
@@ -31,6 +32,8 @@ namespace PoeClone.Network
         private GameObject stallNotice;
         private Text stallText;
         private GameObject menuBar;
+        private BossBarUI bossBar;
+        private RectTransform badgeRect;
         private readonly Image[] menuButtons = new Image[4];
         private readonly Text[] menuLabels = new Text[4];
 
@@ -87,6 +90,13 @@ namespace PoeClone.Network
             if (canvasRoot.activeSelf != isSpectator)
                 canvasRoot.SetActive(isSpectator);
             if (!isSpectator) return;
+
+            if (bossBar == null)
+                bossBar = FindAnyObjectByType<BossBarUI>();
+            // The boss name and bar occupy the top center when visible.
+            Vector2 badgeAt = new Vector2(0f, bossBar != null && bossBar.IsShowing ? -112f : -16f);
+            if (badgeRect.anchoredPosition != badgeAt)
+                badgeRect.anchoredPosition = badgeAt;
 
             var replica = ctrl.Replica;
             bool hasData = replica != null && replica.HasLiveData;
@@ -220,7 +230,7 @@ namespace PoeClone.Network
             var badgeImage = liveBadge.AddComponent<Image>();
             badgeImage.color = new Color(0.75f, 0.1f, 0.1f, 0.85f);
             badgeImage.raycastTarget = false;
-            var badgeRect = badgeImage.rectTransform;
+            badgeRect = badgeImage.rectTransform;
             badgeRect.anchorMin = badgeRect.anchorMax = new Vector2(0.5f, 1f);
             badgeRect.pivot = new Vector2(0.5f, 1f);
             badgeRect.anchoredPosition = new Vector2(0f, -16f);

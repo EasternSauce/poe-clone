@@ -21,6 +21,7 @@ namespace PoeClone.UI
         private Text title;
         private EnemyHealth boss;
         private float nextSearch;
+        public bool IsShowing => root != null && root.activeSelf;
 
         private void Awake()
         {

@@ -78,12 +78,16 @@ namespace PoeClone.Inventory
     public sealed class ItemData
     {
         public const string ReawakeningId = "shed_heart";
-        public static ItemData ReawakeningItem() => new ItemData(ReawakeningId, "Shed Heart - right-click or hold 1s and release to reawaken the act boss", ItemType.Consumable, 1, 1,
-            new Color(0.4f, 0.75f, 0.2f), null, rarity: ItemRarity.Magic);
+        public static ItemData ReawakeningItem() => new ItemData(ReawakeningId, "Shed Heart", ItemType.Consumable, 1, 1,
+            new Color(0.72f, 0.16f, 0.22f), null, rarity: ItemRarity.Magic)
+        { Description = "Right-click, or hold for 1 second and release on touch, to reawaken the defeated act boss." };
         private static readonly IReadOnlyList<StatModifier> NoModifiers = new StatModifier[0];
 
         public string Id { get; }
         public string Name { get; }
+        public string Description { get; set; }
+        public int StackCount { get; set; } = 1;
+        public int MaxStack => Id == ReawakeningId ? 100 : 1;
         public ItemType Type { get; }
         public int Width { get; }
         public int Height { get; }
