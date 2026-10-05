@@ -1,9 +1,9 @@
-version: 2026-10-05-passive-tree-expansion
+version: 2026-10-05-weapon-grip-rotation
 - Spread the passive tree outward so existing nodes and travel routes have more room. Outer keystones now sit beyond three required travel passives on their only approach.
 - Gloves, rings, amulets and quivers roll 2.5x added physical damage early on, tapering to 1.5x by Frozen Hollow drops.
 - Clicking a gate walks through the current area's gate without carrying movement into the next area or bouncing back through its arrival gate.
 - Equipped item pictures keep their bag size inside larger equipment slots.
-- Held weapons turn 180 degrees around the hand without flipping their grips; blades still point downward.
+- Held weapons turn 180 degrees around their grip axis while the grip and blade tip stay in place.
 - Axes and greataxes now sweep through visible cuts on ordinary and Reaping Arc attacks.
 - Might defence passives and some armour, belts and shields now offer small chances to avoid stun without avoiding damage.
 - Drinking a potion plays a gulp copied into the game's sound assets.
@@ -19,7 +19,6 @@ version: 2026-10-05-passive-tree-expansion
 - The Rusty Sword on Haven's starter bench grants Cleave.
 - A skill assigned to a mouse or keyboard slot takes priority over a stale potion binding, so one press cannot trigger both.
 - Melee swings and melee skills no longer trigger enemy enrage, even when their hit reaches farther than usual.
-- Axes and hammers turn 90 degrees around their handles when held by a character.
 - Shortened item tooltips by removing explanations for penetration and Low Life, the Venom Cloud cooldown note, the bow's quiver note, and the "your attack" tag.
 - Pulverize now lifts a mace or maul overhead through its charge and visibly slams it down as the ground burst lands. Basic attacks cannot interrupt a committed strike.
 - Spread out the Grace poison passives and Volley so their nodes and paths no longer pile up around Deadeye.
