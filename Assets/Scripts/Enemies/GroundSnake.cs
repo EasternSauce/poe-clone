@@ -29,6 +29,7 @@ namespace PoeClone.Enemies
         private float hold;
         private float age;
         private float seed;
+        public Vector3 MouthPosition => head != null ? head.position + head.forward * height / 2.2f * 0.65f : transform.position;
 
         /// <param name="toward">The flat direction it strikes in.</param>
         /// <param name="hold">How long it stays up after striking before sinking.</param>

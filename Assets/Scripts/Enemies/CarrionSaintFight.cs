@@ -6,6 +6,7 @@ namespace PoeClone.Enemies
 {
     public class CarrionSaintFight : MonoBehaviour
     {
+        private const float MeleeApproachDistance = 3.6f;
         private EnemyHealth health;
         private CarrionSaintAnimator anim;
         private PlayerStats player;
@@ -24,7 +25,14 @@ namespace PoeClone.Enemies
             if (health == null || health.IsDead || anim == null) return;
             if (player == null) player = FindAnyObjectByType<PlayerStats>();
             if (player == null || player.IsDead) return;
+            if (pursuit == null && nextPursuit == float.PositiveInfinity)
+                nextPursuit = Time.time + 20f;
             if (pursuit != null && !pursuit.IsFinished) return;
+            if (pursuit != null && pursuit.IsFinished)
+            {
+                nextPursuit = Mathf.Max(nextPursuit, Time.time + 20f);
+                pursuit = null;
+            }
             if (anim.IsPlaying || Time.time < nextAttack) return;
             Vector3 to = player.transform.position - transform.position; to.y = 0f;
             if (to.magnitude > 55f) return;
@@ -32,14 +40,15 @@ namespace PoeClone.Enemies
             if (Time.time >= nextPursuit)
             {
                 pursuit = SerpentPursuit.Spawn(health, player, damage);
-                nextPursuit = Time.time + 12.5f;
+                // The recovery starts when the serpent has fully withdrawn.
+                nextPursuit = float.PositiveInfinity;
                 nextAttack = Time.time + 0.5f;
                 return;
             }
-            if (to.magnitude > 8f)
+            if (to.magnitude > MeleeApproachDistance)
             {
                 var cc = GetComponent<CharacterController>();
-                Vector3 move = to.normalized * 16f * Time.deltaTime;
+                Vector3 move = to.normalized * Mathf.Min(16f * Time.deltaTime, to.magnitude - MeleeApproachDistance);
                 if (cc != null && cc.enabled) cc.Move(move); else transform.position += move;
                 return;
             }
@@ -52,7 +61,7 @@ namespace PoeClone.Enemies
         {
             if (player == null || player.IsDead || health.IsDead) return;
             Vector3 d = player.transform.position - transform.position; d.y = 0f;
-            float reach = clip == "RearSlam" ? 9f : 7.5f;
+            float reach = clip == "RearSlam" ? 6f : clip == "TentacleLash" ? 7.5f : 4.5f;
             if (d.magnitude > reach) return;
             if (clip != "RearSlam" && Vector3.Dot(transform.forward, d.normalized) < 0.15f) return;
             if (player.TakeHit(damage * (clip == "RearSlam" ? 1.5f : 1f), DamageType.Physical)) player.Poison(damage * 0.3f, 2f);

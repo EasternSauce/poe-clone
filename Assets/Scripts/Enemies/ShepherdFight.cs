@@ -23,9 +23,9 @@ namespace PoeClone.Enemies
     public class ShepherdFight : MonoBehaviour
     {
         private const float EngageRange = 24f;
-        // How fast every clip plays (and so every wind-up and warning): the player dashes and
-        // teleports, so he has to be quick.
-        public const float Pace = 3.2f;
+        // How fast every clip plays (and so every wind-up and warning). Keep this aligned with
+        // the other act bosses' reduced tempo.
+        public const float Pace = 1.6f;
         private const float Breather = 0.075f;
 
         private const float HookEvery = 2.25f;
@@ -125,7 +125,10 @@ namespace PoeClone.Enemies
 
         private void OnDisable()
         {
-            ZoomOut(false);
+            bool phaseThreeArenaView = Phase >= 3 && World.AreaManager.Instance != null
+                && World.AreaManager.Instance.CurrentAreaIndex == World.WorldBuilder.ActArena;
+            if (!phaseThreeArenaView)
+                ZoomOut(false);
         }
 
         // Grown giant, he doesn't fit the normal view: it pulls back while he's fighting.
@@ -143,8 +146,12 @@ namespace PoeClone.Enemies
         private void Update()
         {
             bool dead = health != null && health.IsDead;
-            ZoomOut(!dead && Grow > 1.01f && player != null && !player.IsDead
-                && Flat(player.transform.position - transform.position).magnitude < EngageRange * Grow);
+            bool insideActArena = World.AreaManager.Instance != null
+                && World.AreaManager.Instance.CurrentAreaIndex == World.WorldBuilder.ActArena;
+            bool phaseThreeArenaView = Phase >= 3 && insideActArena;
+            bool nearGiant = Grow > 1.01f && player != null
+                && Flat(player.transform.position - transform.position).magnitude < EngageRange * Grow;
+            ZoomOut(phaseThreeArenaView || (!dead && player != null && !player.IsDead && nearGiant));
             if (kind == null || anim == null || anim.Demo || dead || changing || Phase >= 3)
                 return;
             if (Phase == 1 && health != null && health.CurrentHealth <= health.MaxHealth * PhaseTwoAt + 0.01f)
@@ -360,7 +367,7 @@ namespace PoeClone.Enemies
                 if (limb == null)
                     continue;
                 Vector3 lunge = limb.transform.position + to * limb.Length * 0.6f + Vector3.up * limb.Length * 0.2f;
-                limb.Strike(lunge, 0.02f + 0.05f * i, 0.07f, 0.05f, 0.25f, _ => Spit(limb.MouthPosition, 1.6f * Grow));
+                limb.Strike(lunge, 0.02f + 0.05f * i, 0.07f, 0.05f, 0.25f, mouth => Spit(mouth, 1.6f * Grow));
             }
         }
 
@@ -385,13 +392,13 @@ namespace PoeClone.Enemies
             if (player == null)
                 yield break;
             float height = 3.2f * ShepherdLook.BaseScale * Mathf.Sqrt(Grow) * 0.8f;
-            GroundSnake.Spawn(spot, player.transform.position - spot, height, 1.6f);
+            GroundSnake snake = GroundSnake.Spawn(spot, player.transform.position - spot, height, 1.6f);
             for (int k = 0; k < 2; k++)
             {
                 yield return new WaitForSeconds(k == 0 ? 0.45f : 0.6f);
                 if (player == null || player.IsDead)
                     yield break;
-                Spit(spot + Vector3.up * height * 0.85f, 0.8f * Grow);
+                if (snake != null) Spit(snake.MouthPosition, 0.8f * Grow);
             }
         }
 

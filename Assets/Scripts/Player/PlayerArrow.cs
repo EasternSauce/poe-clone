@@ -15,6 +15,7 @@ namespace PoeClone.Player
     public class PlayerArrow : MonoBehaviour
     {
         private const float Speed = 26f;
+        public const float BowRangeMultiplier = 1.5f;
         private const float Radius = 0.3f;
         // Enemies are hit from further off than walls are: a shot that visibly grazes one counts.
         private const float EnemyRadius = 0.6f;
@@ -38,6 +39,8 @@ namespace PoeClone.Player
         // target is hurt by the first of them to reach it, and the rest do nothing to it.
         private HashSet<IDamageable> volley;
 
+        public float TravelRemaining => travelLeft;
+
         /// <summary>A shared record for projectiles loosed together (see the volley parameters).</summary>
         public static HashSet<IDamageable> NewVolley()
         {
@@ -56,9 +59,11 @@ namespace PoeClone.Player
             return shooter.position + Vector3.up * 0.3f + shooter.forward * 0.6f;
         }
 
-        public static void Launch(Transform shooter, float range, float damage, Vector3? direction = null, HashSet<IDamageable> volley = null)
+        public static PlayerArrow Launch(Transform shooter, float range, float damage, Vector3? direction = null, HashSet<IDamageable> volley = null)
         {
-            Create(shooter, range, damage, harmless: false, direction: direction).volley = volley;
+            PlayerArrow arrow = Create(shooter, range * BowRangeMultiplier, damage, harmless: false, direction: direction);
+            arrow.volley = volley;
+            return arrow;
         }
 
         public static void LaunchVisual(Transform shooter, float range, Vector3? direction = null)
@@ -72,7 +77,7 @@ namespace PoeClone.Player
         /// </summary>
         public static PlayerArrow LaunchArrow(Transform shooter, float range, float damage, Vector3 direction, HashSet<IDamageable> volley, bool harmless = false)
         {
-            PlayerArrow arrow = Create(shooter, range, damage, harmless, direction: direction);
+            PlayerArrow arrow = Create(shooter, range * BowRangeMultiplier, damage, harmless, direction: direction);
             arrow.volley = volley;
             return arrow;
         }
@@ -307,6 +312,12 @@ namespace PoeClone.Player
                         ai.Chill(chillSeconds);
                 }
                 HitEffects.Deal(owner, enemy, damage, isAttack, textColor, damageType, igniteBonus: igniteBonus);
+                return;
+            }
+
+            if (target is Enemies.SerpentPursuit serpent)
+            {
+                serpent.TakeArrowHit(owner, damage, isAttack, damageType, textColor, igniteBonus);
                 return;
             }
 

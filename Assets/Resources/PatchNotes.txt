@@ -1,4 +1,18 @@
-version: 2026-10-05-controls-settings
+version: 2026-10-05-archer-snake-dash
+<b>Final boss polish</b>
+- The large serpent now emerges behind Carrion Saint, turns for a one-second warning, then pursues. Its head uses the visible jaw bounds to stay above the floor, with smaller jaw hinges and a head shake while swallowing.
+- Carrion Saint closes to bite range before choosing a melee attack.
+- Carrion Saint's bite now matches its animation reach. The pursuing serpent weaves, stays clear of the floor, opens its jaws, and tips its head back to swallow; its 20-second cooldown begins after the attack ends.
+- Poison globs leave the snake mouths. Hits on the pursuing head show the damage dealt to the boss over that head. The third-phase body carries visible living snakes between attacks.
+- Carrion Saint's hind legs buckle on death with a heavy impact and dust. Ordinary corpses last twice as long, and boss corpses four times as long.
+
+<b>Archer and boss balance</b>
+- Bow arrows, including skill arrows, travel 50% farther. PC Dash follows the cursor, and phase-three arena zoom stays pulled back until you leave.
+- The final boss's pursuing serpent head now has a hitbox and shares half of each hit with the boss.
+
+<b>Boss pacing</b>
+- Halved attack tempo for the act bosses, including The Shepherd and Carrion Saint.
+
 <b>Character selection</b>
 - Character rows now show portraits of the saved character model wearing its equipped gear.
 - Existing single-character saves are recovered into the character list, including saves already copied by the first multi-character release.

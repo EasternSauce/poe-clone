@@ -156,15 +156,19 @@ namespace PoeClone.Enemies
 
         private static void SerpentFeatures(Transform rig, Transform trunk)
         {
-            // Carry the phase-two cobra silhouette into the chimera even between serpent attacks.
-            Transform hood = Joint(trunk, "CobraMantle", new Vector3(0f, 0.88f, 0.10f));
+            // Two living serpents remain visible beside the seam tendrils between attacks.
+            // Their animated curves replace the broad plates that read as folded wings.
             for (int side = -1; side <= 1; side += 2)
             {
-                Part(hood, "HoodWing" + side, Scales, new Vector3(side * 0.43f, 0.17f, -0.13f), new Vector3(0.69f, 0.90f, 0.22f));
-                for (int i = 0; i < 5; i++)
-                    Link(hood, "HoodRib" + side + "_" + i, ScaleEdge,
-                        new Vector3(side * 0.16f, -0.20f + i * 0.12f, 0f),
-                        new Vector3(side * (0.52f + Mathf.Sin(i / 4f * Mathf.PI) * 0.18f), -0.22f + i * 0.16f, 0f), 0.045f);
+                SnakeLimb viper = SnakeLimb.Build(trunk, "ShoulderViper" + side,
+                    new Vector3(side * 0.70f, 0.45f, -0.28f), Quaternion.Euler(-55f, side * 35f, -side * 30f),
+                    24, 3.6f, 0.32f, 0.15f, Scales, ScaleEdge, new Color(1f, 0.72f, 0.12f));
+                viper.transform.localScale = Vector3.one * 0.75f;
+                viper.Bend = new Vector3(12f, 0f, side * 5f);
+                viper.Coil = 14f;
+                viper.Sway = 8f;
+                viper.SwaySpeed = 1.2f;
+                viper.JawOpen = 18f;
             }
             Transform armour = Joint(trunk, "DorsalScales", Vector3.zero);
             for (int i = 0; i < 8; i++)

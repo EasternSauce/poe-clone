@@ -43,6 +43,7 @@ namespace PoeClone.Enemies
         private Vector3 target;
         private float t, windUp, lunge, hold, recover;
         private bool bitten;
+        private bool bitePending;
         private Action<Vector3> onBite;
         private Vector3 strikeFrom;
         private float strikeHeight;
@@ -230,6 +231,7 @@ namespace PoeClone.Enemies
             hold = Mathf.Max(0f, stay);
             recover = Mathf.Max(0.01f, back);
             bitten = false;
+            bitePending = false;
             onBite = bite;
             strikeFrom = Tip();
             strikeHeight = 0f;
@@ -269,6 +271,11 @@ namespace PoeClone.Enemies
             {
                 Vector3 head = StrikeHead(ref jawAngle);
                 Solve(head);
+                if (bitePending)
+                {
+                    bitePending = false;
+                    onBite?.Invoke(MouthPosition);
+                }
             }
 
             // Whatever the body is doing, the head keeps its top to the sky (the jaws open up-down).
@@ -330,7 +337,7 @@ namespace PoeClone.Enemies
             if (!bitten)
             {
                 bitten = true;
-                onBite?.Invoke(target);
+                bitePending = true;
             }
             if (t < windUp + lunge + hold)
             {

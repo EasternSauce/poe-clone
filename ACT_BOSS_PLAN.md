@@ -1,7 +1,14 @@
 # Act boss: The Shepherd / Carrion Saint - plan and progress
 
-Working notes for the act boss, so work can resume in a new session. Last updated 2026-10-04.
+Working notes for the act boss, so work can resume in a new session. Last updated 2026-10-05.
 Nothing of this is committed yet (all in the working tree).
+
+## Final boss polish - 2026-10-05
+
+- Phase-three melee reach now follows each attack animation. Pursuit cooldown starts after the previous serpent attack ends and lasts 20 seconds; its head clears the floor, its route weaves, and its jaws close before the head tilts back to swallow.
+- Two animated shoulder vipers replace the wing-like back plates. Phase-two venom volleys and ground spouts now launch from their actual mouth positions. Damage passed from the pursuing head to the boss is displayed over the head after defenses.
+- Carrion Saint death buckles the hind legs and lowers the upright body with shake and dust. Ordinary corpses last twice as long; boss corpses four times as long.
+- Unity Editor: zero compile/runtime errors, 166/166 EditMode tests, real arena phases and final quest/loot checked. A forced Venom Volley produced three globs exactly at three mouth positions. A long pursuit recorded 25 route points with 1.01m lateral deviation; the head collider was 1.035m clear of the floor. A head hit removed 471.7 boss life and displayed 472 at the head. Final death pose had both hips bent 55 degrees and a 100-second boss corpse. All ten impact dust pieces appeared 0.20-0.31m above the arena floor. Temporary save restored and Editor stopped. No Web build, commit, or deploy.
 
 ## Latest handoff - playable release slice, 2026-10-04
 User explicitly prioritized playable access/full fight over appearance and shortened rewards to TWO items. No further visual polish before shipping unless a blocking issue appears.

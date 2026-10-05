@@ -225,6 +225,8 @@ namespace PoeClone.EditorTools
                 notes.GetMethod("Close", Any)?.Invoke(pn, null);
                 sb.Append("closed notes; ");
             }
+            if (Time.timeScale > 0f && Stats() != null)
+                sb.Append(EnsureDash()).Append("; ");
             sb.Append(Time.timeScale > 0f ? "running" : "paused (call Ready again in a few seconds)");
             return sb.ToString();
         }
@@ -233,12 +235,25 @@ namespace PoeClone.EditorTools
 
         private static PlayerStats Stats() => UnityEngine.Object.FindAnyObjectByType<PlayerStats>();
 
+        /// <summary>Make Dash available in every DevTest session, including after a loadout replaces gear.</summary>
+        public static string EnsureDash()
+        {
+            PlayerSkills skills = UnityEngine.Object.FindAnyObjectByType<PlayerSkills>();
+            PlayerStats player = Stats();
+            if (skills == null || player == null)
+                return "no player skills";
+            if (skills.Level(SkillId.Dash) > 0)
+                return "Dash ready";
+            return Equip("leather_boots", "GrantDash=1", Mathf.Max(10, player.Level));
+        }
+
         /// <summary>Practically unkillable, with mana to spare (to watch minions/enemies without dying).</summary>
         public static string God(float life = 100000f, float mana = 10000f)
         {
             PlayerStats ps = Stats();
             if (ps == null)
                 return "no player";
+            EnsureDash();
             typeof(PlayerStats).GetField("maxHealth", Any)?.SetValue(ps, life);
             typeof(PlayerStats).GetField("maxMana", Any)?.SetValue(ps, mana);
             ps.Heal(life);
@@ -345,6 +360,51 @@ namespace PoeClone.EditorTools
                 }
             }
             return (used ? "used " : "did NOT use ") + skills.Slot(slot) + (aim ? " at " + target.name : "");
+        }
+
+        /// <summary>Checks that both regular and skill arrow launch paths apply the 1.5 range multiplier.</summary>
+        public static string CheckBowRange()
+        {
+            PlayerStats ps = Stats();
+            if (ps == null || !Application.isPlaying) return "call CheckBowRange in Play";
+            PlayerArrow a = PlayerArrow.Launch(ps.transform, 10f, 0f, Vector3.forward);
+            PlayerArrow b = PlayerArrow.LaunchArrow(ps.transform, 10f, 0f, Vector3.forward, null, true);
+            float regular = a.TravelRemaining, skill = b.TravelRemaining;
+            UnityEngine.Object.Destroy(a.gameObject); UnityEngine.Object.Destroy(b.gameObject);
+            return "basic=" + regular.ToString("0.0") + " skill=" + skill.ToString("0.0")
+                + (Mathf.Abs(regular - 15f) < 0.01f && Mathf.Abs(skill - 15f) < 0.01f ? " PASS" : " FAIL");
+        }
+
+        /// <summary>Uses Dash with opposing movement input and checks its committed direction against desktop cursor aim.</summary>
+        public static string CheckPcDashDirection()
+        {
+            PlayerSkills skills = UnityEngine.Object.FindAnyObjectByType<PlayerSkills>();
+            PlayerController controller = UnityEngine.Object.FindAnyObjectByType<PlayerController>();
+            if (skills == null || controller == null || UnityEngine.InputSystem.Mouse.current == null) return "no player or mouse";
+            FieldInfo forced = typeof(TouchMode).GetField("forced", Any);
+            bool priorForced = forced != null && (bool)forced.GetValue(null);
+            Vector2 priorMove = VirtualInput.Move;
+            try
+            {
+                if (forced != null) forced.SetValue(null, false);
+                VirtualInput.Move = Vector2.zero;
+                Vector3 expected = (Vector3)typeof(PlayerSkills).GetMethod("AimDirection", Any).Invoke(skills, null);
+                if (expected.sqrMagnitude < 0.01f) return "cursor has no world aim; move mouse over game view";
+                // The resulting dash velocity is the committed direction and ignores any later input.
+                int dashSlot = -1;
+                for (int k = 0; k < SkillBook.SlotCount; k++) if (skills.Slot(k) == SkillId.Dash) dashSlot = k;
+                if (dashSlot < 0) return "Dash is not on the skill bar";
+                ((System.Collections.IDictionary)typeof(PlayerSkills).GetField("readyAt", Any).GetValue(skills)).Clear();
+                if (!skills.TryUse(dashSlot)) return "Dash could not be used";
+                Vector3 actual = (Vector3)typeof(PlayerController).GetField("dashVelocity", Any).GetValue(controller);
+                float dot = Vector3.Dot(actual.normalized, expected.normalized);
+                return "cursor dot=" + dot.ToString("0.000") + (dot > 0.99f ? " PASS" : " FAIL");
+            }
+            finally
+            {
+                if (forced != null) forced.SetValue(null, priorForced);
+                VirtualInput.Move = priorMove;
+            }
         }
 
         private static double attackUntil;

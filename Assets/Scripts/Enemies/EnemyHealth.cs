@@ -28,6 +28,7 @@ namespace PoeClone.Enemies
         [SerializeField] private float deathWindUp = 0.15f;
         [SerializeField] private float collapseDuration = 0.6f;
         [SerializeField] private float corpseSeconds = 25f;
+        private float CorpseLifetime => corpseSeconds * (EnemyKinds.Get(KindIndex).IsBoss ? 4f : 2f);
 
         private float currentHealth;
         private bool dead;
@@ -355,6 +356,12 @@ namespace PoeClone.Enemies
         // Returns whether it was a creature.
         private bool PlayDeathPose(bool instant)
         {
+            CarrionSaintAnimator saint = GetComponentInChildren<CarrionSaintAnimator>();
+            if (saint != null)
+            {
+                StartCoroutine(CarrionCollapse(saint.transform, instant));
+                return true;
+            }
             CreatureAnimator creature = GetComponentInChildren<CreatureAnimator>();
             if (creature != null)
             {
@@ -364,6 +371,44 @@ namespace PoeClone.Enemies
 
             CharacterDeathAnimator.PlayOn(transform, foldLowerBody: false);
             return false;
+        }
+
+        // The Carrion Saint's hind legs buckle under its own mass. Its body stays upright
+        // in the final pose, with a heavy landing instead of the humanoid face plant.
+        private IEnumerator CarrionCollapse(Transform rig, bool instant)
+        {
+            Transform left = rig.Find("BeastHip-1");
+            Transform right = rig.Find("BeastHip1");
+            Transform trunk = rig.Find("Trunk");
+            Vector3 start = rig.localPosition;
+            Quaternion leftRest = left != null ? left.localRotation : Quaternion.identity;
+            Quaternion rightRest = right != null ? right.localRotation : Quaternion.identity;
+            Quaternion trunkRest = trunk != null ? trunk.localRotation : Quaternion.identity;
+            const float fall = 0.8f;
+            for (float elapsed = instant ? fall : 0f; elapsed < fall + Time.deltaTime; elapsed += Time.deltaTime)
+            {
+                float f = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / fall));
+                rig.localPosition = start + Vector3.down * (0.42f * f);
+                if (left != null) left.localRotation = leftRest * Quaternion.Euler(55f * f, 0f, -20f * f);
+                if (right != null) right.localRotation = rightRest * Quaternion.Euler(55f * f, 0f, 20f * f);
+                if (trunk != null) trunk.localRotation = trunkRest * Quaternion.Euler(-18f * f, 0f, 0f);
+                if (!instant && elapsed < fall) yield return null;
+                else break;
+            }
+            if (instant) yield break;
+            CameraSystem.CameraFollow.Shake(0.5f, 0.45f);
+            Vector3 impact = transform.position;
+            impact.y = Debris.GroundBelow(impact + Vector3.up * 5f) + 0.1f;
+            SkillEffects.Shockwave(impact, 4.5f, new Color(0.43f, 0.40f, 0.34f), 0.55f);
+            for (int i = 0; i < 10; i++)
+            {
+                Vector2 spread = UnityEngine.Random.insideUnitCircle * 2.6f;
+                GameObject dust = RuntimePrimitives.Create(PrimitiveType.Sphere, null, new Color(0.43f, 0.40f, 0.34f));
+                dust.transform.position = impact + new Vector3(spread.x, 0.15f, spread.y);
+                dust.transform.localScale = Vector3.one * UnityEngine.Random.Range(0.25f, 0.55f);
+                Debris.Throw(dust, new Vector3(spread.x, UnityEngine.Random.Range(0.8f, 2f), spread.y),
+                    Vector3.zero, UnityEngine.Random.Range(0.6f, 1.1f), 0.03f);
+            }
         }
 
         // A slime bursts into two small ones, which hop out either side already after the player.
@@ -395,7 +440,7 @@ namespace PoeClone.Enemies
         {
             if (corpseSeconds <= 0f)
                 yield break;
-            yield return new WaitForSeconds(corpseSeconds);
+            yield return new WaitForSeconds(CorpseLifetime);
             yield return SinkAndDestroy();
         }
 
@@ -430,7 +475,7 @@ namespace PoeClone.Enemies
             if (!removeCorpse || corpseSeconds <= 0f)
                 yield break;
 
-            yield return new WaitForSeconds(corpseSeconds);
+            yield return new WaitForSeconds(CorpseLifetime);
             yield return SinkAndDestroy();
         }
 

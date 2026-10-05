@@ -117,9 +117,10 @@ namespace PoeClone.EditorTools
                     "GrantSkeletonMages=" + skillLevel + ", MinionDamage=" + bonus +
                     ", AdditionalMinions=" + (stage == 2 ? 1 : 0), level);
             }
+            string dash = DevTest.EnsureDash();
             DevTest.God();
             loaded = build + "/" + tier;
-            return loaded + " L" + level + " passives=" + passives.Allocation.Spent + " " + gear;
+            return loaded + " L" + level + " passives=" + passives.Allocation.Spent + " " + gear + "; " + dash;
         }
 
         /// <summary>Stationary immortal dummy with neutral (Zombie) or current Shepherd defences.

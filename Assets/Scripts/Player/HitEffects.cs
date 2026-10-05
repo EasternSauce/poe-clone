@@ -43,7 +43,7 @@ namespace PoeClone.Player
         /// igniteBonus: % chance to ignite on top of the attacker's own (a fire hit's skill, e.g. Burning Arrow).
         /// </summary>
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
-            DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f)
+            DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null)
         {
             if (enemy == null || enemy.IsDead)
                 return;
@@ -86,7 +86,7 @@ namespace PoeClone.Player
             }
             damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration);
             string number = Mathf.Max(1, Mathf.RoundToInt(damage)).ToString();
-            CombatText.Show(at + Vector3.up * 1.6f * scale, crit ? number + "!" : number, crit ? CritColor : color, crit ? 1.35f : 1f);
+            CombatText.Show(displayAt ?? (at + Vector3.up * 1.6f * scale), crit ? number + "!" : number, crit ? CritColor : color, crit ? 1.35f : 1f);
 
             if (sheet == null)
                 return;

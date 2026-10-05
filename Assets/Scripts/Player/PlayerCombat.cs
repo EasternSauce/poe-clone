@@ -351,7 +351,8 @@ namespace PoeClone.Player
                 int arrows = ArrowCount();
                 if (bowSkillPending != null && SkillSet != null)
                 {
-                    SkillSet.ReleaseBow(bowSkillPending.Value, pendingDamage, range, arrows, BowTarget(range));
+                    SkillSet.ReleaseBow(bowSkillPending.Value, pendingDamage, range, arrows,
+                        BowTarget(range * PlayerArrow.BowRangeMultiplier));
                     bowSkillPending = null;
                     return;
                 }
@@ -399,8 +400,12 @@ namespace PoeClone.Player
                     target.TakeDamage(pendingDamage);
 
                     Transform hit = ((Component)target).transform;
-                    CombatText.Show(hit.position + Vector3.up * 1.6f * hit.localScale.y,
-                        Mathf.Max(1, Mathf.RoundToInt(pendingDamage)).ToString(), CombatText.PhysicalColor);
+                    if (target is SerpentPursuit serpent)
+                        CombatText.Show(serpent.MouthPosition + Vector3.up * 0.8f,
+                            Mathf.Max(1, Mathf.RoundToInt(serpent.LastSharedDamage)).ToString(), CombatText.PhysicalColor);
+                    else
+                        CombatText.Show(hit.position + Vector3.up * 1.6f * hit.localScale.y,
+                            Mathf.Max(1, Mathf.RoundToInt(pendingDamage)).ToString(), CombatText.PhysicalColor);
                 }
             }
 

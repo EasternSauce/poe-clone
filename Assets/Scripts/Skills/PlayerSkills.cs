@@ -717,7 +717,7 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.Dash:
-                    Vector3 dir = controller.InputDirection();
+                    Vector3 dir = TouchMode.Active ? controller.InputDirection() : AimDirection();
                     if (dir.sqrMagnitude < 0.01f)
                         dir = AimDirection();
                     SkillEffects.Shockwave(transform.position, 1.2f, skill.Color, 0.25f);

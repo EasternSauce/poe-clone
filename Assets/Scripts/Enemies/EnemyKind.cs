@@ -260,7 +260,7 @@ namespace PoeClone.Enemies
             // Bosses: weight 0, so only their lairs place them.
             new EnemyKind
             {
-                Name = "Gravelord Mortis", SpawnWeight = 0f, Tempo = 2f,
+                Name = "Gravelord Mortis", SpawnWeight = 0f, Tempo = 1f,
                 MaxHealth = 340f, Armour = 500f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 150,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 21f, AttackCooldown = 1.4f, AttackRange = 4.2f,
@@ -272,7 +272,7 @@ namespace PoeClone.Enemies
             },
             new EnemyKind
             {
-                Name = "Ashen Warlord", SpawnWeight = 0f, Tempo = 2f,
+                Name = "Ashen Warlord", SpawnWeight = 0f, Tempo = 1f,
                 MaxHealth = 420f, Armour = 500f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 220,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
                 Damage = 25f, AttackCooldown = 1.5f, AttackRange = 4.4f,
@@ -285,7 +285,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 // The brood-queen of the Hollow's ice crawlers: a spider the size of a house.
-                Name = "Rimeheart", SpawnWeight = 0f, Tempo = 2f,
+                Name = "Rimeheart", SpawnWeight = 0f, Tempo = 1f,
                 MaxHealth = 460f, Armour = 500f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 300,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
                 Damage = 21f, AttackCooldown = 1.0f, AttackRange = 4.0f,
@@ -525,7 +525,7 @@ namespace PoeClone.Enemies
             {
                 // The act boss, in its first phase: a stooped, hooded old man with a crook and a
                 // lantern. Numbers are placeholders until the fight itself is in.
-                Name = "The Shepherd", SpawnWeight = 0f, Tempo = 4f,
+                Name = "The Shepherd", SpawnWeight = 0f, Tempo = 2f,
                 MaxHealth = 2400f, Armour = 1200f,
                 FireResistance = 30f, ColdResistance = 30f, LightningResistance = 30f, Experience = 400,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
