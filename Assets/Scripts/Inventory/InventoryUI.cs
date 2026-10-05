@@ -120,6 +120,10 @@ namespace PoeClone.Inventory
         private RectTransform previewPanel;
         private RectTransform stashPanel;
         private float panelWidth;
+        private int layoutScreenWidth;
+        private int layoutScreenHeight;
+        private float layoutCanvasScale;
+        private bool layoutTouchMode;
         private readonly RectTransform[] potionSlots = new RectTransform[2];
         private readonly Text[] potionCounts = new Text[2];
         private readonly Image[] potionOverlays = new Image[2];
@@ -254,6 +258,9 @@ namespace PoeClone.Inventory
         private void Update()
         {
             UpdateTooltipCanvasOrder();
+            if (isOpen && (layoutScreenWidth != Screen.width || layoutScreenHeight != Screen.height ||
+                !Mathf.Approximately(layoutCanvasScale, canvas.scaleFactor) || layoutTouchMode != TouchMode.Active))
+                ApplyPanelLayout();
             if (warming)
                 return;
 
@@ -644,17 +651,7 @@ namespace PoeClone.Inventory
             }
 
             panel.gameObject.SetActive(open);
-            float rightInset = touch ? TouchRightInset : DesktopRightInset;
-            panel.anchoredPosition = new Vector2(-rightInset, 0f);
-            // With the stash (or a trader) open the panel widens leftwards into one window: the
-            // stash section on the left, equipment and bag on the right, one X for the lot.
-            panel.sizeDelta = stashOpen
-                ? new Vector2(panelWidth + stashPanel.sizeDelta.x, Mathf.Max(regularPanelHeight, stashPanel.sizeDelta.y))
-                : new Vector2(panelWidth, regularPanelHeight);
-
-            // The character preview sits just left of the panel; on touch the panel is further in,
-            // to clear the on-screen button column.
-            previewPanel.anchoredPosition = new Vector2(-(rightInset + panelWidth + 16f), 0f);
+            ApplyPanelLayout();
 
             // No room for the character preview beside the panel on a phone.
             previewPanel.gameObject.SetActive(open && !touch && !stashOpen);
@@ -679,6 +676,34 @@ namespace PoeClone.Inventory
                 AudioClip toggleClip = open ? AudioManager.Instance.uiInventoryOpen : AudioManager.Instance.uiInventoryClose;
                 AudioManager.Instance.PlayUI(toggleClip, AudioManager.Instance.inventoryToggleVolume);
             }
+        }
+
+        private void ApplyPanelLayout()
+        {
+            bool touch = TouchMode.Active;
+            float rightInset = touch ? TouchRightInset : DesktopRightInset;
+            // The stash and trader share a wide window with the bag. Keep its right edge clear of
+            // touch buttons, then fit the whole window inside the remaining screen area.
+            Vector2 size = stashOpen
+                ? new Vector2(panelWidth + stashPanel.sizeDelta.x, Mathf.Max(regularPanelHeight, stashPanel.sizeDelta.y))
+                : new Vector2(panelWidth, regularPanelHeight);
+            panel.sizeDelta = size;
+            panel.anchoredPosition = new Vector2(-rightInset, 0f);
+            float scale = 1f;
+            if (touch)
+            {
+                float canvasScale = Mathf.Max(0.01f, canvas.scaleFactor);
+                float availableWidth = Screen.width / canvasScale - rightInset - 12f;
+                float availableHeight = Screen.height / canvasScale - 24f;
+                scale = Mathf.Min(1f, availableWidth / size.x, availableHeight / size.y);
+            }
+            panel.localScale = Vector3.one * Mathf.Max(0.01f, scale);
+
+            previewPanel.anchoredPosition = new Vector2(-(rightInset + panelWidth + 16f), 0f);
+            layoutScreenWidth = Screen.width;
+            layoutScreenHeight = Screen.height;
+            layoutCanvasScale = canvas.scaleFactor;
+            layoutTouchMode = touch;
         }
 
         // ------------------------------------------------------------------ stash

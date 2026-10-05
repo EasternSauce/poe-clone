@@ -1,4 +1,5 @@
 version: 2026-10-05-weapon-grip-rotation
+- Storage and shop windows now fit within the mobile screen while leaving space for touch controls.
 - Spread the passive tree outward so existing nodes and travel routes have more room. Outer keystones now sit beyond three required travel passives on their only approach.
 - Gloves, rings, amulets and quivers roll 2.5x added physical damage early on, tapering to 1.5x by Frozen Hollow drops.
 - Clicking a gate walks through the current area's gate without carrying movement into the next area or bouncing back through its arrival gate.
