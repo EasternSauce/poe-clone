@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using PoeClone.Inventory;
 using PoeClone.Player;
+using PoeClone.World;
 
 namespace PoeClone.Network
 {
@@ -355,6 +356,7 @@ namespace PoeClone.Network
         {
             SceneManager.sceneLoaded -= RestartAfterCharacterSwitch;
             new GameObject("GameSessionController").AddComponent<GameSessionController>();
+            WorldBuilder.EnsureBuilt();
         }
 
         private IEnumerator ReconnectAfterDelay()

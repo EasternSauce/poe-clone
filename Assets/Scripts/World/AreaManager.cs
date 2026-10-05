@@ -22,9 +22,7 @@ namespace PoeClone.World
     /// <summary>
     /// Area switcher: fade to a loading screen, teleport the player into the target area (its
     /// spawn point, or a given arrival point such as in front of the gate back), fade back in.
-    /// The scene's original proof-of-concept areas share one space and differ only by ground
-    /// tint; <see cref="WorldBuilder"/> replaces them at start-up with real areas laid out apart
-    /// from each other (town, forest, graveyard, ruins), each with its own ground and gates.
+    /// <see cref="WorldBuilder"/> supplies the real areas at start-up.
     /// </summary>
     public class AreaManager : MonoBehaviour
     {
@@ -34,7 +32,6 @@ namespace PoeClone.World
         public Transform player;
         public Renderer groundRenderer;
         public LoadingScreenUI loadingScreen;
-        public int startAreaIndex = 0;
 
         [Tooltip("Extra pause while the loading screen is fully opaque, so a transition reads as an actual load even though it's instant under the hood.")]
         public float simulatedLoadSeconds = 0.25f;
@@ -50,7 +47,6 @@ namespace PoeClone.World
         public AreaDefinition Current => areas != null && CurrentAreaIndex >= 0 && CurrentAreaIndex < areas.Length ? areas[CurrentAreaIndex] : null;
 
         private bool switching;
-        private bool separateAreas;
         private MaterialPropertyBlock mpb;
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
@@ -60,27 +56,12 @@ namespace PoeClone.World
             mpb = new MaterialPropertyBlock();
         }
 
-private void Start()
-        {
-            if (separateAreas)
-                return; // WorldBuilder already set everything up
-
-            if (areas != null && areas.Length > startAreaIndex)
-            {
-                ApplyGroundColor(areas[startAreaIndex].groundColor);
-                CurrentAreaIndex = startAreaIndex;
-            }
-            UpdateGateVisibility(CurrentAreaIndex);
-        }
-
         /// <summary>
-        /// Replaces the scene's areas with real, separate ones (WorldBuilder) and starts in one of
-        /// them. Gates then stay active everywhere: each lives in its own area.
+        /// Sets the generated areas and starts in one of them.
         /// </summary>
         public void SetAreas(AreaDefinition[] definitions, int startIndex)
         {
             areas = definitions;
-            separateAreas = true;
             CurrentAreaIndex = startIndex;
             if (areas[startIndex].tintsSharedGround)
                 ApplyGroundColor(areas[startIndex].groundColor);
@@ -100,7 +81,6 @@ private void Start()
             if (areas[index].tintsSharedGround)
                 ApplyGroundColor(areas[index].groundColor);
             CurrentAreaIndex = index;
-            UpdateGateVisibility(CurrentAreaIndex);
             AreaChanged?.Invoke(index);
         }
 
@@ -173,7 +153,6 @@ private IEnumerator SwitchRoutine(int index, Transform arrival)
             if (def.tintsSharedGround)
                 ApplyGroundColor(def.groundColor);
             CurrentAreaIndex = index;
-            UpdateGateVisibility(CurrentAreaIndex);
             AreaChanged?.Invoke(index);
 
             if (simulatedLoadSeconds > 0f)
@@ -185,17 +164,6 @@ private IEnumerator SwitchRoutine(int index, Transform arrival)
             switching = false;
         }
 
-        private void UpdateGateVisibility(int areaIndex)
-        {
-            if (separateAreas)
-                return;
-
-            var gates = FindObjectsByType<AreaGate>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            foreach (var g in gates)
-                g.gameObject.SetActive(g.fromAreaIndex == areaIndex);
-        }
-
-        
 private void ApplyGroundColor(Color c)
         {
             if (groundRenderer == null) return;

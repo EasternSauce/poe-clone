@@ -1,4 +1,6 @@
-version: 2026-10-05-shared-stash-and-character-switch
+version: 2026-10-05-world-gates-cleanup
+- Removed the old Area A/B/C scene objects and their editor builder; the real world now creates its own gates.
+- Returning to character selection now rebuilds the full world when a new character starts, instead of leaving the prototype Area A/B/C scene active.
 - Settings can return to character selection without refreshing the page; switching saves the current character first.
 - Stash storage and tab names are shared between characters. Existing character stashes are gathered on first load.
 - Double-click a stash tab to rename it. The active tab changes colour; Enter confirms, and long names stay within the tab.

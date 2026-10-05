@@ -99,6 +99,13 @@ namespace PoeClone.World
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
         {
+            EnsureBuilt();
+        }
+
+        /// <summary>Scene reloads during character selection do not rerun runtime-init hooks.</summary>
+        public static void EnsureBuilt()
+        {
+            if (Instance != null) return;
             var go = new GameObject("World");
             go.AddComponent<WorldBuilder>().Build();
         }
@@ -117,23 +124,15 @@ namespace PoeClone.World
 
             AreaManager manager = FindAnyObjectByType<AreaManager>();
             GameObject ground = GameObject.Find("Ground");
-            AreaGate[] oldGates = FindObjectsByType<AreaGate>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             PlayerController player = FindAnyObjectByType<PlayerController>();
 
-            if (kit == null || manager == null || ground == null || oldGates.Length == 0 || player == null)
+            if (kit == null || manager == null || ground == null || player == null)
             {
-                Debug.LogWarning("WorldBuilder: missing area kit, area manager, ground, gates or player - keeping the original single area.");
-                if (player != null)
-                    StarterLoot.PlaceAround(player.transform.position);
+                Debug.LogError("WorldBuilder: missing area kit, area manager, ground or player; the world cannot be built.");
                 return;
             }
 
-            // One of the scene's proof-of-concept gates becomes the template for every new gate.
-            gateTemplate = Instantiate(oldGates[0].gameObject, root);
-            gateTemplate.name = "GateTemplate";
-            gateTemplate.SetActive(false);
-            foreach (AreaGate old in oldGates)
-                Destroy(old.gameObject);
+            gateTemplate = CreateGateTemplate();
 
             spawnPoints = new Transform[Centers.Length];
             for (int a = 0; a < Centers.Length; a++)
@@ -714,6 +713,43 @@ namespace PoeClone.World
         }
 
         // ------------------------------------------------------------------ gates
+
+        private GameObject CreateGateTemplate()
+        {
+            var gate = new GameObject("GateTemplate");
+            gate.transform.SetParent(root, false);
+            gate.SetActive(false);
+
+            Material stone = kit.Mat("Stone");
+            for (int side = -1; side <= 1; side += 2)
+            {
+                var pillar = new GameObject("Pillar").transform;
+                pillar.SetParent(gate.transform, false);
+                pillar.localPosition = new Vector3(side * 1.3f, 0f, 0f);
+                LocalBox(pillar, new Vector3(0f, 0.175f, 0f), new Vector3(1.1f, 0.35f, 1.1f), stone, solid: false).name = "Base";
+                LocalCyl(pillar, new Vector3(0f, 2f, 0f), 0.7f, 3.3f, stone, solid: false).name = "Column";
+                LocalBox(pillar, new Vector3(0f, 3.7f, 0f), new Vector3(1f, 0.3f, 1f), stone, solid: false).name = "Cap";
+                var pillarCollider = pillar.gameObject.AddComponent<BoxCollider>();
+                pillarCollider.center = new Vector3(0f, 1.925f, 0f);
+                pillarCollider.size = new Vector3(1f, 3.85f, 1f);
+            }
+            LocalBox(gate.transform, new Vector3(0f, 3.85f, 0f), new Vector3(3.6f, 0.4f, 1f), stone).name = "Lintel";
+
+            Shader portalShader = Shader.Find("Universal Render Pipeline/Lit") ?? kit.Mat("Water").shader;
+            Material portal = new Material(portalShader);
+            portal.SetColor("_BaseColor", new Color(.3f, .4f, .5f));
+            portal.SetFloat("_Smoothness", .1f);
+            portal.EnableKeyword("_EMISSION");
+            portal.SetColor("_EmissionColor", new Color(.15f, .2f, .25f));
+            LocalBox(gate.transform, new Vector3(0f, 1.9f, 0f), new Vector3(2.1f, 3.4f, .15f), portal, solid: false).name = "PortalPanel";
+
+            var trigger = gate.AddComponent<BoxCollider>();
+            trigger.isTrigger = true;
+            trigger.center = new Vector3(0f, 1.2f, 0f);
+            trigger.size = new Vector3(2f, 2.4f, 1.6f);
+            gate.AddComponent<AreaGate>();
+            return gate;
+        }
 
         // A gate in each area leading to the other, at the edge of its outline in the given direction;
         // you arrive a few steps in front of the gate back.
