@@ -1,4 +1,5 @@
-version: 2026-10-05-character-selection-polish
+version: 2026-10-05-passive-points-hud
+- The unspent passive points button now sits below the level and health HUD, clear of the skill keys.
 <b>Patch history</b>
 - Patch History now opens on the newest release, including notes saved on this device.
 <b>Spectating</b>

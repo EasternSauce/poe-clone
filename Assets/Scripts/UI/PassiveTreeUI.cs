@@ -225,8 +225,8 @@ namespace PoeClone.UI
             }
         }
 
-        // A gently pulsing note above the skill bar while there are points to spend; clicking it
-        // opens the tree.
+        // A gently pulsing note below the level/health HUD while there are points to spend;
+        // clicking it opens the tree.
         private void UpdateBadge()
         {
             int unspent = passives.Unspent;
@@ -235,6 +235,12 @@ namespace PoeClone.UI
                 badge.gameObject.SetActive(show);
             if (!show)
                 return;
+
+            // PlayerHUD uses screen pixels (OnGUI), while this badge lives on a scaled canvas.
+            float scale = badge.canvas.scaleFactor;
+            float hudBottom = TouchMode.Active ? 124f * TouchMode.GuiScale
+                : PlayerHUD.ControlsHidden ? 326f : 378f;
+            badge.rectTransform.anchoredPosition = new Vector2(20f / scale, -(hudBottom + 10f) / scale);
 
             string text = "+" + unspent + " passive point" + (unspent > 1 ? "s" : "") + (TouchMode.Active ? "" : "  (P)");
             if (badgeText.text != text)
@@ -563,9 +569,8 @@ namespace PoeClone.UI
             badge = UiKit.NewImage("PointsBadge", canvas.transform, new Color(0.12f, 0.09f, 0.04f, 0.85f));
             badge.raycastTarget = true;
             RectTransform br = badge.rectTransform;
-            br.anchorMin = br.anchorMax = new Vector2(0.5f, 0f);
-            br.pivot = new Vector2(0.5f, 0f);
-            br.anchoredPosition = new Vector2(0f, 104f); // just above the skill bar
+            br.anchorMin = br.anchorMax = new Vector2(0f, 1f);
+            br.pivot = new Vector2(0f, 1f);
             br.sizeDelta = new Vector2(260f, 36f);
             UiKit.AddOutline(badge, UiKit.Gold, 1.5f);
             badgeText = UiKit.NewText("Text", br, "", 19, UiKit.Gold, TextAnchor.MiddleCenter);
