@@ -132,10 +132,16 @@ namespace PoeClone.Inventory
                         GameObject instance = Instantiate(child.gameObject, socket);
                         instance.name = "Equip_" + child.name;
                         instance.transform.localPosition = child.localPosition;
-                        // Twist around the weapon's own grip axis. The grip and blade tip keep
-                        // their positions in the hand; only the blade's facing turns 180 degrees.
+                        // Roll melee weapons around their grip axis. This turns the head down
+                        // without moving the grip; bows and casting staves keep their existing roll.
+                        bool meleeWeapon = item.Type == ItemType.Weapon &&
+                            (item.WeaponType == WeaponType.Sword || item.WeaponType == WeaponType.Axe ||
+                             item.WeaponType == WeaponType.Mace || item.WeaponType == WeaponType.Dagger ||
+                             item.WeaponType == WeaponType.Greatsword || item.WeaponType == WeaponType.Greataxe ||
+                             item.WeaponType == WeaponType.Maul || item.WeaponType == WeaponType.Sceptre);
+                        float gripTwist = meleeWeapon ? 270f : 180f;
                         instance.transform.localRotation = slot == EquipSlot.MainHand
-                            ? child.localRotation * Quaternion.Euler(0f, 180f, 0f)
+                            ? child.localRotation * Quaternion.Euler(0f, gripTwist, 0f)
                             : child.localRotation;
                         instance.transform.localScale = child.localScale;
                         instance.AddComponent<EquipmentVisualInstance>();

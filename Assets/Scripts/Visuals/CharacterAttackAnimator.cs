@@ -161,14 +161,14 @@ namespace PoeClone.Visuals
             Range = 2.3f
         };
 
-        // A heavy, low diagonal smash: the slowest weapon.
+        // A one-handed overhead smash: lift the head above the shoulder, then bring it down
+        // through the target. Maces and sceptres share this attack silhouette.
         private static readonly AttackProfile MaceProfile = new AttackProfile
         {
             Duration = 0.7f,
             StrikeTime = 0.55f,
-            // Drive the hammer head forward at the strike instead of sweeping its side across.
-            WindupOffset = new Pose(70f, 0f, 0f, 60f),
-            StrikeOffset = new Pose(-10f, 0f, 0f, 20f),
+            WindupOffset = new Pose(115f, -12f, -8f, 45f),
+            StrikeOffset = new Pose(-95f, 5f, 5f, 12f),
             BaseAttacksPerSecond = 0.9f,
             Range = 2.2f
         };

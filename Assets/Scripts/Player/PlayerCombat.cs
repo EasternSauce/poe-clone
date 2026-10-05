@@ -567,16 +567,5 @@ namespace PoeClone.Player
             return outline;
         }
 
-        private void OnDrawGizmosSelected()
-        {
-            float range = Application.isPlaying ? CharacterAttackAnimator.AttackRange(CurrentWeaponType()) : 1.6f;
-
-            Gizmos.color = Color.red;
-            Vector3 left = Quaternion.AngleAxis(-coneHalfAngle, Vector3.up) * transform.forward;
-            Vector3 right = Quaternion.AngleAxis(coneHalfAngle, Vector3.up) * transform.forward;
-            Gizmos.DrawLine(transform.position, transform.position + left * range);
-            Gizmos.DrawLine(transform.position, transform.position + right * range);
-            Gizmos.DrawWireSphere(transform.position, range);
-        }
     }
 }
