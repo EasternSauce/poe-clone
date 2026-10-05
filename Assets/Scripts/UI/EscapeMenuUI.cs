@@ -132,8 +132,13 @@ namespace PoeClone.UI
             float y=-4;
             if(entries.Length==0) body.text="No patch history is available.";
             for(int i=0;i<entries.Length;i++) { int index=i; Button("Release"+i,content,entries[i].version,new Vector2(0,y),new Vector2(250,38),()=>SelectEntry(index)); y-=44; }
-            if(entries.Length>0) SelectEntry(selected);
-            content.sizeDelta=new Vector2(0,Mathf.Max(100,-y+10)); listScroll.verticalNormalizedPosition=1;
+            content.sizeDelta=new Vector2(0,Mathf.Max(100,-y+10));
+            if(entries.Length>0)
+            {
+                selected=entries.Length-1;
+                SelectEntry(selected);
+            }
+            listScroll.verticalNormalizedPosition=0;
         }
         private void SelectEntry(int index)
         {

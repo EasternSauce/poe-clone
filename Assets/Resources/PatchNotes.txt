@@ -1,4 +1,6 @@
-version: 2026-10-05-archer-snake-dash
+version: 2026-10-05-patch-history-latest
+<b>Patch history</b>
+- Patch History now opens on the newest release, including notes saved on this device.
 <b>Spectating</b>
 - Spectators see the watched player's current quests, objectives, and progress. Switching players updates the tracker.
 - The player switcher moves below the boss health bar while a boss bar is visible.
