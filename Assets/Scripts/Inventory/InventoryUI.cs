@@ -116,8 +116,6 @@ namespace PoeClone.Inventory
         private Canvas tooltipCanvas;
         private CanvasGroup canvasGroup;
         private RectTransform panel;
-        private RectTransform equipmentArea;
-        private Text stashBagTitle;
         private float regularPanelHeight;
         private RectTransform previewPanel;
         private RectTransform stashPanel;
@@ -144,6 +142,7 @@ namespace PoeClone.Inventory
         private Image[] stashTabButtons;
         private Text[] stashTabLabels;
         private InputField tabNameField;
+        private bool tabNameFocusPending;
         private int renamingTab = -1;
         private const float StashReach = 5f;
         private RectTransform gridArea;
@@ -647,18 +646,15 @@ namespace PoeClone.Inventory
             panel.gameObject.SetActive(open);
             float rightInset = touch ? TouchRightInset : DesktopRightInset;
             panel.anchoredPosition = new Vector2(-rightInset, 0f);
-            panel.sizeDelta = new Vector2(panelWidth, stashOpen ? stashPanel.sizeDelta.y : regularPanelHeight);
-            if (equipmentArea != null) equipmentArea.gameObject.SetActive(!stashOpen);
-            if (stashBagTitle != null) stashBagTitle.gameObject.SetActive(stashOpen);
-            if (gridArea != null)
-                gridArea.anchoredPosition = new Vector2(0f, stashOpen ?
-                    (panel.sizeDelta.y - gridArea.sizeDelta.y) * 0.5f : Pad);
+            // With the stash (or a trader) open the panel widens leftwards into one window: the
+            // stash section on the left, equipment and bag on the right, one X for the lot.
+            panel.sizeDelta = stashOpen
+                ? new Vector2(panelWidth + stashPanel.sizeDelta.x, Mathf.Max(regularPanelHeight, stashPanel.sizeDelta.y))
+                : new Vector2(panelWidth, regularPanelHeight);
 
-            // The side panel (preview or stash) sits flush against whichever edge the main panel
-            // is using; on touch that's further in, to clear the on-screen button column.
-            float sideX = -(rightInset + panelWidth + (stashOpen ? 0f : 16f));
-            previewPanel.anchoredPosition = new Vector2(sideX, 0f);
-            stashPanel.anchoredPosition = new Vector2(sideX, 0f);
+            // The character preview sits just left of the panel; on touch the panel is further in,
+            // to clear the on-screen button column.
+            previewPanel.anchoredPosition = new Vector2(-(rightInset + panelWidth + 16f), 0f);
 
             // No room for the character preview beside the panel on a phone.
             previewPanel.gameObject.SetActive(open && !touch && !stashOpen);
@@ -764,22 +760,25 @@ namespace PoeClone.Inventory
         {
             float gridSize = PlayerInventory.StashSize * StashCell;
 
-            Image back = UiKit.NewImage("StashPanel", canvas.transform, UiKit.PanelColor);
-            UiKit.Grain(back);
+            // The stash is the left section of the inventory panel itself (which widens to make
+            // room), so it shares the panel's background, border and X.
+            Image back = UiKit.NewImage("StashPanel", panel, Color.clear);
             back.raycastTarget = true;
             stashPanel = back.rectTransform;
-            stashPanel.anchorMin = new Vector2(1f, 0.5f);
-            stashPanel.anchorMax = new Vector2(1f, 0.5f);
-            stashPanel.pivot = new Vector2(1f, 0.5f);
-            stashPanel.anchoredPosition = new Vector2(-(30f + panelW + 16f), 0f);
+            stashPanel.anchorMin = new Vector2(0f, 0.5f);
+            stashPanel.anchorMax = new Vector2(0f, 0.5f);
+            stashPanel.pivot = new Vector2(0f, 0.5f);
+            stashPanel.anchoredPosition = Vector2.zero;
             stashPanel.sizeDelta = new Vector2(gridSize + Pad * 2f, gridSize + Pad * 2f + 34f + TabRowHeight + NoteHeight);
-            UiKit.AddOutline(back, UiKit.BorderColor, 3f);
             TouchMode.AddMenuBlocker(stashPanel);
-            UiKit.CloseButton(stashPanel, () =>
-            {
-                if (!SpectatorMirror.Active)
-                    CloseStash();
-            });
+
+            // A divider between the stash section and the equipment/bag section.
+            Image divider = UiKit.NewImage("Divider", stashPanel, UiKit.BorderColor);
+            divider.rectTransform.anchorMin = new Vector2(1f, 0f);
+            divider.rectTransform.anchorMax = new Vector2(1f, 1f);
+            divider.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            divider.rectTransform.anchoredPosition = Vector2.zero;
+            divider.rectTransform.sizeDelta = new Vector2(2f, -Pad * 2f);
 
             sideTitle = UiKit.NewText("Title", stashPanel, "STASH", 24, UiKit.Gold, TextAnchor.UpperCenter);
             UiKit.TopLeft(sideTitle.rectTransform, new Vector2(0f, -12f), new Vector2(stashPanel.sizeDelta.x, 30f));
@@ -895,23 +894,38 @@ namespace PoeClone.Inventory
 
         private void BeginRenameTab(int tab)
         {
+            if (renamingTab >= 0)
+                EndRenameTab(tabNameField.text);
             renamingTab = tab;
+            tabNameFocusPending = true;
             RefreshStashTabs();
             RectTransform field = (RectTransform)tabNameField.transform;
             field.anchoredPosition = stashTabButtons[tab].rectTransform.anchoredPosition;
             tabNameField.gameObject.SetActive(true);
             tabNameField.text = inventory.StashTabName(tab);
+            // The button is still handling the double-click. Let its pointer event finish before
+            // selecting the field, otherwise the button can take focus straight back.
+            StartCoroutine(FocusTabNameField(tab));
+        }
+
+        private IEnumerator FocusTabNameField(int tab)
+        {
+            yield return null;
+            if (renamingTab != tab || !tabNameField.gameObject.activeInHierarchy)
+                yield break;
             tabNameField.Select();
             tabNameField.ActivateInputField();
             tabNameField.caretPosition = tabNameField.text.Length;
+            tabNameFocusPending = false;
         }
 
         private void EndRenameTab(string name)
         {
-            if (renamingTab < 0)
+            if (renamingTab < 0 || (tabNameFocusPending && tabNameField.gameObject.activeInHierarchy))
                 return;
             int tab = renamingTab;
             renamingTab = -1;
+            tabNameFocusPending = false;
             UiKit.EnterHandledFrame = Time.frameCount; // the Enter that finished it mustn't open the chat
             UiKit.TextEditEndedFrame = Time.frameCount;
             inventory.RenameStashTab(tab, name);
@@ -1116,7 +1130,7 @@ private Vector2 CellSize(int w, int h)
             panel.sizeDelta = new Vector2(panelW, panelH);
             UiKit.AddOutline(panelImage, UiKit.BorderColor, 3f);
             TouchMode.AddMenuBlocker(panel);
-            UiKit.CloseButton(panel, Close);
+            RectTransform closeButton = UiKit.CloseButton(panel, Close);
 
             // Character preview panel, just to the left of the inventory.
             Image previewBg = UiKit.NewImage("PreviewPanel", canvas.transform, UiKit.PanelColor);
@@ -1141,9 +1155,16 @@ private Vector2 CellSize(int w, int h)
                 UiKit.Stretch((RectTransform)rawGo.transform, 8f);
             }
 
+            // Equipment and bag keep the panel's right edge, so the stash can widen it leftwards.
+            RectTransform bagArea = UiKit.NewRect("Bag", panel);
+            bagArea.anchorMin = new Vector2(1f, 0.5f);
+            bagArea.anchorMax = new Vector2(1f, 0.5f);
+            bagArea.pivot = new Vector2(1f, 0.5f);
+            bagArea.anchoredPosition = Vector2.zero;
+            bagArea.sizeDelta = new Vector2(panelW, panelH);
+
             // Equipment board (top).
-            RectTransform equipArea = UiKit.NewRect("Equipment", panel);
-            equipmentArea = equipArea;
+            RectTransform equipArea = UiKit.NewRect("Equipment", bagArea);
             equipArea.anchorMin = new Vector2(0.5f, 1f);
             equipArea.anchorMax = new Vector2(0.5f, 1f);
             equipArea.pivot = new Vector2(0.5f, 1f);
@@ -1153,16 +1174,12 @@ private Vector2 CellSize(int w, int h)
             foreach (SlotLayout l in Layout)
                 BuildSlot(equipArea, l);
 
-            stashBagTitle = UiKit.NewText("StashBagTitle", panel, "INVENTORY", 24, UiKit.Gold, TextAnchor.UpperCenter);
-            UiKit.TopLeft(stashBagTitle.rectTransform, new Vector2(0f, -12f), new Vector2(panelW, 30f));
-            stashBagTitle.gameObject.SetActive(false);
-
             // The potion slots, either side of the body armour: only potions go here, and they stack.
             BuildPotionSlot(equipArea, 0, 2, 2);
             BuildPotionSlot(equipArea, 1, 5, 2);
 
             // Inventory grid (bottom).
-            gridArea = UiKit.NewRect("Grid", panel);
+            gridArea = UiKit.NewRect("Grid", bagArea);
             gridArea.anchorMin = new Vector2(0.5f, 0f);
             gridArea.anchorMax = new Vector2(0.5f, 0f);
             gridArea.pivot = new Vector2(0.5f, 0f);
@@ -1191,6 +1208,7 @@ private Vector2 CellSize(int w, int h)
             gridHighlight.enabled = false;
 
             BuildStash(panelW, panelH);
+            closeButton.SetAsLastSibling(); // above the stash section added after it
 
             BuildTooltip();
         }
