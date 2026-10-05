@@ -4,7 +4,7 @@ namespace PoeClone.Inventory
 {
     /// <summary>
     /// The gear a new character finds lying around them at the start (StarterLoot puts it on the
-    /// ground): plain, Normal-rarity items with just their base stats, including a sword,
+    /// ground): Normal-rarity items including a sword (carrying Cleave),
     /// a bow (carrying Split Shot), a staff (whose attack is Fire Bolt) and a summoner's sceptre (carrying Raise Skeletons). The
     /// boots carry Dash, so the skill bar has something on it from the start.
     /// </summary>
@@ -26,6 +26,8 @@ namespace PoeClone.Inventory
                     item = WithSkill(item, StatType.GrantRaiseSkeletons, 1);
                 if (id == "short_bow")
                     item = WithSkill(item, StatType.GrantSplitShot, 1);
+                if (id == "rusty_sword")
+                    item = WithSkill(item, StatType.GrantCleave, 1);
                 items.Add(item);
             }
             return items;

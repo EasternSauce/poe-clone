@@ -60,6 +60,8 @@ namespace PoeClone.Enemies
         public float BarHeight => EnemyKinds.Get(KindIndex).BarHeight;
 
         public event Action Damaged;
+        /// <summary>Whether the hit currently notifying Damaged is allowed to trigger enrage.</summary>
+        public bool LastHitCanEnrage { get; private set; } = true;
         /// <summary>Damage after this enemy's defences, before the life pool clamps it.</summary>
         public event Action<float> DamageApplied;
         public event Action Died;
@@ -122,7 +124,8 @@ namespace PoeClone.Enemies
             TakeDamage(amount, type, 0f, 0f);
         }
 
-        public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration, bool throughExposedHead = false)
+        public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration, bool throughExposedHead = false,
+            bool canEnrage = true)
         {
             if (dead || amount <= 0f)
                 return 0f;
@@ -152,6 +155,7 @@ namespace PoeClone.Enemies
             DamageApplied?.Invoke(amount);
             float least = Mathf.Max(0f, Floor);
             currentHealth = Mathf.Max(least, currentHealth - amount);
+            LastHitCanEnrage = canEnrage;
             Damaged?.Invoke();
 
             if (currentHealth <= 0f)

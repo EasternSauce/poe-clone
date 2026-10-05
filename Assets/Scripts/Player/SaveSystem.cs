@@ -193,6 +193,9 @@ namespace PoeClone.Player
             }
 
             Load(stats);
+            // A save can name skills from gear this character no longer wears, and a new
+            // character must not inherit bindings from the scene player or another profile.
+            stats.GetComponent<PlayerSkills>()?.ClearUnavailableSlots();
             loaded = true;
             nextSave = Time.unscaledTime + SaveEvery;
             GameSessionController.Instance?.NotifyCharacterLoaded();
@@ -276,6 +279,8 @@ namespace PoeClone.Player
                 {
                     SkillId? id = skills.Slot(k);
                     data.skillSlots.Add(id.HasValue ? (int)id.Value : -1);
+                    data.skillSourceSlots.Add(skills.SourceSlotAt(k));
+                    data.skillGrantLevels.Add(skills.GrantLevelAt(k));
                 }
             }
 
@@ -383,10 +388,15 @@ namespace PoeClone.Player
                         ? (k < 4 ? k : k == 4 ? 8 : k == 5 ? -1 : k == 6 ? 9 : k == 7 ? 10 : k - 4)
                         : k;
                     if (slot < 0 || slot >= SkillBook.SlotCount) continue;
+                    skills.ClearSlot(slot);
                     if (data.skillSlots[k] < 0)
-                        skills.ClearSlot(slot);
+                        continue;
+                    else if (data.skillSourceSlots != null && k < data.skillSourceSlots.Count &&
+                             data.skillGrantLevels != null && k < data.skillGrantLevels.Count &&
+                             data.skillSourceSlots[k] >= 0 && data.skillSourceSlots[k] < SlotRules.AllSlots.Length)
+                        skills.Assign(slot, (SkillId)data.skillSlots[k], (EquipSlot)data.skillSourceSlots[k], data.skillGrantLevels[k]);
                     else
-                        skills.Assign(slot, (SkillId)data.skillSlots[k]);
+                        skills.Assign(slot, (SkillId)data.skillSlots[k]); // old saves: choose one current grant
                 }
             }
 

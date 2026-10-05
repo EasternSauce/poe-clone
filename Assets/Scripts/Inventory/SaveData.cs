@@ -114,6 +114,8 @@ namespace PoeClone.Inventory
         public List<string> passives = new List<string>();
         public int respecCharges = 1;
         public List<int> skillSlots = new List<int>();     // SkillId per slot, -1 for empty
+        public List<int> skillSourceSlots = new List<int>(); // equipped source slot per binding
+        public List<int> skillGrantLevels = new List<int>(); // base level on that source item
         public int barLayoutVersion;                         // 0: old mouse-first order; 1: current bar order
         public List<string> questsDone = new List<string>();
         public List<QuestRecord> questsActive = new List<QuestRecord>();

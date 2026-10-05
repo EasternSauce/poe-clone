@@ -116,14 +116,16 @@ namespace PoeClone.Inventory
 
         private static void BuildVenom()
         {
-            Sector(PassiveBranch.Grace, 315f);
-            N("v1", "Toxic Blades", 2.1f, 0.65f, Mod(StatType.PoisonDamage, 10), Mod(StatType.DamageOverTime, 6));
-            N("v2", "Venomous Wounds", 2.4f, 0.78f, Mod(StatType.PoisonPenetration, 6), Mod(StatType.PoisonDamage, 8));
-            Nt("v3", "Path of Venom", 2.7f, 0.92f, Mod(StatType.PoisonDamage, 18), Mod(StatType.DamageOverTime, 12), Mod(StatType.PoisonPenetration, 8));
-            Ks("k_viper", "Viper's Kiss", 3.0f, 1.08f, Mod(StatType.PoisonDamage, 30), Mod(StatType.DamageOverTime, 20), Mod(StatType.PoisonResistance, 15));
+            // Fan the poison path below the bow loop. Keeping it in Grace's frame makes its
+            // spacing from Deadeye, Volley and Phase Run easier to maintain.
+            Sector(PassiveBranch.Grace, 330f);
+            N("v1", "Toxic Blades", 2.81f, -0.17f, Mod(StatType.PoisonDamage, 10), Mod(StatType.DamageOverTime, 6));
+            N("v2", "Venomous Wounds", 3.18f, -0.30f, Mod(StatType.PoisonPenetration, 6), Mod(StatType.PoisonDamage, 8));
+            Nt("v3", "Path of Venom", 3.69f, -0.23f, Mod(StatType.PoisonDamage, 18), Mod(StatType.DamageOverTime, 12), Mod(StatType.PoisonPenetration, 8));
+            Ks("k_viper", "Viper's Kiss", 4.16f, -0.23f, Mod(StatType.PoisonDamage, 30), Mod(StatType.DamageOverTime, 20), Mod(StatType.PoisonResistance, 15));
             Chain("g10", "v1", "v2", "v3", "k_viper");
-            N("v4", "Caustic Blood", 2.4f, 0.38f, Mod(StatType.PoisonResistance, 12), Mod(StatType.LifeRegen, 2));
-            N("v5", "Lingering Toxin", 2.7f, 0.42f, Mod(StatType.DamageOverTime, 10), Mod(StatType.PoisonPenetration, 5));
+            N("v4", "Caustic Blood", 3.16f, 0.09f, Mod(StatType.PoisonResistance, 12), Mod(StatType.LifeRegen, 2));
+            N("v5", "Lingering Toxin", 3.55f, 0.15f, Mod(StatType.DamageOverTime, 10), Mod(StatType.PoisonPenetration, 5));
             Chain("g_deadeye", "v4", "v5", "v3");
         }
 
@@ -234,7 +236,7 @@ namespace PoeClone.Inventory
             Nt("g_deadeye", "Deadeye", 2.6f, 0.3f, Mod(StatType.AttackDamage, 10), Mod(StatType.CriticalChance, 4), Mod(StatType.BowDamage, 5));
             Devotion("g_deadeye", Mod(StatType.AttackSpeed, 0.5f));
             Chain("g10", "g_deadeye");
-            Ks("k_volley", "Volley", 3.0f, 0.35f, Mod(StatType.AdditionalArrows, 1), Mod(StatType.BowDamage, 5));
+            Ks("k_volley", "Volley", 2.83f, 0.69f, Mod(StatType.AdditionalArrows, 1), Mod(StatType.BowDamage, 5));
             Chain("g_deadeye", "k_volley");
             N("g_shaft", "True Shaft", 3.3f, 0.62f, Mod(StatType.BowDamage, 5));
             Nt("g_longshot", "Longshot", 3.6f, 0.78f, Mod(StatType.BowDamage, 5));

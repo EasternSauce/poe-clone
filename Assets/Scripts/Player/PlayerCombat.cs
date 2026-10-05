@@ -61,6 +61,7 @@ namespace PoeClone.Player
         private bool castPending;
         // The bow skill the pending shot is (the one on when the draw started), if any.
         private PoeClone.Skills.SkillId? bowSkillPending;
+        private int bowLevelPending;
 
         // Degrees between the arrows of a volley (extra arrows fan out round the aim).
         public const float ArrowSpreadDegrees = 9f;
@@ -139,6 +140,7 @@ namespace PoeClone.Player
             swingPending = false;
             castPending = false;
             bowSkillPending = null;
+            bowLevelPending = 0;
             cooldownTimer = 0f;
         }
 
@@ -182,7 +184,8 @@ namespace PoeClone.Player
                                 !HoldingInventoryItem();
             }
 
-            if (attackPressed && cooldownTimer <= 0f && attackAnimator != null && !attackAnimator.IsAttacking)
+            if (attackPressed && cooldownTimer <= 0f && (controller == null || !controller.IsSkillCommitted) &&
+                attackAnimator != null && !attackAnimator.IsAttacking)
                 StartAttack();
         }
 
@@ -244,6 +247,7 @@ namespace PoeClone.Player
 
             // A bow skill that's on replaces the plain shot: its own draw, and its own pace.
             bowSkillPending = CharacterAttackAnimator.IsRanged(weaponType) && SkillSet != null ? SkillSet.ActiveBowSkill : null;
+            bowLevelPending = bowSkillPending != null ? SkillSet.ActiveBowLevel : 0;
 
             float attacksPerSecond = ComputeAttacksPerSecond(weaponType);
             if (bowSkillPending != null)
@@ -351,9 +355,10 @@ namespace PoeClone.Player
                 int arrows = ArrowCount();
                 if (bowSkillPending != null && SkillSet != null)
                 {
-                    SkillSet.ReleaseBow(bowSkillPending.Value, pendingDamage, range, arrows,
+                    SkillSet.ReleaseBow(bowSkillPending.Value, bowLevelPending, pendingDamage, range, arrows,
                         BowTarget(range * PlayerArrow.BowRangeMultiplier));
                     bowSkillPending = null;
+                    bowLevelPending = 0;
                     return;
                 }
                 var volley = PlayerArrow.NewVolley();
@@ -391,7 +396,7 @@ namespace PoeClone.Player
                 {
                     if (target is EnemyHealth enemy)
                     {
-                        HitEffects.Deal(transform, enemy, pendingDamage, attack: true, CombatText.PhysicalColor);
+                        HitEffects.Deal(transform, enemy, pendingDamage, attack: true, CombatText.PhysicalColor, melee: true);
                         if (marks && !enemy.IsDead && (toMark == null || enemy == aimEnemy))
                             toMark = enemy;
                         continue;

@@ -57,6 +57,7 @@ namespace PoeClone.Visuals
         {
             public float Duration;
             public float StrikeTime; // fraction of Duration where the hit lands
+            public float SwingStart; // optional fraction where the windup turns into a visible strike
             public Pose WindupOffset;
             public Pose StrikeOffset;
             public float BaseAttacksPerSecond;
@@ -258,15 +259,15 @@ namespace PoeClone.Visuals
 
         private static readonly AttackProfile PulverizeMaceProfile = new AttackProfile
         {
-            Duration = 0.9f, StrikeTime = 0.8f,
-            WindupOffset = new Pose(78f, -4f, -8f, 55f),
-            StrikeOffset = new Pose(-55f, 2f, 0f, -20f),
+            Duration = 0.9f, StrikeTime = 0.8f, SwingStart = 0.58f,
+            WindupOffset = new Pose(-145f, -4f, -8f, 25f),
+            StrikeOffset = new Pose(-8f, 2f, 0f, 0f),
             BaseAttacksPerSecond = 0.8f, Range = 2.5f
         };
 
         private static readonly AttackProfile PulverizeMaulProfile = new AttackProfile
         {
-            Duration = 0.9f, StrikeTime = 0.8f, TwoHandGrip = true,
+            Duration = 0.9f, StrikeTime = 0.8f, SwingStart = 0.58f, TwoHandGrip = true,
             WindupOffset = new Pose(-165f, 0f, 0f, 0f),
             StrikeOffset = new Pose(-2f, 0f, 0f, 0f),
             BaseAttacksPerSecond = 0.72f, Range = 2.7f
@@ -687,7 +688,22 @@ namespace PoeClone.Visuals
 
             Pose pose;
             Pose offPose = rest;
-            if (f < p.StrikeTime)
+            if (p.SwingStart > 0f && f < p.StrikeTime)
+            {
+                if (f < p.SwingStart)
+                {
+                    float t = EaseOut(f / p.SwingStart);
+                    pose = Lerp(rest, windup, t);
+                    offPose = Lerp(rest, p.OffWindup, t);
+                }
+                else
+                {
+                    float t = (f - p.SwingStart) / (p.StrikeTime - p.SwingStart);
+                    pose = Lerp(windup, strike, t);
+                    offPose = Lerp(p.OffWindup, p.OffStrike, t);
+                }
+            }
+            else if (f < p.StrikeTime)
             {
                 float t = EaseOut(p.StrikeTime > 0f ? f / p.StrikeTime : 1f);
                 pose = Lerp(rest, windup, t);
@@ -728,7 +744,13 @@ namespace PoeClone.Visuals
             {
                 TorsoYaw = fromRest.ArmYaw * 0.35f;
                 TorsoPitch = -fromRest.ArmPitch * 0.14f;
-                float step = f < p.StrikeTime ? -0.3f * EaseOut(f / Mathf.Max(0.01f, p.StrikeTime)) : 1f - (f - p.StrikeTime) / Mathf.Max(0.01f, 1f - p.StrikeTime);
+                float step;
+                if (p.SwingStart > 0f && f < p.StrikeTime)
+                    step = f < p.SwingStart
+                        ? -0.3f * EaseOut(f / p.SwingStart)
+                        : Mathf.Lerp(-0.3f, 1f, (f - p.SwingStart) / (p.StrikeTime - p.SwingStart));
+                else
+                    step = f < p.StrikeTime ? -0.3f * EaseOut(f / Mathf.Max(0.01f, p.StrikeTime)) : 1f - (f - p.StrikeTime) / Mathf.Max(0.01f, 1f - p.StrikeTime);
                 Lunge = f < p.StrikeTime ? step * 0.12f : Mathf.Sin(step * Mathf.PI * 0.5f) * 0.16f;
 
                 // A great weapon carries the whole body: it rears back while hauling the weapon up
@@ -736,7 +758,11 @@ namespace PoeClone.Visuals
                 if (p.TwoHandGrip)
                 {
                     TorsoYaw = fromRest.ArmYaw * 0.45f;
-                    TorsoPitch = f < p.StrikeTime ? -12f * EaseOut(f / Mathf.Max(0.01f, p.StrikeTime)) : 22f * step;
+                    TorsoPitch = p.SwingStart > 0f && f < p.StrikeTime
+                        ? (f < p.SwingStart
+                            ? -12f * EaseOut(f / p.SwingStart)
+                            : Mathf.Lerp(-12f, 22f, (f - p.SwingStart) / (p.StrikeTime - p.SwingStart)))
+                        : (f < p.StrikeTime ? -12f * EaseOut(f / Mathf.Max(0.01f, p.StrikeTime)) : 22f * step);
                     Lunge *= 1.6f;
                 }
             }

@@ -70,8 +70,8 @@ namespace PoeClone.UI
             terrain.rectTransform.sizeDelta = new Vector2(Size, Size);
 
             playerDot = UiKit.NewImage("Player", frame, Color.white);
-            playerDot.sprite = UiKit.Disc;
-            playerDot.rectTransform.sizeDelta = new Vector2(11f, 11f);
+            playerDot.sprite = IconFactory.Facing;
+            playerDot.rectTransform.sizeDelta = new Vector2(17f, 17f);
             playerDot.rectTransform.anchorMin = playerDot.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             UiKit.AddOutline(playerDot, Color.black, 1.5f);
 
@@ -121,6 +121,9 @@ namespace PoeClone.UI
 
             Vector3 centre = WorldBuilder.Center(areas.CurrentAreaIndex);
             playerDot.rectTransform.anchoredPosition = Rotate(ToMap(player.transform.position, centre), yaw);
+            Vector3 forward = player.transform.forward;
+            Vector2 heading = Rotate(new Vector2(forward.x, forward.z), yaw);
+            playerDot.rectTransform.localRotation = Quaternion.Euler(0f, 0f, Vector2.SignedAngle(Vector2.up, heading));
 
             if (Time.unscaledTime < nextRefresh)
                 return;

@@ -36,8 +36,13 @@ namespace PoeClone.Skills
         private static readonly Key[] SlotKeys = { Key.Q, Key.E, Key.R, Key.F, Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4 };
 
         private readonly SkillId?[] slots = new SkillId?[SkillBook.SlotCount];
+        private readonly ItemData[] slotItems = new ItemData[SkillBook.SlotCount];
+        private readonly EquipSlot[] slotSources = new EquipSlot[SkillBook.SlotCount];
+        private readonly int[] slotGrants = new int[SkillBook.SlotCount];
         private readonly Dictionary<SkillId, float> readyAt = new Dictionary<SkillId, float>();
         private readonly Dictionary<SkillId, float> cooldownOf = new Dictionary<SkillId, float>();
+        private readonly float[] slotReadyAt = new float[SkillBook.SlotCount];
+        private readonly float[] slotCooldownOf = new float[SkillBook.SlotCount];
         // Roomy: in a cluttered spot (Haven's plaza, a ruin) the scenery alone can fill a small
         // buffer and push the enemies out of it.
         private readonly Collider[] buffer = new Collider[256];
@@ -285,7 +290,10 @@ namespace PoeClone.Skills
                 boundMainHand = item;
             }
             CheckBowToggle();
-            FillEmptySlots(announce: item != null);
+            if (item == null)
+                ClearUnavailableSlots();
+            else
+                FillEmptySlots(announce: true);
         }
 
         private void OnStatsChanged()
@@ -317,9 +325,12 @@ namespace PoeClone.Skills
                         granted = Mathf.Max(granted, Mathf.RoundToInt(m.Value));
                 }
             }
-            if (granted <= 0)
-                return 0;
+            return LevelFromGrant(skill, granted);
+        }
 
+        private int LevelFromGrant(SkillDefinition skill, int granted)
+        {
+            if (granted <= 0) return 0;
             int bonus = 0;
             if (skill.Summon)
             {
@@ -340,6 +351,65 @@ namespace PoeClone.Skills
                     bonus += Mathf.RoundToInt(Stat(StatType.LightningSpellLevels));
             }
             return Mathf.Max(1, granted + bonus);
+        }
+
+        public struct SkillGrant
+        {
+            public SkillId Id;
+            public EquipSlot Source;
+            public int GrantLevel;
+            public ItemData Item;
+        }
+
+        /// <summary>Every usable grant is its own bindable entry, even for the same skill and level.</summary>
+        public List<SkillGrant> AvailableGrants()
+        {
+            var grants = new List<SkillGrant>();
+            if (inventory == null) return grants;
+            foreach (EquipSlot source in SlotRules.AllSlots)
+            {
+                ItemData item = inventory.Equipment.Get(source);
+                if (item == null) continue;
+                foreach (StatModifier mod in item.Modifiers)
+                {
+                    SkillDefinition skill = SkillBook.ForGrant(mod.Stat);
+                    if (skill == null || !CanUseWithWeapon(skill.Id, CurrentWeapon()) ||
+                        (skill.Bow && CurrentWeapon() != WeaponType.Bow) || MainSkill == skill.Id)
+                        continue;
+                    int grantLevel = Mathf.RoundToInt(mod.Value);
+                    if (grantLevel > 0)
+                    {
+                        int existing = grants.FindIndex(g => g.Id == skill.Id && g.Item == item);
+                        var grant = new SkillGrant { Id = skill.Id, Source = source, GrantLevel = grantLevel, Item = item };
+                        if (existing < 0) grants.Add(grant);
+                        else if (grantLevel > grants[existing].GrantLevel) grants[existing] = grant;
+                    }
+                }
+            }
+            return grants;
+        }
+
+        public int LevelAt(int slot) => slot >= 0 && slot < slots.Length && slots[slot] != null &&
+            BindingValid(slot) ? LevelFromGrant(SkillBook.Get(slots[slot].Value), slotGrants[slot]) : 0;
+        public int GrantLevelWithBonuses(SkillGrant grant) => LevelFromGrant(SkillBook.Get(grant.Id), grant.GrantLevel);
+
+        public int SourceSlotAt(int slot) => slot >= 0 && slot < slots.Length && slots[slot] != null ? (int)slotSources[slot] : -1;
+        public int GrantLevelAt(int slot) => slot >= 0 && slot < slots.Length && slots[slot] != null ? slotGrants[slot] : 0;
+        public bool MatchesGrant(int slot, SkillGrant grant) => slot >= 0 && slot < slots.Length &&
+            slots[slot] == grant.Id && slotItems[slot] == grant.Item && slotGrants[slot] == grant.GrantLevel;
+        public bool MatchesSource(int slot, SkillId id, EquipSlot source, int grantLevel) =>
+            slot >= 0 && slot < slots.Length && slots[slot] == id && slotSources[slot] == source &&
+            slotGrants[slot] == grantLevel && BindingValid(slot);
+
+        private bool BindingValid(int slot)
+        {
+            if (slots[slot] == null || slotItems[slot] == null || inventory == null ||
+                inventory.Equipment.Get(slotSources[slot]) != slotItems[slot] || !CanBind(slots[slot].Value))
+                return false;
+            foreach (StatModifier mod in slotItems[slot].Modifiers)
+                if (mod.Stat == SkillBook.Get(slots[slot].Value).Grant && Mathf.RoundToInt(mod.Value) == slotGrants[slot])
+                    return true;
+            return false;
         }
 
         /// <summary>
@@ -383,6 +453,16 @@ namespace PoeClone.Skills
             return Level(id) > 0 && MainSkill != id;
         }
 
+        /// <summary>Whether the current gear both grants this skill and can use it.</summary>
+        public bool CanBind(SkillId id)
+        {
+            if (!IsUnlocked(id))
+                return false;
+            SkillDefinition skill = SkillBook.Get(id);
+            WeaponType weapon = CurrentWeapon();
+            return (!skill.Bow || weapon == WeaponType.Bow) && CanUseWithWeapon(id, weapon);
+        }
+
         /// <summary>Which worn item grants the skill (the one at the highest level), for the skills panel.</summary>
         public ItemData Source(SkillId id)
         {
@@ -421,23 +501,83 @@ namespace PoeClone.Skills
             if (slot < 0 || slot >= slots.Length || slots[slot] == null)
                 return;
             slots[slot] = null;
+            slotItems[slot] = null;
+            slotReadyAt[slot] = slotCooldownOf[slot] = 0f;
+            CheckBowToggle();
             Changed?.Invoke();
         }
 
         /// <summary>
-        /// Puts a skill in a slot. Not the staff's attack. A skill
-        /// the gear doesn't grant right now may still be placed (a loaded save, a spectator's copy):
-        /// it waits there, greyed out, until gear grants it again.
+        /// Puts a usable skill in a slot. Disabled spectator replicas may receive remote bindings
+        /// before their replicated gear arrives.
         /// </summary>
         public void Assign(int slot, SkillId id)
         {
-            if (slot < 0 || slot >= slots.Length || MainSkill == id)
+            SkillGrant? first = null;
+            foreach (SkillGrant grant in AvailableGrants())
+            {
+                if (grant.Id != id) continue;
+                if (!first.HasValue) first = grant;
+                bool alreadyBound = false;
+                for (int k = 0; k < slots.Length; k++)
+                    if (MatchesGrant(k, grant)) alreadyBound = true;
+                if (!alreadyBound) { Assign(slot, grant.Id, grant.Source, grant.GrantLevel); return; }
+            }
+            if (first.HasValue) { Assign(slot, id, first.Value.Source, first.Value.GrantLevel); return; }
+            if (!enabled && slot >= 0 && slot < slots.Length)
+            {
+                slots[slot] = id;
+                slotItems[slot] = null;
+                Changed?.Invoke();
+            }
+        }
+
+        public void Assign(int slot, SkillId id, EquipSlot source, int grantLevel)
+        {
+            if (slot < 0 || slot >= slots.Length) return;
+            foreach (SkillGrant grant in AvailableGrants())
+            {
+                if (grant.Id != id || grant.Source != source || grant.GrantLevel != grantLevel) continue;
+                if (enabled) PlayerPotions.SetPotionAt(slot, 0);
+                if (MatchesGrant(slot, grant)) return;
+                float sharedReady = 0f, sharedCooldown = 0f;
+                for (int k = 0; k < slots.Length; k++)
+                    if (k != slot && MatchesGrant(k, grant))
+                    {
+                        sharedReady = slotReadyAt[k];
+                        sharedCooldown = slotCooldownOf[k];
+                        break;
+                    }
+                slots[slot] = id;
+                slotItems[slot] = grant.Item;
+                slotSources[slot] = source;
+                slotGrants[slot] = grantLevel;
+                slotReadyAt[slot] = sharedReady;
+                slotCooldownOf[slot] = sharedCooldown;
+                CheckBowToggle();
+                Changed?.Invoke();
                 return;
+            }
+        }
 
-            if (enabled) PlayerPotions.SetPotionAt(slot, 0);
-
-            slots[slot] = id;
-            Changed?.Invoke();
+        /// <summary>Removes every binding no longer usable with the equipped gear.</summary>
+        public void ClearUnavailableSlots()
+        {
+            bool changed = false;
+            for (int k = 0; k < slots.Length; k++)
+            {
+                if (slots[k] == null || BindingValid(k))
+                    continue;
+                slots[k] = null;
+                slotItems[k] = null;
+                slotReadyAt[k] = slotCooldownOf[k] = 0f;
+                changed = true;
+            }
+            if (changed)
+            {
+                CheckBowToggle();
+                Changed?.Invoke();
+            }
         }
 
         /// <summary>Cooldown at the skill's current level, after Cooldown Recovery (or the cast interval for the attack spell).</summary>
@@ -452,6 +592,34 @@ namespace PoeClone.Skills
                 return cooldown / ((1f + Mathf.Max(-50f, Stat(StatType.CastSpeed)) / 100f) * onslaught);
             return cooldown / (1f + Mathf.Max(-50f, Stat(StatType.CooldownRecovery)) / 100f);
         }
+
+        public float CooldownAt(int slot)
+        {
+            SkillId? id = Slot(slot);
+            if (id == null) return 0f;
+            SkillDefinition skill = SkillBook.Get(id.Value);
+            if (skill.Bow) return 0f;
+            return skill.CooldownAt(Mathf.Max(1, LevelAt(slot))) /
+                (1f + Mathf.Max(-50f, Stat(StatType.CooldownRecovery)) / 100f);
+        }
+
+        public float CooldownForGrant(SkillGrant grant)
+        {
+            SkillDefinition skill = SkillBook.Get(grant.Id);
+            if (skill.Bow) return 0f;
+            return skill.CooldownAt(GrantLevelWithBonuses(grant)) /
+                (1f + Mathf.Max(-50f, Stat(StatType.CooldownRecovery)) / 100f);
+        }
+
+        public float ManaCostForGrant(SkillGrant grant) =>
+            SkillBook.Get(grant.Id).ManaCostAt(GrantLevelWithBonuses(grant));
+
+        public float CooldownLeftAt(int slot) => slot >= 0 && slot < slots.Length ? Mathf.Max(0f, slotReadyAt[slot] - Time.time) : 0f;
+        public float CooldownTotalAt(int slot) => slot >= 0 && slot < slots.Length
+            ? (slotCooldownOf[slot] > 0f ? slotCooldownOf[slot] : CooldownAt(slot)) : 0f;
+        public float ManaCostAt(int slot) => Slot(slot) != null
+            ? SkillBook.Get(Slot(slot).Value).ManaCostAt(Mathf.Max(1, LevelAt(slot))) : 0f;
+        public bool CanAffordAt(int slot) => stats != null && stats.CurrentMana >= ManaCostAt(slot);
 
         public float CooldownLeft(SkillId id)
         {
@@ -474,27 +642,18 @@ namespace PoeClone.Skills
             return stats != null && stats.CurrentMana >= ManaCost(id);
         }
 
-        // Newly granted skills go into the first free slot (or one holding a skill no longer
-        // granted), so nobody has to open the skills panel to get going.
+        // Newly granted item skills go into free slots; removing an item clears only its grants.
         private void FillEmptySlots(bool announce)
         {
-            SkillId? main = MainSkill;
+            ClearUnavailableSlots();
             bool changed = false;
-            foreach (SkillDefinition skill in SkillBook.All)
+            foreach (SkillGrant grant in AvailableGrants())
             {
-                if (skill.Id == main)
-                {
-                    // The attack has no bar slot.
-                    int at = Array.IndexOf(slots, (SkillId?)skill.Id);
-                    if (at >= 0)
-                    {
-                        slots[at] = null;
-                        changed = true;
-                    }
-                    continue;
-                }
-                if (!IsUnlocked(skill.Id) || Array.IndexOf(slots, (SkillId?)skill.Id) >= 0)
-                    continue;
+                bool assigned = false;
+                for (int k = 0; k < slots.Length; k++)
+                    if (slots[k] == grant.Id && slotItems[k] == grant.Item && slotGrants[k] == grant.GrantLevel)
+                        assigned = true;
+                if (assigned) continue;
 
                 int free = -1;
                 for (int k = 0; k < slots.Length; k++)
@@ -502,20 +661,18 @@ namespace PoeClone.Skills
                     if (slots[k] == null && PlayerPotions.PotionAt(k) == 0) { free = k; break; }
                 }
                 if (free < 0)
-                {
-                    for (int k = 0; k < slots.Length && free < 0; k++)
-                    {
-                        if (PlayerPotions.PotionAt(k) == 0 && slots[k] != null && !IsUnlocked(slots[k].Value))
-                            free = k;
-                    }
-                }
-                if (free < 0)
                     continue;
 
-                slots[free] = skill.Id;
+                slots[free] = grant.Id;
+                slotItems[free] = grant.Item;
+                slotSources[free] = grant.Source;
+                slotGrants[free] = grant.GrantLevel;
                 changed = true;
                 if (announce)
+                {
+                    SkillDefinition skill = SkillBook.Get(grant.Id);
                     CombatText.Show(transform.position + Vector3.up * 2.2f, skill.Name + " (" + KeyLabel(free) + ")", skill.Color, 1.1f);
+                }
             }
 
             if (changed || announce)
@@ -542,7 +699,7 @@ namespace PoeClone.Skills
                 for (int k = 0; k < SlotKeys.Length; k++)
                 {
                     int slot = k < 4 ? k : k + 4;
-                    if (PlayerPotions.PotionAt(slot) == 0 && keyboard[SlotKeys[k]].wasPressedThisFrame)
+                    if (slots[slot] != null && keyboard[SlotKeys[k]].wasPressedThisFrame)
                         pressed = slot;
                 }
             }
@@ -552,9 +709,9 @@ namespace PoeClone.Skills
             Mouse mouse = Mouse.current;
             if (pressed < 0 && mouse != null && free && !TouchMode.Active && !PlayerController.IsPointerOverUi() && !DialogueUI.IsOpen)
             {
-                if (PlayerPotions.PotionAt(8) == 0 && mouse.rightButton.wasPressedThisFrame) pressed = 8;
-                else if (PlayerPotions.PotionAt(9) == 0 && mouse.backButton.wasPressedThisFrame) pressed = 9;
-                else if (PlayerPotions.PotionAt(10) == 0 && mouse.forwardButton.wasPressedThisFrame) pressed = 10;
+                if (slots[8] != null && mouse.rightButton.wasPressedThisFrame) pressed = 8;
+                else if (slots[9] != null && mouse.backButton.wasPressedThisFrame) pressed = 9;
+                else if (slots[10] != null && mouse.forwardButton.wasPressedThisFrame) pressed = 10;
             }
 
             if (pressed >= 0)
@@ -569,15 +726,15 @@ namespace PoeClone.Skills
                 return false;
 
             SkillDefinition skill = SkillBook.Get(id.Value);
-            int level = Level(skill.Id);
+            int level = LevelAt(slot);
             if (level <= 0 || MainSkill == skill.Id)
             {
                 CombatText.Show(transform.position + Vector3.up * 2f, skill.Name + ": not on your gear", UiKit.DimText, 0.8f);
                 return false;
             }
             if (skill.Bow)
-                return ToggleBow(skill);
-            if (CooldownLeft(skill.Id) > 0f || controller.IsDashing || controller.IsSkillCommitted)
+                return ToggleBow(skill, slot);
+            if (CooldownLeftAt(slot) > 0f || controller.IsDashing || controller.IsSkillCommitted)
                 return false;
 
             // Swinging skills wait for the current swing; Dash and Rejuvenate can cut in.
@@ -592,13 +749,19 @@ namespace PoeClone.Skills
                 return false;
             }
 
-            if (!stats.TrySpendMana(ManaCost(skill.Id)))
+            if (!stats.TrySpendMana(ManaCostAt(slot)))
             {
                 CombatText.Show(transform.position + Vector3.up * 2f, "Not enough mana", CombatText.ColdColor, 0.8f);
                 return false;
             }
 
-            StartCooldown(skill.Id);
+            float cooldown = CooldownAt(slot);
+            for (int k = 0; k < slots.Length; k++)
+                if (slots[k] == skill.Id && slotItems[k] == slotItems[slot] && slotGrants[k] == slotGrants[slot])
+                {
+                    slotCooldownOf[k] = cooldown;
+                    slotReadyAt[k] = Time.time + cooldown;
+                }
             controller.CancelWalk();
             Cast(skill, level);
             return true;
@@ -825,7 +988,7 @@ namespace PoeClone.Skills
             float damage = WeaponDamage() * (1.68f + 0.12f * (level - 1));
             PlaySkillSound(skill.Id, transform.position);
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
-                Hit(enemy, damage, CombatText.PhysicalColor, attack: true);
+                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
             controller.SetSkillCommit(false);
         }
 
@@ -883,7 +1046,7 @@ namespace PoeClone.Skills
         {
             switch (id)
             {
-                case SkillId.Cleave: return !CharacterAttackAnimator.IsRanged(weapon);
+                case SkillId.Cleave: return weapon != WeaponType.Unarmed && !CharacterAttackAnimator.IsRanged(weapon);
                 case SkillId.Pulverize: return weapon == WeaponType.Mace || weapon == WeaponType.Maul;
                 case SkillId.ReapingArc: return weapon == WeaponType.Axe || weapon == WeaponType.Greataxe;
                 case SkillId.LungingThrust: return weapon == WeaponType.Sword || weapon == WeaponType.Greatsword;
@@ -913,7 +1076,7 @@ namespace PoeClone.Skills
             Record(skill, level, radius);
             float damage = WeaponDamage() * (3.12f + 0.216f * (level - 1));
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, radius))
-                Hit(enemy, damage, CombatText.PhysicalColor, attack: true);
+                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
         }
 
         private void ReapingArc(SkillDefinition skill, int level)
@@ -925,7 +1088,7 @@ namespace PoeClone.Skills
                 Vector3 to = enemy.transform.position - transform.position;
                 to.y = 0f;
                 if (to.sqrMagnitude > 0.01f && Vector3.Angle(transform.forward, to) <= 72f)
-                    Hit(enemy, damage, CombatText.PhysicalColor, attack: true);
+                    Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
             }
             SkillEffects.Shockwave(transform.position + transform.forward * 1.8f, 2.8f, skill.Color, 0.34f);
             Record(skill, level, reach);
@@ -938,7 +1101,7 @@ namespace PoeClone.Skills
             EnemyHealth target = AimedEnemy(reach) ?? EnemyInDirection(transform.forward, reach);
             SkillEffects.Arc(transform.position + Vector3.up, transform.position + Vector3.up + transform.forward * reach, skill.Color, 0.25f);
             if (target != null)
-                Hit(target, damage, CombatText.PhysicalColor, attack: true);
+                Hit(target, damage, CombatText.PhysicalColor, attack: true, melee: true);
             Record(skill, level, reach);
         }
 
@@ -949,8 +1112,9 @@ namespace PoeClone.Skills
             Record(skill, level, reach);
             if (target != null)
             {
-                Hit(target, WeaponDamage() * (1.56f + 0.096f * (level - 1)), skill.Color, true);
-                WeaponVenom.Apply(transform, target, WeaponDamage() * 1.2f, 150f + 15f * (level - 1), 0f, inventory.Stats);
+                Hit(target, WeaponDamage() * (1.56f + 0.096f * (level - 1)), skill.Color, true, melee: true);
+                WeaponVenom.Apply(transform, target, WeaponDamage() * 1.2f, 150f + 15f * (level - 1), 0f, inventory.Stats,
+                    canEnrage: false);
             }
         }
 
@@ -958,10 +1122,10 @@ namespace PoeClone.Skills
         /// A summon's minions as they'd come out now ("max 2 · 97 life · 19 per hit"), so the
         /// skills panel shows what summon levels and minion stats buy. Null for other skills.
         /// </summary>
-        public string MinionSummary(SkillId id)
+        public string MinionSummary(SkillId id, int levelOverride = 0)
         {
             SkillDefinition skill = SkillBook.Get(id);
-            int level = Level(id);
+            int level = levelOverride > 0 ? levelOverride : Level(id);
             if (!skill.Summon || level <= 0)
                 return null;
             MinionKind kind = MinionKindOf(id);
@@ -1095,9 +1259,10 @@ namespace PoeClone.Skills
             Record(skill, level, 0f, 0, arc.ToArray());
         }
 
-        private void Hit(EnemyHealth enemy, float damage, Color color, bool attack, DamageType type = DamageType.Physical)
+        private void Hit(EnemyHealth enemy, float damage, Color color, bool attack, DamageType type = DamageType.Physical,
+            bool melee = false)
         {
-            HitEffects.Deal(transform, enemy, damage, attack, color, type);
+            HitEffects.Deal(transform, enemy, damage, attack, color, type, melee: melee);
         }
 
         // ------------------------------------------------------------------ teleport

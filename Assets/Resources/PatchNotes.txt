@@ -1,4 +1,14 @@
-version: 2026-10-05-character-style-stash-rename
+version: 2026-10-05-skill-bindings-and-melee
+- Skill bindings now belong to the specific equipped item and grant level. Each item shows a separate skill entry, even when another item grants the same skill. Removing that item clears only its bindings.
+- Selecting a character clears saved skill bindings that its current gear or weapon cannot use. New characters receive bindings only from gear they equip.
+- The minimap player marker now points in the direction the character faces.
+- The Rusty Sword on Haven's starter bench grants Cleave.
+- A skill assigned to a mouse or keyboard slot takes priority over a stale potion binding, so one press cannot trigger both.
+- Melee swings and melee skills no longer trigger enemy enrage, even when their hit reaches farther than usual.
+- Axes and hammers turn 90 degrees around their handles when held by a character.
+- Shortened item tooltips by removing explanations for penetration and Low Life, the Venom Cloud cooldown note, the bow's quiver note, and the "your attack" tag.
+- Pulverize now lifts a mace or maul overhead through its charge and visibly slams it down as the ground burst lands. Basic attacks cannot interrupt a committed strike.
+- Spread out the Grace poison passives and Volley so their nodes and paths no longer pile up around Deadeye.
 - Removed the old Area A/B/C scene objects and their editor builder; the real world now creates its own gates.
 - Returning to character selection now rebuilds the full world when a new character starts, instead of leaving the prototype Area A/B/C scene active.
 - Settings can return to character selection without refreshing the page; switching saves the current character first.

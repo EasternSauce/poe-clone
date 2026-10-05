@@ -653,7 +653,7 @@ namespace PoeClone.Inventory
                 case StatType.AttackDamage: return Increased(m, "Attack Damage");
                 case StatType.BowDamage: return n + "% more Bow Damage";
                 case StatType.Damage: return Increased(m, "Damage");
-                case StatType.DamageWhileLowLife: return Increased(m, "Damage while on Low Life (under half)");
+                case StatType.DamageWhileLowLife: return Increased(m, "Damage while on Low Life");
                 case StatType.IncreasedLife: return Increased(m, "Maximum Life");
                 case StatType.IncreasedMana: return Increased(m, "Maximum Mana");
                 case StatType.PercentLifeRegen: return "Regenerate " + n + "% of Maximum Life per second";
@@ -687,12 +687,12 @@ namespace PoeClone.Inventory
                 case StatType.GrantVenomArrow: return "Grants Venom Arrow (Level " + n + ")";
                 case StatType.GrantVenomSpout: return "Grants Venom Spout (Level " + n + ")";
                 case StatType.GrantSummonViper: return "Grants Summon Viper (Level " + n + ")";
-                case StatType.VenomCloudOnHit: return "Attacks create Venom Clouds dealing " + n + "% of hit damage per second (1 second cooldown)";
-                case StatType.FirePenetration: return n + "% Fire Penetration (lowers enemy Fire Resistance)";
-                case StatType.ColdPenetration: return n + "% Cold Penetration (lowers enemy Cold Resistance)";
-                case StatType.LightningPenetration: return n + "% Lightning Penetration (lowers enemy Lightning Resistance)";
-                case StatType.ElementalPenetration: return n + "% Elemental Penetration (lowers enemy elemental resistances)";
-                case StatType.ArmourPenetration: return n + "% Armour Penetration (ignores enemy Armour)";
+                case StatType.VenomCloudOnHit: return "Attacks create Venom Clouds dealing " + n + "% of hit damage per second";
+                case StatType.FirePenetration: return n + "% Fire Penetration";
+                case StatType.ColdPenetration: return n + "% Cold Penetration";
+                case StatType.LightningPenetration: return n + "% Lightning Penetration";
+                case StatType.ElementalPenetration: return n + "% Elemental Penetration";
+                case StatType.ArmourPenetration: return n + "% Armour Penetration";
                 case StatType.BoneArmour: return "Minions take " + n + "% " + (m.Value < 0f ? "more" : "less") + " damage";
                 default:
                     if (SkillGrants.IsGrant(m.Stat))

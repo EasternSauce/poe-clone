@@ -20,6 +20,7 @@ namespace PoeClone.Skills
     public partial class PlayerSkills
     {
         private SkillId? toggledBow;
+        private int toggledBowSlot = -1;
 
         // Degrees between arrows: Split Shot's wide fan, Piercing Shot's tight one.
         private const float SplitSpread = 13f;
@@ -34,7 +35,8 @@ namespace PoeClone.Skills
         {
             get
             {
-                if (toggledBow == null || Level(toggledBow.Value) <= 0 || !CharacterAttackAnimator.IsRanged(CurrentWeapon()))
+                if (toggledBow == null || toggledBowSlot < 0 || Slot(toggledBowSlot) != toggledBow ||
+                    LevelAt(toggledBowSlot) <= 0 || CurrentWeapon() != WeaponType.Bow)
                     return null;
                 return toggledBow;
             }
@@ -46,23 +48,28 @@ namespace PoeClone.Skills
             return ActiveBowSkill == id;
         }
 
-        private bool ToggleBow(SkillDefinition skill)
+        public bool IsToggledOnAt(int slot) => ActiveBowSkill != null && toggledBowSlot == slot;
+        public int ActiveBowLevel => ActiveBowSkill != null ? LevelAt(toggledBowSlot) : 0;
+
+        private bool ToggleBow(SkillDefinition skill, int slot)
         {
             Vector3 above = transform.position + Vector3.up * 2.2f;
-            if (toggledBow == skill.Id)
+            if (toggledBowSlot == slot && toggledBow == skill.Id)
             {
                 toggledBow = null;
+                toggledBowSlot = -1;
                 CombatText.Show(above, skill.Name + " off", UiKit.DimText, 0.8f);
                 Changed?.Invoke();
                 return true;
             }
-            if (!CharacterAttackAnimator.IsRanged(CurrentWeapon()))
+            if (CurrentWeapon() != WeaponType.Bow)
             {
                 CombatText.Show(above, "Needs a bow", CombatText.PhysicalColor, 0.8f);
                 return false;
             }
 
             toggledBow = skill.Id;
+            toggledBowSlot = slot;
             SkillEffects.Shockwave(transform.position, 1.4f, skill.Color, 0.3f);
             CombatText.Show(above, skill.Name, skill.Color, 0.9f);
             Changed?.Invoke();
@@ -73,7 +80,10 @@ namespace PoeClone.Skills
         private void CheckBowToggle()
         {
             if (toggledBow != null && ActiveBowSkill == null)
+            {
                 toggledBow = null;
+                toggledBowSlot = -1;
+            }
         }
 
         /// <summary>How the bow is drawn while this skill is on.</summary>
@@ -122,10 +132,10 @@ namespace PoeClone.Skills
         /// shot's (weapon and Strength); arrows: how many the plain shot would loose (1 plus
         /// Additional Arrows and any extra-arrow roll); target: the aimed spot (Rain of Arrows).
         /// </summary>
-        public void ReleaseBow(SkillId id, float damage, float range, int arrows, Vector3 target)
+        public void ReleaseBow(SkillId id, int level, float damage, float range, int arrows, Vector3 target)
         {
             SkillDefinition skill = SkillBook.Get(id);
-            int level = Mathf.Max(1, Level(id));
+            level = Mathf.Max(1, level);
             float area = DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
             Vector3 forward = transform.forward;
             arrows = Mathf.Max(1, arrows);

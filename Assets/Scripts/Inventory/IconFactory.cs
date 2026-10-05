@@ -28,6 +28,19 @@ namespace PoeClone.Inventory
         }
 
         private static Sprite arrow;
+        private static Sprite facing;
+
+        /// <summary>A compact upward pointer for the player's minimap marker.</summary>
+        public static Sprite Facing
+        {
+            get
+            {
+                if (facing == null)
+                    facing = Rasterise("Icon_Facing", new List<Shape> { Poly(0.5f, 0.94f, 0.12f, 0.12f, 0.88f, 0.12f) },
+                        new List<Shape>(), new List<Shape>());
+                return facing;
+            }
+        }
 
         /// <summary>A single arrow, pointing up and to the right: the bow's plain attack on the skill bar.</summary>
         public static Sprite Arrow

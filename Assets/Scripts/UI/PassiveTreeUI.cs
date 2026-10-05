@@ -29,7 +29,7 @@ namespace PoeClone.UI
 
         // The panel fills the screen but for this margin, so the tree gets all the room there is.
         private const float Margin = 20f;
-        private const float TreeExtent = 3.8f;    // tree units from the centre to the furthest passive's edge
+        private const float TreeExtent = 4.3f;    // includes the outer Venom keystone and its label
 
         private static PassiveTreeUI instance;
 

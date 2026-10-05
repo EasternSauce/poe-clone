@@ -242,7 +242,7 @@ namespace PoeClone.Enemies
             Aggro();
 
             // Damaged fires before the death itself: a killing blow mustn't enrage the corpse.
-            if (health == null || health.IsDead || health.CurrentHealth <= 0f || player == null || Time.time < nextEnrageAt)
+            if (health == null || !health.LastHitCanEnrage || health.IsDead || health.CurrentHealth <= 0f || player == null || Time.time < nextEnrageAt)
                 return;
             Vector3 toPlayer = player.transform.position - transform.position;
             toPlayer.y = 0f;

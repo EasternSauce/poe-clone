@@ -44,7 +44,7 @@ namespace PoeClone.Player
         /// </summary>
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
             DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null,
-            bool throughExposedHead = false)
+            bool throughExposedHead = false, bool melee = false)
         {
             if (enemy == null || enemy.IsDead)
                 return;
@@ -85,7 +85,7 @@ namespace PoeClone.Player
                 if (type == DamageType.Poison)
                     damage *= 1f + (sheet.Total(StatType.PoisonDamage) + sheet.Total(StatType.DamageOverTime)) / 100f;
             }
-            damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration, throughExposedHead);
+            damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration, throughExposedHead, canEnrage: !melee);
             string number = Mathf.Max(1, Mathf.RoundToInt(damage)).ToString();
             CombatText.Show(displayAt ?? (at + Vector3.up * 1.6f * scale), crit ? number + "!" : number, crit ? CritColor : color, crit ? 1.35f : 1f);
 
@@ -99,10 +99,10 @@ namespace PoeClone.Player
                 PlayerSkills skills = attacker.GetComponent<PlayerSkills>();
                 if (skills != null && skills.ActiveBowSkill == SkillId.VenomArrow)
                 {
-                    poison += 90f + 5f * (skills.Level(SkillId.VenomArrow) - 1);
+                    poison += 90f + 5f * (skills.ActiveBowLevel - 1);
                     cloud += 25f;
                 }
-                WeaponVenom.Apply(attacker, enemy, damage, poison, cloud, sheet);
+                WeaponVenom.Apply(attacker, enemy, damage, poison, cloud, sheet, canEnrage: !melee);
             }
 
             if (attack)

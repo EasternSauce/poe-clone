@@ -1566,7 +1566,7 @@ private Vector2 CellSize(int w, int h)
             // Which hands it takes, for the gear where that limits what else can be worn.
             string handNote = null;
             if (item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Bow)
-                handNote = "Two-handed: no shield (a quiver goes in the off hand)";
+                handNote = "Two-handed: no shield";
             else if (SlotRules.IsTwoHanded(item))
                 handNote = "Two-handed: nothing in the off hand";
             else if (item.Type == ItemType.Quiver)
@@ -1586,20 +1586,12 @@ private Vector2 CellSize(int w, int h)
                 sb.Append("\n");
                 lineCount++;
 
-                // Skills first, in gold: they decide how the item plays. A weapon's first main skill
-                // is what its attack does.
-                bool attackTaken = false;
+                // Skills first, in gold: they decide how the item plays.
                 foreach (StatModifier m in item.Modifiers)
                 {
                     if (!SkillGrants.IsGrant(m.Stat))
                         continue;
-                    string line = StatFormatter.ItemLine(m);
-                    if ((item.Type == ItemType.Weapon || item.Type == ItemType.Grimoire) && SkillGrants.IsMain(m.Stat) && !attackTaken)
-                    {
-                        attackTaken = true;
-                        line += " <size=14>(your attack)</size>";
-                    }
-                    sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.Gold)).Append(">").Append(line).Append("</color>");
+                    sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.Gold)).Append(">").Append(StatFormatter.ItemLine(m)).Append("</color>");
                     lineCount++;
                 }
 

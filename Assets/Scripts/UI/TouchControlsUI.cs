@@ -187,7 +187,7 @@ namespace PoeClone.UI
             {
                 SkillButton button = skillButtons[k];
                 Skills.SkillId? id = skills != null ? skills.Slot(k) : null;
-                bool on = id != null && skills.IsToggledOn(id.Value);
+                bool on = id != null && skills.IsToggledOnAt(k);
                 button.Ring.enabled = on;
                 if (on)
                     SkillBarUI.SpinRing(button.Ring, Skills.SkillBook.Get(id.Value).Color);
@@ -200,7 +200,7 @@ namespace PoeClone.UI
                 }
 
                 Skills.SkillDefinition skill = Skills.SkillBook.Get(id.Value);
-                if (skills.Level(skill.Id) <= 0)
+                if (skills.LevelAt(k) <= 0)
                 {
                     // Slotted but not on the gear worn right now.
                     button.Back.color = new Color(0.08f, 0.07f, 0.06f, 0.3f);
@@ -208,12 +208,12 @@ namespace PoeClone.UI
                     button.Cooldown.fillAmount = 0f;
                     continue;
                 }
-                bool affordable = skills.CanAfford(skill.Id);
+                bool affordable = skills.CanAffordAt(k);
                 Color c = affordable ? skill.Color : Color.Lerp(skill.Color, new Color(0.2f, 0.3f, 0.9f), 0.6f);
                 button.Back.color = new Color(c.r * 0.45f, c.g * 0.45f, c.b * 0.45f, 0.8f);
                 button.Label.text = skill.Short;
-                float total = skills.CooldownTotal(skill.Id);
-                button.Cooldown.fillAmount = total > 0f ? skills.CooldownLeft(skill.Id) / total : 0f;
+                float total = skills.CooldownTotalAt(k);
+                button.Cooldown.fillAmount = total > 0f ? skills.CooldownLeftAt(k) / total : 0f;
             }
         }
 

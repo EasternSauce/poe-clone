@@ -53,6 +53,7 @@ namespace PoeClone.Player
 
         private PlayerStats stats;
         private PlayerInventory inventory;
+        private PlayerSkills skills;
         private float readyAt;
 
         public int HealthPotions => inventory != null ? inventory.HealthPotions : 0;
@@ -62,6 +63,7 @@ namespace PoeClone.Player
         {
             stats = GetComponent<PlayerStats>();
             inventory = GetComponent<PlayerInventory>();
+            skills = GetComponent<PlayerSkills>();
         }
 
         private void Start()
@@ -114,22 +116,30 @@ namespace PoeClone.Player
             if (pressed < 0 && keyboard != null && !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused())
             {
                 for (int slot = 0; slot < PotionKeys.Length && pressed < 0; slot++)
-                    if (keyboard[PotionKeys[slot]].wasPressedThisFrame && PotionAt(slot) > 0)
+                    if (keyboard[PotionKeys[slot]].wasPressedThisFrame && PotionAt(slot) > 0 && !HasSkill(slot))
                         pressed = PotionAt(slot) - 1;
             }
 
             Mouse mouse = Mouse.current;
             if (pressed < 0 && mouse != null && !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused() && !TouchMode.Active && !PlayerController.IsPointerOverUi())
             {
-                if (mouse.rightButton.wasPressedThisFrame && PotionAt(8) > 0) pressed = PotionAt(8) - 1;
-                else if (mouse.backButton.wasPressedThisFrame && PotionAt(9) > 0) pressed = PotionAt(9) - 1;
-                else if (mouse.forwardButton.wasPressedThisFrame && PotionAt(10) > 0) pressed = PotionAt(10) - 1;
+                if (mouse.rightButton.wasPressedThisFrame && PotionAt(8) > 0 && !HasSkill(8)) pressed = PotionAt(8) - 1;
+                else if (mouse.backButton.wasPressedThisFrame && PotionAt(9) > 0 && !HasSkill(9)) pressed = PotionAt(9) - 1;
+                else if (mouse.forwardButton.wasPressedThisFrame && PotionAt(10) > 0 && !HasSkill(10)) pressed = PotionAt(10) - 1;
             }
 
             if (pressed == 0)
                 DrinkHealth();
             else if (pressed == 1)
                 DrinkMana();
+        }
+
+        // Older saved bindings can contain both uses for one slot. The visible skill owns it.
+        private bool HasSkill(int slot)
+        {
+            if (skills == null)
+                skills = GetComponent<PlayerSkills>();
+            return skills != null && skills.Slot(slot) != null;
         }
 
         public bool DrinkHealth()

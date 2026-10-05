@@ -13,7 +13,7 @@ namespace PoeClone.UI
     /// the staff's spell, or the weapon's icon), then Q E R F, 1-4, right and side mouse
     /// buttons - with the cooldown sweeping down over them and a blue tint when there isn't enough
     /// mana) and the skills panel (SKL button on touch), which lists every skill, its
-    /// level and the gear it comes from, and where it's slotted, with a button per slot to put it
+    /// level and the gear it comes from, with a separate entry per granting item and buttons to put it
     /// there. Clicking a square on the desktop bar opens a list of skills and potions above it.
     /// On touch the bar itself is TouchControlsUI's round buttons.
     /// Installed by <see cref="GameSessionController"/>; built at runtime.
@@ -41,6 +41,7 @@ namespace PoeClone.UI
         private class Row
         {
             public SkillId Id;
+            public PlayerSkills.SkillGrant? Grant;
             public Image Back;
             public Text Title;
             public Text[] SlotLabels;
@@ -56,8 +57,10 @@ namespace PoeClone.UI
         private RectTransform barRect;
         private RectTransform picker;
         private RectTransform pickerContent;
+        private RectTransform panelContent;
         private ScrollRect pickerScroll;
         private readonly List<GameObject> pickerRows = new List<GameObject>();
+        private readonly List<PlayerSkills.SkillGrant> pickerGrants = new List<PlayerSkills.SkillGrant>();
         private int pickerSlot = -1;
         private PlayerSkills skills;
 
@@ -129,9 +132,9 @@ namespace PoeClone.UI
             for (int k = 0; k < slotViews.Count; k++)
             {
                 slotViews[k].Back.gameObject.SetActive(true);
-                UpdateSlot(slotViews[k], skills.Slot(k));
+                UpdateSlot(slotViews[k], skills.Slot(k), k);
                 int potion = Player.PlayerPotions.PotionAt(k);
-                if (potion != 0)
+                if (potion != 0 && skills.Slot(k) == null)
                     UpdatePotionSlot(slotViews[k], potion == 1);
             }
             UpdateAttack();
@@ -224,34 +227,20 @@ namespace PoeClone.UI
             }
 
             pickerSlot = slot;
-            int shown = 0;
+            RebuildPickerRows();
             for (int k = 0; k < pickerRows.Count; k++)
             {
-                // Skills first, then both potions and the empty option.
-                bool visible = k >= SkillBook.All.Length ||
-                    (skills.IsUnlocked(SkillBook.All[k].Id) && skills.MainSkill != SkillBook.All[k].Id);
-                if (k < SkillBook.All.Length && visible)
-                {
-                    SkillDefinition s = SkillBook.All[k];
-                    pickerRows[k].GetComponentInChildren<Text>().text = "<color=#" + UiKit.Hex(s.Color) + "><b>" + s.Short + "</b></color>  " + s.Name +
-                        "  <size=14><color=#" + UiKit.Hex(UiKit.DimText) + ">level " + skills.Level(s.Id) + "</color></size>";
-                }
-                pickerRows[k].SetActive(visible);
-                if (!visible)
-                    continue;
-
                 var rt = (RectTransform)pickerRows[k].transform;
-                UiKit.TopLeft(rt, new Vector2(4f, -4f - shown * PickerRowHeight), new Vector2(PickerWidth - 8f, PickerRowHeight - 4f));
-                bool here = k < SkillBook.All.Length ? skills.Slot(slot) == SkillBook.All[k].Id :
-                    k == SkillBook.All.Length ? Player.PlayerPotions.PotionAt(slot) == 1 :
-                    k == SkillBook.All.Length + 1 ? Player.PlayerPotions.PotionAt(slot) == 2 :
+                UiKit.TopLeft(rt, new Vector2(4f, -4f - k * PickerRowHeight), new Vector2(PickerWidth - 8f, PickerRowHeight - 4f));
+                bool here = k < pickerGrants.Count ? skills.MatchesGrant(slot, pickerGrants[k]) :
+                    k == pickerGrants.Count ? Player.PlayerPotions.PotionAt(slot) == 1 && skills.Slot(slot) == null :
+                    k == pickerGrants.Count + 1 ? Player.PlayerPotions.PotionAt(slot) == 2 && skills.Slot(slot) == null :
                     skills.Slot(slot) == null && Player.PlayerPotions.PotionAt(slot) == 0;
                 pickerRows[k].GetComponent<Image>().color = here ? new Color(0.45f, 0.35f, 0.15f, 1f) : new Color(0.12f, 0.10f, 0.09f, 1f);
-                shown++;
             }
 
-            picker.sizeDelta = new Vector2(PickerWidth, Mathf.Min(440f, shown * PickerRowHeight + 8f));
-            pickerContent.sizeDelta = new Vector2(0f, shown * PickerRowHeight + 8f);
+            picker.sizeDelta = new Vector2(PickerWidth, Mathf.Min(440f, pickerRows.Count * PickerRowHeight + 8f));
+            pickerContent.sizeDelta = new Vector2(0f, pickerRows.Count * PickerRowHeight + 8f);
             pickerScroll.verticalNormalizedPosition = 1f;
             // Above the clicked square.
             float slotCentre = SlotX(slot) + SlotSize * 0.5f - barRect.sizeDelta.x * 0.5f;
@@ -294,13 +283,16 @@ namespace PoeClone.UI
         {
             if (skills == null || pickerSlot < 0)
                 return;
-            if (row < SkillBook.All.Length)
-                skills.Assign(pickerSlot, SkillBook.All[row].Id);
+            if (row < pickerGrants.Count)
+            {
+                var grant = pickerGrants[row];
+                skills.Assign(pickerSlot, grant.Id, grant.Source, grant.GrantLevel);
+            }
             else
             {
                 skills.ClearSlot(pickerSlot);
-                Player.PlayerPotions.SetPotionAt(pickerSlot, row == SkillBook.All.Length ? 1 :
-                    row == SkillBook.All.Length + 1 ? 2 : 0);
+                Player.PlayerPotions.SetPotionAt(pickerSlot, row == pickerGrants.Count ? 1 :
+                    row == pickerGrants.Count + 1 ? 2 : 0);
             }
             if (Audio.AudioManager.Instance != null)
                 Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.uiItemPlace, 0.4f);
@@ -334,18 +326,30 @@ namespace PoeClone.UI
             pickerScroll.movementType = ScrollRect.MovementType.Clamped;
             pickerScroll.scrollSensitivity = 32f;
 
-            for (int k = 0; k < SkillBook.All.Length + 3; k++)
+            picker.gameObject.SetActive(false);
+        }
+
+        private void RebuildPickerRows()
+        {
+            foreach (GameObject row in pickerRows)
+                if (row != null) Destroy(row);
+            pickerRows.Clear();
+            pickerGrants.Clear();
+            if (skills != null) pickerGrants.AddRange(skills.AvailableGrants());
+            for (int k = 0; k < pickerGrants.Count + 3; k++)
             {
                 int row = k;
                 string label;
-                if (k < SkillBook.All.Length)
+                if (k < pickerGrants.Count)
                 {
-                    SkillDefinition skill = SkillBook.All[k];
-                    label = "<color=#" + UiKit.Hex(skill.Color) + "><b>" + skill.Short + "</b></color>  " + skill.Name;
+                    var grant = pickerGrants[k];
+                    SkillDefinition skill = SkillBook.Get(grant.Id);
+                    label = "<color=#" + UiKit.Hex(skill.Color) + "><b>" + skill.Short + "</b></color>  " + skill.Name +
+                        " <size=14>Lv " + skills.GrantLevelWithBonuses(grant) + " · " + grant.Item.Name + " (" + grant.Source + ")</size>";
                 }
-                else if (k == SkillBook.All.Length)
+                else if (k == pickerGrants.Count)
                     label = "<color=#ff7777><b>HP</b></color>  Health Potion";
-                else if (k == SkillBook.All.Length + 1)
+                else if (k == pickerGrants.Count + 1)
                     label = "<color=#809aff><b>MP</b></color>  Mana Potion";
                 else
                 {
@@ -360,10 +364,9 @@ namespace PoeClone.UI
                 pickerRows.Add(item.gameObject);
             }
 
-            picker.gameObject.SetActive(false);
         }
 
-        private void UpdateSlot(SlotView view, SkillId? id)
+        private void UpdateSlot(SlotView view, SkillId? id, int slot = -1)
         {
             view.Ring.enabled = false;
             if (id == null)
@@ -376,12 +379,12 @@ namespace PoeClone.UI
             }
 
             SkillDefinition skill = SkillBook.Get(id.Value);
-            if (skills.IsToggledOn(skill.Id))
+            if (slot >= 0 ? skills.IsToggledOnAt(slot) : skills.IsToggledOn(skill.Id))
             {
                 view.Ring.enabled = true;
                 SpinRing(view.Ring, skill.Color);
             }
-            int level = skills.Level(skill.Id);
+            int level = slot >= 0 ? skills.LevelAt(slot) : skills.Level(skill.Id);
             if (level <= 0)
             {
                 // Slotted, but no worn gear grants it right now: waits there, greyed out.
@@ -394,10 +397,10 @@ namespace PoeClone.UI
 
             view.Back.color = new Color(skill.Color.r * 0.45f, skill.Color.g * 0.45f, skill.Color.b * 0.45f, 0.95f);
             view.Name.text = skill.Short + "\n<size=12>" + level + "</size>";
-            float left = skills.CooldownLeft(skill.Id);
-            float total = skills.CooldownTotal(skill.Id);
+            float left = slot >= 0 ? skills.CooldownLeftAt(slot) : skills.CooldownLeft(skill.Id);
+            float total = slot >= 0 ? skills.CooldownTotalAt(slot) : skills.CooldownTotal(skill.Id);
             view.Cooldown.fillAmount = total > 0f ? left / total : 0f;
-            view.NoMana.enabled = !skills.CanAfford(skill.Id);
+            view.NoMana.enabled = slot >= 0 ? !skills.CanAffordAt(slot) : !skills.CanAfford(skill.Id);
         }
 
         private void UpdatePotionSlot(SlotView view, bool health)
@@ -439,13 +442,14 @@ namespace PoeClone.UI
         {
             if (skills == null)
                 return;
+            BuildRows();
 
             for (int potion = 0; potion < 2; potion++)
                 for (int binding = 0; binding < SkillBook.SlotCount; binding++)
                 {
                     Text label = potionButtons[potion,binding];
                     if (label == null) continue;
-                    bool assigned = Player.PlayerPotions.PotionAt(binding) == potion + 1;
+                    bool assigned = Player.PlayerPotions.PotionAt(binding) == potion + 1 && skills.Slot(binding) == null;
                     label.color = assigned ? UiKit.Gold : UiKit.TextColor;
                     label.transform.parent.GetComponent<Image>().color = assigned
                         ? new Color(.45f,.35f,.15f,1f) : new Color(.10f,.09f,.08f,1f);
@@ -455,21 +459,23 @@ namespace PoeClone.UI
             foreach (Row row in rows)
             {
                 SkillDefinition skill = SkillBook.Get(row.Id);
-                bool unlocked = skills.IsUnlocked(row.Id);
-                bool isAttack = main == row.Id;
-                int level = skills.Level(row.Id);
+                bool unlocked = row.Grant.HasValue;
+                bool isAttack = main == row.Id && !row.Grant.HasValue;
+                int level = unlocked ? skills.GrantLevelWithBonuses(row.Grant.Value) : skills.Level(row.Id);
                 string dim = UiKit.Hex(UiKit.DimText);
                 row.Back.color = unlocked || isAttack ? new Color(0.14f, 0.12f, 0.10f, 1f) : new Color(0.08f, 0.07f, 0.07f, 1f);
 
                 if (level > 0)
                 {
-                    ItemData source = skills.Source(row.Id);
-                    string from = source != null && !isAttack ? " · from " + source.Name : "";
-                    string timing = isAttack ? Num(skills.Cooldown(row.Id)) + "s per cast" : Num(skills.Cooldown(row.Id)) + "s cooldown";
-                    string minions = skills.MinionSummary(row.Id);
+                    ItemData source = unlocked ? row.Grant.Value.Item : skills.Source(row.Id);
+                    string from = source != null && !isAttack ? " · from " + source.Name +
+                        (unlocked ? " (" + row.Grant.Value.Source + ")" : "") : "";
+                    float cooldown = unlocked ? skills.CooldownForGrant(row.Grant.Value) : skills.Cooldown(row.Id);
+                    string timing = isAttack ? Num(cooldown) + "s per cast" : Num(cooldown) + "s cooldown";
+                    string minions = skills.MinionSummary(row.Id, level);
                     if (minions != null)
                         timing += " · " + minions;
-                    string cost = skill.Bow ? "toggle · no mana" + (skills.IsToggledOn(row.Id) ? " · ON" : "") : Num(skills.ManaCost(row.Id)) + " mana · " + timing;
+                    string cost = skill.Bow ? "toggle · no mana" : Num(unlocked ? skills.ManaCostForGrant(row.Grant.Value) : skills.ManaCost(row.Id)) + " mana · " + timing;
                     row.Title.text = "<color=#" + UiKit.Hex(skill.Color) + "><b>" + skill.Name + "</b></color>  <color=#" + UiKit.Hex(UiKit.Gold) + ">Level " + level +
                                      (isAttack ? " · your attack" : "") + "</color>   <size=14><color=#" + dim + ">" +
                                      cost + from + "</color></size>\n<size=14>" + skill.Description + "</size>";
@@ -482,7 +488,7 @@ namespace PoeClone.UI
 
                 for (int k = 0; k < row.SlotLabels.Length; k++)
                 {
-                    bool here = skills.Slot(k) == row.Id;
+                    bool here = unlocked && skills.MatchesGrant(k, row.Grant.Value);
                     row.SlotLabels[k].color = !unlocked ? new Color(1f, 1f, 1f, 0.2f) : here ? UiKit.Gold : UiKit.TextColor;
                     row.SlotLabels[k].transform.parent.GetComponent<Image>().color = here
                         ? new Color(0.45f, 0.35f, 0.15f, 1f)
@@ -565,9 +571,8 @@ namespace PoeClone.UI
 
             BuildPicker(canvas.transform);
 
-            // The panel: centred list, one row per skill.
+            // The panel: a scrollable list with a row for each equipped grant.
             const float rowHeight = 74f;
-            const float slotButton = 38f;
             const float width = 980f;
             float rowsHeight = SkillBook.All.Length * (rowHeight + 6f);
             // Taller than the screen once there are many skills: the rows scroll.
@@ -637,6 +642,7 @@ namespace PoeClone.UI
             UiKit.TopLeft(viewport, new Vector2(0f, -220f), new Vector2(width, height - 220f - 16f));
 
             RectTransform content = UiKit.NewRect("Content", viewport);
+            panelContent = content;
             content.anchorMin = new Vector2(0f, 1f);
             content.anchorMax = new Vector2(1f, 1f);
             content.pivot = new Vector2(0.5f, 1f);
@@ -650,10 +656,37 @@ namespace PoeClone.UI
             scroll.movementType = ScrollRect.MovementType.Clamped;
             scroll.scrollSensitivity = 40f;
 
+            BuildRows();
+        }
+
+        private void BuildRows()
+        {
+            if (skills == null || panelContent == null) return;
+            foreach (Row old in rows)
+                if (old.Back != null) Destroy(old.Back.gameObject);
+            rows.Clear();
+            var grants = skills.AvailableGrants();
             float y = 0f;
             foreach (SkillDefinition skill in SkillBook.All)
             {
-                Image back = UiKit.NewImage("Row_" + skill.Id, content, Color.black);
+                bool found = false;
+                foreach (var grant in grants)
+                {
+                    if (grant.Id != skill.Id) continue;
+                    AddRow(skill, grant, ref y);
+                    found = true;
+                }
+                if (!found) AddRow(skill, null, ref y);
+            }
+            panelContent.sizeDelta = new Vector2(0f, -y);
+        }
+
+        private void AddRow(SkillDefinition skill, PlayerSkills.SkillGrant? grant, ref float y)
+        {
+                const float width = 980f;
+                const float rowHeight = 74f;
+                const float slotButton = 38f;
+                Image back = UiKit.NewImage("Row_" + skill.Id, panelContent, Color.black);
                 UiKit.Grain(back);
                 UiKit.TopLeft(back.rectTransform, new Vector2(16f, y), new Vector2(width - 32f, rowHeight));
 
@@ -662,7 +695,7 @@ namespace PoeClone.UI
                 float buttonsWidth = SkillBook.SlotCount * (slotButton + 4f);
                 UiKit.TopLeft(text.rectTransform, new Vector2(12f, 0f), new Vector2(width - 32f - 12f - buttonsWidth - 8f, rowHeight));
 
-                var row = new Row { Id = skill.Id, Back = back, Title = text, SlotLabels = new Text[SkillBook.SlotCount] };
+                var row = new Row { Id = skill.Id, Grant = grant, Back = back, Title = text, SlotLabels = new Text[SkillBook.SlotCount] };
                 for (int k = 0; k < SkillBook.SlotCount; k++)
                 {
                     int slot = k;
@@ -677,14 +710,16 @@ namespace PoeClone.UI
                     row.SlotLabels[k] = label;
                     button.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
                     {
-                        if (skills != null && !SpectatorMirror.Active && skills.IsUnlocked(id))
-                            skills.Assign(slot, id);
+                        if (skills != null && !SpectatorMirror.Active && grant.HasValue)
+                        {
+                            var chosen = grant.Value;
+                            skills.Assign(slot, id, chosen.Source, chosen.GrantLevel);
+                        }
                     };
                 }
 
                 rows.Add(row);
                 y -= rowHeight + 6f;
-            }
         }
     }
 }

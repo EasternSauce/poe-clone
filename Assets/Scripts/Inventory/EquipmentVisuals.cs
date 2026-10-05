@@ -132,7 +132,13 @@ namespace PoeClone.Inventory
                         GameObject instance = Instantiate(child.gameObject, socket);
                         instance.name = "Equip_" + child.name;
                         instance.transform.localPosition = child.localPosition;
-                        instance.transform.localRotation = child.localRotation;
+                        // Turn axe and hammer heads around the handle without moving the grip.
+                        bool turnHead = slot == EquipSlot.MainHand && (item.WeaponType == WeaponType.Axe ||
+                            item.WeaponType == WeaponType.Greataxe || item.WeaponType == WeaponType.Mace ||
+                            item.WeaponType == WeaponType.Maul);
+                        instance.transform.localRotation = turnHead
+                            ? child.localRotation * Quaternion.Euler(0f, 90f, 0f)
+                            : child.localRotation;
                         instance.transform.localScale = child.localScale;
                         instance.AddComponent<EquipmentVisualInstance>();
                         if (tint != Color.white)

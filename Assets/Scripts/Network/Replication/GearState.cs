@@ -66,6 +66,8 @@ namespace PoeClone.Network.Replication
         public string[] pas;     // passives taken
         public int rc;           // passive respec charges
         public int[] sk;         // skill per slot (SkillId), -1 = empty
+        public int[] ss;         // source EquipSlot for each bound skill
+        public int[] sg;         // source item's grant level for each bound skill
         public string[] qdone;   // quests handed in
         public QuestProgressState[] qactive; // quests taken, including those ready to hand in
     }

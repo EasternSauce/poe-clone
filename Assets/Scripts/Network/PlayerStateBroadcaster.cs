@@ -300,10 +300,16 @@ namespace PoeClone.Network
 
             if (gear.sk == null || gear.sk.Length != SkillBook.SlotCount)
                 gear.sk = new int[SkillBook.SlotCount];
+            if (gear.ss == null || gear.ss.Length != SkillBook.SlotCount)
+                gear.ss = new int[SkillBook.SlotCount];
+            if (gear.sg == null || gear.sg.Length != SkillBook.SlotCount)
+                gear.sg = new int[SkillBook.SlotCount];
             for (int k = 0; k < gear.sk.Length; k++)
             {
                 SkillId? id = skills != null ? skills.Slot(k) : null;
                 gear.sk[k] = id.HasValue ? (int)id.Value : -1;
+                gear.ss[k] = skills != null ? skills.SourceSlotAt(k) : -1;
+                gear.sg[k] = skills != null ? skills.GrantLevelAt(k) : 0;
             }
             var done = new List<string>();
             var active = new Dictionary<string, int>();

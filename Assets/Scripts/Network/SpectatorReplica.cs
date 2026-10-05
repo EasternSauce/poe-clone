@@ -504,7 +504,7 @@ namespace PoeClone.Network
 
             // Skills can only be slotted once unlocked, which goes by level.
             if (levelChanged && gearPid == currentPid && latestGear != null)
-                ApplySkills(latestGear.sk);
+                ApplySkills(latestGear);
         }
 
         // ---------------------------------------------------------------- the player's menus
@@ -594,7 +594,7 @@ namespace PoeClone.Network
             playerInventory.SetBaseStats(b);
 
             ApplyPassives(g);
-            ApplySkills(g.sk);
+            ApplySkills(g);
 
             if (inventoryUI != null)
                 inventoryUI.MarkDirty();
@@ -672,14 +672,23 @@ namespace PoeClone.Network
             playerPassives.SetRespecCharges(g.rc);
         }
 
-        private void ApplySkills(int[] slots)
+        private void ApplySkills(GearState gear)
         {
+            int[] slots = gear != null ? gear.sk : null;
             if (playerSkills == null || slots == null)
                 return;
             for (int k = 0; k < slots.Length && k < Skills.SkillBook.SlotCount; k++)
             {
                 if (slots[k] < 0)
                     playerSkills.ClearSlot(k);
+                else if (gear.ss != null && k < gear.ss.Length && gear.sg != null && k < gear.sg.Length &&
+                         gear.ss[k] >= 0 && gear.ss[k] < SlotRules.AllSlots.Length)
+                {
+                    var id = (Skills.SkillId)slots[k];
+                    var source = (EquipSlot)gear.ss[k];
+                    if (!playerSkills.MatchesSource(k, id, source, gear.sg[k]))
+                        playerSkills.Assign(k, id, source, gear.sg[k]);
+                }
                 else if (playerSkills.Slot(k) != (Skills.SkillId)slots[k])
                     playerSkills.Assign(k, (Skills.SkillId)slots[k]);
             }
