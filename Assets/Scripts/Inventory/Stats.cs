@@ -687,10 +687,6 @@ namespace PoeClone.Inventory
                 case StatType.DeathsHerald: return "A Marked enemy that dies bursts for a fifth of its life, and the Mark leaps to the nearest enemy";
                 case StatType.ExtraArrowChance: return n + "% chance for Bow Attacks to fire an additional arrow";
                 case StatType.PoisonOnHit: return "Attacks deal " + n + "% of hit damage as Poison over 3 seconds";
-                case StatType.GrantFangStrike: return "Grants Fang Strike (Level " + n + ")";
-                case StatType.GrantVenomArrow: return "Grants Venom Arrow (Level " + n + ")";
-                case StatType.GrantVenomSpout: return "Grants Venom Spout (Level " + n + ")";
-                case StatType.GrantSummonViper: return "Grants Summon Viper (Level " + n + ")";
                 case StatType.VenomCloudOnHit: return "Attacks create Venom Clouds dealing " + n + "% of hit damage per second";
                 case StatType.FirePenetration: return n + "% Fire Penetration";
                 case StatType.ColdPenetration: return n + "% Cold Penetration";

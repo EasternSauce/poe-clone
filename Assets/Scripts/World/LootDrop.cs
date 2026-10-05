@@ -378,8 +378,7 @@ namespace PoeClone.World
                 bool health = Item.Id == ItemGenerator.HealthPotionId;
                 if (inventory.AddPotions(health, 1) > 0)
                 {
-                    if (AudioManager.Instance != null)
-                        AudioManager.Instance.PlayUI(ItemSounds.Pickup(Item));
+                    ItemSounds.PlayPickup(Item);
                     Destroy(gameObject);
                     return true;
                 }

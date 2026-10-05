@@ -243,7 +243,11 @@ namespace PoeClone.Player
             if (stats == null)
                 return;
 
-            var data = new SaveData { level = stats.Level, experience = stats.Experience, gearSkills = true, barLayoutVersion = 1 };
+            var data = new SaveData
+            {
+                level = stats.Level, experience = stats.Experience, gearSkills = true, barLayoutVersion = 1,
+                passiveAllocationVersion = SaveData.CurrentPassiveAllocationVersion
+            };
 
             PlayerInventory inventory = stats.GetComponent<PlayerInventory>();
             if (inventory != null)
@@ -371,10 +375,14 @@ namespace PoeClone.Player
             if (potions != null)
                 potions.SetCounts(data.healthPotions, data.manaPotions);
 
+            bool resetPassives = data.passiveAllocationVersion < SaveData.CurrentPassiveAllocationVersion;
             PlayerPassives passives = stats.GetComponent<PlayerPassives>();
-            if (passives != null && data.passives != null)
+            if (passives != null)
             {
-                passives.Restore(data.passives);
+                if (resetPassives)
+                    passives.Allocation.ResetAll();
+                else if (data.passives != null)
+                    passives.Restore(data.passives);
                 passives.SetRespecCharges(data.respecCharges);
             }
 
@@ -424,6 +432,15 @@ namespace PoeClone.Player
             CombatText.Show(stats.transform.position + Vector3.up * 2.4f,
                 questsCurrent ? "Welcome back" : "Welcome back - the story begins anew: talk to Elder Maren",
                 new Color(1f, 0.85f, 0.4f), 1f);
+
+            if (resetPassives)
+            {
+                // Persist the migration now so a reload cannot restore the old allocation.
+                data.passives = new List<string>();
+                data.passiveAllocationVersion = SaveData.CurrentPassiveAllocationVersion;
+                PlayerPrefs.SetString(Key, JsonUtility.ToJson(data));
+                PlayerPrefs.Save();
+            }
         }
 
         private static void RestoreSharedStash(PlayerInventory inventory, SaveData oldCharacter = null)

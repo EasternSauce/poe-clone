@@ -58,6 +58,7 @@ namespace PoeClone.Player
 
         private void Update()
         {
+            if (Time.timeScale <= 0f) return;
             if (stats != null && stats.IsDead)
             {
                 target = null;

@@ -678,6 +678,11 @@ namespace PoeClone.Skills
 
         private void Update()
         {
+            if (Time.timeScale <= 0f)
+            {
+                VirtualInput.SkillPressed = -1;
+                return;
+            }
             if (stats == null || stats.IsDead)
             {
                 VirtualInput.SkillPressed = -1;

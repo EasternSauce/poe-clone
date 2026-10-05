@@ -167,8 +167,9 @@ namespace PoeClone.Visuals
         {
             Duration = 0.7f,
             StrikeTime = 0.55f,
-            WindupOffset = new Pose(115f, -12f, -8f, 45f),
-            StrikeOffset = new Pose(-95f, 5f, 5f, 12f),
+            SwingStart = 0.28f,
+            WindupOffset = new Pose(-135f, -12f, -8f, 25f),
+            StrikeOffset = new Pose(-8f, 5f, 5f, 5f),
             BaseAttacksPerSecond = 0.9f,
             Range = 2.2f
         };

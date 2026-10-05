@@ -382,8 +382,9 @@ namespace PoeClone.Network
         // audio the same way. Both are undone the instant this tab is granted the play slot.
         private void SetWorldActive(bool active)
         {
-            Time.timeScale = active ? 1f : 0f;
-            AudioListener.pause = !active;
+            bool pausedByMenu = GetComponent<PoeClone.UI.EscapeMenuUI>()?.IsOpen == true;
+            Time.timeScale = active && !pausedByMenu ? 1f : 0f;
+            AudioListener.pause = !active || pausedByMenu;
         }
 
         private static SessionRole ParseRole(string queryString)

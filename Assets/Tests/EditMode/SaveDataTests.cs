@@ -101,5 +101,22 @@ namespace PoeClone.Tests
             Assert.AreEqual(7, loaded.questsActive[0].progress);
             Assert.AreEqual(3, loaded.visited.Count);
         }
+
+        [Test]
+        public void OldSavesNeedOnePassiveResetAndNewSavesDoNot()
+        {
+            SaveData old = JsonUtility.FromJson<SaveData>(
+                "{\"version\":1,\"level\":12,\"passives\":[\"m1\"],\"respecCharges\":2}");
+            Assert.AreEqual(0, old.passiveAllocationVersion);
+            Assert.AreEqual(2, old.respecCharges);
+
+            old.passives.Clear();
+            old.passiveAllocationVersion = SaveData.CurrentPassiveAllocationVersion;
+            SaveData migrated = JsonUtility.FromJson<SaveData>(JsonUtility.ToJson(old));
+            Assert.AreEqual(SaveData.CurrentPassiveAllocationVersion, migrated.passiveAllocationVersion);
+            Assert.AreEqual(0, migrated.passives.Count);
+            Assert.AreEqual(2, migrated.respecCharges);
+            Assert.AreEqual(12, migrated.level);
+        }
     }
 }

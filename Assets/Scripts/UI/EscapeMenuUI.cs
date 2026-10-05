@@ -23,6 +23,9 @@ namespace PoeClone.UI
         private Text title, body;
         private Entry[] entries = Array.Empty<Entry>();
         private int selected;
+        private bool pausedByMenu;
+        private float timeScaleBeforeMenu;
+        private bool audioPausedBeforeMenu;
 
         public bool IsOpen => root != null && root.activeSelf;
 
@@ -72,7 +75,7 @@ namespace PoeClone.UI
             Keyboard kb = Keyboard.current;
             if (kb == null || !kb.escapeKey.wasPressedThisFrame || UiKit.IsTypingInTextField()) return;
             if (PatchNotesUI.IsShowing) return;
-            if (root.activeSelf) { root.SetActive(false); return; }
+            if (root.activeSelf) { Close(); return; }
             if (GetComponent<NamePromptUI>()?.IsShowing == true) return;
             if (DialogueUI.IsOpen || PassiveTreeUI.IsOpen || SkillBarUI.IsOpen || SkillBarUI.PickerOpen ||
                 AnyOpen<InventoryUI>() || AnyOpen<CharacterPageUI>()) return;
@@ -91,9 +94,26 @@ namespace PoeClone.UI
 
         public void OpenSettings()
         {
-            if (PatchNotesUI.IsShowing) return;
+            if (PatchNotesUI.IsShowing || (!IsOpen && Time.timeScale <= 0f)) return;
             ShowSettings();
             root.SetActive(true);
+            if (pausedByMenu) return;
+            timeScaleBeforeMenu = Time.timeScale;
+            audioPausedBeforeMenu = AudioListener.pause;
+            pausedByMenu = true;
+            Time.timeScale = 0f;
+            AudioListener.pause = true;
+        }
+
+        private void Close()
+        {
+            root.SetActive(false);
+            if (!pausedByMenu) return;
+            pausedByMenu = false;
+            GameSessionController session = GameSessionController.Instance;
+            if (session != null && session.Role == SessionRole.Player && (!session.Connected || !session.PlayGranted)) return;
+            Time.timeScale = timeScaleBeforeMenu;
+            AudioListener.pause = audioPausedBeforeMenu;
         }
 
         private void Build()
@@ -116,7 +136,7 @@ namespace PoeClone.UI
             notesScroll=notesViewport.gameObject.AddComponent<ScrollRect>(); notesScroll.content=notesContent; notesScroll.viewport=notesViewport; notesScroll.horizontal=false; notesScroll.movementType=ScrollRect.MovementType.Clamped; notesScroll.scrollSensitivity=30;
             body=UiKit.NewText("Body",notesContent,"",18,UiKit.TextColor,TextAnchor.UpperLeft); body.horizontalOverflow=HorizontalWrapMode.Wrap; body.verticalOverflow=VerticalWrapMode.Overflow; body.raycastTarget=false;
             UiKit.TopLeft(body.rectTransform,new Vector2(8,-4),new Vector2(W-350,0));
-            Button("Close",pr,"Close",new Vector2(W-150,-68),new Vector2(120,42),()=>root.SetActive(false));
+            Button("Close",pr,"Close",new Vector2(W-150,-68),new Vector2(120,42),Close);
         }
 
         private void ShowSettings()

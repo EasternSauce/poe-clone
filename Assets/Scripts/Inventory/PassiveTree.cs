@@ -487,21 +487,67 @@ namespace PoeClone.Inventory
             if (!from.Links.Remove(b) || !to.Links.Remove(a))
                 throw new InvalidOperationException("Missing travel link " + a + " - " + b);
 
+            // Pick once per edge so a longer approach never changes reward halfway through.
+            StatModifier reward = TravelReward(a, b, from);
             string previous = a;
             for (int k = 1; k <= count; k++)
             {
                 float t = (float)k / (count + 1);
                 string id = "travel_" + a + "_" + b + "_" + k;
-                // One attribute per point is deliberately much weaker than a sector passive.
-                StatType stat = from.Branch == PassiveBranch.Might || from.Branch == PassiveBranch.Zeal
-                    ? StatType.Strength : from.Branch == PassiveBranch.Grace || from.Branch == PassiveBranch.Fury
-                    ? StatType.Dexterity : StatType.Intelligence;
                 Add(id, "Travel", from.Branch, false,
-                    from.X + (to.X - from.X) * t, from.Y + (to.Y - from.Y) * t, Mod(stat, 1));
+                    from.X + (to.X - from.X) * t, from.Y + (to.Y - from.Y) * t, reward);
                 Link(previous, id);
                 previous = id;
             }
             Link(previous, b);
+        }
+
+        private static StatModifier TravelReward(string a, string b, PassiveNode from)
+        {
+            // Each bridge arm keeps one theme, at a fraction of the reward at its destination.
+            if (a == "b_fireward" && b == "n1")
+                return Mod(StatType.MinionResistances, 3);
+            if (a == "b_arctic" && b == "g_deadeye")
+                return Mod(StatType.Dexterity, 3);
+            string bridge = a.StartsWith("b_") ? a : b.StartsWith("b_") ? b : null;
+            switch (bridge)
+            {
+                case "b_bloodrage": return Mod(StatType.AttackDamage, 3);
+                case "b_arctic": return Mod(StatType.ColdDamage, 3);
+                case "b_fireward": return Mod(StatType.FireResistance, 4);
+            }
+
+            // Every point on a keystone approach shares one modest supporting stat.
+            switch (b)
+            {
+                case "k_legion": return Mod(StatType.MinionLife, 4);
+                case "k_herald": return Mod(StatType.MarkEffect, 3);
+                case "k_viper": return Mod(StatType.PoisonDamage, 3);
+                case "k_stormblade": return Mod(StatType.CriticalChance, 1);
+                case "k_frostbite": return Mod(StatType.ChillOnHit, 2);
+                case "k_thunderlord": return Mod(StatType.ShockChance, 3);
+                case "k_twincast": return Mod(StatType.SpellDamage, 3);
+                case "k_inferno": return Mod(StatType.FireDamage, 3);
+                case "k_secondwind": return Mod(StatType.CooldownRecovery, 2);
+            }
+
+            // Single steps toward notables hint at the reward without equalling a normal node.
+            switch (b)
+            {
+                case "m5": return Mod(StatType.Armour, 8);
+                case "f_berserk": return Mod(StatType.DamageWhileLowLife, 4);
+                case "g_deadeye": return Mod(StatType.BowDamage, 1);
+                case "s_conductor": return Mod(StatType.LightningDamage, 3);
+                case "w_l3": return Mod(StatType.MaxMana, 5);
+                case "z_t1": return Mod(StatType.FireDamage, 3);
+                case "n_lord": return Mod(StatType.MinionDamage, 2);
+            }
+
+            // The remaining routes keep an attribute reward, now worth three per point.
+            StatType attribute = from.Branch == PassiveBranch.Might || from.Branch == PassiveBranch.Zeal
+                ? StatType.Strength : from.Branch == PassiveBranch.Grace || from.Branch == PassiveBranch.Fury
+                ? StatType.Dexterity : StatType.Intelligence;
+            return Mod(attribute, 3);
         }
 
         private static void Chain(params string[] ids)

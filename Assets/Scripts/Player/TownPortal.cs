@@ -50,6 +50,7 @@ namespace PoeClone.Player
         {
             bool pressed = Pressed;
             Pressed = false;
+            if (Time.timeScale <= 0f) return;
 
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && keyboard.tKey.wasPressedThisFrame && !UiKit.IsTypingInTextField())

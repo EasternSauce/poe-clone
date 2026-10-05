@@ -5,10 +5,9 @@ namespace PoeClone.Inventory
 {
     /// <summary>
     /// Which sound an item makes: landing on the ground (louder and brighter the rarer it is, so a
-    /// unique is heard before it's seen) and being picked up or put down (by what it's made of:
-    /// steel clangs, bows knock like wood, jewellery glimmers; armour, belts and quivers keep the
-    /// plain cloth-and-leather UI clips). Clips live in Resources/Sfx, all about as loud as the UI
-    /// item clips.
+    /// unique is heard before it's seen) and being picked up or put down. Equipment pickups use
+    /// the plain cloth-and-leather UI clip, except jewellery; gold and potions keep their own
+    /// clips. Placement still varies by material. Clips live in Resources/Sfx.
     /// </summary>
     public static class ItemSounds
     {
@@ -32,30 +31,41 @@ namespace PoeClone.Inventory
 
         public static AudioClip Pickup(ItemData item)
         {
-            return Handle(item, "pickup_");
+            AudioManager audio = AudioManager.Instance;
+            if (audio == null)
+                return null;
+            if (item != null)
+            {
+                switch (item.Type)
+                {
+                    case ItemType.Ring:
+                    case ItemType.Amulet:
+                        return audio.Sfx("pickup_jewel") ?? audio.uiItemPickup;
+                    case ItemType.Gold:
+                        return audio.Sfx("pickup_gold") ?? audio.uiItemPickup;
+                    case ItemType.Potion:
+                        return audio.Sfx("pickup_potion") ?? audio.uiItemPickup;
+                }
+            }
+            return audio.uiItemPickup;
         }
 
         public static AudioClip Place(ItemData item)
-        {
-            return Handle(item, "place_");
-        }
-
-        private static AudioClip Handle(ItemData item, string prefix)
         {
             AudioManager audio = AudioManager.Instance;
             if (audio == null)
                 return null;
             string material = item != null ? Material(item) : null;
             // Synthesized steel put down rang like a doorbell: steel lands with the plain UI clip.
-            if (prefix == "place_" && material == "weapon")
+            if (material == "weapon")
                 material = null;
-            AudioClip clip = material != null ? audio.Sfx(prefix + material) : null;
+            AudioClip clip = material != null ? audio.Sfx("place_" + material) : null;
             if (clip != null)
                 return clip;
-            return prefix == "pickup_" ? audio.uiItemPickup : audio.uiItemPlace;
+            return audio.uiItemPlace;
         }
 
-        // Null: the default UI clips.
+        // Null: the default placement clip.
         private static string Material(ItemData item)
         {
             switch (item.Type)
@@ -86,6 +96,7 @@ namespace PoeClone.Inventory
         // often than anything else in the game (every kill, every walk-over). Still way too loud
         // at 0.3 per user feedback - cut to a quarter of that.
         private const float GoldPickupVolume = 0.075f;
+        private const float PotionPickupVolume = 0.5f;
 
         public static void PlayDrop(ItemData item, Vector3 at)
         {
@@ -104,7 +115,8 @@ namespace PoeClone.Inventory
             if (audio == null || clip == null)
                 return;
 
-            float scale = item != null && item.Type == ItemType.Gold ? GoldPickupVolume : 1f;
+            float scale = item != null && item.Type == ItemType.Gold ? GoldPickupVolume
+                : item != null && item.Type == ItemType.Potion ? PotionPickupVolume : 1f;
             audio.PlayUI(clip, audio.uiVolume * scale);
         }
     }

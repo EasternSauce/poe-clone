@@ -152,6 +152,7 @@ namespace PoeClone.Player
 
         private void Update()
         {
+            if (Time.timeScale <= 0f) return;
             if (cooldownTimer > 0f)
                 cooldownTimer -= Time.deltaTime;
 
@@ -367,12 +368,10 @@ namespace PoeClone.Player
                 return;
             }
 
-            // Great weapons land with weight: a burst of dust where the head comes down, and a jolt.
+            // Great weapons land with weight: a camera jolt at the strike frame.
             if (SlotRules.IsTwoHandedMelee(weaponType))
             {
                 bool slam = weaponType != WeaponType.Greatsword;
-                Vector3 impact = transform.position + transform.forward * range * (slam ? 0.7f : 0.5f);
-                PoeClone.Skills.SkillEffects.Shockwave(impact, slam ? 1.5f : range * 0.9f, new Color(0.72f, 0.64f, 0.5f, 1f), 0.3f);
                 CameraSystem.CameraFollow.Shake(slam ? 0.12f : 0.05f, 0.18f);
             }
 
@@ -565,6 +564,18 @@ namespace PoeClone.Player
             if (outline == null)
                 outline = enemy.gameObject.AddComponent<Outline>();
             return outline;
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            float range = Application.isPlaying ? CharacterAttackAnimator.AttackRange(CurrentWeaponType()) : 1.6f;
+
+            Gizmos.color = Color.red;
+            Vector3 left = Quaternion.AngleAxis(-coneHalfAngle, Vector3.up) * transform.forward;
+            Vector3 right = Quaternion.AngleAxis(coneHalfAngle, Vector3.up) * transform.forward;
+            Gizmos.DrawLine(transform.position, transform.position + left * range);
+            Gizmos.DrawLine(transform.position, transform.position + right * range);
+            Gizmos.DrawWireSphere(transform.position, range);
         }
 
     }

@@ -181,7 +181,7 @@ namespace PoeClone.Player
                 if (countdownTimer <= 0f)
                     respawnPhase = RespawnPhase.AwaitingRevive;
             }
-            else if (respawnPhase == RespawnPhase.AwaitingRevive)
+            else if (respawnPhase == RespawnPhase.AwaitingRevive && Time.timeScale > 0f)
             {
                 if (AnyButtonPressed())
                 {

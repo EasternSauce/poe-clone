@@ -108,6 +108,56 @@ namespace PoeClone.Tests
         }
 
         [Test]
+        public void TravelRewardsSplitBetweenAttributesAndBranchThemes()
+        {
+            int attributes = 0, themed = 0;
+            foreach (PassiveNode node in PassiveTree.Nodes)
+            {
+                if (!node.Id.StartsWith("travel_"))
+                    continue;
+                Assert.AreEqual(1, node.Mods.Length, node.Id);
+                StatModifier reward = node.Mods[0];
+                if (reward.Stat == StatType.Strength || reward.Stat == StatType.Dexterity || reward.Stat == StatType.Intelligence)
+                {
+                    Assert.AreEqual(3f, reward.Value, node.Id);
+                    attributes++;
+                }
+                else
+                {
+                    Assert.Greater(reward.Value, 0f, node.Id);
+                    themed++;
+                }
+            }
+            Assert.AreEqual(49, attributes);
+            Assert.AreEqual(50, themed);
+        }
+
+        [Test]
+        public void LongApproachesKeepOneSmallRewardThroughout()
+        {
+            foreach (PassiveNode node in PassiveTree.Nodes)
+            {
+                if (!node.Id.StartsWith("travel_") || !node.Id.EndsWith("_1"))
+                    continue;
+                string path = node.Id.Substring(0, node.Id.Length - 1);
+                PassiveNode second = PassiveTree.Get(path + "2");
+                if (second == null)
+                    continue;
+                Assert.AreEqual(node.Mods[0].Stat, second.Mods[0].Stat, path);
+                Assert.AreEqual(node.Mods[0].Value, second.Mods[0].Value, path);
+                PassiveNode third = PassiveTree.Get(path + "3");
+                if (third == null)
+                    continue;
+                Assert.AreEqual(node.Mods[0].Stat, third.Mods[0].Stat, path);
+                Assert.AreEqual(node.Mods[0].Value, third.Mods[0].Value, path);
+            }
+            Assert.AreEqual(StatType.MinionLife, PassiveTree.Get("travel_n_lord_k_legion_1").Mods[0].Stat);
+            Assert.AreEqual(StatType.BowDamage, PassiveTree.Get("travel_g10_g_deadeye_1").Mods[0].Stat);
+            Assert.AreEqual(StatType.FireResistance, PassiveTree.Get("travel_b_fireward_w_r3_1").Mods[0].Stat);
+            Assert.AreEqual(StatType.MinionResistances, PassiveTree.Get("travel_b_fireward_n1_1").Mods[0].Stat);
+        }
+
+        [Test]
         public void EveryPassiveCanBeReachedFromTheOrigin()
         {
             var reached = new HashSet<string> { PassiveTree.OriginId };
