@@ -1,5 +1,10 @@
 # Act boss: The Shepherd / Carrion Saint - plan and progress
 
+## Boss damage reduction - 2026-10-06
+
+- The Shepherd's base physical damage is now 10 (down from 29), so its direct attacks, abilities, poison, and Carrion Saint's derived attacks and serpent pursuit deal about one third of their previous raw damage. The enrage multiplier remains unchanged.
+- Source and diff checks only, at the user's request; no Unity run. Await player review before further Shepherd balance changes.
+
 ## Boss balance step - 2026-10-06
 
 - The Shepherd's base hit damage is 29 instead of 44; calm movement and attack pace are 20% slower. Ranged and minion hits enrage before damage is applied, restore the old damage and pace, and refresh enrage on every hit. Enraged bosses take 20% less damage from that first hit onward.

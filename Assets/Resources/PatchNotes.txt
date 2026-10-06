@@ -1,4 +1,2 @@
-version: 2026-10-06-new-uniques
-- Added ten ordinary uniques, including restrained versions of Shatter, Stormblade, Glacial Step, Second Wind, and Deaths Herald. The Last Draught grants Onslaught when you drink a health potion; several existing uniques gained an uncommon effect with lower base stats.
-- Bloodroot Cord now increases life recovered by health potions by 25%; its maximum life, regeneration, and strength bonuses are lower.
-- Dash keeps its 3.5-second cooldown at level 1 and scales to 2.2 uses per second at level 10, before Cooldown Recovery.
+version: 2026-10-06-shepherd-damage
+- The Shepherd and Carrion Saint now deal about one third as much damage with direct attacks, abilities, and poison.
