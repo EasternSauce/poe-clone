@@ -153,7 +153,14 @@ namespace PoeClone.Player
                 return false;
 
             readyAt = Time.time + DrinkCooldown;
-            stats.HealOverTime(stats.MaxHealth * 0.4f, 2.5f);
+            float recovery = inventory.Stats.Total(StatType.HealthPotionRecovery);
+            stats.HealOverTime(stats.MaxHealth * 0.4f * (1f + Mathf.Max(0f, recovery) / 100f), 2.5f);
+            if (inventory.Stats.Total(StatType.OnslaughtOnHealthPotion) > 0f)
+            {
+                PlayerController controller = GetComponent<PlayerController>();
+                if (controller != null)
+                    controller.GrantOnslaught(3f);
+            }
             Feedback(new Color(0.9f, 0.25f, 0.25f));
             return true;
         }

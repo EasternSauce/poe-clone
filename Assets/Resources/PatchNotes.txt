@@ -1,3 +1,4 @@
-version: 2026-10-06-armour-and-reconnect
-- Armour now halves hits with half as much armour. Player stagger chance scales with life actually lost: hits under 5% of maximum life do not stagger, hits at 35% always stagger before Avoid Stun, and smaller hits scale between those points.
-- Once gameplay has started, losing the game server connection no longer pauses the local game or covers it with a reconnect screen. Chat reports disconnects and reconnects; spectator streams catch up when the connection returns.
+version: 2026-10-06-new-uniques
+- Added ten ordinary uniques, including restrained versions of Shatter, Stormblade, Glacial Step, Second Wind, and Deaths Herald. The Last Draught grants Onslaught when you drink a health potion; several existing uniques gained an uncommon effect with lower base stats.
+- Bloodroot Cord now increases life recovered by health potions by 25%; its maximum life, regeneration, and strength bonuses are lower.
+- Dash keeps its 3.5-second cooldown at level 1 and scales to 2.2 uses per second at level 10, before Cooldown Recovery.

@@ -138,7 +138,9 @@ namespace PoeClone.Inventory
         MinionArmour,               // flat armour for minions against physical hits
         MinionResistances,          // fire, cold, lightning and poison resistance for minions
         BowDamage,                  // % more bow attack damage, from dedicated Grace passives
-        AvoidStun                   // % chance to take a hit without being staggered
+        AvoidStun,                  // % chance to take a hit without being staggered
+        HealthPotionRecovery,       // % increased life restored by health potions
+        OnslaughtOnHealthPotion     // 1: drinking a health potion grants Onslaught for 3 seconds
     }
 
     /// <summary>
@@ -438,6 +440,8 @@ namespace PoeClone.Inventory
                 case StatType.Evasion: return "Evasion";
                 case StatType.BlockChance: return "Chance to Block";
                 case StatType.AvoidStun: return "Chance to Avoid Stun";
+                case StatType.HealthPotionRecovery: return "Health Potion Recovery";
+                case StatType.OnslaughtOnHealthPotion: return "Onslaught on Health Potion";
                 case StatType.PhysicalDamage: return "Physical Damage";
                 case StatType.AttackSpeed: return "Attack Speed";
                 case StatType.FireResistance: return "Fire Resistance";
@@ -535,6 +539,7 @@ namespace PoeClone.Inventory
             {
                 case StatType.BlockChance:
                 case StatType.AvoidStun:
+                case StatType.HealthPotionRecovery:
                 case StatType.AttackSpeed:
                 case StatType.FireResistance:
                 case StatType.ColdResistance:
@@ -617,6 +622,8 @@ namespace PoeClone.Inventory
                 case StatType.Evasion: return sign + n + " to Evasion";
                 case StatType.BlockChance: return sign + n + "% Chance to Block";
                 case StatType.AvoidStun: return sign + n + "% Chance to Avoid Stun";
+                case StatType.HealthPotionRecovery: return n + "% increased Life recovered by Health Potions";
+                case StatType.OnslaughtOnHealthPotion: return "Drinking a Health Potion grants Onslaught for 3 seconds";
                 case StatType.PhysicalDamage: return "Adds " + n + " Physical Damage";
                 case StatType.AttackSpeed: return n + "% " + (m.Value < 0f ? "reduced" : "increased") + " Attack Speed";
                 case StatType.FireResistance: return sign + n + "% to Fire Resistance";

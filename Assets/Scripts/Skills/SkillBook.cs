@@ -91,9 +91,17 @@ namespace PoeClone.Skills
             return cost;
         }
 
-        /// <summary>Cooldown (or time between casts for an attack spell): a little shorter each level.</summary>
+        /// <summary>Cooldown (or time between casts for an attack spell) at a given skill level.</summary>
         public float CooldownAt(int level)
         {
+            if (Id == SkillId.Dash)
+            {
+                // Scale uses per second evenly from the level 1 cooldown to 2.2/s at level 10.
+                float usesPerSecond = Mathf.Lerp(1f / Cooldown, 2.2f,
+                    Mathf.Clamp01((Mathf.Max(1, level) - 1) / 9f));
+                return 1f / usesPerSecond;
+            }
+
             float perLevel = Main ? 0.01f : 0.025f;
             return Cooldown * Mathf.Max(0.4f, 1f - perLevel * (Mathf.Max(1, level) - 1));
         }

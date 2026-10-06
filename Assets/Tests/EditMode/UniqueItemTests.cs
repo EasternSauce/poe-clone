@@ -56,5 +56,61 @@ namespace PoeClone.Tests
             ItemData plain = ItemGenerator.Generate(new System.Random(3), "rusty_sword", 1, ItemRarity.Rare);
             Assert.IsNull(UniqueItems.FlavourFor(plain));
         }
+
+        [Test]
+        public void BloodrootTradesRawRecoveryForPotionRecovery()
+        {
+            ItemData belt = UniqueItems.Current("Bloodroot Cord");
+            Assert.IsNotNull(belt);
+            Assert.AreEqual(22f, Value(belt, StatType.MaxLife));
+            Assert.AreEqual(3f, Value(belt, StatType.LifeRegen));
+            Assert.AreEqual(25f, Value(belt, StatType.HealthPotionRecovery));
+            Assert.AreEqual(0f, ValueOrZero(belt, StatType.OnslaughtOnHealthPotion));
+            Assert.AreEqual("25% increased Life recovered by Health Potions",
+                StatFormatter.ItemLine(new StatModifier(StatType.HealthPotionRecovery, 25)));
+        }
+
+        [Test]
+        public void NewOrdinaryUniquesUseExistingTreeEffects()
+        {
+            Assert.AreEqual(StatType.Shatter, Signature("Frostglass Bough"));
+            Assert.AreEqual(StatType.Stormblade, Signature("Thundergrip"));
+            Assert.AreEqual(StatType.GlacialStep, Signature("Winter's Passage"));
+            Assert.AreEqual(StatType.SecondWind, Signature("Mercy's Echo"));
+            Assert.AreEqual(StatType.DeathsHerald, Signature("Ledger of the Fallen"));
+            ItemData draught = UniqueItems.Current("The Last Draught");
+            Assert.AreEqual(1f, Value(draught, StatType.OnslaughtOnHealthPotion));
+            Assert.AreEqual(0f, ValueOrZero(draught, StatType.HealthPotionRecovery));
+        }
+
+        private static StatType Signature(string name)
+        {
+            ItemData item = UniqueItems.Current(name);
+            Assert.IsNotNull(item, name);
+            foreach (StatModifier modifier in item.Modifiers)
+                if (modifier.Stat == StatType.Shatter || modifier.Stat == StatType.Stormblade ||
+                    modifier.Stat == StatType.GlacialStep || modifier.Stat == StatType.SecondWind ||
+                    modifier.Stat == StatType.DeathsHerald)
+                    return modifier.Stat;
+            Assert.Fail(name + " has no tree effect");
+            return default(StatType);
+        }
+
+        private static float Value(ItemData item, StatType stat)
+        {
+            foreach (StatModifier modifier in item.Modifiers)
+                if (modifier.Stat == stat)
+                    return modifier.Value;
+            Assert.Fail(item.Name + " lacks " + stat);
+            return 0f;
+        }
+
+        private static float ValueOrZero(ItemData item, StatType stat)
+        {
+            foreach (StatModifier modifier in item.Modifiers)
+                if (modifier.Stat == stat)
+                    return modifier.Value;
+            return 0f;
+        }
     }
 }

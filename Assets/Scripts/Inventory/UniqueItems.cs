@@ -3,9 +3,9 @@ using System.Collections.Generic;
 namespace PoeClone.Inventory
 {
     /// <summary>
-    /// Hand-made items with fixed names and stats (orange), stronger than anything rolled, each
-    /// with at least one special stat that changes how the character plays (extra arrows, leech,
-    /// culling...; see the end of StatType). Each boss always drops one; any other drop has a
+    /// Hand-made items with fixed names and stats (orange), each with at least one uncommon
+    /// stat or effect (extra arrows, leech, culling...; see the end of StatType).
+    /// Each boss always drops one; any other drop has a
     /// small chance to be one. New uniques go at the end (saves keep them by name, not index).
     /// </summary>
     public static class UniqueItems
@@ -45,13 +45,13 @@ namespace PoeClone.Inventory
             {
                 BaseId = "iron_helmet", Name = "Crown of Ash",
                 Flavour = "Taken from the Warlord's brow, still warm.",
-                Mods = new[] { Mod(StatType.Armour, 70), Mod(StatType.MaxLife, 30), Mod(StatType.FireResistance, 25), Mod(StatType.AreaOfEffect, 25) }
+                Mods = new[] { Mod(StatType.Armour, 55), Mod(StatType.MaxLife, 20), Mod(StatType.FireResistance, 20), Mod(StatType.AreaOfEffect, 15), Mod(StatType.ExplodeOnKill, 8) }
             },
             new Unique
             {
                 BaseId = "studded_vest", Name = "Sexton's Hide",
                 Flavour = "Dug a hundred graves. Filled them too.",
-                Mods = new[] { Mod(StatType.Armour, 80), Mod(StatType.MaxLife, 45), Mod(StatType.ColdResistance, 15), Mod(StatType.LifeOnKill, 6) }
+                Mods = new[] { Mod(StatType.Armour, 65), Mod(StatType.MaxLife, 30), Mod(StatType.ColdResistance, 15), Mod(StatType.LifeOnKill, 5), Mod(StatType.AvoidStun, 12) }
             },
             new Unique
             {
@@ -69,7 +69,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "ruby_ring", Name = "Emberheart",
                 Flavour = "It beats, faintly.",
-                Mods = new[] { Mod(StatType.FireResistance, 30), Mod(StatType.Intelligence, 12), Mod(StatType.SpellDamage, 25), Mod(StatType.FirePenetration, 12) }
+                Mods = new[] { Mod(StatType.FireResistance, 25), Mod(StatType.Intelligence, 10), Mod(StatType.SpellDamage, 18), Mod(StatType.FirePenetration, 8), Mod(StatType.IgniteChance, 15) }
             },
             new Unique
             {
@@ -81,13 +81,13 @@ namespace PoeClone.Inventory
             {
                 BaseId = "leather_quiver", Name = "Rimefletch",
                 Flavour = "Feathered with frost that never melts.",
-                Mods = new[] { Mod(StatType.PhysicalDamage, 5), Mod(StatType.ColdResistance, 20), Mod(StatType.ChillOnHit, 30), Mod(StatType.ColdPenetration, 12) }
+                Mods = new[] { Mod(StatType.PhysicalDamage, 4), Mod(StatType.ColdResistance, 15), Mod(StatType.ChillOnHit, 22), Mod(StatType.ColdPenetration, 8), Mod(StatType.Shatter, 12) }
             },
             new Unique
             {
                 BaseId = "steel_dagger", Name = "Leechfang",
                 Flavour = "It drinks first. You drink after.",
-                Mods = new[] { Mod(StatType.PhysicalDamage, 8), Mod(StatType.AttackSpeed, 15), Mod(StatType.LifeLeech, 4), Mod(StatType.LifeOnKill, 4), Mod(StatType.ArmourPenetration, 15) }
+                Mods = new[] { Mod(StatType.PhysicalDamage, 6), Mod(StatType.AttackSpeed, 12), Mod(StatType.LifeLeech, 3), Mod(StatType.LifeOnKill, 3), Mod(StatType.ArmourPenetration, 10), Mod(StatType.OnslaughtOnKill, 15) }
             },
             new Unique
             {
@@ -105,7 +105,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "rope_belt", Name = "Bloodroot Cord",
                 Flavour = "Braided from roots that drank the battlefield dry.",
-                Mods = new[] { Mod(StatType.MaxLife, 35), Mod(StatType.LifeRegen, 6), Mod(StatType.Strength, 10) }
+                Mods = new[] { Mod(StatType.MaxLife, 22), Mod(StatType.LifeRegen, 3), Mod(StatType.Strength, 8), Mod(StatType.HealthPotionRecovery, 25) }
             },
             new Unique
             {
@@ -143,6 +143,38 @@ namespace PoeClone.Inventory
                 Flavour = "Something small coils between every page.", Mods = new[] { Mod(StatType.GrantSummonViper, 7), Mod(StatType.MinionLevels, 1), Mod(StatType.AdditionalMinions, 3), Mod(StatType.MinionDamagePenalty, 30), Mod(StatType.MinionLife, 20), Mod(StatType.PoisonDamage, 15) } },
             new Unique { BaseId = "jade_amulet", Name = "Widow's Brood", ShepherdOnly = true,
                 Flavour = "The venom passes from mother to daughter.", Mods = new[] { Mod(StatType.PoisonDamage, 35), Mod(StatType.DamageOverTime, 25), Mod(StatType.PoisonResistance, 25), Mod(StatType.PoisonPenetration, 15), Mod(StatType.VenomCloudOnHit, 30) } },
+
+            // Ordinary drops: uncommon utility and restrained versions of existing tree effects.
+            new Unique { BaseId = "gnarled_staff", Name = "Frostglass Bough",
+                Flavour = "Its branches ring like glass when winter takes a life.",
+                Mods = new[] { Mod(StatType.GrantIceShard, 6), Mod(StatType.SpellDamage, 14), Mod(StatType.ColdPenetration, 8), Mod(StatType.Shatter, 12) } },
+            new Unique { BaseId = "leather_gloves", Name = "Thundergrip",
+                Flavour = "The first spark always finds another hand to shake.",
+                Mods = new[] { Mod(StatType.Evasion, 32), Mod(StatType.AttackSpeed, 8), Mod(StatType.LightningResistance, 15), Mod(StatType.Stormblade, 18) } },
+            new Unique { BaseId = "silk_slippers", Name = "Winter's Passage",
+                Flavour = "Every hurried step leaves a little winter behind.",
+                Mods = new[] { Mod(StatType.Evasion, 24), Mod(StatType.ColdResistance, 18), Mod(StatType.CooldownRecovery, 5), Mod(StatType.GlacialStep, 1) } },
+            new Unique { BaseId = "sage_circlet", Name = "Mercy's Echo",
+                Flavour = "The last prayer is never spoken only once.",
+                Mods = new[] { Mod(StatType.MaxMana, 25), Mod(StatType.LifeRegen, 2), Mod(StatType.GrantRejuvenate, 5), Mod(StatType.SecondWind, 1) } },
+            new Unique { BaseId = "grimoire", Name = "Ledger of the Fallen",
+                Flavour = "The final entry always points to the next name.",
+                Mods = new[] { Mod(StatType.GrantDeathMark, 6), Mod(StatType.MinionDamage, 12), Mod(StatType.MinionLife, 15), Mod(StatType.DeathsHerald, 1) } },
+            new Unique { BaseId = "kite_shield", Name = "Stillstone Aegis",
+                Flavour = "Behind it, even a wounded heart remembers its rhythm.",
+                Mods = new[] { Mod(StatType.Armour, 38), Mod(StatType.BlockChance, 12), Mod(StatType.MaxLife, 18), Mod(StatType.PercentLifeRegen, 0.4f) } },
+            new Unique { BaseId = "jade_amulet", Name = "Gravesong Charm",
+                Flavour = "The dead hum softly to whoever keeps their names.",
+                Mods = new[] { Mod(StatType.Intelligence, 10), Mod(StatType.MinionLife, 18), Mod(StatType.MinionDamage, 8), Mod(StatType.SoulBond, 1) } },
+            new Unique { BaseId = "great_mallet", Name = "Cinderwake",
+                Flavour = "One blow buries the foe. The next scatters the ashes.",
+                Mods = new[] { Mod(StatType.PhysicalDamage, 22), Mod(StatType.AreaOfEffect, 12), Mod(StatType.FireResistance, 15), Mod(StatType.ExplodeOnKill, 10) } },
+            new Unique { BaseId = "topaz_ring", Name = "Storm's Receipt",
+                Flavour = "A debt paid in lightning is never settled once.",
+                Mods = new[] { Mod(StatType.LightningResistance, 16), Mod(StatType.LightningDamage, 10), Mod(StatType.ManaOnKill, 2), Mod(StatType.AdditionalChains, 1) } },
+            new Unique { BaseId = "iron_ring", Name = "The Last Draught",
+                Flavour = "Courage comes in a bottle, and leaves in a heartbeat.",
+                Mods = new[] { Mod(StatType.MaxLife, 14), Mod(StatType.LifeRegen, 1), Mod(StatType.AvoidStun, 8), Mod(StatType.OnslaughtOnHealthPotion, 1) } },
         };
 
         private static readonly Dictionary<string, string> flavourByName = new Dictionary<string, string>();
