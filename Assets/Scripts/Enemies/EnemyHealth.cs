@@ -125,7 +125,7 @@ namespace PoeClone.Enemies
         }
 
         public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration, bool throughExposedHead = false,
-            bool canEnrage = true)
+            bool canEnrage = true, bool flinch = true)
         {
             if (dead || amount <= 0f)
                 return 0f;
@@ -171,7 +171,7 @@ namespace PoeClone.Enemies
                 return amount;
             }
 
-            if (noFlinch)
+            if (!flinch)
                 return amount;
 
             // Bosses don't flinch.
@@ -198,7 +198,6 @@ namespace PoeClone.Enemies
         private float burnPerSecond;
         private float burnUntil = -1f;
         private Coroutine burning;
-        private bool noFlinch;   // burn ticks hurt without staggering
 
         /// <summary>Shocked: takes more damage from the player for a while (see HitEffects).</summary>
         public bool IsShocked => !dead && Time.time < shockedUntil;
@@ -234,9 +233,7 @@ namespace PoeClone.Enemies
                 float amount = burnPerSecond * tick;
                 UI.CombatText.Show(transform.position + Vector3.up * 1.3f * transform.localScale.y,
                     Mathf.Max(1, Mathf.RoundToInt(amount)).ToString(), UI.CombatText.FireColor, 0.6f);
-                noFlinch = true;
-                TakeDamage(amount, DamageType.Fire);
-                noFlinch = false;
+                TakeDamage(amount, DamageType.Fire, 0f, 0f, flinch: false);
             }
             burning = null;
         }

@@ -47,7 +47,7 @@ namespace PoeClone.Skills
     {
         public SkillId Id;
         public string Name;
-        public string Short;        // two or three letters for the bar button
+        public string Short;        // legacy abbreviation retained for data compatibility
         public string Description;
         public StatType Grant;      // the gear stat that grants it (its value is the level)
         public string RollsOn;      // where it can be found, for the skills panel

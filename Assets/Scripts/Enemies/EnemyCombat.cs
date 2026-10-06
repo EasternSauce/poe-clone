@@ -199,8 +199,8 @@ namespace PoeClone.Enemies
                 return;
             }
 
-            // A great weapon comes down with weight: dust where it lands, and a jolt.
-            if (SlotRules.IsTwoHandedMelee(kind.Weapon))
+            // Only the maul's overhead slam strikes the ground.
+            if (kind.Weapon == WeaponType.Maul)
             {
                 Vector3 impact = transform.position + transform.forward * attackRange * 0.75f;
                 Skills.SkillEffects.Shockwave(impact, 1.2f * transform.localScale.x, new Color(0.72f, 0.64f, 0.5f, 1f), 0.35f);

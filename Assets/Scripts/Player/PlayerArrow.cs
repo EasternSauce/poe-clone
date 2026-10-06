@@ -75,9 +75,9 @@ namespace PoeClone.Player
         /// A bow skill's arrow (see PlayerSkills.ReleaseBow). Make it pierce or burn with
         /// <see cref="Piercing"/> and <see cref="Burning"/>. Harmless: a spectator's copy.
         /// </summary>
-        public static PlayerArrow LaunchArrow(Transform shooter, float range, float damage, Vector3 direction, HashSet<IDamageable> volley, bool harmless = false)
+        public static PlayerArrow LaunchArrow(Transform shooter, float range, float damage, Vector3 direction, HashSet<IDamageable> volley, bool harmless = false, Color? arrowColor = null)
         {
-            PlayerArrow arrow = Create(shooter, range * BowRangeMultiplier, damage, harmless, direction: direction);
+            PlayerArrow arrow = Create(shooter, range * BowRangeMultiplier, damage, harmless, direction: direction, arrowColor: arrowColor);
             arrow.volley = volley;
             return arrow;
         }
@@ -132,7 +132,7 @@ namespace PoeClone.Player
             shard.chillSeconds = chillSeconds;
         }
 
-        private static PlayerArrow Create(Transform shooter, float range, float damage, bool harmless, Color? orb = null, Vector3? direction = null)
+        private static PlayerArrow Create(Transform shooter, float range, float damage, bool harmless, Color? orb = null, Vector3? direction = null, Color? arrowColor = null)
         {
             Vector3 forward = direction ?? shooter.forward;
             forward.y = 0f;
@@ -150,7 +150,7 @@ namespace PoeClone.Player
             }
             else
             {
-                RuntimePrimitives.BuildArrow(root.transform);
+                RuntimePrimitives.BuildArrow(root.transform, arrowColor);
             }
 
             var arrow = root.AddComponent<PlayerArrow>();

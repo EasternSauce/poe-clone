@@ -368,12 +368,9 @@ namespace PoeClone.Player
                 return;
             }
 
-            // Great weapons land with weight: a camera jolt at the strike frame.
-            if (SlotRules.IsTwoHandedMelee(weaponType))
-            {
-                bool slam = weaponType != WeaponType.Greatsword;
-                CameraSystem.CameraFollow.Shake(slam ? 0.12f : 0.05f, 0.18f);
-            }
+            // The maul's overhead strike hits the ground; sweeping great weapons do not.
+            if (weaponType == WeaponType.Maul)
+                CameraSystem.CameraFollow.Shake(0.12f, 0.18f);
 
             int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
             var hitAlready = new HashSet<IDamageable>();

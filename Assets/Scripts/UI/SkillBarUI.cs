@@ -32,6 +32,7 @@ namespace PoeClone.UI
         private class SlotView
         {
             public Image Back;
+            public Image Icon;
             public Image Cooldown;
             public Image NoMana;
             public Text Name;
@@ -157,6 +158,7 @@ namespace PoeClone.UI
             attackView.NoMana.enabled = false;
             attackView.Ring.enabled = false;
             attackView.Back.color = new Color(0.10f, 0.09f, 0.08f, 0.9f);
+            attackView.Icon.enabled = false;
             ItemData weapon = skills.GetComponent<PlayerInventory>()?.Equipment.Get(EquipSlot.MainHand);
             if (weapon != null && weapon.WeaponType == WeaponType.Bow)
             {
@@ -175,6 +177,7 @@ namespace PoeClone.UI
             else
             {
                 attackIcon.enabled = false;
+                attackView.Name.alignment = TextAnchor.MiddleCenter;
                 attackView.Name.text = "<size=13>FIST</size>";
             }
         }
@@ -344,7 +347,7 @@ namespace PoeClone.UI
                 {
                     var grant = pickerGrants[k];
                     SkillDefinition skill = SkillBook.Get(grant.Id);
-                    label = "<color=#" + UiKit.Hex(skill.Color) + "><b>" + skill.Short + "</b></color>  " + skill.Name +
+                    label = skill.Name +
                         " <size=14>Lv " + skills.GrantLevelWithBonuses(grant) + " · " + grant.Item.Name + " (" + grant.Source + ")</size>";
                 }
                 else if (k == pickerGrants.Count)
@@ -360,6 +363,17 @@ namespace PoeClone.UI
                 item.raycastTarget = true;
                 Text text = UiKit.NewText("Text", item.rectTransform, label, 18, UiKit.TextColor, TextAnchor.MiddleLeft);
                 UiKit.Stretch(text.rectTransform, 10f);
+                if (k < pickerGrants.Count)
+                    text.rectTransform.offsetMin = new Vector2(42f, 10f);
+                if (k < pickerGrants.Count)
+                {
+                    SkillDefinition skill = SkillBook.Get(pickerGrants[k].Id);
+                    Image icon = UiKit.NewImage("SkillIcon", item.rectTransform, skill.Color);
+                    icon.sprite = SkillIconFactory.Get(skill.Id);
+                    icon.preserveAspect = true;
+                    icon.raycastTarget = false;
+                    UiKit.TopLeft(icon.rectTransform, new Vector2(8f, -5f), new Vector2(28f, 28f));
+                }
                 item.gameObject.AddComponent<TouchPointerRelay>().Up += _ => Pick(row);
                 pickerRows.Add(item.gameObject);
             }
@@ -372,6 +386,7 @@ namespace PoeClone.UI
             if (id == null)
             {
                 view.Back.color = new Color(0.08f, 0.07f, 0.06f, 0.8f);
+                view.Icon.enabled = false;
                 view.Name.text = "";
                 view.Cooldown.fillAmount = 0f;
                 view.NoMana.enabled = false;
@@ -379,6 +394,9 @@ namespace PoeClone.UI
             }
 
             SkillDefinition skill = SkillBook.Get(id.Value);
+            view.Icon.enabled = true;
+            view.Icon.sprite = SkillIconFactory.Get(skill.Id);
+            view.Name.alignment = TextAnchor.LowerRight;
             if (slot >= 0 ? skills.IsToggledOnAt(slot) : skills.IsToggledOn(skill.Id))
             {
                 view.Ring.enabled = true;
@@ -389,14 +407,16 @@ namespace PoeClone.UI
             {
                 // Slotted, but no worn gear grants it right now: waits there, greyed out.
                 view.Back.color = new Color(0.10f, 0.09f, 0.08f, 0.8f);
-                view.Name.text = "<color=#" + UiKit.Hex(new Color(1f, 1f, 1f, 0.25f)) + ">" + skill.Short + "</color>";
+                view.Icon.color = new Color(1f, 1f, 1f, 0.25f);
+                view.Name.text = "";
                 view.Cooldown.fillAmount = 0f;
                 view.NoMana.enabled = false;
                 return;
             }
 
             view.Back.color = new Color(skill.Color.r * 0.45f, skill.Color.g * 0.45f, skill.Color.b * 0.45f, 0.95f);
-            view.Name.text = skill.Short + "\n<size=12>" + level + "</size>";
+            view.Icon.color = Color.white;
+            view.Name.text = "<size=12>" + level + "</size>";
             float left = slot >= 0 ? skills.CooldownLeftAt(slot) : skills.CooldownLeft(skill.Id);
             float total = slot >= 0 ? skills.CooldownTotalAt(slot) : skills.CooldownTotal(skill.Id);
             view.Cooldown.fillAmount = total > 0f ? left / total : 0f;
@@ -408,6 +428,8 @@ namespace PoeClone.UI
             var inventory = skills.GetComponent<PlayerInventory>();
             int count = inventory != null ? inventory.Potions(health) : 0;
             view.Back.color = health ? new Color(.42f,.10f,.10f,.95f) : new Color(.10f,.18f,.43f,.95f);
+            view.Icon.enabled = false;
+            view.Name.alignment = TextAnchor.MiddleCenter;
             view.Name.text = (health ? "HP" : "MP") + "\n<size=12>" + count + "</size>";
             view.Cooldown.fillAmount = 0f;
             view.NoMana.enabled = false;
@@ -519,6 +541,14 @@ namespace PoeClone.UI
             label.fontStyle = FontStyle.Bold;
             UiKit.Stretch(label.rectTransform, 0f);
 
+            Image icon = UiKit.NewImage("SkillIcon", back.rectTransform, Color.white);
+            icon.preserveAspect = true;
+            icon.raycastTarget = false;
+            UiKit.Stretch(icon.rectTransform, 9f);
+            icon.enabled = false;
+            label.transform.SetAsLastSibling();
+            label.alignment = TextAnchor.LowerRight;
+
             Image noMana = UiKit.NewImage("NoMana", back.rectTransform, new Color(0.1f, 0.2f, 0.7f, 0.45f));
             UiKit.Stretch(noMana.rectTransform, 0f);
 
@@ -535,7 +565,7 @@ namespace PoeClone.UI
 
             Image ring = NewRing(back.rectTransform, -3f);
 
-            return new SlotView { Back = back, Cooldown = cooldown, NoMana = noMana, Name = label, Ring = ring };
+            return new SlotView { Back = back, Icon = icon, Cooldown = cooldown, NoMana = noMana, Name = label, Ring = ring };
         }
 
         private void Build()
@@ -690,10 +720,16 @@ namespace PoeClone.UI
                 UiKit.Grain(back);
                 UiKit.TopLeft(back.rectTransform, new Vector2(16f, y), new Vector2(width - 32f, rowHeight));
 
+                Image icon = UiKit.NewImage("SkillIcon", back.rectTransform, grant.HasValue ? skill.Color : UiKit.DimText);
+                icon.sprite = SkillIconFactory.Get(skill.Id);
+                icon.preserveAspect = true;
+                icon.raycastTarget = false;
+                UiKit.TopLeft(icon.rectTransform, new Vector2(12f, -19f), new Vector2(36f, 36f));
+
                 Text text = UiKit.NewText("Text", back.rectTransform, "", 18, UiKit.TextColor, TextAnchor.MiddleLeft);
                 text.horizontalOverflow = HorizontalWrapMode.Wrap;
                 float buttonsWidth = SkillBook.SlotCount * (slotButton + 4f);
-                UiKit.TopLeft(text.rectTransform, new Vector2(12f, 0f), new Vector2(width - 32f - 12f - buttonsWidth - 8f, rowHeight));
+                UiKit.TopLeft(text.rectTransform, new Vector2(56f, 0f), new Vector2(width - 32f - 56f - buttonsWidth - 8f, rowHeight));
 
                 var row = new Row { Id = skill.Id, Grant = grant, Back = back, Title = text, SlotLabels = new Text[SkillBook.SlotCount] };
                 for (int k = 0; k < SkillBook.SlotCount; k++)

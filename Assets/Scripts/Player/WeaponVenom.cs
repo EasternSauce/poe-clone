@@ -30,7 +30,7 @@ namespace PoeClone.Player
             {
                 yield return new WaitForSeconds(0.5f);
                 if (enemy == null || enemy.IsDead) yield break;
-                float dealt = enemy.TakeDamage(total / 6f, PoeClone.Combat.DamageType.Poison, 0f, penetration, canEnrage: canEnrage);
+                float dealt = enemy.TakeDamage(total / 6f, PoeClone.Combat.DamageType.Poison, 0f, penetration, canEnrage: canEnrage, flinch: false);
                 if (dealt > 0f)
                     UI.CombatText.Show(enemy.transform.position + Vector3.up * 2f, Mathf.CeilToInt(dealt).ToString(), Green, 0.6f);
             }
@@ -50,7 +50,7 @@ namespace PoeClone.Player
                 foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None))
                 {
                     Vector3 d = enemy.transform.position - at; d.y = 0f;
-                    if (!enemy.IsDead && d.sqrMagnitude <= 9f) enemy.TakeDamage(perSecond * 0.5f, PoeClone.Combat.DamageType.Poison, 0f, penetration, canEnrage: canEnrage);
+                    if (!enemy.IsDead && d.sqrMagnitude <= 9f) enemy.TakeDamage(perSecond * 0.5f, PoeClone.Combat.DamageType.Poison, 0f, penetration, canEnrage: canEnrage, flinch: false);
                 }
             }
             Destroy(visual);

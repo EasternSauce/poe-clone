@@ -180,7 +180,7 @@ namespace PoeClone.Skills
                 {
                     var volley = PlayerArrow.NewVolley();
                     foreach (Vector3 direction in HitEffects.Spread(forward, arrows, PierceSpread))
-                        PlayerArrow.LaunchArrow(transform, range, damage * (0.9f + 0.04f * (level - 1)), direction, volley);
+                        PlayerArrow.LaunchArrow(transform, range, damage * (0.9f + 0.04f * (level - 1)), direction, volley, arrowColor: skill.Color);
                     Record(skill, level, range, arrows);
                     break;
                 }
@@ -239,7 +239,7 @@ namespace PoeClone.Skills
                     break;
                 case SkillId.VenomArrow:
                     foreach (Vector3 direction in HitEffects.Spread(facing, count, PierceSpread))
-                        PlayerArrow.LaunchArrow(caster, cast.Size > 0f ? cast.Size : bowRange, 0f, direction, null, harmless: true);
+                        PlayerArrow.LaunchArrow(caster, cast.Size > 0f ? cast.Size : bowRange, 0f, direction, null, harmless: true, arrowColor: skill.Color);
                     break;
 
                 case SkillId.RainOfArrows:

@@ -24,6 +24,7 @@ namespace PoeClone.Network
         private GameObject canvasRoot;
         private GameObject waitingRoot;
         private Text waitingText;
+        private RectTransform waitingSpinner;
         private GameObject liveBadge;
         private Text liveText;
         private Text hintText;
@@ -69,6 +70,8 @@ namespace PoeClone.Network
             if (!canvasRoot.activeSelf)
                 return;
 
+            ConnectionSpinner.Rotate(waitingSpinner);
+
             // Arrow keys switch players, unless they're moving the caret in a half-typed message.
             var keyboard = Keyboard.current;
             var ctrl = GameSessionController.Instance;
@@ -103,6 +106,7 @@ namespace PoeClone.Network
             bool watching = ctrl.Connected && ctrl.RemotePlayerActive && hasData;
 
             SetActive(waitingRoot, !watching);
+            SetActive(waitingSpinner.gameObject, !ctrl.Connected || (ctrl.RemotePlayerActive && !hasData));
             SetActive(liveBadge, watching);
             SetActive(menuBar, watching);
             if (watching)
@@ -224,7 +228,13 @@ namespace PoeClone.Network
             waitingText.alignment = TextAnchor.MiddleCenter;
             waitingText.color = Color.white;
             waitingText.horizontalOverflow = HorizontalWrapMode.Wrap;
-            RuntimeUiUtil.StretchFull(waitingText.rectTransform, 0.1f);
+            var waitingRect = waitingText.rectTransform;
+            waitingRect.anchorMin = new Vector2(0.1f, 0.25f);
+            waitingRect.anchorMax = new Vector2(0.9f, 0.75f);
+            waitingRect.offsetMin = Vector2.zero;
+            waitingRect.offsetMax = Vector2.zero;
+            waitingRect.anchoredPosition = new Vector2(0f, -45f);
+            waitingSpinner = ConnectionSpinner.Create(waitingRoot.transform);
 
             // LIVE badge, top-centre so it stays clear of the HUD (top-left) and chat (bottom-right).
             liveBadge = new GameObject("LiveBadge");
