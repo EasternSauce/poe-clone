@@ -36,6 +36,8 @@ namespace PoeClone.Network
 
         private PlayerInfo[] players = new PlayerInfo[0];
         public string DenyReason { get; private set; }
+        public string DisconnectReason { get; private set; }
+        public bool Reconnecting { get; private set; }
         /// <summary>Display name sent to the server; empty lets the server pick a default.</summary>
         public string PlayerName { get; private set; } = string.Empty;
 
@@ -221,6 +223,8 @@ namespace PoeClone.Network
             Connected = true;
             reconnectDelay = 2f;
             DenyReason = null;
+            DisconnectReason = null;
+            Reconnecting = false;
 
             var hello = new HelloMessage
             {
@@ -298,11 +302,15 @@ namespace PoeClone.Network
             }
         }
 
-        private void HandleClose()
+        private void HandleClose(string reason)
         {
             if (returningToCharacters) return;
+            if (!string.IsNullOrWhiteSpace(reason)) DisconnectReason = reason;
+            if (string.IsNullOrWhiteSpace(DisconnectReason)) DisconnectReason = "Connection closed unexpectedly.";
+            Reconnecting = true;
             Connected = false;
             PlayGranted = false;
+            DenyReason = null;
             RemotePlayerActive = false;
             players = new PlayerInfo[0];
             WatchingId = 0;
@@ -322,6 +330,8 @@ namespace PoeClone.Network
         private void HandleError(string message)
         {
             Debug.LogWarning($"GameSessionController: socket error: {message}");
+            if (!string.IsNullOrWhiteSpace(message) && message != "WebSocket error")
+                DisconnectReason = message;
         }
 
         public void NotifyCharacterLoaded()

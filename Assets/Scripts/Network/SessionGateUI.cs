@@ -46,8 +46,10 @@ namespace PoeClone.Network
             PlayerHUD.SetHiddenBy(this, shouldShow);
             if (!shouldShow) return;
 
-            if (!ctrl.Connected && string.IsNullOrEmpty(ctrl.DenyReason))
-                messageText.text = "Connecting...";
+            if (!ctrl.Connected)
+                messageText.text = ctrl.Reconnecting
+                    ? $"Reconnecting...\n\nReason: {ctrl.DisconnectReason}"
+                    : "Connecting...";
             else if (!string.IsNullOrEmpty(ctrl.DenyReason))
                 messageText.text = $"{ctrl.DenyReason}\n\nLeave this page open -\nyour game starts the moment a place frees up.";
             else

@@ -143,7 +143,9 @@ namespace PoeClone.Network
             string message;
             if (!ctrl.Connected)
                 // Distinct from "no one playing": we can't know whether anyone is playing right now.
-                message = "Connecting to the game server...\n\n(The free server can take up to a minute to wake up.)";
+                message = ctrl.Reconnecting
+                    ? $"Reconnecting to the game server...\n\nReason: {ctrl.DisconnectReason}"
+                    : "Connecting to the game server...\n\n(The free server can take up to a minute to wake up.)";
             else if (ctrl.RemotePlayerActive)
                 message = "Someone is playing - joining their game...";
             else

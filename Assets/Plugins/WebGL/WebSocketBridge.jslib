@@ -21,6 +21,7 @@ mergeInto(LibraryManager.library, {
       socket = new WebSocket(url);
     } catch (e) {
       SendMessage(goName, 'OnWSError', 'Failed to create WebSocket: ' + e.message);
+      SendMessage(goName, 'OnWSClose', '');
       return;
     }
 
@@ -33,7 +34,10 @@ mergeInto(LibraryManager.library, {
       }
     };
     socket.onclose = function (evt) {
-      SendMessage(goName, 'OnWSClose', String(evt.code || 0));
+      var detail = evt.reason || (evt.code === 1006
+        ? 'Connection lost unexpectedly'
+        : 'Connection closed');
+      SendMessage(goName, 'OnWSClose', detail + ' (code ' + evt.code + ').');
     };
     socket.onerror = function () {
       SendMessage(goName, 'OnWSError', 'WebSocket error');

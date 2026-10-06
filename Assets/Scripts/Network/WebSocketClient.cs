@@ -23,7 +23,7 @@ namespace PoeClone.Network
     {
         public event Action OnOpen;
         public event Action<string> OnMessage;
-        public event Action OnClose;
+        public event Action<string> OnClose;
         public event Action<string> OnError;
 
         // The WebGL bridge dispatches callbacks via SendMessage(gameObject.name, method, arg),
@@ -97,7 +97,7 @@ namespace PoeClone.Network
         // --- Callbacks invoked by WebSocketBridge.jslib via SendMessage (WebGL builds only). ---
         public void OnWSOpen(string _) => OnOpen?.Invoke();
         public void OnWSMessage(string data) => OnMessage?.Invoke(data);
-        public void OnWSClose(string _) => OnClose?.Invoke();
+        public void OnWSClose(string reason) => OnClose?.Invoke(reason);
         public void OnWSError(string message) => OnError?.Invoke(message);
 
         public void OnLocationSearch(string search)
@@ -121,7 +121,7 @@ namespace PoeClone.Network
             catch (Exception e)
             {
                 mainThreadActions.Enqueue(() => OnError?.Invoke(e.Message));
-                mainThreadActions.Enqueue(() => OnClose?.Invoke());
+                mainThreadActions.Enqueue(() => OnClose?.Invoke(null));
             }
         }
 
@@ -139,7 +139,10 @@ namespace PoeClone.Network
                         result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
                         if (result.MessageType == WebSocketMessageType.Close)
                         {
-                            mainThreadActions.Enqueue(() => OnClose?.Invoke());
+                            string reason = string.IsNullOrEmpty(result.CloseStatusDescription)
+                                ? $"Connection closed by the server ({result.CloseStatus})."
+                                : $"{result.CloseStatusDescription} ({result.CloseStatus}).";
+                            mainThreadActions.Enqueue(() => OnClose?.Invoke(reason));
                             return;
                         }
                         sb.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
@@ -152,7 +155,7 @@ namespace PoeClone.Network
             catch (Exception e)
             {
                 mainThreadActions.Enqueue(() => OnError?.Invoke(e.Message));
-                mainThreadActions.Enqueue(() => OnClose?.Invoke());
+                mainThreadActions.Enqueue(() => OnClose?.Invoke(null));
             }
         }
 

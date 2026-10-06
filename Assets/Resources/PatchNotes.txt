@@ -1,9 +1,2 @@
-version: 2026-10-06-travel-passive-reset
-- Travel passives now grant either +3 to a nearby attribute or a small bonus suited to their branch, bridge, or destination. Longer paths keep the same bonus throughout.
-- Poison skill grants on items now show their level in the same format as other skills.
-- Maces and sceptres lift overhead, then swing down on basic attacks.
-- Two-handed basic attacks no longer draw an area circle on the ground.
-- Picking up equipment from the ground or inventory now uses the soft armour sound; rings and amulets keep their jewellery sound.
-- Potion pickup sounds play at half their previous volume.
-- Existing characters receive a one-time passive tree reset with all points returned and respec charges preserved.
-- Escape now pauses the game while the settings menu is open; closing it resumes play.
+version: 2026-10-06-reconnect-diagnostics
+- Reconnect screens now show the connection error or close reason for both players and spectators.
