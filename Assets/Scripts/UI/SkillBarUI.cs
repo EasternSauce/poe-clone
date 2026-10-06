@@ -49,6 +49,8 @@ namespace PoeClone.UI
         }
 
         private readonly List<SlotView> slotViews = new List<SlotView>();
+        private Sprite healthPotionIcon;
+        private Sprite manaPotionIcon;
         private SlotView attackView;
         private Image attackIcon;
         private readonly List<Row> rows = new List<Row>();
@@ -363,13 +365,21 @@ namespace PoeClone.UI
                 item.raycastTarget = true;
                 Text text = UiKit.NewText("Text", item.rectTransform, label, 18, UiKit.TextColor, TextAnchor.MiddleLeft);
                 UiKit.Stretch(text.rectTransform, 10f);
-                if (k < pickerGrants.Count)
+                if (k < pickerGrants.Count + 2)
                     text.rectTransform.offsetMin = new Vector2(42f, 10f);
                 if (k < pickerGrants.Count)
                 {
                     SkillDefinition skill = SkillBook.Get(pickerGrants[k].Id);
                     Image icon = UiKit.NewImage("SkillIcon", item.rectTransform, skill.Color);
                     icon.sprite = SkillIconFactory.Get(skill.Id);
+                    icon.preserveAspect = true;
+                    icon.raycastTarget = false;
+                    UiKit.TopLeft(icon.rectTransform, new Vector2(8f, -5f), new Vector2(28f, 28f));
+                }
+                else if (k < pickerGrants.Count + 2)
+                {
+                    Image icon = UiKit.NewImage("PotionIcon", item.rectTransform, Color.white);
+                    icon.sprite = k == pickerGrants.Count ? healthPotionIcon : manaPotionIcon;
                     icon.preserveAspect = true;
                     icon.raycastTarget = false;
                     UiKit.TopLeft(icon.rectTransform, new Vector2(8f, -5f), new Vector2(28f, 28f));
@@ -416,7 +426,7 @@ namespace PoeClone.UI
 
             view.Back.color = new Color(skill.Color.r * 0.45f, skill.Color.g * 0.45f, skill.Color.b * 0.45f, 0.95f);
             view.Icon.color = Color.white;
-            view.Name.text = "<size=12>" + level + "</size>";
+            view.Name.text = "<size=9>lvl </size><size=12>" + level + "</size>";
             float left = slot >= 0 ? skills.CooldownLeftAt(slot) : skills.CooldownLeft(skill.Id);
             float total = slot >= 0 ? skills.CooldownTotalAt(slot) : skills.CooldownTotal(skill.Id);
             view.Cooldown.fillAmount = total > 0f ? left / total : 0f;
@@ -428,9 +438,11 @@ namespace PoeClone.UI
             var inventory = skills.GetComponent<PlayerInventory>();
             int count = inventory != null ? inventory.Potions(health) : 0;
             view.Back.color = health ? new Color(.42f,.10f,.10f,.95f) : new Color(.10f,.18f,.43f,.95f);
-            view.Icon.enabled = false;
-            view.Name.alignment = TextAnchor.MiddleCenter;
-            view.Name.text = (health ? "HP" : "MP") + "\n<size=12>" + count + "</size>";
+            view.Icon.enabled = true;
+            view.Icon.sprite = health ? healthPotionIcon : manaPotionIcon;
+            view.Icon.color = count > 0 ? Color.white : new Color(1f, 1f, 1f, 0.35f);
+            view.Name.alignment = TextAnchor.LowerRight;
+            view.Name.text = "<size=12>" + count + "</size>";
             view.Cooldown.fillAmount = 0f;
             view.NoMana.enabled = false;
             view.Ring.enabled = false;
@@ -540,6 +552,9 @@ namespace PoeClone.UI
             Text label = UiKit.NewText("Name", back.rectTransform, "", 19, UiKit.TextColor, TextAnchor.MiddleCenter);
             label.fontStyle = FontStyle.Bold;
             UiKit.Stretch(label.rectTransform, 0f);
+            Shadow labelShadow = label.gameObject.AddComponent<Shadow>();
+            labelShadow.effectColor = Color.black;
+            labelShadow.effectDistance = new Vector2(1f, -1f);
 
             Image icon = UiKit.NewImage("SkillIcon", back.rectTransform, Color.white);
             icon.preserveAspect = true;
@@ -570,6 +585,8 @@ namespace PoeClone.UI
 
         private void Build()
         {
+            healthPotionIcon = Resources.Load<Sprite>("ItemIcons/" + ItemGenerator.HealthPotionId);
+            manaPotionIcon = Resources.Load<Sprite>("ItemIcons/" + ItemGenerator.ManaPotionId);
             Canvas canvas = UiKit.NewCanvas("SkillCanvas", transform, 60, out CanvasGroup group);
             canvas.gameObject.AddComponent<GraphicRaycaster>();
             group.interactable = true;

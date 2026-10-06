@@ -221,8 +221,8 @@ namespace PoeClone.UI
             PlayerPotions potions = stats != null ? stats.GetComponent<PlayerPotions>() : null;
             int health = potions != null ? potions.HealthPotions : 0;
             int mana = potions != null ? potions.ManaPotions : 0;
-            healthPotionText.text = "HP\n" + health;
-            manaPotionText.text = "MP\n" + mana;
+            healthPotionText.text = health.ToString();
+            manaPotionText.text = mana.ToString();
             healthPotionImage.color = health > 0 ? new Color(0.45f, 0.1f, 0.1f, 0.8f) : ControlColor;
             manaPotionImage.color = mana > 0 ? new Color(0.12f, 0.18f, 0.5f, 0.8f) : ControlColor;
         }
@@ -503,14 +503,14 @@ namespace PoeClone.UI
 
             // Potions: two small buttons along the bottom, between the run and skill buttons.
             healthPotionImage = NewRoundButton("HealthPotion", combat, new Vector2(1f, 0f), new Vector2(-370f, 40f), 72f, null);
-            healthPotionText = UiKit.NewText("Count", healthPotionImage.rectTransform, "", 18, new Color(1f, 0.6f, 0.55f), TextAnchor.MiddleCenter);
-            UiKit.Stretch(healthPotionText.rectTransform, 0f);
+            AddPotionIcon(healthPotionImage, ItemGenerator.HealthPotionId);
+            healthPotionText = AddPotionCount(healthPotionImage, new Color(1f, 0.6f, 0.55f));
             healthPotionImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.PotionPressed = 0;
             TouchMode.AddBlocker(healthPotionImage.rectTransform);
 
             manaPotionImage = NewRoundButton("ManaPotion", combat, new Vector2(1f, 0f), new Vector2(-275f, 40f), 72f, null);
-            manaPotionText = UiKit.NewText("Count", manaPotionImage.rectTransform, "", 18, new Color(0.65f, 0.72f, 1f), TextAnchor.MiddleCenter);
-            UiKit.Stretch(manaPotionText.rectTransform, 0f);
+            AddPotionIcon(manaPotionImage, ItemGenerator.ManaPotionId);
+            manaPotionText = AddPotionCount(manaPotionImage, new Color(0.65f, 0.72f, 1f));
             manaPotionImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.PotionPressed = 1;
             TouchMode.AddBlocker(manaPotionImage.rectTransform);
 
@@ -600,6 +600,26 @@ namespace PoeClone.UI
 
             go.AddComponent<GraphicRaycaster>();
             return canvas;
+        }
+
+        private static void AddPotionIcon(Image button, string potionId)
+        {
+            Image icon = UiKit.NewImage("PotionIcon", button.rectTransform, Color.white);
+            icon.sprite = Resources.Load<Sprite>("ItemIcons/" + potionId);
+            icon.preserveAspect = true;
+            icon.raycastTarget = false;
+            UiKit.Stretch(icon.rectTransform, 13f);
+        }
+
+        private static Text AddPotionCount(Image button, Color color)
+        {
+            Text count = UiKit.NewText("Count", button.rectTransform, "", 18, color, TextAnchor.LowerRight);
+            UiKit.Stretch(count.rectTransform, 5f);
+            count.raycastTarget = false;
+            Shadow shadow = count.gameObject.AddComponent<Shadow>();
+            shadow.effectColor = Color.black;
+            shadow.effectDistance = new Vector2(1f, -1f);
+            return count;
         }
 
         private static Image NewRoundButton(string name, Transform parent, Vector2 anchor, Vector2 position, float size, string label)

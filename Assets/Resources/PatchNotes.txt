@@ -1,6 +1,2 @@
-version: 2026-10-06-skill-icons-and-feedback
-- Every skill now has a distinct icon on the skill bar, touch controls, and skill lists.
-- Connecting and reconnecting screens now show a rotating indicator.
-- Ground shake accompanies maul slams without shaking on greataxe or greatsword swings.
-- Poison and venom cloud damage ticks no longer stun enemies; the initial hit still can.
-- Venom Arrow projectiles are green, including for spectators.
+version: 2026-10-06-potion-icons
+- Skill bar levels now show a small “lvl” label, and health and mana potions use their item icons on desktop and touch controls.
