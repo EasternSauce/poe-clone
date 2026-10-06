@@ -1,5 +1,5 @@
 version: 2026-10-06-character-stats-close-visible
-- The character stats close button stays at the top of the screen when the stats panel is taller than the mobile viewport.
+- The character stats close button stays at the top of the screen when the panel is taller than the mobile viewport, and only appears while the menu is open.
 
 version: 2026-10-06-disable-ground-loot-ui
 - Ground loot canvases are temporarily disabled to reduce mobile frame hitches when enemies die.
