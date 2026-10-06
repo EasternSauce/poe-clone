@@ -1,5 +1,7 @@
 ﻿using System;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using PoeClone.Inventory;
@@ -164,7 +166,12 @@ namespace PoeClone.UI
         {
             var combined = new System.Collections.Generic.List<Entry>();
             AddArchive(combined, Resources.Load<TextAsset>("PatchNotesHistory")?.text);
+            var bundledOrder = new Dictionary<string, int>(StringComparer.Ordinal);
+            for (int i = 0; i < combined.Count; i++) bundledOrder[combined[i].version] = i;
             AddArchive(combined, PlayerPrefs.GetString("PoeClone.PatchNotesArchive", ""));
+            var mergedOrder = new Dictionary<string, int>(StringComparer.Ordinal);
+            for (int i = 0; i < combined.Count; i++) mergedOrder[combined[i].version] = i;
+            combined.Sort((a, b) => CompareReleases(a, b, bundledOrder, mergedOrder));
             entries = combined.ToArray();
             title.text="PATCH HISTORY"; ClearEntries(); settingsButton.SetActive(true); notesViewport.gameObject.SetActive(true);
             body.transform.SetParent(notesContent,false); UiKit.TopLeft(body.rectTransform,new Vector2(8,-4),new Vector2(W-350,0));
@@ -175,10 +182,30 @@ namespace PoeClone.UI
             content.sizeDelta=new Vector2(0,Mathf.Max(100,-y+10));
             if(entries.Length>0)
             {
-                selected=entries.Length-1;
+                selected=0;
                 SelectEntry(selected);
             }
-            listScroll.verticalNormalizedPosition=0;
+            listScroll.verticalNormalizedPosition=1;
+        }
+        private static int CompareReleases(Entry a, Entry b, Dictionary<string, int> bundledOrder, Dictionary<string, int> mergedOrder)
+        {
+            bool aDated = TryReleaseDate(a.version, out DateTime aDate);
+            bool bDated = TryReleaseDate(b.version, out DateTime bDate);
+            if (aDated && bDated && aDate != bDate) return bDate.CompareTo(aDate);
+
+            bool aBundled = bundledOrder.TryGetValue(a.version, out int aIndex);
+            bool bBundled = bundledOrder.TryGetValue(b.version, out int bIndex);
+            if (aBundled && bBundled) return aIndex.CompareTo(bIndex);
+            if (aBundled != bBundled) return aBundled ? 1 : -1;
+            // Device-only releases were appended as they were seen, oldest first.
+            return mergedOrder[b.version].CompareTo(mergedOrder[a.version]);
+        }
+        private static bool TryReleaseDate(string version, out DateTime date)
+        {
+            date = default;
+            return version != null && version.Length >= 10 &&
+                DateTime.TryParseExact(version.Substring(0, 10), "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out date);
         }
         private void SelectEntry(int index)
         {

@@ -1,2 +1,2 @@
-version: 2026-10-06-reconnect-diagnostics
-- Reconnect screens now show the connection error or close reason for both players and spectators.
+version: 2026-10-06-patch-history-order
+- Patch History now lists releases in patch order, with the newest release selected when opened.
