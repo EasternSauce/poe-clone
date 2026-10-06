@@ -1,3 +1,6 @@
+version: 2026-10-06-carrion-melee-hitbox
+- Carrion Saint's phase-three damageable hitbox is twice as wide, so short melee weapons can connect more reliably.
+
 version: 2026-10-06-shepherd-pacing-damage
 - Shepherd and Carrion Saint specials now come half as often while calm; enrage restores their previous ability cadence.
 - Shepherd and Carrion Saint damage is reduced by 25%.

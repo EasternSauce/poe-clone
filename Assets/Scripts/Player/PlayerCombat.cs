@@ -218,6 +218,29 @@ namespace PoeClone.Player
             return range * (1f + Mathf.Max(0f, inventory.Stats.Total(StatType.MeleeRange)) / 100f);
         }
 
+        // Carrion Saint's body collider is intentionally broad to block movement, but the
+        // melee swing also tests enemy pivots. Let phase three's damageable radius extend by
+        // one collider radius, making its effective hitbox twice as wide without changing
+        // ordinary enemies or weapon reach.
+        private static float DamageableReach(EnemyHealth enemy, float range)
+        {
+            if (enemy == null)
+                return range;
+            ShepherdFight fight = enemy.GetComponent<ShepherdFight>();
+            if (fight == null || fight.Phase < 3)
+                return range;
+            CharacterController collider = enemy.GetComponent<CharacterController>();
+            return range + (collider != null ? collider.radius * enemy.transform.lossyScale.x : 0f);
+        }
+
+        private static float MeleeQueryRange(float range)
+        {
+            float expanded = range;
+            foreach (EnemyHealth enemy in EnemyHealth.Active)
+                expanded = Mathf.Max(expanded, DamageableReach(enemy, range));
+            return expanded;
+        }
+
         private void StartAttack()
         {
             WeaponType weaponType = CurrentWeaponType();
@@ -372,7 +395,9 @@ namespace PoeClone.Player
             if (weaponType == WeaponType.Maul)
                 CameraSystem.CameraFollow.Shake(0.12f, 0.18f);
 
-            int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
+            // Expand the overlap query too, or the phase-three damageable edge would never
+            // enter the candidate set for short weapons.
+            int count = Physics.OverlapSphereNonAlloc(transform.position, MeleeQueryRange(range), hitBuffer);
             var hitAlready = new HashSet<IDamageable>();
 
             // A sceptre's blow puts Death Mark on what it strikes (the aimed enemy if it's among them).
@@ -385,7 +410,8 @@ namespace PoeClone.Player
                 if (target == null || target == (object)stats)
                     continue;
 
-                if (!IsInCone(hitBuffer[i].transform.position, range, transform.forward))
+                float targetRange = target is EnemyHealth hitEnemy ? DamageableReach(hitEnemy, range) : range;
+                if (!IsInCone(hitBuffer[i].transform.position, targetRange, transform.forward))
                     continue;
 
                 if (hitAlready.Add(target))
@@ -506,7 +532,8 @@ namespace PoeClone.Player
             aimDirection = aimDirection.sqrMagnitude > 0.0001f ? aimDirection.normalized : transform.forward;
 
             float range = Reach(CurrentWeaponType());
-            int count = Physics.OverlapSphereNonAlloc(transform.position, range, hitBuffer);
+            bool melee = !CharacterAttackAnimator.IsRanged(CurrentWeaponType());
+            int count = Physics.OverlapSphereNonAlloc(transform.position, melee ? MeleeQueryRange(range) : range, hitBuffer);
 
             // On touch the "cursor" is the point the aim stick is pointing at, so that is what
             // gets outlined.
@@ -523,7 +550,7 @@ namespace PoeClone.Player
                 if (enemy == null || enemy.IsDead || !seen.Add(enemy))
                     continue;
 
-                if (!IsInCone(enemy.transform.position, range, aimDirection))
+                if (!IsInCone(enemy.transform.position, melee ? DamageableReach(enemy, range) : range, aimDirection))
                     continue;
 
                 Vector3 screen = cam.WorldToScreenPoint(enemy.transform.position + Vector3.up);

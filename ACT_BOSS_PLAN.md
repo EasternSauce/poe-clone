@@ -1,5 +1,9 @@
 # Act boss: The Shepherd / Carrion Saint - plan and progress
 
+## 2026-10-06 phase-three melee hitbox
+- Doubled the phase-three damageable radius for melee targeting and aim highlighting, accounting for the large movement collider so short weapons can reach.
+- Source and diff review only, at the user's request; no Unity use.
+
 ## 2026-10-06 swallow damage
 - The serpent swallow now deals one fixed 400 physical damage (about seven Carrion Saint auto-attacks at arena level 12). Tune `SwallowDamage` directly; enrage does not affect it.
 - Source and diff review only; no Unity use, as requested earlier.
