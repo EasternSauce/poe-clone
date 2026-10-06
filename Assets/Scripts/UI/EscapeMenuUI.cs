@@ -113,7 +113,7 @@ namespace PoeClone.UI
             if (!pausedByMenu) return;
             pausedByMenu = false;
             GameSessionController session = GameSessionController.Instance;
-            if (session != null && session.Role == SessionRole.Player && (!session.Connected || !session.PlayGranted)) return;
+            if (session != null && session.Role == SessionRole.Player && !session.PlayGranted) return;
             Time.timeScale = timeScaleBeforeMenu;
             AudioListener.pause = audioPausedBeforeMenu;
         }

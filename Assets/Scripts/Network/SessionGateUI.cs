@@ -6,7 +6,8 @@ namespace PoeClone.Network
 {
     /// <summary>
     /// Full-screen gate shown to the "player" role client until the server grants (or denies) the
-    /// play slot (up to 10 people play at once), and again if the connection drops. Hidden entirely for spectators -
+    /// play slot (up to 10 people play at once). Once play starts, a connection loss leaves the
+    /// local game visible. Hidden entirely for spectators -
     /// SpectatorView owns their screen instead. Built at runtime like the rest of this project's UI.
     /// </summary>
     public class SessionGateUI : MonoBehaviour
@@ -45,7 +46,7 @@ namespace PoeClone.Network
             var ctrl = GameSessionController.Instance;
 
             bool shouldShow = ctrl != null && ctrl.Role == SessionRole.Player &&
-                !(ctrl.Connected && ctrl.PlayGranted && PoeClone.Player.SaveSystem.CharacterLoaded);
+                !(ctrl.PlayGranted && PoeClone.Player.SaveSystem.CharacterLoaded);
 
             canvasGroup.alpha = shouldShow ? 1f : 0f;
             canvasGroup.blocksRaycasts = shouldShow;

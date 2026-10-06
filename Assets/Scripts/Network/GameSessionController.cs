@@ -13,7 +13,7 @@ namespace PoeClone.Network
     /// Entry point for the browser session-lock feature. Self-installs into any scene (see
     /// <see cref="Bootstrap"/>) so nothing needed to be wired up in Game.unity: it figures out
     /// whether this browser tab is the "player" or a "spectator" from the URL, connects to the
-    /// session server, and holds the whole world paused (Time.timeScale = 0) until it is either
+    /// session server, and holds the whole world paused (Time.timeScale = 0) until it is first
     /// granted one of the play slots (up to 10 people play at once, each in their own game) or
     /// settles into spectating - so a queued player never simulates a live, interactable copy of
     /// the game locally. Spectators instead get their scene turned into a puppet of one player's
@@ -25,6 +25,7 @@ namespace PoeClone.Network
 
         public SessionRole Role { get; private set; } = SessionRole.Player;
         public bool Connected { get; private set; }
+        /// <summary>Local play was granted once; stays true across chat/server outages.</summary>
         public bool PlayGranted { get; private set; }
         public bool RemotePlayerActive { get; private set; }
         public int SpectatorCount { get; private set; }
@@ -59,6 +60,8 @@ namespace PoeClone.Network
         private float reconnectDelay = 2f;
         private Coroutine reconnectRoutine;
         private bool returningToCharacters;
+        private bool serverPlayGranted;
+        private bool chatDisconnected;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
@@ -207,14 +210,14 @@ namespace PoeClone.Network
         /// <summary>Sends one already-serialized gameplay snapshot (see PlayerStateBroadcaster).</summary>
         public void SendState(string json)
         {
-            if (!Connected || Role != SessionRole.Player || !PlayGranted) return;
+            if (!Connected || Role != SessionRole.Player || !serverPlayGranted) return;
             client.Send(json);
         }
 
         /// <summary>Sends the player's menus' contents (see PlayerStateBroadcaster / GearState).</summary>
         public void SendGear(string json)
         {
-            if (!Connected || Role != SessionRole.Player || !PlayGranted) return;
+            if (!Connected || Role != SessionRole.Player || !serverPlayGranted) return;
             client.Send(json);
         }
 
@@ -270,15 +273,24 @@ namespace PoeClone.Network
             switch (msg.type)
             {
                 case "welcome":
-                    PlayGranted = msg.granted;
+                    serverPlayGranted = msg.granted;
                     DenyReason = msg.reason;
                     if (Role == SessionRole.Player)
                     {
                         // Apply the chosen save before the first unpaused frame whenever the
                         // scene is ready. SaveSystem retries if its scene dependencies are late.
-                        if (msg.granted) PoeClone.Player.SaveSystem.LoadSelectedProfile();
-                        SetWorldActive(msg.granted);
+                        if (msg.granted && !PlayGranted)
+                            PoeClone.Player.SaveSystem.LoadSelectedProfile();
+                        if (msg.granted) PlayGranted = true;
+                        // After the first grant this browser owns its local game, even if the
+                        // server has temporarily lost its slot during a disconnect.
+                        SetWorldActive(PlayGranted);
                         stateBroadcaster.enabled = msg.granted;
+                    }
+                    if (msg.granted && chatDisconnected)
+                    {
+                        chatDisconnected = false;
+                        ChatReceived?.Invoke(new ChatEnvelope("", "system", "Reconnected to chat.", 0));
                     }
                     StateChanged?.Invoke();
                     break;
@@ -305,11 +317,16 @@ namespace PoeClone.Network
         private void HandleClose(string reason)
         {
             if (returningToCharacters) return;
+            if (Connected)
+            {
+                chatDisconnected = true;
+                ChatReceived?.Invoke(new ChatEnvelope("", "system", "Disconnected from chat.", 0));
+            }
             if (!string.IsNullOrWhiteSpace(reason)) DisconnectReason = reason;
             if (string.IsNullOrWhiteSpace(DisconnectReason)) DisconnectReason = "Connection closed unexpectedly.";
             Reconnecting = true;
             Connected = false;
-            PlayGranted = false;
+            serverPlayGranted = false;
             DenyReason = null;
             RemotePlayerActive = false;
             players = new PlayerInfo[0];
@@ -317,7 +334,7 @@ namespace PoeClone.Network
             stateBroadcaster.enabled = false;
             if (Role == SessionRole.Spectator)
                 replica.ResetReplica(); // the server resends the latest snapshot on reconnect
-            else
+            else if (!PlayGranted)
                 SetWorldActive(false);
             StateChanged?.Invoke();
 

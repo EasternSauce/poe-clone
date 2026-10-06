@@ -26,6 +26,22 @@ namespace PoeClone.Tests
             float extreme = DefenceMath.ArmourReduction(1e7f, 1f);
             Assert.Greater(extreme, 0.99f);
             Assert.Less(extreme, 1f);
+            Assert.AreEqual(0.5f, DefenceMath.ArmourReduction(200f, 10f), 1e-4f);
+        }
+
+        [Test]
+        public void Stagger_ScalesWithLifeLost_AndAvoidStun()
+        {
+            Assert.AreEqual(0f, DefenceMath.StaggerChance(5f, 100f, 0f));
+            Assert.AreEqual(0.5f, DefenceMath.StaggerChance(20f, 100f, 0f), 1e-4f);
+            Assert.AreEqual(0f, DefenceMath.StaggerChance(20f, 400f, 0f));
+            Assert.AreEqual(1f, DefenceMath.StaggerChance(35f, 100f, 0f));
+            Assert.AreEqual(0.25f, DefenceMath.StaggerChance(20f, 100f, 50f), 1e-4f);
+            Assert.AreEqual(0f, DefenceMath.StaggerChance(20f, 100f, 100f));
+            Assert.AreEqual(0f, DefenceMath.StaggerChance(0f, 100f, 0f));
+            float mitigatedHit = 18f * (1f - DefenceMath.ArmourReduction(200f, 18f));
+            Assert.Less(DefenceMath.StaggerChance(mitigatedHit, 100f, 0f),
+                DefenceMath.StaggerChance(18f, 100f, 0f));
         }
 
         [Test]

@@ -387,7 +387,7 @@ namespace PoeClone.Player
             if (stagger == null)
                 stagger = gameObject.AddComponent<Stagger>();
             float avoidStun = inventory != null ? inventory.Stats.Total(StatType.AvoidStun) : 0f;
-            if (UnityEngine.Random.value * 100f >= Mathf.Clamp(avoidStun, 0f, 100f))
+            if (UnityEngine.Random.value < DefenceMath.StaggerChance(amount, MaxHealth, avoidStun))
                 stagger.Trigger();
 
             if (AudioManager.Instance != null)

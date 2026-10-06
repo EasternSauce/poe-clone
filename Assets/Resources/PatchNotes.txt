@@ -1,6 +1,3 @@
-version: 2026-10-06-boss-pacing-and-combat
-- Fixed the flowing river missing its water texture property; its texture now scrolls on the toon shader.
-- Bosses deal less damage and move, swing, and use abilities more slowly while calm. Ranged and minion hits enrage them from any distance, restoring their old damage and speed; each hit refreshes enrage. Enraged bosses take 20% less damage, including from the hit that enrages them. The Carrion Saint pursuing snake head keeps its own attack speed and damage.
-- Dash and Teleport gain only 8 mana cost from skill levels 1 to 10, with no further increase from bonus levels.
-- Jewellery pickup and placement sounds, rare loot chimes, and level-up chimes are now three times quieter, including inventory pickups.
-- Boss leaps, falling fire and ice, creature leaps, and slower aimed strikes now target where you stand when they start. The Ashen Warlord fissure now aims through your position, and distant projectiles use shorter movement predictions.
+version: 2026-10-06-armour-and-reconnect
+- Armour now halves hits with half as much armour. Player stagger chance scales with life actually lost: hits under 5% of maximum life do not stagger, hits at 35% always stagger before Avoid Stun, and smaller hits scale between those points.
+- Once gameplay has started, losing the game server connection no longer pauses the local game or covers it with a reconnect screen. Chat reports disconnects and reconnects; spectator streams catch up when the connection returns.

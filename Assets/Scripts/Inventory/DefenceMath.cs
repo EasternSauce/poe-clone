@@ -15,7 +15,12 @@ namespace PoeClone.Inventory
         private const float EvasionForHalf = 600f;
 
         // Armour equal to this many times a hit's damage stops half of that hit.
-        private const float ArmourPerDamageForHalf = 40f;
+        private const float ArmourPerDamageForHalf = 20f;
+
+        // Hits below 5% of maximum life do not stagger; hits at 35% or more always
+        // stagger before Avoid Stun is applied. Use damage actually lost from life.
+        private const float StaggerNoChanceLifeFraction = 0.05f;
+        private const float StaggerFullChanceLifeFraction = 0.35f;
 
         // Mana regenerated per second: a share of the pool, plus a little per point of Intelligence.
         public const float ManaRegenFraction = 0.01f;
@@ -54,6 +59,19 @@ namespace PoeClone.Inventory
             if (armour <= 0f || hitDamage <= 0f)
                 return 0f;
             return armour / (armour + ArmourPerDamageForHalf * hitDamage);
+        }
+
+        /// <summary>Chance (0..1) that life lost to a hit staggers the player, after Avoid Stun.</summary>
+        public static float StaggerChance(float lifeDamage, float maxLife, float avoidStunPercent)
+        {
+            if (lifeDamage <= 0f || maxLife <= 0f)
+                return 0f;
+            float fraction = lifeDamage / maxLife;
+            float hitChance = Math.Max(0f, Math.Min(1f,
+                (fraction - StaggerNoChanceLifeFraction) /
+                (StaggerFullChanceLifeFraction - StaggerNoChanceLifeFraction)));
+            float avoidChance = Math.Max(0f, Math.Min(1f, avoidStunPercent / 100f));
+            return hitChance * (1f - avoidChance);
         }
 
         /// <summary>Chance (0..1) to block a hit entirely, from the (already capped) block stat in percent.</summary>

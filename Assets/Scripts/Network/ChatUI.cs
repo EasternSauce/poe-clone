@@ -228,6 +228,8 @@ namespace PoeClone.Network
 
         private static string FormatLine(ChatEnvelope msg)
         {
+            if (msg.Role == "system")
+                return $"<color=#8FA3B8>{Escape(msg.Text)}</color>";
             bool player = msg.Role == "player";
             string tag = player ? "[Player]" : "[Watching]";
             string tagColour = player ? PlayerTagColour : SpectatorTagColour;
