@@ -194,7 +194,14 @@ namespace PoeClone.Inventory
             Text title = UiKit.NewText("Title", panel, "CHARACTER", 26, UiKit.Gold, TextAnchor.UpperCenter);
             UiKit.TopLeft(title.rectTransform, new Vector2(0f, -14f), new Vector2(PanelWidth, 34f));
 
-            UiKit.CloseButton(panel, Close);
+            // The stats panel can be taller than a phone viewport. Keep its close control
+            // attached to the screen edge instead of the panel's (possibly off-screen) top.
+            RectTransform closeButton = UiKit.CloseButton(panel, Close);
+            closeButton.SetParent(canvas.transform, false);
+            closeButton.anchorMin = new Vector2(0f, 1f);
+            closeButton.anchorMax = new Vector2(0f, 1f);
+            closeButton.pivot = new Vector2(1f, 1f);
+            closeButton.anchoredPosition = new Vector2(30f + PanelWidth - 12f, -12f);
 
             levelText = UiKit.NewText("Level", panel, "", 18, UiKit.DimText, TextAnchor.UpperCenter);
             UiKit.TopLeft(levelText.rectTransform, new Vector2(0f, -48f), new Vector2(PanelWidth, 26f));
