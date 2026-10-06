@@ -104,14 +104,14 @@ namespace PoeClone.Enemies
                 Vector3 along = player.transform.position - chargeFrom; along.y = 0f;
                 if (Vector3.Dot(along, transform.forward) < 0f || Vector3.Dot(along, transform.forward) > chargeLength + 2f
                     || Mathf.Abs(Vector3.Cross(transform.forward, along).y) > ChargeWidth * 0.5f) return;
-                if (player.TakeHit(HitDamage * 1.3f, DamageType.Physical)) player.Poison(HitDamage * 0.3f, 2f);
+                if (player.TakeHit(HitDamage * 1.3f, DamageType.Physical)) player.Poison(HitDamage * 0.2f, 2f);
                 CameraSystem.CameraFollow.Shake(0.2f, 0.3f);
                 return;
             }
             float reach = clip == "RearSlam" ? 11f : clip == "TentacleLash" ? 12f : 10f;
             if (d.magnitude > reach) return;
             if (clip != "RearSlam" && Vector3.Dot(transform.forward, d.normalized) < -0.2f) return;
-            if (player.TakeHit(HitDamage * (clip == "RearSlam" ? 1.5f : 1f), DamageType.Physical)) player.Poison(HitDamage * 0.3f, 2f);
+            if (player.TakeHit(HitDamage * (clip == "RearSlam" ? 1.5f : 1f), DamageType.Physical)) player.Poison(HitDamage * 0.2f, 2f);
             CameraSystem.CameraFollow.Shake(0.15f, 0.2f);
         }
         private void OnDestroy()

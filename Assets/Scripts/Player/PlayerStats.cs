@@ -101,6 +101,7 @@ namespace PoeClone.Player
         {
             public float PerSecond;
             public float Until;
+            public bool FromPool;
         }
 
         private const int MaxPoisonStacks = 12;
@@ -113,6 +114,22 @@ namespace PoeClone.Player
         /// <summary>Adds a stack of poison dealing <paramref name="damage"/> over <paramref name="seconds"/>.</summary>
         public void Poison(float damage, float seconds)
         {
+            AddPoison(damage, seconds, false);
+        }
+
+        /// <summary>Applies pool poison only when no other pool's poison is still active.</summary>
+        public void PoisonFromPool(float damage, float seconds)
+        {
+            for (int i = poison.Count - 1; i >= 0; i--)
+            {
+                if (poison[i].FromPool && Time.time < poison[i].Until)
+                    return;
+            }
+            AddPoison(damage, seconds, true);
+        }
+
+        private void AddPoison(float damage, float seconds, bool fromPool)
+        {
             if (dead || damage <= 0f || seconds <= 0f)
                 return;
             StatSheet defensiveSheet = inventory != null ? inventory.Stats : null;
@@ -122,7 +139,7 @@ namespace PoeClone.Player
                 CombatText.Show(transform.position + Vector3.up * 1.6f, "Poisoned", CombatText.PoisonColor, 0.7f);
             if (poison.Count >= MaxPoisonStacks)
                 poison.RemoveAt(0);
-            poison.Add(new PoisonStack { PerSecond = damage / seconds, Until = Time.time + seconds });
+            poison.Add(new PoisonStack { PerSecond = damage / seconds, Until = Time.time + seconds, FromPool = fromPool });
         }
 
         // The stacks wear off as they run out; what they deal is shown as one green number a second.

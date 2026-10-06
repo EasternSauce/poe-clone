@@ -175,7 +175,7 @@ namespace PoeClone.Enemies
                     {
                         if (DistanceToSegment(player.transform.position, route[i - 1], route[i]) > Radius + 0.3f) continue;
                         nextSkinHit = Time.time + 0.5f;
-                        if (player.TakeHit(damage * 1.2f, Combat.DamageType.Physical)) player.Poison(damage * 0.5f, 2f);
+                        if (player.TakeHit(damage * 1.2f, Combat.DamageType.Physical)) player.Poison(damage * 0.33333334f, 2f);
                         break;
                     }
                 }

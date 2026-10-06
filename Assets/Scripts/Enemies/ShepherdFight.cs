@@ -379,7 +379,7 @@ namespace PoeClone.Enemies
                 (centre, r) =>
                 {
                     if (player != null && !player.IsDead && Flat(player.transform.position - centre).magnitude <= r)
-                        player.Poison(BaseHit * 0.25f, 2f);
+                        player.PoisonFromPool(BaseHit * 0.16666667f, 2f);
                 });
         }
 
@@ -916,7 +916,7 @@ namespace PoeClone.Enemies
         }
 
         // From phase 2 on, everything he hits with is venomous: each hit also leaves a poison stack.
-        private const float PoisonShare = 0.6f;
+        private const float PoisonShare = 0.4f;
         private const float PoisonSeconds = 3f;
 
         private void Damage(float multiplier)

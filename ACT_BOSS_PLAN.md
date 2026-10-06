@@ -1,5 +1,20 @@
 # Act boss: The Shepherd / Carrion Saint - plan and progress
 
+## Boss poison damage - 2026-10-06
+
+- Reduced Shepherd and Carrion Saint poison damage to two thirds by updating the stored poison shares: pools 0.25 to 0.16666667, phase-two hit poison 0.6 to 0.4, Carrion Saint hit poison 0.3 to 0.2, and pursuit skin poison 0.5 to 0.33333334.
+- Updated deploy patch notes. Source/diff review only; pause here for player review before further Shepherd balance changes.
+
+## Venom pool poison overlap - 2026-10-06
+
+- Shepherd venom pools now share one active pool-poison slot on the player. A second pool cannot add another pool poison while that slot is active; non-pool poison behavior is unchanged.
+- Updated deploy patch notes. Source/diff review only; pause here for player review before further Shepherd balance changes.
+
+## Arena exit lock - 2026-10-06
+
+- Area transitions are blocked while the living Shepherd is in the arena, including town portals and NPC transitions. Player-death reset retains its dedicated exit path back to Frozen Hollow.
+- Updated deploy patch notes. Source/diff review only; pause here for player review before the requested poison-damage balance step.
+
 ## Boss armour - 2026-10-06
 
 - The Shepherd's armour is now 600 (half of 1,200); the stored value was updated directly. This applies to the shared boss health component across all phases.

@@ -106,7 +106,7 @@ namespace PoeClone.World
         private void PlayerRevived()
         {
             if (manager != null && manager.CurrentAreaIndex == WorldBuilder.ActArena)
-                manager.EnterArea(WorldBuilder.Frozen, outside);
+                manager.EnterAreaAfterBossDeath(WorldBuilder.Frozen, outside);
         }
         private void Spawn()
         {

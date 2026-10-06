@@ -1,3 +1,12 @@
+version: 2026-10-06-shepherd-poison-reduced
+- All Shepherd and Carrion Saint poison amounts are now two thirds of their previous values.
+
+version: 2026-10-06-shepherd-pool-poison
+- Overlapping Shepherd venom pools cannot apply more than one pool poison at a time.
+
+version: 2026-10-06-shepherd-arena-lock
+- The Shepherd's arena stays locked until he is defeated; dying still resets the fight and returns you outside.
+
 version: 2026-10-06-shepherd-defenses
 - The Shepherd and Carrion Saint now deal about one third as much damage with direct attacks, abilities, and poison.
 - Life and mana potion slots now hold up to 20 potions each.

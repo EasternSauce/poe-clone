@@ -9,6 +9,7 @@ using PoeClone.Enemies;
 using PoeClone.Inventory;
 using PoeClone.Player;
 using PoeClone.Skills;
+using PoeClone.World;
 
 namespace PoeClone.EditorTools
 {
@@ -108,6 +109,11 @@ namespace PoeClone.EditorTools
             if (Time.timeScale <= 0f) return;
             string setup = God();
             if (quickSandbox) setup += " || " + Sandbox();
+            // QuickStart is intended for a desktop editor demo even if its host page carries ?touch=1.
+            TouchMode.SetForced(false);
+            QualitySettings.SetQualityLevel(1, true);
+            UnityEngine.InputSystem.InputSystem.settings.editorInputBehaviorInPlayMode =
+                UnityEngine.InputSystem.InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
             quickState = ready + " || " + setup;
             EditorApplication.update -= AdvanceQuickSession;
             Debug.Log("DevTest QuickStart: " + quickState);
@@ -294,6 +300,59 @@ namespace PoeClone.EditorTools
                 return (ok ? "equipped " : "could NOT equip ") + item.Name + " in " + slot + "; " + Skills();
             }
             return "no slot takes " + item.Type;
+        }
+
+        /// <summary>Drops a pick-up-able item of every weapon type near the player.</summary>
+        public static string WeaponLineup()
+        {
+            if (!Application.isPlaying)
+                return "call WeaponLineup in Play";
+            PlayerStats player = Stats();
+            if (player == null)
+                return "no player";
+
+            string[] ids = { "rusty_sword", "hand_axe", "iron_mace", "steel_dagger", "bastard_sword",
+                "woodsplitter", "great_mallet", "bone_sceptre", "short_bow", "gnarled_staff" };
+            var rng = new System.Random(271828);
+            for (int i = 0; i < ids.Length; i++)
+            {
+                ItemData item = ItemGenerator.Generate(rng, ids[i], 10, ItemRarity.Normal);
+                if (item == null)
+                    return "no weapon base " + ids[i];
+                float angle = i * Mathf.PI * 2f / ids.Length;
+                Vector3 at = player.transform.position + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * 1.45f;
+                at = LootDrop.FreeSpotNear(at, 0f);
+                LootDrop.Spawn(item, LootDrop.GroundBelow(at), interactive: true, id: 0);
+            }
+            Physics.SyncTransforms();
+            return "dropped 8 melee weapons plus bow and staff as pick-up-able items near player";
+        }
+
+        /// <summary>Fills a fresh demo character's bag with varied gear and weapon categories.</summary>
+        public static string InventoryVariety()
+        {
+            if (!Application.isPlaying)
+                return "call InventoryVariety in Play";
+            PlayerInventory inventory = UnityEngine.Object.FindAnyObjectByType<PlayerInventory>();
+            if (inventory == null)
+                return "no player inventory";
+
+            string[] ids = { "iron_helmet", "studded_vest", "leather_gloves", "leather_boots", "rope_belt",
+                "jade_amulet", "iron_ring", "wooden_shield", "grimoire", "leather_quiver",
+                "rusty_sword", "hand_axe", "iron_mace", "short_bow", "gnarled_staff" };
+            var rng = new System.Random(731);
+            var added = new List<string>();
+            var full = new List<string>();
+            foreach (string id in ids)
+            {
+                ItemData item = ItemGenerator.Generate(rng, id, 10, ItemRarity.Normal);
+                if (item != null && inventory.Grid.TryAutoPlace(item))
+                    added.Add(item.Name);
+                else
+                    full.Add(id);
+            }
+            return added.Count + " items in bag: " + string.Join(", ", added.ToArray())
+                + (full.Count > 0 ? "; no space for: " + string.Join(", ", full.ToArray()) : "");
         }
 
         /// <summary>The attack skill and the bar, with levels.</summary>

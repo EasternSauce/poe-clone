@@ -92,9 +92,29 @@ namespace PoeClone.World
         /// <summary>Goes to an area, arriving at the given spot (or the area's spawn point).</summary>
         public void EnterArea(int index, Transform arrival)
         {
+            EnterArea(index, arrival, false);
+        }
+
+        /// <summary>Leaves the act arena as part of its player-death reset flow.</summary>
+        public void EnterAreaAfterBossDeath(int index, Transform arrival)
+        {
+            if (CurrentAreaIndex != WorldBuilder.ActArena || index != WorldBuilder.Frozen) return;
+            EnterArea(index, arrival, true);
+        }
+
+        private void EnterArea(int index, Transform arrival, bool bossDeathReset)
+        {
             if (switching) return;
             if (areas == null || index < 0 || index >= areas.Length) return;
             if (index == CurrentAreaIndex) return;
+            var arena = ActBossArena.Instance;
+            if (!bossDeathReset && CurrentAreaIndex == WorldBuilder.ActArena && arena != null &&
+                arena.Boss != null && !arena.Boss.IsDead)
+            {
+                CombatText.Show(player != null ? player.position + Vector3.up * 2f : Vector3.zero,
+                    "Defeat the Shepherd before leaving", new Color(0.7f, 0.85f, 1f), 1f);
+                return;
+            }
             StartCoroutine(SwitchRoutine(index, arrival));
         }
 
