@@ -184,7 +184,9 @@ namespace PoeClone.Inventory
             panel.anchorMin = new Vector2(0f, 0.5f);
             panel.anchorMax = new Vector2(0f, 0.5f);
             panel.pivot = new Vector2(0f, 0.5f);
-            panel.anchoredPosition = new Vector2(30f, 0f);
+            float canvasHeight = ((RectTransform)canvas.transform).rect.height;
+            float verticalOffset = Mathf.Min(0f, (canvasHeight - panelHeight) * 0.5f - 16f);
+            panel.anchoredPosition = new Vector2(30f, verticalOffset);
             panel.sizeDelta = new Vector2(PanelWidth, panelHeight);
             UiKit.AddOutline(bg, UiKit.BorderColor, 3f);
             TouchMode.AddMenuBlocker(panel);

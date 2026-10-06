@@ -25,6 +25,7 @@ namespace PoeClone.UI
         private const float TopRowY = -24f;
         private const float BottomRowY = -100f;
         private const float BarHeight = 152f;
+        private const float SkillsPanelWidth = 980f;
         private readonly Text[,] potionButtons = new Text[2, SkillBook.SlotCount];
 
         private static SkillBarUI instance;
@@ -61,6 +62,7 @@ namespace PoeClone.UI
         private RectTransform picker;
         private RectTransform pickerContent;
         private RectTransform panelContent;
+        private float panelWidth = SkillsPanelWidth;
         private ScrollRect pickerScroll;
         private readonly List<GameObject> pickerRows = new List<GameObject>();
         private readonly List<PlayerSkills.SkillGrant> pickerGrants = new List<PlayerSkills.SkillGrant>();
@@ -620,16 +622,20 @@ namespace PoeClone.UI
 
             // The panel: a scrollable list with a row for each equipped grant.
             const float rowHeight = 74f;
-            const float width = 980f;
+            RectTransform canvasRect = (RectTransform)canvas.transform;
+            Canvas.ForceUpdateCanvases();
+            panelWidth = Mathf.Min(SkillsPanelWidth, Mathf.Max(320f, canvasRect.rect.width - 32f));
+            float width = panelWidth;
             float rowsHeight = SkillBook.All.Length * (rowHeight + 6f);
             // Taller than the screen once there are many skills: the rows scroll.
-            float height = Mathf.Min(1000f, 220f + rowsHeight + 16f);
+            float height = Mathf.Min(1000f, 220f + rowsHeight + 16f, canvasRect.rect.height - 32f);
 
             Image panel = UiKit.NewImage("SkillsPanel", canvas.transform, UiKit.PanelColor);
             UiKit.Grain(panel);
             panel.raycastTarget = true;
             RectTransform pr = panel.rectTransform;
             pr.anchorMin = pr.anchorMax = new Vector2(0.5f, 0.5f);
+            pr.anchoredPosition = new Vector2(0f, Mathf.Min(0f, (canvasRect.rect.height - height) * 0.5f - 16f));
             pr.sizeDelta = new Vector2(width, height);
             UiKit.AddOutline(panel, UiKit.BorderColor, 3f);
             panelRoot = panel.gameObject;
@@ -730,7 +736,7 @@ namespace PoeClone.UI
 
         private void AddRow(SkillDefinition skill, PlayerSkills.SkillGrant? grant, ref float y)
         {
-                const float width = 980f;
+                float width = panelWidth;
                 const float rowHeight = 74f;
                 const float slotButton = 38f;
                 Image back = UiKit.NewImage("Row_" + skill.Id, panelContent, Color.black);
