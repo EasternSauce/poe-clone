@@ -107,7 +107,7 @@ namespace PoeClone.Inventory
         // ------------------------------------------------------------------ potions
 
         /// <summary>Most potions of each kind the potion slots hold.</summary>
-        public const int MaxPotions = 10;
+        public const int MaxPotions = 20;
 
         public int HealthPotions { get; private set; } = 3;
         public int ManaPotions { get; private set; } = 1;

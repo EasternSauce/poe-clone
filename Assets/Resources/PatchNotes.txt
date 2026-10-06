@@ -1,2 +1,5 @@
-version: 2026-10-06-shepherd-damage
+version: 2026-10-06-shepherd-defenses
 - The Shepherd and Carrion Saint now deal about one third as much damage with direct attacks, abilities, and poison.
+- Life and mana potion slots now hold up to 20 potions each.
+- The Shepherd's maximum life is now 1,600.
+- The Shepherd's armour is now 600.

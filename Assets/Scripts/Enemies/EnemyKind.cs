@@ -530,7 +530,7 @@ namespace PoeClone.Enemies
                 // The act boss, in its first phase: a stooped, hooded old man with a crook and a
                 // lantern. Numbers are placeholders until the fight itself is in.
                 Name = "The Shepherd", SpawnWeight = 0f, Tempo = 1.6f, BossEnrageDamage = 44f / 29f, BossEnrageDamageTaken = 0.8f,
-                MaxHealth = 2400f, Armour = 1200f,
+                MaxHealth = 1600f, Armour = 600f,
                 FireResistance = 30f, ColdResistance = 30f, LightningResistance = 30f, Experience = 400,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 10f, AttackCooldown = 1.4f, AttackRange = 3.6f,

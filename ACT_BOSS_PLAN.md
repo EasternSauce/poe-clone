@@ -1,5 +1,16 @@
 # Act boss: The Shepherd / Carrion Saint - plan and progress
 
+## Boss armour - 2026-10-06
+
+- The Shepherd's armour is now 600 (half of 1,200); the stored value was updated directly. This applies to the shared boss health component across all phases.
+- Source and diff checks only, at the user's request; no Unity run. Await player review before further Shepherd balance changes.
+
+## Boss health and potion capacity - 2026-10-06
+
+- The Shepherd's maximum health is now 1,600 (two thirds of 2,400); the stored value was updated directly.
+- Life and mana potion capacity is now 20 each.
+- Source and diff checks only, at the user's request; no Unity run. Await player review before further Shepherd balance changes.
+
 ## Boss damage reduction - 2026-10-06
 
 - The Shepherd's base physical damage is now 10 (down from 29), so its direct attacks, abilities, poison, and Carrion Saint's derived attacks and serpent pursuit deal about one third of their previous raw damage. The enrage multiplier remains unchanged.
