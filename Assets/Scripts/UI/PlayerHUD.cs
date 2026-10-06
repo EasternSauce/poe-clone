@@ -7,6 +7,7 @@ namespace PoeClone.UI
     public class PlayerHUD : MonoBehaviour
     {
         private PlayerStats stats;
+        private InventoryUI inventoryUI;
 
         /// <summary>Spectator replica: same HUD, but no control hints and the death text addressed to a watcher.</summary>
         public bool SpectatorMode { get; set; }
@@ -205,6 +206,11 @@ namespace PoeClone.UI
                 return;
             }
 
+            // On phones, this IMGUI HUD draws over the stash canvas and can cover its tabs.
+            // Give the stash window the full screen while it is open.
+            if (TouchMode.Active && StashWindowOpen())
+                return;
+
             if (TouchMode.Active)
             {
                 DrawTouchHud();
@@ -303,6 +309,13 @@ namespace PoeClone.UI
         }
 
         private CharacterPageUI characterPage;
+
+        private bool StashWindowOpen()
+        {
+            if (inventoryUI == null)
+                inventoryUI = FindAnyObjectByType<InventoryUI>();
+            return inventoryUI != null && inventoryUI.IsStashOpen;
+        }
 
         private bool CharacterPageOpen()
         {

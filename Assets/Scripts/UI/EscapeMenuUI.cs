@@ -138,7 +138,7 @@ namespace PoeClone.UI
             notesScroll=notesViewport.gameObject.AddComponent<ScrollRect>(); notesScroll.content=notesContent; notesScroll.viewport=notesViewport; notesScroll.horizontal=false; notesScroll.movementType=ScrollRect.MovementType.Clamped; notesScroll.scrollSensitivity=30;
             body=UiKit.NewText("Body",notesContent,"",18,UiKit.TextColor,TextAnchor.UpperLeft); body.horizontalOverflow=HorizontalWrapMode.Wrap; body.verticalOverflow=VerticalWrapMode.Overflow; body.raycastTarget=false;
             UiKit.TopLeft(body.rectTransform,new Vector2(8,-4),new Vector2(W-350,0));
-            Button("Close",pr,"Close",new Vector2(W-150,-68),new Vector2(120,42),Close);
+            UiKit.CloseButton(pr, Close);
         }
 
         private void ShowSettings()

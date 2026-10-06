@@ -124,7 +124,7 @@ namespace PoeClone.Network
         }
 
         // Desktop: bottom right, always shown. Touch: bigger text; the player's panel moves to the
-        // top right (left of the on-screen buttons) and only shows when opened.
+        // bottom center when opened, clear of the minimap and quest tracker.
         private void Relayout()
         {
             if (panelRect == null) return;
@@ -134,18 +134,18 @@ namespace PoeClone.Network
 
             panelRect.gameObject.SetActive(Enabled && (!touchPlayer || touchPanelOpen));
 
-            // On a phone the opened chat shares the top right with the minimap and quest tracker:
-            // it goes over them. On a computer it sits under the inventory (which shares its corner).
+            // On a phone the opened chat sits at the bottom center, clear of the minimap and quest
+            // tracker. On a computer it sits under the inventory (which shares its corner).
             // A spectator's chat is their main control, so it stays over every menu and overlay
             // (the mirrored skill tree, inventory, touch buttons, patch notes) - only the name
             // prompt (950) and the loading screen draw above it.
             chatCanvas.sortingOrder = SortingOrder;
 
-            Vector2 corner = touchPlayer ? new Vector2(1f, 1f) : new Vector2(1f, 0f);
+            Vector2 corner = touchPlayer ? new Vector2(0.5f, 0f) : new Vector2(1f, 0f);
             panelRect.anchorMin = corner;
             panelRect.anchorMax = corner;
             panelRect.pivot = corner;
-            panelRect.anchoredPosition = touchPlayer ? new Vector2(-150f, -20f) : new Vector2(-20f, 20f);
+            panelRect.anchoredPosition = touchPlayer ? new Vector2(0f, 20f) : new Vector2(-20f, 20f);
             panelRect.sizeDelta = touch ? new Vector2(520f, 250f) : new Vector2(460f, 220f);
 
             int fontSize = touch ? 20 : 16;

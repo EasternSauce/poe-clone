@@ -1,3 +1,15 @@
+version: 2026-10-06-menu-close-buttons
+- The settings and patch history menu now has a top-right X close button on mobile.
+
+version: 2026-10-06-mobile-menu-button-priority
+- Mobile menu and combat buttons now hide while another menu is open, leaving that menu's controls accessible.
+
+version: 2026-10-06-mobile-chat-bottom-center
+- Opened mobile chat now sits at the bottom center of the screen.
+
+version: 2026-10-06-mobile-stash-priority
+- The mobile HUD now steps aside while the stash is open, keeping stash tabs and items unobstructed.
+
 version: 2026-10-06-carrion-melee-hitbox
 - Carrion Saint's phase-three damageable hitbox is twice as wide, so short melee weapons can connect more reliably.
 

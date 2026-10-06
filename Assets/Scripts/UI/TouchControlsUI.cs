@@ -48,6 +48,7 @@ namespace PoeClone.UI
         private string aimIconFor;
         private int aimPointer = int.MinValue;
         private Image runImage;
+        private Image settingsButton;
         private GameObject unreadDot;
 
         private class SkillButton
@@ -115,11 +116,18 @@ namespace PoeClone.UI
             bool dead = stats == null || stats.IsDead;
             bool inventoryOpen = inventoryUI != null && inventoryUI.IsOpen;
             bool characterOpen = characterUI != null && characterUI.IsOpen;
-
-            menuRoot.SetActive(!dead);
             if (settingsMenu == null)
                 settingsMenu = FindAnyObjectByType<EscapeMenuUI>();
-            SetCombatShown(!dead && !inventoryOpen && !characterOpen && !SkillBarUI.IsOpen && !DialogueUI.IsOpen && !PassiveTreeUI.IsOpen && (settingsMenu == null || !settingsMenu.IsOpen));
+            bool menuOpen = inventoryOpen || characterOpen || SkillBarUI.IsOpen || DialogueUI.IsOpen ||
+                            PassiveTreeUI.IsOpen || (settingsMenu != null && settingsMenu.IsOpen);
+
+            // Keep the menu buttons behind the active panel in both draw order and hit testing.
+            // The panel's own close control remains available to dismiss it.
+            menuRoot.SetActive(!dead && !menuOpen);
+            if (settingsButton != null)
+                settingsButton.gameObject.SetActive(!dead && !menuOpen);
+
+            SetCombatShown(!dead && !menuOpen);
             UpdateSkillButtons();
             UpdatePotionButtons();
 
@@ -559,16 +567,16 @@ namespace PoeClone.UI
             town.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TownPortal.Pressed = true;
             TouchMode.AddBlocker(town.rectTransform);
 
-            Image settings = NewRoundButton("Settings", canvas.transform, new Vector2(0f, 1f), new Vector2(570f, -58f), 96f, "SETTINGS");
-            settings.GetComponentInChildren<Text>().fontSize = 16;
-            settings.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
+            settingsButton = NewRoundButton("Settings", canvas.transform, new Vector2(0f, 1f), new Vector2(570f, -58f), 96f, "SETTINGS");
+            settingsButton.GetComponentInChildren<Text>().fontSize = 16;
+            settingsButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {
                 CloseOthers();
                 if (settingsMenu == null)
                     settingsMenu = FindAnyObjectByType<EscapeMenuUI>();
                 settingsMenu?.OpenSettings();
             };
-            TouchMode.AddBlocker(settings.rectTransform);
+            TouchMode.AddBlocker(settingsButton.rectTransform);
 
             // Portrait warning, above everything (name prompt included), swallowing touches.
             Canvas rotateCanvas = NewCanvas("RotateDeviceCanvas", 1000);
