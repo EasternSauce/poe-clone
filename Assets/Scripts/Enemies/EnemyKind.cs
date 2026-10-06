@@ -533,7 +533,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 1600f, Armour = 600f,
                 FireResistance = 30f, ColdResistance = 30f, LightningResistance = 30f, Experience = 400,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
-                Damage = 10f, AttackCooldown = 1.4f, AttackRange = 3.6f,
+                Damage = 7.5f, AttackCooldown = 1.4f, AttackRange = 3.6f,
                 SpeedRatio = 1.05f, Scale = 1.5f,
                 Cloth = new Color(0.36f, 0.35f, 0.33f), Skin = new Color(0.55f, 0.58f, 0.50f), Pants = new Color(0.30f, 0.29f, 0.27f), Eyes = new Color(0.9f, 0.8f, 0.4f),
                 HideHorns = true,

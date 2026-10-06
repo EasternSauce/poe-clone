@@ -1,3 +1,10 @@
+version: 2026-10-06-shepherd-pacing-damage
+- Shepherd and Carrion Saint specials now come half as often while calm; enrage restores their previous ability cadence.
+- Shepherd and Carrion Saint damage is reduced by 25%.
+
+version: 2026-10-06-carrion-swallow
+- The Carrion Saint's swallow now deals one fixed 400 physical damage.
+
 version: 2026-10-06-shepherd-poison-reduced
 - All Shepherd and Carrion Saint poison amounts are now two thirds of their previous values.
 

@@ -1,5 +1,14 @@
 # Act boss: The Shepherd / Carrion Saint - plan and progress
 
+## 2026-10-06 swallow damage
+- The serpent swallow now deals one fixed 400 physical damage (about seven Carrion Saint auto-attacks at arena level 12). Tune `SwallowDamage` directly; enrage does not affect it.
+- Source and diff review only; no Unity use, as requested earlier.
+
+## 2026-10-06 balance update
+- Doubled the cooldown intervals for the Shepherd's phase-one and phase-two specials while calm. When enraged by ranged or minion damage, those intervals return to their previous values; phase-two special spacing follows the same rule.
+- Reduced the stored Shepherd damage directly from 10 to 7.5 (25%). This base value feeds both Shepherd phases, Carrion Saint, and their damage-based poison.
+- Source and diff review only; no Unity use, as requested.
+
 ## Boss poison damage - 2026-10-06
 
 - Reduced Shepherd and Carrion Saint poison damage to two thirds by updating the stored poison shares: pools 0.25 to 0.16666667, phase-two hit poison 0.6 to 0.4, Carrion Saint hit poison 0.3 to 0.2, and pursuit skin poison 0.5 to 0.33333334.

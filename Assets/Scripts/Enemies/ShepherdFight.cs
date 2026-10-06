@@ -209,19 +209,19 @@ namespace PoeClone.Enemies
             }
             if (now >= nextLunge && distance > 4.5f * Scale * 0.8f && distance < LungeLength * Grow + 0.8f * Scale)
             {
-                nextLunge = now + LungeEvery;
+                nextLunge = now + LungeEvery * SpecialCooldownScale;
                 Begin("CobraLunge");
                 return;
             }
             if (now >= nextCall && (distance > reach || now >= nextSwing))
             {
-                nextCall = now + CallEvery;
+                nextCall = now + CallEvery * SpecialCooldownScale;
                 Begin("SerpentCall");
                 return;
             }
             if (now >= nextHook && distance <= HookReach * Scale)
             {
-                nextHook = now + HookEvery;
+                nextHook = now + HookEvery * SpecialCooldownScale;
                 Begin("HookPull");
                 return;
             }
@@ -284,10 +284,10 @@ namespace PoeClone.Enemies
         private void StartPhaseTwoTimers()
         {
             float now = Time.time;
-            nextVolley = now + 0.75f;
-            nextSnatch = now + 1.75f;
-            nextSpouts = now + 3.25f;
-            nextDive = now + 4.75f;
+            nextVolley = now + 0.75f * SpecialCooldownScale;
+            nextSnatch = now + 1.75f * SpecialCooldownScale;
+            nextSpouts = now + 3.25f * SpecialCooldownScale;
+            nextDive = now + 4.75f * SpecialCooldownScale;
             nextSpecial = now + 0.5f;
         }
 
@@ -300,27 +300,27 @@ namespace PoeClone.Enemies
                 if (now >= nextSnatch && distance > 3f * Grow)
                 {
                     special = "Snatch";
-                    nextSnatch = now + SnatchEvery;
+                    nextSnatch = now + SnatchEvery * SpecialCooldownScale;
                 }
                 else if (now >= nextDive)
                 {
                     special = "SerpentDive";
-                    nextDive = now + DiveEvery;
+                    nextDive = now + DiveEvery * SpecialCooldownScale;
                 }
                 else if (now >= nextSpouts)
                 {
                     special = "Spouts";
-                    nextSpouts = now + SpoutsEvery;
+                    nextSpouts = now + SpoutsEvery * SpecialCooldownScale;
                 }
                 else if (now >= nextVolley && distance > BiteReach * Scale * 0.5f)
                 {
                     special = "VenomVolley";
-                    nextVolley = now + VolleyEvery;
+                    nextVolley = now + VolleyEvery * SpecialCooldownScale;
                 }
                 if (special != null)
                 {
                     Begin(special);
-                    nextSpecial = now + anim.Current.Duration / Pace + SpecialGap;
+                    nextSpecial = now + anim.Current.Duration / Pace + SpecialGap * SpecialCooldownScale;
                     return;
                 }
             }
@@ -365,6 +365,9 @@ namespace PoeClone.Enemies
 
         private float BaseHit => kind.Damage * EnemyKinds.DamageScale(level, kind)
             * (walker != null ? walker.DamageMultiplier : 1f);
+
+        // Special cooldowns are doubled while calm; enrage restores their current cadence.
+        private float SpecialCooldownScale => walker != null && walker.IsEnraged ? 1f : 2f;
 
         // A glob of venom from a mouth to near the player: splash damage where it lands, then a
         // puddle that poisons whoever stands in it.

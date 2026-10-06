@@ -9,6 +9,9 @@ namespace PoeClone.Enemies
     /// <summary>A serpent grows along its chase route. Its retained body is a damaging escape-route hazard.</summary>
     public class SerpentPursuit : MonoBehaviour, IDamageable
     {
+        // One fixed physical hit at area level 12: about seven Carrion Saint auto-attacks.
+        // Tune this directly; enrage does not change it.
+        private const float SwallowDamage = 400f;
         private const float Radius = 1.5f;
         private const float StartSpeed = 10f;
         private const float EndSpeed = 13.5f;
@@ -38,7 +41,7 @@ namespace PoeClone.Enemies
         private Transform victimModel;
         private Vector3 modelScale;
         private bool modelVisible;
-        private bool firstBite, secondBite;
+        private bool swallowHit;
         private bool previousImmunity;
         public bool IsFinished => endedAt >= 0f;
         public bool Captured => capturedAt >= 0f;
@@ -242,8 +245,11 @@ namespace PoeClone.Enemies
                 victimModel.localScale = modelScale * Mathf.Lerp(1f, 0.05f, Mathf.Clamp01((t - 0.12f) / 0.18f));
                 if (t >= 0.30f) victimModel.gameObject.SetActive(false);
             }
-            if (!firstBite && t >= 0.35f) { firstBite = true; player.TakeHit(damage * 2f, Combat.DamageType.Physical); }
-            if (!secondBite && t >= 1.05f) { secondBite = true; player.TakeHit(damage * 2f, Combat.DamageType.Physical); }
+            if (!swallowHit && t >= 0.35f)
+            {
+                swallowHit = true;
+                player.TakeHit(SwallowDamage, Combat.DamageType.Physical);
+            }
             if (t >= 1.65f)
             {
                 Vector3 outAt = Mouth + direction * 3f; outAt.y = Debris.GroundBelow(outAt + Vector3.up * 5f) + 1.1f;
