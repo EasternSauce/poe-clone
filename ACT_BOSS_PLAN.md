@@ -1,6 +1,12 @@
 # Act boss: The Shepherd / Carrion Saint - plan and progress
 
-Working notes for the act boss, so work can resume in a new session. Last updated 2026-10-05.
+## Boss balance step - 2026-10-06
+
+- The Shepherd's base hit damage is 29 instead of 44; calm movement and attack pace are 20% slower. Ranged and minion hits enrage before damage is applied, restore the old damage and pace, and refresh enrage on every hit. Enraged bosses take 20% less damage from that first hit onward.
+- Carrion Saint body attacks use the same calm/enraged scaling. The detached pursuing snake head deliberately keeps fixed movement, bite timing, and damage regardless of enrage.
+- Source and diff checks completed. Unity was not used at the user's request. Await player review before further Shepherd balance changes.
+
+Working notes for the act boss, so work can resume in a new session. Last updated 2026-10-06.
 Nothing of this is committed yet (all in the working tree).
 
 ## Final boss polish - 2026-10-05

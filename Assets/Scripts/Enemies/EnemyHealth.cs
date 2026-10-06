@@ -60,8 +60,6 @@ namespace PoeClone.Enemies
         public float BarHeight => EnemyKinds.Get(KindIndex).BarHeight;
 
         public event Action Damaged;
-        /// <summary>Whether the hit currently notifying Damaged is allowed to trigger enrage.</summary>
-        public bool LastHitCanEnrage { get; private set; } = true;
         /// <summary>Damage after this enemy's defences, before the life pool clamps it.</summary>
         public event Action<float> DamageApplied;
         public event Action Died;
@@ -116,16 +114,16 @@ namespace PoeClone.Enemies
 
         public void TakeDamage(float amount)
         {
-            TakeDamage(amount, DamageType.Physical, 0f, 0f);
+            TakeDamage(amount, DamageType.Physical, 0f, 0f, canEnrage: false);
         }
 
         public void TakeDamage(float amount, DamageType type)
         {
-            TakeDamage(amount, type, 0f, 0f);
+            TakeDamage(amount, type, 0f, 0f, canEnrage: false);
         }
 
         public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration, bool throughExposedHead = false,
-            bool canEnrage = true, bool flinch = true)
+            bool canEnrage = false, bool flinch = true)
         {
             if (dead || amount <= 0f)
                 return 0f;
@@ -140,7 +138,13 @@ namespace PoeClone.Enemies
                 return 0f;
             }
 
+            // Enrage takes effect before defenses, including on the first ranged/minion hit.
+            EnemyController ai = GetComponent<EnemyController>();
+            ai?.OnIncomingHit(canEnrage);
+
             EnemyKind kind = EnemyKinds.Get(KindIndex);
+            if (kind.IsBoss && ai != null && ai.IsEnraged)
+                amount *= kind.BossEnrageDamageTaken;
             switch (type)
             {
                 case DamageType.Fire: amount = DefenceMath.AfterResistance(amount, kind.FireResistance - elementalPenetration); break;
@@ -155,7 +159,6 @@ namespace PoeClone.Enemies
             DamageApplied?.Invoke(amount);
             float least = Mathf.Max(0f, Floor);
             currentHealth = Mathf.Max(least, currentHealth - amount);
-            LastHitCanEnrage = canEnrage;
             Damaged?.Invoke();
 
             if (currentHealth <= 0f)

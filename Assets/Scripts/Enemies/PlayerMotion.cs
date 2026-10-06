@@ -11,8 +11,8 @@ namespace PoeClone.Enemies
     /// </summary>
     public static class PlayerMotion
     {
-        // Never leads by more than this: a long guess is just a miss the other way.
-        private const float MaxLeadSeconds = 1.2f;
+        // Long guesses miss the player entirely; aim at their launch position instead.
+        private const float MaxLeadSeconds = 0.7f;
 
         private static PlayerStats tracked;
         private static Vector3 velocity;
@@ -66,10 +66,12 @@ namespace PoeClone.Enemies
             return player == tracked ? velocity : Vector3.zero;
         }
 
-        /// <summary>Where the player will be in this many seconds if they keep going as they are.</summary>
+        /// <summary>Lead short attacks; longer attacks aim at the player's current position.</summary>
         public static Vector3 Predict(PlayerStats player, float seconds)
         {
-            return player.transform.position + Velocity(player) * Mathf.Clamp(seconds, 0f, MaxLeadSeconds);
+            return seconds > MaxLeadSeconds
+                ? player.transform.position
+                : player.transform.position + Velocity(player) * Mathf.Max(0f, seconds);
         }
 
         /// <summary>Where a projectile of this speed fired from <paramref name="from"/> now meets the player.</summary>

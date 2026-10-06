@@ -46,6 +46,28 @@ namespace PoeClone.Audio
         private readonly System.Collections.Generic.Dictionary<string, AudioClip> loaded =
             new System.Collections.Generic.Dictionary<string, AudioClip>();
 
+        // Bright item and reward chimes cut through the mix much more than the other effects.
+        // Apply this at playback so ground pickup, inventory actions and quest/level rewards agree.
+        private const float DingVolumeScale = 1f / 3f;
+
+        private float ClipVolumeScale(AudioClip clip)
+        {
+            if (clip == playerLevelUp)
+                return DingVolumeScale;
+
+            switch (clip.name)
+            {
+                case "pickup_jewel":
+                case "place_jewel":
+                case "drop_magic":
+                case "drop_rare":
+                case "drop_unique":
+                    return DingVolumeScale;
+                default:
+                    return 1f;
+            }
+        }
+
         /// <summary>A clip from Resources/Sfx by file name (cached), or null if there's none.</summary>
         public AudioClip Sfx(string name)
         {
@@ -76,7 +98,7 @@ namespace PoeClone.Audio
             if (clip == null)
                 return;
 
-            AudioSource.PlayClipAtPoint(clip, position, sfxVolume * volumeScale);
+            AudioSource.PlayClipAtPoint(clip, position, sfxVolume * volumeScale * ClipVolumeScale(clip));
         }
 
         /// <summary>Like PlayClipAtPoint, at a pitch of its own (a throwaway source that removes itself).</summary>
@@ -96,7 +118,7 @@ namespace PoeClone.Audio
             source.clip = clip;
             source.spatialBlend = 1f;
             source.pitch = pitch;
-            source.volume = sfxVolume * volumeScale;
+            source.volume = sfxVolume * volumeScale * ClipVolumeScale(clip);
             source.Play();
             Destroy(go, clip.length / Mathf.Max(0.1f, pitch) + 0.1f);
         }
@@ -119,7 +141,7 @@ namespace PoeClone.Audio
             if (clip == null)
                 return;
 
-            uiSource.PlayOneShot(clip, volume);
+            uiSource.PlayOneShot(clip, volume * ClipVolumeScale(clip));
         }
     }
 }

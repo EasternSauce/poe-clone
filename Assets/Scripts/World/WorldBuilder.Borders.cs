@@ -483,10 +483,14 @@ namespace PoeClone.World
         {
             public Material material;
             private static readonly Vector2 Speed = new Vector2(0f, 0.08f);
+            private Vector2 offset;
 
             private void Update()
             {
-                material.mainTextureOffset += Speed * Time.deltaTime;
+                offset += Speed * Time.deltaTime;
+                offset.x = Mathf.Repeat(offset.x, 1f);
+                offset.y = Mathf.Repeat(offset.y, 1f);
+                material.SetTextureOffset("_BaseMap", offset);
             }
         }
 

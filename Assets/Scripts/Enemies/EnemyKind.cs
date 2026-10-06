@@ -92,6 +92,10 @@ namespace PoeClone.Enemies
         public bool IsBoss;
         public int Drops = 1;
         public BossStyle Boss;
+        // Restores this boss's original hit damage when ranged or minion damage enrages it.
+        public float BossEnrageDamage = 1f;
+        // Applies on the same ranged/minion hit that starts enrage, preventing a free opening burst.
+        public float BossEnrageDamageTaken = 1f;
 
         public EnemySkill Skill;
         public float SkillCooldown = 9f;
@@ -260,10 +264,10 @@ namespace PoeClone.Enemies
             // Bosses: weight 0, so only their lairs place them.
             new EnemyKind
             {
-                Name = "Gravelord Mortis", SpawnWeight = 0f, Tempo = 1f,
+                Name = "Gravelord Mortis", SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 340f, Armour = 500f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 150,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
-                Damage = 21f, AttackCooldown = 1.4f, AttackRange = 4.2f,
+                Damage = 14f, AttackCooldown = 1.4f, AttackRange = 4.2f,
                 SpeedRatio = 1.05f, Scale = 1.9f,
                 Cloth = new Color(0.16f, 0.18f, 0.16f), Skin = new Color(0.62f, 0.68f, 0.58f), Pants = new Color(0.12f, 0.12f, 0.12f), Eyes = new Color(0.3f, 1.0f, 0.4f),
                 Gear = new[] { "great_helm", "executioner_axe" }, Weapon = WeaponType.Greataxe,
@@ -272,10 +276,10 @@ namespace PoeClone.Enemies
             },
             new EnemyKind
             {
-                Name = "Ashen Warlord", SpawnWeight = 0f, Tempo = 1f,
+                Name = "Ashen Warlord", SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5625f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 420f, Armour = 500f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 220,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
-                Damage = 25f, AttackCooldown = 1.5f, AttackRange = 4.4f,
+                Damage = 16f, AttackCooldown = 1.5f, AttackRange = 4.4f,
                 SpeedRatio = 1.05f, Scale = 2.1f,
                 Cloth = new Color(0.30f, 0.06f, 0.04f), Skin = new Color(0.22f, 0.18f, 0.17f), Pants = new Color(0.10f, 0.08f, 0.08f), Eyes = new Color(1.0f, 0.55f, 0.1f),
                 Gear = new[] { "warlord_plate", "warlord_helm", "earthbreaker" }, Weapon = WeaponType.Maul,
@@ -285,10 +289,10 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 // The brood-queen of the Hollow's ice crawlers: a spider the size of a house.
-                Name = "Rimeheart", SpawnWeight = 0f, Tempo = 1f,
+                Name = "Rimeheart", SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 460f, Armour = 500f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 300,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
-                Damage = 21f, AttackCooldown = 1.0f, AttackRange = 4.0f,
+                Damage = 14f, AttackCooldown = 1.0f, AttackRange = 4.0f,
                 SpeedRatio = 1.2f, Scale = 2.6f,
                 Body = CreatureBody.Spider, Sounds = EnemySounds.Set.Spider,
                 Skin = new Color(0.62f, 0.80f, 0.96f), Cloth = new Color(0.86f, 0.95f, 1.0f), Pants = new Color(0.20f, 0.50f, 0.95f), Eyes = new Color(0.4f, 1.0f, 1.0f),
@@ -525,11 +529,11 @@ namespace PoeClone.Enemies
             {
                 // The act boss, in its first phase: a stooped, hooded old man with a crook and a
                 // lantern. Numbers are placeholders until the fight itself is in.
-                Name = "The Shepherd", SpawnWeight = 0f, Tempo = 2f,
+                Name = "The Shepherd", SpawnWeight = 0f, Tempo = 1.6f, BossEnrageDamage = 44f / 29f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 2400f, Armour = 1200f,
                 FireResistance = 30f, ColdResistance = 30f, LightningResistance = 30f, Experience = 400,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
-                Damage = 44f, AttackCooldown = 1.4f, AttackRange = 3.6f,
+                Damage = 29f, AttackCooldown = 1.4f, AttackRange = 3.6f,
                 SpeedRatio = 1.05f, Scale = 1.5f,
                 Cloth = new Color(0.36f, 0.35f, 0.33f), Skin = new Color(0.55f, 0.58f, 0.50f), Pants = new Color(0.30f, 0.29f, 0.27f), Eyes = new Color(0.9f, 0.8f, 0.4f),
                 HideHorns = true,

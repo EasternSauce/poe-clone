@@ -469,7 +469,7 @@ namespace PoeClone.Skills
                 float d = Flat(e.transform.position - at).magnitude;
                 if (d <= 3.5f)
                 {
-                    e.TakeDamage(burst);
+                    e.TakeDamage(burst, PoeClone.Combat.DamageType.Physical, 0f, 0f, canEnrage: true);
                     CombatText.Show(e.transform.position + Vector3.up * 1.6f * e.transform.localScale.y,
                         Mathf.Max(1, Mathf.RoundToInt(burst)).ToString(), MarkColor, 0.9f);
                 }
@@ -707,7 +707,7 @@ namespace PoeClone.Skills
             StatSheet ownerSheet = ownerInventory != null ? ownerInventory.Stats : null;
             float lessDamage = Mathf.Clamp(Stat(ownerSheet, StatType.MinionDamagePenalty), 0f, 100f);
             amount *= 1f - lessDamage / 100f;
-            float dealt = enemy.TakeDamage(amount, PoeClone.Combat.DamageType.Physical, 0f, 0f);
+            float dealt = enemy.TakeDamage(amount, PoeClone.Combat.DamageType.Physical, 0f, 0f, canEnrage: true);
             if (dealt <= 0f)
                 return;
             if (Kind == MinionKind.Viper && owner != null)

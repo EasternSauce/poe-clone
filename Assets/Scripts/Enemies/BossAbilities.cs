@@ -56,12 +56,13 @@ namespace PoeClone.Enemies
         private CharacterAttackAnimator attackAnimator;
         private CharacterWalkAnimator walk;
         private CreatureAnimator creature;
+        private EnemyController controller;
 
         private float nextMove;
         private float nextLeap;
 
         // The boss's tempo (EnemyKind.Tempo): every wind-up, flight and pause is divided by it.
-        private float T => kind != null ? Mathf.Max(0.1f, kind.Tempo) : 1f;
+        private float T => kind != null ? Mathf.Max(0.1f, kind.Tempo * (controller != null ? controller.AttackSpeedMultiplier : 1f)) : 1f;
 
         // Leaping (the bosses' way of closing in) has its own, shorter timer than the other moves.
         private const float LeapEvery = 3.5f;
@@ -91,6 +92,7 @@ namespace PoeClone.Enemies
         private void Awake()
         {
             health = GetComponent<EnemyHealth>();
+            controller = GetComponent<EnemyController>();
             health.Died += OnBossDied;
             body = GetComponent<CharacterController>();
         }
@@ -227,7 +229,7 @@ namespace PoeClone.Enemies
 
         // ------------------------------------------------------------------ the moves
 
-        // Gathers itself, springs into the air, and comes down where the player is heading,
+        // Gathers itself, springs into the air, and comes down where the player stood at launch,
         // weapon first. The landing glows on the ground from the moment it crouches.
         private IEnumerator LeapSlam()
         {
@@ -239,9 +241,7 @@ namespace PoeClone.Enemies
             float gap = (body != null ? body.radius * scale : 1f) + 0.6f;
 
             Vector3 start = transform.position;
-            // Aims where the player is heading - a beat past it, so running straight on doesn't
-            // clear the landing.
-            Vector3 landing = PlayerMotion.Predict(player, gather + air + 0.35f);
+            Vector3 landing = player.transform.position;
             Vector3 jump = Flat(landing - start);
             if (jump.magnitude > 18f)
                 landing = start + jump.normalized * 18f;
@@ -366,7 +366,7 @@ namespace PoeClone.Enemies
         {
             busy = true;
             float windUp = 0.7f / T;
-            Vector3 toPlayer = Flat(PlayerMotion.Predict(player, windUp + 0.4f) - transform.position);
+            Vector3 toPlayer = Flat(player.transform.position - transform.position);
             Vector3 dir = toPlayer.sqrMagnitude > 0.01f ? toPlayer.normalized : transform.forward;
             Face(dir);
 
@@ -446,15 +446,13 @@ namespace PoeClone.Enemies
             busy = false;
         }
 
-        // Patches round the player (the first right under them, or where they're heading in the
-        // second phase) that burst after a beat.
+        // Patches round where the player stood when the attack began that burst after a beat.
         private IEnumerator RainDown(DamageType type, int count)
         {
-            // Each patch comes down where the player will be when it lands, scattered round that.
+            Vector3 target = player.transform.position;
             for (int k = 0; k < count; k++)
             {
                 float windUp = (0.9f + k * 0.15f) / T;
-                Vector3 target = PlayerMotion.Predict(player, windUp);
                 Vector2 scatter = Random.insideUnitCircle * 3f;
                 Vector3 at = k == 0 ? target : target + new Vector3(scatter.x, 0f, scatter.y);
                 StartCoroutine(Eruption(at, 2.7f, windUp, type, 1.2f));
@@ -568,7 +566,8 @@ namespace PoeClone.Enemies
         {
             if (player == null || player.IsDead || Flat(player.transform.position - center).magnitude > radius)
                 return false;
-            player.TakeHit(kind.Damage * damageMultiplier * EnemyKinds.DamageScale(level, kind), type ?? kind.DamageType);
+            float rage = controller != null ? controller.DamageMultiplier : 1f;
+            player.TakeHit(kind.Damage * damageMultiplier * EnemyKinds.DamageScale(level, kind) * rage, type ?? kind.DamageType);
             return true;
         }
 

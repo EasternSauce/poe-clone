@@ -25,7 +25,8 @@ namespace PoeClone.Enemies
         private const float EngageRange = 24f;
         // How fast every clip plays (and so every wind-up and warning). Keep this aligned with
         // the other act bosses' reduced tempo.
-        public const float Pace = 1.6f;
+        private float Pace => 1.6f * (kind != null ? kind.Tempo / 2f : 1f)
+            * (walker != null ? walker.AttackSpeedMultiplier : 1f);
         private const float Breather = 0.075f;
 
         private const float HookEvery = 2.25f;
@@ -275,7 +276,7 @@ namespace PoeClone.Enemies
                 if (!Manual)
                 {
                     health.Immune = false;
-                    gameObject.AddComponent<CarrionSaintFight>().Configure(BaseHit);
+                    gameObject.AddComponent<CarrionSaintFight>().Configure(kind.Damage * EnemyKinds.DamageScale(level, kind));
                 }
             });
         }
@@ -362,7 +363,8 @@ namespace PoeClone.Enemies
 
         // ------------------------------------------------------------------ phase 2's specials
 
-        private float BaseHit => kind.Damage * EnemyKinds.DamageScale(level, kind);
+        private float BaseHit => kind.Damage * EnemyKinds.DamageScale(level, kind)
+            * (walker != null ? walker.DamageMultiplier : 1f);
 
         // A glob of venom from a mouth to near the player: splash damage where it lands, then a
         // puddle that poisons whoever stands in it.
@@ -919,7 +921,7 @@ namespace PoeClone.Enemies
 
         private void Damage(float multiplier)
         {
-            float hit = kind.Damage * multiplier * EnemyKinds.DamageScale(level, kind);
+            float hit = BaseHit * multiplier;
             if (player.TakeHit(hit, kind.DamageType) && Phase >= 2 && !player.IsDead)
                 player.Poison(hit * PoisonShare, PoisonSeconds);
         }

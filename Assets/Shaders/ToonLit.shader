@@ -106,14 +106,14 @@ Shader "PoeClone/ToonLit"
                 #if defined(_MOBILE_LITE)
                 // One sample instead of three blended ones - visibly flatter on steep surfaces,
                 // but a third of the texture bandwidth on every opaque pixel on screen.
-                return SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, positionWS.xz * scale).rgb;
+                return SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, positionWS.xz * scale + _BaseMap_ST.zw).rgb;
                 #else
                 float3 blend = abs(normalWS);
                 blend = blend / max(blend.x + blend.y + blend.z, 1e-5);
 
-                half3 texX = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, positionWS.zy * scale).rgb;
-                half3 texY = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, positionWS.xz * scale).rgb;
-                half3 texZ = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, positionWS.xy * scale).rgb;
+                half3 texX = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, positionWS.zy * scale + _BaseMap_ST.zw).rgb;
+                half3 texY = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, positionWS.xz * scale + _BaseMap_ST.zw).rgb;
+                half3 texZ = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, positionWS.xy * scale + _BaseMap_ST.zw).rgb;
 
                 return texX * blend.x + texY * blend.y + texZ * blend.z;
                 #endif

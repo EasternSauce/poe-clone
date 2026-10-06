@@ -93,38 +93,31 @@ namespace PoeClone.Enemies
         private float MoveSpeed =>
             (player != null
                 ? player.MoveSpeed * speedRatioToPlayer
-                : fallbackSpeed) * (Time.time < chilledUntil ? 0.5f : 1f) * (IsEnraged ? EnrageSpeed : 1f);
+                : fallbackSpeed) * (Time.time < chilledUntil ? 0.5f : 1f) * (IsEnraged ? (kind != null && kind.IsBoss ? 1.25f : EnrageSpeed) : 1f);
 
-        // Enrage: hit from a distance (an arrow, a spell), an enemy now and then flies into a
-        // rage - faster and harder-hitting for a while - so standing back and picking things off
-        // while backing away isn't free. Not every hit: once it calms down it can't rage again
-        // for a while. The rage spreads: everything near it is roused and enraged with it.
-        private const float EnrageHitDistance = 3f;
+        // Ranged and minion hits enrage regardless of distance. Every such hit refreshes the timer.
         private const float EnrageSpreadRadius = 8f;
         private const float EnrageSeconds = 5f;
-        private const float EnrageCooldown = 12f;
         private const float EnrageSpeed = 2.4f;
         private const float EnrageDamage = 1.35f;
         private static readonly Color EnrageColor = new Color(1f, 0.15f, 0.08f);
 
         private float enragedUntil = -1f;
-        private float nextEnrageAt;
         private float nextEnragePulse;
 
         public bool IsEnraged => Time.time < enragedUntil;
 
         /// <summary>What its hits are multiplied by right now (an enraged enemy hits harder).</summary>
-        public float DamageMultiplier => IsEnraged ? EnrageDamage : 1f;
+        public float DamageMultiplier => IsEnraged ? (kind != null && kind.IsBoss ? kind.BossEnrageDamage : EnrageDamage) : 1f;
 
         /// <summary>How much faster it attacks right now.</summary>
-        public float AttackSpeedMultiplier => IsEnraged ? 1.5f : 1f;
+        public float AttackSpeedMultiplier => IsEnraged ? (kind != null && kind.IsBoss ? 1.25f : 1.5f) : 1f;
 
         // spread: also rouses and enrages every living enemy within EnrageSpreadRadius (those
         // don't spread it further, so it can't run across the whole map).
         private void Enrage(bool spread = true)
         {
             enragedUntil = Time.time + EnrageSeconds;
-            nextEnrageAt = enragedUntil + EnrageCooldown;
             nextEnragePulse = 0f;
 
             PlayEnrageStart(transform, kind ?? EnemyKinds.Get(0), health != null ? health.BarHeight : 2.3f);
@@ -134,13 +127,26 @@ namespace PoeClone.Enemies
             foreach (Collider hit in Physics.OverlapSphere(transform.position, EnrageSpreadRadius, ~0, QueryTriggerInteraction.Ignore))
             {
                 EnemyController other = hit.GetComponentInParent<EnemyController>();
-                if (other == null || other == this || other.IsEnraged || !other.isActiveAndEnabled)
+                if (other == null || other == this || other.IsEnraged || !other.isActiveAndEnabled || (other.kind != null && other.kind.IsBoss))
                     continue;
                 if (other.health != null && other.health.IsDead)
                     continue;
                 other.Aggro();
                 other.Enrage(false);
             }
+        }
+
+        // Called by EnemyHealth before an eligible hit is applied, including a killing blow.
+        public void OnIncomingHit(bool canEnrage)
+        {
+            if (health == null)
+                health = GetComponent<EnemyHealth>();
+            if (!canEnrage || health == null || health.IsDead)
+                return;
+            if (IsEnraged)
+                enragedUntil = Time.time + EnrageSeconds;
+            else
+                Enrage();
         }
 
         // A red pulse at its feet for as long as the rage lasts.
@@ -240,17 +246,6 @@ namespace PoeClone.Enemies
         private void OnDamaged()
         {
             Aggro();
-
-            // Damaged fires before the death itself: a killing blow mustn't enrage the corpse.
-            if (health == null || !health.LastHitCanEnrage || health.IsDead || health.CurrentHealth <= 0f || player == null || Time.time < nextEnrageAt)
-                return;
-            Vector3 toPlayer = player.transform.position - transform.position;
-            toPlayer.y = 0f;
-            // Measured from its edge, not its middle: a big boss is wide, and a player at its
-            // feet is not "far away".
-            float edge = controller != null ? controller.radius * transform.localScale.x : 0f;
-            if (toPlayer.magnitude - edge >= EnrageHitDistance)
-                Enrage();
         }
 
         /// <summary>Starts chasing the player now (a slime's offspring, born angry).</summary>

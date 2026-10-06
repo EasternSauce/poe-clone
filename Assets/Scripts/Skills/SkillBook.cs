@@ -75,12 +75,16 @@ namespace PoeClone.Skills
         public bool Bow => SkillGrants.IsBowSkill(Grant);
 
         /// <summary>
-        /// Mana per use: 40% more each level (4.6x at level 10). Summons get a low-level
-        /// discount so a new summoner can replace an early army without exhausting the entire
-        /// mana pool; the discount fades out by skill level 10.
+        /// Mana per use: movement skills gain at most 8 mana by level 10, including bonus
+        /// levels. Other skills cost 40% more per level. Summons get a low-level discount so
+        /// a new summoner can replace an early army without exhausting the entire mana pool;
+        /// the discount fades out by skill level 10.
         /// </summary>
         public float ManaCostAt(int level)
         {
+            if (Id == SkillId.Dash || Id == SkillId.Teleport)
+                return ManaCost + 8f * Mathf.Clamp01((Mathf.Max(1, level) - 1) / 9f);
+
             float cost = ManaCost * (1f + 0.4f * (Mathf.Max(1, level) - 1));
             if (Summon)
                 cost *= Mathf.Lerp(0.6f, 1f, Mathf.Clamp01((level - 1) / 9f));

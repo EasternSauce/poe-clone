@@ -89,8 +89,6 @@ namespace PoeClone.Enemies
                     return;
             }
 
-            TrackPlayer();
-
             if (player.IsDead || Time.time < nextUse || Busy || Sanctuary.Contains(player.transform.position, 1f))
                 return;
             if ((stagger != null && stagger.IsStaggered) || (attackAnimator != null && attackAnimator.IsAttacking))
@@ -130,15 +128,14 @@ namespace PoeClone.Enemies
                 transform.rotation = Quaternion.LookRotation(facing);
 
             UseCount++;
-            // Enraged, aimed moves lead the player: the blast lands, or the volley flies, where
-            // they're heading rather than where they stand.
+            // Short attacks can lead the player; longer warnings mark their position at launch.
             bool enraged = controller != null && controller.IsEnraged;
-            if (enraged && kind.Skill == EnemySkill.Strike)
+            if (enraged && kind.Skill == EnemySkill.Strike && StrikeWindUp(kind) <= 0.7f)
                 target = PlayerMotion.Predict(player, StrikeWindUp(kind));
             else if (enraged && kind.Skill == EnemySkill.Volley)
                 target = PlayerMotion.Intercept(player, EnemyCombat.BoltOrigin(transform), kind.ProjectileSpeed);
             if (kind.Skill == EnemySkill.Leap)
-                target = LeapLanding(transform.position, PredictPlayer(LeapCrouch + LeapAir), LeapGap(transform));
+                target = LeapLanding(transform.position, target, LeapGap(transform));
             LastTarget = kind.Skill == EnemySkill.Slam ? transform.position : target;
             float damage = kind.Damage * EnemyKinds.DamageScale(level, kind) * (controller != null ? controller.DamageMultiplier : 1f);
 
@@ -175,7 +172,7 @@ namespace PoeClone.Enemies
             }
         }
 
-        // Crouches, springs into the air in a fast arc and comes down where the player is heading
+        // Crouches, springs into the air in a fast arc and comes down near the player's launch position
         // (a glow shows where from the moment it crouches), hitting everything round the landing.
         // Anyone it passes through low on the way is hit too (once: then the landing doesn't).
         // A stagger while it's still crouched calls the jump off.
@@ -249,39 +246,6 @@ namespace PoeClone.Enemies
             Vector3 dir = away.sqrMagnitude > 0.0001f ? away.normalized : Flat(transform.position - player.transform.position).normalized;
             Vector3 p = player.transform.position + dir * gap;
             return new Vector3(p.x, want.y, p.z);
-        }
-
-        // The player's ground speed, measured from how they move (their controller's own velocity
-        // reads zero), smoothed so a single odd frame doesn't throw the aim.
-        private Vector3 playerVelocity;
-        private Vector3 lastPlayerPosition;
-        private bool trackingPlayer;
-
-        private void TrackPlayer()
-        {
-            Vector3 at = player.transform.position;
-            if (trackingPlayer && Time.deltaTime > 0f)
-            {
-                Vector3 step = Flat(at - lastPlayerPosition) / Time.deltaTime;
-                if (step.magnitude > 30f)
-                    step = Vector3.zero; // a teleport, not a run
-                playerVelocity = Vector3.Lerp(playerVelocity, step, 1f - Mathf.Exp(-10f * Time.deltaTime));
-            }
-            lastPlayerPosition = at;
-            trackingPlayer = true;
-        }
-
-        // Where the player will be in this many seconds if they keep going the way they are.
-        private Vector3 PredictPlayer(float seconds)
-        {
-            Vector3 at = player.transform.position + playerVelocity * seconds;
-
-            // No further than it can jump.
-            Vector3 reach = Flat(at - transform.position);
-            if (reach.magnitude > LeapMaxDistance)
-                at = transform.position + reach.normalized * LeapMaxDistance;
-            at.y = player.transform.position.y;
-            return at;
         }
 
         // The player's collider plus its own, with a little room to spare.
