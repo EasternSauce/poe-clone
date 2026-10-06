@@ -17,8 +17,6 @@ namespace PoeClone.World
     /// </summary>
     public class LootDrop : MonoBehaviour
     {
-        // Temporarily disabled while investigating mobile frame hitches on enemy death.
-        private const bool LootUiEnabled = false;
         private const float LifetimeSeconds = 180f;
 
         // A fresh drop pops out of the body in a short arc and can't be clicked until it lands
@@ -221,9 +219,6 @@ namespace PoeClone.World
 
         private void Build()
         {
-            if (!LootUiEnabled)
-                return;
-
             var canvasGo = new GameObject("Canvas", typeof(RectTransform));
             canvasGo.transform.SetParent(transform, false);
             Canvas canvas = canvasGo.AddComponent<Canvas>();

@@ -106,9 +106,6 @@ namespace PoeClone.Player
             if (!PanelOpen() && !PlayerController.IsUiFocused())
             {
                 pointed = TouchMode.Active ? ReadTouch() : ReadMouse();
-                // No mouse to hover with on a phone: the item nearest the player shows its tooltip.
-                if (pointed == null && TouchMode.Active)
-                    pointed = NearestItem();
             }
             SetHovered(pointed);
 
