@@ -1,3 +1,6 @@
+version: 2026-10-07-mobile-kill-isolation
+- Diagnostic build: enemy death sounds, corpse animations, kill quest credit, and spectator state broadcasting are temporarily disabled. Killed enemies disappear immediately; XP remains enabled. Enemy loot drops remain disabled.
+
 version: 2026-10-07-kill-processing-performance
 - Reduced work and memory allocations when enemies die, including player lookups, humanoid death animations, and quest updates. NPC markers and quest scenery now refresh only when quest state changes.
 

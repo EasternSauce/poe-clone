@@ -12,6 +12,9 @@ namespace PoeClone.World
     /// </summary>
     public static class KillRewards
     {
+        // Temporary mobile kill-hitch isolation; XP remains enabled.
+        private static readonly bool KillQuestCreditEnabled = false;
+
         public static readonly Color GoldColor = new Color(1f, 0.84f, 0.3f);
 
         private const float HealthPotionChance = 0.12f;
@@ -39,7 +42,8 @@ namespace PoeClone.World
 
         public static void Grant(EnemyKind kind, int monsterLevel, Vector3 at, bool dropLoot = true)
         {
-            EnemyKilled?.Invoke(kind, monsterLevel);
+            if (KillQuestCreditEnabled)
+                EnemyKilled?.Invoke(kind, monsterLevel);
 
             if (!dropLoot)
                 return;
