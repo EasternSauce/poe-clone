@@ -24,7 +24,7 @@ namespace PoeClone.Player
         private Stagger stagger;
         private float chilledUntil = -1f;
 
-        // Walking somewhere on its own (to an item the player clicked), until it arrives, the player
+        // Sprinting somewhere on its own (to an interactable the player clicked), until it arrives, the player
         // steers or attacks, or it gives up (stuck behind something).
         private const float WalkTimeout = 6f;
         private bool walking;
@@ -131,10 +131,11 @@ namespace PoeClone.Player
             chilledUntil = Mathf.Max(chilledUntil, Time.time + seconds);
         }
 
-        // Hold Shift (or toggle the on-screen run button) to sprint. No stamina or mana cost.
+        // Clicked targets automatically sprint; manual movement uses Shift or the on-screen run toggle.
+        // No stamina or mana cost.
         private bool IsSprinting()
         {
-            if (VirtualInput.Sprint)
+            if (walking || VirtualInput.Sprint)
                 return true;
 
             Keyboard keyboard = Keyboard.current;

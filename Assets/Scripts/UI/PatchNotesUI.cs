@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -26,6 +29,28 @@ namespace PoeClone.UI
         private NamePromptUI namePrompt;
         public static bool IsShowing { get; private set; }
 
+        internal static List<KeyValuePair<string, string>> ParseReleases(string text)
+        {
+            var releases = new List<KeyValuePair<string, string>>();
+            string currentVersion = null;
+            var notes = new StringBuilder();
+            foreach (string line in (text ?? "").Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'))
+            {
+                string header = line.Trim().TrimStart('\uFEFF');
+                if (header.StartsWith("version:", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.IsNullOrEmpty(currentVersion))
+                        releases.Add(new KeyValuePair<string, string>(currentVersion, notes.ToString().Trim()));
+                    currentVersion = header.Substring("version:".Length).Trim();
+                    notes.Clear();
+                }
+                else if (currentVersion != null) notes.AppendLine(line);
+            }
+            if (!string.IsNullOrEmpty(currentVersion))
+                releases.Add(new KeyValuePair<string, string>(currentVersion, notes.ToString().Trim()));
+            return releases;
+        }
+
         private void Start()
         {
             TextAsset notes = Resources.Load<TextAsset>("PatchNotes");
@@ -35,18 +60,17 @@ namespace PoeClone.UI
                 return;
             }
 
-            string text = notes.text.Replace("\r\n", "\n");
-            int firstBreak = text.IndexOf('\n');
-            string header = firstBreak >= 0 ? text.Substring(0, firstBreak) : text;
-            if (!header.StartsWith("version:"))
+            var releases = ParseReleases(notes.text);
+            if (releases.Count == 0)
             {
                 decided = true;
                 return;
             }
 
-            version = header.Substring("version:".Length).Trim();
-            string releaseNotes = firstBreak >= 0 ? text.Substring(firstBreak + 1).Trim() : "";
-            PlayerPrefs.SetString("PoeClone.PatchNotes." + version, releaseNotes);
+            version = releases[0].Key;
+            string releaseNotes = releases[0].Value;
+            foreach (var release in releases)
+                PlayerPrefs.SetString("PoeClone.PatchNotes." + release.Key, release.Value);
             EscapeMenuUI.StoreRelease(version, releaseNotes);
             PlayerPrefs.Save();
             Build(releaseNotes);

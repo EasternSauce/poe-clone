@@ -37,6 +37,7 @@ namespace PoeClone.UI
             AddArchive(merged, Resources.Load<TextAsset>("PatchNotesHistory")?.text);
             AddArchive(merged, PlayerPrefs.GetString("PoeClone.PatchNotesArchive", ""));
             AddEntry(merged, new Entry { version = version, notes = notes });
+            AddReleaseText(merged, Resources.Load<TextAsset>("PatchNotes")?.text);
             PlayerPrefs.SetString("PoeClone.PatchNotesArchive", JsonUtility.ToJson(new Archive { entries = merged.ToArray() }));
             PlayerPrefs.Save();
         }
@@ -48,9 +49,17 @@ namespace PoeClone.UI
             {
                 Archive archive = JsonUtility.FromJson<Archive>(json);
                 if (archive == null || archive.entries == null) return;
-                foreach (Entry entry in archive.entries) AddEntry(into, entry);
+                foreach (Entry entry in archive.entries)
+                    if (entry != null && !string.IsNullOrEmpty(entry.version))
+                        AddReleaseText(into, "version: " + entry.version + "\n" + entry.notes);
             }
             catch { }
+        }
+
+        private static void AddReleaseText(List<Entry> into, string text)
+        {
+            foreach (var release in PatchNotesUI.ParseReleases(text))
+                AddEntry(into, new Entry { version = release.Key, notes = release.Value });
         }
 
         private static void AddEntry(System.Collections.Generic.List<Entry> into, Entry entry)
@@ -165,10 +174,13 @@ namespace PoeClone.UI
         private void ShowHistory()
         {
             var combined = new System.Collections.Generic.List<Entry>();
+            AddReleaseText(combined, Resources.Load<TextAsset>("PatchNotes")?.text);
             AddArchive(combined, Resources.Load<TextAsset>("PatchNotesHistory")?.text);
             var bundledOrder = new Dictionary<string, int>(StringComparer.Ordinal);
             for (int i = 0; i < combined.Count; i++) bundledOrder[combined[i].version] = i;
             AddArchive(combined, PlayerPrefs.GetString("PoeClone.PatchNotesArchive", ""));
+            // Correct previously saved entries that contained the entire multi-release file.
+            AddReleaseText(combined, Resources.Load<TextAsset>("PatchNotes")?.text);
             var mergedOrder = new Dictionary<string, int>(StringComparer.Ordinal);
             for (int i = 0; i < combined.Count; i++) mergedOrder[combined[i].version] = i;
             combined.Sort((a, b) => CompareReleases(a, b, bundledOrder, mergedOrder));
@@ -178,7 +190,21 @@ namespace PoeClone.UI
             UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(250,H-152));
             float y=-4;
             if(entries.Length==0) body.text="No patch history is available.";
-            for(int i=0;i<entries.Length;i++) { int index=i; Button("Release"+i,content,entries[i].version,new Vector2(0,y),new Vector2(250,38),()=>SelectEntry(index)); y-=44; }
+            for (int i = 0; i < entries.Length; i++)
+            {
+                int index = i;
+                string label = entries[i].version;
+                if (TryReleaseDate(label, out _) && label.Length > 11 && label[10] == '-')
+                    label = label.Substring(0, 10) + "\n" + label.Substring(11).Replace('-', ' ');
+                GameObject row = Button("Release" + i, content, label, new Vector2(0, y), new Vector2(250, 38), () => SelectEntry(index));
+                Text rowLabel = row.GetComponentInChildren<Text>();
+                rowLabel.supportRichText = false;
+                rowLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
+                UiKit.Stretch(rowLabel.rectTransform, 8f);
+                float height = Mathf.Max(48f, rowLabel.preferredHeight + 16f);
+                ((RectTransform)row.transform).sizeDelta = new Vector2(250f, height);
+                y -= height + 6f;
+            }
             content.sizeDelta=new Vector2(0,Mathf.Max(100,-y+10));
             if(entries.Length>0)
             {

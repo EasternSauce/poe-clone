@@ -1,3 +1,14 @@
+version: 2026-10-07-patch-history-readability
+- Patch history names now wrap into rows tall enough to show their full title.
+- Selecting a patch shows only that release's notes, including for previously saved history. The What's New popup also shows only the latest release.
+
+version: 2026-10-07-click-to-sprint
+- Clicking or tapping NPCs, the stash, area gates, or ground items now automatically sprints toward them instead of walking.
+
+version: 2026-10-07-inventory-frames-and-pickup
+- Magic, rare and unique item frames meet the inventory slot frame with no gap, and draw inward without covering neighboring items.
+- Picking up an inventory item keeps its displayed size, including when the inventory is scaled to fit a touch screen.
+
 version: 2026-10-07-persistent-toggles-war-cry
 - Toggled bow skills persist per character across logout and reload. Selecting another bow skill switches immediately; selecting the active slot turns it off.
 - Disconnected passive allocations receive an automatic free full reset on character login, refunding every point without using a reset charge.

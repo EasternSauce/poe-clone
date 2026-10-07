@@ -698,6 +698,8 @@ namespace PoeClone.Inventory
                 scale = Mathf.Min(1f, availableWidth / size.x, availableHeight / size.y);
             }
             panel.localScale = Vector3.one * Mathf.Max(0.01f, scale);
+            if (cursorView != null)
+                cursorView.localScale = panel.localScale;
 
             previewPanel.anchoredPosition = new Vector2(-(rightInset + panelWidth + 16f), 0f);
             layoutScreenWidth = Screen.width;
@@ -1308,15 +1310,22 @@ private Vector2 CellSize(int w, int h)
                 border = tint;
             }
 
-            Image bg = UiKit.NewImage("Item_" + item.Name, parent, plate);
-            RectTransform rt = bg.rectTransform;
-            rt.anchorMin = new Vector2(0f, 1f);
-            rt.anchorMax = new Vector2(0f, 1f);
-            rt.pivot = new Vector2(0f, 1f);
-            rt.sizeDelta = size;
-            UiKit.AddOutline(bg, new Color(border.r, border.g, border.b, alpha), 1.5f);
+            // Draw the rarity frame inward from the item bounds, flush with the slot edge.
+            // Unity's Outline expands outward and can cover the grid and neighboring items.
+            Image bg = UiKit.NewImage("Item_" + item.Name, parent, Color.clear);
+            RectTransform outer = bg.rectTransform;
+            outer.anchorMin = new Vector2(0f, 1f);
+            outer.anchorMax = new Vector2(0f, 1f);
+            outer.pivot = new Vector2(0f, 1f);
+            outer.sizeDelta = size;
 
-            Image icon = UiKit.NewImage("Icon", rt, Color.white);
+            border.a = alpha;
+            Image frame = UiKit.NewImage("Frame", outer, border);
+            UiKit.Stretch(frame.rectTransform, 0f);
+            Image face = UiKit.NewImage("Face", frame.transform, plate);
+            UiKit.Stretch(face.rectTransform, 2f);
+
+            Image icon = UiKit.NewImage("Icon", outer, Color.white);
             icon.preserveAspect = true;
             RectTransform irt = icon.rectTransform;
 
@@ -1349,12 +1358,12 @@ private Vector2 CellSize(int w, int h)
 
             if (item.StackCount > 1)
             {
-                Text count = UiKit.NewText("StackCount", rt, item.StackCount.ToString(), 16, Color.white, TextAnchor.LowerRight);
+                Text count = UiKit.NewText("StackCount", outer, item.StackCount.ToString(), 16, Color.white, TextAnchor.LowerRight);
                 UiKit.Stretch(count.rectTransform, 3f);
                 count.raycastTarget = false;
             }
 
-            return rt;
+            return outer;
         }
 
         // Something landed in the bag from outside this screen (a picked-up drop): redraw once,
@@ -1418,7 +1427,10 @@ private Vector2 CellSize(int w, int h)
 
             if (cursorItem != null)
             {
-                cursorView = CreateItemView(canvas.transform, cursorItem, CellSize(cursorItem.Width, cursorItem.Height), 0.85f);
+                // Keep the held item's footprint identical to its inventory footprint. The
+                // cursor position changes, but picking the item up must not resize it.
+                cursorView = CreateItemView(canvas.transform, cursorItem, CellSize(cursorItem.Width, cursorItem.Height), 1f);
+                cursorView.localScale = panel.localScale;
                 cursorView.pivot = new Vector2(0.5f, 0.5f);
                 cursorView.gameObject.SetActive(isOpen);
                 cursorView.SetAsLastSibling();
@@ -1792,7 +1804,7 @@ private Vector2 CellSize(int w, int h)
 
             // Below the held item icon (the hover tooltip for whatever it's over sits beside the
             // cursor instead, see ShowTooltipText), clamped so it never runs off the bottom.
-            float iconHalfHeight = cursorView != null ? cursorView.sizeDelta.y * 0.5f * canvas.scaleFactor : 0f;
+            float iconHalfHeight = cursorView != null ? cursorView.sizeDelta.y * cursorView.localScale.y * 0.5f * canvas.scaleFactor : 0f;
             float gap = 18f + iconHalfHeight;
             bool flipY = pos.y - gap - size.y < 0f;
             heldTooltipRect.pivot = new Vector2(0f, flipY ? 0f : 1f);
@@ -1836,7 +1848,7 @@ private Vector2 CellSize(int w, int h)
             // Clear of the held item, which hangs centred on the cursor.
             float gap = 18f;
             if (cursorItem != null && cursorView != null)
-                gap += cursorView.sizeDelta.x * 0.5f * canvas.scaleFactor;
+                gap += cursorView.sizeDelta.x * cursorView.localScale.x * 0.5f * canvas.scaleFactor;
 
             bool flipX = mousePos.x + gap + size.x > Screen.width;
             bool flipY = mousePos.y - 18f - size.y < 0f;
