@@ -19,6 +19,8 @@
 
 5. Verify the live version and build files:
    https://easternsauce.github.io/poe-clone-web/
-   File checks alone do not confirm gameplay rendering.
+   Once the fresh build is deployed and its live version and build files
+   are confirmed, deployment is complete. Gameplay visual verification is
+   not required.
 
 6. Review and revert only generated Unity changes.
