@@ -12,43 +12,22 @@ namespace PoeClone.World
     /// </summary>
     public static class KillRewards
     {
-        // Temporary mobile kill-hitch isolation; XP remains enabled.
-        private static readonly bool KillQuestCreditEnabled = false;
-
         public static readonly Color GoldColor = new Color(1f, 0.84f, 0.3f);
 
         private const float HealthPotionChance = 0.12f;
         private const float ManaPotionChance = 0.07f;
-
-        private static PlayerStats rewardPlayer;
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetPlayerCache() => rewardPlayer = null;
-
-        // Share the lookup between XP and ground rewards. Unity's destroyed-object check
-        // invalidates this cache when the player is replaced or its scene is unloaded.
-        internal static PlayerStats Player
-        {
-            get
-            {
-                if (rewardPlayer == null || !rewardPlayer.gameObject.activeInHierarchy)
-                    rewardPlayer = Object.FindAnyObjectByType<PlayerStats>();
-                return rewardPlayer;
-            }
-        }
 
         /// <summary>A monster the player killed (quests count these).</summary>
         public static event System.Action<EnemyKind, int> EnemyKilled;
 
         public static void Grant(EnemyKind kind, int monsterLevel, Vector3 at, bool dropLoot = true)
         {
-            if (KillQuestCreditEnabled)
-                EnemyKilled?.Invoke(kind, monsterLevel);
+            EnemyKilled?.Invoke(kind, monsterLevel);
 
             if (!dropLoot)
                 return;
 
-            PlayerStats player = Player;
+            PlayerStats player = Object.FindAnyObjectByType<PlayerStats>();
             if (player == null)
                 return;
 

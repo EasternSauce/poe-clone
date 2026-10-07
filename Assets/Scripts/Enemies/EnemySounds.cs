@@ -10,9 +10,6 @@ namespace PoeClone.Enemies
     /// </summary>
     public static class EnemySounds
     {
-        // Temporary mobile kill-hitch isolation; restore after the diagnostic build.
-        private static readonly bool DeathSoundsEnabled = false;
-
         public enum Set
         {
             Default,
@@ -85,9 +82,6 @@ namespace PoeClone.Enemies
         /// <summary>Plays the kind's sound for this moment; humanoids fall back to the shared clips.</summary>
         public static void Play(EnemyKind kind, Event e, Vector3 at)
         {
-            if (e == Event.Death && !DeathSoundsEnabled)
-                return;
-
             AudioManager audio = AudioManager.Instance;
             if (audio == null || kind == null)
                 return;

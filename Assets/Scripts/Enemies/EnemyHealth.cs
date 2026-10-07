@@ -20,9 +20,6 @@ namespace PoeClone.Enemies
     [RequireComponent(typeof(CharacterController))]
     public class EnemyHealth : MonoBehaviour, IDamageable
     {
-        // Temporary mobile kill-hitch isolation; restore after the diagnostic build.
-        private static readonly bool DeathAnimationsEnabled = false;
-
         [SerializeField] private float maxHealth = 30f;
         [SerializeField] private int experienceReward = 20;
 
@@ -286,11 +283,6 @@ namespace PoeClone.Enemies
             currentHealth = 0f;
             Died?.Invoke();
             DisableLiveBehaviour();
-            if (!DeathAnimationsEnabled)
-            {
-                HideWithoutDeathAnimation(removeCorpse: false);
-                return;
-            }
             if (PlayDeathPose(instant))
                 return;
 
@@ -329,7 +321,7 @@ namespace PoeClone.Enemies
 
             DisableLiveBehaviour();
 
-            PlayerStats player = KillRewards.Player;
+            PlayerStats player = FindAnyObjectByType<PlayerStats>();
             if (player != null)
                 player.GainExperience(experienceReward);
 
@@ -355,12 +347,6 @@ namespace PoeClone.Enemies
             if (kind.SplitInto >= 0)
                 SplitApart(kind.SplitInto);
 
-            if (!DeathAnimationsEnabled)
-            {
-                HideWithoutDeathAnimation(removeCorpse: true);
-                return;
-            }
-
             if (PlayDeathPose(instant: false))
             {
                 StartCoroutine(RemoveCorpse());
@@ -368,17 +354,6 @@ namespace PoeClone.Enemies
             }
 
             StartCoroutine(Collapse(removeCorpse: true));
-        }
-
-        private void HideWithoutDeathAnimation(bool removeCorpse)
-        {
-            // Hide the model so its walk/attack/creature animators also stop updating.
-            // Keep the root and normal corpse lifetime for spawner and boss callbacks.
-            Transform model = transform.Find("Model");
-            if (model != null)
-                model.gameObject.SetActive(false);
-            if (removeCorpse && corpseSeconds > 0f)
-                Destroy(gameObject, CorpseLifetime);
         }
 
         // A creature has a death of its own (it lies where it falls, no topple); a humanoid gets

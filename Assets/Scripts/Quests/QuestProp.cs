@@ -99,7 +99,7 @@ namespace PoeClone.Quests
         private void OnDestroy()
         {
             if (log != null)
-                log.StateChanged -= Refresh;
+                log.Changed -= Refresh;
         }
 
         private void Refresh()
@@ -127,7 +127,7 @@ namespace PoeClone.Quests
             if (log == null && QuestLog.Instance != null && QuestLog.Instance.enabled)
             {
                 log = QuestLog.Instance;
-                log.StateChanged += Refresh;
+                log.Changed += Refresh;
                 Refresh();
             }
 

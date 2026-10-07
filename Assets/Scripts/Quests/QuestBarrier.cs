@@ -47,7 +47,7 @@ namespace PoeClone.Quests
         private void OnDestroy()
         {
             if (log != null)
-                log.StateChanged -= OnQuestsChanged;
+                log.Changed -= OnQuestsChanged;
         }
 
         private void OnQuestsChanged()
@@ -66,7 +66,7 @@ namespace PoeClone.Quests
             if (log == null && QuestLog.Instance != null && QuestLog.Instance.enabled)
             {
                 log = QuestLog.Instance;
-                log.StateChanged += OnQuestsChanged;
+                log.Changed += OnQuestsChanged;
                 // Opened in an earlier visit: gone already.
                 if (ShouldBeOpen())
                 {

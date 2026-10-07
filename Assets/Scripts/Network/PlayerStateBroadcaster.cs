@@ -24,9 +24,6 @@ namespace PoeClone.Network
     /// </summary>
     public class PlayerStateBroadcaster : MonoBehaviour
     {
-        // Temporary mobile kill-hitch isolation: skip state/gear capture and spectator sends.
-        private static readonly bool BroadcastingEnabled = false;
-
         [SerializeField] private float sendInterval = 0.1f;
 
         [Tooltip("Enemies further than this from the player aren't sent. Comfortably wider than what the follow camera can see.")]
@@ -69,12 +66,6 @@ namespace PoeClone.Network
 
         private void OnEnable()
         {
-            if (!BroadcastingEnabled)
-            {
-                enabled = false;
-                return;
-            }
-
             nextSendAt = 0;
             nextEnemyScanAt = 0f;
             nextGearAt = 0;
