@@ -112,6 +112,7 @@ namespace PoeClone.Inventory
             Chain("junction_z_t4", "z_t4");
             Chain("junction_n_lord", "n_lord");
             Chain("junction_v3", "v3");
+            MatchDeadEndApproaches();
             ExpandLayout();
             PassiveTreeLayout.Apply();
         }
@@ -588,7 +589,47 @@ namespace PoeClone.Inventory
             }
         }
 
-        // Keep repeated 3% -> 6% life rewards separated by at least six connections.
+        // Each dedicated notable spur repeats the same small passive up to its junction.
+        // Run after all links are authored so shared routes never become part of a spur.
+        private static void MatchDeadEndApproaches()
+        {
+            foreach (PassiveNode notable in nodes)
+            {
+                if (!notable.Notable || notable.Keystone || notable.Links.Count != 1)
+                    continue;
+
+                var approach = new List<PassiveNode>();
+                var seen = new HashSet<string> { notable.Id };
+                string previous = notable.Id;
+                PassiveNode current = byId[notable.Links[0]];
+                while (current.Id != OriginId && !current.Notable && !current.Keystone &&
+                    current.Links.Count == 2 && seen.Add(current.Id))
+                {
+                    approach.Add(current);
+                    string next = current.Links[0] == previous ? current.Links[1] : current.Links[0];
+                    previous = current.Id;
+                    current = byId[next];
+                }
+
+                if (approach.Count < 2)
+                    continue;
+
+                // Keep the authored small passive nearest the notable, including its values.
+                // Generated travel points inherit it; a travel-only spur keeps its own reward.
+                PassiveNode source = approach[0];
+                foreach (PassiveNode small in approach)
+                {
+                    if (small.Id.StartsWith("travel_"))
+                        continue;
+                    source = small;
+                    break;
+                }
+                foreach (PassiveNode small in approach)
+                    small.Mods = (StatModifier[])source.Mods.Clone();
+            }
+        }
+
+        // Keep repeated life notables separated by at least six connections.
         // Travel goes before each pair, preserving the basic life node -> notable order.
         private static void SpaceLifeBranches()
         {

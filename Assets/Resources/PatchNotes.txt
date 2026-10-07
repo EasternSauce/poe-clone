@@ -1,3 +1,6 @@
+version: 2026-10-07-consistent-notable-approaches
+- Small passives on each dedicated dead-end notable branch now grant the same stats and values throughout the branch, up to the junction with the shared tree.
+
 version: 2026-10-07-patch-history-readability
 - Patch history names now wrap into rows tall enough to show their full title.
 - Selecting a patch shows only that release's notes, including for previously saved history. The What's New popup also shows only the latest release.
