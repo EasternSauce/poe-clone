@@ -258,7 +258,7 @@ namespace PoeClone.Player
             {
                 cooldownTimer = SkillSet.MainInterval();
                 swingPending = true;
-                attackAnimator.PlayAttack(WeaponType.Unarmed);
+                attackAnimator.PlayCast(SkillSet.CastRateMultiplier);
                 return;
             }
             if (HasMainSkill)

@@ -479,6 +479,7 @@ namespace PoeClone.Visuals
         private AttackProfile activeProfile;
         private Pose rest;
         private float timer;
+        private float castSpeedMultiplier = 1f;
         private bool strikeFired;
 
         public bool IsAttacking { get; private set; }
@@ -555,6 +556,13 @@ namespace PoeClone.Visuals
         public void PlayAttack(WeaponType weaponType)
         {
             Play(PickProfile(weaponType));
+        }
+
+        /// <summary>Scale the casting gesture too, so it cannot cap a fast caster's attack rate.</summary>
+        public void PlayCast(float castRateMultiplier)
+        {
+            Play(UnarmedProfile);
+            castSpeedMultiplier = Mathf.Max(0.5f, castRateMultiplier);
         }
 
         /// <summary>Plays the dedicated procedural pose for a committed melee skill.</summary>
@@ -643,6 +651,7 @@ namespace PoeClone.Visuals
 
         private void Play(AttackProfile profile)
         {
+            castSpeedMultiplier = 1f;
             AttackCount++;
             ProfileId = Array.IndexOf(ProfilesById, profile);
             activeProfile = profile;
@@ -677,7 +686,7 @@ namespace PoeClone.Visuals
                 return;
             }
 
-            timer += Time.deltaTime * PlaybackSpeed;
+            timer += Time.deltaTime * PlaybackSpeed * castSpeedMultiplier;
             float f = Mathf.Clamp01(timer / activeProfile.Duration);
 
             AttackProfile p = activeProfile;

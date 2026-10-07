@@ -69,13 +69,13 @@ namespace PoeClone.Inventory
             {
                 BaseId = "ruby_ring", Name = "Emberheart",
                 Flavour = "It beats, faintly.",
-                Mods = new[] { Mod(StatType.FireResistance, 25), Mod(StatType.Intelligence, 10), Mod(StatType.SpellDamage, 18), Mod(StatType.FirePenetration, 8), Mod(StatType.IgniteChance, 15) }
+                Mods = new[] { Mod(StatType.FireResistance, 25), Mod(StatType.CastSpeed, 10), Mod(StatType.SpellDamage, 18), Mod(StatType.FirePenetration, 8), Mod(StatType.IgniteChance, 15) }
             },
             new Unique
             {
                 BaseId = "jade_amulet", Name = "Elder's Charm",
                 Flavour = "Haven's elders have worn it since before the fire.",
-                Mods = new[] { Mod(StatType.Intelligence, 18), Mod(StatType.MaxMana, 40), Mod(StatType.LightningResistance, 20), Mod(StatType.AdditionalChains, 1) }
+                Mods = new[] { Mod(StatType.CastSpeed, 12), Mod(StatType.MaxMana, 40), Mod(StatType.LightningResistance, 20), Mod(StatType.AdditionalChains, 1) }
             },
             new Unique
             {
@@ -99,7 +99,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "sage_circlet", Name = "Stormcaller's Circlet",
                 Flavour = "The sky listens to whoever wears it, and answers twice.",
-                Mods = new[] { Mod(StatType.Intelligence, 15), Mod(StatType.MaxMana, 25), Mod(StatType.AdditionalChains, 2), Mod(StatType.LightningResistance, 15), Mod(StatType.LightningPenetration, 12) }
+                Mods = new[] { Mod(StatType.CastSpeed, 12), Mod(StatType.MaxMana, 25), Mod(StatType.AdditionalChains, 2), Mod(StatType.LightningResistance, 15), Mod(StatType.LightningPenetration, 12) }
             },
             new Unique
             {
@@ -111,7 +111,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "silk_robe", Name = "Mantle of the Still Mind",
                 Flavour = "Pain is a rumour. Mana is the truth.",
-                Mods = new[] { Mod(StatType.Evasion, 40), Mod(StatType.MaxMana, 60), Mod(StatType.CooldownRecovery, 15), Mod(StatType.ManaRegen, 40) }
+                Mods = new[] { Mod(StatType.Evasion, 40), Mod(StatType.MaxMana, 60), Mod(StatType.CastSpeed, 15), Mod(StatType.CooldownRecovery, 15), Mod(StatType.ManaRegen, 40) }
             },
             new Unique
             {
@@ -147,7 +147,7 @@ namespace PoeClone.Inventory
             // Ordinary drops: uncommon utility and restrained versions of existing tree effects.
             new Unique { BaseId = "gnarled_staff", Name = "Frostglass Bough",
                 Flavour = "Its branches ring like glass when winter takes a life.",
-                Mods = new[] { Mod(StatType.GrantIceShard, 6), Mod(StatType.SpellDamage, 14), Mod(StatType.ColdPenetration, 8), Mod(StatType.DamageVsChilled, 12) } },
+                Mods = new[] { Mod(StatType.GrantIceShard, 6), Mod(StatType.SpellDamage, 14), Mod(StatType.CastSpeed, 12), Mod(StatType.ColdPenetration, 8), Mod(StatType.DamageVsChilled, 12) } },
             new Unique { BaseId = "leather_gloves", Name = "Thundergrip",
                 Flavour = "The first spark always finds another hand to shake.",
                 Mods = new[] { Mod(StatType.Evasion, 32), Mod(StatType.CriticalChance, 40), Mod(StatType.LightningResistance, 15), Mod(StatType.Stormblade, 35) } },
@@ -175,6 +175,22 @@ namespace PoeClone.Inventory
             new Unique { BaseId = "iron_ring", Name = "The Last Draught",
                 Flavour = "Courage comes in a bottle, and leaves in a heartbeat.",
                 Mods = new[] { Mod(StatType.MaxLife, 14), Mod(StatType.LifeRegen, 1), Mod(StatType.AvoidStun, 8), Mod(StatType.OnslaughtOnHealthPotion, 1) } },
+            // Single-ability tree bonuses belong on gear that also grants their ability.
+            new Unique { BaseId = "gnarled_staff", Name = "Conductor's Reach",
+                Flavour = "The storm follows wherever its bearer points.",
+                Mods = new[] { Mod(StatType.GrantChainLightning, 6), Mod(StatType.LightningDamage, 15), Mod(StatType.CastSpeed, 12), Mod(StatType.AdditionalChains, 1), Mod(StatType.LightningPenetration, 8) } },
+            new Unique { BaseId = "jade_amulet", Name = "Death's Grip",
+                Flavour = "One whispered name commands a hundred restless hands.",
+                Mods = new[] { Mod(StatType.GrantDeathMark, 6), Mod(StatType.MarkEffect, 20), Mod(StatType.MinionDamage, 4), Mod(StatType.MaxLife, 15) } },
+            new Unique { BaseId = "gnarled_staff", Name = "The Unfinished Sentence",
+                Flavour = "The next spell begins before the last word fades.",
+                Mods = new[] { Mod(StatType.GrantFireBolt, 6), Mod(StatType.SpellDamage, 20), Mod(StatType.CastSpeed, 36), Mod(StatType.MaxMana, 30) } },
+            new Unique { BaseId = "silk_gloves", Name = "Spellweaver's Hands",
+                Flavour = "A hundred gestures, between one heartbeat and the next.",
+                Mods = new[] { Mod(StatType.CastSpeed, 24), Mod(StatType.MaxMana, 25), Mod(StatType.ManaRegen, 20) } },
+            new Unique { BaseId = "jade_amulet", Name = "Pendant of the Fleeting Thought",
+                Flavour = "Catch the thought before the world can answer.",
+                Mods = new[] { Mod(StatType.CastSpeed, 22), Mod(StatType.SpellDamage, 12), Mod(StatType.ManaRegen, 25), Mod(StatType.LightningResistance, 18) } },
         };
 
         private static readonly Dictionary<string, string> flavourByName = new Dictionary<string, string>();

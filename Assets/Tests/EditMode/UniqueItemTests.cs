@@ -83,6 +83,45 @@ namespace PoeClone.Tests
             Assert.AreEqual(0f, ValueOrZero(draught, StatType.HealthPotionRecovery));
         }
 
+        [Test]
+        public void PassiveTreeHasNoSingleAbilityBonuses()
+        {
+            var singleAbilityStats = new[]
+            {
+                StatType.AdditionalChains, StatType.MarkEffect, StatType.GlacialStep,
+                StatType.SecondWind, StatType.DeathsHerald, StatType.RaiseSkeletonsLevels,
+                StatType.SkeletonMagesLevels, StatType.SpiritWolvesLevels, StatType.BoneGolemLevels
+            };
+            foreach (PassiveNode node in PassiveTree.Nodes)
+                foreach (StatModifier modifier in node.Mods)
+                {
+                    Assert.IsFalse(SkillGrants.IsGrant(modifier.Stat), node.Id);
+                    Assert.IsFalse(System.Array.IndexOf(singleAbilityStats, modifier.Stat) >= 0,
+                        node.Id + " only benefits one ability: " + modifier.Stat);
+                }
+        }
+
+        [Test]
+        public void SingleAbilityBonusesAreAvailableOnUniquesWithTheirSkill()
+        {
+            ItemData staff = UniqueItems.Current("Conductor's Reach");
+            Assert.IsNotNull(staff);
+            Assert.AreEqual(6f, Value(staff, StatType.GrantChainLightning));
+            Assert.AreEqual(1f, Value(staff, StatType.AdditionalChains));
+
+            ItemData amulet = UniqueItems.Current("Death's Grip");
+            Assert.IsNotNull(amulet);
+            Assert.AreEqual(6f, Value(amulet, StatType.GrantDeathMark));
+            Assert.AreEqual(20f, Value(amulet, StatType.MarkEffect));
+
+            var gear = new EquipmentSet();
+            Assert.IsTrue(gear.TryEquip(EquipSlot.MainHand, staff, out _));
+            Assert.IsTrue(gear.TryEquip(EquipSlot.Amulet, amulet, out _));
+            StatSheet sheet = StatSheet.Build(new BaseStats(), gear);
+            Assert.AreEqual(1f, sheet.Total(StatType.AdditionalChains));
+            Assert.AreEqual(20f, sheet.Total(StatType.MarkEffect));
+        }
+
         private static StatType Signature(string name)
         {
             ItemData item = UniqueItems.Current(name);

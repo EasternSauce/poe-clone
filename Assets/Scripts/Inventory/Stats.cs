@@ -372,6 +372,9 @@ namespace PoeClone.Inventory
         /// <summary>Each separate more/less source multiplies independently, including identical stat types.</summary>
         public float Multiplier(StatType stat) => multipliers[(int)stat];
 
+        /// <summary>Increased cast speed from all sources adds together.</summary>
+        public float CastRateMultiplier => Math.Max(0.5f, 1f + Total(StatType.CastSpeed) / 100f);
+
         public float DamageMultiplier(bool attack, bool bow, bool lowLife, bool chilled,
             StatType element, bool damageOverTime = false, bool spell = true)
         {
@@ -556,7 +559,7 @@ namespace PoeClone.Inventory
                 case StatType.MaxLife: return "Maximum Life";
                 case StatType.MaxMana: return "Maximum Mana";
                 case StatType.Armour: return "Armour";
-                case StatType.Evasion: return "Attack Evasion";
+                case StatType.Evasion: return "Evasion Rating";
                 case StatType.BlockChance: return "Attack Block Chance";
                 case StatType.AvoidStun: return "Chance to Avoid Stun";
                 case StatType.HealthPotionRecovery: return "Health Potion Recovery";
@@ -756,7 +759,7 @@ namespace PoeClone.Inventory
                 case StatType.MaxLife: return sign + n + " to Maximum Life";
                 case StatType.MaxMana: return sign + n + " to Maximum Mana";
                 case StatType.Armour: return sign + n + " to Armour";
-                case StatType.Evasion: return sign + n + " to Attack Evasion Rating";
+                case StatType.Evasion: return sign + n + " to Evasion Rating";
                 case StatType.BlockChance: return sign + n + "% Chance to Block Attacks";
                 case StatType.AvoidStun: return sign + n + "% Chance to Avoid Stun";
                 case StatType.HealthPotionRecovery: return n + "% increased Life recovered by Health Potions";
@@ -831,7 +834,7 @@ namespace PoeClone.Inventory
                 case StatType.SoulBond: return n + "% of Minion Damage is returned to you as Life";
                 case StatType.DeathsHerald: return "When a Marked enemy dies, the Mark leaps to the nearest enemy";
                 case StatType.BloodMagic: return "Removes all Mana. Skills cost Life instead of Mana";
-                case StatType.IronReflexes: return "Converts Evasion Rating to Armour. Dexterity grants no Evasion";
+                case StatType.IronReflexes: return "Converts Evasion Rating to Armour. Dexterity grants no Evasion Rating";
                 case StatType.PointBlank: return "Projectile Hits deal up to 30% more Damage nearby, and up to 30% less Damage at long range";
                 case StatType.AdditionalProjectiles: return "Projectile Skills fire " + n + " additional projectile" + (n == "1" ? "" : "s");
                 case StatType.MoreLife: return n + "% more Maximum Life";

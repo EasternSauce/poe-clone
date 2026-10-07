@@ -391,7 +391,7 @@ namespace PoeClone.UI
 
             var sb = new StringBuilder();
             sb.Append("<b><color=#").Append(UiKit.Hex(BranchColor(node.Branch))).Append(">").Append(node.Name ?? "Passive")
-                .Append(node.Keystone ? "  (keystone)" : node.Notable ? "  (notable)" : "").Append("</color></b>\n");
+                .Append("</color></b>\n");
             if (node.Mods.Length == 0)
                 sb.Append("Where every path starts.");
             for (int k = 0; k < node.Mods.Length; k++)

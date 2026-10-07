@@ -6,6 +6,88 @@ namespace PoeClone.Tests
 {
     public class PassiveTreeTests
     {
+        private static float GlyphRadius(PassiveNode node)
+        {
+            // UI: 60 px square rotated 45 degrees, 62 px notable, 56 px origin,
+            // and 44 px basic, at 200 px per tree unit. Bound diamonds by a circle.
+            return node.Keystone ? 30f * (float)System.Math.Sqrt(2) / 200f :
+                node.Notable ? 31f / 200f : node.Id == PassiveTree.OriginId ? 28f / 200f : 22f / 200f;
+        }
+
+        private static float Side(PassiveNode a, PassiveNode b, PassiveNode c)
+        {
+            return (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
+        }
+
+        [Test]
+        public void PassiveGlyphsHaveClearSpaceBetweenThem()
+        {
+            var nodes = PassiveTree.Nodes;
+            for (int i = 0; i < nodes.Count; i++)
+                for (int j = i + 1; j < nodes.Count; j++)
+                {
+                    float dx = nodes[i].X - nodes[j].X, dy = nodes[i].Y - nodes[j].Y;
+                    Assert.GreaterOrEqual(System.Math.Sqrt(dx * dx + dy * dy),
+                        GlyphRadius(nodes[i]) + GlyphRadius(nodes[j]) + 0.05f,
+                        nodes[i].Id + " overlaps " + nodes[j].Id);
+                }
+        }
+
+        [Test]
+        public void ConnectionsNeverCrossOrPassThroughAnotherPassive()
+        {
+            var edges = new List<PassiveNode[]>();
+            foreach (PassiveNode a in PassiveTree.Nodes)
+                foreach (string id in a.Links)
+                    if (string.CompareOrdinal(a.Id, id) < 0)
+                        edges.Add(new[] { a, PassiveTree.Get(id) });
+
+            for (int i = 0; i < edges.Count; i++)
+            {
+                PassiveNode a = edges[i][0], b = edges[i][1];
+                foreach (PassiveNode node in PassiveTree.Nodes)
+                {
+                    if (node == a || node == b) continue;
+                    float dx = b.X - a.X, dy = b.Y - a.Y;
+                    float t = System.Math.Max(0f, System.Math.Min(1f,
+                        ((node.X - a.X) * dx + (node.Y - a.Y) * dy) / (dx * dx + dy * dy)));
+                    float nx = node.X - a.X - t * dx, ny = node.Y - a.Y - t * dy;
+                    Assert.GreaterOrEqual(System.Math.Sqrt(nx * nx + ny * ny), GlyphRadius(node) + 0.025f,
+                        a.Id + " - " + b.Id + " passes through " + node.Id);
+                }
+                for (int j = i + 1; j < edges.Count; j++)
+                {
+                    PassiveNode c = edges[j][0], d = edges[j][1];
+                    if (a == c || a == d || b == c || b == d) continue;
+                    Assert.IsFalse(Side(a, b, c) * Side(a, b, d) < 0f &&
+                        Side(c, d, a) * Side(c, d, b) < 0f,
+                        a.Id + " - " + b.Id + " crosses " + c.Id + " - " + d.Id);
+                }
+            }
+        }
+
+        [Test]
+        public void SpacingKeepsItsAverageWithoutLongOutliers()
+        {
+            double total = 0, squared = 0;
+            int count = 0;
+            foreach (PassiveNode a in PassiveTree.Nodes)
+                foreach (string id in a.Links)
+                {
+                    if (string.CompareOrdinal(a.Id, id) >= 0) continue;
+                    PassiveNode b = PassiveTree.Get(id);
+                    double dx = b.X - a.X, dy = b.Y - a.Y;
+                    double length = System.Math.Sqrt(dx * dx + dy * dy);
+                    Assert.LessOrEqual(length, 1.8, a.Id + " - " + b.Id + " is unusually long");
+                    total += length;
+                    squared += length * length;
+                    count++;
+                }
+            double mean = total / count;
+            Assert.That(mean, Is.InRange(0.80, 0.93));
+            Assert.Less(System.Math.Sqrt(squared / count - mean * mean), 0.32);
+        }
+
         [Test]
         public void EveryLinkGoesBothWays()
         {
@@ -151,7 +233,7 @@ namespace PoeClone.Tests
                 Assert.AreEqual(node.Mods[0].Stat, third.Mods[0].Stat, path);
                 Assert.AreEqual(node.Mods[0].Value, third.Mods[0].Value, path);
             }
-            Assert.AreEqual(StatType.MinionLife, PassiveTree.Get("travel_n_lord_k_legion_1").Mods[0].Stat);
+            Assert.AreEqual(StatType.MinionLife, PassiveTree.Get("travel_n2_k_legion_1").Mods[0].Stat);
             Assert.AreEqual(StatType.BowDamage, PassiveTree.Get("travel_g10_g_deadeye_1").Mods[0].Stat);
             Assert.AreEqual(StatType.FireResistance, PassiveTree.Get("travel_b_fireward_w_r3_1").Mods[0].Stat);
             Assert.AreEqual(StatType.MinionResistances, PassiveTree.Get("travel_b_fireward_n1_1").Mods[0].Stat);
@@ -199,6 +281,44 @@ namespace PoeClone.Tests
             allocation.Take("z1", 20); // another sector's passive doesn't count
             sheet = StatSheet.Build(new BaseStats(), new EquipmentSet(), allocation.Modifiers());
             Assert.AreEqual(41f, sheet.Total(StatType.SpellDamage), 0.001f);
+        }
+
+        [Test]
+        public void SmallLifePairsHaveAtLeastSixConnectionsBetweenThem()
+        {
+            var starts = new HashSet<string>();
+            foreach (PassiveNode node in PassiveTree.Nodes)
+            {
+                if (!node.Notable && node.Mods.Length == 1 &&
+                    node.Mods[0].Stat == StatType.IncreasedLife && node.Mods[0].Value == 3f)
+                {
+                    foreach (string link in node.Links)
+                    {
+                        PassiveNode end = PassiveTree.Get(link);
+                        if (end.Notable && end.Mods.Length == 1 &&
+                            end.Mods[0].Stat == StatType.IncreasedLife && end.Mods[0].Value == 6f)
+                            starts.Add(node.Id);
+                    }
+                }
+            }
+            Assert.Greater(starts.Count, 1);
+            foreach (string start in starts)
+            {
+                var seen = new HashSet<string> { start };
+                var frontier = new List<string> { start };
+                for (int distance = 1; distance < 6; distance++)
+                {
+                    var next = new List<string>();
+                    foreach (string id in frontier)
+                        foreach (string link in PassiveTree.Get(id).Links)
+                            if (seen.Add(link))
+                            {
+                                Assert.IsFalse(starts.Contains(link), start + " is too close to " + link);
+                                next.Add(link);
+                            }
+                    frontier = next;
+                }
+            }
         }
 
         [Test]

@@ -575,6 +575,10 @@ namespace PoeClone.Skills
             }
         }
 
+        /// <summary>Cast speed, including temporary Onslaught.</summary>
+        public float CastRateMultiplier => (inventory != null && inventory.Stats != null ? inventory.Stats.CastRateMultiplier : 1f) *
+            (controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f);
+
         /// <summary>Cooldown at the skill's current level, after Cooldown Recovery (or the cast interval for the attack spell).</summary>
         public float Cooldown(SkillId id)
         {
@@ -582,9 +586,8 @@ namespace PoeClone.Skills
             if (skill.Bow)
                 return 0f;
             float cooldown = skill.CooldownAt(Mathf.Max(1, Level(id)));
-            float onslaught = controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f;
             if (skill.Main && MainSkill == id)
-                return cooldown / ((1f + Mathf.Max(-50f, Stat(StatType.CastSpeed)) / 100f) * onslaught);
+                return cooldown / CastRateMultiplier;
             return cooldown / (1f + Mathf.Max(-50f, Stat(StatType.CooldownRecovery)) / 100f);
         }
 
@@ -793,7 +796,7 @@ namespace PoeClone.Skills
             return true;
         }
 
-        /// <summary>Seconds between casts of the attack spell (its level and Cast Speed shorten it).</summary>
+        /// <summary>Seconds between casts of the attack spell (level and Cast Speed shorten it).</summary>
         public float MainInterval()
         {
             SkillId? main = MainSkill;

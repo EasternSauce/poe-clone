@@ -423,13 +423,16 @@ namespace PoeClone.Inventory
             Aff(StatType.LifeOnKill, 2, 5, true, ItemType.Gloves, ItemType.Ring, ItemType.Quiver).Also(ItemType.Weapon, AttackWeapons).Weighted(0.5f),
             Aff(StatType.LifeOnAttackHit, 2, 4, true, ItemType.Gloves, ItemType.Ring, ItemType.Quiver).Also(ItemType.Weapon, AttackWeapons).Weighted(0.7f),
 
-            // Caster stats: a staff's own pool, and a little on jewellery.
+            // Caster stats: staves/sceptres, grimoires, jewellery and armour (Int bases favour these).
             Aff(StatType.SpellDamage, 4, 10, true, ItemType.Weapon).Only(Staves).Weighted(1.6f),
             Aff(StatType.SpellDamage, 2, 5, true, ItemType.Ring, ItemType.Amulet).Weighted(0.6f),
             Aff(StatType.MaxMana, 12, 30, true, ItemType.Weapon).Only(Staves),
             Aff(StatType.ManaRegen, 10, 35, false, ItemType.Weapon, ItemType.Amulet, ItemType.Ring, ItemType.Helmet, ItemType.Grimoire).Only(Staves),
-            Aff(StatType.CastSpeed, 4, 14, false, ItemType.Weapon).Only(Staves).Weighted(1.2f),
-            Aff(StatType.CastSpeed, 3, 8, false, ItemType.Ring, ItemType.Amulet, ItemType.Gloves, ItemType.Grimoire).Weighted(0.6f),
+            // Like other level-scaled stats, cast speed rolls improve in higher-level areas.
+            Aff(StatType.CastSpeed, 6, 18, true, ItemType.Weapon).Only(Staves).Weighted(1.5f),
+            Aff(StatType.CastSpeed, 4, 12, true, ItemType.Weapon).Only(Sceptres).Weighted(1f),
+            Aff(StatType.CastSpeed, 4, 10, true, ItemType.Ring, ItemType.Amulet, ItemType.Gloves, ItemType.Grimoire).Weighted(1f),
+            Aff(StatType.CastSpeed, 3, 8, true, ItemType.Helmet, ItemType.BodyArmour).Weighted(0.6f),
             Aff(StatType.MaxMana, 10, 25, true, ItemType.Grimoire),
             Aff(StatType.CooldownRecovery, 5, 15, false, ItemType.Weapon).Only(Staves),
             Aff(StatType.CooldownRecovery, 4, 10, false, ItemType.Amulet, ItemType.Helmet, ItemType.Belt).Weighted(0.6f),

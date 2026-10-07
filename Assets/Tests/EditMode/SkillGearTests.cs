@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using PoeClone.Inventory;
 
@@ -168,6 +169,115 @@ namespace PoeClone.Tests
         {
             Assert.AreEqual("Grants Level 3 Fire Bolt", StatFormatter.ItemLine(new StatModifier(StatType.GrantFireBolt, 3)));
             Assert.AreEqual("+1 to Level of all Fire Spells", StatFormatter.ItemLine(new StatModifier(StatType.FireSpellLevels, 1)));
+        }
+
+        [TestCase("gnarled_staff", true)]
+        [TestCase("bone_sceptre", true)]
+        [TestCase("grimoire", true)]
+        [TestCase("sapphire_ring", true)]
+        [TestCase("jade_amulet", true)]
+        [TestCase("silk_gloves", true)]
+        [TestCase("arcane_gloves", true)]
+        [TestCase("sage_circlet", true)]
+        [TestCase("silk_robe", true)]
+        [TestCase("rusty_sword", false)]
+        [TestCase("short_bow", false)]
+        [TestCase("leather_quiver", false)]
+        [TestCase("wooden_shield", false)]
+        [TestCase("silk_slippers", false)]
+        [TestCase("rope_belt", false)]
+        public void CastSpeed_RollsOnSuitableGear(string baseId, bool speedAllowed)
+        {
+            var rng = new System.Random(492);
+            int speedRolls = 0;
+            for (int k = 0; k < 3000; k++)
+            {
+                ItemData item = ItemGenerator.Generate(rng, baseId, 12, ItemRarity.Rare);
+                Assert.LessOrEqual(item.Modifiers.Count(m => m.Stat == StatType.CastSpeed), 1,
+                    "cast speed must only appear once per item");
+                foreach (StatModifier mod in item.Modifiers)
+                {
+                    if (mod.Stat == StatType.CastSpeed)
+                    {
+                        speedRolls++;
+                        Assert.That(mod.Value, Is.InRange(3f, 30f));
+                        Assert.IsTrue(ItemGenerator.Legalize(item).Modifiers.Any(m =>
+                            m.Stat == mod.Stat && m.Value == mod.Value), "save repair must preserve valid cast-speed rolls");
+                    }
+                }
+            }
+            Assert.AreEqual(speedAllowed, speedRolls > 0, baseId + " cast speed eligibility");
+        }
+
+        [TestCase("gnarled_staff", 6f, 18f)]
+        [TestCase("bone_sceptre", 4f, 12f)]
+        [TestCase("grimoire", 4f, 10f)]
+        [TestCase("sapphire_ring", 4f, 10f)]
+        [TestCase("jade_amulet", 4f, 10f)]
+        [TestCase("silk_gloves", 4f, 10f)]
+        [TestCase("sage_circlet", 3f, 8f)]
+        [TestCase("silk_robe", 3f, 8f)]
+        public void CastSpeed_UsesExistingItemLevelScaling(string baseId, float min, float max)
+        {
+            var rng = new System.Random(493);
+            float lowSum = 0f, highSum = 0f;
+            int lowCount = 0, highCount = 0;
+            float topScale = 1f + 0.06f * (ItemGenerator.MaxItemLevel - 1);
+            for (int k = 0; k < 3000; k++)
+            {
+                foreach (int level in new[] { 1, ItemGenerator.MaxItemLevel })
+                {
+                    ItemData item = ItemGenerator.Generate(rng, baseId, level, ItemRarity.Rare);
+                    foreach (StatModifier mod in item.Modifiers.Where(m => m.Stat == StatType.CastSpeed))
+                    {
+                        float scale = level == 1 ? 1f : topScale;
+                        Assert.That(mod.Value, Is.InRange((float)Math.Round(min * scale), (float)Math.Round(max * scale)));
+                        Assert.IsTrue(ItemGenerator.Legalize(item).Modifiers.Any(m => m.Stat == mod.Stat && m.Value == mod.Value));
+                        if (level == 1) { lowSum += mod.Value; lowCount++; }
+                        else { highSum += mod.Value; highCount++; }
+                    }
+                }
+            }
+            Assert.Greater(lowCount, 0);
+            Assert.Greater(highCount, 0);
+            Assert.Greater(highSum / highCount, lowSum / lowCount * 1.9f,
+                "high-level areas should naturally produce better cast speed rolls");
+        }
+
+        [Test]
+        public void CastSpeed_AddsAllSources()
+        {
+            var sheet = StatSheet.Build(new BaseStats().Set(StatType.CastSpeed, 10), null, new[]
+            {
+                new StatModifier(StatType.CastSpeed, 40),
+                new StatModifier(StatType.CastSpeed, 20),
+                new StatModifier(StatType.CastSpeed, 20)
+            });
+            Assert.AreEqual(90f, sheet.Total(StatType.CastSpeed), 0.0001f);
+            Assert.AreEqual(1.9f, sheet.CastRateMultiplier, 0.0001f);
+            Assert.AreEqual(1f, StatSheet.Build(new BaseStats(), null).CastRateMultiplier);
+            Assert.AreEqual("24% increased Cast Speed", StatFormatter.ItemLine(new StatModifier(StatType.CastSpeed, 24)));
+            Assert.AreEqual("24%", StatFormatter.Value(StatType.CastSpeed, 24));
+        }
+
+        [Test]
+        public void StrongCastSpeedUniques_AreInOrdinaryDropPool()
+        {
+            var names = new HashSet<string>
+            {
+                "The Unfinished Sentence", "Spellweaver's Hands", "Pendant of the Fleeting Thought"
+            };
+            foreach (string name in names)
+            {
+                ItemData item = UniqueItems.Current(name);
+                Assert.IsNotNull(item, name);
+                Assert.AreEqual(1, item.Modifiers.Count(m => m.Stat == StatType.CastSpeed), name);
+                Assert.GreaterOrEqual(item.Modifiers.Single(m => m.Stat == StatType.CastSpeed).Value, 22f, name);
+            }
+            var rng = new System.Random(31);
+            for (int k = 0; k < 3000 && names.Count > 0; k++)
+                names.Remove(UniqueItems.Random(rng).Name);
+            Assert.IsEmpty(names, "new cast-speed uniques must drop outside the Shepherd reward pool");
         }
     }
 }
