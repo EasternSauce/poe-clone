@@ -614,7 +614,8 @@ namespace PoeClone.Skills
             ? (slotCooldownOf[slot] > 0f ? slotCooldownOf[slot] : CooldownAt(slot)) : 0f;
         public float ManaCostAt(int slot) => Slot(slot) != null
             ? SkillBook.Get(Slot(slot).Value).ManaCostAt(Mathf.Max(1, LevelAt(slot))) : 0f;
-        public bool CanAffordAt(int slot) => stats != null && stats.CurrentMana >= ManaCostAt(slot);
+        public bool CanAffordAt(int slot) => stats != null && stats.CanAffordSkill(ManaCostAt(slot));
+        public string CostResource => stats != null && stats.UsesBloodMagic ? "life" : "mana";
 
         public float CooldownLeft(SkillId id)
         {
@@ -634,7 +635,7 @@ namespace PoeClone.Skills
 
         public bool CanAfford(SkillId id)
         {
-            return stats != null && stats.CurrentMana >= ManaCost(id);
+            return stats != null && stats.CanAffordSkill(ManaCost(id));
         }
 
         // Newly granted item skills go into free slots; removing an item clears only its grants.
@@ -751,7 +752,7 @@ namespace PoeClone.Skills
 
             if (!stats.TrySpendMana(ManaCostAt(slot)))
             {
-                CombatText.Show(transform.position + Vector3.up * 2f, "Not enough mana", CombatText.ColdColor, 0.8f);
+                CombatText.Show(transform.position + Vector3.up * 2f, "Not enough " + CostResource, CombatText.ColdColor, 0.8f);
                 return false;
             }
 
@@ -828,10 +829,10 @@ namespace PoeClone.Skills
         // turned the player at the moment of release); from the bar it aims itself.
         private void Cast(SkillDefinition skill, int level, bool asAttack = false)
         {
-            float spell = SkillBook.SpellMultiplier(stats.Intelligence) * (1f + Stat(StatType.SpellDamage) / 100f);
+            float spell = 1f; // Intelligence and spell/elemental increases share HitEffects' sum.
             float area = DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
             float damage = skill.DamageAt(level) * spell;
-            int extraProjectiles = Mathf.Max(0, Mathf.RoundToInt(Stat(StatType.AdditionalSpellProjectiles)));
+            int extraProjectiles = Mathf.Max(0, Mathf.RoundToInt(Stat(StatType.AdditionalSpellProjectiles) + Stat(StatType.AdditionalProjectiles)));
 
             switch (skill.Id)
             {
@@ -1416,7 +1417,7 @@ namespace PoeClone.Skills
         private float WeaponDamage()
         {
             float physical = inventory != null ? inventory.Stats.Total(StatType.PhysicalDamage) : 2f;
-            return physical * (1f + stats.Strength / 100f);
+            return physical;
         }
 
         private List<EnemyHealth> EnemiesWithin(Vector3 center, float radius)

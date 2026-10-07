@@ -160,8 +160,9 @@ namespace PoeClone.Skills
 
         /// <summary>Damage per hit with the owner's Minion Damage, for the skills panel.</summary>
         public static float DamageFor(MinionKind kind, int level, StatSheet sheet) =>
-            DamageAt(kind, level) * (1f + Mathf.Max(0f, Stat(sheet, StatType.Intelligence)) * 0.005f) *
-            (1f + Mathf.Max(-50f, Stat(sheet, StatType.MinionDamage)) / 100f);
+            DamageAt(kind, level) * Mathf.Max(0f, 1f +
+                (Stat(sheet, StatType.Intelligence) * 0.5f + Stat(sheet, StatType.MinionDamage)) / 100f) *
+            (sheet != null ? sheet.Multiplier(StatType.MoreMinionDamage) * sheet.Multiplier(StatType.MinionDamagePenalty) : 1f);
 
         /// <summary>The shared living-minion limit. Capacity comes from the tree and gear, not per-skill caps.</summary>
         public const int BaseGlobalCap = 2;
@@ -186,7 +187,7 @@ namespace PoeClone.Skills
                 amount *= 1f - DefenceMath.ArmourReduction(ArmourFor(sheet), amount);
             else
                 amount = DefenceMath.AfterResistance(amount, ResistanceFor(sheet));
-            return amount * (1f - Mathf.Clamp(Stat(sheet, StatType.BoneArmour), 0f, 60f) / 100f);
+            return amount * (sheet != null ? sheet.Multiplier(StatType.BoneArmour) : 1f);
         }
 
         // ------------------------------------------------------------------ summoning
@@ -458,8 +459,6 @@ namespace PoeClone.Skills
                 return;
 
             Vector3 at = dying.transform.position;
-            SkillEffects.Shockwave(at, 3.5f, MarkColor, 0.45f);
-            float burst = dying.MaxHealth * 0.2f;
             EnemyHealth next = null;
             float nextDistance = 8f;
             foreach (EnemyHealth e in EnemyHealth.Active.ToArray())
@@ -467,12 +466,6 @@ namespace PoeClone.Skills
                 if (e == null || e.IsDead || e == dying)
                     continue;
                 float d = Flat(e.transform.position - at).magnitude;
-                if (d <= 3.5f)
-                {
-                    e.TakeDamage(burst, PoeClone.Combat.DamageType.Physical, 0f, 0f, canEnrage: true);
-                    CombatText.Show(e.transform.position + Vector3.up * 1.6f * e.transform.localScale.y,
-                        Mathf.Max(1, Mathf.RoundToInt(burst)).ToString(), MarkColor, 0.9f);
-                }
                 if (!e.IsDead && d < nextDistance)
                 {
                     nextDistance = d;
@@ -705,14 +698,12 @@ namespace PoeClone.Skills
             amount *= Curse.TakenMultiplier(enemy);
             PlayerInventory ownerInventory = owner != null ? owner.GetComponent<PlayerInventory>() : null;
             StatSheet ownerSheet = ownerInventory != null ? ownerInventory.Stats : null;
-            float lessDamage = Mathf.Clamp(Stat(ownerSheet, StatType.MinionDamagePenalty), 0f, 100f);
-            amount *= 1f - lessDamage / 100f;
             float dealt = enemy.TakeDamage(amount, PoeClone.Combat.DamageType.Physical, 0f, 0f, canEnrage: true);
             if (dealt <= 0f)
                 return;
             if (Kind == MinionKind.Viper && owner != null)
             {
-                WeaponVenom.Apply(owner, enemy, dealt, 45f, 0f, ownerSheet);
+                WeaponVenom.Apply(owner, enemy, dealt, 45f, 0f, ownerSheet, minionDamage: true);
             }
             CombatText.Show(enemy.transform.position + Vector3.up * 1.6f * enemy.transform.localScale.y,
                 Mathf.Max(1, Mathf.RoundToInt(dealt)).ToString(), new Color(0.6f, 1f, 0.65f), 0.85f);

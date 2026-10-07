@@ -10,14 +10,8 @@ using PoeClone.World;
 namespace PoeClone.Network
 {
     /// <summary>
-    /// Entry point for the browser session-lock feature. Self-installs into any scene (see
-    /// <see cref="Bootstrap"/>) so nothing needed to be wired up in Game.unity: it figures out
-    /// whether this browser tab is the "player" or a "spectator" from the URL, connects to the
-    /// session server, and holds the whole world paused (Time.timeScale = 0) until it is first
-    /// granted one of the play slots (up to 10 people play at once, each in their own game) or
-    /// settles into spectating - so a queued player never simulates a live, interactable copy of
-    /// the game locally. Spectators instead get their scene turned into a puppet of one player's
-    /// game (see <see cref="SpectatorReplica"/>) and can switch between players (<see cref="WatchNext"/>).
+    /// Starts the chosen character locally. Chat and spectator streaming connect in the
+    /// background; server availability never controls local gameplay.
     /// </summary>
     public class GameSessionController : MonoBehaviour
     {
@@ -25,7 +19,7 @@ namespace PoeClone.Network
 
         public SessionRole Role { get; private set; } = SessionRole.Player;
         public bool Connected { get; private set; }
-        /// <summary>Local play was granted once; stays true across chat/server outages.</summary>
+        /// <summary>A character was selected for local play, independently of the server.</summary>
         public bool PlayGranted { get; private set; }
         public bool RemotePlayerActive { get; private set; }
         public int SpectatorCount { get; private set; }
@@ -82,9 +76,7 @@ namespace PoeClone.Network
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            // Hold the world paused until we know whether this tab is playing or spectating -
-            // otherwise a denied player (or a spectator) would briefly see/simulate a live,
-            // controllable game underneath the gate UI while the network round-trip is pending.
+            // Pause while choosing and loading the local character.
             SetWorldActive(false);
 
             var clientGO = new GameObject("NetworkClient");
@@ -127,8 +119,6 @@ namespace PoeClone.Network
                 if (!PlayGranted) scenePlayer.SetActive(false);
             }
 
-            yield return NetworkConfig.Load(cfg => serverUrl = cfg.serverUrl);
-
             client.RequestLocationSearch(search =>
             {
                 Role = ParseRole(search);
@@ -155,7 +145,14 @@ namespace PoeClone.Network
                     PoeClone.Player.SaveSystem.Profiles();
                     string savedId = PlayerPrefs.GetString("PoeClone.ActiveCharacter.v1", "");
                     if (!string.IsNullOrEmpty(savedId)) PoeClone.Player.SaveSystem.SelectProfile(savedId);
-                    namePrompt.ShowCharacters(() => { PlayerName = PoeClone.Player.SaveSystem.ActiveCharacterName; client.Connect(serverUrl); });
+                    namePrompt.ShowCharacters(() =>
+                    {
+                        PlayerName = SaveSystem.ActiveCharacterName;
+                        PlayGranted = true;
+                        SaveSystem.LoadSelectedProfile();
+                        StateChanged?.Invoke();
+                        StartCoroutine(ConnectToServer());
+                    });
                     return;
                 }
                 namePrompt.Show(PlayerPrefs.GetString(NamePrefKey, string.Empty), confirmLabel, name =>
@@ -163,7 +160,7 @@ namespace PoeClone.Network
                     PlayerName = name;
                     PlayerPrefs.SetString(NamePrefKey, name);
                     PlayerPrefs.Save();
-                    client.Connect(serverUrl);
+                    StartCoroutine(ConnectToServer());
                 });
             });
         }
@@ -277,14 +274,7 @@ namespace PoeClone.Network
                     DenyReason = msg.reason;
                     if (Role == SessionRole.Player)
                     {
-                        // Apply the chosen save before the first unpaused frame whenever the
-                        // scene is ready. SaveSystem retries if its scene dependencies are late.
-                        if (msg.granted && !PlayGranted)
-                            PoeClone.Player.SaveSystem.LoadSelectedProfile();
-                        if (msg.granted) PlayGranted = true;
-                        // After the first grant this browser owns its local game, even if the
-                        // server has temporarily lost its slot during a disconnect.
-                        SetWorldActive(PlayGranted);
+                        // Server permission controls spectator streaming only.
                         stateBroadcaster.enabled = msg.granted;
                     }
                     if (msg.granted && chatDisconnected)
@@ -334,8 +324,6 @@ namespace PoeClone.Network
             stateBroadcaster.enabled = false;
             if (Role == SessionRole.Spectator)
                 replica.ResetReplica(); // the server resends the latest snapshot on reconnect
-            else if (!PlayGranted)
-                SetWorldActive(false);
             StateChanged?.Invoke();
 
             // Always reschedule: ScheduleReconnect() itself stops any previous pending attempt
@@ -353,9 +341,20 @@ namespace PoeClone.Network
 
         public void NotifyCharacterLoaded()
         {
-            if (scenePlayer != null && Role == SessionRole.Player)
-                scenePlayer.SetActive(true);
+            if (Role == SessionRole.Player && PlayGranted)
+            {
+                if (scenePlayer != null) scenePlayer.SetActive(true);
+                SetWorldActive(true);
+            }
             StateChanged?.Invoke();
+        }
+
+        private IEnumerator ConnectToServer()
+        {
+            if (string.IsNullOrEmpty(serverUrl))
+                yield return NetworkConfig.Load(cfg => serverUrl = cfg.serverUrl);
+            if (!returningToCharacters && !string.IsNullOrEmpty(serverUrl))
+                client.Connect(serverUrl);
         }
 
         private void ScheduleReconnect()
@@ -406,7 +405,7 @@ namespace PoeClone.Network
 
         // Time.timeScale = 0 freezes every Update()-driven system in the scene (movement, enemy
         // AI, spawners, animators) in one shot; AudioListener.pause silences and stops processing
-        // audio the same way. Both are undone the instant this tab is granted the play slot.
+        // audio the same way. Both are undone once the local character has loaded.
         private void SetWorldActive(bool active)
         {
             bool pausedByMenu = GetComponent<PoeClone.UI.EscapeMenuUI>()?.IsOpen == true;

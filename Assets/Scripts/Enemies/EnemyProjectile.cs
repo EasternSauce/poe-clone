@@ -20,6 +20,7 @@ namespace PoeClone.Enemies
         private float travelLeft;
         private float damage;
         private DamageType damageType;
+        private bool isAttack;
         private PlayerStats target;   // null = visual only (or aimed at a minion)
         private Minion minion;        // aimed at one of the player's minions instead
         private bool spins;
@@ -92,6 +93,7 @@ namespace PoeClone.Enemies
             bolt.travelLeft = target != null ? kind.AttackRange * 1.6f : Vector3.Distance(from, aimAt);
             bolt.damage = damage;
             bolt.damageType = kind.DamageType;
+            bolt.isAttack = kind.Bow;
             bolt.target = target;
             return bolt;
         }
@@ -114,7 +116,7 @@ namespace PoeClone.Enemies
                 if (toTarget.sqrMagnitude <= HitRadius * HitRadius)
                 {
                     if (volleyHit == null || !volleyHit[0])
-                        target.TakeHit(damage, damageType);
+                        target.TakeHit(damage, damageType, attack: isAttack);
                     if (volleyHit != null)
                         volleyHit[0] = true;
                     Destroy(gameObject);

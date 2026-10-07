@@ -62,7 +62,7 @@ namespace PoeClone.Inventory
         IgniteChance,               // % chance for fire hits to set the enemy burning
         ShockChance,                // % chance for lightning hits to shock (takes more damage for a while)
         DamageVsChilled,            // % increased damage against chilled enemies
-        CriticalChance,             // % chance for a hit to be critical
+        CriticalChance,             // % increased attack critical strike chance, scaling weapon base chance
         CriticalMultiplier,         // % added to the critical damage multiplier
         AttackDamage,               // % increased damage with attacks
         Damage,                     // % increased damage of every kind
@@ -137,10 +137,27 @@ namespace PoeClone.Inventory
         GrantLungingThrust,
         MinionArmour,               // flat armour for minions against physical hits
         MinionResistances,          // fire, cold, lightning and poison resistance for minions
-        BowDamage,                  // % more bow attack damage, from dedicated Grace passives
+        BowDamage,                  // % increased bow attack damage
         AvoidStun,                  // % chance to take a hit without being staggered
         HealthPotionRecovery,       // % increased life restored by health potions
-        OnslaughtOnHealthPotion     // 1: drinking a health potion grants Onslaught for 3 seconds
+        OnslaughtOnHealthPotion,    // 1: drinking a health potion grants Onslaught for 3 seconds
+
+        // Append only: saved items store the numeric IDs above.
+        BloodMagic,
+        IronReflexes,
+        PointBlank,
+        AdditionalProjectiles,     // all projectile skills; does not add arrows to a basic bow shot
+        MoreLife,
+        MoreDamage,
+        MoreAttackDamage,
+        MoreSpellDamage,
+        MoreBowDamage,
+        MoreFireDamage,
+        MoreColdDamage,
+        MoreLightningDamage,
+        MorePoisonDamage,
+        MoreMinionDamage,
+        LifeOnAttackHit            // flat life gained per enemy hit by the player's attacks
     }
 
     /// <summary>
@@ -314,6 +331,87 @@ namespace PoeClone.Inventory
         private readonly float[] baseValues;
         private readonly float[] gear;
         private readonly float[] derived;
+        private readonly float[] multipliers;
+
+        public WeaponType Weapon { get; }
+        public float BaseAttackCriticalChance => WeaponCriticalChance(Weapon);
+        public float AttackCriticalChance => Math.Max(0f, Math.Min(100f,
+            BaseAttackCriticalChance * (1f + Total(StatType.CriticalChance) / 100f)));
+
+        // Weapon identity determines base crit; it is not an item modifier or tooltip line.
+        public static float WeaponCriticalChance(WeaponType weapon)
+        {
+            switch (weapon)
+            {
+                case WeaponType.Dagger: return 8f;
+                case WeaponType.Sword: return 6f;
+                case WeaponType.Greatsword: return 5.5f;
+                case WeaponType.Bow: return 5f;
+                case WeaponType.Axe: return 5f;
+                case WeaponType.Greataxe: return 4.5f;
+                case WeaponType.Staff: return 4f;
+                case WeaponType.Sceptre: return 4f;
+                case WeaponType.Mace: return 4f;
+                case WeaponType.Maul: return 3f;
+                default: return 3f;
+            }
+        }
+
+        private static bool IsMore(StatType stat) => stat == StatType.MoreLife ||
+            (stat >= StatType.MoreDamage && stat <= StatType.MoreMinionDamage);
+
+        private void AddModifier(StatModifier modifier)
+        {
+            gear[(int)modifier.Stat] += modifier.Value;
+            if (IsMore(modifier.Stat))
+                multipliers[(int)modifier.Stat] *= Math.Max(0f, 1f + modifier.Value / 100f);
+            else if (modifier.Stat == StatType.MinionDamagePenalty || modifier.Stat == StatType.BoneArmour)
+                multipliers[(int)modifier.Stat] *= Math.Max(0f, 1f - modifier.Value / 100f);
+        }
+
+        /// <summary>Each separate more/less source multiplies independently, including identical stat types.</summary>
+        public float Multiplier(StatType stat) => multipliers[(int)stat];
+
+        public float DamageMultiplier(bool attack, bool bow, bool lowLife, bool chilled,
+            StatType element, bool damageOverTime = false, bool spell = true)
+        {
+            float increased = Total(StatType.Damage);
+            float more = Multiplier(StatType.MoreDamage);
+            if (attack)
+            {
+                increased += Total(StatType.AttackDamage) + Total(StatType.Strength);
+                more *= Multiplier(StatType.MoreAttackDamage);
+                if (bow)
+                {
+                    increased += Total(StatType.BowDamage);
+                    more *= Multiplier(StatType.MoreBowDamage);
+                }
+            }
+            else if (!damageOverTime && spell)
+            {
+                increased += Total(StatType.SpellDamage) + Total(StatType.Intelligence) * 0.6f;
+                more *= Multiplier(StatType.MoreSpellDamage);
+            }
+            if (element == StatType.FireDamage || element == StatType.ColdDamage ||
+                element == StatType.LightningDamage || element == StatType.PoisonDamage)
+                increased += Total(element);
+            if (element == StatType.FireDamage) more *= Multiplier(StatType.MoreFireDamage);
+            else if (element == StatType.ColdDamage) more *= Multiplier(StatType.MoreColdDamage);
+            else if (element == StatType.LightningDamage) more *= Multiplier(StatType.MoreLightningDamage);
+            else if (element == StatType.PoisonDamage) more *= Multiplier(StatType.MorePoisonDamage);
+            if (damageOverTime) increased += Total(StatType.DamageOverTime);
+            if (lowLife) increased += Total(StatType.DamageWhileLowLife);
+            if (chilled) increased += Total(StatType.DamageVsChilled);
+            return Math.Max(0f, 1f + increased / 100f) * more;
+        }
+
+        public static float PointBlankMultiplier(float distance)
+        {
+            // Game distances: full bonus inside 3 units, neutral at 8, full penalty at 16.
+            if (distance <= 3f) return 1.3f;
+            if (distance <= 8f) return 1.3f - (distance - 3f) * 0.06f;
+            return Math.Max(0.7f, 1f - (distance - 8f) * 0.0375f);
+        }
 
         public int Level { get; }
         public int Experience { get; }
@@ -325,9 +423,16 @@ namespace PoeClone.Inventory
             baseValues = new float[count];
             gear = new float[count];
             derived = new float[count];
+            multipliers = new float[count];
+            Weapon = equipment?.Get(EquipSlot.MainHand)?.WeaponType ?? WeaponType.Unarmed;
 
             for (int i = 0; i < count; i++)
+            {
                 baseValues[i] = baseStats.Get((StatType)i);
+                multipliers[i] = IsMore((StatType)i) ? Math.Max(0f, 1f + baseValues[i] / 100f) :
+                    (StatType)i == StatType.MinionDamagePenalty || (StatType)i == StatType.BoneArmour
+                        ? Math.Max(0f, 1f - baseValues[i] / 100f) : 1f;
+            }
 
             Level = baseStats.Level;
             Experience = baseStats.Experience;
@@ -342,7 +447,7 @@ namespace PoeClone.Inventory
                         continue;
 
                     foreach (StatModifier m in item.Modifiers)
-                        gear[(int)m.Stat] += m.Value;
+                        AddModifier(m);
                 }
             }
 
@@ -350,7 +455,7 @@ namespace PoeClone.Inventory
             if (extra != null)
             {
                 foreach (StatModifier m in extra)
-                    gear[(int)m.Stat] += m.Value;
+                    AddModifier(m);
             }
 
             derived[(int)StatType.MaxLife] = (float)Math.Floor(gear[(int)StatType.Strength] * LifePerStrength);
@@ -361,6 +466,17 @@ namespace PoeClone.Inventory
             // extra counts as coming from gear so the character picks it up with the rest.
             Increase(StatType.MaxLife, StatType.IncreasedLife);
             Increase(StatType.MaxMana, StatType.IncreasedMana);
+
+            float life = Base(StatType.MaxLife) + FromGear(StatType.MaxLife);
+            derived[(int)StatType.MaxLife] += (float)Math.Floor(life * (Multiplier(StatType.MoreLife) - 1f));
+            if (Total(StatType.BloodMagic) > 0f)
+                derived[(int)StatType.MaxMana] = -Base(StatType.MaxMana) - Gear(StatType.MaxMana);
+            if (Total(StatType.IronReflexes) > 0f)
+            {
+                // Dexterity's evasion bonus is lost; item/passive evasion becomes armour.
+                derived[(int)StatType.Armour] += Math.Max(0f, Base(StatType.Evasion) + Gear(StatType.Evasion));
+                derived[(int)StatType.Evasion] = -Base(StatType.Evasion) - Gear(StatType.Evasion);
+            }
         }
 
         private void Increase(StatType pool, StatType percent)
@@ -407,6 +523,9 @@ namespace PoeClone.Inventory
         /// <summary>The final value, with resistance and block caps applied.</summary>
         public float Total(StatType stat)
         {
+            if (IsMore(stat)) return (Multiplier(stat) - 1f) * 100f;
+            if (stat == StatType.MinionDamagePenalty || stat == StatType.BoneArmour)
+                return (1f - Multiplier(stat)) * 100f;
             float total = Base(stat) + FromGear(stat);
 
             switch (stat)
@@ -437,8 +556,8 @@ namespace PoeClone.Inventory
                 case StatType.MaxLife: return "Maximum Life";
                 case StatType.MaxMana: return "Maximum Mana";
                 case StatType.Armour: return "Armour";
-                case StatType.Evasion: return "Evasion";
-                case StatType.BlockChance: return "Chance to Block";
+                case StatType.Evasion: return "Attack Evasion";
+                case StatType.BlockChance: return "Attack Block Chance";
                 case StatType.AvoidStun: return "Chance to Avoid Stun";
                 case StatType.HealthPotionRecovery: return "Health Potion Recovery";
                 case StatType.OnslaughtOnHealthPotion: return "Onslaught on Health Potion";
@@ -469,6 +588,7 @@ namespace PoeClone.Inventory
                 case StatType.ChillOnHit: return "Chance to Chill";
                 case StatType.CullingStrike: return "Culling Strike";
                 case StatType.LifeOnKill: return "Life on Kill";
+                case StatType.LifeOnAttackHit: return "Life on Attack Hit";
                 case StatType.MeleeRange: return "Melee Range";
                 case StatType.AllSpellLevels: return "Spell Levels";
                 case StatType.FireSpellLevels: return "Fire Spell Levels";
@@ -482,7 +602,7 @@ namespace PoeClone.Inventory
                 case StatType.IgniteChance: return "Chance to Ignite";
                 case StatType.ShockChance: return "Chance to Shock";
                 case StatType.DamageVsChilled: return "Damage vs Chilled";
-                case StatType.CriticalChance: return "Critical Strike Chance";
+                case StatType.CriticalChance: return "Attack Critical Strike Chance";
                 case StatType.CriticalMultiplier: return "Critical Multiplier";
                 case StatType.AttackDamage: return "Attack Damage";
                 case StatType.BowDamage: return "Bow Damage";
@@ -519,6 +639,20 @@ namespace PoeClone.Inventory
                 case StatType.ExtraArrowChance: return "Extra Arrow Chance";
                 case StatType.PoisonOnHit: return "Poison on Hit";
                 case StatType.VenomCloudOnHit: return "Venom Clouds";
+                case StatType.BloodMagic: return "Blood Magic";
+                case StatType.IronReflexes: return "Iron Reflexes";
+                case StatType.PointBlank: return "Point Blank";
+                case StatType.AdditionalProjectiles: return "Additional Skill Projectiles";
+                case StatType.MoreLife: return "More Maximum Life";
+                case StatType.MoreDamage: return "More Damage";
+                case StatType.MoreAttackDamage: return "More Attack Damage";
+                case StatType.MoreSpellDamage: return "More Spell Damage";
+                case StatType.MoreBowDamage: return "More Bow Damage";
+                case StatType.MoreFireDamage: return "More Fire Damage";
+                case StatType.MoreColdDamage: return "More Cold Damage";
+                case StatType.MoreLightningDamage: return "More Lightning Damage";
+                case StatType.MorePoisonDamage: return "More Poison Damage";
+                case StatType.MoreMinionDamage: return "More Minion Damage";
                 default:
                     if (SkillGrants.IsGrant(stat))
                         return SkillGrants.SkillName(stat);
@@ -535,6 +669,7 @@ namespace PoeClone.Inventory
         /// <summary>Stats that are shown as a percentage.</summary>
         public static bool IsPercent(StatType stat)
         {
+            if (stat >= StatType.MoreLife && stat <= StatType.MoreMinionDamage) return true;
             switch (stat)
             {
                 case StatType.BlockChance:
@@ -610,6 +745,8 @@ namespace PoeClone.Inventory
         {
             string n = Number(Math.Abs(m.Value));
             string sign = m.Value < 0f ? "-" : "+";
+            if (m.Stat >= StatType.MoreLife && m.Stat <= StatType.MoreMinionDamage)
+                return n + "% " + (m.Value < 0f ? "less " : "more ") + Label(m.Stat).Substring(5);
 
             switch (m.Stat)
             {
@@ -619,8 +756,8 @@ namespace PoeClone.Inventory
                 case StatType.MaxLife: return sign + n + " to Maximum Life";
                 case StatType.MaxMana: return sign + n + " to Maximum Mana";
                 case StatType.Armour: return sign + n + " to Armour";
-                case StatType.Evasion: return sign + n + " to Evasion";
-                case StatType.BlockChance: return sign + n + "% Chance to Block";
+                case StatType.Evasion: return sign + n + " to Attack Evasion Rating";
+                case StatType.BlockChance: return sign + n + "% Chance to Block Attacks";
                 case StatType.AvoidStun: return sign + n + "% Chance to Avoid Stun";
                 case StatType.HealthPotionRecovery: return n + "% increased Life recovered by Health Potions";
                 case StatType.OnslaughtOnHealthPotion: return "Drinking a Health Potion grants Onslaught for 3 seconds";
@@ -646,6 +783,7 @@ namespace PoeClone.Inventory
                 case StatType.ChillOnHit: return n + "% chance to Chill enemies with Attacks";
                 case StatType.CullingStrike: return "Culling Strike: kill enemies left below 10% Life";
                 case StatType.LifeOnKill: return "Gain " + n + " Life per enemy killed";
+                case StatType.LifeOnAttackHit: return "Gain " + n + " Life per enemy hit with an Attack";
                 case StatType.MeleeRange: return n + "% increased Melee Range";
                 case StatType.AllSpellLevels: return sign + n + " to Level of all Spells";
                 case StatType.FireSpellLevels: return sign + n + " to Level of all Fire Spells";
@@ -656,13 +794,13 @@ namespace PoeClone.Inventory
                 case StatType.FireDamage: return Increased(m, "Fire Damage");
                 case StatType.ColdDamage: return Increased(m, "Cold Damage");
                 case StatType.LightningDamage: return Increased(m, "Lightning Damage");
-                case StatType.IgniteChance: return n + "% chance to Ignite with Fire hits (burns for 60% of the hit over 3s)";
+                case StatType.IgniteChance: return n + "% chance to Ignite with Fire hits (60% of base Fire damage over 3s, scaled by Fire and Damage over Time bonuses)";
                 case StatType.ShockChance: return n + "% chance to Shock with Lightning hits (shocked enemies take 25% more damage)";
                 case StatType.DamageVsChilled: return Increased(m, "Damage against Chilled enemies");
-                case StatType.CriticalChance: return n + "% chance to deal a Critical Strike";
+                case StatType.CriticalChance: return Increased(m, "Attack Critical Strike Chance");
                 case StatType.CriticalMultiplier: return sign + n + "% to Critical Strike Multiplier";
                 case StatType.AttackDamage: return Increased(m, "Attack Damage");
-                case StatType.BowDamage: return n + "% more Bow Damage";
+                case StatType.BowDamage: return Increased(m, "Bow Damage");
                 case StatType.Damage: return Increased(m, "Damage");
                 case StatType.DamageWhileLowLife: return Increased(m, "Damage while on Low Life");
                 case StatType.IncreasedLife: return Increased(m, "Maximum Life");
@@ -691,10 +829,24 @@ namespace PoeClone.Inventory
                 case StatType.MarkEffect: return Increased(m, "effect of Death Mark");
                 case StatType.MinionDuration: return Increased(m, "duration of Spirit Wolves and the Bone Golem");
                 case StatType.SoulBond: return n + "% of Minion Damage is returned to you as Life";
-                case StatType.DeathsHerald: return "A Marked enemy that dies bursts for a fifth of its life, and the Mark leaps to the nearest enemy";
+                case StatType.DeathsHerald: return "When a Marked enemy dies, the Mark leaps to the nearest enemy";
+                case StatType.BloodMagic: return "Removes all Mana. Skills cost Life instead of Mana";
+                case StatType.IronReflexes: return "Converts Evasion Rating to Armour. Dexterity grants no Evasion";
+                case StatType.PointBlank: return "Projectile Hits deal up to 30% more Damage nearby, and up to 30% less Damage at long range";
+                case StatType.AdditionalProjectiles: return "Projectile Skills fire " + n + " additional projectile" + (n == "1" ? "" : "s");
+                case StatType.MoreLife: return n + "% more Maximum Life";
+                case StatType.MoreDamage: return n + "% more Damage";
+                case StatType.MoreAttackDamage: return n + "% more Attack Damage";
+                case StatType.MoreSpellDamage: return n + "% more Spell Damage";
+                case StatType.MoreBowDamage: return n + "% more Bow Damage";
+                case StatType.MoreFireDamage: return n + "% more Fire Damage";
+                case StatType.MoreColdDamage: return n + "% more Cold Damage";
+                case StatType.MoreLightningDamage: return n + "% more Lightning Damage";
+                case StatType.MorePoisonDamage: return n + "% more Poison Damage";
+                case StatType.MoreMinionDamage: return n + "% more Minion Damage";
                 case StatType.ExtraArrowChance: return n + "% chance for Bow Attacks to fire an additional arrow";
-                case StatType.PoisonOnHit: return "Attacks deal " + n + "% of hit damage as Poison over 3 seconds";
-                case StatType.VenomCloudOnHit: return "Attacks create Venom Clouds dealing " + n + "% of hit damage per second";
+                case StatType.PoisonOnHit: return "Attacks inflict Poison for " + n + "% of base damage over 3 seconds";
+                case StatType.VenomCloudOnHit: return "Attacks create Venom Clouds dealing " + n + "% of base damage per second";
                 case StatType.FirePenetration: return n + "% Fire Penetration";
                 case StatType.ColdPenetration: return n + "% Cold Penetration";
                 case StatType.LightningPenetration: return n + "% Lightning Penetration";

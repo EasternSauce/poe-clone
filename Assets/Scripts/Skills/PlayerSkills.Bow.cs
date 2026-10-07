@@ -14,8 +14,8 @@ namespace PoeClone.Skills
     /// One can be on at a time (turning another on swaps them; pressing it again turns it off).
     /// While one is on, the bow's attack (left click / the aim stick) is that skill: its own draw
     /// animation (<see cref="CharacterAttackAnimator.BowStyle"/>) and its own shot, released by
-    /// <see cref="PlayerCombat"/> through <see cref="ReleaseBow"/>. They are attacks, costing no
-    /// mana: Additional Arrows, attack speed and attack damage all apply to them.
+    /// <see cref="PlayerCombat"/> through <see cref="ReleaseBow"/>. Each shot costs a little mana
+    /// (life with Blood Magic): Additional Arrows, attack speed and attack damage apply to them.
     /// </summary>
     public partial class PlayerSkills
     {
@@ -50,6 +50,10 @@ namespace PoeClone.Skills
 
         public bool IsToggledOnAt(int slot) => ActiveBowSkill != null && toggledBowSlot == slot;
         public int ActiveBowLevel => ActiveBowSkill != null ? LevelAt(toggledBowSlot) : 0;
+        public bool CanAffordBowShot => ActiveBowSkill != null && stats != null &&
+            stats.CanAffordSkill(SkillBook.Get(ActiveBowSkill.Value).ManaCostAt(ActiveBowLevel));
+        public bool TrySpendBowShot(SkillId id, int level) => stats != null &&
+            stats.TrySpendMana(SkillBook.Get(id).ManaCostAt(level));
 
         private bool ToggleBow(SkillDefinition skill, int slot)
         {
@@ -138,7 +142,8 @@ namespace PoeClone.Skills
             level = Mathf.Max(1, level);
             float area = DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
             Vector3 forward = transform.forward;
-            arrows = Mathf.Max(1, arrows);
+            arrows = Mathf.Max(1, arrows + Mathf.Max(0, Mathf.RoundToInt(Stat(StatType.AdditionalProjectiles))));
+            Vector3 shotOrigin = transform.position;
 
             switch (id)
             {
@@ -180,7 +185,7 @@ namespace PoeClone.Skills
                 {
                     var volley = PlayerArrow.NewVolley();
                     foreach (Vector3 direction in HitEffects.Spread(forward, arrows, PierceSpread))
-                        PlayerArrow.LaunchArrow(transform, range, damage * (0.9f + 0.04f * (level - 1)), direction, volley, arrowColor: skill.Color);
+                        PlayerArrow.LaunchArrow(transform, range, damage * (0.9f + 0.04f * (level - 1)), direction, volley, arrowColor: skill.Color).Venomous(level);
                     Record(skill, level, range, arrows);
                     break;
                 }
@@ -197,7 +202,7 @@ namespace PoeClone.Skills
                         Vector2 offset = k == 0 ? Vector2.zero : Random.insideUnitCircle * spread;
                         points[k] = target + new Vector3(offset.x, 0f, offset.y);
                         SkillEffects.FallingArrow(points[k], RainDelay(k, count), hitRadius, skill.Color,
-                            at => RainHit(at, hitRadius, each));
+                            at => RainHit(at, hitRadius, each, shotOrigin));
                     }
                     // A puff at the feet as the volley goes up, so the shot reads before the rain lands.
                     SkillEffects.Shockwave(transform.position, 0.9f, skill.Color, 0.2f);
@@ -208,12 +213,17 @@ namespace PoeClone.Skills
         }
 
         // One rain arrow lands: everything it lands near takes the hit (an enemy can be hit by several).
-        private void RainHit(Vector3 at, float radius, float damage)
+        private void RainHit(Vector3 at, float radius, float damage, Vector3 shotOrigin)
         {
             if (this == null || stats == null || stats.IsDead)
                 return;
             foreach (EnemyHealth enemy in EnemiesWithin(at, radius))
-                HitEffects.Deal(transform, enemy, damage, attack: true, CombatText.PhysicalColor);
+            {
+                Vector3 distance = at - shotOrigin;
+                distance.y = 0f;
+                HitEffects.Deal(transform, enemy, damage, attack: true, CombatText.PhysicalColor,
+                    projectileDistance: distance.magnitude);
+            }
         }
 
         // A spectator's copy of a bow skill's shot (see PlayVisual): the same arrows, harmless.

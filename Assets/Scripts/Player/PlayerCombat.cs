@@ -39,9 +39,6 @@ namespace PoeClone.Player
     [RequireComponent(typeof(PlayerInventory))]
     public class PlayerCombat : MonoBehaviour
     {
-        [Tooltip("Percent damage increase granted per point of Strength.")]
-        [SerializeField] private float damagePercentPerStrength = 1f;
-
         [Tooltip("Half-angle, in degrees, of the forward cone a swing needs to reach a target in.")]
         [SerializeField] private float coneHalfAngle = 35f;
 
@@ -254,8 +251,6 @@ namespace PoeClone.Player
             hasAimPoint = TryGetAimPoint(out aimPoint);
 
             pendingDamage = ComputeDamage();
-            if (weaponType == WeaponType.Bow)
-                pendingDamage *= 1f + inventory.Stats.Total(StatType.BowDamage) / 100f;
 
             // A staff casts its spell; without the mana for it, it's swung instead.
             castPending = HasMainSkill && SkillSet.TrySpendMain();
@@ -267,11 +262,17 @@ namespace PoeClone.Player
                 return;
             }
             if (HasMainSkill)
-                CombatText.Show(transform.position + Vector3.up * 2f, "Not enough mana", CombatText.ColdColor, 0.6f);
+                CombatText.Show(transform.position + Vector3.up * 2f, "Not enough " + SkillSet.CostResource, CombatText.ColdColor, 0.6f);
 
             // A bow skill that's on replaces the plain shot: its own draw, and its own pace.
             bowSkillPending = CharacterAttackAnimator.IsRanged(weaponType) && SkillSet != null ? SkillSet.ActiveBowSkill : null;
             bowLevelPending = bowSkillPending != null ? SkillSet.ActiveBowLevel : 0;
+            // Keep the toggle, but fall back to a free basic shot while resources recover.
+            if (bowSkillPending != null && !SkillSet.CanAffordBowShot)
+            {
+                bowSkillPending = null;
+                bowLevelPending = 0;
+            }
 
             float attacksPerSecond = ComputeAttacksPerSecond(weaponType);
             if (bowSkillPending != null)
@@ -338,8 +339,7 @@ namespace PoeClone.Player
         private float ComputeDamage()
         {
             float baseDamage = inventory.Stats.Total(StatType.PhysicalDamage);
-            float strengthMultiplier = 1f + stats.Strength * damagePercentPerStrength / 100f;
-            return baseDamage * strengthMultiplier;
+            return baseDamage; // Strength and all increased damage are summed when the hit lands.
         }
 
         private float ComputeAttacksPerSecond(WeaponType weaponType)
@@ -377,7 +377,7 @@ namespace PoeClone.Player
             if (CharacterAttackAnimator.IsRanged(weaponType))
             {
                 int arrows = ArrowCount();
-                if (bowSkillPending != null && SkillSet != null)
+                if (bowSkillPending != null && SkillSet != null && SkillSet.TrySpendBowShot(bowSkillPending.Value, bowLevelPending))
                 {
                     SkillSet.ReleaseBow(bowSkillPending.Value, bowLevelPending, pendingDamage, range, arrows,
                         BowTarget(range * PlayerArrow.BowRangeMultiplier));
@@ -385,6 +385,8 @@ namespace PoeClone.Player
                     bowLevelPending = 0;
                     return;
                 }
+                bowSkillPending = null;
+                bowLevelPending = 0;
                 var volley = PlayerArrow.NewVolley();
                 foreach (Vector3 direction in HitEffects.Spread(transform.forward, arrows, ArrowSpreadDegrees))
                     PlayerArrow.Launch(transform, range, pendingDamage, direction, volley);
@@ -421,6 +423,13 @@ namespace PoeClone.Player
                         HitEffects.Deal(transform, enemy, pendingDamage, attack: true, CombatText.PhysicalColor, melee: true);
                         if (marks && !enemy.IsDead && (toMark == null || enemy == aimEnemy))
                             toMark = enemy;
+                        continue;
+                    }
+
+                    if (target is SerpentPursuit exposedSerpent)
+                    {
+                        exposedSerpent.TakeArrowHit(transform, pendingDamage, true, DamageType.Physical,
+                            CombatText.PhysicalColor, 0f, melee: true);
                         continue;
                     }
 

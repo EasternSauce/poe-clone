@@ -13,15 +13,20 @@ namespace PoeClone.Player
         private readonly System.Collections.Generic.List<GameObject> clouds = new System.Collections.Generic.List<GameObject>();
         private static readonly Color Green = new Color(0.38f, 0.72f, 0.15f);
         public static void Apply(Transform attacker, EnemyHealth enemy, float hit, float poison, float cloud, StatSheet sheet = null,
-            bool canEnrage = true)
+            bool canEnrage = true, bool minionDamage = false)
         {
             var venom = attacker.GetComponent<WeaponVenom>();
             if (venom == null) venom = attacker.gameObject.AddComponent<WeaponVenom>();
-            if (poison > 0f && !enemy.IsDead) venom.StartCoroutine(venom.Poison(enemy, hit * poison / 100f * (1f + ((sheet?.Total(StatType.PoisonDamage) ?? 0f) + (sheet?.Total(StatType.DamageOverTime) ?? 0f)) / 100f), sheet?.Total(StatType.PoisonPenetration) ?? 0f, canEnrage));
+            PlayerStats stats = attacker.GetComponent<PlayerStats>();
+            Enemies.EnemyController ai = enemy.GetComponent<Enemies.EnemyController>();
+            float multiplier = minionDamage ? 1f : sheet?.DamageMultiplier(false, false,
+                stats != null && stats.CurrentHealth < stats.MaxHealth * 0.5f,
+                ai != null && ai.IsChilled, StatType.PoisonDamage, damageOverTime: true) ?? 1f;
+            if (poison > 0f && !enemy.IsDead) venom.StartCoroutine(venom.Poison(enemy, hit * poison / 100f * multiplier, sheet?.Total(StatType.PoisonPenetration) ?? 0f, canEnrage));
             if (cloud > 0f && Time.time >= venom.nextCloud)
             {
                 venom.nextCloud = Time.time + 1f;
-                venom.StartCoroutine(venom.Cloud(enemy.transform.position, hit * cloud / 100f, sheet?.Total(StatType.PoisonPenetration) ?? 0f, canEnrage));
+                venom.StartCoroutine(venom.Cloud(enemy.transform.position, hit * cloud / 100f * multiplier, sheet?.Total(StatType.PoisonPenetration) ?? 0f, canEnrage));
             }
         }
         private IEnumerator Poison(EnemyHealth enemy, float total, float penetration, bool canEnrage)

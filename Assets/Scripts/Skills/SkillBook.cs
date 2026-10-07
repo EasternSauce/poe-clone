@@ -69,7 +69,7 @@ namespace PoeClone.Skills
         public bool Summon => SkillGrants.IsSummon(Grant);
 
         /// <summary>
-        /// A bow skill: toggled on and off from the bar (one at a time, no mana, no cooldown), and
+        /// A bow skill: toggled on and off from the bar (one at a time, free toggle), and
         /// while it's on, the bow's attack is this skill (see PlayerSkills.ReleaseBow).
         /// </summary>
         public bool Bow => SkillGrants.IsBowSkill(Grant);
@@ -82,6 +82,8 @@ namespace PoeClone.Skills
         /// </summary>
         public float ManaCostAt(int level)
         {
+            if (Bow)
+                return ManaCost + 0.1f * Mathf.Clamp(level - 1, 0, 9);
             if (Id == SkillId.Dash || Id == SkillId.Teleport)
                 return ManaCost + 8f * Mathf.Clamp01((Mathf.Max(1, level) - 1) / 9f);
 
@@ -221,30 +223,30 @@ namespace PoeClone.Skills
             },
             new SkillDefinition
             {
-                Id = SkillId.SplitShot, Name = "Split Shot", Short = "SPL", Grant = StatType.GrantSplitShot, RollsOn = "bows, quivers",
+                Id = SkillId.SplitShot, Name = "Split Shot", Short = "SPL", Grant = StatType.GrantSplitShot, RollsOn = "bows, quivers", ManaCost = 2f,
                 Color = new Color(0.75f, 0.95f, 0.5f),
                 Description = "Bow skill (toggle): each shot splits into a wide fan, 2 more arrows (+1 at levels 4 and 8) for 75% damage each (+2.5% per level). Each enemy is hit by one arrow at most."
             },
             new SkillDefinition
             {
-                Id = SkillId.PiercingShot, Name = "Piercing Shot", Short = "PRC", Grant = StatType.GrantPiercingShot, RollsOn = "bows, quivers",
+                Id = SkillId.PiercingShot, Name = "Piercing Shot", Short = "PRC", Grant = StatType.GrantPiercingShot, RollsOn = "bows, quivers", ManaCost = 2f,
                 Color = new Color(0.85f, 0.9f, 1f),
                 Description = "Bow skill (toggle): a heavy draw that looses an arrow through every enemy in its path, flying 30% further for 110% damage (+5% per level). 10% slower."
             },
             new SkillDefinition
             {
-                Id = SkillId.RainOfArrows, Name = "Rain of Arrows", Short = "RAIN", Grant = StatType.GrantRainOfArrows, RollsOn = "bows, quivers",
+                Id = SkillId.RainOfArrows, Name = "Rain of Arrows", Short = "RAIN", Grant = StatType.GrantRainOfArrows, RollsOn = "bows, quivers", ManaCost = 4f,
                 Color = new Color(0.95f, 0.8f, 0.45f),
                 Description = "Bow skill (toggle): shoot into the sky and 6 arrows (+1 at levels 4 and 8, +2 per extra arrow) rain down where you aim, each hitting what it lands near for 45% damage (+2.5% per level). 15% slower."
             },
             new SkillDefinition
             {
-                Id = SkillId.BurningArrow, Name = "Burning Arrow", Short = "BRN", Grant = StatType.GrantBurningArrow, RollsOn = "bows, quivers",
+                Id = SkillId.BurningArrow, Name = "Burning Arrow", Short = "BRN", Grant = StatType.GrantBurningArrow, RollsOn = "bows, quivers", ManaCost = 3f,
                 Color = new Color(1f, 0.5f, 0.2f),
                 Description = "Bow skill (toggle): arrows of fire for 100% damage (+4% per level) as Fire, bursting to scorch those around the target, with a 20% chance (+2% per level) to set it burning."
             },
             new SkillDefinition { Id = SkillId.FangStrike, Name = "Fang Strike", Short = "FNG", Grant = StatType.GrantFangStrike, RollsOn = "daggers", ManaCost = 7f, Cooldown = 2f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Strike the aimed enemy for 156% weapon damage (+9.6% per level) and inflict a potent poison over 3 seconds." },
-            new SkillDefinition { Id = SkillId.VenomArrow, Name = "Venom Arrow", Short = "VNM", Grant = StatType.GrantVenomArrow, RollsOn = "bows, quivers", Color = new Color(0.48f, 0.9f, 0.22f), Description = "Bow skill (toggle): attacks inflict a stronger poison and leave a brief venom cloud." },
+            new SkillDefinition { Id = SkillId.VenomArrow, Name = "Venom Arrow", Short = "VNM", Grant = StatType.GrantVenomArrow, RollsOn = "bows, quivers", ManaCost = 3f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Bow skill (toggle): attacks inflict a stronger poison and leave a brief venom cloud." },
             new SkillDefinition { Id = SkillId.VenomSpout, Name = "Venom Spout", Short = "SPT", Grant = StatType.GrantVenomSpout, RollsOn = "staves, Shepherd sceptre", Spell = true, BaseDamage = 5f, ManaCost = 14f, Cooldown = 5f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Erupt poison beneath your target, damaging and poisoning enemies in the area." },
             new SkillDefinition { Id = SkillId.SummonViper, Name = "Summon Viper", Short = "VIP", Grant = StatType.GrantSummonViper, RollsOn = "grimoires, sceptres", Spell = true, ManaCost = 50f, Cooldown = 12f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Call a viper spirit to fight at your side. It shares the global army limit with every other summon skill." },
             new SkillDefinition { Id = SkillId.Pulverize, Name = "Pulverize", Short = "PVL", Grant = StatType.GrantPulverize, RollsOn = "maces and mauls", ManaCost = 12f, Cooldown = 4.5f, Color = new Color(0.95f, 0.65f, 0.28f), Description = "Plant your feet and bring a mace down in a crushing slam after a heavy windup, dealing 312% weapon damage (+21.6% per level) in a broad area. Maces and mauls only." },

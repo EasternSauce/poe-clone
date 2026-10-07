@@ -99,7 +99,7 @@ namespace PoeClone.Inventory
     public class SaveData
     {
         public const int CurrentVersion = 1;
-        public const int CurrentPassiveAllocationVersion = 1;
+        public const int CurrentPassiveAllocationVersion = 2;
 
         public int version = CurrentVersion;
         public int level = 1;
@@ -113,7 +113,7 @@ namespace PoeClone.Inventory
         public List<string> stashTabNames = new List<string>();             // every tab's own name, "" = none
         public List<EquippedRecord> equipped = new List<EquippedRecord>();
         public List<string> passives = new List<string>();
-        public int passiveAllocationVersion;                 // 0: before the one-time allocation reset; 1: reset applied
+        public int passiveAllocationVersion;                 // 2: devotion/keystone/crit tree rework
         public int respecCharges = 1;
         public List<int> skillSlots = new List<int>();     // SkillId per slot, -1 for empty
         public List<int> skillSourceSlots = new List<int>(); // equipped source slot per binding

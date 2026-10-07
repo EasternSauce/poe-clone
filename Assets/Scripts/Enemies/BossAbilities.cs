@@ -380,12 +380,12 @@ namespace PoeClone.Enemies
             {
                 Vector3 at = origin + dir * step * k;
                 // A second phase splits into a fork on either side of the main line.
-                StartCoroutine(Eruption(at, 1.7f, windUp + k * 0.07f / T, DamageType.Fire, 1.2f, once));
+                StartCoroutine(Eruption(at, 1.7f, windUp + k * 0.07f / T, DamageType.Fire, 1.2f, once, attack: true));
                 if (secondPhase && k > 1 && k % 2 == 0)
                 {
                     Vector3 side = Vector3.Cross(Vector3.up, dir) * (0.35f * step * k);
-                    StartCoroutine(Eruption(at + side, 1.1f, windUp + (k * 0.07f + 0.1f) / T, DamageType.Fire, 1.0f, once));
-                    StartCoroutine(Eruption(at - side, 1.1f, windUp + (k * 0.07f + 0.1f) / T, DamageType.Fire, 1.0f, once));
+                    StartCoroutine(Eruption(at + side, 1.1f, windUp + (k * 0.07f + 0.1f) / T, DamageType.Fire, 1.0f, once, attack: true));
+                    StartCoroutine(Eruption(at - side, 1.1f, windUp + (k * 0.07f + 0.1f) / T, DamageType.Fire, 1.0f, once, attack: true));
                 }
             }
 
@@ -414,7 +414,7 @@ namespace PoeClone.Enemies
             {
                 if (this == null || health.IsDead)
                     return;
-                if (HitIfInside(at, radius, 1.3f))
+                if (HitIfInside(at, radius, 1.3f, attack: false))
                     player.GetComponent<PlayerController>()?.Chill(3f);
                 SkillEffects.Shockwave(at, radius, GroundTelegraph.FillColor(DamageType.Cold), 0.5f);
                 CameraSystem.CameraFollow.Shake(0.15f, 0.3f);
@@ -498,7 +498,7 @@ namespace PoeClone.Enemies
 
         // A glowing patch that fills in over the wind-up, then hurts the player if they're still on
         // it. Patches sharing a <paramref name="hitOnce"/> flag hurt at most once between them.
-        private IEnumerator Eruption(Vector3 center, float radius, float windUp, DamageType type, float damageMultiplier, bool[] hitOnce = null)
+        private IEnumerator Eruption(Vector3 center, float radius, float windUp, DamageType type, float damageMultiplier, bool[] hitOnce = null, bool attack = false)
         {
             return GroundTelegraph.Run(center, radius, windUp, type, at =>
             {
@@ -506,7 +506,7 @@ namespace PoeClone.Enemies
                     return;
                 if (hitOnce == null || !hitOnce[0])
                 {
-                    if (HitIfInside(at, radius, damageMultiplier, type) && hitOnce != null)
+                    if (HitIfInside(at, radius, damageMultiplier, type, attack: attack) && hitOnce != null)
                         hitOnce[0] = true;
                 }
                 SkillEffects.Shockwave(at, radius, GroundTelegraph.FillColor(type), 0.3f);
@@ -562,13 +562,12 @@ namespace PoeClone.Enemies
             attackAnimator.PlayAttack(kind.Weapon);
         }
 
-        private bool HitIfInside(Vector3 center, float radius, float damageMultiplier, DamageType? type = null)
+        private bool HitIfInside(Vector3 center, float radius, float damageMultiplier, DamageType? type = null, bool attack = true)
         {
             if (player == null || player.IsDead || Flat(player.transform.position - center).magnitude > radius)
                 return false;
             float rage = controller != null ? controller.DamageMultiplier : 1f;
-            player.TakeHit(kind.Damage * damageMultiplier * EnemyKinds.DamageScale(level, kind) * rage, type ?? kind.DamageType);
-            return true;
+            return player.TakeHit(kind.Damage * damageMultiplier * EnemyKinds.DamageScale(level, kind) * rage, type ?? kind.DamageType, attack);
         }
 
         private void SetCrouch(float amount)

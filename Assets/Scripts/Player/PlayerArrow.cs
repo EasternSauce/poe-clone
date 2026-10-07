@@ -33,6 +33,21 @@ namespace PoeClone.Player
         private Combat.DamageType damageType = Combat.DamageType.Physical;
         private float chillSeconds;     // an ice shard slows what it hits
         private float igniteBonus;      // a burning arrow's own chance to ignite
+        private Vector3 launchPosition;
+        private int venomArrowLevel;
+
+        public PlayerArrow Venomous(int level)
+        {
+            venomArrowLevel = Mathf.Max(1, level);
+            return this;
+        }
+
+        private float DistanceTo(Vector3 at)
+        {
+            Vector3 offset = at - launchPosition;
+            offset.y = 0f;
+            return offset.magnitude;
+        }
         private HashSet<Enemies.EnemyHealth> pierced; // a piercing arrow flies on through these
 
         // Projectiles loosed together (Ice Shard's fan, extra arrows or bolts) share this: each
@@ -158,6 +173,7 @@ namespace PoeClone.Player
             arrow.travelLeft = range;
             arrow.damage = damage;
             arrow.owner = shooter;
+            arrow.launchPosition = root.transform.position;
             arrow.harmless = harmless;
             return arrow;
         }
@@ -289,7 +305,8 @@ namespace PoeClone.Player
                 if (target == null || !done.Add(target) || (owner != null && c.transform.IsChildOf(owner)))
                     continue;
                 if (target is Enemies.EnemyHealth enemy && !enemy.IsDead && FirstVolleyHit(target))
-                    HitEffects.Deal(owner, enemy, damage * 0.4f, isAttack, textColor, damageType, igniteBonus: igniteBonus);
+                    HitEffects.Deal(owner, enemy, damage * 0.4f, isAttack, textColor, damageType, igniteBonus: igniteBonus,
+                        projectileDistance: DistanceTo(at));
             }
         }
 
@@ -311,13 +328,15 @@ namespace PoeClone.Player
                     if (ai != null)
                         ai.Chill(chillSeconds);
                 }
-                HitEffects.Deal(owner, enemy, damage, isAttack, textColor, damageType, igniteBonus: igniteBonus);
+                HitEffects.Deal(owner, enemy, damage, isAttack, textColor, damageType, igniteBonus: igniteBonus,
+                    projectileDistance: DistanceTo(enemy.transform.position), venomArrowLevel: venomArrowLevel);
                 return;
             }
 
             if (target is Enemies.SerpentPursuit serpent)
             {
-                serpent.TakeArrowHit(owner, damage, isAttack, damageType, textColor, igniteBonus);
+                serpent.TakeArrowHit(owner, damage, isAttack, damageType, textColor, igniteBonus,
+                    projectileDistance: DistanceTo(serpent.MouthPosition), venomArrowLevel: venomArrowLevel);
                 return;
             }
 

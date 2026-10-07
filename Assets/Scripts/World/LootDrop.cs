@@ -17,6 +17,9 @@ namespace PoeClone.World
     /// </summary>
     public class LootDrop : MonoBehaviour
     {
+        /// <summary>Temporary mobile hitch diagnostic: enemy drops are suppressed as a whole.</summary>
+        public const bool EnemyDropsEnabled = false;
+
         private const float LifetimeSeconds = 180f;
 
         // A fresh drop pops out of the body in a short arc and can't be clicked until it lands

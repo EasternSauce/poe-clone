@@ -137,6 +137,51 @@ namespace PoeClone.EditorTools
             return Warp("500,500", 0f) + "; sandbox ready";
         }
 
+        /// <summary>Check passive review using the same click callback as the node UI, in a temporary QuickStart session.</summary>
+        public static string PassiveReview(bool verify = false)
+        {
+            if (!Application.isPlaying || Stats() == null) return "call in a QuickStart Play session";
+            Stats().RestoreProgress(12, 0);
+            var player = Stats().GetComponent<PlayerPassives>();
+            var ui = UnityEngine.Object.FindAnyObjectByType<PoeClone.UI.PassiveTreeUI>();
+            if (ui == null) return "passive UI missing";
+            PoeClone.UI.PassiveTreeUI.SetOpen(true);
+            if (!verify) return "passive tree open; 11 points to preview";
+            var click = typeof(PoeClone.UI.PassiveTreeUI).GetMethod("OnClick", Any);
+            Action<string> take = id => click.Invoke(ui, new object[] { PassiveTree.Get(id), UnityEngine.EventSystems.PointerEventData.InputButton.Left });
+            Action<bool, string> require = (ok, message) => { if (!ok) throw new Exception(message); };
+            take("m1"); take("m2"); take("m_life");
+            require(!player.Allocation.Has("m1") && ui.HasPendingChanges, "draft changed live allocation");
+            PoeClone.UI.PassiveTreeUI.SetOpen(false);
+            require(PoeClone.UI.PassiveTreeUI.IsOpen, "close bypassed review");
+            ui.CancelChanges();
+            require(!PoeClone.UI.PassiveTreeUI.IsOpen && player.Allocation.Spent == 0, "cancel failed");
+            PoeClone.UI.PassiveTreeUI.SetOpen(true);
+            take("m1"); take("m2"); take("m_life_heart");
+            var draft = (PassiveAllocation)typeof(PoeClone.UI.PassiveTreeUI).GetField("draft", Any).GetValue(ui);
+            require(!draft.Has("m_life_heart"), "life notable skipped prerequisite");
+            take("m_life"); take("m_life_heart");
+            require(draft.Has("m_life_heart"), "life notable not reachable after prerequisite");
+            ui.ConfirmChanges();
+            require(!PoeClone.UI.PassiveTreeUI.IsOpen && player.Allocation.Spent == 4, "confirmation failed");
+            PoeClone.UI.PassiveTreeUI.SetOpen(true);
+            draft = (PassiveAllocation)typeof(PoeClone.UI.PassiveTreeUI).GetField("draft", Any).GetValue(ui);
+            int charges = player.RespecCharges;
+            draft.ResetAll();
+            typeof(PoeClone.UI.PassiveTreeUI).GetField("resetPending", Any).SetValue(ui, true);
+            ui.CancelChanges();
+            require(player.Allocation.Spent == 4 && player.RespecCharges == charges, "cancelled reset consumed points or charge");
+            PoeClone.UI.PassiveTreeUI.SetOpen(true);
+            draft = (PassiveAllocation)typeof(PoeClone.UI.PassiveTreeUI).GetField("draft", Any).GetValue(ui);
+            draft.ResetAll();
+            typeof(PoeClone.UI.PassiveTreeUI).GetField("resetPending", Any).SetValue(ui, true);
+            take("g1");
+            ui.ConfirmChanges();
+            require(player.Allocation.Spent == 1 && player.Allocation.Has("g1") && player.RespecCharges == charges - 1, "confirmed reset failed");
+            PoeClone.UI.PassiveTreeUI.SetOpen(true);
+            return "PASS: preview, close guard, Cancel, Confirm, life prerequisite, cancelled reset, confirmed reset";
+        }
+
         // ------------------------------------------------------------------ session
 
         /// <summary>

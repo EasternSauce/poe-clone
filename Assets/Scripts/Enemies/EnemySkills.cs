@@ -265,7 +265,7 @@ namespace PoeClone.Enemies
             if (this == null || health.IsDead || player == null || player.IsDead)
                 return;
             if (Flat(player.transform.position - center).magnitude <= radius)
-                player.TakeHit(damage, kind.DamageType);
+                player.TakeHit(damage, kind.DamageType, attack: kind.Skill != EnemySkill.Strike);
         }
 
         // Dashes straight at the player; hits them if it gets there.
@@ -281,7 +281,7 @@ namespace PoeClone.Enemies
                 Vector3 toPlayer = Flat(player.transform.position - transform.position);
                 if (toPlayer.magnitude < 1.6f)
                 {
-                    player.TakeHit(damage, kind.DamageType);
+                player.TakeHit(damage, kind.DamageType, attack: kind.Skill != EnemySkill.Strike);
                     SkillEffects.Shockwave(player.transform.position, 1.4f, DustColor, 0.3f);
                     break;
                 }

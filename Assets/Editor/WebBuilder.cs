@@ -33,6 +33,15 @@ public static class WebBuilder
             return false;
         }
 
+        // URP gathers and strips shaders using the Editor's active target, even when
+        // BuildPlayer is given a different profile. Require WebGL before preprocessing.
+        if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WebGL ||
+            BuildProfile.GetActiveBuildProfile() != profile)
+        {
+            Debug.LogError("Build Web: activate the Web - Desktop - Release profile and wait for compilation before building.");
+            return false;
+        }
+
         BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerWithProfileOptions
         {
             buildProfile = profile,

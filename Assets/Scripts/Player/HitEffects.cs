@@ -44,7 +44,7 @@ namespace PoeClone.Player
         /// </summary>
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
             DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null,
-            bool throughExposedHead = false, bool melee = false)
+            bool throughExposedHead = false, bool melee = false, float projectileDistance = -1f, int venomArrowLevel = 0)
         {
             if (enemy == null || enemy.IsDead)
                 return;
@@ -56,11 +56,14 @@ namespace PoeClone.Player
             bool wasChilled = ai != null && ai.IsChilled;
 
             bool crit = false;
+            float baseDamage = damage;
             if (sheet != null)
             {
-                damage *= Increase(sheet, stats, attack, type, wasChilled);
-                float critChance = sheet.Total(StatType.CriticalChance);
-                if (critChance > 0f && Random.value * 100f < critChance)
+                damage *= Increase(sheet, stats, attack, type, wasChilled, spell: !secondary);
+                if (projectileDistance >= 0f && sheet.Total(StatType.PointBlank) > 0f)
+                    damage *= StatSheet.PointBlankMultiplier(projectileDistance);
+                float critChance = sheet.AttackCriticalChance;
+                if (attack && !secondary && critChance > 0f && Random.value * 100f < critChance)
                 {
                     crit = true;
                     damage *= BaseCritMultiplier + sheet.Total(StatType.CriticalMultiplier) / 100f;
@@ -69,7 +72,10 @@ namespace PoeClone.Player
             if (enemy.IsShocked)
                 damage *= ShockedMore;
             damage *= Skills.Curse.TakenMultiplier(enemy);
-            float ailmentBaseDamage = damage;
+            float ailmentBaseDamage = sheet != null ? baseDamage * sheet.DamageMultiplier(false, false,
+                stats.CurrentHealth < stats.MaxHealth * 0.5f, wasChilled, StatType.FireDamage, damageOverTime: true) : baseDamage;
+            if (enemy.IsShocked) ailmentBaseDamage *= ShockedMore;
+            ailmentBaseDamage *= Skills.Curse.TakenMultiplier(enemy);
 
             Vector3 at = enemy.transform.position;
             float scale = enemy.transform.localScale.y;
@@ -82,8 +88,6 @@ namespace PoeClone.Player
                 else if (type == DamageType.Cold) elementalPenetration += sheet.Total(StatType.ColdPenetration);
                 else if (type == DamageType.Lightning) elementalPenetration += sheet.Total(StatType.LightningPenetration);
                 else if (type == DamageType.Poison) elementalPenetration += sheet.Total(StatType.PoisonPenetration);
-                if (type == DamageType.Poison)
-                    damage *= 1f + (sheet.Total(StatType.PoisonDamage) + sheet.Total(StatType.DamageOverTime)) / 100f;
             }
             damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration, throughExposedHead, canEnrage: !melee);
             string number = Mathf.Max(1, Mathf.RoundToInt(damage)).ToString();
@@ -96,17 +100,21 @@ namespace PoeClone.Player
             {
                 float poison = sheet.Total(StatType.PoisonOnHit);
                 float cloud = sheet.Total(StatType.VenomCloudOnHit);
-                PlayerSkills skills = attacker.GetComponent<PlayerSkills>();
-                if (skills != null && skills.ActiveBowSkill == SkillId.VenomArrow)
+                if (venomArrowLevel > 0)
                 {
-                    poison += 90f + 5f * (skills.ActiveBowLevel - 1);
+                    poison += 90f + 5f * (venomArrowLevel - 1);
                     cloud += 25f;
                 }
-                WeaponVenom.Apply(attacker, enemy, damage, poison, cloud, sheet, canEnrage: !melee);
+                WeaponVenom.Apply(attacker, enemy, baseDamage, poison, cloud, sheet, canEnrage: !melee);
             }
 
             if (attack)
             {
+                // Each enemy actually struck grants flat recovery, including killing blows.
+                // Passive effects and blocked/immune hits cannot generate extra recovery.
+                if (!secondary && damage > 0f)
+                    stats.Heal(sheet.Total(StatType.LifeOnAttackHit));
+
                 float leech = sheet.Total(StatType.LifeLeech);
                 if (leech > 0f)
                     stats.Heal(damage * leech / 100f);
@@ -116,7 +124,7 @@ namespace PoeClone.Player
                     ai.Chill(ChillSeconds);
 
                 if (crit && !secondary && Random.value * 100f < sheet.Total(StatType.Stormblade))
-                    Stormblade(attacker, enemy, damage * StormbladeShare);
+                    Stormblade(attacker, enemy, baseDamage * StormbladeShare);
             }
 
             if (!enemy.IsDead)
@@ -147,22 +155,18 @@ namespace PoeClone.Player
         }
 
         // Everything that adds up as "increased damage" for this hit, as one multiplier.
-        private static float Increase(StatSheet sheet, PlayerStats stats, bool attack, DamageType type, bool chilled)
+        private static float Increase(StatSheet sheet, PlayerStats stats, bool attack, DamageType type, bool chilled, bool spell)
         {
-            float percent = sheet.Total(StatType.Damage);
-            if (attack)
-                percent += sheet.Total(StatType.AttackDamage);
+            StatType element = StatType.PhysicalDamage;
             switch (type)
             {
-                case DamageType.Fire: percent += sheet.Total(StatType.FireDamage); break;
-                case DamageType.Cold: percent += sheet.Total(StatType.ColdDamage); break;
-                case DamageType.Lightning: percent += sheet.Total(StatType.LightningDamage); break;
+                case DamageType.Fire: element = StatType.FireDamage; break;
+                case DamageType.Cold: element = StatType.ColdDamage; break;
+                case DamageType.Lightning: element = StatType.LightningDamage; break;
+                case DamageType.Poison: element = StatType.PoisonDamage; break;
             }
-            if (stats.MaxHealth > 0f && stats.CurrentHealth < stats.MaxHealth * 0.5f)
-                percent += sheet.Total(StatType.DamageWhileLowLife);
-            if (chilled)
-                percent += sheet.Total(StatType.DamageVsChilled);
-            return Mathf.Max(0.1f, 1f + percent / 100f);
+            return sheet.DamageMultiplier(attack, attack && sheet.Weapon == WeaponType.Bow,
+                stats.MaxHealth > 0f && stats.CurrentHealth < stats.MaxHealth * 0.5f, chilled, element, spell: spell);
         }
 
         private static bool Roll(StatSheet sheet, StatType chance)

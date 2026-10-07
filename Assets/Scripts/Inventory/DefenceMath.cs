@@ -28,10 +28,9 @@ namespace PoeClone.Inventory
 
         /// <summary>
         /// Share of every hit taken from mana instead of life while there is mana to take it from
-        /// (a little of PoE's Mind over Matter for everyone; the Mind over Matter keystone and some
-        /// gear add more through StatType.ManaAbsorb). More mana, and faster mana regeneration, soak more.
+        /// (only the Mind over Matter keystone grants this mechanic).
         /// </summary>
-        public const float ManaAbsorbShare = 0.1f;
+        public const float ManaAbsorbShare = 0f;
 
         /// <summary>Life regenerated per second by everyone, as a share of maximum life: very slow.</summary>
         public const float LifeRegenFraction = 0.002f;

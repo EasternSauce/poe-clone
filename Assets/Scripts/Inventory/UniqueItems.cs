@@ -45,7 +45,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "iron_helmet", Name = "Crown of Ash",
                 Flavour = "Taken from the Warlord's brow, still warm.",
-                Mods = new[] { Mod(StatType.Armour, 55), Mod(StatType.MaxLife, 20), Mod(StatType.FireResistance, 20), Mod(StatType.AreaOfEffect, 15), Mod(StatType.ExplodeOnKill, 8) }
+                Mods = new[] { Mod(StatType.Armour, 55), Mod(StatType.MaxLife, 20), Mod(StatType.FireResistance, 20), Mod(StatType.AreaOfEffect, 15), Mod(StatType.IgniteChance, 15) }
             },
             new Unique
             {
@@ -63,7 +63,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "wooden_shield", Name = "The Keeper's Ward",
                 Flavour = "The graveyard's last keeper held the gate with this. For a while.",
-                Mods = new[] { Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 15), Mod(StatType.ColdResistance, 20), Mod(StatType.ManaAbsorb, 15) }
+                Mods = new[] { Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 15), Mod(StatType.ColdResistance, 20), Mod(StatType.AvoidStun, 25) }
             },
             new Unique
             {
@@ -81,7 +81,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "leather_quiver", Name = "Rimefletch",
                 Flavour = "Feathered with frost that never melts.",
-                Mods = new[] { Mod(StatType.PhysicalDamage, 4), Mod(StatType.ColdResistance, 15), Mod(StatType.ChillOnHit, 22), Mod(StatType.ColdPenetration, 8), Mod(StatType.Shatter, 12) }
+                Mods = new[] { Mod(StatType.PhysicalDamage, 4), Mod(StatType.ColdResistance, 15), Mod(StatType.ChillOnHit, 22), Mod(StatType.ColdPenetration, 8), Mod(StatType.DamageVsChilled, 12) }
             },
             new Unique
             {
@@ -111,7 +111,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "silk_robe", Name = "Mantle of the Still Mind",
                 Flavour = "Pain is a rumour. Mana is the truth.",
-                Mods = new[] { Mod(StatType.Evasion, 40), Mod(StatType.MaxMana, 60), Mod(StatType.ManaAbsorb, 20), Mod(StatType.ManaRegen, 40) }
+                Mods = new[] { Mod(StatType.Evasion, 40), Mod(StatType.MaxMana, 60), Mod(StatType.CooldownRecovery, 15), Mod(StatType.ManaRegen, 40) }
             },
             new Unique
             {
@@ -147,10 +147,10 @@ namespace PoeClone.Inventory
             // Ordinary drops: uncommon utility and restrained versions of existing tree effects.
             new Unique { BaseId = "gnarled_staff", Name = "Frostglass Bough",
                 Flavour = "Its branches ring like glass when winter takes a life.",
-                Mods = new[] { Mod(StatType.GrantIceShard, 6), Mod(StatType.SpellDamage, 14), Mod(StatType.ColdPenetration, 8), Mod(StatType.Shatter, 12) } },
+                Mods = new[] { Mod(StatType.GrantIceShard, 6), Mod(StatType.SpellDamage, 14), Mod(StatType.ColdPenetration, 8), Mod(StatType.DamageVsChilled, 12) } },
             new Unique { BaseId = "leather_gloves", Name = "Thundergrip",
                 Flavour = "The first spark always finds another hand to shake.",
-                Mods = new[] { Mod(StatType.Evasion, 32), Mod(StatType.AttackSpeed, 8), Mod(StatType.LightningResistance, 15), Mod(StatType.Stormblade, 18) } },
+                Mods = new[] { Mod(StatType.Evasion, 32), Mod(StatType.CriticalChance, 40), Mod(StatType.LightningResistance, 15), Mod(StatType.Stormblade, 35) } },
             new Unique { BaseId = "silk_slippers", Name = "Winter's Passage",
                 Flavour = "Every hurried step leaves a little winter behind.",
                 Mods = new[] { Mod(StatType.Evasion, 24), Mod(StatType.ColdResistance, 18), Mod(StatType.CooldownRecovery, 5), Mod(StatType.GlacialStep, 1) } },
@@ -168,7 +168,7 @@ namespace PoeClone.Inventory
                 Mods = new[] { Mod(StatType.Intelligence, 10), Mod(StatType.MinionLife, 18), Mod(StatType.MinionDamage, 8), Mod(StatType.SoulBond, 1) } },
             new Unique { BaseId = "great_mallet", Name = "Cinderwake",
                 Flavour = "One blow buries the foe. The next scatters the ashes.",
-                Mods = new[] { Mod(StatType.PhysicalDamage, 22), Mod(StatType.AreaOfEffect, 12), Mod(StatType.FireResistance, 15), Mod(StatType.ExplodeOnKill, 10) } },
+                Mods = new[] { Mod(StatType.PhysicalDamage, 22), Mod(StatType.AreaOfEffect, 12), Mod(StatType.FireResistance, 15), Mod(StatType.FirePenetration, 10) } },
             new Unique { BaseId = "topaz_ring", Name = "Storm's Receipt",
                 Flavour = "A debt paid in lightning is never settled once.",
                 Mods = new[] { Mod(StatType.LightningResistance, 16), Mod(StatType.LightningDamage, 10), Mod(StatType.ManaOnKill, 2), Mod(StatType.AdditionalChains, 1) } },

@@ -378,7 +378,7 @@ namespace PoeClone.Enemies
             Vector3 at = player.transform.position + Flat(Random.insideUnitSphere) * spread;
             float radius = 1.6f * Grow * (Phase >= 3 ? 1.25f : 1f);
             VenomGlob.Lob(mouth, at, 0.55f, 0.35f * Grow * (Phase >= 3 ? 1.25f : 1f), radius, 4f,
-                spot => HitInside(spot, radius + 0.2f, 0.7f),
+                spot => HitInside(spot, radius + 0.2f, 0.7f, attack: false),
                 (centre, r) =>
                 {
                     if (player != null && !player.IsDead && Flat(player.transform.position - centre).magnitude <= r)
@@ -902,10 +902,10 @@ namespace PoeClone.Enemies
             return true;
         }
 
-        private void HitInside(Vector3 centre, float radius, float multiplier)
+        private void HitInside(Vector3 centre, float radius, float multiplier, bool attack = true)
         {
             if (player != null && !player.IsDead && Flat(player.transform.position - centre).magnitude <= radius)
-                Damage(multiplier);
+                Damage(multiplier, attack);
         }
 
         private void HitAlong(Vector3 from, Vector3 dir, float length, float halfWidth, float multiplier)
@@ -922,10 +922,10 @@ namespace PoeClone.Enemies
         private const float PoisonShare = 0.4f;
         private const float PoisonSeconds = 3f;
 
-        private void Damage(float multiplier)
+        private void Damage(float multiplier, bool attack = true)
         {
             float hit = BaseHit * multiplier;
-            if (player.TakeHit(hit, kind.DamageType) && Phase >= 2 && !player.IsDead)
+            if (player.TakeHit(hit, kind.DamageType, attack) && Phase >= 2 && !player.IsDead)
                 player.Poison(hit * PoisonShare, PoisonSeconds);
         }
 

@@ -5,10 +5,8 @@ using PoeClone.UI;
 namespace PoeClone.Network
 {
     /// <summary>
-    /// Full-screen gate shown to the "player" role client until the server grants (or denies) the
-    /// play slot (up to 10 people play at once). Once play starts, a connection loss leaves the
-    /// local game visible. Hidden entirely for spectators -
-    /// SpectatorView owns their screen instead. Built at runtime like the rest of this project's UI.
+    /// Covers local character selection and save loading, independently of network state.
+    /// SpectatorView owns the spectator screen instead.
     /// </summary>
     public class SessionGateUI : MonoBehaviour
     {
@@ -57,16 +55,8 @@ namespace PoeClone.Network
                 return;
             }
 
-            spinner.gameObject.SetActive(!ctrl.Connected || string.IsNullOrEmpty(ctrl.DenyReason));
-
-            if (!ctrl.Connected)
-                messageText.text = ctrl.Reconnecting
-                    ? $"Reconnecting...\n\nReason: {ctrl.DisconnectReason}"
-                    : "Connecting...";
-            else if (!string.IsNullOrEmpty(ctrl.DenyReason))
-                messageText.text = $"{ctrl.DenyReason}\n\nLeave this page open -\nyour game starts the moment a place frees up.";
-            else
-                messageText.text = "Reconnecting...";
+            spinner.gameObject.SetActive(true);
+            messageText.text = "Loading character...";
         }
 
         private void Build()

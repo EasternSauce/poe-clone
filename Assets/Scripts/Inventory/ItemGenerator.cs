@@ -381,6 +381,10 @@ namespace PoeClone.Inventory
 
         private static readonly Affix[] Affixes =
         {
+            // Global attack crit increases scale the wielded weapon's hidden base chance.
+            Aff(StatType.CriticalChance, 20, 60, true, ItemType.Weapon).Weighted(1.2f),
+            Aff(StatType.CriticalChance, 15, 40, true, ItemType.Ring, ItemType.Amulet, ItemType.Gloves, ItemType.Quiver, ItemType.Helmet, ItemType.BodyArmour, ItemType.Belt, ItemType.Boots, ItemType.Shield, ItemType.Grimoire).Weighted(1f),
+            Aff(StatType.CriticalMultiplier, 10, 25, false, ItemType.Weapon, ItemType.Ring, ItemType.Amulet, ItemType.Gloves, ItemType.Quiver).Weighted(0.65f),
             Aff(StatType.MaxLife, 8, 25, true, NotWeapon),
             Aff(StatType.MaxMana, 8, 20, true, ItemType.Helmet, ItemType.Gloves, ItemType.Amulet, ItemType.Ring, ItemType.Belt),
             Aff(StatType.Strength, 4, 12, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Belt, ItemType.Amulet, ItemType.Ring).Also(ItemType.Weapon, MeleeWeapons),
@@ -417,6 +421,7 @@ namespace PoeClone.Inventory
             Aff(StatType.LifeRegen, 1, 3, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Belt, ItemType.Amulet, ItemType.Ring, ItemType.Shield).Weighted(0.8f),
             Aff(StatType.LifeLeech, 1, 2, false, ItemType.Gloves, ItemType.Ring).Also(ItemType.Weapon, MeleeWeapons).Weighted(0.3f),
             Aff(StatType.LifeOnKill, 2, 5, true, ItemType.Gloves, ItemType.Ring, ItemType.Quiver).Also(ItemType.Weapon, AttackWeapons).Weighted(0.5f),
+            Aff(StatType.LifeOnAttackHit, 2, 4, true, ItemType.Gloves, ItemType.Ring, ItemType.Quiver).Also(ItemType.Weapon, AttackWeapons).Weighted(0.7f),
 
             // Caster stats: a staff's own pool, and a little on jewellery.
             Aff(StatType.SpellDamage, 4, 10, true, ItemType.Weapon).Only(Staves).Weighted(1.6f),
@@ -494,6 +499,8 @@ namespace PoeClone.Inventory
             { StatType.Armour, "Reinforced" },
             { StatType.Evasion, "Shadowy" },
             { StatType.PhysicalDamage, "Heavy" },
+            { StatType.CriticalChance, "Keen" },
+            { StatType.CriticalMultiplier, "Deadly" },
             { StatType.ArmourPenetration, "Piercing" },
             { StatType.PoisonPenetration, "Virulent" },
             { StatType.PoisonDamage, "Toxic" },
@@ -507,6 +514,7 @@ namespace PoeClone.Inventory
             { StatType.GrantDash, "Fleet" },
             { StatType.GrantCleave, "Sweeping" },
             { StatType.LifeOnKill, "Ravenous" },
+            { StatType.LifeOnAttackHit, "Sustaining" },
             { StatType.MinionDamage, "Commanding" },
             { StatType.MinionLife, "Bonebound" },
             { StatType.AdditionalMinions, "Graveward's" },

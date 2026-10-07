@@ -1,8 +1,26 @@
+version: 2026-10-07-passive-tree-and-attack-crit
+- Passive spending is previewed until Confirm; Cancel discards changes, including a pending full reset. Closing with changes asks you to choose.
+- Small passives show their stats without invented names. Life notables have corrected names.
+- Characters start locally without waiting for the server. Chat and spectating connect in the background; local save loading now says Loading character.
+- Passive descriptions now appear in a tooltip beside the hovered or tapped node instead of along the bottom of the tree.
+- Gain Life per enemy hit with an Attack: new Vital Strikes and Feast of Blades passives in early Fury, plus item modifiers on melee weapons, bows, gloves, rings and quivers. Melee and bow attacks recover life instantly for each enemy hit, including killing blows.
+- Passive tree rework: devotion is gone, small damage and minion nodes are weaker, and the outer tree includes both notables and keystones.
+- Optional one- or two-node maximum-life branches now appear throughout every sector, including Might and Necromancy. Existing characters receive all allocated passive points back once.
+- Keystone approaches now have one travel point, or two for exceptional rewards. Sector bridges have three identical passives per crossing.
+- New keystones: Blood Magic (skills cost life, no mana, 10% more maximum life), Iron Reflexes (evasion becomes armour; Dexterity grants no evasion), and Point Blank (projectile hits are stronger nearby and weaker at range).
+- Volley grants one extra bow arrow. Convergence, on the Wisdom side, grants one extra projectile to projectile skills, including bow skills. Bone Legion grants one extra minion without a damage penalty.
+- Mind over Matter is the only source of damage taken from mana before life. Its unrelated mana-on-kill bonus and the automatic mana protection are removed; affected uniques have replacement stats.
+- Pyre is the sole corpse-explosion source. Former skill-specific keystone effects remain on uniques; Death's Herald now transfers its mark without an explosion.
+- Applicable increased damage bonuses add together; separate more and less modifiers multiply independently. More damage is reserved for keystone passives; bow notables and small nodes grant increased damage.
+- Attacks now have weapon-based critical strike chance, improved by increased attack critical chance on the tree and ordinary equipment. The character stats show effective attack critical chance; spells cannot crit.
+- Evasion and block protect against attacks only. Enemy spell bolts, elemental spell strikes, frost bursts and venom splashes bypass those avoidance rolls.
+- Toggled bow skills cost a little mana per shot: Split Shot and Piercing Shot 2, Burning Arrow and Venom Arrow 3, Rain of Arrows 4 at level 1, rising by at most 0.9 at higher levels. Blood Magic pays life instead. Without enough resources, the bow fires a free basic shot until resources recover.
+
 version: 2026-10-06-character-stats-close-visible
 - The character stats close button stays at the top of the screen when the panel is taller than the mobile viewport, and only appears while the menu is open.
 
-version: 2026-10-06-disable-auto-loot-tooltip
-- Ground loot names and icons remain visible; mobile no longer opens an item's stat tooltip just because the player is nearby.
+version: 2026-10-06-mobile-kill-hitch-diagnostic
+- Enemy item, gold, and potion drops are temporarily disabled while investigating mobile kill hitches; experience and quest credit remain enabled.
 
 version: 2026-10-06-mobile-skill-menu-close
 - The character stats and skill menus now keep their close buttons within the screen on shorter displays.

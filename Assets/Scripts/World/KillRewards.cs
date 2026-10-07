@@ -20,9 +20,12 @@ namespace PoeClone.World
         /// <summary>A monster the player killed (quests count these).</summary>
         public static event System.Action<EnemyKind, int> EnemyKilled;
 
-        public static void Grant(EnemyKind kind, int monsterLevel, Vector3 at)
+        public static void Grant(EnemyKind kind, int monsterLevel, Vector3 at, bool dropLoot = true)
         {
             EnemyKilled?.Invoke(kind, monsterLevel);
+
+            if (!dropLoot)
+                return;
 
             PlayerStats player = Object.FindAnyObjectByType<PlayerStats>();
             if (player == null)

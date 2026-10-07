@@ -13,8 +13,7 @@ namespace PoeClone.UI
 {
     /// <summary>
     /// The passive tree panel (P, or the TREE button on touch): every passive as a circle, linked
-    /// to its neighbours. Click/tap one that can be taken to take it; select a taken one at the end
-    /// of a path to give it back. Hovering (or tapping) shows what a passive gives at the bottom.
+    /// to its neighbours. Click/tap to preview spending, then Confirm or Cancel the draft. Hovering (or tapping) shows what a passive gives in a tooltip.
     /// The tree is bigger than the panel: drag to move around it, scroll or pinch to zoom.
     /// Installed by GameSessionController.
     /// </summary>
@@ -53,7 +52,44 @@ namespace PoeClone.UI
         private Text badgeText;
         private Text pointsText;
         private Text infoText;
-        private Image refundButton;
+        private Image tooltip;
+        private Text tooltipText;
+        private PassiveNode hovered;
+        private Image confirmButton;
+        private Image cancelButton;
+        private PassiveAllocation draft;
+        private bool resetPending;
+        private bool closeRequested;
+        private PassiveAllocation Preview => !Spectating && draft != null ? draft : passives.Allocation;
+        public bool HasPendingChanges => draft != null && (resetPending ||
+            !new HashSet<string>(draft.Taken).SetEquals(passives.Allocation.Taken));
+
+        private void BeginDraft()
+        {
+            if (passives == null) return;
+            draft = new PassiveAllocation();
+            draft.ReplaceWith(passives.Allocation.Taken);
+            resetPending = false;
+            closeRequested = false;
+        }
+
+        public void ConfirmChanges()
+        {
+            if (Spectating) return;
+            if (!HasPendingChanges) { SetOpen(false); return; }
+            if (!passives.ConfirmDraft(draft, resetPending)) return;
+            draft = null;
+            resetPending = false;
+            SetOpen(false);
+        }
+
+        public void CancelChanges()
+        {
+            if (Spectating) return;
+            draft = null;
+            resetPending = false;
+            SetOpen(false);
+        }
         private Image resetButton;
         private Image zoomInButton;
         private Image zoomOutButton;
@@ -61,7 +97,7 @@ namespace PoeClone.UI
         private Text resetLabel;
         private PlayerPassives passives;
         private PassiveNode selected;
-        private PassiveNode shown;          // the passive the info line describes
+        private PassiveNode shown;          // the passive the tooltip describes
         private PassiveNode mirroredHover;  // spectators: the player's pointed-at passive last shown
         private bool dirty = true;
 
@@ -77,12 +113,25 @@ namespace PoeClone.UI
         {
             if (instance == null)
                 return;
+            if (!open && !Spectating && instance.HasPendingChanges)
+            {
+                instance.closeRequested = true;
+                instance.hovered = null;
+                instance.ShowInfo(null);
+                instance.dirty = true;
+                return;
+            }
+            if (open && !IsOpen && !Spectating) instance.BeginDraft();
             // Both panels sit in the middle of the screen: one at a time.
             if (open)
                 SkillBarUI.SetOpen(false);
             instance.panelRoot.SetActive(open);
             if (!open)
+            {
                 instance.ResetPinch();
+                instance.hovered = null;
+                instance.ShowInfo(null);
+            }
             instance.dirty = true;
             if (open && !instance.viewFitted)
             {
@@ -272,13 +321,16 @@ namespace PoeClone.UI
 
         private void Refresh()
         {
-            PassiveAllocation allocation = passives.Allocation;
-            int unspent = passives.Unspent;
+            PassiveAllocation allocation = Preview;
+            int unspent = allocation.Unspent(passives.Level);
             pointsText.text = unspent > 0
                 ? "<color=#FFD040>" + unspent + " passive point" + (unspent > 1 ? "s" : "") + " to spend</color>"
                 : "<color=#" + UiKit.Hex(UiKit.DimText) + ">No points to spend - one more each level</color>";
 
-            int charges = passives.RespecCharges;
+            int charges = passives.RespecCharges - (resetPending ? 1 : 0);
+            confirmButton.gameObject.SetActive(!Spectating);
+            cancelButton.gameObject.SetActive(!Spectating);
+            resetButton.gameObject.SetActive(!Spectating);
             resetLabel.text = "Reset all (" + charges + ")";
             resetButton.color = charges > 0 ? new Color(0.18f, 0.14f, 0.10f, 1f) : new Color(0.12f, 0.10f, 0.08f, 1f);
             resetLabel.color = charges > 0 ? UiKit.TextColor : UiKit.DimText;
@@ -288,7 +340,7 @@ namespace PoeClone.UI
                 bool taken = allocation.Has(v.Node.Id);
                 bool available = allocation.CanTake(v.Node.Id, passives.Level);
                 Color c = BranchColor(v.Node.Branch);
-                v.Body.color = taken ? c : available ? Color.Lerp(Locked, c, 0.35f) : Locked;
+                v.Body.color = taken ? (!Spectating && !passives.Allocation.Has(v.Node.Id) ? new Color(0.3f, 0.85f, 1f) : c) : available ? Color.Lerp(Locked, c, 0.35f) : Locked;
                 v.Ring.color = taken ? UiKit.Gold : available ? new Color(1f, 0.85f, 0.4f, 0.9f) : new Color(0.35f, 0.32f, 0.28f, 1f);
                 if (v.Label != null)
                     v.Label.color = taken ? UiKit.Gold : available ? UiKit.TextColor : UiKit.DimText;
@@ -300,77 +352,92 @@ namespace PoeClone.UI
                 l.Line.color = both ? UiKit.Gold : new Color(0.30f, 0.27f, 0.23f, 1f);
             }
 
-            ShowInfo(selected);
+            ShowInfo(hovered ?? (TouchMode.Active || (Spectating && SpectatorMirror.FollowingPlayer) ? selected : null));
+        }
+
+        private void LateUpdate()
+        {
+            if (!panelRoot.activeSelf || shown == null || !tooltip.gameObject.activeSelf)
+                return;
+
+            Vector2 at = Vector2.zero;
+            if (!TouchMode.Active && hovered != null && Mouse.current != null)
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRect,
+                    Mouse.current.position.ReadValue(), null, out at);
+            else
+                at = panelRect.InverseTransformPoint(content.TransformPoint(NodePosition(shown)));
+
+            Rect bounds = panelRect.rect;
+            Vector2 size = tooltip.rectTransform.sizeDelta;
+            float x = at.x + 20f;
+            if (x + size.x > bounds.xMax - 8f)
+                x = at.x - size.x - 20f;
+            float y = at.y - 20f;
+            tooltip.rectTransform.anchoredPosition = new Vector2(
+                Mathf.Clamp(x, bounds.xMin + 8f, bounds.xMax - size.x - 8f),
+                Mathf.Clamp(y, bounds.yMin + size.y + 8f, bounds.yMax - 8f));
         }
 
         private void ShowInfo(PassiveNode node)
         {
             shown = node;
-            if (node == null)
-            {
-                infoText.text = PlayerHUD.ControlsHidden ? "" :
-                    "<color=#" + UiKit.Hex(UiKit.DimText) + ">Point at a passive to see what it gives. " +
-                    (TouchMode.Active
-                        ? "Tap one next to a taken passive to take it. Drag to look around, pinch to zoom."
-                        : "Click one next to a taken passive to take it; right-click a taken one at the end of a path to give it back. Drag to look around, scroll to zoom. (H hides this.)") +
-                    "</color>";
-                refundButton.gameObject.SetActive(false);
-                return;
-            }
+            tooltip.gameObject.SetActive(node != null);
+            infoText.text = PlayerHUD.ControlsHidden ? "" : TouchMode.Active
+                ? "Tap a passive to inspect it; tap again to take it. Drag to look around, pinch to zoom."
+                : "Click to take a passive; click a pending end node again to undo it. Drag to look around, scroll to zoom. (H hides this.)";
+            if (closeRequested)
+                infoText.text = "You have unconfirmed changes. Confirm to spend your points, or Cancel to discard changes.";
+            if (node == null) return;
 
             var sb = new StringBuilder();
-            sb.Append("<b><color=#").Append(UiKit.Hex(BranchColor(node.Branch))).Append(">").Append(node.Name)
-                .Append(node.Keystone ? "  (keystone)" : node.Notable ? "  (notable)" : "").Append("</color></b>   ");
+            sb.Append("<b><color=#").Append(UiKit.Hex(BranchColor(node.Branch))).Append(">").Append(node.Name ?? "Passive")
+                .Append(node.Keystone ? "  (keystone)" : node.Notable ? "  (notable)" : "").Append("</color></b>\n");
             if (node.Mods.Length == 0)
                 sb.Append("Where every path starts.");
             for (int k = 0; k < node.Mods.Length; k++)
             {
                 if (k > 0)
-                    sb.Append(",  ");
+                    sb.Append("\n");
                 sb.Append(StatFormatter.ItemLine(node.Mods[k]));
             }
 
-            PassiveAllocation allocation = passives.Allocation;
-            if (node.PerBranchMods.Length > 0)
-            {
-                int count = allocation.CountIn(node.Branch) + (allocation.Has(node.Id) ? 0 : 1);
-                sb.Append("\n<color=#").Append(UiKit.Hex(BranchColor(node.Branch))).Append(">Devotion, per ").Append(node.Branch).Append(" passive taken: ");
-                for (int k = 0; k < node.PerBranchMods.Length; k++)
-                {
-                    StatModifier m = node.PerBranchMods[k];
-                    if (k > 0)
-                        sb.Append(",  ");
-                    sb.Append(StatFormatter.ItemLine(m)).Append(" (").Append(allocation.Has(node.Id) ? "now " : "would be ")
-                        .Append(StatFormatter.Value(m.Stat, m.Value * count)).Append(")");
-                }
-                sb.Append("</color>");
-            }
+            PassiveAllocation allocation = Preview;
             bool taken = allocation.Has(node.Id);
             sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">");
             if (node.Id == PassiveTree.OriginId)
                 sb.Append("Always yours.");
             else if (taken)
-                sb.Append(allocation.CanRefund(node.Id) ? "Taken." : "Taken. Give back the passives after it first.");
+                sb.Append(passives.Allocation.Has(node.Id) && !resetPending ? "Allocated." : "Pending - confirm to apply.");
             else if (allocation.CanTake(node.Id, passives.Level))
                 sb.Append(TouchMode.Active ? "Tap again to take it." : "Click to take it.");
             else
-                sb.Append(passives.Unspent <= 0 ? "No points left." : "Take a passive next to it first.");
+                sb.Append(allocation.Unspent(passives.Level) <= 0 ? "No points left." : "Take a passive next to it first.");
             sb.Append("</color>");
 
-            infoText.text = sb.ToString();
-            refundButton.gameObject.SetActive(taken && allocation.CanRefund(node.Id) && !Spectating);
+            tooltipText.text = sb.ToString();
+            float width = Mathf.Min(360f, panelRect.rect.width - 16f);
+            tooltip.rectTransform.sizeDelta = new Vector2(width, 100f);
+            tooltipText.rectTransform.sizeDelta = new Vector2(width - 24f, 0f);
+            tooltip.rectTransform.sizeDelta = new Vector2(width, tooltipText.preferredHeight + 24f);
+
         }
 
         private void OnHover(PassiveNode node)
         {
             if (!TouchMode.Active)
+            {
+                hovered = node;
                 ShowInfo(node);
+            }
         }
 
         private void OnHoverEnd()
         {
             if (!TouchMode.Active)
-                ShowInfo(selected);
+            {
+                hovered = null;
+                ShowInfo(null);
+            }
         }
 
         private void OnClick(PassiveNode node, PointerEventData.InputButton button)
@@ -388,7 +455,7 @@ namespace PoeClone.UI
 
             if (button == PointerEventData.InputButton.Right)
             {
-                passives.Refund(node.Id);
+                if (draft != null && (resetPending || !passives.Allocation.Has(node.Id))) draft.Refund(node.Id);
                 selected = node;
                 dirty = true;
                 return;
@@ -397,18 +464,14 @@ namespace PoeClone.UI
             // Touch: the first tap only selects (shows what it gives); a second tap takes it.
             bool take = !TouchMode.Active || selected == node;
             selected = node;
-            if (take && passives.Take(node.Id))
+            if (draft == null) BeginDraft();
+            closeRequested = false;
+            if (take && draft.Has(node.Id) && (resetPending || !passives.Allocation.Has(node.Id))) draft.Refund(node.Id);
+            else if (take && draft.Take(node.Id, passives.Level))
             {
                 if (Audio.AudioManager.Instance != null)
                     Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.uiItemPlace, 0.4f);
             }
-            dirty = true;
-        }
-
-        private void RefundSelected()
-        {
-            if (selected != null && passives != null && !Spectating)
-                passives.Refund(selected.Id);
             dirty = true;
         }
 
@@ -622,8 +685,11 @@ namespace PoeClone.UI
             resetLabel = resetButton.GetComponentInChildren<Text>();
             resetButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {
-                if (passives != null && !Spectating && passives.ResetAll())
+                if (passives != null && !Spectating && passives.RespecCharges > 0 && Preview.Spent > 0)
                 {
+                    if (draft == null) BeginDraft();
+                    draft.ResetAll();
+                    resetPending = passives.Allocation.Spent > 0;
                     selected = null;
                     dirty = true;
                 }
@@ -660,19 +726,17 @@ namespace PoeClone.UI
             centreButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ResetView();
             UpdateZoomButtons();
 
-            // Links first, so the circles draw over them.
+            // Every graph edge is one uninterrupted straight connection.
             var linked = new HashSet<string>();
             foreach (PassiveNode node in PassiveTree.Nodes)
             {
                 foreach (string other in node.Links)
                 {
                     string key = string.CompareOrdinal(node.Id, other) < 0 ? node.Id + "|" + other : other + "|" + node.Id;
-                    if (!linked.Add(key))
-                        continue;
-
-                    Vector2 a = NodePosition(node);
-                    Vector2 b = NodePosition(PassiveTree.Get(other));
+                    if (!linked.Add(key)) continue;
+                    Vector2 a = NodePosition(node), b = NodePosition(PassiveTree.Get(other));
                     Image line = UiKit.NewImage("Link", content, Color.gray);
+                    line.raycastTarget = false;
                     RectTransform lr = line.rectTransform;
                     lr.anchorMin = lr.anchorMax = lr.pivot = new Vector2(0.5f, 0.5f);
                     lr.anchoredPosition = (a + b) * 0.5f;
@@ -726,7 +790,7 @@ namespace PoeClone.UI
                 v.Label = label;
             }
 
-            // What the pointed-at passive gives, along the bottom.
+            // Controls and the touch refund action stay along the bottom.
             Image info = UiKit.NewImage("Info", pr, new Color(0f, 0f, 0f, 0.35f));
             RectTransform ir = info.rectTransform;
             ir.anchorMin = new Vector2(0f, 0f);
@@ -740,11 +804,30 @@ namespace PoeClone.UI
             tr0.anchorMin = Vector2.zero;
             tr0.anchorMax = Vector2.one;
             tr0.offsetMin = new Vector2(12f, 0f);
-            tr0.offsetMax = new Vector2(-170f, 0f);
+            tr0.offsetMax = new Vector2(-310f, 0f);
 
-            refundButton = NewButton(info.rectTransform, "Refund", "Give back", Vector2.zero, new Vector2(140f, 40f));
-            TopRight(refundButton.rectTransform, new Vector2(12f, -20f), new Vector2(140f, 40f));
-            refundButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => RefundSelected();
+            confirmButton = NewButton(info.rectTransform, "Confirm", "Confirm", Vector2.zero, new Vector2(130f, 40f));
+            TopRight(confirmButton.rectTransform, new Vector2(156f, -20f), new Vector2(130f, 40f));
+            confirmButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ConfirmChanges();
+            cancelButton = NewButton(info.rectTransform, "Cancel", "Cancel", Vector2.zero, new Vector2(130f, 40f));
+            TopRight(cancelButton.rectTransform, new Vector2(12f, -20f), new Vector2(130f, 40f));
+            cancelButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => CancelChanges();
+
+            // Outside the masked tree so details remain readable at every zoom level.
+            tooltip = UiKit.NewImage("PassiveTooltip", pr, new Color(0.06f, 0.05f, 0.04f, 0.98f));
+            tooltip.raycastTarget = false;
+            UiKit.AddOutline(tooltip, UiKit.BorderColor, 2f);
+            RectTransform tip = tooltip.rectTransform;
+            tip.anchorMin = tip.anchorMax = new Vector2(0.5f, 0.5f);
+            tip.pivot = new Vector2(0f, 1f);
+            tooltipText = UiKit.NewText("Text", tip, "", 18, UiKit.TextColor, TextAnchor.UpperLeft);
+            tooltipText.raycastTarget = false;
+            tooltipText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            tooltipText.verticalOverflow = VerticalWrapMode.Overflow;
+            tooltipText.rectTransform.anchorMin = tooltipText.rectTransform.anchorMax = new Vector2(0f, 1f);
+            tooltipText.rectTransform.pivot = new Vector2(0f, 1f);
+            tooltipText.rectTransform.anchoredPosition = new Vector2(12f, -12f);
+            tooltip.gameObject.SetActive(false);
         }
 
         private static Image NewButton(RectTransform parent, string name, string label, Vector2 pos, Vector2 size)

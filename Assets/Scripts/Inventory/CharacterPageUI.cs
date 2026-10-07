@@ -34,7 +34,7 @@ namespace PoeClone.Inventory
             new Group("Attributes", StatType.Strength, StatType.Dexterity, StatType.Intelligence),
             new Group("Vitals", StatType.MaxLife, StatType.MaxMana),
             new Group("Defences", StatType.Armour, StatType.Evasion, StatType.BlockChance),
-            new Group("Offence", StatType.PhysicalDamage, StatType.AttackSpeed),
+            new Group("Offence", StatType.PhysicalDamage, StatType.AttackSpeed, StatType.CriticalChance),
             new Group("Resistances", StatType.FireResistance, StatType.ColdResistance, StatType.LightningResistance),
             new Group("Movement", StatType.MovementSpeed)
         };
@@ -247,6 +247,7 @@ namespace PoeClone.Inventory
             {
                 case StatType.MaxLife: return "Life";
                 case StatType.MaxMana: return "Mana";
+                case StatType.CriticalChance: return "Attack Crit Chance";
                 default: return StatFormatter.Label(stat);
             }
         }
@@ -271,10 +272,12 @@ namespace PoeClone.Inventory
             foreach (KeyValuePair<StatType, Text> pair in valueTexts)
             {
                 StatType stat = pair.Key;
-                string text = ValueFor(stat, sheet.Total(stat));
+                string text = stat == StatType.CriticalChance
+                    ? StatFormatter.Number(sheet.AttackCriticalChance) + "%"
+                    : ValueFor(stat, sheet.Total(stat));
 
                 float bonus = sheet.FromGear(stat);
-                if (Mathf.Abs(bonus) > 0.001f)
+                if (stat != StatType.CriticalChance && Mathf.Abs(bonus) > 0.001f)
                 {
                     string sign = bonus > 0f ? "+" : "-";
                     text += "  <color=#" + green + ">(" + sign + StatFormatter.Number(Mathf.Abs(bonus)) + ")</color>";
@@ -291,7 +294,7 @@ namespace PoeClone.Inventory
             foreach (StatType stat in System.Enum.GetValues(typeof(StatType)))
             {
                 float total = sheet.Total(stat);
-                if (!StatFormatter.IsSpecial(stat) || SkillGrants.IsGrant(stat) || Mathf.Abs(total) < 0.001f)
+                if (!StatFormatter.IsSpecial(stat) || SkillGrants.IsGrant(stat) || stat == StatType.CriticalChance || Mathf.Abs(total) < 0.001f)
                     continue;
                 if (special.Length > 0)
                     special.Append('\n');
@@ -313,7 +316,7 @@ namespace PoeClone.Inventory
                     hint = Percent(reduction) + " less from a " + StatFormatter.Number(DefenceMath.ReferenceHit) + " hit";
                     break;
                 case StatType.Evasion:
-                    hint = Percent(DefenceMath.EvadeChance(sheet.Total(StatType.Evasion))) + " to evade";
+                    hint = Percent(DefenceMath.EvadeChance(sheet.Total(StatType.Evasion))) + " to evade attacks";
                     break;
                 case StatType.MaxMana:
                     float regen = DefenceMath.ManaRegenPerSecond(sheet.Total(StatType.MaxMana), sheet.Total(StatType.Intelligence),

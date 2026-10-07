@@ -69,6 +69,28 @@ namespace PoeClone.Player
             return true;
         }
 
+        /// <summary>Apply a reviewed draft once, charging a reset only on confirmation.</summary>
+        public bool ConfirmDraft(PassiveAllocation draft, bool reset)
+        {
+            if (draft == null || draft.Spent > PassiveAllocation.PointsForLevel(Level) ||
+                (reset && RespecCharges <= 0)) return false;
+            // Validate new purchases against the current graph; keep legacy saved nodes intact.
+            var check = new PassiveAllocation();
+            if (!reset) check.RestoreSaved(new System.Collections.Generic.List<string>(Allocation.Taken), Level);
+            var remaining = new System.Collections.Generic.List<string>();
+            foreach (string id in draft.Taken) if (!check.Has(id)) remaining.Add(id);
+            while (remaining.Count > 0)
+            {
+                bool progress = false;
+                for (int i = remaining.Count - 1; i >= 0; i--)
+                    if (check.Take(remaining[i], Level)) { remaining.RemoveAt(i); progress = true; }
+                if (!progress) return false;
+            }
+            if (reset) RespecCharges--;
+            Allocation.ReplaceWith(draft.Taken);
+            return true;
+        }
+
         /// <summary>A major quest's reward: more full respecs.</summary>
         public void GrantRespec(int amount)
         {

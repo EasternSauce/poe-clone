@@ -81,7 +81,10 @@ namespace PoeClone.UI
             if (!TouchMode.Active)
                 open = false;
             if (open && PassiveTreeUI.IsOpen)
+            {
                 PassiveTreeUI.SetOpen(false);
+                if (PassiveTreeUI.IsOpen) return;
+            }
             instance.panelRoot.SetActive(open);
             if (open)
                 instance.RefreshRows();
@@ -511,7 +514,8 @@ namespace PoeClone.UI
                     string minions = skills.MinionSummary(row.Id, level);
                     if (minions != null)
                         timing += " · " + minions;
-                    string cost = skill.Bow ? "toggle · no mana" : Num(unlocked ? skills.ManaCostForGrant(row.Grant.Value) : skills.ManaCost(row.Id)) + " mana · " + timing;
+                    string resourceCost = Num(unlocked ? skills.ManaCostForGrant(row.Grant.Value) : skills.ManaCost(row.Id)) + " " + skills.CostResource;
+                    string cost = skill.Bow ? "toggle · " + resourceCost + " per shot" : resourceCost + " · " + timing;
                     row.Title.text = "<color=#" + UiKit.Hex(skill.Color) + "><b>" + skill.Name + "</b></color>  <color=#" + UiKit.Hex(UiKit.Gold) + ">Level " + level +
                                      (isAttack ? " · your attack" : "") + "</color>   <size=14><color=#" + dim + ">" +
                                      cost + from + "</color></size>\n<size=14>" + skill.Description + "</size>";

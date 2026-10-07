@@ -290,12 +290,18 @@ namespace PoeClone.Player
         private float healOverTimeLeft;
         private float healOverTimeRate;
 
-        /// <summary>Pays a skill's mana cost. False (nothing spent) if there isn't enough.</summary>
+        public bool UsesBloodMagic => inventory != null && inventory.Stats != null &&
+            inventory.Stats.Total(StatType.BloodMagic) > 0f;
+
+        public bool CanAffordSkill(float amount) => !dead &&
+            (amount <= 0f || (UsesBloodMagic ? currentHealth > amount : currentMana >= amount));
+
+        /// <summary>Pays the skill cost from mana, or life with Blood Magic. Never kills the caster.</summary>
         public bool TrySpendMana(float amount)
         {
-            if (dead || currentMana < amount)
-                return false;
-            currentMana -= amount;
+            if (!CanAffordSkill(amount)) return false;
+            if (UsesBloodMagic) currentHealth -= Mathf.Max(0f, amount);
+            else currentMana -= Mathf.Max(0f, amount);
             return true;
         }
 
@@ -323,7 +329,7 @@ namespace PoeClone.Player
         }
 
         /// <summary>A blow from an enemy: evasion and block first, then mitigation. False if it never landed.</summary>
-        public bool TakeHit(float damage, DamageType type)
+        public bool TakeHit(float damage, DamageType type, bool attack = true)
         {
             if (dead || damage <= 0f)
                 return false;
@@ -333,13 +339,13 @@ namespace PoeClone.Player
 
             if (sheet != null)
             {
-                if (UnityEngine.Random.value < DefenceMath.EvadeChance(sheet.Total(StatType.Evasion)))
+                if (attack && UnityEngine.Random.value < DefenceMath.EvadeChance(sheet.Total(StatType.Evasion)))
                 {
                     CombatText.Show(textAt, "Evaded", CombatText.AvoidColor, 0.8f);
                     return false;
                 }
 
-                if (UnityEngine.Random.value < DefenceMath.BlockChance(sheet.Total(StatType.BlockChance)))
+                if (attack && UnityEngine.Random.value < DefenceMath.BlockChance(sheet.Total(StatType.BlockChance)))
                 {
                     CombatText.Show(textAt, "Blocked", CombatText.BlockColor, 0.8f);
                     if (AudioManager.Instance != null)

@@ -325,21 +325,24 @@ namespace PoeClone.Enemies
             if (player != null)
                 player.GainExperience(experienceReward);
 
-            // Deeper areas drop better gear: the item level follows the monster level.
             EnemyKind kind = EnemyKinds.Get(KindIndex);
-            for (int k = 0; k < Mathf.Max(1, kind.Drops); k++)
-                LootDrop.RollDrop(kind, transform.position, Mathf.Max(MonsterLevel, 1));
-
-            // A boss always leaves one unique behind.
-            if (kind.IsBoss)
+            if (LootDrop.EnemyDropsEnabled)
             {
-                var rng = new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
-                LootDrop.Drop(kind.Boss == BossStyle.Shepherd ? Inventory.UniqueItems.ShepherdReward(rng) : Inventory.UniqueItems.Random(rng), transform.position);
+                // Deeper areas drop better gear: the item level follows the monster level.
+                for (int k = 0; k < Mathf.Max(1, kind.Drops); k++)
+                    LootDrop.RollDrop(kind, transform.position, Mathf.Max(MonsterLevel, 1));
+
+                // A boss always leaves one unique behind.
+                if (kind.IsBoss)
+                {
+                    var rng = new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
+                    LootDrop.Drop(kind.Boss == BossStyle.Shepherd ? Inventory.UniqueItems.ShepherdReward(rng) : Inventory.UniqueItems.Random(rng), transform.position);
+                }
+                var area = World.AreaManager.Instance;
+                if (area != null && area.CurrentAreaIndex >= World.WorldBuilder.Ruins && area.CurrentAreaIndex <= World.WorldBuilder.Frozen && UnityEngine.Random.value < 0.008f)
+                    LootDrop.Drop(World.ActBossArena.ReawakeningItem(), transform.position);
             }
-            var area = World.AreaManager.Instance;
-            if (area != null && area.CurrentAreaIndex >= World.WorldBuilder.Ruins && area.CurrentAreaIndex <= World.WorldBuilder.Frozen && UnityEngine.Random.value < 0.008f)
-                LootDrop.Drop(World.ActBossArena.ReawakeningItem(), transform.position);
-            KillRewards.Grant(EnemyKinds.Get(KindIndex), MonsterLevel, transform.position);
+            KillRewards.Grant(kind, MonsterLevel, transform.position, LootDrop.EnemyDropsEnabled);
 
             if (kind.SplitInto >= 0)
                 SplitApart(kind.SplitInto);
