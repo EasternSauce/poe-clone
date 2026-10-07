@@ -32,6 +32,15 @@ namespace PoeClone.Quests
 
         /// <summary>Any quest taken, advanced, completed or handed in.</summary>
         public event Action Changed;
+        /// <summary>Quest availability, completion or prop state changed; ordinary kill progress is excluded.</summary>
+        public event Action StateChanged;
+
+        private void NotifyChanged(bool stateChanged = true)
+        {
+            Changed?.Invoke();
+            if (stateChanged)
+                StateChanged?.Invoke();
+        }
         public bool HasReplicaState { get; private set; }
 
         private void Awake()
@@ -110,7 +119,7 @@ namespace PoeClone.Quests
             }
             foreach (int area in visitedAreas)
                 visited.Add(area);
-            Changed?.Invoke();
+            NotifyChanged();
         }
 
         /// <summary>Replace this disabled spectator log with the watched player's quest progress.</summary>
@@ -127,7 +136,7 @@ namespace PoeClone.Quests
                     if (entry != null && QuestBook.Get(entry.id) != null && !done.Contains(entry.id))
                         active[entry.id] = entry.progress;
             }
-            Changed?.Invoke();
+            NotifyChanged();
         }
 
         /// <summary>Been to this area this session (waystones only go where the player has been).</summary>
@@ -199,7 +208,7 @@ namespace PoeClone.Quests
                 }
             }
             if (changed)
-                Changed?.Invoke();
+                NotifyChanged();
         }
 
         /// <summary>A quest prop was used (smashed, lit, taken, its rite held): counts once per prop.</summary>
@@ -211,7 +220,7 @@ namespace PoeClone.Quests
             active[quest.Id] = progress;
             if (progress >= quest.Count)
                 Announce(quest);
-            Changed?.Invoke();
+            NotifyChanged();
         }
 
         /// <summary>The quests taken and not handed in yet, in book order.</summary>
@@ -235,7 +244,7 @@ namespace PoeClone.Quests
 
             // Somewhere already been counts straight away.
             active[quest.Id] = quest.Goal == QuestGoal.ReachArea && visited.Contains(quest.Area) ? quest.Count : 0;
-            Changed?.Invoke();
+            NotifyChanged();
         }
 
         /// <summary>Hands a finished quest in; returns the reward lines to show ("+60 gold", ...).</summary>
@@ -259,7 +268,7 @@ namespace PoeClone.Quests
                 }
             }
 
-            Changed?.Invoke();
+            NotifyChanged();
             return lines;
         }
 
@@ -330,40 +339,50 @@ namespace PoeClone.Quests
         private void OnEnemyKilled(EnemyKind kind, int monsterLevel)
         {
             int area = areas != null ? areas.CurrentAreaIndex : -1;
-            Advance(q =>
-                (q.Goal == QuestGoal.KillInArea && (q.Area < 0 || q.Area == area)) ||
-                (q.Goal == QuestGoal.KillKind && q.Target == kind.Name) ||
-                (q.Goal == QuestGoal.KillBoss && q.Target == kind.Name));
+            Advance(kind, area);
         }
 
         private void OnAreaChanged(int index)
         {
             visited.Add(index);
-            Advance(q => q.Goal == QuestGoal.ReachArea && q.Area == index);
+            Advance(null, index);
         }
 
         private readonly List<string> scratch = new List<string>();
 
-        private void Advance(Predicate<QuestDefinition> counts)
+        private void Advance(EnemyKind killedKind, int area)
         {
+            if (active.Count == 0)
+                return;
             scratch.Clear();
             scratch.AddRange(active.Keys);
             bool changed = false;
+            bool completed = false;
             foreach (string id in scratch)
             {
                 QuestDefinition q = QuestBook.Get(id);
                 int progress = active[id];
-                if (q == null || progress >= q.Count || q.Goal == QuestGoal.Use || q.Goal == QuestGoal.Talk || !counts(q))
+                if (q == null || progress >= q.Count)
+                    continue;
+                bool counts = killedKind != null
+                    ? (q.Goal == QuestGoal.KillInArea && (q.Area < 0 || q.Area == area)) ||
+                      (q.Goal == QuestGoal.KillKind && q.Target == killedKind.Name) ||
+                      (q.Goal == QuestGoal.KillBoss && q.Target == killedKind.Name)
+                    : q.Goal == QuestGoal.ReachArea && q.Area == area;
+                if (!counts)
                     continue;
 
                 active[id] = progress + 1;
                 changed = true;
                 if (progress + 1 >= q.Count)
+                {
+                    completed = true;
                     Announce(q);
+                }
             }
 
             if (changed)
-                Changed?.Invoke();
+                NotifyChanged(completed);
         }
 
         private void Announce(QuestDefinition quest)

@@ -21,6 +21,7 @@ namespace PoeClone.UI
         private InventoryUI inventoryUI;
         private CharacterPageUI characterUI;
         private bool dirty = true;
+        private bool markersDirty = true;
         private int npcCount = -1;
         private bool laidOutForTouch;
 
@@ -42,7 +43,10 @@ namespace PoeClone.UI
         private void OnDestroy()
         {
             if (log != null)
+            {
                 log.Changed -= MarkDirty;
+                log.StateChanged -= MarkMarkersDirty;
+            }
         }
 
         private void MarkDirty()
@@ -50,13 +54,17 @@ namespace PoeClone.UI
             dirty = true;
         }
 
+        private void MarkMarkersDirty() => markersDirty = true;
+
         private void Update()
         {
             if (log == null && QuestLog.Instance != null)
             {
                 log = QuestLog.Instance;
                 log.Changed += MarkDirty;
+                log.StateChanged += MarkMarkersDirty;
                 dirty = true;
+                markersDirty = true;
             }
 
             var session = GameSessionController.Instance;
@@ -79,12 +87,17 @@ namespace PoeClone.UI
             {
                 npcCount = Npc.All.Count;
                 dirty = true;
+                markersDirty = true;
             }
 
             if (dirty)
             {
                 dirty = false;
                 Rebuild();
+            }
+            if (markersDirty)
+            {
+                markersDirty = false;
                 NpcDialogues.RefreshMarkers();
             }
 
@@ -105,7 +118,8 @@ namespace PoeClone.UI
             var sb = new StringBuilder();
 
             // Nothing taken yet and the Elder has work: point the way.
-            QuestDefinition first = log.Taken().Count == 0 ? log.CurrentFrom(NpcRole.Elder) : null;
+            var taken = log.Taken();
+            QuestDefinition first = taken.Count == 0 ? log.CurrentFrom(NpcRole.Elder) : null;
             if (first != null && log.State(first) == QuestState.Available)
             {
                 Npc elder = Npc.Find(NpcRole.Elder);
@@ -113,7 +127,7 @@ namespace PoeClone.UI
                     .Append(" in Haven</color>\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">  look for the ! over her head</color>");
             }
 
-            foreach (QuestDefinition q in log.Taken())
+            foreach (QuestDefinition q in taken)
             {
                 if (sb.Length > 0)
                     sb.Append('\n');

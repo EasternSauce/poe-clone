@@ -17,6 +17,23 @@ namespace PoeClone.World
         private const float HealthPotionChance = 0.12f;
         private const float ManaPotionChance = 0.07f;
 
+        private static PlayerStats rewardPlayer;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetPlayerCache() => rewardPlayer = null;
+
+        // Share the lookup between XP and ground rewards. Unity's destroyed-object check
+        // invalidates this cache when the player is replaced or its scene is unloaded.
+        internal static PlayerStats Player
+        {
+            get
+            {
+                if (rewardPlayer == null || !rewardPlayer.gameObject.activeInHierarchy)
+                    rewardPlayer = Object.FindAnyObjectByType<PlayerStats>();
+                return rewardPlayer;
+            }
+        }
+
         /// <summary>A monster the player killed (quests count these).</summary>
         public static event System.Action<EnemyKind, int> EnemyKilled;
 
@@ -27,7 +44,7 @@ namespace PoeClone.World
             if (!dropLoot)
                 return;
 
-            PlayerStats player = Object.FindAnyObjectByType<PlayerStats>();
+            PlayerStats player = Player;
             if (player == null)
                 return;
 

@@ -321,7 +321,7 @@ namespace PoeClone.Enemies
 
             DisableLiveBehaviour();
 
-            PlayerStats player = FindAnyObjectByType<PlayerStats>();
+            PlayerStats player = KillRewards.Player;
             if (player != null)
                 player.GainExperience(experienceReward);
 

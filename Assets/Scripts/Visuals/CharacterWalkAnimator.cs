@@ -133,6 +133,10 @@ public void Configure(
 
         private void Start()
         {
+            // Build the joint cache when the completed humanoid rig starts, not on a killing blow.
+            if (GetComponent<CharacterDeathAnimator>() == null)
+                gameObject.AddComponent<CharacterDeathAnimator>();
+
             lastPosition = transform.position;
             baseLocalPosition = transform.localPosition;
             idleSeed = Random.value * 10f;

@@ -31,7 +31,7 @@ namespace PoeClone.Visuals
             public Quaternion To;
         }
 
-        private Joint[] joints;
+        private readonly Joint[] joints = new Joint[9];
         private float timer;
         private bool playing;
 
@@ -98,15 +98,18 @@ namespace PoeClone.Visuals
 
         private void Awake()
         {
-            leftLeg = FindDescendant(transform, "LegL");
-            rightLeg = FindDescendant(transform, "LegR");
-            leftKnee = leftLeg != null ? FindDescendant(leftLeg, "Knee") : null;
-            rightKnee = rightLeg != null ? FindDescendant(rightLeg, "Knee") : null;
-            upperBody = FindDescendant(transform, "UpperBody");
-            leftArm = FindDescendant(transform, "ArmL");
-            rightArm = FindDescendant(transform, "ArmR");
-            leftElbow = leftArm != null ? FindDescendant(leftArm, "Elbow") : null;
-            rightElbow = rightArm != null ? FindDescendant(rightArm, "Elbow") : null;
+            // Collect the hierarchy once rather than allocate an array for every joint lookup.
+            Transform[] descendants = GetComponentsInChildren<Transform>(true);
+            leftLeg = FindDescendant(descendants, transform, "LegL");
+            rightLeg = FindDescendant(descendants, transform, "LegR");
+            leftKnee = leftLeg != null ? FindDescendant(descendants, leftLeg, "Knee") : null;
+            rightKnee = rightLeg != null ? FindDescendant(descendants, rightLeg, "Knee") : null;
+            upperBody = FindDescendant(descendants, transform, "UpperBody");
+            leftArm = FindDescendant(descendants, transform, "ArmL");
+            rightArm = FindDescendant(descendants, transform, "ArmR");
+            leftElbow = leftArm != null ? FindDescendant(descendants, leftArm, "Elbow") : null;
+            rightElbow = rightArm != null ? FindDescendant(descendants, rightArm, "Elbow") : null;
+            enabled = false;
         }
 
         public void PlayDeath(bool foldLowerBody = true)
@@ -117,18 +120,15 @@ namespace PoeClone.Visuals
             float kneePitchR = foldLowerBody ? 112f : 0f;
             float upperBodyPitch = foldLowerBody ? 85f : 0f;
 
-            joints = new[]
-            {
-                MakeJoint(leftLeg, legPitchL, 0f),
-                MakeJoint(rightLeg, legPitchR, 0f),
-                MakeJoint(leftKnee, kneePitchL, 0f),
-                MakeJoint(rightKnee, kneePitchR, 0f),
-                MakeJoint(upperBody, upperBodyPitch, 0f),
-                MakeJoint(leftArm, -15f, -72f),
-                MakeJoint(rightArm, -15f, 72f),
-                MakeJoint(leftElbow, -32f, 0f),
-                MakeJoint(rightElbow, -32f, 0f),
-            };
+            joints[0] = MakeJoint(leftLeg, legPitchL, 0f);
+            joints[1] = MakeJoint(rightLeg, legPitchR, 0f);
+            joints[2] = MakeJoint(leftKnee, kneePitchL, 0f);
+            joints[3] = MakeJoint(rightKnee, kneePitchR, 0f);
+            joints[4] = MakeJoint(upperBody, upperBodyPitch, 0f);
+            joints[5] = MakeJoint(leftArm, -15f, -72f);
+            joints[6] = MakeJoint(rightArm, -15f, 72f);
+            joints[7] = MakeJoint(leftElbow, -32f, 0f);
+            joints[8] = MakeJoint(rightElbow, -32f, 0f);
 
             timer = 0f;
             playing = true;
@@ -161,14 +161,17 @@ namespace PoeClone.Visuals
             }
 
             if (f >= 1f)
+            {
                 playing = false;
+                enabled = false;
+            }
         }
 
-        private static Transform FindDescendant(Transform root, string name)
+        private static Transform FindDescendant(Transform[] descendants, Transform root, string name)
         {
-            foreach (Transform t in root.GetComponentsInChildren<Transform>(true))
+            foreach (Transform t in descendants)
             {
-                if (t != root && t.name == name)
+                if (t != root && t.name == name && t.IsChildOf(root))
                     return t;
             }
 
