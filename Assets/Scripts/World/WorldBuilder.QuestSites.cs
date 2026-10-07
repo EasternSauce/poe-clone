@@ -547,7 +547,7 @@ namespace PoeClone.World
             prop.SetLooks(book.gameObject, null, null);
         }
 
-        // The Shepherd's door, north of Rimeheart's throne: shut, warm, waiting (the act boss beyond is still to come).
+        // The Shepherd's door, north-west of Rimeheart's throne: shut, warm, waiting.
         private void StagDoor(Transform t, Vector3 p)
         {
             ClearSite(Frozen, p, 8f);

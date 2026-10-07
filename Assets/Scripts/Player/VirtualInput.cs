@@ -29,8 +29,8 @@ namespace PoeClone.Player
         /// <summary>A touch skill button was pressed this frame (its slot), or -1. PlayerSkills consumes it.</summary>
         public static int SkillPressed = -1;
 
-        /// <summary>A touch potion button was pressed this frame (0 health, 1 mana), or -1.</summary>
-        public static int PotionPressed = -1;
+        /// <summary>Touch potion buttons pressed this frame: bit 1 health, bit 2 mana.</summary>
+        public static int PotionPresses;
 
         public static void Clear()
         {
@@ -38,7 +38,7 @@ namespace PoeClone.Player
             Aim = Vector2.zero;
             AttackHeld = false;
             SkillPressed = -1;
-            PotionPressed = -1;
+            PotionPresses = 0;
         }
 
         // Domain reload is off in this project, so statics must be reset per play session.

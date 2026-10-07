@@ -482,9 +482,9 @@ public void Heal(float amount)
             if (cameraFollow != null)
                 cameraFollow.SnapToTarget();
 
+            Revived?.Invoke();
             if (loadingScreen != null)
                 yield return loadingScreen.FadeOut();
-            Revived?.Invoke();
         }
 
         /// <summary>

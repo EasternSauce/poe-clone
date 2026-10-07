@@ -111,7 +111,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "silk_robe", Name = "Mantle of the Still Mind",
                 Flavour = "Pain is a rumour. Mana is the truth.",
-                Mods = new[] { Mod(StatType.Evasion, 40), Mod(StatType.MaxMana, 60), Mod(StatType.CastSpeed, 15), Mod(StatType.CooldownRecovery, 15), Mod(StatType.ManaRegen, 40) }
+                Mods = new[] { Mod(StatType.Evasion, 40), Mod(StatType.MaxMana, 60), Mod(StatType.CastSpeed, 30), Mod(StatType.ManaRegen, 40) }
             },
             new Unique
             {
@@ -153,10 +153,10 @@ namespace PoeClone.Inventory
                 Mods = new[] { Mod(StatType.Evasion, 32), Mod(StatType.CriticalChance, 40), Mod(StatType.LightningResistance, 15), Mod(StatType.Stormblade, 35) } },
             new Unique { BaseId = "silk_slippers", Name = "Winter's Passage",
                 Flavour = "Every hurried step leaves a little winter behind.",
-                Mods = new[] { Mod(StatType.Evasion, 24), Mod(StatType.ColdResistance, 18), Mod(StatType.CooldownRecovery, 5), Mod(StatType.GlacialStep, 1) } },
+                Mods = new[] { Mod(StatType.Evasion, 24), Mod(StatType.ColdResistance, 18), Mod(StatType.CastSpeed, 5), Mod(StatType.GrantDash, 5), Mod(StatType.GlacialStep, 1) } },
             new Unique { BaseId = "sage_circlet", Name = "Mercy's Echo",
                 Flavour = "The last prayer is never spoken only once.",
-                Mods = new[] { Mod(StatType.MaxMana, 25), Mod(StatType.LifeRegen, 2), Mod(StatType.GrantRejuvenate, 5), Mod(StatType.SecondWind, 1) } },
+                Mods = new[] { Mod(StatType.MaxMana, 25), Mod(StatType.LifeRegen, 2), Mod(StatType.GrantWarCry, 5), Mod(StatType.SecondWind, 1) } },
             new Unique { BaseId = "grimoire", Name = "Ledger of the Fallen",
                 Flavour = "The final entry always points to the next name.",
                 Mods = new[] { Mod(StatType.GrantDeathMark, 6), Mod(StatType.MinionDamage, 12), Mod(StatType.MinionLife, 15), Mod(StatType.DeathsHerald, 1) } },

@@ -143,8 +143,6 @@ namespace PoeClone.Network
                 if (Role == SessionRole.Player)
                 {
                     PoeClone.Player.SaveSystem.Profiles();
-                    string savedId = PlayerPrefs.GetString("PoeClone.ActiveCharacter.v1", "");
-                    if (!string.IsNullOrEmpty(savedId)) PoeClone.Player.SaveSystem.SelectProfile(savedId);
                     namePrompt.ShowCharacters(() =>
                     {
                         PlayerName = SaveSystem.ActiveCharacterName;

@@ -1890,6 +1890,7 @@ private Vector2 CellSize(int w, int h)
 
         private void ThrowCursorItem()
         {
+            UiKit.ClickConsumedFrame = Time.frameCount;
             ItemData item = cursorItem;
             cursorItem = null;
             inventory.ThrowAway(item);

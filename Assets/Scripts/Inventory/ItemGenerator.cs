@@ -431,11 +431,9 @@ namespace PoeClone.Inventory
             // Like other level-scaled stats, cast speed rolls improve in higher-level areas.
             Aff(StatType.CastSpeed, 6, 18, true, ItemType.Weapon).Only(Staves).Weighted(1.5f),
             Aff(StatType.CastSpeed, 4, 12, true, ItemType.Weapon).Only(Sceptres).Weighted(1f),
-            Aff(StatType.CastSpeed, 4, 10, true, ItemType.Ring, ItemType.Amulet, ItemType.Gloves, ItemType.Grimoire).Weighted(1f),
+            Aff(StatType.CastSpeed, 4, 10, true, ItemType.Ring, ItemType.Amulet, ItemType.Gloves, ItemType.Grimoire, ItemType.Belt).Weighted(1f),
             Aff(StatType.CastSpeed, 3, 8, true, ItemType.Helmet, ItemType.BodyArmour).Weighted(0.6f),
             Aff(StatType.MaxMana, 10, 25, true, ItemType.Grimoire),
-            Aff(StatType.CooldownRecovery, 5, 15, false, ItemType.Weapon).Only(Staves),
-            Aff(StatType.CooldownRecovery, 4, 10, false, ItemType.Amulet, ItemType.Helmet, ItemType.Belt).Weighted(0.6f),
 
             // "+1 to level of ..." spells: staves, amulets (all spells) and rings (one element).
             Aff(StatType.AllSpellLevels, 1, 1, false, ItemType.Weapon, ItemType.Amulet).Only(Staves).Weighted(0.3f),
@@ -449,7 +447,7 @@ namespace PoeClone.Inventory
             Grant(StatType.GrantChainLightning, 0.15f, ItemType.Weapon).Only(Staves),
             Grant(StatType.GrantIceShard, 0.15f, ItemType.Weapon).Only(Staves),
             Grant(StatType.GrantFrostNova, 0.3f, ItemType.Weapon, ItemType.Helmet, ItemType.Gloves).Only(Staves),
-            Grant(StatType.GrantRejuvenate, 0.6f, ItemType.Weapon, ItemType.Amulet, ItemType.Belt).Only(Staves),
+            Grant(StatType.GrantWarCry, 0.6f, ItemType.Weapon, ItemType.Amulet, ItemType.Belt).Only(Staves),
             Grant(StatType.GrantCleave, 0.6f, ItemType.Weapon).Only(MeleeWeapons),
             Grant(StatType.GrantFangStrike, 0.28f, ItemType.Weapon).Only(Daggers),
             Grant(StatType.GrantPulverize, 0.38f, ItemType.Weapon).Only(Maces),
@@ -546,14 +544,13 @@ namespace PoeClone.Inventory
             { StatType.AreaOfEffect, "of Expanse" },
             { StatType.MeleeRange, "of Reach" },
             { StatType.CastSpeed, "of Talent" },
-            { StatType.CooldownRecovery, "of the Hourglass" },
             { StatType.AllSpellLevels, "of Mastery" },
             { StatType.FireSpellLevels, "of Embers" },
             { StatType.ColdSpellLevels, "of Rime" },
             { StatType.LightningSpellLevels, "of Sparks" },
             { StatType.ManaRegen, "of Wisdom" },
             { StatType.GrantFrostNova, "of Frost" },
-            { StatType.GrantRejuvenate, "of Renewal" },
+            { StatType.GrantWarCry, "of the War Cry" },
             { StatType.LifeRegen, "of Mending" },
             { StatType.LifeLeech, "of the Leech" },
             { StatType.MinionSpeed, "of the Horde" },
@@ -1010,7 +1007,6 @@ namespace PoeClone.Inventory
                 case StatType.ManaRegen:
                 case StatType.SpellDamage:
                 case StatType.CastSpeed:
-                case StatType.CooldownRecovery:
                 case StatType.AllSpellLevels:
                 case StatType.FireSpellLevels:
                 case StatType.ColdSpellLevels:
@@ -1020,7 +1016,7 @@ namespace PoeClone.Inventory
                 case StatType.GrantIceShard:
                 case StatType.GrantTeleport:
                 case StatType.GrantFrostNova:
-                case StatType.GrantRejuvenate:
+                case StatType.GrantWarCry:
                 case StatType.GrantRaiseSkeletons:
                 case StatType.MinionDamage:
                 case StatType.MinionLife:

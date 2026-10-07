@@ -30,6 +30,7 @@ namespace PoeClone.Network.Replication
         public float sz;
         public int en;     // enemies: 1 = enraged
         public float bs;   // boss visual scale
+        public int bh;     // 1 = boss health bar hidden during dialogue or transformation
         public int bp;     // Shepherd phase (0 for other entities)
         public int bm;     // boss animation sequence counter
         public int ba;     // boss animation id (ShepherdAnimator / CarrionSaintAnimator)

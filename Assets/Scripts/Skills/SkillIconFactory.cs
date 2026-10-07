@@ -136,13 +136,12 @@ namespace PoeClone.Skills
                             0.5f + Mathf.Cos(t) * 0.46f, 0.5f + Mathf.Sin(t) * 0.46f, 0.065f));
                     }
                     break;
-                case SkillId.Rejuvenate:
-                    a.Add(Disc(0.34f, 0.64f, 0.2f));
-                    a.Add(Disc(0.66f, 0.64f, 0.2f));
-                    a.Add(Poly(0.15f, 0.64f, 0.85f, 0.64f, 0.5f, 0.13f));
-                    c.Add(Poly(0.46f, 0.77f, 0.54f, 0.77f, 0.54f, 0.62f, 0.68f, 0.62f,
-                        0.68f, 0.54f, 0.54f, 0.54f, 0.54f, 0.4f, 0.46f, 0.4f,
-                        0.46f, 0.54f, 0.32f, 0.54f, 0.32f, 0.62f, 0.46f, 0.62f));
+                case SkillId.WarCry:
+                    a.Add(Poly(0.18f, 0.4f, 0.18f, 0.6f, 0.63f, 0.83f, 0.63f, 0.17f));
+                    a.Add(Line(0.25f, 0.39f, 0.37f, 0.16f, 0.1f));
+                    a.Add(Line(0.72f, 0.5f, 0.94f, 0.5f, 0.06f));
+                    a.Add(Line(0.71f, 0.69f, 0.9f, 0.83f, 0.06f));
+                    a.Add(Line(0.71f, 0.31f, 0.9f, 0.17f, 0.06f));
                     break;
                 case SkillId.ChainLightning:
                     a.Add(Poly(0.56f, 0.94f, 0.22f, 0.46f, 0.45f, 0.48f, 0.32f, 0.07f,

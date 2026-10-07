@@ -784,6 +784,7 @@ namespace PoeClone.Network
 
             Vector3 at = puppet.Root.transform.position;
             puppet.Health.ApplyReplicatedHealth(e.hp, e.mhp);
+            puppet.Health.HideBossBar = e.bh != 0;
 
             if (puppet.Health.IsDead)
                 return;
@@ -1075,6 +1076,7 @@ namespace PoeClone.Network
             if (puppet.Health != null)
             {
                 puppet.Health.ApplyReplicatedHealth(e.hp, e.mhp);
+                puppet.Health.HideBossBar = e.bh != 0;
                 if (e.d != 0)
                     puppet.Health.ApplyReplicatedDeath(instant: true);
             }

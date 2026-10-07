@@ -178,6 +178,8 @@ namespace PoeClone.Enemies
         // A stagger while it's still crouched calls the jump off.
         private IEnumerator Leap(Vector3 landing, float damage)
         {
+            landing = World.GroundObstacleMotion.Clamp(body, transform.position, KeepClear(landing, LeapGap(transform)));
+            LastTarget = landing;
             busyUntil = Time.time + LeapCrouch + LeapAir + 0.3f;
             GetComponentInChildren<CreatureAnimator>()?.Crouch(LeapCrouch);
 
@@ -218,7 +220,10 @@ namespace PoeClone.Enemies
                 float f = Mathf.Clamp01(t / LeapAir);
                 float rise = height * 4f * f * (1f - f);
                 Vector3 want = Vector3.Lerp(start, landing, f) + Vector3.up * rise;
-                body.Move(KeepClear(want, gap) - transform.position);
+                // Keep collision checks on the ground plane; the arc cannot clear scenery.
+                Vector3 grounded = new Vector3(transform.position.x, start.y, transform.position.z);
+                Vector3 clear = World.GroundObstacleMotion.Clamp(body, grounded, KeepClear(want, gap));
+                body.Move(clear - transform.position);
 
                 // In the way: still low enough to bowl into the player rather than sail over them.
                 if (!struck && player != null && !player.IsDead && rise < 1.5f &&
@@ -231,7 +236,11 @@ namespace PoeClone.Enemies
                 yield return null;
             }
             if (!health.IsDead)
-                body.Move(KeepClear(landing, gap) - transform.position + Vector3.down * 0.2f);
+            {
+                Vector3 grounded = new Vector3(transform.position.x, start.y, transform.position.z);
+                Vector3 clear = World.GroundObstacleMotion.Clamp(body, grounded, KeepClear(landing, gap));
+                body.Move(clear - transform.position + Vector3.down * 0.2f);
+            }
         }
 
         // Never comes down on top of the player (the colliders would overlap and it would end up

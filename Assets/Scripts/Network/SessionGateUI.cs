@@ -44,7 +44,7 @@ namespace PoeClone.Network
             var ctrl = GameSessionController.Instance;
 
             bool shouldShow = ctrl != null && ctrl.Role == SessionRole.Player &&
-                !(ctrl.PlayGranted && PoeClone.Player.SaveSystem.CharacterLoaded);
+                ctrl.PlayGranted && !PoeClone.Player.SaveSystem.CharacterLoaded;
 
             canvasGroup.alpha = shouldShow ? 1f : 0f;
             canvasGroup.blocksRaycasts = shouldShow;

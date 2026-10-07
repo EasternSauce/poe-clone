@@ -10,7 +10,7 @@ namespace PoeClone.Skills
         FireBolt,
         Dash,
         FrostNova,
-        Rejuvenate,
+        WarCry,
         ChainLightning,
         IceShard,
         Teleport,
@@ -161,9 +161,9 @@ namespace PoeClone.Skills
             },
             new SkillDefinition
             {
-                Id = SkillId.Rejuvenate, Name = "Rejuvenate", Short = "REJ", Grant = StatType.GrantRejuvenate, RollsOn = "staves, amulets, belts",
-                Spell = true, ManaCost = 22f, Cooldown = 18f, Color = new Color(0.45f, 0.95f, 0.45f),
-                Description = "Restore 35% of your life (+2.5% per level) over three seconds."
+                Id = SkillId.WarCry, Name = "War Cry", Short = "CRY", Grant = StatType.GrantWarCry, RollsOn = "staves, amulets, belts",
+                Spell = true, BaseDamage = 8f, ManaCost = 18f, Cooldown = 10f, Color = new Color(1f, 0.7f, 0.25f),
+                Description = "Unleash a physical shockwave around you and gain Onslaught for 4 seconds (+0.2 seconds per level), increasing attack speed, cast speed and movement speed."
             },
             new SkillDefinition
             {

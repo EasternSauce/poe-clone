@@ -142,7 +142,20 @@ namespace PoeClone.Inventory
             Width = width;
             Height = height;
             Tint = tint;
-            Modifiers = modifiers == null ? NoModifiers : new List<StatModifier>(modifiers);
+            // Saved cooldown bonuses migrate to cast speed in StatModifier. Present their
+            // combined value as one line, including older gear that carried both stats.
+            var normalized = modifiers == null ? new List<StatModifier>() : new List<StatModifier>(modifiers);
+            float castSpeed = 0f;
+            int castIndex = -1;
+            for (int i = normalized.Count - 1; i >= 0; i--)
+                if (normalized[i].Stat == StatType.CastSpeed)
+                {
+                    castSpeed += normalized[i].Value;
+                    castIndex = i;
+                    normalized.RemoveAt(i);
+                }
+            if (castIndex >= 0) normalized.Insert(castIndex, new StatModifier(StatType.CastSpeed, castSpeed));
+            Modifiers = normalized;
             HasCape = hasCape;
             WeaponType = weaponType;
             Rarity = rarity ?? (Modifiers.Count > 0 ? ItemRarity.Magic : ItemRarity.Normal);

@@ -1,5 +1,11 @@
 # Deployment
 
+Start with this file and the current Git status. Do not run a generic project
+discovery scan (for example, searching for `AGENTS.md`, `package.json`, README,
+or hosting config files) when the deployment target and workflow are already
+documented here. Inspect additional files only to resolve a specific deployment
+question.
+
 1. Review changes, commit intended source changes, and push `master`.
    Do not include generated Unity files. Run tests only when requested.
 

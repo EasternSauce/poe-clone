@@ -66,9 +66,9 @@ namespace PoeClone.UI
             }
 
             bool actArena = AreaManager.Instance != null && AreaManager.Instance.CurrentAreaIndex == WorldBuilder.ActArena;
-            bool show = boss != null && !boss.IsDead && focus != null &&
+            bool show = boss != null && !boss.IsDead && !boss.HideBossBar && focus != null &&
                         (actArena && EnemyKinds.Get(boss.KindIndex).Boss == BossStyle.Shepherd ||
-                         !boss.HideBossBar && (boss.transform.position - focus.position).sqrMagnitude <= ShowRange * ShowRange);
+                         (boss.transform.position - focus.position).sqrMagnitude <= ShowRange * ShowRange);
             root.SetActive(show);
             if (!show)
                 return;

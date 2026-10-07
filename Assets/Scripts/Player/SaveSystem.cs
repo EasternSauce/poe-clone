@@ -112,6 +112,12 @@ namespace PoeClone.Player
             if (instance != null) instance.TryLoadSelectedProfile();
         }
 
+        public static void SaveCharacterNow()
+        {
+            if (instance != null && instance.loaded && !instance.erased && Playing())
+                instance.Save();
+        }
+
         public static void SaveBeforeCharacterSwitch()
         {
             if (instance != null && instance.loaded && !instance.erased)
@@ -279,6 +285,8 @@ namespace PoeClone.Player
             PlayerSkills skills = stats.GetComponent<PlayerSkills>();
             if (skills != null)
             {
+                data.activeBowSlot = skills.SavedBowSlot;
+                data.activeBowSkill = skills.SavedBowSkill;
                 for (int k = 0; k < SkillBook.SlotCount; k++)
                 {
                     SkillId? id = skills.Slot(k);
@@ -383,6 +391,13 @@ namespace PoeClone.Player
                     passives.Allocation.ResetAll();
                 else if (data.passives != null)
                     passives.Restore(data.passives);
+                if (!passives.Allocation.IsFullyConnected)
+                {
+                    // Tree revisions can leave old purchases separated by unallocated travel
+                    // nodes. Refund the entire allocation without spending a reset charge.
+                    passives.Allocation.ResetAll();
+                    resetPassives = true;
+                }
                 passives.SetRespecCharges(data.respecCharges);
             }
 
@@ -407,6 +422,8 @@ namespace PoeClone.Player
                         skills.Assign(slot, (SkillId)data.skillSlots[k]); // old saves: choose one current grant
                 }
             }
+
+            skills?.RestoreBowToggle(data.activeBowSlot, data.activeBowSkill);
 
             QuestLog log = QuestLog.Instance;
             // Quests saved under an older quest book start over (the places visited are kept).
@@ -435,6 +452,8 @@ namespace PoeClone.Player
 
             if (resetPassives)
             {
+                CombatText.Show(stats.transform.position + Vector3.up * 2.8f,
+                    "Passive tree reset for free - all points refunded", UiKit.Gold, 3f);
                 // Persist the migration now so a reload cannot restore the old allocation.
                 data.passives = new List<string>();
                 data.passiveAllocationVersion = SaveData.CurrentPassiveAllocationVersion;

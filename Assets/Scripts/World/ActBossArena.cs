@@ -43,7 +43,8 @@ namespace PoeClone.World
         }
         private void Update()
         {
-            if (slain && Time.time >= respawnAt && manager != null && manager.CurrentAreaIndex == WorldBuilder.ActArena)
+            if (slain && Time.time >= respawnAt && player != null && !player.IsDead &&
+                manager != null && manager.CurrentAreaIndex == WorldBuilder.ActArena)
                 Spawn();
             if (introState == 0 && Boss != null && player != null && !player.IsDead &&
                 manager != null && manager.CurrentAreaIndex == WorldBuilder.ActArena &&
@@ -61,6 +62,7 @@ namespace PoeClone.World
             speech = null;
             if (Boss == null || Boss.IsDead || player == null || player.IsDead) yield break;
             Boss.Immune = false;
+            Boss.HideBossBar = false;
             SetBossActive(true);
             introState = 2;
         }
@@ -77,8 +79,12 @@ namespace PoeClone.World
             var go = Boss.gameObject;
             foreach (MonoBehaviour behaviour in go.GetComponents<MonoBehaviour>())
                 if (behaviour is EnemyController || behaviour is EnemyCombat || behaviour is EnemySkills ||
-                    behaviour is BossAbilities || behaviour is ShepherdFight)
+                    behaviour is BossAbilities || behaviour is ShepherdFight || behaviour is CarrionSaintFight ||
+                    behaviour is CarrionSaintReveal)
+                {
+                    if (!active) behaviour.StopAllCoroutines();
                     behaviour.enabled = active;
+                }
         }
         private void AreaChanged(int index)
         {
@@ -99,7 +105,16 @@ namespace PoeClone.World
         private void PlayerDied()
         {
             if (manager == null || manager.CurrentAreaIndex != WorldBuilder.ActArena) return;
-            if (Boss != null && !Boss.IsDead) { Destroy(Boss.gameObject); Boss = null; }
+            StopAllCoroutines();
+            SetBossActive(false);
+            if (Boss != null && !Boss.IsDead)
+            {
+                Boss.Immune = true;
+                Boss.GetComponentInChildren<ShepherdAnimator>()?.Stop();
+                Boss.GetComponentInChildren<CarrionSaintAnimator>()?.Stop();
+                var walk = Boss.GetComponentInChildren<PoeClone.Visuals.CharacterWalkAnimator>();
+                if (walk != null) walk.Crouch = 0f;
+            }
             speech = null; introState = 2;
             player.SetSpawnPoint(outside.position, outside.rotation);
         }
@@ -124,6 +139,7 @@ namespace PoeClone.World
             Boss.Died += BossDied;
             Boss.Floor = Boss.MaxHealth * ShepherdFight.PhaseTwoAt;
             Boss.Immune = true;
+            Boss.HideBossBar = true;
             SetBossActive(false);
             introState = 0;
             speech = null;

@@ -371,6 +371,7 @@ namespace PoeClone.Network
                 e.i = IdFor(enemy);
                 e.hp = enemy.CurrentHealth;
                 e.mhp = enemy.MaxHealth;
+                e.bh = enemy.HideBossBar ? 1 : 0;
                 e.d = enemy.IsDead ? 1 : 0;
 
                 var attack = enemy.GetComponentInChildren<CharacterAttackAnimator>();

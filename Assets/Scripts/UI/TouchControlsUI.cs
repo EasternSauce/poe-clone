@@ -513,13 +513,13 @@ namespace PoeClone.UI
             healthPotionImage = NewRoundButton("HealthPotion", combat, new Vector2(1f, 0f), new Vector2(-370f, 40f), 72f, null);
             AddPotionIcon(healthPotionImage, ItemGenerator.HealthPotionId);
             healthPotionText = AddPotionCount(healthPotionImage, new Color(1f, 0.6f, 0.55f));
-            healthPotionImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.PotionPressed = 0;
+            healthPotionImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.PotionPresses |= 1;
             TouchMode.AddBlocker(healthPotionImage.rectTransform);
 
             manaPotionImage = NewRoundButton("ManaPotion", combat, new Vector2(1f, 0f), new Vector2(-275f, 40f), 72f, null);
             AddPotionIcon(manaPotionImage, ItemGenerator.ManaPotionId);
             manaPotionText = AddPotionCount(manaPotionImage, new Color(0.65f, 0.72f, 1f));
-            manaPotionImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.PotionPressed = 1;
+            manaPotionImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.PotionPresses |= 2;
             TouchMode.AddBlocker(manaPotionImage.rectTransform);
 
             runImage = NewRoundButton("Run", combat, new Vector2(1f, 0f), new Vector2(-480f, 76f), 96f, "RUN");

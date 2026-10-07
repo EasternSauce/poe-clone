@@ -95,11 +95,20 @@ namespace PoeClone.World
             EnterArea(index, arrival, false);
         }
 
-        /// <summary>Leaves the act arena as part of its player-death reset flow.</summary>
+        /// <summary>Completes the arena exit under the revive routine's existing loading screen.</summary>
         public void EnterAreaAfterBossDeath(int index, Transform arrival)
         {
             if (CurrentAreaIndex != WorldBuilder.ActArena || index != WorldBuilder.Frozen) return;
-            EnterArea(index, arrival, true);
+            if (areas == null || index < 0 || index >= areas.Length || arrival == null) return;
+            if (areas[index].tintsSharedGround) ApplyGroundColor(areas[index].groundColor);
+            CurrentAreaIndex = index;
+            if (player != null)
+            {
+                player.GetComponent<PoeClone.Player.PlayerController>()?.CancelWalk();
+                player.GetComponent<PoeClone.Player.PlayerStats>()?.SetSpawnPoint(arrival.position, arrival.rotation);
+                AreaGate.DisarmAtArrival(index, player.position);
+            }
+            AreaChanged?.Invoke(index);
         }
 
         private void EnterArea(int index, Transform arrival, bool bossDeathReset)

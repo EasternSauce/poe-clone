@@ -44,7 +44,7 @@ namespace PoeClone.Inventory
         GrantFireBolt,
         GrantDash,
         GrantFrostNova,
-        GrantRejuvenate,
+        GrantWarCry,
         GrantChainLightning,
         GrantIceShard,
 
@@ -52,8 +52,8 @@ namespace PoeClone.Inventory
         FireSpellLevels,
         ColdSpellLevels,
         LightningSpellLevels,
-        CastSpeed,                  // % increased cast speed (spells used as the attack)
-        CooldownRecovery,           // % faster skill cooldowns
+        CastSpeed,                  // % faster casts and skill cooldowns
+        LegacyCooldownRecovery,     // reserved saved ID; migrated to CastSpeed
 
         // Mostly from the passive tree (see HitEffects for what each does in a fight).
         FireDamage,                 // % increased fire damage
@@ -77,7 +77,7 @@ namespace PoeClone.Inventory
         // Skill synergies (keystones): each makes two of the game's skills or effects work together.
         GlacialStep,                // 1: Dash ends in a Frost Nova
         Shatter,                    // % chance for a chilled enemy killed to burst into ice, chilling and hurting those near
-        SecondWind,                 // 1: Rejuvenate also refills mana and grants Onslaught
+        SecondWind,                 // 1: War Cry also refills mana and extends Onslaught
         Stormblade,                 // % chance for an attack critical strike to arc lightning to nearby enemies
 
         GrantTeleport,              // a skill grant like the ones above (added later, so it sits here)
@@ -229,7 +229,7 @@ namespace PoeClone.Inventory
                 case StatType.GrantFireBolt: return "Fire Bolt";
                 case StatType.GrantDash: return "Dash";
                 case StatType.GrantFrostNova: return "Frost Nova";
-                case StatType.GrantRejuvenate: return "Rejuvenate";
+                case StatType.GrantWarCry: return "War Cry";
                 case StatType.GrantChainLightning: return "Chain Lightning";
                 case StatType.GrantIceShard: return "Ice Shard";
                 case StatType.GrantTeleport: return "Teleport";
@@ -288,7 +288,7 @@ namespace PoeClone.Inventory
 
         public StatModifier(StatType stat, float value)
         {
-            Stat = stat;
+            Stat = stat == StatType.LegacyCooldownRecovery ? StatType.CastSpeed : stat;
             Value = value;
         }
     }
@@ -309,7 +309,7 @@ namespace PoeClone.Inventory
 
         public BaseStats Set(StatType stat, float value)
         {
-            values[(int)stat] = value;
+            values[(int)(stat == StatType.LegacyCooldownRecovery ? StatType.CastSpeed : stat)] = value;
             return this;
         }
     }
@@ -598,7 +598,7 @@ namespace PoeClone.Inventory
                 case StatType.ColdSpellLevels: return "Cold Spell Levels";
                 case StatType.LightningSpellLevels: return "Lightning Spell Levels";
                 case StatType.CastSpeed: return "Cast Speed";
-                case StatType.CooldownRecovery: return "Cooldown Recovery";
+                case StatType.LegacyCooldownRecovery: return "Cast Speed";
                 case StatType.FireDamage: return "Fire Damage";
                 case StatType.ColdDamage: return "Cold Damage";
                 case StatType.LightningDamage: return "Lightning Damage";
@@ -700,7 +700,7 @@ namespace PoeClone.Inventory
                 case StatType.ChillOnHit:
                 case StatType.MeleeRange:
                 case StatType.CastSpeed:
-                case StatType.CooldownRecovery:
+                case StatType.LegacyCooldownRecovery:
                 case StatType.FireDamage:
                 case StatType.ColdDamage:
                 case StatType.LightningDamage:
@@ -793,7 +793,7 @@ namespace PoeClone.Inventory
                 case StatType.ColdSpellLevels: return sign + n + " to Level of all Cold Spells";
                 case StatType.LightningSpellLevels: return sign + n + " to Level of all Lightning Spells";
                 case StatType.CastSpeed: return n + "% increased Cast Speed";
-                case StatType.CooldownRecovery: return n + "% faster Skill Cooldowns";
+                case StatType.LegacyCooldownRecovery: return n + "% increased Cast Speed";
                 case StatType.FireDamage: return Increased(m, "Fire Damage");
                 case StatType.ColdDamage: return Increased(m, "Cold Damage");
                 case StatType.LightningDamage: return Increased(m, "Lightning Damage");
@@ -814,7 +814,7 @@ namespace PoeClone.Inventory
                 case StatType.ExplodeOnKill: return n + "% chance for enemies you kill to explode, dealing a sixth of their life as Fire damage around them";
                 case StatType.GlacialStep: return "Dash ends in a Frost Nova that chills everything around you";
                 case StatType.Shatter: return n + "% chance for Chilled enemies you kill to Shatter, dealing Cold damage and chilling those nearby";
-                case StatType.SecondWind: return "Rejuvenate also restores a third of your Mana and grants Onslaught";
+                case StatType.SecondWind: return "War Cry also restores a third of your Mana and extends Onslaught by 2 seconds";
                 case StatType.Stormblade: return n + "% chance for Attack Critical Strikes to arc Lightning to 3 nearby enemies";
                 case StatType.MinionDamage: return Increased(m, "Minion Damage");
                 case StatType.MinionLife: return Increased(m, "Minion Life");

@@ -348,6 +348,10 @@ namespace PoeClone.World
             bench.SetParent(t, false);
             bench.SetPositionAndRotation(p, Quaternion.Euler(0f, yaw, 0f));
             const float seatTop = 0.55f;
+            // Fill the footprint so the player cannot slip below the seat and step up its edge.
+            var blocker = bench.gameObject.AddComponent<BoxCollider>();
+            blocker.center = new Vector3(0f, seatTop * 0.5f, 0f);
+            blocker.size = new Vector3(3f, seatTop, 0.6f);
             LocalBox(bench, new Vector3(0f, seatTop - 0.05f, 0f), new Vector3(3f, 0.1f, 0.6f), kit.Mat("Wood"));
             for (int side = -1; side <= 1; side += 2)
                 LocalBox(bench, new Vector3(side * 1.3f, (seatTop - 0.1f) * 0.5f, 0f), new Vector3(0.12f, seatTop - 0.1f, 0.5f), kit.Mat("Wood"));
@@ -370,8 +374,8 @@ namespace PoeClone.World
             Claim(c + new Vector3(0f, 0f, 0f), 3f);
             Claim(c + new Vector3(30f, 0f, 0f), 3f);
 
-            // The crypt, north of the path.
-            Vector3 crypt = c + new Vector3(0f, 0f, 30f);
+            // The crypt, north-west of the path and well away from the central waystone.
+            Vector3 crypt = c + new Vector3(-26f, 0f, 32f);
             Box(t, crypt + new Vector3(0f, 2f, 0f), new Vector3(7f, 4f, 7f), kit.Mat("TombstoneDark"));
             Box(t, crypt + new Vector3(0f, 4.4f, 0f), new Vector3(7.8f, 0.8f, 7.8f), kit.Mat("Tombstone"));
             Box(t, crypt + new Vector3(0f, 1.3f, -3.55f), new Vector3(2f, 2.6f, 0.2f), kit.Mat("Charred"), solid: false);
@@ -413,8 +417,8 @@ namespace PoeClone.World
             Transform t = Group("Ruins");
 
             // The temple dais, with a ring of columns (some broken) and an altar.
-            // Keep the Warlord's dais well beyond the waystone arrival and its aggro range.
-            Vector3 temple = c + new Vector3(0f, 0f, 22f);
+            // The north-east pocket keeps the dais away from the waystone and the north gate.
+            Vector3 temple = c + new Vector3(30f, 0f, 24f);
             Box(t, temple + new Vector3(0f, 0.07f, 0f), new Vector3(20f, 0.14f, 20f), kit.Mat("Sandstone"), solid: false);
             for (int k = 0; k < 10; k++)
             {
@@ -473,14 +477,14 @@ namespace PoeClone.World
         }
 
         // The Frozen Hollow: snow, frosted pines, ice crystals and frozen ponds round the queen's
-        // throne, a ring of ice spikes north of the centre.
+        // throne, a ring of ice spikes north-east of the centre, clear of the waystone-to-door route.
         private void BuildFrozen()
         {
             Begin(Frozen, 404);
             Vector3 c = Centers[Frozen];
             Transform t = Group("Frozen");
 
-            Vector3 throne = c + new Vector3(0f, 0f, 28f);
+            Vector3 throne = c + new Vector3(34f, 0f, 20f);
             Cyl(t, throne + Vector3.up * 0.04f, 9f, 0.08f, kit.Mat("Ice"), solid: false);
             for (int k = 0; k < 12; k++)
             {

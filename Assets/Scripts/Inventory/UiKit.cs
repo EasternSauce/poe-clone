@@ -18,6 +18,9 @@ namespace PoeClone.Inventory
 
         public static int TextEditEndedFrame = -1;
 
+        // Shared across the inventory and gameplay assemblies.
+        public static int ClickConsumedFrame = -1;
+
         // The full-screen name prompt is supplied by the session UI (a separate assembly).
         public static System.Action<string, System.Action<string>> StashTabNamePrompt;
         public static bool IsStashNamePromptOpen;

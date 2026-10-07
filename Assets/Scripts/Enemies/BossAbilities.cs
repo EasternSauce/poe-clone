@@ -246,6 +246,7 @@ namespace PoeClone.Enemies
             if (jump.magnitude > 18f)
                 landing = start + jump.normalized * 18f;
             landing.y = start.y;
+            landing = World.GroundObstacleMotion.Clamp(body, start, KeepClear(landing, gap));
             Face(landing - start);
 
             bool landed = false;
@@ -285,10 +286,12 @@ namespace PoeClone.Enemies
                 // Tucked at the top of the arc, stretching out for the landing.
                 SetCrouch(f < 0.5f ? Mathf.Lerp(1f, 0.35f, f * 2f) : Mathf.Lerp(0.35f, 0.7f, (f - 0.5f) * 2f));
                 Vector3 want = Vector3.Lerp(from, landing, f) + Vector3.up * height * 4f * f * (1f - f);
-                MoveTo(KeepClear(want, gap));
+                Vector3 grounded = new Vector3(transform.position.x, start.y, transform.position.z);
+                MoveTo(World.GroundObstacleMotion.Clamp(body, grounded, KeepClear(want, gap)));
                 yield return null;
             }
-            MoveTo(KeepClear(landing, gap) + Vector3.down * 0.2f);
+            Vector3 groundPosition = new Vector3(transform.position.x, start.y, transform.position.z);
+            MoveTo(World.GroundObstacleMotion.Clamp(body, groundPosition, KeepClear(landing, gap)) + Vector3.down * 0.2f);
 
             // Hold the landing crouch a beat, then rise.
             float recover = 0.3f / T;

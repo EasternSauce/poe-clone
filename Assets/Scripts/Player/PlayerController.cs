@@ -175,7 +175,7 @@ namespace PoeClone.Player
             if (dashTimeLeft > 0f)
             {
                 dashTimeLeft -= Time.deltaTime;
-                controller.Move(dashVelocity * Time.deltaTime);
+                MoveAlongGround(dashVelocity * Time.deltaTime);
                 ApplyGravity();
                 return;
             }
@@ -219,7 +219,7 @@ namespace PoeClone.Player
             if (IsChilled)
                 speed *= chilledSpeed;
 
-            controller.Move(
+            MoveAlongGround(
                 movement *
                 speed *
                 Time.deltaTime
@@ -311,18 +311,16 @@ namespace PoeClone.Player
             return input.normalized;
         }
 
-        private static int clickConsumedFrame = -1;
-
         /// <summary>
         /// Marks this frame's click as used (an item picked up, someone talked to, a gate walked to),
         /// so the attack doesn't also fire on it, whichever script happens to run first.
         /// </summary>
         public static void ConsumeClick()
         {
-            clickConsumedFrame = Time.frameCount;
+            PoeClone.Inventory.UiKit.ClickConsumedFrame = Time.frameCount;
         }
 
-        public static bool ClickConsumed => clickConsumedFrame == Time.frameCount;
+        public static bool ClickConsumed => PoeClone.Inventory.UiKit.ClickConsumedFrame == Time.frameCount;
 
         /// <summary>The mouse is over a clickable on-screen panel (skills, chat...), not the world.</summary>
         internal static bool IsPointerOverUi()
@@ -336,6 +334,12 @@ namespace PoeClone.Player
             if (PoeClone.Inventory.UiKit.IsStashNamePromptOpen) return true;
             EventSystem es = EventSystem.current;
             return es != null && es.currentSelectedGameObject != null;
+        }
+
+        private void MoveAlongGround(Vector3 motion)
+        {
+            Vector3 target = World.GroundObstacleMotion.Slide(controller, transform.position, transform.position + motion);
+            controller.Move(target - transform.position);
         }
 
         private void ApplyGravity()

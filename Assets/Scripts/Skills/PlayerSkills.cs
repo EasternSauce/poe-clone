@@ -112,7 +112,7 @@ namespace PoeClone.Skills
             };
         }
 
-        private void Record(SkillDefinition skill, int level, float size = 0f, int count = 0, Vector3[] points = null)
+        private void Record(SkillDefinition skill, int level, float size = 0f, int count = 0, Vector3[] points = null, Vector3? at = null)
         {
             CastCount++;
             recentCasts[CastCount % RecentCastCount] = new CastRecord
@@ -120,7 +120,7 @@ namespace PoeClone.Skills
                 Number = CastCount,
                 Skill = skill.Id,
                 Level = level,
-                At = transform.position,
+                At = at ?? transform.position,
                 Facing = transform.forward,
                 Size = size,
                 Count = count,
@@ -195,8 +195,8 @@ namespace PoeClone.Skills
                     SkillEffects.Arc(cast.At + Vector3.up * 0.8f, cast.At + Vector3.up * 0.8f + facing * cast.Size, skill.Color, 0.18f);
                     break;
 
-                case SkillId.Rejuvenate:
-                    SkillEffects.Rise(caster, skill.Color);
+                case SkillId.WarCry:
+                    SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, 0.45f);
                     break;
 
                 case SkillId.RaiseSkeletons:
@@ -579,7 +579,7 @@ namespace PoeClone.Skills
         public float CastRateMultiplier => (inventory != null && inventory.Stats != null ? inventory.Stats.CastRateMultiplier : 1f) *
             (controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f);
 
-        /// <summary>Cooldown at the skill's current level, after Cooldown Recovery (or the cast interval for the attack spell).</summary>
+        /// <summary>Cooldown at the skill's current level, after Cast Speed (including Onslaught).</summary>
         public float Cooldown(SkillId id)
         {
             SkillDefinition skill = SkillBook.Get(id);
@@ -588,7 +588,7 @@ namespace PoeClone.Skills
             float cooldown = skill.CooldownAt(Mathf.Max(1, Level(id)));
             if (skill.Main && MainSkill == id)
                 return cooldown / CastRateMultiplier;
-            return cooldown / (1f + Mathf.Max(-50f, Stat(StatType.CooldownRecovery)) / 100f);
+            return cooldown / CastRateMultiplier;
         }
 
         public float CooldownAt(int slot)
@@ -598,7 +598,7 @@ namespace PoeClone.Skills
             SkillDefinition skill = SkillBook.Get(id.Value);
             if (skill.Bow) return 0f;
             return skill.CooldownAt(Mathf.Max(1, LevelAt(slot))) /
-                (1f + Mathf.Max(-50f, Stat(StatType.CooldownRecovery)) / 100f);
+                CastRateMultiplier;
         }
 
         public float CooldownForGrant(SkillGrant grant)
@@ -606,7 +606,7 @@ namespace PoeClone.Skills
             SkillDefinition skill = SkillBook.Get(grant.Id);
             if (skill.Bow) return 0f;
             return skill.CooldownAt(GrantLevelWithBonuses(grant)) /
-                (1f + Mathf.Max(-50f, Stat(StatType.CooldownRecovery)) / 100f);
+                CastRateMultiplier;
         }
 
         public float ManaCostForGrant(SkillGrant grant) =>
@@ -741,8 +741,8 @@ namespace PoeClone.Skills
             if (CooldownLeftAt(slot) > 0f || controller.IsDashing || controller.IsSkillCommitted)
                 return false;
 
-            // Swinging skills wait for the current swing; Dash and Rejuvenate can cut in.
-            bool usesArms = skill.Id != SkillId.Dash && skill.Id != SkillId.Rejuvenate;
+            // Swinging skills wait for the current swing; Dash and War Cry can cut in.
+            bool usesArms = skill.Id != SkillId.Dash && skill.Id != SkillId.WarCry;
             if (usesArms && attackAnimator != null && attackAnimator.IsAttacking)
                 return false;
 
@@ -883,7 +883,7 @@ namespace PoeClone.Skills
                 case SkillId.Dash:
                     Vector3 dir = TouchMode.Active || !DashTowardsCursor ? controller.InputDirection() : AimDirection();
                     if (dir.sqrMagnitude < 0.01f)
-                        dir = TouchMode.Active || DashTowardsCursor ? AimDirection() : transform.forward;
+                        dir = AimDirection();
                     SkillEffects.Shockwave(transform.position, 1.2f, skill.Color, 0.25f);
                     Record(skill, level);
                     controller.Dash(dir, 7f + 0.35f * (level - 1), 0.18f);
@@ -904,15 +904,15 @@ namespace PoeClone.Skills
                     }
                     break;
 
-                case SkillId.Rejuvenate:
-                    stats.HealOverTime(stats.MaxHealth * (0.35f + 0.025f * (level - 1)), 3f);
-                    SkillEffects.Rise(transform, skill.Color);
+                case SkillId.WarCry:
+                    float cryRadius = 4f * area;
+                    SkillEffects.Shockwave(transform.position, cryRadius, skill.Color, 0.45f);
+                    foreach (EnemyHealth enemy in EnemiesWithin(transform.position, cryRadius))
+                        Hit(enemy, damage, CombatText.PhysicalColor, attack: false, DamageType.Physical);
+                    controller.GrantOnslaught(4f + 0.2f * (level - 1) + (Stat(StatType.SecondWind) > 0f ? 2f : 0f));
                     if (Stat(StatType.SecondWind) > 0f)
-                    {
                         stats.RestoreMana(stats.MaxMana / 3f);
-                        controller.GrantOnslaught(HitEffects.OnslaughtSeconds + 2f);
-                    }
-                    Record(skill, level);
+                    Record(skill, level, cryRadius);
                     break;
 
                 case SkillId.ChainLightning:
@@ -1002,6 +1002,9 @@ namespace PoeClone.Skills
             Face(AimDirection());
             PlaySkillAnimation(skill, animationWeapon);
             yield return new WaitForSeconds(windup);
+            // Read the hammer position after the arm and body have applied their strike pose.
+            if (skill == SkillId.Pulverize)
+                yield return new WaitForEndOfFrame();
             PlaySkillSound(skill, transform.position);
             release();
             yield return new WaitForSeconds(0.18f);
@@ -1074,12 +1077,16 @@ namespace PoeClone.Skills
         private void Pulverize(SkillDefinition skill, int level)
         {
             float radius = 3.6f * DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
-            SkillEffects.Shockwave(transform.position, radius, skill.Color, 0.42f);
+            Vector3 impact = transform.position + transform.forward * CharacterAttackAnimator.AttackRange(CurrentWeapon());
+            EquipmentVisuals visuals = GetComponentInChildren<EquipmentVisuals>();
+            if (visuals != null && visuals.TryGetMainHandHeadPosition(out Vector3 head))
+                impact = new Vector3(head.x, transform.position.y, head.z);
+            SkillEffects.Shockwave(impact, radius, skill.Color, 0.42f);
             // Match the impact treatment of a basic maul slam: ground burst plus a brief camera jolt.
             PoeClone.CameraSystem.CameraFollow.Shake(0.12f, 0.18f);
-            Record(skill, level, radius);
+            Record(skill, level, radius, at: impact);
             float damage = WeaponDamage() * (3.12f + 0.216f * (level - 1));
-            foreach (EnemyHealth enemy in EnemiesWithin(transform.position, radius))
+            foreach (EnemyHealth enemy in EnemiesWithin(impact, radius))
                 Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
         }
 

@@ -54,7 +54,8 @@ namespace PoeClone.Player
         private PlayerStats stats;
         private PlayerInventory inventory;
         private PlayerSkills skills;
-        private float readyAt;
+        private float healthReadyAt;
+        private float manaReadyAt;
 
         public int HealthPotions => inventory != null ? inventory.HealthPotions : 0;
         public int ManaPotions => inventory != null ? inventory.ManaPotions : 0;
@@ -105,37 +106,47 @@ namespace PoeClone.Player
         {
             if (Time.timeScale <= 0f)
             {
-                VirtualInput.PotionPressed = -1;
+                VirtualInput.PotionPresses = 0;
                 return;
             }
             if (stats == null || stats.IsDead)
             {
-                VirtualInput.PotionPressed = -1;
+                VirtualInput.PotionPresses = 0;
                 return;
             }
 
-            int pressed = VirtualInput.PotionPressed;
-            VirtualInput.PotionPressed = -1;
+            int presses = VirtualInput.PotionPresses;
+            VirtualInput.PotionPresses = 0;
+            bool healthPressed = (presses & 1) != 0;
+            bool manaPressed = (presses & 2) != 0;
 
             Keyboard keyboard = Keyboard.current;
-            if (pressed < 0 && keyboard != null && !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused())
+            if (keyboard != null && !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused())
             {
-                for (int slot = 0; slot < PotionKeys.Length && pressed < 0; slot++)
+                for (int slot = 0; slot < PotionKeys.Length; slot++)
                     if (keyboard[PotionKeys[slot]].wasPressedThisFrame && PotionAt(slot) > 0 && !HasSkill(slot))
-                        pressed = PotionAt(slot) - 1;
+                    {
+                        healthPressed |= PotionAt(slot) == 1;
+                        manaPressed |= PotionAt(slot) == 2;
+                    }
             }
 
             Mouse mouse = Mouse.current;
-            if (pressed < 0 && mouse != null && !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused() && !TouchMode.Active && !PlayerController.IsPointerOverUi())
+            if (mouse != null && !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused() && !TouchMode.Active && !PlayerController.IsPointerOverUi())
             {
-                if (mouse.rightButton.wasPressedThisFrame && PotionAt(8) > 0 && !HasSkill(8)) pressed = PotionAt(8) - 1;
-                else if (mouse.backButton.wasPressedThisFrame && PotionAt(9) > 0 && !HasSkill(9)) pressed = PotionAt(9) - 1;
-                else if (mouse.forwardButton.wasPressedThisFrame && PotionAt(10) > 0 && !HasSkill(10)) pressed = PotionAt(10) - 1;
+                for (int slot = 8; slot <= 10; slot++)
+                {
+                    bool down = slot == 8 ? mouse.rightButton.wasPressedThisFrame :
+                        slot == 9 ? mouse.backButton.wasPressedThisFrame : mouse.forwardButton.wasPressedThisFrame;
+                    if (!down || HasSkill(slot)) continue;
+                    healthPressed |= PotionAt(slot) == 1;
+                    manaPressed |= PotionAt(slot) == 2;
+                }
             }
 
-            if (pressed == 0)
+            if (healthPressed)
                 DrinkHealth();
-            else if (pressed == 1)
+            if (manaPressed)
                 DrinkMana();
         }
 
@@ -149,10 +160,10 @@ namespace PoeClone.Player
 
         public bool DrinkHealth()
         {
-            if (HealthPotions <= 0 || Time.time < readyAt || !inventory.UsePotion(true))
+            if (HealthPotions <= 0 || Time.time < healthReadyAt || !inventory.UsePotion(true))
                 return false;
 
-            readyAt = Time.time + DrinkCooldown;
+            healthReadyAt = Time.time + DrinkCooldown;
             float recovery = inventory.Stats.Total(StatType.HealthPotionRecovery);
             stats.HealOverTime(stats.MaxHealth * 0.4f * (1f + Mathf.Max(0f, recovery) / 100f), 2.5f);
             if (inventory.Stats.Total(StatType.OnslaughtOnHealthPotion) > 0f)
@@ -167,10 +178,10 @@ namespace PoeClone.Player
 
         public bool DrinkMana()
         {
-            if (ManaPotions <= 0 || Time.time < readyAt || !inventory.UsePotion(false))
+            if (ManaPotions <= 0 || Time.time < manaReadyAt || !inventory.UsePotion(false))
                 return false;
 
-            readyAt = Time.time + DrinkCooldown;
+            manaReadyAt = Time.time + DrinkCooldown;
             stats.RestoreMana(stats.MaxMana * 0.5f);
             Feedback(new Color(0.3f, 0.45f, 1f));
             return true;

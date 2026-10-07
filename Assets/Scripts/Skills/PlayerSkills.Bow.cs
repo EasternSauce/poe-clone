@@ -22,6 +22,21 @@ namespace PoeClone.Skills
         private SkillId? toggledBow;
         private int toggledBowSlot = -1;
 
+        public int SavedBowSlot => toggledBowSlot + 1;
+        public int SavedBowSkill => toggledBow.HasValue ? (int)toggledBow.Value + 1 : 0;
+
+        /// <summary>Restore only after this character's equipment and bindings have loaded.</summary>
+        public void RestoreBowToggle(int savedSlot, int savedSkill)
+        {
+            toggledBow = savedSkill > 0 ? (SkillId?)(SkillId)(savedSkill - 1) : null;
+            toggledBowSlot = savedSlot - 1;
+            if (toggledBow.HasValue && !SkillBook.Get(toggledBow.Value).Bow)
+                toggledBow = null;
+            CheckBowToggle();
+            if (!toggledBow.HasValue) toggledBowSlot = -1;
+            Changed?.Invoke();
+        }
+
         // Degrees between arrows: Split Shot's wide fan, Piercing Shot's tight one.
         private const float SplitSpread = 13f;
         private const float PierceSpread = 5f;
@@ -64,6 +79,7 @@ namespace PoeClone.Skills
                 toggledBowSlot = -1;
                 CombatText.Show(above, skill.Name + " off", UiKit.DimText, 0.8f);
                 Changed?.Invoke();
+                SaveSystem.SaveCharacterNow();
                 return true;
             }
             if (CurrentWeapon() != WeaponType.Bow)
@@ -77,6 +93,7 @@ namespace PoeClone.Skills
             SkillEffects.Shockwave(transform.position, 1.4f, skill.Color, 0.3f);
             CombatText.Show(above, skill.Name, skill.Color, 0.9f);
             Changed?.Invoke();
+            SaveSystem.SaveCharacterNow();
             return true;
         }
 

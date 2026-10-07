@@ -1,3 +1,11 @@
+version: 2026-10-07-persistent-toggles-war-cry
+- Toggled bow skills persist per character across logout and reload. Selecting another bow skill switches immediately; selecting the active slot turns it off.
+- Disconnected passive allocations receive an automatic free full reset on character login, refunding every point without using a reset charge.
+- War Cry replaces the healing skill on existing and new equipment: unleash a nearby physical shockwave and gain Onslaught. Second Wind now restores mana and extends the cry's Onslaught.
+- Cast Speed now speeds up both casts and skill cooldowns. Previous cooldown bonuses become Cast Speed; equipment with both bonuses shows their combined value.
+- Passive tooltips stay beside the inspected tree position and scroll away as you pan or zoom.
+- Loading character appears only after choosing a character.
+
 version: 2026-10-07-passive-tree-and-attack-crit
 - Passive spending is previewed until Confirm; Cancel discards changes, including a pending full reset. Closing with changes asks you to choose.
 - Small passives show their stats without invented names. Life notables have corrected names.

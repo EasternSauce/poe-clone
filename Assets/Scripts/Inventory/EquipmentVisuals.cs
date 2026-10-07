@@ -143,6 +143,9 @@ namespace PoeClone.Inventory
                         instance.transform.localRotation = slot == EquipSlot.MainHand
                             ? child.localRotation * Quaternion.Euler(0f, gripTwist, 0f)
                             : child.localRotation;
+                        // Reverse the bow around its upright model axis so the string faces the archer.
+                        if (item.WeaponType == WeaponType.Bow && child.name == "Socket_OffHand")
+                            instance.transform.localRotation = child.localRotation * Quaternion.Euler(0f, 180f, 0f);
                         instance.transform.localScale = child.localScale;
                         instance.AddComponent<EquipmentVisualInstance>();
                         if (tint != Color.white)
@@ -153,6 +156,23 @@ namespace PoeClone.Inventory
             }
 
             UpdateBaseGear();
+        }
+
+        /// <summary>The equipped hammer's head in its current animated pose.</summary>
+        public bool TryGetMainHandHeadPosition(out Vector3 position)
+        {
+            if (spawned.TryGetValue(EquipSlot.MainHand, out List<GameObject> gear))
+            {
+                foreach (GameObject instance in gear)
+                {
+                    Transform head = instance != null ? instance.transform.Find("Head") : null;
+                    if (head == null) continue;
+                    position = head.position;
+                    return true;
+                }
+            }
+            position = Vector3.zero;
+            return false;
         }
 
         // Rings are written once ("Socket_Ring"); the slot decides which hand they go on.

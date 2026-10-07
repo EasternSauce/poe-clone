@@ -11,7 +11,7 @@ namespace PoeClone.Inventory
         Wisdom,    // intelligence: mana, spells, resistances
         Fury,      // between Might and Grace: attacks, critical strikes, Onslaught
         Storm,     // between Grace and Wisdom: lightning and cold, cast speed, cooldowns, Dash
-        Zeal,      // between Wisdom and Might: fire, burning, regeneration, Rejuvenate
+        Zeal,      // between Wisdom and Might: fire, burning, regeneration, War Cry
         Necromancy // out past Fire Ward, between Wisdom and Zeal: minions
     }
 
@@ -312,13 +312,13 @@ namespace PoeClone.Inventory
             N("junction_s_conductor", "", 2.41f, 0f, Mod(StatType.Intelligence, 3));
             N("s_sp5", "Haste", 2.12f, 0.63f, Mod(StatType.CastSpeed, 5));
             N("s_sp6", "Flow", 1.4f, 0.69f, Mod(StatType.CastSpeed, 5));
-            Nt("s_eye", "Eye of the Storm", 1.8f, 0.05f, Mod(StatType.CastSpeed, 8), Mod(StatType.CooldownRecovery, 8), Mod(StatType.ManaRegen, 20));
+            Nt("s_eye", "Eye of the Storm", 1.8f, 0.05f, Mod(StatType.CastSpeed, 16), Mod(StatType.ManaRegen, 20));
             Chain("s2", "s_sp1", "s_sp2", "s_sp3", "junction_s_conductor", "s_sp5", "s_sp6", "s_eye");
 
             Nt("k_thunderlord", "Thunderlord", 2.85f, 0f, Mod(StatType.ShockChance, 15), Mod(StatType.LightningDamage, 18));
             Chain("s_sp3", "k_thunderlord");
 
-            Nt("s_stride", "Frozen Stride", 2.3f, -0.95f, Mod(StatType.ColdDamage, 10), Mod(StatType.MovementSpeed, 5), Mod(StatType.CooldownRecovery, 5), Mod(StatType.ColdPenetration, 6));
+            Nt("s_stride", "Frozen Stride", 2.3f, -0.95f, Mod(StatType.ColdDamage, 10), Mod(StatType.MovementSpeed, 5), Mod(StatType.CastSpeed, 5), Mod(StatType.ColdPenetration, 6));
             N("junction_s_stride", "", 2.3f, -0.95f, Mod(StatType.Intelligence, 3));
             Chain("s_sp3", "junction_s_stride");
             Nt("k_glacial", "Winter's Reach", 2.75f, -1.15f, Mod(StatType.ColdDamage, 16), Mod(StatType.ColdPenetration, 8));
@@ -395,7 +395,7 @@ namespace PoeClone.Inventory
 
             Ks("k_inferno", "Pyre", 3.05f, -0.45f, Mod(StatType.ExplodeOnKill, 20));
             Chain("z_s2", "k_inferno");
-            Nt("k_secondwind", "Renewed Vigour", 3.05f, 0.45f, Mod(StatType.PercentLifeRegen, 0.6f), Mod(StatType.CooldownRecovery, 8));
+            Nt("k_secondwind", "Renewed Vigour", 3.05f, 0.45f, Mod(StatType.PercentLifeRegen, 0.6f), Mod(StatType.CastSpeed, 8));
             Chain("z_s3", "k_secondwind");
         }
 
@@ -668,7 +668,7 @@ namespace PoeClone.Inventory
                 case "k_unbreakable": return Mod(StatType.Armour, 8);
                 case "k_volley": return Mod(StatType.BowDamage, 3);
                 case "k_inferno": return Mod(StatType.FireDamage, 3);
-                case "k_secondwind": return Mod(StatType.CooldownRecovery, 2);
+                case "k_secondwind": return Mod(StatType.CastSpeed, 2);
             }
 
             // Single steps toward notables hint at the reward without equalling a normal node.
@@ -730,6 +730,8 @@ namespace PoeClone.Inventory
         public int Spent => taken.Count - 1;
 
         public bool Has(string id) => taken.Contains(id);
+
+        public bool IsFullyConnected => ReachableFromOrigin(null).Count == taken.Count;
 
         /// <summary>Every passive taken, the origin included.</summary>
         public IEnumerable<string> Taken => taken;

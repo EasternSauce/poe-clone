@@ -97,6 +97,8 @@ namespace PoeClone.UI
         private Text resetLabel;
         private PlayerPassives passives;
         private PassiveNode selected;
+        private Vector2 tooltipOffset;
+        private bool placeTooltip;
         private PassiveNode shown;          // the passive the tooltip describes
         private PassiveNode mirroredHover;  // spectators: the player's pointed-at passive last shown
         private bool dirty = true;
@@ -360,26 +362,29 @@ namespace PoeClone.UI
             if (!panelRoot.activeSelf || shown == null || !tooltip.gameObject.activeSelf)
                 return;
 
-            Vector2 at = Vector2.zero;
-            if (!TouchMode.Active && hovered != null && Mouse.current != null)
-                RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRect,
-                    Mouse.current.position.ReadValue(), null, out at);
-            else
-                at = panelRect.InverseTransformPoint(content.TransformPoint(NodePosition(shown)));
-
-            Rect bounds = panelRect.rect;
-            Vector2 size = tooltip.rectTransform.sizeDelta;
-            float x = at.x + 20f;
-            if (x + size.x > bounds.xMax - 8f)
-                x = at.x - size.x - 20f;
-            float y = at.y - 20f;
-            tooltip.rectTransform.anchoredPosition = new Vector2(
-                Mathf.Clamp(x, bounds.xMin + 8f, bounds.xMax - size.x - 8f),
-                Mathf.Clamp(y, bounds.yMin + size.y + 8f, bounds.yMax - 8f));
+            // Keep a fixed offset from the inspected tree position. Clamp once on
+            // selection, then allow panning/zooming to carry the tooltip off-screen.
+            Vector2 at = panelRect.InverseTransformPoint(content.TransformPoint(NodePosition(shown)));
+            if (placeTooltip)
+            {
+                Rect bounds = panelRect.rect;
+                Vector2 size = tooltip.rectTransform.sizeDelta;
+                float x = at.x + 20f;
+                if (x + size.x > bounds.xMax - 8f)
+                    x = at.x - size.x - 20f;
+                float y = at.y - 20f;
+                Vector2 placed = new Vector2(
+                    Mathf.Clamp(x, bounds.xMin + 8f, bounds.xMax - size.x - 8f),
+                    Mathf.Clamp(y, bounds.yMin + size.y + 8f, bounds.yMax - 8f));
+                tooltipOffset = placed - at;
+                placeTooltip = false;
+            }
+            tooltip.rectTransform.anchoredPosition = at + tooltipOffset;
         }
 
         private void ShowInfo(PassiveNode node)
         {
+            if (shown != node) placeTooltip = true;
             shown = node;
             tooltip.gameObject.SetActive(node != null);
             infoText.text = PlayerHUD.ControlsHidden ? "" : TouchMode.Active

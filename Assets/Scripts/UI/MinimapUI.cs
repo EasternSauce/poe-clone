@@ -21,6 +21,7 @@ namespace PoeClone.UI
     {
         public const float Size = 210f;
         private const float AreaSize = AreaShape.MaxRadius * 2f; // the widest any area reaches
+        private const float ViewSize = 55f; // four times closer, centred on the player
         private const float Refresh = 0.25f;
         private const float MonsterRange = 34f; // about twice the screen's reach: you see what's coming
 
@@ -67,7 +68,7 @@ namespace PoeClone.UI
             terrain = terrainGo.GetComponent<RawImage>();
             terrain.raycastTarget = false;
             terrain.rectTransform.anchorMin = terrain.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            terrain.rectTransform.sizeDelta = new Vector2(Size, Size);
+            terrain.rectTransform.sizeDelta = Vector2.one * (Size * AreaSize / ViewSize);
 
             playerDot = UiKit.NewImage("Player", frame, Color.white);
             playerDot.sprite = IconFactory.Facing;
@@ -120,7 +121,8 @@ namespace PoeClone.UI
             content.localRotation = Quaternion.Euler(0f, 0f, yaw);
 
             Vector3 centre = WorldBuilder.Center(areas.CurrentAreaIndex);
-            playerDot.rectTransform.anchoredPosition = Rotate(ToMap(player.transform.position, centre), yaw);
+            content.anchoredPosition = -Rotate(ToMap(player.transform.position, centre), yaw);
+            playerDot.rectTransform.anchoredPosition = Vector2.zero;
             Vector3 forward = player.transform.forward;
             Vector2 heading = Rotate(new Vector2(forward.x, forward.z), yaw);
             playerDot.rectTransform.localRotation = Quaternion.Euler(0f, 0f, Vector2.SignedAngle(Vector2.up, heading));
@@ -198,7 +200,7 @@ namespace PoeClone.UI
 
         private static Vector2 ToMap(Vector3 world, Vector3 centre)
         {
-            float scale = Size / AreaSize;
+            float scale = Size / ViewSize;
             return new Vector2((world.x - centre.x) * scale, (world.z - centre.z) * scale);
         }
 
