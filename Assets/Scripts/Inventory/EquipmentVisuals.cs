@@ -140,12 +140,9 @@ namespace PoeClone.Inventory
                              item.WeaponType == WeaponType.Greatsword || item.WeaponType == WeaponType.Greataxe ||
                              item.WeaponType == WeaponType.Maul || item.WeaponType == WeaponType.Sceptre);
                         float gripTwist = meleeWeapon ? 270f : 180f;
-                        instance.transform.localRotation = slot == EquipSlot.MainHand
+                        instance.transform.localRotation = slot == EquipSlot.MainHand && child.name == "Socket_MainHand"
                             ? child.localRotation * Quaternion.Euler(0f, gripTwist, 0f)
                             : child.localRotation;
-                        // Reverse the bow around its upright model axis so the string faces the archer.
-                        if (item.WeaponType == WeaponType.Bow && child.name == "Socket_OffHand")
-                            instance.transform.localRotation = child.localRotation * Quaternion.Euler(0f, 180f, 0f);
                         instance.transform.localScale = child.localScale;
                         instance.AddComponent<EquipmentVisualInstance>();
                         if (tint != Color.white)

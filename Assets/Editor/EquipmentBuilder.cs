@@ -639,7 +639,8 @@ namespace PoeClone.EditorTools
         private static void ShortBow()
         {
             GameObject root = NewRoot("short_bow");
-            Transform bow = Node(root, "Socket_OffHand", new Vector3(0f, 0f, 0.02f), new Vector3(90f, 0f, 0f));
+            // The grip sits at model z=0.22; offset it onto the palm after the 90-degree turn.
+            Transform bow = Node(root, "Socket_OffHand", new Vector3(0f, 0.32f, -0.05f), new Vector3(90f, 0f, 0f));
 
             Cube(bow, "Grip", "Leather", new Vector3(0f, 0f, 0.22f), new Vector3(0.06f, 0.16f, 0.06f));
             Bar(bow, "UpperInner", "Silver", new Vector3(0f, 0.07f, 0.22f), new Vector3(0f, 0.30f, 0.16f), 0.05f);

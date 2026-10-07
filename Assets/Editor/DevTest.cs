@@ -46,6 +46,7 @@ namespace PoeClone.EditorTools
         private const BindingFlags Any = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
         private static bool quickSession;
         private static bool quickSandbox;
+        private static string quickWeaponBaseId;
         private static double nextReadyAt;
         private static double quickDeadline;
         private static string quickState = "idle";
@@ -71,13 +72,14 @@ namespace PoeClone.EditorTools
         /// temporary DevTest character, dismisses startup UI, gives god mode, then moves to a quiet
         /// flat floor by default. Stop Play to restore the user's character and preferences.
         /// </summary>
-        public static string QuickStart(bool sandbox = true)
+        public static string QuickStart(bool sandbox = true, string weaponBaseId = null)
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 return "stop Play before QuickStart";
             string begin = Begin();
             quickSession = true;
             quickSandbox = sandbox;
+            quickWeaponBaseId = weaponBaseId;
             quickState = "starting Play";
             quickDeadline = EditorApplication.timeSinceStartup + 45;
             nextReadyAt = 0;
@@ -90,6 +92,9 @@ namespace PoeClone.EditorTools
 
         [MenuItem("PoeClone/Test/Quick Start (Sandbox)")]
         private static void QuickStartMenu() => Debug.Log("DevTest QuickStart: " + QuickStart());
+
+        [MenuItem("PoeClone/Test/Bow Grip Demo")]
+        private static void BowGripDemoMenu() => Debug.Log("DevTest Bow Grip Demo: " + QuickStart(weaponBaseId: "short_bow"));
 
         private static void AdvanceQuickSession()
         {
@@ -108,6 +113,7 @@ namespace PoeClone.EditorTools
             quickState = ready;
             if (Time.timeScale <= 0f) return;
             string setup = God();
+            if (!string.IsNullOrEmpty(quickWeaponBaseId)) setup += " || " + Equip(quickWeaponBaseId);
             if (quickSandbox) setup += " || " + Sandbox();
             // QuickStart is intended for a desktop editor demo even if its host page carries ?touch=1.
             TouchMode.SetForced(false);

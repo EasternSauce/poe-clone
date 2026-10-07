@@ -21,7 +21,7 @@ namespace PoeClone.UI
     {
         public const float Size = 210f;
         private const float AreaSize = AreaShape.MaxRadius * 2f; // the widest any area reaches
-        private const float ViewSize = 55f; // four times closer, centred on the player
+        private const float ViewSize = 110f; // metres across the view, centred on the player
         private const float Refresh = 0.25f;
         private const float MonsterRange = 34f; // about twice the screen's reach: you see what's coming
 
