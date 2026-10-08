@@ -400,30 +400,77 @@ namespace PoeClone.World
             Vector2 start = -Size * 0.5f - Vector2.one * padding;
             int nx = Mathf.CeilToInt((Size.x + padding * 2f) / step);
             int nz = Mathf.CeilToInt((Size.y + padding * 2f) / step);
-            var samples = new float[nx + 1, nz + 1];
+            var land = new float[nx + 1, nz + 1];
+            var shore = new float[nx + 1, nz + 1];
             for (int z = 0; z <= nz; z++)
                 for (int x = 0; x <= nx; x++)
                 {
-                    float distance = LandDistance(start + new Vector2(x * step, z * step));
-                    samples[x, z] = Mathf.Min(Mathf.Min(-distance - outward, distance + outward + width),
-                        -ShorelineDistance(start + new Vector2(x * step, z * step)) - 0.06f);
+                    Vector2 p = start + new Vector2(x * step, z * step);
+                    land[x, z] = LandDistance(p);
+                    shore[x, z] = -ShorelineDistance(p) - 0.06f;
                 }
-            // Clip a non-overlapping grid to the solid band outside the playable outline.
-            // Holes and merging room edges use the same field as the floor, with no long
-            // triangles connecting unrelated contour normals. Preserve the floor Boundary.
-            Vector3 Point(int x, int z)
-            {
-                Vector2 p = start + new Vector2(x * step, z * step);
-                return new Vector3(p.x, RimHeight(p, top), p.y);
-            }
+            Vector3 Point(int x, int z) => new Vector3(start.x + x * step, 0f, start.y + z * step);
             int first = vertices.Count;
             var contour = new List<(Vector3 a, Vector3 b)>();
+            // Clip each half-plane separately. Sampling their minimum can miss a
+            // narrow band entirely, or move its edge away from the vertical wall.
+            void RimTriangle(Vector3 a, Vector3 b, Vector3 c, float la, float lb, float lc,
+                float sa, float sb, float sc)
+            {
+                // Most of the grid is inside the floor or beyond the rim. Reject
+                // those triangles before allocating clipping polygons.
+                if ((la > -outward && lb > -outward && lc > -outward) ||
+                    (la < -outward - width && lb < -outward - width && lc < -outward - width) ||
+                    (sa < 0f && sb < 0f && sc < 0f)) return;
+                var polygon = new List<(Vector3 point, float land, float shore)>
+                { (a, la, sa), (b, lb, sb), (c, lc, sc) };
+                for (int plane = 0; plane < 3 && polygon.Count > 0; plane++)
+                {
+                    float Signed(float distance, float water) => plane == 0 ? -distance - outward :
+                        plane == 1 ? distance + outward + width : water;
+                    var clipped = new List<(Vector3 point, float land, float shore)>();
+                    for (int i = 0; i < polygon.Count; i++)
+                    {
+                        var p = polygon[i];
+                        var q = polygon[(i + 1) % polygon.Count];
+                        float dp = Signed(p.land, p.shore), dq = Signed(q.land, q.shore);
+                        if (dp >= 0f) clipped.Add(p);
+                        if ((dp >= 0f) == (dq >= 0f)) continue;
+                        float t = dp / (dp - dq);
+                        clipped.Add((Vector3.Lerp(p.point, q.point, t), Mathf.Lerp(p.land, q.land, t),
+                            Mathf.Lerp(p.shore, q.shore, t)));
+                    }
+                    polygon = clipped;
+                }
+                if (polygon.Count < 3) return;
+                int at = vertices.Count;
+                foreach (var vertex in polygon)
+                {
+                    Vector3 point = vertex.point;
+                    // Compute height at the final edge, matching the wall face below it.
+                    point.y = RimHeight(new Vector2(point.x, point.z), top);
+                    vertices.Add(point);
+                }
+                for (int i = 1; i + 1 < polygon.Count; i++)
+                {
+                    if (Vector3.Cross(vertices[at + i] - vertices[at], vertices[at + i + 1] - vertices[at]).sqrMagnitude < 0.00000001f) continue;
+                    triangles.Add(at); triangles.Add(at + i); triangles.Add(at + i + 1);
+                }
+                for (int i = 0; i < polygon.Count; i++)
+                {
+                    int next = (i + 1) % polygon.Count;
+                    if (Mathf.Abs(polygon[i].shore) < 0.00001f && Mathf.Abs(polygon[next].shore) < 0.00001f)
+                        contour.Add((vertices[at + i], vertices[at + next]));
+                }
+            }
             for (int z = 0; z < nz; z++)
                 for (int x = 0; x < nx; x++)
                 {
                     Vector3 a = Point(x, z), b = Point(x, z + 1), c = Point(x + 1, z + 1), d = Point(x + 1, z);
-                    Clip(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1], vertices, triangles, false, contour);
-                    Clip(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z], vertices, triangles, false, contour);
+                    RimTriangle(a, b, c, land[x, z], land[x, z + 1], land[x + 1, z + 1],
+                        shore[x, z], shore[x, z + 1], shore[x + 1, z + 1]);
+                    RimTriangle(a, c, d, land[x, z], land[x + 1, z + 1], land[x + 1, z],
+                        shore[x, z], shore[x + 1, z + 1], shore[x + 1, z]);
                 }
             for (int i = first; i < vertices.Count; i++)
             {

@@ -1,3 +1,6 @@
+version: 2026-10-08-solid-terrain-rims
+- Fixed broken rock and ice rim fragments, triangular gaps and uneven joins beside water by keeping border tops aligned with their wall faces and shoreline heights.
+
 version: 2026-10-08-readable-gate-angles
 - Angled area gates individually to reveal their openings from the game camera and angled world preview. Each entrance keeps its own orientation suited to its approach.
 
