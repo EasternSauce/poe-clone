@@ -197,5 +197,31 @@ namespace PoeClone.Inventory
         }
 
         public void NotifyChanged() => Changed?.Invoke();
+
+        public int CountItem(string id)
+        {
+            int count = 0;
+            foreach (PlacedItem p in placed)
+                if (p.Item.Id == id) count += p.Item.StackCount;
+            return count;
+        }
+
+        /// <summary>Consumes across stacks only when the entire cost is available.</summary>
+        public bool TryConsume(string id, int count)
+        {
+            if (count < 0 || CountItem(id) < count) return false;
+            if (count == 0) return true;
+            for (int i = placed.Count - 1; i >= 0 && count > 0; i--)
+            {
+                ItemData item = placed[i].Item;
+                if (item.Id != id) continue;
+                int used = Math.Min(count, item.StackCount);
+                item.StackCount -= used;
+                count -= used;
+                if (item.StackCount == 0) placed.RemoveAt(i);
+            }
+            Changed?.Invoke();
+            return true;
+        }
     }
 }

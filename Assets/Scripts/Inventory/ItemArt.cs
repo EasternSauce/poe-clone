@@ -30,7 +30,7 @@ namespace PoeClone.Inventory
         public static Sprite Icon(ItemData item)
         {
             Sprite painted = PaintedIcon(item);
-            return painted != null ? painted : IconFactory.Get(item.Type);
+            return painted != null ? painted : IconFactory.Get(item);
         }
     }
 }

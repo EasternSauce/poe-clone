@@ -45,9 +45,9 @@ namespace PoeClone.Inventory
 
         public ItemData ToItem()
         {
-            if (id == ItemData.ReawakeningId)
+            if (id == ItemData.ReawakeningId || id == ItemData.RegretId)
             {
-                ItemData heart = ItemData.ReawakeningItem();
+                ItemData heart = id == ItemData.RegretId ? ItemData.RegretItem() : ItemData.ReawakeningItem();
                 heart.ItemLevel = Math.Max(0, ilvl);
                 heart.StackCount = Math.Max(1, Math.Min(heart.MaxStack, count));
                 return heart;

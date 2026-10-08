@@ -22,6 +22,16 @@ namespace PoeClone.Player
 
         public int Level => stats != null ? stats.Level : 1;
         public int Unspent => Allocation.Unspent(Level);
+        public int RegretOrbs => inventory != null && inventory.Grid != null ? inventory.Grid.CountItem(ItemData.RegretId) : 0;
+
+        public int RefundCost(PassiveAllocation draft)
+        {
+            int count = 0;
+            if (draft != null)
+                foreach (string id in Allocation.Taken)
+                    if (id != PassiveTree.OriginId && !draft.Has(id)) count++;
+            return count;
+        }
 
         /// <summary>Full tree resets left. Starts at 1; more are earned from major quests.</summary>
         public int RespecCharges { get; private set; } = 1;
@@ -70,13 +80,25 @@ namespace PoeClone.Player
         }
 
         /// <summary>Apply a reviewed draft once, charging a reset only on confirmation.</summary>
-        public bool ConfirmDraft(PassiveAllocation draft, bool reset)
+        public bool ConfirmDraft(PassiveAllocation draft, bool reset, bool respec = false)
         {
             if (draft == null || draft.Spent > PassiveAllocation.PointsForLevel(Level) ||
                 (reset && RespecCharges <= 0)) return false;
             // Validate new purchases against the current graph; keep legacy saved nodes intact.
             var check = new PassiveAllocation();
             if (!reset) check.RestoreSaved(new System.Collections.Generic.List<string>(Allocation.Taken), Level);
+            int cost = reset ? 0 : RefundCost(draft);
+            if (cost > 0 && (!respec || RegretOrbs < cost)) return false;
+            // Replay removals to reject drafts that would sever an existing connected path.
+            var removals = new System.Collections.Generic.List<string>();
+            foreach (string id in check.Taken) if (!draft.Has(id)) removals.Add(id);
+            while (removals.Count > 0)
+            {
+                bool progress = false;
+                for (int i = removals.Count - 1; i >= 0; i--)
+                    if (check.Refund(removals[i])) { removals.RemoveAt(i); progress = true; }
+                if (!progress) return false;
+            }
             var remaining = new System.Collections.Generic.List<string>();
             foreach (string id in draft.Taken) if (!check.Has(id)) remaining.Add(id);
             while (remaining.Count > 0)
@@ -87,6 +109,7 @@ namespace PoeClone.Player
                 if (!progress) return false;
             }
             if (reset) RespecCharges--;
+            if (cost > 0 && !inventory.Grid.TryConsume(ItemData.RegretId, cost)) return false;
             Allocation.ReplaceWith(draft.Taken);
             return true;
         }

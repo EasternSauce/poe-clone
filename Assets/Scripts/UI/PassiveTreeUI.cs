@@ -59,6 +59,10 @@ namespace PoeClone.UI
         private Image cancelButton;
         private PassiveAllocation draft;
         private bool resetPending;
+        private bool respecMode;
+        private int lastRegretOrbs = -1;
+        private Image respecButton;
+        private Text respecLabel;
         private bool closeRequested;
         private PassiveAllocation Preview => !Spectating && draft != null ? draft : passives.Allocation;
         public bool HasPendingChanges => draft != null && (resetPending ||
@@ -77,9 +81,10 @@ namespace PoeClone.UI
         {
             if (Spectating) return;
             if (!HasPendingChanges) { SetOpen(false); return; }
-            if (!passives.ConfirmDraft(draft, resetPending)) return;
+            if (!passives.ConfirmDraft(draft, resetPending, respecMode)) return;
             draft = null;
             resetPending = false;
+            respecMode = false;
             SetOpen(false);
         }
 
@@ -88,6 +93,7 @@ namespace PoeClone.UI
             if (Spectating) return;
             draft = null;
             resetPending = false;
+            respecMode = false;
             SetOpen(false);
         }
         private Image resetButton;
@@ -115,6 +121,13 @@ namespace PoeClone.UI
         {
             if (instance == null)
                 return;
+            if (!open && !Spectating && instance.respecMode)
+            {
+                instance.draft = null;
+                instance.resetPending = false;
+                instance.respecMode = false;
+                instance.closeRequested = false;
+            }
             if (!open && !Spectating && instance.HasPendingChanges)
             {
                 instance.closeRequested = true;
@@ -204,6 +217,11 @@ namespace PoeClone.UI
             }
 
             UpdateBadge();
+            if (lastRegretOrbs != passives.RegretOrbs)
+            {
+                lastRegretOrbs = passives.RegretOrbs;
+                dirty = true;
+            }
 
             if (panelRoot.activeSelf)
                 UpdatePinch();
@@ -328,11 +346,19 @@ namespace PoeClone.UI
             pointsText.text = unspent > 0
                 ? "<color=#FFD040>" + unspent + " passive point" + (unspent > 1 ? "s" : "") + " to spend</color>"
                 : "<color=#" + UiKit.Hex(UiKit.DimText) + ">No points to spend - one more each level</color>";
+            int refundCost = passives.RefundCost(draft);
+            if (respecMode)
+                pointsText.text = passives.Unspent + " points available | +" + refundCost + " on accept | Orbs: " + refundCost + "/" + passives.RegretOrbs;
 
             int charges = passives.RespecCharges - (resetPending ? 1 : 0);
             confirmButton.gameObject.SetActive(!Spectating);
             cancelButton.gameObject.SetActive(!Spectating);
             resetButton.gameObject.SetActive(!Spectating);
+            respecButton.gameObject.SetActive(!Spectating && (passives.RegretOrbs > 0 || respecMode));
+            respecLabel.text = respecMode ? "Respec active" : "Respec (" + passives.RegretOrbs + ")";
+            respecButton.color = respecMode ? new Color(0.15f, 0.3f, 0.4f) : new Color(0.18f, 0.14f, 0.10f);
+            confirmButton.color = respecMode && refundCost > passives.RegretOrbs ? new Color(0.12f, 0.10f, 0.08f) : new Color(0.18f, 0.14f, 0.10f);
+            confirmButton.GetComponentInChildren<Text>().text = respecMode ? "Accept" : "Confirm";
             resetLabel.text = "Reset all (" + charges + ")";
             resetButton.color = charges > 0 ? new Color(0.18f, 0.14f, 0.10f, 1f) : new Color(0.12f, 0.10f, 0.08f, 1f);
             resetLabel.color = charges > 0 ? UiKit.TextColor : UiKit.DimText;
@@ -343,7 +369,8 @@ namespace PoeClone.UI
                 bool available = allocation.CanTake(v.Node.Id, passives.Level);
                 Color c = BranchColor(v.Node.Branch);
                 v.Body.color = taken ? (!Spectating && !passives.Allocation.Has(v.Node.Id) ? new Color(0.3f, 0.85f, 1f) : c) : available ? Color.Lerp(Locked, c, 0.35f) : Locked;
-                v.Ring.color = taken ? UiKit.Gold : available ? new Color(1f, 0.85f, 0.4f, 0.9f) : new Color(0.35f, 0.32f, 0.28f, 1f);
+                bool removed = respecMode && passives.Allocation.Has(v.Node.Id) && !taken;
+                v.Ring.color = removed ? new Color(1f, 0.35f, 0.3f) : taken ? UiKit.Gold : available && !respecMode ? new Color(1f, 0.85f, 0.4f, 0.9f) : new Color(0.35f, 0.32f, 0.28f, 1f);
                 if (v.Label != null)
                     v.Label.color = taken ? UiKit.Gold : available ? UiKit.TextColor : UiKit.DimText;
             }
@@ -392,6 +419,8 @@ namespace PoeClone.UI
                 : "Click to take a passive; click a pending end node again to undo it. Drag to look around, scroll to zoom. (H hides this.)";
             if (closeRequested)
                 infoText.text = "You have unconfirmed changes. Confirm to spend your points, or Cancel to discard changes.";
+            if (respecMode)
+                infoText.text = "Click allocated end nodes to refund. One orb per node on Accept. Cancel or close to discard.";
             if (node == null) return;
 
             var sb = new StringBuilder();
@@ -411,6 +440,13 @@ namespace PoeClone.UI
             sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">");
             if (node.Id == PassiveTree.OriginId)
                 sb.Append("Always yours.");
+            else if (respecMode)
+            {
+                if (!taken) sb.Append(passives.Allocation.Has(node.Id) ? "Pending refund - accept to regain the point." : "Respec mode only removes allocated nodes.");
+                else if (!allocation.CanRefund(node.Id)) sb.Append("Remove dependent nodes first to keep your paths connected.");
+                else if (passives.Allocation.Has(node.Id) && passives.RefundCost(draft) >= passives.RegretOrbs) sb.Append("All inventory orbs are reserved for pending refunds.");
+                else sb.Append("Click to preview refunding this node.");
+            }
             else if (taken)
                 sb.Append(passives.Allocation.Has(node.Id) && !resetPending ? "Allocated." : "Pending - confirm to apply.");
             else if (allocation.CanTake(node.Id, passives.Level))
@@ -453,6 +489,17 @@ namespace PoeClone.UI
 
             if (Spectating)
             {
+                selected = node;
+                dirty = true;
+                return;
+            }
+
+            if (respecMode)
+            {
+                if (draft == null) BeginDraft();
+                bool costsOrb = passives.Allocation.Has(node.Id);
+                if ((!costsOrb || passives.RefundCost(draft) < passives.RegretOrbs) && draft.CanRefund(node.Id))
+                    draft.Refund(node.Id);
                 selected = node;
                 dirty = true;
                 return;
@@ -690,7 +737,7 @@ namespace PoeClone.UI
             resetLabel = resetButton.GetComponentInChildren<Text>();
             resetButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {
-                if (passives != null && !Spectating && passives.RespecCharges > 0 && Preview.Spent > 0)
+                if (passives != null && !Spectating && !respecMode && passives.RespecCharges > 0 && Preview.Spent > 0)
                 {
                     if (draft == null) BeginDraft();
                     draft.ResetAll();
@@ -698,6 +745,18 @@ namespace PoeClone.UI
                     selected = null;
                     dirty = true;
                 }
+            };
+
+            respecButton = NewButton(pr, "Respec", "Respec", new Vector2(176f, -12f), new Vector2(150f, 38f));
+            respecLabel = respecButton.GetComponentInChildren<Text>();
+            respecButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
+            {
+                if (passives == null || Spectating || respecMode || resetPending || passives.RegretOrbs <= 0) return;
+                if (draft == null) BeginDraft();
+                respecMode = true;
+                closeRequested = false;
+                selected = null;
+                dirty = true;
             };
 
             // The window the tree is seen through: drag to pan, scroll or pinch to zoom.

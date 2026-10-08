@@ -29,6 +29,23 @@ namespace PoeClone.Inventory
 
         private static Sprite arrow;
         private static Sprite facing;
+        private static Sprite regret;
+
+        public static Sprite Get(ItemData item)
+        {
+            if (item.Id != ItemData.RegretId) return Get(item.Type);
+            if (regret == null)
+                regret = Rasterise("Icon_OrbOfRegret",
+                    new List<Shape> { Circle(0.5f, 0.5f, 0.4f) },
+                    new List<Shape> { Circle(0.5f, 0.5f, 0.32f) },
+                    new List<Shape> {
+                        Capsule(0.34f, 0.68f, 0.66f, 0.68f, 0.035f),
+                        Poly(0.3f, 0.76f, 0.3f, 0.57f, 0.45f, 0.68f),
+                        Capsule(0.66f, 0.68f, 0.7f, 0.42f, 0.035f),
+                        Capsule(0.7f, 0.42f, 0.39f, 0.3f, 0.035f)
+                    });
+            return regret;
+        }
 
         /// <summary>A compact upward pointer for the player's minimap marker.</summary>
         public static Sprite Facing

@@ -1486,7 +1486,7 @@ private Vector2 CellSize(int w, int h)
             else
             {
                 Color bright = Color.Lerp(tint, Color.white, 0.3f);
-                icon.sprite = IconFactory.Get(item.Type);
+                icon.sprite = IconFactory.Get(item);
                 icon.color = new Color(bright.r, bright.g, bright.b, alpha);
                 irt.anchorMin = new Vector2(0.5f, 0.5f);
                 irt.anchorMax = new Vector2(0.5f, 0.5f);

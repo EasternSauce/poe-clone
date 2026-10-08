@@ -342,8 +342,10 @@ namespace PoeClone.Enemies
                     LootDrop.Drop(kind.Boss == BossStyle.Shepherd ? Inventory.UniqueItems.ShepherdReward(rng) : Inventory.UniqueItems.Random(rng), transform.position, itemLevel: MonsterLevel);
                 }
                 var area = World.AreaManager.Instance;
-                if (area != null && area.CurrentAreaIndex >= World.WorldBuilder.Ruins && area.CurrentAreaIndex <= World.WorldBuilder.Frozen && UnityEngine.Random.value < 0.008f)
+                if (area != null && area.CurrentAreaIndex >= World.WorldBuilder.Ruins && area.CurrentAreaIndex <= World.WorldBuilder.Frozen && UnityEngine.Random.value < ItemData.ReawakeningDropChance)
                     LootDrop.Drop(World.ActBossArena.ReawakeningItem(), transform.position, itemLevel: MonsterLevel);
+                if (UnityEngine.Random.value < ItemData.RegretDropChance)
+                    LootDrop.Drop(ItemData.RegretItem(), transform.position, itemLevel: MonsterLevel);
             }
             KillRewards.Grant(kind, MonsterLevel, transform.position, LootDrop.EnemyDropsActive);
 

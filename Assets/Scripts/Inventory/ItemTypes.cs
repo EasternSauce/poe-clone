@@ -78,6 +78,12 @@ namespace PoeClone.Inventory
     public sealed class ItemData
     {
         public const string ReawakeningId = "shed_heart";
+        public const float ReawakeningDropChance = 0.008f;
+        public const string RegretId = "orb_of_regret";
+        public const float RegretDropChance = ReawakeningDropChance * 1.3f;
+        public static ItemData RegretItem() => new ItemData(RegretId, "Orb of Regret", ItemType.Consumable, 1, 1,
+            new Color(0.65f, 0.82f, 0.95f), null, rarity: ItemRarity.Magic)
+        { Description = "Enable Respec in the passive tree. Each confirmed passive refund consumes one orb. Canceling or closing the tree spends nothing." };
         public static ItemData ReawakeningItem() => new ItemData(ReawakeningId, "Shed Heart", ItemType.Consumable, 1, 1,
             new Color(0.72f, 0.16f, 0.22f), null, rarity: ItemRarity.Magic)
         { Description = "Right-click, or hold for 1 second and release on touch, to reawaken the defeated act boss." };
@@ -93,7 +99,7 @@ namespace PoeClone.Inventory
         public string IconId => Id;
         public Color IconTint => IconId == ArtId ? ArtTint : Color.white;
         public int StackCount { get; set; } = 1;
-        public int MaxStack => Id == ReawakeningId ? 100 : 1;
+        public int MaxStack => Id == ReawakeningId || Id == RegretId ? 100 : 1;
         public ItemType Type { get; }
         public int Width { get; }
         public int Height { get; }
