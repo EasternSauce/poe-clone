@@ -8,18 +8,9 @@ using PoeClone.Visuals;
 namespace PoeClone.World
 {
     /// <summary>
-    /// Builds the world at start-up, the same way on every client (fixed seeds, so spectators see
-    /// exactly what the player sees): four areas laid out apart from each other, each with its own
-    /// ground, edges, themed props, monster level and gates.
-    ///
-    ///   Haven (town, safe)  —  Greenwood (lv 1)  —  Haunted Graveyard (lv 4)  —  Ashen Ruins (lv 7)
-    ///                                                                         |
-    ///                                                               Frozen Hollow (lv 10)
-    ///
-    /// Greenwood is the scene's original forest; the others are dressed from <see cref="AreaKit"/>
-    /// using the project's stylized prefabs and materials. The game starts in Haven, with the
-    /// starter gear on the ground around the player. Named spots (NPC stands, the ruins' altar)
-    /// are kept in <see cref="Spots"/> for the features that use them.
+    /// Builds fixed authored areas, themed scenery and existing story content identically on every client.
+    /// Route: Haven - Greenwood - The Lost Hollows - Haunted Graveyard - Ashen Ruins - Frozen Hollow.
+    /// Layout geometry and permanent anchors live in AreaLayouts; the game starts in Haven.
     /// </summary>
     public partial class WorldBuilder : MonoBehaviour
     {
@@ -28,19 +19,23 @@ namespace PoeClone.World
         public const int Graveyard = 2;
         public const int Ruins = 3;
         public const int Frozen = 4;
+        public const int Cave = 6; // Preserve the final arena's saved area ID (5).
+        public static readonly int[] WorldAreas = { Greenwood, Haven, Graveyard, Ruins, Frozen, Cave };
 
         public static WorldBuilder Instance { get; private set; }
 
-        public static readonly string[] AreaNames = { "Greenwood", "Haven", "Haunted Graveyard", "Ashen Ruins", "Frozen Hollow" };
-        public static readonly int[] MonsterLevels = { 1, 0, 4, 7, 10 };
+        public static readonly string[] AreaNames = { "Greenwood", "Haven", "Haunted Graveyard", "Ashen Ruins", "Frozen Hollow", "The Shed Sanctuary", "The Lost Hollows" };
+        public static readonly int[] MonsterLevels = { 1, 0, 4, 7, 10, 12, 3 };
 
         private static readonly Vector3[] Centers =
         {
             Vector3.zero,
-            new Vector3(-260f, 0f, 0f),
-            new Vector3(260f, 0f, 0f),
-            new Vector3(520f, 0f, 0f),
-            new Vector3(780f, 0f, 0f)
+            new Vector3(-420f, 0f, 0f),
+            new Vector3(420f, 0f, 0f),
+            new Vector3(840f, 0f, 0f),
+            new Vector3(1260f, 0f, 0f),
+            ActArenaCenter,
+            new Vector3(420f, 0f, -420f)
         };
 
         /// <summary>The colour that stands for an area (gate panels, its minimap ground).</summary>
@@ -55,7 +50,9 @@ namespace PoeClone.World
             new Color(0.82f, 0.74f, 0.56f),
             new Color(0.40f, 0.46f, 0.42f),
             new Color(0.58f, 0.44f, 0.36f),
-            new Color(0.80f, 0.88f, 0.95f)
+            new Color(0.80f, 0.88f, 0.95f),
+            new Color(0.50f, 0.44f, 0.38f),
+            new Color(0.31f, 0.35f, 0.37f)
         };
 
         // Per area, one spawn weight per EnemyKinds entry, so each area has its own cast:
@@ -138,14 +135,15 @@ namespace PoeClone.World
             gateTemplate = CreateGateTemplate();
 
             spawnPoints = new Transform[Centers.Length];
-            for (int a = 0; a < Centers.Length; a++)
+            foreach (int a in WorldAreas)
                 spawnPoints[a] = Marker("Spawn_" + AreaNames[a], Centers[a] + new Vector3(0f, 1.1f, -6f), 0f);
 
             InitShapes();
-            for (int a = 1; a < Centers.Length; a++)
-                BuildGround(ground, a);
+            foreach (int a in WorldAreas)
+                if (a != Greenwood) BuildGround(ground, a);
             // The scene's own forest gets the same outline; its square walls go.
             ShapeGround(ground, Greenwood);
+            RelocateOriginalScenery();
             GameObject sceneBounds = GameObject.Find("WorldBounds");
             if (sceneBounds != null)
                 sceneBounds.SetActive(false);
@@ -154,15 +152,17 @@ namespace PoeClone.World
             BuildGraveyard();
             BuildRuins();
             BuildFrozen();
+            BuildCave();
             BuildGlowshrooms();
             BuildGreenwoodOutskirts();
             BuildWaystones();
             BuildOutposts();
 
-            // Gates: Haven - Greenwood - Graveyard - Ruins - Frozen Hollow. The way home is the
+            // Gates: Haven - Greenwood - Lost Hollows - Graveyard - Ruins - Frozen Hollow. The way home is the
             // town portal or a waystone.
             Connect(Haven, new Vector3(40f, 0f, 0f), Greenwood, new Vector3(-40f, 0f, 2f));
-            Connect(Greenwood, new Vector3(40f, 0f, -2f), Graveyard, new Vector3(-40f, 0f, 0f));
+            Connect(Greenwood, new Vector3(40f, 0f, -2f), Cave, new Vector3(-40f, 0f, 0f));
+            Connect(Cave, new Vector3(40f, 0f, 0f), Graveyard, new Vector3(-40f, 0f, 0f));
             Connect(Graveyard, new Vector3(40f, 0f, 0f), Ruins, new Vector3(-40f, 0f, 0f));
             Connect(Ruins, new Vector3(0f, 0f, 40f), Frozen, new Vector3(-40f, 0f, 0f));
             BuildHavenRoads();
@@ -173,8 +173,8 @@ namespace PoeClone.World
             BuildTownsfolk();
             PlaceBosses();
 
-            var definitions = new AreaDefinition[Centers.Length + 1];
-            for (int a = 0; a < Centers.Length; a++)
+            var definitions = new AreaDefinition[Centers.Length];
+            foreach (int a in WorldAreas)
             {
                 definitions[a] = new AreaDefinition
                 {
@@ -188,6 +188,7 @@ namespace PoeClone.World
             }
 
             definitions[ActArena] = BuildActArena();
+            ConfigureCaveLighting(player.transform);
 
             // Colliders made this frame aren't in the physics world until it syncs; the starter
             // loot below finds the ground by raycast.
@@ -251,6 +252,9 @@ namespace PoeClone.World
                 case Frozen:
                     return GroundTextures.Make(44, new Color(0.78f, 0.84f, 0.90f), new Color(0.93f, 0.96f, 0.98f),
                         new Color(0.55f, 0.72f, 0.88f), 0.012f, 7f);
+                case Cave:
+                    return GroundTextures.Make(66, new Color(0.18f, 0.20f, 0.21f), new Color(0.32f, 0.33f, 0.30f),
+                        new Color(0.29f, 0.35f, 0.32f), 0.012f, 7f);
                 default:
                     return GroundTextures.Make(33, new Color(0.22f, 0.19f, 0.18f), new Color(0.44f, 0.37f, 0.31f),
                         new Color(0.85f, 0.35f, 0.12f), 0.01f, 8f);
@@ -331,7 +335,7 @@ namespace PoeClone.World
 
             Spots["Elder"] = c + new Vector3(-3.5f, 0f, 3.5f);
             Spots["Smith"] = c + new Vector3(5.5f, 0f, -7f);
-            Spots["Guard"] = c + new Vector3(33f, 0f, 4f);
+            Spots["Guard"] = c + new Vector3(112f, 0f, 4f);
 
             // Four benches by the spawn point, side-on to the camera so the names of the things lying
             // on them don't overlap; a new character's first gear lies on them.
@@ -372,13 +376,13 @@ namespace PoeClone.World
             Transform t = Group("Graveyard");
 
             // Central path, west to east.
-            Box(t, c + new Vector3(0f, 0.025f, 0f), new Vector3(86f, 0.05f, 3.6f), kit.Mat("Ash"), solid: false);
+            Box(t, c + new Vector3(0f, 0.025f, 0f), new Vector3(246f, 0.05f, 3.6f), kit.Mat("Ash"), solid: false);
             Claim(c + new Vector3(-30f, 0f, 0f), 3f);
             Claim(c + new Vector3(0f, 0f, 0f), 3f);
             Claim(c + new Vector3(30f, 0f, 0f), 3f);
 
             // The crypt, north-west of the path and well away from the central waystone.
-            Vector3 crypt = Shape(Graveyard).EdgePoint(new Vector3(-1f, 0f, 1f), 18f);
+            Vector3 crypt = c + AreaLayouts.BossLocal(Graveyard);
             Box(t, crypt + new Vector3(0f, 2f, 0f), new Vector3(7f, 4f, 7f), kit.Mat("TombstoneDark"));
             Box(t, crypt + new Vector3(0f, 4.4f, 0f), new Vector3(7.8f, 0.8f, 7.8f), kit.Mat("Tombstone"));
             Box(t, crypt + new Vector3(0f, 1.3f, -3.55f), new Vector3(2f, 2.6f, 0.2f), kit.Mat("Charred"), solid: false);
@@ -401,7 +405,7 @@ namespace PoeClone.World
                 new Vector2(26f, -15f), new Vector2(-6f, -18f), new Vector2(14f, -30f)
             };
             foreach (Vector2 plot in plots)
-                GravePlot(t, c + Flat(plot.x, plot.y));
+                GravePlot(t, Shape(Graveyard).NearestOpen(c + Flat(plot.x * 2.4f, plot.y * 2.4f), 12f));
 
             // Dead trees, candles, bones and a few pumpkins.
             Scatter(t, 18, 6f, 46f, p => DeadTree(t, p, kit.Mat("DeadWood")), 1.6f);
@@ -421,7 +425,7 @@ namespace PoeClone.World
 
             // The temple dais, with a ring of columns (some broken) and an altar.
             // The north-east pocket keeps the dais away from the waystone and the north gate.
-            Vector3 temple = c + new Vector3(30f, 0f, 24f);
+            Vector3 temple = c + AreaLayouts.BossLocal(Ruins);
             Box(t, temple + new Vector3(0f, 0.07f, 0f), new Vector3(20f, 0.14f, 20f), kit.Mat("Sandstone"), solid: false);
             for (int k = 0; k < 10; k++)
             {
@@ -442,8 +446,8 @@ namespace PoeClone.World
             // Broken walls: rows of blocks with gaps, a few fallen.
             for (int w = 0; w < 9; w++)
             {
-                Vector3 start = c + Flat(R(-40f, 40f), R(-40f, 40f));
-                if (!Free(start, 5f))
+                Vector3 start = c + Flat(R(-140f, 140f), R(-110f, 110f));
+                if (!Free(start, 5f) || !Shape(Ruins).Contains(start, 16f))
                     continue;
                 float yaw = R(0f, 180f);
                 Vector3 dir = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
@@ -464,8 +468,8 @@ namespace PoeClone.World
             // Cracks of lava in the ash.
             for (int k = 0; k < 16; k++)
             {
-                Vector3 p = c + Flat(R(-44f, 44f), R(-44f, 44f));
-                if (Vector3.Distance(p, temple) < 11f)
+                Vector3 p = c + Flat(R(-140f, 140f), R(-110f, 110f));
+                if (Vector3.Distance(p, temple) < 11f || !Shape(Ruins).Contains(p, 5f))
                     continue;
                 Box(t, p + Vector3.up * 0.03f, new Vector3(R(0.25f, 0.5f), 0.05f, R(3f, 8f)), kit.Mat("Lava"), solid: false,
                     euler: new Vector3(0f, R(0f, 180f), 0f));
@@ -487,7 +491,7 @@ namespace PoeClone.World
             Vector3 c = Centers[Frozen];
             Transform t = Group("Frozen");
 
-            Vector3 throne = c + new Vector3(34f, 0f, 20f);
+            Vector3 throne = c + AreaLayouts.BossLocal(Frozen);
             Cyl(t, throne + Vector3.up * 0.04f, 9f, 0.08f, kit.Mat("Ice"), solid: false);
             for (int k = 0; k < 12; k++)
             {
@@ -505,9 +509,9 @@ namespace PoeClone.World
             // Frozen ponds.
             for (int k = 0; k < 5; k++)
             {
-                Vector3 p = c + Flat(R(-38f, 38f), R(-38f, 38f));
+                Vector3 p = c + Flat(R(-130f, 130f), R(-140f, 140f));
                 float radius = R(3f, 6f);
-                if (!Free(p, radius))
+                if (!Free(p, radius) || !Shape(Frozen).Contains(p, radius + 2f))
                     continue;
                 Cyl(t, p + Vector3.up * 0.03f, radius, 0.06f, kit.Mat("Ice"), solid: false);
                 Claim(p, radius);
@@ -576,19 +580,19 @@ namespace PoeClone.World
                 return;
 
             GameObject prefab = original.EnemyPrefab;
-            original.Configure(prefab, Centers[Greenwood], AreaShape.MaxRadius, 34, MonsterLevels[Greenwood], KindWeights[Greenwood]);
+            original.Configure(prefab, Centers[Greenwood], AreaShape.MaxRadius, 48, MonsterLevels[Greenwood], KindWeights[Greenwood]);
             original.SetSafeSpots(SafeSpots(Greenwood));
             AreaShape greenwood = Shape(Greenwood);
             original.SetBounds(p => greenwood.Contains(p, 3f));
             spawnersByArea[Greenwood] = original;
 
-            foreach (int area in new[] { Graveyard, Ruins, Frozen })
+            foreach (int area in new[] { Graveyard, Ruins, Frozen, Cave })
             {
                 var go = new GameObject("Spawner_" + AreaNames[area]);
                 go.transform.SetParent(root, false);
                 go.transform.position = Centers[area];
                 var spawner = go.AddComponent<EnemySpawner>();
-                spawner.Configure(prefab, Centers[area], AreaShape.MaxRadius, 36, MonsterLevels[area], KindWeights[area]);
+                spawner.Configure(prefab, Centers[area], AreaShape.MaxRadius, 48, MonsterLevels[area], KindWeights[area == Cave ? Graveyard : area]);
                 spawner.SetSafeSpots(SafeSpots(area));
                 AreaShape shape = Shape(area);
                 spawner.SetBounds(p => shape.Contains(p, 3f));
@@ -823,7 +827,7 @@ namespace PoeClone.World
         // areas' own), which may be cleared away from gates, arrivals and waystones.
         private static readonly HashSet<string> ClearableGroups = new HashSet<string>
         {
-            "Trees", "Rocks", "Bushes", "Haven", "Graveyard", "Ruins", "Frozen", "Outskirts", "Glowshrooms"
+            "Trees", "Rocks", "Bushes", "Houses", "Haven", "Graveyard", "Ruins", "Frozen", "Cave", "Outskirts", "Glowshrooms"
         };
 
         private static void ClearSpot(Vector3 at, float radius)
@@ -1071,7 +1075,7 @@ namespace PoeClone.World
         private void BuildWaystones()
         {
             Transform t = Group("Waystones");
-            for (int a = 0; a < Centers.Length; a++)
+            foreach (int a in WorldAreas)
             {
                 Vector3 p = WaystoneSpot(a);
                 if (a == Greenwood)
@@ -1202,7 +1206,7 @@ namespace PoeClone.World
         }
 
         // Places up to `count` things at random spots in a ring round the current area's centre.
-        // A ring reaching 40 m or more means "out to the edge": it covers the whole outline instead,
+        // A ring reaching 40 m or more means "out to the edge": sample the authored walkable space,
         // with proportionally more things.
         private void Scatter(Transform t, int count, float minRadius, float maxRadius, System.Func<Vector3, GameObject> place, float radius)
         {
@@ -1220,7 +1224,7 @@ namespace PoeClone.World
                 float d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(c.x, c.z));
                 if (d < minRadius || d > maxRadius || !Free(p, radius))
                     continue;
-                if (wide && !shape.Contains(p, 4f))
+                if (!shape.Contains(p, shape.IsCave ? radius + 8f : radius + 2f))
                     continue;
                 place(p);
                 Claim(p, radius);

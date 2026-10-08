@@ -14,7 +14,7 @@ namespace PoeClone.UI
     /// </summary>
     public static class MinimapTerrain
     {
-        public const int Resolution = 160;        // texture pixels across an area
+        public const int Resolution = 240;        // preserve corridor detail across the larger maps
         public const int FogResolution = 80;      // seen/unseen cells across an area
         private const float RevealRadius = 22f;   // metres around the player that count as seen
 
@@ -192,7 +192,7 @@ namespace PoeClone.UI
                 {
                     var p = new Vector3(centre.x - AreaSize * 0.5f + (x + 0.5f) * pixel, 0f, centre.z - AreaSize * 0.5f + (y + 0.5f) * pixel);
                     Cell c = Cell.Outside;
-                    if (shape.Contains(p, -2f))
+                    if (shape.Contains(p))
                     {
                         // Anything standing up out of the ground (a trunk, a rock, a wall, a house) is solid.
                         c = Cell.Open;

@@ -83,6 +83,15 @@ Shader "PoeClone/ToonLit"
             float4 _ManualLightPosRange[MAX_MANUAL_LIGHTS];   // xyz = world pos, w = range
             float4 _ManualLightColorIntensity[MAX_MANUAL_LIGHTS]; // rgb = color, a = intensity
             int _ManualLightCount;
+            // World-space cave regions keep sunlight/ambient dim while preserving local torches.
+            float4 _CaveBounds;
+            float4 _HollowBounds;
+            float4 _SanctuaryBounds;
+            float InCave(float3 p, float4 bounds)
+            {
+                float2 distance = abs(p.xz - bounds.xy);
+                return bounds.z > 0 && distance.x < bounds.z && distance.y < bounds.w ? 1.0 : 0.0;
+            }
 
             Varyings vert(Attributes IN)
             {
@@ -140,6 +149,8 @@ Shader "PoeClone/ToonLit"
 
                 half3 ambient = SampleSH(normalWS) * albedo;
                 color += ambient * _AmbientBoost;
+                float cave = max(InCave(IN.positionWS, _CaveBounds), max(InCave(IN.positionWS, _HollowBounds), InCave(IN.positionWS, _SanctuaryBounds)));
+                color *= lerp(1.0, 0.23, cave);
 
                 #if defined(_ADDITIONAL_LIGHTS) || defined(_CLUSTER_LIGHT_LOOP)
                 int pixelLightCount = GetAdditionalLightsCount();
@@ -187,7 +198,7 @@ Shader "PoeClone/ToonLit"
                 float3 viewDir = normalize(GetCameraPositionWS() - IN.positionWS);
                 float rim = 1.0 - saturate(dot(viewDir, normalWS));
                 rim = pow(rim, _RimPower) * _RimIntensity * band;
-                color += _RimColor.rgb * rim;
+                color += _RimColor.rgb * rim * lerp(1.0, 0.23, cave);
                 #endif
 
                 color = MixFog(color, IN.fogCoord);

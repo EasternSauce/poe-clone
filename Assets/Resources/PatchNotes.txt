@@ -1,3 +1,10 @@
+version: 2026-10-08-fixed-area-layouts
+- Replaced open blob maps with permanent authored layouts and larger, uneven rectangular bounds: open woodland and town basins, divided graveyard grounds, lava cliff shelves, and winding ice caverns. The enclosing rectangle and blocked regions cannot be walked on.
+- Added The Lost Hollows, a dark cave connecting Greenwood and the Haunted Graveyard, with roomy entrances, looping tunnels and many dead ends. Cave passages remain comfortably wider than the player.
+- Relocated existing gates, bosses, NPC camps and quest objects into the layouts without adding new quests. Expanded themed scenery and existing enemy populations to cover the larger maps.
+- Caves reduce daylight and ambient lighting while preserving mushrooms, torches and a small visibility light around the player. Minimap terrain follows corridors, cliff edges and inaccessible pockets.
+- Added reusable layout definitions and an Edit-mode authoring preview under PoeClone > World > Area Layout Preview for future areas.
+
 version: 2026-10-08-character-startup-and-controls
 - Reorganized Settings into Communication, Controls, and Session sections with aligned option buttons, persistent Settings/Patch History tabs, and a Resume button.
 - Mobile inventory directional buttons now display drawn arrow icons that render independently of the UI font.

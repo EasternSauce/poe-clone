@@ -7,18 +7,21 @@ namespace PoeClone.World
     public partial class WorldBuilder
     {
         public const int ActArena = 5;
-        public static readonly Vector3 ActArenaCenter = new Vector3(1040f, 0f, 0f);
+        public static readonly Vector3 ActArenaCenter = new Vector3(1680f, 0f, 0f);
+        public static Vector3 SanctuaryDoorSpot => Center(Frozen) + new Vector3(0f, 0f, 128f);
         private AreaDefinition BuildActArena()
         {
             Transform arena = Group("The Shed Sanctuary");
             Vector3 c = ActArenaCenter;
-            LocalBox(arena, c + Vector3.down * 0.35f, new Vector3(82f, 0.7f, 82f), kit.Mat("RockDark"));
-            // A spare floor, rimmed by giant fossil ribs. No obstacles in the chase space.
-            for (int i = 0; i < 4; i++)
-            {
-                Vector3 p = c + Quaternion.Euler(0f, i * 90f, 0f) * Vector3.forward * 41f;
-                LocalBox(arena, p + Vector3.up * 3f, i % 2 == 0 ? new Vector3(84f, 6f, 2f) : new Vector3(2f, 6f, 84f), kit.Mat("RockDark"));
-            }
+            var floor = new GameObject("Ground_Sanctuary");
+            floor.transform.SetParent(arena, false);
+            floor.transform.position = c;
+            Mesh mesh = Shape(ActArena).BuildGroundMesh(0f);
+            floor.AddComponent<MeshFilter>().sharedMesh = mesh;
+            floor.AddComponent<MeshRenderer>().sharedMaterial = kit.Mat("RockDark");
+            floor.AddComponent<MeshCollider>().sharedMesh = mesh;
+            BuildLayoutWalls(ActArena, 0f);
+            // The encounter retains its clear central chase space inside a shaped cave perimeter.
             for (int side = -1; side <= 1; side += 2)
             {
                 for (int i = 0; i < 5; i++)
@@ -31,7 +34,7 @@ namespace PoeClone.World
             }
             LocalBox(arena, c + new Vector3(0f, 1f, 34f), new Vector3(12f, 2f, 4f), kit.Mat("TombstoneDark"));
             Transform entry = Marker("SanctuaryEntry", c + new Vector3(0f, 1.1f, -31f), 0f);
-            Vector3 door = Centers[Frozen] + new Vector3(0f, 1.1f, 49f);
+            Vector3 door = SanctuaryDoorSpot + new Vector3(0f, 1.1f, -3f);
             Transform outside = Marker("SanctuaryReturn", door + Vector3.back * 6f, 180f);
             MakeActGate(arena, "Sanctuary entrance", door, Frozen, ActArena, entry, true);
             MakeActGate(arena, "Sanctuary exit", c + new Vector3(0f, 1.1f, -37f), ActArena, Frozen, outside, false);

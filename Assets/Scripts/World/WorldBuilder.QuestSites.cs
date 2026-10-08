@@ -27,11 +27,18 @@ namespace PoeClone.World
         private static Vector3 Site(int area, float x, float z)
         {
             Vector3 c = Centers[area];
-            Vector3 p = c + new Vector3(x, 0f, z);
+            Vector3 p = c + new Vector3(x, 0f, z) * 1.8f;
             AreaShape shape = Shape(area);
-            for (int k = 0; k < 20 && !shape.Contains(p, 14f); k++)
-                p = Vector3.Lerp(p, c, 0.1f);
-            return p;
+            return shape.NearestOpen(p, 16f);
+        }
+
+        private static Vector3[] QuestPoints(int area, string group)
+        {
+            Vector3[] anchors = AreaLayouts.QuestAnchors[group];
+            var points = new Vector3[anchors.Length];
+            for (int i = 0; i < anchors.Length; i++)
+                points[i] = Shape(area).NearestOpen(Center(area) + anchors[i], 5f);
+            return points;
         }
 
         // Makes room: scenery with colliders (ClearSpot), and loose decor of the area's own group
@@ -272,39 +279,39 @@ namespace PoeClone.World
 
             // The Hollow Call: bone totems in the Greenwood.
             Begin(Greenwood, 631);
-            Vector3[] totems = { Site(Greenwood, 34f, 38f), Site(Greenwood, -28f, -46f), Site(Greenwood, 50f, -30f) };
+            Vector3[] totems = QuestPoints(Greenwood, "totems");
             for (int k = 0; k < totems.Length; k++)
                 Totem(t, totems[k], k);
 
             // The Lost Patrol: Hale's scouts.
-            Vector3[] scouts = { Site(Greenwood, -48f, 32f), Site(Greenwood, 12f, -58f), Site(Greenwood, 62f, 14f) };
+            Vector3[] scouts = QuestPoints(Greenwood, "patrol");
             string[] names = { "Aldo", "Bren", "Corin" };
             for (int k = 0; k < scouts.Length; k++)
                 FallenScout(t, scouts[k], k, names[k]);
 
             // The Gravelord: Mortis's reliquaries; the Lost Caravan: Oda's crates.
             Begin(Graveyard, 632);
-            Vector3[] relics = { Site(Graveyard, -42f, 6f), Site(Graveyard, 38f, 32f), Site(Graveyard, 4f, -44f) };
+            Vector3[] relics = QuestPoints(Graveyard, "relics");
             for (int k = 0; k < relics.Length; k++)
                 Reliquary(t, relics[k], k);
-            Vector3[] crates = { Site(Graveyard, 44f, -22f), Site(Graveyard, -16f, 42f), Site(Graveyard, 58f, 8f) };
+            Vector3[] crates = QuestPoints(Graveyard, "caravan");
             for (int k = 0; k < crates.Length; k++)
                 OdaCrate(t, crates[k], k);
 
             // Embers of War: supply caches, the Ashen Shrine. The Frozen Seal: sunstones, the ice.
             Begin(Ruins, 633);
-            Vector3[] caches = { Site(Ruins, -36f, 32f), Site(Ruins, -48f, -30f), Site(Ruins, 60f, 22f) };
+            Vector3[] caches = QuestPoints(Ruins, "supplies");
             for (int k = 0; k < caches.Length; k++)
                 SupplyCache(t, caches[k], k);
-            AshenShrine(t, Site(Ruins, -30f, -20f));
-            Vector3[] suns = { Site(Ruins, -22f, 52f), Site(Ruins, 22f, 52f), Site(Ruins, 0f, 34f) };
+            AshenShrine(t, QuestPoints(Ruins, "shrine")[0]);
+            Vector3[] suns = QuestPoints(Ruins, "sunstones");
             for (int k = 0; k < suns.Length; k++)
                 Sunstone(t, suns[k], k);
             IceSeal(t);
 
             // The Frozen Seal: the lost scouts, the door beneath the ice.
             Begin(Frozen, 634);
-            Vector3[] frozen = { Site(Frozen, -42f, -30f), Site(Frozen, 32f, -42f), Site(Frozen, 48f, 12f) };
+            Vector3[] frozen = QuestPoints(Frozen, "scouts");
             string[] journals =
             {
                 "\"Day 3. Spiders the size of carts in the pines. Lost Mott to one. The cold is worse than the spiders.\"",
@@ -313,7 +320,7 @@ namespace PoeClone.World
             };
             for (int k = 0; k < frozen.Length; k++)
                 FrozenScout(t, frozen[k], k, journals[k]);
-            StagDoor(t, Centers[Frozen] + new Vector3(0f, 0f, 52f));
+            StagDoor(t, SanctuaryDoorSpot);
         }
 
         private Light QuestGlow(Transform parent, Vector3 p, Color color, float range, float intensity)
