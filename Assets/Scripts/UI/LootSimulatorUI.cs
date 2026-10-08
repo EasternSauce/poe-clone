@@ -29,6 +29,8 @@ namespace PoeClone.EditorTools
         private Text tipText, status, inventorySummary;
         private ScrollRect inventoryScroll;
         private InputField level, count;
+        private ItemRarity minimumRarity = ItemRarity.Normal;
+        private readonly Dictionary<ItemRarity, Text> rarityButtons = new Dictionary<ItemRarity, Text>();
         private const int GridColumns = 16;
         private const int MinimumRows = 12;
         private const float CellSize = 44f;
@@ -79,6 +81,13 @@ namespace PoeClone.EditorTools
             Label(pr,"CountLabel","Items (1?1000)",new Vector2(214,-110),new Vector2(175,30));
             count = Field(pr,"ItemCount","48",new Vector2(214,-145));
             Button(pr,"Randomize Loot",new Vector2(420,-140),new Vector2(200,42),Randomize);
+            Label(pr,"MinimumRarity","Minimum rarity",new Vector2(650,-110),new Vector2(440,30));
+            foreach (ItemRarity rarity in Enum.GetValues(typeof(ItemRarity)))
+            {
+                ItemRarity selected = rarity;
+                rarityButtons[rarity] = Button(pr,rarity.ToString(),new Vector2(650+(int)rarity*112,-145),new Vector2(104,36),() => SelectRarity(selected));
+            }
+            SelectRarity(ItemRarity.Normal);
             Button(pr,"Select all",new Vector2(24,-205),new Vector2(150,34),() => SelectAll(true));
             Button(pr,"Clear all",new Vector2(186,-205),new Vector2(150,34),() => SelectAll(false));
             foreach (ItemType type in Enum.GetValues(typeof(ItemType)))
@@ -162,6 +171,16 @@ namespace PoeClone.EditorTools
             return placed;
         }
 
+        private void SelectRarity(ItemRarity rarity)
+        {
+            minimumRarity = rarity;
+            foreach (var pair in rarityButtons)
+            {
+                pair.Value.text = (pair.Key == rarity ? "[x] " : "") + pair.Key;
+                pair.Value.color = pair.Key == rarity ? UiKit.RarityColor(pair.Key) : UiKit.DimText;
+            }
+        }
+
         private void AddFilter(Transform parent, ItemType type, WeaponType weapon, string name)
         {
             int index = filters.Count;
@@ -177,22 +196,60 @@ namespace PoeClone.EditorTools
             if (!int.TryParse(level.text,out int ilvl) || ilvl < 1 || ilvl > 100 || !int.TryParse(count.text,out int amount) || amount < 1 || amount > 1000)
             { status.text = "Enter an area level from 1 to 100 and an item count from 1 to 1000."; return; }
             var bases = new List<string>(); var weights = new List<float>(); float total = 0;
-            foreach (var pair in ItemGenerator.DropChances(ilvl))
+            var dropChances = ItemGenerator.DropChances(ilvl);
+            foreach (var pair in dropChances)
             {
                 ItemData display = ItemGenerator.Display(pair.Key,null,ItemRarity.Normal);
                 if (display == null || !Allowed(display)) continue;
                 bases.Add(pair.Key); weights.Add(pair.Value); total += pair.Value;
             }
             if (bases.Count == 0) { status.text = "Select at least one item type available at this area level."; return; }
-            items.Clear(); int normal = 0, magic = 0, rare = 0;
+            var uniqueIndices = new List<int>();
+            if (minimumRarity == ItemRarity.Unique)
+            {
+                for (int k = 0; k < UniqueItems.Count; k++)
+                {
+                    ItemData unique = UniqueItems.Create(k);
+                    if (Allowed(unique) && dropChances.ContainsKey(unique.Id)) uniqueIndices.Add(k);
+                }
+                if (uniqueIndices.Count == 0)
+                { status.text = "No unique items match the selected types at this area level."; return; }
+            }
+            // Build a complete batch before replacing the previous preview. Generator balance
+            // edits can leave a base without enough modifiers to meet the requested rarity.
+            var generated = new List<ItemData>(amount);
+            int normal = 0, magic = 0, rare = 0, uniques = 0;
             for (int i = 0; i < amount; i++)
             {
-                double roll = rng.NextDouble()*total; int pick = bases.Count-1;
-                for (int k = 0; k < weights.Count; k++) { roll -= weights[k]; if (roll < 0) { pick = k; break; } }
-                ItemData item = ItemGenerator.Generate(rng,bases[pick],ilvl,ItemGenerator.RollRarity(rng)); items.Add(item);
-                if (item.Rarity == ItemRarity.Normal) normal++; else if (item.Rarity == ItemRarity.Magic) magic++; else rare++;
+                ItemData item = null;
+                if (minimumRarity == ItemRarity.Unique)
+                {
+                    item = UniqueItems.Create(uniqueIndices[rng.Next(uniqueIndices.Count)]);
+                    item.ItemLevel = ilvl;
+                }
+                else
+                {
+                    for (int attempt = 0; attempt < 32; attempt++)
+                    {
+                        double roll = rng.NextDouble()*total; int pick = bases.Count-1;
+                        for (int k = 0; k < weights.Count; k++) { roll -= weights[k]; if (roll < 0) { pick = k; break; } }
+                        ItemRarity rarity = ItemGenerator.RollRarity(rng);
+                        if (rarity < minimumRarity) rarity = minimumRarity;
+                        item = ItemGenerator.Generate(rng,bases[pick],ilvl,rarity);
+                        if (item != null && item.Rarity >= minimumRarity) break;
+                        item = null;
+                    }
+                    if (item == null)
+                    { status.text = "Could not meet the minimum rarity with these types and modifier settings. Try other types or a lower minimum."; return; }
+                }
+                generated.Add(item);
+                if (item.Rarity == ItemRarity.Normal) normal++;
+                else if (item.Rarity == ItemRarity.Magic) magic++;
+                else if (item.Rarity == ItemRarity.Rare) rare++;
+                else uniques++;
             }
-            status.text = $"{amount} items ? area level {ilvl}\n{normal} Normal / {magic} Magic / {rare} Rare"; Render();
+            items.Clear(); items.AddRange(generated);
+            status.text = $"{amount} items - area level {ilvl}\nMinimum: {minimumRarity}\n{normal} Normal / {magic} Magic\n{rare} Rare / {uniques} Unique"; Render();
         }
         private void Render()
         {
