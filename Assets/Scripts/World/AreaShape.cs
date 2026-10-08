@@ -20,6 +20,7 @@ namespace PoeClone.World
         private readonly List<Region> cuts = new List<Region>();
         public readonly List<(Vector3 a, Vector3 b)> Boundary = new List<(Vector3, Vector3)>();
         private Mesh groundMesh, landMesh;
+        private float[,] landSamples;
         private readonly List<(Vector3 a, Vector3 b)> landBoundary = new List<(Vector3, Vector3)>();
         private float[,] gapSamples;
         private bool[,] filledGaps;
@@ -257,6 +258,7 @@ namespace PoeClone.World
                     Clip(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1], vertices, triangles, !omitBridges, omitBridges ? landBoundary : null);
                     Clip(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z], vertices, triangles, !omitBridges, omitBridges ? landBoundary : null);
                 }
+            if (omitBridges) landSamples = samples;
             Mesh mesh = MeshFrom(omitBridges ? "AuthoredLand" : "AuthoredAreaGround", vertices, triangles);
             if (omitBridges) landMesh = mesh; else groundMesh = mesh;
             return mesh;
@@ -297,6 +299,22 @@ namespace PoeClone.World
             }
         }
 
+        // Interpolate the same triangles that render the floor, including its water cutouts.
+        // Separate, finer sampling of the analytic outline leaves slits beside the ground mesh.
+        private float LandDistance(Vector2 p)
+        {
+            if (landSamples == null) BuildGroundMesh(0, omitBridges: true);
+            Vector2 grid = (p + Size * 0.5f) / Cell;
+            int x = Mathf.FloorToInt(grid.x), z = Mathf.FloorToInt(grid.y);
+            if (x < 0 || z < 0 || x + 1 >= landSamples.GetLength(0) || z + 1 >= landSamples.GetLength(1))
+                return Mathf.Min(Distance(p), -WaterDistance(p));
+            float u = grid.x - x, v = grid.y - z;
+            float a = landSamples[x, z], b = landSamples[x, z + 1];
+            float c = landSamples[x + 1, z + 1], d = landSamples[x + 1, z];
+            return v >= u ? a * (1f - v) + b * (v - u) + c * u :
+                a * (1f - u) + c * v + d * (u - v);
+        }
+
         public Mesh BuildWalls(float bottom, float top, float outward = 0f)
         {
             BuildGroundMesh(0f);
@@ -335,8 +353,20 @@ namespace PoeClone.World
             }
             foreach (var edge in collision ? Boundary : WallContour(outward))
             {
-                if (!collision && WaterDistance((edge.a + edge.b) * 0.5f + Center) > -8f) continue;
-                int a = Join(edge.a), b = Join(edge.b);
+                Vector3 start = edge.a, end = edge.b;
+                if (!collision)
+                {
+                    // Clip at the shore instead of deleting entire wall segments near a river.
+                    float da = -WaterDistance(start + Center) - 0.06f;
+                    float db = -WaterDistance(end + Center) - 0.06f;
+                    if (da <= 0f && db <= 0f) continue;
+                    if ((da > 0f) != (db > 0f))
+                    {
+                        Vector3 crossing = Vector3.Lerp(start, end, da / (da - db));
+                        if (da <= 0f) start = crossing; else end = crossing;
+                    }
+                }
+                int a = Join(start), b = Join(end);
                 Vector3 facing = normals[a] + normals[b];
                 Face(a, a + 1, b, facing);
                 Face(b, a + 1, b + 1, facing);
@@ -359,9 +389,9 @@ namespace PoeClone.World
             for (int z = 0; z <= nz; z++)
                 for (int x = 0; x <= nx; x++)
                 {
-                    float distance = Distance(start + new Vector2(x * step, z * step));
+                    float distance = LandDistance(start + new Vector2(x * step, z * step));
                     samples[x, z] = Mathf.Min(Mathf.Min(-distance - outward, distance + outward + width),
-                        -WaterDistance(start + new Vector2(x * step, z * step)) - 8f);
+                        -WaterDistance(start + new Vector2(x * step, z * step)) - 0.06f);
                 }
             // Clip a non-overlapping grid to the solid band outside the playable outline.
             // Holes and merging room edges use the same field as the floor, with no long
@@ -387,7 +417,7 @@ namespace PoeClone.World
             var samples = new float[nx + 1, nz + 1];
             for (int z = 0; z <= nz; z++)
                 for (int x = 0; x <= nx; x++)
-                    samples[x, z] = Distance(start + new Vector2(x, z)) + outward;
+                    samples[x, z] = LandDistance(start + new Vector2(x, z)) + outward;
             var result = new List<(Vector3, Vector3)>();
             void Triangle(Vector3 a, Vector3 b, Vector3 c, float da, float db, float dc)
             {

@@ -1,3 +1,6 @@
+version: 2026-10-08-continuous-shoreline-borders
+- Rock and ice borders now reach river and lake shores instead of stopping several metres away and leaving dark gaps. Border surfaces follow the rendered ground edge to close the seams beside them.
+
 version: 2026-10-08-natural-bridge-and-river-banks
 - Rebuilt timber bridges to fit their river crossings, with angled, narrower decks, gently arched boards, shaped rails and bank supports. Water now runs beneath bridges instead of grass.
 - Removed fragmented river-edge patches and joined shore surfaces to the terrain outline. Closed exposed bank faces and softened the water texture.

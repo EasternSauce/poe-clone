@@ -61,7 +61,7 @@ namespace PoeClone.World
             var rim = new GameObject(shape.IsCliff ? "CliffFaces" : "RockBanks");
             rim.transform.SetParent(group, false);
             rim.AddComponent<MeshFilter>().sharedMesh = shape.BuildWalls(shape.IsCliff ? -12f : -0.5f,
-                shape.IsCave ? 3.2f : shape.IsCliff ? 0.25f : 1.3f, 0.65f);
+                shape.IsCave ? 3.2f : shape.IsCliff ? 0.25f : 1.3f, 0.025f);
             rim.AddComponent<MeshRenderer>().sharedMaterial = LayoutRockMaterial(area);
             // Backdrops are visual only: the enclosing rectangle and cliff bottoms cannot be walked on.
             Box(group, shape.Center + new Vector3(0, floorY - (shape.IsCliff ? 12.5f : 1.5f), 0),
