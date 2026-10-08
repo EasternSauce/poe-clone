@@ -360,9 +360,8 @@ namespace PoeClone.Enemies
         }
 
         // A creature has a death of its own (it lies where it falls, no topple); a humanoid gets
-        // the limb collapse. foldLowerBody: false -- the root topple (Collapse) already lies the
-        // whole rig on the ground, so the big local leg/knee/upper-body fold used for the player
-        // (who has no topple) would double up on top of it and bury the legs under the torso.
+        // arm splay. foldUpperBody: false -- the root topple (Collapse) already lies the
+        // whole rig on the ground, so the player's torso fold would double up on top of it.
         // Returns whether it was a creature.
         private bool PlayDeathPose(bool instant)
         {
@@ -379,7 +378,7 @@ namespace PoeClone.Enemies
                 return true;
             }
 
-            CharacterDeathAnimator.PlayOn(transform, foldLowerBody: false);
+            CharacterDeathAnimator.PlayOn(transform, foldUpperBody: false);
             return false;
         }
 
@@ -459,7 +458,7 @@ namespace PoeClone.Enemies
         // the rig lands lying flat instead of hanging in the air off to one side. Confirmed visually
         // (screenshot) that folding the legs/knees/upper-body locally *and* toppling the root both
         // fight over the same space and hide the legs under the torso either way -- toppling the
-        // root alone, with the limbs left in their natural standing proportions (foldLowerBody:
+        // root alone, with the limbs left in their natural standing proportions (foldUpperBody:
         // false above), is what actually reads as a body lying on the ground with visible legs.
         // The corpse is left in place afterward rather than destroyed.
         private IEnumerator Collapse(bool removeCorpse)

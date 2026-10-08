@@ -4,7 +4,7 @@ namespace PoeClone.Visuals
 {
     /// <summary>
     /// Procedural death collapse for the same blocky pivot rig <see cref="CharacterWalkAnimator"/>
-    /// animates: knees buckle, the upper body folds forward and the arms go limp and splay
+    /// animates: legs straighten, the upper body folds forward and the arms go limp and splay
     /// outward, settling into a heap pose over <see cref="PlayDeath"/>'s duration. Each joint
     /// eases from whatever pose it was actually in when death began (rather than a hardcoded
     /// start), so it never pops even if death lands mid-swing or mid-stride. Purely a limb pose;
@@ -41,14 +41,11 @@ namespace PoeClone.Visuals
         /// immediately overwrite the collapse pose). Shared by EnemyHealth and PlayerStats so a
         /// death always looks the same either way. No-ops if there's no "Model" child.
         /// </summary>
-        /// <param name="foldLowerBody">
-        /// The player has no separate root topple, so it needs the full leg/knee/upper-body fold to
-        /// read as collapsed while staying upright. Enemies do get a root topple (see
-        /// EnemyHealth.Collapse) which lies the whole rig on the ground -- combining that with this
-        /// same big local fold doubled up and buried the legs under the torso, so enemies pass false
-        /// here and only get the (much smaller) arm splay.
+        /// <param name="foldUpperBody">
+        /// The player folds its torso forward while keeping its legs straight and visible.
+        /// Enemies pass false because EnemyHealth.Collapse topples the whole rig instead.
         /// </param>
-        public static void PlayOn(Transform root, bool foldLowerBody = true)
+        public static void PlayOn(Transform root, bool foldUpperBody = true)
         {
             Transform model = root.Find("Model");
             if (model == null)
@@ -66,7 +63,7 @@ namespace PoeClone.Visuals
             if (deathAnimator == null)
                 deathAnimator = model.gameObject.AddComponent<CharacterDeathAnimator>();
 
-            deathAnimator.PlayDeath(foldLowerBody);
+            deathAnimator.PlayDeath(foldUpperBody);
         }
 
         /// <summary>
@@ -109,20 +106,16 @@ namespace PoeClone.Visuals
             rightElbow = rightArm != null ? FindDescendant(rightArm, "Elbow") : null;
         }
 
-        public void PlayDeath(bool foldLowerBody = true)
+        public void PlayDeath(bool foldUpperBody = true)
         {
-            float legPitchL = foldLowerBody ? -32f : 0f;
-            float legPitchR = foldLowerBody ? -22f : 0f;
-            float kneePitchL = foldLowerBody ? 125f : 0f;
-            float kneePitchR = foldLowerBody ? 112f : 0f;
-            float upperBodyPitch = foldLowerBody ? 85f : 0f;
+            float upperBodyPitch = foldUpperBody ? 85f : 0f;
 
             joints = new[]
             {
-                MakeJoint(leftLeg, legPitchL, 0f),
-                MakeJoint(rightLeg, legPitchR, 0f),
-                MakeJoint(leftKnee, kneePitchL, 0f),
-                MakeJoint(rightKnee, kneePitchR, 0f),
+                MakeJoint(leftLeg, 0f, 0f),
+                MakeJoint(rightLeg, 0f, 0f),
+                MakeJoint(leftKnee, 0f, 0f),
+                MakeJoint(rightKnee, 0f, 0f),
                 MakeJoint(upperBody, upperBodyPitch, 0f),
                 MakeJoint(leftArm, -15f, -72f),
                 MakeJoint(rightArm, -15f, 72f),
