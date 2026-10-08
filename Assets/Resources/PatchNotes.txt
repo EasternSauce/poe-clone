@@ -1,3 +1,6 @@
+version: 2026-10-08-skill-tier-unlock-progression
+- Rescaled all six granted-skill tiers to unlock at item levels 1, 8, 16, 23, 31 and 34. Level 10 skills remain available in level 34 areas, with the preceding tier unlocking separately at level 31. Applies to optional skills and guaranteed staff/grimoire attacks.
+
 version: 2026-10-08-all-modifier-tiers
 - Added stronger item-level tiers to all 34 previously single-tier random modifiers, including resistances, attack speed, penetration, movement speed and minion bonuses. Higher-level gear can now roll lightning resistance up to 67 instead of 24.
 - Most modifiers now have ten tiers unlocking from item level 1 to 100. Small integer bonuses (spell/minion levels, additional minions and life leech) have three distinct tiers at item levels 1, 34 and 80. Weaker tiers remain more common; existing items keep their rolls.
