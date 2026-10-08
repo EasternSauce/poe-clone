@@ -557,7 +557,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Briarbound", SpawnWeight = 0f,
-                MaxHealth = 52f, Armour = 80f, PoisonResistance = 35f, Experience = 42,
+                MaxHealth = 104f, Armour = 80f, PoisonResistance = 35f, Experience = 42,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Physical,
                 Damage = 12f, AttackCooldown = 2.4f, AttackRange = 10f, ProjectileSpeed = 12f,
                 SpeedRatio = 0.48f, Body = CreatureBody.Briarbound,
@@ -569,7 +569,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Grave Siren", SpawnWeight = 0f, Undead = true,
-                MaxHealth = 65f, Armour = 120f, ColdResistance = 25f, Experience = 48,
+                MaxHealth = 130f, Armour = 120f, ColdResistance = 25f, Experience = 48,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Cold,
                 Damage = 14f, AttackCooldown = 2.5f, AttackRange = 9f, ProjectileSpeed = 10f,
                 SpeedRatio = 0.45f, Body = CreatureBody.GraveSiren,
@@ -581,7 +581,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Rime Stalker", SpawnWeight = 0f,
-                MaxHealth = 48f, ColdResistance = 55f, Experience = 48,
+                MaxHealth = 96f, ColdResistance = 55f, Experience = 48,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
                 Damage = 14f, AttackCooldown = 1.2f, AttackRange = 2.3f,
                 SpeedRatio = 0.95f, Body = CreatureBody.RimeStalker,
@@ -592,7 +592,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Cinder Penitent", SpawnWeight = 0f,
-                MaxHealth = 62f, FireResistance = 50f, Experience = 48,
+                MaxHealth = 124f, FireResistance = 50f, Experience = 48,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
                 Damage = 12f, AttackCooldown = 1.8f, AttackRange = 2.2f,
                 SpeedRatio = 0.48f, Body = CreatureBody.CinderPenitent,
@@ -603,7 +603,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Hollowmaw", SpawnWeight = 0f,
-                MaxHealth = 75f, Armour = 60f, Experience = 48,
+                MaxHealth = 150f, Armour = 60f, Experience = 48,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 16f, AttackCooldown = 1.7f, AttackRange = 2.4f,
                 SpeedRatio = 0.67f, Body = CreatureBody.Hollowmaw,
@@ -614,7 +614,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Barrow Castellan", SpawnWeight = 0f, Undead = true,
-                MaxHealth = 90f, Armour = 220f, ColdResistance = 20f, Experience = 58,
+                MaxHealth = 180f, Armour = 220f, ColdResistance = 20f, Experience = 58,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 18f, AttackCooldown = 1.8f, AttackRange = 3f,
                 SpeedRatio = 0.60f, Body = CreatureBody.BarrowCastellan,

@@ -1,3 +1,7 @@
+version: 2026-10-08-six-enemies-survivability
+- Doubled the base life of Briarbound, Grave Siren, Rime Stalker, Cinder Penitent, Hollowmaw, and Barrow Castellan.
+- Briarbound's thorn patches now form four touching ground circles. Hollowmaw pulls 20% faster.
+
 version: 2026-10-08-six-enemy-threats
 - Doubled auto attack and ability damage for Briarbound, Grave Siren, Rime Stalker, Cinder Penitent, Hollowmaw, and Barrow Castellan. Their abilities now recharge twice as quickly and cover 2.5 times the area.
 

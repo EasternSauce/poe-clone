@@ -277,7 +277,7 @@ namespace PoeClone.Enemies
                         if (playerBody != null && playerBody.enabled && (motion == null || !motion.IsDashing))
                         {
                             Vector3 offset = Flat(origin - player.transform.position);
-                            float step = Mathf.Min(4.5f * Time.deltaTime, Mathf.Max(0f, offset.magnitude - 1.8f));
+                            float step = Mathf.Min(5.4f * Time.deltaTime, Mathf.Max(0f, offset.magnitude - 1.8f));
                             Vector3 destination = player.transform.position + offset.normalized * step;
                             destination = World.GroundObstacleMotion.Clamp(playerBody, player.transform.position, destination);
                             playerBody.Move(destination - player.transform.position);
@@ -327,10 +327,10 @@ namespace PoeClone.Enemies
         {
             Vector3 direction = Flat(target - from).normalized;
             if (direction.sqrMagnitude < 0.001f) direction = Vector3.forward;
-            var centers = new Vector3[3];
+            var centers = new Vector3[4];
             for (int i = 0; i < centers.Length; i++)
             {
-                centers[i] = target + direction * ((i - 1) * 6.75f);
+                centers[i] = target + direction * ((i - 1.5f) * 6.25f);
                 host.StartCoroutine(GroundTelegraph.Run(centers[i], RootRadius, RootWindUp, DamageType.Physical, null));
             }
             yield return new WaitForSeconds(RootWindUp);
