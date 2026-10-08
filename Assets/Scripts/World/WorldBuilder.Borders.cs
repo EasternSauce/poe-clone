@@ -195,20 +195,18 @@ namespace PoeClone.World
             }
         }
         // A dirt road from the town plaza out to each of Haven's gates.
-        private void BuildHavenRoads()
+        private void BuildHavenRoads(Transform t)
         {
-            Vector3 c = Centers[Haven];
-            Transform t = Group("Haven");
-            foreach ((int a, Vector3 g) in gatePoints)
-            {
-                if (a != Haven)
-                    continue;
-                Vector3 from = c + (g - c).normalized * 11f;
-                Vector3 span = g - from;
-                span.y = 0f;
-                Box(t, (from + g) * 0.5f + Vector3.up * 0.025f, new Vector3(3.6f, 0.05f, span.magnitude), kit.Mat("TanDark"),
-                    solid: false, euler: new Vector3(0f, Mathf.Atan2(span.x, span.z) * Mathf.Rad2Deg, 0f));
-            }
+            Material dirt = kit.Mat("TanDark");
+            WindingPath(t, "GateLane", Haven, 4.2f, dirt,
+                Flat(10, 0), Flat(28, 3), Flat(48, -8), Flat(70, -5),
+                Flat(92, 8), Flat(113, 5), AreaLayouts.GateLocal(Haven, true));
+            WindingPath(t, "SouthLane", Haven, 3.6f, dirt,
+                Flat(0, -10), Flat(-3, -24), Flat(4, -39), Flat(-9, -58), Flat(-20, -80));
+            WindingPath(t, "NorthLane", Haven, 3.4f, dirt,
+                Flat(0, 10), Flat(-4, 25), Flat(8, 41), Flat(28, 55), Flat(42, 70));
+            WindingPath(t, "WestLane", Haven, 3.4f, dirt,
+                Flat(-10, 1), Flat(-27, 6), Flat(-44, 0), Flat(-63, 12), Flat(-85, 25));
         }
 
         private static void NoShadows(GameObject go)

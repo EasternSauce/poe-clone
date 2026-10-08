@@ -165,7 +165,6 @@ namespace PoeClone.World
             Connect(Cave, new Vector3(40f, 0f, 0f), Graveyard, new Vector3(-40f, 0f, 0f));
             Connect(Graveyard, new Vector3(40f, 0f, 0f), Ruins, new Vector3(-40f, 0f, 0f));
             Connect(Ruins, new Vector3(0f, 0f, 40f), Frozen, new Vector3(-40f, 0f, 0f));
-            BuildHavenRoads();
             BuildBorders();
             BuildQuestSites();
 
@@ -261,7 +260,7 @@ namespace PoeClone.World
             }
         }
 
-        // Haven: a market town round a well, houses in a ring, lamps, stalls, crates.
+        // Haven: cottages and working yards along winding lanes around a market square.
         private void BuildHaven()
         {
             Begin(Haven, 101);
@@ -277,23 +276,14 @@ namespace PoeClone.World
             Box(t, c + new Vector3(0f, 2.9f, 0f), new Vector3(3.2f, 0.25f, 2.2f), kit.Mat("Roof"), euler: new Vector3(0f, 0f, 0f));
             Claim(c, 12f);
 
-            // A dirt road south (the one out to the gate is laid with the gate, see BuildHavenRoads).
-            Box(t, c + new Vector3(0f, 0.025f, -24f), new Vector3(3.6f, 0.05f, 26f), kit.Mat("TanDark"), solid: false);
-
-            // Houses in a ring, facing the well.
-            float[] houseAngles = { 25f, 70f, 115f, 160f, 205f, 250f, 330f };
-            foreach (float deg in houseAngles)
-            {
-                float rad = deg * Mathf.Deg2Rad;
-                float dist = 27f + R(-2f, 3f);
-                Vector3 p = c + new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad)) * dist;
-                if (!Free(p, 6f))
-                    continue;
-                GameObject house = Prefab(kit.house, t, p, 0f, Vector3.one * R(0.95f, 1.15f));
-                Vector3 toWell = c - p;
-                house.transform.rotation = Quaternion.LookRotation(new Vector3(toWell.x, 0f, toWell.z));
-                Claim(p, 6.5f);
-            }
+            // Reserve lanes before scattering vegetation or yard clutter.
+            BuildHavenRoads(t);
+            BuildVillageHomes(t);
+            BuildSmithWorkshop(t, c + Flat(10f, -15f));
+            BuildVillageCommons(t);
+            foreach (Vector3 local in new[] { Flat(-9, -17), Flat(-21, 12), Flat(-31, -12),
+                Flat(21, 31), Flat(95, -5), Flat(-23, -14) })
+                Claim(c + local, 2f);
 
             // Market stalls on the west side of the plaza; the merchant stands at the first.
             string[] cloths = { "ClothRed", "ClothBlue", "ClothYellow" };
@@ -375,8 +365,10 @@ namespace PoeClone.World
             Vector3 c = Centers[Graveyard];
             Transform t = Group("Graveyard");
 
-            // Central path, west to east.
-            Box(t, c + new Vector3(0f, 0.025f, 0f), new Vector3(246f, 0.05f, 3.6f), kit.Mat("Ash"), solid: false);
+            // Worn winding track, still inside the broad central corridor.
+            WindingPath(t, "GraveyardTrack", Graveyard, 3.6f, kit.Mat("Ash"),
+                Flat(-121, 0), Flat(-95, -5), Flat(-65, 5), Flat(-33, -5),
+                Flat(0, 0), Flat(32, 6), Flat(63, -5), Flat(94, 4), Flat(121, 0));
             Claim(c + new Vector3(-30f, 0f, 0f), 3f);
             Claim(c + new Vector3(0f, 0f, 0f), 3f);
             Claim(c + new Vector3(30f, 0f, 0f), 3f);
@@ -688,6 +680,7 @@ namespace PoeClone.World
                 Gear = new[] { "iron_helmet", "rusty_sword", "wooden_shield" }
             });
 
+            BuildVillageFolk(spawner.EnemyPrefab, t);
             BuildOutpostFolk(spawner.EnemyPrefab);
         }
 

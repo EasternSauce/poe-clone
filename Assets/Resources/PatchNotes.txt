@@ -1,3 +1,8 @@
+version: 2026-10-08-cozy-haven-village
+- Dirt lanes now wind smoothly through Haven, with narrower footpaths to cottage doors and uneven worn edges. The graveyard's central track also bends instead of running in a straight line.
+- Expanded Haven into a cozy village with cottages close to the square and along its lanes, kitchen gardens, timber porches, flower boxes, firewood stacks, laundry lines, a smith's workshop, a noticeboard, a produce handcart, and a shared fire with benches.
+- Added six named villagers with their own conversations about baking, gardening, village evenings, laundry, the lanes, and local stories.
+
 version: 2026-10-08-rendered-world-layouts
 - Added PoeClone > World > Rendered World Layouts in Unity: launches a separate temporary preview scene showing the actual rendered world with simulation paused. Scroll to zoom, drag or use WASD/arrows to pan, fit the whole world or an individual area, and switch between top-down and angled views. Escape closes the preview; stopping Play restores character preferences and the previous editor launch scene. The viewer has no in-game shortcut. Starts the local session server on port 8099 when needed.
 

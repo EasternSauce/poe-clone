@@ -24,7 +24,9 @@ namespace PoeClone.UI
 
         public static void Open(Npc npc)
         {
-            if (npc.Role == NpcRole.Waystone)
+            if (npc.Role == NpcRole.Villager)
+                VillagerPage(npc, npc.ConversationGreeting);
+            else if (npc.Role == NpcRole.Waystone)
                 WaystonePage(npc);
             else if (npc.Role == NpcRole.Stash)
                 OpenStash(npc);
@@ -44,6 +46,15 @@ namespace PoeClone.UI
         }
 
         // ------------------------------------------------------------------ stash
+
+        private static void VillagerPage(Npc npc, string text)
+        {
+            var options = new List<DialogueOption>();
+            if (!string.IsNullOrEmpty(npc.ConversationTopic))
+                options.Add(new DialogueOption(npc.ConversationTopic, () => VillagerPage(npc, npc.ConversationStory)));
+            options.Add(new DialogueOption("Goodbye", DialogueUI.Close));
+            DialogueUI.Show(npc, text ?? "Lovely to see a new face in Haven.", options);
+        }
 
         private static void OpenStash(Npc npc)
         {

@@ -16,7 +16,8 @@ namespace PoeClone.World
         Gravekeeper,
         Commander,
         Seer,
-        QuestProp  // not a person: something a quest has the player use (see Quests.QuestProp)
+        QuestProp, // not a person: something a quest has the player use (see Quests.QuestProp)
+        Villager  // conversation only; appended to preserve existing saved role IDs
     }
 
     /// <summary>
@@ -34,6 +35,16 @@ namespace PoeClone.World
 
         public NpcRole Role { get; private set; }
         public string DisplayName { get; private set; }
+        public string ConversationGreeting { get; private set; }
+        public string ConversationTopic { get; private set; }
+        public string ConversationStory { get; private set; }
+
+        public void SetConversation(string greeting, string topic, string story)
+        {
+            ConversationGreeting = greeting;
+            ConversationTopic = topic;
+            ConversationStory = story;
+        }
 
         private WorldLabel label;
         private string marker = "";
