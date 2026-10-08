@@ -1,3 +1,7 @@
+version: 2026-10-08-angled-weapons-and-sash-icons
+- All weapon icons now lean diagonally, with angles fitted to their inventory dimensions. Rebuilding icons preserves the angle without repeatedly rotating them.
+- Cloth Sash and its higher-tier variants now use the painted belt shape and detailing of the other belt icons, with pale cloth colours.
+
 version: 2026-10-08-crude-bow-painted-icon
 - Crude Bow now uses painted bow artwork from the inspiration collection, with muted wood colours, matching the other equipment icons. Icon rebuilds retain the new artwork.
 

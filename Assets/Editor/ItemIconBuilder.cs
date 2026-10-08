@@ -71,6 +71,7 @@ namespace PoeClone.EditorTools
             VarietyIcons();
             SummonerIcons();
             BuildBaseIcons();
+            BuildAngledWeaponIcons();
 
             AssetDatabase.Refresh();
             Debug.Log("ItemIconBuilder: icons written to " + OutDir);
@@ -229,7 +230,7 @@ namespace PoeClone.EditorTools
             Make("silk_robe", "Armor/512x512/light_body_armor_03.png", 2, 3, b => b);
             Make("silk_gloves", "Armor/512x512/light_hand_armor_03.png", 2, 2, b => b);
             Make("silk_slippers", "Armor/512x512/light_foot_armor_03.png", 2, 2, b => b);
-            Make("cloth_sash", "Armor/512x512/light_belt_03.png", 2, 1, b => b);
+            MakeClothSash();
             Make("bastard_sword", "Weapons/512x512/two-handed_sword_03.png", 1, 4, b => b, 45f);
             Make("woodsplitter", "Weapons/512x512/two-handed_battle_axe_03.png", 2, 4, b => b, 45f);
             Make("great_mallet", "Weapons/512x512/war_hammer_03.png", 2, 4, b => b, 45f);
@@ -249,6 +250,11 @@ namespace PoeClone.EditorTools
         [MenuItem("PoeClone/Build Base Icons")]
         public static void BuildBaseIcons()
         {
+            BuildBaseIcons(null);
+        }
+
+        private static void BuildBaseIcons(string artFilter)
+        {
             var sources = new Dictionary<string, Bitmap>();
             foreach (string id in ItemGenerator.BaseIds)
             {
@@ -258,6 +264,7 @@ namespace PoeClone.EditorTools
             foreach (string id in ItemGenerator.BaseIds)
             {
                 ItemData item = ItemGenerator.Display(id, null, ItemRarity.Normal);
+                if (artFilter != null && item.ArtId != artFilter) continue;
                 // Preserve the original painted starter assets.
                 if (id == item.ArtId) continue;
                 if (id == "crude_bow")
@@ -304,6 +311,60 @@ namespace PoeClone.EditorTools
             Make("crude_bow", "Weapons/512x512/bow_03.png", 2, 3,
                 b => GradientMap(b, new Color(0.10f, 0.065f, 0.035f),
                     new Color(0.48f, 0.32f, 0.16f), new Color(0.82f, 0.67f, 0.43f), false), 45f);
+        }
+
+        [MenuItem("PoeClone/Build Sash Icons")]
+        public static void BuildSashIcons()
+        {
+            MakeClothSash();
+            BuildBaseIcons("cloth_sash");
+        }
+
+        private static void MakeClothSash()
+        {
+            Make("cloth_sash", "Armor/512x512/medium_belt_03.png", 2, 1,
+                b => GradientMap(b, new Color(0.16f, 0.14f, 0.10f),
+                    new Color(0.66f, 0.62f, 0.49f), new Color(0.95f, 0.92f, 0.78f), false));
+        }
+
+        [MenuItem("PoeClone/Build Angled Weapon Icons")]
+        public static void BuildAngledWeaponIcons()
+        {
+            foreach (string id in ItemGenerator.BaseIds)
+            {
+                ItemData item = ItemGenerator.Display(id, null, ItemRarity.Normal);
+                if (item.Type == ItemType.Weapon) Save(id, Load(OutDir + "/" + id + ".png"));
+            }
+            AssetDatabase.Refresh();
+        }
+
+        private static Bitmap AngleWeapon(Bitmap b, ItemData item)
+        {
+            // Measure the long axis so painted art, ink art and already angled icons
+            // all converge on the same pose without accumulating rotation on rebuilds.
+            double weight = 0, mx = 0, my = 0;
+            for (int y = 0; y < b.H; y++)
+                for (int x = 0; x < b.W; x++)
+                {
+                    float a = b.P[y * b.W + x].a;
+                    weight += a; mx += x * a; my += y * a;
+                }
+            if (weight <= 0) return b;
+            mx /= weight; my /= weight;
+            double xx = 0, yy = 0, xy = 0;
+            for (int y = 0; y < b.H; y++)
+                for (int x = 0; x < b.W; x++)
+                {
+                    float a = b.P[y * b.W + x].a;
+                    double dx = x - mx, dy = y - my;
+                    xx += dx * dx * a; yy += dy * dy * a; xy += dx * dy * a;
+                }
+            float axis = 0.5f * Mathf.Atan2((float)(2 * xy), (float)(xx - yy)) * Mathf.Rad2Deg;
+            float tilt = Mathf.Atan2(item.Width * 0.7f, item.Height) * Mathf.Rad2Deg;
+            float rotation = Mathf.Repeat(90f - tilt - axis + 90f, 180f) - 90f;
+            if (Mathf.Abs(rotation) < 1f) return b;
+            return FitTo(Trim(Rotate(Trim(b), rotation)), item.Width * PxPerCell,
+                item.Height * PxPerCell, 8);
         }
 
         private static string InkSource(string line, int tier)
@@ -1043,6 +1104,8 @@ namespace PoeClone.EditorTools
 
         private static void Save(string id, Bitmap b)
         {
+            ItemData item = ItemGenerator.Display(id, null, ItemRarity.Normal);
+            if (item.Type == ItemType.Weapon) b = AngleWeapon(b, item);
             Texture2D tex = new Texture2D(b.W, b.H, TextureFormat.RGBA32, false);
             tex.SetPixels(b.P);
             tex.Apply();
