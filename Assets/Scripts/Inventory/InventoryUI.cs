@@ -1803,7 +1803,7 @@ private Vector2 CellSize(int w, int h)
                 {
                     if (hasImplicits)
                     {
-                        sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">------------------------</color>");
+                        sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">────────────────────────</color>");
                         lineCount++;
                     }
                     AppendTooltipModifiers(sb, item, false, ref lineCount);
