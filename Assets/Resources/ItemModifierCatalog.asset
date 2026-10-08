@@ -1408,7 +1408,7 @@ MonoBehaviour:
   - Label: MovementSpeed / 1
     Enabled: 1
     Stat: 13
-    Weight: 1
+    Weight: 2
     On: 03000000i
     AnyWeapon: 1
     Weapons:

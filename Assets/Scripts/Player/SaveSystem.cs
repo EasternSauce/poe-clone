@@ -354,6 +354,9 @@ namespace PoeClone.Player
             }
 
             stats.RestoreProgress(data.level, data.experience);
+            // Requirements and skill grants must see the loaded level immediately,
+            // rather than waiting for PlayerStatsLink.Update on the next frame.
+            stats.GetComponent<PlayerStatsLink>()?.PushBase();
 
             PlayerInventory inventory = stats.GetComponent<PlayerInventory>();
             if (inventory != null)
@@ -418,7 +421,20 @@ namespace PoeClone.Player
                     else if (data.skillSourceSlots != null && k < data.skillSourceSlots.Count &&
                              data.skillGrantLevels != null && k < data.skillGrantLevels.Count &&
                              data.skillSourceSlots[k] >= 0 && data.skillSourceSlots[k] < SlotRules.AllSlots.Length)
-                        skills.Assign(slot, (SkillId)data.skillSlots[k], (EquipSlot)data.skillSourceSlots[k], data.skillGrantLevels[k]);
+                    {
+                        SkillId id = (SkillId)data.skillSlots[k];
+                        EquipSlot source = (EquipSlot)data.skillSourceSlots[k];
+                        skills.Assign(slot, id, source, data.skillGrantLevels[k]);
+                        // Item migration can change a grant's level. Keep the saved key
+                        // bound to that same worn item's current grant.
+                        if (skills.Slot(slot) == null)
+                            foreach (var grant in skills.AvailableGrants())
+                                if (grant.Id == id && grant.Source == source)
+                                {
+                                    skills.Assign(slot, id, source, grant.GrantLevel);
+                                    break;
+                                }
+                    }
                     else
                         skills.Assign(slot, (SkillId)data.skillSlots[k]); // old saves: choose one current grant
                 }

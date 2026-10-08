@@ -85,7 +85,7 @@ namespace PoeClone.Player
         }
 
         // Base stats -> sheet.
-        private void PushBase()
+        public void PushBase()
         {
             lastLevel = stats.Level;
             lastExperience = stats.Experience;

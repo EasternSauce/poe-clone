@@ -643,9 +643,14 @@ namespace PoeClone.Inventory
                     changed = true;
                     continue;
                 }
-                if (!Mathf.Approximately(legal.Value, m.Value))
+                // Older saves predate implicit tier tags. Base stats cannot also roll as
+                // explicits, so their identity is enough to recover the section safely.
+                int tier = m.Tier;
+                foreach (StatModifier implicitMod in b.Implicits)
+                    if (implicitMod.Stat == m.Stat) { tier = -1; break; }
+                if (tier != m.Tier || !Mathf.Approximately(legal.Value, m.Value))
                     changed = true;
-                mods.Add(new StatModifier(m.Stat, legal.Value, Mathf.Approximately(legal.Value, m.Value) ? m.Tier : 0));
+                mods.Add(new StatModifier(m.Stat, legal.Value, tier == -1 ? -1 : Mathf.Approximately(legal.Value, m.Value) ? tier : 0));
             }
 
             if (!changed)

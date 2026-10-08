@@ -1,3 +1,8 @@
+version: 2026-10-08-boot-speed-and-startup-bindings
+- Doubled the random movement speed modifier weight on boots to match attribute modifiers, retaining base stat preferences and existing speed tiers.
+- Fixed saved skill bindings, including Dash, being lost when startup used the previous character level for equipment requirements or adjusted the equipped skill's grant level while loading.
+- Restored implicit modifier tags on older saved equipment so in-game tooltips show the divider between implicit and explicit modifiers.
+
 version: 2026-10-08-six-enemy-spawn-rarity
 - Reduced the area spawn weights of Briarbound, Grave Siren, Rime Stalker, Cinder Penitent, Hollowmaw and Barrow Castellan to half the most common local enemy weight.
 
