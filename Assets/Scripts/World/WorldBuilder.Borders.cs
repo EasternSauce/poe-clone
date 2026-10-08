@@ -24,7 +24,8 @@ namespace PoeClone.World
         private void ShapeGround(GameObject ground, int area)
         {
             AreaShape shape = Shape(area);
-            Mesh mesh = shape.BuildGroundMesh(0f);
+            shape.BuildGroundMesh(0f); // Keep the walkable contour for boundary collision.
+            Mesh mesh = shape.BuildGroundMesh(0f, omitBridges: true);
             ground.transform.position = new Vector3(shape.Center.x, ground.transform.position.y, shape.Center.z);
             ground.transform.rotation = Quaternion.identity;
             ground.transform.localScale = Vector3.one;

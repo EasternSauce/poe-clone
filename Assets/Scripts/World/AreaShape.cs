@@ -14,12 +14,13 @@ namespace PoeClone.World
         public bool IsCave { get; }
         public bool IsCliff { get; }
         private readonly List<Region> rooms = new List<Region>();
-        public readonly List<(Vector2 center, Vector2 size)> Bridges = new List<(Vector2, Vector2)>();
+        public readonly List<(Vector2 center, Vector2 size, float yaw)> Bridges = new List<(Vector2, Vector2, float)>();
         private readonly List<Region> waters = new List<Region>();
         private bool ocean;
         private readonly List<Region> cuts = new List<Region>();
         public readonly List<(Vector3 a, Vector3 b)> Boundary = new List<(Vector3, Vector3)>();
-        private Mesh groundMesh;
+        private Mesh groundMesh, landMesh;
+        private readonly List<(Vector3 a, Vector3 b)> landBoundary = new List<(Vector3, Vector3)>();
         private float[,] gapSamples;
         private bool[,] filledGaps;
 
@@ -93,9 +94,9 @@ namespace PoeClone.World
             return d;
         }
 
-        public AreaShape Bridge(float x, float z, float length, float width)
+        public AreaShape Bridge(float x, float z, float length, float width, float yaw = 0f)
         {
-            Bridges.Add((new Vector2(x, z), new Vector2(length, width)));
+            Bridges.Add((new Vector2(x, z), new Vector2(length, width), yaw));
             return this;
         }
         private float BridgeDistance(Vector2 p)
@@ -103,7 +104,9 @@ namespace PoeClone.World
             float d = -10000f;
             foreach (var bridge in Bridges)
             {
-                Vector2 delta = p - bridge.center;
+                Vector2 offset = p - bridge.center;
+                float angle = bridge.yaw * Mathf.Deg2Rad, cos = Mathf.Cos(angle), sin = Mathf.Sin(angle);
+                Vector2 delta = new Vector2(offset.x * cos - offset.y * sin, offset.x * sin + offset.y * cos);
                 d = Mathf.Max(d, Mathf.Min(bridge.size.x * 0.5f - Mathf.Abs(delta.x), bridge.size.y * 0.5f - Mathf.Abs(delta.y)));
             }
             return d;
@@ -231,30 +234,35 @@ namespace PoeClone.World
         }
 
         /// <summary>Clip a triangulation against the authored outline, including internal holes.</summary>
-        public Mesh BuildGroundMesh(float extra, int segments = 96)
+        public Mesh BuildGroundMesh(float extra, int segments = 96, bool omitBridges = false)
         {
-            if (groundMesh != null) return groundMesh;
-            Boundary.Clear();
+            if (omitBridges && landMesh != null) return landMesh;
+            if (!omitBridges && groundMesh != null) return groundMesh;
+            if (omitBridges) landBoundary.Clear(); else Boundary.Clear();
             var vertices = new List<Vector3>();
             var triangles = new List<int>();
             int nx = Mathf.CeilToInt(Size.x / Cell), nz = Mathf.CeilToInt(Size.y / Cell);
             var samples = new float[nx + 1, nz + 1];
             for (int z = 0; z <= nz; z++)
                 for (int x = 0; x <= nx; x++)
-                    samples[x, z] = Distance(new Vector2(x * Cell - Size.x * 0.5f, z * Cell - Size.y * 0.5f));
+                {
+                    Vector2 point = new Vector2(x * Cell - Size.x * 0.5f, z * Cell - Size.y * 0.5f);
+                    samples[x, z] = omitBridges ? Mathf.Min(Distance(point), -WaterDistance(point)) : Distance(point);
+                }
             for (int z = 0; z < nz; z++)
                 for (int x = 0; x < nx; x++)
                 {
                     Vector3 a = new Vector3(x * Cell - Size.x * 0.5f, 0, z * Cell - Size.y * 0.5f);
                     Vector3 b = a + Vector3.forward * Cell, c = b + Vector3.right * Cell, d = a + Vector3.right * Cell;
-                    Clip(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1], vertices, triangles);
-                    Clip(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z], vertices, triangles);
+                    Clip(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1], vertices, triangles, !omitBridges, omitBridges ? landBoundary : null);
+                    Clip(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z], vertices, triangles, !omitBridges, omitBridges ? landBoundary : null);
                 }
-            groundMesh = MeshFrom("AuthoredAreaGround", vertices, triangles);
-            return groundMesh;
+            Mesh mesh = MeshFrom(omitBridges ? "AuthoredLand" : "AuthoredAreaGround", vertices, triangles);
+            if (omitBridges) landMesh = mesh; else groundMesh = mesh;
+            return mesh;
         }
 
-        private void Clip(Vector3 a, Vector3 b, Vector3 c, float da, float db, float dc, List<Vector3> vertices, List<int> triangles, bool recordBoundary = true)
+        private void Clip(Vector3 a, Vector3 b, Vector3 c, float da, float db, float dc, List<Vector3> vertices, List<int> triangles, bool recordBoundary = true, List<(Vector3 a, Vector3 b)> contour = null)
         {
             if (da < 0 && db < 0 && dc < 0) return;
             if (da >= 0 && db >= 0 && dc >= 0)
@@ -278,8 +286,8 @@ namespace PoeClone.World
                     polygon.Add(at); crossings.Add(at);
                 }
             }
-            if (recordBoundary && crossings.Count == 2 && (crossings[0] - crossings[1]).sqrMagnitude > 0.00001f)
-                Boundary.Add((crossings[0], crossings[1]));
+            if ((recordBoundary || contour != null) && crossings.Count == 2 && (crossings[0] - crossings[1]).sqrMagnitude > 0.00001f)
+                (contour ?? Boundary).Add((crossings[0], crossings[1]));
             int first = vertices.Count;
             vertices.AddRange(polygon);
             for (int i = 1; i + 1 < polygon.Count; i++)
@@ -405,8 +413,44 @@ namespace PoeClone.World
             return result;
         }
 
-        // Visual fields share the exact water definition used by ground, movement and minimaps.
-        public Mesh BuildWaterMesh(bool shore = false, bool foam = false)
+        // Shore strips are clipped from the rendered land triangles, so their outer edges
+        // cannot disagree with the floor or break into undersampled narrow-band fragments.
+        public Mesh BuildShoreMesh()
+        {
+            Mesh land = BuildGroundMesh(0, omitBridges: true);
+            Vector3[] points = land.vertices;
+            int[] indices = land.triangles;
+            var vertices = new List<Vector3>();
+            var triangles = new List<int>();
+            float width = ocean ? 7f : 2f;
+            for (int i = 0; i < indices.Length; i += 3)
+            {
+                Vector3 a = points[indices[i]], b = points[indices[i + 1]], c = points[indices[i + 2]];
+                Clip(a, b, c, width + WaterDistance(a + Center), width + WaterDistance(b + Center),
+                    width + WaterDistance(c + Center), vertices, triangles, false);
+            }
+            // Close the exposed earth between the water level and the grassy bank.
+            foreach (var edge in landBoundary)
+            {
+                if (WaterDistance((edge.a + edge.b) * 0.5f + Center) < -0.25f) continue;
+                int first = vertices.Count;
+                vertices.Add(edge.a); vertices.Add(edge.b);
+                vertices.Add(edge.a + Vector3.down * 0.48f); vertices.Add(edge.b + Vector3.down * 0.48f);
+                triangles.Add(first); triangles.Add(first + 2); triangles.Add(first + 1);
+                triangles.Add(first + 1); triangles.Add(first + 2); triangles.Add(first + 3);
+                Vector3 facing = Vector3.Cross(Vector3.down, edge.b - edge.a).normalized;
+                Vector3 midpoint = (edge.a + edge.b) * 0.5f + Center;
+                if (WaterDistance(midpoint + facing * 0.1f) < WaterDistance(midpoint - facing * 0.1f))
+                {
+                    int t = triangles.Count - 6;
+                    for (int k = t; k < t + 6; k += 3)
+                    { int swap = triangles[k]; triangles[k] = triangles[k + 2]; triangles[k + 2] = swap; }
+                }
+            }
+            return MeshFrom("ContinuousRiverBank", vertices, triangles);
+        }
+
+        public Mesh BuildWaterMesh()
         {
             float padding = 12f;
             Vector2 start = -Size * 0.5f - Vector2.one * padding;
@@ -415,12 +459,7 @@ namespace PoeClone.World
             var samples = new float[nx + 1, nz + 1];
             for (int z = 0; z <= nz; z++)
                 for (int x = 0; x <= nx; x++)
-                {
-                    Vector2 p = start + new Vector2(x * Cell, z * Cell);
-                    float water = WaterDistance(p);
-                    samples[x, z] = shore ? Mathf.Min(Distance(p), Mathf.Min(-water, water + (ocean ? 9f : 3f))) :
-                        foam ? Mathf.Min(water, 0.9f - water) : water;
-                }
+                    samples[x, z] = WaterDistance(start + new Vector2(x * Cell, z * Cell));
             var vertices = new List<Vector3>();
             var triangles = new List<int>();
             for (int z = 0; z < nz; z++)
@@ -431,7 +470,7 @@ namespace PoeClone.World
                     Clip(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1], vertices, triangles, false);
                     Clip(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z], vertices, triangles, false);
                 }
-            return MeshFrom(shore ? "WaterShore" : foam ? "WaterEdge" : "WaterSurface", vertices, triangles);
+            return MeshFrom("WaterSurface", vertices, triangles);
         }
 
         private static Mesh MeshFrom(string name, List<Vector3> vertices, List<int> triangles)

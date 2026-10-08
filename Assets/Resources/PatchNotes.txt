@@ -1,3 +1,7 @@
+version: 2026-10-08-natural-bridge-and-river-banks
+- Rebuilt timber bridges to fit their river crossings, with angled, narrower decks, gently arched boards, shaped rails and bank supports. Water now runs beneath bridges instead of grass.
+- Removed fragmented river-edge patches and joined shore surfaces to the terrain outline. Closed exposed bank faces and softened the water texture.
+
 version: 2026-10-08-rivers-lakes-and-coast
 - Added a winding river through Greenwood with three timber bridges, larger woodland lakes and smaller pools.
 - Haven now has a sandy southern beach and ocean border, plus a village pond. A river replaces part of the graveyard's southern border, with a lake among its grounds and pools in the Lost Hollows.
