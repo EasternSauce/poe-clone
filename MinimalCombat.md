@@ -41,6 +41,23 @@ Switches can be combined. Audio remains enabled in the original bare loop;
 `audio=0` skips the audio manager, including its clip loading and one-shot sources.
 It is useful for distinguishing audio processing from the other work on a kill.
 
+Menu isolation (requires a new web build):
+
+| URL | Menu systems running |
+| --- | --- |
+| `?minimal=1&features=0&character=1` | Character stats page only |
+| `?minimal=1&features=0&skills=1` | Skill bar and skill menu only |
+| `?minimal=1&features=0&passives=1` | Passive tree only |
+| `?minimal=1&features=0&inventory=1` | Inventory with its character preview |
+| `?minimal=1&features=0&inventory=1&preview=0` | Inventory with preview creation disabled |
+
+These flags independently override the `menus` group. A `0` disables a member;
+a `1` enables it even with `features=0` or `menus=0`. Disabled menu components
+are omitted before their startup and event subscriptions, and their touch buttons
+are hidden. Leave panels closed while killing enemies to reproduce background work.
+The preview switch controls whether the inventory's character clone and camera
+are built at all, even on mobile where the preview normally stays hidden.
+
 The arena is a 48 by 48 empty floor with four low boundary walls. Use the normal
 movement and attack controls. Three seconds after each kill, the corpse is removed
 and one replacement enemy appears five metres ahead of the player's position,

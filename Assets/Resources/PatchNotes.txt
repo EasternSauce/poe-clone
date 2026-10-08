@@ -1,3 +1,6 @@
+version: 2026-10-08-minimal-menu-isolation
+- Added independent minimal-arena switches for inventory, character stats, skills, passive tree, and the inventory character preview to narrow down mobile kill hitches.
+
 version: 2026-10-08-minimal-combat-features
 - Minimal combat now includes gear, gold and potion drops, loot pickup, inventory/character/skill/passive menus, and quest kill tracking. URL switches let you disable additions individually or return to the original bare arena. Existing combat and kill sounds remain enabled.
 - Fixed pink floors and walls in the minimal arena on mobile by using the game's runtime material.

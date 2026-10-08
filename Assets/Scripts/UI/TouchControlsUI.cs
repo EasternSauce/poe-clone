@@ -176,9 +176,9 @@ namespace PoeClone.UI
         {
             if (stats == null)
                 stats = FindAnyObjectByType<PlayerStats>();
-            if ((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.MenusEnabled) && inventoryUI == null)
+            if ((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.InventoryMenuEnabled) && inventoryUI == null)
                 inventoryUI = FindAnyObjectByType<InventoryUI>();
-            if ((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.MenusEnabled) && characterUI == null)
+            if ((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.CharacterMenuEnabled) && characterUI == null)
                 characterUI = FindAnyObjectByType<CharacterPageUI>();
             if (skills == null)
                 skills = FindAnyObjectByType<Skills.PlayerSkills>();
@@ -571,6 +571,10 @@ namespace PoeClone.UI
             {
                 chat.gameObject.SetActive(false);
                 town.gameObject.SetActive(false);
+                bag.gameObject.SetActive(PoeClone.World.MinimalCombatMode.InventoryMenuEnabled);
+                character.gameObject.SetActive(PoeClone.World.MinimalCombatMode.CharacterMenuEnabled);
+                skillsButton.gameObject.SetActive(PoeClone.World.MinimalCombatMode.SkillMenuEnabled);
+                tree.gameObject.SetActive(PoeClone.World.MinimalCombatMode.PassiveMenuEnabled);
             }
 
             settingsButton = NewRoundButton("Settings", canvas.transform, new Vector2(0f, 1f), new Vector2(570f, -58f), 96f, "SETTINGS");

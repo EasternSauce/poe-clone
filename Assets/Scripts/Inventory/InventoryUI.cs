@@ -191,6 +191,9 @@ namespace PoeClone.Inventory
         /// <summary>An item is on the cursor (so a click outside the panel throws it, rather than attacking).</summary>
         public bool IsHoldingItem => cursorItem != null;
 
+        /// <summary>Set before Start to omit the preview in an isolated diagnostic session.</summary>
+        public bool EnableCharacterPreview { get; set; } = true;
+
         private void Start()
         {
             if (inventory == null)
@@ -204,9 +207,13 @@ namespace PoeClone.Inventory
             }
 
             // The character copy shown next to the panel.
-            preview = gameObject.AddComponent<CharacterPreview>();
-            EquipmentVisuals source = inventory.GetComponentInChildren<EquipmentVisuals>(true);
-            bool hasPreview = preview.Build(source, inventory.Equipment);
+            bool hasPreview = false;
+            if (EnableCharacterPreview)
+            {
+                preview = gameObject.AddComponent<CharacterPreview>();
+                EquipmentVisuals source = inventory.GetComponentInChildren<EquipmentVisuals>(true);
+                hasPreview = preview.Build(source, inventory.Equipment);
+            }
 
             BuildUI(hasPreview);
             StartCoroutine(Prewarm());

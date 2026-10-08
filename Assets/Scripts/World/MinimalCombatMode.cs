@@ -33,7 +33,14 @@ namespace PoeClone.World
             (QueryValue("features") != "0" && QueryValue(name) != "0"));
         public static bool DropsEnabled => FeatureEnabled("drops");
         public static bool QuestsEnabled => FeatureEnabled("quests");
-        public static bool MenusEnabled => FeatureEnabled("menus");
+        private static bool MenuEnabled(string name) => Enabled && (QueryValue(name) == "1" ||
+            (QueryValue(name) != "0" && FeatureEnabled("menus")));
+        public static bool InventoryMenuEnabled => MenuEnabled("inventory");
+        public static bool CharacterMenuEnabled => MenuEnabled("character");
+        public static bool SkillMenuEnabled => MenuEnabled("skills");
+        public static bool PassiveMenuEnabled => MenuEnabled("passives");
+        public static bool PreviewEnabled => InventoryMenuEnabled && QueryValue("preview") != "0";
+        public static bool MenusEnabled => InventoryMenuEnabled || CharacterMenuEnabled || SkillMenuEnabled || PassiveMenuEnabled;
         public static bool AudioEnabled => !Enabled || QueryValue("audio") != "0";
         public static bool GuaranteedGear => DropsEnabled && QueryValue("guaranteedGear") != "0";
 
@@ -97,10 +104,27 @@ namespace PoeClone.World
 
             foreach (GameObject root in SceneManager.GetActiveScene().GetRootGameObjects())
             {
+                var inventoryMenu = root.GetComponent<InventoryUI>();
+                if (inventoryMenu != null)
+                {
+                    inventoryMenu.EnableCharacterPreview = PreviewEnabled;
+                    if (!InventoryMenuEnabled)
+                    {
+                        inventoryMenu.enabled = false;
+                        Destroy(inventoryMenu);
+                    }
+                }
+                var characterMenu = root.GetComponent<CharacterPageUI>();
+                if (characterMenu != null && !CharacterMenuEnabled)
+                {
+                    characterMenu.enabled = false;
+                    Destroy(characterMenu);
+                }
                 bool keep = root == gameObject || root == player.gameObject ||
                     root.GetComponent<Camera>() != null || root.GetComponent<Light>() != null ||
                     (AudioEnabled && root.GetComponent<PoeClone.Audio.AudioManager>() != null) || root.GetComponent<PlayerHUD>() != null ||
-                    (MenusEnabled && root.GetComponent<InventoryUI>() != null) ||
+                    (InventoryMenuEnabled && inventoryMenu != null) ||
+                    (CharacterMenuEnabled && characterMenu != null) ||
                     (QuestsEnabled && root.GetComponent<AreaManager>() != null);
                 if (!keep)
                 {
@@ -132,11 +156,10 @@ namespace PoeClone.World
             player.SetSpawnPoint(player.transform.position, player.transform.rotation);
             if (cc != null) cc.enabled = true;
             Camera.main?.GetComponent<CameraFollow>()?.SnapToTarget();
-            if (MenusEnabled)
-            {
+            if (SkillMenuEnabled)
                 gameObject.AddComponent<SkillBarUI>();
+            if (PassiveMenuEnabled)
                 gameObject.AddComponent<PassiveTreeUI>();
-            }
             if (QuestsEnabled)
             {
                 var area = FindAnyObjectByType<AreaManager>();
