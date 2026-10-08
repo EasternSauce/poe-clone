@@ -1,3 +1,8 @@
+version: 2026-10-08-unique-modifier-rolls
+- Removed modifier tier labels from unique item tooltips.
+- Unique items now roll several numeric bonuses within individual ranges, giving copies different stats while retaining their signature effects and skill grants. Applies to drops, rewards and Loot Simulator rolls.
+- Unique modifier rolls now persist when saving and loading; existing copies retain values within the new ranges.
+
 version: 2026-10-08-tooltip-divider-and-modifier-colors
 - Replaced the implicit/explicit tooltip separator with a bright, solid line spanning the tooltip in inventory, held-item, ground loot and Loot Simulator previews.
 - Skill-granting item modifiers now use the same blue color as other modifiers.

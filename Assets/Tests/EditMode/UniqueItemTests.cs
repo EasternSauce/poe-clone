@@ -51,6 +51,73 @@ namespace PoeClone.Tests
         }
 
         [Test]
+        public void EveryUniqueRollsDifferentStatsAndKeepsThemThroughRepeatedJsonLoads()
+        {
+            var rng = new System.Random(731);
+            for (int k = 0; k < UniqueItems.Count; k++)
+            {
+                ItemData first = UniqueItems.Create(k, rng);
+                first.ItemLevel = 37;
+                var changedStats = new System.Collections.Generic.HashSet<StatType>();
+                for (int roll = 0; roll < 32; roll++)
+                {
+                    ItemData next = UniqueItems.Create(k, rng);
+                    for (int m = 0; m < first.Modifiers.Count; m++)
+                        if (first.Modifiers[m].Value != next.Modifiers[m].Value)
+                            changedStats.Add(first.Modifiers[m].Stat);
+                }
+                Assert.GreaterOrEqual(changedStats.Count, 2, first.Name);
+                ItemData loaded = first;
+                for (int load = 0; load < 3; load++)
+                {
+                    loaded = UnityEngine.JsonUtility.FromJson<ItemRecord>(
+                        UnityEngine.JsonUtility.ToJson(ItemRecord.From(loaded))).ToItem();
+                    Assert.AreEqual(37, loaded.ItemLevel, first.Name);
+                    for (int m = 0; m < first.Modifiers.Count; m++)
+                    {
+                        Assert.AreEqual(first.Modifiers[m].Stat, loaded.Modifiers[m].Stat, first.Name);
+                        Assert.AreEqual(first.Modifiers[m].Value, loaded.Modifiers[m].Value, first.Name);
+                        Assert.AreEqual(0, loaded.Modifiers[m].Tier, first.Name);
+                    }
+                }
+            }
+        }
+
+        [Test]
+        public void UniqueMigrationClampsOldValuesWithoutRerolling()
+        {
+            var old = new ItemData("hand_axe", "Bonehew", ItemType.Weapon, 1, 3,
+                UnityEngine.Color.white, new[]
+                {
+                    new StatModifier(StatType.PhysicalDamage, 999, 1),
+                    new StatModifier(StatType.AttackSpeed, 1, 2),
+                    new StatModifier(StatType.MaxLife, 21, 3),
+                    new StatModifier(StatType.LifeLeech, 99),
+                    new StatModifier(StatType.AdditionalArrows, 4)
+                }, rarity: ItemRarity.Unique);
+            ItemData current = ItemGenerator.Legalize(old);
+            Assert.AreEqual(19f, Value(current, StatType.PhysicalDamage));
+            Assert.AreEqual(8f, Value(current, StatType.AttackSpeed));
+            Assert.AreEqual(21f, Value(current, StatType.MaxLife));
+            Assert.AreEqual(3f, Value(current, StatType.LifeLeech));
+            Assert.AreEqual(10f, Value(current, StatType.ArmourPenetration));
+            Assert.AreEqual(0f, ValueOrZero(current, StatType.AdditionalArrows));
+        }
+
+        [Test]
+        public void UniqueTooltipsOmitAllModifierTierLabels()
+        {
+            var item = new ItemData("hand_axe", "Bonehew", ItemType.Weapon, 1, 3,
+                UnityEngine.Color.white, new[] { new StatModifier(StatType.MaxLife, 20, 1) },
+                rarity: ItemRarity.Unique);
+            string tooltip = InventoryUI.BuildTooltipText(item, out _);
+            StringAssert.DoesNotContain("[T1]", tooltip);
+            StringAssert.DoesNotContain("[Unique]", tooltip);
+            StringAssert.DoesNotContain("[Tier unknown]", tooltip);
+            StringAssert.Contains("+20", tooltip);
+        }
+
+        [Test]
         public void OtherItemsHaveNoFlavour()
         {
             ItemData plain = ItemGenerator.Generate(new System.Random(3), "rusty_sword", 1, ItemRarity.Rare);
@@ -62,8 +129,8 @@ namespace PoeClone.Tests
         {
             ItemData belt = UniqueItems.Current("Bloodroot Cord");
             Assert.IsNotNull(belt);
-            Assert.AreEqual(22f, Value(belt, StatType.MaxLife));
-            Assert.AreEqual(3f, Value(belt, StatType.LifeRegen));
+            Assert.That(Value(belt, StatType.MaxLife), Is.InRange(18f, 26f));
+            Assert.That(Value(belt, StatType.LifeRegen), Is.InRange(2f, 4f));
             Assert.AreEqual(25f, Value(belt, StatType.HealthPotionRecovery));
             Assert.AreEqual(0f, ValueOrZero(belt, StatType.OnslaughtOnHealthPotion));
             Assert.AreEqual("25% increased Life recovered by Health Potions",

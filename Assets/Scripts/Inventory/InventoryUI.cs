@@ -1856,8 +1856,8 @@ private Vector2 CellSize(int w, int h)
                 {
                     if ((m.Tier == -1) != implicits || SkillGrants.IsGrant(m.Stat) != skills)
                         continue;
-                    string tier = m.Tier > 0 ? "T" + m.Tier : m.Tier == -1 ? null :
-                        item.Rarity == ItemRarity.Unique ? "Unique" : "Tier unknown";
+                    string tier = item.Rarity == ItemRarity.Unique || m.Tier == -1 ? null :
+                        m.Tier > 0 ? "T" + m.Tier : "Tier unknown";
                     sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.MagicBlue)).Append(">")
                         .Append(StatFormatter.ItemLine(m));
                     if (tier != null)

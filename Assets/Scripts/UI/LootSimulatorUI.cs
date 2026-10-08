@@ -224,7 +224,7 @@ namespace PoeClone.EditorTools
                 ItemData item = null;
                 if (minimumRarity == ItemRarity.Unique)
                 {
-                    item = UniqueItems.Create(uniqueIndices[rng.Next(uniqueIndices.Count)]);
+                    item = UniqueItems.Create(uniqueIndices[rng.Next(uniqueIndices.Count)], rng);
                     item.ItemLevel = ilvl;
                 }
                 else

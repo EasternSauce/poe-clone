@@ -32,7 +32,7 @@ namespace PoeClone.Inventory
         Normal,
         Magic,
         Rare,
-        Unique   // hand-made, fixed stats (UniqueItems)
+        Unique   // hand-made modifier sets with roll ranges (UniqueItems)
     }
 
     /// <summary>

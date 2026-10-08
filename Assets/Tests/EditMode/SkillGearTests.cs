@@ -274,7 +274,7 @@ namespace PoeClone.Tests
                 ItemData item = UniqueItems.Current(name);
                 Assert.IsNotNull(item, name);
                 Assert.AreEqual(1, item.Modifiers.Count(m => m.Stat == StatType.CastSpeed), name);
-                Assert.GreaterOrEqual(item.Modifiers.Single(m => m.Stat == StatType.CastSpeed).Value, 22f, name);
+                Assert.GreaterOrEqual(item.Modifiers.Single(m => m.Stat == StatType.CastSpeed).Value, 18f, name);
             }
             var rng = new System.Random(31);
             for (int k = 0; k < 3000 && names.Count > 0; k++)

@@ -617,11 +617,7 @@ namespace PoeClone.Inventory
             if (item == null)
                 return null;
             if (item.Rarity == ItemRarity.Unique)
-            {
-                ItemData current = UniqueItems.Current(item.Name) ?? item;
-                current.ItemLevel = item.ItemLevel;
-                return current;
-            }
+                return UniqueItems.Legalize(item);
 
             ItemBase b = Find(item.Id);
             if (b == null || b.Type == ItemType.Potion || b.Type == ItemType.Gold)
