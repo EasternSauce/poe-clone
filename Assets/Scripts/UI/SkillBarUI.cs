@@ -193,7 +193,7 @@ namespace PoeClone.UI
             attackView.Ring.enabled = false;
             attackView.Back.color = new Color(0.10f, 0.09f, 0.08f, 0.9f);
             attackView.Icon.enabled = false;
-            ItemData weapon = skills.GetComponent<PlayerInventory>()?.Equipment.Get(EquipSlot.MainHand);
+            ItemData weapon = skills.GetComponent<PlayerInventory>()?.Equipment.GetActive(EquipSlot.MainHand);
             if (weapon != null && weapon.WeaponType == WeaponType.Bow)
             {
                 attackIcon.enabled = true;
@@ -205,7 +205,7 @@ namespace PoeClone.UI
             {
                 attackIcon.enabled = true;
                 attackIcon.sprite = ItemArt.Icon(weapon);
-                attackIcon.color = weapon.ArtTint;
+                attackIcon.color = weapon.IconTint;
                 attackView.Name.text = "";
             }
             else

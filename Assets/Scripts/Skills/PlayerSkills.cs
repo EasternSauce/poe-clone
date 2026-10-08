@@ -298,6 +298,7 @@ namespace PoeClone.Skills
 
         private void OnStatsChanged()
         {
+            CheckBowToggle();
             Changed?.Invoke();
         }
 
@@ -316,7 +317,7 @@ namespace PoeClone.Skills
             int granted = 0;
             foreach (EquipSlot slot in SlotRules.AllSlots)
             {
-                ItemData item = inventory.Equipment.Get(slot);
+                ItemData item = inventory.Equipment.GetActive(slot);
                 if (item == null)
                     continue;
                 foreach (StatModifier m in item.Modifiers)
@@ -368,7 +369,7 @@ namespace PoeClone.Skills
             if (inventory == null) return grants;
             foreach (EquipSlot source in SlotRules.AllSlots)
             {
-                ItemData item = inventory.Equipment.Get(source);
+                ItemData item = inventory.Equipment.GetActive(source);
                 if (item == null) continue;
                 foreach (StatModifier mod in item.Modifiers)
                 {
@@ -399,7 +400,7 @@ namespace PoeClone.Skills
         private bool BindingValid(int slot)
         {
             if (slots[slot] == null || slotItems[slot] == null || inventory == null ||
-                inventory.Equipment.Get(slotSources[slot]) != slotItems[slot] || !CanBind(slots[slot].Value))
+                inventory.Equipment.GetActive(slotSources[slot]) != slotItems[slot] || !CanBind(slots[slot].Value))
                 return false;
             foreach (StatModifier mod in slotItems[slot].Modifiers)
                 if (mod.Stat == SkillBook.Get(slots[slot].Value).Grant && Mathf.RoundToInt(mod.Value) == slotGrants[slot])
@@ -418,10 +419,10 @@ namespace PoeClone.Skills
             {
                 if (inventory == null)
                     return null;
-                SkillId? main = MainOn(inventory.Equipment.Get(EquipSlot.MainHand));
+                SkillId? main = MainOn(inventory.Equipment.GetActive(EquipSlot.MainHand));
                 if (main != null)
                     return main;
-                ItemData offHand = inventory.Equipment.Get(EquipSlot.OffHand);
+                ItemData offHand = inventory.Equipment.GetActive(EquipSlot.OffHand);
                 return offHand != null && offHand.Type == ItemType.Grimoire ? MainOn(offHand) : null;
             }
         }
@@ -468,7 +469,7 @@ namespace PoeClone.Skills
             float bestLevel = 0f;
             foreach (EquipSlot slot in SlotRules.AllSlots)
             {
-                ItemData item = inventory.Equipment.Get(slot);
+                ItemData item = inventory.Equipment.GetActive(slot);
                 if (item == null)
                     continue;
                 foreach (StatModifier m in item.Modifiers)
@@ -1431,7 +1432,7 @@ namespace PoeClone.Skills
 
         private WeaponType CurrentWeapon()
         {
-            ItemData weapon = inventory != null ? inventory.Equipment.Get(EquipSlot.MainHand) : null;
+            ItemData weapon = inventory != null ? inventory.Equipment.GetActive(EquipSlot.MainHand) : null;
             return weapon != null ? weapon.WeaponType : WeaponType.Unarmed;
         }
 

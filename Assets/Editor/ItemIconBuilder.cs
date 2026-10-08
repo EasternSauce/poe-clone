@@ -1,4 +1,6 @@
 using System.IO;
+using System.Collections.Generic;
+using PoeClone.Inventory;
 using UnityEditor;
 using UnityEngine;
 
@@ -67,6 +69,7 @@ namespace PoeClone.EditorTools
             MakeAmulet();
             VarietyIcons();
             SummonerIcons();
+            BuildBaseIcons();
 
             AssetDatabase.Refresh();
             Debug.Log("ItemIconBuilder: icons written to " + OutDir);
@@ -239,6 +242,116 @@ namespace PoeClone.EditorTools
             Make("steel_dagger", "Weapons/512x512/dagger_03.png", 1, 2, b => b, 45f);
             Make("short_bow", "Weapons/512x512/bow_03.png", 2, 3, b => b, 45f);
             MakeQuiver();
+        }
+
+        /// <summary>Separate base icons; models continue to use the original ArtId.</summary>
+        [MenuItem("PoeClone/Build Base Icons")]
+        public static void BuildBaseIcons()
+        {
+            var sources = new Dictionary<string, Bitmap>();
+            foreach (string id in ItemGenerator.BaseIds)
+            {
+                ItemData item = ItemGenerator.Display(id, null, ItemRarity.Normal);
+                if (!sources.ContainsKey(item.ArtId)) sources[item.ArtId] = Load(OutDir + "/" + item.ArtId + ".png");
+            }
+            foreach (string id in ItemGenerator.BaseIds)
+            {
+                ItemData item = ItemGenerator.Display(id, null, ItemRarity.Normal);
+                // Preserve the original painted starter assets.
+                if (id == item.ArtId) continue;
+                int tier = item.Requirements.Level / 7;
+                Bitmap original = sources[item.ArtId];
+                Bitmap b = new Bitmap(original.W, original.H) { P = (Color[])original.P.Clone() };
+                string line = ItemGenerator.LineOf(id);
+                string inkSource = InkSource(line, tier);
+                if (inkSource != null) b = ColourInk(Load("Assets/assets_for_inspiration/Icons Png/" + inkSource), item.ArtTint, line != "helm_dex");
+                else
+                {
+                    // Change proportions and add actual trim/rivets, rather than relying on runtime tint.
+                    b = Trim(b);
+                    int width = Mathf.Max(1, Mathf.RoundToInt(b.W * (0.82f + tier * 0.09f)));
+                    Bitmap shaped = new Bitmap(width, b.H);
+                    for (int y = 0; y < shaped.H; y++)
+                        for (int x = 0; x < shaped.W; x++)
+                            shaped.P[y * shaped.W + x] = SampleStraight(b, x * b.W / (float)width, y);
+                    b = shaped;
+                    for (int i = 0; i < b.P.Length; i++)
+                        if (b.P[i].a > 0f) b.P[i] *= new Color(item.ArtTint.r, item.ArtTint.g, item.ArtTint.b, 1f);
+                }
+                b = FitTo(Trim(b), item.Width * PxPerCell, item.Height * PxPerCell, 8);
+                AddBaseTrim(b, tier, line);
+                Save(id, AddOutline(b, 2, OutlineColor));
+            }
+            AssetDatabase.Refresh();
+            Debug.Log("ItemIconBuilder: separate icons built for every equipment base.");
+        }
+
+        private static string InkSource(string line, int tier)
+        {
+            if (line == "helm_dex") return "600x600_0021_Hood.png";
+            if (line == "shield_int") return "600x600_0007_Conduit.png";
+            if (line == "shield_str" && tier >= 2) return "600x600_0014_TowerShield.png";
+            if (line == "shield_dex" && tier > 0) return "600x600_0016_SpikedShield.png";
+            if (line == "bow") return tier < 2 ? "600x600_0031_RecurveBow.png" : "600x1200_0013_Longbow.png";
+            if (line == "sword" && tier > 0) return tier == 1 ? "600x600_0043_ArmingSword.png" : "600x600_0044_Sword.png";
+            if (line == "greatsword" && tier > 0) return tier == 1 ? "600x1200_0011_Claymore.png" : "600x1200_0002_Zweihander.png";
+            if (line == "maul" && tier > 0) return tier == 1 ? "600x1200_0009_Warhammer.png" : "600x1200_0006_Maul.png";
+            return null;
+        }
+
+        // These inspiration icons are ink drawings. Remove only the white region connected to
+        // the canvas edges, preserving enclosed cloth/metal areas and their dark drawn detail.
+        private static Bitmap ColourInk(Bitmap b, Color tint, bool brightInk)
+        {
+            var outside = new bool[b.P.Length];
+            var queue = new Queue<int>();
+            for (int y = 0; y < b.H; y++) { queue.Enqueue(y * b.W); queue.Enqueue(y * b.W + b.W - 1); }
+            for (int x = 0; x < b.W; x++) { queue.Enqueue(x); queue.Enqueue((b.H - 1) * b.W + x); }
+            while (queue.Count > 0)
+            {
+                int i = queue.Dequeue();
+                if (outside[i] || (b.P[i].a > 0.1f && b.P[i].grayscale < 0.94f)) continue;
+                outside[i] = true;
+                int x = i % b.W, y = i / b.W;
+                if (x > 0) queue.Enqueue(i - 1);
+                if (x + 1 < b.W) queue.Enqueue(i + 1);
+                if (y > 0) queue.Enqueue(i - b.W);
+                if (y + 1 < b.H) queue.Enqueue(i + b.W);
+            }
+            for (int i = 0; i < b.P.Length; i++)
+            {
+                if (outside[i] || b.P[i].a < 0.1f) { b.P[i] = Color.clear; continue; }
+                float y = (i / b.W) / (float)b.H;
+                float light = 0.35f + 0.65f * y;
+                b.P[i] = brightInk
+                    ? Color.Lerp(tint * (0.4f + 0.4f * y), Color.Lerp(tint, Color.white, 0.45f), b.P[i].grayscale)
+                    : Color.Lerp(new Color(0.12f, 0.10f, 0.09f), tint * light, b.P[i].grayscale);
+                b.P[i].a = 1f;
+            }
+            return b;
+        }
+
+        private static void AddBaseTrim(Bitmap b, int tier, string line)
+        {
+            Color metal = tier >= 2 ? new Color(0.94f, 0.74f, 0.34f) : new Color(0.65f, 0.70f, 0.78f);
+            for (int n = 0; n <= tier; n++)
+            {
+                int cy = Mathf.RoundToInt(b.H * (0.35f + n * 0.12f));
+                // Follow the silhouette: paired rivets or setting stones stay on the item itself.
+                int left = -1, right = -1;
+                for (int x = 0; x < b.W; x++)
+                    if (b.P[cy * b.W + x].a > 0.9f) { if (left < 0) left = x; right = x; }
+                if (right - left < 10) continue;
+                foreach (int cx in new[] { left + 5 + tier, right - 5 - tier })
+                    for (int dy = -3; dy <= 3; dy++)
+                        for (int dx = -3; dx <= 3; dx++)
+                        {
+                            int x = cx + dx, y = cy + dy;
+                            if (x < 0 || x >= b.W || y < 0 || y >= b.H || dx * dx + dy * dy > 9) continue;
+                            int i = y * b.W + x;
+                            if (b.P[i].a > 0.9f) b.P[i] = metal * (dy > 0 ? 1f : 0.7f);
+                        }
+            }
         }
 
         // None of the source art has a quiver, so this one is painted: a shaded leather tube with

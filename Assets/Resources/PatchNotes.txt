@@ -1,3 +1,9 @@
+version: 2026-10-08-item-base-requirements
+- Equipment bases now progress through required levels 0, 7, 14, and 21, with matching drop gates and a separate icon per base. Strength, Dexterity, and Intelligence bases require their matching attributes; hybrid armour requires both Strength and Dexterity. Added four Intelligence shield focuses.
+- Item tooltips show the base name and equip requirements separately from item level. Unique items inherit their base's attribute requirements and cannot require a lower level than their base; Shepherd uniques require at least level 21.
+- An item's own attributes can satisfy its requirements. Gear that no longer qualifies stays equipped, turns red, and grants no stats or skills. Requirements recalculate after equipment, attributes, levels, or passives change, including cascading loss of attribute support; qualifying gear automatically reactivates.
+- Existing saved equipment stays in its slots after the update, even when its requirements are unmet.
+
 version: 2026-10-08-area-level-progression
 - Area levels now follow the route: Greenwood 1, The Lost Hollows 9, Haunted Graveyard 17, Ashen Ruins 25, Frozen Hollow 34, and The Shed Sanctuary 37.
 - All monsters, including bosses and their summons, share their area's level. Monsters now use comparable level-one baselines and shared health/damage growth, with separate heavy, elite, and boss bonuses. Existing native monsters retain their current health, damage, and armour; placing them in another area scales them to its level.

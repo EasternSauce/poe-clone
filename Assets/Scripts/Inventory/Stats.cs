@@ -488,7 +488,37 @@ namespace PoeClone.Inventory
             if (baseStats == null)
                 throw new ArgumentNullException(nameof(baseStats));
 
-            return new StatSheet(baseStats, equipment, extra);
+            if (equipment == null || !equipment.EnforceRequirements)
+                return new StatSheet(baseStats, equipment, extra);
+
+            // Own attributes count. Start with the full loadout, remove unmet items and repeat
+            // so losing one attribute source also disables any gear that depended on it.
+            // Rebuild from all worn gear each time so qualifying items reactivate automatically.
+            var modifiers = extra == null ? null : new List<StatModifier>(extra);
+            var active = new EquipmentSet();
+            var slots = new HashSet<EquipSlot>();
+            foreach (EquipSlot slot in SlotRules.AllSlots)
+            {
+                ItemData item = equipment.Get(slot);
+                if (item != null && active.Restore(slot, item, out _)) slots.Add(slot);
+            }
+            StatSheet sheet = new StatSheet(baseStats, active, modifiers);
+            bool changed;
+            do
+            {
+                changed = false;
+                foreach (EquipSlot slot in SlotRules.AllSlots)
+                {
+                    ItemData item = active.Get(slot);
+                    if (item == null || item.Requirements.MetBy(sheet)) continue;
+                    active.Unequip(slot);
+                    slots.Remove(slot);
+                    changed = true;
+                    sheet = new StatSheet(baseStats, active, modifiers);
+                }
+            } while (changed);
+            equipment.SetActiveSlots(slots);
+            return sheet;
         }
 
         /// <summary>The character's own value, before gear.</summary>

@@ -178,6 +178,8 @@ namespace PoeClone.Inventory
             for (int k = 0; k < StashTabCount; k++)
                 StashTabs[k] = new InventoryGrid(StashSize, StashSize);
             Equipment = new EquipmentSet();
+            Equipment.EnforceRequirements = true;
+            Equipment.MeetsRequirements = MeetsItemRequirements;
             Equipment.Changed += (slot, item) => Recalculate();
             Stats = StatSheet.Build(baseStats, Equipment);
         }
@@ -186,6 +188,25 @@ namespace PoeClone.Inventory
         {
             baseStats = stats ?? new BaseStats();
             Recalculate();
+        }
+
+        public bool MeetsItemRequirements(EquipSlot slot, ItemData item)
+        {
+            // Preview the resulting loadout, including the incoming item's own attributes.
+            var otherGear = new EquipmentSet { EnforceRequirements = true };
+            foreach (EquipSlot other in SlotRules.AllSlots)
+            {
+                ItemData worn = Equipment.Get(other);
+                if (other != slot && worn != null) otherGear.Restore(other, worn, out _);
+            }
+            if (item == null) return false;
+            // Hand compatibility is checked by CanEquip; this preview may temporarily have
+            // an off-hand item that the inventory UI will move into the bag.
+            if (slot == EquipSlot.MainHand && !SlotRules.HandsCompatible(item, otherGear.Get(EquipSlot.OffHand)))
+                otherGear.Unequip(EquipSlot.OffHand);
+            if (!otherGear.Restore(slot, item, out _)) return false;
+            StatSheet.Build(baseStats, otherGear, passives);
+            return otherGear.IsActive(slot);
         }
 
         private List<StatModifier> passives = new List<StatModifier>();

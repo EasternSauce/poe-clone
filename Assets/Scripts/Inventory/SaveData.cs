@@ -195,7 +195,7 @@ namespace PoeClone.Inventory
                 foreach (EquippedRecord e in equipped)
                 {
                     ItemData item = e.item != null ? e.item.ToItem() : null;
-                    if (item != null && !inventory.Equipment.TryEquip((EquipSlot)e.slot, item, out _))
+                    if (item != null && !inventory.Equipment.Restore((EquipSlot)e.slot, item, out _))
                         leftOver.Add(item);
                 }
             }

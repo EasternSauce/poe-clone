@@ -730,7 +730,7 @@ namespace PoeClone.Network
                 appliedEquipment[k] = id;
 
                 if (id.Length > 0 && itemsById.TryGetValue(id, out ItemData item))
-                    playerInventory.Equipment.TryEquip(slots[k], item, out _);
+                    playerInventory.Equipment.Restore(slots[k], item, out _);
             }
         }
 

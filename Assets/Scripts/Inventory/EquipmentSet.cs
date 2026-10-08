@@ -13,6 +13,12 @@ namespace PoeClone.Inventory
 
         /// <summary>Slot that changed, and the item now in it (null if it was emptied).</summary>
         public event Action<EquipSlot, ItemData> Changed;
+        public Func<EquipSlot, ItemData, bool> MeetsRequirements { get; set; }
+        public bool EnforceRequirements { get; set; }
+        private HashSet<EquipSlot> activeSlots;
+        public bool IsActive(EquipSlot slot) => Get(slot) != null && (activeSlots == null || activeSlots.Contains(slot));
+        public ItemData GetActive(EquipSlot slot) => IsActive(slot) ? Get(slot) : null;
+        internal void SetActiveSlots(HashSet<EquipSlot> slots) => activeSlots = slots;
 
         public ItemData Get(EquipSlot slot)
         {
@@ -23,6 +29,8 @@ namespace PoeClone.Inventory
         public bool CanEquip(EquipSlot slot, ItemData item)
         {
             if (!SlotRules.Accepts(slot, item))
+                return false;
+            if (MeetsRequirements != null && !MeetsRequirements(slot, item))
                 return false;
 
             // The two hands have to suit each other (a bow takes no shield, a quiver needs a bow).
@@ -35,10 +43,19 @@ namespace PoeClone.Inventory
 
         /// <summary>Equips the item. Whatever was in the slot is returned in <paramref name="replaced"/>.</summary>
         public bool TryEquip(EquipSlot slot, ItemData item, out ItemData replaced)
+            => Equip(slot, item, out replaced, false);
+
+        /// <summary>Restore existing saved or replicated gear before character stats arrive.</summary>
+        public bool Restore(EquipSlot slot, ItemData item, out ItemData replaced)
+            => Equip(slot, item, out replaced, true);
+
+        private bool Equip(EquipSlot slot, ItemData item, out ItemData replaced, bool restoring)
         {
             replaced = null;
 
-            if (!CanEquip(slot, item))
+            if (restoring ? !SlotRules.Accepts(slot, item) ||
+                (slot == EquipSlot.MainHand && !SlotRules.HandsCompatible(item, Get(EquipSlot.OffHand))) ||
+                (slot == EquipSlot.OffHand && !SlotRules.HandsCompatible(Get(EquipSlot.MainHand), item)) : !CanEquip(slot, item))
                 return false;
 
             replaced = Get(slot);

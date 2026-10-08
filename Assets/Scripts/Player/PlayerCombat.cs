@@ -204,7 +204,7 @@ namespace PoeClone.Player
 
         private WeaponType CurrentWeaponType()
         {
-            ItemData weapon = inventory.Equipment.Get(EquipSlot.MainHand);
+            ItemData weapon = inventory.Equipment.GetActive(EquipSlot.MainHand);
             return weapon != null ? weapon.WeaponType : WeaponType.Unarmed;
         }
 

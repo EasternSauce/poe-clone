@@ -99,6 +99,7 @@ namespace PoeClone.Inventory
             public string ArtId;               // null: its own
             public Color ArtTint = Color.white;
             public int MinLevel = 1;           // drops only at this item level and up
+            public int RequiredLevel;
             public string Line;                // its family: tiers of one line replace each other as levels rise
             public Leaning Leaning;
         }
@@ -170,7 +171,7 @@ namespace PoeClone.Inventory
             { "grimoire", new Color(0.30f, 0.22f, 0.26f) },
         };
 
-        // Every base that can drop. Legacy base tiers 1/4/8/12 unlock at levels 1/9/25/34.
+        // Every base that can drop. Legacy tier markers 1/4/8/12 mean equip levels 0/7/14/21.
         // A drop favours the highest
         // tier its level allows. Ids are saved: never rename or remove one.
         private static readonly ItemBase[] All =
@@ -296,6 +297,10 @@ namespace PoeClone.Inventory
             Gear("shield_dex", Leaning.Dex, "spiked_buckler", "Spiked Buckler", ItemType.Shield, 2, 2, 4, "buckler", Dusk, Mod(StatType.Evasion, 25), Mod(StatType.BlockChance, 11)),
             Gear("shield_dex", Leaning.Dex, "duelist_buckler", "Duelist Buckler", ItemType.Shield, 2, 2, 8, "buckler", Gilded, Mod(StatType.Evasion, 40), Mod(StatType.BlockChance, 14)),
             Gear("shield_dex", Leaning.Dex, "champion_buckler", "Champion Buckler", ItemType.Shield, 2, 2, 12, "buckler", Royal, Mod(StatType.Evasion, 60), Mod(StatType.BlockChance, 18)),
+            Gear("shield_int", Leaning.Int, "spirit_focus", "Spirit Focus", ItemType.Shield, 2, 2, 1, "buckler", Lapis, Mod(StatType.MaxMana, 12), Mod(StatType.BlockChance, 8)),
+            Gear("shield_int", Leaning.Int, "runic_focus", "Runic Focus", ItemType.Shield, 2, 2, 4, "buckler", Silk, Mod(StatType.MaxMana, 22), Mod(StatType.BlockChance, 11)),
+            Gear("shield_int", Leaning.Int, "arcane_focus", "Arcane Focus", ItemType.Shield, 2, 2, 8, "buckler", Gilded, Mod(StatType.MaxMana, 34), Mod(StatType.BlockChance, 14)),
+            Gear("shield_int", Leaning.Int, "archon_focus", "Archon Focus", ItemType.Shield, 2, 2, 12, "buckler", Royal, Mod(StatType.MaxMana, 48), Mod(StatType.BlockChance, 18)),
 
             // ---- Grimoires: the summoner's off hand. Death Mark (its attack) always rolls on one.
             Gear("grimoire", Leaning.Int, "grimoire", "Bone Grimoire", ItemType.Grimoire, 2, 2, 1, null, Plain, Mod(StatType.MinionLife, 10)),
@@ -868,6 +873,24 @@ namespace PoeClone.Inventory
             return b != null ? b.MinLevel : 1;
         }
 
+        public static string BaseNameOf(string baseId) => Find(baseId)?.Name;
+
+        /// <summary>Requirements come from the saved base ID, never from the item's own bonuses or ilvl.</summary>
+        public static ItemRequirements RequirementsOf(ItemData item)
+        {
+            ItemBase b = item != null ? Find(item.Id) : null;
+            if (b == null || b.Line == null) return default;
+            int level = b.RequiredLevel;
+            if (item.Rarity == ItemRarity.Unique)
+                level = Math.Max(level, UniqueItems.RequiredLevelFor(item.Name));
+            int attribute = 10 + b.RequiredLevel * 2;
+            bool hybrid = b.Line.EndsWith("_hyb");
+            return new ItemRequirements(level,
+                b.Leaning == Leaning.Str || hybrid || b.Line == "sword" || b.Line == "ring_phys" ? attribute : 0,
+                b.Leaning == Leaning.Dex || hybrid ? attribute : 0,
+                b.Leaning == Leaning.Int ? attribute : 0);
+        }
+
         /// <summary>Gives an item made from a base id the base's art (for loaded saves).</summary>
         public static void ApplyArt(ItemData item)
         {
@@ -1175,7 +1198,8 @@ namespace PoeClone.Inventory
             ItemBase b = Base(id, name, type, w, h, colour * artTint, implicits);
             b.Line = line;
             b.Leaning = leaning;
-            b.MinLevel = minLevel == 4 ? 9 : minLevel == 8 ? 25 : minLevel == 12 ? 34 : minLevel;
+            b.RequiredLevel = minLevel == 1 ? 0 : minLevel == 4 ? 7 : minLevel == 8 ? 14 : minLevel == 12 ? 21 : minLevel;
+            b.MinLevel = Math.Max(1, b.RequiredLevel);
             b.ArtId = art;
             b.ArtTint = artTint;
             return b;

@@ -339,6 +339,7 @@ namespace PoeClone.Inventory
 
             inventory.PlayerDied += OnPlayerDied;
             inventory.Grid.Changed += OnGridChanged;
+            inventory.StatsChanged += OnGridChanged;
             inventory.PotionsChanged += OnGridChanged;
             inventory.StashTabNamesChanged += RefreshStashTabs;
         }
@@ -349,6 +350,7 @@ namespace PoeClone.Inventory
             {
                 inventory.PlayerDied -= OnPlayerDied;
                 inventory.Grid.Changed -= OnGridChanged;
+                inventory.StatsChanged -= OnGridChanged;
                 inventory.PotionsChanged -= OnGridChanged;
                 inventory.StashTabNamesChanged -= RefreshStashTabs;
             }
@@ -1471,7 +1473,7 @@ private Vector2 CellSize(int w, int h)
             if (painted != null)
             {
                 icon.sprite = painted;
-                icon.color = new Color(item.ArtTint.r, item.ArtTint.g, item.ArtTint.b, alpha);
+                icon.color = new Color(item.IconTint.r, item.IconTint.g, item.IconTint.b, alpha);
                 if (iconLimit.HasValue)
                 {
                     irt.anchorMin = irt.anchorMax = irt.pivot = new Vector2(0.5f, 0.5f);
@@ -1552,6 +1554,12 @@ private Vector2 CellSize(int w, int h)
                 {
                     Vector2 size = s.Rect.sizeDelta - new Vector2(4f, 4f);
                     RectTransform rt = CreateItemView(s.Rect, item, size, 1f, CellSize(item.Width, item.Height));
+                    if (!inventory.Equipment.IsActive(s.Slot))
+                    {
+                        rt.Find("Frame").GetComponent<Image>().color = new Color(1f, 0.15f, 0.12f);
+                        rt.Find("Frame/Face").GetComponent<Image>().color = new Color(0.32f, 0.04f, 0.04f, 0.95f);
+                        rt.Find("Icon").GetComponent<Image>().color = new Color(1f, 0.28f, 0.25f);
+                    }
                     rt.anchoredPosition = new Vector2(2f, -2f);
                     itemViews.Add(rt.gameObject);
                 }
@@ -1733,6 +1741,12 @@ private Vector2 CellSize(int w, int h)
             sb.Append("<b><color=#").Append(UiKit.Hex(UiKit.RarityColor(item.Rarity))).Append(">").Append(item.Name).Append("</color></b>\n");
             sb.Append("<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">").Append(type).Append("</color>");
             lineCount = 2;
+            if (!string.IsNullOrEmpty(item.BaseName))
+            {
+                sb.Append("\nBase: ").Append(item.BaseName);
+                sb.Append("\n").Append(item.Requirements);
+                lineCount += 2;
+            }
             if (item.ItemLevel > 0 && item.Type != ItemType.Gold && item.Type != ItemType.Potion)
             {
                 sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">Item level: ").Append(item.ItemLevel).Append("</color>");
@@ -1910,6 +1924,13 @@ private Vector2 CellSize(int w, int h)
         {
             int lines;
             string text = BuildTooltipText(item, out lines);
+            foreach (EquipSlot slot in SlotRules.AllSlots)
+                if (inventory.Equipment.Get(slot) == item && !inventory.Equipment.IsActive(slot))
+                {
+                    text += "\n<color=#FF5040>Requirements unmet: item stats and skills are inactive.</color>";
+                    lines++;
+                    break;
+                }
             ShowTooltipText(text, lines, mousePos);
         }
 
@@ -2065,6 +2086,7 @@ private Vector2 CellSize(int w, int h)
 
             // A two-handed weapon pushes whatever is in the off hand into the bag (if there's room).
             if (s.Slot == EquipSlot.MainHand && SlotRules.Accepts(s.Slot, cursorItem) &&
+                inventory.MeetsItemRequirements(s.Slot, cursorItem) &&
                 !inventory.Equipment.CanEquip(s.Slot, cursorItem))
             {
                 ItemData off = inventory.Equipment.Get(EquipSlot.OffHand);

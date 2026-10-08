@@ -9,14 +9,15 @@ namespace PoeClone.Inventory
         private static readonly Dictionary<string, Sprite> Cache = new Dictionary<string, Sprite>();
 
         /// <summary>The item's painted icon, or null if it has none.</summary>
-public static Sprite PaintedIcon(ItemData item)
+        public static Sprite PaintedIcon(ItemData item)
         {
             Sprite sprite;
-            if (Cache.TryGetValue(item.ArtId, out sprite))
+            if (Cache.TryGetValue(item.IconId, out sprite))
                 return sprite; // may be null: this item has no painted art
 
-            sprite = Resources.Load<Sprite>("ItemIcons/" + item.ArtId);
-            Cache[item.ArtId] = sprite;
+            sprite = Resources.Load<Sprite>("ItemIcons/" + item.IconId);
+            if (sprite == null) sprite = Resources.Load<Sprite>("ItemIcons/" + item.ArtId);
+            Cache[item.IconId] = sprite;
             return sprite;
         }
 

@@ -17,6 +17,7 @@ namespace PoeClone.Inventory
             public string Flavour;
             public StatModifier[] Mods;
             public bool ShepherdOnly;
+            public int RequiredLevel = 7;
         }
 
         private static StatModifier Mod(StatType stat, float value) => new StatModifier(stat, value);
@@ -212,6 +213,13 @@ namespace PoeClone.Inventory
         }
 
         public static int Count => All.Length;
+
+        public static int RequiredLevelFor(string name)
+        {
+            foreach (Unique u in All)
+                if (u.Name == name) return u.ShepherdOnly ? System.Math.Max(21, u.RequiredLevel) : u.RequiredLevel;
+            return 0;
+        }
 
         /// <summary>A random unique item.</summary>
         public static ItemData Random(System.Random rng)

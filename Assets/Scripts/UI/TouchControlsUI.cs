@@ -148,7 +148,7 @@ namespace PoeClone.UI
         private void UpdateAimIcon()
         {
             PlayerInventory inventory = stats != null ? stats.GetComponent<PlayerInventory>() : null;
-            ItemData weapon = inventory != null ? inventory.Equipment.Get(EquipSlot.MainHand) : null;
+            ItemData weapon = inventory != null ? inventory.Equipment.GetActive(EquipSlot.MainHand) : null;
             Skills.SkillId? attackSkill = skills != null ? skills.MainSkill ?? skills.ActiveBowSkill : null;
             string id = (weapon != null ? weapon.Id : "") + "|" + attackSkill;
             if (id == aimIconFor)
@@ -171,7 +171,7 @@ namespace PoeClone.UI
             }
             Sprite painted = weapon != null ? ItemArt.PaintedIcon(weapon) : null;
             aimIcon.sprite = painted != null ? painted : IconFactory.Get(ItemType.Weapon);
-            aimIcon.color = painted != null ? weapon.ArtTint : new Color(0.92f, 0.86f, 0.72f, 0.9f);
+            aimIcon.color = painted != null ? weapon.IconTint : new Color(0.92f, 0.86f, 0.72f, 0.9f);
         }
 
         private void FindGameplay()

@@ -253,7 +253,7 @@ namespace PoeClone.World
             Image iconImage = UiKit.NewImage("Icon", canvasRect, Color.white);
             iconImage.sprite = ItemArt.Icon(Item);
             if (ItemArt.HasPaintedIcon(Item))
-                iconImage.color = Item.ArtTint;
+                iconImage.color = Item.IconTint;
             iconImage.preserveAspect = true;
             icon = iconImage.rectTransform;
             float aspect = (float)Item.Width / Item.Height;
