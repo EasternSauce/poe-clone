@@ -1,3 +1,6 @@
+version: 2026-10-08-implicit-modifier-sections
+- Item tooltips and Loot Simulator hover previews now group implicit modifiers in a labeled section above explicit modifiers, with a blank line separating the sections. Granted skills retain their gold highlight and modifier tier labels remain visible.
+
 version: 2026-10-08-loot-simulator-startup-fix
 - Fixed the standalone Unity Loot Simulator failing to open with a NullReferenceException. Its UI component now lives in the runtime script assembly during Editor runs, while remaining excluded from game builds.
 

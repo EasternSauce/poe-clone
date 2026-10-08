@@ -1735,7 +1735,6 @@ private Vector2 CellSize(int w, int h)
             // Weapons name their kind ("Bow", "Axe"); everything else its slot type ("Body Armour").
             string typeName = item.Type == ItemType.Weapon ? item.WeaponType.ToString() : item.Type.ToString();
             string type = Regex.Replace(typeName, "(?<=.)([A-Z])", " $1");
-            string magic = UiKit.Hex(UiKit.MagicBlue);
 
             StringBuilder sb = new StringBuilder();
             sb.Append("<b><color=#").Append(UiKit.Hex(UiKit.RarityColor(item.Rarity))).Append(">").Append(item.Name).Append("</color></b>\n");
@@ -1788,21 +1787,28 @@ private Vector2 CellSize(int w, int h)
                 sb.Append("\n");
                 lineCount++;
 
-                // Skills first, in gold: they decide how the item plays.
+                bool hasImplicits = false;
+                bool hasExplicits = false;
                 foreach (StatModifier m in item.Modifiers)
                 {
-                    if (!SkillGrants.IsGrant(m.Stat))
-                        continue;
-                    sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.Gold)).Append(">").Append(StatFormatter.ItemLine(m) + " [" + (m.Tier > 0 ? "T" + m.Tier : m.Tier == -1 ? "Implicit" : item.Rarity == ItemRarity.Unique ? "Unique" : "Tier unknown") + "]").Append("</color>");
-                    lineCount++;
+                    if (m.Tier == -1) hasImplicits = true;
+                    else hasExplicits = true;
                 }
 
-                foreach (StatModifier m in item.Modifiers)
+                if (hasImplicits)
                 {
-                    if (SkillGrants.IsGrant(m.Stat))
-                        continue;
-                    sb.Append("\n<color=#").Append(magic).Append(">").Append(StatFormatter.ItemLine(m) + " [" + (m.Tier > 0 ? "T" + m.Tier : m.Tier == -1 ? "Implicit" : item.Rarity == ItemRarity.Unique ? "Unique" : "Tier unknown") + "]").Append("</color>");
+                    sb.Append("\n<b><color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">Implicit modifiers</color></b>");
                     lineCount++;
+                    AppendTooltipModifiers(sb, item, true, ref lineCount);
+                }
+                if (hasExplicits)
+                {
+                    if (hasImplicits)
+                    {
+                        sb.Append("\n\n<b><color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">Explicit modifiers</color></b>");
+                        lineCount += 2;
+                    }
+                    AppendTooltipModifiers(sb, item, false, ref lineCount);
                 }
             }
 
@@ -1833,6 +1839,25 @@ private Vector2 CellSize(int w, int h)
             }
 
             return sb.ToString();
+        }
+
+        private static void AppendTooltipModifiers(StringBuilder sb, ItemData item, bool implicits, ref int lineCount)
+        {
+            // Keep granted skills first and gold within each modifier section.
+            for (int pass = 0; pass < 2; pass++)
+            {
+                bool skills = pass == 0;
+                foreach (StatModifier m in item.Modifiers)
+                {
+                    if ((m.Tier == -1) != implicits || SkillGrants.IsGrant(m.Stat) != skills)
+                        continue;
+                    string tier = m.Tier > 0 ? "T" + m.Tier : m.Tier == -1 ? "Implicit" :
+                        item.Rarity == ItemRarity.Unique ? "Unique" : "Tier unknown";
+                    sb.Append("\n<color=#").Append(UiKit.Hex(skills ? UiKit.Gold : UiKit.MagicBlue)).Append(">")
+                        .Append(StatFormatter.ItemLine(m)).Append(" [").Append(tier).Append("]</color>");
+                    lineCount++;
+                }
+            }
         }
 
         // The item lying on the ground under the mouse shows its stats too; on a phone, the item
