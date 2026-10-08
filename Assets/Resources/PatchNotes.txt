@@ -1,3 +1,6 @@
+version: 2026-10-08-loot-simulator-default-rare
+- Loot Simulator now defaults its minimum rarity to Rare.
+
 version: 2026-10-08-concise-handedness-labels
 - Shortened item tooltip handedness labels to Two-handed or Off hand, removing equipment pairing explanations from inventory and Loot Simulator previews.
 

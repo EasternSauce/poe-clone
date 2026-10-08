@@ -29,7 +29,7 @@ namespace PoeClone.EditorTools
         private Text tipText, status, inventorySummary;
         private ScrollRect inventoryScroll;
         private InputField level, count;
-        private ItemRarity minimumRarity = ItemRarity.Normal;
+        private ItemRarity minimumRarity = ItemRarity.Rare;
         private readonly Dictionary<ItemRarity, Text> rarityButtons = new Dictionary<ItemRarity, Text>();
         private const int GridColumns = 16;
         private const int MinimumRows = 12;
@@ -87,7 +87,7 @@ namespace PoeClone.EditorTools
                 ItemRarity selected = rarity;
                 rarityButtons[rarity] = Button(pr,rarity.ToString(),new Vector2(650+(int)rarity*112,-145),new Vector2(104,36),() => SelectRarity(selected));
             }
-            SelectRarity(ItemRarity.Normal);
+            SelectRarity(minimumRarity);
             Button(pr,"Select all",new Vector2(24,-205),new Vector2(150,34),() => SelectAll(true));
             Button(pr,"Clear all",new Vector2(186,-205),new Vector2(150,34),() => SelectAll(false));
             foreach (ItemType type in Enum.GetValues(typeof(ItemType)))
