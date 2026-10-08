@@ -1,3 +1,8 @@
+version: 2026-10-08-native-enemy-rosters
+- Added three distinct dark fantasy enemies with custom bodies and animations: the thorn-crowned Briarbound in Greenwood, the shrouded Grave Siren in Haunted Graveyard, and the clawed Rime Stalker in Frozen Hollow.
+- Briarbound grows lingering thorn patches, Grave Siren screams across a ring with a safe center, and Rime Stalker opens crossed frost fissures with safe diagonal gaps. Each ability warns before dealing damage and belongs only to its creature.
+- Narrowed each area's enemy roster. The Lost Hollows now has its own cave-dweller mix instead of sharing the graveyard's roster. These rosters also apply to respawns.
+
 version: 2026-10-08-sanctuary-scattered-remains
 - Scattered small corpses, skeletons, loose bones, broken antlers, shed hides, discarded shrouds and votive candles across the whole Shed Sanctuary floor, including the fighting area. All remains are low and collider-free.
 

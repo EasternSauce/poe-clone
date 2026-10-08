@@ -11,7 +11,10 @@ namespace PoeClone.Visuals
         Wolf,     // four legs, a snout with a working jaw, a tail
         Slime,    // a hopping, wobbling blob
         Bat,      // flies: flapping wings, hangs in the air
-        Beetle    // six short legs under a heavy shell, a horn; spits
+        Beetle,   // six short legs under a heavy shell, a horn; spits
+        Briarbound,
+        GraveSiren,
+        RimeStalker
     }
 
     /// <summary>
@@ -60,6 +63,9 @@ namespace PoeClone.Visuals
                 case CreatureBody.Slime: BuildSlime(model, ctx); break;
                 case CreatureBody.Bat: BuildBat(model, ctx); break;
                 case CreatureBody.Beetle: BuildBeetle(model, ctx); break;
+                case CreatureBody.Briarbound: BuildBriarbound(model, ctx); break;
+                case CreatureBody.GraveSiren: BuildGraveSiren(model, ctx); break;
+                case CreatureBody.RimeStalker: BuildRimeStalker(model, ctx); break;
             }
             ctx.Anim.CaptureRest();
             return ctx.Anim;
@@ -320,6 +326,110 @@ namespace PoeClone.Visuals
                 AddInsectLeg(c, body, +1, new Vector3(0.28f, -0.08f, z[i]), yaw[i], 0.32f, 0.5f, 28f, -96f, i);
                 AddInsectLeg(c, body, -1, new Vector3(-0.28f, -0.08f, z[i]), yaw[i], 0.32f, 0.5f, 28f, -96f, i + 1);
             }
+        }
+
+        // Dark fantasy bodies with their own proportions, joints and silhouettes.
+        private static void BuildBriarbound(Transform model, Ctx c)
+        {
+            Transform body = Pivot(model, "Briarbound", new Vector3(0f, 1.25f, 0f));
+            c.Anim.BodyPivot = body;
+            Ico(c, body, c.Colors.Main, Vector3.zero, new Vector3(0.55f, 0.85f, 0.38f));
+            Ico(c, body, c.Colors.Second, new Vector3(0f, -0.38f, -0.02f), new Vector3(0.36f, 0.4f, 0.3f));
+            Transform head = Pivot(body, "Head", new Vector3(0f, 0.62f, 0.08f));
+            c.Anim.Head = head;
+            Ico(c, head, c.Colors.Second, Vector3.zero, new Vector3(0.32f, 0.46f, 0.3f));
+            // The face is split by a bark ridge; only two small pale eyes shine through.
+            Cone(c, head, c.Colors.Main, new Vector3(0f, -0.14f, 0.16f), new Vector3(0.035f, 0.32f, 0.04f), Vector3.zero);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Part(head, PrimitiveType.Cube, c.Colors.Eyes, new Vector3(side * 0.09f, 0.04f, 0.145f), new Vector3(0.07f, 0.035f, 0.025f), new Vector3(0f, 0f, side * 15f), false);
+                float crown = side < 0 ? 0.85f : 0.65f;
+                Cone(c, head, c.Colors.Main, new Vector3(side * 0.11f, 0.14f, -0.06f), new Vector3(0.075f, crown, 0.075f), new Vector3(-10f, 0f, side * -28f));
+                Cone(c, head, c.Colors.Second, new Vector3(side * 0.30f, 0.49f, -0.12f), new Vector3(0.045f, crown * 0.5f, 0.045f), new Vector3(0f, 0f, side * -65f));
+                AddRevenantLimb(c, body, side, false, c.Colors.Main, 0.57f, 0.62f);
+                AddRevenantLimb(c, body, side, true, c.Colors.Second, 0.5f, 0.58f);
+                for (int i = 0; i < 3; i++)
+                {
+                    // Bark plates protrude through the torso like ribs, with moss in the seams.
+                    Part(body, PrimitiveType.Cube, c.Colors.Second, new Vector3(side * 0.17f, 0.23f - i * 0.19f, 0.18f), new Vector3(0.23f, 0.07f, 0.07f), new Vector3(0f, side * 22f, side * -18f));
+                    Cone(c, body, c.Colors.Accent, new Vector3(side * 0.28f, 0.12f - i * 0.18f, -0.08f), new Vector3(0.09f, 0.24f, 0.08f), new Vector3(0f, 0f, side * -65f));
+                }
+            }
+            c.Anim.Mouth = Pivot(head, CreatureAnimator.MouthName, new Vector3(0f, -0.08f, 0.22f));
+        }
+
+        private static void BuildGraveSiren(Transform model, Ctx c)
+        {
+            Transform body = Pivot(model, "GraveSiren", new Vector3(0f, 1.35f, 0f));
+            c.Anim.BodyPivot = body;
+            Color bone = new Color(0.64f, 0.65f, 0.58f);
+            Ico(c, body, c.Colors.Main, Vector3.zero, new Vector3(0.32f, 0.66f, 0.23f));
+            Transform head = Pivot(body, "Head", new Vector3(0f, 0.54f, 0.08f));
+            c.Anim.Head = head;
+            Ico(c, head, bone, new Vector3(0f, 0.05f, 0f), new Vector3(0.28f, 0.36f, 0.26f));
+            Part(head, PrimitiveType.Cube, c.Colors.Accent, new Vector3(0f, -0.12f, 0.135f), new Vector3(0.13f, 0.21f, 0.045f), Vector3.zero);
+            Transform jaw = Pivot(head, "Jaw", new Vector3(0f, -0.13f, 0.06f));
+            c.Anim.Jaw = jaw;
+            Ico(c, jaw, bone, new Vector3(0f, -0.15f, 0.025f), new Vector3(0.21f, 0.23f, 0.16f));
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Part(head, PrimitiveType.Cube, c.Colors.Eyes, new Vector3(side * 0.08f, 0.06f, 0.13f), new Vector3(0.055f, 0.025f, 0.025f), Vector3.zero, false);
+                Cone(c, head, c.Colors.Accent, new Vector3(side * 0.12f, 0.14f, -0.03f), new Vector3(0.1f, 0.78f, 0.12f), new Vector3(180f, 0f, side * -12f));
+                AddRevenantLimb(c, body, side, true, bone, 0.43f, 0.54f);
+                for (int i = 0; i < 4; i++)
+                    Part(body, PrimitiveType.Cube, bone, new Vector3(side * 0.11f, 0.19f - i * 0.11f, 0.13f), new Vector3(0.19f, 0.04f, 0.05f), new Vector3(0f, side * 25f, side * -15f));
+            }
+            Transform shroud = Pivot(body, "BurialShroud", new Vector3(0f, -0.25f, 0f));
+            c.Anim.Tail = shroud;
+            for (int i = 0; i < 7; i++)
+            {
+                float a = i * Mathf.PI * 2f / 7f;
+                Cone(c, shroud, i % 2 == 0 ? c.Colors.Second : c.Colors.Accent, new Vector3(Mathf.Cos(a) * 0.14f, -0.02f, Mathf.Sin(a) * 0.12f), new Vector3(0.16f, 0.85f + (i % 3) * 0.1f, 0.1f), new Vector3(175f, i * 51f, Mathf.Cos(a) * 14f));
+            }
+            c.Anim.Mouth = Pivot(head, CreatureAnimator.MouthName, new Vector3(0f, -0.17f, 0.22f));
+        }
+
+        private static void BuildRimeStalker(Transform model, Ctx c)
+        {
+            Transform body = Pivot(model, "RimeStalker", new Vector3(0f, 1.15f, 0f));
+            c.Anim.BodyPivot = body;
+            Ico(c, body, c.Colors.Main, new Vector3(0f, 0f, -0.05f), new Vector3(0.5f, 0.74f, 0.38f));
+            Transform head = Pivot(body, "Head", new Vector3(0f, 0.39f, 0.33f));
+            c.Anim.Head = head;
+            Ico(c, head, c.Colors.Main, Vector3.zero, new Vector3(0.32f, 0.32f, 0.4f));
+            Transform jaw = Pivot(head, "Jaw", new Vector3(0f, -0.12f, 0.09f));
+            c.Anim.Jaw = jaw;
+            Ico(c, jaw, c.Colors.Accent, new Vector3(0f, -0.03f, 0.1f), new Vector3(0.25f, 0.12f, 0.3f));
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Part(head, PrimitiveType.Cube, c.Colors.Eyes, new Vector3(side * 0.12f, 0.04f, 0.17f), new Vector3(0.065f, 0.035f, 0.03f), new Vector3(0f, 0f, side * 25f), false);
+                Cone(c, head, c.Colors.Accent, new Vector3(side * 0.12f, 0.2f, -0.04f), new Vector3(0.09f, 0.44f, 0.14f), new Vector3(-35f, 0f, side * -20f));
+                AddRevenantLimb(c, body, side, false, c.Colors.Main, 0.48f, 0.56f);
+                AddRevenantLimb(c, body, side, true, c.Colors.Main, 0.48f, 0.64f);
+                Cone(c, jaw, c.Colors.Second, new Vector3(side * 0.085f, 0.04f, 0.21f), new Vector3(0.04f, 0.14f, 0.04f), Vector3.zero);
+            }
+            for (int i = 0; i < 6; i++)
+                Cone(c, body, c.Colors.Second, new Vector3(0.12f + (i % 2) * 0.18f, 0.32f - i * 0.09f, -0.2f), new Vector3(0.16f, 0.6f - i * 0.045f, 0.18f), new Vector3(-40f - i * 6f, 0f, -24f));
+            c.Anim.Mouth = Pivot(head, CreatureAnimator.MouthName, new Vector3(0f, -0.08f, 0.3f));
+        }
+
+        private static void AddRevenantLimb(Ctx c, Transform body, int side, bool arm, Color color, float upper, float lower)
+        {
+            Transform hip = Pivot(body, arm ? "Shoulder" : "Hip", new Vector3(side * (arm ? 0.3f : 0.16f), arm ? 0.25f : -0.35f, 0f));
+            hip.localRotation = Quaternion.Euler(arm ? -12f : -10f, 0f, arm ? side * 22f : side * 7f);
+            Ico(c, hip, color, Vector3.zero, Vector3.one * (arm ? 0.18f : 0.16f));
+            Ico(c, hip, color, new Vector3(0f, -upper * 0.5f, 0f), new Vector3(arm ? 0.13f : 0.17f, upper, 0.14f));
+            Transform knee = Pivot(hip, arm ? "Elbow" : "Knee", new Vector3(0f, -upper, 0f));
+            knee.localRotation = Quaternion.Euler(arm ? -20f : 25f, 0f, 0f);
+            Ico(c, knee, color, Vector3.zero, Vector3.one * 0.13f);
+            Ico(c, knee, color, new Vector3(0f, -lower * 0.5f, 0f), new Vector3(0.1f, lower, 0.12f));
+            for (int i = 0; i < 3; i++)
+            {
+                Vector3 tip = new Vector3((i - 1) * 0.06f, -lower, 0.06f);
+                Cone(c, knee, c.Colors.Second, tip, new Vector3(0.035f, arm ? 0.25f : 0.2f, 0.045f), new Vector3(arm ? 150f : 110f, 0f, (i - 1) * 15f));
+            }
+            c.Anim.Legs.Add(new CreatureAnimator.Leg { Hip = hip, Knee = knee, Side = side, Front = arm, Group = side < 0 ? 0 : 1,
+                Lift = arm ? side * 22f : side * 7f, Bend = arm ? -20f : 25f });
         }
 
         // ------------------------------------------------------------------ helpers

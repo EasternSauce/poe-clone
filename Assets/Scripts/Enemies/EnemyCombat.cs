@@ -128,6 +128,9 @@ namespace PoeClone.Enemies
                 boss = GetComponent<BossAbilities>();
             if (boss != null && boss.Busy)
                 return;
+            EnemySkills skills = GetComponent<EnemySkills>();
+            if (skills != null && skills.enabled && skills.Busy)
+                return;
             // The act boss's every blow is one of its own moves (ShepherdFight).
             if (kind.Boss == BossStyle.Shepherd)
                 return;

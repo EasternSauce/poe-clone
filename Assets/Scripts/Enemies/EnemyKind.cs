@@ -22,7 +22,10 @@ namespace PoeClone.Enemies
         Blink,    // vanishes and reappears beside the player
         WarCry,   // heals the enemies round it
         Summon,   // raises skeletons
-        Leap      // springs through the air and lands on the player (a glow marks where)
+        Leap,     // springs through the air and lands on the player (a glow marks where)
+        ThornGarden, // seeds lingering thorn patches in a line
+        Wail,        // a scream across a ring: stay inside or escape outside
+        FrostFissures // crossed frost fissures with safe diagonal gaps
     }
 
     public enum BossStyle
@@ -124,6 +127,9 @@ namespace PoeClone.Enemies
                     case CreatureBody.Slime: return 0.7f;
                     case CreatureBody.Bat: return 1.4f;
                     case CreatureBody.Beetle: return 0.6f;
+                    case CreatureBody.Briarbound: return 2.6f;
+                    case CreatureBody.GraveSiren: return 2.8f;
+                    case CreatureBody.RimeStalker: return 2.5f;
                     default: return 2.3f;
                 }
             }
@@ -540,6 +546,42 @@ namespace PoeClone.Enemies
                 DropChance = 1f, RareBonus = 1f, Drops = 5,
                 IsBoss = true, Boss = BossStyle.Shepherd
             },
+            // Append only: kind indices are also used by spectator snapshots.
+            new EnemyKind
+            {
+                Name = "Briarbound", SpawnWeight = 0f,
+                MaxHealth = 52f, Armour = 80f, PoisonResistance = 35f, Experience = 42,
+                Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Physical,
+                Damage = 6f, AttackCooldown = 2.4f, AttackRange = 10f, ProjectileSpeed = 12f,
+                SpeedRatio = 0.48f, Body = CreatureBody.Briarbound,
+                StaffOrb = new Color(0.42f, 0.56f, 0.22f),
+                Skin = new Color(0.20f, 0.12f, 0.10f), Cloth = new Color(0.40f, 0.30f, 0.18f),
+                Pants = new Color(0.42f, 0.65f, 0.23f), Eyes = new Color(0.85f, 1f, 0.32f),
+                Skill = EnemySkill.ThornGarden, SkillCooldown = 10f, DropChance = 0.45f
+            },
+            new EnemyKind
+            {
+                Name = "Grave Siren", SpawnWeight = 0f,
+                MaxHealth = 65f, Armour = 120f, ColdResistance = 25f, Experience = 48,
+                Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Cold,
+                Damage = 7f, AttackCooldown = 2.5f, AttackRange = 9f, ProjectileSpeed = 10f,
+                SpeedRatio = 0.45f, Body = CreatureBody.GraveSiren,
+                StaffOrb = new Color(0.45f, 0.75f, 0.68f),
+                Skin = new Color(0.26f, 0.30f, 0.30f), Cloth = new Color(0.38f, 0.40f, 0.38f),
+                Pants = new Color(0.12f, 0.16f, 0.18f), Eyes = new Color(0.45f, 1f, 0.85f),
+                Skill = EnemySkill.Wail, SkillCooldown = 9f, DropChance = 0.5f
+            },
+            new EnemyKind
+            {
+                Name = "Rime Stalker", SpawnWeight = 0f,
+                MaxHealth = 48f, ColdResistance = 55f, Experience = 48,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
+                Damage = 7f, AttackCooldown = 1.2f, AttackRange = 2.3f,
+                SpeedRatio = 0.95f, Body = CreatureBody.RimeStalker,
+                Skin = new Color(0.18f, 0.34f, 0.52f), Cloth = new Color(0.48f, 0.78f, 0.94f),
+                Pants = new Color(0.36f, 0.52f, 0.62f), Eyes = new Color(0.85f, 1f, 1f),
+                Skill = EnemySkill.FrostFissures, SkillCooldown = 8f, DropChance = 0.45f
+            },
         };
 
         public const int SlimelingIndex = 20;
@@ -585,7 +627,7 @@ namespace PoeClone.Enemies
 
         private static float Weight(int k, float[] weights)
         {
-            return weights != null && k < weights.Length ? weights[k] : All[k].SpawnWeight;
+            return weights != null ? (k < weights.Length ? weights[k] : 0f) : All[k].SpawnWeight;
         }
 
         /// <summary>

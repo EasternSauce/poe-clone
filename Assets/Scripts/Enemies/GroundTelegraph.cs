@@ -111,6 +111,46 @@ namespace PoeClone.Enemies
             burst?.Invoke();
         }
 
+        /// <summary>An annular warning with a genuinely empty, safe center.</summary>
+        public static IEnumerator RunRing(Vector3 center, float innerRadius, float outerRadius, float windUp, DamageType type, Action<Vector3> burst)
+        {
+            const int segments = 64;
+            var vertices = new Vector3[(segments + 1) * 2];
+            var triangles = new int[segments * 6];
+            for (int i = 0; i <= segments; i++)
+            {
+                float angle = i * Mathf.PI * 2f / segments;
+                Vector3 direction = new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle));
+                vertices[i * 2] = direction * innerRadius;
+                vertices[i * 2 + 1] = direction * outerRadius;
+                if (i == segments) continue;
+                int k = i * 6, v = i * 2;
+                triangles[k] = v; triangles[k + 1] = v + 1; triangles[k + 2] = v + 2;
+                triangles[k + 3] = v + 1; triangles[k + 4] = v + 3; triangles[k + 5] = v + 2;
+            }
+            var mesh = new Mesh { name = "SirenWailRing", vertices = vertices, triangles = triangles };
+            mesh.RecalculateNormals();
+            GameObject ring = RuntimePrimitives.Create(PrimitiveType.Cylinder, null, WarningColor(type));
+            ring.name = "WailTelegraph";
+            ring.GetComponent<MeshFilter>().sharedMesh = mesh;
+            ring.transform.position = new Vector3(center.x, GroundY(center) + 0.19f, center.z);
+            UnityEngine.Object.Destroy(ring, windUp + 0.35f);
+            UnityEngine.Object.Destroy(mesh, windUp + 0.35f);
+            Renderer renderer = ring.GetComponent<Renderer>();
+            var block = new MaterialPropertyBlock();
+            for (float t = 0f; t < windUp; t += Time.deltaTime)
+            {
+                Color color = Color.Lerp(WarningColor(type), FillColor(type), Mathf.Clamp01(t / windUp));
+                block.SetColor("_BaseColor", color); block.SetColor("_Color", color);
+                renderer.SetPropertyBlock(block);
+                yield return null;
+            }
+            SkillEffects.Shockwave(center, outerRadius, FillColor(type), 0.3f);
+            SkillEffects.Shockwave(center, innerRadius, FillColor(type), 0.3f);
+            burst?.Invoke(center);
+            UnityEngine.Object.Destroy(ring);
+        }
+
         private static float GroundY(Vector3 p)
         {
             float best = float.MaxValue;

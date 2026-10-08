@@ -116,6 +116,9 @@ namespace PoeClone.Enemies
                 case EnemySkill.WarCry: return distance < 14f && AnyHurtAllyNear();
                 case EnemySkill.Summon: return distance < 14f && minions.FindAll(m => m != null && !m.IsDead).Count < MaxMinions;
                 case EnemySkill.Leap: return distance > 3f && distance < LeapMaxDistance - 2f;
+                case EnemySkill.ThornGarden: return distance < 12f;
+                case EnemySkill.Wail: return distance > WailInnerRadius && distance < WailOuterRadius + 1f;
+                case EnemySkill.FrostFissures: return distance < 11f;
                 default: return false;
             }
         }
@@ -136,7 +139,7 @@ namespace PoeClone.Enemies
                 target = PlayerMotion.Intercept(player, EnemyCombat.BoltOrigin(transform), kind.ProjectileSpeed);
             if (kind.Skill == EnemySkill.Leap)
                 target = LeapLanding(transform.position, target, LeapGap(transform));
-            LastTarget = kind.Skill == EnemySkill.Slam ? transform.position : target;
+            LastTarget = kind.Skill == EnemySkill.Slam || kind.Skill == EnemySkill.Wail ? transform.position : target;
             float damage = kind.Damage * EnemyKinds.DamageScale(level, kind) * (controller != null ? controller.DamageMultiplier : 1f);
 
             switch (kind.Skill)
@@ -169,7 +172,123 @@ namespace PoeClone.Enemies
                 case EnemySkill.Leap:
                     StartCoroutine(Leap(target, damage * 1.4f));
                     break;
+                case EnemySkill.ThornGarden:
+                    busyUntil = Time.time + RootWindUp;
+                    GetComponentInChildren<CreatureAnimator>()?.Crouch(RootWindUp);
+                    StartCoroutine(ThornGarden(this, transform.position, target, kind,
+                        () => CanSpecialHit(), center => HitIfInside(center, RootRadius, damage * 0.35f)));
+                    break;
+                case EnemySkill.Wail:
+                    busyUntil = Time.time + WailWindUp;
+                    GetComponentInChildren<CreatureAnimator>()?.Crouch(WailWindUp);
+                    StartCoroutine(GroundTelegraph.RunRing(LastTarget, WailInnerRadius, WailOuterRadius, WailWindUp, kind.DamageType, center =>
+                    {
+                        if (!CanSpecialHit()) return;
+                        float range = Flat(player.transform.position - center).magnitude;
+                        if (range >= WailInnerRadius && range <= WailOuterRadius)
+                            player.TakeHit(damage * 1.3f, kind.DamageType, attack: false);
+                    }));
+                    break;
+                case EnemySkill.FrostFissures:
+                    busyUntil = Time.time + FissureWindUp;
+                    GetComponentInChildren<CreatureAnimator>()?.Crouch(FissureWindUp);
+                    Vector3 fissureFrom = transform.position;
+                    FrostFissures(this, fissureFrom, target, kind, () =>
+                    {
+                        if (!CanSpecialHit()) return;
+                        if (InsideFissures(fissureFrom, target, player.transform.position))
+                            player.TakeHit(damage * 1.2f, kind.DamageType, attack: false);
+                    });
+                    break;
             }
+        }
+
+        private const float RootRadius = 1.25f;
+        private const float RootWindUp = 1f;
+        private const float WailInnerRadius = 3f;
+        private const float WailOuterRadius = 7.5f;
+        private const float WailWindUp = 1.25f;
+        private const float FissureWindUp = 1.1f;
+        private const float FissureHalfLength = 5f;
+        private const float FissureWidth = 1.5f;
+
+        private bool CanSpecialHit() => this != null && health != null && !health.IsDead &&
+            player != null && !player.IsDead && !Sanctuary.Contains(player.transform.position, 1f) &&
+            (stagger == null || !stagger.IsStaggered);
+
+        // Three fixed patches grow after a warning, then persist for four seconds. Standing at
+        // a seam never takes multiple patch hits on the same tick. Replicas run visuals only.
+        private static IEnumerator ThornGarden(MonoBehaviour host, Vector3 from, Vector3 target, EnemyKind kind,
+            System.Func<bool> active, System.Action<Vector3> hit)
+        {
+            Vector3 direction = Flat(target - from).normalized;
+            if (direction.sqrMagnitude < 0.001f) direction = Vector3.forward;
+            var centers = new Vector3[3];
+            for (int i = 0; i < centers.Length; i++)
+            {
+                centers[i] = target + direction * ((i - 1) * 2.7f);
+                host.StartCoroutine(GroundTelegraph.Run(centers[i], RootRadius, RootWindUp, DamageType.Physical, null));
+            }
+            yield return new WaitForSeconds(RootWindUp);
+            if (active != null && !active()) yield break;
+            var roots = new GameObject("BriarboundThornPatches");
+            Object.Destroy(roots, 4.1f); // Also cleans up if the host is destroyed mid-coroutine.
+            foreach (Vector3 center in centers)
+            {
+                for (int i = 0; i < 7; i++)
+                {
+                    float a = i * Mathf.PI * 2f / 7f;
+                    GameObject thorn = RuntimePrimitives.Create(PrimitiveType.Capsule, roots.transform, kind.Skin);
+                    thorn.transform.position = new Vector3(center.x + Mathf.Sin(a) * 0.8f, 0.35f, center.z + Mathf.Cos(a) * 0.8f);
+                    thorn.transform.localScale = new Vector3(0.12f, 0.45f, 0.12f);
+                    thorn.transform.rotation = Quaternion.Euler(Mathf.Cos(a) * 28f, 0f, Mathf.Sin(a) * 28f);
+                }
+            }
+            for (int tick = 0; tick < 8; tick++)
+            {
+                if (active != null && !active()) break;
+                foreach (Vector3 center in centers)
+                {
+                    SkillEffects.Shockwave(center, RootRadius, kind.Pants, 0.5f);
+                    hit?.Invoke(center);
+                }
+                yield return new WaitForSeconds(0.5f);
+            }
+            Object.Destroy(roots);
+        }
+
+        private static Vector3 FissureDirection(Vector3 from, Vector3 target)
+        {
+            Vector3 direction = Flat(target - from);
+            return direction.sqrMagnitude > 0.001f ? direction.normalized : Vector3.forward;
+        }
+
+        private static bool InsideFissures(Vector3 from, Vector3 target, Vector3 position)
+        {
+            Vector3 axis = FissureDirection(from, target);
+            Vector3 side = Vector3.Cross(Vector3.up, axis);
+            Vector3 offset = Flat(position - target);
+            float along = Mathf.Abs(Vector3.Dot(offset, axis)), across = Mathf.Abs(Vector3.Dot(offset, side));
+            return (along <= FissureHalfLength && across <= FissureWidth * 0.5f) ||
+                   (across <= FissureHalfLength && along <= FissureWidth * 0.5f);
+        }
+
+        private static void FrostFissures(MonoBehaviour host, Vector3 from, Vector3 target, EnemyKind kind, System.Action hit)
+        {
+            Vector3 axis = FissureDirection(from, target);
+            Vector3 side = Vector3.Cross(Vector3.up, axis);
+            host.StartCoroutine(GroundTelegraph.RunLine(target - axis * FissureHalfLength, axis,
+                FissureHalfLength * 2f, FissureWidth, FissureWindUp, kind.DamageType, () =>
+                {
+                    // One resolution for both beams prevents double damage at their intersection.
+                    hit?.Invoke();
+                    SkillEffects.Arc(target - axis * FissureHalfLength + Vector3.up * 0.25f,
+                        target + axis * FissureHalfLength + Vector3.up * 0.25f, kind.Eyes, 0.4f);
+                    SkillEffects.Arc(target - side * FissureHalfLength + Vector3.up * 0.25f,
+                        target + side * FissureHalfLength + Vector3.up * 0.25f, kind.Eyes, 0.4f);
+                }));
+            host.StartCoroutine(GroundTelegraph.RunLine(target - side * FissureHalfLength, side,
+                FissureHalfLength * 2f, FissureWidth, FissureWindUp, kind.DamageType, null));
         }
 
         // Crouches, springs into the air in a fast arc and comes down near the player's launch position
@@ -424,6 +543,15 @@ namespace PoeClone.Enemies
         {
             switch (kind.Skill)
             {
+                case EnemySkill.ThornGarden:
+                    host.StartCoroutine(ThornGarden(host, body.position, target, kind, null, null));
+                    break;
+                case EnemySkill.Wail:
+                    host.StartCoroutine(GroundTelegraph.RunRing(target, WailInnerRadius, WailOuterRadius, WailWindUp, kind.DamageType, null));
+                    break;
+                case EnemySkill.FrostFissures:
+                    FrostFissures(host, body.position, target, kind, null);
+                    break;
                 case EnemySkill.Slam:
                     host.StartCoroutine(GroundTelegraph.Run(body.position, SlamRadius(kind, body), SlamWindUp, kind.DamageType, null));
                     break;

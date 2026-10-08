@@ -55,27 +55,37 @@ namespace PoeClone.World
             new Color(0.31f, 0.35f, 0.37f)
         };
 
-        // Per area, one spawn weight per EnemyKinds entry, so each area has its own cast:
-        // Zombie, Raider, Brute, Archer, Fire / Frost / Storm Caster, Skeleton, Wraith, Ember Knight,
-        // (three bosses, always 0), Forest Shaman, Necromancer, Skeleton Archer, Frost Giant;
-        // creatures: Giant Spider, Dire Wolf, Bog Slime, Slimeling (0: only split off), Grave Bat,
-        // Corpse Ooze, Oozeling (0), Crypt Spider, Magma Beetle, Hellhound, Frost Wolf, Ice Crawler.
-        // Wolves, hounds and bats come in packs, so their weights count for more than they look.
+        // Explicit native rosters for opening spawns and respawns. Named entries keep additions
+        // independent of kind-array positions; omitted kinds never leak into an area's mix.
+        // Packs count for more than their weight suggests. Haven and the act arena have no mix.
         private static readonly float[][] KindWeights =
         {
-            // Greenwood: the living - zombies, raiders, archers, a few brutes and shamans; spiders,
-            // wolf packs and bog slimes in the woods.
-            new float[] { 22, 18, 8, 18, 0, 0, 3, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 14, 9, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            null,
-            // Graveyard: the dead - skeletons (some with bows), wraiths, necromancers; bat swarms,
-            // oozes and crypt spiders.
-            new float[] { 12, 0, 4, 0, 0, 6, 0, 22, 14, 0, 0, 0, 0, 0, 10, 14, 0, 0, 0, 0, 0, 9, 10, 0, 14, 0, 0, 0, 0 },
-            // Ruins: fire - ember knights and fire casters, with brutes and raiders; magma beetles
-            // and hellhound packs.
-            new float[] { 0, 10, 12, 4, 20, 0, 8, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 10, 0, 0 },
-            // Frozen Hollow: cold - frost casters, wraiths, frost giants; frost wolf packs, ice crawlers.
-            new float[] { 0, 0, 4, 0, 0, 20, 10, 8, 16, 0, 0, 0, 0, 0, 0, 8, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 16 }
+            Roster(("Raider", 18f), ("Archer", 16f), ("Forest Shaman", 10f),
+                ("Giant Spider", 14f), ("Dire Wolf", 9f), ("Bog Slime", 12f), ("Briarbound", 14f)),
+            Roster(),
+            Roster(("Zombie", 16f), ("Skeleton", 22f), ("Skeleton Archer", 14f),
+                ("Wraith", 14f), ("Necromancer", 10f), ("Grave Siren", 16f)),
+            Roster(("Fire Caster", 24f), ("Ember Knight", 24f), ("Magma Beetle", 20f), ("Hellhound", 12f)),
+            Roster(("Frost Caster", 20f), ("Frost Giant", 12f), ("Frost Wolf", 10f),
+                ("Ice Crawler", 16f), ("Rime Stalker", 18f)),
+            Roster(),
+            // The Lost Hollows have cave dwellers, rather than the graveyard's entire undead mix.
+            Roster(("Brute", 16f), ("Storm Caster", 12f), ("Grave Bat", 12f),
+                ("Corpse Ooze", 18f), ("Crypt Spider", 22f))
         };
+
+        private static float[] Roster(params (string name, float weight)[] entries)
+        {
+            var weights = new float[EnemyKinds.All.Length];
+            foreach (var entry in entries)
+            {
+                int index = EnemyKinds.IndexOf(entry.name);
+                if (index < 0)
+                    throw new System.ArgumentException($"Unknown area enemy: {entry.name}");
+                weights[index] = entry.weight;
+            }
+            return weights;
+        }
 
         /// <summary>Named places other features hang things on (NPC stands, the boss arena).</summary>
         public readonly Dictionary<string, Vector3> Spots = new Dictionary<string, Vector3>();
@@ -587,7 +597,7 @@ namespace PoeClone.World
                 go.transform.SetParent(root, false);
                 go.transform.position = Centers[area];
                 var spawner = go.AddComponent<EnemySpawner>();
-                spawner.Configure(prefab, Centers[area], AreaShape.MaxRadius, 48, MonsterLevels[area], KindWeights[area == Cave ? Graveyard : area]);
+                spawner.Configure(prefab, Centers[area], AreaShape.MaxRadius, 48, MonsterLevels[area], KindWeights[area]);
                 spawner.SetSafeSpots(SafeSpots(area));
                 AreaShape shape = Shape(area);
                 spawner.SetBounds(p => shape.Contains(p, 3f));
