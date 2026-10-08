@@ -1,3 +1,6 @@
+version: 2026-10-08-crude-bow-painted-icon
+- Crude Bow now uses painted bow artwork from the inspiration collection, with muted wood colours, matching the other equipment icons. Icon rebuilds retain the new artwork.
+
 version: 2026-10-08-hood-icon-cutout-fix
 - Repaired Hunter Hood and its higher-tier hood icons with intact cloth, clean silhouettes and readable folds. Icon rebuilds now preserve the repaired artwork.
 

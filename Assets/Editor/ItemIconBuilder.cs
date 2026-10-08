@@ -260,6 +260,11 @@ namespace PoeClone.EditorTools
                 ItemData item = ItemGenerator.Display(id, null, ItemRarity.Normal);
                 // Preserve the original painted starter assets.
                 if (id == item.ArtId) continue;
+                if (id == "crude_bow")
+                {
+                    BuildCrudeBowIcon();
+                    continue;
+                }
                 int tier = item.Requirements.Level / 7;
                 Bitmap original = sources[item.ArtId];
                 Bitmap b = new Bitmap(original.W, original.H) { P = (Color[])original.P.Clone() };
@@ -290,6 +295,15 @@ namespace PoeClone.EditorTools
             }
             AssetDatabase.Refresh();
             Debug.Log("ItemIconBuilder: separate icons built for every equipment base.");
+        }
+
+        [MenuItem("PoeClone/Build Crude Bow Icon")]
+        public static void BuildCrudeBowIcon()
+        {
+            // Match the painted equipment set, retaining the source's shading and detail.
+            Make("crude_bow", "Weapons/512x512/bow_03.png", 2, 3,
+                b => GradientMap(b, new Color(0.10f, 0.065f, 0.035f),
+                    new Color(0.48f, 0.32f, 0.16f), new Color(0.82f, 0.67f, 0.43f), false), 45f);
         }
 
         private static string InkSource(string line, int tier)
