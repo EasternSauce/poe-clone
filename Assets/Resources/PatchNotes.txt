@@ -1,3 +1,6 @@
+version: 2026-10-08-movement-speed-tiers
+- Boot movement speed modifiers now roll fixed tiers of 15%, 20%, 25%, 30% and 35%, unlocked at item levels 1, 9, 17, 25 and 34. Other equipment can roll roughly one-third of these bonuses: 5%, 7%, 8%, 10% and 12% at the same item levels. These highest tiers remain available at higher item levels.
+
 version: 2026-10-08-critical-strike-chance-balance
 - Reduced Critical Strike Chance bonuses on random item modifiers, unique items and all passive tree nodes by about 30%.
 

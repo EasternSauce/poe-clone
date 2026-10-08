@@ -1414,45 +1414,53 @@ MonoBehaviour:
     Weapons:
     Tiers:
     - RequiredItemLevel: 1
-      Min: 5
+      Min: 15
       Max: 15
       Weight: 1
     - RequiredItemLevel: 9
-      Min: 6
-      Max: 18
+      Min: 20
+      Max: 20
       Weight: 0.7
     - RequiredItemLevel: 17
-      Min: 7
-      Max: 21
+      Min: 25
+      Max: 25
       Weight: 0.48999998
     - RequiredItemLevel: 25
-      Min: 8
-      Max: 24
+      Min: 30
+      Max: 30
       Weight: 0.343
     - RequiredItemLevel: 34
-      Min: 9
-      Max: 27
+      Min: 35
+      Max: 35
       Weight: 0.24009998
-    - RequiredItemLevel: 37
+  - Label: MovementSpeed / 2
+    Enabled: 1
+    Stat: 13
+    Weight: 1
+    On: 0000000001000000020000000400000005000000060000000700000008000000090000000c000000i
+    AnyWeapon: 1
+    Weapons:
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 5
+      Max: 5
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 7
+      Max: 7
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 8
+      Max: 8
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
       Min: 10
-      Max: 30
-      Weight: 0.16806999
-    - RequiredItemLevel: 50
-      Min: 11
-      Max: 33
-      Weight: 0.11764899
-    - RequiredItemLevel: 65
+      Max: 10
+      Weight: 0.343
+    - RequiredItemLevel: 34
       Min: 12
-      Max: 36
-      Weight: 0.08235429
-    - RequiredItemLevel: 80
-      Min: 13
-      Max: 39
-      Weight: 0.057648003
-    - RequiredItemLevel: 100
-      Min: 14
-      Max: 42
-      Weight: 0.0403536
+      Max: 12
+      Weight: 0.24009998
   - Label: AreaOfEffect / 1
     Enabled: 1
     Stat: 17
