@@ -18,6 +18,7 @@ namespace PoeClone.EditorTools
         private const string SourceRoot = "Assets/assets_for_inspiration/38_free_fantasy_icons";
         private const string OutDir = "Assets/Resources/ItemIcons";
         private const int PxPerCell = 96;
+        private const string HoodSource = "Assets/Editor/ItemIconSources/hunter_hood.png";
 
         private static readonly Color OutlineColor = new Color(0.06f, 0.045f, 0.035f, 1f);
 
@@ -263,6 +264,11 @@ namespace PoeClone.EditorTools
                 Bitmap original = sources[item.ArtId];
                 Bitmap b = new Bitmap(original.W, original.H) { P = (Color[])original.P.Clone() };
                 string line = ItemGenerator.LineOf(id);
+                if (line == "helm_dex")
+                {
+                    BuildHoodIcon(item);
+                    continue;
+                }
                 string inkSource = InkSource(line, tier);
                 if (inkSource != null) b = ColourInk(Load("Assets/assets_for_inspiration/Icons Png/" + inkSource), item.ArtTint, line != "helm_dex");
                 else
@@ -288,7 +294,6 @@ namespace PoeClone.EditorTools
 
         private static string InkSource(string line, int tier)
         {
-            if (line == "helm_dex") return "600x600_0021_Hood.png";
             if (line == "shield_int") return "600x600_0007_Conduit.png";
             if (line == "shield_str" && tier >= 2) return "600x600_0014_TowerShield.png";
             if (line == "shield_dex" && tier > 0) return "600x600_0016_SpikedShield.png";
@@ -297,6 +302,37 @@ namespace PoeClone.EditorTools
             if (line == "greatsword" && tier > 0) return tier == 1 ? "600x1200_0011_Claymore.png" : "600x1200_0002_Zweihander.png";
             if (line == "maul" && tier > 0) return tier == 1 ? "600x1200_0009_Warhammer.png" : "600x1200_0006_Maul.png";
             return null;
+        }
+
+        // The ink hood has open contours: background removal eats the neck cloth.
+        // Use repaired, transparent painted art instead, retaining it across rebuilds.
+        [MenuItem("PoeClone/Build Hood Icons")]
+        public static void BuildHoodIcons()
+        {
+            foreach (string id in ItemGenerator.BaseIds)
+                if (ItemGenerator.LineOf(id) == "helm_dex")
+                    BuildHoodIcon(ItemGenerator.Display(id, null, ItemRarity.Normal));
+            AssetDatabase.Refresh();
+        }
+
+        private static void BuildHoodIcon(ItemData item)
+        {
+            Bitmap b = Load(HoodSource);
+            if (item.Id != "hunter_hood")
+            {
+                // Source art uses the Hunter Hood's green palette. Keep neutral shadows
+                // and the face recess dark while tinting cloth for the higher bases.
+                for (int i = 0; i < b.P.Length; i++)
+                {
+                    Color c = b.P[i];
+                    if (c.a <= 0f || c.g <= c.r * 1.1f || c.g <= c.b * 1.1f) continue;
+                    b.P[i] = new Color(c.r * item.ArtTint.r / 0.55f,
+                        c.g * item.ArtTint.g / 0.85f, c.b * item.ArtTint.b / 0.55f, c.a);
+                }
+            }
+            b = FitTo(Trim(b), item.Width * PxPerCell, item.Height * PxPerCell, 8);
+            AddBaseTrim(b, item.Requirements.Level / 7, "helm_dex");
+            Save(item.Id, AddOutline(b, 2, OutlineColor));
         }
 
         // These inspiration icons are ink drawings. Remove only the white region connected to

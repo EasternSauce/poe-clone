@@ -1,3 +1,6 @@
+version: 2026-10-08-hood-icon-cutout-fix
+- Repaired Hunter Hood and its higher-tier hood icons with intact cloth, clean silhouettes and readable folds. Icon rebuilds now preserve the repaired artwork.
+
 version: 2026-10-08-critical-strike-modifier-wording
 - Critical strike chance modifiers now say Critical Strike Chance instead of Attack Critical Strike Chance.
 
