@@ -1,3 +1,7 @@
+version: 2026-10-08-tooltip-divider-and-modifier-colors
+- Replaced the implicit/explicit tooltip separator with a bright, solid line spanning the tooltip in inventory, held-item, ground loot and Loot Simulator previews.
+- Skill-granting item modifiers now use the same blue color as other modifiers.
+
 version: 2026-10-08-boot-speed-and-startup-bindings
 - Doubled the random movement speed modifier weight on boots to match attribute modifiers, retaining base stat preferences and existing speed tiers.
 - Fixed saved skill bindings, including Dash, being lost when startup used the previous character level for equipment requirements or adjusted the equipped skill's grant level while loading.

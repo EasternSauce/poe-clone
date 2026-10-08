@@ -1730,6 +1730,9 @@ private Vector2 CellSize(int w, int h)
         }
 
         // Name, type, then the item's real stats (the ones that change the character when worn).
+        // Reserve a text row; FitTooltip draws the divider as geometry rather than font glyphs.
+        private const string TooltipDividerMarker = "<color=#00000000>-</color>";
+
         public static string BuildTooltipText(ItemData item, out int lineCount)
         {
             // Weapons name their kind ("Bow", "Axe"); everything else its slot type ("Body Armour").
@@ -1807,7 +1810,7 @@ private Vector2 CellSize(int w, int h)
                 {
                     if (hasImplicits)
                     {
-                        sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">────────────────────────</color>");
+                        sb.Append("\n").Append(TooltipDividerMarker);
                         lineCount++;
                     }
                     AppendTooltipModifiers(sb, item, false, ref lineCount);
@@ -1845,7 +1848,7 @@ private Vector2 CellSize(int w, int h)
 
         private static void AppendTooltipModifiers(StringBuilder sb, ItemData item, bool implicits, ref int lineCount)
         {
-            // Keep granted skills first and gold within each modifier section.
+            // Keep granted skills first within each modifier section.
             for (int pass = 0; pass < 2; pass++)
             {
                 bool skills = pass == 0;
@@ -1855,7 +1858,7 @@ private Vector2 CellSize(int w, int h)
                         continue;
                     string tier = m.Tier > 0 ? "T" + m.Tier : m.Tier == -1 ? null :
                         item.Rarity == ItemRarity.Unique ? "Unique" : "Tier unknown";
-                    sb.Append("\n<color=#").Append(UiKit.Hex(skills ? UiKit.Gold : UiKit.MagicBlue)).Append(">")
+                    sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.MagicBlue)).Append(">")
                         .Append(StatFormatter.ItemLine(m));
                     if (tier != null)
                         sb.Append(" [").Append(tier).Append("]");
@@ -2032,7 +2035,32 @@ private Vector2 CellSize(int w, int h)
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             TextGenerationSettings settings = text.GetGenerationSettings(new Vector2(width - 20f, 0f));
             float laidOut = text.cachedTextGeneratorForLayout.GetPreferredHeight(text.text, settings) / Mathf.Max(0.01f, text.pixelsPerUnit);
+            UpdateTooltipDivider(text, settings, width - 20f);
             return new Vector2(width, Mathf.Max(estimatedHeight * 0.6f, laidOut + 26f));
+        }
+
+        private static void UpdateTooltipDivider(Text text, TextGenerationSettings settings, float width)
+        {
+            int marker = text.text.IndexOf(TooltipDividerMarker, System.StringComparison.Ordinal);
+            Transform existing = text.transform.Find("ModifierDivider");
+            if (marker < 0)
+            {
+                if (existing != null) existing.gameObject.SetActive(false);
+                return;
+            }
+
+            Image divider = existing != null ? existing.GetComponent<Image>() :
+                UiKit.NewImage("ModifierDivider", text.transform, UiKit.TextColor);
+            divider.gameObject.SetActive(true);
+            divider.color = UiKit.TextColor;
+            // Measure the prefix with the same wrapping as the complete tooltip, so long
+            // modifier lines and the larger touch font move the divider with their section.
+            string prefix = text.text.Substring(0, marker + TooltipDividerMarker.Length);
+            float height = text.cachedTextGeneratorForLayout.GetPreferredHeight(prefix, settings) /
+                Mathf.Max(0.01f, text.pixelsPerUnit);
+            float rowHeight = text.fontSize * text.lineSpacing;
+            UiKit.TopLeft(divider.rectTransform, new Vector2(0f, -height + rowHeight * 0.5f),
+                new Vector2(width, 2f));
         }
 
         private void ShowTooltipText(string text, int lines, Vector2 mousePos)
