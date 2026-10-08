@@ -1,3 +1,7 @@
+version: 2026-10-08-sanctuary-door-and-haven-well-angles
+- Angled the Shepherd's Sanctuary door and Haven's well for a more natural placement. The Sanctuary steps, inscription and entrance follow the door's angle.
+- Joined the carved antler branches above the Sanctuary door and anchored them into the lintel so they no longer appear to float.
+
 version: 2026-10-08-solid-terrain-rims
 - Fixed broken rock and ice rim fragments, triangular gaps and uneven joins beside water by keeping border tops aligned with their wall faces and shoreline heights.
 

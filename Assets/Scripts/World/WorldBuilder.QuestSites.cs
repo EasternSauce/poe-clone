@@ -570,11 +570,15 @@ namespace PoeClone.World
             // Antlers carved over the lintel: a great branching rack, rimed with frost.
             for (int s = -1; s <= 1; s += 2)
             {
-                LocalBox(site, new Vector3(s * 1.6f, 11.2f, 0f), new Vector3(0.35f, 3f, 0.35f), kit.Mat("Bone"), solid: false, euler: new Vector3(0f, 0f, -s * 40f));
-                LocalBox(site, new Vector3(s * 3.2f, 12.6f, 0f), new Vector3(0.3f, 2.4f, 0.3f), kit.Mat("Bone"), solid: false, euler: new Vector3(0f, 0f, -s * 15f));
-                LocalBox(site, new Vector3(s * 2.0f, 12.9f, 0f), new Vector3(0.25f, 1.8f, 0.25f), kit.Mat("Bone"), solid: false, euler: new Vector3(0f, 0f, s * 20f));
-                LocalBox(site, new Vector3(s * 4.3f, 12.4f, 0f), new Vector3(0.22f, 1.4f, 0.22f), kit.Mat("Bone"), solid: false, euler: new Vector3(0f, 0f, -s * 60f));
-                LocalBox(site, new Vector3(s * 3.6f, 14f, 0f), new Vector3(0.2f, 1.2f, 0.2f), kit.Mat("Bone"), solid: false, euler: new Vector3(0f, 0f, s * 5f));
+                Vector3 foot = new Vector3(s * 1.5f, 9.95f, 0f);
+                Vector3 fork = new Vector3(s * 2.5f, 11.8f, 0f);
+                Vector3 crown = new Vector3(s * 3.3f, 13.5f, 0f);
+                AntlerBranch(site, foot, fork, 0.38f);
+                AntlerBranch(site, fork, crown, 0.3f);
+                AntlerBranch(site, crown, new Vector3(s * 3.5f, 14.4f, 0f), 0.2f);
+                AntlerBranch(site, Vector3.Lerp(foot, fork, 0.6f), new Vector3(s * 4.5f, 12.1f, 0f), 0.25f);
+                AntlerBranch(site, fork, new Vector3(s * 1.6f, 13.2f, 0f), 0.23f);
+                AntlerBranch(site, Vector3.Lerp(fork, crown, 0.75f), new Vector3(s * 4.4f, 13.9f, 0f), 0.2f);
             }
             // Runes down the seam, glowing a deep, warm red behind the frost.
             for (int k = 0; k < 6; k++)
@@ -595,6 +599,19 @@ namespace PoeClone.World
                 "A door taller than a house, cut from one block of black stone. Antlers branch across the lintel, carved, rimed with frost. Yet the stone is warm under your hand, and from somewhere behind it comes a slow, enormous breath.\n\nWords are cut down the seam, in a script older than Haven:\n\n<i>HERE SLEEPS THE SHEPHERD, FATHER OF THE DEAD.\nTHREE WARDENS HOLD HIS DOOR: THE PRIEST, THE KING, THE QUEEN.\nWHEN THE LAST WARDEN FALLS, HE WAKES.</i>",
                 "Copy the inscription", "Behind the door, something shifts in its sleep.", 3.2f);
             prop.SetLooks(null, null, null);
+            // Rotate the whole finished site, including its inscription, light and ice dressing.
+            site.rotation = SanctuaryDoorRotation;
+        }
+
+        private void AntlerBranch(Transform parent, Vector3 start, Vector3 end, float thickness)
+        {
+            Vector3 direction = end - start;
+            // A slight overlap closes the joints and embeds each root into the lintel.
+            GameObject branch = LocalBox(parent, (start + end) * 0.5f,
+                new Vector3(thickness, direction.magnitude + thickness * 0.5f, thickness),
+                kit.Mat("Bone"), solid: false);
+            branch.name = "CarvedAntler";
+            branch.transform.localRotation = Quaternion.FromToRotation(Vector3.up, direction);
         }
     }
 }

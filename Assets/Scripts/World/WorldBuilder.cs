@@ -269,11 +269,13 @@ namespace PoeClone.World
 
             // Plaza and the well at its heart.
             Cyl(t, c + new Vector3(0f, 0.02f, 0f), 11f, 0.04f, kit.Mat("Stone"), solid: false);
-            Cyl(t, c + new Vector3(0f, 0.45f, 0f), 1.3f, 0.9f, kit.Mat("Stone"));
-            Cyl(t, c + new Vector3(0f, 0.92f, 0f), 1.05f, 0.04f, kit.Mat("Water"), solid: false);
-            Box(t, c + new Vector3(-1.2f, 1.4f, 0f), new Vector3(0.18f, 2.8f, 0.18f), kit.Mat("Wood"));
-            Box(t, c + new Vector3(1.2f, 1.4f, 0f), new Vector3(0.18f, 2.8f, 0.18f), kit.Mat("Wood"));
-            Box(t, c + new Vector3(0f, 2.9f, 0f), new Vector3(3.2f, 0.25f, 2.2f), kit.Mat("Roof"), euler: new Vector3(0f, 0f, 0f));
+            Transform well = Holder(t, "HavenWell", c, Quaternion.identity);
+            LocalCyl(well, new Vector3(0f, 0.45f, 0f), 1.3f, 0.9f, kit.Mat("Stone"));
+            LocalCyl(well, new Vector3(0f, 0.92f, 0f), 1.05f, 0.04f, kit.Mat("Water"), solid: false);
+            LocalBox(well, new Vector3(-1.2f, 1.4f, 0f), new Vector3(0.18f, 2.8f, 0.18f), kit.Mat("Wood"));
+            LocalBox(well, new Vector3(1.2f, 1.4f, 0f), new Vector3(0.18f, 2.8f, 0.18f), kit.Mat("Wood"));
+            LocalBox(well, new Vector3(0f, 2.9f, 0f), new Vector3(3.2f, 0.25f, 2.2f), kit.Mat("Roof"));
+            well.rotation = Quaternion.Euler(0f, -25f, 0f);
             Claim(c, 12f);
 
             // Reserve lanes before scattering vegetation or yard clutter.

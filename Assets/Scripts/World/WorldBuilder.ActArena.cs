@@ -9,6 +9,7 @@ namespace PoeClone.World
         public const int ActArena = 5;
         public static readonly Vector3 ActArenaCenter = new Vector3(1680f, 0f, 0f);
         public static Vector3 SanctuaryDoorSpot => Center(Frozen) + new Vector3(0f, 0f, 128f);
+        public static Quaternion SanctuaryDoorRotation => Quaternion.Euler(0f, -25f, 0f);
         private AreaDefinition BuildActArena()
         {
             Transform arena = Group("The Shed Sanctuary");
@@ -34,8 +35,8 @@ namespace PoeClone.World
             }
             LocalBox(arena, c + new Vector3(0f, 1f, 34f), new Vector3(12f, 2f, 4f), kit.Mat("TombstoneDark"));
             Transform entry = Marker("SanctuaryEntry", c + new Vector3(0f, 1.1f, -31f), 0f);
-            Vector3 door = SanctuaryDoorSpot + new Vector3(0f, 1.1f, -3f);
-            Transform outside = Marker("SanctuaryReturn", door + Vector3.back * 6f, 180f);
+            Vector3 door = SanctuaryDoorSpot + SanctuaryDoorRotation * new Vector3(0f, 1.1f, -3f);
+            Transform outside = Marker("SanctuaryReturn", door + SanctuaryDoorRotation * Vector3.back * 6f, 155f);
             MakeActGate(arena, "Sanctuary entrance", door, Frozen, ActArena, entry, true);
             MakeActGate(arena, "Sanctuary exit", c + new Vector3(0f, 1.1f, -37f), ActArena, Frozen, outside, false);
             EnemySpawner spawner = FindAnyObjectByType<EnemySpawner>();
@@ -46,6 +47,7 @@ namespace PoeClone.World
         private void MakeActGate(Transform parent, string name, Vector3 at, int from, int to, Transform arrival, bool sealedDoor)
         {
             var go = new GameObject(name); go.transform.SetParent(parent, false); go.transform.position = at;
+            if (sealedDoor) go.transform.rotation = SanctuaryDoorRotation;
             var box = go.AddComponent<BoxCollider>(); box.isTrigger = true; box.size = new Vector3(6f, 4f, 2f);
             var gate = go.AddComponent<AreaGate>(); gate.fromAreaIndex = from; gate.targetAreaIndex = to; gate.arrival = arrival;
             if (sealedDoor)
