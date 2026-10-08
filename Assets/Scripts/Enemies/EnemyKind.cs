@@ -559,68 +559,68 @@ namespace PoeClone.Enemies
                 Name = "Briarbound", SpawnWeight = 0f,
                 MaxHealth = 52f, Armour = 80f, PoisonResistance = 35f, Experience = 42,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Physical,
-                Damage = 6f, AttackCooldown = 2.4f, AttackRange = 10f, ProjectileSpeed = 12f,
+                Damage = 12f, AttackCooldown = 2.4f, AttackRange = 10f, ProjectileSpeed = 12f,
                 SpeedRatio = 0.48f, Body = CreatureBody.Briarbound,
                 StaffOrb = new Color(0.42f, 0.56f, 0.22f),
                 Skin = new Color(0.20f, 0.12f, 0.10f), Cloth = new Color(0.40f, 0.30f, 0.18f),
                 Pants = new Color(0.42f, 0.65f, 0.23f), Eyes = new Color(0.85f, 1f, 0.32f),
-                Skill = EnemySkill.ThornGarden, SkillCooldown = 10f, DropChance = 0.45f
+                Skill = EnemySkill.ThornGarden, SkillCooldown = 5f, DropChance = 0.45f
             },
             new EnemyKind
             {
                 Name = "Grave Siren", SpawnWeight = 0f, Undead = true,
                 MaxHealth = 65f, Armour = 120f, ColdResistance = 25f, Experience = 48,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Cold,
-                Damage = 7f, AttackCooldown = 2.5f, AttackRange = 9f, ProjectileSpeed = 10f,
+                Damage = 14f, AttackCooldown = 2.5f, AttackRange = 9f, ProjectileSpeed = 10f,
                 SpeedRatio = 0.45f, Body = CreatureBody.GraveSiren,
                 StaffOrb = new Color(0.45f, 0.75f, 0.68f),
                 Skin = new Color(0.26f, 0.30f, 0.30f), Cloth = new Color(0.38f, 0.40f, 0.38f),
                 Pants = new Color(0.12f, 0.16f, 0.18f), Eyes = new Color(0.45f, 1f, 0.85f),
-                Skill = EnemySkill.Wail, SkillCooldown = 9f, DropChance = 0.5f
+                Skill = EnemySkill.Wail, SkillCooldown = 4.5f, DropChance = 0.5f
             },
             new EnemyKind
             {
                 Name = "Rime Stalker", SpawnWeight = 0f,
                 MaxHealth = 48f, ColdResistance = 55f, Experience = 48,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
-                Damage = 7f, AttackCooldown = 1.2f, AttackRange = 2.3f,
+                Damage = 14f, AttackCooldown = 1.2f, AttackRange = 2.3f,
                 SpeedRatio = 0.95f, Body = CreatureBody.RimeStalker,
                 Skin = new Color(0.18f, 0.34f, 0.52f), Cloth = new Color(0.48f, 0.78f, 0.94f),
                 Pants = new Color(0.36f, 0.52f, 0.62f), Eyes = new Color(0.85f, 1f, 1f),
-                Skill = EnemySkill.FrostFissures, SkillCooldown = 8f, DropChance = 0.45f
+                Skill = EnemySkill.FrostFissures, SkillCooldown = 4f, DropChance = 0.45f
             },
             new EnemyKind
             {
                 Name = "Cinder Penitent", SpawnWeight = 0f,
                 MaxHealth = 62f, FireResistance = 50f, Experience = 48,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
-                Damage = 6f, AttackCooldown = 1.8f, AttackRange = 2.2f,
+                Damage = 12f, AttackCooldown = 1.8f, AttackRange = 2.2f,
                 SpeedRatio = 0.48f, Body = CreatureBody.CinderPenitent,
                 Skin = new Color(0.17f, 0.13f, 0.12f), Cloth = new Color(0.32f, 0.23f, 0.18f),
                 Pants = new Color(0.48f, 0.17f, 0.08f), Eyes = new Color(1f, 0.47f, 0.12f),
-                Skill = EnemySkill.LastOffering, SkillCooldown = 8f, DropChance = 0.45f
+                Skill = EnemySkill.LastOffering, SkillCooldown = 4f, DropChance = 0.45f
             },
             new EnemyKind
             {
                 Name = "Hollowmaw", SpawnWeight = 0f,
                 MaxHealth = 75f, Armour = 60f, Experience = 48,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
-                Damage = 8f, AttackCooldown = 1.7f, AttackRange = 2.4f,
+                Damage = 16f, AttackCooldown = 1.7f, AttackRange = 2.4f,
                 SpeedRatio = 0.67f, Body = CreatureBody.Hollowmaw,
                 Skin = new Color(0.63f, 0.60f, 0.51f), Cloth = new Color(0.38f, 0.35f, 0.29f),
                 Pants = new Color(0.22f, 0.12f, 0.12f), Eyes = new Color(0.12f, 0.07f, 0.06f),
-                Skill = EnemySkill.DraggingBreath, SkillCooldown = 9f, DropChance = 0.45f
+                Skill = EnemySkill.DraggingBreath, SkillCooldown = 4.5f, DropChance = 0.45f
             },
             new EnemyKind
             {
                 Name = "Barrow Castellan", SpawnWeight = 0f, Undead = true,
                 MaxHealth = 90f, Armour = 220f, ColdResistance = 20f, Experience = 58,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
-                Damage = 9f, AttackCooldown = 1.8f, AttackRange = 3f,
+                Damage = 18f, AttackCooldown = 1.8f, AttackRange = 3f,
                 SpeedRatio = 0.60f, Body = CreatureBody.BarrowCastellan,
                 Skin = new Color(0.31f, 0.33f, 0.29f), Cloth = new Color(0.24f, 0.29f, 0.28f),
                 Pants = new Color(0.25f, 0.20f, 0.16f), Eyes = new Color(0.56f, 0.77f, 0.66f),
-                Skill = EnemySkill.Graveward, SkillCooldown = 12f, DropChance = 0.55f, RareBonus = 0.1f
+                Skill = EnemySkill.Graveward, SkillCooldown = 6f, DropChance = 0.55f, RareBonus = 0.1f
             },
         };
 
