@@ -256,27 +256,19 @@ namespace PoeClone.Inventory
 
         /// <summary>
         /// The skill level a drop of this item level rolls: up to 1 at item level 1, up to 10 at
-        /// item level 15 (the toughest things in the Frozen Hollow), often a level or two below the top.
+        /// item level 37 (the Shed Sanctuary), with weaker eligible tiers more common than the strongest ones.
         /// </summary>
         public static int RollLevel(Random rng, int itemLevel)
         {
-            int top = Math.Max(1, Math.Min(MaxDropLevel, (int)Math.Round(1 + (itemLevel - 1) * 9.0 / 14.0)));
-            double roll = rng.NextDouble();
-            int below = roll < 0.5 ? 0 : roll < 0.85 ? 1 : 2;
-            return Math.Max(1, top - below);
+            return ItemGenerator.RollSkillLevel(rng, itemLevel);
         }
 
         /// <summary>
-        /// A bow skill's level: any of 1 to 10 at every item level, but low levels are common from
-        /// weak monsters and the top ones far likelier from strong ones (item level 1: about 4% for
-        /// level 10 and a median of 2; item level 15: about 17% for level 10 and a median of 7).
+        /// Bow skills use the same level gates as other skills: stronger ranks unlock in later areas.
         /// </summary>
         public static int RollBowLevel(Random rng, int itemLevel)
         {
-            double t = Math.Max(0.0, Math.Min(1.0, (itemLevel - 1) / 14.0));
-            double skew = 2.5 + (0.55 - 2.5) * t;
-            int level = 1 + (int)Math.Floor(MaxDropLevel * Math.Pow(rng.NextDouble(), skew));
-            return Math.Max(1, Math.Min(MaxDropLevel, level));
+            return RollLevel(rng, itemLevel);
         }
     }
 

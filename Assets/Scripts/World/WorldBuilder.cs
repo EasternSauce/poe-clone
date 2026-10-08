@@ -25,7 +25,7 @@ namespace PoeClone.World
         public static WorldBuilder Instance { get; private set; }
 
         public static readonly string[] AreaNames = { "Greenwood", "Haven", "Haunted Graveyard", "Ashen Ruins", "Frozen Hollow", "The Shed Sanctuary", "The Lost Hollows" };
-        public static readonly int[] MonsterLevels = { 1, 0, 4, 7, 10, 12, 3 };
+        public static readonly int[] MonsterLevels = { 1, 0, 17, 25, 34, 37, 9 };
 
         private static readonly Vector3[] Centers =
         {
@@ -640,11 +640,11 @@ namespace PoeClone.World
 
             Transform t = Group("Bosses");
             if (Spots.TryGetValue("Crypt", out Vector3 crypt))
-                BossLair.Create(t, Graveyard, BossIndex("Gravelord Mortis"), 5, spawner.EnemyPrefab, crypt, Vector3.back);
+                BossLair.Create(t, Graveyard, BossIndex("Gravelord Mortis"), MonsterLevels[Graveyard], spawner.EnemyPrefab, crypt, Vector3.back);
             if (Spots.TryGetValue("Altar", out Vector3 altar))
-                BossLair.Create(t, Ruins, BossIndex("Ashen Warlord"), 8, spawner.EnemyPrefab, altar, Vector3.back);
+                BossLair.Create(t, Ruins, BossIndex("Ashen Warlord"), MonsterLevels[Ruins], spawner.EnemyPrefab, altar, Vector3.back);
             if (Spots.TryGetValue("Throne", out Vector3 throne))
-                BossLair.Create(t, Frozen, BossIndex("Rimeheart"), 11, spawner.EnemyPrefab, throne, Vector3.back);
+                BossLair.Create(t, Frozen, BossIndex("Rimeheart"), MonsterLevels[Frozen], spawner.EnemyPrefab, throne, Vector3.back);
         }
 
         private static int BossIndex(string name)

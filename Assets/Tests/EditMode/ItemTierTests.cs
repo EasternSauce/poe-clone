@@ -43,6 +43,7 @@ namespace PoeClone.Tests
         {
             ItemData tier = ItemGenerator.Generate(new System.Random(3), "full_plate", 9, ItemRarity.Rare);
             ItemData loaded = ItemRecord.From(tier).ToItem();
+            Assert.AreEqual(tier.ItemLevel, loaded.ItemLevel);
             Assert.AreEqual(tier.ArtId, loaded.ArtId);
             Assert.AreEqual(tier.ArtTint, loaded.ArtTint);
         }

@@ -19,6 +19,7 @@ namespace PoeClone.Inventory
         public string id;
         public string name;
         public int count;
+        public int ilvl;
         public int type;
         public int w;
         public int h;
@@ -32,7 +33,7 @@ namespace PoeClone.Inventory
         {
             var record = new ItemRecord
             {
-                id = item.Id, name = item.Name, count = item.StackCount, type = (int)item.Type, w = item.Width, h = item.Height,
+                id = item.Id, name = item.Name, count = item.StackCount, ilvl = item.ItemLevel, type = (int)item.Type, w = item.Width, h = item.Height,
                 weapon = (int)item.WeaponType, rarity = (int)item.Rarity, cape = item.HasCape,
                 r = item.Tint.r, g = item.Tint.g, b = item.Tint.b, a = item.Tint.a
             };
@@ -46,6 +47,7 @@ namespace PoeClone.Inventory
             if (id == ItemData.ReawakeningId)
             {
                 ItemData heart = ItemData.ReawakeningItem();
+                heart.ItemLevel = Math.Max(0, ilvl);
                 heart.StackCount = Math.Max(1, Math.Min(heart.MaxStack, count));
                 return heart;
             }
@@ -57,6 +59,7 @@ namespace PoeClone.Inventory
             }
             var item = new ItemData(id, name, (ItemType)type, Math.Max(1, w), Math.Max(1, h), new Color(r, g, b, a), modifiers,
                 hasCape: cape, weaponType: (WeaponType)weapon, rarity: (ItemRarity)rarity);
+            item.ItemLevel = Math.Max(0, ilvl);
             ItemGenerator.ApplyArt(item);
             // Made under older rules? Stats no longer allowed are fixed or removed.
             return ItemGenerator.Legalize(item);

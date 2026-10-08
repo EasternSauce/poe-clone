@@ -373,6 +373,7 @@ namespace PoeClone.Player
                         mods.Add(m.Stat == StatType.GrantFireBolt ? new StatModifier(m.Stat, spellLevel) : m);
                     var gift = new ItemData(staff.Id, staff.Name, staff.Type, staff.Width, staff.Height, staff.Tint, mods,
                         false, staff.WeaponType, staff.Rarity);
+                    gift.ItemLevel = staff.ItemLevel;
                     ItemGenerator.ApplyArt(gift);
                     if (!inventory.Grid.TryAutoPlace(gift))
                         inventory.ThrowAway(gift);

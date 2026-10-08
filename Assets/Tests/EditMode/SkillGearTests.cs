@@ -41,13 +41,13 @@ namespace PoeClone.Tests
             for (int k = 0; k < 400; k++)
             {
                 int low = SkillGrants.RollLevel(rng, 1);
-                int high = SkillGrants.RollLevel(rng, 15);
+                int high = SkillGrants.RollLevel(rng, 37);
                 Assert.AreEqual(1, low);
                 Assert.That(high, Is.InRange(1, SkillGrants.MaxDropLevel));
                 lowSum += low;
                 highSum += high;
             }
-            Assert.Greater(highSum, lowSum * 5);
+            Assert.Greater(highSum, lowSum * 2);
         }
 
         [Test]
@@ -132,7 +132,7 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void BowSkillLevels_SpanOneToTen_AndFavourTheTopFromStrongMonsters()
+        public void BowSkillLevels_RespectAreaTierGates()
         {
             var rng = new System.Random(3);
             int lowSum = 0, highSum = 0, lowTens = 0, highTens = 0;
@@ -140,7 +140,7 @@ namespace PoeClone.Tests
             for (int k = 0; k < 4000; k++)
             {
                 int low = SkillGrants.RollBowLevel(rng, 1);
-                int high = SkillGrants.RollBowLevel(rng, 15);
+                int high = SkillGrants.RollBowLevel(rng, 37);
                 Assert.That(low, Is.InRange(1, SkillGrants.MaxDropLevel));
                 Assert.That(high, Is.InRange(1, SkillGrants.MaxDropLevel));
                 seen.Add(low);
@@ -149,7 +149,8 @@ namespace PoeClone.Tests
                 if (low == 10) lowTens++;
                 if (high == 10) highTens++;
             }
-            Assert.AreEqual(10, seen.Count, "every level should be possible even from weak monsters");
+            Assert.AreEqual(1, seen.Count, "level-one areas only grant rank-one skills");
+            Assert.AreEqual(0, lowTens);
             Assert.Greater(highSum, lowSum * 1.6);
             Assert.Greater(highTens, lowTens * 2);
         }
@@ -217,12 +218,12 @@ namespace PoeClone.Tests
         [TestCase("silk_gloves", 4f, 10f)]
         [TestCase("sage_circlet", 3f, 8f)]
         [TestCase("silk_robe", 3f, 8f)]
-        public void CastSpeed_UsesExistingItemLevelScaling(string baseId, float min, float max)
+        public void CastSpeed_UsesUnlockedItemLevelTiers(string baseId, float min, float max)
         {
             var rng = new System.Random(493);
             float lowSum = 0f, highSum = 0f;
             int lowCount = 0, highCount = 0;
-            float topScale = 1f + 0.06f * (ItemGenerator.MaxItemLevel - 1);
+            float topScale = ItemGenerator.RollTierScale(ItemGenerator.MaxRollTier(ItemGenerator.MaxItemLevel));
             for (int k = 0; k < 3000; k++)
             {
                 foreach (int level in new[] { 1, ItemGenerator.MaxItemLevel })
@@ -230,8 +231,9 @@ namespace PoeClone.Tests
                     ItemData item = ItemGenerator.Generate(rng, baseId, level, ItemRarity.Rare);
                     foreach (StatModifier mod in item.Modifiers.Where(m => m.Stat == StatType.CastSpeed))
                     {
-                        float scale = level == 1 ? 1f : topScale;
-                        Assert.That(mod.Value, Is.InRange((float)Math.Round(min * scale), (float)Math.Round(max * scale)));
+                        float minScale = 1f;
+                        float maxScale = level == 1 ? 1f : topScale;
+                        Assert.That(mod.Value, Is.InRange((float)Math.Round(min * minScale), (float)Math.Round(max * maxScale)));
                         Assert.IsTrue(ItemGenerator.Legalize(item).Modifiers.Any(m => m.Stat == mod.Stat && m.Value == mod.Value));
                         if (level == 1) { lowSum += mod.Value; lowCount++; }
                         else { highSum += mod.Value; highCount++; }
@@ -240,7 +242,7 @@ namespace PoeClone.Tests
             }
             Assert.Greater(lowCount, 0);
             Assert.Greater(highCount, 0);
-            Assert.Greater(highSum / highCount, lowSum / lowCount * 1.9f,
+            Assert.Greater(highSum / highCount, lowSum / lowCount * 1.25f,
                 "high-level areas should naturally produce better cast speed rolls");
         }
 

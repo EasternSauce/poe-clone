@@ -34,7 +34,7 @@ namespace PoeClone.Tests
         [Test]
         public void DeeperDrops_FavourTheNewestTier()
         {
-            Dictionary<string, float> deep = ItemGenerator.DropChances(13);
+            Dictionary<string, float> deep = ItemGenerator.DropChances(37);
             Assert.Greater(deep["warlord_plate"], deep["chain_hauberk"] * 5f);
             Assert.Greater(deep["titan_maul"], deep["great_mallet"] * 5f);
 

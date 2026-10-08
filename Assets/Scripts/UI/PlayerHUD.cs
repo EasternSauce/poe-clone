@@ -116,7 +116,7 @@ namespace PoeClone.UI
             if (area == null)
                 return;
             titleText = area.areaName;
-            titleSub = area.isTown ? "Town - you are safe here" : area.monsterLevel > 0 ? "Monster level " + area.monsterLevel : "";
+            titleSub = area.isTown ? "Town - you are safe here" : area.monsterLevel > 0 ? "Area level " + area.monsterLevel : "";
             // Starts when the HUD is actually on screen (not behind the name prompt or a loading fade).
             titlePending = true;
         }

@@ -133,8 +133,9 @@ namespace PoeClone.World
             for (int i = 0; i < EnemyKinds.All.Length; i++) if (EnemyKinds.All[i].Boss == BossStyle.Shepherd) { index = i; break; }
             var go = Instantiate(prefab, spot + Vector3.up * 1.65f, Quaternion.Euler(0f, 180f, 0f), transform);
             go.name = "The Shepherd";
-            EnemyKinds.Apply(go, index, 12);
-            go.AddComponent<BossAbilities>().Configure(EnemyKinds.Get(index), 12, prefab);
+            int level = WorldBuilder.MonsterLevels[WorldBuilder.ActArena];
+            EnemyKinds.Apply(go, index, level);
+            go.AddComponent<BossAbilities>().Configure(EnemyKinds.Get(index), level, prefab);
             Boss = go.GetComponent<EnemyHealth>();
             Boss.Died += BossDied;
             Boss.Floor = Boss.MaxHealth * ShepherdFight.PhaseTwoAt;

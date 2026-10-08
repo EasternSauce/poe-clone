@@ -13,9 +13,67 @@ namespace PoeClone.Inventory
     /// </summary>
     public static class ItemGenerator
     {
-        // The highest item level anything rolls at (deep drops reach about 15, traders stock at the
-        // player's level). Also the top of the range a stat may have when old items are checked.
-        public const int MaxItemLevel = 20;
+        // Drops use their area's level; vendors use the player's level.
+        public const int MaxItemLevel = 100;
+
+        // Higher roll ranges unlock only at these levels. A drop may still roll a lower tier.
+        private static readonly int[] RollTierLevels = { 1, 9, 17, 25, 34, 37, 50, 65, 80, 100 };
+        private static readonly ModifierTier[] SkillTiers = CreateTiers(1, 10, false, skill: true);
+
+        public static int MaxRollTier(int itemLevel)
+        {
+            int tier = 0;
+            while (tier + 1 < RollTierLevels.Length && itemLevel >= RollTierLevels[tier + 1]) tier++;
+            return tier;
+        }
+
+        public static float RollTierScale(int tier) => 1f + 0.2f * Math.Max(0, Math.Min(RollTierLevels.Length - 1, tier));
+
+        // Every tier owns an eligibility gate, an explicit roll range and its selection weight.
+        // Arrays are ordered weakest to strongest; the strongest is conventionally Tier 1.
+        private readonly struct ModifierTier
+        {
+            public readonly int RequiredItemLevel;
+            public readonly float Min, Max, Weight;
+            public ModifierTier(int requiredItemLevel, float min, float max, float weight)
+            { RequiredItemLevel = requiredItemLevel; Min = min; Max = max; Weight = weight; }
+        }
+
+        private static ModifierTier[] CreateTiers(float min, float max, bool scales, bool skill = false)
+        {
+            int count = skill ? 6 : scales ? RollTierLevels.Length : 1;
+            int[] skillMin = { 1, 1, 2, 3, 5, 7 };
+            int[] skillMax = { 1, 2, 4, 6, 8, 10 };
+            var tiers = new ModifierTier[count];
+            for (int i = 0; i < count; i++)
+            {
+                float low = skill ? skillMin[i] : Mathf.Max(1f, Mathf.Round(min * RollTierScale(i)));
+                float high = skill ? skillMax[i] : Mathf.Max(low, Mathf.Round(max * RollTierScale(i)));
+                tiers[i] = new ModifierTier(RollTierLevels[i], low, high, Mathf.Pow(0.7f, i));
+            }
+            return tiers;
+        }
+
+        private static ModifierTier ChooseTier(System.Random rng, ModifierTier[] tiers, int itemLevel)
+        {
+            float total = 0f;
+            foreach (ModifierTier tier in tiers)
+                if (tier.RequiredItemLevel <= itemLevel) total += tier.Weight;
+            float roll = (float)rng.NextDouble() * total;
+            foreach (ModifierTier tier in tiers)
+            {
+                if (tier.RequiredItemLevel > itemLevel) continue;
+                roll -= tier.Weight;
+                if (roll < 0f) return tier;
+            }
+            return tiers[0];
+        }
+
+        private static float RollTierValue(System.Random rng, ModifierTier tier) =>
+            rng.Next((int)tier.Min, (int)tier.Max + 1);
+
+        public static int RollSkillLevel(System.Random rng, int itemLevel) =>
+            (int)RollTierValue(rng, ChooseTier(rng, SkillTiers, Math.Max(1, itemLevel)));
 
         // Which kind of character a base is made for. Its random stats lean that way (a silk robe
         // rolls caster stats more often, plate rolls Strength and Armour), so a build finds gear
@@ -51,6 +109,7 @@ namespace PoeClone.Inventory
             public float Min;
             public float Max;
             public bool ScalesWithLevel;
+            public ModifierTier[] Tiers;
             public ItemType[] On;
             public WeaponType[] Weapons;   // on a Weapon: only these kinds (null: every kind)
             public float Weight = 1f;      // how often it rolls, against the item's other candidates
@@ -111,8 +170,8 @@ namespace PoeClone.Inventory
             { "grimoire", new Color(0.30f, 0.22f, 0.26f) },
         };
 
-        // Every base that can drop. Each line has a tier for item levels 1, 4, 8 and 12 (Greenwood,
-        // the Graveyard, the Ruins, the Frozen Hollow and its bosses); a drop favours the highest
+        // Every base that can drop. Legacy base tiers 1/4/8/12 unlock at levels 1/9/25/34.
+        // A drop favours the highest
         // tier its level allows. Ids are saved: never rename or remove one.
         private static readonly ItemBase[] All =
         {
@@ -394,9 +453,8 @@ namespace PoeClone.Inventory
             Aff(StatType.Evasion, 10, 40, true, Armour),
             Aff(StatType.BlockChance, 3, 8, false, ItemType.Shield),
             Aff(StatType.AvoidStun, 3, 7, false, ItemType.Helmet, ItemType.BodyArmour, ItemType.Belt, ItemType.Shield).Weighted(0.55f),
-            // Early accessory rolls need to matter beside weapon base damage; the bonus tapers
-            // from 2.5x at item level 1 to 1.5x by Frozen Hollow's level 10 drops.
-            Aff(StatType.PhysicalDamage, 1, 3, true, ItemType.Gloves, ItemType.Ring, ItemType.Amulet, ItemType.Quiver),
+            // Accessory damage has its own tier ranges, independent of weapon damage.
+            Aff(StatType.PhysicalDamage, 2, 7, true, ItemType.Gloves, ItemType.Ring, ItemType.Amulet, ItemType.Quiver),
             Aff(StatType.PhysicalDamage, 3, 8, true, ItemType.Weapon).Only(LightWeapons),
             Aff(StatType.PhysicalDamage, 6, 15, true, ItemType.Weapon).Only(GreatWeapons),
             Aff(StatType.AttackSpeed, 3, 10, false, ItemType.Gloves, ItemType.Ring, ItemType.Amulet, ItemType.Quiver).Also(ItemType.Weapon, AttackWeapons),
@@ -707,7 +765,11 @@ namespace PoeClone.Inventory
             if (item == null)
                 return null;
             if (item.Rarity == ItemRarity.Unique)
-                return UniqueItems.Current(item.Name) ?? item;
+            {
+                ItemData current = UniqueItems.Current(item.Name) ?? item;
+                current.ItemLevel = item.ItemLevel;
+                return current;
+            }
 
             ItemBase b = Find(item.Id);
             if (b == null || b.Type == ItemType.Potion || b.Type == ItemType.Gold)
@@ -739,6 +801,7 @@ namespace PoeClone.Inventory
 
             var fixedItem = new ItemData(item.Id, item.Name, item.Type, item.Width, item.Height, item.Tint, mods,
                 item.HasCape, item.WeaponType, item.Rarity);
+            fixedItem.ItemLevel = item.ItemLevel;
             fixedItem.ArtId = item.ArtId;
             fixedItem.ArtTint = item.ArtTint;
             return fixedItem;
@@ -766,7 +829,7 @@ namespace PoeClone.Inventory
 
             // A random stat: the widest range any of today's affixes for it gives this base.
             float? min = null, max = null;
-            float topScale = 1f + 0.06f * (MaxItemLevel - 1);
+            float topScale = RollTierScale(MaxRollTier(MaxItemLevel));
             foreach (Affix a in Affixes)
             {
                 if (a.Stat != stat || Array.IndexOf(a.On, b.Type) < 0)
@@ -775,8 +838,6 @@ namespace PoeClone.Inventory
                     continue;
                 float aMin = Mathf.Max(1f, a.Min);
                 float maxScale = a.ScalesWithLevel ? topScale : 1f;
-                if (a.Stat == StatType.PhysicalDamage && b.Type != ItemType.Weapon)
-                    maxScale *= 1.5f;
                 float aMax = SkillGrants.IsGrant(stat) ? SkillGrants.MaxDropLevel : Mathf.Max(1f, Mathf.Round(a.Max * maxScale));
                 min = min == null ? aMin : Mathf.Min(min.Value, aMin);
                 max = max == null ? aMax : Mathf.Max(max.Value, aMax);
@@ -862,7 +923,6 @@ namespace PoeClone.Inventory
         private static ItemData Generate(System.Random rng, ItemBase b, int itemLevel, ItemRarity rarity, StatType? mainSpell = null)
         {
             int level = Math.Max(1, Math.Min(MaxItemLevel, itemLevel));
-            float levelScale = 1f + 0.06f * (level - 1);
 
             int affixCount = 0;
             if (rarity == ItemRarity.Magic)
@@ -886,20 +946,20 @@ namespace PoeClone.Inventory
             var mods = new List<StatModifier>();
             var rolled = new List<StatType>();
             var baseStats = new HashSet<StatType>();
+            var selected = new List<Affix>();
 
             // Every staff and grimoire carries a spell: its attack. It comes on top of the rarity's stats.
             StatType[] mains = MainSpells(b);
             if (mains != null)
             {
                 StatType spell = mainSpell.HasValue && Array.IndexOf(mains, mainSpell.Value) >= 0 ? mainSpell.Value : mains[rng.Next(mains.Length)];
-                mods.Add(new StatModifier(spell, SkillGrants.RollLevel(rng, level)));
+                selected.Add(Grant(spell, 1f, b.Type));
                 rolled.Add(spell);
             }
 
             // A stat the base already has never rolls again as an extra (no second Armour line on plate).
             foreach (StatModifier implicitMod in b.Implicits)
             {
-                mods.Add(new StatModifier(implicitMod.Stat, RollImplicit(rng, implicitMod.Value)));
                 baseStats.Add(implicitMod.Stat);
             }
             int fromRarity = 0;
@@ -913,29 +973,20 @@ namespace PoeClone.Inventory
                 if (rolled.Contains(a.Stat) || baseStats.Contains(a.Stat))
                     continue;
 
-                float value;
-                if (SkillGrants.IsBowSkill(a.Stat))
-                {
-                    value = SkillGrants.RollBowLevel(rng, level);
-                }
-                else if (SkillGrants.IsGrant(a.Stat))
-                {
-                    value = SkillGrants.RollLevel(rng, level);
-                }
-                else
-                {
-                    value = a.Min + (float)rng.NextDouble() * (a.Max - a.Min);
-                    if (a.ScalesWithLevel)
-                        value *= levelScale;
-                    if (a.Stat == StatType.PhysicalDamage && b.Type != ItemType.Weapon)
-                        value *= 2.5f - Mathf.Min(1f, (level - 1f) / 9f);
-                }
-
-                // (Tooltips list skills first whatever their order here.)
-                mods.Add(new StatModifier(a.Stat, Mathf.Max(1f, Mathf.Round(value))));
+                selected.Add(a);
                 rolled.Add(a.Stat);
                 fromRarity++;
             }
+
+            // All modifier identities are fixed before any tier or value is rolled.
+            var selectedTiers = new List<ModifierTier>();
+            foreach (Affix a in selected)
+                selectedTiers.Add(ChooseTier(rng, a.Tiers, level));
+
+            foreach (StatModifier implicitMod in b.Implicits)
+                mods.Add(new StatModifier(implicitMod.Stat, RollImplicit(rng, implicitMod.Value)));
+            for (int i = 0; i < selected.Count; i++)
+                mods.Add(new StatModifier(selected[i].Stat, RollTierValue(rng, selectedTiers[i])));
 
             // The rarity shown matches what actually rolled (a base can run out of stats to give).
             if (rarity != ItemRarity.Normal && fromRarity == 0)
@@ -946,6 +997,7 @@ namespace PoeClone.Inventory
             string name = NameFor(rng, b, rarity, rolled);
             var item = new ItemData(b.Id, name, b.Type, b.Width, b.Height, b.Tint, mods,
                 hasCape: false, weaponType: b.WeaponType, rarity: rarity);
+            item.ItemLevel = Math.Max(1, itemLevel);
             item.ArtId = b.ArtId;
             item.ArtTint = b.ArtTint;
             return item;
@@ -1123,7 +1175,7 @@ namespace PoeClone.Inventory
             ItemBase b = Base(id, name, type, w, h, colour * artTint, implicits);
             b.Line = line;
             b.Leaning = leaning;
-            b.MinLevel = minLevel;
+            b.MinLevel = minLevel == 4 ? 9 : minLevel == 8 ? 25 : minLevel == 12 ? 34 : minLevel;
             b.ArtId = art;
             b.ArtTint = artTint;
             return b;
@@ -1144,13 +1196,13 @@ namespace PoeClone.Inventory
 
         private static Affix Aff(StatType stat, float min, float max, bool scales, params ItemType[] on)
         {
-            return new Affix { Stat = stat, Min = min, Max = max, ScalesWithLevel = scales, On = on };
+            return new Affix { Stat = stat, Min = min, Max = max, ScalesWithLevel = scales, On = on, Tiers = CreateTiers(min, max, scales) };
         }
 
         // A skill on gear: its value is the skill level (see SkillGrants.RollLevel).
         private static Affix Grant(StatType grant, float weight, params ItemType[] on)
         {
-            return new Affix { Stat = grant, Min = 1, Max = 1, On = on, Weight = weight };
+            return new Affix { Stat = grant, Min = 1, Max = 1, On = on, Weight = weight, Tiers = CreateTiers(1, 10, false, skill: true) };
         }
 
         /// <summary>On a weapon, only these kinds roll it (other item types are unaffected).</summary>

@@ -1,3 +1,10 @@
+version: 2026-10-08-area-level-progression
+- Area levels now follow the route: Greenwood 1, The Lost Hollows 9, Haunted Graveyard 17, Ashen Ruins 25, Frozen Hollow 34, and The Shed Sanctuary 37.
+- All monsters, including bosses and their summons, share their area's level. Monsters now use comparable level-one baselines and shared health/damage growth, with separate heavy, elite, and boss bonuses. Existing native monsters retain their current health, damage, and armour; placing them in another area scales them to its level.
+- Items now record their exact source area level as ilvl, show it in tooltips, and preserve it in saves and spectator views. Required equip levels remain a separate future system. Older items retain an unknown item level.
+- Gear rolls select modifiers first, then weighted eligible tiers, then values from each tier's own range. Weaker tiers remain more common; higher ilvl unlocks stronger possibilities.
+- Higher-level monsters award more experience and gold. Gear drops use the area level, with stronger stat and skill roll tiers unlocking as you progress; bosses cannot bypass the area's drop level.
+
 version: 2026-10-08-six-enemies-survivability
 - Doubled the base life of Briarbound, Grave Siren, Rime Stalker, Cinder Penitent, Hollowmaw, and Barrow Castellan.
 - Briarbound's thorn patches now form four touching ground circles. Hollowmaw pulls 20% faster.

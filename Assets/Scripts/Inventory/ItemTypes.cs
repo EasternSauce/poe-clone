@@ -86,6 +86,8 @@ namespace PoeClone.Inventory
         public string Id { get; }
         public string Name { get; }
         public string Description { get; set; }
+        /// <summary>Level of the area that produced this item; governs modifier tier access, not equip requirements. Zero for legacy items whose origin is unknown.</summary>
+        public int ItemLevel { get; set; }
         public int StackCount { get; set; } = 1;
         public int MaxStack => Id == ReawakeningId ? 100 : 1;
         public ItemType Type { get; }

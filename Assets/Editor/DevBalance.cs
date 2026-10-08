@@ -193,7 +193,7 @@ namespace PoeClone.EditorTools
             if (startedAt > 0f) EndWindow();
             if (sampleSeconds <= 0f) return "measurement still running (or no sample)";
             float dps = damage / sampleSeconds;
-            float bossLife = EnemyKinds.Get(EnemyKinds.IndexOf("The Shepherd")).MaxHealth * EnemyKinds.LifeScale(12);
+            float bossLife = EnemyKinds.Get(EnemyKinds.IndexOf("The Shepherd")).MaxHealth * EnemyKinds.LifeScale(PoeClone.World.WorldBuilder.MonsterLevels[PoeClone.World.WorldBuilder.ActArena], EnemyKinds.Get(EnemyKinds.IndexOf("The Shepherd")));
             string phase = defenceName == "boss" ? "; Shepherd P1/P2/P3 free-DPS seconds " +
                 F(bossLife / 3f / Mathf.Max(.01f, dps)) + "/" + F(bossLife * 2f / 3f / Mathf.Max(.01f, dps)) +
                 "/" + F(bossLife / Mathf.Max(.01f, dps)) : "";

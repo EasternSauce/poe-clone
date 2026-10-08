@@ -72,10 +72,10 @@ namespace PoeClone.World
             if (!guaranteed && Random.value > chance)
                 return;
 
-            // Tougher kinds drop better things: higher item level (so higher-tier bases), more
-            // magic and rare items, more uniques. Toughness is life against a zombie's (30).
-            float toughness = Mathf.Max(1f, kind.MaxHealth / 30f);
-            float steps = Mathf.Log(toughness, 2f); // zombie 0, brute ~1.6, frost giant 2, bosses 3.5+
+            // Tougher kinds drop better things: more
+            // magic and rare items, more uniques. Include creature bonuses in its level-one life.
+            float toughness = Mathf.Max(1f, kind.MaxHealth * EnemyKinds.LifeScale(1, kind) / 30f);
+            float steps = Mathf.Log(toughness, 2f);
 
             var rng = new System.Random(Random.Range(int.MinValue, int.MaxValue));
             ItemData item;
@@ -87,11 +87,12 @@ namespace PoeClone.World
             {
                 float rareBonus = kind.RareBonus + 0.04f * steps;
                 ItemRarity rarity = ItemGenerator.RollRarity(rng, rareBonus);
-                int itemLevel = monsterLevel + Random.Range(0, 3) + Mathf.Clamp(Mathf.RoundToInt(steps), 0, 3);
+                // Area level is the eligibility ceiling, including bosses and summoned enemies.
+                int itemLevel = Mathf.Max(1, monsterLevel);
                 item = ItemGenerator.Generate(rng, itemLevel, rarity);
             }
 
-            Drop(item, deathPosition);
+            Drop(item, deathPosition, itemLevel: Mathf.Max(1, monsterLevel));
         }
 
         /// <summary>How much of a non-boss kind's drop chance actually turns into gear.</summary>
@@ -122,8 +123,10 @@ namespace PoeClone.World
         public int Amount { get; private set; }
 
         /// <summary>Pops an item out of a death spot onto the ground nearby.</summary>
-        public static void Drop(ItemData item, Vector3 deathPosition, int amount = 0)
+        public static void Drop(ItemData item, Vector3 deathPosition, int amount = 0, int? itemLevel = null)
         {
+            if (item == null) return;
+            if (itemLevel.HasValue) item.ItemLevel = Mathf.Max(1, itemLevel.Value);
             Vector3 at = GroundBelow(FreeSpotNear(deathPosition, 0.6f));
             LootDrop drop = Spawn(item, at, interactive: true, id: 0);
             drop.Amount = amount;

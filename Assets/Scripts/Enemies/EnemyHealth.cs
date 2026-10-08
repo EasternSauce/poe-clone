@@ -90,7 +90,7 @@ namespace PoeClone.Enemies
         {
             KindIndex = kindIndex;
             MonsterLevel = Mathf.Max(1, level);
-            maxHealth = kind.MaxHealth * EnemyKinds.LifeScale(MonsterLevel);
+            maxHealth = kind.MaxHealth * EnemyKinds.LifeScale(MonsterLevel, kind);
             currentHealth = maxHealth;
             experienceReward = Mathf.RoundToInt(kind.Experience * EnemyKinds.ExperienceScale(MonsterLevel));
         }
@@ -155,7 +155,7 @@ namespace PoeClone.Enemies
                 case DamageType.Lightning: amount = DefenceMath.AfterResistance(amount, kind.LightningResistance - elementalPenetration); break;
                 case DamageType.Poison: amount = DefenceMath.AfterResistance(amount, kind.PoisonResistance - elementalPenetration); break;
                 default:
-                    float effectiveArmour = kind.Armour * (1f - Mathf.Clamp(armourPenetration, 0f, 100f) / 100f);
+                    float effectiveArmour = kind.Armour * EnemyKinds.ArmourScale(MonsterLevel) * (1f - Mathf.Clamp(armourPenetration, 0f, 100f) / 100f);
                     amount *= 1f - DefenceMath.ArmourReduction(effectiveArmour, amount);
                     break;
             }
@@ -339,11 +339,11 @@ namespace PoeClone.Enemies
                 if (kind.IsBoss)
                 {
                     var rng = new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
-                    LootDrop.Drop(kind.Boss == BossStyle.Shepherd ? Inventory.UniqueItems.ShepherdReward(rng) : Inventory.UniqueItems.Random(rng), transform.position);
+                    LootDrop.Drop(kind.Boss == BossStyle.Shepherd ? Inventory.UniqueItems.ShepherdReward(rng) : Inventory.UniqueItems.Random(rng), transform.position, itemLevel: MonsterLevel);
                 }
                 var area = World.AreaManager.Instance;
                 if (area != null && area.CurrentAreaIndex >= World.WorldBuilder.Ruins && area.CurrentAreaIndex <= World.WorldBuilder.Frozen && UnityEngine.Random.value < 0.008f)
-                    LootDrop.Drop(World.ActBossArena.ReawakeningItem(), transform.position);
+                    LootDrop.Drop(World.ActBossArena.ReawakeningItem(), transform.position, itemLevel: MonsterLevel);
             }
             KillRewards.Grant(kind, MonsterLevel, transform.position, LootDrop.EnemyDropsActive);
 

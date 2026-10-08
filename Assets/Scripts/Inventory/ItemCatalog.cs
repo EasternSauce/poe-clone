@@ -42,6 +42,7 @@ namespace PoeClone.Inventory
                 item.HasCape, item.WeaponType, item.Rarity);
             copy.ArtId = item.ArtId;
             copy.ArtTint = item.ArtTint;
+            copy.ItemLevel = item.ItemLevel;
             return copy;
         }
     }

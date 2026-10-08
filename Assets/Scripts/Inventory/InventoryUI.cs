@@ -1026,7 +1026,7 @@ namespace PoeClone.Inventory
             {
                 stashTabButtons[k].color = k == inventory.StashTab ? UiKit.Gold * 0.6f : CellColor;
                 string name = inventory.StashTabName(k);
-                stashTabLabels[k].text = name.Length > 6 ? name.Substring(0, 6) + "…" : name;
+                stashTabLabels[k].text = name.Length > 6 ? name.Substring(0, 6) + "â€¦" : name;
             }
         }
 
@@ -1733,6 +1733,11 @@ private Vector2 CellSize(int w, int h)
             sb.Append("<b><color=#").Append(UiKit.Hex(UiKit.RarityColor(item.Rarity))).Append(">").Append(item.Name).Append("</color></b>\n");
             sb.Append("<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">").Append(type).Append("</color>");
             lineCount = 2;
+            if (item.ItemLevel > 0 && item.Type != ItemType.Gold && item.Type != ItemType.Potion)
+            {
+                sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">Item level: ").Append(item.ItemLevel).Append("</color>");
+                lineCount++;
+            }
             if (item.StackCount > 1)
             {
                 sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">Stack: ")
