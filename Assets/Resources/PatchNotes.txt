@@ -1,3 +1,7 @@
+version: 2026-10-08-passive-tree-attributes
+- Doubled existing small passive Strength, Dexterity and Intelligence bonuses, including attribute travel passives.
+- Replaced 11 optional maximum-life branches with thematic attribute choices across the tree: +10 on small branch passives and +30 on notables. Strength supports melee and fire areas, Dexterity supports agile attacks, bows and poison, and Intelligence supports spells and minions.
+
 version: 2026-10-08-loot-simulator-minimum-rarity
 - Added Normal, Magic, Rare and Unique minimum rarity options to Loot Simulator. Magic and Rare raise lower rarity rolls to the selected minimum; Unique generates named unique items matching the selected types and area-level base availability. Results now count uniques separately.
 

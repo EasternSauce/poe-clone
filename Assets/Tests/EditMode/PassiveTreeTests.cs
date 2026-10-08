@@ -141,11 +141,11 @@ namespace PoeClone.Tests
         {
             var allocation = new PassiveAllocation();
             allocation.Take("m1", 10);   // +12 life
-            allocation.Take("m2", 10);   // +6 strength -> +3 life
+            allocation.Take("m2", 10);   // +12 strength -> +6 life
 
             StatSheet sheet = StatSheet.Build(new BaseStats().Set(StatType.MaxLife, 100f), new EquipmentSet(), allocation.Modifiers());
-            Assert.AreEqual(100f + 12f + 3f, sheet.Total(StatType.MaxLife), 0.001f);
-            Assert.AreEqual(6f, sheet.Total(StatType.Strength), 0.001f);
+            Assert.AreEqual(100f + 12f + 6f, sheet.Total(StatType.MaxLife), 0.001f);
+            Assert.AreEqual(12f, sheet.Total(StatType.Strength), 0.001f);
         }
 
         [Test]
@@ -201,7 +201,7 @@ namespace PoeClone.Tests
                 StatModifier reward = node.Mods[0];
                 if (reward.Stat == StatType.Strength || reward.Stat == StatType.Dexterity || reward.Stat == StatType.Intelligence)
                 {
-                    Assert.AreEqual(3f, reward.Value, node.Id);
+                    Assert.That(reward.Value, Is.EqualTo(6f).Or.EqualTo(10f), node.Id);
                     attributes++;
                 }
                 else
@@ -210,8 +210,8 @@ namespace PoeClone.Tests
                     themed++;
                 }
             }
-            Assert.AreEqual(49, attributes);
-            Assert.AreEqual(50, themed);
+            Assert.AreEqual(30, attributes);
+            Assert.AreEqual(39, themed);
         }
 
         [Test]
