@@ -60,6 +60,7 @@ namespace PoeClone.Network
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
         {
+            if (MinimalCombatMode.Enabled) return;
             if (Instance != null) return;
             var go = new GameObject("GameSessionController");
             go.AddComponent<GameSessionController>();

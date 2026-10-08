@@ -1,3 +1,6 @@
+version: 2026-10-08-minimal-combat-url
+- Added an isolated combat URL (?minimal=1): an empty arena, a temporary player with a sword, and one enemy that respawns three seconds after death. Skips character selection, saves, generated areas, quests, chat, and spectators while retaining normal mobile controls, combat, death sounds, and death animations.
+
 version: 2026-10-07-restore-kill-behavior
 - Restored enemy death sounds, corpse animations, kill quest credit, and spectator broadcasting after the diagnostic test. Reverted the experimental kill-processing optimizations.
 

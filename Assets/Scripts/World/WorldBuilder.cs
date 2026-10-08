@@ -105,6 +105,7 @@ namespace PoeClone.World
         /// <summary>Scene reloads during character selection do not rerun runtime-init hooks.</summary>
         public static void EnsureBuilt()
         {
+            if (MinimalCombatMode.Enabled) return;
             if (Instance != null) return;
             var go = new GameObject("World");
             go.AddComponent<WorldBuilder>().Build();

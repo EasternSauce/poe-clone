@@ -116,16 +116,16 @@ namespace PoeClone.UI
             bool dead = stats == null || stats.IsDead;
             bool inventoryOpen = inventoryUI != null && inventoryUI.IsOpen;
             bool characterOpen = characterUI != null && characterUI.IsOpen;
-            if (settingsMenu == null)
+            if (!PoeClone.World.MinimalCombatMode.Enabled && settingsMenu == null)
                 settingsMenu = FindAnyObjectByType<EscapeMenuUI>();
             bool menuOpen = inventoryOpen || characterOpen || SkillBarUI.IsOpen || DialogueUI.IsOpen ||
                             PassiveTreeUI.IsOpen || (settingsMenu != null && settingsMenu.IsOpen);
 
             // Keep the menu buttons behind the active panel in both draw order and hit testing.
             // The panel's own close control remains available to dismiss it.
-            menuRoot.SetActive(!dead && !menuOpen);
+            menuRoot.SetActive(!PoeClone.World.MinimalCombatMode.Enabled && !dead && !menuOpen);
             if (settingsButton != null)
-                settingsButton.gameObject.SetActive(!dead && !menuOpen);
+                settingsButton.gameObject.SetActive(!PoeClone.World.MinimalCombatMode.Enabled && !dead && !menuOpen);
 
             SetCombatShown(!dead && !menuOpen);
             UpdateSkillButtons();
@@ -176,9 +176,9 @@ namespace PoeClone.UI
         {
             if (stats == null)
                 stats = FindAnyObjectByType<PlayerStats>();
-            if (inventoryUI == null)
+            if (!PoeClone.World.MinimalCombatMode.Enabled && inventoryUI == null)
                 inventoryUI = FindAnyObjectByType<InventoryUI>();
-            if (characterUI == null)
+            if (!PoeClone.World.MinimalCombatMode.Enabled && characterUI == null)
                 characterUI = FindAnyObjectByType<CharacterPageUI>();
             if (skills == null)
                 skills = FindAnyObjectByType<Skills.PlayerSkills>();
