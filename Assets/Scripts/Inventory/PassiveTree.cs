@@ -217,13 +217,13 @@ namespace PoeClone.Inventory
         {
             Sector(PassiveBranch.Fury, 270f);
             N("f1", "Battle Rhythm", 0.55f, 0f, Mod(StatType.AttackSpeed, 3));
-            N("f2", "Sharpened Edges", 0.9f, 0f, Mod(StatType.CriticalChance, 20));
+            N("f2", "Sharpened Edges", 0.9f, 0f, Mod(StatType.CriticalChance, 14));
             Chain("f1", "f2");
             LifeSpur("f_life", "Battle Scars", "f2");
 
-            N("f_a1", "Keen Eye", 1.2f, -0.3f, Mod(StatType.CriticalChance, 20));
+            N("f_a1", "Keen Eye", 1.2f, -0.3f, Mod(StatType.CriticalChance, 14));
             N("f_a2", "Fervour", 1.2f, 0.3f, Mod(StatType.AttackDamage, 8));
-            Nt("f_dancer", "Bladedancer", 1.5f, 0f, Mod(StatType.AttackSpeed, 8), Mod(StatType.CriticalChance, 40));
+            Nt("f_dancer", "Bladedancer", 1.5f, 0f, Mod(StatType.AttackSpeed, 8), Mod(StatType.CriticalChance, 28));
             N("junction_f_dancer", "", 1.5f, 0f, Mod(StatType.Dexterity, 6));
             Chain("f2", "f_a1", "junction_f_dancer", "f_a2", "f2");
 
@@ -234,11 +234,11 @@ namespace PoeClone.Inventory
 
             N("f_b1", "Assassin's Mark", 1.85f, -0.35f, Mod(StatType.CriticalMultiplier, 15));
             N("f_b2", "Momentum", 1.85f, 0.35f, Mod(StatType.OnslaughtOnKill, 10));
-            Nt("f_precision", "Deadly Precision", 2.2f, 0f, Mod(StatType.CriticalChance, 60), Mod(StatType.CriticalMultiplier, 25), Mod(StatType.ArmourPenetration, 5));
+            Nt("f_precision", "Deadly Precision", 2.2f, 0f, Mod(StatType.CriticalChance, 42), Mod(StatType.CriticalMultiplier, 25), Mod(StatType.ArmourPenetration, 5));
             N("junction_f_precision", "", 2.2f, 0f, Mod(StatType.Dexterity, 6));
             Chain("junction_f_dancer", "f_b1", "junction_f_precision", "f_b2", "junction_f_dancer");
 
-            Nt("k_stormblade", "Battle Focus", 2.65f, 0f, Mod(StatType.CriticalChance, 50), Mod(StatType.AttackDamage, 12));
+            Nt("k_stormblade", "Battle Focus", 2.65f, 0f, Mod(StatType.CriticalChance, 35), Mod(StatType.AttackDamage, 12));
             Chain("f_b2", "k_stormblade");
 
             Nt("f_berserk", "Berserker", 2.25f, -0.7f, Mod(StatType.AttackDamage, 16), Mod(StatType.LifeLeech, 1));
@@ -278,7 +278,7 @@ namespace PoeClone.Inventory
             N("junction_g8", "", 1.8f, 0.55f, Mod(StatType.Dexterity, 6));
             Chain("g2", "g6", "g7", "junction_g8", "g10");
 
-            Nt("g_deadeye", "Deadeye", 2.6f, 0.3f, Mod(StatType.BowDamage, 18), Mod(StatType.CriticalChance, 50));
+            Nt("g_deadeye", "Deadeye", 2.6f, 0.3f, Mod(StatType.BowDamage, 18), Mod(StatType.CriticalChance, 35));
             N("junction_g_deadeye", "", 2.6f, 0.3f, Mod(StatType.Dexterity, 6));
             Chain("g10", "junction_g_deadeye");
             Ks("k_volley", "Volley", 2.83f, 0.69f, Mod(StatType.AdditionalArrows, 1));
@@ -487,12 +487,12 @@ namespace PoeClone.Inventory
         private static void AddCriticalBranches()
         {
             Sector(PassiveBranch.Might, 210f);
-            N("m_crit", "Sharp Intent", 1.55f, 0.95f, Mod(StatType.CriticalChance, 20));
-            Nt("m_crit_master", "Lethal Blows", 1.85f, 1.25f, Mod(StatType.CriticalChance, 50), Mod(StatType.CriticalMultiplier, 20));
+            N("m_crit", "Sharp Intent", 1.55f, 0.95f, Mod(StatType.CriticalChance, 14));
+            Nt("m_crit_master", "Lethal Blows", 1.85f, 1.25f, Mod(StatType.CriticalChance, 35), Mod(StatType.CriticalMultiplier, 20));
             Chain("m7", "m_crit", "m_crit_master");
             Sector(PassiveBranch.Grace, 330f);
-            N("g_crit", "Steady Aim", 2.05f, 0.85f, Mod(StatType.CriticalChance, 20));
-            Nt("g_crit_master", "Killing Shot", 2.25f, 1.15f, Mod(StatType.CriticalChance, 50), Mod(StatType.CriticalMultiplier, 20));
+            N("g_crit", "Steady Aim", 2.05f, 0.85f, Mod(StatType.CriticalChance, 14));
+            Nt("g_crit_master", "Killing Shot", 2.25f, 1.15f, Mod(StatType.CriticalChance, 35), Mod(StatType.CriticalMultiplier, 20));
             Chain("g7", "g_crit", "g_crit_master");
         }
 

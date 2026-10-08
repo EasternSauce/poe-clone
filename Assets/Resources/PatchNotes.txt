@@ -1,3 +1,6 @@
+version: 2026-10-08-critical-strike-chance-balance
+- Reduced Critical Strike Chance bonuses on random item modifiers, unique items and all passive tree nodes by about 30%.
+
 version: 2026-10-08-orb-of-regret
 - Added Orb of Regret, stacking to 100 and dropping from any monster with a 1.04% chance (30% more common than Shed Hearts).
 - Carry orbs in your inventory to enable Refund in the passive tree. Click allocated end nodes to preview refunds, up to the number of orbs you carry. Accept consumes one orb per refunded node and returns the points; Cancel or closing the tree discards the preview without spending orbs. Remaining paths must stay connected.

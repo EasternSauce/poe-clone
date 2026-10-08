@@ -151,7 +151,7 @@ namespace PoeClone.Inventory
                 Mods = new[] { Mod(StatType.GrantIceShard, 6), Mod(StatType.SpellDamage, 14), Mod(StatType.CastSpeed, 12), Mod(StatType.ColdPenetration, 8), Mod(StatType.DamageVsChilled, 12) } },
             new Unique { BaseId = "leather_gloves", Name = "Thundergrip",
                 Flavour = "The first spark always finds another hand to shake.",
-                Mods = new[] { Mod(StatType.Evasion, 32), Mod(StatType.CriticalChance, 40), Mod(StatType.LightningResistance, 15), Mod(StatType.Stormblade, 35) } },
+                Mods = new[] { Mod(StatType.Evasion, 32), Mod(StatType.CriticalChance, 28), Mod(StatType.LightningResistance, 15), Mod(StatType.Stormblade, 35) } },
             new Unique { BaseId = "silk_slippers", Name = "Winter's Passage",
                 Flavour = "Every hurried step leaves a little winter behind.",
                 Mods = new[] { Mod(StatType.Evasion, 24), Mod(StatType.ColdResistance, 18), Mod(StatType.CastSpeed, 5), Mod(StatType.GrantDash, 5), Mod(StatType.GlacialStep, 1) } },
