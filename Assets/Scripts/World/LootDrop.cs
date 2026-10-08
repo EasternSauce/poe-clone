@@ -20,6 +20,8 @@ namespace PoeClone.World
         /// <summary>Temporary mobile hitch diagnostic: enemy drops are suppressed as a whole.</summary>
         public const bool EnemyDropsEnabled = false;
 
+        public static bool EnemyDropsActive => MinimalCombatMode.Enabled ? MinimalCombatMode.DropsEnabled : EnemyDropsEnabled;
+
         private const float LifetimeSeconds = 180f;
 
         // A fresh drop pops out of the body in a short arc and can't be clicked until it lands
@@ -62,12 +64,12 @@ namespace PoeClone.World
         public bool IsLanded => Time.time >= clickableAt;
 
         /// <summary>Maybe drops something where an enemy died, by its kind's drop chance; tougher kinds drop better items.</summary>
-        public static void RollDrop(EnemyKind kind, Vector3 deathPosition, int monsterLevel)
+        public static void RollDrop(EnemyKind kind, Vector3 deathPosition, int monsterLevel, bool guaranteed = false)
         {
             // Ordinary monsters drop gear at a fraction of their kind's listed chance (bosses
             // still always drop theirs); gold and potions are rolled separately (KillRewards).
             float chance = kind.IsBoss ? kind.DropChance : kind.DropChance * GearDropScale;
-            if (Random.value > chance)
+            if (!guaranteed && Random.value > chance)
                 return;
 
             // Tougher kinds drop better things: higher item level (so higher-tier bases), more

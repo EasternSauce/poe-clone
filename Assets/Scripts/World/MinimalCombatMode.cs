@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using PoeClone.CameraSystem;
@@ -12,12 +13,13 @@ namespace PoeClone.World
 {
     /// <summary>
     /// Opt-in isolated combat loop at ?minimal=1. Uses the real player, enemy and death
-    /// pipeline, but never creates the generated world, session, saves or quest listeners.
+    /// pipeline, with optional loot, menus and quest tracking. Never loads character saves.
     /// </summary>
     public sealed class MinimalCombatMode : MonoBehaviour
     {
         private static bool? enabledForUrl;
         private static string query;
+        private static Dictionary<string, string> options;
         public static bool Enabled
         {
             get
@@ -27,17 +29,27 @@ namespace PoeClone.World
             }
         }
 
+        private static bool FeatureEnabled(string name) => Enabled && (QueryValue(name) == "1" ||
+            (QueryValue("features") != "0" && QueryValue(name) != "0"));
+        public static bool DropsEnabled => FeatureEnabled("drops");
+        public static bool QuestsEnabled => FeatureEnabled("quests");
+        public static bool MenusEnabled => FeatureEnabled("menus");
+        public static bool AudioEnabled => !Enabled || QueryValue("audio") != "0";
+        public static bool GuaranteedGear => DropsEnabled && QueryValue("guaranteedGear") != "0";
+
         private GameObject enemyPrefab;
         private EnemyHealth enemy;
         private PlayerStats player;
         private int kindIndex;
         private bool respawning;
+        private Material arenaMaterial;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
             enabledForUrl = null;
             query = null;
+            options = null;
         }
 
         private static string QueryValue(string key)
@@ -50,13 +62,17 @@ namespace PoeClone.World
                 query = Uri.TryCreate(Application.absoluteURL, UriKind.Absolute, out var url) ? url.Query : string.Empty;
 #endif
             }
-            foreach (string field in query.TrimStart('?').Split('&'))
+            if (options == null)
             {
-                int split = field.IndexOf('=');
-                if (split >= 0 && field.Substring(0, split) == key)
-                    return Uri.UnescapeDataString(field.Substring(split + 1).Replace("+", " "));
+                options = new Dictionary<string, string>();
+                foreach (string field in query.TrimStart('?').Split('&'))
+                {
+                    int split = field.IndexOf('=');
+                    if (split >= 0)
+                        options[field.Substring(0, split)] = Uri.UnescapeDataString(field.Substring(split + 1).Replace("+", " "));
+                }
             }
-            return string.Empty;
+            return options.TryGetValue(key, out string value) ? value : string.Empty;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -83,7 +99,9 @@ namespace PoeClone.World
             {
                 bool keep = root == gameObject || root == player.gameObject ||
                     root.GetComponent<Camera>() != null || root.GetComponent<Light>() != null ||
-                    root.GetComponent<PoeClone.Audio.AudioManager>() != null || root.GetComponent<PlayerHUD>() != null;
+                    (AudioEnabled && root.GetComponent<PoeClone.Audio.AudioManager>() != null) || root.GetComponent<PlayerHUD>() != null ||
+                    (MenusEnabled && root.GetComponent<InventoryUI>() != null) ||
+                    (QuestsEnabled && root.GetComponent<AreaManager>() != null);
                 if (!keep)
                 {
                     root.SetActive(false);
@@ -93,11 +111,15 @@ namespace PoeClone.World
 
             if (QueryValue("touch") == "1") TouchMode.SetForced(true);
             Time.timeScale = 1f;
+            // The Resources material references a shader included in mobile WebGL builds.
+            // Unity's default primitive material can have its shader variants stripped.
+            arenaMaterial = Resources.Load<Material>("RuntimePrimitive");
             var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             floor.name = "Minimal Arena Floor";
             floor.transform.SetParent(transform, false);
             floor.transform.position = new Vector3(0f, -0.5f, 0f);
             floor.transform.localScale = new Vector3(48f, 1f, 48f);
+            ApplyArenaMaterial(floor, new Color(0.38f, 0.42f, 0.34f));
             // Low walls keep both actors on the small, otherwise empty floor.
             CreateWall(new Vector3(-24f, 1f, 0f), new Vector3(1f, 2f, 49f));
             CreateWall(new Vector3(24f, 1f, 0f), new Vector3(1f, 2f, 49f));
@@ -110,6 +132,19 @@ namespace PoeClone.World
             player.SetSpawnPoint(player.transform.position, player.transform.rotation);
             if (cc != null) cc.enabled = true;
             Camera.main?.GetComponent<CameraFollow>()?.SnapToTarget();
+            if (MenusEnabled)
+            {
+                gameObject.AddComponent<SkillBarUI>();
+                gameObject.AddComponent<PassiveTreeUI>();
+            }
+            if (QuestsEnabled)
+            {
+                var area = FindAnyObjectByType<AreaManager>();
+                if (area != null)
+                    area.SetAreas(new[] { new AreaDefinition { areaName = "Minimal Arena", monsterLevel = 1,
+                        spawnPoint = player.transform, tintsSharedGround = false } }, 0);
+                gameObject.AddComponent<QuestTrackerUI>();
+            }
             gameObject.AddComponent<TouchControlsUI>();
             Physics.SyncTransforms();
         }
@@ -121,6 +156,18 @@ namespace PoeClone.World
             wall.transform.SetParent(transform, false);
             wall.transform.position = position;
             wall.transform.localScale = scale;
+            ApplyArenaMaterial(wall, new Color(0.3f, 0.32f, 0.28f));
+        }
+
+        private void ApplyArenaMaterial(GameObject surface, Color color)
+        {
+            var renderer = surface.GetComponent<Renderer>();
+            if (arenaMaterial != null) renderer.sharedMaterial = arenaMaterial;
+            else Debug.LogError("Minimal combat: Resources/RuntimePrimitive material is missing.");
+            var block = new MaterialPropertyBlock();
+            block.SetColor("_BaseColor", color);
+            block.SetColor("_Color", color);
+            renderer.SetPropertyBlock(block);
         }
 
         private IEnumerator Start()
@@ -139,6 +186,19 @@ namespace PoeClone.World
             if (kindIndex < 0 || EnemyKinds.Get(kindIndex).IsBoss || EnemyKinds.Get(kindIndex).SplitInto >= 0 ||
                 EnemyKinds.Get(kindIndex).Skill == EnemySkill.Summon)
                 kindIndex = EnemyKinds.IndexOf("Zombie");
+            if (QuestsEnabled)
+            {
+                // Exercise real quest kill callbacks using temporary, already-accepted quests.
+                var active = new Dictionary<string, int>();
+                foreach (var quest in PoeClone.Quests.QuestBook.All)
+                {
+                    if ((quest.Goal == PoeClone.Quests.QuestGoal.KillInArea && quest.Area <= 0) ||
+                        (quest.Goal == PoeClone.Quests.QuestGoal.KillKind && quest.Target == EnemyKinds.Get(kindIndex).Name))
+                        active[quest.Id] = 0;
+                }
+                player.GetComponent<PoeClone.Quests.QuestLog>()?.Import(Array.Empty<string>(), active,
+                    Array.Empty<int>(), Array.Empty<string>());
+            }
             SpawnEnemy();
         }
 

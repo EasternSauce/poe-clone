@@ -152,7 +152,7 @@ namespace PoeClone.Player
             if (stagger == null)
                 stagger = gameObject.AddComponent<Stagger>();
 
-            if (!PoeClone.World.MinimalCombatMode.Enabled && GetComponent<LootPicker>() == null)
+            if ((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.DropsEnabled) && GetComponent<LootPicker>() == null)
                 gameObject.AddComponent<LootPicker>();
             if (GetComponent<Skills.PlayerSkills>() == null)
                 gameObject.AddComponent<Skills.PlayerSkills>();
@@ -160,7 +160,7 @@ namespace PoeClone.Player
                 gameObject.AddComponent<PlayerPotions>();
             if (!PoeClone.World.MinimalCombatMode.Enabled && GetComponent<NpcInteractor>() == null)
                 gameObject.AddComponent<NpcInteractor>();
-            if (!PoeClone.World.MinimalCombatMode.Enabled && GetComponent<Quests.QuestLog>() == null)
+            if ((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.QuestsEnabled) && GetComponent<Quests.QuestLog>() == null)
                 gameObject.AddComponent<Quests.QuestLog>();
             if (GetComponent<PlayerPassives>() == null)
                 gameObject.AddComponent<PlayerPassives>();

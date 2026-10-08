@@ -123,7 +123,7 @@ namespace PoeClone.UI
 
             // Keep the menu buttons behind the active panel in both draw order and hit testing.
             // The panel's own close control remains available to dismiss it.
-            menuRoot.SetActive(!PoeClone.World.MinimalCombatMode.Enabled && !dead && !menuOpen);
+            menuRoot.SetActive((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.MenusEnabled) && !dead && !menuOpen);
             if (settingsButton != null)
                 settingsButton.gameObject.SetActive(!PoeClone.World.MinimalCombatMode.Enabled && !dead && !menuOpen);
 
@@ -176,9 +176,9 @@ namespace PoeClone.UI
         {
             if (stats == null)
                 stats = FindAnyObjectByType<PlayerStats>();
-            if (!PoeClone.World.MinimalCombatMode.Enabled && inventoryUI == null)
+            if ((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.MenusEnabled) && inventoryUI == null)
                 inventoryUI = FindAnyObjectByType<InventoryUI>();
-            if (!PoeClone.World.MinimalCombatMode.Enabled && characterUI == null)
+            if ((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.MenusEnabled) && characterUI == null)
                 characterUI = FindAnyObjectByType<CharacterPageUI>();
             if (skills == null)
                 skills = FindAnyObjectByType<Skills.PlayerSkills>();
@@ -566,6 +566,12 @@ namespace PoeClone.UI
             Image town = NewRoundButton("Town", menu, new Vector2(0f, 1f), new Vector2(460f, -58f), 96f, "TOWN");
             town.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TownPortal.Pressed = true;
             TouchMode.AddBlocker(town.rectTransform);
+
+            if (PoeClone.World.MinimalCombatMode.Enabled)
+            {
+                chat.gameObject.SetActive(false);
+                town.gameObject.SetActive(false);
+            }
 
             settingsButton = NewRoundButton("Settings", canvas.transform, new Vector2(0f, 1f), new Vector2(570f, -58f), 96f, "SETTINGS");
             settingsButton.GetComponentInChildren<Text>().fontSize = 16;

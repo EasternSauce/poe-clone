@@ -326,11 +326,11 @@ namespace PoeClone.Enemies
                 player.GainExperience(experienceReward);
 
             EnemyKind kind = EnemyKinds.Get(KindIndex);
-            if (LootDrop.EnemyDropsEnabled)
+            if (LootDrop.EnemyDropsActive)
             {
                 // Deeper areas drop better gear: the item level follows the monster level.
                 for (int k = 0; k < Mathf.Max(1, kind.Drops); k++)
-                    LootDrop.RollDrop(kind, transform.position, Mathf.Max(MonsterLevel, 1));
+                    LootDrop.RollDrop(kind, transform.position, Mathf.Max(MonsterLevel, 1), MinimalCombatMode.GuaranteedGear);
 
                 // A boss always leaves one unique behind.
                 if (kind.IsBoss)
@@ -342,7 +342,7 @@ namespace PoeClone.Enemies
                 if (area != null && area.CurrentAreaIndex >= World.WorldBuilder.Ruins && area.CurrentAreaIndex <= World.WorldBuilder.Frozen && UnityEngine.Random.value < 0.008f)
                     LootDrop.Drop(World.ActBossArena.ReawakeningItem(), transform.position);
             }
-            KillRewards.Grant(kind, MonsterLevel, transform.position, LootDrop.EnemyDropsEnabled);
+            KillRewards.Grant(kind, MonsterLevel, transform.position, LootDrop.EnemyDropsActive);
 
             if (kind.SplitInto >= 0)
                 SplitApart(kind.SplitInto);
