@@ -12,9 +12,6 @@ namespace PoeClone.Player
         /// <summary>Joystick direction, screen-relative like WASD (y = up the screen), length 0..1.</summary>
         public static Vector2 Move;
 
-        /// <summary>Sprint toggle (touch has no Shift to hold).</summary>
-        public static bool Sprint;
-
         /// <summary>
         /// The aim stick's direction, screen-relative like <see cref="Move"/>, length 0..1, zero
         /// when not held. Replaces a plain attack button: holding it off-centre attacks (or casts)
@@ -46,7 +43,6 @@ namespace PoeClone.Player
         private static void Reset()
         {
             Clear();
-            Sprint = false;
         }
     }
 }

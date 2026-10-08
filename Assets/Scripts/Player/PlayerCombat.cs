@@ -25,8 +25,8 @@ namespace PoeClone.Player
     /// Touch has no cursor, so instead of a button, attacking uses a second stick
     /// (<see cref="VirtualInput.Aim"/>, drawn by TouchControlsUI next to the movement stick):
     /// holding it off-centre swings/shoots repeatedly towards wherever it points, exactly like
-    /// holding the mouse button down while pointing it, so aiming is always explicit - there is no
-    /// automatic targeting.
+    /// holding the mouse button down while pointing it. Basic melee attacks assist that aim by
+    /// selecting a reachable enemy within 30 degrees of the stick, preferring the smallest angle.
     ///
     /// A bow shoots instead (<see cref="PlayerArrow"/>, no ammo); its "reach" is how far arrows fly,
     /// so the same aiming and highlighting work for it unchanged. A staff casts its spell instead
@@ -41,6 +41,10 @@ namespace PoeClone.Player
     {
         [Tooltip("Half-angle, in degrees, of the forward cone a swing needs to reach a target in.")]
         [SerializeField] private float coneHalfAngle = 35f;
+
+        // Aim assistance stays narrower than the weapon's damage cone, even for wide sweeps.
+        private const float TouchMeleeAimHalfAngle = 30f;
+        private Vector3 touchAttackDirection;
 
         private PlayerStats stats;
         private PlayerInventory inventory;
@@ -212,7 +216,13 @@ namespace PoeClone.Player
             float range = CharacterAttackAnimator.AttackRange(weaponType);
             if (CharacterAttackAnimator.IsRanged(weaponType))
                 return range;
-            return range * (1f + Mathf.Max(0f, inventory.Stats.Total(StatType.MeleeRange)) / 100f);
+            return MeleeReach(weaponType);
+        }
+
+        private float MeleeReach(WeaponType weaponType)
+        {
+            return CharacterAttackAnimator.AttackRange(weaponType) *
+                (1f + Mathf.Max(0f, inventory.Stats.Total(StatType.MeleeRange)) / 100f);
         }
 
         // Carrion Saint's body collider is intentionally broad to block movement, but the
@@ -249,6 +259,8 @@ namespace PoeClone.Player
             FaceAimPoint();
             aimEnemy = highlighted;
             hasAimPoint = TryGetAimPoint(out aimPoint);
+            if (TouchMode.Active)
+                touchAttackDirection = PlayerController.CameraRelativeDirection(VirtualInput.Aim);
 
             pendingDamage = ComputeDamage();
 
@@ -298,6 +310,16 @@ namespace PoeClone.Player
             {
                 Vector3 direction = point - transform.position;
                 direction.y = 0f;
+                if (TouchMode.Active)
+                    touchAttackDirection = direction.normalized;
+
+                if (TouchMode.Active && !HasMainSkill && !CharacterAttackAnimator.IsRanged(CurrentWeaponType()))
+                {
+                    EnemyHealth target = FindTouchMeleeTarget(direction);
+                    if (target != null)
+                        direction = target.transform.position - transform.position;
+                    direction.y = 0f;
+                }
 
                 if (direction.sqrMagnitude > 0.0001f)
                     transform.rotation = Quaternion.LookRotation(direction);
@@ -372,7 +394,7 @@ namespace PoeClone.Player
             }
 
             WeaponType weaponType = CurrentWeaponType();
-            float range = Reach(weaponType);
+            float range = CharacterAttackAnimator.IsRanged(weaponType) ? Reach(weaponType) : MeleeReach(weaponType);
 
             if (CharacterAttackAnimator.IsRanged(weaponType))
             {
@@ -485,6 +507,23 @@ namespace PoeClone.Player
         // go, it falls back to what was aimed at when the swing started (the enemy, else the point).
         private void ReaimAtRelease()
         {
+            if (TouchMode.Active && !castPending && !CharacterAttackAnimator.IsRanged(CurrentWeaponType()))
+            {
+                // Always search around the player's raw input, never around a previously locked
+                // target. Releasing the stick keeps its last direction, not an enemy lock.
+                Vector3 pickedDirection = PlayerController.CameraRelativeDirection(VirtualInput.Aim);
+                if (pickedDirection.sqrMagnitude < 0.0001f)
+                    pickedDirection = touchAttackDirection;
+                EnemyHealth enemy = FindTouchMeleeTarget(pickedDirection);
+                aimEnemy = enemy;
+                Vector3 assistedDirection = enemy != null
+                    ? enemy.transform.position - transform.position : pickedDirection;
+                assistedDirection.y = 0f;
+                if (assistedDirection.sqrMagnitude > 0.0001f)
+                    transform.rotation = Quaternion.LookRotation(assistedDirection);
+                return;
+            }
+
             Vector3 target;
             if (TryGetAimPoint(out Vector3 now))
                 target = now;
@@ -517,6 +556,36 @@ namespace PoeClone.Player
             return Vector3.Angle(forward, toTarget) <= (cone > 0f ? cone : coneHalfAngle);
         }
 
+        private EnemyHealth FindTouchMeleeTarget(Vector3 pickedDirection)
+        {
+            pickedDirection.y = 0f;
+            if (pickedDirection.sqrMagnitude < 0.0001f)
+                return null;
+
+            // Use the actual melee reach, including range bonuses, even when a staff falls
+            // back to a basic blow because its spell cannot be paid for.
+            float range = MeleeReach(CurrentWeaponType());
+            EnemyHealth best = null;
+            float bestAngle = float.MaxValue;
+            foreach (EnemyHealth enemy in EnemyHealth.Active)
+            {
+                if (enemy == null || enemy.IsDead || !enemy.isActiveAndEnabled)
+                    continue;
+                Vector3 offset = enemy.transform.position - transform.position;
+                offset.y = 0f;
+                float reach = DamageableReach(enemy, range);
+                if (offset.sqrMagnitude > reach * reach || offset.sqrMagnitude < 0.000001f)
+                    continue;
+                float angle = Vector3.Angle(pickedDirection, offset);
+                if (angle <= TouchMeleeAimHalfAngle && angle < bestAngle)
+                {
+                    bestAngle = angle;
+                    best = enemy;
+                }
+            }
+            return best;
+        }
+
         // Pure aiming feedback: highlights whichever in-range enemy is closest to the cursor on
         // screen. Must only ever highlight a target that PerformHit would actually hit right now,
         // so it re-runs the exact same distance+cone check PerformHit uses -- against the aim
@@ -539,6 +608,12 @@ namespace PoeClone.Player
             Vector3 aimDirection = aimPoint - transform.position;
             aimDirection.y = 0f;
             aimDirection = aimDirection.sqrMagnitude > 0.0001f ? aimDirection.normalized : transform.forward;
+
+            if (touch && !HasMainSkill && !CharacterAttackAnimator.IsRanged(CurrentWeaponType()))
+            {
+                SetHighlight(FindTouchMeleeTarget(aimDirection));
+                return;
+            }
 
             float range = Reach(CurrentWeaponType());
             bool melee = !CharacterAttackAnimator.IsRanged(CurrentWeaponType());

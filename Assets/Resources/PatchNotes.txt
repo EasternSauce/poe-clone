@@ -1,3 +1,10 @@
+version: 2026-10-08-mobile-running-melee-aim
+- Mobile movement always runs; removed the Run toggle.
+- Mobile basic melee attacks assist aiming within a 60-degree cone centered on the chosen direction. Only enemies within weapon reach qualify, and the enemy closest to the cone's center takes priority over nearer enemies. With no valid target, attacks keep the chosen direction.
+
+version: 2026-10-08-mobile-potion-skill-separation
+- Mobile skill buttons are independent of the dedicated life and mana potion buttons. Empty skill buttons no longer show desktop potion assignments, and potions no longer block automatic skill assignment on mobile.
+
 version: 2026-10-08-disable-public-test-urls
 - Disabled public minimal-arena test URLs. The combat arena remains available in the Unity Editor through PoeClone > Test > Minimal Combat Arena.
 

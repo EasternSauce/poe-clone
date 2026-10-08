@@ -533,7 +533,7 @@ namespace PoeClone.Skills
             foreach (SkillGrant grant in AvailableGrants())
             {
                 if (grant.Id != id || grant.Source != source || grant.GrantLevel != grantLevel) continue;
-                if (enabled) PlayerPotions.SetPotionAt(slot, 0);
+                if (enabled && !TouchMode.Active) PlayerPotions.SetPotionAt(slot, 0);
                 float sharedReady = slots[slot] == id ? slotReadyAt[slot] : 0f;
                 float sharedCooldown = slots[slot] == id ? slotCooldownOf[slot] : 0f;
                 for (int k = 0; k < slots.Length; k++)
@@ -665,7 +665,8 @@ namespace PoeClone.Skills
                 int free = -1;
                 for (int k = 0; k < slots.Length; k++)
                 {
-                    if (slots[k] == null && PlayerPotions.PotionAt(k) == 0) { free = k; break; }
+                    // Touch has dedicated potion buttons, so desktop potion bindings reserve no skill slots.
+                    if (slots[k] == null && (TouchMode.Active || PlayerPotions.PotionAt(k) == 0)) { free = k; break; }
                 }
                 if (free < 0)
                     continue;

@@ -131,11 +131,11 @@ namespace PoeClone.Player
             chilledUntil = Mathf.Max(chilledUntil, Time.time + seconds);
         }
 
-        // Clicked targets automatically sprint; manual movement uses Shift or the on-screen run toggle.
+        // Clicked targets and touch movement automatically sprint; desktop movement uses Shift.
         // No stamina or mana cost.
         private bool IsSprinting()
         {
-            if (walking || VirtualInput.Sprint)
+            if (walking || Inventory.TouchMode.Active)
                 return true;
 
             Keyboard keyboard = Keyboard.current;

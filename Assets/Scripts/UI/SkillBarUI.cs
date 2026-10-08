@@ -518,9 +518,8 @@ namespace PoeClone.UI
             for (int k = 0; k < SkillBook.TouchSlotCount; k++)
             {
                 SkillId? id = skills.Slot(k);
-                int potion = Player.PlayerPotions.PotionAt(k);
                 string name = id.HasValue && skills.LevelAt(k) > 0 ? SkillBook.Get(id.Value).Name :
-                    potion == 1 ? "Health potion" : potion == 2 ? "Mana potion" : "Empty";
+                    "Empty";
                 mobileLabels[k].text = "<b>Button " + (k + 1) + "</b>\n" + name;
                 mobileButtons[k].color = k == selectedMobileButton
                     ? new Color(0.42f, 0.31f, 0.13f, 1f) : new Color(0.14f, 0.12f, 0.10f, 1f);
@@ -712,7 +711,6 @@ namespace PoeClone.UI
             {
                 if (skills == null || SpectatorMirror.Active) return;
                 skills.ClearSlot(selectedMobileButton);
-                Player.PlayerPotions.SetPotionAt(selectedMobileButton, 0);
                 RefreshRows();
             };
             clear.gameObject.SetActive(!SpectatorMirror.Active);

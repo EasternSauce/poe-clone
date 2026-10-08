@@ -11,8 +11,8 @@ namespace PoeClone.UI
     /// <summary>
     /// On-screen controls for phone/tablet play, shown only in <see cref="TouchMode"/>: a floating
     /// joystick on the left half of the screen for movement, an aim stick (drag to aim, hold off
-    /// centre to keep attacking/casting that way - see <see cref="VirtualInput.Aim"/>) and a run
-    /// toggle at the bottom right, and buttons at the top right for menus and settings.
+    /// centre to keep attacking/casting that way - see <see cref="VirtualInput.Aim"/>) at the
+    /// bottom right, and buttons at the top right for menus and settings. Movement always runs.
     /// They feed <see cref="VirtualInput"/>, which the player scripts read
     /// next to the keyboard and mouse. Also asks for landscape when the phone is held upright.
     ///
@@ -27,7 +27,6 @@ namespace PoeClone.UI
 
         private static readonly Color ControlColor = new Color(0.08f, 0.07f, 0.06f, 0.55f);
         private static readonly Color ControlPressed = new Color(0.30f, 0.24f, 0.14f, 0.75f);
-        private static readonly Color RunOnColor = new Color(0.62f, 0.48f, 0.20f, 0.85f);
         private static readonly Color UnreadColor = new Color(0.85f, 0.20f, 0.15f, 1f);
 
         private GameObject controlsRoot;
@@ -47,7 +46,6 @@ namespace PoeClone.UI
         private Image aimIcon;
         private string aimIconFor;
         private int aimPointer = int.MinValue;
-        private Image runImage;
         private Image settingsButton;
         private GameObject unreadDot;
 
@@ -526,13 +524,6 @@ namespace PoeClone.UI
             manaPotionImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.PotionPresses |= 2;
             TouchMode.AddBlocker(manaPotionImage.rectTransform);
 
-            runImage = NewRoundButton("Run", combat, new Vector2(1f, 0f), new Vector2(-480f, 76f), 96f, "RUN");
-            runImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ =>
-            {
-                VirtualInput.Sprint = !VirtualInput.Sprint;
-                runImage.color = VirtualInput.Sprint ? RunOnColor : ControlColor;
-            };
-
             // Menus stay at the edges, clear of the combat buttons and the left HUD.
             RectTransform menu = UiKit.NewRect("Menu", canvas.transform);
             UiKit.Stretch(menu, 0f);
@@ -558,7 +549,6 @@ namespace PoeClone.UI
 
             // The inventory and item pickup read raw touches, so they must know these buttons sit on top.
             TouchMode.AddBlocker(aimBaseImage.rectTransform);
-            TouchMode.AddBlocker(runImage.rectTransform);
             TouchMode.AddBlocker(bag.rectTransform);
             TouchMode.AddBlocker(character.rectTransform);
             TouchMode.AddBlocker(chat.rectTransform);
