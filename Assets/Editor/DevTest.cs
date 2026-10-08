@@ -99,16 +99,13 @@ namespace PoeClone.EditorTools
         /// <summary>Standalone loot debug run: no game world, server or character startup.</summary>
         public static string QuickStartLootSimulator() => LootSimulatorSession.Start();
 
-        [MenuItem("PoeClone/Test/Loot Simulator")]
+        [MenuItem("PoeClone/Loot Simulator", priority = 33)]
         private static void LootSimulatorMenu() => Debug.Log(QuickStartLootSimulator());
 
         [MenuItem("PoeClone/Test/Quick Start (Sandbox)")]
         private static void QuickStartMenu() => Debug.Log("DevTest QuickStart: " + QuickStart());
 
-        [MenuItem("PoeClone/Test/Bow Grip Demo")]
-        private static void BowGripDemoMenu() => Debug.Log("DevTest Bow Grip Demo: " + QuickStart(weaponBaseId: "short_bow"));
-
-        [MenuItem("PoeClone/World/Rendered World Layouts")]
+        [MenuItem("PoeClone/Rendered World Layouts", priority = 34)]
         private static void WorldLayoutsMenu() => Debug.Log(QuickStartWorldLayouts());
 
         public static string QuickStartWorldLayouts()

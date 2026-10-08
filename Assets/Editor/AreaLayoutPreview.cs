@@ -14,9 +14,6 @@ namespace PoeClone.EditorTools
         private string report;
         private const int Resolution = 360;
 
-        [MenuItem("PoeClone/World/Area Layout Preview")]
-        public static void Open() { GetWindow<AreaLayoutPreview>("Area Layouts"); }
-
         private void OnDisable() { if (preview != null) DestroyImmediate(preview); }
 
         private void OnGUI()

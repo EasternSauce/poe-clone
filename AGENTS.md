@@ -16,7 +16,7 @@ Do not run complex Unity tests unless the user specifically asks. Leave gameplay
    ```csharp
    return PoeClone.EditorTools.DevTest.QuickStart(weaponBaseId: "short_bow");
    ```
-   The equivalent editor menu is **PoeClone > Test > Bow Grip Demo**. Any supported weapon base ID can be supplied to `QuickStart`.
+   Any supported weapon base ID can be supplied to `QuickStart`.
 5. Change inventory and scene state directly through code during Play:
    ```csharp
    return PoeClone.EditorTools.DevTest.Equip("short_bow");
