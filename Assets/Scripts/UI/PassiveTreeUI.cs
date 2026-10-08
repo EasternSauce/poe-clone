@@ -355,7 +355,7 @@ namespace PoeClone.UI
             cancelButton.gameObject.SetActive(!Spectating);
             resetButton.gameObject.SetActive(!Spectating);
             respecButton.gameObject.SetActive(!Spectating && (passives.RegretOrbs > 0 || respecMode));
-            respecLabel.text = respecMode ? "Respec active" : "Respec (" + passives.RegretOrbs + ")";
+            respecLabel.text = respecMode ? "Refund active" : "Refund (" + passives.RegretOrbs + ")";
             respecButton.color = respecMode ? new Color(0.15f, 0.3f, 0.4f) : new Color(0.18f, 0.14f, 0.10f);
             confirmButton.color = respecMode && refundCost > passives.RegretOrbs ? new Color(0.12f, 0.10f, 0.08f) : new Color(0.18f, 0.14f, 0.10f);
             confirmButton.GetComponentInChildren<Text>().text = respecMode ? "Accept" : "Confirm";
@@ -442,7 +442,7 @@ namespace PoeClone.UI
                 sb.Append("Always yours.");
             else if (respecMode)
             {
-                if (!taken) sb.Append(passives.Allocation.Has(node.Id) ? "Pending refund - accept to regain the point." : "Respec mode only removes allocated nodes.");
+                if (!taken) sb.Append(passives.Allocation.Has(node.Id) ? "Pending refund - accept to regain the point." : "Refund mode only removes allocated nodes.");
                 else if (!allocation.CanRefund(node.Id)) sb.Append("Remove dependent nodes first to keep your paths connected.");
                 else if (passives.Allocation.Has(node.Id) && passives.RefundCost(draft) >= passives.RegretOrbs) sb.Append("All inventory orbs are reserved for pending refunds.");
                 else sb.Append("Click to preview refunding this node.");
@@ -747,7 +747,7 @@ namespace PoeClone.UI
                 }
             };
 
-            respecButton = NewButton(pr, "Respec", "Respec", new Vector2(176f, -12f), new Vector2(150f, 38f));
+            respecButton = NewButton(pr, "Refund", "Refund", new Vector2(176f, -12f), new Vector2(150f, 38f));
             respecLabel = respecButton.GetComponentInChildren<Text>();
             respecButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {

@@ -1,6 +1,6 @@
 version: 2026-10-08-orb-of-regret
 - Added Orb of Regret, stacking to 100 and dropping from any monster with a 1.04% chance (30% more common than Shed Hearts).
-- Carry orbs in your inventory to enable Respec in the passive tree. Click allocated end nodes to preview refunds, up to the number of orbs you carry. Accept consumes one orb per refunded node and returns the points; Cancel or closing the tree discards the preview without spending orbs. Remaining paths must stay connected.
+- Carry orbs in your inventory to enable Refund in the passive tree. Click allocated end nodes to preview refunds, up to the number of orbs you carry. Accept consumes one orb per refunded node and returns the points; Cancel or closing the tree discards the preview without spending orbs. Remaining paths must stay connected.
 
 version: 2026-10-08-item-attribute-weights
 - Strength, Dexterity and Intelligence now have doubled random modifier weights, 25% above the highest other individual modifier weight. Equipment restrictions and base stat preferences still apply.
