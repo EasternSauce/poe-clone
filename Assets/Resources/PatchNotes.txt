@@ -1,3 +1,6 @@
+version: 2026-10-08-clean-water-border-joins
+- Removed stray rock-wall fragments at river and lake joins by matching walls to the water surface outline. Closed the exposed ends of rock and ice borders, tapered rims into shores to remove sharp ledges and slivers, and aligned wall shading with their rendered contours.
+
 version: 2026-10-08-continuous-shoreline-borders
 - Rock and ice borders now reach river and lake shores instead of stopping several metres away and leaving dark gaps. Border surfaces follow the rendered ground edge to close the seams beside them.
 

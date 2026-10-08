@@ -20,7 +20,7 @@ namespace PoeClone.World
         private readonly List<Region> cuts = new List<Region>();
         public readonly List<(Vector3 a, Vector3 b)> Boundary = new List<(Vector3, Vector3)>();
         private Mesh groundMesh, landMesh;
-        private float[,] landSamples;
+        private float[,] landSamples, waterSamples;
         private readonly List<(Vector3 a, Vector3 b)> landBoundary = new List<(Vector3, Vector3)>();
         private float[,] gapSamples;
         private bool[,] filledGaps;
@@ -244,11 +244,14 @@ namespace PoeClone.World
             var triangles = new List<int>();
             int nx = Mathf.CeilToInt(Size.x / Cell), nz = Mathf.CeilToInt(Size.y / Cell);
             var samples = new float[nx + 1, nz + 1];
+            if (omitBridges) waterSamples = new float[nx + 1, nz + 1];
             for (int z = 0; z <= nz; z++)
                 for (int x = 0; x <= nx; x++)
                 {
                     Vector2 point = new Vector2(x * Cell - Size.x * 0.5f, z * Cell - Size.y * 0.5f);
-                    samples[x, z] = omitBridges ? Mathf.Min(Distance(point), -WaterDistance(point)) : Distance(point);
+                    float water = WaterDistance(point);
+                    samples[x, z] = omitBridges ? Mathf.Min(Distance(point), -water) : Distance(point);
+                    if (omitBridges) waterSamples[x, z] = water;
                 }
             for (int z = 0; z < nz; z++)
                 for (int x = 0; x < nx; x++)
@@ -301,18 +304,29 @@ namespace PoeClone.World
 
         // Interpolate the same triangles that render the floor, including its water cutouts.
         // Separate, finer sampling of the analytic outline leaves slits beside the ground mesh.
-        private float LandDistance(Vector2 p)
+        private float LandDistance(Vector2 p) => SampleSurface(p, false);
+        private float ShorelineDistance(Vector2 p) => SampleSurface(p, true);
+        private float SampleSurface(Vector2 p, bool water)
         {
             if (landSamples == null) BuildGroundMesh(0, omitBridges: true);
             Vector2 grid = (p + Size * 0.5f) / Cell;
             int x = Mathf.FloorToInt(grid.x), z = Mathf.FloorToInt(grid.y);
             if (x < 0 || z < 0 || x + 1 >= landSamples.GetLength(0) || z + 1 >= landSamples.GetLength(1))
-                return Mathf.Min(Distance(p), -WaterDistance(p));
+                return water ? WaterDistance(p) : Mathf.Min(Distance(p), -WaterDistance(p));
             float u = grid.x - x, v = grid.y - z;
-            float a = landSamples[x, z], b = landSamples[x, z + 1];
-            float c = landSamples[x + 1, z + 1], d = landSamples[x + 1, z];
+            float[,] field = water ? waterSamples : landSamples;
+            float a = field[x, z], b = field[x, z + 1];
+            float c = field[x + 1, z + 1], d = field[x + 1, z];
             return v >= u ? a * (1f - v) + b * (v - u) + c * u :
                 a * (1f - u) + c * v + d * (u - v);
+        }
+
+        private float RimHeight(Vector2 p, float top)
+        {
+            if (!HasWater) return top;
+            float t = Mathf.Clamp01(-ShorelineDistance(p) / 4f);
+            t = t * t * (3f - 2f * t);
+            return Mathf.Lerp(Mathf.Min(0.025f, top), top, t);
         }
 
         public Mesh BuildWalls(float bottom, float top, float outward = 0f)
@@ -325,6 +339,7 @@ namespace PoeClone.World
             bool collision = outward <= 0f;
             // Share the vertical face at contour joins. The top is triangulated separately:
             // extending these normals into a wide strip crosses faces at concave bends.
+            float Surface(Vector2 p) => collision ? Distance(p) : LandDistance(p);
             int Join(Vector3 point)
             {
                 var key = new Vector2Int(Mathf.RoundToInt(point.x * 10000f), Mathf.RoundToInt(point.z * 10000f));
@@ -332,12 +347,12 @@ namespace PoeClone.World
                 Vector2 p = new Vector2(key.x, key.y) / 10000f;
                 const float delta = 0.1f;
                 Vector3 normal = -new Vector3(
-                    Distance(p + Vector2.right * delta) - Distance(p - Vector2.right * delta), 0f,
-                    Distance(p + Vector2.up * delta) - Distance(p - Vector2.up * delta)).normalized;
+                    Surface(p + Vector2.right * delta) - Surface(p - Vector2.right * delta), 0f,
+                    Surface(p + Vector2.up * delta) - Surface(p - Vector2.up * delta)).normalized;
                 Vector3 inner = new Vector3(p.x, 0f, p.y);
                 int start = vertices.Count;
                 vertices.Add(inner + Vector3.up * bottom);
-                vertices.Add(inner + Vector3.up * top);
+                vertices.Add(inner + Vector3.up * (collision ? top : RimHeight(p, top)));
                 normals.Add(-normal); normals.Add(-normal);
                 joins.Add(key, start);
                 return start;
@@ -357,8 +372,8 @@ namespace PoeClone.World
                 if (!collision)
                 {
                     // Clip at the shore instead of deleting entire wall segments near a river.
-                    float da = -WaterDistance(start + Center) - 0.06f;
-                    float db = -WaterDistance(end + Center) - 0.06f;
+                    float da = -ShorelineDistance(new Vector2(start.x, start.z)) - 0.06f;
+                    float db = -ShorelineDistance(new Vector2(end.x, end.z)) - 0.06f;
                     if (da <= 0f && db <= 0f) continue;
                     if ((da > 0f) != (db > 0f))
                     {
@@ -371,14 +386,14 @@ namespace PoeClone.World
                 Face(a, a + 1, b, facing);
                 Face(b, a + 1, b + 1, facing);
             }
-            if (!collision) BuildWallTop(top, outward, vertices, triangles, normals);
+            if (!collision) BuildWallTop(bottom, top, outward, vertices, triangles, normals);
             Mesh mesh = MeshFrom("AuthoredAreaWalls", vertices, triangles);
             // Both triangle windings share collision vertices; explicit normals avoid cancellation.
             mesh.SetNormals(normals);
             return mesh;
         }
 
-        private void BuildWallTop(float top, float outward, List<Vector3> vertices, List<int> triangles, List<Vector3> normals)
+        private void BuildWallTop(float bottom, float top, float outward, List<Vector3> vertices, List<int> triangles, List<Vector3> normals)
         {
             const float width = 5f, step = 1f;
             float padding = outward + width + step;
@@ -391,21 +406,52 @@ namespace PoeClone.World
                 {
                     float distance = LandDistance(start + new Vector2(x * step, z * step));
                     samples[x, z] = Mathf.Min(Mathf.Min(-distance - outward, distance + outward + width),
-                        -WaterDistance(start + new Vector2(x * step, z * step)) - 0.06f);
+                        -ShorelineDistance(start + new Vector2(x * step, z * step)) - 0.06f);
                 }
             // Clip a non-overlapping grid to the solid band outside the playable outline.
             // Holes and merging room edges use the same field as the floor, with no long
             // triangles connecting unrelated contour normals. Preserve the floor Boundary.
+            Vector3 Point(int x, int z)
+            {
+                Vector2 p = start + new Vector2(x * step, z * step);
+                return new Vector3(p.x, RimHeight(p, top), p.y);
+            }
             int first = vertices.Count;
+            var contour = new List<(Vector3 a, Vector3 b)>();
             for (int z = 0; z < nz; z++)
                 for (int x = 0; x < nx; x++)
                 {
-                    Vector3 a = new Vector3(start.x + x * step, top, start.y + z * step);
-                    Vector3 b = a + Vector3.forward * step, c = b + Vector3.right * step, d = a + Vector3.right * step;
-                    Clip(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1], vertices, triangles, false);
-                    Clip(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z], vertices, triangles, false);
+                    Vector3 a = Point(x, z), b = Point(x, z + 1), c = Point(x + 1, z + 1), d = Point(x + 1, z);
+                    Clip(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1], vertices, triangles, false, contour);
+                    Clip(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z], vertices, triangles, false, contour);
                 }
-            for (int i = first; i < vertices.Count; i++) normals.Add(Vector3.up);
+            for (int i = first; i < vertices.Count; i++)
+            {
+                Vector2 p = new Vector2(vertices[i].x, vertices[i].z);
+                const float delta = 0.1f;
+                normals.Add(new Vector3(
+                    RimHeight(p - Vector2.right * delta, top) - RimHeight(p + Vector2.right * delta, top), 2f * delta,
+                    RimHeight(p - Vector2.up * delta, top) - RimHeight(p + Vector2.up * delta, top)).normalized);
+            }
+            // Close the cut ends of the broad rim where its top reaches the shore.
+            foreach (var edge in contour)
+            {
+                Vector3 mid = (edge.a + edge.b) * 0.5f;
+                Vector2 p = new Vector2(mid.x, mid.z);
+                if (Mathf.Abs(ShorelineDistance(p) + 0.06f) > 0.02f || LandDistance(p) > -outward - 0.02f) continue;
+                const float delta = 0.1f;
+                Vector3 facing = new Vector3(
+                    ShorelineDistance(p + Vector2.right * delta) - ShorelineDistance(p - Vector2.right * delta), 0,
+                    ShorelineDistance(p + Vector2.up * delta) - ShorelineDistance(p - Vector2.up * delta)).normalized;
+                int at = vertices.Count;
+                vertices.Add(edge.a); vertices.Add(edge.b);
+                vertices.Add(new Vector3(edge.a.x, bottom, edge.a.z));
+                vertices.Add(new Vector3(edge.b.x, bottom, edge.b.z));
+                for (int i = 0; i < 4; i++) normals.Add(facing);
+                bool reverse = Vector3.Dot(Vector3.Cross(vertices[at + 2] - vertices[at], vertices[at + 1] - vertices[at]), facing) < 0;
+                triangles.Add(at); triangles.Add(at + (reverse ? 1 : 2)); triangles.Add(at + (reverse ? 2 : 1));
+                triangles.Add(at + 1); triangles.Add(at + (reverse ? 3 : 2)); triangles.Add(at + (reverse ? 2 : 3));
+            }
         }
 
         private List<(Vector3 a, Vector3 b)> WallContour(float outward)
@@ -456,13 +502,14 @@ namespace PoeClone.World
             for (int i = 0; i < indices.Length; i += 3)
             {
                 Vector3 a = points[indices[i]], b = points[indices[i + 1]], c = points[indices[i + 2]];
-                Clip(a, b, c, width + WaterDistance(a + Center), width + WaterDistance(b + Center),
-                    width + WaterDistance(c + Center), vertices, triangles, false);
+                Clip(a, b, c, width + ShorelineDistance(new Vector2(a.x, a.z)), width + ShorelineDistance(new Vector2(b.x, b.z)),
+                    width + ShorelineDistance(new Vector2(c.x, c.z)), vertices, triangles, false);
             }
             // Close the exposed earth between the water level and the grassy bank.
             foreach (var edge in landBoundary)
             {
-                if (WaterDistance((edge.a + edge.b) * 0.5f + Center) < -0.25f) continue;
+                Vector3 localMidpoint = (edge.a + edge.b) * 0.5f;
+                if (Mathf.Abs(ShorelineDistance(new Vector2(localMidpoint.x, localMidpoint.z))) > 0.02f) continue;
                 int first = vertices.Count;
                 vertices.Add(edge.a); vertices.Add(edge.b);
                 vertices.Add(edge.a + Vector3.down * 0.48f); vertices.Add(edge.b + Vector3.down * 0.48f);
@@ -489,7 +536,9 @@ namespace PoeClone.World
             var samples = new float[nx + 1, nz + 1];
             for (int z = 0; z <= nz; z++)
                 for (int x = 0; x <= nx; x++)
-                    samples[x, z] = WaterDistance(start + new Vector2(x * Cell, z * Cell));
+                    // A submerged overlap hides corner seams between separately clipped surfaces.
+                    // It stays beneath the opaque land and bank; movement uses the authored water field.
+                    samples[x, z] = WaterDistance(start + new Vector2(x * Cell, z * Cell)) + 0.65f;
             var vertices = new List<Vector3>();
             var triangles = new List<int>();
             for (int z = 0; z < nz; z++)
