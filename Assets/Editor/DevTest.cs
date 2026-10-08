@@ -47,6 +47,8 @@ namespace PoeClone.EditorTools
         private static bool quickSession;
         private static bool quickSandbox;
         private static bool quickTouch;
+        private static bool quickWorldLayouts;
+        private static bool worldLayoutStartupReady;
         private static string quickWeaponBaseId;
         private static double nextReadyAt;
         private static double quickDeadline;
@@ -81,6 +83,8 @@ namespace PoeClone.EditorTools
             quickSession = true;
             quickSandbox = sandbox;
             quickTouch = false;
+            quickWorldLayouts = false;
+            worldLayoutStartupReady = false;
             quickWeaponBaseId = weaponBaseId;
             quickState = "starting Play";
             quickDeadline = EditorApplication.timeSinceStartup + 45;
@@ -97,6 +101,55 @@ namespace PoeClone.EditorTools
 
         [MenuItem("PoeClone/Test/Bow Grip Demo")]
         private static void BowGripDemoMenu() => Debug.Log("DevTest Bow Grip Demo: " + QuickStart(weaponBaseId: "short_bow"));
+
+        [MenuItem("PoeClone/World/Rendered World Layouts")]
+        private static void WorldLayoutsMenu() => Debug.Log(QuickStartWorldLayouts());
+
+        public static string QuickStartWorldLayouts()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) return "Stop Play before opening Rendered World Layouts";
+            // Start the local server explicitly on the same port used by the temporary session.
+            bool listening = false;
+            foreach (var endpoint in System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners())
+                if (endpoint.Port == 8099) { listening = true; break; }
+            if (!listening)
+            {
+                var start = new System.Diagnostics.ProcessStartInfo("node", "server.js")
+                {
+                    WorkingDirectory = Path.GetFullPath("server"),
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden
+                };
+                start.EnvironmentVariables["PORT"] = "8099";
+                System.Diagnostics.Process.Start(start);
+                // Wait for the listener in the editor update callback before QuickStart.
+                EditorApplication.update -= WaitForWorldLayoutServer;
+                EditorApplication.update += WaitForWorldLayoutServer;
+                worldLayoutServerDeadline = EditorApplication.timeSinceStartup + 15;
+                return "Starting local server on 8099; rendered world startup pending";
+            }
+            string result = QuickStart(sandbox: false);
+            quickWorldLayouts = true;
+            return result;
+        }
+
+        private static double worldLayoutServerDeadline;
+        private static void WaitForWorldLayoutServer()
+        {
+            foreach (var endpoint in System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners())
+                if (endpoint.Port == 8099)
+                {
+                    EditorApplication.update -= WaitForWorldLayoutServer;
+                    Debug.Log(QuickStartWorldLayouts());
+                    return;
+                }
+            if (EditorApplication.timeSinceStartup > worldLayoutServerDeadline)
+            {
+                EditorApplication.update -= WaitForWorldLayoutServer;
+                Debug.LogError("Rendered World Layouts: local server did not start on port 8099.");
+            }
+        }
 
         /// <summary>Starts the retained Editor arena; options are local diagnostics, never public URLs.</summary>
         public static string QuickStartMinimal(bool touch = false, string options = "")
@@ -141,6 +194,17 @@ namespace PoeClone.EditorTools
             UnityEngine.InputSystem.InputSystem.settings.editorInputBehaviorInPlayMode =
                 UnityEngine.InputSystem.InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
             quickState = ready + " || " + setup;
+            if (quickWorldLayouts)
+            {
+                // Let delayed startup overlays appear, then advance Ready again before inspecting.
+                if (!worldLayoutStartupReady)
+                { worldLayoutStartupReady = true; return; }
+                Ready();
+                if (PoeClone.UI.PatchNotesUI.IsShowing || WorldBuilder.Instance == null) return;
+                var mode = PoeClone.CameraSystem.WorldLayoutMode.Open();
+                if (mode == null) return;
+                quickState += " || rendered world layouts ready";
+            }
             EditorApplication.update -= AdvanceQuickSession;
             Debug.Log("DevTest QuickStart: " + quickState);
         }

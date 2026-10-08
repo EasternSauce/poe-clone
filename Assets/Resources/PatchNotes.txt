@@ -1,3 +1,6 @@
+version: 2026-10-08-rendered-world-layouts
+- Added PoeClone > World > Rendered World Layouts in Unity: launches a temporary game session with the actual rendered world, gameplay paused and the gameplay HUD hidden. Scroll to zoom, drag or use WASD/arrows to pan, fit the whole world or an individual area, and switch between top-down and angled views. F8/Escape restores gameplay; stopping Play restores character preferences. Starts the local session server on port 8099 when needed.
+
 version: 2026-10-08-layout-wall-surfaces
 - Joined curved rock banks and cliff rims into continuous surfaces, removing cracks between segments and overlapping faces that could flicker.
 - Smoothed curved wall shading and reduced small-scale texture repetition. Frozen walls now use pale rock with an ice tint; volcanic cliff faces use warmer, darker stone.
