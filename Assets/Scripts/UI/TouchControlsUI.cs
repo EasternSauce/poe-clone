@@ -506,6 +506,10 @@ namespace PoeClone.UI
                 back.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.SkillPressed = slot;
                 TouchMode.AddBlocker(back.rectTransform);
                 Image ring = SkillBarUI.NewRing(back.rectTransform, 6f);
+                Text number = UiKit.NewText("ButtonNumber", back.rectTransform, (k + 1).ToString(),
+                    16, UiKit.Gold, TextAnchor.LowerRight);
+                number.raycastTarget = false;
+                UiKit.Stretch(number.rectTransform, 10f);
                 skillButtons.Add(new SkillButton { Back = back, Icon = icon, Cooldown = cooldown, Ring = ring });
             }
 

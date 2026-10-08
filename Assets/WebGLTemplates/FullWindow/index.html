@@ -90,7 +90,6 @@
       var fill = document.getElementById("bar-fill");
       var errorBox = document.getElementById("error");
       var fsButton = document.getElementById("fullscreen");
-      var minimalCombat = new URLSearchParams(window.location.search).get("minimal") === "1";
 
       function showError(message) {
         errorBox.textContent = message;
@@ -221,10 +220,8 @@
           loading.classList.add("done");
           if (!standalone) fsButton.style.display = "flex";
           canvas.focus();
-          if (!minimalCombat) {
-            maybeShowIosHintOnce();
-            watchForUpdates();
-          }
+          maybeShowIosHintOnce();
+          watchForUpdates();
         }).catch(function (message) {
           showError(String(message));
         });

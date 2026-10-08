@@ -12,7 +12,7 @@ using PoeClone.UI;
 namespace PoeClone.World
 {
     /// <summary>
-    /// Opt-in isolated combat loop at ?minimal=1. Uses the real player, enemy and death
+    /// Editor-only opt-in combat arena, started through DevTest. Uses real player and death
     /// pipeline, with optional loot, menus and quest tracking. Never loads character saves.
     /// </summary>
     public sealed class MinimalCombatMode : MonoBehaviour
@@ -24,8 +24,12 @@ namespace PoeClone.World
         {
             get
             {
+#if UNITY_EDITOR
                 if (!enabledForUrl.HasValue) enabledForUrl = QueryValue("minimal") == "1";
                 return enabledForUrl.Value;
+#else
+                return false;
+#endif
             }
         }
 
@@ -66,7 +70,7 @@ namespace PoeClone.World
 #if UNITY_EDITOR
                 query = PlayerPrefs.GetString("PoeClone.DevQuery", string.Empty);
 #else
-                query = Uri.TryCreate(Application.absoluteURL, UriKind.Absolute, out var url) ? url.Query : string.Empty;
+                query = string.Empty;
 #endif
             }
             if (options == null)

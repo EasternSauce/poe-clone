@@ -534,15 +534,23 @@ namespace PoeClone.Skills
             {
                 if (grant.Id != id || grant.Source != source || grant.GrantLevel != grantLevel) continue;
                 if (enabled) PlayerPotions.SetPotionAt(slot, 0);
-                if (MatchesGrant(slot, grant)) return;
-                float sharedReady = 0f, sharedCooldown = 0f;
+                float sharedReady = slots[slot] == id ? slotReadyAt[slot] : 0f;
+                float sharedCooldown = slots[slot] == id ? slotCooldownOf[slot] : 0f;
                 for (int k = 0; k < slots.Length; k++)
-                    if (k != slot && MatchesGrant(k, grant))
+                    if (k != slot && slots[k] == id && slotReadyAt[k] >= sharedReady)
                     {
                         sharedReady = slotReadyAt[k];
                         sharedCooldown = slotCooldownOf[k];
-                        break;
                     }
+                // A binding moves the skill. Preserve its cooldown before clearing old slots.
+                if (enabled)
+                    for (int k = 0; k < slots.Length; k++)
+                        if (k != slot && slots[k] == id)
+                        {
+                            slots[k] = null;
+                            slotItems[k] = null;
+                            slotReadyAt[k] = slotCooldownOf[k] = 0f;
+                        }
                 slots[slot] = id;
                 slotItems[slot] = grant.Item;
                 slotSources[slot] = source;
@@ -650,7 +658,7 @@ namespace PoeClone.Skills
             {
                 bool assigned = false;
                 for (int k = 0; k < slots.Length; k++)
-                    if (slots[k] == grant.Id && slotItems[k] == grant.Item && slotGrants[k] == grant.GrantLevel)
+                    if (slots[k] == grant.Id)
                         assigned = true;
                 if (assigned) continue;
 

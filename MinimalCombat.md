@@ -1,86 +1,35 @@
-# Minimal mobile combat reproduction
+# Minimal combat arena (Unity Editor only)
 
-Build and publish through the usual **PoeClone > Build Web** workflow. The same
-build provides both the full game and the isolated arena; no server route is needed.
+Public diagnostic URLs are disabled. Published builds ignore `minimal=1` and
+all of its arena feature switches and start the normal game. The page also uses
+normal update polling and startup hints regardless of those old parameters.
+Rebuild and publish the web player for this change to take effect online.
 
-Append `?minimal=1` to the game URL (or `&minimal=1` if it already has a query).
-This feature needs a new web build; an older published build cannot recognize it.
+The arena and its diagnostic switches are retained for future Editor debugging.
+Start it from **PoeClone > Test > Minimal Combat Arena**, or through Unity MCP:
 
-Examples, relative to the published game's index page:
+```csharp
+return PoeClone.EditorTools.DevTest.QuickStartMinimal();
+```
 
-- `?minimal=1`: sword and one zombie.
-- `?minimal=1&weapon=short_bow`: bow and one zombie.
-- `?minimal=1&enemy=Raider`: sword and one raider.
-- `?minimal=1&touch=1`: force the existing mobile controls in a desktop browser.
+For mobile controls and a chosen diagnostic configuration:
 
-The default arena now includes gear, gold and potion drops, loot pickup, the
-inventory and character pages, skill and passive menus, and quest kill tracking.
-Combat, death, loot and pickup sounds run through the normal audio systems.
-Each kill guarantees a gear roll so that the added work runs on every kill;
-gold and potion rewards use the normal kill reward logic and potion chances.
-All gear generation, icons, labels, pop animations and pickup behavior use the
-main game's implementations. Quest progress uses temporary accepted kill quests
-from the existing quest book, with the arena treated as a level 1 area.
+```csharp
+return PoeClone.EditorTools.DevTest.QuickStartMinimal(
+    touch: true, options: "features=0&skills=1");
+```
 
-Use these switches to isolate the hitch:
+Other local options include `weapon=short_bow`, `enemy=Raider`, `drops=0`,
+`quests=0`, `menus=0`, `inventory=1`, `character=1`, `passives=1`, `preview=0`,
+`audio=0`, and `guaranteedGear=0`. With no options, all arena additions are enabled.
+These options are Editor preferences configured by DevTest, not web URL features.
 
-| URL | Features running |
-| --- | --- |
-| `?minimal=1` | All the additions |
-| `?minimal=1&features=0` | Original bare combat loop, with the floor fix |
-| `?minimal=1&features=0&drops=1` | Bare loop plus drops and pickup |
-| `?minimal=1&features=0&quests=1` | Bare loop plus quest callbacks and tracker |
-| `?minimal=1&features=0&menus=1` | Bare loop plus inventory, character, skill and passive menus |
-| `?minimal=1&drops=0` | All additions except drops and pickup |
-| `?minimal=1&quests=0` | All additions except quest tracking |
-| `?minimal=1&menus=0` | All additions except menus |
-| `?minimal=1&audio=0` | All additions with the audio manager removed |
-| `?minimal=1&guaranteedGear=0` | All additions with normal random gear drop chances |
+Follow the DevTest session instructions in AGENTS.md: verify the local session
+server on port 8099 before starting, wait for QuickStatus, and call Ready again
+before inspecting gameplay to ensure startup overlays are gone. Stop Play to
+restore character preferences automatically.
 
-Switches can be combined. Audio remains enabled in the original bare loop;
-`audio=0` skips the audio manager, including its clip loading and one-shot sources.
-It is useful for distinguishing audio processing from the other work on a kill.
-
-Menu isolation (requires a new web build):
-
-| URL | Menu systems running |
-| --- | --- |
-| `?minimal=1&features=0&character=1` | Character stats page only |
-| `?minimal=1&features=0&skills=1` | Skill bar and skill menu only |
-| `?minimal=1&features=0&passives=1` | Passive tree only |
-| `?minimal=1&features=0&inventory=1` | Inventory with its character preview |
-| `?minimal=1&features=0&inventory=1&preview=0` | Inventory with preview creation disabled |
-
-These flags independently override the `menus` group. A `0` disables a member;
-a `1` enables it even with `features=0` or `menus=0`. Disabled menu components
-are omitted before their startup and event subscriptions, and their touch buttons
-are hidden. Leave panels closed while killing enemies to reproduce background work.
-The preview switch controls whether the inventory's character clone and camera
-are built at all, even on mobile where the preview normally stays hidden.
-
-The arena is a 48 by 48 empty floor with four low boundary walls. Use the normal
-movement and attack controls. Three seconds after each kill, the corpse is removed
-and one replacement enemy appears five metres ahead of the player's position,
-clamped inside the arena. Respawn creation occurs on a separate frame from corpse
-removal and well after the killing frame. Bosses, splitting monsters and summoners
-fall back to a zombie to preserve the single-enemy loop. Invalid weapon IDs fall
-back to the sword. The player can die and revive using the normal HUD.
-
-This mode retains the real player movement, attack, equipment/stat calculations,
-mobile controls, enemy AI/combat, hit effects, experience, death audio and corpse
-animation. It bypasses session startup, character selection, profile loading and
-saving, chat, spectator broadcasting, world generation, normal spawners,
-area transitions and minimap. Existing scene scenery is deactivated
-before its Start methods and then destroyed. The browser also skips its automatic
-iPhone hint and background update polling in this mode.
-
-The full game's existing `EnemyDropsEnabled` setting remains disabled; minimal
-mode overrides it locally through its `drops` switch. Floors and walls explicitly
-use the project's Resources/RuntimePrimitive material, whose shader is included
-in mobile WebGL builds. This arena isolates the bug; it does not claim to fix the
-mobile hitch. A hitch here implicates code retained in this loop. Smooth kills here
-suggest that a system omitted from this mode, or the full scene's size, contributes.
-
-No character profile is read or written. Open the ordinary URL to return to the
-full game. Gameplay reproduction and mobile measurements are left to the developer;
-only Unity asset refresh, compilation and console inspection were performed.
+The arena retains its empty 48 by 48 floor, four walls using the mobile-compatible
+runtime material, and one enemy that respawns three seconds after death. No
+character profile is loaded or saved by the arena. Gameplay checks are left to
+the developer; only asset refresh, compilation and console inspection were run.

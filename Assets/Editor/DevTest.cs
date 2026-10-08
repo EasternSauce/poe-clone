@@ -46,6 +46,7 @@ namespace PoeClone.EditorTools
         private const BindingFlags Any = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
         private static bool quickSession;
         private static bool quickSandbox;
+        private static bool quickTouch;
         private static string quickWeaponBaseId;
         private static double nextReadyAt;
         private static double quickDeadline;
@@ -79,6 +80,7 @@ namespace PoeClone.EditorTools
             string begin = Begin();
             quickSession = true;
             quickSandbox = sandbox;
+            quickTouch = false;
             quickWeaponBaseId = weaponBaseId;
             quickState = "starting Play";
             quickDeadline = EditorApplication.timeSinceStartup + 45;
@@ -95,6 +97,24 @@ namespace PoeClone.EditorTools
 
         [MenuItem("PoeClone/Test/Bow Grip Demo")]
         private static void BowGripDemoMenu() => Debug.Log("DevTest Bow Grip Demo: " + QuickStart(weaponBaseId: "short_bow"));
+
+        /// <summary>Starts the retained Editor arena; options are local diagnostics, never public URLs.</summary>
+        public static string QuickStartMinimal(bool touch = false, string options = "")
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                return "stop Play before QuickStartMinimal";
+            string result = QuickStart(sandbox: false);
+            string query = PlayerPrefs.GetString(DevQueryKey) + "&minimal=1";
+            if (touch) query += "&touch=1";
+            if (!string.IsNullOrWhiteSpace(options)) query += "&" + options.TrimStart('?', '&');
+            PlayerPrefs.SetString(DevQueryKey, query);
+            PlayerPrefs.Save();
+            quickTouch = touch;
+            return result + "; Editor minimal arena requested";
+        }
+
+        [MenuItem("PoeClone/Test/Minimal Combat Arena")]
+        private static void MinimalCombatMenu() => Debug.Log("DevTest Minimal Combat: " + QuickStartMinimal());
 
         private static void AdvanceQuickSession()
         {
@@ -116,7 +136,7 @@ namespace PoeClone.EditorTools
             if (!string.IsNullOrEmpty(quickWeaponBaseId)) setup += " || " + Equip(quickWeaponBaseId);
             if (quickSandbox) setup += " || " + Sandbox();
             // QuickStart is intended for a desktop editor demo even if its host page carries ?touch=1.
-            TouchMode.SetForced(false);
+            TouchMode.SetForced(quickTouch);
             QualitySettings.SetQualityLevel(1, true);
             UnityEngine.InputSystem.InputSystem.settings.editorInputBehaviorInPlayMode =
                 UnityEngine.InputSystem.InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;

@@ -12,9 +12,8 @@ namespace PoeClone.UI
     /// The skill bar (desktop: squares at the bottom of the screen - first the attack (left click:
     /// the staff's spell, or the weapon's icon), then Q E R F, 1-4, right and side mouse
     /// buttons - with the cooldown sweeping down over them and a blue tint when there isn't enough
-    /// mana) and the skills panel (SKL button on touch), which lists every skill, its
-    /// level and the gear it comes from, with a separate entry per granting item and buttons to put it
-    /// there. Clicking a square on the desktop bar opens a list of skills and potions above it.
+    /// mana) and the skills panel (SKL button on touch), which assigns usable equipment skills to Button 1 through Button 4.
+    /// Each granting item gets its own choice; inaccessible skills are omitted. Clicking a square on the desktop bar opens a list of skills and potions above it.
     /// On touch the bar itself is TouchControlsUI's round buttons.
     /// Installed by <see cref="GameSessionController"/>; built at runtime.
     /// </summary>
@@ -25,8 +24,12 @@ namespace PoeClone.UI
         private const float TopRowY = -24f;
         private const float BottomRowY = -100f;
         private const float BarHeight = 152f;
-        private const float SkillsPanelWidth = 980f;
-        private readonly Text[,] potionButtons = new Text[2, SkillBook.SlotCount];
+        private const float SkillsPanelWidth = 760f;
+        private readonly Image[] mobileButtons = new Image[SkillBook.TouchSlotCount];
+        private readonly Text[] mobileLabels = new Text[SkillBook.TouchSlotCount];
+        private int selectedMobileButton;
+        private Text selectionHint;
+        private Text emptySkillsText;
 
         private static SkillBarUI instance;
 
@@ -46,7 +49,7 @@ namespace PoeClone.UI
             public PlayerSkills.SkillGrant? Grant;
             public Image Back;
             public Text Title;
-            public Text[] SlotLabels;
+            public Text Assignment;
         }
 
         private readonly List<SlotView> slotViews = new List<SlotView>();
@@ -68,6 +71,8 @@ namespace PoeClone.UI
         private readonly List<PlayerSkills.SkillGrant> pickerGrants = new List<PlayerSkills.SkillGrant>();
         private int pickerSlot = -1;
         private PlayerSkills skills;
+        private bool rowsDirty = true;
+        private List<PlayerSkills.SkillGrant> builtGrants;
 
         public static bool IsOpen => instance != null && instance.panelRoot != null && instance.panelRoot.activeSelf;
 
@@ -85,6 +90,7 @@ namespace PoeClone.UI
                 PassiveTreeUI.SetOpen(false);
                 if (PassiveTreeUI.IsOpen) return;
             }
+            if (open) instance.EnsureMobilePanel();
             instance.panelRoot.SetActive(open);
             if (open)
                 instance.RefreshRows();
@@ -97,6 +103,18 @@ namespace PoeClone.UI
             panelRoot.SetActive(false);
         }
 
+        private void OnSkillsChanged()
+        {
+            // XP updates also raise this event. Keep closed menus out of the killing frame.
+            rowsDirty = true;
+        }
+
+        private void OnDestroy()
+        {
+            if (skills != null) skills.Changed -= OnSkillsChanged;
+            if (instance == this) instance = null;
+        }
+
         private void Update()
         {
             var session = GameSessionController.Instance;
@@ -106,7 +124,10 @@ namespace PoeClone.UI
             {
                 skills = FindAnyObjectByType<PlayerSkills>();
                 if (skills != null)
-                    skills.Changed += RefreshRows;
+                {
+                    skills.Changed += OnSkillsChanged;
+                    rowsDirty = true;
+                }
             }
 
             if (spectator && skills != null)
@@ -136,6 +157,12 @@ namespace PoeClone.UI
                 else if (panelRoot.activeSelf && keyboard.escapeKey.wasPressedThisFrame)
                     SetOpen(false);
             }
+
+            if (panelRoot.activeSelf && rowsDirty)
+                RefreshRows();
+
+            // TouchControlsUI draws the mobile slots; these desktop views stay hidden.
+            if (TouchMode.Active) return;
 
             for (int k = 0; k < slotViews.Count; k++)
             {
@@ -215,10 +242,13 @@ namespace PoeClone.UI
             bool open = TouchMode.Active && SpectatorMirror.Shown(SpectatorMirror.Menu.Skills);
             if (panelRoot.activeSelf != open)
             {
+                if (open) EnsureMobilePanel();
                 panelRoot.SetActive(open);
                 if (open)
                     RefreshRows();
             }
+            if (open && rowsDirty)
+                RefreshRows();
         }
 
         // ------------------------------------------------------------------ picker
@@ -479,62 +509,53 @@ namespace PoeClone.UI
 
         private void RefreshRows()
         {
-            if (skills == null)
+            rowsDirty = true;
+            if (skills == null || panelRoot == null || !panelRoot.activeSelf)
                 return;
             BuildRows();
+            rowsDirty = false;
 
-            for (int potion = 0; potion < 2; potion++)
-                for (int binding = 0; binding < SkillBook.SlotCount; binding++)
-                {
-                    Text label = potionButtons[potion,binding];
-                    if (label == null) continue;
-                    bool assigned = Player.PlayerPotions.PotionAt(binding) == potion + 1 && skills.Slot(binding) == null;
-                    label.color = assigned ? UiKit.Gold : UiKit.TextColor;
-                    label.transform.parent.GetComponent<Image>().color = assigned
-                        ? new Color(.45f,.35f,.15f,1f) : new Color(.10f,.09f,.08f,1f);
-                }
+            for (int k = 0; k < SkillBook.TouchSlotCount; k++)
+            {
+                SkillId? id = skills.Slot(k);
+                int potion = Player.PlayerPotions.PotionAt(k);
+                string name = id.HasValue && skills.LevelAt(k) > 0 ? SkillBook.Get(id.Value).Name :
+                    potion == 1 ? "Health potion" : potion == 2 ? "Mana potion" : "Empty";
+                mobileLabels[k].text = "<b>Button " + (k + 1) + "</b>\n" + name;
+                mobileButtons[k].color = k == selectedMobileButton
+                    ? new Color(0.42f, 0.31f, 0.13f, 1f) : new Color(0.14f, 0.12f, 0.10f, 1f);
+            }
+            selectionHint.text = SpectatorMirror.Active ? "Viewing skill buttons" :
+                "Choose a skill for Button " + (selectedMobileButton + 1);
+            emptySkillsText.gameObject.SetActive(rows.Count == 0);
 
-            SkillId? main = skills.MainSkill;
+            float y = 0f;
             foreach (Row row in rows)
             {
-                SkillDefinition skill = SkillBook.Get(row.Id);
-                bool unlocked = row.Grant.HasValue;
-                bool isAttack = main == row.Id && !row.Grant.HasValue;
-                int level = unlocked ? skills.GrantLevelWithBonuses(row.Grant.Value) : skills.Level(row.Id);
-                string dim = UiKit.Hex(UiKit.DimText);
-                row.Back.color = unlocked || isAttack ? new Color(0.14f, 0.12f, 0.10f, 1f) : new Color(0.08f, 0.07f, 0.07f, 1f);
-
-                if (level > 0)
-                {
-                    ItemData source = unlocked ? row.Grant.Value.Item : skills.Source(row.Id);
-                    string from = source != null && !isAttack ? " · from " + source.Name +
-                        (unlocked ? " (" + row.Grant.Value.Source + ")" : "") : "";
-                    float cooldown = unlocked ? skills.CooldownForGrant(row.Grant.Value) : skills.Cooldown(row.Id);
-                    string timing = isAttack ? Num(cooldown) + "s per cast" : Num(cooldown) + "s cooldown";
-                    string minions = skills.MinionSummary(row.Id, level);
-                    if (minions != null)
-                        timing += " · " + minions;
-                    string resourceCost = Num(unlocked ? skills.ManaCostForGrant(row.Grant.Value) : skills.ManaCost(row.Id)) + " " + skills.CostResource;
-                    string cost = skill.Bow ? "toggle · " + resourceCost + " per shot" : resourceCost + " · " + timing;
-                    row.Title.text = "<color=#" + UiKit.Hex(skill.Color) + "><b>" + skill.Name + "</b></color>  <color=#" + UiKit.Hex(UiKit.Gold) + ">Level " + level +
-                                     (isAttack ? " · your attack" : "") + "</color>   <size=14><color=#" + dim + ">" +
-                                     cost + from + "</color></size>\n<size=14>" + skill.Description + "</size>";
-                }
-                else
-                {
-                    row.Title.text = "<color=#" + dim + "><b>" + skill.Name + "</b>   <size=14>not on your gear · rolls on " + skill.RollsOn +
-                                     "</size>\n<size=14>" + skill.Description + "</size></color>";
-                }
-
-                for (int k = 0; k < row.SlotLabels.Length; k++)
-                {
-                    bool here = unlocked && skills.MatchesGrant(k, row.Grant.Value);
-                    row.SlotLabels[k].color = !unlocked ? new Color(1f, 1f, 1f, 0.2f) : here ? UiKit.Gold : UiKit.TextColor;
-                    row.SlotLabels[k].transform.parent.GetComponent<Image>().color = here
-                        ? new Color(0.45f, 0.35f, 0.15f, 1f)
-                        : new Color(0.10f, 0.09f, 0.08f, 1f);
-                }
+                var grant = row.Grant.Value;
+                var skill = SkillBook.Get(row.Id);
+                int level = skills.GrantLevelWithBonuses(grant);
+                string cost = Num(skills.ManaCostForGrant(grant)) + " " + skills.CostResource;
+                string timing = skill.Bow ? "per shot" : Num(skills.CooldownForGrant(grant)) + "s cooldown";
+                string bindings = "";
+                for (int k = 0; k < SkillBook.TouchSlotCount; k++)
+                    if (skills.MatchesGrant(k, grant))
+                        bindings += (bindings.Length == 0 ? "Button " : ", ") + (k + 1);
+                row.Title.text = "<b>" + skill.Name + "</b>  <color=#" + UiKit.Hex(UiKit.Gold) +
+                    ">Level " + level + "</color>\n<size=14>From " + grant.Item.Name + " (" + grant.Source +
+                    ") ? " + cost + " ? " + timing + "</size>\n<size=14>" + skill.Description +
+                    (bindings.Length == 0 ? "" : "\n<color=#" + UiKit.Hex(UiKit.Gold) + ">" + bindings + "</color>") + "</size>";
+                bool assigned = skills.MatchesGrant(selectedMobileButton, grant);
+                row.Back.color = assigned ? new Color(0.24f, 0.20f, 0.12f, 1f) : new Color(0.14f, 0.12f, 0.10f, 1f);
+                row.Assignment.text = SpectatorMirror.Active ? "" : assigned ? "Assigned" : "Assign";
+                float height = Mathf.Max(100f, row.Title.preferredHeight + 20f);
+                UiKit.TopLeft(row.Back.rectTransform, new Vector2(8f, y), new Vector2(panelWidth - 32f, height));
+                row.Title.rectTransform.sizeDelta = new Vector2(panelWidth - 208f, height - 16f);
+                var action = (RectTransform)row.Assignment.transform.parent;
+                UiKit.TopLeft(action, new Vector2(panelWidth - 142f, -(height - 48f) * 0.5f), new Vector2(102f, 48f));
+                y -= height + 8f;
             }
+            panelContent.sizeDelta = new Vector2(0f, Mathf.Max(rows.Count == 0 ? 80f : 0f, -y));
         }
 
         private static string Num(float value)
@@ -624,165 +645,168 @@ namespace PoeClone.UI
 
             BuildPicker(canvas.transform);
 
-            // The panel: a scrollable list with a row for each equipped grant.
-            const float rowHeight = 74f;
-            RectTransform canvasRect = (RectTransform)canvas.transform;
+            // The mobile menu is populated only on its first open.
+            panelRoot = UiKit.NewRect("MobileSkillsPanel", canvas.transform).gameObject;
+            panelRoot.SetActive(false);
+            barRoot.SetActive(!TouchMode.Active);
+        }
+
+        private void EnsureMobilePanel()
+        {
+            if (panelContent != null) return;
+            var parent = (RectTransform)panelRoot.transform.parent;
             Canvas.ForceUpdateCanvases();
-            panelWidth = Mathf.Min(SkillsPanelWidth, Mathf.Max(320f, canvasRect.rect.width - 32f));
-            float width = panelWidth;
-            float rowsHeight = SkillBook.All.Length * (rowHeight + 6f);
-            // Taller than the screen once there are many skills: the rows scroll.
-            float height = Mathf.Min(1000f, 220f + rowsHeight + 16f, canvasRect.rect.height - 32f);
-
-            Image panel = UiKit.NewImage("SkillsPanel", canvas.transform, UiKit.PanelColor);
-            UiKit.Grain(panel);
+            panelWidth = Mathf.Min(SkillsPanelWidth, Mathf.Max(320f, parent.rect.width - 32f));
+            float height = Mathf.Min(850f, parent.rect.height - 32f);
+            var pr = (RectTransform)panelRoot.transform;
+            pr.anchorMin = pr.anchorMax = pr.pivot = new Vector2(0.5f, 0.5f);
+            pr.anchoredPosition = Vector2.zero;
+            pr.sizeDelta = new Vector2(panelWidth, height);
+            var panel = panelRoot.AddComponent<Image>();
+            panel.color = UiKit.PanelColor;
             panel.raycastTarget = true;
-            RectTransform pr = panel.rectTransform;
-            pr.anchorMin = pr.anchorMax = new Vector2(0.5f, 0.5f);
-            pr.anchoredPosition = new Vector2(0f, Mathf.Min(0f, (canvasRect.rect.height - height) * 0.5f - 16f));
-            pr.sizeDelta = new Vector2(width, height);
+            UiKit.Grain(panel);
             UiKit.AddOutline(panel, UiKit.BorderColor, 3f);
-            panelRoot = panel.gameObject;
 
-            Text title = UiKit.NewText("Title", pr, "SKILLS", 26, UiKit.Gold, TextAnchor.UpperCenter);
-            UiKit.TopLeft(title.rectTransform, new Vector2(0f, -14f), new Vector2(width, 34f));
-
-            Text sub = UiKit.NewText("Sub", pr, "Pick a slot for each skill", 15, UiKit.DimText, TextAnchor.UpperCenter);
-            UiKit.TopLeft(sub.rectTransform, new Vector2(0f, -44f), new Vector2(width, 22f));
-
-            Image close = UiKit.NewImage("Close", pr, new Color(0.25f, 0.1f, 0.08f, 1f));
+            Text title = UiKit.NewText("Title", pr, "SKILL BUTTONS", 26, UiKit.Gold, TextAnchor.MiddleLeft);
+            UiKit.TopLeft(title.rectTransform, new Vector2(18f, -12f), new Vector2(panelWidth - 90f, 40f));
+            Image close = UiKit.NewImage("Close", pr, new Color(0.25f, 0.10f, 0.08f, 1f));
             close.raycastTarget = true;
-            UiKit.TopLeft(close.rectTransform, new Vector2(width - 50f, -12f), new Vector2(38f, 38f));
-            Text x = UiKit.NewText("X", close.rectTransform, "X", 20, UiKit.TextColor, TextAnchor.MiddleCenter);
-            UiKit.Stretch(x.rectTransform, 0f);
-            // A spectator shuts only their own copy (the player's stays open for the player).
+            UiKit.TopLeft(close.rectTransform, new Vector2(panelWidth - 62f, -12f), new Vector2(48f, 48f));
+            Text closeText = UiKit.NewText("Label", close.rectTransform, "X", 22, UiKit.TextColor, TextAnchor.MiddleCenter);
+            UiKit.Stretch(closeText.rectTransform, 0f);
             close.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {
-                if (SpectatorMirror.Active)
-                    SpectatorMirror.Close(SpectatorMirror.Menu.Skills);
-                else
-                    SetOpen(false);
+                if (SpectatorMirror.Active) SpectatorMirror.Close(SpectatorMirror.Menu.Skills);
+                else SetOpen(false);
             };
 
-            for (int potion = 0; potion < 2; potion++)
+            float cardWidth = (panelWidth - 44f) * 0.5f;
+            for (int k = 0; k < SkillBook.TouchSlotCount; k++)
             {
-                bool health = potion == 0;
-                float top = -78f - potion * 44f;
-                Text heading = UiKit.NewText(health ? "HealthBinding" : "ManaBinding",pr,health ? "Health potion" : "Mana potion",17,UiKit.TextColor,TextAnchor.MiddleLeft);
-                UiKit.TopLeft(heading.rectTransform,new Vector2(18f,top),new Vector2(170f,36f));
-                for (int binding = 0; binding < SkillBook.SlotCount; binding++)
+                int slot = k;
+                Image button = UiKit.NewImage("Button" + (k + 1), pr, Color.black);
+                button.raycastTarget = true;
+                UiKit.TopLeft(button.rectTransform, new Vector2(16f + (k % 2) * (cardWidth + 12f), -72f - (k / 2) * 70f),
+                    new Vector2(cardWidth, 60f));
+                UiKit.AddOutline(button, UiKit.BorderColor, 2f);
+                Text label = UiKit.NewText("Label", button.rectTransform, "", 18, UiKit.TextColor, TextAnchor.MiddleCenter);
+                UiKit.Stretch(label.rectTransform, 5f);
+                mobileButtons[k] = button;
+                mobileLabels[k] = label;
+                button.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
                 {
-                    int selectedBinding = binding;
-                    Image button = UiKit.NewImage("PotionKey"+potion+"_"+binding,pr,Color.black);
-                    button.raycastTarget=true;
-                    UiKit.TopLeft(button.rectTransform,new Vector2(196f+binding*48f,top),new Vector2(45f,36f));
-                    Text label=UiKit.NewText("Key",button.rectTransform,PlayerSkills.KeyLabel(binding),13,UiKit.TextColor,TextAnchor.MiddleCenter);
-                    UiKit.Stretch(label.rectTransform,0f);
-                    potionButtons[potion,binding]=label;
-                    button.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
-                    {
-                        if (SpectatorMirror.Active) return;
-                        if (skills != null) skills.ClearSlot(selectedBinding);
-                        Player.PlayerPotions.SetPotionAt(selectedBinding, health ? 1 : 2);
-                        RefreshRows();
-                    };
-                }
+                    selectedMobileButton = slot;
+                    RefreshRows();
+                };
             }
 
-            Text hint = UiKit.NewText("BindingHint",pr,"Each key holds one skill or potion. Assigning a key replaces its current use.",14,UiKit.DimText,TextAnchor.MiddleLeft);
-            UiKit.TopLeft(hint.rectTransform,new Vector2(18f,-162f),new Vector2(width-36f,20f));
+            selectionHint = UiKit.NewText("SelectedButton", pr, "", 17, UiKit.Gold, TextAnchor.MiddleLeft);
+            UiKit.TopLeft(selectionHint.rectTransform, new Vector2(16f, -214f), new Vector2(panelWidth - 154f, 42f));
+            Image clear = UiKit.NewImage("ClearButton", pr, new Color(0.25f, 0.10f, 0.08f, 1f));
+            clear.raycastTarget = true;
+            UiKit.TopLeft(clear.rectTransform, new Vector2(panelWidth - 126f, -212f), new Vector2(110f, 44f));
+            Text clearText = UiKit.NewText("Label", clear.rectTransform, "Clear", 18, UiKit.TextColor, TextAnchor.MiddleCenter);
+            UiKit.Stretch(clearText.rectTransform, 0f);
+            clear.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
+            {
+                if (skills == null || SpectatorMirror.Active) return;
+                skills.ClearSlot(selectedMobileButton);
+                Player.PlayerPotions.SetPotionAt(selectedMobileButton, 0);
+                RefreshRows();
+            };
+            clear.gameObject.SetActive(!SpectatorMirror.Active);
 
             RectTransform viewport = UiKit.NewRect("Viewport", pr);
+            viewport.anchorMin = Vector2.zero;
+            viewport.anchorMax = Vector2.one;
+            viewport.offsetMin = new Vector2(8f, 16f);
+            viewport.offsetMax = new Vector2(-8f, -266f);
+            var viewportImage = viewport.gameObject.AddComponent<Image>();
+            viewportImage.color = new Color(0f, 0f, 0f, 0.15f);
             viewport.gameObject.AddComponent<RectMask2D>();
-            Image catcher = viewport.gameObject.AddComponent<Image>();
-            catcher.color = Color.clear; // lets the wheel and drags reach the scroll view
-            UiKit.TopLeft(viewport, new Vector2(0f, -220f), new Vector2(width, height - 220f - 16f));
-
-            RectTransform content = UiKit.NewRect("Content", viewport);
-            panelContent = content;
-            content.anchorMin = new Vector2(0f, 1f);
-            content.anchorMax = new Vector2(1f, 1f);
-            content.pivot = new Vector2(0.5f, 1f);
-            content.anchoredPosition = Vector2.zero;
-            content.sizeDelta = new Vector2(0f, rowsHeight);
-
-            ScrollRect scroll = viewport.gameObject.AddComponent<ScrollRect>();
-            scroll.content = content;
+            panelContent = UiKit.NewRect("Content", viewport);
+            panelContent.anchorMin = new Vector2(0f, 1f);
+            panelContent.anchorMax = new Vector2(1f, 1f);
+            panelContent.pivot = new Vector2(0.5f, 1f);
+            panelContent.anchoredPosition = Vector2.zero;
+            panelContent.sizeDelta = Vector2.zero;
+            var scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            scroll.content = panelContent;
             scroll.viewport = viewport;
             scroll.horizontal = false;
             scroll.movementType = ScrollRect.MovementType.Clamped;
             scroll.scrollSensitivity = 40f;
-
-            BuildRows();
+            emptySkillsText = UiKit.NewText("NoSkills", panelContent,
+                "Your equipped gear grants no assignable skills.\nEquip gear with a skill to add it here.",
+                18, UiKit.DimText, TextAnchor.MiddleCenter);
+            UiKit.TopLeft(emptySkillsText.rectTransform, new Vector2(8f, 0f), new Vector2(panelWidth - 32f, 80f));
         }
 
         private void BuildRows()
         {
             if (skills == null || panelContent == null) return;
-            foreach (Row old in rows)
-                if (old.Back != null) Destroy(old.Back.gameObject);
-            rows.Clear();
             var grants = skills.AvailableGrants();
-            float y = 0f;
-            foreach (SkillDefinition skill in SkillBook.All)
-            {
-                bool found = false;
-                foreach (var grant in grants)
+            // Stats, cooldowns and bindings update row values, but only a changed list of
+            // equipment grants requires destroying and recreating its UI hierarchy.
+            if (SameGrants(builtGrants, grants)) return;
+            foreach (Row old in rows)
+                if (old.Back != null)
                 {
-                    if (grant.Id != skill.Id) continue;
-                    AddRow(skill, grant, ref y);
-                    found = true;
+                    old.Back.gameObject.SetActive(false);
+                    Destroy(old.Back.gameObject);
                 }
-                if (!found) AddRow(skill, null, ref y);
-            }
+            rows.Clear();
+            builtGrants = grants;
+            float y = 0f;
+            foreach (var grant in grants)
+                AddRow(SkillBook.Get(grant.Id), grant, ref y);
             panelContent.sizeDelta = new Vector2(0f, -y);
         }
 
-        private void AddRow(SkillDefinition skill, PlayerSkills.SkillGrant? grant, ref float y)
+        private static bool SameGrants(List<PlayerSkills.SkillGrant> previous, List<PlayerSkills.SkillGrant> current)
         {
-                float width = panelWidth;
-                const float rowHeight = 74f;
-                const float slotButton = 38f;
-                Image back = UiKit.NewImage("Row_" + skill.Id, panelContent, Color.black);
-                UiKit.Grain(back);
-                UiKit.TopLeft(back.rectTransform, new Vector2(16f, y), new Vector2(width - 32f, rowHeight));
+            if (previous == null || previous.Count != current.Count) return false;
+            for (int k = 0; k < current.Count; k++)
+            {
+                var a = previous[k];
+                var b = current[k];
+                if (a.Id != b.Id || a.Source != b.Source || a.GrantLevel != b.GrantLevel ||
+                    !ReferenceEquals(a.Item, b.Item)) return false;
+            }
+            return true;
+        }
 
-                Image icon = UiKit.NewImage("SkillIcon", back.rectTransform, grant.HasValue ? skill.Color : UiKit.DimText);
-                icon.sprite = SkillIconFactory.Get(skill.Id);
-                icon.preserveAspect = true;
-                icon.raycastTarget = false;
-                UiKit.TopLeft(icon.rectTransform, new Vector2(12f, -19f), new Vector2(36f, 36f));
-
-                Text text = UiKit.NewText("Text", back.rectTransform, "", 18, UiKit.TextColor, TextAnchor.MiddleLeft);
-                text.horizontalOverflow = HorizontalWrapMode.Wrap;
-                float buttonsWidth = SkillBook.SlotCount * (slotButton + 4f);
-                UiKit.TopLeft(text.rectTransform, new Vector2(56f, 0f), new Vector2(width - 32f - 56f - buttonsWidth - 8f, rowHeight));
-
-                var row = new Row { Id = skill.Id, Grant = grant, Back = back, Title = text, SlotLabels = new Text[SkillBook.SlotCount] };
-                for (int k = 0; k < SkillBook.SlotCount; k++)
-                {
-                    int slot = k;
-                    SkillId id = skill.Id;
-                    Image button = UiKit.NewImage("Slot" + k, back.rectTransform, Color.black);
-                    UiKit.Inset(button);
-                    button.raycastTarget = true;
-                    UiKit.TopLeft(button.rectTransform, new Vector2(width - 32f - buttonsWidth - 4f + k * (slotButton + 4f), -(rowHeight - slotButton) * 0.5f), new Vector2(slotButton, slotButton));
-                    UiKit.AddOutline(button, UiKit.BorderColor, 1.5f);
-                    Text label = UiKit.NewText("Key", button.rectTransform, PlayerSkills.KeyLabel(k), k < SkillBook.TouchSlotCount ? 18 : 13, UiKit.TextColor, TextAnchor.MiddleCenter);
-                    UiKit.Stretch(label.rectTransform, 0f);
-                    row.SlotLabels[k] = label;
-                    button.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
-                    {
-                        if (skills != null && !SpectatorMirror.Active && grant.HasValue)
-                        {
-                            var chosen = grant.Value;
-                            skills.Assign(slot, id, chosen.Source, chosen.GrantLevel);
-                        }
-                    };
-                }
-
-                rows.Add(row);
-                y -= rowHeight + 6f;
+        private void AddRow(SkillDefinition skill, PlayerSkills.SkillGrant grant, ref float y)
+        {
+            Image back = UiKit.NewImage("Row_" + skill.Id + "_" + grant.Source, panelContent, Color.black);
+            back.raycastTarget = true;
+            UiKit.TopLeft(back.rectTransform, new Vector2(8f, y), new Vector2(panelWidth - 32f, 100f));
+            Image icon = UiKit.NewImage("Icon", back.rectTransform, skill.Color);
+            icon.sprite = SkillIconFactory.Get(skill.Id);
+            icon.preserveAspect = true;
+            icon.raycastTarget = false;
+            UiKit.TopLeft(icon.rectTransform, new Vector2(8f, -12f), new Vector2(40f, 40f));
+            Text text = UiKit.NewText("Details", back.rectTransform, "", 18, UiKit.TextColor, TextAnchor.UpperLeft);
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            UiKit.TopLeft(text.rectTransform, new Vector2(56f, -8f), new Vector2(panelWidth - 208f, 84f));
+            Image action = UiKit.NewImage("Assign", back.rectTransform, new Color(0.25f, 0.21f, 0.13f, 1f));
+            action.raycastTarget = true;
+            UiKit.TopLeft(action.rectTransform, new Vector2(panelWidth - 142f, -26f), new Vector2(102f, 48f));
+            Text label = UiKit.NewText("Label", action.rectTransform, "Assign", 17, UiKit.TextColor, TextAnchor.MiddleCenter);
+            UiKit.Stretch(label.rectTransform, 0f);
+            System.Action assign = () =>
+            {
+                if (skills == null || SpectatorMirror.Active) return;
+                skills.Assign(selectedMobileButton, grant.Id, grant.Source, grant.GrantLevel);
+                RefreshRows();
+            };
+            // Click handlers let a drag reach the ScrollRect without assigning on release.
+            UiKit.OnClick(action, assign);
+            UiKit.OnClick(back, assign);
+            rows.Add(new Row { Id = skill.Id, Grant = grant, Back = back, Title = text, Assignment = label });
+            y -= 108f;
         }
     }
 }

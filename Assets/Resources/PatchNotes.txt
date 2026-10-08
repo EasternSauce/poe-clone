@@ -1,3 +1,14 @@
+version: 2026-10-08-disable-public-test-urls
+- Disabled public minimal-arena test URLs. The combat arena remains available in the Unity Editor through PoeClone > Test > Minimal Combat Arena.
+
+version: 2026-10-08-mobile-skill-button-menu
+- Redesigned the mobile skill menu around Button 1 through Button 4: select a button, then choose a skill granted by equipped gear. Shows current assignments, skill details and a Clear action; inaccessible skills and desktop key bindings are omitted.
+- Assigning a skill moves it from its previous binding without resetting its cooldown. Automatically assigned skills also avoid duplicate bindings.
+- The mobile skill menu builds on first open and reuses its rows. XP gains do not rebuild closed menus.
+
+version: 2026-10-08-skill-menu-kill-hitch
+- Skill menus no longer rebuild their full skill list after every XP gain while closed. Visible menus reuse their rows when the available skills are unchanged, and mobile skips updates to the hidden desktop skill bar.
+
 version: 2026-10-08-minimal-menu-isolation
 - Added independent minimal-arena switches for inventory, character stats, skills, passive tree, and the inventory character preview to narrow down mobile kill hitches.
 
