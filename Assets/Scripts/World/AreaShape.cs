@@ -147,7 +147,7 @@ namespace PoeClone.World
             return groundMesh;
         }
 
-        private void Clip(Vector3 a, Vector3 b, Vector3 c, float da, float db, float dc, List<Vector3> vertices, List<int> triangles)
+        private void Clip(Vector3 a, Vector3 b, Vector3 c, float da, float db, float dc, List<Vector3> vertices, List<int> triangles, bool recordBoundary = true)
         {
             if (da < 0 && db < 0 && dc < 0) return;
             if (da >= 0 && db >= 0 && dc >= 0)
@@ -171,7 +171,7 @@ namespace PoeClone.World
                     polygon.Add(at); crossings.Add(at);
                 }
             }
-            if (crossings.Count == 2 && (crossings[0] - crossings[1]).sqrMagnitude > 0.00001f)
+            if (recordBoundary && crossings.Count == 2 && (crossings[0] - crossings[1]).sqrMagnitude > 0.00001f)
                 Boundary.Add((crossings[0], crossings[1]));
             int first = vertices.Count;
             vertices.AddRange(polygon);
@@ -190,8 +190,8 @@ namespace PoeClone.World
             var normals = new List<Vector3>();
             var joins = new Dictionary<Vector2Int, int>();
             bool collision = outward <= 0f;
-            // Each contour point owns one cross-section. Neighboring segments reuse it,
-            // including the cap's outer edge, instead of offsetting separate slabs.
+            // Share the vertical face at contour joins. The top is triangulated separately:
+            // extending these normals into a wide strip crosses faces at concave bends.
             int Join(Vector3 point)
             {
                 var key = new Vector2Int(Mathf.RoundToInt(point.x * 10000f), Mathf.RoundToInt(point.z * 10000f));
@@ -201,18 +201,11 @@ namespace PoeClone.World
                 Vector3 normal = -new Vector3(
                     Distance(p + Vector2.right * delta) - Distance(p - Vector2.right * delta), 0f,
                     Distance(p + Vector2.up * delta) - Distance(p - Vector2.up * delta)).normalized;
-                Vector3 inner = new Vector3(p.x, 0f, p.y) + normal * outward;
+                Vector3 inner = new Vector3(p.x, 0f, p.y);
                 int start = vertices.Count;
                 vertices.Add(inner + Vector3.up * bottom);
                 vertices.Add(inner + Vector3.up * top);
                 normals.Add(-normal); normals.Add(-normal);
-                if (!collision)
-                {
-                    // Separate cap normals preserve a crisp lip above the smooth face.
-                    vertices.Add(inner + Vector3.up * top);
-                    vertices.Add(inner + normal * 5f + Vector3.up * top);
-                    normals.Add(Vector3.up); normals.Add(Vector3.up);
-                }
                 joins.Add(key, start);
                 return start;
             }
@@ -225,22 +218,82 @@ namespace PoeClone.World
                 // coplanar render triangles cause flicker and cancel recalculated normals.
                 if (collision) { triangles.Add(a); triangles.Add(c); triangles.Add(b); }
             }
-            foreach (var edge in Boundary)
+            foreach (var edge in collision ? Boundary : WallContour(outward))
             {
                 int a = Join(edge.a), b = Join(edge.b);
                 Vector3 facing = normals[a] + normals[b];
                 Face(a, a + 1, b, facing);
                 Face(b, a + 1, b + 1, facing);
-                if (!collision)
-                {
-                    Face(a + 2, a + 3, b + 2, Vector3.up);
-                    Face(b + 2, a + 3, b + 3, Vector3.up);
-                }
             }
+            if (!collision) BuildWallTop(top, outward, vertices, triangles, normals);
             Mesh mesh = MeshFrom("AuthoredAreaWalls", vertices, triangles);
             // Both triangle windings share collision vertices; explicit normals avoid cancellation.
             mesh.SetNormals(normals);
             return mesh;
+        }
+
+        private void BuildWallTop(float top, float outward, List<Vector3> vertices, List<int> triangles, List<Vector3> normals)
+        {
+            const float width = 5f, step = 1f;
+            float padding = outward + width + step;
+            Vector2 start = -Size * 0.5f - Vector2.one * padding;
+            int nx = Mathf.CeilToInt((Size.x + padding * 2f) / step);
+            int nz = Mathf.CeilToInt((Size.y + padding * 2f) / step);
+            var samples = new float[nx + 1, nz + 1];
+            for (int z = 0; z <= nz; z++)
+                for (int x = 0; x <= nx; x++)
+                {
+                    float distance = Distance(start + new Vector2(x * step, z * step));
+                    samples[x, z] = Mathf.Min(-distance - outward, distance + outward + width);
+                }
+            // Clip a non-overlapping grid to the solid band outside the playable outline.
+            // Holes and merging room edges use the same field as the floor, with no long
+            // triangles connecting unrelated contour normals. Preserve the floor Boundary.
+            int first = vertices.Count;
+            for (int z = 0; z < nz; z++)
+                for (int x = 0; x < nx; x++)
+                {
+                    Vector3 a = new Vector3(start.x + x * step, top, start.y + z * step);
+                    Vector3 b = a + Vector3.forward * step, c = b + Vector3.right * step, d = a + Vector3.right * step;
+                    Clip(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1], vertices, triangles, false);
+                    Clip(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z], vertices, triangles, false);
+                }
+            for (int i = first; i < vertices.Count; i++) normals.Add(Vector3.up);
+        }
+
+        private List<(Vector3 a, Vector3 b)> WallContour(float outward)
+        {
+            const float step = 1f;
+            float padding = outward + 1f;
+            Vector2 start = -Size * 0.5f - Vector2.one * padding;
+            int nx = Mathf.CeilToInt(Size.x + padding * 2f), nz = Mathf.CeilToInt(Size.y + padding * 2f);
+            var samples = new float[nx + 1, nz + 1];
+            for (int z = 0; z <= nz; z++)
+                for (int x = 0; x <= nx; x++)
+                    samples[x, z] = Distance(start + new Vector2(x, z)) + outward;
+            var result = new List<(Vector3, Vector3)>();
+            void Triangle(Vector3 a, Vector3 b, Vector3 c, float da, float db, float dc)
+            {
+                int count = 0;
+                Vector3 first = default, second = default;
+                void Edge(Vector3 p, Vector3 q, float dp, float dq)
+                {
+                    if ((dp >= 0) == (dq >= 0)) return;
+                    Vector3 crossing = Vector3.Lerp(p, q, dp / (dp - dq));
+                    if (count++ == 0) first = crossing; else second = crossing;
+                }
+                Edge(a, b, da, db); Edge(b, c, db, dc); Edge(c, a, dc, da);
+                if (count == 2 && (first - second).sqrMagnitude > 0.00001f) result.Add((first, second));
+            }
+            for (int z = 0; z < nz; z++)
+                for (int x = 0; x < nx; x++)
+                {
+                    Vector3 a = new Vector3(start.x + x, 0, start.y + z);
+                    Vector3 b = a + Vector3.forward * step, c = b + Vector3.right * step, d = a + Vector3.right * step;
+                    Triangle(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1]);
+                    Triangle(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z]);
+                }
+            return result;
         }
 
         private static Mesh MeshFrom(string name, List<Vector3> vertices, List<int> triangles)

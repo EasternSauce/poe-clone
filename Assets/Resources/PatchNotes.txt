@@ -1,3 +1,6 @@
+version: 2026-10-08-rock-rim-spikes
+- Fixed overlapping, spiked rock-bank and cliff tops at sharp bends and room joins. Rim tops now follow the area outline, including internal holes.
+
 version: 2026-10-08-cozy-haven-village
 - Dirt lanes now wind smoothly through Haven, with narrower footpaths to cottage doors and uneven worn edges. The graveyard's central track also bends instead of running in a straight line.
 - Expanded Haven into a cozy village with cottages close to the square and along its lanes, kitchen gardens, timber porches, flower boxes, firewood stacks, laundry lines, a smith's workshop, a noticeboard, a produce handcart, and a shared fire with benches.
