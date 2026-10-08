@@ -256,7 +256,7 @@ MonoBehaviour:
   - Label: Strength / 1
     Enabled: 1
     Stat: 0
-    Weight: 1
+    Weight: 2
     On: 00000000010000000200000004000000050000000600000007000000i
     AnyWeapon: 0
     Weapons: 01000000020000000300000004000000070000000800000009000000i
@@ -304,7 +304,7 @@ MonoBehaviour:
   - Label: Dexterity / 1
     Enabled: 1
     Stat: 1
-    Weight: 1
+    Weight: 2
     On: 000000000100000002000000030000000400000005000000060000000900000007000000i
     AnyWeapon: 0
     Weapons: 0100000002000000030000000400000005000000070000000800000009000000i
@@ -352,7 +352,7 @@ MonoBehaviour:
   - Label: Intelligence / 1
     Enabled: 1
     Stat: 2
-    Weight: 1
+    Weight: 2
     On: 0000000001000000020000000300000004000000080000000500000006000000070000000c000000i
     AnyWeapon: 1
     Weapons: 
@@ -3433,54 +3433,6 @@ MonoBehaviour:
       Min: 7
       Max: 10
       Weight: 0.16806999
-  - Label: ExtraArrowChance / 1
-    Enabled: 1
-    Stat: 86
-    Weight: 0.25
-    On: 0700000009000000i
-    AnyWeapon: 0
-    Weapons: 05000000i
-    Tiers:
-    - RequiredItemLevel: 1
-      Min: 5
-      Max: 15
-      Weight: 1
-    - RequiredItemLevel: 9
-      Min: 6
-      Max: 18
-      Weight: 0.7
-    - RequiredItemLevel: 17
-      Min: 7
-      Max: 21
-      Weight: 0.48999998
-    - RequiredItemLevel: 25
-      Min: 8
-      Max: 24
-      Weight: 0.343
-    - RequiredItemLevel: 34
-      Min: 9
-      Max: 27
-      Weight: 0.24009998
-    - RequiredItemLevel: 37
-      Min: 10
-      Max: 30
-      Weight: 0.16806999
-    - RequiredItemLevel: 50
-      Min: 11
-      Max: 33
-      Weight: 0.11764899
-    - RequiredItemLevel: 65
-      Min: 12
-      Max: 36
-      Weight: 0.08235429
-    - RequiredItemLevel: 80
-      Min: 13
-      Max: 39
-      Weight: 0.057648003
-    - RequiredItemLevel: 100
-      Min: 14
-      Max: 42
-      Weight: 0.0403536
   MainSkillTiers:
   - RequiredItemLevel: 1
     Min: 1

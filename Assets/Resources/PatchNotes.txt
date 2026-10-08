@@ -1,3 +1,7 @@
+version: 2026-10-08-item-attribute-weights
+- Strength, Dexterity and Intelligence now have doubled random modifier weights, 25% above the highest other individual modifier weight. Equipment restrictions and base stat preferences still apply.
+- Removed chance for bow attacks to fire an additional arrow from the random item modifier pool.
+
 version: 2026-10-08-loot-simulator-default-rare
 - Loot Simulator now defaults its minimum rarity to Rare.
 
