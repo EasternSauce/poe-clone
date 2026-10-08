@@ -1,3 +1,7 @@
+version: 2026-10-08-layout-viewer-loading-and-menu
+- The layout viewer now shows "Loading layout viewer" during startup instead of Unity's missing-camera message.
+- Enlarged preview menu text to three times its previous size, with larger buttons that wrap to fit the window and scroll when needed.
+
 version: 2026-10-08-layout-preview-controls
 - Rendered World Layouts now hides game startup until the preview is ready and opens in angled view by default.
 - The preview menu spans the whole window, and mouse-wheel zoom is much faster while keeping the point beneath the cursor in place.

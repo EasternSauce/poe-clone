@@ -31,11 +31,35 @@ namespace PoeClone.EditorTools
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
             rect.offsetMin = rect.offsetMax = Vector2.zero;
+
+            // Unity's Game view needs a rendering camera even before the game camera is enabled.
+            var cameraObject = new GameObject("Layout Viewer Loading Camera", typeof(Camera));
+            cameraObject.transform.SetParent(loadingCover.transform, false);
+            var camera = cameraObject.GetComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = Color.black;
+            camera.cullingMask = 0;
+            camera.depth = 10000;
+
+            var label = new GameObject("Loading Message", typeof(RectTransform), typeof(Text));
+            label.transform.SetParent(loadingCover.transform, false);
+            var text = label.GetComponent<Text>();
+            text.text = "Loading layout viewer";
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = 32;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = Color.white;
+            text.raycastTarget = false;
+            var labelRect = text.rectTransform;
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = labelRect.offsetMax = Vector2.zero;
         }
 
         public static void Reveal()
         {
             if (loadingCover == null) return;
+            loadingCover.SetActive(false);
             Object.Destroy(loadingCover);
             loadingCover = null;
         }

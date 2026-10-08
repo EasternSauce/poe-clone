@@ -21,6 +21,8 @@ namespace PoeClone.CameraSystem
         private readonly List<Behaviour> suspended = new List<Behaviour>();
         private readonly List<Canvas> hiddenCanvases = new List<Canvas>();
         private Rect toolbar;
+        private Vector2 menuScroll;
+        private GUIStyle menuButton, menuTitle, menuLabel;
         public bool IsActive => active;
         public Vector3 Focus => focus;
 
@@ -224,21 +226,34 @@ namespace PoeClone.CameraSystem
                     GUI.Box(new Rect(screen.x - 90, Screen.height - screen.y - 22, 180, 22), WorldBuilder.AreaNames[i]);
             }
             float width = Screen.width;
-            int columns = Mathf.Max(1, Mathf.FloorToInt((width - 16) / 145));
+            if (menuButton == null)
+            {
+                const int menuFontSize = 13 * 3;
+                menuButton = new GUIStyle(GUI.skin.button) { fontSize = menuFontSize, wordWrap = true };
+                menuTitle = new GUIStyle(GUI.skin.box) { fontSize = menuFontSize };
+                menuLabel = new GUIStyle(GUI.skin.label) { fontSize = menuFontSize, wordWrap = true };
+            }
+            int columns = Mathf.Max(1, Mathf.FloorToInt((width - 16) / (145 * 3)));
             int rows = Mathf.CeilToInt(WorldBuilder.AreaNames.Length / (float)columns);
-            toolbar = new Rect(0, 0, width, 98 + rows * 28);
-            GUI.Box(toolbar, "Rendered World Layout Preview");
-            GUILayout.BeginArea(new Rect(8, 26, width - 16, toolbar.height - 26));
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Fit World (F)")) FitWorld();
-            if (GUILayout.Button(angled ? "Top-down (T)" : "Angled view (T)")) { angled = !angled; ApplyCamera(); }
-            if (GUILayout.Button("−")) { zoom = Mathf.Min(2500, zoom * 1.25f); ApplyCamera(); }
-            if (GUILayout.Button("+")) { zoom = Mathf.Max(4, zoom / 1.25f); ApplyCamera(); }
-            if (GUILayout.Button("Close preview (Esc)")) QuitPreview();
-            GUILayout.EndHorizontal();
-            int area = GUILayout.SelectionGrid(-1, WorldBuilder.AreaNames, columns, GUILayout.Height(rows * 28));
+            string[] controls = { "Fit World (F)", angled ? "Top-down (T)" : "Angled view (T)", "−", "+", "Close preview (Esc)" };
+            int controlColumns = Mathf.Min(columns, controls.Length);
+            int controlRows = Mathf.CeilToInt(controls.Length / (float)controlColumns);
+            const string hint = "Scroll: zoom at cursor  |  Drag / WASD / arrows: pan  |  Area buttons: fit layout";
+            float hintHeight = menuLabel.CalcHeight(new GUIContent(hint), Mathf.Max(1, width - 40));
+            toolbar = new Rect(0, 0, width, Mathf.Min(Screen.height, 78 + (rows + controlRows) * 84 + hintHeight));
+            GUI.Box(toolbar, "Rendered World Layout Preview", menuTitle);
+            GUILayout.BeginArea(new Rect(8, 62, width - 16, toolbar.height - 62));
+            menuScroll = GUILayout.BeginScrollView(menuScroll);
+            int control = GUILayout.SelectionGrid(-1, controls, controlColumns, menuButton, GUILayout.Height(controlRows * 84));
+            if (control == 0) FitWorld();
+            if (control == 1) { angled = !angled; ApplyCamera(); }
+            if (control == 2) { zoom = Mathf.Min(2500, zoom * 1.25f); ApplyCamera(); }
+            if (control == 3) { zoom = Mathf.Max(4, zoom / 1.25f); ApplyCamera(); }
+            if (control == 4) QuitPreview();
+            int area = GUILayout.SelectionGrid(-1, WorldBuilder.AreaNames, columns, menuButton, GUILayout.Height(rows * 84));
             if (area >= 0) FocusArea(area);
-            GUILayout.Label("Scroll: zoom at cursor  |  Drag / WASD / arrows: pan  |  Area buttons: fit layout");
+            GUILayout.Label(hint, menuLabel);
+            GUILayout.EndScrollView();
             GUILayout.EndArea();
         }
     }
