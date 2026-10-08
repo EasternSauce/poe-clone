@@ -521,20 +521,24 @@ namespace PoeClone.World
             Vector3 inward = Centers[Ruins] - g;
             inward.y = 0f;
             inward.Normalize();
-            Vector3 at = g + inward * 1.5f;
+            Vector3 at = g;
 
             var wall = new GameObject("IceSeal").transform;
             wall.SetParent(t, false);
-            wall.SetPositionAndRotation(at, Quaternion.LookRotation(inward));
+            wall.SetPositionAndRotation(at, gateTransform.rotation);
+            // Enclose the entire frame from every side, including its lintel. The continuous
+            // opaque core prevents gaps between decorative shards from exposing the portal.
+            WeatheredSlab(wall, "IceSealCore", at - Vector3.up * 0.15f, new Vector2(4.4f, 3.2f),
+                5.7f, kit.Mat("Ice"), gateTransform.eulerAngles.y, topScale: 0.8f);
             for (int k = -5; k <= 5; k++)
             {
-                float h = 4.5f - Mathf.Abs(k) * 0.3f + R(-0.4f, 0.4f);
-                LocalBox(wall, new Vector3(k * 1.15f, h * 0.5f, R(-0.3f, 0.3f)), new Vector3(1.3f, h, 1.2f), kit.Mat("Ice"),
+                float h = 5.8f - Mathf.Abs(k) * 0.55f + R(-0.3f, 0.3f);
+                LocalBox(wall, new Vector3(k * 0.8f, h * 0.5f, 0f), new Vector3(1.2f, h, 2.8f), kit.Mat("Ice"),
                     euler: new Vector3(R(-6f, 6f), R(-15f, 15f), R(-6f, 6f)));
-                IceSpike(wall, wall.TransformPoint(new Vector3(k * 1.15f + 0.4f, 0f, -0.9f)), R(1f, 2.4f), new Vector3(R(-20f, 20f), R(0f, 360f), R(-20f, 20f)));
+                IceSpike(wall, wall.TransformPoint(new Vector3(k * 0.8f + 0.2f, 0f, 2.6f)), R(1.5f, 3.2f), new Vector3(R(-20f, 20f), R(0f, 360f), R(-20f, 20f)));
             }
             Glow(wall, at + Vector3.up * 2.5f - inward * 0.5f, IceLight, 9f, 4f);
-            QuestBarrier.Create(wall.gameObject, "sunstones", gate, "Sealed under ice that no fire of yours will melt", 6f);
+            QuestBarrier.Create(wall.gameObject, "sunstones", gate, "Sealed under ice that no fire of yours will melt", 8f);
         }
 
         private void FrozenScout(Transform t, Vector3 p, int index, string journal)

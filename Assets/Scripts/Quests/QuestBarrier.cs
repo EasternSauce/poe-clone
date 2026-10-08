@@ -20,6 +20,8 @@ namespace PoeClone.Quests
         private bool open;
         private float sinkStarted = -1f;
         private float height = 5f;
+        private GameObject gateLabel;
+        private bool gateLabelWasActive;
 
         public static QuestBarrier Create(GameObject wall, string questId, AreaGate gate, string sealedMessage, float height)
         {
@@ -31,6 +33,13 @@ namespace PoeClone.Quests
             {
                 gate.Locked = () => !barrier.open;
                 gate.LockedMessage = sealedMessage;
+                WorldLabel label = gate.GetComponentInChildren<WorldLabel>(true);
+                if (label != null)
+                {
+                    barrier.gateLabel = label.gameObject;
+                    barrier.gateLabelWasActive = label.gameObject.activeSelf;
+                    label.gameObject.SetActive(false);
+                }
             }
             return barrier;
         }
@@ -48,6 +57,12 @@ namespace PoeClone.Quests
         {
             if (log != null)
                 log.Changed -= OnQuestsChanged;
+        }
+
+        private void RevealGate()
+        {
+            if (gateLabel != null)
+                gateLabel.SetActive(gateLabelWasActive);
         }
 
         private void OnQuestsChanged()
@@ -71,6 +86,7 @@ namespace PoeClone.Quests
                 if (ShouldBeOpen())
                 {
                     open = true;
+                    RevealGate();
                     gameObject.SetActive(false);
                     return;
                 }
@@ -81,6 +97,7 @@ namespace PoeClone.Quests
             float t = (Time.time - sinkStarted) / SinkSeconds;
             if (t >= 1f)
             {
+                RevealGate();
                 gameObject.SetActive(false);
                 return;
             }

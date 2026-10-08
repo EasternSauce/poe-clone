@@ -420,7 +420,7 @@ namespace PoeClone.World
             // The temple dais, with a ring of columns (some broken) and an altar.
             // The north-east pocket keeps the dais away from the waystone and the north gate.
             Vector3 temple = c + AreaLayouts.BossLocal(Ruins);
-            Box(t, temple + new Vector3(0f, 0.07f, 0f), new Vector3(20f, 0.14f, 20f), kit.Mat("Sandstone"), solid: false);
+            WeatheredSlab(t, "TempleDais", temple, new Vector2(10.3f, 9.8f), 0.14f, kit.Mat("Sandstone"), 18f, solid: false);
             for (int k = 0; k < 10; k++)
             {
                 float rad = k * 36f * Mathf.Deg2Rad;
@@ -430,7 +430,8 @@ namespace PoeClone.World
                 else
                     Prefab(kit.pillar, t, p + Vector3.up * 0.14f, R(0f, 360f), new Vector3(1f, R(0.45f, 1.05f), 1f));
             }
-            Box(t, temple + new Vector3(0f, 0.64f, 3f), new Vector3(2.4f, 1f, 1.4f), kit.Mat("Sandstone"));
+            WeatheredSlab(t, "AltarBase", temple + new Vector3(0f, 0.14f, 3f), new Vector2(1.3f, 0.85f), 0.85f, kit.Mat("Sandstone"), 18f);
+            WeatheredSlab(t, "AltarCap", temple + new Vector3(0f, 0.99f, 3f), new Vector2(1.5f, 1f), 0.15f, kit.Mat("Sandstone"), 18f);
             Ball(t, temple + new Vector3(-0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
             Ball(t, temple + new Vector3(0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
             Glow(t, temple + new Vector3(0f, 1.9f, 3f), FireLight, 10f, 5f, flicker: true);
@@ -1270,6 +1271,51 @@ namespace PoeClone.World
             GameObject go = Instantiate(prefab, p, Quaternion.Euler(0f, yaw, 0f), t);
             go.transform.localScale = Vector3.Scale(go.transform.localScale, scale);
             return go;
+        }
+
+        // A closed, chipped stone outline instead of a pristine rectangular primitive.
+        // Duplicate triangle vertices preserve the facets and keep the top shading flat.
+        private GameObject WeatheredSlab(Transform parent, string name, Vector3 p, Vector2 radii,
+            float height, Material material, float yaw, bool solid = true, float topScale = 0.96f)
+        {
+            const int sides = 20;
+            var vertices = new List<Vector3>();
+            var uv = new List<Vector2>();
+            var triangles = new List<int>();
+            Vector3 Edge(int k, bool top)
+            {
+                float angle = k * Mathf.PI * 2f / sides;
+                float wear = 1f + 0.055f * Mathf.Sin(k * 2.3f) + 0.035f * Mathf.Cos(k * 4.1f);
+                float scale = wear * (top ? topScale : 1f);
+                return new Vector3(Mathf.Cos(angle) * radii.x * scale, top ? height : 0f,
+                    Mathf.Sin(angle) * radii.y * scale);
+            }
+            void Face(Vector3 a, Vector3 b, Vector3 c)
+            {
+                int start = vertices.Count;
+                vertices.Add(a); vertices.Add(b); vertices.Add(c);
+                uv.Add(new Vector2(a.x, a.z)); uv.Add(new Vector2(b.x, b.z)); uv.Add(new Vector2(c.x, c.z));
+                triangles.Add(start); triangles.Add(start + 1); triangles.Add(start + 2);
+            }
+            for (int k = 0; k < sides; k++)
+            {
+                Vector3 a = Edge(k, false), b = Edge((k + 1) % sides, false);
+                Vector3 at = Edge(k, true), bt = Edge((k + 1) % sides, true);
+                Face(Vector3.up * height, bt, at);
+                Face(Vector3.zero, a, b);
+                Face(a, at, bt); Face(a, bt, b);
+            }
+            var mesh = new Mesh { name = name };
+            mesh.SetVertices(vertices);
+            mesh.SetUVs(0, uv);
+            mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            Transform slab = Holder(parent, name, p, Quaternion.Euler(0f, yaw, 0f));
+            slab.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
+            slab.gameObject.AddComponent<MeshRenderer>().sharedMaterial = material;
+            if (solid) slab.gameObject.AddComponent<MeshCollider>().sharedMesh = mesh;
+            return slab.gameObject;
         }
 
         private GameObject Box(Transform t, Vector3 p, Vector3 size, Material mat, bool solid = true, Vector3 euler = default)

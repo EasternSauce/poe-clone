@@ -1,3 +1,7 @@
+version: 2026-10-08-ashen-altar-and-frozen-seal
+- Replaced the Ashen Ruins' square temple platform and box-shaped altar with worn, irregular stone outlines and a layered altar cap.
+- Angled the entrance to Frozen Hollow and enclosed its entire frame in a thick mass of ice. The gate and its destination label are concealed until the sunstones melt the seal.
+
 version: 2026-10-08-layout-viewer-loading-and-menu
 - The layout viewer now shows "Loading layout viewer" during startup instead of Unity's missing-camera message.
 - Enlarged preview menu text to three times its previous size, with larger buttons that wrap to fit the window and scroll when needed.

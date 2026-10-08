@@ -59,7 +59,7 @@ namespace PoeClone.World
                 case WorldBuilder.Haven: return 225f;
                 case WorldBuilder.Greenwood: return destination == WorldBuilder.Haven ? 40f : 235f;
                 case WorldBuilder.Graveyard: return destination == WorldBuilder.Cave ? 55f : 215f;
-                case WorldBuilder.Ruins: return destination == WorldBuilder.Graveyard ? 30f : 180f;
+                case WorldBuilder.Ruins: return destination == WorldBuilder.Graveyard ? 30f : 155f;
                 case WorldBuilder.Frozen: return 20f;
                 case WorldBuilder.Cave: return destination == WorldBuilder.Greenwood ? 45f : 220f;
                 default: return 0f;
