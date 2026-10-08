@@ -25,7 +25,10 @@ namespace PoeClone.Enemies
         Leap,     // springs through the air and lands on the player (a glow marks where)
         ThornGarden, // seeds lingering thorn patches in a line
         Wail,        // a scream across a ring: stay inside or escape outside
-        FrostFissures // crossed frost fissures with safe diagonal gaps
+        FrostFissures, // crossed frost fissures with safe diagonal gaps
+        LastOffering,
+        DraggingBreath,
+        Graveward
     }
 
     public enum BossStyle
@@ -93,6 +96,7 @@ namespace PoeClone.Enemies
         // Bosses: never spawn at random (weight 0), placed by a BossLair; drop several items,
         // shrug off stagger, and get a BossAbilities set of their own.
         public bool IsBoss;
+        public bool Undead;
         public int Drops = 1;
         public BossStyle Boss;
         // Restores this boss's original hit damage when ranged or minion damage enrages it.
@@ -130,6 +134,9 @@ namespace PoeClone.Enemies
                     case CreatureBody.Briarbound: return 2.6f;
                     case CreatureBody.GraveSiren: return 2.8f;
                     case CreatureBody.RimeStalker: return 2.5f;
+                    case CreatureBody.CinderPenitent: return 1.8f;
+                    case CreatureBody.Hollowmaw: return 2.5f;
+                    case CreatureBody.BarrowCastellan: return 2.7f;
                     default: return 2.3f;
                 }
             }
@@ -150,7 +157,7 @@ namespace PoeClone.Enemies
         {
             new EnemyKind
             {
-                Name = "Zombie", SpawnWeight = 30f,
+                Name = "Zombie", SpawnWeight = 30f, Undead = true,
                 MaxHealth = 30f, Experience = 20,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 6f, AttackCooldown = 1.4f, AttackRange = 2.0f,
@@ -234,7 +241,7 @@ namespace PoeClone.Enemies
             // Area natives (weight 0 by default: only areas that list them spawn them).
             new EnemyKind
             {
-                Name = "Skeleton", SpawnWeight = 0f,
+                Name = "Skeleton", SpawnWeight = 0f, Undead = true,
                 MaxHealth = 24f, Experience = 26,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 6f, AttackCooldown = 1.0f, AttackRange = 2.0f,
@@ -245,7 +252,7 @@ namespace PoeClone.Enemies
             },
             new EnemyKind
             {
-                Name = "Wraith", SpawnWeight = 0f,
+                Name = "Wraith", SpawnWeight = 0f, Undead = true,
                 MaxHealth = 34f, Experience = 34,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
                 Damage = 8f, AttackCooldown = 1.5f, AttackRange = 2.2f,
@@ -321,7 +328,7 @@ namespace PoeClone.Enemies
             },
             new EnemyKind
             {
-                Name = "Necromancer", SpawnWeight = 0f,
+                Name = "Necromancer", SpawnWeight = 0f, Undead = true,
                 MaxHealth = 32f, Experience = 40,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Cold,
                 Damage = 8f, AttackCooldown = 2.2f, AttackRange = 10f, ProjectileSpeed = 10f,
@@ -333,7 +340,7 @@ namespace PoeClone.Enemies
             },
             new EnemyKind
             {
-                Name = "Skeleton Archer", SpawnWeight = 0f,
+                Name = "Skeleton Archer", SpawnWeight = 0f, Undead = true,
                 MaxHealth = 22f, Experience = 28,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Physical,
                 Damage = 7f, AttackCooldown = 1.9f, AttackRange = 12f, ProjectileSpeed = 20f,
@@ -561,7 +568,7 @@ namespace PoeClone.Enemies
             },
             new EnemyKind
             {
-                Name = "Grave Siren", SpawnWeight = 0f,
+                Name = "Grave Siren", SpawnWeight = 0f, Undead = true,
                 MaxHealth = 65f, Armour = 120f, ColdResistance = 25f, Experience = 48,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Cold,
                 Damage = 7f, AttackCooldown = 2.5f, AttackRange = 9f, ProjectileSpeed = 10f,
@@ -581,6 +588,39 @@ namespace PoeClone.Enemies
                 Skin = new Color(0.18f, 0.34f, 0.52f), Cloth = new Color(0.48f, 0.78f, 0.94f),
                 Pants = new Color(0.36f, 0.52f, 0.62f), Eyes = new Color(0.85f, 1f, 1f),
                 Skill = EnemySkill.FrostFissures, SkillCooldown = 8f, DropChance = 0.45f
+            },
+            new EnemyKind
+            {
+                Name = "Cinder Penitent", SpawnWeight = 0f,
+                MaxHealth = 62f, FireResistance = 50f, Experience = 48,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
+                Damage = 6f, AttackCooldown = 1.8f, AttackRange = 2.2f,
+                SpeedRatio = 0.48f, Body = CreatureBody.CinderPenitent,
+                Skin = new Color(0.17f, 0.13f, 0.12f), Cloth = new Color(0.32f, 0.23f, 0.18f),
+                Pants = new Color(0.48f, 0.17f, 0.08f), Eyes = new Color(1f, 0.47f, 0.12f),
+                Skill = EnemySkill.LastOffering, SkillCooldown = 8f, DropChance = 0.45f
+            },
+            new EnemyKind
+            {
+                Name = "Hollowmaw", SpawnWeight = 0f,
+                MaxHealth = 75f, Armour = 60f, Experience = 48,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 8f, AttackCooldown = 1.7f, AttackRange = 2.4f,
+                SpeedRatio = 0.67f, Body = CreatureBody.Hollowmaw,
+                Skin = new Color(0.63f, 0.60f, 0.51f), Cloth = new Color(0.38f, 0.35f, 0.29f),
+                Pants = new Color(0.22f, 0.12f, 0.12f), Eyes = new Color(0.12f, 0.07f, 0.06f),
+                Skill = EnemySkill.DraggingBreath, SkillCooldown = 9f, DropChance = 0.45f
+            },
+            new EnemyKind
+            {
+                Name = "Barrow Castellan", SpawnWeight = 0f, Undead = true,
+                MaxHealth = 90f, Armour = 220f, ColdResistance = 20f, Experience = 58,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 9f, AttackCooldown = 1.8f, AttackRange = 3f,
+                SpeedRatio = 0.60f, Body = CreatureBody.BarrowCastellan,
+                Skin = new Color(0.31f, 0.33f, 0.29f), Cloth = new Color(0.24f, 0.29f, 0.28f),
+                Pants = new Color(0.25f, 0.20f, 0.16f), Eyes = new Color(0.56f, 0.77f, 0.66f),
+                Skill = EnemySkill.Graveward, SkillCooldown = 12f, DropChance = 0.55f, RareBonus = 0.1f
             },
         };
 

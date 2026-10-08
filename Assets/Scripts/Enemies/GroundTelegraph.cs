@@ -151,6 +151,43 @@ namespace PoeClone.Enemies
             UnityEngine.Object.Destroy(ring);
         }
 
+        /// <summary>A fixed wedge: marks the exact cone a Hollowmaw will inhale through.</summary>
+        public static IEnumerator RunCone(Vector3 center, Vector3 facing, float radius, float halfAngle, float seconds, Func<bool> active = null)
+        {
+            const int segments = 24;
+            var vertices = new Vector3[segments + 2];
+            var triangles = new int[segments * 3];
+            facing.y = 0f;
+            if (facing.sqrMagnitude < 0.001f) facing = Vector3.forward;
+            facing.Normalize();
+            for (int i = 0; i <= segments; i++)
+            {
+                float angle = Mathf.Lerp(-halfAngle, halfAngle, i / (float)segments);
+                vertices[i + 1] = Quaternion.AngleAxis(angle, Vector3.up) * facing * radius;
+                if (i == segments) continue;
+                triangles[i * 3] = 0; triangles[i * 3 + 1] = i + 1; triangles[i * 3 + 2] = i + 2;
+            }
+            var mesh = new Mesh { name = "DraggingBreathCone", vertices = vertices, triangles = triangles };
+            mesh.RecalculateNormals();
+            GameObject cone = RuntimePrimitives.Create(PrimitiveType.Cylinder, null, PhysicalWarning);
+            cone.name = "BreathTelegraph";
+            cone.GetComponent<MeshFilter>().sharedMesh = mesh;
+            cone.transform.position = new Vector3(center.x, GroundY(center) + 0.19f, center.z);
+            UnityEngine.Object.Destroy(cone, seconds + 0.1f);
+            UnityEngine.Object.Destroy(mesh, seconds + 0.1f);
+            var renderer = cone.GetComponent<Renderer>();
+            var block = new MaterialPropertyBlock();
+            for (float t = 0f; t < seconds; t += Time.deltaTime)
+            {
+                if (active != null && !active()) break;
+                Color color = Color.Lerp(PhysicalWarning, PhysicalFill, Mathf.Clamp01(t / seconds));
+                block.SetColor("_BaseColor", color); block.SetColor("_Color", color);
+                renderer.SetPropertyBlock(block);
+                yield return null;
+            }
+            UnityEngine.Object.Destroy(cone);
+        }
+
         private static float GroundY(Vector3 p)
         {
             float best = float.MaxValue;

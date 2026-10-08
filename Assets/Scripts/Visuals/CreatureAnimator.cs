@@ -175,7 +175,12 @@ namespace PoeClone.Visuals
                 case CreatureBody.Briarbound:
                 case CreatureBody.GraveSiren:
                 case CreatureBody.RimeStalker:
+                case CreatureBody.Hollowmaw:
+                case CreatureBody.BarrowCastellan:
                     AnimateRevenant(dt, t, windUp, lunge, bite, recoil);
+                    break;
+                case CreatureBody.CinderPenitent:
+                    AnimatePenitent(dt, t, windUp, lunge, recoil);
                     break;
             }
         }
@@ -421,12 +426,29 @@ namespace PoeClone.Visuals
                 Head.localRotation = Quaternion.Euler(-bite * 20f, Mathf.Sin(t * 1.9f) * 15f * (1f - moveBlend), 0f);
         }
 
+        private void AnimatePenitent(float dt, float t, float windUp, float lunge, float recoil)
+        {
+            windUp = Mathf.Max(windUp, crouchBlend);
+            phase += speed * dt * 3.5f;
+            foreach (Leg leg in Legs)
+            {
+                float crawl = Mathf.Sin(phase + (leg.Group == 0 ? 0f : Mathf.PI)) * moveBlend;
+                leg.Hip.localRotation = Quaternion.Euler(leg.Front ? -35f + crawl * 24f - windUp * 40f + lunge * 30f : -65f + crawl * 6f,
+                    0f, leg.Side * (leg.Front ? 12f : 10f));
+                leg.Knee.localRotation = Quaternion.Euler(leg.Front ? -30f - Mathf.Max(0f, crawl) * 25f : 110f, 0f, 0f);
+            }
+            BodyPivot.localPosition = bodyBase + new Vector3(0f, Mathf.Abs(Mathf.Sin(phase)) * 0.04f * moveBlend, lunge * 0.2f - recoil * 0.12f);
+            BodyPivot.localRotation = bodyBaseRotation * Quaternion.Euler(12f - windUp * 15f + lunge * 20f, 0f, Mathf.Sin(phase) * moveBlend * 6f);
+            if (Head != null) Head.localRotation = Quaternion.Euler(18f - windUp * 25f, Mathf.Sin(t * 0.7f) * 5f, 0f);
+        }
+
         private void AnimateRevenant(float dt, float t, float windUp, float lunge, float bite, float recoil)
         {
             windUp = Mathf.Max(windUp, crouchBlend);
             bite = Mathf.Max(bite, crouchBlend);
             bool siren = Body == CreatureBody.GraveSiren;
-            bool stalker = Body == CreatureBody.RimeStalker;
+            bool stalker = Body == CreatureBody.RimeStalker || Body == CreatureBody.Hollowmaw;
+            bool castellan = Body == CreatureBody.BarrowCastellan;
             phase += speed * dt * (stalker ? 4.5f : 2.6f);
             foreach (Leg leg in Legs)
             {
@@ -435,6 +457,7 @@ namespace PoeClone.Visuals
                     ? -12f - stride * 12f - windUp * 65f + lunge * 40f - recoil * 20f
                     : -10f + stride * (stalker ? 34f : 22f);
                 if (siren) pitch = -35f - windUp * 45f + Mathf.Sin(t * 1.5f + leg.Side) * 8f;
+                if (castellan && leg.Front) pitch = -20f - stride * 6f - windUp * 12f + lunge * 40f;
                 leg.Hip.localRotation = Quaternion.Euler(pitch, 0f, leg.Lift + (leg.Front ? Mathf.Sin(t * 1.8f) * 5f : 0f));
                 leg.Knee.localRotation = Quaternion.Euler(leg.Bend + (leg.Front ? -windUp * 20f : Mathf.Max(0f, -stride) * 28f), 0f, 0f);
             }
@@ -477,6 +500,9 @@ namespace PoeClone.Visuals
                 case CreatureBody.Briarbound:
                 case CreatureBody.GraveSiren:
                 case CreatureBody.RimeStalker:
+                case CreatureBody.CinderPenitent:
+                case CreatureBody.Hollowmaw:
+                case CreatureBody.BarrowCastellan:
                     AddSettle(BodyPivot, new Vector3(bodyBase.x, 0.22f, bodyBase.z), Quaternion.Euler(78f, 15f, 12f));
                     foreach (Leg leg in Legs)
                     {

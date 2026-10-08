@@ -123,9 +123,12 @@ namespace PoeClone.Enemies
         }
 
         public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration, bool throughExposedHead = false,
-            bool canEnrage = false, bool flinch = true)
+            bool canEnrage = false, bool flinch = true, Vector3? hitOrigin = null)
         {
             if (dead || amount <= 0f)
+                return 0f;
+
+            if (hitOrigin.HasValue && Graveward.Blocks(this, hitOrigin.Value))
                 return 0f;
 
             if (Immune && !throughExposedHead)

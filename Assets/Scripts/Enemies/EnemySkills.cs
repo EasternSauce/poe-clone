@@ -119,6 +119,9 @@ namespace PoeClone.Enemies
                 case EnemySkill.ThornGarden: return distance < 12f;
                 case EnemySkill.Wail: return distance > WailInnerRadius && distance < WailOuterRadius + 1f;
                 case EnemySkill.FrostFissures: return distance < 11f;
+                case EnemySkill.LastOffering: return distance < 10f;
+                case EnemySkill.DraggingBreath: return distance > 2f && distance < BreathRange;
+                case EnemySkill.Graveward: return distance < 14f;
                 default: return false;
             }
         }
@@ -200,7 +203,108 @@ namespace PoeClone.Enemies
                             player.TakeHit(damage * 1.2f, kind.DamageType, attack: false);
                     });
                     break;
+                case EnemySkill.LastOffering:
+                    busyUntil = Time.time + OfferingWindUp;
+                    GetComponentInChildren<CreatureAnimator>()?.Crouch(OfferingWindUp);
+                    int offeringStagger = stagger != null ? stagger.TriggerCount : 0;
+                    StartCoroutine(Offering(target, damage * 1.4f, offeringStagger));
+                    break;
+                case EnemySkill.DraggingBreath:
+                    StartCoroutine(DraggingBreath(target, damage * 1.4f));
+                    break;
+                case EnemySkill.Graveward:
+                    StartCoroutine(RaiseGraveward(target));
+                    break;
             }
+        }
+
+        private const float OfferingWindUp = 0.55f;
+        private const float BreathRange = 9f;
+        private const float BreathHalfAngle = 24f;
+        private const float BreathWindUp = 0.65f;
+        private const float BreathChannel = 1.2f;
+        private const float WardWindUp = 0.65f;
+
+        private bool CastAlive(int staggerCount) => this != null && health != null && !health.IsDead &&
+            (stagger == null || stagger.TriggerCount == staggerCount);
+
+        private IEnumerator Offering(Vector3 target, float damage, int staggerCount)
+        {
+            yield return new WaitForSeconds(OfferingWindUp);
+            if (!CastAlive(staggerCount)) yield break;
+            SkillEffects.Arc(transform.position + Vector3.up * 0.15f, target + Vector3.up * 0.3f, kind.Eyes, 0.25f);
+            EnemyOffering.Place(target, kind, damage, player);
+        }
+
+        private IEnumerator RaiseGraveward(Vector3 target)
+        {
+            int staggerCount = stagger != null ? stagger.TriggerCount : 0;
+            busyUntil = Time.time + WardWindUp;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(WardWindUp);
+            yield return new WaitForSeconds(WardWindUp);
+            if (!CastAlive(staggerCount)) yield break;
+            // The guardian holds its ground while the ward is up; flanking stays predictable.
+            busyUntil = Time.time + 5f;
+            Graveward.Raise(transform, Flat(target - transform.position), kind.Eyes, gameplay: true);
+        }
+
+        private static bool InsideBreath(Vector3 origin, Vector3 facing, Vector3 target)
+        {
+            Vector3 offset = Flat(target - origin);
+            return offset.sqrMagnitude <= BreathRange * BreathRange &&
+                Vector3.Dot(offset.normalized, facing) >= Mathf.Cos(BreathHalfAngle * Mathf.Deg2Rad);
+        }
+
+        private IEnumerator DraggingBreath(Vector3 target, float damage)
+        {
+            Vector3 origin = transform.position;
+            Vector3 facing = FissureDirection(origin, target);
+            int staggerCount = stagger != null ? stagger.TriggerCount : 0;
+            float duration = BreathWindUp + BreathChannel;
+            busyUntil = Time.time + duration;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(duration);
+            StartCoroutine(GroundTelegraph.RunCone(origin, facing, BreathRange, BreathHalfAngle, duration,
+                () => CastAlive(staggerCount)));
+            try
+            {
+                for (float t = 0f; t < duration; t += Time.deltaTime)
+                {
+                    if (!CastAlive(staggerCount)) yield break;
+                    if (t >= BreathWindUp && CanSpecialHit() && InsideBreath(origin, facing, player.transform.position))
+                    {
+                        CharacterController playerBody = player.GetComponent<CharacterController>();
+                        PlayerController motion = player.GetComponent<PlayerController>();
+                        if (playerBody != null && playerBody.enabled && (motion == null || !motion.IsDashing))
+                        {
+                            Vector3 offset = Flat(origin - player.transform.position);
+                            float step = Mathf.Min(4.5f * Time.deltaTime, Mathf.Max(0f, offset.magnitude - 1.8f));
+                            Vector3 destination = player.transform.position + offset.normalized * step;
+                            destination = World.GroundObstacleMotion.Clamp(playerBody, player.transform.position, destination);
+                            playerBody.Move(destination - player.transform.position);
+                        }
+                    }
+                    yield return null;
+                }
+                if (CanSpecialHit() && InsideBreath(origin, facing, player.transform.position) &&
+                    Flat(player.transform.position - origin).magnitude < 2.6f)
+                {
+                    player.TakeHit(damage, kind.DamageType);
+                    SkillEffects.Shockwave(origin + facing, 1.5f, DustColor, 0.3f);
+                }
+            }
+            finally { busyUntil = Time.time; }
+        }
+
+        private static IEnumerator OfferingVisual(Vector3 target, EnemyKind kind)
+        {
+            yield return new WaitForSeconds(OfferingWindUp);
+            EnemyOffering.Place(target, kind, 0f, null);
+        }
+
+        private static IEnumerator WardVisual(Transform caster, Vector3 target, EnemyKind kind)
+        {
+            yield return new WaitForSeconds(WardWindUp);
+            if (caster != null) Graveward.Raise(caster, Flat(target - caster.position), kind.Eyes, gameplay: false);
         }
 
         private const float RootRadius = 1.25f;
@@ -543,6 +647,16 @@ namespace PoeClone.Enemies
         {
             switch (kind.Skill)
             {
+                case EnemySkill.LastOffering:
+                    host.StartCoroutine(OfferingVisual(target, kind));
+                    break;
+                case EnemySkill.DraggingBreath:
+                    host.StartCoroutine(GroundTelegraph.RunCone(body.position, FissureDirection(body.position, target),
+                        BreathRange, BreathHalfAngle, BreathWindUp + BreathChannel));
+                    break;
+                case EnemySkill.Graveward:
+                    host.StartCoroutine(WardVisual(body, target, kind));
+                    break;
                 case EnemySkill.ThornGarden:
                     host.StartCoroutine(ThornGarden(host, body.position, target, kind, null, null));
                     break;

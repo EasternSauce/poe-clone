@@ -44,7 +44,8 @@ namespace PoeClone.Player
         /// </summary>
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
             DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null,
-            bool throughExposedHead = false, bool melee = false, float projectileDistance = -1f, int venomArrowLevel = 0)
+            bool throughExposedHead = false, bool melee = false, float projectileDistance = -1f, int venomArrowLevel = 0,
+            Vector3? hitOrigin = null)
         {
             if (enemy == null || enemy.IsDead)
                 return;
@@ -89,7 +90,10 @@ namespace PoeClone.Player
                 else if (type == DamageType.Lightning) elementalPenetration += sheet.Total(StatType.LightningPenetration);
                 else if (type == DamageType.Poison) elementalPenetration += sheet.Total(StatType.PoisonPenetration);
             }
-            damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration, throughExposedHead, canEnrage: !melee);
+            damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration, throughExposedHead,
+                canEnrage: !melee, hitOrigin: hitOrigin ?? (attacker != null ? (Vector3?)attacker.position : null));
+            // A warded hit cannot apply ailments, cull, or grant on-hit recovery.
+            if (damage <= 0f) return;
             string number = Mathf.Max(1, Mathf.RoundToInt(damage)).ToString();
             CombatText.Show(displayAt ?? (at + Vector3.up * 1.6f * scale), crit ? number + "!" : number, crit ? CritColor : color, crit ? 1.35f : 1f);
 
@@ -227,13 +231,14 @@ namespace PoeClone.Player
 
             foreach (EnemyHealth other in EnemiesNear(at, radius, dead))
             {
+                if (Graveward.Blocks(other, at)) continue;
                 if (type == DamageType.Cold)
                 {
                     EnemyController ai = other.GetComponent<EnemyController>();
                     if (ai != null)
                         ai.Chill(ChillSeconds);
                 }
-                Deal(attacker, other, damage, false, color, type, secondary: true);
+                Deal(attacker, other, damage, false, color, type, secondary: true, hitOrigin: at);
             }
         }
 
@@ -262,7 +267,7 @@ namespace PoeClone.Player
                 Vector3 to = next.transform.position + Vector3.up * 0.8f;
                 SkillEffects.Arc(origin, to, CombatText.LightningColor);
                 struck.Add(next);
-                Deal(attacker, next, damage, false, CombatText.LightningColor, DamageType.Lightning, secondary: true);
+                Deal(attacker, next, damage, false, CombatText.LightningColor, DamageType.Lightning, secondary: true, hitOrigin: origin);
                 origin = to;
             }
         }

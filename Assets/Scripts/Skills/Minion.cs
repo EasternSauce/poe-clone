@@ -686,7 +686,7 @@ namespace PoeClone.Skills
         }
 
         /// <summary>One of this minion's hits landing (the mage's bolts call this when they arrive).</summary>
-        public void Deal(EnemyHealth enemy, float share)
+        public void Deal(EnemyHealth enemy, float share, Vector3? hitOrigin = null)
         {
             if (enemy == null || enemy.IsDead)
                 return;
@@ -698,7 +698,7 @@ namespace PoeClone.Skills
             amount *= Curse.TakenMultiplier(enemy);
             PlayerInventory ownerInventory = owner != null ? owner.GetComponent<PlayerInventory>() : null;
             StatSheet ownerSheet = ownerInventory != null ? ownerInventory.Stats : null;
-            float dealt = enemy.TakeDamage(amount, PoeClone.Combat.DamageType.Physical, 0f, 0f, canEnrage: true);
+            float dealt = enemy.TakeDamage(amount, PoeClone.Combat.DamageType.Physical, 0f, 0f, canEnrage: true, hitOrigin: hitOrigin ?? transform.position);
             if (dealt <= 0f)
                 return;
             if (Kind == MinionKind.Viper && owner != null)
@@ -761,6 +761,7 @@ namespace PoeClone.Skills
         private class MinionBolt : MonoBehaviour
         {
             private Minion caster;
+            private Vector3 launchPosition;
             private EnemyHealth target;
             private float life = 2f;
             private const float Speed = 14f;
@@ -776,6 +777,7 @@ namespace PoeClone.Skills
                 spark.transform.localPosition = new Vector3(0.16f, 0f, 0f);
                 var bolt = root.AddComponent<MinionBolt>();
                 bolt.caster = caster;
+                bolt.launchPosition = root.transform.position;
                 bolt.target = target;
             }
 
@@ -794,7 +796,7 @@ namespace PoeClone.Skills
                 if (to.magnitude <= step + 0.3f)
                 {
                     if (caster != null)
-                        caster.Deal(target, 1f);
+                        caster.Deal(target, 1f, launchPosition);
                     SkillEffects.Shockwave(aim, 0.7f, new Color(0.5f, 0.85f, 1f), 0.2f);
                     Destroy(gameObject);
                     return;

@@ -306,7 +306,7 @@ namespace PoeClone.Player
                     continue;
                 if (target is Enemies.EnemyHealth enemy && !enemy.IsDead && FirstVolleyHit(target))
                     HitEffects.Deal(owner, enemy, damage * 0.4f, isAttack, textColor, damageType, igniteBonus: igniteBonus,
-                        projectileDistance: DistanceTo(at));
+                        projectileDistance: DistanceTo(at), hitOrigin: launchPosition);
             }
         }
 
@@ -321,6 +321,7 @@ namespace PoeClone.Player
 
             if (target is Enemies.EnemyHealth enemy)
             {
+                if (Enemies.Graveward.Blocks(enemy, launchPosition)) return;
                 // Chilled before the hit lands, so "against chilled enemies" and Shatter count it.
                 if (chillSeconds > 0f)
                 {
@@ -329,7 +330,7 @@ namespace PoeClone.Player
                         ai.Chill(chillSeconds);
                 }
                 HitEffects.Deal(owner, enemy, damage, isAttack, textColor, damageType, igniteBonus: igniteBonus,
-                    projectileDistance: DistanceTo(enemy.transform.position), venomArrowLevel: venomArrowLevel);
+                    projectileDistance: DistanceTo(enemy.transform.position), venomArrowLevel: venomArrowLevel, hitOrigin: launchPosition);
                 return;
             }
 

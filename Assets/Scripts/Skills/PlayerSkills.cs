@@ -906,6 +906,7 @@ namespace PoeClone.Skills
                     Record(skill, level, novaRadius);
                     foreach (EnemyHealth enemy in EnemiesWithin(transform.position, novaRadius))
                     {
+                        if (Graveward.Blocks(enemy, transform.position)) continue;
                         EnemyController ai = enemy.GetComponent<EnemyController>();
                         if (ai != null)
                             ai.Chill(3f + 0.2f * (level - 1));
@@ -1413,6 +1414,7 @@ namespace PoeClone.Skills
             float damage = (4f + 1.2f * (level - 1)) * spell;
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, radius))
             {
+                if (Graveward.Blocks(enemy, transform.position)) continue;
                 EnemyController ai = enemy.GetComponent<EnemyController>();
                 if (ai != null)
                     ai.Chill(2.5f);

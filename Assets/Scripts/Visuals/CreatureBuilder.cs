@@ -14,7 +14,10 @@ namespace PoeClone.Visuals
         Beetle,   // six short legs under a heavy shell, a horn; spits
         Briarbound,
         GraveSiren,
-        RimeStalker
+        RimeStalker,
+        CinderPenitent,
+        Hollowmaw,
+        BarrowCastellan
     }
 
     /// <summary>
@@ -66,6 +69,9 @@ namespace PoeClone.Visuals
                 case CreatureBody.Briarbound: BuildBriarbound(model, ctx); break;
                 case CreatureBody.GraveSiren: BuildGraveSiren(model, ctx); break;
                 case CreatureBody.RimeStalker: BuildRimeStalker(model, ctx); break;
+                case CreatureBody.CinderPenitent: BuildCinderPenitent(model, ctx); break;
+                case CreatureBody.Hollowmaw: BuildHollowmaw(model, ctx); break;
+                case CreatureBody.BarrowCastellan: BuildBarrowCastellan(model, ctx); break;
             }
             ctx.Anim.CaptureRest();
             return ctx.Anim;
@@ -411,6 +417,107 @@ namespace PoeClone.Visuals
             for (int i = 0; i < 6; i++)
                 Cone(c, body, c.Colors.Second, new Vector3(0.12f + (i % 2) * 0.18f, 0.32f - i * 0.09f, -0.2f), new Vector3(0.16f, 0.6f - i * 0.045f, 0.18f), new Vector3(-40f - i * 6f, 0f, -24f));
             c.Anim.Mouth = Pivot(head, CreatureAnimator.MouthName, new Vector3(0f, -0.08f, 0.3f));
+        }
+
+        private static void BuildCinderPenitent(Transform model, Ctx c)
+        {
+            Transform body = Pivot(model, "CinderPenitent", new Vector3(0f, 0.72f, 0f));
+            c.Anim.BodyPivot = body;
+            Ico(c, body, c.Colors.Main, new Vector3(0f, 0.04f, -0.06f), new Vector3(0.48f, 0.65f, 0.35f));
+            Transform head = Pivot(body, "BoundHead", new Vector3(0f, 0.39f, 0.18f));
+            c.Anim.Head = head;
+            Ico(c, head, c.Colors.Main, Vector3.zero, new Vector3(0.27f, 0.35f, 0.27f));
+            for (int i = 0; i < 3; i++)
+                Part(head, PrimitiveType.Cube, c.Colors.Second, new Vector3(0f, 0.12f - i * 0.11f, 0.12f), new Vector3(0.3f, 0.04f, 0.08f), new Vector3(0f, 0f, i % 2 == 0 ? 12f : -15f));
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Part(head, PrimitiveType.Cube, c.Colors.Eyes, new Vector3(side * 0.08f, 0.025f, 0.15f), new Vector3(0.035f, 0.022f, 0.025f), Vector3.zero, false);
+                AddRevenantLimb(c, body, side, true, c.Colors.Main, 0.48f, 0.58f);
+                var arm = c.Anim.Legs[c.Anim.Legs.Count - 1];
+                arm.Hip.localPosition = new Vector3(side * 0.28f, 0.15f, 0.04f);
+                arm.Hip.localRotation = Quaternion.Euler(-35f, 0f, side * 12f);
+                arm.Knee.localRotation = Quaternion.Euler(-30f, 0f, 0f);
+                Ico(c, arm.Knee, c.Colors.Main, new Vector3(0f, -0.58f, 0.04f), new Vector3(0.25f, 0.12f, 0.28f));
+                AddRevenantLimb(c, body, side, false, c.Colors.Main, 0.24f, 0.27f);
+                var leg = c.Anim.Legs[c.Anim.Legs.Count - 1];
+                leg.Hip.localRotation = Quaternion.Euler(-65f, 0f, side * 10f);
+                leg.Knee.localRotation = Quaternion.Euler(110f, 0f, 0f);
+                // Glowing flesh visible between charred ribs and snapped ritual bands.
+                for (int i = 0; i < 4; i++)
+                {
+                    Part(body, PrimitiveType.Cube, c.Colors.Eyes, new Vector3(side * 0.1f, 0.20f - i * 0.105f, 0.17f), new Vector3(0.13f, 0.028f, 0.045f), new Vector3(0f, side * 20f, side * 15f), false);
+                    Part(body, PrimitiveType.Cube, c.Colors.Second, new Vector3(side * 0.18f, 0.21f - i * 0.105f, 0.13f), new Vector3(0.11f, 0.045f, 0.07f), new Vector3(0f, 0f, side * 18f));
+                }
+            }
+            Cone(c, body, c.Colors.Second, new Vector3(0f, -0.28f, -0.12f), new Vector3(0.29f, 0.46f, 0.09f), new Vector3(135f, 0f, 0f));
+        }
+
+        private static void BuildHollowmaw(Transform model, Ctx c)
+        {
+            Transform body = Pivot(model, "Hollowmaw", new Vector3(0f, 1.1f, 0f));
+            c.Anim.BodyPivot = body;
+            Ico(c, body, c.Colors.Main, new Vector3(0f, 0.12f, -0.12f), new Vector3(0.72f, 0.78f, 0.55f));
+            Transform head = Pivot(body, "EyelessHead", new Vector3(0f, 0.45f, 0.18f));
+            c.Anim.Head = head;
+            Ico(c, head, c.Colors.Main, Vector3.zero, new Vector3(0.42f, 0.4f, 0.38f));
+            Ico(c, head, c.Colors.Second, new Vector3(0f, 0.07f, 0.17f), new Vector3(0.43f, 0.14f, 0.12f));
+            // A continuous vertical throat from the chin into the chest, bordered by teeth.
+            Part(body, PrimitiveType.Cube, c.Colors.Accent, new Vector3(0f, 0.04f, 0.27f), new Vector3(0.18f, 0.86f, 0.06f), Vector3.zero);
+            Transform jaw = Pivot(body, "SplitJaw", new Vector3(0.1f, 0.18f, 0.24f));
+            c.Anim.Jaw = jaw;
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Transform parent = side > 0 ? jaw : body;
+                Vector3 offset = side > 0 ? -jaw.localPosition : Vector3.zero;
+                Ico(c, parent, c.Colors.Main, offset + new Vector3(side * 0.12f, 0.03f, 0.27f), new Vector3(0.15f, 0.85f, 0.14f));
+                for (int i = 0; i < 6; i++)
+                    Cone(c, parent, Bone, offset + new Vector3(side * 0.095f, 0.35f - i * 0.13f, 0.34f), new Vector3(0.018f, 0.1f, 0.025f), new Vector3(0f, 0f, side * 75f));
+                AddRevenantLimb(c, body, side, false, c.Colors.Main, 0.4f, 0.48f);
+                AddRevenantLimb(c, body, side, true, c.Colors.Main, 0.45f, 0.6f);
+                var arm = c.Anim.Legs[c.Anim.Legs.Count - 1];
+                arm.Hip.localPosition = new Vector3(side * 0.42f, 0.25f, -0.02f);
+                Ico(c, arm.Knee, c.Colors.Second, new Vector3(0f, -0.58f, 0.04f), new Vector3(0.34f, 0.22f, 0.26f));
+            }
+            for (int i = 0; i < 4; i++)
+                Ico(c, body, c.Colors.Second, new Vector3(0f, 0.4f - i * 0.17f, -0.37f), new Vector3(0.14f, 0.19f, 0.12f));
+            c.Anim.Mouth = Pivot(body, CreatureAnimator.MouthName, new Vector3(0f, 0.12f, 0.38f));
+        }
+
+        private static void BuildBarrowCastellan(Transform model, Ctx c)
+        {
+            Transform body = Pivot(model, "BarrowCastellan", new Vector3(0f, 1.25f, 0f));
+            c.Anim.BodyPivot = body;
+            Ico(c, body, c.Colors.Main, Vector3.zero, new Vector3(0.6f, 0.72f, 0.36f));
+            Ico(c, body, c.Colors.Second, new Vector3(0f, 0.03f, 0.17f), new Vector3(0.5f, 0.62f, 0.15f));
+            Transform head = Pivot(body, "CollapsedHelm", new Vector3(0f, 0.56f, 0f));
+            c.Anim.Head = head;
+            Ico(c, head, c.Colors.Second, Vector3.zero, new Vector3(0.38f, 0.44f, 0.34f));
+            Part(head, PrimitiveType.Cube, Dark, new Vector3(0f, -0.01f, 0.17f), new Vector3(0.26f, 0.12f, 0.035f), Vector3.zero);
+            Ico(c, head, Bone, new Vector3(0.035f, -0.14f, 0.18f), new Vector3(0.14f, 0.12f, 0.075f));
+            Part(head, PrimitiveType.Cube, c.Colors.Eyes, new Vector3(-0.06f, 0.01f, 0.2f), new Vector3(0.045f, 0.022f, 0.025f), Vector3.zero, false);
+            Part(head, PrimitiveType.Cube, c.Colors.Accent, new Vector3(0f, 0.17f, -0.03f), new Vector3(0.07f, 0.19f, 0.34f), new Vector3(-8f, 0f, 0f));
+            for (int side = -1; side <= 1; side += 2)
+            {
+                AddRevenantLimb(c, body, side, false, c.Colors.Accent, 0.55f, 0.58f);
+                AddRevenantLimb(c, body, side, true, c.Colors.Main, 0.44f, 0.5f);
+                var arm = c.Anim.Legs[c.Anim.Legs.Count - 1];
+                Ico(c, arm.Hip, c.Colors.Second, new Vector3(0f, -0.06f, 0f), new Vector3(0.4f, 0.24f, 0.4f));
+                Part(arm.Knee, PrimitiveType.Cube, c.Colors.Second, new Vector3(0f, -0.25f, 0.07f), new Vector3(0.16f, 0.36f, 0.13f), Vector3.zero);
+                Cone(c, body, c.Colors.Accent, new Vector3(side * 0.16f, -0.3f, 0f), new Vector3(0.18f, 0.65f, 0.16f), new Vector3(180f, 0f, side * 10f));
+                if (side > 0)
+                {
+                    Transform weapon = Pivot(arm.Knee, "GravePolearm", new Vector3(0f, -0.45f, 0.12f));
+                    Part(weapon, PrimitiveType.Cylinder, c.Colors.Accent, new Vector3(0f, 0.4f, 0f), new Vector3(0.055f, 1.05f, 0.055f), new Vector3(0f, 0f, -8f));
+                    Cone(c, weapon, c.Colors.Second, new Vector3(0.15f, 1.4f, 0f), new Vector3(0.16f, 0.6f, 0.045f), new Vector3(0f, 0f, -65f));
+                    Cone(c, weapon, c.Colors.Main, new Vector3(0.12f, 1.42f, 0f), new Vector3(0.06f, 0.28f, 0.06f), Vector3.zero);
+                    Part(weapon, PrimitiveType.Cube, c.Colors.Second, new Vector3(0.12f, 1.33f, 0f), new Vector3(0.35f, 0.065f, 0.12f), Vector3.zero);
+                    Cone(c, weapon, c.Colors.Accent, new Vector3(0.15f, 1.15f, 0f), new Vector3(0.08f, 0.58f, 0.035f), new Vector3(180f, 0f, -20f));
+                }
+            }
+            Transform cloak = Pivot(body, "TombMantle", new Vector3(0f, 0.24f, -0.22f));
+            c.Anim.Tail = cloak;
+            for (int i = 0; i < 3; i++)
+                Cone(c, cloak, c.Colors.Accent, new Vector3((i - 1) * 0.18f, 0f, 0f), new Vector3(0.16f, 0.95f + i * 0.06f, 0.05f), new Vector3(160f, 0f, (i - 1) * 8f));
         }
 
         private static void AddRevenantLimb(Ctx c, Transform body, int side, bool arm, Color color, float upper, float lower)

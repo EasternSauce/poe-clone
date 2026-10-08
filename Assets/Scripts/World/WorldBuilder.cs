@@ -64,14 +64,15 @@ namespace PoeClone.World
                 ("Giant Spider", 14f), ("Dire Wolf", 9f), ("Bog Slime", 12f), ("Briarbound", 14f)),
             Roster(),
             Roster(("Zombie", 16f), ("Skeleton", 22f), ("Skeleton Archer", 14f),
-                ("Wraith", 14f), ("Necromancer", 10f), ("Grave Siren", 16f)),
-            Roster(("Fire Caster", 24f), ("Ember Knight", 24f), ("Magma Beetle", 20f), ("Hellhound", 12f)),
+                ("Wraith", 14f), ("Necromancer", 10f), ("Grave Siren", 16f), ("Barrow Castellan", 12f)),
+            Roster(("Fire Caster", 24f), ("Ember Knight", 24f), ("Magma Beetle", 20f), ("Hellhound", 12f),
+                ("Cinder Penitent", 18f)),
             Roster(("Frost Caster", 20f), ("Frost Giant", 12f), ("Frost Wolf", 10f),
                 ("Ice Crawler", 16f), ("Rime Stalker", 18f)),
             Roster(),
             // The Lost Hollows have cave dwellers, rather than the graveyard's entire undead mix.
             Roster(("Brute", 16f), ("Storm Caster", 12f), ("Grave Bat", 12f),
-                ("Corpse Ooze", 18f), ("Crypt Spider", 22f))
+                ("Corpse Ooze", 18f), ("Crypt Spider", 22f), ("Hollowmaw", 16f))
         };
 
         private static float[] Roster(params (string name, float weight)[] entries)

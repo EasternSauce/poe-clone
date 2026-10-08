@@ -1,3 +1,8 @@
+version: 2026-10-08-penitent-hollowmaw-castellan
+- Added three native enemies with distinct bodies and movement: the crawling Cinder Penitent in Ashen Ruins, the eyeless Hollowmaw in The Lost Hollows, and the armored Barrow Castellan in Haunted Graveyard.
+- Cinder Penitent places pulsing explosive offerings that remain armed after its death. Hollowmaw warns with a narrow cone, inhales to drag you closer, then snaps its jaws; dodge sideways, Dash, or interrupt it.
+- Barrow Castellan plants a directional Graveward protecting nearby undead against hits crossing the barrier. Flank it or kill the guardian to break the ward; blocked hits cannot apply ailments or grant on-hit recovery.
+
 version: 2026-10-08-native-enemy-rosters
 - Added three distinct dark fantasy enemies with custom bodies and animations: the thorn-crowned Briarbound in Greenwood, the shrouded Grave Siren in Haunted Graveyard, and the clawed Rime Stalker in Frozen Hollow.
 - Briarbound grows lingering thorn patches, Grave Siren screams across a ring with a safe center, and Rime Stalker opens crossed frost fissures with safe diagonal gaps. Each ability warns before dealing damage and belongs only to its creature.
