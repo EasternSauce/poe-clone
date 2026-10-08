@@ -153,14 +153,17 @@ namespace PoeClone.Inventory
             var normalized = modifiers == null ? new List<StatModifier>() : new List<StatModifier>(modifiers);
             float castSpeed = 0f;
             int castIndex = -1;
+            int castTier = 0, castCount = 0;
             for (int i = normalized.Count - 1; i >= 0; i--)
                 if (normalized[i].Stat == StatType.CastSpeed)
                 {
                     castSpeed += normalized[i].Value;
+                    castTier = normalized[i].Tier;
+                    castCount++;
                     castIndex = i;
                     normalized.RemoveAt(i);
                 }
-            if (castIndex >= 0) normalized.Insert(castIndex, new StatModifier(StatType.CastSpeed, castSpeed));
+            if (castIndex >= 0) normalized.Insert(castIndex, new StatModifier(StatType.CastSpeed, castSpeed, castCount == 1 ? castTier : 0));
             Modifiers = normalized;
             HasCape = hasCape;
             WeaponType = weaponType;

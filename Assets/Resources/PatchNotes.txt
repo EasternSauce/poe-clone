@@ -1,3 +1,8 @@
+version: 2026-10-08-loot-simulator-and-tooltip-tiers
+- Added an in-game Loot Simulator to the Escape menu. Select equipment and weapon types, area level (1?100), and item count (1?1000), then Randomize Loot. Results use the live drop weights, rarity chances and modifier rolls, show item icons with rarity frames, and support hover tooltips and paging. Simulated items are previews and do not enter your inventory.
+- Newly rolled modifiers show their tier in brackets (T1 is strongest), including granted skills. Implicits and unique modifiers have bracketed labels; older untiered rolls show Tier unknown. Rolled tiers persist in saves and spectator views.
+- Item tooltips now grow to fit long lines up to a screen-safe width, then wrap and measure their full text height. Desktop tooltips are clamped within the screen.
+
 version: 2026-10-08-skill-tier-unlock-progression
 - Rescaled all six granted-skill tiers to unlock at item levels 1, 8, 16, 23, 31 and 34. Level 10 skills remain available in level 34 areas, with the preceding tier unlocking separately at level 31. Applies to optional skills and guaranteed staff/grimoire attacks.
 

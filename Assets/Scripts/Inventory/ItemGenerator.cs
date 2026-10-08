@@ -645,7 +645,7 @@ namespace PoeClone.Inventory
                 }
                 if (!Mathf.Approximately(legal.Value, m.Value))
                     changed = true;
-                mods.Add(new StatModifier(m.Stat, legal.Value));
+                mods.Add(new StatModifier(m.Stat, legal.Value, Mathf.Approximately(legal.Value, m.Value) ? m.Tier : 0));
             }
 
             if (!changed)
@@ -852,9 +852,9 @@ namespace PoeClone.Inventory
                 selectedTiers.Add(ChooseTier(rng, a.Tiers, level));
 
             foreach (StatModifier implicitMod in b.Implicits)
-                mods.Add(new StatModifier(implicitMod.Stat, RollImplicit(rng, implicitMod.Value)));
+                mods.Add(new StatModifier(implicitMod.Stat, RollImplicit(rng, implicitMod.Value), -1));
             for (int i = 0; i < selected.Count; i++)
-                mods.Add(new StatModifier(selected[i].Stat, RollTierValue(rng, selectedTiers[i])));
+                mods.Add(new StatModifier(selected[i].Stat, RollTierValue(rng, selectedTiers[i]), selected[i].Tiers.Length - Array.IndexOf(selected[i].Tiers, selectedTiers[i])));
 
             // The rarity shown matches what actually rolled (a base can run out of stats to give).
             if (rarity != ItemRarity.Normal && fromRarity == 0)

@@ -10,6 +10,7 @@ namespace PoeClone.Inventory
     {
         public int stat;
         public float value;
+        public int tier;
     }
 
     /// <summary>An item as saved (JsonUtility-friendly: plain public fields).</summary>
@@ -38,7 +39,7 @@ namespace PoeClone.Inventory
                 r = item.Tint.r, g = item.Tint.g, b = item.Tint.b, a = item.Tint.a
             };
             foreach (StatModifier m in item.Modifiers)
-                record.mods.Add(new ModRecord { stat = (int)m.Stat, value = m.Value });
+                record.mods.Add(new ModRecord { stat = (int)m.Stat, value = m.Value, tier = m.Tier });
             return record;
         }
 
@@ -55,7 +56,7 @@ namespace PoeClone.Inventory
             if (mods != null)
             {
                 foreach (ModRecord m in mods)
-                    modifiers.Add(new StatModifier((StatType)m.stat, m.value));
+                    modifiers.Add(new StatModifier((StatType)m.stat, m.value, m.tier));
             }
             var item = new ItemData(id, name, (ItemType)type, Math.Max(1, w), Math.Max(1, h), new Color(r, g, b, a), modifiers,
                 hasCape: cape, weaponType: (WeaponType)weapon, rarity: (ItemRarity)rarity);

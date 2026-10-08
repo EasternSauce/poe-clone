@@ -12,8 +12,10 @@ namespace PoeClone.Network
         public static GearItem ToWire(ItemData item)
         {
             var mods = new float[item.Modifiers.Count * 2];
+            var tiers = new int[item.Modifiers.Count];
             for (int k = 0; k < item.Modifiers.Count; k++)
             {
+                tiers[k] = item.Modifiers[k].Tier;
                 mods[k * 2] = (int)item.Modifiers[k].Stat;
                 mods[k * 2 + 1] = item.Modifiers[k].Value;
             }
@@ -31,6 +33,7 @@ namespace PoeClone.Network
                 q = (int)item.Rarity,
                 c = item.HasCape ? 1 : 0,
                 tn = ColorUtility.ToHtmlStringRGBA(item.Tint),
+                mt = tiers,
                 m = mods
             };
         }
@@ -53,7 +56,7 @@ namespace PoeClone.Network
             if (g.m != null)
             {
                 for (int k = 0; k + 1 < g.m.Length; k += 2)
-                    record.mods.Add(new ModRecord { stat = Mathf.RoundToInt(g.m[k]), value = g.m[k + 1] });
+                    record.mods.Add(new ModRecord { stat = Mathf.RoundToInt(g.m[k]), value = g.m[k + 1], tier = g.mt != null && k / 2 < g.mt.Length ? g.mt[k / 2] : 0 });
             }
             return record.ToItem();
         }
@@ -65,7 +68,7 @@ namespace PoeClone.Network
                 return string.Empty;
             var sb = new System.Text.StringBuilder(item.Id).Append('|').Append(item.Name).Append('|').Append(item.StackCount).Append('|').Append(item.ItemLevel);
             foreach (StatModifier m in item.Modifiers)
-                sb.Append('|').Append((int)m.Stat).Append(':').Append(m.Value.ToString(CultureInfo.InvariantCulture));
+                sb.Append('|').Append((int)m.Stat).Append(':').Append(m.Value.ToString(CultureInfo.InvariantCulture)).Append(':').Append(m.Tier);
             return sb.ToString();
         }
     }

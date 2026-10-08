@@ -1730,7 +1730,7 @@ private Vector2 CellSize(int w, int h)
         }
 
         // Name, type, then the item's real stats (the ones that change the character when worn).
-        private static string BuildTooltipText(ItemData item, out int lineCount)
+        public static string BuildTooltipText(ItemData item, out int lineCount)
         {
             // Weapons name their kind ("Bow", "Axe"); everything else its slot type ("Body Armour").
             string typeName = item.Type == ItemType.Weapon ? item.WeaponType.ToString() : item.Type.ToString();
@@ -1793,7 +1793,7 @@ private Vector2 CellSize(int w, int h)
                 {
                     if (!SkillGrants.IsGrant(m.Stat))
                         continue;
-                    sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.Gold)).Append(">").Append(StatFormatter.ItemLine(m)).Append("</color>");
+                    sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.Gold)).Append(">").Append(StatFormatter.ItemLine(m) + " [" + (m.Tier > 0 ? "T" + m.Tier : m.Tier == -1 ? "Implicit" : item.Rarity == ItemRarity.Unique ? "Unique" : "Tier unknown") + "]").Append("</color>");
                     lineCount++;
                 }
 
@@ -1801,7 +1801,7 @@ private Vector2 CellSize(int w, int h)
                 {
                     if (SkillGrants.IsGrant(m.Stat))
                         continue;
-                    sb.Append("\n<color=#").Append(magic).Append(">").Append(StatFormatter.ItemLine(m)).Append("</color>");
+                    sb.Append("\n<color=#").Append(magic).Append(">").Append(StatFormatter.ItemLine(m) + " [" + (m.Tier > 0 ? "T" + m.Tier : m.Tier == -1 ? "Implicit" : item.Rarity == ItemRarity.Unique ? "Unique" : "Tier unknown") + "]").Append("</color>");
                     lineCount++;
                 }
             }
@@ -1964,6 +1964,7 @@ private Vector2 CellSize(int w, int h)
                 float x = Mathf.Clamp(pos.x, size.x * 0.5f, Screen.width - size.x * 0.5f);
                 heldTooltipRect.pivot = new Vector2(0.5f, 0f);
                 heldTooltipRect.position = new Vector2(x, Mathf.Min(pos.y + offset, Screen.height - size.y));
+                ClampTooltip(heldTooltipRect);
                 return;
             }
 
@@ -1975,13 +1976,30 @@ private Vector2 CellSize(int w, int h)
             heldTooltipRect.pivot = new Vector2(0f, flipY ? 0f : 1f);
             float px = Mathf.Min(pos.x, Screen.width - size.x);
             heldTooltipRect.position = new Vector2(px, pos.y + (flipY ? gap : -gap));
+            ClampTooltip(heldTooltipRect);
         }
 
         // A tooltip's size for its text: this width, and as tall as the text really lays out (long
         // stat lines wrap, which a count of lines misses), never less than the estimate. The text
         // sits 10 px in from every edge (see BuildTooltip).
-        private static Vector2 FitTooltip(Text text, float width, float estimatedHeight)
+        public static void ClampTooltip(RectTransform rect)
         {
+            float scale = rect.GetComponentInParent<Canvas>().scaleFactor;
+            Vector2 size = rect.sizeDelta * scale;
+            Vector3 at = rect.position;
+            at.x = Mathf.Clamp(at.x, size.x * rect.pivot.x, Mathf.Max(size.x * rect.pivot.x, Screen.width - size.x * (1f - rect.pivot.x)));
+            at.y = Mathf.Clamp(at.y, size.y * rect.pivot.y, Mathf.Max(size.y * rect.pivot.y, Screen.height - size.y * (1f - rect.pivot.y)));
+            rect.position = at;
+        }
+
+        public static Vector2 FitTooltip(Text text, float width, float estimatedHeight)
+        {
+            float scale = text.canvas != null ? text.canvas.scaleFactor : 1f;
+            float maxWidth = Mathf.Max(40f, Screen.width / Mathf.Max(.01f, scale) - 24f);
+            var unwrapped = text.GetGenerationSettings(Vector2.zero);
+            float preferred = text.cachedTextGeneratorForLayout.GetPreferredWidth(text.text, unwrapped) / Mathf.Max(.01f, text.pixelsPerUnit) + 24f;
+            width = Mathf.Min(maxWidth, Mathf.Max(width, Mathf.Min(620f, preferred)));
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
             TextGenerationSettings settings = text.GetGenerationSettings(new Vector2(width - 20f, 0f));
             float laidOut = text.cachedTextGeneratorForLayout.GetPreferredHeight(text.text, settings) / Mathf.Max(0.01f, text.pixelsPerUnit);
             return new Vector2(width, Mathf.Max(estimatedHeight * 0.6f, laidOut + 26f));
@@ -2007,6 +2025,7 @@ private Vector2 CellSize(int w, int h)
                 float y = Mathf.Clamp(mousePos.y, size.y * 0.5f, Screen.height - size.y * 0.5f);
                 tooltipRect.pivot = new Vector2(1f, 0.5f);
                 tooltipRect.position = new Vector2(Mathf.Max(mousePos.x - offset, size.x), y);
+                ClampTooltip(tooltipRect);
                 return;
             }
 
@@ -2019,6 +2038,7 @@ private Vector2 CellSize(int w, int h)
             bool flipY = mousePos.y - 18f - size.y < 0f;
             tooltipRect.pivot = new Vector2(flipX ? 1f : 0f, flipY ? 0f : 1f);
             tooltipRect.position = new Vector2(mousePos.x + (flipX ? -gap : gap), mousePos.y + (flipY ? 18f : -18f));
+            ClampTooltip(tooltipRect);
         }
 
         // ------------------------------------------------------------------ clicking

@@ -277,11 +277,14 @@ namespace PoeClone.Inventory
     {
         public StatType Stat { get; }
         public float Value { get; }
+        // Positive: rolled tier (T1 strongest); -1: implicit; 0: legacy/untiered.
+        public int Tier { get; }
 
-        public StatModifier(StatType stat, float value)
+        public StatModifier(StatType stat, float value, int tier = 0)
         {
             Stat = stat == StatType.LegacyCooldownRecovery ? StatType.CastSpeed : stat;
             Value = value;
+            Tier = tier;
         }
     }
 

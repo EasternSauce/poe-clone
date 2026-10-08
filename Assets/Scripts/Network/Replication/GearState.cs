@@ -23,6 +23,7 @@ namespace PoeClone.Network.Replication
         public int c;       // 1 = has a cape
         public string tn;   // tint, RRGGBBAA
         public float[] m;   // modifiers as (stat, value) pairs
+        public int[] mt;    // parallel modifier tiers; absent in older messages
         public int x;       // grid position, or the EquipSlot for worn gear
         public int y;
     }
