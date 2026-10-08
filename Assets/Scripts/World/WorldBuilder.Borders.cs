@@ -60,10 +60,26 @@ namespace PoeClone.World
             rim.transform.SetParent(group, false);
             rim.AddComponent<MeshFilter>().sharedMesh = shape.BuildWalls(shape.IsCliff ? -12f : -0.5f,
                 shape.IsCave ? 3.2f : shape.IsCliff ? 0.25f : 1.3f, 0.65f);
-            rim.AddComponent<MeshRenderer>().sharedMaterial = kit.Mat(area == Frozen ? "Ice" : "RockDark");
+            rim.AddComponent<MeshRenderer>().sharedMaterial = LayoutRockMaterial(area);
             // Backdrops are visual only: the enclosing rectangle and cliff bottoms cannot be walked on.
             Box(group, shape.Center + new Vector3(0, floorY - (shape.IsCliff ? 12.5f : 1.5f), 0),
                 new Vector3(shape.Size.x + 24, 0.1f, shape.Size.y + 24), kit.Mat(shape.IsCliff ? "Lava" : "Charred"), false).name = "Backdrop";
+        }
+
+        private Material LayoutRockMaterial(int area)
+        {
+            // Broad rock strata suit continuous banks better than tiny repeated flecks.
+            // Frozen walls are pale rock with ice tint, rather than the blue Steel copy
+            // used for small ice props and water elsewhere in the world.
+            var material = new Material(kit.Mat("RockDark")) { name = "LayoutRock_" + AreaNames[area] };
+            Color color = area == Frozen ? new Color(0.65f, 0.73f, 0.78f) :
+                area == Ruins ? new Color(0.32f, 0.27f, 0.24f) : new Color(0.34f, 0.33f, 0.31f);
+            material.SetColor("_BaseColor", color);
+            material.SetColor("_ShadowColor", new Color(color.r * 0.5f, color.g * 0.5f, color.b * 0.55f));
+            material.SetFloat("_TriplanarTileSize", 3.2f);
+            material.SetFloat("_TexInfluence", 0.6f);
+            material.SetFloat("_RimIntensity", 0.04f);
+            return material;
         }
 
         private void BuildBorders()

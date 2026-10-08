@@ -1,3 +1,7 @@
+version: 2026-10-08-layout-wall-surfaces
+- Joined curved rock banks and cliff rims into continuous surfaces, removing cracks between segments and overlapping faces that could flicker.
+- Smoothed curved wall shading and reduced small-scale texture repetition. Frozen walls now use pale rock with an ice tint; volcanic cliff faces use warmer, darker stone.
+
 version: 2026-10-08-fixed-area-layouts
 - Replaced open blob maps with permanent authored layouts and larger, uneven rectangular bounds: open woodland and town basins, divided graveyard grounds, lava cliff shelves, and winding ice caverns. The enclosing rectangle and blocked regions cannot be walked on.
 - Added The Lost Hollows, a dark cave connecting Greenwood and the Haunted Graveyard, with roomy entrances, looping tunnels and many dead ends. Cave passages remain comfortably wider than the player.

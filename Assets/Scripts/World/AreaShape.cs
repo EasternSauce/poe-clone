@@ -188,27 +188,53 @@ namespace PoeClone.World
             var vertices = new List<Vector3>();
             var triangles = new List<int>();
             var normals = new List<Vector3>();
+            var joins = new Dictionary<Vector2Int, int>();
+            bool collision = outward <= 0f;
+            // Each contour point owns one cross-section. Neighboring segments reuse it,
+            // including the cap's outer edge, instead of offsetting separate slabs.
+            int Join(Vector3 point)
+            {
+                var key = new Vector2Int(Mathf.RoundToInt(point.x * 10000f), Mathf.RoundToInt(point.z * 10000f));
+                if (joins.TryGetValue(key, out int existing)) return existing;
+                Vector2 p = new Vector2(key.x, key.y) / 10000f;
+                const float delta = 0.1f;
+                Vector3 normal = -new Vector3(
+                    Distance(p + Vector2.right * delta) - Distance(p - Vector2.right * delta), 0f,
+                    Distance(p + Vector2.up * delta) - Distance(p - Vector2.up * delta)).normalized;
+                Vector3 inner = new Vector3(p.x, 0f, p.y) + normal * outward;
+                int start = vertices.Count;
+                vertices.Add(inner + Vector3.up * bottom);
+                vertices.Add(inner + Vector3.up * top);
+                normals.Add(-normal); normals.Add(-normal);
+                if (!collision)
+                {
+                    // Separate cap normals preserve a crisp lip above the smooth face.
+                    vertices.Add(inner + Vector3.up * top);
+                    vertices.Add(inner + normal * 5f + Vector3.up * top);
+                    normals.Add(Vector3.up); normals.Add(Vector3.up);
+                }
+                joins.Add(key, start);
+                return start;
+            }
+            void Face(int a, int b, int c, Vector3 facing)
+            {
+                if (Vector3.Dot(Vector3.Cross(vertices[b] - vertices[a], vertices[c] - vertices[a]), facing) < 0f)
+                { int swap = b; b = c; c = swap; }
+                triangles.Add(a); triangles.Add(b); triangles.Add(c);
+                // Only the invisible collision wall needs both windings. Duplicate
+                // coplanar render triangles cause flicker and cancel recalculated normals.
+                if (collision) { triangles.Add(a); triangles.Add(c); triangles.Add(b); }
+            }
             foreach (var edge in Boundary)
             {
-                Vector3 a = edge.a, b = edge.b;
-                Vector3 normal = Vector3.Cross(b - a, Vector3.up).normalized;
-                if (Contains(Center + (a + b) * 0.5f + normal * 0.4f)) normal = -normal;
-                a += normal * outward; b += normal * outward;
-                int i = vertices.Count;
-                vertices.Add(a + Vector3.up * bottom); vertices.Add(b + Vector3.up * bottom);
-                vertices.Add(a + Vector3.up * top); vertices.Add(b + Vector3.up * top);
-                for (int n = 0; n < 4; n++) normals.Add(-normal);
-                triangles.AddRange(new[] { i, i + 2, i + 1, i + 1, i + 2, i + 3, i, i + 1, i + 2, i + 1, i + 3, i + 2 });
-                if (outward > 0)
+                int a = Join(edge.a), b = Join(edge.b);
+                Vector3 facing = normals[a] + normals[b];
+                Face(a, a + 1, b, facing);
+                Face(b, a + 1, b + 1, facing);
+                if (!collision)
                 {
-                    int roof = vertices.Count;
-                    vertices.Add(a + Vector3.up * top);
-                    vertices.Add(b + Vector3.up * top);
-                    vertices.Add(a + normal * 5f + Vector3.up * top);
-                    vertices.Add(b + normal * 5f + Vector3.up * top);
-                    for (int n = 0; n < 4; n++) normals.Add(Vector3.up);
-                    triangles.AddRange(new[] { roof, roof + 2, roof + 1, roof + 1, roof + 2, roof + 3,
-                        roof, roof + 1, roof + 2, roof + 1, roof + 3, roof + 2 });
+                    Face(a + 2, a + 3, b + 2, Vector3.up);
+                    Face(b + 2, a + 3, b + 3, Vector3.up);
                 }
             }
             Mesh mesh = MeshFrom("AuthoredAreaWalls", vertices, triangles);
