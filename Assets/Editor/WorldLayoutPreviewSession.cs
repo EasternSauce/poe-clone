@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace PoeClone.EditorTools
 {
@@ -10,6 +11,34 @@ namespace PoeClone.EditorTools
         private const string ScenePath = "Assets/Editor/WorldLayoutPreview.unity";
         private const string ActiveKey = "PoeClone.WorldLayoutPreview.Active";
         private const string PreviousSceneKey = "PoeClone.WorldLayoutPreview.PreviousStartScene";
+        private static GameObject loadingCover;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void CoverStartup()
+        {
+            if (!SessionState.GetBool(ActiveKey, false)) return;
+            // Cover the very first frame, including startup menus, until the preview is configured.
+            loadingCover = new GameObject("World Layout Preview Loading", typeof(Canvas), typeof(GraphicRaycaster));
+            Object.DontDestroyOnLoad(loadingCover);
+            var canvas = loadingCover.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = short.MaxValue;
+            var shade = new GameObject("Cover", typeof(RectTransform), typeof(Image));
+            shade.transform.SetParent(loadingCover.transform, false);
+            var image = shade.GetComponent<Image>();
+            image.color = Color.black;
+            var rect = image.rectTransform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+        }
+
+        public static void Reveal()
+        {
+            if (loadingCover == null) return;
+            Object.Destroy(loadingCover);
+            loadingCover = null;
+        }
 
         [InitializeOnLoadMethod]
         private static void InstallCleanup()

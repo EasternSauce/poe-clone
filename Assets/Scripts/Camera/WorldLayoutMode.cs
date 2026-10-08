@@ -11,7 +11,7 @@ namespace PoeClone.CameraSystem
         private Camera view;
         private Vector3 focus;
         private float zoom;
-        private bool angled;
+        private bool angled = true;
         private bool active;
         private Vector3 savedPosition;
         private Quaternion savedRotation;
@@ -191,9 +191,14 @@ namespace PoeClone.CameraSystem
                 if (!overToolbar)
                 {
                     float scroll = mouse.scroll.ReadValue().y;
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+                    if (InputSystem.settings.scrollDeltaBehavior == InputSettings.ScrollDeltaBehavior.KeepPlatformSpecificInputRange)
+                        scroll /= 120f;
+#endif
                     if (scroll != 0 && GroundPoint(at, out Vector3 before))
                     {
-                        zoom = Mathf.Clamp(zoom * Mathf.Exp(-scroll * 0.0015f), 4, 2500);
+                        // Current Input System wheel deltas are normalized to one unit per notch.
+                        zoom = Mathf.Clamp(zoom * Mathf.Exp(-scroll * 0.35f), 4, 2500);
                         ApplyCamera();
                         if (GroundPoint(at, out Vector3 after)) focus += before - after;
                     }
@@ -218,12 +223,12 @@ namespace PoeClone.CameraSystem
                 if (screen.z > 0 && screen.x >= 0 && screen.x <= Screen.width && screen.y >= 0 && screen.y <= Screen.height)
                     GUI.Box(new Rect(screen.x - 90, Screen.height - screen.y - 22, 180, 22), WorldBuilder.AreaNames[i]);
             }
-            float width = Mathf.Min(Screen.width - 16, 940);
+            float width = Screen.width;
             int columns = Mathf.Max(1, Mathf.FloorToInt((width - 16) / 145));
             int rows = Mathf.CeilToInt(WorldBuilder.AreaNames.Length / (float)columns);
-            toolbar = new Rect(8, 8, width, 98 + rows * 28);
+            toolbar = new Rect(0, 0, width, 98 + rows * 28);
             GUI.Box(toolbar, "Rendered World Layout Preview");
-            GUILayout.BeginArea(new Rect(16, 34, width - 16, toolbar.height - 26));
+            GUILayout.BeginArea(new Rect(8, 26, width - 16, toolbar.height - 26));
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Fit World (F)")) FitWorld();
             if (GUILayout.Button(angled ? "Top-down (T)" : "Angled view (T)")) { angled = !angled; ApplyCamera(); }

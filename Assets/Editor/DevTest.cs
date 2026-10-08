@@ -203,7 +203,8 @@ namespace PoeClone.EditorTools
                 Ready();
                 if (PoeClone.UI.PatchNotesUI.IsShowing || WorldBuilder.Instance == null) return;
                 var mode = PoeClone.CameraSystem.WorldLayoutMode.Open();
-                if (mode == null) return;
+                if (mode == null || !mode.IsActive) return;
+                WorldLayoutPreviewSession.Reveal();
                 quickState += " || rendered world layouts ready";
             }
             EditorApplication.update -= AdvanceQuickSession;

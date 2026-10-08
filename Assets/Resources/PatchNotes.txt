@@ -1,3 +1,7 @@
+version: 2026-10-08-layout-preview-controls
+- Rendered World Layouts now hides game startup until the preview is ready and opens in angled view by default.
+- The preview menu spans the whole window, and mouse-wheel zoom is much faster while keeping the point beneath the cursor in place.
+
 version: 2026-10-08-sanctuary-door-and-haven-well-angles
 - Angled the Shepherd's Sanctuary door and Haven's well for a more natural placement. The Sanctuary steps, inscription and entrance follow the door's angle.
 - Joined the carved antler branches above the Sanctuary door and anchored them into the lintel so they no longer appear to float.
