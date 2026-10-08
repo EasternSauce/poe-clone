@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using PoeClone.Inventory;
 
-namespace PoeClone.UI
+namespace PoeClone.EditorTools
 {
     /// <summary>Preview-only loot rolls using the live game's base and modifier tables.</summary>
     public class LootSimulatorUI : MonoBehaviour
@@ -29,7 +29,7 @@ namespace PoeClone.UI
             if (root == null) Build();
             root.SetActive(true);
         }
-        public void Close() { if (root != null) root.SetActive(false); }
+        public void Close() { UnityEditor.EditorApplication.isPlaying = false; }
         private static string Human(string value) => Regex.Replace(value, "(?<=.)([A-Z])", " $1");
         private Text Label(Transform parent, string name, string text, Vector2 at, Vector2 size, int font = 18)
         {
@@ -65,7 +65,7 @@ namespace PoeClone.UI
             Label(pr,"Hint","Preview loot only. Hover an icon for its item tooltip. T1 is the strongest tier.",new Vector2(24,-60),new Vector2(1080,32));
             UiKit.CloseButton(pr,Close);
             Label(pr,"AreaLabel","Area level (1?100)",new Vector2(24,-110),new Vector2(190,30));
-            level = Field(pr,"AreaLevel",Mathf.Clamp(PoeClone.World.AreaManager.Instance?.Current?.monsterLevel ?? 1,1,100).ToString(),new Vector2(24,-145));
+            level = Field(pr,"AreaLevel","1",new Vector2(24,-145));
             Label(pr,"CountLabel","Items (1?1000)",new Vector2(214,-110),new Vector2(175,30));
             count = Field(pr,"ItemCount","48",new Vector2(214,-145));
             Button(pr,"Randomize Loot",new Vector2(420,-140),new Vector2(200,42),Randomize);

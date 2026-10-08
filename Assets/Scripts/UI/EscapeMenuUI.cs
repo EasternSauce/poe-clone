@@ -71,7 +71,6 @@ namespace PoeClone.UI
 
         private void Awake()
         {
-            gameObject.AddComponent<LootSimulatorUI>();
             TextAsset asset = Resources.Load<TextAsset>("PatchNotesHistory");
             if (asset != null)
             {
@@ -87,7 +86,6 @@ namespace PoeClone.UI
             Keyboard kb = Keyboard.current;
             if (kb == null || !kb.escapeKey.wasPressedThisFrame || UiKit.IsTypingInTextField()) return;
             if (PatchNotesUI.IsShowing) return;
-            if (GetComponent<LootSimulatorUI>().IsOpen) { GetComponent<LootSimulatorUI>().Close(); return; }
             if (root.activeSelf) { Close(); return; }
             if (GetComponent<NamePromptUI>()?.IsShowing == true) return;
             if (DialogueUI.IsOpen || PassiveTreeUI.IsOpen || SkillBarUI.IsOpen || SkillBarUI.PickerOpen ||
@@ -139,7 +137,6 @@ namespace PoeClone.UI
             title=UiKit.NewText("Title",pr,"MENU",28,UiKit.Gold,TextAnchor.MiddleLeft); UiKit.TopLeft(title.rectTransform,new Vector2(30,-16),new Vector2(W-100,40));
             settingsButton=Button("Settings",pr,"Settings",new Vector2(30,-68),new Vector2(180,42),ShowSettings);
             historyButton=Button("History",pr,"Patch History",new Vector2(222,-68),new Vector2(180,42),ShowHistory);
-            Button("LootSimulator",pr,"Loot Simulator",new Vector2(414,-68),new Vector2(180,42),() => GetComponent<LootSimulatorUI>().Open());
             Button("Resume",pr,"Resume",new Vector2(W-210,-H+66),new Vector2(180,42),Close);
             viewport=UiKit.NewRect("Viewport",pr); viewport.gameObject.AddComponent<RectMask2D>(); Image catcher=viewport.gameObject.AddComponent<Image>(); catcher.color=Color.clear;
             UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(W-60,H-220));

@@ -89,6 +89,9 @@ namespace PoeClone.World
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
         {
+#if UNITY_EDITOR
+            if (UnityEditor.SessionState.GetBool("PoeClone.LootSimulator.Active", false)) return;
+#endif
             if (!Enabled) return;
             new GameObject("Minimal Combat").AddComponent<MinimalCombatMode>().Prepare();
         }

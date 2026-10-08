@@ -96,6 +96,12 @@ namespace PoeClone.EditorTools
             return begin + "; automatic startup pending (QuickStatus for progress)";
         }
 
+        /// <summary>Standalone loot debug run: no game world, server or character startup.</summary>
+        public static string QuickStartLootSimulator() => LootSimulatorSession.Start();
+
+        [MenuItem("PoeClone/Test/Loot Simulator")]
+        private static void LootSimulatorMenu() => Debug.Log(QuickStartLootSimulator());
+
         [MenuItem("PoeClone/Test/Quick Start (Sandbox)")]
         private static void QuickStartMenu() => Debug.Log("DevTest QuickStart: " + QuickStart());
 

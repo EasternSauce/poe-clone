@@ -113,6 +113,9 @@ namespace PoeClone.World
         /// <summary>Scene reloads during character selection do not rerun runtime-init hooks.</summary>
         public static void EnsureBuilt()
         {
+#if UNITY_EDITOR
+            if (UnityEditor.SessionState.GetBool("PoeClone.LootSimulator.Active", false)) return;
+#endif
             if (MinimalCombatMode.Enabled) return;
             var session = PoeClone.Network.GameSessionController.Instance;
             if (session != null && session.Role == PoeClone.Network.SessionRole.Player && !session.PlayGranted) return;
