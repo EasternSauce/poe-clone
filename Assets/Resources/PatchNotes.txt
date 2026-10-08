@@ -1,4 +1,7 @@
 version: 2026-10-08-character-startup-and-controls
+- Reorganized Settings into Communication, Controls, and Session sections with aligned option buttons, persistent Settings/Patch History tabs, and a Resume button.
+- Mobile inventory directional buttons now display drawn arrow icons that render independently of the UI font.
+- Tapping Teleport on mobile now jumps at maximum range in the character's current facing direction, shortening the jump only to find a valid landing spot.
 - Character selection now keeps gameplay scene objects inactive and defers world generation and gameplay UI until a character is chosen.
 - Enlarged mobile life and mana potion buttons and swapped their positions.
 - Moved Mortis and his crypt farther toward the graveyard's north-west edge, away from its waypoint.

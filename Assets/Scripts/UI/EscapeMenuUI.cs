@@ -21,7 +21,7 @@ namespace PoeClone.UI
         private GameObject root;
         private RectTransform viewport, content, notesViewport, notesContent;
         private ScrollRect listScroll, notesScroll;
-        private GameObject settingsButton;
+        private GameObject settingsButton, historyButton;
         private Text title, body;
         private Entry[] entries = Array.Empty<Entry>();
         private int selected;
@@ -134,15 +134,16 @@ namespace PoeClone.UI
             Image shade = UiKit.NewImage("Shade", canvas.transform, new Color(0f,0f,0f,0.6f)); shade.raycastTarget = true; UiKit.Stretch(shade.rectTransform, 0f);
             Image panel = UiKit.NewImage("Panel", canvas.transform, UiKit.PanelColor); UiKit.Grain(panel); panel.raycastTarget = true;
             RectTransform pr=panel.rectTransform; pr.anchorMin=pr.anchorMax=new Vector2(.5f,.5f); pr.sizeDelta=new Vector2(W,H); UiKit.AddOutline(panel,UiKit.BorderColor,3f); TouchMode.AddBlocker(pr);
-            title=UiKit.NewText("Title",pr,"MENU",28,UiKit.Gold,TextAnchor.UpperCenter); UiKit.TopLeft(title.rectTransform,new Vector2(0,-16),new Vector2(W,40));
-            settingsButton=Button("Settings",pr,"Settings",new Vector2(30,-68),new Vector2(150,42),ShowSettings);
-            Button("History",pr,"Patch History",new Vector2(190,-68),new Vector2(180,42),ShowHistory);
+            title=UiKit.NewText("Title",pr,"MENU",28,UiKit.Gold,TextAnchor.MiddleLeft); UiKit.TopLeft(title.rectTransform,new Vector2(30,-16),new Vector2(W-100,40));
+            settingsButton=Button("Settings",pr,"Settings",new Vector2(30,-68),new Vector2(180,42),ShowSettings);
+            historyButton=Button("History",pr,"Patch History",new Vector2(222,-68),new Vector2(180,42),ShowHistory);
+            Button("Resume",pr,"Resume",new Vector2(W-210,-H+66),new Vector2(180,42),Close);
             viewport=UiKit.NewRect("Viewport",pr); viewport.gameObject.AddComponent<RectMask2D>(); Image catcher=viewport.gameObject.AddComponent<Image>(); catcher.color=Color.clear;
-            UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(W-60,H-152));
+            UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(W-60,H-220));
             content=UiKit.NewRect("Content",viewport); content.anchorMin=new Vector2(0,1); content.anchorMax=new Vector2(1,1); content.pivot=new Vector2(.5f,1); content.anchoredPosition=Vector2.zero;
             listScroll=viewport.gameObject.AddComponent<ScrollRect>(); listScroll.content=content; listScroll.viewport=viewport; listScroll.horizontal=false; listScroll.movementType=ScrollRect.MovementType.Clamped; listScroll.scrollSensitivity=30;
             notesViewport=UiKit.NewRect("NotesViewport",pr); notesViewport.gameObject.AddComponent<RectMask2D>(); Image notesCatcher=notesViewport.gameObject.AddComponent<Image>(); notesCatcher.color=Color.clear;
-            UiKit.TopLeft(notesViewport,new Vector2(300,-126),new Vector2(W-330,H-152));
+            UiKit.TopLeft(notesViewport,new Vector2(300,-126),new Vector2(W-330,H-220));
             notesContent=UiKit.NewRect("NotesContent",notesViewport); notesContent.anchorMin=new Vector2(0,1); notesContent.anchorMax=new Vector2(1,1); notesContent.pivot=new Vector2(.5f,1); notesContent.anchoredPosition=Vector2.zero;
             notesScroll=notesViewport.gameObject.AddComponent<ScrollRect>(); notesScroll.content=notesContent; notesScroll.viewport=notesViewport; notesScroll.horizontal=false; notesScroll.movementType=ScrollRect.MovementType.Clamped; notesScroll.scrollSensitivity=30;
             body=UiKit.NewText("Body",notesContent,"",18,UiKit.TextColor,TextAnchor.UpperLeft); body.horizontalOverflow=HorizontalWrapMode.Wrap; body.verticalOverflow=VerticalWrapMode.Overflow; body.raycastTarget=false;
@@ -152,24 +153,74 @@ namespace PoeClone.UI
 
         private void ShowSettings()
         {
-            title.text="SETTINGS"; ClearEntries(); settingsButton.SetActive(false); notesViewport.gameObject.SetActive(false);
-            body.transform.SetParent(content,false); UiKit.TopLeft(body.rectTransform,new Vector2(0,-4),new Vector2(W-80,0));
-            UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(W-60,H-152));
-            body.text="Chat\n\nShow chat messages and chat controls";
-            Button("ChatToggle",content,"Chat: "+(ChatUI.Enabled?"ON":"OFF"),new Vector2(0,-100),new Vector2(220,48),()=>{ChatUI.SetEnabled(!ChatUI.Enabled);ShowSettings();});
+            title.text = "SETTINGS";
+            ClearEntries();
+            SelectTab(true);
+            notesViewport.gameObject.SetActive(false);
+            UiKit.TopLeft(viewport, new Vector2(30, -126), new Vector2(W-60, H-220));
+            float y = 0f;
+            RectTransform chatRow = SettingsRow("Communication", "Chat", "Show chat messages and chat controls.", ref y);
+            Text chatLabel = null;
+            GameObject chatButton = Button("ChatToggle", chatRow, ChatUI.Enabled ? "On" : "Off",
+                new Vector2(W-294, -15), new Vector2(216, 48), () =>
+                {
+                    ChatUI.SetEnabled(!ChatUI.Enabled);
+                    chatLabel.text = ChatUI.Enabled ? "On" : "Off";
+                });
+            chatLabel = chatButton.GetComponentInChildren<Text>();
             if (!TouchMode.Active)
             {
-                Button("DashDirection",content,"Dash: "+(PlayerSkills.DashTowardsCursor ? "Cursor" : "Movement"),
-                    new Vector2(0,-170),new Vector2(240,48),()=>{PlayerSkills.DashTowardsCursor=!PlayerSkills.DashTowardsCursor;ShowSettings();});
-                ResizeBody(250);
+                RectTransform dashRow = SettingsRow("Controls", "Dash direction", "Choose how to aim Dash on desktop.", ref y);
+                Text dashLabel = null;
+                GameObject dashButton = Button("DashDirection", dashRow, PlayerSkills.DashTowardsCursor ? "Cursor" : "Movement",
+                    new Vector2(W-294, -15), new Vector2(216, 48), () =>
+                    {
+                        PlayerSkills.DashTowardsCursor = !PlayerSkills.DashTowardsCursor;
+                        dashLabel.text = PlayerSkills.DashTowardsCursor ? "Cursor" : "Movement";
+                    });
+                dashLabel = dashButton.GetComponentInChildren<Text>();
             }
-            else ResizeBody(180);
             var session = GameSessionController.Instance;
             if (session != null && session.Role == SessionRole.Player && session.PlayGranted)
             {
-                Button("Characters",content,"Character Selection",new Vector2(0,-240),new Vector2(240,48),()=>session.ReturnToCharacters());
-                ResizeBody(330);
+                RectTransform characterRow = SettingsRow("Session", "Characters", "Return to character selection.", ref y);
+                Button("Characters", characterRow, "Switch Character", new Vector2(W-294, -15),
+                    new Vector2(216, 48), () => session.ReturnToCharacters());
             }
+            content.sizeDelta = new Vector2(0, Mathf.Max(viewport.rect.height, y-16));
+            listScroll.StopMovement();
+            listScroll.verticalNormalizedPosition = 1f;
+        }
+
+        private RectTransform SettingsRow(string section, string label, string description, ref float y)
+        {
+            Text heading = UiKit.NewText(section + "Heading", content, section.ToUpperInvariant(), 16, UiKit.Gold, TextAnchor.MiddleLeft);
+            UiKit.TopLeft(heading.rectTransform, new Vector2(0, -y), new Vector2(W-60, 22));
+            y += 30f;
+
+            Image row = UiKit.NewImage(section + "Row", content, new Color(.12f, .10f, .08f, 1f));
+            UiKit.TopLeft(row.rectTransform, new Vector2(0, -y), new Vector2(W-60, 78));
+            UiKit.AddOutline(row, UiKit.BorderColor, 1f);
+            Text name = UiKit.NewText("Name", row.transform, label, 20, UiKit.TextColor, TextAnchor.MiddleLeft);
+            UiKit.TopLeft(name.rectTransform, new Vector2(18, -10), new Vector2(420, 26));
+            Text detail = UiKit.NewText("Description", row.transform, description, 16, UiKit.DimText, TextAnchor.UpperLeft);
+            detail.horizontalOverflow = HorizontalWrapMode.Wrap;
+            UiKit.TopLeft(detail.rectTransform, new Vector2(18, -40), new Vector2(420, 32));
+            y += 94f;
+            return row.rectTransform;
+        }
+
+        private void SelectTab(bool settings)
+        {
+            SetTab(settingsButton, settings);
+            SetTab(historyButton, !settings);
+        }
+
+        private static void SetTab(GameObject tab, bool active)
+        {
+            tab.GetComponent<UnityEngine.UI.Button>().interactable = !active;
+            tab.GetComponent<Image>().color = active ? new Color(.36f, .28f, .15f, 1f) : new Color(.16f, .13f, .09f, 1f);
+            tab.GetComponentInChildren<Text>().color = active ? UiKit.Gold : UiKit.TextColor;
         }
         private void ShowHistory()
         {
@@ -185,9 +236,9 @@ namespace PoeClone.UI
             for (int i = 0; i < combined.Count; i++) mergedOrder[combined[i].version] = i;
             combined.Sort((a, b) => CompareReleases(a, b, bundledOrder, mergedOrder));
             entries = combined.ToArray();
-            title.text="PATCH HISTORY"; ClearEntries(); settingsButton.SetActive(true); notesViewport.gameObject.SetActive(true);
+            title.text="PATCH HISTORY"; ClearEntries(); SelectTab(false); notesViewport.gameObject.SetActive(true);
             body.transform.SetParent(notesContent,false); UiKit.TopLeft(body.rectTransform,new Vector2(8,-4),new Vector2(W-350,0));
-            UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(250,H-152));
+            UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(250,H-220));
             float y=-4;
             if(entries.Length==0) body.text="No patch history is available.";
             for (int i = 0; i < entries.Length; i++)
@@ -248,10 +299,6 @@ namespace PoeClone.UI
             body.transform.SetParent(notesContent,false);
             for(int i=content.childCount-1;i>=0;i--) Destroy(content.GetChild(i).gameObject);
             body.text="";
-        }
-        private void ResizeBody(float height)
-        {
-            content.sizeDelta=new Vector2(0,height);
         }
         private GameObject Button(string name,Transform parent,string label,Vector2 pos,Vector2 size,Action action)
         {

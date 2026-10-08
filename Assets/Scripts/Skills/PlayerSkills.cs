@@ -1290,13 +1290,14 @@ namespace PoeClone.Skills
         /// <summary>How far Teleport reaches: about half the screen, a little further each level.</summary>
         public static float TeleportRange(int level) => 9f + 0.3f * (Mathf.Max(1, level) - 1);
 
-        // To the aimed point (or as far as it reaches that way), through anything in between. The
+        // On mobile, full range straight ahead; on desktop, to the aimed point (or as far as it
+        // reaches that way), through anything in between. The
         // landing spot has to be open ground inside the current area: if it isn't, the jump comes
         // up short, back toward the player, until it is.
         private void Teleport(SkillDefinition skill, int level)
         {
             Vector3 start = transform.position;
-            Vector3 direction = AimDirection();
+            Vector3 direction = TouchMode.Active ? Flat(transform.forward) : AimDirection();
             float distance = TeleportRange(level);
             float? aimed = AimDistance();
             if (aimed.HasValue)

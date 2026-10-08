@@ -531,12 +531,12 @@ namespace PoeClone.UI
             Canvas navigationCanvas = NewCanvas("InventoryNavigationCanvas", 805);
             inventoryNavigationRoot = navigationCanvas.gameObject;
             Vector2[] directions = { Vector2.up, Vector2.right, Vector2.down, Vector2.left };
-            string[] labels = { "▲", "▶", "▼", "◀" };
             for (int k = 0; k < directions.Length; k++)
             {
                 Vector2 direction = directions[k];
                 Image button = NewRoundButton("InventoryDirection" + k, navigationCanvas.transform, Vector2.zero,
-                    JoystickIdle + direction * 85f, 78f, labels[k]);
+                    JoystickIdle + direction * 85f, 78f, null);
+                AddDirectionArrow(button, direction);
                 button.gameObject.AddComponent<TouchPointerRelay>().Down += _ => inventoryUI?.Navigate(direction);
                 TouchMode.AddBlocker(button.rectTransform);
             }
@@ -639,6 +639,25 @@ namespace PoeClone.UI
             icon.preserveAspect = true;
             icon.raycastTarget = false;
             UiKit.Stretch(icon.rectTransform, 13f);
+        }
+
+        private static void AddDirectionArrow(Image button, Vector2 direction)
+        {
+            // Draw with UI geometry so mobile fonts do not need arrow glyphs.
+            RectTransform arrow = UiKit.NewRect("Arrow", button.rectTransform);
+            Place(arrow, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(38f, 38f));
+            arrow.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(-direction.x, direction.y) * Mathf.Rad2Deg);
+
+            Image stem = UiKit.NewImage("Stem", arrow, UiKit.TextColor);
+            stem.raycastTarget = false;
+            Place(stem.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -6f), new Vector2(7f, 24f));
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Image head = UiKit.NewImage("Head" + side, arrow, UiKit.TextColor);
+                head.raycastTarget = false;
+                Place(head.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(side * 6f, 6f), new Vector2(7f, 22f));
+                head.rectTransform.localRotation = Quaternion.Euler(0f, 0f, side * 45f);
+            }
         }
 
         private static Text AddPotionCount(Image button, Color color)
