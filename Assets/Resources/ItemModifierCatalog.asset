@@ -1,0 +1,2592 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5222ac277b9fea041ae440773bab31f8, type: 3}
+  m_Name: ItemModifierCatalog
+  m_EditorClassIdentifier: PoeClone.Inventory::PoeClone.Inventory.ItemModifierCatalog
+  Modifiers:
+  - Label: CriticalChance / 1
+    Enabled: 1
+    Stat: 46
+    Weight: 1.2
+    On: 07000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 20
+      Max: 60
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 24
+      Max: 72
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 28
+      Max: 84
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 32
+      Max: 96
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 36
+      Max: 108
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 40
+      Max: 120
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 44
+      Max: 132
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 48
+      Max: 144
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 52
+      Max: 156
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 56
+      Max: 168
+      Weight: 0.0403536
+  - Label: CriticalChance / 2
+    Enabled: 1
+    Stat: 46
+    Weight: 1
+    On: 0600000005000000020000000900000000000000010000000400000003000000080000000c000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 15
+      Max: 40
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 18
+      Max: 48
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 21
+      Max: 56
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 24
+      Max: 64
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 27
+      Max: 72
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 30
+      Max: 80
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 33
+      Max: 88
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 36
+      Max: 96
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 39
+      Max: 104
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 42
+      Max: 112
+      Weight: 0.0403536
+  - Label: CriticalMultiplier / 1
+    Enabled: 1
+    Stat: 47
+    Weight: 0.65
+    On: 0700000006000000050000000200000009000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 10
+      Max: 25
+      Weight: 1
+  - Label: MaxLife / 1
+    Enabled: 1
+    Stat: 3
+    Weight: 1
+    On: 0000000001000000020000000300000008000000050000000600000004000000090000000c000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 8
+      Max: 25
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 10
+      Max: 30
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 11
+      Max: 35
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 13
+      Max: 40
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 14
+      Max: 45
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 16
+      Max: 50
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 18
+      Max: 55
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 19
+      Max: 60
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 21
+      Max: 65
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 22
+      Max: 70
+      Weight: 0.0403536
+  - Label: MaxMana / 1
+    Enabled: 1
+    Stat: 4
+    Weight: 1
+    On: 0000000002000000050000000600000004000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 8
+      Max: 20
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 10
+      Max: 24
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 11
+      Max: 28
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 13
+      Max: 32
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 14
+      Max: 36
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 16
+      Max: 40
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 18
+      Max: 44
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 19
+      Max: 48
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 21
+      Max: 52
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 22
+      Max: 56
+      Weight: 0.0403536
+  - Label: Strength / 1
+    Enabled: 1
+    Stat: 0
+    Weight: 1
+    On: 00000000010000000200000004000000050000000600000007000000i
+    AnyWeapon: 0
+    Weapons: 01000000020000000300000004000000070000000800000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 12
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 5
+      Max: 14
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 6
+      Max: 17
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 6
+      Max: 19
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 7
+      Max: 22
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 8
+      Max: 24
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 9
+      Max: 26
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 10
+      Max: 29
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 10
+      Max: 31
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 11
+      Max: 34
+      Weight: 0.0403536
+  - Label: Dexterity / 1
+    Enabled: 1
+    Stat: 1
+    Weight: 1
+    On: 000000000100000002000000030000000400000005000000060000000900000007000000i
+    AnyWeapon: 0
+    Weapons: 0100000002000000030000000400000005000000070000000800000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 12
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 5
+      Max: 14
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 6
+      Max: 17
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 6
+      Max: 19
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 7
+      Max: 22
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 8
+      Max: 24
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 9
+      Max: 26
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 10
+      Max: 29
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 10
+      Max: 31
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 11
+      Max: 34
+      Weight: 0.0403536
+  - Label: Intelligence / 1
+    Enabled: 1
+    Stat: 2
+    Weight: 1
+    On: 0000000001000000020000000300000004000000080000000500000006000000070000000c000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 12
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 5
+      Max: 14
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 6
+      Max: 17
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 6
+      Max: 19
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 7
+      Max: 22
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 8
+      Max: 24
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 9
+      Max: 26
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 10
+      Max: 29
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 10
+      Max: 31
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 11
+      Max: 34
+      Weight: 0.0403536
+  - Label: Armour / 1
+    Enabled: 1
+    Stat: 5
+    Weight: 1
+    On: 0000000001000000020000000300000008000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 10
+      Max: 40
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 12
+      Max: 48
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 14
+      Max: 56
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 16
+      Max: 64
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 18
+      Max: 72
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 20
+      Max: 80
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 22
+      Max: 88
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 24
+      Max: 96
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 26
+      Max: 104
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 28
+      Max: 112
+      Weight: 0.0403536
+  - Label: Evasion / 1
+    Enabled: 1
+    Stat: 6
+    Weight: 1
+    On: 0000000001000000020000000300000008000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 10
+      Max: 40
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 12
+      Max: 48
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 14
+      Max: 56
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 16
+      Max: 64
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 18
+      Max: 72
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 20
+      Max: 80
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 22
+      Max: 88
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 24
+      Max: 96
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 26
+      Max: 104
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 28
+      Max: 112
+      Weight: 0.0403536
+  - Label: BlockChance / 1
+    Enabled: 1
+    Stat: 7
+    Weight: 1
+    On: 08000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 3
+      Max: 8
+      Weight: 1
+  - Label: AvoidStun / 1
+    Enabled: 1
+    Stat: 110
+    Weight: 0.55
+    On: 00000000010000000400000008000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 3
+      Max: 7
+      Weight: 1
+  - Label: PhysicalDamage / 1
+    Enabled: 1
+    Stat: 8
+    Weight: 1
+    On: 02000000060000000500000009000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 2
+      Max: 7
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 2
+      Max: 8
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 3
+      Max: 10
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 11
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 4
+      Max: 13
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 4
+      Max: 14
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 4
+      Max: 15
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 5
+      Max: 17
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 5
+      Max: 18
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 6
+      Max: 20
+      Weight: 0.0403536
+  - Label: PhysicalDamage / 2
+    Enabled: 1
+    Stat: 8
+    Weight: 1
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 0100000002000000030000000400000005000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 3
+      Max: 8
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 4
+      Max: 10
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 4
+      Max: 11
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 5
+      Max: 13
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 14
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 6
+      Max: 16
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 7
+      Max: 18
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 7
+      Max: 19
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 8
+      Max: 21
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 8
+      Max: 22
+      Weight: 0.0403536
+  - Label: PhysicalDamage / 3
+    Enabled: 1
+    Stat: 8
+    Weight: 1
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 070000000800000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 6
+      Max: 15
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 7
+      Max: 18
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 8
+      Max: 21
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 10
+      Max: 24
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 11
+      Max: 27
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 12
+      Max: 30
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 13
+      Max: 33
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 14
+      Max: 36
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 16
+      Max: 39
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 17
+      Max: 42
+      Weight: 0.0403536
+  - Label: AttackSpeed / 1
+    Enabled: 1
+    Stat: 9
+    Weight: 1
+    On: 0200000006000000050000000900000007000000i
+    AnyWeapon: 0
+    Weapons: 0100000002000000030000000400000005000000070000000800000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 3
+      Max: 10
+      Weight: 1
+  - Label: FireResistance / 1
+    Enabled: 1
+    Stat: 10
+    Weight: 1
+    On: 0000000001000000020000000300000008000000050000000600000004000000090000000c000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 6
+      Max: 24
+      Weight: 1
+  - Label: ColdResistance / 1
+    Enabled: 1
+    Stat: 11
+    Weight: 1
+    On: 0000000001000000020000000300000008000000050000000600000004000000090000000c000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 6
+      Max: 24
+      Weight: 1
+  - Label: LightningResistance / 1
+    Enabled: 1
+    Stat: 12
+    Weight: 1
+    On: 0000000001000000020000000300000008000000050000000600000004000000090000000c000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 6
+      Max: 24
+      Weight: 1
+  - Label: PoisonResistance / 1
+    Enabled: 1
+    Stat: 94
+    Weight: 0.55
+    On: 0000000001000000020000000300000008000000050000000600000004000000090000000c000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 6
+      Max: 24
+      Weight: 1
+  - Label: PoisonDamage / 1
+    Enabled: 1
+    Stat: 96
+    Weight: 0.35
+    On: 07000000020000000600000005000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 5
+      Max: 15
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 6
+      Max: 18
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 7
+      Max: 21
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 8
+      Max: 24
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 9
+      Max: 27
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 10
+      Max: 30
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 11
+      Max: 33
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 12
+      Max: 36
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 13
+      Max: 39
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 14
+      Max: 42
+      Weight: 0.0403536
+  - Label: DamageOverTime / 1
+    Enabled: 1
+    Stat: 97
+    Weight: 0.3
+    On: 07000000020000000600000005000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 12
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 5
+      Max: 14
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 6
+      Max: 17
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 6
+      Max: 19
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 7
+      Max: 22
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 8
+      Max: 24
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 9
+      Max: 26
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 10
+      Max: 29
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 10
+      Max: 31
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 11
+      Max: 34
+      Weight: 0.0403536
+  - Label: PoisonPenetration / 1
+    Enabled: 1
+    Stat: 95
+    Weight: 0.3
+    On: 07000000020000000600000005000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 3
+      Max: 10
+      Weight: 1
+  - Label: PoisonDamage / 2
+    Enabled: 1
+    Stat: 96
+    Weight: 0.35
+    On: 0c00000007000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 5
+      Max: 14
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 6
+      Max: 17
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 7
+      Max: 20
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 8
+      Max: 22
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 9
+      Max: 25
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 10
+      Max: 28
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 11
+      Max: 31
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 12
+      Max: 34
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 13
+      Max: 36
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 14
+      Max: 39
+      Weight: 0.0403536
+  - Label: ArmourPenetration / 1
+    Enabled: 1
+    Stat: 93
+    Weight: 0.55
+    On: 020000000600000007000000i
+    AnyWeapon: 0
+    Weapons: 0100000002000000030000000400000005000000070000000800000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 12
+      Weight: 1
+  - Label: FirePenetration / 1
+    Enabled: 1
+    Stat: 89
+    Weight: 0.45
+    On: 07000000020000000600000005000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 12
+      Weight: 1
+  - Label: ColdPenetration / 1
+    Enabled: 1
+    Stat: 90
+    Weight: 0.45
+    On: 07000000020000000600000005000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 12
+      Weight: 1
+  - Label: LightningPenetration / 1
+    Enabled: 1
+    Stat: 91
+    Weight: 0.45
+    On: 07000000020000000600000005000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 12
+      Weight: 1
+  - Label: ElementalPenetration / 1
+    Enabled: 1
+    Stat: 92
+    Weight: 0.35
+    On: 070000000600000005000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 3
+      Max: 8
+      Weight: 1
+  - Label: MovementSpeed / 1
+    Enabled: 1
+    Stat: 13
+    Weight: 1
+    On: 03000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 5
+      Max: 15
+      Weight: 1
+  - Label: AreaOfEffect / 1
+    Enabled: 1
+    Stat: 17
+    Weight: 1
+    On: 050000000000000007000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 5
+      Max: 12
+      Weight: 1
+  - Label: MeleeRange / 1
+    Enabled: 1
+    Stat: 26
+    Weight: 1
+    On: 0200000007000000i
+    AnyWeapon: 0
+    Weapons: 01000000020000000300000004000000070000000800000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 5
+      Max: 12
+      Weight: 1
+  - Label: LifeRegen / 1
+    Enabled: 1
+    Stat: 18
+    Weight: 0.8
+    On: 000000000100000004000000050000000600000008000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 4
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 1
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 2
+      Max: 5
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 2
+      Max: 5
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 2
+      Max: 6
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 2
+      Max: 7
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 2
+      Max: 7
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 3
+      Max: 8
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 3
+      Max: 8
+      Weight: 0.0403536
+  - Label: LifeLeech / 1
+    Enabled: 1
+    Stat: 20
+    Weight: 0.3
+    On: 020000000600000007000000i
+    AnyWeapon: 0
+    Weapons: 01000000020000000300000004000000070000000800000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 2
+      Weight: 1
+  - Label: LifeOnKill / 1
+    Enabled: 1
+    Stat: 25
+    Weight: 0.5
+    On: 02000000060000000900000007000000i
+    AnyWeapon: 0
+    Weapons: 0100000002000000030000000400000005000000070000000800000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 2
+      Max: 5
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 2
+      Max: 6
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 3
+      Max: 7
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 8
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 4
+      Max: 9
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 4
+      Max: 10
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 4
+      Max: 11
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 5
+      Max: 12
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 5
+      Max: 13
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 6
+      Max: 14
+      Weight: 0.0403536
+  - Label: LifeOnAttackHit / 1
+    Enabled: 1
+    Stat: 127
+    Weight: 0.7
+    On: 02000000060000000900000007000000i
+    AnyWeapon: 0
+    Weapons: 0100000002000000030000000400000005000000070000000800000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 2
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 2
+      Max: 5
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 3
+      Max: 6
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 4
+      Max: 7
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 4
+      Max: 8
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 4
+      Max: 9
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 5
+      Max: 10
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 5
+      Max: 10
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 6
+      Max: 11
+      Weight: 0.0403536
+  - Label: SpellDamage / 1
+    Enabled: 1
+    Stat: 16
+    Weight: 1.6
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 5
+      Max: 12
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 6
+      Max: 14
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 6
+      Max: 16
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 7
+      Max: 18
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 8
+      Max: 20
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 9
+      Max: 22
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 10
+      Max: 24
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 10
+      Max: 26
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 11
+      Max: 28
+      Weight: 0.0403536
+  - Label: SpellDamage / 2
+    Enabled: 1
+    Stat: 16
+    Weight: 0.6
+    On: 0600000005000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 2
+      Max: 5
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 2
+      Max: 6
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 3
+      Max: 7
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 8
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 4
+      Max: 9
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 4
+      Max: 10
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 4
+      Max: 11
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 5
+      Max: 12
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 5
+      Max: 13
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 6
+      Max: 14
+      Weight: 0.0403536
+  - Label: MaxMana / 2
+    Enabled: 1
+    Stat: 4
+    Weight: 1
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 12
+      Max: 30
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 14
+      Max: 36
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 17
+      Max: 42
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 19
+      Max: 48
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 22
+      Max: 54
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 24
+      Max: 60
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 26
+      Max: 66
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 29
+      Max: 72
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 31
+      Max: 78
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 34
+      Max: 84
+      Weight: 0.0403536
+  - Label: ManaRegen / 1
+    Enabled: 1
+    Stat: 19
+    Weight: 1
+    On: 070000000500000006000000000000000c000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 10
+      Max: 35
+      Weight: 1
+  - Label: CastSpeed / 1
+    Enabled: 1
+    Stat: 38
+    Weight: 1.5
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 6
+      Max: 18
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 7
+      Max: 22
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 8
+      Max: 25
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 10
+      Max: 29
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 11
+      Max: 32
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 12
+      Max: 36
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 13
+      Max: 40
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 14
+      Max: 43
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 16
+      Max: 47
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 17
+      Max: 50
+      Weight: 0.0403536
+  - Label: CastSpeed / 2
+    Enabled: 1
+    Stat: 38
+    Weight: 1
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 12
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 5
+      Max: 14
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 6
+      Max: 17
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 6
+      Max: 19
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 7
+      Max: 22
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 8
+      Max: 24
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 9
+      Max: 26
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 10
+      Max: 29
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 10
+      Max: 31
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 11
+      Max: 34
+      Weight: 0.0403536
+  - Label: CastSpeed / 3
+    Enabled: 1
+    Stat: 38
+    Weight: 1
+    On: 0600000005000000020000000c00000004000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 5
+      Max: 12
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 6
+      Max: 14
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 6
+      Max: 16
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 7
+      Max: 18
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 8
+      Max: 20
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 9
+      Max: 22
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 10
+      Max: 24
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 10
+      Max: 26
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 11
+      Max: 28
+      Weight: 0.0403536
+  - Label: CastSpeed / 4
+    Enabled: 1
+    Stat: 38
+    Weight: 0.6
+    On: 0000000001000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 3
+      Max: 8
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 4
+      Max: 10
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 4
+      Max: 11
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 5
+      Max: 13
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 14
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 6
+      Max: 16
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 7
+      Max: 18
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 7
+      Max: 19
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 8
+      Max: 21
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 8
+      Max: 22
+      Weight: 0.0403536
+  - Label: MaxMana / 3
+    Enabled: 1
+    Stat: 4
+    Weight: 1
+    On: 0c000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 10
+      Max: 25
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 12
+      Max: 30
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 14
+      Max: 35
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 16
+      Max: 40
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 18
+      Max: 45
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 20
+      Max: 50
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 22
+      Max: 55
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 24
+      Max: 60
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 26
+      Max: 65
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 28
+      Max: 70
+      Weight: 0.0403536
+  - Label: AllSpellLevels / 1
+    Enabled: 1
+    Stat: 34
+    Weight: 0.3
+    On: 0700000005000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+  - Label: FireSpellLevels / 1
+    Enabled: 1
+    Stat: 35
+    Weight: 0.35
+    On: 070000000500000006000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+  - Label: ColdSpellLevels / 1
+    Enabled: 1
+    Stat: 36
+    Weight: 0.35
+    On: 070000000500000006000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+  - Label: LightningSpellLevels / 1
+    Enabled: 1
+    Stat: 37
+    Weight: 0.35
+    On: 070000000500000006000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+  - Label: GrantFireBolt / 1
+    Enabled: 1
+    Stat: 28
+    Weight: 0.15
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantChainLightning / 1
+    Enabled: 1
+    Stat: 32
+    Weight: 0.15
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantIceShard / 1
+    Enabled: 1
+    Stat: 33
+    Weight: 0.15
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantFrostNova / 1
+    Enabled: 1
+    Stat: 30
+    Weight: 0.3
+    On: 070000000000000002000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantWarCry / 1
+    Enabled: 1
+    Stat: 31
+    Weight: 0.6
+    On: 070000000500000004000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantCleave / 1
+    Enabled: 1
+    Stat: 27
+    Weight: 0.6
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 01000000020000000300000004000000070000000800000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantFangStrike / 1
+    Enabled: 1
+    Stat: 98
+    Weight: 0.28
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 04000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantPulverize / 1
+    Enabled: 1
+    Stat: 104
+    Weight: 0.38
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 0300000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantReapingArc / 1
+    Enabled: 1
+    Stat: 105
+    Weight: 0.38
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 0200000008000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantLungingThrust / 1
+    Enabled: 1
+    Stat: 106
+    Weight: 0.38
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 0100000007000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantDash / 1
+    Enabled: 1
+    Stat: 29
+    Weight: 0.45
+    On: 03000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantTeleport / 1
+    Enabled: 1
+    Stat: 61
+    Weight: 0.5
+    On: 050000000600000002000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: MinionDamage / 1
+    Enabled: 1
+    Stat: 67
+    Weight: 1.4
+    On: 0c000000070000000500000002000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 5
+      Max: 12
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 6
+      Max: 14
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 6
+      Max: 16
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 7
+      Max: 18
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 8
+      Max: 20
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 9
+      Max: 22
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 10
+      Max: 24
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 10
+      Max: 26
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 11
+      Max: 28
+      Weight: 0.0403536
+  - Label: MinionLife / 1
+    Enabled: 1
+    Stat: 68
+    Weight: 1.2
+    On: 0c0000000700000000000000010000000400000008000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 6
+      Max: 16
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 7
+      Max: 19
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 8
+      Max: 22
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 10
+      Max: 26
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 11
+      Max: 29
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 12
+      Max: 32
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 13
+      Max: 35
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 14
+      Max: 38
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 16
+      Max: 42
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 17
+      Max: 45
+      Weight: 0.0403536
+  - Label: AdditionalMinions / 1
+    Enabled: 1
+    Stat: 102
+    Weight: 0.65
+    On: 0c0000000500000000000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+  - Label: MinionSpeed / 1
+    Enabled: 1
+    Stat: 69
+    Weight: 0.8
+    On: 0c000000020000000300000007000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 12
+      Weight: 1
+  - Label: MinionLevels / 1
+    Enabled: 1
+    Stat: 70
+    Weight: 0.3
+    On: 0c000000070000000500000000000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+  - Label: RaiseSkeletonsLevels / 1
+    Enabled: 1
+    Stat: 71
+    Weight: 0.4
+    On: 0c000000070000000000000006000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 2
+      Weight: 1
+  - Label: SkeletonMagesLevels / 1
+    Enabled: 1
+    Stat: 72
+    Weight: 0.35
+    On: 0c000000070000000200000006000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 2
+      Weight: 1
+  - Label: SpiritWolvesLevels / 1
+    Enabled: 1
+    Stat: 73
+    Weight: 0.3
+    On: 0c000000070000000300000006000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 2
+      Weight: 1
+  - Label: BoneGolemLevels / 1
+    Enabled: 1
+    Stat: 74
+    Weight: 0.3
+    On: 0c000000070000000100000006000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 2
+      Weight: 1
+  - Label: MarkEffect / 1
+    Enabled: 1
+    Stat: 76
+    Weight: 0.8
+    On: 0c00000007000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 10
+      Max: 25
+      Weight: 1
+  - Label: MinionDuration / 1
+    Enabled: 1
+    Stat: 77
+    Weight: 0.6
+    On: 0c00000004000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 10
+      Max: 25
+      Weight: 1
+  - Label: BoneArmour / 1
+    Enabled: 1
+    Stat: 80
+    Weight: 0.5
+    On: 0c0000000800000001000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 4
+      Max: 10
+      Weight: 1
+  - Label: GrantRaiseSkeletons / 1
+    Enabled: 1
+    Stat: 62
+    Weight: 0.9
+    On: 0c0000000700000000000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantSkeletonMages / 1
+    Enabled: 1
+    Stat: 64
+    Weight: 0.7
+    On: 0c0000000700000002000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantSpiritWolves / 1
+    Enabled: 1
+    Stat: 65
+    Weight: 0.5
+    On: 0c000000070000000300000005000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantBoneGolem / 1
+    Enabled: 1
+    Stat: 66
+    Weight: 0.45
+    On: 0c000000070000000100000004000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantGraveRot / 1
+    Enabled: 1
+    Stat: 81
+    Weight: 0.8
+    On: 0c000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantGraveRot / 2
+    Enabled: 1
+    Stat: 81
+    Weight: 0.15
+    On: 00000000i
+    AnyWeapon: 1
+    Weapons: 
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantSplitShot / 1
+    Enabled: 1
+    Stat: 82
+    Weight: 0.45
+    On: 0700000009000000i
+    AnyWeapon: 0
+    Weapons: 05000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantPiercingShot / 1
+    Enabled: 1
+    Stat: 83
+    Weight: 0.4
+    On: 0700000009000000i
+    AnyWeapon: 0
+    Weapons: 05000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantRainOfArrows / 1
+    Enabled: 1
+    Stat: 84
+    Weight: 0.4
+    On: 0700000009000000i
+    AnyWeapon: 0
+    Weapons: 05000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantBurningArrow / 1
+    Enabled: 1
+    Stat: 85
+    Weight: 0.4
+    On: 0700000009000000i
+    AnyWeapon: 0
+    Weapons: 05000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantVenomArrow / 1
+    Enabled: 1
+    Stat: 99
+    Weight: 0.28
+    On: 0700000009000000i
+    AnyWeapon: 0
+    Weapons: 05000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantVenomSpout / 1
+    Enabled: 1
+    Stat: 100
+    Weight: 0.2
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 06000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantSummonViper / 1
+    Enabled: 1
+    Stat: 101
+    Weight: 0.2
+    On: 0c00000007000000i
+    AnyWeapon: 0
+    Weapons: 0a000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: ExtraArrowChance / 1
+    Enabled: 1
+    Stat: 86
+    Weight: 0.25
+    On: 0700000009000000i
+    AnyWeapon: 0
+    Weapons: 05000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 5
+      Max: 15
+      Weight: 1
+  MainSkillTiers:
+  - RequiredItemLevel: 1
+    Min: 1
+    Max: 1
+    Weight: 1
+  - RequiredItemLevel: 9
+    Min: 1
+    Max: 2
+    Weight: 0.7
+  - RequiredItemLevel: 17
+    Min: 2
+    Max: 4
+    Weight: 0.48999998
+  - RequiredItemLevel: 25
+    Min: 3
+    Max: 6
+    Weight: 0.343
+  - RequiredItemLevel: 34
+    Min: 5
+    Max: 8
+    Weight: 0.24009998
+  - RequiredItemLevel: 37
+    Min: 7
+    Max: 10
+    Weight: 0.16806999

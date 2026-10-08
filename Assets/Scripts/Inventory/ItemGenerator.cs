@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Affix = PoeClone.Inventory.ItemModifierDefinition;
+using ModifierTier = PoeClone.Inventory.ItemModifierTier;
 
 namespace PoeClone.Inventory
 {
@@ -16,57 +18,46 @@ namespace PoeClone.Inventory
         // Drops use their area's level; vendors use the player's level.
         public const int MaxItemLevel = 100;
 
-        // Higher roll ranges unlock only at these levels. A drop may still roll a lower tier.
-        private static readonly int[] RollTierLevels = { 1, 9, 17, 25, 34, 37, 50, 65, 80, 100 };
-        private static readonly ModifierTier[] SkillTiers = CreateTiers(1, 10, false, skill: true);
+        private static ItemModifierCatalog catalog;
+        private static ItemModifierCatalog Catalog
+        {
+            get
+            {
+                if (catalog == null) catalog = Resources.Load<ItemModifierCatalog>("ItemModifierCatalog");
+                if (catalog == null) throw new InvalidOperationException("Missing Resources/ItemModifierCatalog balance asset.");
+                return catalog;
+            }
+        }
+        private static ModifierTier[] SkillTiers => Catalog.MainSkillTiers;
+        private static Affix[] Affixes => Catalog.Modifiers;
 
+        // Compatibility helpers for older balance tools. Actual rolls use each saved tier's range.
         public static int MaxRollTier(int itemLevel)
         {
-            int tier = 0;
-            while (tier + 1 < RollTierLevels.Length && itemLevel >= RollTierLevels[tier + 1]) tier++;
-            return tier;
+            int highest = 0;
+            foreach (var mod in Affixes)
+                for (int i = 0; i < mod.Tiers.Length; i++)
+                    if (mod.Tiers[i].Eligible(itemLevel)) highest = Math.Max(highest, i);
+            return highest;
         }
-
-        public static float RollTierScale(int tier) => 1f + 0.2f * Math.Max(0, Math.Min(RollTierLevels.Length - 1, tier));
-
-        // Every tier owns an eligibility gate, an explicit roll range and its selection weight.
-        // Arrays are ordered weakest to strongest; the strongest is conventionally Tier 1.
-        private readonly struct ModifierTier
-        {
-            public readonly int RequiredItemLevel;
-            public readonly float Min, Max, Weight;
-            public ModifierTier(int requiredItemLevel, float min, float max, float weight)
-            { RequiredItemLevel = requiredItemLevel; Min = min; Max = max; Weight = weight; }
-        }
-
-        private static ModifierTier[] CreateTiers(float min, float max, bool scales, bool skill = false)
-        {
-            int count = skill ? 6 : scales ? RollTierLevels.Length : 1;
-            int[] skillMin = { 1, 1, 2, 3, 5, 7 };
-            int[] skillMax = { 1, 2, 4, 6, 8, 10 };
-            var tiers = new ModifierTier[count];
-            for (int i = 0; i < count; i++)
-            {
-                float low = skill ? skillMin[i] : Mathf.Max(1f, Mathf.Round(min * RollTierScale(i)));
-                float high = skill ? skillMax[i] : Mathf.Max(low, Mathf.Round(max * RollTierScale(i)));
-                tiers[i] = new ModifierTier(RollTierLevels[i], low, high, Mathf.Pow(0.7f, i));
-            }
-            return tiers;
-        }
+        public static float RollTierScale(int tier) => 1f + 0.2f * Math.Max(0, tier);
 
         private static ModifierTier ChooseTier(System.Random rng, ModifierTier[] tiers, int itemLevel)
         {
             float total = 0f;
             foreach (ModifierTier tier in tiers)
-                if (tier.RequiredItemLevel <= itemLevel) total += tier.Weight;
+                if (tier != null && tier.Eligible(itemLevel)) total += tier.Weight;
+            if (total <= 0f) throw new InvalidOperationException("No eligible modifier tier at item level " + itemLevel);
+            ModifierTier last = null;
             float roll = (float)rng.NextDouble() * total;
             foreach (ModifierTier tier in tiers)
             {
-                if (tier.RequiredItemLevel > itemLevel) continue;
+                if (tier == null || !tier.Eligible(itemLevel)) continue;
+                last = tier;
                 roll -= tier.Weight;
                 if (roll < 0f) return tier;
             }
-            return tiers[0];
+            return last;
         }
 
         private static float RollTierValue(System.Random rng, ModifierTier tier) =>
@@ -102,18 +93,6 @@ namespace PoeClone.Inventory
             public int RequiredLevel;
             public string Line;                // its family: tiers of one line replace each other as levels rise
             public Leaning Leaning;
-        }
-
-        private sealed class Affix
-        {
-            public StatType Stat;
-            public float Min;
-            public float Max;
-            public bool ScalesWithLevel;
-            public ModifierTier[] Tiers;
-            public ItemType[] On;
-            public WeaponType[] Weapons;   // on a Weapon: only these kinds (null: every kind)
-            public float Weight = 1f;      // how often it rolls, against the item's other candidates
         }
 
         // Tier tints (over the shared art): each line's art gets darker, richer or gilded as it climbs.
@@ -423,138 +402,6 @@ namespace PoeClone.Inventory
             return artId;
         }
 
-        private static readonly ItemType[] Armour = { ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Boots, ItemType.Shield };
-        private static readonly ItemType[] Jewellery = { ItemType.Amulet, ItemType.Ring, ItemType.Belt };
-        private static readonly ItemType[] NotWeapon =
-            { ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Boots, ItemType.Shield, ItemType.Amulet, ItemType.Ring, ItemType.Belt, ItemType.Quiver, ItemType.Grimoire };
-
-        // Weapon kinds that attack with the weapon itself, and the ones that swing it.
-        private static readonly WeaponType[] AttackWeapons =
-            { WeaponType.Sword, WeaponType.Axe, WeaponType.Mace, WeaponType.Dagger, WeaponType.Bow, WeaponType.Greatsword, WeaponType.Greataxe, WeaponType.Maul };
-        private static readonly WeaponType[] MeleeWeapons =
-            { WeaponType.Sword, WeaponType.Axe, WeaponType.Mace, WeaponType.Dagger, WeaponType.Greatsword, WeaponType.Greataxe, WeaponType.Maul };
-        private static readonly WeaponType[] LightWeapons = { WeaponType.Sword, WeaponType.Axe, WeaponType.Mace, WeaponType.Dagger, WeaponType.Bow };
-        private static readonly WeaponType[] GreatWeapons = { WeaponType.Greatsword, WeaponType.Greataxe, WeaponType.Maul };
-        private static readonly WeaponType[] Staves = { WeaponType.Staff };
-        private static readonly WeaponType[] Sceptres = { WeaponType.Sceptre };
-        private static readonly WeaponType[] Bows = { WeaponType.Bow };
-        private static readonly WeaponType[] Daggers = { WeaponType.Dagger };
-        private static readonly WeaponType[] Maces = { WeaponType.Mace, WeaponType.Maul };
-        private static readonly WeaponType[] Axes = { WeaponType.Axe, WeaponType.Greataxe };
-        private static readonly WeaponType[] Swords = { WeaponType.Sword, WeaponType.Greatsword };
-
-        private static readonly Affix[] Affixes =
-        {
-            // Global attack crit increases scale the wielded weapon's hidden base chance.
-            Aff(StatType.CriticalChance, 20, 60, true, ItemType.Weapon).Weighted(1.2f),
-            Aff(StatType.CriticalChance, 15, 40, true, ItemType.Ring, ItemType.Amulet, ItemType.Gloves, ItemType.Quiver, ItemType.Helmet, ItemType.BodyArmour, ItemType.Belt, ItemType.Boots, ItemType.Shield, ItemType.Grimoire).Weighted(1f),
-            Aff(StatType.CriticalMultiplier, 10, 25, false, ItemType.Weapon, ItemType.Ring, ItemType.Amulet, ItemType.Gloves, ItemType.Quiver).Weighted(0.65f),
-            Aff(StatType.MaxLife, 8, 25, true, NotWeapon),
-            Aff(StatType.MaxMana, 8, 20, true, ItemType.Helmet, ItemType.Gloves, ItemType.Amulet, ItemType.Ring, ItemType.Belt),
-            Aff(StatType.Strength, 4, 12, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Belt, ItemType.Amulet, ItemType.Ring).Also(ItemType.Weapon, MeleeWeapons),
-            Aff(StatType.Dexterity, 4, 12, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Boots, ItemType.Belt, ItemType.Amulet, ItemType.Ring, ItemType.Quiver).Also(ItemType.Weapon, AttackWeapons),
-            Aff(StatType.Intelligence, 4, 12, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Gloves, ItemType.Boots, ItemType.Belt, ItemType.Shield, ItemType.Amulet, ItemType.Ring, ItemType.Weapon, ItemType.Grimoire),
-            Aff(StatType.Armour, 10, 40, true, Armour),
-            Aff(StatType.Evasion, 10, 40, true, Armour),
-            Aff(StatType.BlockChance, 3, 8, false, ItemType.Shield),
-            Aff(StatType.AvoidStun, 3, 7, false, ItemType.Helmet, ItemType.BodyArmour, ItemType.Belt, ItemType.Shield).Weighted(0.55f),
-            // Accessory damage has its own tier ranges, independent of weapon damage.
-            Aff(StatType.PhysicalDamage, 2, 7, true, ItemType.Gloves, ItemType.Ring, ItemType.Amulet, ItemType.Quiver),
-            Aff(StatType.PhysicalDamage, 3, 8, true, ItemType.Weapon).Only(LightWeapons),
-            Aff(StatType.PhysicalDamage, 6, 15, true, ItemType.Weapon).Only(GreatWeapons),
-            Aff(StatType.AttackSpeed, 3, 10, false, ItemType.Gloves, ItemType.Ring, ItemType.Amulet, ItemType.Quiver).Also(ItemType.Weapon, AttackWeapons),
-            Aff(StatType.FireResistance, 6, 24, false, NotWeapon),
-            Aff(StatType.ColdResistance, 6, 24, false, NotWeapon),
-            Aff(StatType.LightningResistance, 6, 24, false, NotWeapon),
-            Aff(StatType.PoisonResistance, 6, 24, false, NotWeapon).Weighted(0.55f),
-            Aff(StatType.PoisonDamage, 5, 15, true, ItemType.Weapon, ItemType.Gloves, ItemType.Ring, ItemType.Amulet).Weighted(0.35f),
-            Aff(StatType.DamageOverTime, 4, 12, true, ItemType.Weapon, ItemType.Gloves, ItemType.Ring, ItemType.Amulet).Weighted(0.3f),
-            Aff(StatType.PoisonPenetration, 3, 10, false, ItemType.Weapon, ItemType.Gloves, ItemType.Ring, ItemType.Amulet).Weighted(0.3f),
-            Aff(StatType.PoisonDamage, 5, 14, true, ItemType.Grimoire, ItemType.Weapon).Only(Staves).Weighted(0.35f),
-            Aff(StatType.ArmourPenetration, 4, 12, false, ItemType.Gloves, ItemType.Ring).Also(ItemType.Weapon, AttackWeapons).Weighted(0.55f),
-            Aff(StatType.FirePenetration, 4, 12, false, ItemType.Weapon, ItemType.Gloves, ItemType.Ring, ItemType.Amulet).Weighted(0.45f),
-            Aff(StatType.ColdPenetration, 4, 12, false, ItemType.Weapon, ItemType.Gloves, ItemType.Ring, ItemType.Amulet).Weighted(0.45f),
-            Aff(StatType.LightningPenetration, 4, 12, false, ItemType.Weapon, ItemType.Gloves, ItemType.Ring, ItemType.Amulet).Weighted(0.45f),
-            Aff(StatType.ElementalPenetration, 3, 8, false, ItemType.Weapon, ItemType.Ring, ItemType.Amulet).Only(Staves).Weighted(0.35f),
-            Aff(StatType.MovementSpeed, 5, 15, false, ItemType.Boots),
-            Aff(StatType.AreaOfEffect, 5, 12, false, ItemType.Amulet, ItemType.Helmet, ItemType.Weapon).Only(Staves),
-            Aff(StatType.MeleeRange, 5, 12, false, ItemType.Gloves).Also(ItemType.Weapon, MeleeWeapons),
-
-            // Sustain: slow life regeneration on armour and jewellery, life back from blows and kills.
-            Aff(StatType.LifeRegen, 1, 3, true, ItemType.Helmet, ItemType.BodyArmour, ItemType.Belt, ItemType.Amulet, ItemType.Ring, ItemType.Shield).Weighted(0.8f),
-            Aff(StatType.LifeLeech, 1, 2, false, ItemType.Gloves, ItemType.Ring).Also(ItemType.Weapon, MeleeWeapons).Weighted(0.3f),
-            Aff(StatType.LifeOnKill, 2, 5, true, ItemType.Gloves, ItemType.Ring, ItemType.Quiver).Also(ItemType.Weapon, AttackWeapons).Weighted(0.5f),
-            Aff(StatType.LifeOnAttackHit, 2, 4, true, ItemType.Gloves, ItemType.Ring, ItemType.Quiver).Also(ItemType.Weapon, AttackWeapons).Weighted(0.7f),
-
-            // Caster stats: staves/sceptres, grimoires, jewellery and armour (Int bases favour these).
-            Aff(StatType.SpellDamage, 4, 10, true, ItemType.Weapon).Only(Staves).Weighted(1.6f),
-            Aff(StatType.SpellDamage, 2, 5, true, ItemType.Ring, ItemType.Amulet).Weighted(0.6f),
-            Aff(StatType.MaxMana, 12, 30, true, ItemType.Weapon).Only(Staves),
-            Aff(StatType.ManaRegen, 10, 35, false, ItemType.Weapon, ItemType.Amulet, ItemType.Ring, ItemType.Helmet, ItemType.Grimoire).Only(Staves),
-            // Like other level-scaled stats, cast speed rolls improve in higher-level areas.
-            Aff(StatType.CastSpeed, 6, 18, true, ItemType.Weapon).Only(Staves).Weighted(1.5f),
-            Aff(StatType.CastSpeed, 4, 12, true, ItemType.Weapon).Only(Sceptres).Weighted(1f),
-            Aff(StatType.CastSpeed, 4, 10, true, ItemType.Ring, ItemType.Amulet, ItemType.Gloves, ItemType.Grimoire, ItemType.Belt).Weighted(1f),
-            Aff(StatType.CastSpeed, 3, 8, true, ItemType.Helmet, ItemType.BodyArmour).Weighted(0.6f),
-            Aff(StatType.MaxMana, 10, 25, true, ItemType.Grimoire),
-
-            // "+1 to level of ..." spells: staves, amulets (all spells) and rings (one element).
-            Aff(StatType.AllSpellLevels, 1, 1, false, ItemType.Weapon, ItemType.Amulet).Only(Staves).Weighted(0.3f),
-            Aff(StatType.FireSpellLevels, 1, 1, false, ItemType.Weapon, ItemType.Amulet, ItemType.Ring).Only(Staves).Weighted(0.35f),
-            Aff(StatType.ColdSpellLevels, 1, 1, false, ItemType.Weapon, ItemType.Amulet, ItemType.Ring).Only(Staves).Weighted(0.35f),
-            Aff(StatType.LightningSpellLevels, 1, 1, false, ItemType.Weapon, ItemType.Amulet, ItemType.Ring).Only(Staves).Weighted(0.35f),
-
-            // Skills on gear (the value is the skill's level, rolled by item level). A staff's
-            // second spell is rare (it goes on the skill bar); melee weapons can carry melee skills.
-            Grant(StatType.GrantFireBolt, 0.15f, ItemType.Weapon).Only(Staves),
-            Grant(StatType.GrantChainLightning, 0.15f, ItemType.Weapon).Only(Staves),
-            Grant(StatType.GrantIceShard, 0.15f, ItemType.Weapon).Only(Staves),
-            Grant(StatType.GrantFrostNova, 0.3f, ItemType.Weapon, ItemType.Helmet, ItemType.Gloves).Only(Staves),
-            Grant(StatType.GrantWarCry, 0.6f, ItemType.Weapon, ItemType.Amulet, ItemType.Belt).Only(Staves),
-            Grant(StatType.GrantCleave, 0.6f, ItemType.Weapon).Only(MeleeWeapons),
-            Grant(StatType.GrantFangStrike, 0.28f, ItemType.Weapon).Only(Daggers),
-            Grant(StatType.GrantPulverize, 0.38f, ItemType.Weapon).Only(Maces),
-            Grant(StatType.GrantReapingArc, 0.38f, ItemType.Weapon).Only(Axes),
-            Grant(StatType.GrantLungingThrust, 0.38f, ItemType.Weapon).Only(Swords),
-            Grant(StatType.GrantDash, 0.45f, ItemType.Boots),
-            Grant(StatType.GrantTeleport, 0.5f, ItemType.Amulet, ItemType.Ring, ItemType.Gloves),
-
-            // The summoner: minion stats on grimoires, sceptres and a few armour pieces (never on
-            // the other weapons); the summons themselves mostly on grimoires and sceptres, now and
-            // then on armour and jewellery. Summon levels are the big lever: a minion's life and
-            // damage climb steeply with its level, so "+1 to level" gear is what makes them sturdy.
-            Aff(StatType.MinionDamage, 4, 10, true, ItemType.Grimoire, ItemType.Weapon, ItemType.Amulet, ItemType.Gloves).Only(Sceptres).Weighted(1.4f),
-            Aff(StatType.MinionLife, 6, 16, true, ItemType.Grimoire, ItemType.Weapon, ItemType.Helmet, ItemType.BodyArmour, ItemType.Belt, ItemType.Shield).Only(Sceptres).Weighted(1.2f),
-            Aff(StatType.AdditionalMinions, 1, 1, false, ItemType.Grimoire, ItemType.Amulet, ItemType.Helmet).Weighted(0.65f),
-            Aff(StatType.MinionSpeed, 4, 12, false, ItemType.Grimoire, ItemType.Gloves, ItemType.Boots, ItemType.Weapon).Only(Sceptres).Weighted(0.8f),
-            Aff(StatType.MinionLevels, 1, 1, false, ItemType.Grimoire, ItemType.Weapon, ItemType.Amulet, ItemType.Helmet).Only(Sceptres).Weighted(0.3f),
-            Aff(StatType.RaiseSkeletonsLevels, 1, 2, false, ItemType.Grimoire, ItemType.Weapon, ItemType.Helmet, ItemType.Ring).Only(Sceptres).Weighted(0.4f),
-            Aff(StatType.SkeletonMagesLevels, 1, 2, false, ItemType.Grimoire, ItemType.Weapon, ItemType.Gloves, ItemType.Ring).Only(Sceptres).Weighted(0.35f),
-            Aff(StatType.SpiritWolvesLevels, 1, 2, false, ItemType.Grimoire, ItemType.Weapon, ItemType.Boots, ItemType.Ring).Only(Sceptres).Weighted(0.3f),
-            Aff(StatType.BoneGolemLevels, 1, 2, false, ItemType.Grimoire, ItemType.Weapon, ItemType.BodyArmour, ItemType.Ring).Only(Sceptres).Weighted(0.3f),
-            Aff(StatType.MarkEffect, 10, 25, false, ItemType.Grimoire, ItemType.Weapon).Only(Sceptres).Weighted(0.8f),
-            Aff(StatType.MinionDuration, 10, 25, false, ItemType.Grimoire, ItemType.Belt).Weighted(0.6f),
-            Aff(StatType.BoneArmour, 4, 10, false, ItemType.Grimoire, ItemType.Shield, ItemType.BodyArmour).Weighted(0.5f),
-            Grant(StatType.GrantRaiseSkeletons, 0.9f, ItemType.Grimoire, ItemType.Weapon, ItemType.Helmet).Only(Sceptres),
-            Grant(StatType.GrantSkeletonMages, 0.7f, ItemType.Grimoire, ItemType.Weapon, ItemType.Gloves).Only(Sceptres),
-            Grant(StatType.GrantSpiritWolves, 0.5f, ItemType.Grimoire, ItemType.Weapon, ItemType.Boots, ItemType.Amulet).Only(Sceptres),
-            Grant(StatType.GrantBoneGolem, 0.45f, ItemType.Grimoire, ItemType.Weapon, ItemType.BodyArmour, ItemType.Belt).Only(Sceptres),
-            Grant(StatType.GrantGraveRot, 0.8f, ItemType.Grimoire),
-            Grant(StatType.GrantGraveRot, 0.15f, ItemType.Helmet),
-
-            // The archer: bow skills on bows and quivers (any level from 1 to 10, the high ones
-            // likelier from strong monsters, see SkillGrants.RollBowLevel), and now and then a
-            // chance to loose one more arrow.
-            Grant(StatType.GrantSplitShot, 0.45f, ItemType.Weapon, ItemType.Quiver).Only(Bows),
-            Grant(StatType.GrantPiercingShot, 0.4f, ItemType.Weapon, ItemType.Quiver).Only(Bows),
-            Grant(StatType.GrantRainOfArrows, 0.4f, ItemType.Weapon, ItemType.Quiver).Only(Bows),
-            Grant(StatType.GrantBurningArrow, 0.4f, ItemType.Weapon, ItemType.Quiver).Only(Bows),
-            Grant(StatType.GrantVenomArrow, 0.28f, ItemType.Weapon, ItemType.Quiver).Only(Bows),
-            Grant(StatType.GrantVenomSpout, 0.2f, ItemType.Weapon).Only(Staves),
-            Grant(StatType.GrantSummonViper, 0.2f, ItemType.Grimoire, ItemType.Weapon).Only(Sceptres),
-            Aff(StatType.ExtraArrowChance, 5, 15, false, ItemType.Weapon, ItemType.Quiver).Only(Bows).Weighted(0.25f),
-        };
-
         // Magic items are named after their first stats, PoE style: "Hale Iron Helmet of the Fox".
         private static readonly Dictionary<StatType, string> Prefixes = new Dictionary<StatType, string>
         {
@@ -834,18 +681,16 @@ namespace PoeClone.Inventory
 
             // A random stat: the widest range any of today's affixes for it gives this base.
             float? min = null, max = null;
-            float topScale = RollTierScale(MaxRollTier(MaxItemLevel));
             foreach (Affix a in Affixes)
             {
-                if (a.Stat != stat || Array.IndexOf(a.On, b.Type) < 0)
+                if (a == null || !a.Enabled || a.Weight <= 0 || a.Stat != stat || !a.Allows(b.Type, b.WeaponType))
                     continue;
-                if (b.Type == ItemType.Weapon && a.Weapons != null && Array.IndexOf(a.Weapons, b.WeaponType) < 0)
-                    continue;
-                float aMin = Mathf.Max(1f, a.Min);
-                float maxScale = a.ScalesWithLevel ? topScale : 1f;
-                float aMax = SkillGrants.IsGrant(stat) ? SkillGrants.MaxDropLevel : Mathf.Max(1f, Mathf.Round(a.Max * maxScale));
-                min = min == null ? aMin : Mathf.Min(min.Value, aMin);
-                max = max == null ? aMax : Mathf.Max(max.Value, aMax);
+                foreach (var tier in a.Tiers)
+                {
+                    if (tier == null || !tier.Eligible(MaxItemLevel)) continue;
+                    min = min == null ? tier.Min : Mathf.Min(min.Value, tier.Min);
+                    max = max == null ? tier.Max : Mathf.Max(max.Value, tier.Max);
+                }
             }
             if (min == null)
                 return null;
@@ -958,9 +803,8 @@ namespace PoeClone.Inventory
             var candidateWeights = new List<float>();
             foreach (Affix a in Affixes)
             {
-                if (Array.IndexOf(a.On, b.Type) < 0)
-                    continue;
-                if (b.Type == ItemType.Weapon && a.Weapons != null && Array.IndexOf(a.Weapons, b.WeaponType) < 0)
+                if (a == null || !a.Enabled || a.Weight <= 0 || float.IsNaN(a.Weight) || float.IsInfinity(a.Weight) ||
+                    !a.Allows(b.Type, b.WeaponType) || !a.HasTier(level))
                     continue;
                 candidates.Add(a);
                 candidateWeights.Add(a.Weight * LeaningFactor(b.Leaning, a.Stat));
@@ -976,7 +820,8 @@ namespace PoeClone.Inventory
             if (mains != null)
             {
                 StatType spell = mainSpell.HasValue && Array.IndexOf(mains, mainSpell.Value) >= 0 ? mainSpell.Value : mains[rng.Next(mains.Length)];
-                selected.Add(Grant(spell, 1f, b.Type));
+                var main = new Affix { Stat = spell, Tiers = SkillTiers };
+                selected.Add(main);
                 rolled.Add(spell);
             }
 
@@ -1216,41 +1061,6 @@ namespace PoeClone.Inventory
         private static ItemBase Base(string id, string name, ItemType type, int w, int h, Color tint, params StatModifier[] implicits)
         {
             return new ItemBase { Id = id, Name = name, Type = type, Width = w, Height = h, Tint = tint, Implicits = implicits };
-        }
-
-        private static Affix Aff(StatType stat, float min, float max, bool scales, params ItemType[] on)
-        {
-            return new Affix { Stat = stat, Min = min, Max = max, ScalesWithLevel = scales, On = on, Tiers = CreateTiers(min, max, scales) };
-        }
-
-        // A skill on gear: its value is the skill level (see SkillGrants.RollLevel).
-        private static Affix Grant(StatType grant, float weight, params ItemType[] on)
-        {
-            return new Affix { Stat = grant, Min = 1, Max = 1, On = on, Weight = weight, Tiers = CreateTiers(1, 10, false, skill: true) };
-        }
-
-        /// <summary>On a weapon, only these kinds roll it (other item types are unaffected).</summary>
-        private static Affix Only(this Affix a, WeaponType[] weapons)
-        {
-            a.Weapons = weapons;
-            return a;
-        }
-
-        /// <summary>Also rolls on this item type; for a weapon, only these kinds.</summary>
-        private static Affix Also(this Affix a, ItemType type, WeaponType[] weapons)
-        {
-            var on = new ItemType[a.On.Length + 1];
-            a.On.CopyTo(on, 0);
-            on[a.On.Length] = type;
-            a.On = on;
-            a.Weapons = weapons;
-            return a;
-        }
-
-        private static Affix Weighted(this Affix a, float weight)
-        {
-            a.Weight = weight;
-            return a;
         }
 
         private static StatModifier Mod(StatType stat, float value)

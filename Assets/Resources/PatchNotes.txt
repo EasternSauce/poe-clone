@@ -1,3 +1,7 @@
+version: 2026-10-08-item-modifier-editor
+- Added PoeClone > Item Modifier Editor to tune each modifier's allowed item types, weapon restrictions, enabled state and selection weight. Each tier has editable minimum item level, minimum roll, maximum roll and selection weight; tiers and modifiers can be added, duplicated or removed.
+- Moved all 87 random modifier definitions and their tiers into the saved ItemModifierCatalog balance asset, preserving current balance. Guaranteed attack skill tiers are editable separately. Balance edits support undo, validation and explicit saving, and apply to newly generated gear in builds.
+
 version: 2026-10-08-item-base-requirements
 - Equipment bases now progress through required levels 0, 7, 14, and 21, with matching drop gates and a separate icon per base. Strength, Dexterity, and Intelligence bases require their matching attributes; hybrid armour requires both Strength and Dexterity. Added four Intelligence shield focuses.
 - Item tooltips show the base name and equip requirements separately from item level. Unique items inherit their base's attribute requirements and cannot require a lower level than their base; Shepherd uniques require at least level 21.
