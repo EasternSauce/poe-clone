@@ -79,6 +79,43 @@ namespace PoeClone.EditorTools
 
         private void OnGUI()
         {
+            // Unity's editor styles are shared; restore them after drawing this window.
+            using (new LargerFontScope()) DrawWindow();
+        }
+
+        private sealed class LargerFontScope : IDisposable
+        {
+            private readonly List<(GUIStyle style, int fontSize, float fixedHeight)> originals =
+                new List<(GUIStyle, int, float)>();
+
+            public LargerFontScope()
+            {
+                var styles = new[] { GUI.skin.label, GUI.skin.button, GUI.skin.toggle, GUI.skin.textField,
+                    EditorStyles.label, EditorStyles.boldLabel, EditorStyles.miniLabel, EditorStyles.helpBox,
+                    EditorStyles.textField, EditorStyles.numberField, EditorStyles.popup, EditorStyles.toggle,
+                    EditorStyles.toolbar, EditorStyles.toolbarButton };
+                var seen = new HashSet<GUIStyle>();
+                foreach (var style in styles)
+                {
+                    if (!seen.Add(style)) continue;
+                    originals.Add((style, style.fontSize, style.fixedHeight));
+                    style.fontSize = (style.fontSize > 0 ? style.fontSize : 12) + 2;
+                    if (style.fixedHeight > 0) style.fixedHeight += 4;
+                }
+            }
+
+            public void Dispose()
+            {
+                foreach (var original in originals)
+                {
+                    original.style.fontSize = original.fontSize;
+                    original.style.fixedHeight = original.fixedHeight;
+                }
+            }
+        }
+
+        private void DrawWindow()
+        {
             if (draft == null || serialized == null) return;
             serialized.Update();
             using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
@@ -121,9 +158,9 @@ namespace PoeClone.EditorTools
 
         private void DrawList()
         {
-            using (new EditorGUILayout.VerticalScope(GUILayout.Width(280)))
+            using (new EditorGUILayout.VerticalScope(GUILayout.Width(310)))
             {
-                search = EditorGUILayout.TextField("Search", search);
+                search = EditorGUILayout.TextField("Search", search, GUILayout.Height(22));
                 listScroll = EditorGUILayout.BeginScrollView(listScroll);
                 if (GUILayout.Toggle(selected == -1, "Built-in attack skill levels", "Button")) selected = -1;
                 var mods = serialized.FindProperty("Modifiers");
@@ -158,14 +195,14 @@ namespace PoeClone.EditorTools
 
         private void DrawModifier(SerializedProperty mod)
         {
-            EditorGUILayout.PropertyField(mod.FindPropertyRelative("Label"));
-            EditorGUILayout.PropertyField(mod.FindPropertyRelative("Stat"));
-            EditorGUILayout.PropertyField(mod.FindPropertyRelative("Enabled"));
-            EditorGUILayout.PropertyField(mod.FindPropertyRelative("Weight"), new GUIContent("Modifier weight", "Relative chance against other eligible modifiers, multiplied by the item's existing attribute leaning."));
+            EditorGUILayout.PropertyField(mod.FindPropertyRelative("Label"), GUILayout.Height(22));
+            EditorGUILayout.PropertyField(mod.FindPropertyRelative("Stat"), GUILayout.Height(22));
+            EditorGUILayout.PropertyField(mod.FindPropertyRelative("Enabled"), GUILayout.Height(22));
+            EditorGUILayout.PropertyField(mod.FindPropertyRelative("Weight"), new GUIContent("Modifier weight", "Relative chance against other eligible modifiers, multiplied by the item's existing attribute leaning."), GUILayout.Height(22));
             GUILayout.Space(8);
             GUILayout.Label("Allowed item types", EditorStyles.boldLabel);
             DrawTypes<ItemType>(mod.FindPropertyRelative("On"));
-            EditorGUILayout.PropertyField(mod.FindPropertyRelative("AnyWeapon"), new GUIContent("All weapon types"));
+            EditorGUILayout.PropertyField(mod.FindPropertyRelative("AnyWeapon"), new GUIContent("All weapon types"), GUILayout.Height(22));
             if (!mod.FindPropertyRelative("AnyWeapon").boolValue) DrawTypes<WeaponType>(mod.FindPropertyRelative("Weapons"));
             EditorGUILayout.HelpBox("Weapon restrictions apply only to Weapon items. No checked item types or a zero modifier weight prevents this modifier from rolling.", MessageType.None);
             DrawTiers(mod.FindPropertyRelative("Tiers"));
@@ -186,9 +223,9 @@ namespace PoeClone.EditorTools
         private static void DrawTypes<T>(SerializedProperty array) where T : Enum
         {
             var values = Enum.GetValues(typeof(T));
-            for (int row = 0; row < values.Length; row += 4)
+            for (int row = 0; row < values.Length; row += 3)
             using (new EditorGUILayout.HorizontalScope())
-            for (int column = row; column < Math.Min(row + 4, values.Length); column++)
+            for (int column = row; column < Math.Min(row + 3, values.Length); column++)
             {
                 int value = Convert.ToInt32(values.GetValue(column));
                 int found = -1;
@@ -218,10 +255,10 @@ namespace PoeClone.EditorTools
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     GUILayout.Label("T" + (tiers.arraySize - i), GUILayout.Width(38));
-                    EditorGUILayout.PropertyField(tier.FindPropertyRelative("RequiredItemLevel"), GUIContent.none, GUILayout.MinWidth(75));
-                    EditorGUILayout.PropertyField(tier.FindPropertyRelative("Min"), GUIContent.none, GUILayout.MinWidth(75));
-                    EditorGUILayout.PropertyField(tier.FindPropertyRelative("Max"), GUIContent.none, GUILayout.MinWidth(75));
-                    EditorGUILayout.PropertyField(tier.FindPropertyRelative("Weight"), GUIContent.none, GUILayout.MinWidth(75));
+                    EditorGUILayout.PropertyField(tier.FindPropertyRelative("RequiredItemLevel"), GUIContent.none, GUILayout.MinWidth(75), GUILayout.Height(22));
+                    EditorGUILayout.PropertyField(tier.FindPropertyRelative("Min"), GUIContent.none, GUILayout.MinWidth(75), GUILayout.Height(22));
+                    EditorGUILayout.PropertyField(tier.FindPropertyRelative("Max"), GUIContent.none, GUILayout.MinWidth(75), GUILayout.Height(22));
+                    EditorGUILayout.PropertyField(tier.FindPropertyRelative("Weight"), GUIContent.none, GUILayout.MinWidth(75), GUILayout.Height(22));
                     if (GUILayout.Button("↑", GUILayout.Width(23)) && i > 0) tiers.MoveArrayElement(i, i - 1);
                     if (GUILayout.Button("↓", GUILayout.Width(23)) && i + 1 < tiers.arraySize) tiers.MoveArrayElement(i, i + 1);
                     if (GUILayout.Button("×", GUILayout.Width(23))) { tiers.DeleteArrayElementAtIndex(i); break; }

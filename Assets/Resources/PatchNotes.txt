@@ -1,3 +1,6 @@
+version: 2026-10-08-item-modifier-editor-font
+- Increased the Item Modifier Editor's font size and control spacing, widened the modifier list, and arranged item-type checkboxes in three columns for easier reading.
+
 version: 2026-10-08-item-modifier-editor
 - Added PoeClone > Item Modifier Editor to tune each modifier's allowed item types, weapon restrictions, enabled state and selection weight. Each tier has editable minimum item level, minimum roll, maximum roll and selection weight; tiers and modifiers can be added, duplicated or removed.
 - Moved all 87 random modifier definitions and their tiers into the saved ItemModifierCatalog balance asset, preserving current balance. Guaranteed attack skill tiers are editable separately. Balance edits support undo, validation and explicit saving, and apply to newly generated gear in builds.
