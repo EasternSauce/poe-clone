@@ -10,7 +10,7 @@ namespace PoeClone.Enemies
     /// <summary>A placed ember owns its fuse, so killing its caster cannot disarm it.</summary>
     public sealed class EnemyOffering : MonoBehaviour
     {
-        private const float Radius = 2.4f;
+        private const float Radius = 6f;
         private const float Fuse = 2.4f;
 
         private void Update()

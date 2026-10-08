@@ -219,7 +219,7 @@ namespace PoeClone.Enemies
         }
 
         private const float OfferingWindUp = 0.55f;
-        private const float BreathRange = 9f;
+        private const float BreathRange = 22.5f;
         private const float BreathHalfAngle = 24f;
         private const float BreathWindUp = 0.65f;
         private const float BreathChannel = 1.2f;
@@ -307,14 +307,14 @@ namespace PoeClone.Enemies
             if (caster != null) Graveward.Raise(caster, Flat(target - caster.position), kind.Eyes, gameplay: false);
         }
 
-        private const float RootRadius = 1.25f;
+        private const float RootRadius = 3.125f;
         private const float RootWindUp = 1f;
-        private const float WailInnerRadius = 3f;
-        private const float WailOuterRadius = 7.5f;
+        private const float WailInnerRadius = 7.5f;
+        private const float WailOuterRadius = 18.75f;
         private const float WailWindUp = 1.25f;
         private const float FissureWindUp = 1.1f;
-        private const float FissureHalfLength = 5f;
-        private const float FissureWidth = 1.5f;
+        private const float FissureHalfLength = 12.5f;
+        private const float FissureWidth = 3.75f;
 
         private bool CanSpecialHit() => this != null && health != null && !health.IsDead &&
             player != null && !player.IsDead && !Sanctuary.Contains(player.transform.position, 1f) &&
@@ -330,7 +330,7 @@ namespace PoeClone.Enemies
             var centers = new Vector3[3];
             for (int i = 0; i < centers.Length; i++)
             {
-                centers[i] = target + direction * ((i - 1) * 2.7f);
+                centers[i] = target + direction * ((i - 1) * 6.75f);
                 host.StartCoroutine(GroundTelegraph.Run(centers[i], RootRadius, RootWindUp, DamageType.Physical, null));
             }
             yield return new WaitForSeconds(RootWindUp);
@@ -343,8 +343,8 @@ namespace PoeClone.Enemies
                 {
                     float a = i * Mathf.PI * 2f / 7f;
                     GameObject thorn = RuntimePrimitives.Create(PrimitiveType.Capsule, roots.transform, kind.Skin);
-                    thorn.transform.position = new Vector3(center.x + Mathf.Sin(a) * 0.8f, 0.35f, center.z + Mathf.Cos(a) * 0.8f);
-                    thorn.transform.localScale = new Vector3(0.12f, 0.45f, 0.12f);
+                    thorn.transform.position = new Vector3(center.x + Mathf.Sin(a) * 2f, 0.35f, center.z + Mathf.Cos(a) * 2f);
+                    thorn.transform.localScale = new Vector3(0.3f, 0.45f, 0.3f);
                     thorn.transform.rotation = Quaternion.Euler(Mathf.Cos(a) * 28f, 0f, Mathf.Sin(a) * 28f);
                 }
             }

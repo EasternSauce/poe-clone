@@ -8,8 +8,8 @@ namespace PoeClone.Enemies
     /// <summary>A fixed directional ward; no collider, so characters can flank through it.</summary>
     public sealed class Graveward : MonoBehaviour
     {
-        private const float HalfWidth = 3.5f;
-        private const float ProtectRadius = 6f;
+        private const float HalfWidth = 8.75f;
+        private const float ProtectRadius = 15f;
         private const float Duration = 5f;
         private static readonly List<Graveward> Active = new List<Graveward>();
         private EnemyHealth owner;

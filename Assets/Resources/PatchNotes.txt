@@ -1,5 +1,5 @@
 version: 2026-10-08-six-enemy-threats
-- Doubled auto attack and ability damage for Briarbound, Grave Siren, Rime Stalker, Cinder Penitent, Hollowmaw, and Barrow Castellan. Their abilities now recharge twice as quickly.
+- Doubled auto attack and ability damage for Briarbound, Grave Siren, Rime Stalker, Cinder Penitent, Hollowmaw, and Barrow Castellan. Their abilities now recharge twice as quickly and cover 2.5 times the area.
 
 version: 2026-10-08-penitent-hollowmaw-castellan
 - Increased all six newly added enemies' area spawn weights to match the most common enemies in their respective maps.
