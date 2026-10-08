@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine.InputSystem;
 using System;
 using System.Collections.Generic;
@@ -155,3 +156,5 @@ namespace PoeClone.EditorTools
         }
     }
 }
+
+#endif

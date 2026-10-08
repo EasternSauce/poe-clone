@@ -48,7 +48,8 @@ namespace PoeClone.EditorTools
             camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = Color.black; camera.cullingMask = 0;
             new GameObject("Loot Simulator EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
             PoeClone.Inventory.TouchMode.SetForced(false);
-            new GameObject("Loot Simulator").AddComponent<LootSimulatorUI>().Open();
+            var simulator = new GameObject("Loot Simulator").AddComponent<LootSimulatorUI>();
+            simulator.Open();
         }
 
         private static void OnPlayModeChanged(PlayModeStateChange state)

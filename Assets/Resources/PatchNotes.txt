@@ -1,3 +1,6 @@
+version: 2026-10-08-loot-simulator-startup-fix
+- Fixed the standalone Unity Loot Simulator failing to open with a NullReferenceException. Its UI component now lives in the runtime script assembly during Editor runs, while remaining excluded from game builds.
+
 version: 2026-10-08-standalone-loot-debug-run
 - Moved the Loot Simulator out of the game menu into PoeClone > Test > Loot Simulator in Unity. It launches an isolated, temporary debug scene with item icons and hover tooltips, without game startup, character selection or a server connection. Stopping Play restores the previous launch configuration. The simulator is editor-only and excluded from game builds.
 - Modifier tier labels and dynamically sized item tooltips remain available during normal gameplay.
