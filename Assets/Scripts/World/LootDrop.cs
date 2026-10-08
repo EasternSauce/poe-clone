@@ -17,8 +17,8 @@ namespace PoeClone.World
     /// </summary>
     public class LootDrop : MonoBehaviour
     {
-        /// <summary>Temporary mobile hitch diagnostic: enemy drops are suppressed as a whole.</summary>
-        public const bool EnemyDropsEnabled = false;
+        /// <summary>Enemy gear, gold and potion drops are enabled in normal gameplay.</summary>
+        public const bool EnemyDropsEnabled = true;
 
         public static bool EnemyDropsActive => MinimalCombatMode.Enabled ? MinimalCombatMode.DropsEnabled : EnemyDropsEnabled;
 

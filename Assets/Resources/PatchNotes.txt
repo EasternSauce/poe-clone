@@ -1,3 +1,7 @@
+version: 2026-10-08-restore-loot-and-nearby-tooltip
+- Restored enemy gear, gold and potion drops after the mobile performance investigation.
+- On mobile, the closest ground item within 2.5 units again shows its tooltip automatically. Tapping another item takes priority; gold is collected by walking over it.
+
 version: 2026-10-08-mobile-melee-lock-range
 - Mobile basic melee lock-on now searches 25% beyond the weapon's melee reach, including Melee Range bonuses. The 75-degree aim cone on either side and center-first selection remain; actual attack damage still requires normal weapon reach.
 
