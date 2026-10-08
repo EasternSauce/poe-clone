@@ -1,3 +1,6 @@
+version: 2026-10-08-remove-ground-slivers
+- Filled tiny enclosed gaps between rooms and corridors throughout the world, removing the dark ground slivers and their rock walls. Ground, collision and minimaps use the corrected layout.
+
 version: 2026-10-08-rock-rim-spikes
 - Fixed overlapping, spiked rock-bank and cliff tops at sharp bends and room joins. Rim tops now follow the area outline, including internal holes.
 

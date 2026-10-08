@@ -17,6 +17,8 @@ namespace PoeClone.World
         private readonly List<Region> cuts = new List<Region>();
         public readonly List<(Vector3 a, Vector3 b)> Boundary = new List<(Vector3, Vector3)>();
         private Mesh groundMesh;
+        private float[,] gapSamples;
+        private bool[,] filledGaps;
 
         private struct Region
         {
@@ -44,12 +46,14 @@ namespace PoeClone.World
 
         public AreaShape Room(float x, float z, float rx, float rz)
         {
+            gapSamples = null;
             rooms.Add(new Region { a = new Vector2(x, z), radii = new Vector2(rx, rz) });
             return this;
         }
 
         public AreaShape Route(float width, params float[] points)
         {
+            gapSamples = null;
             for (int i = 0; i + 3 < points.Length; i += 2)
                 rooms.Add(new Region { a = new Vector2(points[i], points[i + 1]), b = new Vector2(points[i + 2], points[i + 3]), radii = Vector2.one * (width * 0.5f), corridor = true });
             return this;
@@ -63,16 +67,73 @@ namespace PoeClone.World
 
         private float Distance(Vector2 p)
         {
-            float d = Mathf.Min(Size.x * 0.5f - Mathf.Abs(p.x), Size.y * 0.5f - Mathf.Abs(p.y));
+            if (gapSamples == null) FillSmallGaps();
+            float d = OpenDistance(p);
+            Vector2 grid = p + Size * 0.5f;
+            int x = Mathf.FloorToInt(grid.x), z = Mathf.FloorToInt(grid.y);
+            if (x >= 0 && z >= 0 && x + 1 < gapSamples.GetLength(0) && z + 1 < gapSamples.GetLength(1) &&
+                (filledGaps[x, z] || filledGaps[x + 1, z] || filledGaps[x, z + 1] || filledGaps[x + 1, z + 1]))
+            {
+                float corrected = Mathf.Lerp(Mathf.Lerp(gapSamples[x, z], gapSamples[x + 1, z], grid.x - x),
+                    Mathf.Lerp(gapSamples[x, z + 1], gapSamples[x + 1, z + 1], grid.x - x), grid.y - z);
+                d = Mathf.Max(d, corrected);
+            }
+            // Authored exclusions remain blocked even when a room/corridor gap is filled.
+            foreach (Region cut in cuts) d = Mathf.Min(d, -cut.Distance(p) + Roughness(p));
+            return d;
+        }
+
+        private float Roughness(Vector2 p) => Mathf.Sin(p.x * 0.23f + p.y * 0.11f) *
+            Mathf.Sin(p.y * 0.19f - p.x * 0.08f) * (IsCave ? 0.6f : 0.9f);
+
+        private float OpenDistance(Vector2 p)
+        {
+            float bounds = Mathf.Min(Size.x * 0.5f - Mathf.Abs(p.x), Size.y * 0.5f - Mathf.Abs(p.y));
             float open = -10000f;
             foreach (Region room in rooms) open = Mathf.Max(open, room.Distance(p));
-            d = Mathf.Min(d, open);
-            foreach (Region cut in cuts) d = Mathf.Min(d, -cut.Distance(p));
-            // Fixed wall undulations soften room/corridor joins without ever rerolling the layout.
-            float roughness = IsCave ? 0.6f : 0.9f;
-            d += Mathf.Sin(p.x * 0.23f + p.y * 0.11f) * Mathf.Sin(p.y * 0.19f - p.x * 0.08f) * roughness;
-            d = Mathf.Min(d, Mathf.Min(Size.x * 0.5f - Mathf.Abs(p.x), Size.y * 0.5f - Mathf.Abs(p.y)));
-            return d;
+            return Mathf.Min(bounds, Mathf.Min(bounds, open) + Roughness(p));
+        }
+
+        private void FillSmallGaps()
+        {
+            // One-metre samples identify tiny closed pockets at overlapping room/route joins.
+            // Keep large islands and exterior space; fill only enclosed gaps up to 64 m².
+            int nx = Mathf.CeilToInt(Size.x) + 1, nz = Mathf.CeilToInt(Size.y) + 1;
+            gapSamples = new float[nx, nz];
+            filledGaps = new bool[nx, nz];
+            var visited = new bool[nx, nz];
+            for (int z = 0; z < nz; z++)
+                for (int x = 0; x < nx; x++)
+                    gapSamples[x, z] = OpenDistance(new Vector2(x, z) - Size * 0.5f);
+            var pocket = new List<Vector2Int>();
+            for (int z = 0; z < nz; z++)
+                for (int x = 0; x < nx; x++)
+                {
+                    if (visited[x, z] || gapSamples[x, z] >= 0f) continue;
+                    pocket.Clear();
+                    pocket.Add(new Vector2Int(x, z));
+                    visited[x, z] = true;
+                    bool exterior = false;
+                    void Visit(int px, int pz)
+                    {
+                        if (px < 0 || pz < 0 || px >= nx || pz >= nz) { exterior = true; return; }
+                        if (visited[px, pz] || gapSamples[px, pz] >= 0f) return;
+                        visited[px, pz] = true;
+                        pocket.Add(new Vector2Int(px, pz));
+                    }
+                    for (int i = 0; i < pocket.Count; i++)
+                    {
+                        Vector2Int point = pocket[i];
+                        Visit(point.x - 1, point.y); Visit(point.x + 1, point.y);
+                        Visit(point.x, point.y - 1); Visit(point.x, point.y + 1);
+                    }
+                    if (exterior || pocket.Count > 64) continue;
+                    foreach (Vector2Int point in pocket)
+                    {
+                        filledGaps[point.x, point.y] = true;
+                        gapSamples[point.x, point.y] = 1f;
+                    }
+                }
         }
 
         public bool Contains(Vector3 p, float margin = 0f)
