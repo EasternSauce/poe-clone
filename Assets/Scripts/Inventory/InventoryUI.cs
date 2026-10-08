@@ -1797,16 +1797,14 @@ private Vector2 CellSize(int w, int h)
 
                 if (hasImplicits)
                 {
-                    sb.Append("\n<b><color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">Implicit modifiers</color></b>");
-                    lineCount++;
                     AppendTooltipModifiers(sb, item, true, ref lineCount);
                 }
                 if (hasExplicits)
                 {
                     if (hasImplicits)
                     {
-                        sb.Append("\n\n<b><color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">Explicit modifiers</color></b>");
-                        lineCount += 2;
+                        sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">------------------------</color>");
+                        lineCount++;
                     }
                     AppendTooltipModifiers(sb, item, false, ref lineCount);
                 }
@@ -1851,10 +1849,13 @@ private Vector2 CellSize(int w, int h)
                 {
                     if ((m.Tier == -1) != implicits || SkillGrants.IsGrant(m.Stat) != skills)
                         continue;
-                    string tier = m.Tier > 0 ? "T" + m.Tier : m.Tier == -1 ? "Implicit" :
+                    string tier = m.Tier > 0 ? "T" + m.Tier : m.Tier == -1 ? null :
                         item.Rarity == ItemRarity.Unique ? "Unique" : "Tier unknown";
                     sb.Append("\n<color=#").Append(UiKit.Hex(skills ? UiKit.Gold : UiKit.MagicBlue)).Append(">")
-                        .Append(StatFormatter.ItemLine(m)).Append(" [").Append(tier).Append("]</color>");
+                        .Append(StatFormatter.ItemLine(m));
+                    if (tier != null)
+                        sb.Append(" [").Append(tier).Append("]");
+                    sb.Append("</color>");
                     lineCount++;
                 }
             }
