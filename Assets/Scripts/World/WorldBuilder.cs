@@ -1234,6 +1234,7 @@ namespace PoeClone.World
 
         private bool Free(Vector3 p, float radius)
         {
+            if (Shape(CurrentArea()).IsBridge(p, radius + 3f)) return false;
             foreach (Vector3 c in claimed)
             {
                 float dx = c.x - p.x;

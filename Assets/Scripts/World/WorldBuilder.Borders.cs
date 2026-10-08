@@ -33,6 +33,7 @@ namespace PoeClone.World
             if (collider == null) collider = ground.AddComponent<MeshCollider>();
             collider.sharedMesh = mesh;
             BuildLayoutWalls(area, ground.transform.position.y);
+            BuildWater(area, ground.transform.position.y);
         }
 
         private Vector3 GatePoint(int area, Vector3 direction)
@@ -99,7 +100,7 @@ namespace PoeClone.World
                     Vector3 outward = Vector3.Cross(edge.b - edge.a, Vector3.up).normalized;
                     if (shape.Contains(p + outward * 0.4f)) outward = -outward;
                     p += outward * 4.5f;
-                    if (NearGate(area, p, 12f) || shape.Contains(p, -3f)) continue;
+                    if (NearGate(area, p, 12f) || shape.Contains(p, -3f) || shape.WaterDistance(p) > -9f) continue;
                     GameObject prop;
                     if (shape.IsCave || shape.IsCliff || rng.NextDouble() < 0.3)
                     {
@@ -154,7 +155,7 @@ namespace PoeClone.World
                 {
                     float radius = name == "Houses" ? 8f : 4f;
                     props.Add((prop, radius));
-                    if (shape.Contains(prop.position, radius + 1f)) Claim(prop.position, radius);
+                    if (shape.Contains(prop.position, radius + 1f) && !shape.IsBridge(prop.position, radius + 3f)) Claim(prop.position, radius);
                 }
             }
             // Scene torches were authored beside houses/pillars. Move them with their nearest prop.
@@ -177,7 +178,7 @@ namespace PoeClone.World
             {
                 Transform prop = entry.prop;
                 Vector3 old = prop.position;
-                if (shape.Contains(old, entry.radius + 1f)) continue;
+                if (shape.Contains(old, entry.radius + 1f) && !shape.IsBridge(old, entry.radius + 3f)) continue;
                 Vector3 target = shape.NearestOpen(old, entry.radius + 2f);
                 for (int attempt = 0; attempt < 500; attempt++)
                 {

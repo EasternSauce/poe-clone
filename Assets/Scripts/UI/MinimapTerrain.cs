@@ -176,7 +176,7 @@ namespace PoeClone.UI
             return map;
         }
 
-        private enum Cell : byte { Outside, Open, Solid }
+        private enum Cell : byte { Outside, Open, Solid, Water, Bridge }
 
         private static AreaMap Bake(int area)
         {
@@ -201,6 +201,7 @@ namespace PoeClone.UI
                             hit.point.y > groundY + 0.6f)
                             c = Cell.Solid;
                     }
+                    if (shape.WaterDistance(p) >= 0f) c = shape.Contains(p) && shape.IsBridge(p) ? Cell.Bridge : Cell.Water;
                     cells[y * Resolution + x] = c;
                 }
             }
@@ -230,7 +231,11 @@ namespace PoeClone.UI
                               Mathf.PerlinNoise(seedX + x * 0.35f, seedY + y * 0.35f) * 0.3f;
                     float shade = 0.82f + 0.3f * n;
                     Color col;
-                    if (c == Cell.Solid)
+                    if (c == Cell.Water)
+                        col = (area == WorldBuilder.Frozen ? new Color(0.40f, 0.65f, 0.77f) : new Color(0.12f, 0.36f, 0.47f)) * shade;
+                    else if (c == Cell.Bridge)
+                        col = new Color(0.66f, 0.48f, 0.27f) * shade;
+                    else if (c == Cell.Solid)
                         col = solid * shade;
                     else
                         col = IsEdge(cells, x, y) ? rim : open * shade;

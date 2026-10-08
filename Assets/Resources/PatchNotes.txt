@@ -1,3 +1,8 @@
+version: 2026-10-08-rivers-lakes-and-coast
+- Added a winding river through Greenwood with three timber bridges, larger woodland lakes and smaller pools.
+- Haven now has a sandy southern beach and ocean border, plus a village pond. A river replaces part of the graveyard's southern border, with a lake among its grounds and pools in the Lost Hollows.
+- Frozen Hollow now has a frozen river with three timber crossings and icy pools. Water and ice remain blocked outside bridges; scenery leaves crossings clear, and minimaps and the layout preview show water and bridges.
+
 version: 2026-10-08-remove-ground-slivers
 - Filled tiny enclosed gaps between rooms and corridors throughout the world, removing the dark ground slivers and their rock walls. Ground, collision and minimaps use the corrected layout.
 

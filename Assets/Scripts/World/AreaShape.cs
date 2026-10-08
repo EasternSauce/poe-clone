@@ -14,6 +14,9 @@ namespace PoeClone.World
         public bool IsCave { get; }
         public bool IsCliff { get; }
         private readonly List<Region> rooms = new List<Region>();
+        public readonly List<(Vector2 center, Vector2 size)> Bridges = new List<(Vector2, Vector2)>();
+        private readonly List<Region> waters = new List<Region>();
+        private bool ocean;
         private readonly List<Region> cuts = new List<Region>();
         public readonly List<(Vector3 a, Vector3 b)> Boundary = new List<(Vector3, Vector3)>();
         private Mesh groundMesh;
@@ -65,6 +68,49 @@ namespace PoeClone.World
             return this;
         }
 
+        public AreaShape Lake(float x, float z, float rx, float rz)
+        {
+            waters.Add(new Region { a = new Vector2(x, z), radii = new Vector2(rx, rz) });
+            return this;
+        }
+
+        public AreaShape River(float width, params float[] points)
+        {
+            for (int i = 0; i + 3 < points.Length; i += 2)
+                waters.Add(new Region { a = new Vector2(points[i], points[i + 1]),
+                    b = new Vector2(points[i + 2], points[i + 3]), radii = Vector2.one * width * 0.5f, corridor = true });
+            return this;
+        }
+
+        public AreaShape Ocean() { ocean = true; return this; }
+        public bool HasWater => ocean || waters.Count > 0;
+        public bool HasOcean => ocean;
+        public float WaterDistance(Vector3 world) => WaterDistance(new Vector2(world.x - Center.x, world.z - Center.z));
+        private float WaterDistance(Vector2 p)
+        {
+            float d = ocean ? -94f + Mathf.Sin(p.x * 0.045f) * 4f - p.y : -10000f;
+            foreach (Region water in waters) d = Mathf.Max(d, water.Distance(p) + Roughness(p) * 0.4f);
+            return d;
+        }
+
+        public AreaShape Bridge(float x, float z, float length, float width)
+        {
+            Bridges.Add((new Vector2(x, z), new Vector2(length, width)));
+            return this;
+        }
+        private float BridgeDistance(Vector2 p)
+        {
+            float d = -10000f;
+            foreach (var bridge in Bridges)
+            {
+                Vector2 delta = p - bridge.center;
+                d = Mathf.Max(d, Mathf.Min(bridge.size.x * 0.5f - Mathf.Abs(delta.x), bridge.size.y * 0.5f - Mathf.Abs(delta.y)));
+            }
+            return d;
+        }
+        public bool IsBridge(Vector3 world, float margin = 0f) =>
+            BridgeDistance(new Vector2(world.x - Center.x, world.z - Center.z)) >= -margin;
+
         private float Distance(Vector2 p)
         {
             if (gapSamples == null) FillSmallGaps();
@@ -80,7 +126,7 @@ namespace PoeClone.World
             }
             // Authored exclusions remain blocked even when a room/corridor gap is filled.
             foreach (Region cut in cuts) d = Mathf.Min(d, -cut.Distance(p) + Roughness(p));
-            return d;
+            return Mathf.Min(d, Mathf.Max(-WaterDistance(p), BridgeDistance(p)));
         }
 
         private float Roughness(Vector2 p) => Mathf.Sin(p.x * 0.23f + p.y * 0.11f) *
@@ -281,6 +327,7 @@ namespace PoeClone.World
             }
             foreach (var edge in collision ? Boundary : WallContour(outward))
             {
+                if (!collision && WaterDistance((edge.a + edge.b) * 0.5f + Center) > -8f) continue;
                 int a = Join(edge.a), b = Join(edge.b);
                 Vector3 facing = normals[a] + normals[b];
                 Face(a, a + 1, b, facing);
@@ -305,7 +352,8 @@ namespace PoeClone.World
                 for (int x = 0; x <= nx; x++)
                 {
                     float distance = Distance(start + new Vector2(x * step, z * step));
-                    samples[x, z] = Mathf.Min(-distance - outward, distance + outward + width);
+                    samples[x, z] = Mathf.Min(Mathf.Min(-distance - outward, distance + outward + width),
+                        -WaterDistance(start + new Vector2(x * step, z * step)) - 8f);
                 }
             // Clip a non-overlapping grid to the solid band outside the playable outline.
             // Holes and merging room edges use the same field as the floor, with no long
@@ -355,6 +403,35 @@ namespace PoeClone.World
                     Triangle(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z]);
                 }
             return result;
+        }
+
+        // Visual fields share the exact water definition used by ground, movement and minimaps.
+        public Mesh BuildWaterMesh(bool shore = false, bool foam = false)
+        {
+            float padding = 12f;
+            Vector2 start = -Size * 0.5f - Vector2.one * padding;
+            int nx = Mathf.CeilToInt((Size.x + padding * 2f) / Cell);
+            int nz = Mathf.CeilToInt((Size.y + padding * 2f) / Cell);
+            var samples = new float[nx + 1, nz + 1];
+            for (int z = 0; z <= nz; z++)
+                for (int x = 0; x <= nx; x++)
+                {
+                    Vector2 p = start + new Vector2(x * Cell, z * Cell);
+                    float water = WaterDistance(p);
+                    samples[x, z] = shore ? Mathf.Min(Distance(p), Mathf.Min(-water, water + (ocean ? 9f : 3f))) :
+                        foam ? Mathf.Min(water, 0.9f - water) : water;
+                }
+            var vertices = new List<Vector3>();
+            var triangles = new List<int>();
+            for (int z = 0; z < nz; z++)
+                for (int x = 0; x < nx; x++)
+                {
+                    Vector3 a = new Vector3(start.x + x * Cell, 0, start.y + z * Cell);
+                    Vector3 b = a + Vector3.forward * Cell, c = b + Vector3.right * Cell, d = a + Vector3.right * Cell;
+                    Clip(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1], vertices, triangles, false);
+                    Clip(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z], vertices, triangles, false);
+                }
+            return MeshFrom(shore ? "WaterShore" : foam ? "WaterEdge" : "WaterSurface", vertices, triangles);
         }
 
         private static Mesh MeshFrom(string name, List<Vector3> vertices, List<int> triangles)

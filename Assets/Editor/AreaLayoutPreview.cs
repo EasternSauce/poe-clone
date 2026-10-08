@@ -30,7 +30,7 @@ namespace PoeClone.EditorTools
             }
             AreaShape shape = AreaLayouts.Create(area, Vector3.zero);
             EditorGUILayout.LabelField($"Bounds: {shape.Size.x} × {shape.Size.y} m | {(shape.IsCave ? "Cave" : shape.IsCliff ? "Cliffs" : "Open terrain")}");
-            EditorGUILayout.HelpBox("Colored ground = walkable, dark = inaccessible, purple = gates, blue = spawn/waystone, gold = existing boss site, orange = existing quest props. Edit AreaLayouts.cs to author rooms, routes and holes.", MessageType.Info);
+            EditorGUILayout.HelpBox("Colored ground = walkable, teal = water/ice, brown = bridges, dark = inaccessible, purple = gates, blue = spawn/waystone, gold = existing boss site, orange = existing quest props. Edit AreaLayouts.cs to author rooms, routes and holes.", MessageType.Info);
             Rect rect = GUILayoutUtility.GetAspectRect(shape.Size.x / shape.Size.y);
             GUI.DrawTexture(rect, preview, ScaleMode.StretchToFill);
             if (rect.Contains(Event.current.mousePosition))
@@ -59,7 +59,10 @@ namespace PoeClone.EditorTools
                 {
                     Vector3 p = new Vector3((x + 0.5f) / Resolution * shape.Size.x - shape.Size.x * 0.5f,
                         0, (z + 0.5f) / height * shape.Size.y - shape.Size.y * 0.5f);
-                    pixels[z * Resolution + x] = shape.Contains(p) ? open : outside;
+                    pixels[z * Resolution + x] = shape.WaterDistance(p) >= 0f ?
+                        (shape.Contains(p) && shape.IsBridge(p) ? new Color32(169, 122, 69, 255) :
+                        area == WorldBuilder.Frozen ? new Color32(102, 166, 196, 255) : new Color32(31, 92, 120, 255)) :
+                        shape.Contains(p) ? open : outside;
                 }
             texture.SetPixels32(pixels);
             Dot(texture, shape, new Vector3(0, 0, area == WorldBuilder.ActArena ? -31 : -6), Color.cyan);

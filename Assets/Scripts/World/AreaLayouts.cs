@@ -69,14 +69,18 @@ namespace PoeClone.World
                     return new AreaShape(center, new Vector2(332, 276))
                         .Room(0, 0, 98, 78).Room(-70, 26, 72, 72).Room(68, -20, 80, 68)
                         .Room(-20, -78, 66, 44).Room(42, 70, 78, 50)
-                        .Exclude(-58, 55, 20, 15).Exclude(90, -42, 18, 15);
+                        .Exclude(90, -42, 18, 15)
+                        .Lake(-58, 55, 20, 15).Ocean();
                 case WorldBuilder.Greenwood:
                     return new AreaShape(center, new Vector2(340, 284))
                         .Room(-4, -5, 102, 86).Room(-83, -12, 68, 65).Room(82, 8, 70, 64)
                         .Room(-50, 73, 76, 52).Room(40, -75, 80, 49)
                         .Route(24, -66, 54, -118, 90, -137, 65)
                         .Route(22, 82, 8, 129, 52, 140, 89)
-                        .Exclude(-37, 35, 22, 20).Exclude(58, -38, 22, 16).Exclude(72, 58, 23, 23);
+                        .Exclude(-37, 35, 22, 20)
+                        .Lake(58, -38, 22, 16).Lake(72, 58, 23, 23)
+                        .River(12, 24, -152, 24, -65, 24, 0, 8, 50, -6, 100, -18, 152)
+                        .Bridge(24, -65, 26, 8).Bridge(24, 0, 26, 9).Bridge(8, 50, 28, 8);
                 case WorldBuilder.Graveyard:
                     return new AreaShape(center, new Vector2(352, 276))
                         .Room(0, 0, 64, 50).Room(-91, -50, 46, 44).Room(87, -46, 47, 46)
@@ -84,7 +88,8 @@ namespace PoeClone.World
                         .Route(26, -124, 0, -78, 0, 0, 0, 80, 0, 124, 0)
                         .Route(24, -78, 0, -91, -50, -2, -99, 87, -46, 80, 0)
                         .Route(24, -78, 0, -76, 85, -8, 65, 62, 82, 80, 0)
-                        .Exclude(-30, -48, 23, 18).Exclude(36, -46, 22, 18)
+                        .Lake(-30, -48, 23, 18).Exclude(36, -46, 22, 18)
+                        .River(18, -184, -111, -115, -123, -20, -132, 70, -126, 184, -115)
                         .Exclude(-10, 29, 19, 10).Exclude(27, 80, 12, 18);
                 case WorldBuilder.Ruins:
                     return new AreaShape(center, new Vector2(340, 284), cliff: true)
@@ -107,7 +112,10 @@ namespace PoeClone.World
                         .Route(14, -38, 42, -89, 57, -109, 99)
                         .Route(14, 77, -28, 115, -4, 124, -48)
                         .Route(14, 61, 37, 115, 79, 95, 114)
-                        .Route(14, -61, -89, -106, -117);
+                        .Route(14, -61, -89, -106, -117)
+                        .River(9, 26, -174, 26, -110, 26, -93, 32, -52, 26, 16, 20, 64, 26, 87, 26, 112, 38, 174)
+                        .Bridge(26, -93, 22, 7).Bridge(26, 16, 22, 8).Bridge(26, 87, 22, 7)
+                        .Lake(30, 0, 9, 12).Lake(-5, 65, 17, 12).Lake(94, -57, 10, 8);
                 case WorldBuilder.Cave:
                     return new AreaShape(center, new Vector2(340, 284), cave: true)
                         .Room(-126, -74, 25, 24).Room(0, 0, 24, 23)
@@ -124,7 +132,8 @@ namespace PoeClone.World
                         .Route(12, 37, 19, 75, 0, 112, 18, 135, -10)
                         .Route(12, 47, -64, 33, -109, 70, -120)
                         .Route(12, 91, -45, 124, -60, 138, -95)
-                        .Route(12, 79, 58, 101, 33, 132, 40);
+                        .Route(12, 79, 58, 101, 33, 132, 40)
+                        .Lake(0, 47, 19, 13).Lake(-110, 17, 9, 7);
                 default:
                     return new AreaShape(center, new Vector2(124, 92), cave: true).Room(0, 0, 59, 43);
             }
