@@ -1,3 +1,6 @@
+version: 2026-10-08-loot-simulator-inventory
+- Loot Simulator results now fill a large, scrollable inventory instead of paged square cards. Items occupy their actual inventory width and height, pack without overlapping, and retain rarity frames and hover tooltips. All rolls stay available, including batches of 1000 items.
+
 version: 2026-10-08-angled-weapons-and-sash-icons
 - All weapon icons now lean diagonally, with angles fitted to their inventory dimensions. Rebuilding icons preserves the angle without repeatedly rotating them.
 - Cloth Sash and its higher-tier variants now use the painted belt shape and detailing of the other belt icons, with pale cloth colours.

@@ -13,16 +13,25 @@ namespace PoeClone.EditorTools
     /// <summary>Preview-only loot rolls using the live game's base and modifier tables.</summary>
     public class LootSimulatorUI : MonoBehaviour
     {
+        private sealed class ItemHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+        {
+            public Action<Vector2> Enter;
+            public Action Exit;
+            public void OnPointerEnter(PointerEventData e) => Enter?.Invoke(e.position);
+            public void OnPointerExit(PointerEventData e) => Exit?.Invoke();
+        }
         private sealed class Filter { public ItemType Type; public WeaponType Weapon; public bool Selected = true; public Text Label; public string Name; }
         private readonly List<Filter> filters = new List<Filter>();
         private readonly List<ItemData> items = new List<ItemData>();
         private readonly System.Random rng = new System.Random();
         private GameObject root;
         private RectTransform grid, tip;
-        private Text tipText, status, pages;
+        private Text tipText, status, inventorySummary;
+        private ScrollRect inventoryScroll;
         private InputField level, count;
-        private int page;
-        private const int PageSize = 48;
+        private const int GridColumns = 16;
+        private const int MinimumRows = 12;
+        private const float CellSize = 44f;
         public bool IsOpen => root != null && root.activeSelf;
 
         public void Open()
@@ -63,7 +72,7 @@ namespace PoeClone.EditorTools
             RectTransform pr = panel.rectTransform; pr.anchorMin = pr.anchorMax = new Vector2(.5f,.5f); pr.sizeDelta = new Vector2(1140,830);
             TouchMode.AddBlocker(pr); UiKit.AddOutline(panel,UiKit.BorderColor,2);
             Label(pr,"Title","LOOT SIMULATOR",new Vector2(24,-14),new Vector2(900,42),28);
-            Label(pr,"Hint","Preview loot only. Hover an icon for its item tooltip. T1 is the strongest tier.",new Vector2(24,-60),new Vector2(1080,32));
+            Label(pr,"Hint","Preview loot only. Items use their inventory sizes. Scroll for more; hover for details. T1 is strongest.",new Vector2(24,-60),new Vector2(1080,32));
             UiKit.CloseButton(pr,Close);
             Label(pr,"AreaLabel","Area level (1?100)",new Vector2(24,-110),new Vector2(190,30));
             level = Field(pr,"AreaLevel","1",new Vector2(24,-145));
@@ -82,16 +91,77 @@ namespace PoeClone.EditorTools
                 }
                 else AddFilter(pr,type,WeaponType.Unarmed,Human(type.ToString()));
             }
-            grid = UiKit.NewRect("Results",pr); UiKit.TopLeft(grid,new Vector2(390,-205),new Vector2(720,550));
-            Button(pr,"Previous",new Vector2(390,-770),new Vector2(120,36),() => { page = Mathf.Max(0,page-1); Render(); });
-            Button(pr,"Next",new Vector2(970,-770),new Vector2(120,36),() => { page = Mathf.Min(Mathf.Max(0,(items.Count-1)/PageSize),page+1); Render(); });
-            pages = Label(pr,"Pages","",new Vector2(530,-770),new Vector2(420,36));
+            BuildInventory(pr);
+            inventorySummary = Label(pr,"InventorySummary","No items yet",new Vector2(390,-770),new Vector2(720,36));
             status = Label(pr,"Status","Select item types, then randomize.",new Vector2(24,-655),new Vector2(350,100)); status.horizontalOverflow = HorizontalWrapMode.Wrap;
             Image tipBg = UiKit.NewImage("Tooltip",canvas.transform,new Color(.07f,.07f,.08f,.98f)); tip = tipBg.rectTransform;
             tip.anchorMin = tip.anchorMax = Vector2.zero; tip.pivot = new Vector2(0,1);
             tipText = UiKit.NewText("Text",tip,"",17,UiKit.TextColor,TextAnchor.UpperLeft); UiKit.Stretch(tipText.rectTransform,10);
             tipBg.raycastTarget = false; tipText.raycastTarget = false; tip.gameObject.SetActive(false);
+            Render();
         }
+        private void BuildInventory(Transform parent)
+        {
+            RectTransform area = UiKit.NewRect("Inventory",parent);
+            UiKit.TopLeft(area,new Vector2(390,-205),new Vector2(720,MinimumRows*CellSize));
+            Image viewport = UiKit.NewImage("Viewport",area,new Color(.10f,.11f,.15f));
+            UiKit.TopLeft(viewport.rectTransform,Vector2.zero,new Vector2(GridColumns*CellSize,MinimumRows*CellSize));
+            viewport.raycastTarget = true;
+            viewport.gameObject.AddComponent<RectMask2D>();
+            grid = UiKit.NewRect("Results",viewport.transform);
+            UiKit.TopLeft(grid,Vector2.zero,new Vector2(GridColumns*CellSize,MinimumRows*CellSize));
+
+            inventoryScroll = area.gameObject.AddComponent<ScrollRect>();
+            inventoryScroll.viewport = viewport.rectTransform;
+            inventoryScroll.content = grid;
+            inventoryScroll.horizontal = false;
+            inventoryScroll.movementType = ScrollRect.MovementType.Clamped;
+            inventoryScroll.scrollSensitivity = CellSize*3;
+            inventoryScroll.onValueChanged.AddListener(_ => tip.gameObject.SetActive(false));
+
+            Image track = UiKit.NewImage("Scrollbar",area,new Color(.04f,.04f,.05f));
+            UiKit.TopLeft(track.rectTransform,new Vector2(GridColumns*CellSize+3,0),new Vector2(13,MinimumRows*CellSize));
+            RectTransform sliding = UiKit.NewRect("SlidingArea",track.transform);
+            UiKit.Stretch(sliding,2);
+            Image handle = UiKit.NewImage("Handle",sliding,UiKit.BorderColor);
+            UiKit.Stretch(handle.rectTransform,0);
+            Scrollbar scrollbar = track.gameObject.AddComponent<Scrollbar>();
+            scrollbar.targetGraphic = handle;
+            scrollbar.handleRect = handle.rectTransform;
+            scrollbar.direction = Scrollbar.Direction.BottomToTop;
+            inventoryScroll.verticalScrollbar = scrollbar;
+        }
+
+        // First-fit packing keeps every roll separate and avoids overlap scans against all
+        // previous items when previewing up to 1000 drops.
+        private List<PlacedItem> PackItems(out int rows)
+        {
+            int capacity = MinimumRows;
+            foreach (ItemData item in items) capacity += item.Height;
+            var occupied = new bool[GridColumns,capacity];
+            var placed = new List<PlacedItem>(items.Count);
+            rows = MinimumRows;
+            foreach (ItemData item in items)
+            {
+                bool found = false;
+                for (int y = 0; y <= capacity-item.Height && !found; y++)
+                    for (int x = 0; x <= GridColumns-item.Width && !found; x++)
+                    {
+                        bool fits = true;
+                        for (int dy = 0; dy < item.Height && fits; dy++)
+                            for (int dx = 0; dx < item.Width; dx++)
+                                if (occupied[x+dx,y+dy]) { fits = false; break; }
+                        if (!fits) continue;
+                        for (int dy = 0; dy < item.Height; dy++)
+                            for (int dx = 0; dx < item.Width; dx++) occupied[x+dx,y+dy] = true;
+                        placed.Add(new PlacedItem(item,x,y));
+                        rows = Mathf.Max(rows,y+item.Height);
+                        found = true;
+                    }
+            }
+            return placed;
+        }
+
         private void AddFilter(Transform parent, ItemType type, WeaponType weapon, string name)
         {
             int index = filters.Count;
@@ -122,26 +192,41 @@ namespace PoeClone.EditorTools
                 ItemData item = ItemGenerator.Generate(rng,bases[pick],ilvl,ItemGenerator.RollRarity(rng)); items.Add(item);
                 if (item.Rarity == ItemRarity.Normal) normal++; else if (item.Rarity == ItemRarity.Magic) magic++; else rare++;
             }
-            page = 0; status.text = $"{amount} items ? area level {ilvl}\n{normal} Normal / {magic} Magic / {rare} Rare"; Render();
+            status.text = $"{amount} items ? area level {ilvl}\n{normal} Normal / {magic} Magic / {rare} Rare"; Render();
         }
         private void Render()
         {
             tip.gameObject.SetActive(false);
             foreach (Transform child in grid) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
-            int start = page*PageSize, end = Mathf.Min(items.Count,start+PageSize);
-            for (int i = start; i < end; i++)
+            List<PlacedItem> placed = PackItems(out int rows);
+            grid.sizeDelta = new Vector2(GridColumns*CellSize,rows*CellSize);
+            Color lineColor = new Color(.30f,.32f,.40f);
+            for (int x = 0; x <= GridColumns; x++)
             {
-                ItemData item = items[i]; int cell = i-start;
-                Image frame = UiKit.NewImage("Item_"+i,grid,UiKit.RarityColor(item.Rarity)); frame.raycastTarget = true;
-                UiKit.TopLeft(frame.rectTransform,new Vector2((cell%8)*90,-(cell/8)*90),new Vector2(84,84));
+                Image line = UiKit.NewImage("Column"+x,grid,lineColor); line.raycastTarget = false;
+                UiKit.TopLeft(line.rectTransform,new Vector2(Mathf.Min(x*CellSize,grid.sizeDelta.x-1),0),new Vector2(1,grid.sizeDelta.y));
+            }
+            for (int y = 0; y <= rows; y++)
+            {
+                Image line = UiKit.NewImage("Row"+y,grid,lineColor); line.raycastTarget = false;
+                UiKit.TopLeft(line.rectTransform,new Vector2(0,-Mathf.Min(y*CellSize,grid.sizeDelta.y-1)),new Vector2(grid.sizeDelta.x,1));
+            }
+            foreach (PlacedItem p in placed)
+            {
+                ItemData item = p.Item;
+                Image frame = UiKit.NewImage("Item_"+item.Name,grid,UiKit.RarityColor(item.Rarity)); frame.raycastTarget = true;
+                UiKit.TopLeft(frame.rectTransform,new Vector2(p.X*CellSize+1,-p.Y*CellSize-1),new Vector2(item.Width*CellSize-2,item.Height*CellSize-2));
                 Image face = UiKit.NewImage("Face",frame.transform,new Color(.06f,.06f,.07f)); UiKit.Stretch(face.rectTransform,2);
                 Image icon = UiKit.NewImage("Icon",frame.transform,item.IconTint); icon.sprite = ItemArt.Icon(item); icon.preserveAspect = true; UiKit.Stretch(icon.rectTransform,5);
                 face.raycastTarget = icon.raycastTarget = false;
-                var trigger = frame.gameObject.AddComponent<EventTrigger>();
-                var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter }; enter.callback.AddListener(e => ShowTip(item,((PointerEventData)e).position)); trigger.triggers.Add(enter);
-                var exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit }; exit.callback.AddListener(e => tip.gameObject.SetActive(false)); trigger.triggers.Add(exit);
+                // Only handle hover so wheel and drag events reach the parent ScrollRect.
+                var hover = frame.gameObject.AddComponent<ItemHover>();
+                hover.Enter = at => ShowTip(item,at);
+                hover.Exit = () => tip.gameObject.SetActive(false);
             }
-            pages.text = items.Count == 0 ? "No items yet" : $"{start+1}?{end} of {items.Count} ? page {page+1}/{(items.Count+PageSize-1)/PageSize}";
+            inventoryScroll.StopMovement();
+            inventoryScroll.verticalNormalizedPosition = 1f;
+            inventorySummary.text = items.Count == 0 ? "No items yet" : $"{items.Count} items in a {GridColumns} x {rows} inventory - scroll to browse";
         }
         private void Update()
         {
