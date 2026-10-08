@@ -36,7 +36,8 @@ namespace PoeClone.World
 
         private void BuildSanctuaryLair(Transform arena, Vector3 c)
         {
-            // Keep the middle and boss spawn clear. All dressing is visual only, including the gate.
+            // Tall scenery stays at the sides; low floor remains are scattered throughout the arena.
+            // All dressing is visual only, including the gate.
             Transform dressing = Holder(arena, "ShepherdLair", c, Quaternion.identity);
             float[] offsets = { -27f, -15f, -3f, 10f, 23f, 31f };
             float[] heights = { 7.2f, 9.8f, 11.4f, 10.2f, 8.6f, 6.1f };
@@ -79,6 +80,111 @@ namespace PoeClone.World
             LocalBox(gate, new Vector3(0f, 7.5f, 0f), new Vector3(10f, 1f, 1.6f), kit.Mat("TombstoneDark"), false);
             LocalBox(gate, new Vector3(0f, 0.025f, 0f), new Vector3(7.2f, 0.05f, 3f), kit.Mat("TanDark"), false);
             SanctuarySkull(gate, new Vector3(0f, 7.65f, 0.92f), 0.72f);
+            ScatterSanctuaryRemains(dressing, c);
+        }
+
+        private void ScatterSanctuaryRemains(Transform parent, Vector3 c)
+        {
+            // A separate fixed seed keeps the lair identical for every client without changing world RNG.
+            var random = new System.Random(51873);
+            var placed = new System.Collections.Generic.List<Vector2>();
+            for (int attempt = 0; attempt < 800 && placed.Count < 66; attempt++)
+            {
+                var p = new Vector2((float)random.NextDouble() * 104f - 52f,
+                    (float)random.NextDouble() * 70f - 35f);
+                // Leave the arrival and exact boss spawn readable, but dress the rest of the fighting floor.
+                if ((p - new Vector2(0f, -31f)).sqrMagnitude < 36f ||
+                    (p - new Vector2(0f, 14f)).sqrMagnitude < 16f) continue;
+                bool crowded = false;
+                foreach (Vector2 other in placed)
+                    if ((p - other).sqrMagnitude < 36f) { crowded = true; break; }
+                if (crowded) continue;
+                int variant = placed.Count % 6;
+                placed.Add(p);
+                Vector3 at = c + new Vector3(p.x, 0f, p.y);
+                float yaw = (float)random.NextDouble() * 360f;
+                if (variant == 3)
+                {
+                    SanctuaryOffering(parent, at, yaw, placed.Count);
+                    continue;
+                }
+                Transform remains = Holder(parent, variant == 0 ? "DiscardedCorpse" :
+                    variant == 1 ? "ScatteredSkeleton" : "LairFloorRemains", at, Quaternion.Euler(0f, yaw, 0f));
+                remains.localScale = Vector3.one * (0.8f + (float)random.NextDouble() * 0.35f);
+                if (variant < 2)
+                    SanctuaryBody(remains, variant == 1, placed.Count);
+                else if (variant == 2)
+                {
+                    SanctuarySkull(remains, new Vector3(-0.3f, 0.21f, 0.1f), 0.24f);
+                    for (int bone = 0; bone < 4; bone++)
+                    {
+                        Vector3 start = new Vector3((float)random.NextDouble() * 1.4f - 0.7f, 0.09f,
+                            (float)random.NextDouble() * 1.4f - 0.7f);
+                        Vector3 end = start + Quaternion.Euler(0f, (float)random.NextDouble() * 360f, 0f) * Vector3.forward * 0.7f;
+                        SanctuaryLimb(remains, start, end, 0.065f, kit.Mat("Bone"));
+                    }
+                }
+                else if (variant == 4)
+                {
+                    SanctuaryCurve(remains, "BrokenAntler", new Vector3(-0.9f, 0.12f, -0.4f),
+                        new Vector3(-0.6f, 0.3f, 0.1f), new Vector3(0.4f, 0.22f, 0.6f),
+                        new Vector3(1f, 0.1f, 0.2f), 0.16f, kit.Mat("Bone"));
+                    SanctuaryLimb(remains, new Vector3(-0.25f, 0.2f, 0.2f), new Vector3(-0.5f, 0.12f, 0.85f), 0.08f, kit.Mat("Bone"));
+                    SanctuaryLimb(remains, new Vector3(0.2f, 0.2f, 0.4f), new Vector3(0.6f, 0.12f, 1f), 0.065f, kit.Mat("Bone"));
+                }
+                else
+                {
+                    // A flattened discarded shroud with a fallen votive candle.
+                    LocalBall(remains, new Vector3(0f, 0.045f, 0f), 1f, kit.Mat("Cloth"))
+                        .transform.localScale = new Vector3(1.1f, 0.09f, 1.8f);
+                    LocalBall(remains, new Vector3(0.3f, 0.075f, -0.3f), 1f, kit.Mat("Leather"))
+                        .transform.localScale = new Vector3(0.65f, 0.1f, 0.8f);
+                    SanctuaryLimb(remains, new Vector3(0.7f, 0.09f, 0.3f), new Vector3(1f, 0.09f, 0.6f), 0.085f, kit.Mat("Candle"));
+                }
+            }
+        }
+
+        private void SanctuaryBody(Transform body, bool skeleton, int variant)
+        {
+            Material material = kit.Mat(skeleton ? "Bone" : "Cloth");
+            float armZ = variant % 2 == 0 ? 0.55f : -0.1f;
+            if (skeleton)
+            {
+                SanctuarySkull(body, new Vector3(0f, 0.23f, 1.05f), 0.24f);
+                SanctuaryLimb(body, new Vector3(0f, 0.12f, -0.35f), new Vector3(0f, 0.17f, 0.7f), 0.065f, material);
+                for (int rib = 0; rib < 3; rib++)
+                    for (int side = -1; side <= 1; side += 2)
+                    {
+                        float z = 0.2f + rib * 0.16f;
+                        SanctuaryCurve(body, "SmallRib", new Vector3(0f, 0.15f, z),
+                            new Vector3(side * 0.25f, 0.34f, z + 0.04f), new Vector3(side * 0.45f, 0.23f, z - 0.02f),
+                            new Vector3(side * 0.32f, 0.09f, z - 0.15f), 0.045f, material);
+                    }
+            }
+            else
+            {
+                LocalBall(body, new Vector3(0f, 0.17f, 0.3f), 1f, material)
+                    .transform.localScale = new Vector3(0.7f, 0.34f, 1.1f);
+                LocalBall(body, new Vector3(0.08f, 0.2f, 1.03f), 0.22f, kit.Mat("TanDark"));
+                LocalBall(body, new Vector3(0f, 0.15f, -0.32f), 1f, kit.Mat("Leather"))
+                    .transform.localScale = new Vector3(0.6f, 0.3f, 0.45f);
+            }
+            float thickness = skeleton ? 0.07f : 0.13f;
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Vector3 elbow = new Vector3(side * 0.62f, 0.12f, armZ);
+                SanctuaryLimb(body, new Vector3(side * 0.25f, 0.17f, 0.55f), elbow, thickness, material);
+                SanctuaryLimb(body, elbow, new Vector3(side * 0.88f, 0.09f, armZ - side * 0.35f), thickness * 0.8f, material);
+                Vector3 knee = new Vector3(side * 0.3f, 0.12f, -0.9f);
+                SanctuaryLimb(body, new Vector3(side * 0.18f, 0.13f, -0.35f), knee, thickness, material);
+                SanctuaryLimb(body, knee, new Vector3(side * 0.48f, 0.09f, -1.5f + side * 0.15f), thickness * 0.85f, material);
+            }
+        }
+
+        private void SanctuaryLimb(Transform parent, Vector3 start, Vector3 end, float radius, Material material)
+        {
+            SanctuaryCurve(parent, "FallenFragment", start, Vector3.Lerp(start, end, 0.33f) + Vector3.up * 0.04f,
+                Vector3.Lerp(start, end, 0.67f) + Vector3.up * 0.04f, end, radius, material);
         }
 
         private void SanctuaryOffering(Transform parent, Vector3 at, float yaw, int variant)
@@ -127,7 +233,8 @@ namespace PoeClone.World
                 float t = ring / (float)rings, u = 1f - t;
                 Vector3 center = u * u * u * a + 3f * u * u * t * b + 3f * u * t * t * c + t * t * t * d;
                 Vector3 tangent = (3f * u * u * (b - a) + 6f * u * t * (c - b) + 3f * t * t * (d - c)).normalized;
-                Vector3 normal = Vector3.Cross(tangent, Vector3.forward).normalized;
+                Vector3 reference = Mathf.Abs(Vector3.Dot(tangent, Vector3.forward)) > 0.95f ? Vector3.up : Vector3.forward;
+                Vector3 normal = Vector3.Cross(tangent, reference).normalized;
                 Vector3 binormal = Vector3.Cross(tangent, normal).normalized;
                 float width = radius * Mathf.Lerp(1f, 0.045f, Mathf.Pow(t, 1.35f)) * (1f + 0.045f * Mathf.Sin(t * 19f));
                 for (int side = 0; side < sides; side++)

@@ -1,3 +1,6 @@
+version: 2026-10-08-sanctuary-scattered-remains
+- Scattered small corpses, skeletons, loose bones, broken antlers, shed hides, discarded shrouds and votive candles across the whole Shed Sanctuary floor, including the fighting area. All remains are low and collider-free.
+
 version: 2026-10-08-shed-sanctuary-lair
 - Reworked the Shed Sanctuary into the Shepherd's lair with continuous curved, tapered bones emerging at varied angles in diagonal rows along both sides.
 - Added a visible stone-and-antler gate inside the arena, with small skull offerings, curled shed hides and candles around the edges. All new scenery is collider-free, and the raised rear platform was removed to keep the fighting space open.
