@@ -1,3 +1,6 @@
+version: 2026-10-08-critical-strike-modifier-wording
+- Critical strike chance modifiers now say Critical Strike Chance instead of Attack Critical Strike Chance.
+
 version: 2026-10-08-implicit-modifier-sections
 - Item tooltips and Loot Simulator hover previews now list implicit modifiers above the other modifiers, separated by a solid line without section headings or Implicit tags. Granted skills retain their gold highlight and rolled modifier tier labels remain visible.
 

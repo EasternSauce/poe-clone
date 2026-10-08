@@ -630,7 +630,7 @@ namespace PoeClone.Inventory
                 case StatType.IgniteChance: return "Chance to Ignite";
                 case StatType.ShockChance: return "Chance to Shock";
                 case StatType.DamageVsChilled: return "Damage vs Chilled";
-                case StatType.CriticalChance: return "Attack Critical Strike Chance";
+                case StatType.CriticalChance: return "Critical Strike Chance";
                 case StatType.CriticalMultiplier: return "Critical Multiplier";
                 case StatType.AttackDamage: return "Attack Damage";
                 case StatType.BowDamage: return "Bow Damage";
@@ -825,7 +825,7 @@ namespace PoeClone.Inventory
                 case StatType.IgniteChance: return n + "% chance to Ignite with Fire hits (60% of base Fire damage over 3s, scaled by Fire and Damage over Time bonuses)";
                 case StatType.ShockChance: return n + "% chance to Shock with Lightning hits (shocked enemies take 25% more damage)";
                 case StatType.DamageVsChilled: return Increased(m, "Damage against Chilled enemies");
-                case StatType.CriticalChance: return Increased(m, "Attack Critical Strike Chance");
+                case StatType.CriticalChance: return Increased(m, "Critical Strike Chance");
                 case StatType.CriticalMultiplier: return sign + n + "% to Critical Strike Multiplier";
                 case StatType.AttackDamage: return Increased(m, "Attack Damage");
                 case StatType.BowDamage: return Increased(m, "Bow Damage");
