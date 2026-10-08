@@ -1,3 +1,9 @@
+version: 2026-10-08-mobile-melee-lock-range
+- Mobile basic melee lock-on now searches 25% beyond the weapon's melee reach, including Melee Range bonuses. The 75-degree aim cone on either side and center-first selection remain; actual attack damage still requires normal weapon reach.
+
+version: 2026-10-08-stronger-mobile-melee-lock
+- Widened mobile basic melee lock-on to 75 degrees either side of the chosen direction so aiming corrections are easier to notice. Targets must still be within weapon reach; enemies behind the chosen direction cannot be selected, and the target closest to the cone's center takes priority.
+
 version: 2026-10-08-mobile-running-melee-aim
 - Mobile movement always runs; removed the Run toggle.
 - Mobile basic melee attacks assist aiming within a 60-degree cone centered on the chosen direction. Only enemies within weapon reach qualify, and the enemy closest to the cone's center takes priority over nearer enemies. With no valid target, attacks keep the chosen direction.

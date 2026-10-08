@@ -26,7 +26,7 @@ namespace PoeClone.Player
     /// (<see cref="VirtualInput.Aim"/>, drawn by TouchControlsUI next to the movement stick):
     /// holding it off-centre swings/shoots repeatedly towards wherever it points, exactly like
     /// holding the mouse button down while pointing it. Basic melee attacks assist that aim by
-    /// selecting a reachable enemy within 30 degrees of the stick, preferring the smallest angle.
+    /// selecting a reachable enemy within 75 degrees of the stick, preferring the smallest angle.
     ///
     /// A bow shoots instead (<see cref="PlayerArrow"/>, no ammo); its "reach" is how far arrows fly,
     /// so the same aiming and highlighting work for it unchanged. A staff casts its spell instead
@@ -42,8 +42,9 @@ namespace PoeClone.Player
         [Tooltip("Half-angle, in degrees, of the forward cone a swing needs to reach a target in.")]
         [SerializeField] private float coneHalfAngle = 35f;
 
-        // Aim assistance stays narrower than the weapon's damage cone, even for wide sweeps.
-        private const float TouchMeleeAimHalfAngle = 30f;
+        // Deliberately strong assistance for tuning, while excluding enemies behind the aim.
+        private const float TouchMeleeAimHalfAngle = 75f;
+        private const float TouchMeleeAimRangeMultiplier = 1.25f;
         private Vector3 touchAttackDirection;
 
         private PlayerStats stats;
@@ -562,8 +563,8 @@ namespace PoeClone.Player
             if (pickedDirection.sqrMagnitude < 0.0001f)
                 return null;
 
-            // Use the actual melee reach, including range bonuses, even when a staff falls
-            // back to a basic blow because its spell cannot be paid for.
+            // Start from actual melee reach, including range bonuses and staff basic blows.
+            // Target acquisition has 25% extra range; PerformHit still uses actual damage reach.
             float range = MeleeReach(CurrentWeaponType());
             EnemyHealth best = null;
             float bestAngle = float.MaxValue;
@@ -573,7 +574,7 @@ namespace PoeClone.Player
                     continue;
                 Vector3 offset = enemy.transform.position - transform.position;
                 offset.y = 0f;
-                float reach = DamageableReach(enemy, range);
+                float reach = DamageableReach(enemy, range) * TouchMeleeAimRangeMultiplier;
                 if (offset.sqrMagnitude > reach * reach || offset.sqrMagnitude < 0.000001f)
                     continue;
                 float angle = Vector3.Angle(pickedDirection, offset);
