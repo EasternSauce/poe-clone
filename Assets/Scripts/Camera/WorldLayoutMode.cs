@@ -78,7 +78,7 @@ namespace PoeClone.CameraSystem
             behaviour.enabled = false;
         }
 
-        public void Close()
+        private void Close()
         {
             if (!active) return;
             active = false;
@@ -100,6 +100,15 @@ namespace PoeClone.CameraSystem
         }
 
         private void OnDisable() => Close();
+
+        private void QuitPreview()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
 
         public void FocusArea(int area)
         {
@@ -161,12 +170,10 @@ namespace PoeClone.CameraSystem
         private void Update()
         {
             var keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.f8Key.wasPressedThisFrame)
-            { if (active) Close(); else Enter(); return; }
             if (!active) return;
             if (keyboard != null)
             {
-                if (keyboard.escapeKey.wasPressedThisFrame) { Close(); return; }
+                if (keyboard.escapeKey.wasPressedThisFrame) { QuitPreview(); return; }
                 if (keyboard.fKey.wasPressedThisFrame) FitWorld();
                 if (keyboard.tKey.wasPressedThisFrame) { angled = !angled; ApplyCamera(); }
                 Vector3 movement = new Vector3(
@@ -215,14 +222,14 @@ namespace PoeClone.CameraSystem
             int columns = Mathf.Max(1, Mathf.FloorToInt((width - 16) / 145));
             int rows = Mathf.CeilToInt(WorldBuilder.AreaNames.Length / (float)columns);
             toolbar = new Rect(8, 8, width, 98 + rows * 28);
-            GUI.Box(toolbar, "Rendered World Layouts — gameplay paused");
+            GUI.Box(toolbar, "Rendered World Layout Preview");
             GUILayout.BeginArea(new Rect(16, 34, width - 16, toolbar.height - 26));
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Fit World (F)")) FitWorld();
             if (GUILayout.Button(angled ? "Top-down (T)" : "Angled view (T)")) { angled = !angled; ApplyCamera(); }
             if (GUILayout.Button("−")) { zoom = Mathf.Min(2500, zoom * 1.25f); ApplyCamera(); }
             if (GUILayout.Button("+")) { zoom = Mathf.Max(4, zoom / 1.25f); ApplyCamera(); }
-            if (GUILayout.Button("Return to game (F8 / Esc)")) Close();
+            if (GUILayout.Button("Close preview (Esc)")) QuitPreview();
             GUILayout.EndHorizontal();
             int area = GUILayout.SelectionGrid(-1, WorldBuilder.AreaNames, columns, GUILayout.Height(rows * 28));
             if (area >= 0) FocusArea(area);

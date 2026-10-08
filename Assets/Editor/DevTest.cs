@@ -129,6 +129,7 @@ namespace PoeClone.EditorTools
                 worldLayoutServerDeadline = EditorApplication.timeSinceStartup + 15;
                 return "Starting local server on 8099; rendered world startup pending";
             }
+            if (!WorldLayoutPreviewSession.Prepare()) return "Could not prepare rendered world preview scene";
             string result = QuickStart(sandbox: false);
             quickWorldLayouts = true;
             return result;
