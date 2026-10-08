@@ -50,6 +50,22 @@ namespace PoeClone.World
             }
         }
 
+        // Authored per entrance: show the opening from gameplay (yaw 45) and the
+        // angled layout preview (yaw 0), while respecting each approach direction.
+        public static float GateYaw(int area, int destination)
+        {
+            switch (area)
+            {
+                case WorldBuilder.Haven: return 225f;
+                case WorldBuilder.Greenwood: return destination == WorldBuilder.Haven ? 40f : 235f;
+                case WorldBuilder.Graveyard: return destination == WorldBuilder.Cave ? 55f : 215f;
+                case WorldBuilder.Ruins: return destination == WorldBuilder.Graveyard ? 30f : 180f;
+                case WorldBuilder.Frozen: return 20f;
+                case WorldBuilder.Cave: return destination == WorldBuilder.Greenwood ? 45f : 220f;
+                default: return 0f;
+            }
+        }
+
         public static Vector3 BossLocal(int area)
         {
             switch (area)

@@ -1,3 +1,6 @@
+version: 2026-10-08-readable-gate-angles
+- Angled area gates individually to reveal their openings from the game camera and angled world preview. Each entrance keeps its own orientation suited to its approach.
+
 version: 2026-10-08-clean-water-border-joins
 - Removed stray rock-wall fragments at river and lake joins by matching walls to the water surface outline. Closed the exposed ends of rock and ice borders, tapered rims into shores to remove sharp ledges and slivers, and aligned wall shading with their rendered contours.
 

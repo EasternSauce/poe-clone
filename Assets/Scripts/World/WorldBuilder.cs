@@ -777,10 +777,8 @@ namespace PoeClone.World
             GameObject gate = Instantiate(gateTemplate, root);
             gate.name = "Gate_" + AreaNames[from] + "_to_" + AreaNames[to];
             gate.transform.position = new Vector3(position.x, gateTemplate.transform.position.y, position.z);
-            // Face into the area, so you walk through it heading out.
-            Vector3 inward = Centers[from] - position;
-            inward.y = 0f;
-            gate.transform.rotation = Quaternion.LookRotation(inward.sqrMagnitude > 0.01f ? inward : Vector3.forward);
+            // Each entrance has its own readable angle; rotate the frame and trigger together.
+            gate.transform.rotation = Quaternion.Euler(0f, AreaLayouts.GateYaw(from, to), 0f);
 
             AreaGate g = gate.GetComponent<AreaGate>();
             g.fromAreaIndex = from;
