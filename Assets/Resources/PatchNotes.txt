@@ -1,3 +1,6 @@
+version: 2026-10-08-six-enemy-spawn-rarity
+- Reduced the area spawn weights of Briarbound, Grave Siren, Rime Stalker, Cinder Penitent, Hollowmaw and Barrow Castellan to half the most common local enemy weight.
+
 version: 2026-10-08-editor-menu-cleanup
 - Removed Bow Grip Demo and Area Layout Preview from the Unity editor menu. Loot Simulator and Rendered World Layouts now appear directly under PoeClone beside Item Modifier Editor and Passive Tree Positions Editor.
 
