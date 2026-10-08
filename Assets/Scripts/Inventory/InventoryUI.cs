@@ -1768,16 +1768,16 @@ private Vector2 CellSize(int w, int h)
                 lineCount += 3;
             }
 
-            // Which hands it takes, for the gear where that limits what else can be worn.
+            // Concise handedness labels for equipment.
             string handNote = null;
             if (item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Bow)
-                handNote = "Two-handed: no shield";
+                handNote = "Two-handed";
             else if (SlotRules.IsTwoHanded(item))
-                handNote = "Two-handed: nothing in the off hand";
+                handNote = "Two-handed";
             else if (item.Type == ItemType.Quiver)
-                handNote = "Off hand, worn with a bow";
+                handNote = "Off hand";
             else if (item.Type == ItemType.Grimoire)
-                handNote = "Off hand, with a one-handed weapon or none";
+                handNote = "Off hand";
             else if (item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Sceptre)
                 handNote = "Its blows put Death Mark on what they strike";
             if (handNote != null)

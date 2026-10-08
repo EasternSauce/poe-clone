@@ -1,3 +1,6 @@
+version: 2026-10-08-concise-handedness-labels
+- Shortened item tooltip handedness labels to Two-handed or Off hand, removing equipment pairing explanations from inventory and Loot Simulator previews.
+
 version: 2026-10-08-inline-item-bases
 - Item tooltips now show the base as a continuation of the item name instead of a separate Base line. Names that already include the base show it only once. Applies to inventory and Loot Simulator tooltips.
 
