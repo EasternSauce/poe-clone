@@ -1,3 +1,14 @@
+version: 2026-10-08-character-startup-and-controls
+- Character selection now keeps gameplay scene objects inactive and defers world generation and gameplay UI until a character is chosen.
+- Enlarged mobile life and mana potion buttons and swapped their positions.
+- Moved Mortis and his crypt farther toward the graveyard's north-west edge, away from its waypoint.
+- Life and mana potions are automatically collected nearby like gold when their potion slot has room.
+- Removed the repeatable kill-only bounty quest chain; story quests, including their kill-count steps and the route to the final boss, remain.
+- Holding left click on PC repeats the equipped attack or main ability at its normal attack/cast rate.
+- The minimap initializes the new area's terrain and markers before showing after a location change, avoiding the delayed map jump.
+- Tapping empty space in the passive tree dismisses the current tooltip and selection.
+- On mobile, opening inventory replaces the movement joystick with four directional inspect buttons. The first press selects the first inventory item; later presses move the highlight and tooltip between items. Crossing between inventory and equipment requires two consecutive presses in the same direction.
+
 version: 2026-10-08-restore-loot-and-nearby-tooltip
 - Restored enemy gear, gold and potion drops after the mobile performance investigation.
 - On mobile, the closest ground item within 2.5 units again shows its tooltip automatically. Tapping another item takes priority; gold is collected by walking over it.

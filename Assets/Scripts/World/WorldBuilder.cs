@@ -106,6 +106,8 @@ namespace PoeClone.World
         public static void EnsureBuilt()
         {
             if (MinimalCombatMode.Enabled) return;
+            var session = PoeClone.Network.GameSessionController.Instance;
+            if (session != null && session.Role == PoeClone.Network.SessionRole.Player && !session.PlayGranted) return;
             if (Instance != null) return;
             var go = new GameObject("World");
             go.AddComponent<WorldBuilder>().Build();
@@ -376,7 +378,7 @@ namespace PoeClone.World
             Claim(c + new Vector3(30f, 0f, 0f), 3f);
 
             // The crypt, north-west of the path and well away from the central waystone.
-            Vector3 crypt = c + new Vector3(-26f, 0f, 32f);
+            Vector3 crypt = Shape(Graveyard).EdgePoint(new Vector3(-1f, 0f, 1f), 18f);
             Box(t, crypt + new Vector3(0f, 2f, 0f), new Vector3(7f, 4f, 7f), kit.Mat("TombstoneDark"));
             Box(t, crypt + new Vector3(0f, 4.4f, 0f), new Vector3(7.8f, 0.8f, 7.8f), kit.Mat("Tombstone"));
             Box(t, crypt + new Vector3(0f, 1.3f, -3.55f), new Vector3(2f, 2.6f, 0.2f), kit.Mat("Charred"), solid: false);

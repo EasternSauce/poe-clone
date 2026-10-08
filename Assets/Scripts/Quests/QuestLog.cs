@@ -249,28 +249,8 @@ namespace PoeClone.Quests
             done.Add(quest.Id);
             GrantRewards(quest, lines);
 
-            // A bounty board starts over once its last bounty is in.
-            if (quest.Repeatable && !HasFollowUp(quest))
-            {
-                foreach (QuestDefinition q in QuestBook.All)
-                {
-                    if (q.Repeatable && q.Giver == quest.Giver)
-                        done.Remove(q.Id);
-                }
-            }
-
             Changed?.Invoke();
             return lines;
-        }
-
-        private static bool HasFollowUp(QuestDefinition quest)
-        {
-            foreach (QuestDefinition q in QuestBook.All)
-            {
-                if (q.After == quest.Id)
-                    return true;
-            }
-            return false;
         }
 
         private void GrantRewards(QuestDefinition quest, List<string> lines)

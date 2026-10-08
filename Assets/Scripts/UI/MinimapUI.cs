@@ -17,6 +17,7 @@ namespace PoeClone.UI
     /// second camera, cheap on the web.
     /// M hides/shows it. Installed by GameSessionController.
     /// </summary>
+    [DefaultExecutionOrder(100)]
     public class MinimapUI : MonoBehaviour
     {
         public const float Size = 210f;
@@ -85,14 +86,14 @@ namespace PoeClone.UI
                 instance = null;
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             var session = GameSessionController.Instance;
             AreaManager areas = AreaManager.Instance;
             if (player == null)
                 player = FindAnyObjectByType<Player.PlayerStats>();
-            if (areas == null || areas.CurrentAreaIndex < 0 || player == null || session == null ||
-                (session.Role == SessionRole.Player && !session.PlayGranted))
+            if (areas == null || areas.CurrentAreaIndex < 0 || areas.IsSwitching || player == null || session == null ||
+                (session.Role == SessionRole.Player && !Player.SaveSystem.CharacterLoaded))
             {
                 frame.gameObject.SetActive(false);
                 return;
@@ -108,9 +109,11 @@ namespace PoeClone.UI
                 characterUI = FindAnyObjectByType<CharacterPageUI>();
             bool covered = (inventoryUI != null && inventoryUI.IsOpen) || (characterUI != null && characterUI.IsOpen) ||
                            PassiveTreeUI.IsOpen || SkillBarUI.IsOpen;
-            frame.gameObject.SetActive(!hidden && !covered);
-            if (!frame.gameObject.activeSelf)
+            if (hidden || covered)
+            {
+                frame.gameObject.SetActive(false);
                 return;
+            }
 
             frame.anchoredPosition = new Vector2(TouchMode.Active ? -250f : -16f, -16f);
             frame.localScale = Vector3.one * Scale;
@@ -127,7 +130,9 @@ namespace PoeClone.UI
             Vector2 heading = Rotate(new Vector2(forward.x, forward.z), yaw);
             playerDot.rectTransform.localRotation = Quaternion.Euler(0f, 0f, Vector2.SignedAngle(Vector2.up, heading));
 
-            if (Time.unscaledTime < nextRefresh)
+            bool firstFrame = !frame.gameObject.activeSelf || terrainArea != areas.CurrentAreaIndex;
+            frame.gameObject.SetActive(true);
+            if (!firstFrame && Time.unscaledTime < nextRefresh)
                 return;
             nextRefresh = Time.unscaledTime + Refresh;
             UpdateTerrain(areas.CurrentAreaIndex);

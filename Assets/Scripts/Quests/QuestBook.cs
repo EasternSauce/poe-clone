@@ -43,7 +43,6 @@ namespace PoeClone.Quests
 
         /// <summary>The quest before it in its chain (null: available from the start).</summary>
         public string After;
-        public bool Repeatable;
 
         public string Offer;      // what the giver says when offering it
         public string Reminder;   // what they say while it's under way
@@ -74,7 +73,7 @@ namespace PoeClone.Quests
     ///   Commander Varek (camp)    Embers of War: the host, lost supplies, Ysolde's rite, the Warlord
     ///   Seer Ysolde (camp)        The Frozen Seal: wake the sunstones (thaws the north gate), the lost
     ///                             scouts, Rimeheart, the door beneath the ice, home to Maren
-    ///   Captain Hale (Haven)      The Lost Patrol, then his bounty board (repeatable)
+    ///   Captain Hale (Haven)      The Lost Patrol
     ///   Merchant Oda (Haven)      The Lost Caravan, and a letter for Varek
     /// </summary>
     public static class QuestBook
@@ -352,32 +351,7 @@ namespace PoeClone.Quests
                 RewardGold = 200, RewardExperience = 900, RewardItem = ItemRarity.Rare, RewardItemLevel = 7
             },
 
-            // The Guard's bounties, once his patrol is avenged: one at a time, round and round.
-            Bounty("bounty_archers", "Bounty: Archers", "Archer", 8, "badges",
-                "Their archers pick off our scouts from the treeline. Eight of them, and the bounty is yours."),
-            Bounty("bounty_brutes", "Bounty: Brutes", "Brute", 5, "bounty_archers",
-                "Brutes broke the east fence again. Five of them. They hit hard - keep moving."),
-            Bounty("bounty_casters", "Bounty: Fire Casters", "Fire Caster", 6, "bounty_brutes",
-                "The fire casters set the grain store alight. Six of them, and I'll pay double the usual."),
-            Bounty("bounty_raiders", "Bounty: Raiders", "Raider", 10, "bounty_casters",
-                "Raiders on the roads again. Ten of them, and the merchants will breathe easier."),
-            Bounty("bounty_skeletons", "Bounty: Skeletons", "Skeleton", 12, "bounty_raiders",
-                "The graveyard's bones are walking about in broad daylight now. Twelve skeletons - smash them properly."),
         };
-
-        private static QuestDefinition Bounty(string id, string title, string kind, int count, string after, string offer)
-        {
-            return new QuestDefinition
-            {
-                Id = id, Title = title, Giver = NpcRole.Guard, After = after, Repeatable = true,
-                Goal = QuestGoal.KillKind, Target = kind, Count = count,
-                Objective = "Slay " + kind + "s",
-                Offer = offer,
-                Reminder = count + " " + kind + "s. You'll find them out past the gate.",
-                Thanks = "Good work. Here's your bounty - come back for the next one.",
-                RewardGold = 40 + count * 8, RewardExperience = 60 + count * 15
-            };
-        }
 
         public static QuestDefinition Get(string id)
         {

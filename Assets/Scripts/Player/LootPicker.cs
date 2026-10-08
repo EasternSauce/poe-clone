@@ -100,7 +100,7 @@ namespace PoeClone.Player
                 return;
             }
 
-            CollectGoldUnderfoot();
+            CollectPickupsUnderfoot();
 
             LootDrop pointed = null;
             if (!PanelOpen() && !PlayerController.IsUiFocused())
@@ -129,12 +129,14 @@ namespace PoeClone.Player
             }
         }
 
-        private void CollectGoldUnderfoot()
+        private void CollectPickupsUnderfoot()
         {
             for (int k = LootDrop.All.Count - 1; k >= 0; k--)
             {
                 LootDrop drop = LootDrop.All[k];
-                if (drop == null || !drop.IsGold || !drop.IsInteractive)
+                if (drop == null || !drop.IsPickup || !drop.IsInteractive)
+                    continue;
+                if (!drop.IsGold && (inventory == null || inventory.Potions(drop.Item.Id == ItemGenerator.HealthPotionId) >= PlayerInventory.MaxPotions))
                     continue;
                 Vector3 offset = drop.transform.position - transform.position;
                 offset.y = 0f;

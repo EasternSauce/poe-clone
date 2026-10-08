@@ -44,7 +44,7 @@ namespace PoeClone.Network
             var ctrl = GameSessionController.Instance;
 
             bool shouldShow = ctrl != null && ctrl.Role == SessionRole.Player &&
-                ctrl.PlayGranted && !PoeClone.Player.SaveSystem.CharacterLoaded;
+                !PoeClone.Player.SaveSystem.CharacterLoaded;
 
             canvasGroup.alpha = shouldShow ? 1f : 0f;
             canvasGroup.blocksRaycasts = shouldShow;
@@ -55,8 +55,8 @@ namespace PoeClone.Network
                 return;
             }
 
-            spinner.gameObject.SetActive(true);
-            messageText.text = "Loading character...";
+            spinner.gameObject.SetActive(ctrl.PlayGranted);
+            messageText.text = ctrl.PlayGranted ? "Loading character..." : "";
         }
 
         private void Build()

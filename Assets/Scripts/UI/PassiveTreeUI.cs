@@ -711,6 +711,13 @@ namespace PoeClone.UI
             view.gameObject.AddComponent<RectMask2D>();
             viewRect = view.rectTransform;
             var nav = view.gameObject.AddComponent<ViewHandler>();
+            nav.Click = () =>
+            {
+                if (suppressPinchClicks || Time.frameCount <= pinchEndedFrame + 1) return;
+                selected = null;
+                hovered = null;
+                ShowInfo(null);
+            };
             nav.Drag = delta => { if (!suppressPinchClicks) Pan(delta); };
             nav.Scroll = (amount, at) => Zoom(amount > 0f ? 1.15f : 1f / 1.15f, at);
 
@@ -847,8 +854,10 @@ namespace PoeClone.UI
             return button;
         }
 
-        private class ViewHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IScrollHandler
+        private class ViewHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IScrollHandler, IPointerClickHandler
         {
+            public System.Action Click;
+            public void OnPointerClick(PointerEventData eventData) { if (!eventData.dragging) Click?.Invoke(); }
             public System.Action<Vector2> Drag;
             public System.Action<float, Vector2> Scroll;
 

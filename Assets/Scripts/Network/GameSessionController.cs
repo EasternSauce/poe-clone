@@ -21,6 +21,7 @@ namespace PoeClone.Network
         public bool Connected { get; private set; }
         /// <summary>A character was selected for local play, independently of the server.</summary>
         public bool PlayGranted { get; private set; }
+        public bool GameplayReady { get; private set; }
         public bool RemotePlayerActive { get; private set; }
         public int SpectatorCount { get; private set; }
         public int MaxPlayers { get; private set; }
@@ -48,6 +49,8 @@ namespace PoeClone.Network
         private SpectatorReplica replica;
         private NamePromptUI namePrompt;
         private GameObject scenePlayer;
+        private readonly System.Collections.Generic.List<GameObject> suspendedRoots = new System.Collections.Generic.List<GameObject>();
+        private bool gameplayCreated;
 
         public SpectatorReplica Replica => replica;
         private string serverUrl;
@@ -64,6 +67,36 @@ namespace PoeClone.Network
             if (Instance != null) return;
             var go = new GameObject("GameSessionController");
             go.AddComponent<GameSessionController>();
+            SceneManager.sceneLoaded += SuspendStartupScene;
+        }
+
+        private static void SuspendStartupScene(Scene scene, LoadSceneMode mode)
+        {
+            SceneManager.sceneLoaded -= SuspendStartupScene;
+            Instance?.SuspendScene(scene);
+        }
+
+        private void SuspendScene(Scene scene)
+        {
+            foreach (GameObject root in scene.GetRootGameObjects())
+            {
+                if (root == gameObject || !root.activeSelf || root.GetComponent<UnityEngine.EventSystems.EventSystem>() != null) continue;
+                suspendedRoots.Add(root);
+                root.SetActive(false);
+            }
+        }
+
+        private void PrepareGameplay()
+        {
+            if (gameplayCreated) return;
+            gameplayCreated = true;
+            foreach (GameObject root in suspendedRoots)
+                if (root != null) root.SetActive(true);
+            suspendedRoots.Clear();
+            var player = FindAnyObjectByType<PlayerStats>();
+            scenePlayer = player != null ? player.gameObject : null;
+            WorldBuilder.EnsureBuilt();
+            CreateGameplaySystems();
         }
 
         private void Awake()
@@ -89,15 +122,6 @@ namespace PoeClone.Network
             client.OnError += HandleError;
 
             gameObject.AddComponent<SessionGateUI>();
-            gameObject.AddComponent<SpectatorView>();
-            gameObject.AddComponent<ChatUI>();
-            gameObject.AddComponent<PoeClone.UI.TouchControlsUI>();
-            gameObject.AddComponent<PoeClone.UI.SkillBarUI>();
-            gameObject.AddComponent<PoeClone.UI.DialogueUI>();
-            gameObject.AddComponent<PoeClone.UI.MinimapUI>();
-            gameObject.AddComponent<PoeClone.UI.QuestTrackerUI>();
-            gameObject.AddComponent<PoeClone.UI.BossBarUI>();
-            gameObject.AddComponent<PoeClone.UI.PassiveTreeUI>();
             gameObject.AddComponent<PoeClone.Player.SaveSystem>();
             namePrompt = gameObject.AddComponent<NamePromptUI>();
             gameObject.AddComponent<PoeClone.UI.PatchNotesUI>();
@@ -108,17 +132,22 @@ namespace PoeClone.Network
             replica = gameObject.AddComponent<SpectatorReplica>();
         }
 
+        private void CreateGameplaySystems()
+        {
+            gameObject.AddComponent<SpectatorView>();
+            gameObject.AddComponent<ChatUI>();
+            gameObject.AddComponent<PoeClone.UI.TouchControlsUI>();
+            gameObject.AddComponent<PoeClone.UI.SkillBarUI>();
+            gameObject.AddComponent<PoeClone.UI.DialogueUI>();
+            gameObject.AddComponent<PoeClone.UI.MinimapUI>();
+            gameObject.AddComponent<PoeClone.UI.QuestTrackerUI>();
+            gameObject.AddComponent<PoeClone.UI.BossBarUI>();
+            gameObject.AddComponent<PoeClone.UI.PassiveTreeUI>();
+        }
+
         private IEnumerator Start()
         {
-            // The scene's player is needed while the world wires its references on startup.
-            // After that frame it stays inactive until the chosen save has been applied.
             yield return null;
-            var player = FindAnyObjectByType<PlayerStats>();
-            if (player != null)
-            {
-                scenePlayer = player.gameObject;
-                if (!PlayGranted) scenePlayer.SetActive(false);
-            }
 
             client.RequestLocationSearch(search =>
             {
@@ -132,6 +161,7 @@ namespace PoeClone.Network
 
                 if (Role == SessionRole.Spectator)
                 {
+                    PrepareGameplay();
                     if (scenePlayer != null) scenePlayer.SetActive(true);
                     // Spectators run the world (so puppets animate and sounds play) but with every
                     // gameplay system switched off by the replica.
@@ -148,7 +178,8 @@ namespace PoeClone.Network
                     {
                         PlayerName = SaveSystem.ActiveCharacterName;
                         PlayGranted = true;
-                        SaveSystem.LoadSelectedProfile();
+                        PrepareGameplay();
+                        StartCoroutine(LoadChosenCharacter());
                         StateChanged?.Invoke();
                         StartCoroutine(ConnectToServer());
                     });
@@ -168,6 +199,15 @@ namespace PoeClone.Network
         {
             if (!Connected || string.IsNullOrWhiteSpace(text)) return;
             client.Send(JsonUtility.ToJson(new ChatOutMessage { text = text }));
+        }
+
+        private IEnumerator LoadChosenCharacter()
+        {
+            // Allow the reactivated scene's Start methods to bind stats, gear and skills
+            // before applying the character's saved values and bindings.
+            yield return null;
+            GameplayReady = true;
+            SaveSystem.LoadSelectedProfile();
         }
 
         /// <summary>
@@ -389,8 +429,8 @@ namespace PoeClone.Network
         private static void RestartAfterCharacterSwitch(Scene scene, LoadSceneMode mode)
         {
             SceneManager.sceneLoaded -= RestartAfterCharacterSwitch;
-            new GameObject("GameSessionController").AddComponent<GameSessionController>();
-            WorldBuilder.EnsureBuilt();
+            var session = new GameObject("GameSessionController").AddComponent<GameSessionController>();
+            session.SuspendScene(scene);
         }
 
         private IEnumerator ReconnectAfterDelay()

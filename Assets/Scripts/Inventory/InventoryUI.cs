@@ -110,6 +110,125 @@ namespace PoeClone.Inventory
         }
 
         private readonly List<SlotView> slotViews = new List<SlotView>();
+        private ItemData navigationItem;
+        private bool navigationEquipment;
+        private Vector2 navigationCrossing;
+
+        private struct NavigationTarget
+        {
+            public ItemData Item;
+            public bool Equipment;
+            public Hover Hover;
+            public Vector2 Center;
+        }
+
+        private List<NavigationTarget> NavigationTargets()
+        {
+            var targets = new List<NavigationTarget>();
+            foreach (PlacedItem placed in inventory.Grid.Items)
+            {
+                Vector2 cell = new Vector2(placed.X + placed.Item.Width * 0.5f, placed.Y + placed.Item.Height * 0.5f);
+                Vector3 local = new Vector3(gridArea.rect.xMin + cell.x * cellSize, gridArea.rect.yMax - cell.y * cellSize);
+                Vector2 screen = RectTransformUtility.WorldToScreenPoint(null, gridArea.TransformPoint(local));
+                targets.Add(new NavigationTarget { Item = placed.Item, Center = screen,
+                    Hover = new Hover { OverGrid = true, GridPos = cell, Screen = screen } });
+            }
+            foreach (SlotView slot in slotViews)
+            {
+                ItemData item = inventory.Equipment.Get(slot.Slot);
+                if (item == null || !slot.Rect.gameObject.activeInHierarchy) continue;
+                Vector2 screen = RectTransformUtility.WorldToScreenPoint(null, slot.Rect.TransformPoint(slot.Rect.rect.center));
+                targets.Add(new NavigationTarget { Item = item, Equipment = true, Center = screen,
+                    Hover = new Hover { Slot = slot, Screen = screen } });
+            }
+            return targets;
+        }
+
+        /// <summary>Inspect items with the mobile directional buttons without moving gear.</summary>
+        public void Navigate(Vector2 direction)
+        {
+            if (!isOpen || !TouchMode.Active || SpectatorMirror.Active || cursorItem != null) return;
+            Canvas.ForceUpdateCanvases();
+            List<NavigationTarget> targets = NavigationTargets();
+            if (targets.Count == 0) return;
+            int current = targets.FindIndex(t => t.Item == navigationItem && t.Equipment == navigationEquipment);
+            if (current < 0)
+            {
+                // First occupied inventory position, scanning top to bottom, left to right.
+                int first = -1;
+                float firstCell = float.MaxValue;
+                for (int k = 0; k < targets.Count; k++)
+                {
+                    if (targets[k].Equipment) continue;
+                    PlacedItem placed = inventory.Grid.GetAt((int)targets[k].Hover.GridPos.x, (int)targets[k].Hover.GridPos.y);
+                    float cell = placed.Y * inventory.Grid.Width + placed.X;
+                    if (cell < firstCell) { firstCell = cell; first = k; }
+                }
+                SelectNavigation(targets[first >= 0 ? first : 0]);
+                return;
+            }
+
+            NavigationTarget origin = targets[current];
+            int next = FindNavigationTarget(targets, current, direction, origin.Equipment);
+            if (next >= 0)
+            {
+                SelectNavigation(targets[next]);
+                return;
+            }
+
+            bool crossing = origin.Equipment ? direction == Vector2.down : direction == Vector2.up;
+            next = crossing ? FindNavigationTarget(targets, current, direction, !origin.Equipment) : -1;
+            if (next < 0) { navigationCrossing = Vector2.zero; return; }
+            if (navigationCrossing != direction)
+            {
+                navigationCrossing = direction;
+                return;
+            }
+            SelectNavigation(targets[next]);
+        }
+
+        private static int FindNavigationTarget(List<NavigationTarget> targets, int current, Vector2 direction, bool equipment)
+        {
+            int best = -1;
+            float score = float.MaxValue;
+            Vector2 perpendicular = new Vector2(-direction.y, direction.x);
+            for (int k = 0; k < targets.Count; k++)
+            {
+                if (k == current || targets[k].Equipment != equipment) continue;
+                Vector2 delta = targets[k].Center - targets[current].Center;
+                float forward = Vector2.Dot(delta, direction);
+                if (forward <= 1f) continue;
+                float candidate = forward + Mathf.Abs(Vector2.Dot(delta, perpendicular)) * 3f;
+                if (candidate < score) { score = candidate; best = k; }
+            }
+            return best;
+        }
+
+        private void SelectNavigation(NavigationTarget target)
+        {
+            navigationItem = target.Item;
+            navigationEquipment = target.Equipment;
+            navigationCrossing = Vector2.zero;
+            ShowNavigation();
+        }
+
+        private void ShowNavigation()
+        {
+            if (navigationItem == null) return;
+            foreach (NavigationTarget target in NavigationTargets())
+            {
+                if (target.Item != navigationItem || target.Equipment != navigationEquipment) continue;
+                report = target.Hover;
+                reportPointer = target.Center;
+                UpdateHighlights(target.Hover);
+                UpdateTooltip(target.Hover, target.Center);
+                return;
+            }
+            navigationItem = null;
+            navigationCrossing = Vector2.zero;
+            tooltipRect.gameObject.SetActive(false);
+            UpdateHighlights(new Hover());
+        }
         private readonly List<GameObject> itemViews = new List<GameObject>();
 
         private Canvas canvas;
@@ -548,6 +667,7 @@ namespace PoeClone.Inventory
         // already held, lifting the finger puts it down there, whether that was a tap or a drag.
         private void UpdateTouch()
         {
+            if (!touchTracking) ShowNavigation();
             Touchscreen screen = Touchscreen.current;
             if (screen == null)
                 return;
@@ -558,6 +678,12 @@ namespace PoeClone.Inventory
             if (touch.press.wasPressedThisFrame)
             {
                 touchTracking = !TouchMode.IsOverBlocker(pos) && Time.frameCount != sideOpenedFrame;
+                if (touchTracking)
+                {
+                    navigationItem = null;
+                    navigationCrossing = Vector2.zero;
+                    tooltipRect.gameObject.SetActive(false);
+                }
                 touchHadItem = cursorItem != null;
                 touchPickupTried = false;
                 touchInspecting = false;
@@ -579,7 +705,8 @@ namespace PoeClone.Inventory
 
             if (!touchTracking)
             {
-                UpdateHighlights(new Hover());
+                if (navigationItem != null) ShowNavigation();
+                else UpdateHighlights(new Hover());
                 return;
             }
 
@@ -645,6 +772,11 @@ namespace PoeClone.Inventory
 
         public void SetOpen(bool open)
         {
+            if (open != isOpen)
+            {
+                navigationItem = null;
+                navigationCrossing = Vector2.zero;
+            }
             isOpen = open;
             touchTracking = false;
             bool touch = TouchMode.Active;

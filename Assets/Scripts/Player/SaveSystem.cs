@@ -161,7 +161,7 @@ namespace PoeClone.Player
         private static bool Playing()
         {
             var session = GameSessionController.Instance;
-            return session != null && session.Role == SessionRole.Player && session.PlayGranted;
+            return session != null && session.Role == SessionRole.Player && session.PlayGranted && session.GameplayReady;
         }
 
         private void Update()

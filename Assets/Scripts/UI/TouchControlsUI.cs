@@ -33,6 +33,7 @@ namespace PoeClone.UI
         private GameObject combatRoot;
         private GameObject menuRoot;
         private GameObject rotateRoot;
+        private GameObject inventoryNavigationRoot;
 
         private RectTransform joystickZone;
         private RectTransform joystickBase;
@@ -99,11 +100,13 @@ namespace PoeClone.UI
 
             var session = GameSessionController.Instance;
             bool spectator = session != null && session.Role == SessionRole.Spectator;
-            bool show = touch && !spectator && !portrait;
+            bool ready = PoeClone.World.MinimalCombatMode.Enabled || SaveSystem.CharacterLoaded;
+            bool show = touch && !spectator && !portrait && ready;
             controlsRoot.SetActive(show);
 
             if (!show)
             {
+                inventoryNavigationRoot.SetActive(false);
                 SetCombatShown(false);
                 PlayerHUD.SetHiddenBy(this, false);
                 return;
@@ -113,6 +116,7 @@ namespace PoeClone.UI
 
             bool dead = stats == null || stats.IsDead;
             bool inventoryOpen = inventoryUI != null && inventoryUI.IsOpen;
+            inventoryNavigationRoot.SetActive(inventoryOpen && !dead);
             bool characterOpen = characterUI != null && characterUI.IsOpen;
             if (!PoeClone.World.MinimalCombatMode.Enabled && settingsMenu == null)
                 settingsMenu = FindAnyObjectByType<EscapeMenuUI>();
@@ -511,18 +515,32 @@ namespace PoeClone.UI
                 skillButtons.Add(new SkillButton { Back = back, Icon = icon, Cooldown = cooldown, Ring = ring });
             }
 
-            // Potions: two small buttons along the bottom, between the run and skill buttons.
-            healthPotionImage = NewRoundButton("HealthPotion", combat, new Vector2(1f, 0f), new Vector2(-370f, 40f), 72f, null);
+            // Larger potion targets, with life nearest the attack stick.
+            healthPotionImage = NewRoundButton("HealthPotion", combat, new Vector2(1f, 0f), new Vector2(-295f, 62f), 104f, null);
             AddPotionIcon(healthPotionImage, ItemGenerator.HealthPotionId);
             healthPotionText = AddPotionCount(healthPotionImage, new Color(1f, 0.6f, 0.55f));
             healthPotionImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.PotionPresses |= 1;
             TouchMode.AddBlocker(healthPotionImage.rectTransform);
 
-            manaPotionImage = NewRoundButton("ManaPotion", combat, new Vector2(1f, 0f), new Vector2(-275f, 40f), 72f, null);
+            manaPotionImage = NewRoundButton("ManaPotion", combat, new Vector2(1f, 0f), new Vector2(-415f, 62f), 104f, null);
             AddPotionIcon(manaPotionImage, ItemGenerator.ManaPotionId);
             manaPotionText = AddPotionCount(manaPotionImage, new Color(0.65f, 0.72f, 1f));
             manaPotionImage.gameObject.AddComponent<TouchPointerRelay>().Down += _ => VirtualInput.PotionPresses |= 2;
             TouchMode.AddBlocker(manaPotionImage.rectTransform);
+
+            Canvas navigationCanvas = NewCanvas("InventoryNavigationCanvas", 805);
+            inventoryNavigationRoot = navigationCanvas.gameObject;
+            Vector2[] directions = { Vector2.up, Vector2.right, Vector2.down, Vector2.left };
+            string[] labels = { "▲", "▶", "▼", "◀" };
+            for (int k = 0; k < directions.Length; k++)
+            {
+                Vector2 direction = directions[k];
+                Image button = NewRoundButton("InventoryDirection" + k, navigationCanvas.transform, Vector2.zero,
+                    JoystickIdle + direction * 85f, 78f, labels[k]);
+                button.gameObject.AddComponent<TouchPointerRelay>().Down += _ => inventoryUI?.Navigate(direction);
+                TouchMode.AddBlocker(button.rectTransform);
+            }
+            inventoryNavigationRoot.SetActive(false);
 
             // Menus stay at the edges, clear of the combat buttons and the left HUD.
             RectTransform menu = UiKit.NewRect("Menu", canvas.transform);
