@@ -1,3 +1,6 @@
+version: 2026-10-08-inline-item-bases
+- Item tooltips now show the base as a continuation of the item name instead of a separate Base line. Names that already include the base show it only once. Applies to inventory and Loot Simulator tooltips.
+
 version: 2026-10-08-straight-legs-on-death
 - Dead characters now keep their legs straight instead of folding them underneath the torso, making the legs and feet visible.
 

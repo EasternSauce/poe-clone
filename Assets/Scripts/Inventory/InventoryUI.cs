@@ -1737,14 +1737,18 @@ private Vector2 CellSize(int w, int h)
             string type = Regex.Replace(typeName, "(?<=.)([A-Z])", " $1");
 
             StringBuilder sb = new StringBuilder();
-            sb.Append("<b><color=#").Append(UiKit.Hex(UiKit.RarityColor(item.Rarity))).Append(">").Append(item.Name).Append("</color></b>\n");
+            string baseName = item.BaseName;
+            sb.Append("<b><color=#").Append(UiKit.Hex(UiKit.RarityColor(item.Rarity))).Append(">").Append(item.Name);
+            // Normal and magic names already contain their base; rare and unique names do not.
+            if (!string.IsNullOrEmpty(baseName) && item.Name.IndexOf(baseName, System.StringComparison.OrdinalIgnoreCase) < 0)
+                sb.Append(" ").Append(baseName);
+            sb.Append("</color></b>\n");
             sb.Append("<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">").Append(type).Append("</color>");
             lineCount = 2;
-            if (!string.IsNullOrEmpty(item.BaseName))
+            if (!string.IsNullOrEmpty(baseName))
             {
-                sb.Append("\nBase: ").Append(item.BaseName);
                 sb.Append("\n").Append(item.Requirements);
-                lineCount += 2;
+                lineCount++;
             }
             if (item.ItemLevel > 0 && item.Type != ItemType.Gold && item.Type != ItemType.Potion)
             {
