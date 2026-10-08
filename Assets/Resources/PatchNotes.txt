@@ -1,3 +1,6 @@
+version: 2026-10-08-item-modifier-editor-editing
+- Fixed disabled fields in the Item Modifier Editor. Modifier settings and tier minimums, maximums, levels and weights are now editable; existing drafts retain their unsaved edits.
+
 version: 2026-10-08-item-modifier-editor-font
 - Increased the Item Modifier Editor's font size and control spacing, widened the modifier list, and arranged item-type checkboxes in three columns for easier reading.
 

@@ -8,6 +8,8 @@ namespace PoeClone.EditorTools
 {
     public sealed class ItemModifierEditor : EditorWindow
     {
+        // HideAndDontSave includes NotEditable, which disables SerializedProperty controls.
+        private const HideFlags EditableDraftFlags = HideFlags.HideAndDontSave & ~HideFlags.NotEditable;
         [SerializeField] private ItemModifierCatalog draft;
         [SerializeField] private string savedJson;
         [SerializeField] private int selected;
@@ -35,7 +37,12 @@ namespace PoeClone.EditorTools
             saveChangesMessage = "Save item modifier balance changes?";
             Undo.undoRedoPerformed += OnUndo;
             if (draft == null) Load();
-            else serialized = new SerializedObject(draft);
+            else
+            {
+                // Repair existing drafts after reload without discarding the user's edits.
+                draft.hideFlags = EditableDraftFlags;
+                serialized = new SerializedObject(draft);
+            }
         }
 
         private void OnDisable() => Undo.undoRedoPerformed -= OnUndo;
@@ -47,7 +54,7 @@ namespace PoeClone.EditorTools
         {
             if (draft != null) DestroyImmediate(draft);
             draft = Instantiate(EnsureAsset());
-            draft.hideFlags = HideFlags.HideAndDontSave;
+            draft.hideFlags = EditableDraftFlags;
             serialized = new SerializedObject(draft);
             savedJson = JsonUtility.ToJson(draft);
             UpdateDirty();
