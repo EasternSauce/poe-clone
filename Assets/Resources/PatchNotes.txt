@@ -1,3 +1,8 @@
+version: 2026-10-09-spell-and-bow-mana
+- Bow skills (Split Shot, Piercing Shot, Rain of Arrows, Burning Arrow and Venom Arrow) cost 50% more mana.
+- Damage spells (Fire Bolt, Ice Shard, Chain Lightning, Frost Nova, War Cry, Venom Spout and Death Mark) cost half as much mana at level 1. The discount shrinks each level and is gone at level 10.
+- Damage spells deal 30% more damage at level 1. The bonus shrinks each level and is gone at level 10, so level 10 damage is unchanged.
+
 version: 2026-10-09-web-shadows
 - The browser version now shows shadows on desktop (Chrome, Firefox, Edge and so on). Phones and tablets keep shadows off for performance.
 
