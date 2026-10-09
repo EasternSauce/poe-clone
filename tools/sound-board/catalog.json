@@ -76,6 +76,120 @@
             ]
         },
         {
+            "id": "combat.bite",
+            "label": "Snake bite impact",
+            "group": "Combat",
+            "description": "The Shepherd's snake-arm bite. Independent of weapon hits.",
+            "portrait": "",
+            "current": [
+                "Assets/Resources/Sfx/Creatures/bite_1.wav",
+                "Assets/Resources/Sfx/Creatures/bite_2.wav",
+                "Assets/Resources/Sfx/Creatures/bite_3.wav"
+            ],
+            "suggestions": [
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#3-1766764032292_break_wood.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#4-1766764026227_slam_hard.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
+            ]
+        },
+        {
+            "id": "combat.ground.Physical",
+            "label": "Physical ground impact",
+            "group": "Combat",
+            "description": "Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.",
+            "portrait": "",
+            "current": [
+                "Assets/Audio/SoundLibrary/Magic & spells/30_Earth_02.wav"
+            ],
+            "suggestions": [
+                "Assets/Audio/SoundLibrary/Magic & spells/30_Earth_02.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Earth01.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Earth02.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Earth03.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Earth04.wav"
+            ]
+        },
+        {
+            "id": "combat.ground.Fire",
+            "label": "Fire ground impact",
+            "group": "Combat",
+            "description": "Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.",
+            "portrait": "",
+            "current": [
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#1-1766764398952.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#2-1766764396374.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#3-1766764393616.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#4-1766764388701.mp3"
+            ],
+            "suggestions": [
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#1-1766764398952.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#2-1766764396374.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#3-1766764393616.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#4-1766764388701.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3"
+            ]
+        },
+        {
+            "id": "combat.ground.Cold",
+            "label": "Cold ground impact",
+            "group": "Combat",
+            "description": "Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.",
+            "portrait": "",
+            "current": [
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#1-1766764678544.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#2-1766764676177.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#3-1766764673747.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#4-1766764669612.mp3"
+            ],
+            "suggestions": [
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#1-1766764678544.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#2-1766764676177.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#3-1766764673747.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#4-1766764669612.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3"
+            ]
+        },
+        {
+            "id": "combat.ground.Lightning",
+            "label": "Lightning ground impact",
+            "group": "Combat",
+            "description": "Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.",
+            "portrait": "",
+            "current": [
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#1-1766764720689.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#2-1766764718272.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#3-1766764718272.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#4-1766764715064.mp3"
+            ],
+            "suggestions": [
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#1-1766764720689.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#2-1766764718272.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#3-1766764718272.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#4-1766764715064.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3"
+            ]
+        },
+        {
+            "id": "combat.ground.Poison",
+            "label": "Poison ground impact",
+            "group": "Combat",
+            "description": "Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.",
+            "portrait": "",
+            "current": [
+                "Assets/Audio/SoundLibrary/Creatures & voices/slime6.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/slime7.wav"
+            ],
+            "suggestions": [
+                "Assets/Audio/SoundLibrary/Creatures & voices/creature_slime_01.ogg",
+                "Assets/Audio/SoundLibrary/Creatures & voices/creature_slime_02.ogg",
+                "Assets/Audio/SoundLibrary/Creatures & voices/creature_slime_03.ogg",
+                "Assets/Audio/SoundLibrary/Creatures & voices/creature_slime_04.ogg",
+                "Assets/Audio/SoundLibrary/Creatures & voices/slime1.wav"
+            ]
+        },
+        {
             "id": "player.hurt",
             "label": "Player hurt",
             "group": "Player",

@@ -96,6 +96,120 @@ MonoBehaviour:
     selected: {fileID: 0}
     muted: 0
     volume: 1
+  - id: combat.bite
+    label: Snake bite impact
+    group: Combat
+    description: The Shepherd's snake-arm bite. Independent of weapon hits.
+    aliases: []
+    sharedIds: []
+    defaults:
+    - {fileID: 8300000, guid: 64af864c1f0abe5448bf21d0929b026f, type: 3}
+    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
+    - {fileID: 8300000, guid: 66eff9a3b2843af43bf2194b8926fb65, type: 3}
+    suggestions:
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#2-1766764035183_punchy_bass_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#3-1766764032292_break_wood.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#4-1766764026227_slam_hard.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_\u2013_#3-1766764176083_arrow_release.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: combat.ground.Physical
+    label: Physical ground impact
+    group: Combat
+    description: Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.
+    aliases: []
+    sharedIds: []
+    defaults:
+    - {fileID: 8300000, guid: 4039c3e106933b44b9f2d65f79591426, type: 3}
+    suggestions:
+    - Assets/Audio/SoundLibrary/Magic & spells/30_Earth_02.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Earth01.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Earth02.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Earth03.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Earth04.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: combat.ground.Fire
+    label: Fire ground impact
+    group: Combat
+    description: Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.
+    aliases: []
+    sharedIds: []
+    defaults:
+    - {fileID: 8300000, guid: b6ac0d81b294c1c469116a2abf7dc203, type: 3}
+    - {fileID: 8300000, guid: 206d0858514daa24b820483f918732f2, type: 3}
+    - {fileID: 8300000, guid: c1d37e81fe7b6be43ad4eb2e90ea8297, type: 3}
+    - {fileID: 8300000, guid: 5ba3fb1c77358404faa53a309dc852f5, type: 3}
+    suggestions:
+    - "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_\u2013__#1-1766764398952.mp3"
+    - "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_\u2013__#2-1766764396374.mp3"
+    - "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_\u2013__#3-1766764393616.mp3"
+    - "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_\u2013__#4-1766764388701.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: combat.ground.Cold
+    label: Cold ground impact
+    group: Combat
+    description: Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.
+    aliases: []
+    sharedIds: []
+    defaults:
+    - {fileID: 8300000, guid: d170febca97f1304186a715fe6c0e6de, type: 3}
+    - {fileID: 8300000, guid: c116096b92069294fae8395cf0261d22, type: 3}
+    - {fileID: 8300000, guid: c638bbb2e560ec542a9a35b9f7bd6471, type: 3}
+    - {fileID: 8300000, guid: 83a318a4623c6934ba8e5c9e59dd23a3, type: 3}
+    suggestions:
+    - "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_\u2013_Ice_sha_#1-1766764678544.mp3"
+    - "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_\u2013_Ice_sha_#2-1766764676177.mp3"
+    - "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_\u2013_Ice_sha_#3-1766764673747.mp3"
+    - "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_\u2013_Ice_sha_#4-1766764669612.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: combat.ground.Lightning
+    label: Lightning ground impact
+    group: Combat
+    description: Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.
+    aliases: []
+    sharedIds: []
+    defaults:
+    - {fileID: 8300000, guid: 930568f126afc52489657fd26c39e0e2, type: 3}
+    - {fileID: 8300000, guid: b6c92be9d13caa54996055dcaa75702b, type: 3}
+    - {fileID: 8300000, guid: 97e945ae92222c44390d90fdb4f64b92, type: 3}
+    - {fileID: 8300000, guid: dd9de4f76b1dab64eae434e9dc5f29b7, type: 3}
+    suggestions:
+    - "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_\u2013_Ele_#1-1766764720689.mp3"
+    - "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_\u2013_Ele_#2-1766764718272.mp3"
+    - "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_\u2013_Ele_#3-1766764718272.mp3"
+    - "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_\u2013_Ele_#4-1766764715064.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: combat.ground.Poison
+    label: Poison ground impact
+    group: Combat
+    description: Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.
+    aliases: []
+    sharedIds: []
+    defaults:
+    - {fileID: 8300000, guid: a68f118bb0f707249a8d19af894e3f43, type: 3}
+    - {fileID: 8300000, guid: d7de322055b75ab4eb1f81f31af80124, type: 3}
+    suggestions:
+    - Assets/Audio/SoundLibrary/Creatures & voices/creature_slime_01.ogg
+    - Assets/Audio/SoundLibrary/Creatures & voices/creature_slime_02.ogg
+    - Assets/Audio/SoundLibrary/Creatures & voices/creature_slime_03.ogg
+    - Assets/Audio/SoundLibrary/Creatures & voices/creature_slime_04.ogg
+    - Assets/Audio/SoundLibrary/Creatures & voices/slime1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
   - id: player.hurt
     label: Player hurt
     group: Player

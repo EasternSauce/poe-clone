@@ -92,6 +92,15 @@ namespace PoeClone.EditorTools
             Add("player.bow", "Basic bow shot", "Combat", Clips(), "bow|arrow|miss|wind|magic_projectile");
             Add("combat.hit", "Hit impact", "Combat", Clips("melee_hit_6", "melee_hit_7"), "sword_hit_flesh|impact_flesh|flesh|hit|impact");
             Add("combat.block", "Shield block", "Combat", Clips("shield_block"), "shield_block|block|armor|metal");
+            Add("combat.bite", "Snake bite impact", "Combat", Clips("bite_1", "bite_2", "bite_3"), "bite",
+                "The Shepherd's snake-arm bite. Independent of weapon hits.", false);
+            foreach (PoeClone.Combat.DamageType type in Enum.GetValues(typeof(PoeClone.Combat.DamageType)))
+                Add("combat.ground." + type, type + " ground impact", "Combat", Clips(),
+                    type == PoeClone.Combat.DamageType.Physical ? "earth" :
+                    type == PoeClone.Combat.DamageType.Fire ? "fire_spell_impact" :
+                    type == PoeClone.Combat.DamageType.Cold ? "ice_impact" :
+                    type == PoeClone.Combat.DamageType.Lightning ? "lightning_cast" : "slime",
+                    "Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.", false);
             Add("player.hurt", "Player hurt", "Player", Clips("hurt_1", "hurt_2", "hurt_3"), "player_hurt|hurt|flesh|impact");
             Add("player.reward", "Level up / quest reward", "Player", Clips("level_up"), "level_up|quest_complete|quest_accepted|confirm", "Level ups and quest rewards currently share this sound.");
             Add("player.steps", "Footsteps", "Player", Clips("footstep_grass_1"), "footstep_grass|step_grass|footstep_dirt|step_rock");

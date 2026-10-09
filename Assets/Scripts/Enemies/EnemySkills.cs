@@ -430,7 +430,7 @@ namespace PoeClone.Enemies
                 if (!struck)
                     HitIfInside(center, radius, damage);
                 SkillEffects.Shockwave(center, radius, DustColor, 0.35f);
-            }));
+            }, source: kind));
 
             for (float t = 0f; t < LeapCrouch; t += Time.deltaTime)
             {
@@ -704,7 +704,7 @@ namespace PoeClone.Enemies
                 case EnemySkill.Leap:
                     float leapRadius = LeapRadius(body);
                     host.StartCoroutine(GroundTelegraph.Run(target, leapRadius, LeapCrouch + LeapAir, kind.DamageType,
-                        center => SkillEffects.Shockwave(center, leapRadius, DustColor, 0.35f)));
+                        center => SkillEffects.Shockwave(center, leapRadius, DustColor, 0.35f), source: kind));
                     break;
             }
         }

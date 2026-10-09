@@ -46,7 +46,7 @@ namespace PoeClone.Enemies
         }
 
         /// <summary>Run as a coroutine; <paramref name="burst"/> (may be null) gets the centre when it goes off.</summary>
-        public static IEnumerator Run(Vector3 center, float radius, float windUp, DamageType type, Action<Vector3> burst)
+        public static IEnumerator Run(Vector3 center, float radius, float windUp, DamageType type, Action<Vector3> burst, EnemyKind source = null)
         {
             float groundY = GroundY(center);
             var root = new GameObject("Telegraph");
@@ -74,8 +74,11 @@ namespace PoeClone.Enemies
 
             UnityEngine.Object.Destroy(root);
             SkillEffects.Shockwave(center, radius, fill, 0.3f);
-            if (Audio.AudioManager.Instance != null)
-                Audio.AudioManager.Instance.PlayRandomAtPoint(Audio.AudioManager.Instance.meleeHit, center);
+            // A ground burst happens even on a miss: it is never a weapon hitting flesh/armour.
+            if (source != null && source.Sounds == EnemySounds.Set.Slime)
+                EnemySounds.Play(source, EnemySounds.Event.Attack, center);
+            else
+                Audio.AudioManager.Instance?.PlayEffect("combat.ground." + type, center, volume: 0.7f);
             burst?.Invoke(center);
         }
 
