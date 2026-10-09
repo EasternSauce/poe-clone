@@ -97,6 +97,13 @@ namespace PoeClone.Visuals
         /// <summary>A standing forward lean of the upper body, in degrees, on top of everything else (a stooped old man).</summary>
         public float Hunch { get; set; }
 
+        // VillageRoutine supplies a chore pose; locomotion still owns the legs and stride.
+        public float WorkBlend { get; set; }
+        public Vector2 WorkArms { get; set; }
+        public Vector2 WorkElbows { get; set; }
+        public float WorkLean { get; set; }
+        public Transform WorkHand => rightElbow != null ? rightElbow : rightArm;
+
         /// <summary>Changes the arms' rest pitch (town NPCs built from the monster rig hold theirs down).</summary>
         public void SetArmRestAngle(float angle)
         {
@@ -193,9 +200,9 @@ private void LateUpdate()
             SetPivot(leftLeg, s * legAmp - 35f * crouch);
             SetPivot(rightLeg, -s * legAmp - 35f * crouch);
             if (!leftArmSuppressed)
-                SetPivot(leftArm, armRestAngle - s * armAmp + breath * 2.5f + sway * 1.5f);
+                SetPivot(leftArm, Mathf.Lerp(armRestAngle - s * armAmp + breath * 2.5f + sway * 1.5f, WorkArms.x, WorkBlend));
             if (!rightArmSuppressed)
-                SetPivot(rightArm, armRestAngle + s * armAmp + breath * 2.5f - sway * 1.5f);
+                SetPivot(rightArm, Mathf.Lerp(armRestAngle + s * armAmp + breath * 2.5f - sway * 1.5f, WorkArms.y, WorkBlend));
 
             // Knees bend while the leg swings forward (more so when running).
             float kneeMax = Mathf.Lerp(walkKneeBend, runKneeBend, runBlend) * blend;
@@ -205,9 +212,9 @@ private void LateUpdate()
             // Elbows bend forward; running holds the arms sharply bent.
             float elbow = -Mathf.Lerp(walkElbowBend, runElbowBend, runBlend) * blend;
             if (!leftArmSuppressed)
-                SetPivot(leftElbow, elbow);
+                SetPivot(leftElbow, Mathf.Lerp(elbow, WorkElbows.x, WorkBlend));
             if (!rightArmSuppressed)
-                SetPivot(rightElbow, elbow);
+                SetPivot(rightElbow, Mathf.Lerp(elbow, WorkElbows.y, WorkBlend));
 
             float staggerTilt = stagger != null ? stagger.RecoilFraction * staggerTiltAngle : 0f;
             float torsoPitch = attackAnimator != null ? attackAnimator.TorsoPitch : 0f;
@@ -216,7 +223,7 @@ private void LateUpdate()
             float walkTwist = s * 5f * blend;
             if (upperBody != null)
                 upperBody.localRotation = Quaternion.Euler(
-                    runLean * runBlend * blend + staggerTilt + torsoPitch - breath * 1.2f + 25f * crouch + Hunch,
+                    runLean * runBlend * blend + staggerTilt + torsoPitch - breath * 1.2f + 25f * crouch + Hunch + WorkLean * WorkBlend,
                     torsoYaw + walkTwist + sway * 2f, 0f);
 
             float bobAmount = Mathf.Lerp(bobHeight, runBobHeight, runBlend);

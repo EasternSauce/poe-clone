@@ -21,7 +21,18 @@ namespace PoeClone.World
             water.SetFloat("_TriplanarTileSize", frozen ? 5f : 8f);
             water.SetFloat("_RimIntensity", 0.08f);
             water.SetFloat("_TexInfluence", frozen ? 0.24f : 0.12f);
-            WaterPart(group, frozen ? "FrozenRiverAndPools" : "RiversAndLakes", shape.BuildWaterMesh(), water, -0.45f);
+            Mesh surface = shape.BuildWaterMesh();
+            if (!frozen)
+            {
+                var motion = new System.Collections.Generic.List<Vector4>();
+                foreach (Vector3 vertex in surface.vertices) motion.Add(shape.WaterMotion(vertex));
+                surface.SetUVs(1, motion);
+                // GPU waves need an expanded bound, but never change collision or shoreline logic.
+                Bounds bounds = surface.bounds; bounds.Expand(Vector3.up * 0.2f); surface.bounds = bounds;
+                water.SetFloat("_LivingWater", 1);
+                water.SetFloat("_WaterOcean", shape.HasOcean ? 1 : 0);
+            }
+            WaterPart(group, frozen ? "FrozenRiverAndPools" : "RiversAndLakes", surface, water, -0.45f);
             var shore = new Material(kit.Mat(frozen ? "Snow" : shape.HasOcean ? "Tan" : "TanDark"));
             shore.SetFloat("_TriplanarTileSize", 3f);
             shore.SetFloat("_TexInfluence", 0.35f);

@@ -13,6 +13,8 @@ Shader "PoeClone/ToonLit"
         _AmbientBoost ("Ambient Fill", Range(0,1)) = 0.35
         _TriplanarTileSize ("Triplanar Tile Size (world units)", Float) = 2.0
         _TexInfluence ("Texture Influence", Range(0,1)) = 1.0
+        _LivingWater ("Living Water", Range(0,1)) = 0
+        _WaterOcean ("Ocean Wave Strength", Range(0,1)) = 0
         _SerpentScales ("Serpent Scale Surface", Range(0,1)) = 0
     }
     SubShader
@@ -47,6 +49,7 @@ Shader "PoeClone/ToonLit"
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
                 float2 uv : TEXCOORD0;
+                float4 waterMotion : TEXCOORD1;
             };
 
             struct Varyings
@@ -56,6 +59,7 @@ Shader "PoeClone/ToonLit"
                 float3 normalWS : TEXCOORD1;
                 float fogCoord : TEXCOORD2;
                 float2 uv : TEXCOORD3;
+                float4 waterMotion : TEXCOORD4;
             };
 
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
@@ -73,6 +77,8 @@ Shader "PoeClone/ToonLit"
                 float _TriplanarTileSize;
                 float _TexInfluence;
                 float _SerpentScales;
+                float _LivingWater;
+                float _WaterOcean;
             CBUFFER_END
 
             // ---------------------------------------------------------------
@@ -97,9 +103,21 @@ Shader "PoeClone/ToonLit"
                 return bounds.z > 0 && distance.x < bounds.z && distance.y < bounds.w ? 1.0 : 0.0;
             }
 
+            float WaterWave(float2 p, float4 motion)
+            {
+                float t = _Time.y;
+                float still = sin(dot(p, float2(0.87, 0.54)) - t * 1.1) *
+                    0.035 + sin(dot(p, float2(-0.6, 1.3)) - t * 0.83) * 0.018;
+                float current = sin(motion.z * 2.6 - t * 3.8) * 0.035 +
+                    sin(dot(p, float2(-motion.y, motion.x)) * 4 + motion.z * 1.3 - t * 2) * 0.012;
+                return lerp(still, current, motion.w) * (1 + _WaterOcean * 0.5);
+            }
+
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
+                if (_LivingWater > 0)
+                    IN.positionOS.y += WaterWave(TransformObjectToWorld(IN.positionOS.xyz).xz, IN.waterMotion);
                 VertexPositionInputs vpi = GetVertexPositionInputs(IN.positionOS.xyz);
                 VertexNormalInputs vni = GetVertexNormalInputs(IN.normalOS);
                 OUT.positionHCS = vpi.positionCS;
@@ -107,6 +125,7 @@ Shader "PoeClone/ToonLit"
                 OUT.normalWS = vni.normalWS;
                 OUT.fogCoord = ComputeFogFactor(vpi.positionCS.z);
                 OUT.uv = IN.uv;
+                OUT.waterMotion = IN.waterMotion;
                 return OUT;
             }
 
@@ -160,6 +179,17 @@ Shader "PoeClone/ToonLit"
             half4 frag(Varyings IN) : SV_Target
             {
                 float3 normalWS = normalize(IN.normalWS);
+                half waterHighlight = 0;
+                if (_LivingWater > 0)
+                {
+                    float wave = WaterWave(IN.positionWS.xz, IN.waterMotion);
+                    float3 surfaceNormal = normalize(cross(ddy(IN.positionWS), ddx(IN.positionWS)));
+                    normalWS = surfaceNormal.y < 0 ? -surfaceNormal : surfaceNormal;
+                    // Fine travelling highlights remain visible even on the coarse low-poly mesh.
+                    float ripple = lerp(sin(dot(IN.positionWS.xz, float2(1.6, 0.7)) - _Time.y * 1.4),
+                        sin(IN.waterMotion.z * 3.4 - _Time.y * 4.9), IN.waterMotion.w);
+                    waterHighlight = smoothstep(0.72, 0.98, ripple) * 0.14 + wave * 0.7;
+                }
                 half4 scales = half4(1, 1, 1, 0);
                 if (_SerpentScales > 0.0)
                 {
@@ -244,6 +274,7 @@ Shader "PoeClone/ToonLit"
                 color += _RimColor.rgb * rim * lerp(1.0, 0.23, cave);
                 #endif
 
+                color += waterHighlight * half3(0.45, 0.75, 0.8);
                 color = MixFog(color, IN.fogCoord);
 
                 return half4(color, _BaseColor.a);

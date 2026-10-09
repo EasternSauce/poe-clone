@@ -126,6 +126,7 @@ namespace PoeClone.World
                 GameObject flame = RuntimePrimitives.Create(PrimitiveType.Sphere, t, SpiritLight);
                 flame.transform.position = p + Vector3.up * 0.58f;
                 flame.transform.localScale = new Vector3(0.09f, 0.15f, 0.09f);
+                PoeClone.Visuals.LivingFlame.Attach(flame);
                 if (k % 3 == 0)
                     Glow(t, p + Vector3.up * 0.9f, SpiritLight, 5f, 2.2f, flicker: true);
             }
@@ -187,15 +188,15 @@ namespace PoeClone.World
                 float rad = (openingYaw + s * 25f) * Mathf.Deg2Rad;
                 Vector3 p = site + new Vector3(Mathf.Sin(rad), 0f, Mathf.Cos(rad)) * wallRadius;
                 Box(t, p + Vector3.up * 1.6f, new Vector3(0.18f, 3.2f, 0.18f), kit.Mat("Wood"));
-                Ball(t, p + Vector3.up * 3.3f, 0.22f, kit.Mat("Ember"), solid: false);
+                Flame(t, p + Vector3.up * 3.3f, 0.22f, kit.Mat("Ember"));
                 Glow(t, p + Vector3.up * 3.6f, FireLight, 9f, 4.5f, flicker: true);
             }
 
             // The big campfire in the middle.
             for (int k = 0; k < 4; k++)
                 Cyl(t, site + Vector3.up * 0.15f, 0.12f, 1.6f, kit.Mat("Charred"), solid: false, euler: new Vector3(90f, k * 45f, 0f));
-            Ball(t, site + Vector3.up * 0.35f, 0.45f, kit.Mat("Ember"), flatten: 0.6f, solid: false);
-            Ball(t, site + Vector3.up * 0.7f, 0.25f, kit.Mat("Lantern"), solid: false);
+            Flame(t, site + Vector3.up * 0.35f, 0.45f, kit.Mat("Ember"), flatten: 0.6f);
+            Flame(t, site + Vector3.up * 0.7f, 0.25f, kit.Mat("Lantern"));
             Cyl(t, site + Vector3.up * 0.4f, 1.1f, 0.8f, kit.Mat("Stone"), solid: true).GetComponent<Renderer>().enabled = false;
             Glow(t, site + Vector3.up * 1.4f, FireLight, 14f, 7f, flicker: true);
 

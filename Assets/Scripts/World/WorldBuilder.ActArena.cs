@@ -205,7 +205,7 @@ namespace PoeClone.World
                 Vector3 p = new Vector3(-1f + j * 0.32f, 0f, -0.65f - j % 2 * 0.25f);
                 float h = 0.28f + (j + variant) % 3 * 0.12f;
                 LocalCyl(offering, p + Vector3.up * h * 0.5f, 0.075f, h, kit.Mat("Candle"), false);
-                LocalBall(offering, p + Vector3.up * (h + 0.05f), 0.06f, kit.Mat("Lantern"));
+                LocalFlame(offering, p + Vector3.up * (h + 0.05f), 0.06f, kit.Mat("Lantern"));
             }
         }
 

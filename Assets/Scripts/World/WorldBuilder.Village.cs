@@ -1,11 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using PoeClone.Visuals;
 
 namespace PoeClone.World
 {
     public partial class WorldBuilder
     {
+        private Vector3 laundryWorkSpot, laundryBasket, laundryFacing, gardenWorkSpot, gardenFacing;
+        private WindCloth[] villageLaundry;
+
         // A continuous ribbon avoids overlapping road cubes and their visible seams.
         // Authored bends are sampled smoothly; edges and width vary without rerolling routes.
         private void WindingPath(Transform parent, string name, int area, float width, Material material,
@@ -140,6 +144,11 @@ namespace PoeClone.World
             }
             LocalBox(yard, new Vector3(0, 0.65f, 1.8f), new Vector3(5.5f, 0.14f, 0.1f), kit.Mat("Wood"));
             Claim(yard.position, 4f);
+            if (gardenWorkSpot == Vector3.zero)
+            {
+                gardenWorkSpot = yard.TransformPoint(new Vector3(0, 0, -1.3f));
+                gardenFacing = yard.forward;
+            }
         }
 
         private void CottageDetails(Transform house, int index)
@@ -170,9 +179,18 @@ namespace PoeClone.World
             for (int side = -1; side <= 1; side += 2)
                 LocalBox(laundry, new Vector3(side * 2.4f, 1.05f, 0), new Vector3(0.12f, 2.1f, 0.12f), kit.Mat("Wood"));
             LocalBox(laundry, new Vector3(0, 2f, 0), new Vector3(4.8f, 0.035f, 0.035f), kit.Mat("Wood"), false);
+            var clothes = new WindCloth[3];
             for (int cloth = -1; cloth <= 1; cloth++)
-                LocalBox(laundry, new Vector3(cloth * 1.25f, 1.5f, 0), new Vector3(0.8f, 0.9f, 0.025f),
-                    kit.Mat(cloth == 0 ? "ClothYellow" : "ClothBlue"), false, new Vector3(0, 0, cloth * 4));
+                clothes[cloth + 1] = WindCloth.Create(laundry, new Vector3(cloth * 1.25f, 1.95f, 0), 0.8f, 0.9f,
+                    kit.Mat(cloth == 0 ? "ClothYellow" : "ClothBlue"));
+            LocalCyl(laundry, new Vector3(1.5f, 0.22f, -1.1f), 0.42f, 0.44f, kit.Mat("Wood"), false);
+            if (index == 1)
+            {
+                villageLaundry = clothes;
+                laundryWorkSpot = laundry.TransformPoint(new Vector3(0, 0, -0.85f));
+                laundryBasket = laundry.TransformPoint(new Vector3(1.5f, 0.45f, -1.1f));
+                laundryFacing = laundry.forward;
+            }
             Claim(laundry.position, 4f);
         }
 
@@ -203,7 +221,7 @@ namespace PoeClone.World
             }
             Box(nook, fire + Vector3.up * 0.18f, new Vector3(1.6f, 0.25f, 0.25f), kit.Mat("Bark"), false, new Vector3(0, 35, 0));
             Box(nook, fire + Vector3.up * 0.32f, new Vector3(1.6f, 0.25f, 0.25f), kit.Mat("Bark"), false, new Vector3(0, -35, 0));
-            Ball(nook, fire + Vector3.up * 0.55f, 0.48f, kit.Mat("Ember"), flatten: 1.4f, solid: false);
+            Flame(nook, fire + Vector3.up * 0.55f, 0.48f, kit.Mat("Ember"), flatten: 1.4f);
             Glow(nook, fire + Vector3.up * 1.1f, new Color(1f, 0.59f, 0.26f), 9, 3, true);
             // Social seating is separate from the starter-loot benches.
             for (int side = -1; side <= 1; side += 2)
@@ -265,6 +283,43 @@ namespace PoeClone.World
             Npc npc = Npc.Create(prefab, NpcRole.Villager, name, look, p + Vector3.up * 1.1f * look.Scale,
                 -local.normalized, parent);
             npc.SetConversation(greeting, topic, story);
+            VillageActivity activity = name.Contains("Tessa") ? VillageActivity.Sweep :
+                name.Contains("Nella") ? VillageActivity.Garden : name.Contains("Fen") ? VillageActivity.WarmHands :
+                name.Contains("Lio") ? VillageActivity.Laundry : name.Contains("Dain") ? VillageActivity.Produce : VillageActivity.Chat;
+            Vector3 work = activity == VillageActivity.Laundry ? laundryWorkSpot :
+                activity == VillageActivity.Garden ? gardenWorkSpot : p;
+            Vector3 face = activity == VillageActivity.Laundry ? laundryFacing :
+                activity == VillageActivity.Garden ? gardenFacing :
+                activity == VillageActivity.WarmHands ? (Center(Haven) + Flat(-27, -12) - p).normalized :
+                activity == VillageActivity.Produce ? (Center(Haven) + Flat(91, -5) - p).normalized : -local.normalized;
+            var walk = npc.GetComponentInChildren<CharacterWalkAnimator>();
+            GameObject tool = null;
+            if (walk != null && walk.WorkHand != null && (activity == VillageActivity.Sweep || activity == VillageActivity.Garden))
+            {
+                tool = new GameObject(activity == VillageActivity.Sweep ? "SweepingBroom" : "WateringCan");
+                tool.transform.SetParent(walk.WorkHand, false);
+                tool.transform.localPosition = new Vector3(0, -0.45f, 0);
+                if (activity == VillageActivity.Sweep)
+                {
+                    LocalBox(tool.transform, new Vector3(0, -0.3f, 0), new Vector3(0.055f, 1.25f, 0.055f), kit.Mat("Wood"), false);
+                    LocalBox(tool.transform, new Vector3(0, -0.93f, 0), new Vector3(0.38f, 0.25f, 0.13f), kit.Mat("Tan"), false);
+                }
+                else
+                {
+                    LocalCyl(tool.transform, new Vector3(0, -0.1f, 0), 0.19f, 0.32f, kit.Mat("Iron"), false);
+                    LocalBox(tool.transform, new Vector3(0, 0, 0.28f), new Vector3(0.08f, 0.08f, 0.4f), kit.Mat("Iron"), false, new Vector3(-20, 0, 0));
+                }
+                tool.SetActive(false);
+            }
+            Vector3 social = Center(Haven) + (activity == VillageActivity.Produce ? Flat(84, 5) :
+                activity == VillageActivity.Laundry ? Flat(21, 31) :
+                activity == VillageActivity.Garden ? Flat(-21, 12) :
+                activity == VillageActivity.Sweep ? Flat(-8, 6) :
+                activity == VillageActivity.WarmHands ? Flat(-35, -5) : Flat(-20, -8));
+            work.y = p.y; social.y = p.y;
+            var routine = npc.gameObject.AddComponent<VillageRoutine>();
+            routine.Configure(Shape(Haven), activity, face, tool, work, social, p);
+            if (activity == VillageActivity.Laundry) routine.BindLaundry(villageLaundry, laundryBasket);
         }
 
         private void BuildSmithWorkshop(Transform parent, Vector3 p)
@@ -281,6 +336,8 @@ namespace PoeClone.World
             LocalBox(workshop, new Vector3(2, 1.35f, -0.9f), new Vector3(1.1f, 0.12f, 0.9f), kit.Mat("Ember"), false);
             LocalBox(workshop, new Vector3(-1.3f, 0.55f, 0), new Vector3(0.6f, 1.1f, 0.6f), kit.Mat("Wood"));
             LocalBox(workshop, new Vector3(-1.3f, 1.15f, 0), new Vector3(1.6f, 0.3f, 0.65f), kit.Mat("Iron"));
+            Flame(workshop, p + new Vector3(2, 1.58f, -0.9f), 0.25f, kit.Mat("Ember"), 1.1f, 0.25f);
+            Glow(workshop, p + new Vector3(2, 1.7f, -0.9f), FireLight, 6, 2, true);
             Claim(p, 5f);
         }
     }

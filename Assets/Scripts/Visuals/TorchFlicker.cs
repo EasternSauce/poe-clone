@@ -3,9 +3,7 @@ using UnityEngine;
 namespace PoeClone.Visuals
 {
     /// <summary>
-    /// Very simple point-light flicker for torches: perturbs intensity (and a
-    /// touch of flame scale) using layered Perlin noise, no textures or
-    /// coroutines needed.
+    /// Point-light flicker for torches; the optional flame mesh gets wind motion and smoke.
     /// </summary>
     public class TorchFlicker : MonoBehaviour
     {
@@ -18,13 +16,15 @@ namespace PoeClone.Visuals
         public float flameScaleJitter = 0.15f;
 
         private float seed;
-        private Vector3 baseFlameScale = Vector3.one;
 
         private void Awake()
         {
             if (torchLight == null) torchLight = GetComponent<Light>();
             seed = Random.Range(0f, 1000f);
-            if (flameVisual != null) baseFlameScale = flameVisual.localScale;
+            if (flameVisual != null)
+            {
+                LivingFlame.Attach(flameVisual.gameObject);
+            }
         }
 
         private void Update()
@@ -34,12 +34,6 @@ namespace PoeClone.Visuals
 
             if (torchLight != null)
                 torchLight.intensity = baseIntensity + flicker;
-
-            if (flameVisual != null)
-            {
-                float s = 1f + (n - 0.5f) * flameScaleJitter;
-                flameVisual.localScale = new Vector3(baseFlameScale.x, baseFlameScale.y * s, baseFlameScale.z);
-            }
         }
     }
 }

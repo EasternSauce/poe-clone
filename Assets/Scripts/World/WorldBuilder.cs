@@ -202,6 +202,7 @@ namespace PoeClone.World
 
             definitions[ActArena] = BuildActArena();
             ConfigureCaveLighting(player.transform);
+            BuildAmbientDetails();
 
             // Colliders made this frame aren't in the physics world until it syncs; the starter
             // loot below finds the ground by raycast.
@@ -285,7 +286,9 @@ namespace PoeClone.World
             Cyl(t, c + new Vector3(0f, 0.02f, 0f), 11f, 0.04f, kit.Mat("Stone"), solid: false);
             Transform well = Holder(t, "HavenWell", c, Quaternion.identity);
             LocalCyl(well, new Vector3(0f, 0.45f, 0f), 1.3f, 0.9f, kit.Mat("Stone"));
-            LocalCyl(well, new Vector3(0f, 0.92f, 0f), 1.05f, 0.04f, kit.Mat("Water"), solid: false);
+            var wellWater = new Material(kit.Mat("Water")) { name = "RipplingWellWater" };
+            wellWater.SetFloat("_LivingWater", 1);
+            LocalCyl(well, new Vector3(0f, 0.92f, 0f), 1.05f, 0.04f, wellWater, solid: false);
             LocalBox(well, new Vector3(-1.2f, 1.4f, 0f), new Vector3(0.18f, 2.8f, 0.18f), kit.Mat("Wood"));
             LocalBox(well, new Vector3(1.2f, 1.4f, 0f), new Vector3(0.18f, 2.8f, 0.18f), kit.Mat("Wood"));
             LocalBox(well, new Vector3(0f, 2.9f, 0f), new Vector3(3.2f, 0.25f, 2.2f), kit.Mat("Roof"));
@@ -401,6 +404,7 @@ namespace PoeClone.World
                 GameObject flame = RuntimePrimitives.Create(PrimitiveType.Sphere, t, SpiritLight);
                 flame.transform.position = crypt + new Vector3(k * 2.4f, 4.05f, -4.2f);
                 flame.transform.localScale = new Vector3(0.35f, 0.55f, 0.35f);
+                LivingFlame.Attach(flame);
                 Glow(t, crypt + new Vector3(k * 2.4f, 4.3f, -4.2f), SpiritLight, 10f, 5f, flicker: true);
             }
             Claim(crypt, 7f);
@@ -446,8 +450,8 @@ namespace PoeClone.World
             }
             WeatheredSlab(t, "AltarBase", temple + new Vector3(0f, 0.14f, 3f), new Vector2(1.3f, 0.85f), 0.85f, kit.Mat("Sandstone"), 18f);
             WeatheredSlab(t, "AltarCap", temple + new Vector3(0f, 0.99f, 3f), new Vector2(1.5f, 1f), 0.15f, kit.Mat("Sandstone"), 18f);
-            Ball(t, temple + new Vector3(-0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
-            Ball(t, temple + new Vector3(0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
+            Flame(t, temple + new Vector3(-0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
+            Flame(t, temple + new Vector3(0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
             Glow(t, temple + new Vector3(0f, 1.9f, 3f), FireLight, 10f, 5f, flicker: true);
             Claim(temple, 11f);
             Spots["Altar"] = temple;
@@ -886,6 +890,8 @@ namespace PoeClone.World
             LocalBox(stall, new Vector3(0f, 2.55f, 0f), new Vector3(3.1f, 0.15f, 2.2f), cloth, euler: new Vector3(-8f, 0f, 0f));
             LocalBox(stall, new Vector3(-0.6f, 1.2f, 0.75f), new Vector3(0.5f, 0.2f, 0.4f), kit.Mat("ClothGreen"), solid: false);
             LocalBox(stall, new Vector3(0.5f, 1.25f, 0.7f), new Vector3(0.4f, 0.3f, 0.3f), kit.Mat("Pumpkin"), solid: false);
+            for (int strip = -1; strip <= 1; strip++)
+                WindCloth.Create(stall, new Vector3(strip * 0.95f, 2.42f, -1.05f), 0.94f, 0.28f, cloth);
             Claim(p, 2.6f);
         }
 
@@ -893,8 +899,8 @@ namespace PoeClone.World
         {
             Box(t, p + Vector3.up * 1.4f, new Vector3(0.14f, 2.8f, 0.14f), kit.Mat("Iron"));
             Box(t, p + new Vector3(0f, 2.75f, 0f), new Vector3(0.5f, 0.08f, 0.5f), kit.Mat("Iron"), solid: false);
-            Ball(t, p + new Vector3(0f, 2.55f, 0f), 0.22f, kit.Mat("Lantern"), solid: false);
-            Glow(t, p + new Vector3(0f, 2.3f, 0f), LanternLight, 10f, 8f);
+            Flame(t, p + new Vector3(0f, 2.55f, 0f), 0.22f, kit.Mat("Lantern"), 1, 0.2f);
+            Glow(t, p + new Vector3(0f, 2.3f, 0f), LanternLight, 10f, 8f, true);
             Claim(p, 0.6f);
         }
 
@@ -1004,7 +1010,7 @@ namespace PoeClone.World
                 Vector3 o = new Vector3(R(-0.3f, 0.3f), 0f, R(-0.3f, 0.3f));
                 float h = R(0.15f, 0.4f);
                 LocalCyl(group, o + Vector3.up * h * 0.5f, 0.05f, h, kit.Mat("Candle"), solid: false);
-                LocalBall(group, o + Vector3.up * (h + 0.04f), 0.035f, kit.Mat("Ember"));
+                LocalFlame(group, o + Vector3.up * (h + 0.04f), 0.035f, kit.Mat("Ember"));
             }
             Glow(group, p + Vector3.up * 0.6f, CandleLight, 4.5f, 2.5f, flicker: true);
             return group.gameObject;
@@ -1037,8 +1043,8 @@ namespace PoeClone.World
         private GameObject Brazier(Transform t, Vector3 p)
         {
             GameObject bowl = Cyl(t, p + Vector3.up * 0.5f, 0.45f, 1f, kit.Mat("Stone"));
-            Ball(t, p + Vector3.up * 1.1f, 0.3f, kit.Mat("Ember"), solid: false);
-            Ball(t, p + new Vector3(0.12f, 1.3f, 0.05f), 0.16f, kit.Mat("Lantern"), solid: false);
+            Flame(t, p + Vector3.up * 1.1f, 0.3f, kit.Mat("Ember"));
+            Flame(t, p + new Vector3(0.12f, 1.3f, 0.05f), 0.16f, kit.Mat("Lantern"));
             Glow(t, p + Vector3.up * 1.6f, FireLight, 9f, 5f, flicker: true);
             return bowl;
         }

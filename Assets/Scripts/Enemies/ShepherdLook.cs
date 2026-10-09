@@ -317,7 +317,7 @@ namespace PoeClone.Enemies
                 float z = (i < 2 ? 1f : -1f) * 0.10f;
                 Part(PrimitiveType.Cube, t, Iron, new Vector3(x, -0.28f, z), new Vector3(0.025f, 0.30f, 0.025f));
             }
-            Part(PrimitiveType.Sphere, t, Flame, new Vector3(0f, -0.28f, 0f), new Vector3(0.15f, 0.20f, 0.15f));
+            LivingFlame.Attach(Part(PrimitiveType.Sphere, t, Flame, new Vector3(0f, -0.28f, 0f), new Vector3(0.15f, 0.20f, 0.15f)), 0.2f);
 
             var glow = new GameObject("LanternGlow");
             glow.transform.SetParent(t, false);

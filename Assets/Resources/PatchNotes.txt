@@ -1,3 +1,9 @@
+version: 2026-10-09-living-world
+- Added ripples to lakes, ocean waves, and visible downstream currents that follow river bends. Frozen water remains still.
+- Candles, torches, lanterns, braziers, forge fires and campfires now dance in the wind and release drifting smoke.
+- Town laundry, market awning hems, cloth tied to forest branches and weathered roadside banners move with a shared, gusting breeze. Tree crowns sway gently.
+- Haven villagers now walk between chore and social stops, avoiding scenery and pausing when selected for conversation. They hang laundry from baskets, tend gardens with watering cans, sweep with brooms, check produce, warm their hands and gesture while telling stories.
+
 version: 2026-10-09-gate-alignment
 - Aligned area gates across their approach paths, including Haven and the Haunted Graveyard. Arrival points now follow the same approach direction.
 - Straightened the Shed Sanctuary's inner gate against the south wall and aligned its exit trigger with the doorway.

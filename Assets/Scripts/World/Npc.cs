@@ -52,6 +52,7 @@ namespace PoeClone.World
         private Transform player;
         private bool turnsToPlayer = true;
         private float labelHeight = 2.1f;
+        private VillageRoutine routine;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
@@ -212,6 +213,8 @@ namespace PoeClone.World
         {
             if (!turnsToPlayer)
                 return;
+            if (routine == null) routine = GetComponent<VillageRoutine>();
+            if (routine != null && routine.OwnsFacing) return;
 
             if (player == null)
             {

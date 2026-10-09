@@ -33,6 +33,7 @@ namespace PoeClone.Player
         }
 
         private static NpcInteractor activeInstance;
+        public static Npc RequestedNpc => activeInstance != null ? activeInstance.target : null;
 
         private PlayerController controller;
         private PlayerStats stats;

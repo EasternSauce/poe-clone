@@ -95,6 +95,32 @@ namespace PoeClone.World
             return d;
         }
 
+        /// <summary>XY is downstream direction, Z is distance along the river, W is current strength.
+        /// Rivers flow from their first authored knot to their last; lakes have no current.</summary>
+        public Vector4 WaterMotion(Vector3 local)
+        {
+            Vector2 p = new Vector2(local.x, local.z);
+            Vector2 direction = Vector2.zero;
+            float weightedDistance = 0, weights = 0, along = 0, riverDepth = -10000, lakeDepth = -10000;
+            foreach (Region water in waters)
+            {
+                if (!water.corridor) { lakeDepth = Mathf.Max(lakeDepth, water.Distance(p)); continue; }
+                Vector2 segment = water.b - water.a;
+                float length = segment.magnitude;
+                float t = Mathf.Clamp01(Vector2.Dot(p - water.a, segment) / Mathf.Max(0.001f, segment.sqrMagnitude));
+                float distance = Vector2.Distance(p, water.a + segment * t);
+                riverDepth = Mathf.Max(riverDepth, water.radii.x - distance);
+                float weight = 1f / Mathf.Pow(0.5f + distance, 4);
+                direction += segment.normalized * weight;
+                weightedDistance += (along + t * length) * weight;
+                weights += weight; along += length;
+            }
+            float strength = Mathf.Clamp01((riverDepth - lakeDepth + 1) * 0.5f);
+            if (weights <= 0 || riverDepth < -1) return Vector4.zero;
+            direction.Normalize();
+            return new Vector4(direction.x, direction.y, weightedDistance / weights, strength);
+        }
+
         public AreaShape Bridge(float x, float z, float length, float width, float yaw = 0f)
         {
             Bridges.Add((new Vector2(x, z), new Vector2(length, width), yaw));
