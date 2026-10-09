@@ -749,6 +749,165 @@ namespace PoeClone.EditorTools
             return "spawned " + string.Join(", ", spawned);
         }
 
+        // ------------------------------------------------------------------ boss showcase
+
+        private static readonly string[] ShowcaseBosses =
+        {
+            "Bramblesow", "Vex, the Tunnel King", "Gravelord Mortis", "The Bell-Ringer",
+            "Ashen Warlord", "The Sunforged Idol", "Rimeheart", "Hrimgar the Huntress"
+        };
+
+        private const float ShowcaseGap = 3.5f;      // seconds between moves (after the last one finishes)
+        private const float ShowcaseIntro = 2.5f;    // the boss stands there a moment before its first move
+        private const float ShowcaseCorpse = 4f;     // how long the dead boss lies before the next one comes
+
+        private static int showcaseBoss = -1;
+        private static int showcaseMove;
+        private static float showcaseNext;
+        private static BossAbilities showcaseCurrent;
+        private static List<string> showcaseMoves;
+        private static bool showcasePlaying;
+        private static string showcaseLog = "not running";
+
+        /// <summary>
+        /// A one-time demo of every field boss: each in turn appears in front of the player, plays
+        /// every one of its moves a few seconds apart (its name and the move's shown over it), then
+        /// dies, and the next one comes. Run in a QuickStart sandbox (the player is in god mode).
+        /// </summary>
+        public static string BossShowcase()
+        {
+            if (!Application.isPlaying)
+                return "start play first (QuickStart)";
+            ShowcaseStop();
+            God();
+            Clear(60f);
+            showcaseBoss = -1;
+            showcaseNext = Time.time + 0.5f;
+            EditorApplication.update += ShowcaseTick;
+            showcaseLog = "starting";
+            return "showcase started: " + string.Join(", ", ShowcaseBosses);
+        }
+
+        public static string BossShowcaseStatus() => showcaseLog;
+
+        public static string ShowcaseStop()
+        {
+            EditorApplication.update -= ShowcaseTick;
+            if (showcaseCurrent != null)
+                UnityEngine.Object.Destroy(showcaseCurrent.gameObject);
+            showcaseCurrent = null;
+            return "stopped";
+        }
+
+        private static void ShowcaseTick()
+        {
+            if (!Application.isPlaying)
+            {
+                EditorApplication.update -= ShowcaseTick;
+                showcaseLog = "stopped (play ended)";
+                return;
+            }
+            if (Time.time < showcaseNext)
+                return;
+
+            PlayerStats ps = Stats();
+            if (ps == null)
+                return;
+
+            // The current boss: its next move, or its death once it has shown them all.
+            if (showcaseCurrent != null)
+            {
+                EnemyHealth h = showcaseCurrent.GetComponent<EnemyHealth>();
+                if (h.IsDead)
+                {
+                    UnityEngine.Object.Destroy(showcaseCurrent.gameObject);
+                    showcaseCurrent = null;
+                    Clear(60f);
+                    showcaseNext = Time.time + 1f;
+                    return;
+                }
+                if (showcaseCurrent.Busy)
+                {
+                    showcaseNext = Time.time + 0.2f;
+                    return;
+                }
+                // A move just ended: the gap before the next one.
+                if (showcasePlaying)
+                {
+                    showcasePlaying = false;
+                    showcaseNext = Time.time + ShowcaseGap;
+                    return;
+                }
+                if (showcaseMove < showcaseMoves.Count)
+                {
+                    string move = showcaseMoves[showcaseMove++];
+                    // Closing in needs a player out of reach: the boss steps back first.
+                    if (move == "closer")
+                        ShowcaseStepBack(showcaseCurrent, ps, 16f);
+                    string label = move == "closer" ? "closing in" : move == "roar" ? "half life: second phase" : move;
+                    UI.CombatText.Show(showcaseCurrent.transform.position + Vector3.up * (h.BarHeight * showcaseCurrent.transform.localScale.y + 1f),
+                        label, new Color(1f, 0.9f, 0.5f), 1.6f);
+                    showcaseLog = showcaseCurrent.name + ": " + showcaseCurrent.Play(move) + " (" + showcaseMove + "/" + showcaseMoves.Count + ")";
+                    // Its effects outlast the move a little (waves, patches): the gap is counted from when it ends.
+                    showcasePlaying = true;
+                    showcaseNext = Time.time + 0.5f;
+                    return;
+                }
+                // Shown everything: it dies.
+                h.Immune = false;
+                h.Floor = 0f;
+                UI.CombatText.Show(showcaseCurrent.transform.position + Vector3.up * 3f, "defeated", new Color(1f, 0.6f, 0.4f), 1.6f);
+                h.TakeDamage(h.CurrentHealth + 1f);
+                showcaseLog = showcaseCurrent.name + ": defeated";
+                showcaseNext = Time.time + ShowcaseCorpse;
+                return;
+            }
+
+            // The next boss.
+            showcaseBoss++;
+            if (showcaseBoss >= ShowcaseBosses.Length)
+            {
+                EditorApplication.update -= ShowcaseTick;
+                showcaseLog = "done: all " + ShowcaseBosses.Length + " bosses shown";
+                UI.CombatText.Show(ps.transform.position + Vector3.up * 3f, "Showcase finished", Color.white, 1.8f);
+                return;
+            }
+            string name = ShowcaseBosses[showcaseBoss];
+            int index = EnemyKinds.IndexOf(name);
+            EnemyKind kind = EnemyKinds.Get(index);
+            EnemySpawner spawner = UnityEngine.Object.FindAnyObjectByType<EnemySpawner>();
+            Vector3 forward = Vector3.forward;
+            Vector3 at = ps.transform.position + forward * (6f + 3f * kind.Scale);
+            at.y = 1.1f * kind.Scale;
+            GameObject go = UnityEngine.Object.Instantiate(spawner.EnemyPrefab, at, Quaternion.LookRotation(-forward));
+            go.name = kind.Name;
+            EnemyKinds.Apply(go, index, 10);
+            showcaseCurrent = go.AddComponent<BossAbilities>();
+            showcaseCurrent.Configure(kind, 10, spawner.EnemyPrefab);
+            showcaseCurrent.Scripted = true;
+            showcaseMoves = showcaseCurrent.ShowcaseOrder();
+            showcaseMove = 0;
+            showcasePlaying = false;
+            Physics.SyncTransforms();
+            UI.CombatText.Show(at + Vector3.up * (kind.BarHeight * kind.Scale + 1.5f), kind.Name, new Color(1f, 0.8f, 0.35f), 2.2f);
+            showcaseLog = (showcaseBoss + 1) + "/" + ShowcaseBosses.Length + " " + kind.Name + ": " + string.Join(", ", showcaseMoves);
+            showcaseNext = Time.time + ShowcaseIntro;
+        }
+
+        private static void ShowcaseStepBack(BossAbilities boss, PlayerStats ps, float distance)
+        {
+            Vector3 away = boss.transform.position - ps.transform.position;
+            away.y = 0f;
+            away = away.sqrMagnitude > 0.01f ? away.normalized : Vector3.forward;
+            Vector3 p = ps.transform.position + away * distance;
+            p.y = boss.transform.position.y;
+            var cc = boss.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+            boss.transform.position = p;
+            if (cc != null) cc.enabled = true;
+            Physics.SyncTransforms();
+        }
+
         /// <summary>Makes the nearest field boss play one of its moves now (by its name: "Toll", "Charge", "closer", "roar"...).</summary>
         public static string FieldMove(string move)
         {

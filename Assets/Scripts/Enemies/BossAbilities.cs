@@ -204,7 +204,7 @@ namespace PoeClone.Enemies
             }
 
             Tick();
-            if (busy)
+            if (busy || Scripted)
                 return;
 
             float distance = Flat(player.transform.position - transform.position).magnitude;
@@ -247,6 +247,25 @@ namespace PoeClone.Enemies
             nextMove = Time.time + (secondPhase ? moveEveryEnraged : moveEvery) / T;
             EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
             StartCoroutine(RunBusy(move.Run()));
+        }
+
+        /// <summary>For a showcase: picks no moves of its own (and no half-life roar); only <see cref="Play"/> runs them.</summary>
+        public bool Scripted { get; set; }
+
+        /// <summary>Every move it has, in an order that shows them all: its own moves, closing in, the roar, then the moves only its second phase uses.</summary>
+        public List<string> ShowcaseOrder()
+        {
+            var order = new List<string>();
+            foreach (BossMove m in moves)
+                if (!m.SecondPhaseOnly)
+                    order.Add(m.Name);
+            if (closer != null)
+                order.Add("closer");
+            order.Add("roar");
+            foreach (BossMove m in moves)
+                if (m.SecondPhaseOnly)
+                    order.Add(m.Name);
+            return order;
         }
 
         /// <summary>
