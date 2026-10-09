@@ -1,3 +1,19 @@
+version: 2026-10-09-unique-rework
+- Unique items have been reworked. Each now has a few stats suited to its build and one or two effects of its own, and nearly every stat rolls within a range, so two copies are rarely the same.
+- Uniques now have different level requirements, from level 1 up to level 34, and drop only in areas whose level reaches that requirement. The strongest are much rarer than the rest.
+- Uniques use better bases where their level allows, and never require less than their base.
+- New unique effects:
+  - Attacks dealing Fire, Cold or Lightning damage instead of Physical (Ashfall, Rimefletch, Storm's Receipt), so fire, cold and lightning bonuses now work for those weapons.
+  - Spell Echo: damaging spells can cast a second time for free (The Unfinished Sentence).
+  - Melee Splash: basic melee blows also hit enemies around each target (Cinderwake, Hands of the Butcher-King).
+  - Rampage: more damage for each kill in the last 4 seconds (Gorebrand, Hands of the Butcher-King).
+  - Hits dealing extra damage from your maximum mana (Mantle of the Still Mind, which also has Mind over Matter).
+  - Blocking hits back with a burst of damage based on your Armour (The Keeper's Ward).
+  - Spell damage leeched as life (Spellweaver's Hands), Onslaught while on full life (Wanderer's Stride), cursing enemies with Grave Rot on hit (Sexton's Hide), cheaper skills (Elder's Charm), life recovered on kill (Bonehew, Gorebrand), and taking less damage (Stillstone Aegis).
+- Some uniques give passive tree keystones without travelling to them: Pyre (Emberheart, Crown of Ash), Convergence (Twinflame Loop), Point Blank (Hollowpoint) and Executioner (Death's Grip).
+- New uniques: Gorebrand, Hollowpoint, Starfall, The Red Covenant, The Glass Diadem and Hands of the Butcher-King. The Red Covenant, The Glass Diadem and The Ossuary Codex give a large bonus with a serious drawback: no life regeneration, 35-40% less maximum life, or taking more damage.
+- Uniques you already own keep their rolls where they still apply and take on their new design. A few now need a higher level to wear.
+
 version: 2026-10-09-field-boss-rework
 - Field bosses are no longer giant versions of normal enemies. Each has a body and attacks of its own, and they come in different sizes:
   - Gravelord Mortis is now a gaunt gravedigger, only a little taller than you. He burrows under the ground and bursts up beneath you, opens graves whose dead hands hold you in place, throws the coffin off his back (the dead climb out of it), drags his shovel to split the ground, and sweeps it around him.

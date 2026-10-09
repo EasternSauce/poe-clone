@@ -32,6 +32,9 @@ namespace PoeClone.Player
         private const float ShatterShare = 0.12f;
         private const float StormbladeShare = 0.5f;
         private const float StormbladeJump = 6f;
+        private const float CurseOnHitSeconds = 4f;
+        private const float SplashRadius = 2.4f;
+        private const float RetaliationRadius = 3.5f;
 
         private static readonly Color ExplosionColor = new Color(1f, 0.45f, 0.12f);
         private static readonly Color CritColor = new Color(1f, 0.85f, 0.25f);
@@ -56,11 +59,25 @@ namespace PoeClone.Player
             EnemyController ai = enemy.GetComponent<EnemyController>();
             bool wasChilled = ai != null && ai.IsChilled;
 
+            if (sheet != null && attack && type == DamageType.Physical)
+            {
+                DamageType converted = ConvertedAttackType(sheet);
+                if (converted != DamageType.Physical)
+                {
+                    type = converted;
+                    color = CombatText.ColorFor(type);
+                }
+            }
+            // Extra damage from the mana pool joins the hit's base, so every bonus scales it.
+            if (sheet != null && !secondary)
+                damage += stats.MaxMana * Mathf.Max(0f, sheet.Total(StatType.ManaAsDamage)) / 100f;
+
             bool crit = false;
             float baseDamage = damage;
             if (sheet != null)
             {
                 damage *= Increase(sheet, stats, attack, type, wasChilled, spell: !secondary);
+                damage *= 1f + stats.RampageStacks * Mathf.Max(0f, sheet.Total(StatType.Rampage)) / 100f;
                 if (projectileDistance >= 0f && sheet.Total(StatType.PointBlank) > 0f)
                     damage *= StatSheet.PointBlankMultiplier(projectileDistance);
                 float critChance = sheet.AttackCriticalChance;
@@ -110,6 +127,20 @@ namespace PoeClone.Player
                     cloud += 25f;
                 }
                 WeaponVenom.Apply(attacker, enemy, baseDamage, poison, cloud, sheet, canEnrage: !melee);
+            }
+
+            if (!attack && !secondary)
+            {
+                float spellLeech = sheet.Total(StatType.SpellLeech);
+                if (spellLeech > 0f)
+                    stats.Heal(damage * spellLeech / 100f);
+            }
+
+            if (!secondary && !enemy.IsDead && Roll(sheet, StatType.CurseOnHit))
+            {
+                if (Skills.Curse.TakenMultiplier(enemy) <= 1f)
+                    CombatText.Show(at + Vector3.up * 2.1f * scale, "Rotting", Skills.Curse.RotColor, 0.7f);
+                Skills.Curse.Apply(enemy, CurseOnHitSeconds, 0.2f, 0.15f);
             }
 
             if (attack)
@@ -173,6 +204,48 @@ namespace PoeClone.Player
                 stats.MaxHealth > 0f && stats.CurrentHealth < stats.MaxHealth * 0.5f, chilled, element, spell: spell);
         }
 
+        // An item that turns attacks into an element: the first one worn wins.
+        private static DamageType ConvertedAttackType(StatSheet sheet)
+        {
+            if (sheet.Total(StatType.PhysicalToFire) > 0f) return DamageType.Fire;
+            if (sheet.Total(StatType.PhysicalToCold) > 0f) return DamageType.Cold;
+            if (sheet.Total(StatType.PhysicalToLightning) > 0f) return DamageType.Lightning;
+            return DamageType.Physical;
+        }
+
+        /// <summary>
+        /// Melee Splash: a basic melee blow also hurts the enemies around the one it struck, for a
+        /// share of the swing's damage (enemies the swing hit directly are left out).
+        /// </summary>
+        public static void Splash(Transform attacker, EnemyHealth struck, float damage, ICollection<EnemyHealth> alreadyHit)
+        {
+            float share = Stat(attacker, StatType.MeleeSplash);
+            if (share <= 0f || struck == null)
+                return;
+            Vector3 at = struck.transform.position;
+            foreach (EnemyHealth other in EnemiesNear(at, SplashRadius, struck))
+            {
+                if (alreadyHit != null && alreadyHit.Contains(other)) continue;
+                Deal(attacker, other, damage * share / 100f, true, CombatText.PhysicalColor, secondary: true, melee: true, hitOrigin: at);
+            }
+        }
+
+        /// <summary>Block Retaliation: a block answers with a burst of physical damage around the player.</summary>
+        public static void Retaliate(Transform player, StatSheet sheet)
+        {
+            float share = sheet != null ? sheet.Total(StatType.BlockRetaliation) : 0f;
+            float damage = Mathf.Max(0f, sheet != null ? sheet.Total(StatType.Armour) : 0f) * share / 100f;
+            if (damage <= 0f || player == null)
+                return;
+            Vector3 at = player.position;
+            SkillEffects.Shockwave(at, RetaliationRadius, CombatText.BlockColor, 0.3f);
+            foreach (EnemyHealth enemy in EnemiesNear(at, RetaliationRadius, null))
+            {
+                if (Graveward.Blocks(enemy, at)) continue;
+                Deal(player, enemy, damage, false, CombatText.PhysicalColor, DamageType.Physical, secondary: true, hitOrigin: at);
+            }
+        }
+
         private static bool Roll(StatSheet sheet, StatType chance)
         {
             float percent = sheet.Total(chance);
@@ -182,9 +255,11 @@ namespace PoeClone.Player
         private static void OnKill(Transform attacker, PlayerStats stats, StatSheet sheet, EnemyHealth enemy, Vector3 at,
             float enemyMaxLife, bool chilled, bool secondary)
         {
-            float life = sheet.Total(StatType.LifeOnKill);
+            float life = sheet.Total(StatType.LifeOnKill) + stats.MaxHealth * Mathf.Max(0f, sheet.Total(StatType.LifePercentOnKill)) / 100f;
             if (life > 0f)
                 stats.Heal(life);
+            if (sheet.Total(StatType.Rampage) > 0f)
+                stats.RecordKill();
             float mana = sheet.Total(StatType.ManaOnKill);
             if (mana > 0f)
                 stats.RestoreMana(mana);

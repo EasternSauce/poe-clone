@@ -91,16 +91,17 @@ namespace PoeClone.Tests
                 {
                     new StatModifier(StatType.PhysicalDamage, 999, 1),
                     new StatModifier(StatType.AttackSpeed, 1, 2),
-                    new StatModifier(StatType.MaxLife, 21, 3),
+                    new StatModifier(StatType.MaxLife, 15, 3),
                     new StatModifier(StatType.LifeLeech, 99),
                     new StatModifier(StatType.AdditionalArrows, 4)
                 }, rarity: ItemRarity.Unique);
             ItemData current = ItemGenerator.Legalize(old);
-            Assert.AreEqual(19f, Value(current, StatType.PhysicalDamage));
-            Assert.AreEqual(8f, Value(current, StatType.AttackSpeed));
-            Assert.AreEqual(21f, Value(current, StatType.MaxLife));
-            Assert.AreEqual(3f, Value(current, StatType.LifeLeech));
-            Assert.AreEqual(10f, Value(current, StatType.ArmourPenetration));
+            Assert.AreEqual(7f, Value(current, StatType.PhysicalDamage));
+            Assert.AreEqual(15f, Value(current, StatType.MaxLife));
+            Assert.AreEqual(10f, Value(current, StatType.Strength));
+            Assert.AreEqual(2.5f, Value(current, StatType.LifePercentOnKill));
+            Assert.AreEqual(0f, ValueOrZero(current, StatType.AttackSpeed));
+            Assert.AreEqual(0f, ValueOrZero(current, StatType.LifeLeech));
             Assert.AreEqual(0f, ValueOrZero(current, StatType.AdditionalArrows));
         }
 
@@ -129,9 +130,9 @@ namespace PoeClone.Tests
         {
             ItemData belt = UniqueItems.Current("Bloodroot Cord");
             Assert.IsNotNull(belt);
-            Assert.That(Value(belt, StatType.MaxLife), Is.InRange(18f, 26f));
-            Assert.That(Value(belt, StatType.LifeRegen), Is.InRange(2f, 4f));
-            Assert.AreEqual(25f, Value(belt, StatType.HealthPotionRecovery));
+            Assert.That(Value(belt, StatType.MaxLife), Is.InRange(25f, 35f));
+            Assert.That(Value(belt, StatType.HealthPotionRecovery), Is.InRange(20f, 30f));
+            Assert.AreEqual(1f, Value(belt, StatType.PercentLifeRegen));
             Assert.AreEqual(0f, ValueOrZero(belt, StatType.OnslaughtOnHealthPotion));
             Assert.AreEqual("25% increased Life recovered by Health Potions",
                 StatFormatter.ItemLine(new StatModifier(StatType.HealthPotionRecovery, 25)));
@@ -147,7 +148,67 @@ namespace PoeClone.Tests
             Assert.AreEqual(StatType.DeathsHerald, Signature("Ledger of the Fallen"));
             ItemData draught = UniqueItems.Current("The Last Draught");
             Assert.AreEqual(1f, Value(draught, StatType.OnslaughtOnHealthPotion));
-            Assert.AreEqual(0f, ValueOrZero(draught, StatType.HealthPotionRecovery));
+        }
+
+        [Test]
+        public void EveryUniqueHasArchetypeStatsAndOneOrTwoSignatures()
+        {
+            for (int k = 0; k < UniqueItems.Count; k++)
+                Assert.That(UniqueItems.Create(k).Modifiers.Count, Is.InRange(4, 7), UniqueItems.Create(k).Name);
+        }
+
+        [Test]
+        public void UniquesNeverRequireLessThanTheirBaseAndSpanEveryAreaLevel()
+        {
+            var levels = new System.Collections.Generic.List<int>();
+            for (int k = 0; k < UniqueItems.Count; k++)
+            {
+                ItemData item = UniqueItems.Create(k);
+                int baseLevel = ItemGenerator.RequirementsOf(ItemGenerator.Display(item.Id, null, ItemRarity.Normal)).Level;
+                int uniqueLevel = ItemGenerator.RequirementsOf(item).Level;
+                Assert.GreaterOrEqual(uniqueLevel, baseLevel, item.Name);
+                Assert.AreEqual(uniqueLevel, UniqueItems.RequiredLevelFor(item.Name), item.Name);
+                if (UniqueItems.CanDrop(k, 100)) levels.Add(uniqueLevel);
+            }
+            foreach (int area in new[] { 1, 9, 17, 25, 30 })
+                Assert.IsTrue(levels.Exists(l => l >= area && l <= area + 4), "no unique starts dropping around level " + area);
+        }
+
+        [Test]
+        public void UniquesOnlyDropWhereTheAreaLevelReachesThem()
+        {
+            var rng = new System.Random(5);
+            foreach (int area in new[] { 1, 9, 17, 25, 34 })
+                for (int k = 0; k < 400; k++)
+                {
+                    ItemData item = UniqueItems.Random(rng, area);
+                    Assert.LessOrEqual(UniqueItems.RequiredLevelFor(item.Name), area, item.Name + " at area level " + area);
+                }
+        }
+
+        [Test]
+        public void StrongerUniquesDropLessOften()
+        {
+            var rng = new System.Random(9);
+            var counts = new System.Collections.Generic.Dictionary<string, int>();
+            for (int k = 0; k < 40000; k++)
+            {
+                string name = UniqueItems.Random(rng, 34).Name;
+                counts[name] = counts.TryGetValue(name, out int n) ? n + 1 : 1;
+            }
+            counts.TryGetValue("The Glass Diadem", out int diadem);
+            Assert.Greater(diadem, 0);
+            Assert.Less(diadem, counts["Bonehew"] / 5);
+        }
+
+        [Test]
+        public void UniqueEffectsDescribeThemselves()
+        {
+            Assert.AreEqual("You take 10% less Damage", StatFormatter.ItemLine(new StatModifier(StatType.DamageTaken, -10)));
+            Assert.AreEqual("You take 15% more Damage", StatFormatter.ItemLine(new StatModifier(StatType.DamageTaken, 15)));
+            Assert.AreEqual("40% less Maximum Life", StatFormatter.ItemLine(new StatModifier(StatType.MoreLife, -40)));
+            Assert.AreEqual("Attacks deal Fire damage instead of Physical", StatFormatter.ItemLine(new StatModifier(StatType.PhysicalToFire, 1)));
+            Assert.IsTrue(StatFormatter.IsSpecial(StatType.SpellEcho));
         }
 
         [Test]
@@ -173,20 +234,18 @@ namespace PoeClone.Tests
         {
             ItemData staff = UniqueItems.Current("Conductor's Reach");
             Assert.IsNotNull(staff);
-            Assert.AreEqual(6f, Value(staff, StatType.GrantChainLightning));
-            Assert.AreEqual(1f, Value(staff, StatType.AdditionalChains));
+            Assert.That(Value(staff, StatType.GrantChainLightning), Is.InRange(7f, 8f));
+            Assert.AreEqual(2f, Value(staff, StatType.AdditionalChains));
 
-            ItemData amulet = UniqueItems.Current("Death's Grip");
-            Assert.IsNotNull(amulet);
-            Assert.AreEqual(6f, Value(amulet, StatType.GrantDeathMark));
-            Assert.AreEqual(20f, Value(amulet, StatType.MarkEffect));
+            ItemData ledger = UniqueItems.Current("Ledger of the Fallen");
+            Assert.IsNotNull(ledger);
+            Assert.That(Value(ledger, StatType.GrantDeathMark), Is.InRange(5f, 6f));
+            Assert.That(Value(ledger, StatType.MarkEffect), Is.InRange(25f, 35f));
 
             var gear = new EquipmentSet();
             Assert.IsTrue(gear.TryEquip(EquipSlot.MainHand, staff, out _));
-            Assert.IsTrue(gear.TryEquip(EquipSlot.Amulet, amulet, out _));
             StatSheet sheet = StatSheet.Build(new BaseStats(), gear);
-            Assert.AreEqual(1f, sheet.Total(StatType.AdditionalChains));
-            Assert.AreEqual(20f, sheet.Total(StatType.MarkEffect));
+            Assert.AreEqual(2f, sheet.Total(StatType.AdditionalChains));
         }
 
         private static StatType Signature(string name)

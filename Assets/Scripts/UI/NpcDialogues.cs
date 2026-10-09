@@ -477,7 +477,7 @@ namespace PoeClone.UI
             double roll = rng.NextDouble();
             ItemRarity rarity = roll < 0.06 ? ItemRarity.Unique : roll < 0.5 ? ItemRarity.Rare : ItemRarity.Magic;
             ItemData item = rarity == ItemRarity.Unique
-                ? UniqueItems.Random(rng, kind)
+                ? UniqueItems.Random(rng, level, kind)
                 : ItemGenerator.Generate(rng, bases[rng.Next(bases.Count)], level, rarity);
 
             bool fits = inventory.Grid.TryAutoPlace(item);

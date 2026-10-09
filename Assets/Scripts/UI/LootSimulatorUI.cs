@@ -210,7 +210,7 @@ namespace PoeClone.EditorTools
                 for (int k = 0; k < UniqueItems.Count; k++)
                 {
                     ItemData unique = UniqueItems.Create(k);
-                    if (Allowed(unique) && dropChances.ContainsKey(unique.Id)) uniqueIndices.Add(k);
+                    if (Allowed(unique) && UniqueItems.CanDrop(k, ilvl)) uniqueIndices.Add(k);
                 }
                 if (uniqueIndices.Count == 0)
                 { status.text = "No unique items match the selected types at this area level."; return; }
@@ -224,7 +224,7 @@ namespace PoeClone.EditorTools
                 ItemData item = null;
                 if (minimumRarity == ItemRarity.Unique)
                 {
-                    item = UniqueItems.Create(uniqueIndices[rng.Next(uniqueIndices.Count)], rng);
+                    item = UniqueItems.Create(UniqueItems.PickWeighted(rng, uniqueIndices), rng);
                     item.ItemLevel = ilvl;
                 }
                 else

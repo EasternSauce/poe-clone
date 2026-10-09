@@ -840,8 +840,10 @@ namespace PoeClone.Skills
 
         // asAttack: cast as the staff's attack, already facing where it should go (PlayerCombat
         // turned the player at the moment of release); from the bar it aims itself.
-        private void Cast(SkillDefinition skill, int level, bool asAttack = false)
+        private void Cast(SkillDefinition skill, int level, bool asAttack = false, bool echo = false)
         {
+            if (!echo && Echoes(skill) && UnityEngine.Random.value * 100f < Stat(StatType.SpellEcho))
+                StartCoroutine(Echo(skill, level));
             // Committed melee skills play at impact; teleport plays only after finding a landing.
             if (skill.Id != SkillId.Cleave && skill.Id != SkillId.Pulverize &&
                 skill.Id != SkillId.ReapingArc && skill.Id != SkillId.LungingThrust &&
@@ -979,6 +981,21 @@ namespace PoeClone.Skills
                     break;
                 }
             }
+        }
+
+        // Spell Echo repeats spells that deal damage themselves; not the grimoire's mark or War Cry's buff.
+        private static bool Echoes(SkillDefinition skill) =>
+            skill.DamageSpell && skill.Id != SkillId.DeathMark && skill.Id != SkillId.WarCry;
+
+        private const float EchoDelay = 0.22f;
+
+        // The echo leaves the way the player faces by then, free of cost and cooldown.
+        private IEnumerator Echo(SkillDefinition skill, int level)
+        {
+            yield return new WaitForSeconds(EchoDelay);
+            if (stats == null || stats.IsDead)
+                yield break;
+            Cast(skill, level, asAttack: true, echo: true);
         }
 
         // A full turn on the spot, then everything in reach takes the blow.

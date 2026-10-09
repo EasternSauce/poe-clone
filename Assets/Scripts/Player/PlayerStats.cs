@@ -134,7 +134,8 @@ namespace PoeClone.Player
                 return;
             StatSheet defensiveSheet = inventory != null ? inventory.Stats : null;
             if (defensiveSheet != null)
-                damage = DefenceMath.AfterResistance(damage, defensiveSheet.Total(StatType.PoisonResistance));
+                damage = DefenceMath.AfterResistance(damage, defensiveSheet.Total(StatType.PoisonResistance)) *
+                    TakenMultiplier(defensiveSheet);
             if (poison.Count == 0)
                 CombatText.Show(transform.position + Vector3.up * 1.6f, "Poisoned", CombatText.PoisonColor, 0.7f);
             if (poison.Count >= MaxPoisonStacks)
@@ -179,9 +180,10 @@ namespace PoeClone.Player
             {
                 StatSheet sheet = inventory != null ? inventory.Stats : null;
                 float manaRegen = sheet != null ? sheet.Total(StatType.ManaRegen) : 0f;
-                float lifeRegen = sheet != null ? sheet.Total(StatType.LifeRegen) : 0f;
+                bool regenerates = sheet == null || sheet.Total(StatType.NoLifeRegen) <= 0f;
+                float lifeRegen = sheet != null && regenerates ? sheet.Total(StatType.LifeRegen) : 0f;
                 currentMana = Mathf.Min(MaxMana, currentMana + DefenceMath.ManaRegenPerSecond(MaxMana, Intelligence, manaRegen) * Time.deltaTime);
-                float percentRegen = sheet != null ? sheet.Total(StatType.PercentLifeRegen) : 0f;
+                float percentRegen = sheet != null && regenerates ? sheet.Total(StatType.PercentLifeRegen) : 0f;
                 currentHealth = Mathf.Min(MaxHealth, currentHealth + DefenceMath.LifeRegenPerSecond(MaxHealth, lifeRegen, percentRegen) * Time.deltaTime);
 
                 if (healOverTimeLeft > 0f)
@@ -293,13 +295,24 @@ namespace PoeClone.Player
         public bool UsesBloodMagic => inventory != null && inventory.Stats != null &&
             inventory.Stats.Total(StatType.BloodMagic) > 0f;
 
-        public bool CanAffordSkill(float amount) => !dead &&
-            (amount <= 0f || (UsesBloodMagic ? currentHealth > amount : currentMana >= amount));
+        public bool CanAffordSkill(float amount)
+        {
+            amount = AfterCostReduction(amount);
+            return !dead && (amount <= 0f || (UsesBloodMagic ? currentHealth > amount : currentMana >= amount));
+        }
+
+        // Skill costs after "Skills cost X% less" from gear.
+        private float AfterCostReduction(float amount)
+        {
+            float reduction = inventory != null && inventory.Stats != null ? inventory.Stats.Total(StatType.ManaCostReduction) : 0f;
+            return amount * Mathf.Clamp01(1f - reduction / 100f);
+        }
 
         /// <summary>Pays the skill cost from mana, or life with Blood Magic. Never kills the caster.</summary>
         public bool TrySpendMana(float amount)
         {
             if (!CanAffordSkill(amount)) return false;
+            amount = AfterCostReduction(amount);
             if (UsesBloodMagic) currentHealth -= Mathf.Max(0f, amount);
             else currentMana -= Mathf.Max(0f, amount);
             return true;
@@ -348,12 +361,13 @@ namespace PoeClone.Player
                 if (attack && UnityEngine.Random.value < DefenceMath.BlockChance(sheet.Total(StatType.BlockChance)))
                 {
                     CombatText.Show(textAt, "Blocked", CombatText.BlockColor, 0.8f);
+                    HitEffects.Retaliate(transform, sheet);
                     if (AudioManager.Instance != null)
                         AudioManager.Instance.PlayAtPoint(AudioManager.Instance.combatBlock, transform.position);
                     return false;
                 }
 
-                damage = Mitigate(sheet, damage, type);
+                damage = Mitigate(sheet, damage, type) * TakenMultiplier(sheet);
             }
 
             if (type == DamageType.Cold && controller != null)
@@ -371,6 +385,32 @@ namespace PoeClone.Player
 
             TakeDamage(damage - absorbed);
             return true;
+        }
+
+        // "You take X% more (or less) damage" from gear.
+        private static float TakenMultiplier(StatSheet sheet) =>
+            Mathf.Max(0f, 1f + sheet.Total(StatType.DamageTaken) / 100f);
+
+        // Rampage: the times of recent kills (only the last few seconds' worth count).
+        public const float RampageSeconds = 4f;
+        public const int RampageMaxStacks = 10;
+        private readonly System.Collections.Generic.List<float> recentKills = new System.Collections.Generic.List<float>();
+
+        /// <summary>Kills in the last few seconds, up to the Rampage cap.</summary>
+        public int RampageStacks
+        {
+            get
+            {
+                recentKills.RemoveAll(at => Time.time - at > RampageSeconds);
+                return Mathf.Min(RampageMaxStacks, recentKills.Count);
+            }
+        }
+
+        public void RecordKill()
+        {
+            recentKills.Add(Time.time);
+            if (recentKills.Count > RampageMaxStacks)
+                recentKills.RemoveAt(0);
         }
 
         private static float Mitigate(StatSheet sheet, float damage, DamageType type)

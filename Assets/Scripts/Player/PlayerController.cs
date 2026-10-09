@@ -114,7 +114,23 @@ namespace PoeClone.Player
         public const float OnslaughtMore = 1.2f;
         private float onslaughtUntil = -1f;
 
-        public bool HasOnslaught => Time.time < onslaughtUntil;
+        public bool HasOnslaught => Time.time < onslaughtUntil || OnslaughtFromFullLife;
+
+        private PlayerStats ownStats;
+        private PoeClone.Inventory.PlayerInventory ownInventory;
+
+        // A unique's "Onslaught while on Full Life".
+        private bool OnslaughtFromFullLife
+        {
+            get
+            {
+                if (ownStats == null) ownStats = GetComponent<PlayerStats>();
+                if (ownInventory == null) ownInventory = GetComponent<PoeClone.Inventory.PlayerInventory>();
+                return ownStats != null && ownInventory != null && ownInventory.Stats != null && !ownStats.IsDead &&
+                    ownInventory.Stats.Total(PoeClone.Inventory.StatType.OnslaughtAtFullLife) > 0f &&
+                    ownStats.CurrentHealth >= ownStats.MaxHealth - 0.01f;
+            }
+        }
 
         public void GrantOnslaught(float seconds)
         {

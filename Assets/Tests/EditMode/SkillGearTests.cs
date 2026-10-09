@@ -274,10 +274,10 @@ namespace PoeClone.Tests
                 ItemData item = UniqueItems.Current(name);
                 Assert.IsNotNull(item, name);
                 Assert.AreEqual(1, item.Modifiers.Count(m => m.Stat == StatType.CastSpeed), name);
-                Assert.GreaterOrEqual(item.Modifiers.Single(m => m.Stat == StatType.CastSpeed).Value, 18f, name);
+                Assert.GreaterOrEqual(item.Modifiers.Single(m => m.Stat == StatType.CastSpeed).Value, 12f, name);
             }
             var rng = new System.Random(31);
-            for (int k = 0; k < 3000 && names.Count > 0; k++)
+            for (int k = 0; k < 20000 && names.Count > 0; k++)
                 names.Remove(UniqueItems.Random(rng).Name);
             Assert.IsEmpty(names, "new cast-speed uniques must drop outside the Shepherd reward pool");
         }

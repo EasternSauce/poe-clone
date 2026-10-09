@@ -157,7 +157,24 @@ namespace PoeClone.Inventory
         MoreLightningDamage,
         MorePoisonDamage,
         MoreMinionDamage,
-        LifeOnAttackHit            // flat life gained per enemy hit by the player's attacks
+        LifeOnAttackHit,           // flat life gained per enemy hit by the player's attacks
+
+        // Unique effects (see HitEffects, PlayerStats and PlayerSkills for what each does).
+        PhysicalToFire,             // 1: attacks deal Fire damage instead of Physical
+        PhysicalToCold,             // 1: attacks deal Cold damage instead of Physical
+        PhysicalToLightning,        // 1: attacks deal Lightning damage instead of Physical
+        SpellEcho,                  // % chance for a damaging spell to cast again for free
+        MeleeSplash,                // % of a melee attack's damage dealt to enemies around each target
+        Rampage,                    // % more damage per kill in the last 4 seconds (up to 10 kills)
+        DamageTaken,                // % more damage taken (negative: less)
+        ManaAsDamage,               // hits deal extra damage equal to this % of maximum mana
+        BlockRetaliation,           // blocking deals this % of Armour as Physical damage around you
+        SpellLeech,                 // % of spell damage dealt returned as life
+        OnslaughtAtFullLife,        // 1: Onslaught while on full life
+        CurseOnHit,                 // % chance for hits to curse the enemy with Grave Rot
+        NoLifeRegen,                // 1: life does not regenerate
+        ManaCostReduction,          // % less mana (or life) spent on skills
+        LifePercentOnKill           // % of maximum life recovered on kill
     }
 
     /// <summary>
@@ -681,6 +698,21 @@ namespace PoeClone.Inventory
                 case StatType.MoreLightningDamage: return "More Lightning Damage";
                 case StatType.MorePoisonDamage: return "More Poison Damage";
                 case StatType.MoreMinionDamage: return "More Minion Damage";
+                case StatType.PhysicalToFire: return "Attacks Deal Fire";
+                case StatType.PhysicalToCold: return "Attacks Deal Cold";
+                case StatType.PhysicalToLightning: return "Attacks Deal Lightning";
+                case StatType.SpellEcho: return "Spell Echo";
+                case StatType.MeleeSplash: return "Melee Splash";
+                case StatType.Rampage: return "Rampage";
+                case StatType.DamageTaken: return "Damage Taken";
+                case StatType.ManaAsDamage: return "Mana as Damage";
+                case StatType.BlockRetaliation: return "Block Retaliation";
+                case StatType.SpellLeech: return "Spell Leech";
+                case StatType.OnslaughtAtFullLife: return "Onslaught on Full Life";
+                case StatType.CurseOnHit: return "Curse on Hit";
+                case StatType.NoLifeRegen: return "No Life Regeneration";
+                case StatType.ManaCostReduction: return "Skill Cost Reduction";
+                case StatType.LifePercentOnKill: return "Life Recovered on Kill";
                 default:
                     if (SkillGrants.IsGrant(stat))
                         return SkillGrants.SkillName(stat);
@@ -755,6 +787,16 @@ namespace PoeClone.Inventory
                 case StatType.SoulBond:
                 case StatType.BoneArmour:
                 case StatType.ExtraArrowChance:
+                case StatType.SpellEcho:
+                case StatType.MeleeSplash:
+                case StatType.Rampage:
+                case StatType.DamageTaken:
+                case StatType.ManaAsDamage:
+                case StatType.BlockRetaliation:
+                case StatType.SpellLeech:
+                case StatType.CurseOnHit:
+                case StatType.ManaCostReduction:
+                case StatType.LifePercentOnKill:
                     return true;
                 default:
                     return false;
@@ -881,6 +923,21 @@ namespace PoeClone.Inventory
                 case StatType.ElementalPenetration: return n + "% Elemental Penetration";
                 case StatType.ArmourPenetration: return n + "% Armour Penetration";
                 case StatType.BoneArmour: return "Minions take " + n + "% " + (m.Value < 0f ? "more" : "less") + " damage";
+                case StatType.PhysicalToFire: return "Attacks deal Fire damage instead of Physical";
+                case StatType.PhysicalToCold: return "Attacks deal Cold damage instead of Physical";
+                case StatType.PhysicalToLightning: return "Attacks deal Lightning damage instead of Physical";
+                case StatType.SpellEcho: return n + "% chance for damaging Spells to cast a second time for free";
+                case StatType.MeleeSplash: return "Melee basic attacks deal " + n + "% of their damage to enemies around each target";
+                case StatType.Rampage: return n + "% more Damage for each enemy killed in the last 4 seconds (up to 10)";
+                case StatType.DamageTaken: return "You take " + n + "% " + (m.Value < 0f ? "less" : "more") + " Damage";
+                case StatType.ManaAsDamage: return "Hits deal extra damage equal to " + n + "% of your Maximum Mana";
+                case StatType.BlockRetaliation: return "When you Block, deal " + n + "% of your Armour as Physical damage to enemies around you";
+                case StatType.SpellLeech: return n + "% of Spell Damage Leeched as Life";
+                case StatType.OnslaughtAtFullLife: return "You have Onslaught while on Full Life";
+                case StatType.CurseOnHit: return n + "% chance for Hits to curse enemies with Grave Rot";
+                case StatType.NoLifeRegen: return "You cannot Regenerate Life";
+                case StatType.ManaCostReduction: return "Skills cost " + n + "% less";
+                case StatType.LifePercentOnKill: return "Recover " + n + "% of Maximum Life when you kill an enemy";
                 default:
                     if (SkillGrants.IsGrant(m.Stat))
                         return "Grants Level " + n + " " + SkillGrants.SkillName(m.Stat);

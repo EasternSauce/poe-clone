@@ -339,7 +339,7 @@ namespace PoeClone.Enemies
                 if (kind.IsBoss)
                 {
                     var rng = new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
-                    LootDrop.Drop(kind.Boss == BossStyle.Shepherd ? Inventory.UniqueItems.ShepherdReward(rng) : Inventory.UniqueItems.Random(rng), transform.position, itemLevel: MonsterLevel);
+                    LootDrop.Drop(kind.Boss == BossStyle.Shepherd ? Inventory.UniqueItems.ShepherdReward(rng) : Inventory.UniqueItems.Random(rng, MonsterLevel), transform.position, itemLevel: MonsterLevel);
                 }
                 var area = World.AreaManager.Instance;
                 if (area != null && area.CurrentAreaIndex >= World.WorldBuilder.Ruins && area.CurrentAreaIndex <= World.WorldBuilder.Frozen && UnityEngine.Random.value < ItemData.ReawakeningDropChance)

@@ -81,7 +81,7 @@ namespace PoeClone.World
             ItemData item;
             if (rng.NextDouble() < UniqueChance * Mathf.Min(4f, toughness))
             {
-                item = UniqueItems.Random(rng);
+                item = UniqueItems.Random(rng, Mathf.Max(1, monsterLevel));
             }
             else
             {
