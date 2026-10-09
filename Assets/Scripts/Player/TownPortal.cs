@@ -7,7 +7,7 @@ using PoeClone.World;
 namespace PoeClone.Player
 {
     /// <summary>
-    /// T (or the TOWN button on touch): a short channel, then home to Haven's waystone - to sell,
+    /// B (or the TOWN button on touch): a short channel, then home to Haven's waystone - to sell,
     /// buy potions and hand quests in, and take the waystone back out again. Moving, dashing or
     /// getting hit cancels it. Self-added by <see cref="PlayerController"/>.
     /// </summary>
@@ -53,7 +53,7 @@ namespace PoeClone.Player
             if (Time.timeScale <= 0f) return;
 
             Keyboard keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.tKey.wasPressedThisFrame && !UiKit.IsTypingInTextField())
+            if (keyboard != null && keyboard.bKey.wasPressedThisFrame && !UiKit.IsTypingInTextField())
                 pressed = true;
 
             if (IsChanneling)

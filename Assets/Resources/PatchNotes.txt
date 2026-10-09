@@ -1,3 +1,6 @@
+version: 2026-10-09-town-portal-key
+- Town Portal is now on B instead of T.
+
 version: 2026-10-09-gate-shadows
 - Area gate pillars now cast shadows, so a gate's shadow joins the gate instead of floating on the grass beside it.
 

@@ -294,7 +294,7 @@ namespace PoeClone.UI
                 GUILayout.Space(20f);
 
                 GUILayout.Label(
-                    "WASD - Move | Shift - Sprint | Left click - Attack | Q E R F, 1 2 3 4, RMB / M4 / M5 - Skills\nPotion keys are assigned on the skill bar | T - Town portal | P - Passives | I - Inventory\nC - Character | M - Map | Enter - Chat | H - Hide this",
+                    "WASD - Move | Shift - Sprint | Left click - Attack | Q E R F, 1 2 3 4, RMB / M4 / M5 - Skills\nPotion keys are assigned on the skill bar | B - Town portal | P - Passives | I - Inventory\nC - Character | M - Map | Enter - Chat | H - Hide this",
                     textStyle
                 );
             }
