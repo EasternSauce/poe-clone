@@ -1,3 +1,8 @@
+version: 2026-10-09-animated-telegraphs
+- The warning marks on the ground before a blast, charge, breath or arrow rain now have animated textures matching the damage type: rolling flames and embers for fire, frost crystals with a shimmer for cold, jumping arcs for lightning, and cracked earth for physical.
+- A bright edge sweeps across each mark as it fills, and its outline pulses faster as the hit gets close. The marks are slightly see-through, so the ground under them stays visible.
+- The wailing ring and breath cones now fill outwards like the other marks instead of only changing colour.
+
 version: 2026-10-09-enemy-skill-variety
 - Several creatures have new special attacks instead of the same jump or dash:
   - Crypt Spiders spit webs that hit where they land and leave a sticky patch that slows you.
