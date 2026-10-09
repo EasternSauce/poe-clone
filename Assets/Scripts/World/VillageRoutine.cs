@@ -38,6 +38,7 @@ namespace PoeClone.World
         private void AnimateLaundry(bool working)
         {
             if (laundry == null) return;
+            if (laundry.Length == 0) return;
             int selected = Mathf.FloorToInt(workTime / 6) % laundry.Length;
             float cycle = Mathf.Repeat(workTime, 6);
             for (int i = 0; i < laundry.Length; i++)
@@ -55,8 +56,10 @@ namespace PoeClone.World
             npc = GetComponent<Npc>(); body = GetComponent<CharacterController>();
             walk = GetComponentInChildren<CharacterWalkAnimator>();
             seed = Mathf.Abs(transform.position.x * 0.37f + transform.position.z * 0.61f);
-            stop = stops.Length - 1;
-            wait = 1 + seed % 5;
+            Vector3 offset = transform.position - stops[0]; offset.y = 0;
+            arrived = offset.sqrMagnitude < 0.1f;
+            stop = arrived ? 0 : stops.Length - 1;
+            wait = arrived ? 12 + seed % 8 : 1 + seed % 5;
         }
 
         private void Update()
@@ -78,7 +81,12 @@ namespace PoeClone.World
             if (wait > 0)
             {
                 wait -= Time.deltaTime;
-                if (wait <= 0) { stop = (stop + 1) % stops.Length; BeginRoute(); }
+                if (wait <= 0)
+                {
+                    // A failed or obstructed route retries its destination instead of skipping the chore.
+                    if (arrived) stop = (stop + 1) % stops.Length;
+                    BeginRoute();
+                }
                 return;
             }
             if (path.Count == 0) { BeginRoute(); return; }
@@ -175,7 +183,14 @@ namespace PoeClone.World
                             if (Open(goal + new Vector2Int(x, z))) { goal += new Vector2Int(x, z); found = true; }
                 if (!found) { planning = false; wait = 3; yield break; }
             }
-            var queue = new SortedSet<(float score, int order, Vector2Int point)>();
+            // Vector2Int is not IComparable. Even removing an entry compares it with itself,
+            // so the default tuple comparer throws after matching score and order.
+            var queue = new SortedSet<(float score, int order, Vector2Int point)>(
+                Comparer<(float score, int order, Vector2Int point)>.Create((a, b) =>
+                {
+                    int score = a.score.CompareTo(b.score);
+                    return score != 0 ? score : a.order.CompareTo(b.order);
+                }));
             var cost = new Dictionary<Vector2Int, float> { [start] = 0 };
             var previous = new Dictionary<Vector2Int, Vector2Int>();
             var closed = new HashSet<Vector2Int>();

@@ -10,6 +10,14 @@ namespace PoeClone.World
         private Vector3 laundryWorkSpot, laundryBasket, laundryFacing, gardenWorkSpot, gardenFacing;
         private WindCloth[] villageLaundry;
 
+        private sealed class VillageHome
+        {
+            public Vector3 Door, Lane, Work, Facing, Basket;
+            public VillageActivity Activity = VillageActivity.Sweep;
+            public WindCloth[] Laundry;
+        }
+        private readonly List<VillageHome> villageHomes = new List<VillageHome>();
+
         // A continuous ribbon avoids overlapping road cubes and their visible seams.
         // Authored bends are sampled smoothly; edges and width vary without rerolling routes.
         private void WindingPath(Transform parent, string name, int area, float width, Material material,
@@ -78,6 +86,7 @@ namespace PoeClone.World
         private void BuildVillageHomes(Transform parent)
         {
             // Position, lane-facing point: compact square, then several small neighbourhoods.
+            villageHomes.Clear();
             Vector3[] homes =
             {
                 Flat(-15, 17), Flat(12, 19), Flat(-17, -24), Flat(18, -34),
@@ -118,12 +127,30 @@ namespace PoeClone.World
                 LocalBox(house.transform, new Vector3(0, 1.95f, -2.1f), new Vector3(1.8f, 0.12f, 1f),
                     kit.Mat(i % 3 == 0 ? "ClothRed" : "Roof"), false, new Vector3(-8, 0, 0));
                 LocalCyl(house.transform, new Vector3(2.7f, 0.45f, 0), 0.35f, 0.9f, kit.Mat("Wood"));
-                CottageDetails(house.transform, i);
-                if (i % 2 == 0) VillageGarden(parent, house.transform);
+                var home = new VillageHome
+                {
+                    Door = doorstep - house.transform.forward * 1.5f,
+                    Lane = center + lanes[i],
+                    Work = doorstep - house.transform.forward * 1.5f,
+                    Facing = -house.transform.forward
+                };
+                CottageDetails(house.transform, i, home);
+                // Laundry and vegetable beds need separate yards.
+                if (i % 2 == 0 && home.Laundry == null) VillageGarden(parent, house.transform, home);
+                // Nella and Lio already use the first garden and washing line.
+                if (i < 2)
+                {
+                    home.Activity = VillageActivity.Sweep;
+                    home.Work = home.Door;
+                    home.Facing = -house.transform.forward;
+                }
+                villageHomes.Add(home);
+                Claim(home.Work, 1.5f);
+                Claim(home.Door, 1.5f);
             }
         }
 
-        private void VillageGarden(Transform parent, Transform house)
+        private void VillageGarden(Transform parent, Transform house, VillageHome home)
         {
             var yard = new GameObject("KitchenGarden").transform;
             yard.SetParent(parent, false);
@@ -144,6 +171,9 @@ namespace PoeClone.World
             }
             LocalBox(yard, new Vector3(0, 0.65f, 1.8f), new Vector3(5.5f, 0.14f, 0.1f), kit.Mat("Wood"));
             Claim(yard.position, 4f);
+            home.Activity = VillageActivity.Garden;
+            home.Work = yard.TransformPoint(new Vector3(0, 0, -1.3f));
+            home.Facing = yard.forward;
             if (gardenWorkSpot == Vector3.zero)
             {
                 gardenWorkSpot = yard.TransformPoint(new Vector3(0, 0, -1.3f));
@@ -151,7 +181,7 @@ namespace PoeClone.World
             }
         }
 
-        private void CottageDetails(Transform house, int index)
+        private void CottageDetails(Transform house, int index, VillageHome home)
         {
             for (int side = -1; side <= 1; side += 2)
             {
@@ -184,6 +214,11 @@ namespace PoeClone.World
                 clothes[cloth + 1] = WindCloth.Create(laundry, new Vector3(cloth * 1.25f, 1.95f, 0), 0.8f, 0.9f,
                     kit.Mat(cloth == 0 ? "ClothYellow" : "ClothBlue"));
             LocalCyl(laundry, new Vector3(1.5f, 0.22f, -1.1f), 0.42f, 0.44f, kit.Mat("Wood"), false);
+            home.Activity = VillageActivity.Laundry;
+            home.Laundry = clothes;
+            home.Work = laundry.TransformPoint(new Vector3(0, 0, -0.85f));
+            home.Basket = laundry.TransformPoint(new Vector3(1.5f, 0.45f, -1.1f));
+            home.Facing = laundry.forward;
             if (index == 1)
             {
                 villageLaundry = clothes;
@@ -250,6 +285,7 @@ namespace PoeClone.World
 
         private void BuildVillageFolk(GameObject prefab, Transform parent)
         {
+            BuildCottageResidents(prefab, parent);
             VillagePerson(prefab, parent, "Baker Tessa", Flat(-9, -17), new Color(0.72f, 0.45f, 0.29f),
                 "You're just in time for the smell of the morning loaves. Bram says it reaches his forge before I do.",
                 "Ask about her baking", "We keep a little of each batch for whoever comes through the gate hungry. Oda calls it bad business. Funny how she's always first in the queue.");
@@ -270,8 +306,26 @@ namespace PoeClone.World
                 "Hear a village story", "When the well first ran dry, everyone brought one cup of water from home. By dusk it was full again. Fen says that isn't how wells work. I say that's how villages work.");
         }
 
+        private void BuildCottageResidents(GameObject prefab, Transform parent)
+        {
+            string[] names = { "Mira", "Corin", "Hett", "Oswin", "Sera", "Tobin", "Ada", "Wren", "Perrin",
+                "Maud", "Ivo", "Orla", "Rowan", "Bess", "Galen", "Elsie", "Ansel", "Faye" };
+            Color[] clothes = { new Color(0.43f, 0.53f, 0.32f), new Color(0.57f, 0.37f, 0.29f),
+                new Color(0.36f, 0.44f, 0.62f), new Color(0.60f, 0.49f, 0.30f), new Color(0.51f, 0.35f, 0.53f) };
+            for (int i = 0; i < villageHomes.Count; i++)
+            {
+                VillageHome home = villageHomes[i];
+                string greeting = home.Activity == VillageActivity.Garden ? "A little water now, a full pot come autumn." :
+                    home.Activity == VillageActivity.Laundry ? "One more shirt, then I can take a turn down the lane." :
+                    "The leaves always find their way back to my doorstep.";
+                VillagePerson(prefab, parent, names[i], home.Work - Center(Haven), clothes[i % clothes.Length],
+                    greeting, "Ask about this neighborhood",
+                    "We look after these cottages together. A spare onion, a mended sleeve, a swept path for an old neighbour. There's always something to do, even this far from the square.", home);
+            }
+        }
+
         private void VillagePerson(GameObject prefab, Transform parent, string name, Vector3 local, Color cloth,
-            string greeting, string topic, string story)
+            string greeting, string topic, string story, VillageHome home = null)
         {
             Vector3 p = Center(Haven) + local;
             var look = new PoeClone.Enemies.EnemyKind
@@ -286,12 +340,14 @@ namespace PoeClone.World
             VillageActivity activity = name.Contains("Tessa") ? VillageActivity.Sweep :
                 name.Contains("Nella") ? VillageActivity.Garden : name.Contains("Fen") ? VillageActivity.WarmHands :
                 name.Contains("Lio") ? VillageActivity.Laundry : name.Contains("Dain") ? VillageActivity.Produce : VillageActivity.Chat;
+            if (home != null) activity = home.Activity;
             Vector3 work = activity == VillageActivity.Laundry ? laundryWorkSpot :
                 activity == VillageActivity.Garden ? gardenWorkSpot : p;
             Vector3 face = activity == VillageActivity.Laundry ? laundryFacing :
                 activity == VillageActivity.Garden ? gardenFacing :
                 activity == VillageActivity.WarmHands ? (Center(Haven) + Flat(-27, -12) - p).normalized :
                 activity == VillageActivity.Produce ? (Center(Haven) + Flat(91, -5) - p).normalized : -local.normalized;
+            if (home != null) { work = home.Work; face = home.Facing; }
             var walk = npc.GetComponentInChildren<CharacterWalkAnimator>();
             GameObject tool = null;
             if (walk != null && walk.WorkHand != null && (activity == VillageActivity.Sweep || activity == VillageActivity.Garden))
@@ -318,8 +374,13 @@ namespace PoeClone.World
                 activity == VillageActivity.WarmHands ? Flat(-35, -5) : Flat(-20, -8));
             work.y = p.y; social.y = p.y;
             var routine = npc.gameObject.AddComponent<VillageRoutine>();
-            routine.Configure(Shape(Haven), activity, face, tool, work, social, p);
-            if (activity == VillageActivity.Laundry) routine.BindLaundry(villageLaundry, laundryBasket);
+            // Cottage residents stay in their own neighborhoods rather than converging on the square.
+            if (home != null)
+                routine.Configure(Shape(Haven), activity, face, tool, work, home.Lane, home.Door);
+            else
+                routine.Configure(Shape(Haven), activity, face, tool, work, social, p);
+            if (activity == VillageActivity.Laundry)
+                routine.BindLaundry(home != null ? home.Laundry : villageLaundry, home != null ? home.Basket : laundryBasket);
         }
 
         private void BuildSmithWorkshop(Transform parent, Vector3 p)

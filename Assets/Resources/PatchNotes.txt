@@ -1,3 +1,8 @@
+version: 2026-10-09-haven-residents-and-working-routines
+- Fixed a route-planning crash that left every chore villager standing still. Villagers now walk between stops and perform their chore animations, retrying blocked routes.
+- Added eighteen cottage residents across Haven's western, southern, northern and eastern neighborhoods, bringing the town to twenty-four ambient villagers plus its four service NPCs. Residents sweep doorsteps, tend vegetable beds and hang washing, with local routes instead of gathering in the square.
+- Cottage residents begin at their chores. Laundry lines and vegetable beds now occupy separate yards.
+
 version: 2026-10-09-audible-sword-misses
 - Fixed quiet or silent sword swings, including attacks that miss. World sound volume now follows the viewed character's position, so camera height and zoom no longer muffle nearby effects.
 
