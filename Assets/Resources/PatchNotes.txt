@@ -1,3 +1,6 @@
+version: 2026-10-09-goblin-grunt-cooldown
+- Goblin-style attack grunts from Raiders, Ember Knights, Rime Stalkers, Cinder Penitents, Hollowmaws and the Barrow Castellan now play at most once every 2.5 seconds, so packs no longer spam them.
+
 version: 2026-10-09-pickup-no-punch
 - Clicking an item to pick it up no longer makes the character attack while the mouse button is still held. The same applies to clicks on NPCs, area gates and the interface.
 

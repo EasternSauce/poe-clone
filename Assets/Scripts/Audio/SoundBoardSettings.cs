@@ -12,10 +12,17 @@ namespace PoeClone.Audio
         {
             public string id, purpose;
             public AudioClip[] clips = Array.Empty<AudioClip>();
+            [Tooltip("Minimum seconds between plays from this group, shared by every caller. Requests during it stay silent.")]
+            [Min(0f)] public float cooldown;
             [NonSerialized] private AudioClip lastPlayed;
+            [NonSerialized] private float lastPlayedAt = float.NegativeInfinity;
 
             public AudioClip Choose(AudioClip fallback = null)
             {
+                // Play mode restarts Time.time at zero, so a time ahead of now is from an earlier session.
+                if (cooldown > 0f && Time.time >= lastPlayedAt && Time.time < lastPlayedAt + cooldown)
+                    return null;
+                lastPlayedAt = Time.time;
                 AudioClip next = null;
                 int count = 0;
                 foreach (var clip in clips)

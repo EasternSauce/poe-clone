@@ -86,7 +86,9 @@ namespace PoeClone.EditorTools
                 string key = purpose + "\n" + string.Join("\n", clips.Select(AssetDatabase.GetAssetPath).OrderBy(p => p, StringComparer.Ordinal));
                 if (!groups.TryGetValue(key, out var group))
                 {
-                    group = new SoundBoardSettings.SoundGroup { id = "sound." + effect.id, purpose = purpose, clips = clips };
+                    string id = "sound." + effect.id;
+                    float cooldown = settings.soundGroups.FirstOrDefault(g => g.id == id)?.cooldown ?? 0f;
+                    group = new SoundBoardSettings.SoundGroup { id = id, purpose = purpose, clips = clips, cooldown = cooldown };
                     groups.Add(key, group);
                 }
                 assignments.Add(effect, group);

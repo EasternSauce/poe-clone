@@ -2487,6 +2487,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 7f546aab911c796469bc86aa483bc3c1, type: 3}
     - {fileID: 8300000, guid: 8c6b9f048d26b7d4f9083f5a2a51a1fb, type: 3}
     - {fileID: 8300000, guid: e54b84efebc0e3140824e6af94c7fd52, type: 3}
+    cooldown: 2.5
   - id: sound.enemy.Raider.Death
     purpose: Humanoid grunts / death voices
     clips:
