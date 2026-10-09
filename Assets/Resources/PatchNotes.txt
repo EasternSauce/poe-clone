@@ -1,3 +1,6 @@
+version: 2026-10-09-correct-poison-skill-audio
+- Grave Rot, Venom Arrow and Venom Spout now use separate poison recordings instead of the mislabeled riposte effect. Venom Arrow uses the dedicated poison arrow shot.
+
 version: 2026-10-09-correct-arrow-release-audio
 - Player and enemy archer bow releases now use arrow-release recordings instead of the mislabeled arrow landing sound.
 

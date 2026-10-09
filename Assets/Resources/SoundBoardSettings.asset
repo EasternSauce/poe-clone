@@ -2410,7 +2410,7 @@ MonoBehaviour:
   - id: sound.skill.GraveRot
     purpose: Grave Rot
     clips:
-    - {fileID: 8300000, guid: 4cb38b6820aa9534181a1c93c2b71167, type: 3}
+    - {fileID: 8300000, guid: 63d66c806b870864f956a713fa805ac8, type: 3}
   - id: sound.skill.SplitShot
     purpose: Split Shot
     clips:
@@ -2435,11 +2435,11 @@ MonoBehaviour:
   - id: sound.skill.VenomArrow
     purpose: Venom Arrow
     clips:
-    - {fileID: 8300000, guid: 4cb38b6820aa9534181a1c93c2b71167, type: 3}
+    - {fileID: 8300000, guid: 9280a5b9a7da32149a82cea664836f46, type: 3}
   - id: sound.skill.VenomSpout
     purpose: Venom Spout
     clips:
-    - {fileID: 8300000, guid: 4cb38b6820aa9534181a1c93c2b71167, type: 3}
+    - {fileID: 8300000, guid: 612fa68abc7eb7545805eda4de8f77cd, type: 3}
   - id: sound.skill.SummonViper
     purpose: Summon Viper
     clips:

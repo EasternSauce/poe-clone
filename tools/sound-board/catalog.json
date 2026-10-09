@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-09T13:36:51.0113996Z",
+    "generatedAt": "2026-10-09T14:03:23.3834359Z",
     "effects": [
         {
             "id": "player.swing",
@@ -35,7 +35,8 @@
             "soundGroup": "sound.player.bow",
             "purpose": "Bow releases",
             "current": [
-                "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Arrow02_arrow_release.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Arrow03_arrow_release.wav"
             ],
             "usages": [
                 {
@@ -2158,7 +2159,7 @@
             "soundGroup": "sound.skill.GraveRot",
             "purpose": "Grave Rot",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav"
             ],
             "usages": [
                 {
@@ -2297,7 +2298,7 @@
             "soundGroup": "sound.skill.VenomArrow",
             "purpose": "Venom Arrow",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03_poison_arrow_shot.wav"
             ],
             "usages": [
                 {
@@ -2320,7 +2321,7 @@
             "soundGroup": "sound.skill.VenomSpout",
             "purpose": "Venom Spout",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav"
             ],
             "usages": [
                 {
