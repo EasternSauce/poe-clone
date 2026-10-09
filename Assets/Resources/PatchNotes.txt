@@ -1,3 +1,6 @@
+version: 2026-10-09-web-shadows
+- The browser version now shows shadows on desktop (Chrome, Firefox, Edge and so on). Phones and tablets keep shadows off for performance.
+
 version: 2026-10-09-projectile-momentum
 - Arrows, Fire Bolts and Ice Shards now carry your movement when loosed. Shooting while walking sideways no longer looks angled backwards on screen, and the shot lands where the cursor points. Lead stationary targets slightly when strafing.
 
