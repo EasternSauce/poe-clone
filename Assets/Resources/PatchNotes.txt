@@ -1,3 +1,6 @@
+version: 2026-10-09-centered-audio
+- Centered all game sounds in the stereo mix so they cannot shift into one ear. World effects fade in volume with distance, and wind gusts have no directional pan.
+
 version: 2026-10-09-venom-skill-audio
 - Venom Arrow now uses the poison arrow shot recording. Venom Spout uses a separate poison spell sound. Removed deleted poison clip references from sound board suggestions.
 

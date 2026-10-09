@@ -26,13 +26,11 @@ namespace PoeClone.World
         private readonly System.Random random = new System.Random();
         private AreaManager manager;
         private Transform player;
-        private Camera view;
 
         public void Build(AreaManager areaManager, Transform listener)
         {
             manager = areaManager;
             player = listener;
-            view = Camera.main;
             var library = Resources.Load<AmbientSoundLibrary>("AmbientSoundLibrary");
             if (library == null)
             {
@@ -151,7 +149,8 @@ namespace PoeClone.World
             var source = go.AddComponent<AudioSource>();
             source.playOnAwake = false;
             source.loop = voice.loop;
-            source.spatialBlend = 0; // Explicit player-distance attenuation, independent of camera height.
+            source.spatialBlend = 0; // Keep ambience centered; distance is mixed into volume explicitly.
+            source.panStereo = 0f;
             source.priority = voice.loop ? 200 : 180; // Combat and dialogue retain priority.
             source.volume = voice.level;
             voice.source = source;
@@ -171,12 +170,7 @@ namespace PoeClone.World
                 if (voice.source != null)
                 {
                     voice.source.volume = voice.level;
-                    if (voice.anchor != null && view != null)
-                    {
-                        Vector3 delta = voice.anchor.position - player.position;
-                        delta.y = 0;
-                        voice.source.panStereo = Mathf.Clamp(Vector3.Dot(delta, view.transform.right) / 18, -0.65f, 0.65f);
-                    }
+                    voice.source.panStereo = 0f;
                 }
                 if (voice.loop)
                 {
@@ -204,7 +198,7 @@ namespace PoeClone.World
                     source.clip = voice.clips[index];
                     source.volume = voice.level;
                     source.pitch = Delay(0.96f, 1.04f);
-                    source.panStereo = Delay(-0.4f, 0.4f);
+                    source.panStereo = 0f;
                     source.Play();
                     voice.next = Delay(voice.minDelay, voice.maxDelay);
                 }

@@ -5,8 +5,8 @@ namespace PoeClone.Audio
 {
     /// <summary>
     /// Central SFX player. World/combat clips go through PlayAtPoint or PlayRandomAtPoint,
-    /// which create temporary spatial sources so callers don't need their own AudioSource.
-    /// UI clips are non-spatial and share one source on this object.
+    /// which create temporary centered sources with distance-based volume falloff.
+    /// UI clips are also centered and share one source on this object.
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
@@ -130,11 +130,21 @@ namespace PoeClone.Audio
             go.transform.position = position;
             AudioSource source = go.AddComponent<AudioSource>();
             source.clip = clip;
-            source.spatialBlend = 1f;
+            source.spatialBlend = 0f;
+            source.panStereo = 0f;
             source.pitch = pitch;
-            source.volume = sfxVolume * volumeScale;
+            source.volume = sfxVolume * volumeScale * DistanceVolume(position);
             source.Play();
             Destroy(go, clip.length / Mathf.Max(0.1f, pitch) + 0.1f);
+        }
+
+        private static float DistanceVolume(Vector3 position)
+        {
+            Camera listener = Camera.main;
+            if (listener == null) return 1f;
+            float distance = Vector3.Distance(listener.transform.position, position);
+            float fade = Mathf.Clamp01(1f - distance / 32f);
+            return fade * fade;
         }
 
         public void PlayRandomAtPoint(AudioClip[] clips, Vector3 position)

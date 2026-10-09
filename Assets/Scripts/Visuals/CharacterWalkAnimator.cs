@@ -152,7 +152,8 @@ public void Configure(
             if (audioSource == null)
                 audioSource = gameObject.AddComponent<AudioSource>();
             audioSource.playOnAwake = false;
-            audioSource.spatialBlend = 1f;
+            audioSource.spatialBlend = 0f;
+            audioSource.panStereo = 0f;
         }
 
 private void LateUpdate()
