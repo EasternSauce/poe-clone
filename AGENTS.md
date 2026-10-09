@@ -31,6 +31,10 @@ Keep demo equipment changes inside the temporary session. Do not change new-char
 
 `Assets/assets_for_inspiration` is temporary reference material and will be deleted. The game must not depend on files in this directory. Before using any inspiration asset, copy it into a permanent directory under `Assets` outside `assets_for_inspiration`, then reference the copied asset. This applies to scenes, prefabs, scripts, Resources paths, soundboards, and other runtime asset references. Never add new game dependencies on the inspiration directory. Existing soundboard references still need migration during the planned soundboard rework.
 
+# Audio levels
+
+Sound loudness lives in the audio files. To make a sound louder or quieter, re-render the file (for example ffmpeg `-af volume=X`, written as wav) and keep its `.meta` so the GUID is preserved. Do not add per-sound volume multipliers in code or on the sound board; code only applies the SFX/UI/ambience category gains, distance fade and the player's master volume. If one recording needs two levels, add a quieter copy with its own sound board effect.
+
 # Change completion
 
 When finishing a set of project changes, update `Assets/Resources/PatchNotes.txt` to describe the user-facing changes. Keep the patch notes current as part of completing the work.
