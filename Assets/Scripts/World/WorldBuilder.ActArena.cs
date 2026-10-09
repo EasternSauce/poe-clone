@@ -81,11 +81,11 @@ namespace PoeClone.World
             LocalBox(gate, new Vector3(0f, 0.025f, 0f), new Vector3(7.2f, 0.05f, 3f), kit.Mat("TanDark"), false);
             SanctuarySkull(gate, new Vector3(0f, 7.65f, 0.92f), 0.72f);
             ScatterSanctuaryRemains(dressing, c);
-            // Unevenly scattered moults, clear of the entrance and boss spawn.
-            SanctuaryShedSkin(dressing, c + new Vector3(-32f, 0f, -20f), 67f, 0);
-            SanctuaryShedSkin(dressing, c + new Vector3(-18f, 0f, 24f), -41f, 2);
-            SanctuaryShedSkin(dressing, c + new Vector3(30f, 0f, 12f), 18f, 1);
-            SanctuaryShedSkin(dressing, c + new Vector3(9f, 0f, -14f), 123f, 3);
+            // Unevenly scattered moults follow the perimeter, leaving the fighting floor open.
+            SanctuaryShedSkin(dressing, c + new Vector3(-46f, 0f, -14f), 25f, 0);
+            SanctuaryShedSkin(dressing, c + new Vector3(-15f, 0f, 36f), -78f, 2);
+            SanctuaryShedSkin(dressing, c + new Vector3(49f, 0f, 9f), 18f, 1);
+            SanctuaryShedSkin(dressing, c + new Vector3(20f, 0f, -32f), 105f, 3);
         }
 
         private void ScatterSanctuaryRemains(Transform parent, Vector3 c)
