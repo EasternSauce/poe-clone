@@ -22,8 +22,8 @@ namespace PoeClone.Inventory
     }
 
     /// <summary>
-    /// The traders' stock and prices. Each trader keeps a grid of goods suited to the player's
-    /// level, restocked when the player has grown two levels or a while has passed; what the
+    /// The traders' stock and prices. Each trader keeps a grid of goods no higher in item level
+    /// (or base level) than the player, restocked when the player has grown two levels or a while has passed; what the
     /// player sells lands in the trader's grid (so it can be bought back). Pure C#, testable.
     /// </summary>
     public static class Vendors
@@ -50,7 +50,9 @@ namespace PoeClone.Inventory
                 stocks[trader] = stock;
             }
 
-            if (playerLevel >= stock.StockedForLevel + 2 || now - stock.StockedAt >= RestockSeconds)
+            // Stock rolled for a higher level (another character this session) is never shown.
+            if (playerLevel >= stock.StockedForLevel + 2 || playerLevel < stock.StockedForLevel ||
+                now - stock.StockedAt >= RestockSeconds)
             {
                 Restock(stock, playerLevel, sells, rng);
                 stock.StockedAt = now;
@@ -67,7 +69,7 @@ namespace PoeClone.Inventory
             foreach (string id in ItemGenerator.BaseIds)
             {
                 ItemData sample = ItemGenerator.Display(id, null, ItemRarity.Normal);
-                if (sample != null && sells(sample.Type) && ItemGenerator.MinLevelOf(id) <= playerLevel + 1)
+                if (sample != null && sells(sample.Type) && ItemGenerator.MinLevelOf(id) <= playerLevel)
                     bases.Add(id);
             }
 

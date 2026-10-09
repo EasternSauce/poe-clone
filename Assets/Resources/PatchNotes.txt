@@ -1,3 +1,6 @@
+version: 2026-10-09-trader-item-level
+- Traders only stock items up to your character level: no item level or base type above yours. Their goods are also restocked if you visit with a lower-level character.
+
 version: 2026-10-09-quest-chain-dialogue
 - After handing in a quest, if that person has another quest for you, its offer opens straight away (with your rewards shown above it) instead of making you click the quest name.
 
