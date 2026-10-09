@@ -1,3 +1,6 @@
+version: 2026-10-09-correct-arrow-release-audio
+- Player and enemy archer bow releases now use arrow-release recordings instead of the mislabeled arrow landing sound.
+
 version: 2026-10-09-replace-deleted-bites
 - Replaced deleted bite recordings with creature-specific hisses, snarls, bat squeaks and squishy beetle sounds. The Shepherd now uses a light contact sound for snake-arm impacts.
 
