@@ -33,9 +33,15 @@ namespace PoeClone.World
                 foreach (Transform tree in trees.transform)
                 {
                     if (!tree.gameObject.activeInHierarchy) continue;
+                    Transform trunk = tree.Find("Trunk");
+                    MeshFilter trunkMesh = trunk != null ? trunk.GetComponent<MeshFilter>() : null;
+                    if (trunkMesh == null || trunkMesh.sharedMesh == null) continue;
+                    float trunkTop = tree.InverseTransformPoint(trunk.TransformPoint(
+                        Vector3.up * trunkMesh.sharedMesh.bounds.max.y)).y;
                     var branch = new GameObject("BranchWithTiedRag").transform;
                     branch.SetParent(tree, false);
-                    branch.localPosition = new Vector3(0, 1.8f, 0);
+                    // Pines have shorter trunks than oaks; keep the root embedded in wood.
+                    branch.localPosition = new Vector3(0, Mathf.Min(1.8f, trunkTop - 0.15f), 0);
                     LocalBox(branch, new Vector3(0.55f, 0, 0), new Vector3(1.2f, 0.08f, 0.08f), kit.Mat("Bark"), false);
                     WindCloth.Create(branch, new Vector3(0.85f, 0, 0), 0.32f, 0.8f,
                         kit.Mat(count % 2 == 0 ? "ClothRed" : "ClothYellow"), true);

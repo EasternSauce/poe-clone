@@ -1000,7 +1000,8 @@ namespace PoeClone.World
                 float length = R(0.9f, 1.8f);
                 Transform branch = LocalBox(tree, new Vector3(0f, y, 0f), new Vector3(0.1f, length, 0.1f), wood, solid: false,
                     euler: new Vector3(R(35f, 60f), yaw, 0f)).transform;
-                branch.localPosition += branch.up * length * 0.5f;
+                // Both the attachment point and offset must stay in the tree's local space.
+                branch.localPosition += branch.localRotation * Vector3.up * length * 0.5f;
             }
             return tree.gameObject;
         }
