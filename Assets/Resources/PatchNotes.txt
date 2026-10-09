@@ -1,3 +1,6 @@
+version: 2026-10-09-complete-sound-library
+- Sound Library now includes all recordings under Assets/Audio, so assigned sounds such as bite recordings can be found, previewed and managed alongside imported sounds.
+
 version: 2026-10-09-assigned-sounds-only
 - The sound board now shows only assigned gameplay recordings; unassigned recordings remain in the separate Sound Library.
 

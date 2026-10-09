@@ -35,17 +35,19 @@ function cleanName(value) {
   return value;
 }
 function createLibrary(root = path.resolve(__dirname, '../..')) {
-  const source = path.join(root, 'Assets/Audio/SoundLibrary');
-  const manifestFile = path.join(source, 'manifest.json');
+  const source = path.join(root, 'Assets/Audio');
+  const imported = path.join(source, 'SoundLibrary');
+  const manifestFile = path.join(imported, 'manifest.json');
   function manifest() { return fs.existsSync(manifestFile) ? JSON.parse(fs.readFileSync(manifestFile, 'utf8')) : { sounds: [] }; }
   function load() {
     if (fs.existsSync(source) && fs.lstatSync(source).isSymbolicLink()) throw Error('The library directory must not be a symbolic link.');
-    const origins = new Map(manifest().sounds.map(row => [row.file, row.sources]));
+    const origins = new Map(manifest().sounds.map(row => ['SoundLibrary/' + row.file, row.sources]));
     return walk(source).filter(file => MIME[path.extname(file).toLowerCase()]).map(file => {
       const id = slash(path.relative(source, file));
       const sources = origins.get(id) || [];
       const packs = [...new Set(sources.map(row => row.pack))];
-      return { id, packs: packs.length ? packs : ['Local files'], sources, category: id.includes('/') ? id.split('/')[0] : 'Other', name: path.basename(file, path.extname(file)), ext: path.extname(file), bytes: fs.statSync(file).size };
+      const category = id.startsWith('SoundLibrary/') ? id.split('/')[1] : categoryFor(id);
+      return { id, packs: packs.length ? packs : ['Local files'], sources, category, name: path.basename(file, path.extname(file)), ext: path.extname(file), bytes: fs.statSync(file).size };
     }).sort((a, b) => a.category.localeCompare(b.category) || a.id.localeCompare(b.id));
   }
   function find(id) {
@@ -66,7 +68,9 @@ function createLibrary(root = path.resolve(__dirname, '../..')) {
     const hasMeta = fs.existsSync(oldFile + '.meta');
     if (hasMeta && fs.lstatSync(oldFile + '.meta').isSymbolicLink()) throw Error('Unity metadata must not be a symbolic link.');
     const data = manifest();
-    data.sounds = deleting ? data.sounds.filter(item => item.file !== row.id) : data.sounds.map(item => item.file === row.id ? { ...item, file: newId } : item);
+    const importedId = row.id.startsWith('SoundLibrary/') ? row.id.slice('SoundLibrary/'.length) : null;
+    const updateManifest = importedId !== null && fs.existsSync(manifestFile);
+    if (updateManifest) data.sounds = deleting ? data.sounds.filter(item => item.file !== importedId) : data.sounds.map(item => item.file === importedId ? { ...item, file: newId.slice('SoundLibrary/'.length) } : item);
     const staged = path.join(source, '.operation-' + crypto.randomUUID());
     const moves = [];
     const move = (from, to) => { fs.renameSync(from, to); moves.push([from, to]); };
@@ -78,8 +82,10 @@ function createLibrary(root = path.resolve(__dirname, '../..')) {
         if (hasMeta) move(staged + '.meta', newFile + '.meta');
         move(staged, newFile);
       }
-      fs.writeFileSync(manifestFile + '.tmp', JSON.stringify(data, null, 2) + '\n');
-      fs.renameSync(manifestFile + '.tmp', manifestFile);
+      if (updateManifest) {
+        fs.writeFileSync(manifestFile + '.tmp', JSON.stringify(data, null, 2) + '\n');
+        fs.renameSync(manifestFile + '.tmp', manifestFile);
+      }
     } catch (error) {
       for (const [from, to] of moves.reverse()) fs.renameSync(to, from);
       throw error;
@@ -103,7 +109,7 @@ function createServer(options = {}) {
         res.writeHead(200, { 'Content-Type': url.pathname === '/' ? 'text/html; charset=utf-8' : 'text/javascript; charset=utf-8' });
         return res.end(fs.readFileSync(path.join(__dirname, url.pathname === '/' ? 'index.html' : 'app.js')));
       }
-      if (req.method === 'GET' && url.pathname === '/api/library') return json(200, { app: 'sound-library', version: 2, token, directory: 'Assets/Audio/SoundLibrary', sounds: library.load() });
+      if (req.method === 'GET' && url.pathname === '/api/library') return json(200, { app: 'sound-library', version: 3, token, directory: 'Assets/Audio', sounds: library.load() });
       if (req.method === 'GET' && url.pathname === '/audio') {
         let row;
         try { row = library.find(url.searchParams.get('id')); } catch { return json(404, { error: 'Unknown sound.' }); }

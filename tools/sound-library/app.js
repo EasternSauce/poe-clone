@@ -61,7 +61,7 @@ function render() {
     const detail = element('div');
     const name = document.createElement('input'); name.type = 'text'; name.value = row.name; name.disabled = busy; name.maxLength = 100; name.setAttribute('aria-label', 'Filename for ' + row.id); name.title = 'Filename without extension; press Rename or Enter to apply';
     name.onkeydown = event => { if (event.key === 'Enter') { event.preventDefault(); mutate('/api/rename', row, name.value); } };
-    detail.append(name, element('div', 'source', 'Assets/Audio/SoundLibrary/' + row.id));
+    detail.append(name, element('div', 'source', 'Assets/Audio/' + row.id));
     const pack = element('div', 'pack-info'); pack.append(element('div', 'pack', row.packs.join(', ')), element('div', 'ext', row.ext.slice(1).toUpperCase() + ' · ' + formatBytes(row.bytes)));
     const actions = element('div', 'actions');
     const rename = element('button', 'rename', 'Rename'); rename.disabled = busy; rename.onclick = () => mutate('/api/rename', row, name.value);
@@ -69,7 +69,7 @@ function render() {
     actions.append(rename, remove);
     item.append(play, detail, pack, actions); list.append(item);
   }
-  if (!matches.length) list.append(element('div', 'empty', sounds.length ? 'No sounds match these filters.' : 'No audio files found in Assets/Audio/SoundLibrary.'));
+  if (!matches.length) list.append(element('div', 'empty', sounds.length ? 'No sounds match these filters.' : 'No audio files found in Assets/Audio.'));
   $('page').textContent = matches.length ? `Page ${page + 1} of ${Math.ceil(matches.length / pageSize)} · ${matches.length.toLocaleString()} matches` : '0 matches';
   $('previous').disabled = page === 0 || busy; $('next').disabled = (page + 1) * pageSize >= matches.length || busy;
 }
@@ -90,7 +90,7 @@ async function load() {
     const response = await fetch('/api/library');
     if (!response.ok) throw Error('Could not load the sound library.');
     const data = await response.json();
-    if (data.version !== 2) throw Error('Restart Sound Library to load the updated file browser.');
+    if (data.version !== 3) throw Error('Restart Sound Library to load the updated file browser.');
     sounds = data.sounds; token = data.token;
     if (activeId && !sounds.some(row => row.id === activeId)) clearPlayer();
     for (const [id, values, title] of [['category', sounds.map(row => row.category), 'All categories'], ['pack', sounds.flatMap(row => row.packs), 'All packs']]) {

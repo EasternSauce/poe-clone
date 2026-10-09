@@ -28,10 +28,10 @@ function fixture(t) {
 test('import covers all sources once, deduplicates across categories and preserves documentation', t => {
   const { root, source, result, library } = fixture(t);
   assert.equal(result.sourceFiles, 4); assert.equal(result.uniqueFiles, 3);
-  const manifest = JSON.parse(fs.readFileSync(path.join(library.source, 'manifest.json')));
+  const manifest = JSON.parse(fs.readFileSync(path.join(library.source, 'SoundLibrary/manifest.json')));
   assert.equal(manifest.sounds.reduce((total, row) => total + row.sources.length, 0), 4);
   assert.equal(new Set(manifest.sounds.map(row => row.sha256)).size, 3);
-  assert.equal(fs.readFileSync(path.join(library.source, 'SourceNotes/Pack A/License.txt'), 'utf8'), 'Keep this license.');
+  assert.equal(fs.readFileSync(path.join(library.source, 'SoundLibrary/SourceNotes/Pack A/License.txt'), 'utf8'), 'Keep this license.');
   assert.throws(() => importInspiration(root), /already exists/);
   fs.renameSync(source, path.join(root, 'removed-inspiration'));
   assert.equal(library.load().length, 3);
@@ -56,7 +56,7 @@ test('delete immediately removes clip, metadata and manifest entry while preserv
   assert.equal(fs.existsSync(path.join(library.source, row.id)), false);
   assert.equal(fs.existsSync(path.join(library.source, row.id + '.meta')), false);
   assert.equal(createLibrary(root).load().length, 2);
-  assert.ok(!JSON.parse(fs.readFileSync(path.join(library.source, 'manifest.json'))).sounds.some(item => item.file === row.id));
+  assert.ok(!JSON.parse(fs.readFileSync(path.join(library.source, 'SoundLibrary/manifest.json'))).sounds.some(item => 'SoundLibrary/' + item.file === row.id));
   assert.ok(fs.existsSync(path.join(source, row.sources[0].file)));
   assert.throws(() => library.delete({ id: row.id }));
 });
@@ -72,7 +72,7 @@ test('invalid paths, reserved names, and collisions cannot mutate another asset'
 test('failed manifest write rolls back audio and GUID moves', t => {
   const { library } = fixture(t); const row = library.load()[0];
   fs.writeFileSync(path.join(library.source, row.id + '.meta'), 'guid: abc123');
-  fs.mkdirSync(path.join(library.source, 'manifest.json.tmp'));
+  fs.mkdirSync(path.join(library.source, 'SoundLibrary/manifest.json.tmp'));
   assert.throws(() => library.rename({ id: row.id, name: 'Rollback' }));
   assert.throws(() => library.delete({ id: row.id }));
   assert.ok(fs.existsSync(path.join(library.source, row.id)));
@@ -84,7 +84,7 @@ test('HTTP protects instant actions, previews ranges and rescans external change
   t.after(() => new Promise(resolve => server.close(resolve)));
   const base = `http://127.0.0.1:${server.address().port}`;
   assert.equal((await fetch(base)).status, 200); assert.equal((await fetch(base + '/app.js')).status, 200);
-  const data = await (await fetch(base + '/api/library')).json(); assert.equal(data.version, 2);
+  const data = await (await fetch(base + '/api/library')).json(); assert.equal(data.version, 3);
   const row = data.sounds[0]; const url = base + '/audio?id=' + encodeURIComponent(row.id);
   const clip = await fetch(url), buffer = Buffer.from(await clip.arrayBuffer());
   const range = await fetch(url, { headers: { Range: 'bytes=1-3' } });
@@ -101,4 +101,34 @@ test('HTTP protects instant actions, previews ranges and rescans external change
   fs.writeFileSync(path.join(options.library.source, 'Other.wav'), 'external');
   const refreshed = await (await fetch(base + '/api/library')).json(); assert.equal(refreshed.sounds.length, 3);
   assert.equal((await post('/api/export', {})).status, 404);
+});
+
+test('gameplay recordings outside the imported library can be found, previewed and managed', async t => {
+  const { root, library } = fixture(t);
+  const id = 'Resources/Sfx/Creatures/bite_1.wav';
+  const file = path.join(library.source, id);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, 'bite-audio');
+  fs.writeFileSync(file + '.meta', 'guid: bite-guid');
+  const manifest = path.join(library.source, 'SoundLibrary/manifest.json');
+  const original = fs.readFileSync(manifest, 'utf8');
+  const server = createServer({ root });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const data = await (await fetch(base + '/api/library')).json();
+  assert.equal(data.directory, 'Assets/Audio');
+  const bite = data.sounds.find(row => row.name.includes('bite'));
+  assert.equal(bite.id, id);
+  assert.equal(bite.category, 'Creatures & voices');
+  assert.equal(await (await fetch(base + '/audio?id=' + encodeURIComponent(id))).text(), 'bite-audio');
+  library.rename({ id, name: 'bite_renamed' });
+  const renamed = 'Resources/Sfx/Creatures/bite_renamed.wav';
+  assert.equal(fs.readFileSync(path.join(library.source, renamed + '.meta'), 'utf8'), 'guid: bite-guid');
+  assert.equal(fs.readFileSync(manifest, 'utf8'), original);
+  fs.unlinkSync(manifest);
+  library.delete({ id: renamed });
+  assert.equal(fs.existsSync(path.join(library.source, renamed)), false);
+  assert.equal(fs.existsSync(path.join(library.source, renamed + '.meta')), false);
+  assert.equal(fs.existsSync(manifest), false);
 });
