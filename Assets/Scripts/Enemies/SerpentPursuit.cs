@@ -44,7 +44,8 @@ namespace PoeClone.Enemies
         private bool swallowHit;
         private bool previousImmunity;
         private bool edgePass, missed, retained;
-        private Vector3 passTarget, passEnd;
+        private World.AreaShape passArena;
+        private Vector3 lastPassVelocity;
         private float passSpeed;
         public bool ReachedEdge => retained;
         public bool IsFinished => endedAt >= 0f;
@@ -54,7 +55,7 @@ namespace PoeClone.Enemies
         public Vector3 MouthPosition => head != null ? head.position + Vector3.up * 1.5f : nose + Vector3.up * 1.5f;
 
         public static SerpentPursuit Spawn(EnemyHealth boss, PlayerStats target, float hitDamage,
-            Vector3? edgeStart = null, Vector3? edgeEnd = null)
+            Vector3? edgeStart = null, World.AreaShape edgeArena = null)
         {
             SnakeLimb source = boss.GetComponentInChildren<SnakeLimb>(true);
             foreach (SnakeLimb snake in boss.GetComponentsInChildren<SnakeLimb>(true))
@@ -64,7 +65,7 @@ namespace PoeClone.Enemies
             var pursuit = go.AddComponent<SerpentPursuit>();
             pursuit.owner = boss; pursuit.player = target; pursuit.damage = hitDamage;
             pursuit.previousImmunity = boss.Immune;
-            pursuit.edgePass = edgeStart.HasValue && edgeEnd.HasValue;
+            pursuit.edgePass = edgeStart.HasValue && edgeArena != null;
             if (!pursuit.edgePass) boss.Immune = true;
             // Emerge from the very rear of the chimera, facing away from the player.
             pursuit.rearDirection = -boss.transform.forward;
@@ -82,10 +83,12 @@ namespace PoeClone.Enemies
                 pursuit.floorY = Debris.GroundBelow(ground + Vector3.up * 5f);
                 ground.y = pursuit.floorY + Radius + 0.15f;
                 pursuit.nose = ground;
-                pursuit.passTarget = target.transform.position;
-                pursuit.passEnd = edgeEnd.Value;
-                pursuit.direction = Horizontal(pursuit.passEnd - ground).normalized;
+                pursuit.passArena = edgeArena;
+                pursuit.direction = Horizontal(target.transform.position - ground).normalized;
+                if (pursuit.direction.sqrMagnitude < 0.01f)
+                    pursuit.direction = Horizontal(edgeArena.Center - ground).normalized;
                 pursuit.passSpeed = EndSpeed;
+                pursuit.lastPassVelocity = pursuit.direction * EndSpeed;
                 pursuit.route.Clear(); pursuit.route.Add(ground);
             }
             pursuit.head = Instantiate(source.MouthTransform.gameObject, go.transform).transform;
@@ -217,15 +220,53 @@ namespace PoeClone.Enemies
             if (age < RearTellSeconds) { UpdateHead(1f); BuildSkin(1f); return; }
             if (emergenceWarning != null) { Destroy(emergenceWarning); emergenceWarning = null; }
             Vector3 oldMouth = Mouth;
-            if (missed) passSpeed = Mathf.MoveTowards(passSpeed, EndSpeed * 2f, 18f * Time.deltaTime);
-            float remaining = Mathf.Max(0f, Vector3.Dot(Horizontal(passEnd - nose), direction));
-            nose += direction * Mathf.Min(passSpeed * Time.deltaTime, remaining);
+            Vector3 velocity;
+            if (!missed)
+            {
+                // Track the player's live position with the pursuit's limited turn rate and weave.
+                // Once the jaws pass them, commit to the actual travelling direction, including
+                // the current sideways weave, so the exit never snaps back toward the player.
+                Vector3 to = Horizontal(player.transform.position - oldMouth);
+                if (Vector3.Dot(to, direction) <= 0f)
+                {
+                    missed = true;
+                    direction = lastPassVelocity.normalized;
+                }
+                else if (to.sqrMagnitude > 0.01f)
+                    direction = Vector3.RotateTowards(direction, to.normalized,
+                        TurnDegreesPerSecond * Mathf.Deg2Rad * Time.deltaTime, 0f).normalized;
+            }
+            // Double the approach speed in 0.2 seconds: a distinct burst after the dodge.
+            if (missed) passSpeed = Mathf.MoveTowards(passSpeed, EndSpeed * 2f, EndSpeed / 0.2f * Time.deltaTime);
+            Vector3 side = Vector3.Cross(Vector3.up, direction).normalized;
+            velocity = direction * passSpeed + (missed ? Vector3.zero : side * Mathf.Sin(age * 5.5f) * 3.2f);
+            lastPassVelocity = velocity;
+            Vector3 next = nose + velocity * Time.deltaTime;
+            bool atEdge = !passArena.Contains(next, 1.8f);
+            if (atEdge)
+            {
+                // Clip the final step to the authored arena rather than the original aim line:
+                // steering can send a missed pass toward any point on the boundary.
+                float low = 0f, high = 1f;
+                for (int i = 0; i < 8; i++)
+                {
+                    float middle = (low + high) * 0.5f;
+                    if (passArena.Contains(Vector3.Lerp(nose, next, middle), 1.8f)) low = middle;
+                    else high = middle;
+                }
+                next = Vector3.Lerp(nose, next, low);
+            }
+            nose = next;
             if ((nose - route[route.Count - 1]).sqrMagnitude >= 0.8f * 0.8f) route.Add(nose);
             UpdateHead(1f);
             // Sweep the jaws so fast exit movement cannot skip a player between frames.
             if (DistanceToSegment(player.transform.position, oldMouth, Mouth) < 2.3f) Capture();
-            else if (Vector3.Dot(Horizontal(passTarget - Mouth), direction) <= 0f) missed = true;
-            if (!Captured && remaining <= passSpeed * Time.deltaTime)
+            else if (!missed && Vector3.Dot(Horizontal(player.transform.position - Mouth), direction) <= 0f)
+            {
+                missed = true;
+                direction = velocity.normalized;
+            }
+            if (!Captured && atEdge)
             {
                 retained = true;
                 head.gameObject.SetActive(false);

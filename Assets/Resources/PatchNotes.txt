@@ -1,3 +1,7 @@
+version: 2026-10-09-serpent-gauntlet-steering
+- Fixed the four-pass colossal serpent attack to weave and turn toward the player's current position at full speed. Only a missed jaw attack locks its direction and accelerates straight to the arena edge, retaining the curved tail behind it.
+- Missing the player now triggers a sharp burst to twice the approach speed within 0.2 seconds.
+
 version: 2026-10-09-carrion-saint-serpent-gauntlet
 - Carrion Saint now alternates his pursuit with a four-pass serpent attack. His main body freezes and becomes immune while colossal snakes rush from the arena edge at full speed.
 - Dodge the jaws: missed snakes accelerate straight to the far edge and leave damaging tails behind, constricting the arena with every pass. Being caught triggers the normal swallow and ends the sequence early; tails withdraw when the attack ends.

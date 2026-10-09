@@ -76,11 +76,7 @@ namespace PoeClone.Enemies
             if (Time.time < nextPass) return;
             Vector3 radial = Quaternion.Euler(0f, firstAngle + passes * 90f, 0f) * Vector3.forward;
             Vector3 start = FindEdge(arena.Center, radial);
-            Vector3 target = player.transform.position; target.y = start.y;
-            Vector3 direction = (target - start).normalized;
-            if (direction.sqrMagnitude < 0.01f) direction = -radial;
-            Vector3 end = FindEdge(start, direction);
-            current = SerpentPursuit.Spawn(owner, player, damage, start, end);
+            current = SerpentPursuit.Spawn(owner, player, damage, start, arena);
             if (current == null) { Finish(); return; }
             snakes.Add(current); passes++;
         }
