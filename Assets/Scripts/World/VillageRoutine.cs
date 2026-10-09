@@ -131,7 +131,7 @@ namespace PoeClone.World
                 case VillageActivity.Garden:
                     arms = new Vector2(-25, -52 + beat * 12); elbows = new Vector2(-25, -35); lean = 16 + beat * 4; break;
                 case VillageActivity.Sweep:
-                    arms = new Vector2(-45 + beat * 13, -55 - beat * 20); elbows = new Vector2(-30, -20); lean = 12 + beat * 4; break;
+                    arms = new Vector2(-35, -40); elbows = new Vector2(-30, -35); lean = 10; break;
                 case VillageActivity.Produce:
                     arms = new Vector2(-40 - beat * 15, -55 + beat * 18); elbows = new Vector2(-35, -40); lean = 10; break;
                 case VillageActivity.WarmHands:
@@ -140,6 +140,8 @@ namespace PoeClone.World
                     arms = new Vector2(-15 - beat * 10, -40 + beat * 22); elbows = new Vector2(-15, -45); break;
             }
             walk.WorkBlend = workBlend; walk.WorkArms = arms; walk.WorkElbows = elbows; walk.WorkLean = lean;
+            walk.WorkSweep = activity == VillageActivity.Sweep ? 1f : 0f;
+            walk.WorkSweepPhase = workTime * 2.2f + seed;
         }
 
         private void BeginRoute()
@@ -231,7 +233,7 @@ namespace PoeClone.World
         {
             if (routeJob != null) StopCoroutine(routeJob);
             routeJob = null; planning = false; path.Clear(); OwnsFacing = false;
-            if (walk != null) walk.WorkBlend = 0;
+            if (walk != null) { walk.WorkBlend = 0; walk.WorkSweep = 0; }
             AnimateLaundry(false);
             if (tool != null) tool.SetActive(false);
         }

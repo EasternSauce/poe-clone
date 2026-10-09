@@ -107,6 +107,16 @@ namespace PoeClone.Visuals
         public Vector2 WorkElbows { get; set; }
         public float WorkLean { get; set; }
         public Transform WorkHand => rightElbow != null ? rightElbow : rightArm;
+        public float WorkSweep { get; set; }
+        public float WorkSweepPhase { get; set; }
+        private Transform sweepingBroom, sweepLeftHand, sweepRightHand;
+
+        public void BindSweepingBroom(Transform broom)
+        {
+            sweepingBroom = broom;
+            sweepLeftHand = leftElbow != null ? leftElbow.Find("Hand") : null;
+            sweepRightHand = rightElbow != null ? rightElbow.Find("Hand") : null;
+        }
 
         /// <summary>Changes the arms' rest pitch (town NPCs built from the monster rig hold theirs down).</summary>
         public void SetArmRestAngle(float angle)
@@ -250,6 +260,48 @@ private void LateUpdate()
             float bob = Mathf.Abs(c) * bobAmount * blend;
             float lunge = attackAnimator != null ? attackAnimator.Lunge : 0f;
             transform.localPosition = baseLocalPosition + Vector3.up * (bob - 0.28f * crouch) + Vector3.forward * lunge;
+            if (sweepingBroom != null && WorkSweep > 0f)
+                PoseSweepingBroom(!leftArmSuppressed, !rightArmSuppressed);
+        }
+
+        private void PoseSweepingBroom(bool poseLeft, bool poseRight)
+        {
+            float stroke = Mathf.Sin(WorkSweepPhase);
+            // The bristles travel across the doorstep. Only the return stroke lifts
+            // slightly; the handle tilts around the upper grip instead of bobbing.
+            float lift = Mathf.Max(0f, -Mathf.Cos(WorkSweepPhase)) * 0.035f;
+            sweepingBroom.localPosition = new Vector3(stroke * 0.45f, 0.02f + lift, 0.62f);
+            sweepingBroom.localRotation = Quaternion.FromToRotation(Vector3.up,
+                new Vector3(-stroke * 0.45f, 1f, -0.3f).normalized);
+            float weight = Mathf.Clamp01(WorkBlend * WorkSweep);
+            if (poseLeft)
+                PoseGrip(leftArm, leftElbow, sweepLeftHand, sweepingBroom.TransformPoint(Vector3.up * 1.5f), -1f, weight);
+            if (poseRight)
+                PoseGrip(rightArm, rightElbow, sweepRightHand, sweepingBroom.TransformPoint(Vector3.up * 1.25f), 1f, weight);
+        }
+
+        // Solve the two arm segments so both visible hands stay on the shaft as
+        // the broom moves. Shoulder/elbow rotations alone preserve the rig lengths.
+        private void PoseGrip(Transform arm, Transform elbow, Transform hand, Vector3 grip, float side, float weight)
+        {
+            if (arm == null || elbow == null || hand == null) return;
+            Quaternion armRest = arm.localRotation, elbowRest = elbow.localRotation;
+            float upperLength = Vector3.Distance(arm.position, elbow.position);
+            float lowerLength = Vector3.Distance(elbow.position, hand.position);
+            Vector3 reach = grip - arm.position;
+            if (upperLength < 0.001f || lowerLength < 0.001f || reach.sqrMagnitude < 0.000001f) return;
+            float distance = Mathf.Clamp(reach.magnitude, Mathf.Abs(upperLength - lowerLength) + 0.0001f,
+                upperLength + lowerLength - 0.0001f);
+            Vector3 direction = reach.normalized;
+            Vector3 bend = Vector3.ProjectOnPlane(transform.TransformDirection(new Vector3(side, -0.6f, -0.2f)), direction).normalized;
+            float along = (upperLength * upperLength - lowerLength * lowerLength + distance * distance) / (2f * distance);
+            float outward = Mathf.Sqrt(Mathf.Max(0f, upperLength * upperLength - along * along));
+            Vector3 elbowTarget = arm.position + direction * along + bend * outward;
+            arm.rotation = Quaternion.FromToRotation(elbow.position - arm.position, elbowTarget - arm.position) * arm.rotation;
+            elbow.rotation = Quaternion.FromToRotation(hand.position - elbow.position, grip - elbow.position) * elbow.rotation;
+            Quaternion armPose = arm.localRotation, elbowPose = elbow.localRotation;
+            arm.localRotation = Quaternion.Slerp(armRest, armPose, weight);
+            elbow.localRotation = Quaternion.Slerp(elbowRest, elbowPose, weight);
         }
 
         // Called right after a teleport (e.g. an area gate) so the next LateUpdate

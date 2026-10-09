@@ -1,3 +1,6 @@
+version: 2026-10-09-two-handed-sweeping
+- Villagers now sweep sideways along the ground with both hands gripping the broom handle, replacing the one-handed lifting motion.
+
 version: 2026-10-09-deleted-audio-cleanup
 - Removed the forest background in Greenwood and Haven, and cleared deleted cave-stone recordings.
 - Restored original gold, jewellery, bow placement and loot sounds after their replacement recordings were removed. Updated soundboard suggestions to use surviving files.

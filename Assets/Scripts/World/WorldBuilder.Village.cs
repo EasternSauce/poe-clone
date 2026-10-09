@@ -357,8 +357,13 @@ namespace PoeClone.World
                 tool.transform.localPosition = new Vector3(0, -0.45f, 0);
                 if (activity == VillageActivity.Sweep)
                 {
-                    LocalBox(tool.transform, new Vector3(0, -0.3f, 0), new Vector3(0.055f, 1.25f, 0.055f), kit.Mat("Wood"), false);
-                    LocalBox(tool.transform, new Vector3(0, -0.93f, 0), new Vector3(0.38f, 0.25f, 0.13f), kit.Mat("Tan"), false);
+                    // Ground-based broom motion drives both hands, rather than
+                    // inheriting one forearm's up/down rotation.
+                    tool.transform.SetParent(walk.transform, false);
+                    tool.transform.localPosition = new Vector3(0, 0.02f, 0.62f);
+                    LocalBox(tool.transform, new Vector3(0, 0.95f, 0), new Vector3(0.055f, 1.4f, 0.055f), kit.Mat("Wood"), false);
+                    LocalBox(tool.transform, new Vector3(0, 0.125f, 0), new Vector3(0.38f, 0.25f, 0.13f), kit.Mat("Tan"), false);
+                    walk.BindSweepingBroom(tool.transform);
                 }
                 else
                 {
