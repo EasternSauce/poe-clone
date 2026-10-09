@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>poe-clone</title>
+    <!-- iPhone Safari has no fullscreen for web pages, but "Add to Home Screen" opens the game as a
+         full-screen app (no Safari bars). The manifest has no start_url, so the icon opens the
+         address it was added from (a spectator link stays a spectator link). -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PoE Clone">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+      /* The canvas always fills the window; Unity matches its render resolution to this size. Only
+         the top/bottom insets are subtracted (status bar / home indicator, which run the full width
+         and would otherwise sit under the HUD); left/right notch and rounded-corner insets are NOT
+         subtracted in landscape, since iOS reports those symmetrically on both edges even on devices
+         with no real notch there, which used to pillarbox the whole game to recover a strip neither
+         side's actual cutout needs (the cutout itself doesn't reach the top/bottom corners where the
+         game's own buttons sit). */
+      #game-canvas { position: fixed; display: block; background: #000; outline: none;
+                     left: 0; top: env(safe-area-inset-top, 0px);
+                     width: 100vw;
+                     height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+                     height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+      /* Touch: no browser gestures on the game (pinch zoom, double-tap zoom, pull-to-refresh), and
+         no text selection / iOS callout when a finger is held down (the inventory uses long presses). */
+      html, body, #game-canvas { touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none;
+                                 -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+      #loading { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                 gap: 18px; color: #e8e2d4; font: 600 20px/1.3 system-ui, sans-serif; background: #000; transition: opacity .4s; }
+      #loading.done { opacity: 0; pointer-events: none; }
+      #bar { width: min(360px, 70vw); height: 8px; border-radius: 4px; background: #2a2622; overflow: hidden; }
+      #bar-fill { width: 0; height: 100%; background: #b3412e; transition: width .2s; }
+      #error { display: none; max-width: 80vw; color: #f2b8a8; font-weight: 400; font-size: 15px; text-align: center; }
+      #fullscreen { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); width: 40px; height: 40px; border: 0; border-radius: 6px; cursor: pointer;
+                    background: rgba(0,0,0,.45); color: #fff; opacity: .7; display: none; align-items: center; justify-content: center; }
+      #fullscreen:hover, #fullscreen:focus-visible { opacity: 1; background: rgba(0,0,0,.7); }
+      #fullscreen svg { width: 22px; height: 22px; }
+      /* On phones the top right holds the game's own buttons, so fullscreen moves to the top middle. */
+      @media (pointer: coarse) { #fullscreen { right: auto; left: 50%; transform: translateX(-50%); } }
+      /* iPhone: how to get the game full screen (Add to Home Screen). */
+      #ios-hint { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
+                  padding: 16px; background: rgba(0,0,0,.6); font: 16px/1.4 system-ui, sans-serif; color: #e8e2d4; }
+      #ios-hint[hidden] { display: none; }
+      #ios-hint .card { max-width: 380px; padding: 20px 22px; border-radius: 10px; background: #1b1512; border: 2px solid #8c6b37;
+                        box-shadow: 0 8px 30px rgba(0,0,0,.6); }
+      #ios-hint h2 { margin: 0 0 8px; font-size: 20px; color: #dcb86b; }
+      #ios-hint p { margin: 0 0 10px; }
+      #ios-hint ol { margin: 0 0 16px; padding-left: 22px; }
+      #ios-hint li { margin: 6px 0; }
+      #ios-hint svg { width: 18px; height: 18px; vertical-align: -3px; color: #7fb4ff; }
+      #ios-hint button { width: 100%; padding: 10px; border: 0; border-radius: 6px; background: #b3412e; color: #fff;
+                         font: 600 16px system-ui, sans-serif; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <canvas id="game-canvas" tabindex="-1"></canvas>
+    <div id="loading" role="status" aria-live="polite">
+      <div>poe-clone</div>
+      <div id="bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100"><div id="bar-fill"></div></div>
+      <div id="error"></div>
+    </div>
+    <button id="fullscreen" type="button" aria-label="Toggle fullscreen" title="Fullscreen (F11 also works)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+    </button>
+    <div id="ios-hint" role="dialog" aria-modal="true" aria-labelledby="ios-hint-title" hidden>
+      <div class="card">
+        <h2 id="ios-hint-title">Play full screen</h2>
+        <p>Safari on iPhone can't make a web page full screen, but the game can run like an app:</p>
+        <ol>
+          <li>Tap <b>Share</b>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1"/></svg>
+            in Safari's toolbar (on newer iPhones it's in the <b>&middot;&middot;&middot;</b> menu).</li>
+          <li>Choose <b>Add to Home Screen</b>.</li>
+          <li>Open the game from its new icon.</li>
+        </ol>
+        <button id="ios-hint-close" type="button">Got it</button>
+      </div>
+    </div>
+    <script>
+      var canvas = document.getElementById("game-canvas");
+      var loading = document.getElementById("loading");
+      var fill = document.getElementById("bar-fill");
+      var errorBox = document.getElementById("error");
+      var fsButton = document.getElementById("fullscreen");
+
+      function showError(message) {
+        errorBox.textContent = message;
+        errorBox.style.display = "block";
+        loading.classList.remove("done");
+      }
+
+      // Fullscreen: desktop browsers, Android and iPad have the Fullscreen API (Safari's is
+      // prefixed); iPhone Safari doesn't, so there the button explains Add to Home Screen instead.
+      // Opened from the Home Screen the game is already full screen, so the button isn't shown.
+      var root = document.documentElement;
+      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      var standalone = navigator.standalone === true ||
+        (window.matchMedia && (window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: fullscreen)").matches));
+      var canFullscreen = !!(root.requestFullscreen || root.webkitRequestFullscreen) &&
+        (document.fullscreenEnabled || document.webkitFullscreenEnabled) === true;
+      var iosHint = document.getElementById("ios-hint");
+
+      function showIosHint() { iosHint.hidden = false; document.getElementById("ios-hint-close").focus(); }
+      document.getElementById("ios-hint-close").addEventListener("click", function () {
+        iosHint.hidden = true;
+        canvas.focus();
+      });
+
+      // Fullscreen the whole page rather than the canvas: the canvas is already sized to the
+      // page, so it simply grows with it and Unity follows the new size. (Unity's own
+      // canvas-fullscreen path is what produced a black screen.)
+      fsButton.addEventListener("click", function () {
+        if (!canFullscreen) {
+          showIosHint();
+          return;
+        }
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        } else {
+          var result = (root.requestFullscreen || root.webkitRequestFullscreen).call(root);
+          if (result && result.catch) result.catch(function () {});
+        }
+        canvas.focus();
+      });
+
+      // On an iPhone in Safari, explain it once without being asked (the button repeats it).
+      function maybeShowIosHintOnce() {
+        if (!isIOS || standalone || canFullscreen) return;
+        try {
+          if (localStorage.getItem("poeclone.iosHintShown")) return;
+          localStorage.setItem("poeclone.iosHintShown", "1");
+        } catch (e) {
+          return; // storage blocked: don't nag on every visit
+        }
+        showIosHint();
+      }
+
+      // Clicking the game gives it keyboard focus (and takes it away from the button).
+      canvas.addEventListener("pointerdown", function () { canvas.focus(); });
+
+      // Right click is a game button. Unity only blocks the menu on the canvas itself, and
+      // Firefox (just after alt-tabbing back) can send the event to the page instead, so block
+      // it for the whole page, before anything else sees it.
+      document.addEventListener("contextmenu", function (e) { e.preventDefault(); }, true);
+
+      // The canvas renders at its CSS size x pixel ratio, and must not exceed the GPU's maximum
+      // render size or WebGL silently draws nothing (black screen). Hardened browsers
+      // (LibreWolf, Firefox with resistFingerprinting) report a minimal 2048px limit together
+      // with a spoofed devicePixelRatio of 2, which a full-window canvas easily exceeds.
+      var gpuLimit = (function () {
+        try {
+          var gl = document.createElement("canvas").getContext("webgl2") || document.createElement("canvas").getContext("webgl");
+          if (!gl) return 4096;
+          var viewport = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+          var limit = Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE), gl.getParameter(gl.MAX_TEXTURE_SIZE), viewport[0], viewport[1]);
+          var lose = gl.getExtension("WEBGL_lose_context");
+          if (lose) lose.loseContext();
+          return limit;
+        } catch (e) {
+          return 4096;
+        }
+      })();
+
+      // Sharp on high-DPI screens, capped at 2x (4K laptops shouldn't render 4x the pixels)
+      // and at whatever keeps the canvas within the GPU limit. Phones get 1.5x: their 3x screens
+      // are tiny, and every pixel costs battery and frame rate on a mobile GPU.
+      var maxRatio = window.matchMedia && window.matchMedia("(pointer: coarse)").matches ? 1.5 : 2;
+      function pixelRatio() {
+        var longest = Math.max(canvas.clientWidth, canvas.clientHeight, 1);
+        return Math.max(0.25, Math.min(window.devicePixelRatio || 1, maxRatio, (gpuLimit - 8) / longest));
+      }
+
+      var unityInstance = null;
+      window.addEventListener("resize", function () {
+        // Unity re-reads this every time it sizes the canvas (window resize, fullscreen).
+        if (unityInstance) unityInstance.Module.devicePixelRatio = pixelRatio();
+      });
+
+      // Stamped into the published page by WebBuilder; "?v=" makes every build's files new URLs,
+      // so a reload after an update never mixes in cached files from the old build.
+      var BUILD_ID = "2026-10-09-generic-loot-drop-audio-20261009144610";
+      var v = BUILD_ID.indexOf("__") === 0 ? "" : "?v=" + encodeURIComponent(BUILD_ID);
+
+      var config = {
+        dataUrl: "Build/WebGL.data.unityweb" + v,
+        frameworkUrl: "Build/WebGL.framework.js.unityweb" + v,
+        codeUrl: "Build/WebGL.wasm.unityweb" + v,
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "poe-clone",
+        productVersion: "0.1.0",
+        devicePixelRatio: pixelRatio(),
+        showBanner: function (msg, type) { if (type === "error") showError(msg); else console.warn(msg); }
+      };
+
+      var script = document.createElement("script");
+      script.src = "Build/WebGL.loader.js" + v;
+      script.onload = function () {
+        createUnityInstance(canvas, config, function (progress) {
+          fill.style.width = Math.round(progress * 100) + "%";
+          document.getElementById("bar").setAttribute("aria-valuenow", Math.round(progress * 100));
+        }).then(function (instance) {
+          unityInstance = instance;
+          loading.classList.add("done");
+          if (!standalone) fsButton.style.display = "flex";
+          canvas.focus();
+          maybeShowIosHintOnce();
+          watchForUpdates();
+        }).catch(function (message) {
+          showError(String(message));
+        });
+      };
+      // A new version went live: save, tell everyone, and reload onto it (players and spectators
+      // alike). Checks version.json (written next to this page by every build) once a minute.
+      function watchForUpdates() {
+        if (v === "") return; // a local build that was never stamped
+        setInterval(function () {
+          fetch("version.json?t=" + Date.now(), { cache: "no-store" })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (info) {
+              if (info && info.build && info.build !== BUILD_ID) reloadForUpdate();
+            })
+            .catch(function () { /* offline for a moment: try again next time */ });
+        }, 60000);
+      }
+
+      // Ten seconds' warning to get somewhere safe, counting down; the character is saved right
+      // before the reload (and once at the start, in case the tab is closed meanwhile).
+      var updating = false;
+      function saveGame() {
+        try { if (unityInstance) unityInstance.SendMessage("GameSessionController", "SaveForUpdate"); } catch (e) { }
+      }
+      function reloadForUpdate() {
+        if (updating) return;
+        updating = true;
+        saveGame();
+
+        var note = document.createElement("div");
+        note.style.cssText = "position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:1000;" +
+          "background:rgba(20,14,8,0.92);color:#f0d9a0;border:1px solid #a07a3a;border-radius:6px;" +
+          "padding:10px 16px;font:15px sans-serif;max-width:90vw;text-align:center";
+        var text = document.createElement("span");
+        var now = document.createElement("button");
+        now.textContent = "Reload now";
+        now.style.cssText = "margin-left:12px;background:#a07a3a;color:#1a120a;border:0;border-radius:4px;" +
+          "padding:4px 10px;font:bold 14px sans-serif;cursor:pointer";
+        note.appendChild(text);
+        note.appendChild(now);
+        document.body.appendChild(note);
+
+        var left = 10;
+        function reloadNow() {
+          saveGame();
+          setTimeout(function () { location.reload(); }, 300); // a moment for the save to land
+        }
+        function tick() {
+          text.textContent = "A new version of the game is out. Reloading in " + left + "...";
+          if (left <= 0) { reloadNow(); return; }
+          left--;
+          setTimeout(tick, 1000);
+        }
+        now.onclick = function () { left = 0; now.disabled = true; reloadNow(); };
+        tick();
+      }
+
+      script.onerror = function () { showError("The game files failed to load. Try reloading the page."); };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
