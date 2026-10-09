@@ -168,7 +168,7 @@ namespace PoeClone.Skills
                 case SkillId.SplitShot:
                 {
                     int count = arrows + SplitExtra(level);
-                    float each = damage * (0.75f + 0.025f * (level - 1));
+                    float each = damage * skill.WeaponMultiplierAt(level);
                     var volley = PlayerArrow.NewVolley();
                     foreach (Vector3 direction in HitEffects.Spread(forward, count, SplitSpread))
                         PlayerArrow.LaunchArrow(transform, range, each, direction, volley);
@@ -179,7 +179,7 @@ namespace PoeClone.Skills
                 case SkillId.PiercingShot:
                 {
                     float far = range * PierceRangeMore;
-                    float each = damage * (1.1f + 0.05f * (level - 1));
+                    float each = damage * skill.WeaponMultiplierAt(level);
                     var volley = PlayerArrow.NewVolley();
                     foreach (Vector3 direction in HitEffects.Spread(forward, arrows, PierceSpread))
                         PlayerArrow.LaunchArrow(transform, far, each, direction, volley).Piercing(skill.Color);
@@ -190,7 +190,7 @@ namespace PoeClone.Skills
                 case SkillId.BurningArrow:
                 {
                     float radius = BurnRadius * area;
-                    float each = damage * (1f + 0.04f * (level - 1));
+                    float each = damage * skill.WeaponMultiplierAt(level);
                     float ignite = 20f + 2f * (level - 1);
                     var volley = PlayerArrow.NewVolley();
                     foreach (Vector3 direction in HitEffects.Spread(forward, arrows, PlayerCombat.ArrowSpreadDegrees))
@@ -203,7 +203,7 @@ namespace PoeClone.Skills
                 {
                     var volley = PlayerArrow.NewVolley();
                     foreach (Vector3 direction in HitEffects.Spread(forward, arrows, PierceSpread))
-                        PlayerArrow.LaunchArrow(transform, range, damage * (0.9f + 0.04f * (level - 1)), direction, volley, arrowColor: skill.Color).Venomous(level);
+                        PlayerArrow.LaunchArrow(transform, range, damage * skill.WeaponMultiplierAt(level), direction, volley, arrowColor: skill.Color).Venomous(level);
                     Record(skill, level, range, arrows);
                     break;
                 }
@@ -213,7 +213,7 @@ namespace PoeClone.Skills
                     int count = RainCount(level, arrows);
                     float spread = RainRadius * area;
                     float hitRadius = RainHitRadius * area;
-                    float each = damage * (0.45f + 0.025f * (level - 1));
+                    float each = damage * skill.WeaponMultiplierAt(level);
                     var points = new Vector3[count];
                     for (int k = 0; k < count; k++)
                     {

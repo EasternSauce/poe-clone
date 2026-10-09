@@ -123,6 +123,50 @@ namespace PoeClone.Skills
             int l = Mathf.Max(1, level);
             return BaseDamage * (1f + 0.35f * (l - 1)) * Mathf.Lerp(1.3f, 1f, Mathf.Clamp01((l - 1) / 9f));
         }
+
+        /// <summary>
+        /// A weapon skill's share of the weapon's damage per hit (per arrow for bow skills) at this
+        /// level, e.g. Cleave 1.68 (+0.12 per level). 0 for skills that don't use the weapon.
+        /// </summary>
+        public float WeaponMultiplierAt(int level)
+        {
+            int l = Mathf.Max(1, level) - 1;
+            switch (Id)
+            {
+                case SkillId.Cleave: return 1.68f + 0.12f * l;
+                case SkillId.Pulverize: return 3.12f + 0.216f * l;
+                case SkillId.ReapingArc: return 2.64f + 0.18f * l;
+                case SkillId.LungingThrust: return 2.88f + 0.192f * l;
+                case SkillId.FangStrike: return 1.56f + 0.096f * l;
+                case SkillId.SplitShot: return 0.75f + 0.025f * l;
+                case SkillId.PiercingShot: return 1.1f + 0.05f * l;
+                case SkillId.BurningArrow: return 1f + 0.04f * l;
+                case SkillId.VenomArrow: return 0.9f + 0.04f * l;
+                case SkillId.RainOfArrows: return 0.45f + 0.025f * l;
+                default: return 0f;
+            }
+        }
+
+        /// <summary>A spell's hit multiplier on top of <see cref="DamageAt"/> (Venom Spout's eruption grows 12% per level).</summary>
+        public float ExtraHitMultiplierAt(int level) =>
+            Id == SkillId.VenomSpout ? 1f + 0.12f * (Mathf.Max(1, level) - 1) : 1f;
+
+        /// <summary>The damage type its hits deal, for tooltips.</summary>
+        public StatType DamageElement
+        {
+            get
+            {
+                if (Id == SkillId.VenomSpout) return StatType.PoisonDamage;
+                if (Id == SkillId.BurningArrow) return StatType.FireDamage;
+                switch (Element)
+                {
+                    case SkillElement.Fire: return StatType.FireDamage;
+                    case SkillElement.Cold: return StatType.ColdDamage;
+                    case SkillElement.Lightning: return StatType.LightningDamage;
+                    default: return StatType.PhysicalDamage;
+                }
+            }
+        }
     }
 
     /// <summary>

@@ -1,3 +1,7 @@
+version: 2026-10-09-skill-tooltips
+- Hovering a skill on the skill bar now shows a tooltip with its level, damage per hit (with your current stats), mana cost, cooldown, the item granting it and its description. Skills in the bind list over the bar show it too, and the attack button shows your basic attack's damage.
+- On touch screens, the skill buttons menu now lists each skill's damage per hit (or its minions' stats for summons).
+
 version: 2026-10-09-spell-and-bow-mana
 - Bow skills (Split Shot, Piercing Shot, Rain of Arrows, Burning Arrow and Venom Arrow) cost 50% more mana.
 - Damage spells (Fire Bolt, Ice Shard, Chain Lightning, Frost Nova, War Cry, Venom Spout and Death Mark) cost half as much mana at level 1. The discount shrinks each level and is gone at level 10.

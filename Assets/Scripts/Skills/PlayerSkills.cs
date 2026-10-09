@@ -973,7 +973,7 @@ namespace PoeClone.Skills
                     Record(skill, level, radius, 0, new[] { at });
                     foreach (EnemyHealth target in EnemiesWithin(at, radius))
                     {
-                        Hit(target, damage * (1f + 0.12f * (level - 1)), skill.Color, false, DamageType.Poison);
+                        Hit(target, damage * skill.ExtraHitMultiplierAt(level), skill.Color, false, DamageType.Poison);
                         WeaponVenom.Apply(transform, target, damage, 100f + 10f * (level - 1), 0f, inventory.Stats);
                     }
                     break;
@@ -1005,7 +1005,7 @@ namespace PoeClone.Skills
             SkillEffects.Shockwave(transform.position, reach, skill.Color, 0.3f);
             Record(skill, level, reach);
 
-            float damage = WeaponDamage() * (1.68f + 0.12f * (level - 1));
+            float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
             PlaySkillSound(skill.Id, transform.position);
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
                 Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
@@ -1103,7 +1103,7 @@ namespace PoeClone.Skills
             // Match the impact treatment of a basic maul slam: ground burst plus a brief camera jolt.
             PoeClone.CameraSystem.CameraFollow.Shake(0.12f, 0.18f);
             Record(skill, level, radius, at: impact);
-            float damage = WeaponDamage() * (3.12f + 0.216f * (level - 1));
+            float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
             foreach (EnemyHealth enemy in EnemiesWithin(impact, radius))
                 Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
         }
@@ -1111,7 +1111,7 @@ namespace PoeClone.Skills
         private void ReapingArc(SkillDefinition skill, int level)
         {
             float reach = 4.6f * (1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f);
-            float damage = WeaponDamage() * (2.64f + 0.18f * (level - 1));
+            float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
             {
                 Vector3 to = enemy.transform.position - transform.position;
@@ -1126,7 +1126,7 @@ namespace PoeClone.Skills
         private void LungingThrust(SkillDefinition skill, int level)
         {
             float reach = 3f * (1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f);
-            float damage = WeaponDamage() * (2.88f + 0.192f * (level - 1));
+            float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
             EnemyHealth target = AimedEnemy(reach) ?? EnemyInDirection(transform.forward, reach);
             SkillEffects.Arc(transform.position + Vector3.up, transform.position + Vector3.up + transform.forward * reach, skill.Color, 0.25f);
             if (target != null)
@@ -1141,7 +1141,7 @@ namespace PoeClone.Skills
             Record(skill, level, reach);
             if (target != null)
             {
-                Hit(target, WeaponDamage() * (1.56f + 0.096f * (level - 1)), skill.Color, true, melee: true);
+                Hit(target, WeaponDamage() * skill.WeaponMultiplierAt(level), skill.Color, true, melee: true);
                 WeaponVenom.Apply(transform, target, WeaponDamage() * 1.2f, 150f + 15f * (level - 1), 0f, inventory.Stats,
                     canEnrage: false);
             }
@@ -1168,6 +1168,55 @@ namespace PoeClone.Skills
             if (duration > 0f)
                 summary += " · " + Mathf.RoundToInt(duration) + "s";
             return summary;
+        }
+
+        /// <summary>
+        /// What one hit of the skill does now at this level, with the current damage stats but no
+        /// situational ones (crits, shock, low life, curses): "34 fire per hit". A summon's minions
+        /// instead (see <see cref="MinionSummary"/>); null for skills that deal no damage themselves.
+        /// </summary>
+        public string DamageSummary(SkillId id, int level)
+        {
+            SkillDefinition skill = SkillBook.Get(id);
+            level = Mathf.Max(1, level);
+            if (skill.Summon)
+                return MinionSummary(id, level);
+            StatSheet sheet = inventory != null ? inventory.Stats : null;
+            StatType element = skill.DamageElement;
+            float weapon = skill.WeaponMultiplierAt(level);
+            float damage;
+            if (weapon > 0f)
+                damage = WeaponDamage() * weapon * (sheet != null
+                    ? sheet.DamageMultiplier(true, skill.Bow, false, false, element) : 1f);
+            else if (skill.DamageSpell)
+                damage = skill.DamageAt(level) * skill.ExtraHitMultiplierAt(level) * (sheet != null
+                    ? sheet.DamageMultiplier(false, false, false, false, element, spell: true) : 1f);
+            else
+                return null;
+            return Mathf.Max(1, Mathf.RoundToInt(damage)) + " " + ElementName(element) +
+                   (skill.Bow ? " per arrow" : " per hit");
+        }
+
+        /// <summary>A basic weapon attack's hit with the current damage stats, for the attack button's tooltip.</summary>
+        public string BasicAttackSummary()
+        {
+            StatSheet sheet = inventory != null ? inventory.Stats : null;
+            bool bow = CurrentWeapon() == WeaponType.Bow;
+            float damage = WeaponDamage() * (sheet != null
+                ? sheet.DamageMultiplier(true, bow, false, false, StatType.PhysicalDamage) : 1f);
+            return Mathf.Max(1, Mathf.RoundToInt(damage)) + " physical" + (bow ? " per arrow" : " per hit");
+        }
+
+        private static string ElementName(StatType element)
+        {
+            switch (element)
+            {
+                case StatType.FireDamage: return "fire";
+                case StatType.ColdDamage: return "cold";
+                case StatType.LightningDamage: return "lightning";
+                case StatType.PoisonDamage: return "poison";
+                default: return "physical";
+            }
         }
 
         private static MinionKind MinionKindOf(SkillId id)

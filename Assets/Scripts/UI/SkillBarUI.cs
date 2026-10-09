@@ -14,6 +14,7 @@ namespace PoeClone.UI
     /// buttons - with the cooldown sweeping down over them and a blue tint when there isn't enough
     /// mana) and the skills panel (SKL button on touch), which assigns usable equipment skills to Button 1 through Button 4.
     /// Each granting item gets its own choice; inaccessible skills are omitted. Clicking a square on the desktop bar opens a list of skills and potions above it.
+    /// Hovering a square (or a skill in that list) shows the skill's tooltip: level, damage, cost, cooldown and description.
     /// On touch the bar itself is TouchControlsUI's round buttons.
     /// Installed by <see cref="GameSessionController"/>; built at runtime.
     /// </summary>
@@ -72,6 +73,9 @@ namespace PoeClone.UI
         private int pickerSlot = -1;
         private PlayerSkills skills;
         private bool rowsDirty = true;
+        private Canvas canvas;
+        private RectTransform tooltip;
+        private Text tooltipText;
         private List<PlayerSkills.SkillGrant> builtGrants;
 
         public static bool IsOpen => instance != null && instance.panelRoot != null && instance.panelRoot.activeSelf;
@@ -144,6 +148,7 @@ namespace PoeClone.UI
             {
                 panelRoot.SetActive(false);
                 ClosePicker();
+                HideTooltip();
                 return;
             }
 
@@ -162,7 +167,11 @@ namespace PoeClone.UI
                 RefreshRows();
 
             // TouchControlsUI draws the mobile slots; these desktop views stay hidden.
-            if (TouchMode.Active) return;
+            if (TouchMode.Active)
+            {
+                HideTooltip();
+                return;
+            }
 
             for (int k = 0; k < slotViews.Count; k++)
             {
@@ -173,6 +182,7 @@ namespace PoeClone.UI
                     UpdatePotionSlot(slotViews[k], potion == 1);
             }
             UpdateAttack();
+            UpdateTooltip();
         }
 
         // The attack square: the staff's spell, the bow skill that's on, an arrow for a plain bow,
@@ -229,6 +239,7 @@ namespace PoeClone.UI
             if (barRoot.activeSelf)
                 barRoot.SetActive(false);
             ClosePicker();
+            HideTooltip();
 
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && !UiKit.IsTypingInTextField())
@@ -536,13 +547,15 @@ namespace PoeClone.UI
                 int level = skills.GrantLevelWithBonuses(grant);
                 string cost = Num(skills.ManaCostForGrant(grant)) + " " + skills.CostResource;
                 string timing = skill.Bow ? "per shot" : Num(skills.CooldownForGrant(grant)) + "s cooldown";
+                string damage = skills.DamageSummary(skill.Id, level);
                 string bindings = "";
                 for (int k = 0; k < SkillBook.TouchSlotCount; k++)
                     if (skills.MatchesGrant(k, grant))
                         bindings += (bindings.Length == 0 ? "Button " : ", ") + (k + 1);
                 row.Title.text = "<b>" + skill.Name + "</b>  <color=#" + UiKit.Hex(UiKit.Gold) +
                     ">Level " + level + "</color>\n<size=14>From " + grant.Item.Name + " (" + grant.Source +
-                    ") ? " + cost + " ? " + timing + "</size>\n<size=14>" + skill.Description +
+                    ") · " + cost + " · " + timing + "</size>\n<size=14>" +
+                    (damage == null ? "" : (skill.Summon ? "Minions: " : "Damage: ") + damage + "\n") + skill.Description +
                     (bindings.Length == 0 ? "" : "\n<color=#" + UiKit.Hex(UiKit.Gold) + ">" + bindings + "</color>") + "</size>";
                 bool assigned = skills.MatchesGrant(selectedMobileButton, grant);
                 row.Back.color = assigned ? new Color(0.24f, 0.20f, 0.12f, 1f) : new Color(0.14f, 0.12f, 0.10f, 1f);
@@ -555,6 +568,195 @@ namespace PoeClone.UI
                 y -= height + 8f;
             }
             panelContent.sizeDelta = new Vector2(0f, Mathf.Max(rows.Count == 0 ? 80f : 0f, -y));
+        }
+
+        // ------------------------------------------------------------------ tooltip
+
+        private const float TooltipWidth = 360f;
+
+        private void BuildTooltip(Transform parent)
+        {
+            Image back = UiKit.NewImage("SkillTooltip", parent, new Color(0.07f, 0.07f, 0.08f, 0.97f));
+            UiKit.AddOutline(back, UiKit.BorderColor, 2f);
+            tooltip = back.rectTransform;
+            tooltip.anchorMin = tooltip.anchorMax = tooltip.pivot = Vector2.zero;
+            tooltipText = UiKit.NewText("Text", tooltip, "", 16, UiKit.TextColor, TextAnchor.UpperLeft);
+            tooltipText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            tooltipText.rectTransform.anchorMin = tooltipText.rectTransform.anchorMax = new Vector2(0f, 1f);
+            tooltipText.rectTransform.pivot = new Vector2(0f, 1f);
+            tooltipText.rectTransform.anchoredPosition = new Vector2(12f, -10f);
+            tooltipText.rectTransform.sizeDelta = new Vector2(TooltipWidth - 24f, 0f);
+            tooltip.gameObject.SetActive(false);
+        }
+
+        private void HideTooltip()
+        {
+            if (tooltip != null && tooltip.gameObject.activeSelf)
+                tooltip.gameObject.SetActive(false);
+        }
+
+        // The square (or bind-list skill) under the mouse: above the square, beside the list.
+        private void UpdateTooltip()
+        {
+            Mouse mouse = Mouse.current;
+            if (mouse == null)
+            {
+                HideTooltip();
+                return;
+            }
+            Vector2 at = mouse.position.ReadValue();
+            string text = null;
+            RectTransform over = null;
+            bool beside = false;
+
+            if (pickerSlot >= 0 && RectTransformUtility.RectangleContainsScreenPoint(picker, at, null))
+            {
+                for (int k = 0; k < pickerGrants.Count && k < pickerRows.Count; k++)
+                {
+                    if (!RectTransformUtility.RectangleContainsScreenPoint((RectTransform)pickerRows[k].transform, at, null))
+                        continue;
+                    var grant = pickerGrants[k];
+                    text = SkillTooltip(SkillBook.Get(grant.Id), skills.GrantLevelWithBonuses(grant),
+                        skills.ManaCostForGrant(grant), skills.CooldownForGrant(grant), grant.Item.Name, false);
+                    over = picker;
+                    beside = true;
+                    break;
+                }
+            }
+            else
+            {
+                for (int k = 0; k < slotViews.Count && text == null; k++)
+                    if (RectTransformUtility.RectangleContainsScreenPoint(slotViews[k].Back.rectTransform, at, null))
+                    {
+                        text = SlotTooltip(k);
+                        over = slotViews[k].Back.rectTransform;
+                    }
+                if (text == null && RectTransformUtility.RectangleContainsScreenPoint(attackView.Back.rectTransform, at, null))
+                {
+                    text = AttackTooltip();
+                    over = attackView.Back.rectTransform;
+                }
+            }
+
+            if (text == null)
+            {
+                HideTooltip();
+                return;
+            }
+            tooltipText.text = text;
+            float height = tooltipText.preferredHeight + 20f;
+            tooltip.sizeDelta = new Vector2(TooltipWidth, height);
+            PlaceTooltip(over, beside, height);
+            if (!tooltip.gameObject.activeSelf)
+                tooltip.gameObject.SetActive(true);
+            tooltip.SetAsLastSibling();
+        }
+
+        private void PlaceTooltip(RectTransform over, bool beside, float height)
+        {
+            // The canvas is screen-space overlay: world corners are screen pixels.
+            var corners = new Vector3[4];
+            over.GetWorldCorners(corners);
+            float scale = canvas.scaleFactor > 0f ? canvas.scaleFactor : 1f;
+            Vector2 min = corners[0] / scale;
+            Vector2 max = corners[2] / scale;
+            float screenW = Screen.width / scale;
+            float screenH = Screen.height / scale;
+            Vector2 position;
+            if (beside)
+            {
+                position = new Vector2(max.x + 8f, min.y);
+                if (position.x + TooltipWidth > screenW - 8f)
+                    position.x = min.x - 8f - TooltipWidth;
+            }
+            else
+                position = new Vector2((min.x + max.x - TooltipWidth) * 0.5f, max.y + 26f);
+            position.x = Mathf.Clamp(position.x, 8f, Mathf.Max(8f, screenW - TooltipWidth - 8f));
+            position.y = Mathf.Clamp(position.y, 8f, Mathf.Max(8f, screenH - height - 8f));
+            tooltip.anchoredPosition = position;
+        }
+
+        private string SlotTooltip(int slot)
+        {
+            SkillId? id = skills.Slot(slot);
+            if (id == null)
+            {
+                int potion = Player.PlayerPotions.PotionAt(slot);
+                if (potion == 0) return null;
+                var inventory = skills.GetComponent<PlayerInventory>();
+                int count = inventory != null ? inventory.Potions(potion == 1) : 0;
+                return "<size=20><b>" + (potion == 1 ? "Health Potion" : "Mana Potion") + "</b></size>\n" +
+                       count + " carried\n<color=#" + UiKit.Hex(UiKit.DimText) + ">Click to change this button.</color>";
+            }
+            int level = skills.LevelAt(slot);
+            string source = null;
+            int sourceSlot = skills.SourceSlotAt(slot);
+            var inv = skills.GetComponent<PlayerInventory>();
+            if (level > 0 && sourceSlot >= 0 && inv != null)
+                source = inv.Equipment.GetActive((EquipSlot)sourceSlot)?.Name;
+            return SkillTooltip(SkillBook.Get(id.Value), level, skills.ManaCostAt(slot), skills.CooldownAt(slot), source, false);
+        }
+
+        private string AttackTooltip()
+        {
+            SkillId? main = skills.MainSkill;
+            if (main != null)
+                return SkillTooltip(SkillBook.Get(main.Value), skills.Level(main.Value), skills.ManaCost(main.Value),
+                    skills.Cooldown(main.Value), null, true);
+            SkillId? bow = skills.ActiveBowSkill;
+            if (bow != null)
+            {
+                SkillDefinition skill = SkillBook.Get(bow.Value);
+                return SkillTooltip(skill, skills.ActiveBowLevel, skill.ManaCostAt(Mathf.Max(1, skills.ActiveBowLevel)), 0f, null, true);
+            }
+            ItemData weapon = skills.GetComponent<PlayerInventory>()?.Equipment.GetActive(EquipSlot.MainHand);
+            return "<size=20><b>" + (weapon != null ? weapon.Name : "Unarmed") + "</b></size>\n<color=#" +
+                   UiKit.Hex(UiKit.DimText) + ">Basic attack</color>\nDamage: " + skills.BasicAttackSummary() +
+                   "\n\n<color=#" + UiKit.Hex(UiKit.DimText) + ">Attack with the left mouse button.</color>";
+        }
+
+        private string SkillTooltip(SkillDefinition skill, int level, float cost, float cooldown, string source, bool attack)
+        {
+            string gold = UiKit.Hex(UiKit.Gold);
+            string dim = UiKit.Hex(UiKit.DimText);
+            var text = new System.Text.StringBuilder();
+            text.Append("<size=20><b>").Append(skill.Name).Append("</b></size>\n");
+            if (level > 0)
+                text.Append("<color=#").Append(gold).Append(">Level ").Append(level).Append("</color>  ");
+            text.Append("<color=#").Append(dim).Append('>').Append(Tags(skill)).Append("</color>\n");
+            if (level <= 0)
+                text.Append("<color=#ff7777>No worn gear grants this skill.</color>\n");
+            else
+            {
+                string damage = skills.DamageSummary(skill.Id, level);
+                if (damage != null)
+                    text.Append(skill.Summon ? "Minions: " : "Damage: ").Append(damage).Append('\n');
+                if (cost > 0f)
+                    text.Append("Cost: ").Append(Num(cost)).Append(' ').Append(skills.CostResource)
+                        .Append(skill.Bow ? " per shot" : "").Append('\n');
+                if (cooldown > 0f)
+                    text.Append(attack ? "Cast time: " : "Cooldown: ").Append(Num(cooldown)).Append("s\n");
+                if (!string.IsNullOrEmpty(source))
+                    text.Append("<color=#").Append(dim).Append(">From ").Append(source).Append("</color>\n");
+            }
+            text.Append('\n').Append(skill.Description);
+            if (skill.Bow && !attack)
+                text.Append("\n<color=#").Append(dim).Append(">Press to toggle; while on, it replaces your bow attack.</color>");
+            return text.ToString();
+        }
+
+        private static string Tags(SkillDefinition skill)
+        {
+            string tags = skill.Bow ? "Attack, Bow" : skill.WeaponMultiplierAt(1) > 0f ? "Attack, Melee" :
+                skill.Summon ? "Spell, Summon" : skill.Spell ? "Spell" : "Movement";
+            switch (skill.DamageElement)
+            {
+                case StatType.FireDamage: return tags + ", Fire";
+                case StatType.ColdDamage: return tags + ", Cold";
+                case StatType.LightningDamage: return tags + ", Lightning";
+                case StatType.PoisonDamage: return tags + ", Poison";
+                default: return tags;
+            }
         }
 
         private static string Num(float value)
@@ -613,7 +815,7 @@ namespace PoeClone.UI
         {
             healthPotionIcon = Resources.Load<Sprite>("ItemIcons/" + ItemGenerator.HealthPotionId);
             manaPotionIcon = Resources.Load<Sprite>("ItemIcons/" + ItemGenerator.ManaPotionId);
-            Canvas canvas = UiKit.NewCanvas("SkillCanvas", transform, 60, out CanvasGroup group);
+            canvas = UiKit.NewCanvas("SkillCanvas", transform, 60, out CanvasGroup group);
             canvas.gameObject.AddComponent<GraphicRaycaster>();
             group.interactable = true;
             group.blocksRaycasts = true;
@@ -643,6 +845,7 @@ namespace PoeClone.UI
             }
 
             BuildPicker(canvas.transform);
+            BuildTooltip(canvas.transform);
 
             // The mobile menu is populated only on its first open.
             panelRoot = UiKit.NewRect("MobileSkillsPanel", canvas.transform).gameObject;
