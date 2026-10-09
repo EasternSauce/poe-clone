@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-09T14:03:23.3834359Z",
+    "generatedAt": "2026-10-09T14:07:49.8004652Z",
     "effects": [
         {
             "id": "player.swing",
@@ -1768,7 +1768,7 @@
             "soundGroup": "sound.world.explosion",
             "purpose": "Corpse and quest explosions",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/04_Fire_explosion_04_medium.wav"
+                "Assets/Audio/SoundLibrary/Combat & weapons/best_corpse_explosion.wav"
             ],
             "usages": [
                 {

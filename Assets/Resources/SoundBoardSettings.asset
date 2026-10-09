@@ -2338,7 +2338,7 @@ MonoBehaviour:
   - id: sound.world.explosion
     purpose: Corpse and quest explosions
     clips:
-    - {fileID: 8300000, guid: 39513d34220f0bc4baa9dd7e9c4b9faf, type: 3}
+    - {fileID: 8300000, guid: e7dfd1b3bebb3554e8e17a1e856cfe5f, type: 3}
   - id: sound.world.reveal
     purpose: Carrion Saint reveal
     clips:
