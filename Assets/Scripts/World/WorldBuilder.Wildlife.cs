@@ -22,8 +22,8 @@ namespace PoeClone.World
             PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Squirrel, 6, 55, 85);
 
             var cats = new System.Random(7903);
-            PopulateWildlife(wildlife, player, cats, Haven, AmbientAnimal.Species.Cat, 10, 0, 34);
-            PopulateWildlife(wildlife, player, cats, Haven, AmbientAnimal.Species.Cat, 3, 34, 80);
+            PopulateWildlife(wildlife, player, cats, Haven, AmbientAnimal.Species.Cat, 5, 0, 34);
+            PopulateWildlife(wildlife, player, cats, Haven, AmbientAnimal.Species.Cat, 1, 34, 80);
 
             // Broad wings and an outstretched neck distinguish these from the small scene birds.
             foreach (int area in new[] { Greenwood, Haven })

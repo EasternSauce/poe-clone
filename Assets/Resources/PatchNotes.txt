@@ -1,3 +1,6 @@
+version: 2026-10-09-fewer-cats-rare-lantern-flicker
+- Halved the cats roaming Haven and made lantern light flicker in brief, occasional bursts.
+
 version: 2026-10-09-simple-walking-sounds
 - Restored the familiar short grass step for walking and removed the louder rotating footstep recordings.
 
