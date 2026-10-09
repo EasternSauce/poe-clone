@@ -74,7 +74,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Axe_hit_armor_–_Deep_#4-1766764026227.mp3",
+      "file": "Combat & weapons/Axe_hit_armor_–_Deep_#4-1766764026227_slam_hard.mp3",
       "sha256": "179f42991133058e504e4763ae776393173c5418f58eadbc1aa294b7c65db82a",
       "sources": [
         {
@@ -364,46 +364,6 @@
       ]
     },
     {
-      "file": "Combat & weapons/Critical_sword_hit_–_#1-1766763481774.mp3",
-      "sha256": "ad4daded522b07e184b4995b28a4269d6a32cb5666b793c484b6cd5537888698",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Critical_sword_hit_–_#1-1766763481774.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Critical_sword_hit_–_#2-1766763478532.mp3",
-      "sha256": "288288536ce7d3aebd2f0a72c22d4ad62abdb2fb2628cb63ab96162dfffd9907",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Critical_sword_hit_–_#2-1766763478532.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Critical_sword_hit_–_#3-1766763474762.mp3",
-      "sha256": "48b028d587fd3575e13de51bf9f85dab490624700e161a681ea1732392e2f803",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Critical_sword_hit_–_#3-1766763474762.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Critical_sword_hit_–_#4-1766763469468.mp3",
-      "sha256": "09935500ebf7d5afeaccbacc646c0bc685ec8b4cf17ead752f9860a23ba9bd0d",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Critical_sword_hit_–_#4-1766763469468.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
       "file": "Combat & weapons/Dagger_stab_–_Quick__#1-1766764093333_punchy.mp3",
       "sha256": "16e3b6b32c054c5dc4da2893e3d1da77942ea5dcfab49dbf3fb06f93aafa12a6",
       "sources": [
@@ -524,7 +484,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/Enemy_death_–_Monste_#1-1766764309706.mp3",
+      "file": "Creatures & voices/Enemy_death_–_Monste_#1-1766764309706_8bit.mp3",
       "sha256": "a7299dd34d388e88e1ee68f666cf41d01bc76c3f1405ea58ecf3444abb3e4a60",
       "sources": [
         {
@@ -534,7 +494,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/Enemy_death_–_Monste_#2-1766764305947.mp3",
+      "file": "Creatures & voices/Enemy_death_–_Monste_#2-1766764305947_8bit.mp3",
       "sha256": "cf6ec7e3f8e34e3ff7da2341ff0ce8f1589ee6cde9b06b40e04ce7059aae9819",
       "sources": [
         {
@@ -564,7 +524,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Equip_weapon_–_Weapo_#1-1766765195705.mp3",
+      "file": "Combat & weapons/Equip_weapon_–_Weapo_#1-1766765195705_sharpening_sound.mp3",
       "sha256": "a3150dcf27090f81f01038eda34fa249784ea2e265233cc27dcfef1643d87641",
       "sources": [
         {
@@ -574,7 +534,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Equip_weapon_–_Weapo_#2-1766765195705.mp3",
+      "file": "Combat & weapons/Equip_weapon_–_Weapo_#2-1766765195705_sharpening_sound.mp3",
       "sha256": "bcbd6c4da2f9b749b9d9e96f7da737a0928d78233351f3e5c03dc80c7edcd0bd",
       "sources": [
         {
@@ -584,7 +544,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Equip_weapon_–_Weapo_#3-1766765195706.mp3",
+      "file": "Combat & weapons/Equip_weapon_–_Weapo_#3-1766765195706_sharpening_sound.mp3",
       "sha256": "2e68971ed00aad09a6c6386b28c890f48bbad9f6b695c10f831d54c8cf6d339e",
       "sources": [
         {
@@ -594,7 +554,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Equip_weapon_–_Weapo_#4-1766765195706.mp3",
+      "file": "Combat & weapons/Equip_weapon_–_Weapo_#4-1766765195706_sharpening_sound.mp3",
       "sha256": "5ea883e1676d45dcd9cb53d6d26e037f36815a6b9936524dd69420a3d25d9d8d",
       "sources": [
         {
@@ -1238,46 +1198,6 @@
       ]
     },
     {
-      "file": "Interface/Inventory_open_–_UI__#1-1766765859218.mp3",
-      "sha256": "1c2030e9810692e2861837dd1cc90b8ab2759026b93e18693ed13be48afd4923",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_–_UI__#1-1766765859218.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
-      "file": "Interface/Inventory_open_–_UI__#2-1766765859219.mp3",
-      "sha256": "8702e5b9ab99d3430e4bfff6f5a189b352a75f97d4d9a11389ba277cc33971ce",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_–_UI__#2-1766765859219.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
-      "file": "Interface/Inventory_open_–_UI__#3-1766765859219.mp3",
-      "sha256": "12fcf760fe18e3d48181fe4d9b8d26eb8f049b2e67c4057e99056358bd67ab79",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_–_UI__#3-1766765859219.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
-      "file": "Interface/Inventory_open_–_UI__#4-1766765856604.mp3",
-      "sha256": "e732649f769f9f2d21dd22499dc92cbf5d09bc44bb04e9dbcd02a6e6b3779fe8",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_–_UI__#4-1766765856604.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
       "file": "Inventory & loot/Item_pickup_–_Soft_c_#1-1766764916364.mp3",
       "sha256": "18ddbe1f1a1a7879770e0a939dc22ee026e91cd1291603779ac099909f245189",
       "sources": [
@@ -1548,71 +1468,11 @@
       ]
     },
     {
-      "file": "Magic & spells/Potion_drink_–_Liqui_#1-1766765101919.mp3",
-      "sha256": "69d4396a37e46b368129a50db34e936f3e57118d8421e12674f1ab0b9099b925",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#1-1766765101919.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
-      "file": "Magic & spells/Potion_drink_–_Liqui_#2-1766765101920.mp3",
-      "sha256": "ea0c032c69ec28bb74ebe86f3a12118998e9d026a3f908c8596dee85bc30be3d",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#2-1766765101920.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
-      "file": "Magic & spells/Potion_drink_–_Liqui_#3-1766765101920.mp3",
-      "sha256": "3d3d206a7f490602f56cdaa55206150ab204716bef00f3fe839d2ae1fad69d6c",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#3-1766765101920.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
       "file": "Magic & spells/Potion_drink_–_Liqui_#4-1766765068166.mp3",
       "sha256": "6aca7fbeda94eb96c84126b0259354e32748caf002373a88ff8f01f538782ff3",
       "sources": [
         {
           "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#4-1766765068166.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
-      "file": "Magic & spells/Potion_drink_–_Liqui_#4-1766765101921.mp3",
-      "sha256": "c22f5adff8aac05cb93ef6e575a564d68550c67751fee5a6d454b4cfe667e0f0",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#4-1766765101921.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
-      "file": "Magic & spells/Potion_throw_–_Bottl_#1-1766765150580.mp3",
-      "sha256": "8ad58453fc65535ed9602435e9aea2dcf5ef710c745571e591d44de487a46419",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_throw_–_Bottl_#1-1766765150580.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
-      "file": "Magic & spells/Potion_throw_–_Bottl_#2-1766765150580.mp3",
-      "sha256": "70782190ff924da5e8d0764719a88fb125bfd320a61090963d28ad4e0f566a00",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_throw_–_Bottl_#2-1766765150580.mp3",
           "pack": "150+ Free RPG Sounds"
         }
       ]
@@ -2028,7 +1888,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Sword_hit_armor_–_Me_#1-1766763413914.mp3",
+      "file": "Combat & weapons/Sword_hit_armor_–_Me_#1-1766763413914_metal_hits_metal.mp3",
       "sha256": "575bd2123dbe75a3e027ff3707ac252b2a3e07af5a4a2fbe219e68a36992850b",
       "sources": [
         {
@@ -2038,7 +1898,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Sword_hit_armor_–_Me_#2-1766763409846.mp3",
+      "file": "Combat & weapons/Sword_hit_armor_–_Me_#2-1766763409846_metal_hits_metal.mp3",
       "sha256": "ec92400a3512ec260673dee96097ace8c40c2deab32d76a9bc24e65c229e6e76",
       "sources": [
         {
@@ -2048,7 +1908,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Sword_hit_armor_–_Me_#3-1766763406268.mp3",
+      "file": "Combat & weapons/Sword_hit_armor_–_Me_#3-1766763406268_metal_hits_metal.mp3",
       "sha256": "afe94900e6598deb8bb07195c11681fae674728d5ebf97ae1d633c2732fea242",
       "sources": [
         {
@@ -2058,7 +1918,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Sword_hit_armor_–_Me_#4-1766763401093.mp3",
+      "file": "Combat & weapons/Sword_hit_armor_–_Me_#4-1766763401093_metal_hits_metal.mp3",
       "sha256": "96149b2e0831153b9d0b5b55615ffba721662bafa3ba54ecda803b7ea2df10db",
       "sources": [
         {
@@ -2298,17 +2158,7 @@
       ]
     },
     {
-      "file": "Other/generate-sound-effect_694eb85e4a053264c8b895d0_97SzKtixHzsKdusWXaACd.mp3",
-      "sha256": "fbbba846fda941313a63db6258570688f1f7a069599677d60782869f4379cfa9",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/generate-sound-effect_694eb85e4a053264c8b895d0_97SzKtixHzsKdusWXaACd.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/blade_01.ogg",
+      "file": "Combat & weapons/blade_01_sharpen_sound.ogg",
       "sha256": "caf7a7cb9b25cda4bd487c1d12d18b74a34bb18c816fd67277cf3c8d7ef32a3a",
       "sources": [
         {
@@ -2318,7 +2168,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/blade_02.ogg",
+      "file": "Combat & weapons/blade_02_sharpen_sound.ogg",
       "sha256": "c770afec8f62f14d3d082d5437c5cec28e2751d393df645ddd938eabc2588abd",
       "sources": [
         {
@@ -2328,7 +2178,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/blade_03.ogg",
+      "file": "Combat & weapons/blade_03_sharpen_sound.ogg",
       "sha256": "2cd9e6926f4602a4350e703eeae4df520053e290f358ab692632d651ad368a7c",
       "sources": [
         {
@@ -2408,7 +2258,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/creature_die_01.ogg",
+      "file": "Creatures & voices/creature_die_01_8bit.ogg",
       "sha256": "b34a816a401c5d80c77a61dabbedef7d1918a01320bbb67286c70f22db4acd43",
       "sources": [
         {
@@ -2418,7 +2268,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/creature_hurt_01.ogg",
+      "file": "Creatures & voices/creature_hurt_01_8bit.ogg",
       "sha256": "9948f9ce067e1aae7bd780e974d51ceae03f2611a52afffb0e092ba47e9dc8e1",
       "sources": [
         {
@@ -2428,7 +2278,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/creature_hurt_02.ogg",
+      "file": "Creatures & voices/creature_hurt_02_8bit.ogg",
       "sha256": "a4ea983e62ace874754c51d78239bd8b6532227119bd511c38fa827b2ccbca70",
       "sources": [
         {
@@ -2448,7 +2298,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/creature_misc_02.ogg",
+      "file": "Creatures & voices/creature_misc_02_8bit.ogg",
       "sha256": "cbaafa1a24ac04f803b3cdabcd13e6e1b1e64f36e53cc200da426cef7d33a20b",
       "sources": [
         {
@@ -2458,7 +2308,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/creature_misc_03.ogg",
+      "file": "Creatures & voices/creature_misc_03_8bit.ogg",
       "sha256": "f12261611d2a93ecb38555a3a1297ef2d0db2e669c9bce1f451d53c1e7c31b35",
       "sources": [
         {
@@ -2468,7 +2318,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/creature_misc_04.ogg",
+      "file": "Creatures & voices/creature_misc_04_8bit.ogg",
       "sha256": "43108cdb25a82a156b2b3be9da8bb2688536d78b70d8e01fbcf9a3ec7e29d5f8",
       "sources": [
         {
@@ -2478,7 +2328,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/creature_misc_05.ogg",
+      "file": "Creatures & voices/creature_misc_05_8bit.ogg",
       "sha256": "09cdd7df30a0f3918cb8a3ce86b999d260c7f289c2049122b550cab65bf9fa9c",
       "sources": [
         {
@@ -2488,7 +2338,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/creature_misc_06.ogg",
+      "file": "Creatures & voices/creature_misc_06_8bit.ogg",
       "sha256": "a304bbc2628cb2cfed87be7666c758f9c47746a72d45fe1a75de9c748b790614",
       "sources": [
         {
@@ -2498,7 +2348,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/creature_misc_07.ogg",
+      "file": "Creatures & voices/creature_misc_07_8bit.ogg",
       "sha256": "2b3ba62c004befe88418ef3286bceea9c6a59257fa6b75e7a010c2d4717141d6",
       "sources": [
         {
@@ -2508,7 +2358,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/creature_misc_08.ogg",
+      "file": "Creatures & voices/creature_misc_08_8bit.ogg",
       "sha256": "86dfb9bb5bf12a1af301ad6ad76ef35e29401240a7f93e37ccfd811770438c4c",
       "sources": [
         {
@@ -3108,291 +2958,11 @@
       ]
     },
     {
-      "file": "Combat & weapons/Skill_Dagger01.mp3",
-      "sha256": "6e02805e47a60343ef5219b081c8146dd7b40267d1275c66607353f73dd7d93e",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Dagger01.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Dagger02.mp3",
-      "sha256": "e79257716c93128cb6ef81358fcad676b142ed5a12181ff955ea8708a683d354",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Dagger02.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Dagger03.mp3",
-      "sha256": "c53bd928ffd5150725a47b703c697c5f53adc499345f59331493efc3a1cb3741",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Dagger03.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Dagger04.mp3",
-      "sha256": "c37e66b9ad050663dbc71ff2f05b735c49b9bfddfb86992b2b6246ba82340e5f",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Dagger04.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior01.mp3",
-      "sha256": "950173b25601164cd8f32ed1858ac4cc20da441fe20004f4eeb3c28aaaa3986a",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Warrior01.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior02.mp3",
-      "sha256": "04f2e06b0d613b81b6e60de720cfa537d78731afa0c9af661c29274dbac7e9aa",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Warrior02.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior03.mp3",
-      "sha256": "87c52ab1d9174995bede0d96d40216671d580558c7c5326bb4ad8a66799d0392",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Warrior03.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior04.mp3",
-      "sha256": "71f661b253d44784dadc43ced5783d5e0f9a771e3320372e06c5e27ddaa10a85",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Warrior04.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior05.mp3",
-      "sha256": "ffd45b5f7253588f3cddfcab26e354b2356c534f50c50e422ce0b7c611fb9d8f",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Warrior05.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior06.mp3",
-      "sha256": "ff4d256bc440f67496f5206a0b2a6384fc1a5beefe4a6706bdc2418eca159c38",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Warrior06.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior07.mp3",
-      "sha256": "f743e4ad827789c72a87701d402f68e6e64dec0c61370e696c5bbf9d5a7115e6",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Warrior07.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior08.mp3",
-      "sha256": "36bd89486b535e154a553da5f8fb1916519598af9151787bd8e158192fec777c",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Warrior08.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior09.mp3",
-      "sha256": "e2d5726e9f8559ea55e0e500506a4b44db61b5839fe5f657dfc460ddf1ef13a3",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Warrior09.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior10.mp3",
+      "file": "Combat & weapons/Skill_Warrior10_quick_double_slash.mp3",
       "sha256": "d88571c31169c6dba539aff7e487dedfbb5ac139ddd90562683621eb9becc6fa",
       "sources": [
         {
           "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Skill_Warrior10.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Weapon_Arrow01.mp3",
-      "sha256": "202aaa0634f7bc949404fa219de22f2f988589763dd2827f6802727e6a5f3a32",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Weapon_Arrow01.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Weapon_Arrow02.mp3",
-      "sha256": "3536b4b650c4faedbe56369b25025a1d19a04ad2a051e8358aaf502482f7bf58",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Weapon_Arrow02.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Weapon_Arrow03.mp3",
-      "sha256": "a8ec9836beba00b0bd65ae9e4c23ea4a2a8dcdcb7dd93b25e1111a7a65c7cc65",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Weapon_Arrow03.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Weapon_Arrow04.mp3",
-      "sha256": "7e81792031236c0311842016fba9ac2bc00133eb48408ef11a0731258bf77202",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/MP3/Weapon_Arrow04.mp3",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Dagger01.ogg",
-      "sha256": "4e2821ba4837e48d7d8c5dd26b8da3a6f6e617b3502e02578f903858beda4794",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Skill_Dagger01.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Dagger02.ogg",
-      "sha256": "2c3c712e23fece91ad13cc5258489821155a97311cff06d898fc4417e1ad9369",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Skill_Dagger02.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Dagger03.ogg",
-      "sha256": "e11ec0d4594a8dfb581e27667248da513515a5b4dee5c397ee04e01cdcdc77bb",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Skill_Dagger03.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Dagger04.ogg",
-      "sha256": "c6ba7c856bca2269222abdcf97a6f675b1a069cbabf55df7a9a940f9565f648f",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Skill_Dagger04.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior01.ogg",
-      "sha256": "26b0011b7dff89a1fbbc4249c466a0fb788035f128a321b8532df8babe84779b",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Skill_Warrior01.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior02.ogg",
-      "sha256": "3e30b0212557af66364c202c85c42e1dfa1b0974a6bc3800965a7b9e73ca0b1d",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Skill_Warrior02.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior03.ogg",
-      "sha256": "e33ebfface4896908c37f1f4097fc6c83b4dcd3745d848383f15315935096c00",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Skill_Warrior03.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior04.ogg",
-      "sha256": "8ce75cdfed88884eea15accb42378bb0505b9a634d4b5bc3f73e00bd9d76633a",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Skill_Warrior04.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior05.ogg",
-      "sha256": "59b8258119f1afe2688365e4d7461c60cdd7a4a128de25c93eeffd18fec0af6e",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Skill_Warrior05.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior06.ogg",
-      "sha256": "bea29ff9f60bea559fe4583a6b0814a3a72b2c405c7014f24186f5c358d66c5f",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Skill_Warrior06.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Warrior07.ogg",
-      "sha256": "21e0a625fce2054b21cd06d1618a21e89ae078be65e07f2ab6c21556f9d09d12",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Skill_Warrior07.ogg",
           "pack": "DarkFantasy_Sound"
         }
       ]
@@ -3423,46 +2993,6 @@
       "sources": [
         {
           "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/UI_Button05.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Weapon_Arrow01.ogg",
-      "sha256": "ddf31b08211a9783f4e0801c30d735e06b9d2dab00498154daf299345f398127",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Weapon_Arrow01.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Weapon_Arrow02.ogg",
-      "sha256": "ab59cd08a157296406c6f508f38cdbe23007558573ae00274d67c7cbaa13391c",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Weapon_Arrow02.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Weapon_Arrow03.ogg",
-      "sha256": "92b03191f88ab660cbacbcf73c1b1f8a480e02d54d84b856e932cf58a700ac53",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Weapon_Arrow03.ogg",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Weapon_Arrow04.ogg",
-      "sha256": "8a4d8d2537c22f2ca7d6b179bebb065b7ef1d471793952fcbc992aea0d905939",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/OGG/Weapon_Arrow04.ogg",
           "pack": "DarkFantasy_Sound"
         }
       ]
@@ -4003,46 +3533,6 @@
       "sources": [
         {
           "file": "DarkFantasy_Sound/DarkFantasy_Sound/WAV/Skill_Curse14.wav",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Dagger01.wav",
-      "sha256": "09e158c2044deef6a6d8d21aafb13178d08ecc91c6013be842f9d438c48f5d2e",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/WAV/Skill_Dagger01.wav",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Dagger02.wav",
-      "sha256": "5d119d2e2b68f45d760f6f40327a05f0dd8bdb3a8a9de01c3841add3fcbd1396",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/WAV/Skill_Dagger02.wav",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Dagger03.wav",
-      "sha256": "bb3d05043cbb42b0bdc478371b66b9a699f7e67f8377f593df6a89bc9bedf658",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/WAV/Skill_Dagger03.wav",
-          "pack": "DarkFantasy_Sound"
-        }
-      ]
-    },
-    {
-      "file": "Combat & weapons/Skill_Dagger04.wav",
-      "sha256": "38c23f116985cc44da750f3002e3c656013e84f4643867772d65e2f6d49cfaa5",
-      "sources": [
-        {
-          "file": "DarkFantasy_Sound/DarkFantasy_Sound/WAV/Skill_Dagger04.wav",
           "pack": "DarkFantasy_Sound"
         }
       ]
@@ -5018,7 +4508,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Skill_Warrior01.wav",
+      "file": "Combat & weapons/Skill_Warrior01_but_also_sounds_like_generic_skill_activation.wav",
       "sha256": "929ffedac3a331f5ea2ebe6822065e46a6665ba19e3d09605ebaf7ca353b087a",
       "sources": [
         {
@@ -5048,7 +4538,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Skill_Warrior04.wav",
+      "file": "Combat & weapons/Skill_Warrior04_but_also_sounds_like_generic_skill_activation.wav",
       "sha256": "c976ab5b48304ddf06e604f85928554c08c885451c6952ec8f9478a5daabc380",
       "sources": [
         {
@@ -5068,7 +4558,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Skill_Warrior06.wav",
+      "file": "Combat & weapons/Skill_Warrior06_but_also_sounds_like_generic_skill_activation.wav",
       "sha256": "c402a59fd1bba8330e32e5a95ae90bb377407c6f8685dc0ec43ecc91a756744c",
       "sources": [
         {
@@ -5078,7 +4568,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Skill_Warrior07.wav",
+      "file": "Combat & weapons/Skill_Warrior07_but_also_sounds_like_generic_skill_activation.wav",
       "sha256": "1e170905b4cf58d969069039dbae000cb701b9ea95246426751dccec0d45b69a",
       "sources": [
         {
@@ -5098,7 +4588,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Skill_Warrior09.wav",
+      "file": "Combat & weapons/Skill_Warrior09_double_slash.wav",
       "sha256": "cf0e89c94210fac5a904c30aa84d6bab27b0968c134c3f390a4b2ba2c579cc4b",
       "sources": [
         {
@@ -5568,7 +5058,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Weapon_Arrow04.wav",
+      "file": "Combat & weapons/Weapon_Arrow04_arrow_drawn.wav",
       "sha256": "18f33b4f1d0b4c2f952126b7eeb9fd411aaeaa545035075d51b3cd07a81b49d2",
       "sources": [
         {
@@ -5828,7 +5318,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/03_Claw_03.wav",
+      "file": "Combat & weapons/03_Claw_03_8bit.wav",
       "sha256": "1158dda43fe614eef3018dcf25dcdde3d10368a621c89035a9fd03b0247806ce",
       "sources": [
         {
@@ -5838,7 +5328,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/08_Bite_04.wav",
+      "file": "Combat & weapons/08_Bite_04_8bit.wav",
       "sha256": "1d8c86e415eb43d53c1d3408336037592382e5a733305ed5aaf80c59889a4d04",
       "sources": [
         {
@@ -5848,7 +5338,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/15_Impact_flesh_02.wav",
+      "file": "Combat & weapons/15_Impact_flesh_02_8bit.wav",
       "sha256": "f4a092dbb8f9a9ce71c7b2aed4e44a0c243590c4a71cf0b435a17abe5aa5a6b3",
       "sources": [
         {
@@ -5858,7 +5348,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/22_Slash_04.wav",
+      "file": "Combat & weapons/22_Slash_04_8bit.wav",
       "sha256": "19ae38066ec928181c7a476543f204b699060d6faa9ff47b791e4cdcdf87974e",
       "sources": [
         {
@@ -5868,7 +5358,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/35_Miss_Evade_02.wav",
+      "file": "Combat & weapons/35_Miss_Evade_02_8bit.wav",
       "sha256": "124628f65f64386a153c715c0897d4276f64c10f6342977f7b8eef78ce3cdd0e",
       "sources": [
         {
@@ -5878,7 +5368,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/39_Block_03.wav",
+      "file": "Combat & weapons/39_Block_03_8bit.wav",
       "sha256": "4763da64e8420a3ec66391b2ca7e9d5ac25be2b483422397e2b5814641a5c8c9",
       "sources": [
         {
@@ -5888,7 +5378,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/51_Flee_02.wav",
+      "file": "Combat & weapons/51_Flee_02_8bit.wav",
       "sha256": "2701a87f986a81f4afa63ad20de0e2a5e8e7e56e14a4623dadb97986322a9a9e",
       "sources": [
         {
@@ -5898,7 +5388,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/55_Encounter_02.wav",
+      "file": "Combat & weapons/55_Encounter_02_8bit.wav",
       "sha256": "1d20c58985ff62a7441fe6f4600410180ba0ed2582f73e93c0e54f957060a7a9",
       "sources": [
         {
@@ -5908,7 +5398,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/69_Enemy_death_01.wav",
+      "file": "Creatures & voices/69_Enemy_death_01_8bit.wav",
       "sha256": "679882a81a208b5aa2644c3183ca532911e8d0a8092b38ceea099cde2775b54c",
       "sources": [
         {
@@ -5918,7 +5408,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/77_flesh_02.wav",
+      "file": "Combat & weapons/77_flesh_02_8bit.wav",
       "sha256": "a1611b80c5091d97079f361b3fe198ae4c1220e30fe057c8d01334aeddfef4d1",
       "sources": [
         {
@@ -6118,7 +5608,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/56_Attack_03.wav",
+      "file": "Combat & weapons/56_Attack_03_8bit.wav",
       "sha256": "24b29f63d577b4b3adaf3f1c58e3c456dd72b661b686bb74bec553021a808755",
       "sources": [
         {
@@ -6128,7 +5618,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/61_Hit_03.wav",
+      "file": "Combat & weapons/61_Hit_03_8bit.wav",
       "sha256": "3e2ee7d0e9733404e10ae4cf9dc89aee36ab3b4946e02f1a7fd5697c774cc08e",
       "sources": [
         {
@@ -6618,16 +6108,6 @@
       ]
     },
     {
-      "file": "Other/drawKnife1.ogg",
-      "sha256": "276403e72c3b71c47bc24db3083970c23f8e5551ffa78f436f83483c56f3f0bb",
-      "sources": [
-        {
-          "file": "kenney_rpg-audio/Audio/drawKnife1.ogg",
-          "pack": "kenney_rpg-audio"
-        }
-      ]
-    },
-    {
       "file": "Other/drawKnife2.ogg",
       "sha256": "d5df6a4130cbb016f97b4883769a418917b9629cb4c21717030b186e0c73281a",
       "sources": [
@@ -6868,16 +6348,6 @@
       ]
     },
     {
-      "file": "Other/Preview.ogg",
-      "sha256": "631d554d100779c7896699bb4727807d4ca365ca850dc79216157cf31dae4b6a",
-      "sources": [
-        {
-          "file": "kenney_rpg-audio/Preview.ogg",
-          "pack": "kenney_rpg-audio"
-        }
-      ]
-    },
-    {
       "file": "Creatures & voices/monster-1.wav",
       "sha256": "eadff00fc48c13eede6255f97ca7bd47e8c44a4bef33edc5ced92f4ca3521575",
       "sources": [
@@ -6978,7 +6448,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/bite-small.wav",
+      "file": "Creatures & voices/bite-small_8bit.wav",
       "sha256": "bc0e9d150aaf71aefa99111cfff90ca1deea5e72fb31c7371df75288d74ab2b5",
       "sources": [
         {
@@ -6988,7 +6458,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/bite-small2.wav",
+      "file": "Creatures & voices/bite-small2_8bit.wav",
       "sha256": "58318528da572fc30eb50487aa733a6dc7f9c06d2ca5141dae8ab57aac022c96",
       "sources": [
         {
@@ -6998,7 +6468,7 @@
       ]
     },
     {
-      "file": "Creatures & voices/bite-small3.wav",
+      "file": "Creatures & voices/bite-small3_8bit.wav",
       "sha256": "6451f3d697ba8e741e1d4bc032d771a5bd3ee33c3c01e81417c60947d3d1b25d",
       "sources": [
         {
@@ -7858,7 +7328,7 @@
       ]
     },
     {
-      "file": "Other/burp.wav",
+      "file": "Other/growl.wav",
       "sha256": "cebc5ef40701bd7916b7e9661f23fe431efa5df1d4a52aad769e27b4c7f29f15",
       "sources": [
         {
