@@ -1,3 +1,8 @@
+version: 2026-10-09-read-only-sound-board
+- Rebuilt the sound board as a read-only browser of game effects and permanent recordings, with usage lists, search, categories and playback for every variation.
+- Shared recordings appear together. Hover sounds to see all enemies using them.
+- Removed sound selection, mixing and apply controls; the sound board no longer writes or imports game audio choices.
+
 version: 2026-10-09-enemy-ground-impact-audio
 - Slime and ooze jumps now land with their own squishy sounds instead of a weapon hit. Other enemy leaps, slams and ground spells use earth or elemental impacts, with separate soundboard controls.
 - The Shepherd's snake-arm bites now use bite sounds instead of weapon hits.

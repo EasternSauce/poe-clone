@@ -1,32 +1,36 @@
-# Local sound board
+# Read-only sound board
 
-Double-click `Start-SoundBoard.cmd` in the project root, or run
-`powershell -ExecutionPolicy Bypass -File .\Start-SoundBoard.ps1`.
-The launcher starts a hidden local Node server and opens http://127.0.0.1:8100.
-Alternatively run `node tools/sound-board/server.js` and open that address yourself.
-Requires Node 18 or later. No npm packages or game session are needed.
+Double-click `Start-SoundBoard.cmd`, or run `node tools/sound-board/server.js`
+and open http://127.0.0.1:8100. Requires Node 18+, no npm packages or game session.
+Set `SOUND_BOARD_PORT` for a different port.
 
-Each effect offers its current recording (including alternating variations), five suggestions
-from `Assets/Audio/SoundLibrary`, a volume slider, previews, and **No sound**.
-Filtering retains edits. **Discard edits** restores the last saved choices.
-Preview volume is a recording gain; in game, existing master volumes, spatial attenuation,
-creature pitch variation and deliberately quieter pickup/reward mixes still apply.
+The board lists the game's current effective recordings, their uses and source file
+references, plus all permanent unassigned recordings. Search by effect, enemy, use
+or file and filter by category or usage. Identical recording pools share a row;
+Fire Bolt and Fire Caster, for example, are one effect with both uses listed.
+Every recording has its own Play/Stop button, including each variation. Only one
+preview plays at a time. Previews use the original recording, without in-game
+pitch, distance or master volume processing. Muted game effects can still be previewed.
+Hover or keyboard-focus an effect to see all enemy portraits using its recordings.
+Hover a particular variation to see all enemies using that exact recording, even
+when it also belongs to other variation pools. Escape stops playback and hides portraits.
 
-**Apply changes** writes `Assets/Resources/SoundBoardChoices.json`. Focus Unity to import
-the changes into `SoundBoardSettings.asset`; choices are also imported before builds.
-The settings apply to all characters and are included in builds. Existing builds must be rebuilt.
-The board never enters Play mode. The current sound means the authored default; the selected
-radio and volume show your saved override.
+The HTTP server only reads files; all write methods return 405. There are no
+selection, volume, mute, apply or import controls. Existing game audio settings
+are preserved. The old choices JSON is no longer automatically imported on asset
+refresh or builds. The browser never enters Play mode.
 
-After adding effects or library clips, use Unity's **PoeClone > Audio > Refresh Standalone
-Sound Board Catalog**. This retains saved choices. Commit the JSON choices and generated
-settings asset when you want to share your mix. The local service binds only to 127.0.0.1.
-Set `SOUND_BOARD_PORT` to change its port. To stop it, end the Node process whose command
-line contains `tools/sound-board/server.js`.
+After changing game audio assignments or adding recordings, use Unity's
+**PoeClone > Audio > Refresh Standalone Sound Board Catalog** and reload the page.
+This exports only `tools/sound-board/catalog.json`; it never changes Unity assets,
+preferences or runtime settings. The snapshot reads `SoundBoardSettings.asset`
+(including existing selections) and `AmbientSoundLibrary.asset`. Source references
+show the playback systems and their callers; they are not a runtime execution trace.
+Unassigned means absent from these current recording pools, including retired
+fallback recordings. Inspiration assets are excluded entirely.
 
-Run API checks with `node --test tools/sound-board/server.test.js`.
+After enemy visual changes, use **PoeClone > Audio > Refresh Sound Board Enemy
+Portraits**. This writes only the board's portrait images. Stop an older sound-board
+Node process before launching the rebuilt version (the launcher rejects older servers).
 
-Enemy sounds show a small portrait rendered from their game model. After changing enemy visuals,
-use **PoeClone > Audio > Refresh Sound Board Enemy Portraits** to regenerate the images.
-
-Shared actions have one board row: Fire Bolt / Fire Caster launch, Ice Shard / Frost Caster launch, basic player / enemy bow shots, and skeleton / skeleton mage summons. Changing a shared row updates every caller, including mute and volume. Single recording overrides remain fixed; authored pools avoid consecutive repeats.
+Run checks: `node --test tools/sound-board/server.test.js`.

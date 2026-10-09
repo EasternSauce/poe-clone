@@ -2,89 +2,80 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { createServer, validate } = require('./server');
-const rows = require('./catalog.json').effects;
-const choicesFile = path.resolve(__dirname, '../../Assets/Resources/SoundBoardChoices.json');
-const defaults = () => rows.map(row => ({ id: row.id, path: '', muted: false, volume: 1 }));
+const crypto = require('node:crypto');
+const { createServer, catalog } = require('./server');
+const root = path.resolve(__dirname, '../..');
+const snapshot = require('./catalog.json');
+const digest = file => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex');
 
-test('catalog covers each effect with five permanent library suggestions and playable defaults', () => {
-  assert.equal(new Set(rows.map(row => row.id)).size, rows.length);
-  for (const row of rows) {
-    assert.equal(row.suggestions.length, 5, row.id);
-    assert.equal(new Set(row.suggestions).size, 5, row.id);
-    assert.ok(row.current.length, row.id);
-    for (const file of [...row.current, ...row.suggestions]) assert.ok(fs.existsSync(path.resolve(__dirname, '../..', file)), file);
-    assert.ok(row.suggestions.every(file => file.startsWith('Assets/Audio/SoundLibrary/')), row.id);
+test('catalog covers permanent clips, merges shared pools, and retains every usage', () => {
+  const board = catalog();
+  assert.equal(board.readOnly, true);
+  const keys = board.effects.map(row => row.clips.map(c => c.path).sort().join('\n'));
+  assert.equal(new Set(keys).size, keys.length);
+  const uses = new Set(board.effects.flatMap(row => row.usages.map(use => use.id)));
+  for (const entry of snapshot.effects) for (const use of entry.usages) assert.ok(uses.has(use.id), use.id);
+  for (const row of board.effects) for (const clip of row.clips) {
+    assert.ok(fs.existsSync(path.join(root, clip.path)), clip.path);
+    assert.ok(!clip.path.includes('assets_for_inspiration'), clip.path);
   }
-  for (const id of ['skill.Dash', 'skill.Teleport', 'skill.FireBolt', 'skill.ChainLightning', 'enemy.Carrion Saint.Attack']) assert.ok(rows.some(row => row.id === id));
+  for (const [id, shared] of [['skill.FireBolt', 'enemy.Fire Caster.Attack'], ['skill.IceShard', 'enemy.Frost Caster.Attack'], ['player.bow', 'enemy.Archer.Attack'], ['player.bow', 'enemy.Skeleton Archer.Attack'], ['skill.RaiseSkeletons', 'skill.SkeletonMages']]) {
+    const row = board.effects.find(row => row.usages.some(use => use.id === id));
+    assert.ok(row.usages.some(use => use.id === shared), shared);
+  }
+  assert.ok(board.effects.some(row => row.usages.some(use => use.id.startsWith('ambient.'))));
+  assert.ok(board.effects.some(row => !row.usages.length));
+  function walk(dir) {
+    return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+      if (entry.name === 'assets_for_inspiration' || entry.name === '__MACOSX' || entry.name.startsWith('.')) return [];
+      const file = path.join(dir, entry.name);
+      return entry.isDirectory() ? walk(file) : /\.(wav|mp3|ogg|aiff?|flac)$/i.test(file) ? [path.relative(root, file).replaceAll('\\', '/')] : [];
+    });
+  }
+  const clips = new Set(board.effects.flatMap(row => row.clips.map(clip => clip.path)));
+  for (const file of walk(path.join(root, 'Assets'))) assert.ok(clips.has(file), file);
 });
 
-test('rejects incomplete, duplicate, foreign and invalid-volume choices', () => {
-  const value = defaults();
-  assert.throws(() => validate({ effects: value.slice(1) }, rows));
-  for (const change of [{ id: value[1].id }, { path: '../../secret' }, { volume: -1 }, { volume: 2 }, { volume: NaN }, { muted: 'false' }]) {
-    const invalid = defaults(); Object.assign(invalid[0], change);
-    assert.throws(() => validate({ effects: invalid }, rows));
+test('per-recording enemy hover includes users from overlapping pools with real portraits', () => {
+  const board = catalog();
+  for (const row of board.effects) for (const clip of row.clips) {
+    const expected = [...new Set(board.effects.filter(other => other.clips.some(c => c.path === clip.path)).flatMap(other => other.usages.filter(use => use.enemy).map(use => use.enemy)))].sort();
+    assert.deepEqual(clip.enemies.map(enemy => enemy.name).sort(), expected, clip.path);
+    for (const enemy of clip.enemies) assert.ok(fs.existsSync(path.join(__dirname, enemy.portrait)), enemy.name);
   }
+  const fire = board.effects.find(row => row.usages.some(use => use.id === 'skill.FireBolt'));
+  assert.ok(fire.enemies.some(enemy => enemy.name === 'Fire Caster'));
+  const bow = board.effects.find(row => row.usages.some(use => use.id === 'player.bow'));
+  for (const name of ['Archer', 'Skeleton Archer']) assert.ok(bow.enemies.some(enemy => enemy.name === name));
 });
 
-test('shared actions expose one editable sound and reviewed events offer distinct variations', () => {
-  for (const [id, linked] of [
-    ['skill.FireBolt', 'enemy.Fire Caster.Attack'],
-    ['skill.IceShard', 'enemy.Frost Caster.Attack'],
-    ['player.bow', 'enemy.Archer.Attack'],
-    ['player.bow', 'enemy.Skeleton Archer.Attack'],
-    ['skill.RaiseSkeletons', 'skill.SkeletonMages']
-  ]) {
-    const row = rows.find(row => row.id === id);
-    assert.ok(row, id);
-    assert.ok(row.description.includes('changes apply to every use'), id);
-    assert.ok(!rows.some(row => row.id === linked), linked);
-  }
-  for (const id of ['player.swing', 'player.bow', 'combat.block', 'player.steps', 'skill.FireBolt', 'skill.IceShard', 'skill.RainOfArrows']) {
-    const row = rows.find(row => row.id === id);
-    assert.ok(new Set(row.current).size > 1, id);
-    assert.ok(row.current.every(file => file.startsWith('Assets/Audio/SoundLibrary/') && !file.includes('8bit')), id);
-  }
-});
-
-test('every enemy sound has a real portrait and the API serves only catalogued images', async t => {
-  const enemies = rows.filter(row => row.id.startsWith('enemy.'));
-  for (const row of enemies) {
-    assert.ok(row.portrait, row.id);
-    assert.ok(fs.existsSync(path.resolve(__dirname, row.portrait)), row.portrait);
-    const name = row.id.slice(6, row.id.lastIndexOf('.'));
-    assert.equal(row.portrait, 'portraits/' + encodeURIComponent(name) + '.png');
-  }
+test('HTTP plays every recording, serves portraits, rejects all writes and preserves game files', async t => {
+  const files = ['Assets/Resources/SoundBoardSettings.asset', 'Assets/Resources/SoundBoardChoices.json', 'Assets/Resources/AmbientSoundLibrary.asset'];
+  const before = files.map(digest);
   const server = createServer();
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   t.after(() => new Promise(resolve => server.close(resolve)));
   const base = `http://127.0.0.1:${server.address().port}`;
-  for (const asset of new Set(enemies.map(row => row.portrait))) {
+  const board = await (await fetch(base + '/api/board')).json();
+  assert.equal(board.readOnly, true);
+  assert.equal(board.token, undefined);
+  assert.equal(board.choices, undefined);
+  for (const method of ['POST', 'PUT', 'PATCH', 'DELETE']) for (const endpoint of ['/api/apply', '/api/board', '/audio']) {
+    const response = await fetch(base + endpoint, { method, body: JSON.stringify({ effects: [] }) });
+    assert.equal(response.status, 405);
+  }
+  for (const asset of new Set(board.effects.flatMap(row => row.clips.map(clip => clip.path)))) {
+    const response = await fetch(base + '/audio?path=' + encodeURIComponent(asset), { headers: { Range: 'bytes=0-31' } });
+    assert.equal(response.status, 206, asset);
+    assert.equal((await response.arrayBuffer()).byteLength, 32, asset);
+  }
+  for (const asset of new Set(board.effects.flatMap(row => row.enemies.map(enemy => enemy.portrait)))) {
     const response = await fetch(base + '/portrait?path=' + encodeURIComponent(asset));
     assert.equal(response.status, 200, asset);
-    assert.equal(response.headers.get('content-type'), 'image/png');
-    assert.deepEqual(Buffer.from(await response.arrayBuffer()), fs.readFileSync(path.resolve(__dirname, asset)));
+    assert.deepEqual(Buffer.from(await response.arrayBuffer()), fs.readFileSync(path.join(__dirname, asset)));
   }
-  assert.equal((await fetch(base + '/portrait?path=../../server/server.js')).status, 404);
-  assert.equal((await fetch(base + '/portrait')).status, 404);
-});
-
-test('API previews ranged audio and persists chosen clips, mute and volume together', async t => {
-  const original = fs.readFileSync(choicesFile);
-  const server = createServer();
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  t.after(async () => { fs.writeFileSync(choicesFile, original); await new Promise(resolve => server.close(resolve)); });
-  const base = `http://127.0.0.1:${server.address().port}`;
-  const board = await (await fetch(base + '/api/board')).json();
-  const effects = defaults(); effects[0].path = rows[0].suggestions[2]; effects[0].volume = 0.37;
-  effects[1].muted = true; effects[1].volume = 0;
-  const post = token => fetch(base + '/api/apply', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Board-Token': token }, body: JSON.stringify({ effects }) });
-  assert.equal((await post('wrong')).status, 403);
-  assert.equal((await post(board.token)).status, 200);
-  assert.deepEqual(JSON.parse(fs.readFileSync(choicesFile)).effects, effects);
-  assert.deepEqual((await (await fetch(base + '/api/board')).json()).choices, effects);
-  const clip = await fetch(base + '/audio?path=' + encodeURIComponent(rows[0].suggestions[0]), { headers: { Range: 'bytes=0-31' } });
-  assert.equal(clip.status, 206); assert.equal((await clip.arrayBuffer()).byteLength, 32);
-  assert.equal((await fetch(base + '/audio?path=../../server/server.js')).status, 404);
+  const clip = board.effects[0].clips[0].path;
+  assert.equal((await fetch(base + '/audio?path=' + encodeURIComponent(clip), { headers: { Range: 'bytes=999999999999-' } })).status, 416);
+  for (const endpoint of ['/audio?path=../../server/server.js', '/portrait?path=../../server/server.js', '/api/apply']) assert.equal((await fetch(base + endpoint)).status, 404);
+  assert.deepEqual(files.map(digest), before);
 });
