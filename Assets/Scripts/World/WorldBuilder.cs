@@ -759,6 +759,10 @@ namespace PoeClone.World
                 LocalBox(pillar, new Vector3(0f, 0.175f, 0f), new Vector3(1.1f, 0.35f, 1.1f), stone, solid: false).name = "Base";
                 LocalCyl(pillar, new Vector3(0f, 2f, 0f), 0.7f, 3.3f, stone, solid: false).name = "Column";
                 LocalBox(pillar, new Vector3(0f, 3.7f, 0f), new Vector3(1f, 0.3f, 1f), stone, solid: false).name = "Cap";
+                // Colliderless parts lose their shadow by default; without the pillars the
+                // lintel's shadow floats on the grass away from the gate.
+                foreach (Renderer r in pillar.GetComponentsInChildren<Renderer>())
+                    r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
                 var pillarCollider = pillar.gameObject.AddComponent<BoxCollider>();
                 pillarCollider.center = new Vector3(0f, 1.925f, 0f);
                 pillarCollider.size = new Vector3(1f, 3.85f, 1f);

@@ -1,3 +1,6 @@
+version: 2026-10-09-gate-shadows
+- Area gate pillars now cast shadows, so a gate's shadow joins the gate instead of floating on the grass beside it.
+
 version: 2026-10-09-minion-leash-and-damage
 - Minions chase enemies twice as far from you before giving up to follow you (and twice as far for an enemy marked with Death Mark).
 - Minions deal 2.5 times as much damage at level 1. The bonus shrinks each level and is gone at level 10, so level 10 damage and above is unchanged.
