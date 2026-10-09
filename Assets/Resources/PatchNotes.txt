@@ -1,3 +1,8 @@
+version: 2026-10-09-passive-wildlife
+- Added bushy-tailed squirrels to Greenwood, grazing sheep to Haven's grasslands and small slithering snakes to the Lost Hollows. They wander, idle and flee nearby players or enemies without attacking or blocking movement.
+- Added white swans with long necks and broad, slowly flapping wings above Greenwood and Haven. Swans stay airborne and never land.
+- Frozen Hollow now has pale, hopping frost hares; the Ashen Ruins have small charcoal-coloured ember lizards with orange markings. Both are harmless and flee nearby threats.
+
 version: 2026-10-09-living-world
 - Added ripples to lakes, ocean waves, and visible downstream currents that follow river bends. Frozen water remains still.
 - Candles, torches, lanterns, braziers, forge fires and campfires now dance in the wind and release drifting smoke.

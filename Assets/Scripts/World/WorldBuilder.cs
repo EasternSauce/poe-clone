@@ -207,6 +207,7 @@ namespace PoeClone.World
             // Colliders made this frame aren't in the physics world until it syncs; the starter
             // loot below finds the ground by raycast.
             Physics.SyncTransforms();
+            BuildWildlife(player.transform);
             ManualPointLightManager.Refresh();
 
             // Start in town.
