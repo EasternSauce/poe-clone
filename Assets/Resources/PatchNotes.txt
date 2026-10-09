@@ -1,3 +1,6 @@
+version: 2026-10-09-sound-library
+- Added a separate Sound Library page, launched with Start-SoundLibrary.cmd, to browse inspiration audio by category and pack, preview clips, rename copies, and select sounds with saved review choices. Export creates an independent collection under Assets/SelectedSounds with source notes and a manifest. Existing soundboard behavior is unchanged.
+
 version: 2026-10-09-sound-board-enemy-portraits
 - Added small portraits from the game models beside enemy sounds in the sound board, including the Carrion Saint. Clarified that Apply saves sound volumes for all characters and future builds.
 

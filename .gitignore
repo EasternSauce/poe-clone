@@ -89,3 +89,6 @@ Assets/Screenshots/
 # Node (server/)
 node_modules/
 npm-debug.log*
+
+# Local sound library review choices
+tools/sound-library/choices.json

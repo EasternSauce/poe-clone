@@ -27,6 +27,10 @@ Do not run complex Unity tests unless the user specifically asks. Leave gameplay
 
 Keep demo equipment changes inside the temporary session. Do not change new-character loadouts just to prepare a visual check.
 
+# Inspiration assets
+
+`Assets/assets_for_inspiration` is temporary reference material and will be deleted. The game must not depend on files in this directory. Before using any inspiration asset, copy it into a permanent directory under `Assets` outside `assets_for_inspiration`, then reference the copied asset. This applies to scenes, prefabs, scripts, Resources paths, soundboards, and other runtime asset references. Never add new game dependencies on the inspiration directory. Existing soundboard references still need migration during the planned soundboard rework.
+
 # Change completion
 
 When finishing a set of project changes, update `Assets/Resources/PatchNotes.txt` to describe the user-facing changes. Keep the patch notes current as part of completing the work.
