@@ -2270,12 +2270,11 @@ MonoBehaviour:
   - id: sound.skill.SplitShot
     purpose: Split Shot
     clips:
-    - {fileID: 8300000, guid: 2160dd2462bd7b4488d1d4c5ce0d3c61, type: 3}
-    - {fileID: 8300000, guid: ed78aa3401f2ef04fab7295b2cf77b9f, type: 3}
+    - {fileID: 8300000, guid: e452f29912848904aa8fe6e4e14ca4af, type: 3}
   - id: sound.skill.PiercingShot
     purpose: Piercing Shot
     clips:
-    - {fileID: 8300000, guid: a13e65bfcd39970428ee8792822a6611, type: 3}
+    - {fileID: 8300000, guid: e452f29912848904aa8fe6e4e14ca4af, type: 3}
   - id: sound.skill.RainOfArrows
     purpose: Rain Of Arrows
     clips:
@@ -2284,7 +2283,7 @@ MonoBehaviour:
   - id: sound.skill.BurningArrow
     purpose: Burning Arrow
     clips:
-    - {fileID: 8300000, guid: 39513d34220f0bc4baa9dd7e9c4b9faf, type: 3}
+    - {fileID: 8300000, guid: e452f29912848904aa8fe6e4e14ca4af, type: 3}
   - id: sound.skill.FangStrike
     purpose: Fang Strike
     clips:
@@ -2292,7 +2291,7 @@ MonoBehaviour:
   - id: sound.skill.VenomArrow
     purpose: Venom Arrow
     clips:
-    - {fileID: 8300000, guid: 9280a5b9a7da32149a82cea664836f46, type: 3}
+    - {fileID: 8300000, guid: e452f29912848904aa8fe6e4e14ca4af, type: 3}
   - id: sound.skill.VenomSpout
     purpose: Venom Spout
     clips:
