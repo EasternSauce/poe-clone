@@ -5,7 +5,7 @@ and open http://127.0.0.1:8100. Requires Node 18+, no npm packages or game sessi
 Set `SOUND_BOARD_PORT` for a different port.
 
 The board lists the game's current effective recordings, their uses and source file
-references, plus all permanent unassigned recordings. Search by effect, enemy, use
+references. Only recordings assigned to gameplay are shown. Search by effect, enemy, use
 or file and filter by category or usage. Gameplay assignments to the same named sound group share a row;
 Fire Bolt and Fire Caster, for example, are one effect with both uses listed.
 Every recording has its own Play/Stop button, including each variation. Only one
@@ -26,8 +26,7 @@ This exports only `tools/sound-board/catalog.json`; it never changes Unity asset
 preferences or runtime settings. The snapshot reads `SoundBoardSettings.asset`
 (including existing selections) and `AmbientSoundLibrary.asset`. Source references
 show the playback systems and their callers; they are not a runtime execution trace.
-Unassigned means absent from these current recording pools, including retired
-fallback recordings. Inspiration assets are excluded entirely.
+Browse unassigned recordings in the separate Sound Library. Inspiration assets are excluded entirely.
 
 After enemy visual changes, use **PoeClone > Audio > Refresh Sound Board Enemy
 Portraits**. This writes only the board's portrait images. Stop an older sound-board
@@ -40,8 +39,7 @@ reference a group rather than keeping independent copies of a recording pool. Al
 of a group share repeat history, including player/enemy shared spells. Mute and gain
 remain per effect. The board displays these real assignments and offers Play next
 alternate in addition to individual recording previews. Unrelated purposes stay
-separate even if they currently reuse a recording. Unassigned named takes are grouped
-for browsing; this does not assign them to gameplay.
+separate even if they currently reuse a recording.
 
 The separate Unity command **PoeClone > Audio > Rebuild Gameplay Sound Groups** authors
 these runtime assignments in SoundBoardSettings.asset. It is not called by the board

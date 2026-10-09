@@ -8,7 +8,7 @@ const root = path.resolve(__dirname, '../..');
 const snapshot = require('./catalog.json');
 const digest = file => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex');
 
-test('catalog covers permanent clips, exposes runtime groups, and retains every usage', () => {
+test('catalog contains only assigned clips, exposes runtime groups, and retains every usage', () => {
   const board = catalog();
   assert.equal(board.readOnly, true);
   const keys = board.effects.map(row => row.id);
@@ -29,16 +29,19 @@ test('catalog covers permanent clips, exposes runtime groups, and retains every 
     assert.ok(row.usages.some(use => use.id === shared), shared);
   }
   assert.ok(board.effects.some(row => row.usages.some(use => use.id.startsWith('ambient.'))));
-  assert.ok(board.effects.some(row => !row.usages.length));
-  function walk(dir) {
-    return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-      if (entry.name === 'assets_for_inspiration' || entry.name === '__MACOSX' || entry.name.startsWith('.')) return [];
-      const file = path.join(dir, entry.name);
-      return entry.isDirectory() ? walk(file) : /\.(wav|mp3|ogg|aiff?|flac)$/i.test(file) ? [path.relative(root, file).replaceAll('\\', '/')] : [];
-    });
-  }
+  assert.ok(board.effects.every(row => row.usages.length > 0));
+  const expected = new Set(snapshot.effects.filter(row => row.usages.length).flatMap(row => row.current));
   const clips = new Set(board.effects.flatMap(row => row.clips.map(clip => clip.path)));
-  for (const file of walk(path.join(root, 'Assets'))) assert.ok(clips.has(file), file);
+  assert.deepEqual([...clips].sort(), [...expected].sort());
+});
+
+test('old catalog entries with no gameplay usages are omitted', () => {
+  const { groupEntries } = require('./groups');
+  const assigned = snapshot.effects.find(entry => entry.usages.length);
+  const unused = { id: 'clip:unused', label: 'Unused recording', group: 'Unassigned recordings', current: ['Assets/Audio/unused.wav'], usages: [] };
+  const rows = groupEntries([assigned, unused]);
+  assert.equal(rows.length, 1);
+  assert.ok(rows.every(row => !row.current.includes('Assets/Audio/unused.wav')));
 });
 
 test('per-recording enemy hover includes users from overlapping pools with real portraits', () => {
@@ -69,8 +72,7 @@ test('purpose-specific runtime pools stay separate and real alternate takes are 
   assert.equal(aggro.usages.find(use => use.id === 'enemy.Zombie.Aggro').muted, false);
   // A numbered generic skill pack is not automatically a pool of interchangeable sounds.
   assert.notEqual(assignment('skill.GraveRot').id, assignment('skill.VenomArrow').id);
-  const { recordingFamily } = require('./groups');
-  assert.notEqual(recordingFamily('Assets/Audio/SoundLibrary/Magic & spells/Skill_Fire01.wav'), recordingFamily('Assets/Audio/SoundLibrary/Magic & spells/Skill_Fire02.wav'));
+
 });
 
 test('HTTP plays every recording, serves portraits, rejects all writes and preserves game files', async t => {

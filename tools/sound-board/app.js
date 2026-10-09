@@ -58,7 +58,7 @@ function render() {
   stop(); hidePortraits(); $('effects').replaceChildren();
   const query = $('search').value.trim().toLowerCase(), group = $('group').value, usage = $('usage').value;
   visible = rows.filter(row => (!group || group === row.group) &&
-    (!usage || usage === 'used' && row.usages.length || usage === 'unused' && !row.usages.length || usage === 'enemy' && row.enemies.length) &&
+    (!usage || usage === 'enemy' && row.enemies.length) &&
     row.search.includes(query));
   $('count').textContent = `${visible.length} / ${rows.length} sound groups · ${new Set(rows.flatMap(row => row.clips.map(clip => clip.path))).size} recordings`;
   $('empty').hidden = visible.length > 0;

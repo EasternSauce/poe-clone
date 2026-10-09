@@ -1,3 +1,10 @@
+version: 2026-10-09-assigned-sounds-only
+- The sound board now shows only assigned gameplay recordings; unassigned recordings remain in the separate Sound Library.
+
+version: 2026-10-09-faster-ice-and-teleport-audio
+- All four ice spell casting recordings now play three times faster, with their pitch preserved.
+- The teleport recording now plays twice as fast, with its pitch preserved.
+
 version: 2026-10-09-central-audio-directory
 - All gameplay sound recordings now live under Assets/Audio, including creature voices, item sounds and skill effects.
 - Added validation to catch gameplay audio references outside the audio directory before building.

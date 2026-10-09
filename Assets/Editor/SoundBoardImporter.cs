@@ -115,12 +115,6 @@ namespace PoeClone.EditorTools
                     rows.Add(new Row { id = "ambient." + field.Name, label = location, group = "World & ambience", current = Paths(clips),
                         usages = new[] { Use("ambient." + field.Name, location, "", new[] { "Assets/Scripts/World/WorldAmbience.cs", "Assets/Resources/AmbientSoundLibrary.asset" }) } });
                 }
-            // Include every permanent recording, clearly separating unassigned clips from game effects.
-            var assigned = new HashSet<string>(rows.SelectMany(r => r.current));
-            foreach (string path in AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets/Audio" }).Select(AssetDatabase.GUIDToAssetPath)
-                .Where(p => !p.Contains("/__MACOSX/") && !Path.GetFileName(p).StartsWith("._") && !assigned.Contains(p)).OrderBy(p => p, StringComparer.Ordinal))
-                rows.Add(new Row { id = "clip:" + path, label = Path.GetFileNameWithoutExtension(path), group = "Unassigned recordings",
-                    current = new[] { path }, usages = Array.Empty<Usage>() });
             Directory.CreateDirectory("tools/sound-board");
             File.WriteAllText("tools/sound-board/catalog.json", JsonUtility.ToJson(new Catalog {
                 generatedAt = DateTime.UtcNow.ToString("o"), effects = rows.ToArray()
