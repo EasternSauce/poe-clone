@@ -80,8 +80,8 @@ namespace PoeClone.EditorTools
                 }
                 if (effect.id == "enemy.Storm Caster.Attack") clips = settings.Find("skill.ChainLightning").Recordings;
                 if (clips.Length == 0) throw new InvalidOperationException("No recordings for " + effect.id);
-                if (clips.Any(c => AssetDatabase.GetAssetPath(c).StartsWith("Assets/assets_for_inspiration/", StringComparison.OrdinalIgnoreCase)))
-                    throw new InvalidOperationException("Inspiration recording in " + effect.id);
+                if (clips.Any(c => !AssetDatabase.GetAssetPath(c).StartsWith("Assets/Audio/", StringComparison.OrdinalIgnoreCase)))
+                    throw new InvalidOperationException("Recording outside Assets/Audio in " + effect.id);
                 string purpose = Purpose(effect, clips);
                 string key = purpose + "\n" + string.Join("\n", clips.Select(AssetDatabase.GetAssetPath).OrderBy(p => p, StringComparer.Ordinal));
                 if (!groups.TryGetValue(key, out var group))

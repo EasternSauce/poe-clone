@@ -1,3 +1,7 @@
+version: 2026-10-09-central-audio-directory
+- All gameplay sound recordings now live under Assets/Audio, including creature voices, item sounds and skill effects.
+- Added validation to catch gameplay audio references outside the audio directory before building.
+
 version: 2026-10-09-archer-death-voice
 - Archer deaths now use humanoid death voices instead of the generic player hurt recording.
 

@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-09T13:16:35.6507677Z",
+    "generatedAt": "2026-10-09T13:20:05.5846588Z",
     "effects": [
         {
             "id": "player.swing",
@@ -590,9 +590,9 @@
             "soundGroup": "sound.combat.bite",
             "purpose": "Snake-arm bite impacts",
             "current": [
-                "Assets/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
             ],
             "usages": [
                 {
@@ -1390,7 +1390,7 @@
             "soundGroup": "sound.item.pickup.gold",
             "purpose": "Pickup — gold",
             "current": [
-                "Assets/Resources/Sfx/pickup_gold.wav"
+                "Assets/Audio/Resources/Sfx/pickup_gold.wav"
             ],
             "usages": [
                 {
@@ -1413,7 +1413,7 @@
             "soundGroup": "sound.item.pickup.potion",
             "purpose": "Pickup — potion",
             "current": [
-                "Assets/Resources/Sfx/pickup_potion.wav"
+                "Assets/Audio/Resources/Sfx/pickup_potion.wav"
             ],
             "usages": [
                 {
@@ -1436,7 +1436,7 @@
             "soundGroup": "sound.item.pickup.jewel",
             "purpose": "Pickup — rings and amulets",
             "current": [
-                "Assets/Resources/Sfx/pickup_jewel.wav"
+                "Assets/Audio/Resources/Sfx/pickup_jewel.wav"
             ],
             "usages": [
                 {
@@ -1460,7 +1460,7 @@
             "soundGroup": "sound.item.place.bow",
             "purpose": "Place — bow",
             "current": [
-                "Assets/Resources/Sfx/place_bow.wav"
+                "Assets/Audio/Resources/Sfx/place_bow.wav"
             ],
             "usages": [
                 {
@@ -1483,7 +1483,7 @@
             "soundGroup": "sound.item.place.potion",
             "purpose": "Place — potion",
             "current": [
-                "Assets/Resources/Sfx/place_potion.wav"
+                "Assets/Audio/Resources/Sfx/place_potion.wav"
             ],
             "usages": [
                 {
@@ -1506,7 +1506,7 @@
             "soundGroup": "sound.item.place.jewel",
             "purpose": "Place — rings and amulets",
             "current": [
-                "Assets/Resources/Sfx/place_jewel.wav"
+                "Assets/Audio/Resources/Sfx/place_jewel.wav"
             ],
             "usages": [
                 {
@@ -1530,7 +1530,7 @@
             "soundGroup": "sound.item.drop.normal",
             "purpose": "Ground drop — normal",
             "current": [
-                "Assets/Resources/Sfx/drop_normal.wav"
+                "Assets/Audio/Resources/Sfx/drop_normal.wav"
             ],
             "usages": [
                 {
@@ -1553,7 +1553,7 @@
             "soundGroup": "sound.item.drop.magic",
             "purpose": "Ground drop — magic",
             "current": [
-                "Assets/Resources/Sfx/drop_magic.wav"
+                "Assets/Audio/Resources/Sfx/drop_magic.wav"
             ],
             "usages": [
                 {
@@ -1577,7 +1577,7 @@
             "soundGroup": "sound.item.drop.rare",
             "purpose": "Ground drop — rare",
             "current": [
-                "Assets/Resources/Sfx/drop_rare.wav"
+                "Assets/Audio/Resources/Sfx/drop_rare.wav"
             ],
             "usages": [
                 {
@@ -1601,7 +1601,7 @@
             "soundGroup": "sound.item.drop.unique",
             "purpose": "Ground drop — unique",
             "current": [
-                "Assets/Resources/Sfx/drop_unique.wav"
+                "Assets/Audio/Resources/Sfx/drop_unique.wav"
             ],
             "usages": [
                 {
@@ -1625,7 +1625,7 @@
             "soundGroup": "sound.item.drop.gold",
             "purpose": "Ground drop — gold",
             "current": [
-                "Assets/Resources/Sfx/drop_gold.wav"
+                "Assets/Audio/Resources/Sfx/drop_gold.wav"
             ],
             "usages": [
                 {
@@ -1648,7 +1648,7 @@
             "soundGroup": "sound.item.drop.potion",
             "purpose": "Ground drop — potion",
             "current": [
-                "Assets/Resources/Sfx/drop_potion.wav"
+                "Assets/Audio/Resources/Sfx/drop_potion.wav"
             ],
             "usages": [
                 {
@@ -1671,7 +1671,7 @@
             "soundGroup": "sound.player.potion",
             "purpose": "Drink potion",
             "current": [
-                "Assets/Resources/Sfx/potion_drink.mp3"
+                "Assets/Audio/Resources/Sfx/potion_drink.mp3"
             ],
             "usages": [
                 {
@@ -1793,7 +1793,7 @@
             "soundGroup": "sound.world.reveal",
             "purpose": "Carrion Saint reveal",
             "current": [
-                "Assets/Resources/Sfx/Creatures/wolf_growl_1.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_1.mp3"
             ],
             "usages": [
                 {
@@ -2276,7 +2276,7 @@
             "soundGroup": "sound.skill.FangStrike",
             "purpose": "Fang Strike",
             "current": [
-                "Assets/Resources/Sfx/skill_fang_strike.wav"
+                "Assets/Audio/Resources/Sfx/skill_fang_strike.wav"
             ],
             "usages": [
                 {
@@ -3355,8 +3355,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Aggro",
             "purpose": "Spider / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
             ],
             "usages": [
                 {
@@ -3381,9 +3381,9 @@
             "soundGroup": "sound.enemy.Rimeheart.Attack",
             "purpose": "Spider / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
             ],
             "usages": [
                 {
@@ -3410,8 +3410,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Death",
             "purpose": "Spider / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
             ],
             "usages": [
                 {
@@ -3735,8 +3735,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Aggro",
             "purpose": "Spider / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
             ],
             "usages": [
                 {
@@ -3761,9 +3761,9 @@
             "soundGroup": "sound.enemy.Rimeheart.Attack",
             "purpose": "Spider / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
             ],
             "usages": [
                 {
@@ -3790,8 +3790,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Death",
             "purpose": "Spider / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
             ],
             "usages": [
                 {
@@ -3816,9 +3816,9 @@
             "soundGroup": "sound.enemy.Dire Wolf.Aggro",
             "purpose": "Wolf / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/wolf_growl_1.mp3",
-                "Assets/Resources/Sfx/Creatures/wolf_growl_2.mp3",
-                "Assets/Resources/Sfx/Creatures/wolf_growl_3.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_2.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_3.mp3"
             ],
             "usages": [
                 {
@@ -3843,9 +3843,9 @@
             "soundGroup": "sound.enemy.Dire Wolf.Attack",
             "purpose": "Wolf / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Resources/Sfx/Creatures/wolf_snarl.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_snarl.wav"
             ],
             "usages": [
                 {
@@ -3872,8 +3872,8 @@
             "soundGroup": "sound.enemy.Dire Wolf.Death",
             "purpose": "Wolf / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/beast_12.wav",
-                "Assets/Resources/Sfx/Creatures/beast_15.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/beast_12.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/beast_15.wav"
             ],
             "usages": [
                 {
@@ -3898,9 +3898,9 @@
             "soundGroup": "sound.enemy.Bog Slime.Aggro",
             "purpose": "Slime / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/slime_1.wav",
-                "Assets/Resources/Sfx/Creatures/slime_2.wav",
-                "Assets/Resources/Sfx/Creatures/slime_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_3.wav"
             ],
             "usages": [
                 {
@@ -3925,10 +3925,10 @@
             "soundGroup": "sound.enemy.Bog Slime.Attack",
             "purpose": "Slime / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/slime_4.wav",
-                "Assets/Resources/Sfx/Creatures/slime_5.wav",
-                "Assets/Resources/Sfx/Creatures/slime_6.wav",
-                "Assets/Resources/Sfx/Creatures/slime_7.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_4.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_5.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_6.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_7.wav"
             ],
             "usages": [
                 {
@@ -3955,9 +3955,9 @@
             "soundGroup": "sound.enemy.Bog Slime.Death",
             "purpose": "Slime / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/slime_10.wav",
-                "Assets/Resources/Sfx/Creatures/slime_8.wav",
-                "Assets/Resources/Sfx/Creatures/slime_9.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_10.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_8.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_9.wav"
             ],
             "usages": [
                 {
@@ -3982,9 +3982,9 @@
             "soundGroup": "sound.enemy.Bog Slime.Aggro",
             "purpose": "Slime / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/slime_1.wav",
-                "Assets/Resources/Sfx/Creatures/slime_2.wav",
-                "Assets/Resources/Sfx/Creatures/slime_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_3.wav"
             ],
             "usages": [
                 {
@@ -4009,10 +4009,10 @@
             "soundGroup": "sound.enemy.Bog Slime.Attack",
             "purpose": "Slime / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/slime_4.wav",
-                "Assets/Resources/Sfx/Creatures/slime_5.wav",
-                "Assets/Resources/Sfx/Creatures/slime_6.wav",
-                "Assets/Resources/Sfx/Creatures/slime_7.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_4.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_5.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_6.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_7.wav"
             ],
             "usages": [
                 {
@@ -4039,9 +4039,9 @@
             "soundGroup": "sound.enemy.Bog Slime.Death",
             "purpose": "Slime / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/slime_10.wav",
-                "Assets/Resources/Sfx/Creatures/slime_8.wav",
-                "Assets/Resources/Sfx/Creatures/slime_9.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_10.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_8.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_9.wav"
             ],
             "usages": [
                 {
@@ -4066,9 +4066,9 @@
             "soundGroup": "sound.enemy.Grave Bat.Aggro",
             "purpose": "Bat / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/bat_alert_1.wav",
-                "Assets/Resources/Sfx/Creatures/bat_alert_2.wav",
-                "Assets/Resources/Sfx/Creatures/bat_alert_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/bat_alert_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bat_alert_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bat_alert_3.wav"
             ],
             "usages": [
                 {
@@ -4093,8 +4093,8 @@
             "soundGroup": "sound.enemy.Grave Bat.Attack",
             "purpose": "Bat / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Resources/Sfx/Creatures/bite_2.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav"
             ],
             "usages": [
                 {
@@ -4121,7 +4121,7 @@
             "soundGroup": "sound.enemy.Grave Bat.Death",
             "purpose": "Bat / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/shade_14.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/shade_14.wav"
             ],
             "usages": [
                 {
@@ -4146,9 +4146,9 @@
             "soundGroup": "sound.enemy.Bog Slime.Aggro",
             "purpose": "Slime / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/slime_1.wav",
-                "Assets/Resources/Sfx/Creatures/slime_2.wav",
-                "Assets/Resources/Sfx/Creatures/slime_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_3.wav"
             ],
             "usages": [
                 {
@@ -4173,10 +4173,10 @@
             "soundGroup": "sound.enemy.Bog Slime.Attack",
             "purpose": "Slime / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/slime_4.wav",
-                "Assets/Resources/Sfx/Creatures/slime_5.wav",
-                "Assets/Resources/Sfx/Creatures/slime_6.wav",
-                "Assets/Resources/Sfx/Creatures/slime_7.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_4.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_5.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_6.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_7.wav"
             ],
             "usages": [
                 {
@@ -4203,9 +4203,9 @@
             "soundGroup": "sound.enemy.Bog Slime.Death",
             "purpose": "Slime / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/slime_10.wav",
-                "Assets/Resources/Sfx/Creatures/slime_8.wav",
-                "Assets/Resources/Sfx/Creatures/slime_9.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_10.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_8.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_9.wav"
             ],
             "usages": [
                 {
@@ -4230,9 +4230,9 @@
             "soundGroup": "sound.enemy.Bog Slime.Aggro",
             "purpose": "Slime / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/slime_1.wav",
-                "Assets/Resources/Sfx/Creatures/slime_2.wav",
-                "Assets/Resources/Sfx/Creatures/slime_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_3.wav"
             ],
             "usages": [
                 {
@@ -4257,10 +4257,10 @@
             "soundGroup": "sound.enemy.Bog Slime.Attack",
             "purpose": "Slime / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/slime_4.wav",
-                "Assets/Resources/Sfx/Creatures/slime_5.wav",
-                "Assets/Resources/Sfx/Creatures/slime_6.wav",
-                "Assets/Resources/Sfx/Creatures/slime_7.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_4.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_5.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_6.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_7.wav"
             ],
             "usages": [
                 {
@@ -4287,9 +4287,9 @@
             "soundGroup": "sound.enemy.Bog Slime.Death",
             "purpose": "Slime / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/slime_10.wav",
-                "Assets/Resources/Sfx/Creatures/slime_8.wav",
-                "Assets/Resources/Sfx/Creatures/slime_9.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_10.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_8.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_9.wav"
             ],
             "usages": [
                 {
@@ -4314,8 +4314,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Aggro",
             "purpose": "Spider / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
             ],
             "usages": [
                 {
@@ -4340,9 +4340,9 @@
             "soundGroup": "sound.enemy.Rimeheart.Attack",
             "purpose": "Spider / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
             ],
             "usages": [
                 {
@@ -4369,8 +4369,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Death",
             "purpose": "Spider / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
             ],
             "usages": [
                 {
@@ -4395,8 +4395,8 @@
             "soundGroup": "sound.enemy.Magma Beetle.Aggro",
             "purpose": "Beetle / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
             ],
             "usages": [
                 {
@@ -4421,8 +4421,8 @@
             "soundGroup": "sound.enemy.Magma Beetle.Attack",
             "purpose": "Beetle / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/slime_6.wav",
-                "Assets/Resources/Sfx/Creatures/slime_9.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_6.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_9.wav"
             ],
             "usages": [
                 {
@@ -4449,8 +4449,8 @@
             "soundGroup": "sound.enemy.Magma Beetle.Death",
             "purpose": "Beetle / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/bite_3.wav",
-                "Assets/Resources/Sfx/Creatures/slime_8.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_8.wav"
             ],
             "usages": [
                 {
@@ -4475,9 +4475,9 @@
             "soundGroup": "sound.enemy.Hellhound.Aggro",
             "purpose": "Hound / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/beast_1.wav",
-                "Assets/Resources/Sfx/Creatures/beast_3.wav",
-                "Assets/Resources/Sfx/Creatures/beast_4.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/beast_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/beast_3.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/beast_4.wav"
             ],
             "usages": [
                 {
@@ -4502,9 +4502,9 @@
             "soundGroup": "sound.enemy.Hellhound.Attack",
             "purpose": "Hound / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/beast_8.wav",
-                "Assets/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/beast_8.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
             ],
             "usages": [
                 {
@@ -4531,8 +4531,8 @@
             "soundGroup": "sound.enemy.Hellhound.Death",
             "purpose": "Hound / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/beast_12.wav",
-                "Assets/Resources/Sfx/Creatures/beast_15.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/beast_12.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/beast_15.wav"
             ],
             "usages": [
                 {
@@ -4557,9 +4557,9 @@
             "soundGroup": "sound.enemy.Dire Wolf.Aggro",
             "purpose": "Wolf / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/wolf_growl_1.mp3",
-                "Assets/Resources/Sfx/Creatures/wolf_growl_2.mp3",
-                "Assets/Resources/Sfx/Creatures/wolf_growl_3.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_2.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_3.mp3"
             ],
             "usages": [
                 {
@@ -4584,9 +4584,9 @@
             "soundGroup": "sound.enemy.Dire Wolf.Attack",
             "purpose": "Wolf / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Resources/Sfx/Creatures/wolf_snarl.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_snarl.wav"
             ],
             "usages": [
                 {
@@ -4613,8 +4613,8 @@
             "soundGroup": "sound.enemy.Dire Wolf.Death",
             "purpose": "Wolf / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/beast_12.wav",
-                "Assets/Resources/Sfx/Creatures/beast_15.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/beast_12.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/beast_15.wav"
             ],
             "usages": [
                 {
@@ -4639,8 +4639,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Aggro",
             "purpose": "Spider / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
             ],
             "usages": [
                 {
@@ -4665,9 +4665,9 @@
             "soundGroup": "sound.enemy.Rimeheart.Attack",
             "purpose": "Spider / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
             ],
             "usages": [
                 {
@@ -4694,8 +4694,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Death",
             "purpose": "Spider / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
             ],
             "usages": [
                 {
@@ -4886,9 +4886,9 @@
             "soundGroup": "sound.enemy.Dire Wolf.Aggro",
             "purpose": "Wolf / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/wolf_growl_1.mp3",
-                "Assets/Resources/Sfx/Creatures/wolf_growl_2.mp3",
-                "Assets/Resources/Sfx/Creatures/wolf_growl_3.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_2.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_3.mp3"
             ],
             "usages": [
                 {
@@ -4913,9 +4913,9 @@
             "soundGroup": "sound.enemy.Dire Wolf.Attack",
             "purpose": "Wolf / attack voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Resources/Sfx/Creatures/wolf_snarl.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_snarl.wav"
             ],
             "usages": [
                 {
@@ -4942,8 +4942,8 @@
             "soundGroup": "sound.enemy.Dire Wolf.Death",
             "purpose": "Wolf / death voices",
             "current": [
-                "Assets/Resources/Sfx/Creatures/beast_12.wav",
-                "Assets/Resources/Sfx/Creatures/beast_15.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/beast_12.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/beast_15.wav"
             ],
             "usages": [
                 {
@@ -5913,6 +5913,127 @@
                     "volume": 1.0
                 }
             ]
+        },
+        {
+            "id": "clip:Assets/Audio/Resources/Sfx/Creatures/shade_1.wav",
+            "label": "shade_1",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/Resources/Sfx/Creatures/shade_1.wav"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/Resources/Sfx/Creatures/shade_2.wav",
+            "label": "shade_2",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/Resources/Sfx/Creatures/shade_2.wav"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/Resources/Sfx/Creatures/shade_3.wav",
+            "label": "shade_3",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/Resources/Sfx/Creatures/shade_3.wav"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/Resources/Sfx/corpse_explosion.wav",
+            "label": "corpse_explosion",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/Resources/Sfx/corpse_explosion.wav"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/Resources/Sfx/pickup_bow.wav",
+            "label": "pickup_bow",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/Resources/Sfx/pickup_bow.wav"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/Resources/Sfx/pickup_weapon.wav",
+            "label": "pickup_weapon",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/Resources/Sfx/pickup_weapon.wav"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/Resources/Sfx/shatter.wav",
+            "label": "shatter",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/Resources/Sfx/shatter.wav"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/Resources/Sfx/skill_cleave.wav",
+            "label": "skill_cleave",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/Resources/Sfx/skill_cleave.wav"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/Resources/Sfx/skill_lunging_thrust.wav",
+            "label": "skill_lunging_thrust",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/Resources/Sfx/skill_lunging_thrust.wav"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/Resources/Sfx/skill_pulverize.wav",
+            "label": "skill_pulverize",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/Resources/Sfx/skill_pulverize.wav"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/Resources/Sfx/skill_reaping_arc.wav",
+            "label": "skill_reaping_arc",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/Resources/Sfx/skill_reaping_arc.wav"
+            ],
+            "usages": []
         },
         {
             "id": "clip:Assets/Audio/SFX/Combat/melee_hit_6.wav",
@@ -12093,127 +12214,6 @@
             "purpose": "",
             "current": [
                 "Assets/Audio/SoundLibrary/World & ambience/doorOpen_2.ogg"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Resources/Sfx/Creatures/shade_1.wav",
-            "label": "shade_1",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Resources/Sfx/Creatures/shade_1.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Resources/Sfx/Creatures/shade_2.wav",
-            "label": "shade_2",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Resources/Sfx/Creatures/shade_2.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Resources/Sfx/Creatures/shade_3.wav",
-            "label": "shade_3",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Resources/Sfx/Creatures/shade_3.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Resources/Sfx/corpse_explosion.wav",
-            "label": "corpse_explosion",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Resources/Sfx/corpse_explosion.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Resources/Sfx/pickup_bow.wav",
-            "label": "pickup_bow",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Resources/Sfx/pickup_bow.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Resources/Sfx/pickup_weapon.wav",
-            "label": "pickup_weapon",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Resources/Sfx/pickup_weapon.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Resources/Sfx/shatter.wav",
-            "label": "shatter",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Resources/Sfx/shatter.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Resources/Sfx/skill_cleave.wav",
-            "label": "skill_cleave",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Resources/Sfx/skill_cleave.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Resources/Sfx/skill_lunging_thrust.wav",
-            "label": "skill_lunging_thrust",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Resources/Sfx/skill_lunging_thrust.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Resources/Sfx/skill_pulverize.wav",
-            "label": "skill_pulverize",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Resources/Sfx/skill_pulverize.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Resources/Sfx/skill_reaping_arc.wav",
-            "label": "skill_reaping_arc",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Resources/Sfx/skill_reaping_arc.wav"
             ],
             "usages": []
         }

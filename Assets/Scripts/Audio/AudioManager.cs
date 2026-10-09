@@ -87,7 +87,7 @@ namespace PoeClone.Audio
             }
         }
 
-        /// <summary>A clip from Resources/Sfx by file name (cached), or null if there's none.</summary>
+        /// <summary>A clip from Assets/Audio/Resources/Sfx by file name (cached), or null if there's none.</summary>
         public AudioClip Sfx(string name)
         {
             if (!loaded.TryGetValue(name, out AudioClip clip))

@@ -7,7 +7,7 @@ namespace PoeClone.Inventory
     /// Which sound an item makes: landing on the ground (louder and brighter the rarer it is, so a
     /// unique is heard before it's seen) and being picked up or put down. Equipment pickups use
     /// the plain cloth-and-leather UI clip, except jewellery; gold and potions keep their own
-    /// clips. Placement still varies by material. Clips live in Resources/Sfx.
+    /// clips. Placement still varies by material. Clips live in Assets/Audio/Resources/Sfx.
     /// </summary>
     public static class ItemSounds
     {

@@ -117,9 +117,8 @@ namespace PoeClone.EditorTools
                 }
             // Include every permanent recording, clearly separating unassigned clips from game effects.
             var assigned = new HashSet<string>(rows.SelectMany(r => r.current));
-            foreach (string path in AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets" }).Select(AssetDatabase.GUIDToAssetPath)
-                .Where(p => !p.StartsWith("Assets/assets_for_inspiration/", StringComparison.OrdinalIgnoreCase) &&
-                    !p.Contains("/__MACOSX/") && !Path.GetFileName(p).StartsWith("._") && !assigned.Contains(p)).OrderBy(p => p, StringComparer.Ordinal))
+            foreach (string path in AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets/Audio" }).Select(AssetDatabase.GUIDToAssetPath)
+                .Where(p => !p.Contains("/__MACOSX/") && !Path.GetFileName(p).StartsWith("._") && !assigned.Contains(p)).OrderBy(p => p, StringComparer.Ordinal))
                 rows.Add(new Row { id = "clip:" + path, label = Path.GetFileNameWithoutExtension(path), group = "Unassigned recordings",
                     current = new[] { path }, usages = Array.Empty<Usage>() });
             Directory.CreateDirectory("tools/sound-board");

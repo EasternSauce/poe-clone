@@ -5,7 +5,7 @@ namespace PoeClone.Enemies
 {
     /// <summary>
     /// Each creature's own voice: what it sounds like when it notices the player, when it bites
-    /// or spits, and when it dies (clips under Resources/Sfx/Creatures, pitched per set). The
+    /// or spits, and when it dies (clips under Assets/Audio/Resources/Sfx/Creatures, pitched per set). The
     /// Every kind has independently configurable aggro, attack and death sounds.
     /// </summary>
     public static class EnemySounds
