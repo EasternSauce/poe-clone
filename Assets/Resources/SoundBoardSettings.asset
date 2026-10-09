@@ -1,0 +1,3023 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62e83aff4e2279148b8418c5543287f5, type: 3}
+  m_Name: SoundBoardSettings
+  m_EditorClassIdentifier: PoeClone.Audio::PoeClone.Audio.SoundBoardSettings
+  effects:
+  - id: player.swing
+    label: Melee attack swing
+    group: Combat
+    description:
+    aliases:
+    - swing_1
+    - swing_2
+    - swing_3
+    defaults:
+    - {fileID: 8300000, guid: 3c6f39ae65d8a5d4b82c74978ed0b6b0, type: 3}
+    - {fileID: 8300000, guid: 96c0d6e4e43e1c14ab0f5fe923514579, type: 3}
+    - {fileID: 8300000, guid: 3c608d1f2d639f94ca6ed4c6ff2a98e4, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing#4.mp3
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing_\u2013_Fast_m_#4-1766763244157.mp3"
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword swing #1.mp3
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/22_Slash_04.wav
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#3-1766763893457.mp3
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: player.bow
+    label: Basic bow shot
+    group: Combat
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: cda2965cbdcc0914f96d54289898275b, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#3-1766764176083.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#4-1766764179015.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: combat.hit
+    label: Hit impact
+    group: Combat
+    description:
+    aliases:
+    - melee_hit_6
+    - melee_hit_7
+    defaults:
+    - {fileID: 8300000, guid: 346438f69794bff48b9bfa302044461e, type: 3}
+    - {fileID: 8300000, guid: 18ec5dfc6b0ace244af58afb702af326, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_hit_flesh_\u2013_Me_#1-1766763353113.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_hit_flesh_\u2013_Me_#4-1766763347247.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/15_Impact_flesh_02.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/77_flesh_02.wav
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Axe_hit_armor_\u2013_Deep_#1-1766764038219.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: combat.block
+    label: Shield block
+    group: Combat
+    description:
+    aliases:
+    - shield_block
+    defaults:
+    - {fileID: 8300000, guid: eeeea64e5bcfce840b5add4a8b6c2c18, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Shield_block_\u2013_Metal_#1-1766764259584.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Shield_block_\u2013_Metal_#4-1766764263919.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/39_Block_03.wav
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Axe_hit_armor_\u2013_Deep_#1-1766764038219.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Axe_hit_armor_\u2013_Deep_#2-1766764035183.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: player.hurt
+    label: Player hurt
+    group: Player
+    description:
+    aliases:
+    - hurt_1
+    - hurt_2
+    - hurt_3
+    defaults:
+    - {fileID: 8300000, guid: 6e8997d11b2c26e47b2dfe8bd7bec284, type: 3}
+    - {fileID: 8300000, guid: c1de4b0d0b171a445bbc345937e4e677, type: 3}
+    - {fileID: 8300000, guid: 801ad7a99eda38945a97267f3c982613, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#2-1766764349848.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#3-1766764346956.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#4-1766764341901.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_hit_flesh_\u2013_Me_#1-1766763353113.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: player.reward
+    label: Level up / quest reward
+    group: Player
+    description: Level ups and quest rewards currently share this sound.
+    aliases:
+    - level_up
+    defaults:
+    - {fileID: 8300000, guid: 02c09b0084c54cc43850d935b952c200, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Level_up_\u2013_Magical_a_#1-1766766447104.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Level_up_\u2013_Magical_a_#2-1766766447105.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Level_up_\u2013_Magical_a_#3-1766766447105.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Level_up_\u2013_Magical_a_#4-1766766447106.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Quest_complete_\u2013_Lon_#1-1766766413148.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: player.steps
+    label: Footsteps
+    group: Player
+    description:
+    aliases:
+    - footstep_grass_1
+    defaults:
+    - {fileID: 8300000, guid: bf4f83921a7f06c44b147fc62cfcdf82, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Footstep_grass_\u2013_Sof_#1-1766767691077.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Footstep_grass_\u2013_Sof_#2-1766767688744.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Footstep_grass_\u2013_Sof_#3-1766767686377.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Footstep_grass_\u2013_Sof_#4-1766767680960.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/12_Player_Movement_SFX/03_Step_grass_03.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: ui.open
+    label: Inventory open
+    group: Interface
+    description:
+    aliases:
+    - inventory_open
+    defaults:
+    - {fileID: 8300000, guid: 9df4dba7b36659f48a08668689523534, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_\u2013_UI__#1-1766765859218.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_\u2013_UI__#2-1766765859219.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_\u2013_UI__#3-1766765859219.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_\u2013_UI__#4-1766765856604.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_UI_Menu_SFX/092_Pause_04.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: ui.close
+    label: Inventory close
+    group: Interface
+    description:
+    aliases:
+    - inventory_close
+    defaults:
+    - {fileID: 8300000, guid: e62ed051481e07d47bad072848f78967, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_\u2013_UI__#1-1766765859218.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_\u2013_UI__#2-1766765859219.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_\u2013_UI__#3-1766765859219.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_\u2013_UI__#4-1766765856604.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_UI_Menu_SFX/098_Unpause_04.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: ui.denied
+    label: Denied action
+    group: Interface
+    description:
+    aliases:
+    - denied
+    defaults:
+    - {fileID: 8300000, guid: a1be5d23278eec44386ec4494ebbbadd, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_UI_Menu_SFX/033_Denied_03.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_UI_Menu_SFX/029_Decline_09.wav
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Button_click_\u2013_Clean_#2-1766767620402.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Button_click_\u2013_Clean_#3-1766767618113.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Button_click_\u2013_Clean_#4-1766767615407.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.pickup
+    label: "Pickup \u2014 equipment"
+    group: Items
+    description: All weapons, bows, armour, shields, grimoires and other equipment except rings and amulets. Also used by some quest interactions.
+    aliases:
+    - item_pickup
+    defaults:
+    - {fileID: 8300000, guid: 7baf97f3279ffef40b747402df81ee46, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/cloth-heavy.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/cloth.wav
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.place
+    label: "Place \u2014 general equipment"
+    group: Items
+    description: Armour, melee weapons, shields and grimoires; also shared by menu confirmations and dialogue.
+    aliases:
+    - item_place
+    defaults:
+    - {fileID: 8300000, guid: 46190f48c471d1e47b59959d5fb422de, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/cloth-heavy.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/cloth.wav
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Equip_weapon_\u2013_Weapo_#1-1766765195705.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Equip_weapon_\u2013_Weapo_#2-1766765195705.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Equip_weapon_\u2013_Weapo_#3-1766765195706.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.pickup.gold
+    label: "Pickup \u2014 gold"
+    group: Items
+    description:
+    aliases:
+    - pickup_gold
+    defaults:
+    - {fileID: 8300000, guid: c10538ce40746744bb6e43bd419f63d4, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Coin_pickup_\u2013_Single_#1-1766764980016.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Coin_pickup_\u2013_Single_#2-1766764967251.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Coin_pickup_\u2013_Single_#3-1766764993247.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Coin_pickup_\u2013_Single_#4-1766764989061.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/coin.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.pickup.potion
+    label: "Pickup \u2014 potion"
+    group: Items
+    description:
+    aliases:
+    - pickup_potion
+    defaults:
+    - {fileID: 8300000, guid: 48dc07097b4960c49822dfac4dae978b, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/bubble.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/bubble2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/bubble3.wav
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_\u2013_Liqui_#1-1766765101919.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_\u2013_Liqui_#2-1766765101920.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.pickup.jewel
+    label: "Pickup \u2014 rings and amulets"
+    group: Items
+    description:
+    aliases:
+    - pickup_jewel
+    defaults:
+    - {fileID: 8300000, guid: 71b3af81dc74a704c84099bbadeeac80, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/metal-ringing.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.place.bow
+    label: "Place \u2014 bow"
+    group: Items
+    description:
+    aliases:
+    - place_bow
+    defaults:
+    - {fileID: 8300000, guid: 84d9fc5e7eeb4d042adc59db48b5119b, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/wood-small.wav
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#3-1766764176083.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#4-1766764179015.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Footstep_wood_\u2013_Wood_#1-1766767773818.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Footstep_wood_\u2013_Wood_#2-1766767771082.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.place.potion
+    label: "Place \u2014 potion"
+    group: Items
+    description:
+    aliases:
+    - place_potion
+    defaults:
+    - {fileID: 8300000, guid: 9973ccb2e142b494ca697d024d12e9ba, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/bubble.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/bubble2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/bubble3.wav
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_\u2013_Liqui_#1-1766765101919.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_\u2013_Liqui_#2-1766765101920.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.place.jewel
+    label: "Place \u2014 rings and amulets"
+    group: Items
+    description:
+    aliases:
+    - place_jewel
+    defaults:
+    - {fileID: 8300000, guid: 8a1c8a00b70f74a43a4743311aecb003, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/metal-ringing.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.drop.normal
+    label: "Ground drop \u2014 normal"
+    group: Items
+    description: Equipment drops share a sound by rarity; gold and potions have their own.
+    aliases:
+    - drop_normal
+    defaults:
+    - {fileID: 8300000, guid: f20cfaf860dd0e64da88289a0d7f854a, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/metal-small1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.drop.magic
+    label: "Ground drop \u2014 magic"
+    group: Items
+    description: Equipment drops share a sound by rarity; gold and potions have their own.
+    aliases:
+    - drop_magic
+    defaults:
+    - {fileID: 8300000, guid: a41c418f5eb75214fb1ddf473851e160, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/metal-small1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.drop.rare
+    label: "Ground drop \u2014 rare"
+    group: Items
+    description: Equipment drops share a sound by rarity; gold and potions have their own.
+    aliases:
+    - drop_rare
+    defaults:
+    - {fileID: 8300000, guid: cda51f50f8a7b3e44948f060936e7a89, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/metal-small1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.drop.unique
+    label: "Ground drop \u2014 unique"
+    group: Items
+    description: Equipment drops share a sound by rarity; gold and potions have their own.
+    aliases:
+    - drop_unique
+    defaults:
+    - {fileID: 8300000, guid: 654ce9f5d4ea9c6458ffce9de4efa358, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/metal-small1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.drop.gold
+    label: "Ground drop \u2014 gold"
+    group: Items
+    description: Equipment drops share a sound by rarity; gold and potions have their own.
+    aliases:
+    - drop_gold
+    defaults:
+    - {fileID: 8300000, guid: 123c9bdd52e8e53409cf847f178211c6, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Coin_pickup_\u2013_Single_#1-1766764980016.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Coin_pickup_\u2013_Single_#2-1766764967251.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Coin_pickup_\u2013_Single_#3-1766764993247.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Coin_pickup_\u2013_Single_#4-1766764989061.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/coin.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: item.drop.potion
+    label: "Ground drop \u2014 potion"
+    group: Items
+    description: Equipment drops share a sound by rarity; gold and potions have their own.
+    aliases:
+    - drop_potion
+    defaults:
+    - {fileID: 8300000, guid: d4d4f30a690867a4394a1681897d7b9f, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/bubble.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/bubble2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/bubble3.wav
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_\u2013_Liqui_#1-1766765101919.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_\u2013_Liqui_#2-1766765101920.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: player.potion
+    label: Drink potion
+    group: Player
+    description:
+    aliases:
+    - potion_drink
+    defaults:
+    - {fileID: 8300000, guid: 3fa9f81615a440d6802d4faf90c5654f, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_\u2013_Liqui_#1-1766765101919.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_\u2013_Liqui_#2-1766765101920.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_\u2013_Liqui_#3-1766765101920.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_\u2013_Liqui_#4-1766765068166.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_\u2013_Liqui_#4-1766765101921.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: world.gate
+    label: Area gate
+    group: World
+    description:
+    aliases:
+    - gate_open
+    defaults:
+    - {fileID: 8300000, guid: 255f0c0a1b85a6d4490764b5ca6fcfb6, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Gate_open_\u2013_Heavy_me_#1-1766767347275.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Gate_open_\u2013_Heavy_me_#2-1766767347276.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Gate_open_\u2013_Heavy_me_#4-1766767347277.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wooden_door_open_\u2013_O_#1-1766765986124.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wooden_door_open_\u2013_O_#2-1766765986125.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: world.loot
+    label: Generic loot drop
+    group: World
+    description:
+    aliases:
+    - loot_drop
+    defaults:
+    - {fileID: 8300000, guid: 8f7eaa9ac09b4ee47a3ddaa2af296db1, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/cloth-heavy.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: world.shatter
+    label: Ice / barrier shatter
+    group: World
+    description:
+    aliases:
+    - shatter
+    defaults:
+    - {fileID: 8300000, guid: 6c996f9a72ab67542b216a300d88a0af, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_impact_\u2013_Ice_sha_#1-1766764678544.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_impact_\u2013_Ice_sha_#2-1766764676177.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_impact_\u2013_Ice_sha_#3-1766764673747.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_impact_\u2013_Ice_sha_#4-1766764669612.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/13_Ice_explosion_01.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: world.explosion
+    label: Corpse / quest explosion
+    group: World
+    description:
+    aliases:
+    - corpse_explosion
+    defaults:
+    - {fileID: 8300000, guid: 05a68df7b16156548a1528e393285f14, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/04_Fire_explosion_04_medium.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/30_Earth_02.wav
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_hit_flesh_\u2013_Me_#1-1766763353113.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_hit_flesh_\u2013_Me_#4-1766763347247.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/15_Impact_flesh_02.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: world.reveal
+    label: Carrion Saint reveal growl
+    group: World
+    description:
+    aliases:
+    - wolf_growl_1
+    defaults:
+    - {fileID: 8300000, guid: 2d320c0db266dfe47b2037dbc2730b53, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#2-1766768104138.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#3-1766768101091.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#4-1766768097372.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr10.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.Cleave
+    label: Cleave
+    group: Skills
+    description:
+    aliases:
+    - skill_cleave
+    defaults:
+    - {fileID: 8300000, guid: 8a736da365b5f144d935c8078786cbb0, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#3-1766763893457.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#4-1766763889384.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing#4.mp3
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing_\u2013_Fast_m_#4-1766763244157.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/22_Slash_04.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.FireBolt
+    label: Fire Bolt
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1acaeadc8beea964d830fb7c84cb9649, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_\u2013_Ma_#1-1766763536495.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_\u2013_Ma_#2-1766763532663.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_\u2013_Ma_#3-1766763528875.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_\u2013_Ma_#4-1766763524728.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/04_Fire_explosion_04_medium.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.Dash
+    label: Dash
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 49f90d0bdcd321c46bed879b48a9cea0, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/48_Speed_up_02.wav
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#3-1766763893457.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#4-1766763889384.mp3
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.FrostNova
+    label: Frost Nova
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 9a3b016aa0d65c642b411272433c09d3, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_\u2013_Col_#1-1766764638425.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_\u2013_Col_#2-1766764635940.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_\u2013_Col_#3-1766764633331.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_\u2013_Col_#4-1766764626746.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/13_Ice_explosion_01.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.WarCry
+    label: War Cry
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: d8f9493ef9ed50943ad188cc51389671, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/ogre/ogre1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/ogre/ogre2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/ogre/ogre3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/ogre/ogre4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/ogre/ogre5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.ChainLightning
+    label: Chain Lightning
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: dc0a4657ba169144bb7f7e7fc9f07f2c, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Lightning_cast_\u2013_Ele_#1-1766764720689.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Lightning_cast_\u2013_Ele_#2-1766764718272.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Lightning_cast_\u2013_Ele_#3-1766764718272.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Lightning_cast_\u2013_Ele_#4-1766764715064.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/18_Thunder_02.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.IceShard
+    label: Ice Shard
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 9a3b016aa0d65c642b411272433c09d3, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_\u2013_Col_#1-1766764638425.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_\u2013_Col_#2-1766764635940.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_\u2013_Col_#3-1766764633331.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_\u2013_Col_#4-1766764626746.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/13_Ice_explosion_01.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.Teleport
+    label: Teleport
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 04c4e7bde84249a46801f69ccf28c397, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/12_Player_Movement_SFX/88_Teleport_02.wav
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#2-1766764864417.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#3-1766764862223.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#4-1766764858633.mp3
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.RaiseSkeletons
+    label: Raise Skeletons
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 37bb7c5e723a4b54da4074d4aa89414f, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Rune_activate_\u2013_Anci_#2-1766768897281.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Rune_activate_\u2013_Anci_#4-1766768893815.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/30_Revive_03.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.DeathMark
+    label: Death Mark
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 37bb7c5e723a4b54da4074d4aa89414f, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Rune_activate_\u2013_Anci_#2-1766768897281.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Rune_activate_\u2013_Anci_#4-1766768893815.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/30_Revive_03.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.SkeletonMages
+    label: Skeleton Mages
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 37bb7c5e723a4b54da4074d4aa89414f, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Rune_activate_\u2013_Anci_#2-1766768897281.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Rune_activate_\u2013_Anci_#4-1766768893815.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/30_Revive_03.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.SpiritWolves
+    label: Spirit Wolves
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 37bb7c5e723a4b54da4074d4aa89414f, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Rune_activate_\u2013_Anci_#2-1766768897281.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Rune_activate_\u2013_Anci_#4-1766768893815.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/30_Revive_03.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.BoneGolem
+    label: Bone Golem
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 37bb7c5e723a4b54da4074d4aa89414f, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Rune_activate_\u2013_Anci_#2-1766768897281.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Rune_activate_\u2013_Anci_#4-1766768893815.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/30_Revive_03.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.GraveRot
+    label: Grave Rot
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 3d64c63fd7ebafd47b223dab2e6175fc, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/46_Poison_01.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.SplitShot
+    label: Split Shot
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: cda2965cbdcc0914f96d54289898275b, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#3-1766764176083.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#4-1766764179015.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.PiercingShot
+    label: Piercing Shot
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: cda2965cbdcc0914f96d54289898275b, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#3-1766764176083.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#4-1766764179015.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.RainOfArrows
+    label: Rain Of Arrows
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: cda2965cbdcc0914f96d54289898275b, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#3-1766764176083.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#4-1766764179015.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.BurningArrow
+    label: Burning Arrow
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1acaeadc8beea964d830fb7c84cb9649, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_\u2013_Ma_#1-1766763536495.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_\u2013_Ma_#2-1766763532663.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_\u2013_Ma_#3-1766763528875.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_\u2013_Ma_#4-1766763524728.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/04_Fire_explosion_04_medium.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.FangStrike
+    label: Fang Strike
+    group: Skills
+    description:
+    aliases:
+    - skill_fang_strike
+    defaults:
+    - {fileID: 8300000, guid: 7285bbda112280d4eb15141e7d3c4ec9, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#3-1766763893457.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#4-1766763889384.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing#4.mp3
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing_\u2013_Fast_m_#4-1766763244157.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/22_Slash_04.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.VenomArrow
+    label: Venom Arrow
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 3d64c63fd7ebafd47b223dab2e6175fc, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/46_Poison_01.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.VenomSpout
+    label: Venom Spout
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 3d64c63fd7ebafd47b223dab2e6175fc, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/46_Poison_01.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.SummonViper
+    label: Summon Viper
+    group: Skills
+    description:
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 3d64c63fd7ebafd47b223dab2e6175fc, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/46_Poison_01.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.Pulverize
+    label: Pulverize
+    group: Skills
+    description:
+    aliases:
+    - skill_pulverize
+    defaults:
+    - {fileID: 8300000, guid: d2b92453dc683d14ab134dd5edfebc81, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#3-1766763893457.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#4-1766763889384.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing#4.mp3
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing_\u2013_Fast_m_#4-1766763244157.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/22_Slash_04.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.ReapingArc
+    label: Reaping Arc
+    group: Skills
+    description:
+    aliases:
+    - skill_reaping_arc
+    defaults:
+    - {fileID: 8300000, guid: 615d1350e83ad2d4797a253415ff831c, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#3-1766763893457.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#4-1766763889384.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing#4.mp3
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing_\u2013_Fast_m_#4-1766763244157.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/22_Slash_04.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: skill.LungingThrust
+    label: Lunging Thrust
+    group: Skills
+    description:
+    aliases:
+    - skill_lunging_thrust
+    defaults:
+    - {fileID: 8300000, guid: c9415292bc2e05244b6ce6460e96baac, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#3-1766763893457.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#4-1766763889384.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing#4.mp3
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing_\u2013_Fast_m_#4-1766763244157.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/22_Slash_04.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Carrion Saint.Attack
+    label: "Carrion Saint \u2014 Attack"
+    group: Enemies
+    description: Carrion Saint's melee attacks and charge. Its final death shares the Shepherd's death effect.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: ec78a60006ac95f4e84120d393bee81f, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr11.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr12.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr13.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Zombie.Aggro
+    label: "Zombie \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Zombie. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#1-1766768225594.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#2-1766768233458.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#3-1766768231428.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#4-1766768225595.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Zombie.Attack
+    label: "Zombie \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Zombie. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: d331492c46b002143898b29d1d1dd283, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#1-1766768225594.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#2-1766768233458.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#3-1766768231428.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#4-1766768225595.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Zombie.Death
+    label: "Zombie \u2014 Death"
+    group: Enemies
+    description: Independent voice for Zombie. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#1-1766768225594.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#2-1766768233458.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#3-1766768231428.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#4-1766768225595.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Raider.Aggro
+    label: "Raider \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Raider. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Raider.Attack
+    label: "Raider \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Raider. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 6ee5ad774f80ac24997ef6377f5f599e, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Raider.Death
+    label: "Raider \u2014 Death"
+    group: Enemies
+    description: Independent voice for Raider. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Brute.Aggro
+    label: "Brute \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Brute. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Brute.Attack
+    label: "Brute \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Brute. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c2656595a6489db44b1348cb3b0647ee, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Brute.Death
+    label: "Brute \u2014 Death"
+    group: Enemies
+    description: Independent voice for Brute. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Archer.Aggro
+    label: "Archer \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Archer. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Archer.Attack
+    label: "Archer \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Archer. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: cda2965cbdcc0914f96d54289898275b, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#3-1766764176083.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#4-1766764179015.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Archer.Death
+    label: "Archer \u2014 Death"
+    group: Enemies
+    description: Independent voice for Archer. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Fire Caster.Aggro
+    label: "Fire Caster \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Fire Caster. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Fire Caster.Attack
+    label: "Fire Caster \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Fire Caster. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1acaeadc8beea964d830fb7c84cb9649, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_\u2013_Ma_#1-1766763536495.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_\u2013_Ma_#2-1766763532663.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_\u2013_Ma_#3-1766763528875.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_\u2013_Ma_#4-1766763524728.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/04_Fire_explosion_04_medium.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Fire Caster.Death
+    label: "Fire Caster \u2014 Death"
+    group: Enemies
+    description: Independent voice for Fire Caster. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Frost Caster.Aggro
+    label: "Frost Caster \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Frost Caster. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Frost Caster.Attack
+    label: "Frost Caster \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Frost Caster. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 9a3b016aa0d65c642b411272433c09d3, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_\u2013_Col_#1-1766764638425.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_\u2013_Col_#2-1766764635940.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_\u2013_Col_#3-1766764633331.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_\u2013_Col_#4-1766764626746.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/13_Ice_explosion_01.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Frost Caster.Death
+    label: "Frost Caster \u2014 Death"
+    group: Enemies
+    description: Independent voice for Frost Caster. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Storm Caster.Aggro
+    label: "Storm Caster \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Storm Caster. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Storm Caster.Attack
+    label: "Storm Caster \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Storm Caster. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: dc0a4657ba169144bb7f7e7fc9f07f2c, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Lightning_cast_\u2013_Ele_#1-1766764720689.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Lightning_cast_\u2013_Ele_#2-1766764718272.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Lightning_cast_\u2013_Ele_#3-1766764718272.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Lightning_cast_\u2013_Ele_#4-1766764715064.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/18_Thunder_02.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Storm Caster.Death
+    label: "Storm Caster \u2014 Death"
+    group: Enemies
+    description: Independent voice for Storm Caster. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Skeleton.Aggro
+    label: "Skeleton \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Skeleton. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#1-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#2-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#3-1766768181651.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#4-1766768179054.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#1-1766768225594.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Skeleton.Attack
+    label: "Skeleton \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Skeleton. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c5bee1aa50285ca46b4cc6ab2eb8d87a, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#1-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#2-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#3-1766768181651.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#4-1766768179054.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#1-1766768225594.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Skeleton.Death
+    label: "Skeleton \u2014 Death"
+    group: Enemies
+    description: Independent voice for Skeleton. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#1-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#2-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#3-1766768181651.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#4-1766768179054.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#1-1766768225594.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Wraith.Aggro
+    label: "Wraith \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Wraith. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Wraith.Attack
+    label: "Wraith \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Wraith. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1f9418a8484b7734e99683ae3fedd627, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Wraith.Death
+    label: "Wraith \u2014 Death"
+    group: Enemies
+    description: Independent voice for Wraith. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Ember Knight.Aggro
+    label: "Ember Knight \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Ember Knight. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Ember Knight.Attack
+    label: "Ember Knight \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Ember Knight. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 6ee5ad774f80ac24997ef6377f5f599e, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Ember Knight.Death
+    label: "Ember Knight \u2014 Death"
+    group: Enemies
+    description: Independent voice for Ember Knight. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Gravelord Mortis.Aggro
+    label: "Gravelord Mortis \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Gravelord Mortis. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Gravelord Mortis.Attack
+    label: "Gravelord Mortis \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Gravelord Mortis. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c2656595a6489db44b1348cb3b0647ee, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Gravelord Mortis.Death
+    label: "Gravelord Mortis \u2014 Death"
+    group: Enemies
+    description: Independent voice for Gravelord Mortis. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Ashen Warlord.Aggro
+    label: "Ashen Warlord \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Ashen Warlord. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Ashen Warlord.Attack
+    label: "Ashen Warlord \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Ashen Warlord. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c2656595a6489db44b1348cb3b0647ee, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Ashen Warlord.Death
+    label: "Ashen Warlord \u2014 Death"
+    group: Enemies
+    description: Independent voice for Ashen Warlord. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Rimeheart.Aggro
+    label: "Rimeheart \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Rimeheart. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 5e7af3fafaf214243a54ad8924078041, type: 3}
+    - {fileID: 8300000, guid: c501f94fb72f6144593aea70a5f228c5, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#1-1766768279530.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#4-1766768277241.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Rimeheart.Attack
+    label: "Rimeheart \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Rimeheart. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 64af864c1f0abe5448bf21d0929b026f, type: 3}
+    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
+    - {fileID: 8300000, guid: 66eff9a3b2843af43bf2194b8926fb65, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#1-1766768279530.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#4-1766768277241.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Rimeheart.Death
+    label: "Rimeheart \u2014 Death"
+    group: Enemies
+    description: Independent voice for Rimeheart. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 5e7af3fafaf214243a54ad8924078041, type: 3}
+    - {fileID: 8300000, guid: c501f94fb72f6144593aea70a5f228c5, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#1-1766768279530.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#4-1766768277241.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Forest Shaman.Aggro
+    label: "Forest Shaman \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Forest Shaman. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Forest Shaman.Attack
+    label: "Forest Shaman \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Forest Shaman. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 893fb52ab04963b43ad8e215a40e63a5, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#2-1766764864417.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#3-1766764862223.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#4-1766764858633.mp3
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Forest Shaman.Death
+    label: "Forest Shaman \u2014 Death"
+    group: Enemies
+    description: Independent voice for Forest Shaman. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Necromancer.Aggro
+    label: "Necromancer \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Necromancer. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Necromancer.Attack
+    label: "Necromancer \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Necromancer. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 893fb52ab04963b43ad8e215a40e63a5, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#2-1766764864417.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#3-1766764862223.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#4-1766764858633.mp3
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Necromancer.Death
+    label: "Necromancer \u2014 Death"
+    group: Enemies
+    description: Independent voice for Necromancer. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Skeleton Archer.Aggro
+    label: "Skeleton Archer \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Skeleton Archer. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#1-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#2-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#3-1766768181651.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#4-1766768179054.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#1-1766768225594.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Skeleton Archer.Attack
+    label: "Skeleton Archer \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Skeleton Archer. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: cda2965cbdcc0914f96d54289898275b, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#3-1766764176083.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_\u2013_#4-1766764179015.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Skeleton Archer.Death
+    label: "Skeleton Archer \u2014 Death"
+    group: Enemies
+    description: Independent voice for Skeleton Archer. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#1-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#2-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#3-1766768181651.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#4-1766768179054.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#1-1766768225594.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Frost Giant.Aggro
+    label: "Frost Giant \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Frost Giant. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Frost Giant.Attack
+    label: "Frost Giant \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Frost Giant. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c2656595a6489db44b1348cb3b0647ee, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Frost Giant.Death
+    label: "Frost Giant \u2014 Death"
+    group: Enemies
+    description: Independent voice for Frost Giant. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Giant Spider.Aggro
+    label: "Giant Spider \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Giant Spider. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 5e7af3fafaf214243a54ad8924078041, type: 3}
+    - {fileID: 8300000, guid: c501f94fb72f6144593aea70a5f228c5, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#1-1766768279530.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#4-1766768277241.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Giant Spider.Attack
+    label: "Giant Spider \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Giant Spider. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 64af864c1f0abe5448bf21d0929b026f, type: 3}
+    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
+    - {fileID: 8300000, guid: 66eff9a3b2843af43bf2194b8926fb65, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#1-1766768279530.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#4-1766768277241.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Giant Spider.Death
+    label: "Giant Spider \u2014 Death"
+    group: Enemies
+    description: Independent voice for Giant Spider. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 5e7af3fafaf214243a54ad8924078041, type: 3}
+    - {fileID: 8300000, guid: c501f94fb72f6144593aea70a5f228c5, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#1-1766768279530.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#4-1766768277241.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Dire Wolf.Aggro
+    label: "Dire Wolf \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Dire Wolf. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 2d320c0db266dfe47b2037dbc2730b53, type: 3}
+    - {fileID: 8300000, guid: a59ac154a6d47704f8ac432900cf797a, type: 3}
+    - {fileID: 8300000, guid: 0e30b0bad8fea074ab3df675778e59ca, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#2-1766768104138.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#3-1766768101091.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#4-1766768097372.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Dire Wolf.Attack
+    label: "Dire Wolf \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Dire Wolf. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: e402be959cd62bd4dbdcad20f6168e5b, type: 3}
+    - {fileID: 8300000, guid: 64af864c1f0abe5448bf21d0929b026f, type: 3}
+    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#2-1766768104138.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#3-1766768101091.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#4-1766768097372.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Dire Wolf.Death
+    label: "Dire Wolf \u2014 Death"
+    group: Enemies
+    description: Independent voice for Dire Wolf. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: b169f030ce8ffe34bb22fe7fe32d65e7, type: 3}
+    - {fileID: 8300000, guid: ed09cc3eeb12320408c99a64df6ea003, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#2-1766768104138.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#3-1766768101091.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#4-1766768097372.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Bog Slime.Aggro
+    label: "Bog Slime \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Bog Slime. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: ea4878184e1e4614790a81fdff157b09, type: 3}
+    - {fileID: 8300000, guid: 3550e5c7ec7407140bd4b5db3643e64e, type: 3}
+    - {fileID: 8300000, guid: 54971cd781137b74998d604f3ed85ad7, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Bog Slime.Attack
+    label: "Bog Slime \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Bog Slime. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: feb0d0a8335734b4aa0f1c945fc96c86, type: 3}
+    - {fileID: 8300000, guid: 06af3b12774eceb4586bf3e4b0121ef9, type: 3}
+    - {fileID: 8300000, guid: a63da36a32f6d434c961578150eee88e, type: 3}
+    - {fileID: 8300000, guid: 8acd833c80b21b04486623ed4003d5f2, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Bog Slime.Death
+    label: "Bog Slime \u2014 Death"
+    group: Enemies
+    description: Independent voice for Bog Slime. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 732f5ce8ea030804b9628677b8124f50, type: 3}
+    - {fileID: 8300000, guid: bf2ab5f30b8471944b9f5ad370c21ef8, type: 3}
+    - {fileID: 8300000, guid: a4953c586c6df054ea71a3284722edbf, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Slimeling.Aggro
+    label: "Slimeling \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Slimeling. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: ea4878184e1e4614790a81fdff157b09, type: 3}
+    - {fileID: 8300000, guid: 3550e5c7ec7407140bd4b5db3643e64e, type: 3}
+    - {fileID: 8300000, guid: 54971cd781137b74998d604f3ed85ad7, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Slimeling.Attack
+    label: "Slimeling \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Slimeling. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: feb0d0a8335734b4aa0f1c945fc96c86, type: 3}
+    - {fileID: 8300000, guid: 06af3b12774eceb4586bf3e4b0121ef9, type: 3}
+    - {fileID: 8300000, guid: a63da36a32f6d434c961578150eee88e, type: 3}
+    - {fileID: 8300000, guid: 8acd833c80b21b04486623ed4003d5f2, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Slimeling.Death
+    label: "Slimeling \u2014 Death"
+    group: Enemies
+    description: Independent voice for Slimeling. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 732f5ce8ea030804b9628677b8124f50, type: 3}
+    - {fileID: 8300000, guid: bf2ab5f30b8471944b9f5ad370c21ef8, type: 3}
+    - {fileID: 8300000, guid: a4953c586c6df054ea71a3284722edbf, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Grave Bat.Aggro
+    label: "Grave Bat \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Grave Bat. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: fb29d71c71eba9747ab97aa31fcafd0c, type: 3}
+    - {fileID: 8300000, guid: ad23c0a49815379429388324395d81fc, type: 3}
+    - {fileID: 8300000, guid: ff981bfffe499094192090e13bfbadc8, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Grave Bat.Attack
+    label: "Grave Bat \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Grave Bat. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 64af864c1f0abe5448bf21d0929b026f, type: 3}
+    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Grave Bat.Death
+    label: "Grave Bat \u2014 Death"
+    group: Enemies
+    description: Independent voice for Grave Bat. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 2b2b502864464ec4ca4d466405aa241d, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Corpse Ooze.Aggro
+    label: "Corpse Ooze \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Corpse Ooze. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: ea4878184e1e4614790a81fdff157b09, type: 3}
+    - {fileID: 8300000, guid: 3550e5c7ec7407140bd4b5db3643e64e, type: 3}
+    - {fileID: 8300000, guid: 54971cd781137b74998d604f3ed85ad7, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Corpse Ooze.Attack
+    label: "Corpse Ooze \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Corpse Ooze. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: feb0d0a8335734b4aa0f1c945fc96c86, type: 3}
+    - {fileID: 8300000, guid: 06af3b12774eceb4586bf3e4b0121ef9, type: 3}
+    - {fileID: 8300000, guid: a63da36a32f6d434c961578150eee88e, type: 3}
+    - {fileID: 8300000, guid: 8acd833c80b21b04486623ed4003d5f2, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Corpse Ooze.Death
+    label: "Corpse Ooze \u2014 Death"
+    group: Enemies
+    description: Independent voice for Corpse Ooze. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 732f5ce8ea030804b9628677b8124f50, type: 3}
+    - {fileID: 8300000, guid: bf2ab5f30b8471944b9f5ad370c21ef8, type: 3}
+    - {fileID: 8300000, guid: a4953c586c6df054ea71a3284722edbf, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Oozeling.Aggro
+    label: "Oozeling \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Oozeling. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: ea4878184e1e4614790a81fdff157b09, type: 3}
+    - {fileID: 8300000, guid: 3550e5c7ec7407140bd4b5db3643e64e, type: 3}
+    - {fileID: 8300000, guid: 54971cd781137b74998d604f3ed85ad7, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Oozeling.Attack
+    label: "Oozeling \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Oozeling. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: feb0d0a8335734b4aa0f1c945fc96c86, type: 3}
+    - {fileID: 8300000, guid: 06af3b12774eceb4586bf3e4b0121ef9, type: 3}
+    - {fileID: 8300000, guid: a63da36a32f6d434c961578150eee88e, type: 3}
+    - {fileID: 8300000, guid: 8acd833c80b21b04486623ed4003d5f2, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Oozeling.Death
+    label: "Oozeling \u2014 Death"
+    group: Enemies
+    description: Independent voice for Oozeling. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 732f5ce8ea030804b9628677b8124f50, type: 3}
+    - {fileID: 8300000, guid: bf2ab5f30b8471944b9f5ad370c21ef8, type: 3}
+    - {fileID: 8300000, guid: a4953c586c6df054ea71a3284722edbf, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Crypt Spider.Aggro
+    label: "Crypt Spider \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Crypt Spider. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 5e7af3fafaf214243a54ad8924078041, type: 3}
+    - {fileID: 8300000, guid: c501f94fb72f6144593aea70a5f228c5, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#1-1766768279530.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#4-1766768277241.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Crypt Spider.Attack
+    label: "Crypt Spider \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Crypt Spider. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 64af864c1f0abe5448bf21d0929b026f, type: 3}
+    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
+    - {fileID: 8300000, guid: 66eff9a3b2843af43bf2194b8926fb65, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#1-1766768279530.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#4-1766768277241.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Crypt Spider.Death
+    label: "Crypt Spider \u2014 Death"
+    group: Enemies
+    description: Independent voice for Crypt Spider. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 5e7af3fafaf214243a54ad8924078041, type: 3}
+    - {fileID: 8300000, guid: c501f94fb72f6144593aea70a5f228c5, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#1-1766768279530.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#4-1766768277241.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Magma Beetle.Aggro
+    label: "Magma Beetle \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Magma Beetle. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 66eff9a3b2843af43bf2194b8926fb65, type: 3}
+    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Magma Beetle.Attack
+    label: "Magma Beetle \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Magma Beetle. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: a63da36a32f6d434c961578150eee88e, type: 3}
+    - {fileID: 8300000, guid: bf2ab5f30b8471944b9f5ad370c21ef8, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Magma Beetle.Death
+    label: "Magma Beetle \u2014 Death"
+    group: Enemies
+    description: Independent voice for Magma Beetle. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 66eff9a3b2843af43bf2194b8926fb65, type: 3}
+    - {fileID: 8300000, guid: 732f5ce8ea030804b9628677b8124f50, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Hellhound.Aggro
+    label: "Hellhound \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Hellhound. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: b61b61a571c025949b9615239cab0380, type: 3}
+    - {fileID: 8300000, guid: 26262797443213245a0c559de5491c1c, type: 3}
+    - {fileID: 8300000, guid: d69a2a9b4f3cefd4da3415381b4be902, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#2-1766768104138.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#3-1766768101091.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#4-1766768097372.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Hellhound.Attack
+    label: "Hellhound \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Hellhound. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 120f306106340914d92a0fb95839269d, type: 3}
+    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
+    - {fileID: 8300000, guid: 66eff9a3b2843af43bf2194b8926fb65, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#2-1766768104138.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#3-1766768101091.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#4-1766768097372.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Hellhound.Death
+    label: "Hellhound \u2014 Death"
+    group: Enemies
+    description: Independent voice for Hellhound. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: ed09cc3eeb12320408c99a64df6ea003, type: 3}
+    - {fileID: 8300000, guid: b169f030ce8ffe34bb22fe7fe32d65e7, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#2-1766768104138.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#3-1766768101091.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#4-1766768097372.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Frost Wolf.Aggro
+    label: "Frost Wolf \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Frost Wolf. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 2d320c0db266dfe47b2037dbc2730b53, type: 3}
+    - {fileID: 8300000, guid: a59ac154a6d47704f8ac432900cf797a, type: 3}
+    - {fileID: 8300000, guid: 0e30b0bad8fea074ab3df675778e59ca, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#2-1766768104138.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#3-1766768101091.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#4-1766768097372.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Frost Wolf.Attack
+    label: "Frost Wolf \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Frost Wolf. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: e402be959cd62bd4dbdcad20f6168e5b, type: 3}
+    - {fileID: 8300000, guid: 64af864c1f0abe5448bf21d0929b026f, type: 3}
+    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#2-1766768104138.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#3-1766768101091.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#4-1766768097372.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Frost Wolf.Death
+    label: "Frost Wolf \u2014 Death"
+    group: Enemies
+    description: Independent voice for Frost Wolf. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: b169f030ce8ffe34bb22fe7fe32d65e7, type: 3}
+    - {fileID: 8300000, guid: ed09cc3eeb12320408c99a64df6ea003, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#2-1766768104138.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#3-1766768101091.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#4-1766768097372.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Ice Crawler.Aggro
+    label: "Ice Crawler \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Ice Crawler. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 5e7af3fafaf214243a54ad8924078041, type: 3}
+    - {fileID: 8300000, guid: c501f94fb72f6144593aea70a5f228c5, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#1-1766768279530.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#4-1766768277241.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Ice Crawler.Attack
+    label: "Ice Crawler \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Ice Crawler. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 64af864c1f0abe5448bf21d0929b026f, type: 3}
+    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
+    - {fileID: 8300000, guid: 66eff9a3b2843af43bf2194b8926fb65, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#1-1766768279530.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#4-1766768277241.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Ice Crawler.Death
+    label: "Ice Crawler \u2014 Death"
+    group: Enemies
+    description: Independent voice for Ice Crawler. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 5e7af3fafaf214243a54ad8924078041, type: 3}
+    - {fileID: 8300000, guid: c501f94fb72f6144593aea70a5f228c5, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#1-1766768279530.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Spider_hiss_\u2013_Soft_c_#4-1766768277241.mp3"
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Skeleton Warrior.Aggro
+    label: "Skeleton Warrior \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Skeleton Warrior. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#1-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#2-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#3-1766768181651.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#4-1766768179054.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#1-1766768225594.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Skeleton Warrior.Attack
+    label: "Skeleton Warrior \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Skeleton Warrior. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c5bee1aa50285ca46b4cc6ab2eb8d87a, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#1-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#2-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#3-1766768181651.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#4-1766768179054.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#1-1766768225594.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Skeleton Warrior.Death
+    label: "Skeleton Warrior \u2014 Death"
+    group: Enemies
+    description: Independent voice for Skeleton Warrior. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#1-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#2-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#3-1766768181651.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#4-1766768179054.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#1-1766768225594.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Skeleton Mage.Aggro
+    label: "Skeleton Mage \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Skeleton Mage. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#1-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#2-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#3-1766768181651.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#4-1766768179054.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#1-1766768225594.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Skeleton Mage.Attack
+    label: "Skeleton Mage \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Skeleton Mage. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 893fb52ab04963b43ad8e215a40e63a5, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#2-1766764864417.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#3-1766764862223.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#4-1766764858633.mp3
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Skeleton Mage.Death
+    label: "Skeleton Mage \u2014 Death"
+    group: Enemies
+    description: Independent voice for Skeleton Mage. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#1-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#2-1766768184245.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#3-1766768181651.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_\u2013_Bo_#4-1766768179054.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_\u2013_Slow_u_#1-1766768225594.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Spirit Wolf.Aggro
+    label: "Spirit Wolf \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Spirit Wolf. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 2d320c0db266dfe47b2037dbc2730b53, type: 3}
+    - {fileID: 8300000, guid: a59ac154a6d47704f8ac432900cf797a, type: 3}
+    - {fileID: 8300000, guid: 0e30b0bad8fea074ab3df675778e59ca, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#2-1766768104138.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#3-1766768101091.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#4-1766768097372.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Spirit Wolf.Attack
+    label: "Spirit Wolf \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Spirit Wolf. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: e402be959cd62bd4dbdcad20f6168e5b, type: 3}
+    - {fileID: 8300000, guid: 64af864c1f0abe5448bf21d0929b026f, type: 3}
+    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#2-1766768104138.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#3-1766768101091.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#4-1766768097372.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Spirit Wolf.Death
+    label: "Spirit Wolf \u2014 Death"
+    group: Enemies
+    description: Independent voice for Spirit Wolf. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: b169f030ce8ffe34bb22fe7fe32d65e7, type: 3}
+    - {fileID: 8300000, guid: ed09cc3eeb12320408c99a64df6ea003, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#2-1766768104138.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#3-1766768101091.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_\u2013_Low_ani_#4-1766768097372.mp3"
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Bone Golem.Aggro
+    label: "Bone Golem \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Bone Golem. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Bone Golem.Attack
+    label: "Bone Golem \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Bone Golem. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c2656595a6489db44b1348cb3b0647ee, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Bone Golem.Death
+    label: "Bone Golem \u2014 Death"
+    group: Enemies
+    description: Independent voice for Bone Golem. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.The Shepherd.Aggro
+    label: "The Shepherd \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for The Shepherd. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.The Shepherd.Attack
+    label: "The Shepherd \u2014 Attack"
+    group: Enemies
+    description: Independent voice for The Shepherd. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c2656595a6489db44b1348cb3b0647ee, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.The Shepherd.Death
+    label: "The Shepherd \u2014 Death"
+    group: Enemies
+    description: Independent voice for The Shepherd. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant2.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Briarbound.Aggro
+    label: "Briarbound \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Briarbound. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Briarbound.Attack
+    label: "Briarbound \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Briarbound. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 893fb52ab04963b43ad8e215a40e63a5, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#2-1766764864417.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#3-1766764862223.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#4-1766764858633.mp3
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Briarbound.Death
+    label: "Briarbound \u2014 Death"
+    group: Enemies
+    description: Independent voice for Briarbound. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Grave Siren.Aggro
+    label: "Grave Siren \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Grave Siren. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Grave Siren.Attack
+    label: "Grave Siren \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Grave Siren. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 893fb52ab04963b43ad8e215a40e63a5, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#2-1766764864417.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#3-1766764862223.mp3
+    - Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#4-1766764858633.mp3
+    - Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Grave Siren.Death
+    label: "Grave Siren \u2014 Death"
+    group: Enemies
+    description: Independent voice for Grave Siren. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade10.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav
+    - Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Rime Stalker.Aggro
+    label: "Rime Stalker \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Rime Stalker. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Rime Stalker.Attack
+    label: "Rime Stalker \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Rime Stalker. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 6ee5ad774f80ac24997ef6377f5f599e, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Rime Stalker.Death
+    label: "Rime Stalker \u2014 Death"
+    group: Enemies
+    description: Independent voice for Rime Stalker. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Cinder Penitent.Aggro
+    label: "Cinder Penitent \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Cinder Penitent. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Cinder Penitent.Attack
+    label: "Cinder Penitent \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Cinder Penitent. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 6ee5ad774f80ac24997ef6377f5f599e, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Cinder Penitent.Death
+    label: "Cinder Penitent \u2014 Death"
+    group: Enemies
+    description: Independent voice for Cinder Penitent. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Hollowmaw.Aggro
+    label: "Hollowmaw \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Hollowmaw. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Hollowmaw.Attack
+    label: "Hollowmaw \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Hollowmaw. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 6ee5ad774f80ac24997ef6377f5f599e, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Hollowmaw.Death
+    label: "Hollowmaw \u2014 Death"
+    group: Enemies
+    description: Independent voice for Hollowmaw. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Barrow Castellan.Aggro
+    label: "Barrow Castellan \u2014 Aggro"
+    group: Enemies
+    description: Independent voice for Barrow Castellan. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
+    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
+    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Barrow Castellan.Attack
+    label: "Barrow Castellan \u2014 Attack"
+    group: Enemies
+    description: Independent voice for Barrow Castellan. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: 6ee5ad774f80ac24997ef6377f5f599e, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1
+  - id: enemy.Barrow Castellan.Death
+    label: "Barrow Castellan \u2014 Death"
+    group: Enemies
+    description: Independent voice for Barrow Castellan. Pitch and distance variation remain active in game.
+    aliases: []
+    defaults:
+    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
+    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    suggestions:
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#1-1766768039592.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#2-1766768045094.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#3-1766768042373.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_\u2013_Smal_#4-1766768042374.mp3"
+    - "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_\u2013_Short__#1-1766764352490.mp3"
+    selected: {fileID: 0}
+    muted: 0
+    volume: 1

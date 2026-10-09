@@ -6,7 +6,7 @@ namespace PoeClone.Enemies
     /// <summary>
     /// Each creature's own voice: what it sounds like when it notices the player, when it bites
     /// or spits, and when it dies (clips under Resources/Sfx/Creatures, pitched per set). The
-    /// humanoids (Set.Default) keep the shared AudioManager clips, and have no attack sound.
+    /// Every kind has independently configurable aggro, attack and death sounds.
     /// </summary>
     public static class EnemySounds
     {
@@ -87,12 +87,15 @@ namespace PoeClone.Enemies
                 return;
 
             Voice voice = VoiceFor(kind.Sounds, e);
+            string id = "enemy." + kind.Name + "." + e;
             if (voice.Clips == null || voice.Clips.Length == 0)
             {
                 if (e == Event.Aggro)
-                    audio.PlayRandomAtPoint(audio.enemyAggro, at);
+                    audio.PlayEffect(id, at, Pick(audio.enemyAggro));
                 else if (e == Event.Death)
-                    audio.PlayRandomAtPoint(audio.enemyDeath, at);
+                    audio.PlayEffect(id, at, Pick(audio.enemyDeath));
+                else
+                    audio.PlayEffect(id, at, volume: 0.65f);
                 return;
             }
 
@@ -100,7 +103,19 @@ namespace PoeClone.Enemies
             float pitch = Random.Range(voice.PitchMin, voice.PitchMax);
             if (kind.Scale < 0.7f)
                 pitch *= SmallPitchBoost;
-            audio.PlayAtPoint(clip, at, voice.Volume, pitch);
+            audio.PlayEffect(id, at, clip, voice.Volume, pitch);
+        }
+
+        private static AudioClip Pick(AudioClip[] clips) => clips != null && clips.Length > 0 ? clips[Random.Range(0, clips.Length)] : null;
+
+        public static AudioClip[] Defaults(EnemyKind kind, Event e, AudioManager audio)
+        {
+            Voice voice = VoiceFor(kind.Sounds, e);
+            if (voice.Clips.Length > 0)
+                return System.Array.ConvertAll(voice.Clips, name => Resources.Load<AudioClip>("Sfx/Creatures/" + name));
+            if (e == Event.Aggro) return audio != null ? audio.enemyAggro : System.Array.Empty<AudioClip>();
+            if (e == Event.Death) return audio != null ? audio.enemyDeath : System.Array.Empty<AudioClip>();
+            return System.Array.Empty<AudioClip>();
         }
     }
 }

@@ -155,6 +155,7 @@ namespace PoeClone.Skills
         /// </summary>
         public void ReleaseBow(SkillId id, int level, float damage, float range, int arrows, Vector3 target)
         {
+            PlaySkillSound(id, transform.position);
             SkillDefinition skill = SkillBook.Get(id);
             level = Mathf.Max(1, level);
             float area = DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));

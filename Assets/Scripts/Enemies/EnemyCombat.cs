@@ -156,8 +156,7 @@ namespace PoeClone.Enemies
                 attackAnimator.PlayCreatureAttack(kind.IsRanged);
             else
                 attackAnimator.PlayClawAttack();
-            if (kind.IsCreature)
-                EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
+            EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
             cooldownTimer = attackCooldown / ((controller != null ? controller.AttackSpeedMultiplier : 1f) * kind.Tempo);
         }
 

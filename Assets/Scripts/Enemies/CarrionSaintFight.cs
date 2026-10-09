@@ -80,6 +80,7 @@ namespace PoeClone.Enemies
             }
             string clip = last == "MawBite" ? "RearSlam" : "MawBite";
             if (Random.value < 0.25f) clip = "TentacleLash";
+            Audio.AudioManager.Instance?.PlayEffect("enemy.Carrion Saint.Attack", transform.position, volume: 0.7f, pitch: 0.7f);
             last = clip; anim.Play(clip, 2.6f * Tempo);
             nextAttack = Time.time + (CarrionSaintAnimator.Duration(clip) / (1.3f * Tempo) + 0.35f / Tempo) * 0.5f;
         }
@@ -100,6 +101,7 @@ namespace PoeClone.Enemies
             anim.RootMotion = true;
             anim.ChargeDistance = chargeLength;
             anim.Play("Charge", 2f * Tempo);
+            Audio.AudioManager.Instance?.PlayEffect("enemy.Carrion Saint.Attack", transform.position, volume: 0.7f, pitch: 0.7f);
             nextAttack = Time.time + CarrionSaintAnimator.Duration("Charge") / (2f * Tempo);
         }
         private void Hit(string clip)

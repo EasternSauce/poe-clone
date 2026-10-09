@@ -842,6 +842,11 @@ namespace PoeClone.Skills
         // turned the player at the moment of release); from the bar it aims itself.
         private void Cast(SkillDefinition skill, int level, bool asAttack = false)
         {
+            // Committed melee skills play at impact; teleport plays only after finding a landing.
+            if (skill.Id != SkillId.Cleave && skill.Id != SkillId.Pulverize &&
+                skill.Id != SkillId.ReapingArc && skill.Id != SkillId.LungingThrust &&
+                skill.Id != SkillId.FangStrike && skill.Id != SkillId.Teleport)
+                PlaySkillSound(skill.Id, transform.position);
             float spell = 1f; // Intelligence and spell/elemental increases share HitEffects' sum.
             float area = DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
             float damage = skill.DamageAt(level) * spell;
@@ -1052,7 +1057,9 @@ namespace PoeClone.Skills
                 case SkillId.ReapingArc: sound = "skill_reaping_arc"; break;
                 case SkillId.LungingThrust: sound = "skill_lunging_thrust"; break;
                 case SkillId.FangStrike: sound = "skill_fang_strike"; break;
-                default: return;
+                default:
+                    PoeClone.Audio.AudioManager.Instance?.PlayEffect("skill." + skill, at, volume: 0.75f);
+                    return;
             }
 
             PoeClone.Audio.AudioManager audio = PoeClone.Audio.AudioManager.Instance;
@@ -1335,7 +1342,7 @@ namespace PoeClone.Skills
             SkillEffects.Shockwave(landing.Value, 1.6f, skill.Color, 0.35f);
             Record(skill, level, 0f, 0, new[] { landing.Value });
             if (Audio.AudioManager.Instance != null)
-                Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.uiItemPlace, 0.25f);
+                Audio.AudioManager.Instance.PlayEffect("skill.Teleport", transform.position, volume: 0.75f);
         }
 
         // How far the mouse points from the player on the ground (null on touch: full range).

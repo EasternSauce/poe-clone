@@ -79,6 +79,7 @@ namespace PoeClone.Visuals
         private Stagger stagger;
 
         private AudioSource audioSource;
+        private PoeClone.Audio.SoundBoardSettings soundBoard;
         private int lastStepIndex;
 
         // Idle: a slow breath and a little sway, out of step from one character to the next.
@@ -140,6 +141,7 @@ public void Configure(
 
         private void Start()
         {
+            soundBoard = PoeClone.Audio.SoundBoardSettings.Load();
             lastPosition = transform.position;
             baseLocalPosition = transform.localPosition;
             idleSeed = Random.value * 10f;
@@ -266,6 +268,8 @@ private void LateUpdate()
 
             audioSource.pitch = Random.Range(footstepPitchRange.x, footstepPitchRange.y);
             float volume = footstepVolume * Random.Range(footstepVolumeRange.x, footstepVolumeRange.y);
+            soundBoard?.Resolve(ref clip, ref volume);
+            if (clip == null) return;
             audioSource.PlayOneShot(clip, volume);
         }
 

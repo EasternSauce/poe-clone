@@ -1,3 +1,7 @@
+version: 2026-10-09-sound-board-and-combat-audio
+- Added sounds for spell casts, bow attacks and skills, Dash and Teleport. Humanoid enemies and boss attacks now have audio alongside existing creature voices, including the Carrion Saint's attacks and charge.
+- Added a separate local sound board, launched with Start-SoundBoard.ps1, with 176 effects, five inspiration-library suggestions per effect, recording previews, volume sliders, search, category filters and No sound options. Apply saves the mix to the project for all characters and future builds; item pickups are grouped by their shared sounds.
+
 version: 2026-10-09-tree-branch-connections
 - Fixed detached branches on dead and charred trees. Cloth-bearing branches now attach below the tops of pine and oak trunks.
 

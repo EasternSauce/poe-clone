@@ -128,6 +128,7 @@ namespace PoeClone.Enemies
 
         private void Use(float distance)
         {
+            EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
             Vector3 target = player.transform.position;
             Vector3 facing = Flat(target - transform.position);
             if (facing.sqrMagnitude > 0.001f)

@@ -215,6 +215,7 @@ namespace PoeClone.Enemies
 
         private IEnumerator Run(Move move)
         {
+            EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
             switch (move)
             {
                 case Move.Leap: return LeapSlam();

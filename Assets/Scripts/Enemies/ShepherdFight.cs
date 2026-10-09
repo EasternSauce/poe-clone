@@ -752,6 +752,7 @@ namespace PoeClone.Enemies
 
         private void Begin(string move)
         {
+            EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
             ShepherdAnimator.Clip clip = ShepherdAnimator.Find(ClipFor(move));
             FacePlayer();
             lastMove = move;

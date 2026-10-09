@@ -299,7 +299,15 @@ namespace PoeClone.Player
                 attackAnimator.PlayAttack(weaponType);
 
             if (AudioManager.Instance != null)
-                AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.playerSwing, transform.position);
+            {
+                if (CharacterAttackAnimator.IsRanged(weaponType))
+                {
+                    if (bowSkillPending == null)
+                        AudioManager.Instance.PlayEffect("player.bow", transform.position, volume: 0.75f);
+                }
+                else
+                    AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.playerSwing, transform.position);
+            }
         }
 
         // Instantly snaps the player to face wherever the mouse is pointing, on the ground plane
