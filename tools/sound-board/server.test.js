@@ -8,13 +8,18 @@ const root = path.resolve(__dirname, '../..');
 const snapshot = require('./catalog.json');
 const digest = file => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex');
 
-test('catalog covers permanent clips, merges shared pools, and retains every usage', () => {
+test('catalog covers permanent clips, exposes runtime groups, and retains every usage', () => {
   const board = catalog();
   assert.equal(board.readOnly, true);
-  const keys = board.effects.map(row => row.clips.map(c => c.path).sort().join('\n'));
+  const keys = board.effects.map(row => row.id);
   assert.equal(new Set(keys).size, keys.length);
   const uses = new Set(board.effects.flatMap(row => row.usages.map(use => use.id)));
   for (const entry of snapshot.effects) for (const use of entry.usages) assert.ok(uses.has(use.id), use.id);
+  for (const entry of snapshot.effects.filter(entry => entry.soundGroup)) {
+    const group = board.effects.find(row => row.id === entry.soundGroup);
+    assert.equal(group.purpose, entry.purpose);
+    assert.deepEqual(group.clips.map(clip => clip.path).sort(), [...entry.current].sort());
+  }
   for (const row of board.effects) for (const clip of row.clips) {
     assert.ok(fs.existsSync(path.join(root, clip.path)), clip.path);
     assert.ok(!clip.path.includes('assets_for_inspiration'), clip.path);
@@ -39,7 +44,7 @@ test('catalog covers permanent clips, merges shared pools, and retains every usa
 test('per-recording enemy hover includes users from overlapping pools with real portraits', () => {
   const board = catalog();
   for (const row of board.effects) for (const clip of row.clips) {
-    const expected = [...new Set(board.effects.filter(other => other.clips.some(c => c.path === clip.path)).flatMap(other => other.usages.filter(use => use.enemy).map(use => use.enemy)))].sort();
+    const expected = [...new Set(board.effects.flatMap(other => other.usages.filter(use => use.enemy && use.recordings.includes(clip.path)).map(use => use.enemy)))].sort();
     assert.deepEqual(clip.enemies.map(enemy => enemy.name).sort(), expected, clip.path);
     for (const enemy of clip.enemies) assert.ok(fs.existsSync(path.join(__dirname, enemy.portrait)), enemy.name);
   }
@@ -47,6 +52,25 @@ test('per-recording enemy hover includes users from overlapping pools with real 
   assert.ok(fire.enemies.some(enemy => enemy.name === 'Fire Caster'));
   const bow = board.effects.find(row => row.usages.some(use => use.id === 'player.bow'));
   for (const name of ['Archer', 'Skeleton Archer']) assert.ok(bow.enemies.some(enemy => enemy.name === name));
+});
+
+test('purpose-specific runtime pools stay separate and real alternate takes are assigned together', () => {
+  const board = catalog();
+  const assignment = id => board.effects.find(row => row.usages.some(use => use.id === id));
+  assert.notEqual(assignment('combat.ground.Cold').id, assignment('world.shatter').id);
+  assert.notEqual(assignment('combat.ground.Lightning').id, assignment('skill.ChainLightning').id);
+  assert.notEqual(assignment('player.hurt').id, assignment('enemy.Archer.Death').id);
+  assert.deepEqual(assignment('player.hurt').enemies, []);
+  assert.equal(assignment('skill.ChainLightning').id, assignment('enemy.Storm Caster.Attack').id);
+  for (const [id, count] of [['enemy.Zombie.Attack', 4], ['enemy.Skeleton.Attack', 4], ['enemy.Raider.Attack', 3], ['enemy.Forest Shaman.Attack', 4]])
+    assert.equal(assignment(id).clips.length, count, id);
+  const aggro = assignment('enemy.Raider.Aggro');
+  assert.equal(aggro.usages.find(use => use.id === 'enemy.Raider.Aggro').muted, true);
+  assert.equal(aggro.usages.find(use => use.id === 'enemy.Zombie.Aggro').muted, false);
+  // A numbered generic skill pack is not automatically a pool of interchangeable sounds.
+  assert.notEqual(assignment('skill.GraveRot').id, assignment('skill.VenomArrow').id);
+  const { recordingFamily } = require('./groups');
+  assert.notEqual(recordingFamily('Assets/Audio/SoundLibrary/Magic & spells/Skill_Fire01.wav'), recordingFamily('Assets/Audio/SoundLibrary/Magic & spells/Skill_Fire02.wav'));
 });
 
 test('HTTP plays every recording, serves portraits, rejects all writes and preserves game files', async t => {

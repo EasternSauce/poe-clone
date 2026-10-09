@@ -21,7 +21,7 @@ namespace PoeClone.EditorTools
         }
         [Serializable] public sealed class Row
         {
-            public string id, label, group;
+            public string id, label, group, soundGroup, purpose;
             public string[] current;
             public Usage[] usages;
         }
@@ -94,7 +94,8 @@ namespace PoeClone.EditorTools
                          k.Skill == EnemySkill.Leap && k.Sounds != EnemySounds.Set.Slime || k.Skill == EnemySkill.ThornGarden)))
                         EnemyUse(kind.Name, "ground impact", "Assets/Scripts/Enemies/GroundTelegraph.cs");
                 rows.Add(new Row { id = effect.id, label = effect.label, group = effect.group,
-                    current = Paths(effect.selected != null ? new[] { effect.selected } : effect.defaults), usages = usages.ToArray() });
+                    soundGroup = effect.soundGroupId, purpose = effect.AssignedGroup?.purpose,
+                    current = Paths(effect.Recordings), usages = usages.ToArray() });
             }
             // Ambience bypasses SoundBoardSettings and is part of the browser too.
             var ambient = AssetDatabase.LoadAssetAtPath<AmbientSoundLibrary>("Assets/Resources/AmbientSoundLibrary.asset");

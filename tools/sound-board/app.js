@@ -9,7 +9,7 @@ function node(tag, text, className) {
 }
 function stop() {
   if (activeAudio) { activeAudio.onended = activeAudio.onerror = null; activeAudio.pause(); activeAudio.removeAttribute('src'); activeAudio.load(); }
-  if (activeButton) { activeButton.textContent = 'Play'; activeButton.setAttribute('aria-pressed', 'false'); }
+  if (activeButton) { activeButton.textContent = activeButton.dataset.idleText || 'Play'; activeButton.setAttribute('aria-pressed', 'false'); }
   activeAudio = activeButton = null;
 }
 function preview(clip, button) {
@@ -67,6 +67,13 @@ function render() {
     if (category !== row.group) { category = row.group; $('effects').append(node('h2', category, 'category')); }
     const card = node('section', undefined, 'effect'); card.tabIndex = 0; hover(card, row.enemies);
     const heading = node('h3', row.label); heading.append(node('span', row.clips.length + (row.clips.length === 1 ? ' recording' : ' recordings'), 'badge')); card.append(heading);
+    if (row.alternate && row.clips.length > 1) {
+      card.append(node('p', 'In game: choose an alternate recording from this group, without immediate repeats.'));
+      const next = node('button', 'Play next alternate'); next.type = 'button'; next.dataset.idleText = 'Play next alternate';
+      let index = 0;
+      next.onclick = () => { stop(); preview(row.clips[index], next); index = (index + 1) % row.clips.length; };
+      card.append(next);
+    }
     if (row.enemies.length) card.append(node('p', `${row.enemies.length} ${row.enemies.length === 1 ? 'enemy uses' : 'enemies use'} these recordings · hover or focus to see them`, 'enemy-hint'));
     if (row.usages.length) {
       const list = node('ul', undefined, 'uses');

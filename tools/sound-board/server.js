@@ -2,38 +2,23 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
+const { groupEntries } = require('./groups');
 const root = path.resolve(__dirname, '../..');
 const mime = { '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.aif': 'audio/aiff', '.aiff': 'audio/aiff', '.flac': 'audio/flac' };
 
 function catalog() {
   const snapshot = JSON.parse(fs.readFileSync(path.join(__dirname, 'catalog.json'), 'utf8'));
-  const pools = new Map();
-  for (const entry of snapshot.effects) {
-    const key = entry.current.length ? [...entry.current].sort().join('\n') : entry.id;
-    let row = pools.get(key);
-    if (!row) {
-      row = { id: entry.id, label: entry.label, group: entry.group, current: entry.current, usages: [], labels: [] };
-      pools.set(key, row);
-    }
-    row.labels.push(entry.label);
-    row.usages.push(...entry.usages);
-  }
-  const effects = [...pools.values()];
+  const effects = groupEntries(snapshot.effects);
   // A recording may be in several different variation pools. Its hover includes every user.
   const enemiesByClip = new Map();
   for (const row of effects) for (const clip of row.current) {
     if (!enemiesByClip.has(clip)) enemiesByClip.set(clip, new Map());
-    for (const use of row.usages) if (use.enemy) enemiesByClip.get(clip).set(use.enemy, { name: use.enemy, portrait: use.portrait });
+    for (const use of row.usages) if (use.enemy && use.recordings.includes(clip)) enemiesByClip.get(clip).set(use.enemy, { name: use.enemy, portrait: use.portrait });
   }
   for (const row of effects) {
     row.usages = [...new Map(row.usages.map(use => [use.id, use])).values()];
     row.clips = row.current.map(asset => ({ path: asset, enemies: [...enemiesByClip.get(asset).values()].sort((a, b) => a.name.localeCompare(b.name)) }));
-    row.enemies = [...new Map(row.clips.flatMap(clip => clip.enemies).map(enemy => [enemy.name, enemy])).values()].sort((a, b) => a.name.localeCompare(b.name));
-    if (row.labels.length > 1) {
-      row.label = row.current.length ? path.basename(row.current[0], path.extname(row.current[0])).replaceAll('_', ' ') : row.label;
-      if (row.current.length > 1) row.label += ` (${row.current.length} variations)`;
-      if (new Set(row.usages.map(use => use.enemy ? 'Enemies' : use.id.split('.')[0])).size > 1) row.group = 'Shared effects';
-    }
+    row.enemies = [...new Map(row.usages.filter(use => use.enemy).map(use => [use.enemy, { name: use.enemy, portrait: use.portrait }])).values()].sort((a, b) => a.name.localeCompare(b.name));
     delete row.current;
   }
   effects.sort((a, b) => Number(!a.usages.length) - Number(!b.usages.length) || a.group.localeCompare(b.group) || a.label.localeCompare(b.label));

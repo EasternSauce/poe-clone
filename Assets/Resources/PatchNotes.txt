@@ -1,3 +1,8 @@
+version: 2026-10-09-gameplay-sound-groups
+- Gameplay effects now reference named recording groups for a specific purpose. Shared callers use the entire alternate pool and avoid immediate repeats across the group.
+- Added alternate takes for zombie, skeleton, humanoid grunt and magic-projectile attacks. Storm Casters share the player's lightning casting group.
+- The read-only sound board displays actual gameplay group assignments and can preview each take or the next alternate. Unrelated purposes remain separate.
+
 version: 2026-10-09-read-only-sound-board
 - Rebuilt the sound board as a read-only browser of game effects and permanent recordings, with usage lists, search, categories and playback for every variation.
 - Shared recordings appear together. Hover sounds to see all enemies using them.
