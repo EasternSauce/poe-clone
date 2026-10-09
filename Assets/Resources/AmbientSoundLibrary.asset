@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 656d0e30f76348e42b23f5a39d41bade, type: 3}
   m_Name: AmbientSoundLibrary
   m_EditorClassIdentifier: PoeClone.Audio::PoeClone.Audio.AmbientSoundLibrary
-  forest: {fileID: 8300000, guid: 841b18da83d5d9b448519f364ef13ce2, type: 3}
   town: {fileID: 8300000, guid: 99c2a2eab45cc9c4e987fed32a6ad088, type: 3}
   night: {fileID: 8300000, guid: 5c0fac3889ebab5409249a7eaa49ece5, type: 3}
   cave: {fileID: 8300000, guid: 186286c1a37cbfc44a8ef0e817f8ec20, type: 3}
@@ -24,10 +23,6 @@ MonoBehaviour:
   ocean: {fileID: 8300000, guid: a021fdad7304c154087f1c5e9954bc67, type: 3}
   fire: {fileID: 8300000, guid: 914b85ad31c126b488f0f7594656f551, type: 3}
   gust: {fileID: 8300000, guid: cb84086d88e83a24484594a05021cdf7, type: 3}
-  stones:
-  - {fileID: 8300000, guid: b30a0a066aa4b82499c4f998b65e808a, type: 3}
-  - {fileID: 8300000, guid: d08365c659e772244825b33ffb8e2a78, type: 3}
-  - {fileID: 8300000, guid: eb6c2c215e323f9468c841fd76a24bb7, type: 3}
-  - {fileID: 8300000, guid: 5daf1c01c41cef443bf4e6991f6d539c, type: 3}
+  stones: []
   creaks:
   - {fileID: 8300000, guid: 9efd46fd6de73d249aadb300d7aaa135, type: 3}

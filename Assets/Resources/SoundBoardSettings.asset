@@ -147,7 +147,11 @@ MonoBehaviour:
     defaults:
     - {fileID: 8300000, guid: bf4f83921a7f06c44b147fc62cfcdf82, type: 3}
     suggestions:
-    - Assets/Audio/SFX/Movement/footstep_grass_1.wav
+    - "Assets/Audio/SoundLibrary/Movement/Footstep_grass_\u2013_Sof_#1-1766767691077.mp3"
+    - "Assets/Audio/SoundLibrary/Movement/Footstep_grass_\u2013_Sof_#2-1766767688744.mp3"
+    - "Assets/Audio/SoundLibrary/Movement/Footstep_grass_\u2013_Sof_#3-1766767686377.mp3"
+    - "Assets/Audio/SoundLibrary/Movement/Footstep_grass_\u2013_Sof_#4-1766767680960.mp3"
+    - Assets/Audio/SoundLibrary/Movement/03_Step_grass_03.wav
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -163,9 +167,9 @@ MonoBehaviour:
     suggestions:
     - Assets/Audio/SoundLibrary/Interface/092_Pause_04.wav
     - Assets/Audio/SoundLibrary/Interface/098_Unpause_04.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth-heavy.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth1.ogg
+    - Assets/Audio/SoundLibrary/Other/dropLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -180,10 +184,10 @@ MonoBehaviour:
     - {fileID: 8300000, guid: e62ed051481e07d47bad072848f78967, type: 3}
     suggestions:
     - Assets/Audio/SoundLibrary/Interface/098_Unpause_04.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth-heavy.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth1.ogg
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth2.ogg
+    - Assets/Audio/SoundLibrary/Other/dropLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -215,11 +219,11 @@ MonoBehaviour:
     defaults:
     - {fileID: 8300000, guid: 7baf97f3279ffef40b747402df81ee46, type: 3}
     suggestions:
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth-heavy.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth1.ogg
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth2.ogg
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth3.ogg
+    - Assets/Audio/SoundLibrary/Other/dropLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg
+    - Assets/Audio/SoundLibrary/Interface/071_Unequip_01.wav
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -233,11 +237,11 @@ MonoBehaviour:
     defaults:
     - {fileID: 8300000, guid: 46190f48c471d1e47b59959d5fb422de, type: 3}
     suggestions:
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth-heavy.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth1.ogg
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth2.ogg
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth3.ogg
+    - Assets/Audio/SoundLibrary/Other/dropLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Equip_weapon_\u2013_Weapo_#1-1766765195705_sharpening_sound.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Equip_weapon_\u2013_Weapo_#2-1766765195705_sharpening_sound.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -249,14 +253,13 @@ MonoBehaviour:
     - pickup_gold
     sharedIds: []
     defaults:
-    - {fileID: 8300000, guid: 666ab340fed8f8c4b8671f7fd73796b8, type: 3}
-    - {fileID: 8300000, guid: a326e7d5943f58f4e88e047dd27a18c9, type: 3}
+    - {fileID: 8300000, guid: c10538ce40746744bb6e43bd419f63d4, type: 3}
     suggestions:
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_\u2013_Single_#1-1766764980016.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_\u2013_Single_#2-1766764967251.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_\u2013_Single_#3-1766764993247.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_\u2013_Single_#4-1766764989061.mp3"
-    - Assets/Audio/SoundLibrary/Inventory & loot/coin.wav
+    - Assets/Audio/SoundLibrary/Interface/079_Buy_sell_01.wav
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#2-1766764035183_punchy_bass_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#3-1766764032292_break_wood.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#4-1766764026227_slam_hard.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -270,11 +273,11 @@ MonoBehaviour:
     defaults:
     - {fileID: 8300000, guid: 48dc07097b4960c49822dfac4dae978b, type: 3}
     suggestions:
-    - Assets/Audio/SoundLibrary/Inventory & loot/bubble.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/bubble2.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/bubble3.wav
     - "Assets/Audio/SoundLibrary/Magic & spells/Potion_drink_\u2013_Liqui_#4-1766765068166.mp3"
     - "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_\u2013_Bottl_#3-1766765150580.mp3"
+    - "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_\u2013_Bottl_#4-1766765147927.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#2-1766764035183_punchy_bass_hit.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -286,16 +289,13 @@ MonoBehaviour:
     - pickup_jewel
     sharedIds: []
     defaults:
-    - {fileID: 8300000, guid: 27bc7510441facb4b9a89805fab91131, type: 3}
-    - {fileID: 8300000, guid: 210fcdf481eea484ca147798192d074e, type: 3}
-    - {fileID: 8300000, guid: d74fdbe3137767d46a355f43d6983fc3, type: 3}
-    - {fileID: 8300000, guid: 610540c0d5d3ead47a151efd2d4d85c5, type: 3}
+    - {fileID: 8300000, guid: 71b3af81dc74a704c84099bbadeeac80, type: 3}
     suggestions:
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
-    - Assets/Audio/SoundLibrary/Inventory & loot/metal-ringing.wav
+    - Assets/Audio/SoundLibrary/Interface/013_Confirm_03.wav
+    - Assets/Audio/SoundLibrary/Interface/UI_Confirm_01.wav
+    - "Assets/Audio/SoundLibrary/Movement/Rune_activate_\u2013_Anci_#2-1766768897281.mp3"
+    - "Assets/Audio/SoundLibrary/Movement/Rune_activate_\u2013_Anci_#4-1766768893815.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -307,15 +307,13 @@ MonoBehaviour:
     - place_bow
     sharedIds: []
     defaults:
-    - {fileID: 8300000, guid: 43766aa95bc214348a8b83e13d6c793e, type: 3}
-    - {fileID: 8300000, guid: 716f98085483f58429eb5689e53d71b1, type: 3}
-    - {fileID: 8300000, guid: d2e493c308da01c4ca256c242bf5f968, type: 3}
+    - {fileID: 8300000, guid: 84d9fc5e7eeb4d042adc59db48b5119b, type: 3}
     suggestions:
-    - Assets/Audio/SoundLibrary/Inventory & loot/wood-small.wav
     - "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_\u2013_#3-1766764176083_arrow_release.mp3"
     - "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_\u2013_#4-1766764179015_arrow_lands_in_wood.mp3"
     - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#3-1766764032292_break_wood.mp3"
-    - Assets/Audio/SoundLibrary/Inventory & loot/item_wood_01.ogg
+    - Assets/Audio/SoundLibrary/Movement/12_Step_wood_03.wav
+    - "Assets/Audio/SoundLibrary/Movement/Footstep_wood_\u2013_Wood_#1-1766767773818.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -329,11 +327,11 @@ MonoBehaviour:
     defaults:
     - {fileID: 8300000, guid: 9973ccb2e142b494ca697d024d12e9ba, type: 3}
     suggestions:
-    - Assets/Audio/SoundLibrary/Inventory & loot/bubble.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/bubble2.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/bubble3.wav
     - "Assets/Audio/SoundLibrary/Magic & spells/Potion_drink_\u2013_Liqui_#4-1766765068166.mp3"
     - "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_\u2013_Bottl_#3-1766765150580.mp3"
+    - "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_\u2013_Bottl_#4-1766765147927.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#2-1766764035183_punchy_bass_hit.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -345,16 +343,13 @@ MonoBehaviour:
     - place_jewel
     sharedIds: []
     defaults:
-    - {fileID: 8300000, guid: 27bc7510441facb4b9a89805fab91131, type: 3}
-    - {fileID: 8300000, guid: 210fcdf481eea484ca147798192d074e, type: 3}
-    - {fileID: 8300000, guid: d74fdbe3137767d46a355f43d6983fc3, type: 3}
-    - {fileID: 8300000, guid: 610540c0d5d3ead47a151efd2d4d85c5, type: 3}
+    - {fileID: 8300000, guid: 8a1c8a00b70f74a43a4743311aecb003, type: 3}
     suggestions:
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
-    - Assets/Audio/SoundLibrary/Inventory & loot/metal-ringing.wav
+    - Assets/Audio/SoundLibrary/Interface/013_Confirm_03.wav
+    - Assets/Audio/SoundLibrary/Interface/UI_Confirm_01.wav
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#2-1766764035183_punchy_bass_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#3-1766764032292_break_wood.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -368,11 +363,11 @@ MonoBehaviour:
     defaults:
     - {fileID: 8300000, guid: f20cfaf860dd0e64da88289a0d7f854a, type: 3}
     suggestions:
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
-    - Assets/Audio/SoundLibrary/Inventory & loot/metal-small1.wav
+    - Assets/Audio/SoundLibrary/Other/dropLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#2-1766764035183_punchy_bass_hit.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -386,11 +381,11 @@ MonoBehaviour:
     defaults:
     - {fileID: 8300000, guid: a41c418f5eb75214fb1ddf473851e160, type: 3}
     suggestions:
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
-    - Assets/Audio/SoundLibrary/Inventory & loot/metal-small1.wav
+    - Assets/Audio/SoundLibrary/Other/dropLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#2-1766764035183_punchy_bass_hit.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -404,11 +399,11 @@ MonoBehaviour:
     defaults:
     - {fileID: 8300000, guid: cda51f50f8a7b3e44948f060936e7a89, type: 3}
     suggestions:
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
-    - Assets/Audio/SoundLibrary/Inventory & loot/metal-small1.wav
+    - Assets/Audio/SoundLibrary/Other/dropLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#2-1766764035183_punchy_bass_hit.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -422,11 +417,11 @@ MonoBehaviour:
     defaults:
     - {fileID: 8300000, guid: 654ce9f5d4ea9c6458ffce9de4efa358, type: 3}
     suggestions:
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
-    - Assets/Audio/SoundLibrary/Inventory & loot/metal-small1.wav
+    - Assets/Audio/SoundLibrary/Other/dropLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#2-1766764035183_punchy_bass_hit.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -438,16 +433,13 @@ MonoBehaviour:
     - drop_gold
     sharedIds: []
     defaults:
-    - {fileID: 8300000, guid: 33eadba0f2391334e8c6782a2e515ba7, type: 3}
-    - {fileID: 8300000, guid: 4ca17b2893c95dd4d97fb5696ba0e9e1, type: 3}
-    - {fileID: 8300000, guid: 28e7e6e9511899849bf8512e4307d3be, type: 3}
-    - {fileID: 8300000, guid: 6745b2a6576b1f849bb66514514d2a76, type: 3}
+    - {fileID: 8300000, guid: 123c9bdd52e8e53409cf847f178211c6, type: 3}
     suggestions:
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_\u2013_Single_#1-1766764980016.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_\u2013_Single_#2-1766764967251.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_\u2013_Single_#3-1766764993247.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_\u2013_Single_#4-1766764989061.mp3"
-    - Assets/Audio/SoundLibrary/Inventory & loot/coin.wav
+    - Assets/Audio/SoundLibrary/Interface/079_Buy_sell_01.wav
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#2-1766764035183_punchy_bass_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#3-1766764032292_break_wood.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#4-1766764026227_slam_hard.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -461,11 +453,11 @@ MonoBehaviour:
     defaults:
     - {fileID: 8300000, guid: d4d4f30a690867a4394a1681897d7b9f, type: 3}
     suggestions:
-    - Assets/Audio/SoundLibrary/Inventory & loot/bubble.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/bubble2.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/bubble3.wav
     - "Assets/Audio/SoundLibrary/Magic & spells/Potion_drink_\u2013_Liqui_#4-1766765068166.mp3"
     - "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_\u2013_Bottl_#3-1766765150580.mp3"
+    - "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_\u2013_Bottl_#4-1766765147927.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#2-1766764035183_punchy_bass_hit.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -480,10 +472,10 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 3fa9f81615a440d6802d4faf90c5654f, type: 3}
     suggestions:
     - "Assets/Audio/SoundLibrary/Magic & spells/Potion_drink_\u2013_Liqui_#4-1766765068166.mp3"
-    - Assets/Audio/SoundLibrary/Inventory & loot/bubble.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/bubble2.wav
-    - Assets/Audio/SoundLibrary/Inventory & loot/bubble3.wav
     - Assets/Audio/SoundLibrary/Magic & spells/02_Heal_02.wav
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#2-1766764035183_punchy_bass_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#3-1766764032292_break_wood.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -513,13 +505,13 @@ MonoBehaviour:
     - loot_drop
     sharedIds: []
     defaults:
-    - {fileID: 8300000, guid: 8b4c8a84a41aa9d4e9596073ceee5d50, type: 3}
+    - {fileID: 8300000, guid: 8f7eaa9ac09b4ee47a3ddaa2af296db1, type: 3}
     suggestions:
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#1-1766764916364.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#2-1766764914173.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#3-1766764911468.mp3"
-    - "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_\u2013_Soft_c_#4-1766764909142.mp3"
-    - Assets/Audio/SoundLibrary/Inventory & loot/cloth-heavy.wav
+    - Assets/Audio/SoundLibrary/Other/dropLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg
+    - Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#1-1766764038219_weak_hit.mp3"
+    - "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_\u2013_Deep_#2-1766764035183_punchy_bass_hit.mp3"
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -814,10 +806,10 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 4cb38b6820aa9534181a1c93c2b71167, type: 3}
     suggestions:
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
-    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03_poison_arrow_shot.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison05.wav
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -915,13 +907,13 @@ MonoBehaviour:
     aliases: []
     sharedIds: []
     defaults:
-    - {fileID: 8300000, guid: 9280a5b9a7da32149a82cea664836f46, type: 3}
+    - {fileID: 8300000, guid: 4cb38b6820aa9534181a1c93c2b71167, type: 3}
     suggestions:
-    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03_poison_arrow_shot.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison05.wav
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -932,13 +924,13 @@ MonoBehaviour:
     aliases: []
     sharedIds: []
     defaults:
-    - {fileID: 8300000, guid: 63d66c806b870864f956a713fa805ac8, type: 3}
+    - {fileID: 8300000, guid: 4cb38b6820aa9534181a1c93c2b71167, type: 3}
     suggestions:
-    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03_poison_arrow_shot.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison05.wav
     selected: {fileID: 0}
     muted: 0
     volume: 1
@@ -953,9 +945,9 @@ MonoBehaviour:
     suggestions:
     - Assets/Audio/SoundLibrary/Creatures & voices/slime1.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
-    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03_poison_arrow_shot.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav
     selected: {fileID: 8300000, guid: 4e7a0dd692f52b04ca8954a5669176ee, type: 3}
     muted: 0
     volume: 1

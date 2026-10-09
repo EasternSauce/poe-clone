@@ -1,3 +1,7 @@
+version: 2026-10-09-deleted-audio-cleanup
+- Removed the forest background in Greenwood and Haven, and cleared deleted cave-stone recordings.
+- Restored original gold, jewellery, bow placement and loot sounds after their replacement recordings were removed. Updated soundboard suggestions to use surviving files.
+
 version: 2026-10-09-remove-smith-metal-ambience
 - Removed the periodic chain-like metal sounds near Haven's smith.
 

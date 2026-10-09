@@ -7,9 +7,9 @@
             "description": "",
             "portrait": "",
             "current": [
-                "Assets/Audio/SoundLibrary/Combat & weapons/swing2_non_bass.wav",
-                "Assets/Audio/SoundLibrary/Combat & weapons/swing3_non_bass.wav",
-                "Assets/Audio/SoundLibrary/Combat & weapons/swing_non_bass.wav"
+                "Assets/Audio/SFX/Combat/swing_1.wav",
+                "Assets/Audio/SFX/Combat/swing_2.wav",
+                "Assets/Audio/SFX/Combat/swing_3.wav"
             ],
             "suggestions": [
                 "Assets/Audio/SoundLibrary/Combat & weapons/Sword_swing#4.mp3",
@@ -119,10 +119,7 @@
             "description": "",
             "portrait": "",
             "current": [
-                "Assets/Audio/SoundLibrary/Movement/Footstep_grass_–_Sof_#1-1766767691077.mp3",
-                "Assets/Audio/SoundLibrary/Movement/Footstep_grass_–_Sof_#2-1766767688744.mp3",
-                "Assets/Audio/SoundLibrary/Movement/Footstep_grass_–_Sof_#3-1766767686377.mp3",
-                "Assets/Audio/SoundLibrary/Movement/Footstep_grass_–_Sof_#4-1766767680960.mp3"
+                "Assets/Audio/SFX/Movement/footstep_grass_1.wav"
             ],
             "suggestions": [
                 "Assets/Audio/SoundLibrary/Movement/Footstep_grass_–_Sof_#1-1766767691077.mp3",
@@ -144,9 +141,9 @@
             "suggestions": [
                 "Assets/Audio/SoundLibrary/Interface/092_Pause_04.wav",
                 "Assets/Audio/SoundLibrary/Interface/098_Unpause_04.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth-heavy.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth1.ogg"
+                "Assets/Audio/SoundLibrary/Other/dropLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg"
             ]
         },
         {
@@ -160,10 +157,10 @@
             ],
             "suggestions": [
                 "Assets/Audio/SoundLibrary/Interface/098_Unpause_04.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth-heavy.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth1.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth2.ogg"
+                "Assets/Audio/SoundLibrary/Other/dropLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3"
             ]
         },
         {
@@ -193,11 +190,11 @@
                 "Assets/Audio/SFX/UI/item_pickup.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth-heavy.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth1.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth2.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth3.ogg"
+                "Assets/Audio/SoundLibrary/Other/dropLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg",
+                "Assets/Audio/SoundLibrary/Interface/071_Unequip_01.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3"
             ]
         },
         {
@@ -210,11 +207,11 @@
                 "Assets/Audio/SFX/UI/item_place.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth-heavy.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth1.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth2.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth3.ogg"
+                "Assets/Audio/SoundLibrary/Other/dropLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Equip_weapon_–_Weapo_#1-1766765195705_sharpening_sound.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Equip_weapon_–_Weapo_#2-1766765195705_sharpening_sound.mp3"
             ]
         },
         {
@@ -224,15 +221,14 @@
             "description": "",
             "portrait": "",
             "current": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/handleCoins.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/handleCoins2.ogg"
+                "Assets/Resources/Sfx/pickup_gold.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_–_Single_#1-1766764980016.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_–_Single_#2-1766764967251.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_–_Single_#3-1766764993247.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_–_Single_#4-1766764989061.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/coin.wav"
+                "Assets/Audio/SoundLibrary/Interface/079_Buy_sell_01.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#3-1766764032292_break_wood.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#4-1766764026227_slam_hard.mp3"
             ]
         },
         {
@@ -245,11 +241,11 @@
                 "Assets/Resources/Sfx/pickup_potion.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/bubble.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/bubble2.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/bubble3.wav",
                 "Assets/Audio/SoundLibrary/Magic & spells/Potion_drink_–_Liqui_#4-1766765068166.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_–_Bottl_#3-1766765150580.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_–_Bottl_#3-1766765150580.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_–_Bottl_#4-1766765147927.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3"
             ]
         },
         {
@@ -259,17 +255,14 @@
             "description": "",
             "portrait": "",
             "current": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_gem_01.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_gem_02.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_gem_03.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_gem_04.ogg"
+                "Assets/Resources/Sfx/pickup_jewel.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#1-1766764916364.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#2-1766764914173.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/metal-ringing.wav"
+                "Assets/Audio/SoundLibrary/Interface/013_Confirm_03.wav",
+                "Assets/Audio/SoundLibrary/Interface/UI_Confirm_01.wav",
+                "Assets/Audio/SoundLibrary/Movement/Rune_activate_–_Anci_#2-1766768897281.mp3",
+                "Assets/Audio/SoundLibrary/Movement/Rune_activate_–_Anci_#4-1766768893815.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3"
             ]
         },
         {
@@ -279,16 +272,14 @@
             "description": "",
             "portrait": "",
             "current": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_wood_01.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_wood_02.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_wood_03.ogg"
+                "Assets/Resources/Sfx/place_bow.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/wood-small.wav",
                 "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3",
                 "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#4-1766764179015_arrow_lands_in_wood.mp3",
                 "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#3-1766764032292_break_wood.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_wood_01.ogg"
+                "Assets/Audio/SoundLibrary/Movement/12_Step_wood_03.wav",
+                "Assets/Audio/SoundLibrary/Movement/Footstep_wood_–_Wood_#1-1766767773818.mp3"
             ]
         },
         {
@@ -301,11 +292,11 @@
                 "Assets/Resources/Sfx/place_potion.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/bubble.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/bubble2.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/bubble3.wav",
                 "Assets/Audio/SoundLibrary/Magic & spells/Potion_drink_–_Liqui_#4-1766765068166.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_–_Bottl_#3-1766765150580.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_–_Bottl_#3-1766765150580.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_–_Bottl_#4-1766765147927.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3"
             ]
         },
         {
@@ -315,17 +306,14 @@
             "description": "",
             "portrait": "",
             "current": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_gem_01.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_gem_02.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_gem_03.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_gem_04.ogg"
+                "Assets/Resources/Sfx/place_jewel.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#1-1766764916364.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#2-1766764914173.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/metal-ringing.wav"
+                "Assets/Audio/SoundLibrary/Interface/013_Confirm_03.wav",
+                "Assets/Audio/SoundLibrary/Interface/UI_Confirm_01.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#3-1766764032292_break_wood.mp3"
             ]
         },
         {
@@ -338,11 +326,11 @@
                 "Assets/Resources/Sfx/drop_normal.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#1-1766764916364.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#2-1766764914173.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/metal-small1.wav"
+                "Assets/Audio/SoundLibrary/Other/dropLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3"
             ]
         },
         {
@@ -355,11 +343,11 @@
                 "Assets/Resources/Sfx/drop_magic.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#1-1766764916364.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#2-1766764914173.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/metal-small1.wav"
+                "Assets/Audio/SoundLibrary/Other/dropLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3"
             ]
         },
         {
@@ -372,11 +360,11 @@
                 "Assets/Resources/Sfx/drop_rare.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#1-1766764916364.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#2-1766764914173.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/metal-small1.wav"
+                "Assets/Audio/SoundLibrary/Other/dropLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3"
             ]
         },
         {
@@ -389,11 +377,11 @@
                 "Assets/Resources/Sfx/drop_unique.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#1-1766764916364.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#2-1766764914173.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/metal-small1.wav"
+                "Assets/Audio/SoundLibrary/Other/dropLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3"
             ]
         },
         {
@@ -403,17 +391,14 @@
             "description": "Equipment drops share a sound by rarity; gold and potions have their own.",
             "portrait": "",
             "current": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_coins_01.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_coins_02.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_coins_03.ogg",
-                "Assets/Audio/SoundLibrary/Inventory & loot/item_coins_04.ogg"
+                "Assets/Resources/Sfx/drop_gold.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_–_Single_#1-1766764980016.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_–_Single_#2-1766764967251.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_–_Single_#3-1766764993247.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Coin_pickup_–_Single_#4-1766764989061.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/coin.wav"
+                "Assets/Audio/SoundLibrary/Interface/079_Buy_sell_01.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#3-1766764032292_break_wood.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#4-1766764026227_slam_hard.mp3"
             ]
         },
         {
@@ -426,11 +411,11 @@
                 "Assets/Resources/Sfx/drop_potion.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/bubble.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/bubble2.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/bubble3.wav",
                 "Assets/Audio/SoundLibrary/Magic & spells/Potion_drink_–_Liqui_#4-1766765068166.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_–_Bottl_#3-1766765150580.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_–_Bottl_#3-1766765150580.mp3",
+                "Assets/Audio/SoundLibrary/Magic & spells/Potion_throw_–_Bottl_#4-1766765147927.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3"
             ]
         },
         {
@@ -444,10 +429,10 @@
             ],
             "suggestions": [
                 "Assets/Audio/SoundLibrary/Magic & spells/Potion_drink_–_Liqui_#4-1766765068166.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/bubble.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/bubble2.wav",
-                "Assets/Audio/SoundLibrary/Inventory & loot/bubble3.wav",
-                "Assets/Audio/SoundLibrary/Magic & spells/02_Heal_02.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/02_Heal_02.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#3-1766764032292_break_wood.mp3"
             ]
         },
         {
@@ -474,14 +459,14 @@
             "description": "",
             "portrait": "",
             "current": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth-heavy.wav"
+                "Assets/Audio/SFX/World/loot_drop.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#1-1766764916364.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#2-1766764914173.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
-                "Assets/Audio/SoundLibrary/Inventory & loot/cloth-heavy.wav"
+                "Assets/Audio/SoundLibrary/Other/dropLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather.ogg",
+                "Assets/Audio/SoundLibrary/Other/handleSmallLeather2.ogg",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3"
             ]
         },
         {
@@ -765,14 +750,14 @@
             "description": "",
             "portrait": "",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/46_Poison_01.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Magic & spells/46_Poison_01.wav",
                 "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav",
                 "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav",
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03.wav",
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03_poison_arrow_shot.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison05.wav"
             ]
         },
         {
@@ -868,14 +853,14 @@
             "description": "",
             "portrait": "",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/46_Poison_01.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Magic & spells/46_Poison_01.wav",
                 "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav",
                 "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav",
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03.wav",
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03_poison_arrow_shot.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison05.wav"
             ]
         },
         {
@@ -885,14 +870,14 @@
             "description": "",
             "portrait": "",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/46_Poison_01.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav"
             ],
             "suggestions": [
-                "Assets/Audio/SoundLibrary/Magic & spells/46_Poison_01.wav",
                 "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav",
                 "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav",
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03.wav",
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03_poison_arrow_shot.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison05.wav"
             ]
         },
         {
@@ -906,10 +891,10 @@
             ],
             "suggestions": [
                 "Assets/Audio/SoundLibrary/Creatures & voices/slime1.wav",
-                "Assets/Audio/SoundLibrary/Magic & spells/46_Poison_01.wav",
                 "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav",
                 "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav",
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03_poison_arrow_shot.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav"
             ]
         },
         {

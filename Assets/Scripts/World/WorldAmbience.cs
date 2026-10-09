@@ -38,8 +38,6 @@ namespace PoeClone.World
                 return;
             }
 
-            Bed(WorldBuilder.Greenwood, library.forest, 0.24f);
-            Bed(WorldBuilder.Haven, library.forest, 0.10f);
             Loop(WorldBuilder.Haven, library.town, 0.22f,
                 p => Falloff(FlatDistance(p, WorldBuilder.Center(WorldBuilder.Haven)), 24, 85));
             Bed(WorldBuilder.Graveyard, library.night, 0.18f);
