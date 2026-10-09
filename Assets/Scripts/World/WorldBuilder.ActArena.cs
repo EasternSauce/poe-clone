@@ -10,6 +10,7 @@ namespace PoeClone.World
         public static readonly Vector3 ActArenaCenter = new Vector3(1680f, 0f, 0f);
         public static Vector3 SanctuaryDoorSpot => Center(Frozen) + new Vector3(0f, 0f, 128f);
         public static Quaternion SanctuaryDoorRotation => Quaternion.Euler(0f, -25f, 0f);
+        private static Vector3 SanctuaryInnerGateSpot => ActArenaCenter + new Vector3(0f, 0f, -42f);
         private AreaDefinition BuildActArena()
         {
             Transform arena = Group("The Shed Sanctuary");
@@ -27,7 +28,7 @@ namespace PoeClone.World
             Vector3 door = SanctuaryDoorSpot + SanctuaryDoorRotation * new Vector3(0f, 1.1f, -3f);
             Transform outside = Marker("SanctuaryReturn", door + SanctuaryDoorRotation * Vector3.back * 6f, 155f);
             MakeActGate(arena, "Sanctuary entrance", door, Frozen, ActArena, entry, true);
-            MakeActGate(arena, "Sanctuary exit", c + new Vector3(0f, 1.1f, -37f), ActArena, Frozen, outside, false);
+            MakeActGate(arena, "Sanctuary exit", SanctuaryInnerGateSpot + new Vector3(0f, 1.1f, 1f), ActArena, Frozen, outside, false);
             EnemySpawner spawner = FindAnyObjectByType<EnemySpawner>();
             var encounter = arena.gameObject.AddComponent<ActBossArena>();
             encounter.Configure(spawner != null ? spawner.EnemyPrefab : null, outside, c + Vector3.forward * 14f);
@@ -62,9 +63,8 @@ namespace PoeClone.World
                 }
             }
 
-            // A readable reverse face of the Shepherd's doorway, aligned with the existing exit trigger.
-            Transform gate = Holder(dressing, "SanctuaryInnerGate", c + new Vector3(0f, 0f, -38f),
-                Quaternion.Euler(0f, -18f, 0f));
+            // Seat the reverse face against the south wall, with the exit trigger just inside.
+            Transform gate = Holder(dressing, "SanctuaryInnerGate", SanctuaryInnerGateSpot, Quaternion.identity);
             for (int side = -1; side <= 1; side += 2)
             {
                 LocalBox(gate, new Vector3(side * 4.3f, 3.7f, 0f), new Vector3(1.4f, 7.4f, 1.5f),

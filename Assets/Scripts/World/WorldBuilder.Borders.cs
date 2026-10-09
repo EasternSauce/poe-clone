@@ -202,7 +202,7 @@ namespace PoeClone.World
             Material dirt = kit.Mat("TanDark");
             WindingPath(t, "GateLane", Haven, 4.2f, dirt,
                 Flat(10, 0), Flat(28, 3), Flat(48, -8), Flat(70, -5),
-                Flat(92, 8), Flat(113, 5), AreaLayouts.GateLocal(Haven, true));
+                Flat(92, 8), AreaLayouts.GateApproachLocal(Haven, Greenwood), AreaLayouts.GateLocal(Haven, true));
             WindingPath(t, "SouthLane", Haven, 3.6f, dirt,
                 Flat(0, -10), Flat(-3, -24), Flat(4, -39), Flat(-9, -58), Flat(-20, -80));
             WindingPath(t, "NorthLane", Haven, 3.4f, dirt,

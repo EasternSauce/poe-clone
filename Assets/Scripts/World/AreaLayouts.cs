@@ -50,20 +50,30 @@ namespace PoeClone.World
             }
         }
 
-        // Authored per entrance: show the opening from gameplay (yaw 45) and the
-        // angled layout preview (yaw 0), while respecting each approach direction.
-        public static float GateYaw(int area, int destination)
+        // The final road knot or corridor approach, on the inside of each gate.
+        public static Vector3 GateApproachLocal(int area, int destination)
         {
             switch (area)
             {
-                case WorldBuilder.Haven: return 225f;
-                case WorldBuilder.Greenwood: return destination == WorldBuilder.Haven ? 40f : 235f;
-                case WorldBuilder.Graveyard: return destination == WorldBuilder.Cave ? 55f : 215f;
-                case WorldBuilder.Ruins: return destination == WorldBuilder.Graveyard ? 30f : 155f;
-                case WorldBuilder.Frozen: return 20f;
-                case WorldBuilder.Cave: return destination == WorldBuilder.Greenwood ? 45f : 220f;
-                default: return 0f;
+                case WorldBuilder.Haven: return new Vector3(113, 0, 5);
+                case WorldBuilder.Greenwood: return destination == WorldBuilder.Haven ? new Vector3(-83, 0, -12) : new Vector3(82, 0, 8);
+                case WorldBuilder.Graveyard: return destination == WorldBuilder.Cave ? new Vector3(-95, 0, -5) : new Vector3(94, 0, 4);
+                case WorldBuilder.Ruins: return destination == WorldBuilder.Graveyard ? new Vector3(-65, 0, -18) : new Vector3(0, 0, 108);
+                case WorldBuilder.Frozen: return new Vector3(-70, 0, -30);
+                case WorldBuilder.Cave: return destination == WorldBuilder.Greenwood ? new Vector3(-87, 0, -74) : new Vector3(79, 0, 98);
+                default: return new Vector3(0, 0, -31);
             }
+        }
+
+        public static float GateYaw(int area, int destination)
+        {
+            bool forward = area == WorldBuilder.Haven ||
+                (area == WorldBuilder.Greenwood && destination == WorldBuilder.Cave) ||
+                (area == WorldBuilder.Cave && destination == WorldBuilder.Graveyard) ||
+                (area == WorldBuilder.Graveyard && destination == WorldBuilder.Ruins) ||
+                (area == WorldBuilder.Ruins && destination == WorldBuilder.Frozen);
+            Vector3 inward = GateApproachLocal(area, destination) - GateLocal(area, forward);
+            return Mathf.Atan2(inward.x, inward.z) * Mathf.Rad2Deg;
         }
 
         public static Vector3 BossLocal(int area)

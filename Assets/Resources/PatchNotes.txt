@@ -1,3 +1,7 @@
+version: 2026-10-09-gate-alignment
+- Aligned area gates across their approach paths, including Haven and the Haunted Graveyard. Arrival points now follow the same approach direction.
+- Straightened the Shed Sanctuary's inner gate against the south wall and aligned its exit trigger with the doorway.
+
 version: 2026-10-09-sanctuary-skin-perimeter
 - Moved the colossal shed skins closer to the arena edges, leaving more of the central fighting floor clear.
 

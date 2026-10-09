@@ -383,8 +383,8 @@ namespace PoeClone.World
 
             // Worn winding track, still inside the broad central corridor.
             WindingPath(t, "GraveyardTrack", Graveyard, 3.6f, kit.Mat("Ash"),
-                Flat(-121, 0), Flat(-95, -5), Flat(-65, 5), Flat(-33, -5),
-                Flat(0, 0), Flat(32, 6), Flat(63, -5), Flat(94, 4), Flat(121, 0));
+                AreaLayouts.GateLocal(Graveyard, false), AreaLayouts.GateApproachLocal(Graveyard, Cave), Flat(-65, 5), Flat(-33, -5),
+                Flat(0, 0), Flat(32, 6), Flat(63, -5), AreaLayouts.GateApproachLocal(Graveyard, Ruins), AreaLayouts.GateLocal(Graveyard, true));
             Claim(c + new Vector3(-30f, 0f, 0f), 3f);
             Claim(c + new Vector3(0f, 0f, 0f), 3f);
             Claim(c + new Vector3(30f, 0f, 0f), 3f);
@@ -778,8 +778,8 @@ namespace PoeClone.World
         {
             Vector3 gateA = GatePoint(a, offsetA);
             Vector3 gateB = GatePoint(b, offsetB);
-            Transform arriveInA = Marker("Arrive_" + AreaNames[a] + "_from_" + AreaNames[b], InFront(a, gateA), Yaw(gateA, Centers[a]));
-            Transform arriveInB = Marker("Arrive_" + AreaNames[b] + "_from_" + AreaNames[a], InFront(b, gateB), Yaw(gateB, Centers[b]));
+            Transform arriveInA = Marker("Arrive_" + AreaNames[a] + "_from_" + AreaNames[b], InFront(a, b, gateA), AreaLayouts.GateYaw(a, b));
+            Transform arriveInB = Marker("Arrive_" + AreaNames[b] + "_from_" + AreaNames[a], InFront(b, a, gateB), AreaLayouts.GateYaw(b, a));
             ClearSpot(arriveInA.position, 2f);
             ClearSpot(arriveInB.position, 2f);
 
@@ -794,7 +794,7 @@ namespace PoeClone.World
             GameObject gate = Instantiate(gateTemplate, root);
             gate.name = "Gate_" + AreaNames[from] + "_to_" + AreaNames[to];
             gate.transform.position = new Vector3(position.x, gateTemplate.transform.position.y, position.z);
-            // Each entrance has its own readable angle; rotate the frame and trigger together.
+            // Face down the final approach, keeping the opening square across the path.
             gate.transform.rotation = Quaternion.Euler(0f, AreaLayouts.GateYaw(from, to), 0f);
 
             AreaGate g = gate.GetComponent<AreaGate>();
@@ -817,10 +817,9 @@ namespace PoeClone.World
             gate.SetActive(true);
         }
 
-        private static Vector3 InFront(int area, Vector3 gate)
+        private static Vector3 InFront(int area, int destination, Vector3 gate)
         {
-            Vector3 inward = (Centers[area] - gate);
-            inward.y = 0f;
+            Vector3 inward = Quaternion.Euler(0f, AreaLayouts.GateYaw(area, destination), 0f) * Vector3.forward;
             return gate + inward.normalized * 5f + Vector3.up * 1.1f;
         }
 
