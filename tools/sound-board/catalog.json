@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-09T13:10:01.4953522Z",
+    "generatedAt": "2026-10-09T13:14:26.7549976Z",
     "effects": [
         {
             "id": "player.swing",
@@ -88,10 +88,7 @@
             "soundGroup": "sound.combat.hit",
             "purpose": "Weapon hit impacts",
             "current": [
-                "Assets/Audio/SoundLibrary/Combat & weapons/Dagger_stab_–_Quick__#1-1766764093333_punchy.mp3",
-                "Assets/Audio/SoundLibrary/Combat & weapons/Dagger_stab_–_Quick__#2-1766764090266_punchy.mp3",
-                "Assets/Audio/SoundLibrary/Combat & weapons/Dagger_stab_–_Quick__#3-1766764080183_punchy.mp3",
-                "Assets/Audio/SoundLibrary/Combat & weapons/Dagger_stab_–_Quick__#4-1766764076280_punchy.mp3"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3"
             ],
             "usages": [
                 {
@@ -106,7 +103,7 @@
                         "Assets/Scripts/Network/SpectatorReplica.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Zombie",
@@ -117,7 +114,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Raider",
@@ -128,7 +125,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Brute",
@@ -139,7 +136,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Archer",
@@ -150,7 +147,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Fire Caster",
@@ -161,7 +158,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Frost Caster",
@@ -172,7 +169,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Storm Caster",
@@ -183,7 +180,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Skeleton",
@@ -194,7 +191,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Wraith",
@@ -205,7 +202,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Ember Knight",
@@ -216,7 +213,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Gravelord Mortis",
@@ -227,7 +224,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Ashen Warlord",
@@ -238,7 +235,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Rimeheart",
@@ -249,7 +246,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Forest Shaman",
@@ -260,7 +257,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Necromancer",
@@ -271,7 +268,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Skeleton Archer",
@@ -282,7 +279,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Frost Giant",
@@ -293,7 +290,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Giant Spider",
@@ -304,7 +301,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Dire Wolf",
@@ -315,7 +312,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Bog Slime",
@@ -326,7 +323,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Slimeling",
@@ -337,7 +334,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Grave Bat",
@@ -348,7 +345,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Corpse Ooze",
@@ -359,7 +356,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Oozeling",
@@ -370,7 +367,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Crypt Spider",
@@ -381,7 +378,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Magma Beetle",
@@ -392,7 +389,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Hellhound",
@@ -403,7 +400,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Frost Wolf",
@@ -414,7 +411,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Ice Crawler",
@@ -425,7 +422,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Skeleton Warrior",
@@ -436,7 +433,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Skeleton Mage",
@@ -447,7 +444,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Spirit Wolf",
@@ -458,7 +455,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Bone Golem",
@@ -469,7 +466,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/The Shepherd",
@@ -480,7 +477,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Briarbound",
@@ -491,7 +488,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Grave Siren",
@@ -502,7 +499,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Rime Stalker",
@@ -513,7 +510,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Cinder Penitent",
@@ -524,7 +521,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Hollowmaw",
@@ -535,7 +532,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/Barrow Castellan",
@@ -546,7 +543,7 @@
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 },
                 {
                     "id": "combat.hit/The Shepherd",
@@ -557,7 +554,7 @@
                         "Assets/Scripts/Enemies/ShepherdFight.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.8500000238418579
                 }
             ]
         },
@@ -629,7 +626,7 @@
             "soundGroup": "sound.combat.ground.Physical",
             "purpose": "Physical ground impacts",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/30_Earth_02.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Earth04.wav"
             ],
             "usages": [
                 {
@@ -643,7 +640,7 @@
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.5
                 },
                 {
                     "id": "combat.ground.Physical/The Shepherd",
@@ -654,7 +651,7 @@
                         "Assets/Scripts/Enemies/ShepherdFight.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.5
                 },
                 {
                     "id": "combat.ground.Physical/Brute",
@@ -665,7 +662,7 @@
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.5
                 },
                 {
                     "id": "combat.ground.Physical/Gravelord Mortis",
@@ -676,7 +673,7 @@
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.5
                 },
                 {
                     "id": "combat.ground.Physical/Giant Spider",
@@ -687,7 +684,7 @@
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.5
                 },
                 {
                     "id": "combat.ground.Physical/Dire Wolf",
@@ -698,7 +695,7 @@
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.5
                 },
                 {
                     "id": "combat.ground.Physical/Briarbound",
@@ -709,7 +706,7 @@
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.5
                 }
             ]
         },
@@ -4068,9 +4065,9 @@
             "soundGroup": "sound.enemy.Grave Bat.Aggro",
             "purpose": "Bat / alert calls",
             "current": [
-                "Assets/Resources/Sfx/Creatures/shade_1.wav",
-                "Assets/Resources/Sfx/Creatures/shade_2.wav",
-                "Assets/Resources/Sfx/Creatures/shade_3.wav"
+                "Assets/Resources/Sfx/Creatures/bat_alert_1.wav",
+                "Assets/Resources/Sfx/Creatures/bat_alert_2.wav",
+                "Assets/Resources/Sfx/Creatures/bat_alert_3.wav"
             ],
             "usages": [
                 {
@@ -6027,17 +6024,6 @@
             "usages": []
         },
         {
-            "id": "clip:Assets/Audio/SoundLibrary/Combat & weapons/08_Bite_04_8bit.wav",
-            "label": "08_Bite_04_8bit",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Audio/SoundLibrary/Combat & weapons/08_Bite_04_8bit.wav"
-            ],
-            "usages": []
-        },
-        {
             "id": "clip:Assets/Audio/SoundLibrary/Combat & weapons/15_Impact_flesh_02_8bit.wav",
             "label": "15_Impact_flesh_02_8bit",
             "group": "Unassigned recordings",
@@ -6137,17 +6123,6 @@
             "usages": []
         },
         {
-            "id": "clip:Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
-            "label": "Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3"
-            ],
-            "usages": []
-        },
-        {
             "id": "clip:Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3",
             "label": "Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit",
             "group": "Unassigned recordings",
@@ -6188,6 +6163,50 @@
             "purpose": "",
             "current": [
                 "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#4-1766764179015_arrow_lands_in_wood.mp3"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/SoundLibrary/Combat & weapons/Dagger_stab_–_Quick__#1-1766764093333_punchy.mp3",
+            "label": "Dagger_stab_–_Quick__#1-1766764093333_punchy",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/SoundLibrary/Combat & weapons/Dagger_stab_–_Quick__#1-1766764093333_punchy.mp3"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/SoundLibrary/Combat & weapons/Dagger_stab_–_Quick__#2-1766764090266_punchy.mp3",
+            "label": "Dagger_stab_–_Quick__#2-1766764090266_punchy",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/SoundLibrary/Combat & weapons/Dagger_stab_–_Quick__#2-1766764090266_punchy.mp3"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/SoundLibrary/Combat & weapons/Dagger_stab_–_Quick__#3-1766764080183_punchy.mp3",
+            "label": "Dagger_stab_–_Quick__#3-1766764080183_punchy",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/SoundLibrary/Combat & weapons/Dagger_stab_–_Quick__#3-1766764080183_punchy.mp3"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/SoundLibrary/Combat & weapons/Dagger_stab_–_Quick__#4-1766764076280_punchy.mp3",
+            "label": "Dagger_stab_–_Quick__#4-1766764076280_punchy",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/SoundLibrary/Combat & weapons/Dagger_stab_–_Quick__#4-1766764076280_punchy.mp3"
             ],
             "usages": []
         },
@@ -7354,39 +7373,6 @@
             "purpose": "",
             "current": [
                 "Assets/Audio/SoundLibrary/Creatures & voices/Wolf_growl_–_Low_ani_#4-1766768097372.mp3"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Audio/SoundLibrary/Creatures & voices/bite-small2_8bit.wav",
-            "label": "bite-small2_8bit",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Audio/SoundLibrary/Creatures & voices/bite-small2_8bit.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Audio/SoundLibrary/Creatures & voices/bite-small3_8bit.wav",
-            "label": "bite-small3_8bit",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Audio/SoundLibrary/Creatures & voices/bite-small3_8bit.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Audio/SoundLibrary/Creatures & voices/bite-small_8bit.wav",
-            "label": "bite-small_8bit",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Audio/SoundLibrary/Creatures & voices/bite-small_8bit.wav"
             ],
             "usages": []
         },
@@ -9455,17 +9441,6 @@
             "purpose": "",
             "current": [
                 "Assets/Audio/SoundLibrary/Magic & spells/Skill_Earth03.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Audio/SoundLibrary/Magic & spells/Skill_Earth04.wav",
-            "label": "Skill_Earth04",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Earth04.wav"
             ],
             "usages": []
         },
@@ -12117,6 +12092,39 @@
             "purpose": "",
             "current": [
                 "Assets/Audio/SoundLibrary/World & ambience/doorOpen_2.ogg"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Resources/Sfx/Creatures/shade_1.wav",
+            "label": "shade_1",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Resources/Sfx/Creatures/shade_1.wav"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Resources/Sfx/Creatures/shade_2.wav",
+            "label": "shade_2",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Resources/Sfx/Creatures/shade_2.wav"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Resources/Sfx/Creatures/shade_3.wav",
+            "label": "shade_3",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Resources/Sfx/Creatures/shade_3.wav"
             ],
             "usages": []
         },

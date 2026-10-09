@@ -4838,16 +4838,6 @@
       ]
     },
     {
-      "file": "Combat & weapons/08_Bite_04_8bit.wav",
-      "sha256": "1d8c86e415eb43d53c1d3408336037592382e5a733305ed5aaf80c59889a4d04",
-      "sources": [
-        {
-          "file": "RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav",
-          "pack": "RPG_Essentials_Free"
-        }
-      ]
-    },
-    {
       "file": "Combat & weapons/15_Impact_flesh_02_8bit.wav",
       "sha256": "f4a092dbb8f9a9ce71c7b2aed4e44a0c243590c4a71cf0b435a17abe5aa5a6b3",
       "sources": [
@@ -5193,16 +5183,6 @@
       "sources": [
         {
           "file": "RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav",
-          "pack": "RPG_Essentials_Free"
-        }
-      ]
-    },
-    {
-      "file": "Magic & spells/30_Earth_02.wav",
-      "sha256": "096ed69309b460103fc1149919674cc6af2b29af0b715fe8b0275205a2471d98",
-      "sources": [
-        {
-          "file": "RPG_Essentials_Free/8_Atk_Magic_SFX/30_Earth_02.wav",
           "pack": "RPG_Essentials_Free"
         }
       ]
@@ -5724,36 +5704,6 @@
         {
           "file": "monster_sfx_pack/monster_sfx_pack/monster-9.wav",
           "pack": "monster_sfx_pack"
-        }
-      ]
-    },
-    {
-      "file": "Creatures & voices/bite-small_8bit.wav",
-      "sha256": "bc0e9d150aaf71aefa99111cfff90ca1deea5e72fb31c7371df75288d74ab2b5",
-      "sources": [
-        {
-          "file": "rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav",
-          "pack": "rpg_sound_pack"
-        }
-      ]
-    },
-    {
-      "file": "Creatures & voices/bite-small2_8bit.wav",
-      "sha256": "58318528da572fc30eb50487aa733a6dc7f9c06d2ca5141dae8ab57aac022c96",
-      "sources": [
-        {
-          "file": "rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav",
-          "pack": "rpg_sound_pack"
-        }
-      ]
-    },
-    {
-      "file": "Creatures & voices/bite-small3_8bit.wav",
-      "sha256": "6451f3d697ba8e741e1d4bc032d771a5bd3ee33c3c01e81417c60947d3d1b25d",
-      "sources": [
-        {
-          "file": "rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small3.wav",
-          "pack": "rpg_sound_pack"
         }
       ]
     },

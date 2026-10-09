@@ -67,7 +67,8 @@ namespace PoeClone.Enemies
                     if (e == Event.Attack) return new Voice(0.85f, 1.15f, 0.8f, "slime_4", "slime_5", "slime_6", "slime_7");
                     return new Voice(0.8f, 1.0f, 1f, "slime_8", "slime_9", "slime_10");
                 case Set.Bat:
-                    if (e == Event.Aggro) return new Voice(1.7f, 2.0f, 0.6f, "shade_1", "shade_2", "shade_3");
+                    // Short, bass-filtered and pitched-up edits of shade_1/2/3, with quiet peaks baked in.
+                    if (e == Event.Aggro) return new Voice(0.95f, 1.1f, 0.45f, "bat_alert_1", "bat_alert_2", "bat_alert_3");
                     if (e == Event.Attack) return new Voice(1.3f, 1.5f, 0.5f, "bite_1", "bite_2");
                     return new Voice(1.6f, 1.8f, 0.8f, "shade_14");
                 case Set.Beetle:

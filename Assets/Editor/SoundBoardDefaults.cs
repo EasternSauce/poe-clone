@@ -28,9 +28,9 @@ namespace PoeClone.EditorTools
         static readonly Dictionary<string, string[]> recordings = new Dictionary<string, string[]>
         {
             { "player.bow", new[] { "Bow_and_arrow_shot_–_#3-1766764176083_arrow_release" } },
-            { "combat.hit", new[] { "Dagger_stab_" } },
+            { "combat.hit", new[] { "Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit" } },
             { "combat.block", new[] { "Shield_block_" } },
-            { "combat.ground.Physical", new[] { "30_Earth_02" } },
+            { "combat.ground.Physical", new[] { "Skill_Earth04" } },
             { "combat.ground.Fire", new[] { "Fire_spell_impact_" } },
             { "combat.ground.Cold", new[] { "Ice_impact_" } },
             { "combat.ground.Lightning", new[] { "Skill_Electric05" } },

@@ -1,3 +1,9 @@
+version: 2026-10-09-lighter-combat-and-bat-audio
+- Replaced the removed earth recording with a short, quieter earth effect for physical ground impacts.
+- Generic weapon hits now use a light contact recording instead of bass-heavy punchy stabs.
+- Bat alert calls are now brief, quiet squeaks with the deep monster rumble removed.
+- Removed deleted 8-bit bite recordings from the sound board; creature bites continue using the surviving bite recordings.
+
 version: 2026-10-09-softer-bow-and-lightning
 - Bow releases now use a softer dedicated bow-and-arrow recording for player and enemy archers.
 - Lightning ground impacts now use a shorter, quieter electric effect for a less intrusive spell impact.

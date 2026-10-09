@@ -55,7 +55,7 @@ MonoBehaviour:
     suggestions: []
     selected: {fileID: 0}
     muted: 0
-    volume: 1
+    volume: 0.85
   - id: combat.block
     label: Shield block
     group: Combat
@@ -92,7 +92,7 @@ MonoBehaviour:
     suggestions: []
     selected: {fileID: 0}
     muted: 0
-    volume: 1
+    volume: 0.5
   - id: combat.ground.Fire
     label: Fire ground impact
     group: Combat
@@ -2195,10 +2195,7 @@ MonoBehaviour:
   - id: sound.combat.hit
     purpose: Weapon hit impacts
     clips:
-    - {fileID: 8300000, guid: 2550bc19543ef3a4e85d0dba8ba23a17, type: 3}
-    - {fileID: 8300000, guid: f2fd73181646f2842a27251b533d2195, type: 3}
-    - {fileID: 8300000, guid: 23cb361a8c9a289468803c5b4c4cff0a, type: 3}
-    - {fileID: 8300000, guid: 0c979ac724e221a4faec5872f1ba1db9, type: 3}
+    - {fileID: 8300000, guid: cfa9bd3a439dd5d49a9bda17e114751a, type: 3}
   - id: sound.combat.block
     purpose: Shield blocks
     clips:
@@ -2213,7 +2210,7 @@ MonoBehaviour:
   - id: sound.combat.ground.Physical
     purpose: Physical ground impacts
     clips:
-    - {fileID: 8300000, guid: 4039c3e106933b44b9f2d65f79591426, type: 3}
+    - {fileID: 8300000, guid: 035d4ac07f532014dbef52a5982a2c58, type: 3}
   - id: sound.combat.ground.Fire
     purpose: Fire ground impacts
     clips:
@@ -2585,9 +2582,9 @@ MonoBehaviour:
   - id: sound.enemy.Grave Bat.Aggro
     purpose: Bat / alert calls
     clips:
-    - {fileID: 8300000, guid: fb29d71c71eba9747ab97aa31fcafd0c, type: 3}
-    - {fileID: 8300000, guid: ad23c0a49815379429388324395d81fc, type: 3}
-    - {fileID: 8300000, guid: ff981bfffe499094192090e13bfbadc8, type: 3}
+    - {fileID: 8300000, guid: 119165e1f3b5c784980d1005fcd22664, type: 3}
+    - {fileID: 8300000, guid: 8acee8fc2a4f36547a8bd6df40600d4e, type: 3}
+    - {fileID: 8300000, guid: 23f4d92412764ed44bd0ea391bf5d297, type: 3}
   - id: sound.enemy.Grave Bat.Attack
     purpose: Bat / attack voices
     clips:
