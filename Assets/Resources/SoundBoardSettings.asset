@@ -913,7 +913,7 @@ MonoBehaviour:
     label: "Archer \u2014 Death"
     group: Enemies
     description: Independent voice for Archer. Pitch and distance variation remain active in game.
-    soundGroupId: sound.enemy.Archer.Death
+    soundGroupId: sound.enemy.Fire Caster.Death
     aliases: []
     sharedIds: []
     defaults: []
@@ -2500,10 +2500,6 @@ MonoBehaviour:
     purpose: giant / death voices
     clips:
     - {fileID: 8300000, guid: d9bf550722614fc4e8214f91b243d4b2, type: 3}
-  - id: sound.enemy.Archer.Death
-    purpose: Human / death voices
-    clips:
-    - {fileID: 8300000, guid: 53346a3d498e76e4daeb7ae7899bdce4, type: 3}
   - id: sound.enemy.Fire Caster.Death
     purpose: Humanoid / death voices
     clips:

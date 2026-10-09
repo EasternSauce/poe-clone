@@ -1,3 +1,6 @@
+version: 2026-10-09-archer-death-voice
+- Archer deaths now use humanoid death voices instead of the generic player hurt recording.
+
 version: 2026-10-09-lighter-combat-and-bat-audio
 - Replaced the removed earth recording with a short, quieter earth effect for physical ground impacts.
 - Generic weapon hits now use a light contact recording instead of bass-heavy punchy stabs.

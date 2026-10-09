@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-09T13:14:26.7549976Z",
+    "generatedAt": "2026-10-09T13:16:35.6507677Z",
     "effects": [
         {
             "id": "player.swing",
@@ -2732,10 +2732,11 @@
             "id": "enemy.Archer.Death",
             "label": "Archer — Death",
             "group": "Enemies",
-            "soundGroup": "sound.enemy.Archer.Death",
-            "purpose": "Human / death voices",
+            "soundGroup": "sound.enemy.Fire Caster.Death",
+            "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Other/Player_hurt_–_Short__#1-1766764352490.mp3"
+                "Assets/Audio/SFX/Combat/enemy_death_1.wav",
+                "Assets/Audio/SFX/Combat/enemy_death_3.mp3"
             ],
             "usages": [
                 {
