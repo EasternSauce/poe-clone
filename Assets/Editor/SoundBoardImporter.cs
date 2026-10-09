@@ -21,7 +21,7 @@ namespace PoeClone.EditorTools
         [Serializable] public sealed class Choices { public Choice[] effects = Array.Empty<Choice>(); }
         [Serializable] public sealed class Row
         {
-            public string id, label, group, description;
+            public string id, label, group, description, portrait;
             public string[] current, suggestions;
         }
         [Serializable] public sealed class Catalog { public Row[] effects; }
@@ -143,7 +143,9 @@ namespace PoeClone.EditorTools
             Directory.CreateDirectory("tools/sound-board");
             File.WriteAllText("tools/sound-board/catalog.json", JsonUtility.ToJson(new Catalog { effects = settings.effects.Select(e => new Row {
                 id = e.id, label = e.label, group = e.group, description = e.description,
-                current = e.defaults.Select(AssetDatabase.GetAssetPath).ToArray(), suggestions = e.suggestions
+                current = e.defaults.Select(AssetDatabase.GetAssetPath).ToArray(), suggestions = e.suggestions,
+                portrait = e.id.StartsWith("enemy.") ? SoundBoardPortraits.PathFor(e.id.Substring(6, e.id.LastIndexOf('.') - 6)) :
+                    e.id == "world.reveal" ? SoundBoardPortraits.PathFor("Carrion Saint") : ""
             }).ToArray() }, true));
             ImportChoices();
             return "Exported " + settings.effects.Count + " effects, each with five suggestions.";

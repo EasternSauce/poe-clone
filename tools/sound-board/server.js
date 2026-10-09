@@ -34,6 +34,16 @@ function createServer() {
         return res.end(fs.readFileSync(path.join(__dirname, 'index.html')));
       }
       if (req.method === 'GET' && url.pathname === '/api/board') return json(200, { ...catalog(), choices: choices().effects, token });
+      if (req.method === 'GET' && url.pathname === '/portrait') {
+        const asset = url.searchParams.get('path');
+        if (!asset || !catalog().effects.some(row => row.portrait === asset)) return json(404, { error: 'Unknown portrait.' });
+        const directory = path.join(__dirname, 'portraits');
+        const file = path.resolve(__dirname, asset);
+        if (!file.startsWith(directory + path.sep) || path.extname(file) !== '.png') return json(400, { error: 'Invalid portrait.' });
+        const image = fs.readFileSync(file);
+        res.writeHead(200, { 'Content-Type': 'image/png' });
+        return res.end(image);
+      }
       if (req.method === 'POST' && url.pathname === '/api/apply') {
         if (req.headers['x-board-token'] !== token) return json(403, { error: 'Reload the board before applying.' });
         let body = '';

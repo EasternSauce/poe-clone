@@ -28,6 +28,28 @@ test('rejects incomplete, duplicate, foreign and invalid-volume choices', () => 
   }
 });
 
+test('every enemy sound has a real portrait and the API serves only catalogued images', async t => {
+  const enemies = rows.filter(row => row.id.startsWith('enemy.'));
+  for (const row of enemies) {
+    assert.ok(row.portrait, row.id);
+    assert.ok(fs.existsSync(path.resolve(__dirname, row.portrait)), row.portrait);
+    const name = row.id.slice(6, row.id.lastIndexOf('.'));
+    assert.equal(row.portrait, 'portraits/' + encodeURIComponent(name) + '.png');
+  }
+  const server = createServer();
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  for (const asset of new Set(enemies.map(row => row.portrait))) {
+    const response = await fetch(base + '/portrait?path=' + encodeURIComponent(asset));
+    assert.equal(response.status, 200, asset);
+    assert.equal(response.headers.get('content-type'), 'image/png');
+    assert.deepEqual(Buffer.from(await response.arrayBuffer()), fs.readFileSync(path.resolve(__dirname, asset)));
+  }
+  assert.equal((await fetch(base + '/portrait?path=../../server/server.js')).status, 404);
+  assert.equal((await fetch(base + '/portrait')).status, 404);
+});
+
 test('API previews ranged audio and persists chosen clips, mute and volume together', async t => {
   const original = fs.readFileSync(choicesFile);
   const server = createServer();

@@ -25,3 +25,6 @@ Set `SOUND_BOARD_PORT` to change its port. To stop it, end the Node process whos
 line contains `tools/sound-board/server.js`.
 
 Run API checks with `node --test tools/sound-board/server.test.js`.
+
+Enemy sounds show a small portrait rendered from their game model. After changing enemy visuals,
+use **PoeClone > Audio > Refresh Sound Board Enemy Portraits** to regenerate the images.

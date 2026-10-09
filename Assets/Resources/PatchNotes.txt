@@ -1,3 +1,6 @@
+version: 2026-10-09-sound-board-enemy-portraits
+- Added small portraits from the game models beside enemy sounds in the sound board, including the Carrion Saint. Clarified that Apply saves sound volumes for all characters and future builds.
+
 version: 2026-10-09-sound-board-and-combat-audio
 - Added sounds for spell casts, bow attacks and skills, Dash and Teleport. Humanoid enemies and boss attacks now have audio alongside existing creature voices, including the Carrion Saint's attacks and charge.
 - Added a separate local sound board, launched with Start-SoundBoard.ps1, with 176 effects, five inspiration-library suggestions per effect, recording previews, volume sliders, search, category filters and No sound options. Apply saves the mix to the project for all characters and future builds; item pickups are grouped by their shared sounds.

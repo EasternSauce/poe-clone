@@ -16,7 +16,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword swing #1.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/22_Slash_04.wav",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#3-1766763893457.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "player.bow",
@@ -32,7 +33,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "combat.hit",
@@ -49,7 +51,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/15_Impact_flesh_02.wav",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/77_flesh_02.wav",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Axe_hit_armor_–_Deep_#1-1766764038219.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "combat.block",
@@ -65,7 +68,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/39_Block_03.wav",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Axe_hit_armor_–_Deep_#1-1766764038219.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Axe_hit_armor_–_Deep_#2-1766764035183.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "player.hurt",
@@ -83,7 +87,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#3-1766764346956.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#4-1766764341901.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_hit_flesh_–_Me_#1-1766763353113.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "player.reward",
@@ -99,7 +104,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Level_up_–_Magical_a_#3-1766766447105.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Level_up_–_Magical_a_#4-1766766447106.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Quest_complete_–_Lon_#1-1766766413148.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "player.steps",
@@ -115,7 +121,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Footstep_grass_–_Sof_#3-1766767686377.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Footstep_grass_–_Sof_#4-1766767680960.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/12_Player_Movement_SFX/03_Step_grass_03.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "ui.open",
@@ -131,7 +138,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_–_UI__#3-1766765859219.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_–_UI__#4-1766765856604.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_UI_Menu_SFX/092_Pause_04.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "ui.close",
@@ -147,7 +155,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_–_UI__#3-1766765859219.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Inventory_open_–_UI__#4-1766765856604.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_UI_Menu_SFX/098_Unpause_04.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "ui.denied",
@@ -163,7 +172,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Button_click_–_Clean_#2-1766767620402.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Button_click_–_Clean_#3-1766767618113.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Button_click_–_Clean_#4-1766767615407.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.pickup",
@@ -179,7 +189,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#1-1766764916364.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#2-1766764914173.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#3-1766764911468.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.place",
@@ -195,7 +206,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Equip_weapon_–_Weapo_#1-1766765195705.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Equip_weapon_–_Weapo_#2-1766765195705.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Equip_weapon_–_Weapo_#3-1766765195706.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.pickup.gold",
@@ -211,7 +223,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Coin_pickup_–_Single_#3-1766764993247.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Coin_pickup_–_Single_#4-1766764989061.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/coin.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.pickup.potion",
@@ -227,7 +240,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/bubble3.wav",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#1-1766765101919.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#2-1766765101920.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.pickup.jewel",
@@ -243,7 +257,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/metal-ringing.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.place.bow",
@@ -259,7 +274,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Bow_and_arrow_shot_–_#4-1766764179015.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Footstep_wood_–_Wood_#1-1766767773818.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Footstep_wood_–_Wood_#2-1766767771082.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.place.potion",
@@ -275,7 +291,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/bubble3.wav",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#1-1766765101919.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#2-1766765101920.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.place.jewel",
@@ -291,7 +308,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/metal-ringing.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.drop.normal",
@@ -307,7 +325,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/metal-small1.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.drop.magic",
@@ -323,7 +342,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/metal-small1.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.drop.rare",
@@ -339,7 +359,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/metal-small1.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.drop.unique",
@@ -355,7 +376,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/metal-small1.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.drop.gold",
@@ -371,7 +393,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Coin_pickup_–_Single_#3-1766764993247.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Coin_pickup_–_Single_#4-1766764989061.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/coin.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "item.drop.potion",
@@ -387,7 +410,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/bubble3.wav",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#1-1766765101919.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#2-1766765101920.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "player.potion",
@@ -403,7 +427,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#3-1766765101920.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#4-1766765068166.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Potion_drink_–_Liqui_#4-1766765101921.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "world.gate",
@@ -419,7 +444,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Gate_open_–_Heavy_me_#4-1766767347277.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wooden_door_open_–_O_#1-1766765986124.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wooden_door_open_–_O_#2-1766765986125.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "world.loot",
@@ -435,7 +461,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#3-1766764911468.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Item_pickup_–_Soft_c_#4-1766764909142.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/inventory/cloth-heavy.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "world.shatter",
@@ -451,7 +478,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_impact_–_Ice_sha_#3-1766764673747.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_impact_–_Ice_sha_#4-1766764669612.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/13_Ice_explosion_01.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "world.explosion",
@@ -467,7 +495,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_hit_flesh_–_Me_#1-1766763353113.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_hit_flesh_–_Me_#4-1766763347247.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/15_Impact_flesh_02.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "world.reveal",
@@ -483,7 +512,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_–_Low_ani_#4-1766768097372.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr10.wav"
-            ]
+            ],
+            "portrait": "portraits/Carrion%20Saint.png"
         },
         {
             "id": "skill.Cleave",
@@ -499,7 +529,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing#4.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing_–_Fast_m_#4-1766763244157.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/22_Slash_04.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.FireBolt",
@@ -515,7 +546,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_–_Ma_#3-1766763528875.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_–_Ma_#4-1766763524728.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/04_Fire_explosion_04_medium.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.Dash",
@@ -531,7 +563,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#3-1766763893457.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Heavy_weapon_whoosh,_#4-1766763889384.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.FrostNova",
@@ -547,7 +580,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_–_Col_#3-1766764633331.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_–_Col_#4-1766764626746.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/13_Ice_explosion_01.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.WarCry",
@@ -563,7 +597,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/ogre/ogre3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/ogre/ogre4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/ogre/ogre5.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.ChainLightning",
@@ -579,7 +614,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Lightning_cast_–_Ele_#3-1766764718272.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Lightning_cast_–_Ele_#4-1766764715064.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/18_Thunder_02.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.IceShard",
@@ -595,7 +631,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_–_Col_#3-1766764633331.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_–_Col_#4-1766764626746.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/13_Ice_explosion_01.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.Teleport",
@@ -611,7 +648,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#2-1766764864417.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#3-1766764862223.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#4-1766764858633.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.RaiseSkeletons",
@@ -627,7 +665,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/30_Revive_03.wav",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.DeathMark",
@@ -643,7 +682,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/30_Revive_03.wav",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.SkeletonMages",
@@ -659,7 +699,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/30_Revive_03.wav",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.SpiritWolves",
@@ -675,7 +716,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/30_Revive_03.wav",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.BoneGolem",
@@ -691,7 +733,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/30_Revive_03.wav",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade1.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.GraveRot",
@@ -707,7 +750,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.SplitShot",
@@ -723,7 +767,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.PiercingShot",
@@ -739,7 +784,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.RainOfArrows",
@@ -755,7 +801,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.BurningArrow",
@@ -771,7 +818,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_–_Ma_#3-1766763528875.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_–_Ma_#4-1766763524728.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/04_Fire_explosion_04_medium.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.FangStrike",
@@ -787,7 +835,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing#4.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing_–_Fast_m_#4-1766763244157.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/22_Slash_04.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.VenomArrow",
@@ -803,7 +852,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.VenomSpout",
@@ -819,7 +869,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.SummonViper",
@@ -835,7 +886,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime10.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.Pulverize",
@@ -851,7 +903,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing#4.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing_–_Fast_m_#4-1766763244157.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/22_Slash_04.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.ReapingArc",
@@ -867,7 +920,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing#4.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing_–_Fast_m_#4-1766763244157.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/22_Slash_04.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "skill.LungingThrust",
@@ -883,7 +937,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing#4.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Sword_swing_–_Fast_m_#4-1766763244157.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/22_Slash_04.wav"
-            ]
+            ],
+            "portrait": ""
         },
         {
             "id": "enemy.Carrion Saint.Attack",
@@ -899,7 +954,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr11.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr12.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr13.wav"
-            ]
+            ],
+            "portrait": "portraits/Carrion%20Saint.png"
         },
         {
             "id": "enemy.Zombie.Aggro",
@@ -917,7 +973,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#3-1766768231428.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#4-1766768225595.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Zombie.png"
         },
         {
             "id": "enemy.Zombie.Attack",
@@ -933,7 +990,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#3-1766768231428.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#4-1766768225595.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Zombie.png"
         },
         {
             "id": "enemy.Zombie.Death",
@@ -950,7 +1008,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#3-1766768231428.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#4-1766768225595.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Zombie.png"
         },
         {
             "id": "enemy.Raider.Aggro",
@@ -968,7 +1027,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Raider.png"
         },
         {
             "id": "enemy.Raider.Attack",
@@ -984,7 +1044,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Raider.png"
         },
         {
             "id": "enemy.Raider.Death",
@@ -1001,7 +1062,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Raider.png"
         },
         {
             "id": "enemy.Brute.Aggro",
@@ -1019,7 +1081,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Brute.png"
         },
         {
             "id": "enemy.Brute.Attack",
@@ -1035,7 +1098,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Brute.png"
         },
         {
             "id": "enemy.Brute.Death",
@@ -1052,7 +1116,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Brute.png"
         },
         {
             "id": "enemy.Archer.Aggro",
@@ -1070,7 +1135,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Archer.png"
         },
         {
             "id": "enemy.Archer.Attack",
@@ -1086,7 +1152,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3"
-            ]
+            ],
+            "portrait": "portraits/Archer.png"
         },
         {
             "id": "enemy.Archer.Death",
@@ -1103,7 +1170,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Archer.png"
         },
         {
             "id": "enemy.Fire Caster.Aggro",
@@ -1121,7 +1189,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Fire%20Caster.png"
         },
         {
             "id": "enemy.Fire Caster.Attack",
@@ -1137,7 +1206,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_–_Ma_#3-1766763528875.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Fire_spell_cast_–_Ma_#4-1766763524728.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/04_Fire_explosion_04_medium.wav"
-            ]
+            ],
+            "portrait": "portraits/Fire%20Caster.png"
         },
         {
             "id": "enemy.Fire Caster.Death",
@@ -1154,7 +1224,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Fire%20Caster.png"
         },
         {
             "id": "enemy.Frost Caster.Aggro",
@@ -1172,7 +1243,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Frost%20Caster.png"
         },
         {
             "id": "enemy.Frost Caster.Attack",
@@ -1188,7 +1260,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_–_Col_#3-1766764633331.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Ice_spell_cast_–_Col_#4-1766764626746.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/13_Ice_explosion_01.wav"
-            ]
+            ],
+            "portrait": "portraits/Frost%20Caster.png"
         },
         {
             "id": "enemy.Frost Caster.Death",
@@ -1205,7 +1278,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Frost%20Caster.png"
         },
         {
             "id": "enemy.Storm Caster.Aggro",
@@ -1223,7 +1297,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Storm%20Caster.png"
         },
         {
             "id": "enemy.Storm Caster.Attack",
@@ -1239,7 +1314,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Lightning_cast_–_Ele_#3-1766764718272.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Lightning_cast_–_Ele_#4-1766764715064.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/18_Thunder_02.wav"
-            ]
+            ],
+            "portrait": "portraits/Storm%20Caster.png"
         },
         {
             "id": "enemy.Storm Caster.Death",
@@ -1256,7 +1332,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Storm%20Caster.png"
         },
         {
             "id": "enemy.Skeleton.Aggro",
@@ -1274,7 +1351,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#3-1766768181651.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#4-1766768179054.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#1-1766768225594.mp3"
-            ]
+            ],
+            "portrait": "portraits/Skeleton.png"
         },
         {
             "id": "enemy.Skeleton.Attack",
@@ -1290,7 +1368,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#3-1766768181651.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#4-1766768179054.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#1-1766768225594.mp3"
-            ]
+            ],
+            "portrait": "portraits/Skeleton.png"
         },
         {
             "id": "enemy.Skeleton.Death",
@@ -1307,7 +1386,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#3-1766768181651.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#4-1766768179054.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#1-1766768225594.mp3"
-            ]
+            ],
+            "portrait": "portraits/Skeleton.png"
         },
         {
             "id": "enemy.Wraith.Aggro",
@@ -1325,7 +1405,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav"
-            ]
+            ],
+            "portrait": "portraits/Wraith.png"
         },
         {
             "id": "enemy.Wraith.Attack",
@@ -1341,7 +1422,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav"
-            ]
+            ],
+            "portrait": "portraits/Wraith.png"
         },
         {
             "id": "enemy.Wraith.Death",
@@ -1358,7 +1440,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav"
-            ]
+            ],
+            "portrait": "portraits/Wraith.png"
         },
         {
             "id": "enemy.Ember Knight.Aggro",
@@ -1376,7 +1459,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Ember%20Knight.png"
         },
         {
             "id": "enemy.Ember Knight.Attack",
@@ -1392,7 +1476,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Ember%20Knight.png"
         },
         {
             "id": "enemy.Ember Knight.Death",
@@ -1409,7 +1494,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Ember%20Knight.png"
         },
         {
             "id": "enemy.Gravelord Mortis.Aggro",
@@ -1427,7 +1513,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Gravelord%20Mortis.png"
         },
         {
             "id": "enemy.Gravelord Mortis.Attack",
@@ -1443,7 +1530,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Gravelord%20Mortis.png"
         },
         {
             "id": "enemy.Gravelord Mortis.Death",
@@ -1460,7 +1548,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Gravelord%20Mortis.png"
         },
         {
             "id": "enemy.Ashen Warlord.Aggro",
@@ -1478,7 +1567,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Ashen%20Warlord.png"
         },
         {
             "id": "enemy.Ashen Warlord.Attack",
@@ -1494,7 +1584,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Ashen%20Warlord.png"
         },
         {
             "id": "enemy.Ashen Warlord.Death",
@@ -1511,7 +1602,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Ashen%20Warlord.png"
         },
         {
             "id": "enemy.Rimeheart.Aggro",
@@ -1528,7 +1620,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav"
-            ]
+            ],
+            "portrait": "portraits/Rimeheart.png"
         },
         {
             "id": "enemy.Rimeheart.Attack",
@@ -1546,7 +1639,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav"
-            ]
+            ],
+            "portrait": "portraits/Rimeheart.png"
         },
         {
             "id": "enemy.Rimeheart.Death",
@@ -1563,7 +1657,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav"
-            ]
+            ],
+            "portrait": "portraits/Rimeheart.png"
         },
         {
             "id": "enemy.Forest Shaman.Aggro",
@@ -1581,7 +1676,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Forest%20Shaman.png"
         },
         {
             "id": "enemy.Forest Shaman.Attack",
@@ -1597,7 +1693,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#3-1766764862223.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#4-1766764858633.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav"
-            ]
+            ],
+            "portrait": "portraits/Forest%20Shaman.png"
         },
         {
             "id": "enemy.Forest Shaman.Death",
@@ -1614,7 +1711,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Forest%20Shaman.png"
         },
         {
             "id": "enemy.Necromancer.Aggro",
@@ -1632,7 +1730,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Necromancer.png"
         },
         {
             "id": "enemy.Necromancer.Attack",
@@ -1648,7 +1747,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#3-1766764862223.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#4-1766764858633.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav"
-            ]
+            ],
+            "portrait": "portraits/Necromancer.png"
         },
         {
             "id": "enemy.Necromancer.Death",
@@ -1665,7 +1765,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Necromancer.png"
         },
         {
             "id": "enemy.Skeleton Archer.Aggro",
@@ -1683,7 +1784,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#3-1766768181651.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#4-1766768179054.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#1-1766768225594.mp3"
-            ]
+            ],
+            "portrait": "portraits/Skeleton%20Archer.png"
         },
         {
             "id": "enemy.Skeleton Archer.Attack",
@@ -1699,7 +1801,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/35_Miss_Evade_02.wav",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Atk_Magic_SFX/25_Wind_01.wav",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3"
-            ]
+            ],
+            "portrait": "portraits/Skeleton%20Archer.png"
         },
         {
             "id": "enemy.Skeleton Archer.Death",
@@ -1716,7 +1819,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#3-1766768181651.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#4-1766768179054.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#1-1766768225594.mp3"
-            ]
+            ],
+            "portrait": "portraits/Skeleton%20Archer.png"
         },
         {
             "id": "enemy.Frost Giant.Aggro",
@@ -1734,7 +1838,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Frost%20Giant.png"
         },
         {
             "id": "enemy.Frost Giant.Attack",
@@ -1750,7 +1855,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Frost%20Giant.png"
         },
         {
             "id": "enemy.Frost Giant.Death",
@@ -1767,7 +1873,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Frost%20Giant.png"
         },
         {
             "id": "enemy.Giant Spider.Aggro",
@@ -1784,7 +1891,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav"
-            ]
+            ],
+            "portrait": "portraits/Giant%20Spider.png"
         },
         {
             "id": "enemy.Giant Spider.Attack",
@@ -1802,7 +1910,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav"
-            ]
+            ],
+            "portrait": "portraits/Giant%20Spider.png"
         },
         {
             "id": "enemy.Giant Spider.Death",
@@ -1819,7 +1928,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav"
-            ]
+            ],
+            "portrait": "portraits/Giant%20Spider.png"
         },
         {
             "id": "enemy.Dire Wolf.Aggro",
@@ -1837,7 +1947,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_–_Low_ani_#4-1766768097372.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Dire%20Wolf.png"
         },
         {
             "id": "enemy.Dire Wolf.Attack",
@@ -1855,7 +1966,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_–_Low_ani_#4-1766768097372.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Dire%20Wolf.png"
         },
         {
             "id": "enemy.Dire Wolf.Death",
@@ -1872,7 +1984,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_–_Low_ani_#4-1766768097372.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Dire%20Wolf.png"
         },
         {
             "id": "enemy.Bog Slime.Aggro",
@@ -1890,7 +2003,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav"
-            ]
+            ],
+            "portrait": "portraits/Bog%20Slime.png"
         },
         {
             "id": "enemy.Bog Slime.Attack",
@@ -1909,7 +2023,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav"
-            ]
+            ],
+            "portrait": "portraits/Bog%20Slime.png"
         },
         {
             "id": "enemy.Bog Slime.Death",
@@ -1927,7 +2042,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav"
-            ]
+            ],
+            "portrait": "portraits/Bog%20Slime.png"
         },
         {
             "id": "enemy.Slimeling.Aggro",
@@ -1945,7 +2061,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav"
-            ]
+            ],
+            "portrait": "portraits/Slimeling.png"
         },
         {
             "id": "enemy.Slimeling.Attack",
@@ -1964,7 +2081,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav"
-            ]
+            ],
+            "portrait": "portraits/Slimeling.png"
         },
         {
             "id": "enemy.Slimeling.Death",
@@ -1982,7 +2100,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav"
-            ]
+            ],
+            "portrait": "portraits/Slimeling.png"
         },
         {
             "id": "enemy.Grave Bat.Aggro",
@@ -2000,7 +2119,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav"
-            ]
+            ],
+            "portrait": "portraits/Grave%20Bat.png"
         },
         {
             "id": "enemy.Grave Bat.Attack",
@@ -2017,7 +2137,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav"
-            ]
+            ],
+            "portrait": "portraits/Grave%20Bat.png"
         },
         {
             "id": "enemy.Grave Bat.Death",
@@ -2033,7 +2154,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav"
-            ]
+            ],
+            "portrait": "portraits/Grave%20Bat.png"
         },
         {
             "id": "enemy.Corpse Ooze.Aggro",
@@ -2051,7 +2173,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav"
-            ]
+            ],
+            "portrait": "portraits/Corpse%20Ooze.png"
         },
         {
             "id": "enemy.Corpse Ooze.Attack",
@@ -2070,7 +2193,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav"
-            ]
+            ],
+            "portrait": "portraits/Corpse%20Ooze.png"
         },
         {
             "id": "enemy.Corpse Ooze.Death",
@@ -2088,7 +2212,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav"
-            ]
+            ],
+            "portrait": "portraits/Corpse%20Ooze.png"
         },
         {
             "id": "enemy.Oozeling.Aggro",
@@ -2106,7 +2231,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav"
-            ]
+            ],
+            "portrait": "portraits/Oozeling.png"
         },
         {
             "id": "enemy.Oozeling.Attack",
@@ -2125,7 +2251,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav"
-            ]
+            ],
+            "portrait": "portraits/Oozeling.png"
         },
         {
             "id": "enemy.Oozeling.Death",
@@ -2143,7 +2270,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime4.wav"
-            ]
+            ],
+            "portrait": "portraits/Oozeling.png"
         },
         {
             "id": "enemy.Crypt Spider.Aggro",
@@ -2160,7 +2288,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav"
-            ]
+            ],
+            "portrait": "portraits/Crypt%20Spider.png"
         },
         {
             "id": "enemy.Crypt Spider.Attack",
@@ -2178,7 +2307,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav"
-            ]
+            ],
+            "portrait": "portraits/Crypt%20Spider.png"
         },
         {
             "id": "enemy.Crypt Spider.Death",
@@ -2195,7 +2325,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav"
-            ]
+            ],
+            "portrait": "portraits/Crypt%20Spider.png"
         },
         {
             "id": "enemy.Magma Beetle.Aggro",
@@ -2212,7 +2343,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav"
-            ]
+            ],
+            "portrait": "portraits/Magma%20Beetle.png"
         },
         {
             "id": "enemy.Magma Beetle.Attack",
@@ -2229,7 +2361,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav"
-            ]
+            ],
+            "portrait": "portraits/Magma%20Beetle.png"
         },
         {
             "id": "enemy.Magma Beetle.Death",
@@ -2246,7 +2379,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/slime/slime1.wav"
-            ]
+            ],
+            "portrait": "portraits/Magma%20Beetle.png"
         },
         {
             "id": "enemy.Hellhound.Aggro",
@@ -2264,7 +2398,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_–_Low_ani_#4-1766768097372.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Hellhound.png"
         },
         {
             "id": "enemy.Hellhound.Attack",
@@ -2282,7 +2417,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_–_Low_ani_#4-1766768097372.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Hellhound.png"
         },
         {
             "id": "enemy.Hellhound.Death",
@@ -2299,7 +2435,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_–_Low_ani_#4-1766768097372.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Hellhound.png"
         },
         {
             "id": "enemy.Frost Wolf.Aggro",
@@ -2317,7 +2454,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_–_Low_ani_#4-1766768097372.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Frost%20Wolf.png"
         },
         {
             "id": "enemy.Frost Wolf.Attack",
@@ -2335,7 +2473,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_–_Low_ani_#4-1766768097372.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Frost%20Wolf.png"
         },
         {
             "id": "enemy.Frost Wolf.Death",
@@ -2352,7 +2491,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_–_Low_ani_#4-1766768097372.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Frost%20Wolf.png"
         },
         {
             "id": "enemy.Ice Crawler.Aggro",
@@ -2369,7 +2509,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav"
-            ]
+            ],
+            "portrait": "portraits/Ice%20Crawler.png"
         },
         {
             "id": "enemy.Ice Crawler.Attack",
@@ -2387,7 +2528,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav"
-            ]
+            ],
+            "portrait": "portraits/Ice%20Crawler.png"
         },
         {
             "id": "enemy.Ice Crawler.Death",
@@ -2404,7 +2546,8 @@
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/10_Battle_SFX/08_Bite_04.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/beetle/bite-small2.wav"
-            ]
+            ],
+            "portrait": "portraits/Ice%20Crawler.png"
         },
         {
             "id": "enemy.Skeleton Warrior.Aggro",
@@ -2422,7 +2565,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#3-1766768181651.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#4-1766768179054.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#1-1766768225594.mp3"
-            ]
+            ],
+            "portrait": "portraits/Skeleton%20Warrior.png"
         },
         {
             "id": "enemy.Skeleton Warrior.Attack",
@@ -2438,7 +2582,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#3-1766768181651.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#4-1766768179054.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#1-1766768225594.mp3"
-            ]
+            ],
+            "portrait": "portraits/Skeleton%20Warrior.png"
         },
         {
             "id": "enemy.Skeleton Warrior.Death",
@@ -2455,7 +2600,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#3-1766768181651.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#4-1766768179054.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#1-1766768225594.mp3"
-            ]
+            ],
+            "portrait": "portraits/Skeleton%20Warrior.png"
         },
         {
             "id": "enemy.Skeleton Mage.Aggro",
@@ -2473,7 +2619,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#3-1766768181651.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#4-1766768179054.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#1-1766768225594.mp3"
-            ]
+            ],
+            "portrait": "portraits/Skeleton%20Mage.png"
         },
         {
             "id": "enemy.Skeleton Mage.Attack",
@@ -2489,7 +2636,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#3-1766764862223.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#4-1766764858633.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav"
-            ]
+            ],
+            "portrait": "portraits/Skeleton%20Mage.png"
         },
         {
             "id": "enemy.Skeleton Mage.Death",
@@ -2506,7 +2654,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#3-1766768181651.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Skeleton_attack_–_Bo_#4-1766768179054.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Zombie_moan_–_Slow_u_#1-1766768225594.mp3"
-            ]
+            ],
+            "portrait": "portraits/Skeleton%20Mage.png"
         },
         {
             "id": "enemy.Spirit Wolf.Aggro",
@@ -2524,7 +2673,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_–_Low_ani_#4-1766768097372.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Spirit%20Wolf.png"
         },
         {
             "id": "enemy.Spirit Wolf.Attack",
@@ -2542,7 +2692,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_–_Low_ani_#4-1766768097372.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Spirit%20Wolf.png"
         },
         {
             "id": "enemy.Spirit Wolf.Death",
@@ -2559,7 +2710,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Wolf_growl_–_Low_ani_#4-1766768097372.mp3",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/misc/wolfman.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/gutteral beast/mnstr1.wav"
-            ]
+            ],
+            "portrait": "portraits/Spirit%20Wolf.png"
         },
         {
             "id": "enemy.Bone Golem.Aggro",
@@ -2577,7 +2729,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Bone%20Golem.png"
         },
         {
             "id": "enemy.Bone Golem.Attack",
@@ -2593,7 +2746,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Bone%20Golem.png"
         },
         {
             "id": "enemy.Bone Golem.Death",
@@ -2610,7 +2764,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/Bone%20Golem.png"
         },
         {
             "id": "enemy.The Shepherd.Aggro",
@@ -2628,7 +2783,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/The%20Shepherd.png"
         },
         {
             "id": "enemy.The Shepherd.Attack",
@@ -2644,7 +2800,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/The%20Shepherd.png"
         },
         {
             "id": "enemy.The Shepherd.Death",
@@ -2661,7 +2818,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant3.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant4.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/giant/giant5.wav"
-            ]
+            ],
+            "portrait": "portraits/The%20Shepherd.png"
         },
         {
             "id": "enemy.Briarbound.Aggro",
@@ -2679,7 +2837,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Briarbound.png"
         },
         {
             "id": "enemy.Briarbound.Attack",
@@ -2695,7 +2854,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#3-1766764862223.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#4-1766764858633.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav"
-            ]
+            ],
+            "portrait": "portraits/Briarbound.png"
         },
         {
             "id": "enemy.Briarbound.Death",
@@ -2712,7 +2872,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Briarbound.png"
         },
         {
             "id": "enemy.Grave Siren.Aggro",
@@ -2730,7 +2891,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav"
-            ]
+            ],
+            "portrait": "portraits/Grave%20Siren.png"
         },
         {
             "id": "enemy.Grave Siren.Attack",
@@ -2746,7 +2908,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#3-1766764862223.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#4-1766764858633.mp3",
                 "Assets/assets_for_inspiration/RPG_Essentials_Free/8_Buffs_Heals_SFX/39_Absorb_04.wav"
-            ]
+            ],
+            "portrait": "portraits/Grave%20Siren.png"
         },
         {
             "id": "enemy.Grave Siren.Death",
@@ -2763,7 +2926,8 @@
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade11.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade12.wav",
                 "Assets/assets_for_inspiration/rpg_sound_pack/RPG Sound Pack/NPC/shade/shade13.wav"
-            ]
+            ],
+            "portrait": "portraits/Grave%20Siren.png"
         },
         {
             "id": "enemy.Rime Stalker.Aggro",
@@ -2781,7 +2945,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Rime%20Stalker.png"
         },
         {
             "id": "enemy.Rime Stalker.Attack",
@@ -2797,7 +2962,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Rime%20Stalker.png"
         },
         {
             "id": "enemy.Rime Stalker.Death",
@@ -2814,7 +2980,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Rime%20Stalker.png"
         },
         {
             "id": "enemy.Cinder Penitent.Aggro",
@@ -2832,7 +2999,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Cinder%20Penitent.png"
         },
         {
             "id": "enemy.Cinder Penitent.Attack",
@@ -2848,7 +3016,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Cinder%20Penitent.png"
         },
         {
             "id": "enemy.Cinder Penitent.Death",
@@ -2865,7 +3034,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Cinder%20Penitent.png"
         },
         {
             "id": "enemy.Hollowmaw.Aggro",
@@ -2883,7 +3053,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Hollowmaw.png"
         },
         {
             "id": "enemy.Hollowmaw.Attack",
@@ -2899,7 +3070,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Hollowmaw.png"
         },
         {
             "id": "enemy.Hollowmaw.Death",
@@ -2916,7 +3088,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Hollowmaw.png"
         },
         {
             "id": "enemy.Barrow Castellan.Aggro",
@@ -2934,7 +3107,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Barrow%20Castellan.png"
         },
         {
             "id": "enemy.Barrow Castellan.Attack",
@@ -2950,7 +3124,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Barrow%20Castellan.png"
         },
         {
             "id": "enemy.Barrow Castellan.Death",
@@ -2967,7 +3142,8 @@
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#3-1766768042373.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Goblin_attack_–_Smal_#4-1766768042374.mp3",
                 "Assets/assets_for_inspiration/150+ Free RPG Sounds/150+ Free RPG Sounds/Player_hurt_–_Short__#1-1766764352490.mp3"
-            ]
+            ],
+            "portrait": "portraits/Barrow%20Castellan.png"
         }
     ]
 }
