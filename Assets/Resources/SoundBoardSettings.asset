@@ -818,12 +818,12 @@ MonoBehaviour:
     aliases: []
     sharedIds: []
     defaults:
-    - {fileID: 8300000, guid: 19f9c16637d3f7947b5e9ada592e0d8c, type: 3}
+    - {fileID: 8300000, guid: 4cb38b6820aa9534181a1c93c2b71167, type: 3}
     suggestions:
-    - Assets/Audio/SoundLibrary/Magic & spells/46_Poison_01.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav
-    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03_poison_arrow_shot.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav
     selected: {fileID: 0}
     muted: 0
@@ -922,12 +922,12 @@ MonoBehaviour:
     aliases: []
     sharedIds: []
     defaults:
-    - {fileID: 8300000, guid: 19f9c16637d3f7947b5e9ada592e0d8c, type: 3}
+    - {fileID: 8300000, guid: 9280a5b9a7da32149a82cea664836f46, type: 3}
     suggestions:
-    - Assets/Audio/SoundLibrary/Magic & spells/46_Poison_01.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav
-    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03_poison_arrow_shot.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav
     selected: {fileID: 0}
     muted: 0
@@ -939,12 +939,12 @@ MonoBehaviour:
     aliases: []
     sharedIds: []
     defaults:
-    - {fileID: 8300000, guid: 19f9c16637d3f7947b5e9ada592e0d8c, type: 3}
+    - {fileID: 8300000, guid: 63d66c806b870864f956a713fa805ac8, type: 3}
     suggestions:
-    - Assets/Audio/SoundLibrary/Magic & spells/46_Poison_01.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav
-    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03_poison_arrow_shot.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav
     selected: {fileID: 0}
     muted: 0
@@ -959,10 +959,10 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 4e7a0dd692f52b04ca8954a5669176ee, type: 3}
     suggestions:
     - Assets/Audio/SoundLibrary/Creatures & voices/slime1.wav
-    - Assets/Audio/SoundLibrary/Magic & spells/46_Poison_01.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison01.wav
     - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav
-    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03.wav
+    - Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison03_poison_arrow_shot.wav
     selected: {fileID: 8300000, guid: 4e7a0dd692f52b04ca8954a5669176ee, type: 3}
     muted: 0
     volume: 1

@@ -4318,7 +4318,7 @@
       ]
     },
     {
-      "file": "Magic & spells/Skill_Poison03.wav",
+      "file": "Magic & spells/Skill_Poison03_poison_arrow_shot.wav",
       "sha256": "d8b6cd92681733b8dbd1fd0a49817c0e9409093ca21360716f9eb5be98cbc681",
       "sources": [
         {
@@ -5703,16 +5703,6 @@
       "sources": [
         {
           "file": "RPG_Essentials_Free/8_Atk_Magic_SFX/45_Charge_05.wav",
-          "pack": "RPG_Essentials_Free"
-        }
-      ]
-    },
-    {
-      "file": "Magic & spells/46_Poison_01.wav",
-      "sha256": "07de4efd8bb5d36ce4419f7d5f48f640b4007ecdc9b8ca66184480a7090ffc2e",
-      "sources": [
-        {
-          "file": "RPG_Essentials_Free/8_Atk_Magic_SFX/46_Poison_01.wav",
           "pack": "RPG_Essentials_Free"
         }
       ]

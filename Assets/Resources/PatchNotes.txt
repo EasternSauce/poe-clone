@@ -1,3 +1,6 @@
+version: 2026-10-09-venom-skill-audio
+- Venom Arrow now uses the poison arrow shot recording. Venom Spout uses a separate poison spell sound. Removed deleted poison clip references from sound board suggestions.
+
 version: 2026-10-09-sound-review
 - Updated melee swings, impacts, blocks, bow releases, spell launches, war cries, weapon skills, loot and footsteps with fitting recordings from the reviewed permanent sound library. Rain of Arrows now uses volley recordings.
 - Repeated effects alternate between available recordings without playing the same take twice in a row. Explicit single-sound selections still play the chosen recording.
