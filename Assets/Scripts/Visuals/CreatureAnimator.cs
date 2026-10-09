@@ -17,7 +17,7 @@ namespace PoeClone.Visuals
     /// times the strike), the recoil from <see cref="Stagger"/>. So a spectator's puppet, which only
     /// gets positions and attack/stagger counters, animates the same way.
     /// </summary>
-    public class CreatureAnimator : MonoBehaviour
+    public partial class CreatureAnimator : MonoBehaviour
     {
         /// <summary>Where a creature's spit leaves its body (see EnemyCombat.BoltOrigin).</summary>
         public const string MouthName = "Mouth";
@@ -115,6 +115,7 @@ namespace PoeClone.Visuals
                 wingRBase = WingR.localRotation;
             if (Jaw != null)
                 jawBaseScale = Jaw.localScale;
+            CaptureBossRest();
         }
 
         /// <summary>Gathers itself to jump (a leap's wind-up) for this long.</summary>
@@ -156,6 +157,7 @@ namespace PoeClone.Visuals
             AttackCurves(out float windUp, out float lunge, out float bite);
             float recoil = stagger != null ? stagger.RecoilFraction : 0f;
             float t = Time.time + seed;
+            UpdateBossAct(dt);
 
             switch (Body)
             {
@@ -181,6 +183,9 @@ namespace PoeClone.Visuals
                     break;
                 case CreatureBody.CinderPenitent:
                     AnimatePenitent(dt, t, windUp, lunge, recoil);
+                    break;
+                default:
+                    AnimateBoss(dt, t, windUp, lunge, bite, recoil);
                     break;
             }
         }
@@ -553,6 +558,9 @@ namespace PoeClone.Visuals
                     if (WingR != null) AddSettle(WingR, WingR.localPosition, wingRBase * Quaternion.Euler(0f, 0f, -8f));
                     if (WristL != null) AddSettle(WristL, WristL.localPosition, Quaternion.Euler(0f, 0f, -15f));
                     if (WristR != null) AddSettle(WristR, WristR.localPosition, Quaternion.Euler(0f, 0f, -15f));
+                    break;
+                default:
+                    BossDeath();
                     break;
             }
 

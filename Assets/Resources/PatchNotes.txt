@@ -1,3 +1,16 @@
+version: 2026-10-09-field-boss-rework
+- Field bosses are no longer giant versions of normal enemies. Each has a body and attacks of its own, and they come in different sizes:
+  - Gravelord Mortis is now a gaunt gravedigger, only a little taller than you. He burrows under the ground and bursts up beneath you, opens graves whose dead hands hold you in place, throws the coffin off his back (the dead climb out of it), drags his shovel to split the ground, and sweeps it around him.
+  - The Ashen Warlord is now an empty suit of armour with fire for a head and a greatsword. It drags a line of fire that keeps burning, tosses burning embers, cleaves a wedge in front of it and leaps after you. At half life its plates tear loose, circle it, burn you on contact and fly at you along marked lines.
+  - Rimeheart is now a floating heart of ice in a cage of shards. It keeps its distance and shoots. Rings of frost roll out from it (slip through the gaps), shards spiral out of it, ice mirrors rise around you and shatter, and ice lances fall where you stand.
+- New field bosses:
+  - Bramblesow (Greenwood, at the north-east dead end): a huge boar with a thicket on its back. It paws the ground and charges down a marked line, and is dazed for a moment if it rams a log or a wall. Roots burst up and hold you, and it shakes thorns off its back.
+  - Vex, the Tunnel King (The Warren, through a new gate at a dead end in the south-east of the Lost Hollows): a small, quick goblin king. He vanishes in smoke and comes out behind you, scatters snares that hold you when you step on them, lobs spore mushrooms that leave slowing clouds and throws fans of knives.
+  - The Bell-Ringer (The Drowned Belfry, through a new gate at the end of a lane off the Haunted Graveyard's north-east plots): carries a great cracked bell. Tolling it sends out rings of sound with a gap to slip through and wakes bats. It drops the bell over you to trap you, calls down lightning and hammers anyone close.
+  - The Sunforged Idol (the Sun Court, a new dead end off the Ashen Ruins' south-west hall): a huge four-armed statue holding up a sun. It hardly moves. It sweeps beams of sunlight around itself, drops stone hands from the sky, flares when you stand close, and sinks into the ground to rise again beside you.
+  - Hrimgar the Huntress (the Frozen Hollow's north-east dead end, now widened into a hunting camp): hunts with frost wolves. She throws her spear down a marked line, casts nets that hold you, pounces and sweeps her spear around her. At half life she throws three spears at once.
+- Some attacks now hold you in place for a moment: walking stops, but Dash still breaks free.
+
 version: 2026-10-09-animated-telegraphs
 - The warning marks on the ground before a blast, charge, breath or arrow rain now have animated textures matching the damage type: rolling flames and embers for fire, frost crystals with a shimmer for cold, jumping arcs for lightning, and cracked earth for physical.
 - A bright edge sweeps across each mark as it fills, and its outline pulses faster as the hit gets close. The marks are slightly see-through, so the ground under them stays visible.

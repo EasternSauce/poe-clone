@@ -125,6 +125,17 @@ namespace PoeClone.Player
 
         public bool IsChilled => Time.time < chilledUntil;
 
+        private float rootedUntil = -1f;
+
+        /// <summary>Held in place for a moment (a boss's grasping hands, a net, a bell): no walking, but a dash still breaks free.</summary>
+        public void Root(float seconds)
+        {
+            rootedUntil = Mathf.Max(rootedUntil, Time.time + seconds);
+            walking = false;
+        }
+
+        public bool IsRooted => Time.time < rootedUntil;
+
         /// <summary>Slowed for a moment by a cold hit (PoE's chill).</summary>
         public void Chill(float seconds)
         {
@@ -185,8 +196,8 @@ namespace PoeClone.Player
                 return;
             }
 
-            Vector2 input = skillCommitted ? Vector2.zero : ReadMovementInput();
-            if (skillCommitted)
+            Vector2 input = skillCommitted || IsRooted ? Vector2.zero : ReadMovementInput();
+            if (skillCommitted || IsRooted)
                 walking = false;
 
             // Move relative to the camera so W is always "up the screen",

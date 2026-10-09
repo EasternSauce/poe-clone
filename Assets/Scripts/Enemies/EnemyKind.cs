@@ -39,10 +39,15 @@ namespace PoeClone.Enemies
     public enum BossStyle
     {
         None,
-        Gravelord,   // greataxe: leaps onto the player, spins its axe all round, raises zombies
-        Warlord,     // maul: slams a line of eruptions at the player, quake-leaps, rains fire
-        FrostQueen,  // a giant frost spider: pounces, hatches ice crawlers, bursts frost, calls down ice
-        Shepherd     // the act boss: a hooded shepherd with a snake crook and a lantern (ShepherdLook); three phases
+        Gravelord,   // Mortis, a gravedigger: burrows, opens graves under the player, throws his coffin full of dead
+        Warlord,     // empty burning armour: drags a line of fire, tosses embers, cleaves, its plates fly in phase two
+        FrostQueen,  // Rimeheart, a floating heart of ice: pulses rings of frost, spirals shards, raises mirrors
+        Shepherd,    // the act boss: a hooded shepherd with a snake crook and a lantern (ShepherdLook); three phases
+        Bramblesow,  // a boar with a thicket on its back: charges (stunned if it hits a wall), roots, thorns
+        TunnelKing,  // Vex: smoke bombs and backstabs, tripwires, spore mushrooms, knife fans
+        BellRinger,  // tolls rings of sound, drops its bell over the player, calls bats
+        SunIdol,     // a statue that barely moves: sweeping sunbeams, stone hands, sinks and rises elsewhere
+        Huntress     // Hrimgar: spear throws, nets, pounces, a pack of frost wolves
     }
 
     /// <summary>
@@ -148,6 +153,14 @@ namespace PoeClone.Enemies
                     case CreatureBody.CinderPenitent: return 1.8f;
                     case CreatureBody.Hollowmaw: return 2.5f;
                     case CreatureBody.BarrowCastellan: return 2.7f;
+                    case CreatureBody.Gravedigger: return 2.5f;
+                    case CreatureBody.HollowArmor: return 2.5f;
+                    case CreatureBody.FrostHeart: return 3.1f;
+                    case CreatureBody.Boar: return 1.7f;
+                    case CreatureBody.TunnelKing: return 1.6f;
+                    case CreatureBody.BellRinger: return 2.9f;
+                    case CreatureBody.SunIdol: return 3.3f;
+                    case CreatureBody.Huntress: return 2.3f;
                     default: return 2.3f;
                 }
             }
@@ -291,10 +304,11 @@ namespace PoeClone.Enemies
                 Name = "Gravelord Mortis", HealthMultiplier = 20f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 16.72131f, Armour = 255.102f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 150,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
-                Damage = 9.333333f, AttackCooldown = 1.4f, AttackRange = 4.2f,
-                SpeedRatio = 1.05f, Scale = 1.9f,
-                Cloth = new Color(0.16f, 0.18f, 0.16f), Skin = new Color(0.62f, 0.68f, 0.58f), Pants = new Color(0.12f, 0.12f, 0.12f), Eyes = new Color(0.3f, 1.0f, 0.4f),
-                Gear = new[] { "great_helm", "executioner_axe" }, Weapon = WeaponType.Greataxe,
+                Damage = 9.333333f, AttackCooldown = 1.4f, AttackRange = 3.0f,
+                SpeedRatio = 0.95f, Scale = 1.15f,
+                // A gaunt gravedigger, not much taller than a man: coat, waistcoat, grey skin, grave-light eyes.
+                Body = CreatureBody.Gravedigger,
+                Skin = new Color(0.20f, 0.24f, 0.21f), Cloth = new Color(0.12f, 0.12f, 0.13f), Pants = new Color(0.62f, 0.67f, 0.58f), Eyes = new Color(0.3f, 1.0f, 0.4f),
                 DropChance = 1f, RareBonus = 0.6f, Drops = 3,
                 IsBoss = true, Boss = BossStyle.Gravelord
             },
@@ -303,23 +317,24 @@ namespace PoeClone.Enemies
                 Name = "Ashen Warlord", HealthMultiplier = 20f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5625f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 22.92722f, Armour = 204.918f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 220,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
-                Damage = 11.67816f, AttackCooldown = 1.5f, AttackRange = 4.4f,
-                SpeedRatio = 1.05f, Scale = 2.1f,
-                Cloth = new Color(0.30f, 0.06f, 0.04f), Skin = new Color(0.22f, 0.18f, 0.17f), Pants = new Color(0.10f, 0.08f, 0.08f), Eyes = new Color(1.0f, 0.55f, 0.1f),
-                Gear = new[] { "warlord_plate", "warlord_helm", "earthbreaker" }, Weapon = WeaponType.Maul,
+                Damage = 11.67816f, AttackCooldown = 1.5f, AttackRange = 4.8f,
+                SpeedRatio = 0.9f, Scale = 2.25f,
+                // Empty plate armour, embers in its joints and fire where its head should be.
+                Body = CreatureBody.HollowArmor,
+                Skin = new Color(0.20f, 0.18f, 0.18f), Cloth = new Color(0.32f, 0.07f, 0.04f), Pants = new Color(1.0f, 0.45f, 0.1f), Eyes = new Color(1.0f, 0.85f, 0.35f),
                 DropChance = 1f, RareBonus = 0.8f, Drops = 4,
                 IsBoss = true, Boss = BossStyle.Warlord
             },
             new EnemyKind
             {
-                // The brood-queen of the Hollow's ice crawlers: a spider the size of a house.
+                // The frozen heart of the Hollow: a heart of ice the size of a man, floating in a cage of shards.
                 Name = "Rimeheart", HealthMultiplier = 20f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 26.07053f, Armour = 167.7852f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 300,
-                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
-                Damage = 10.60983f, AttackCooldown = 1.0f, AttackRange = 4.0f,
-                SpeedRatio = 1.2f, Scale = 2.6f,
-                Body = CreatureBody.Spider, Sounds = EnemySounds.Set.Spider,
-                Skin = new Color(0.62f, 0.80f, 0.96f), Cloth = new Color(0.86f, 0.95f, 1.0f), Pants = new Color(0.20f, 0.50f, 0.95f), Eyes = new Color(0.4f, 1.0f, 1.0f),
+                Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Cold,
+                Damage = 10.60983f, AttackCooldown = 1.3f, AttackRange = 11f, ProjectileSpeed = 13f,
+                SpeedRatio = 0.75f, Scale = 1.25f,
+                Body = CreatureBody.FrostHeart, StaffOrb = new Color(0.6f, 0.9f, 1f),
+                Skin = new Color(0.62f, 0.84f, 0.98f), Cloth = new Color(0.88f, 0.96f, 1.0f), Pants = new Color(0.22f, 0.48f, 0.92f), Eyes = new Color(0.55f, 1.0f, 1.0f),
                 DropChance = 1f, RareBonus = 0.9f, Drops = 4,
                 IsBoss = true, Boss = BossStyle.FrostQueen
             },
@@ -638,6 +653,73 @@ namespace PoeClone.Enemies
                 Skin = new Color(0.31f, 0.33f, 0.29f), Cloth = new Color(0.24f, 0.29f, 0.28f),
                 Pants = new Color(0.25f, 0.20f, 0.16f), Eyes = new Color(0.56f, 0.77f, 0.66f),
                 Skill = EnemySkill.Graveward, SkillCooldown = 6f, DropChance = 0.55f, RareBonus = 0.1f
+            },
+
+            // Field bosses added later (weight 0: their lairs place them). See BossAbilities.
+            new EnemyKind
+            {
+                // Greenwood's first boss: a boar the size of a cart, a thicket growing on its back.
+                Name = "Bramblesow", HealthMultiplier = 14f, DamageMultiplier = 2f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
+                MaxHealth = 20f, Armour = 30f, PoisonResistance = 20f, Experience = 90,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 7f, AttackCooldown = 1.6f, AttackRange = 3.4f,
+                SpeedRatio = 0.75f, Scale = 2.0f,
+                Body = CreatureBody.Boar, Sounds = EnemySounds.Set.Hound,
+                Skin = new Color(0.38f, 0.26f, 0.17f), Cloth = new Color(0.17f, 0.12f, 0.09f), Pants = new Color(0.30f, 0.50f, 0.20f), Eyes = new Color(1.0f, 0.25f, 0.12f),
+                DropChance = 1f, RareBonus = 0.4f, Drops = 2,
+                IsBoss = true, Boss = BossStyle.Bramblesow
+            },
+            new EnemyKind
+            {
+                // King of the tunnels under the Lost Hollows: small, quick and full of tricks.
+                Name = "Vex, the Tunnel King", HealthMultiplier = 16f, DamageMultiplier = 2.5f, SpawnWeight = 0f, Tempo = 0.85f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
+                MaxHealth = 15f, Armour = 60f, PoisonResistance = 40f, Experience = 130,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 8f, AttackCooldown = 0.8f, AttackRange = 1.9f,
+                SpeedRatio = 1.05f, Scale = 0.95f,
+                Body = CreatureBody.TunnelKing,
+                Skin = new Color(0.44f, 0.50f, 0.30f), Cloth = new Color(0.30f, 0.22f, 0.16f), Pants = new Color(0.82f, 0.55f, 0.24f), Eyes = new Color(1.0f, 0.9f, 0.2f),
+                DropChance = 1f, RareBonus = 0.5f, Drops = 3,
+                IsBoss = true, Boss = BossStyle.TunnelKing
+            },
+            new EnemyKind
+            {
+                // Rings the graveyard's sunken bell for the dead; it carries it on its back.
+                Name = "The Bell-Ringer", HealthMultiplier = 20f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
+                MaxHealth = 16f, Armour = 180f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 40f, Experience = 160,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Lightning,
+                Damage = 9f, AttackCooldown = 1.5f, AttackRange = 2.9f,
+                SpeedRatio = 0.55f, Scale = 1.2f, Undead = true,
+                Body = CreatureBody.BellRinger,
+                Skin = new Color(0.16f, 0.13f, 0.18f), Cloth = new Color(0.62f, 0.44f, 0.20f), Pants = new Color(0.30f, 0.58f, 0.48f), Eyes = new Color(1.0f, 0.92f, 0.5f),
+                DropChance = 1f, RareBonus = 0.6f, Drops = 3,
+                IsBoss = true, Boss = BossStyle.BellRinger
+            },
+            new EnemyKind
+            {
+                // The ruins' old god: a four-armed statue holding up a sun. It hardly moves.
+                Name = "The Sunforged Idol", HealthMultiplier = 20f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
+                MaxHealth = 24f, Armour = 320f, FireResistance = 50f, ColdResistance = 20f, LightningResistance = 20f, Experience = 240,
+                Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Fire,
+                Damage = 11f, AttackCooldown = 1.8f, AttackRange = 15f, ProjectileSpeed = 12f,
+                SpeedRatio = 0.001f, Scale = 2.6f,
+                Body = CreatureBody.SunIdol, StaffOrb = new Color(1f, 0.6f, 0.15f),
+                Skin = new Color(0.80f, 0.68f, 0.50f), Cloth = new Color(0.42f, 0.36f, 0.30f), Pants = new Color(0.95f, 0.75f, 0.25f), Eyes = new Color(1.0f, 0.62f, 0.15f),
+                DropChance = 1f, RareBonus = 0.8f, Drops = 4,
+                IsBoss = true, Boss = BossStyle.SunIdol
+            },
+            new EnemyKind
+            {
+                // A huntress of the Hollow's ice, with her frost wolves.
+                Name = "Hrimgar the Huntress", HealthMultiplier = 20f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.85f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
+                MaxHealth = 24f, Armour = 160f, FireResistance = 10f, ColdResistance = 50f, LightningResistance = 20f, Experience = 300,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
+                Damage = 10f, AttackCooldown = 1.1f, AttackRange = 2.7f,
+                SpeedRatio = 0.95f, Scale = 1.0f,
+                Body = CreatureBody.Huntress,
+                Skin = new Color(0.34f, 0.40f, 0.48f), Cloth = new Color(0.90f, 0.92f, 0.94f), Pants = new Color(0.66f, 0.78f, 0.86f), Eyes = new Color(0.5f, 1.0f, 1.0f),
+                DropChance = 1f, RareBonus = 0.9f, Drops = 4,
+                IsBoss = true, Boss = BossStyle.Huntress
             },
         };
 

@@ -104,6 +104,8 @@ namespace PoeClone.World
                         .Route(24, -66, 54, -118, 90, -137, 65)
                         .Route(22, 82, 8, 129, 52, 140, 89)
                         .Exclude(-37, 35, 22, 20)
+                        // Bramblesow's wallow, widened out of the north-east dead end.
+                        .Room(138, 98, 21, 19)
                         .Lake(58, -38, 22, 16).Lake(72, 58, 23, 23)
                         .River(12, 24, -152, 24, -65, 24, 0, 8, 50, -6, 100, -18, 152)
                         .Bridge(24, -65, 26, 5.5f, 12).Bridge(24, 0, 26, 6, -9).Bridge(8, 50, 28, 5.5f, -17);
@@ -114,6 +116,8 @@ namespace PoeClone.World
                         .Route(26, -124, 0, -78, 0, 0, 0, 80, 0, 124, 0)
                         .Route(24, -78, 0, -91, -50, -2, -99, 87, -46, 80, 0)
                         .Route(24, -78, 0, -76, 85, -8, 65, 62, 82, 80, 0)
+                        // A lane off the north-east plots to the gate of the Drowned Belfry.
+                        .Route(12, 108, 88, 152, 98)
                         .Lake(-30, -48, 23, 18).Exclude(36, -46, 22, 18)
                         .River(18, -184, -111, -115, -123, -20, -132, 70, -126, 184, -115)
                         .Exclude(-10, 29, 19, 10).Exclude(27, 80, 12, 18);
@@ -126,6 +130,8 @@ namespace PoeClone.World
                         .Route(22, 0, 0, 34, -32, 78, -70)
                         .Route(20, -65, -18, -68, -69, -12, -86, 34, -32)
                         .Route(22, 0, 0, -50, 72, 0, 108, 57, 43)
+                        // The Sun Court, a dead end off the south-west hall: the Sunforged Idol's.
+                        .Route(20, -80, -88, -112, -112).Room(-118, -116, 24, 20)
                         .Exclude(6, 64, 15, 15).Exclude(-19, -49, 18, 16);
                 case WorldBuilder.Frozen:
                     return new AreaShape(center, new Vector2(292, 332), cave: true)
@@ -138,6 +144,8 @@ namespace PoeClone.World
                         .Route(14, -38, 42, -89, 57, -109, 99)
                         .Route(14, 77, -28, 115, -4, 124, -48)
                         .Route(14, 61, 37, 115, 79, 95, 114)
+                        // Hrimgar's hunting camp, widened out of the north-east dead end.
+                        .Room(92, 120, 20, 17)
                         .Route(14, -61, -89, -106, -117)
                         .River(9, 26, -174, 26, -110, 26, -93, 32, -52, 26, 16, 20, 64, 26, 87, 26, 112, 38, 174)
                         .Bridge(26, -93, 22, 5.5f, 8).Bridge(26, 16, 22, 6, -8).Bridge(26, 87, 22, 5.5f, 12)
@@ -160,6 +168,15 @@ namespace PoeClone.World
                         .Route(12, 91, -45, 124, -60, 138, -95)
                         .Route(12, 79, 58, 101, 33, 132, 40)
                         .Lake(0, 47, 19, 13).Lake(-110, 17, 9, 7);
+                case WorldBuilder.Warren:
+                    // Vex's hoard: a round cave, a tunnel in from the gate, two niches.
+                    return new AreaShape(center, new Vector2(112, 104), cave: true)
+                        .Room(0, 4, 32, 27).Room(-24, 16, 11, 9).Room(26, 14, 10, 9)
+                        .Route(11, 0, -42, 0, -20);
+                case WorldBuilder.Belfry:
+                    // A sunken chapel yard, round, with a path in from the gate.
+                    return new AreaShape(center, new Vector2(110, 110))
+                        .Room(0, 4, 31, 30).Route(11, 0, -44, 0, -24);
                 default:
                     return new AreaShape(center, new Vector2(124, 92), cave: true).Room(0, 0, 59, 43);
             }

@@ -1,48 +1,46 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using PoeClone.Combat;
-using PoeClone.Inventory;
 using PoeClone.Player;
 using PoeClone.Skills;
 using PoeClone.UI;
 using PoeClone.Visuals;
+using Random = UnityEngine.Random;
 
 namespace PoeClone.Enemies
 {
     /// <summary>
-    /// What a boss does besides its plain blows: its own set of big, readable moves, one at a time
-    /// while the player is close, each telegraphed on the ground before it lands.
+    /// What a field boss does besides its plain blows: a set of big, readable moves of its own,
+    /// one at a time while the player is close, each telegraphed before it lands. Every boss has a
+    /// body of its own (<see cref="CreatureBuilder"/>) and its own moves, in its own file:
     ///
-    /// - Gravelord Mortis (greataxe): leaps onto the player and buries the axe where he lands;
-    ///   spins the axe all round himself; raises zombies.
-    /// - The Ashen Warlord (maul): slams the maul down and sends a line of eruptions racing at the
-    ///   player; quake-leaps; rains fire.
-    /// - Rimeheart (a giant frost spider): pounces; bursts frost all round her, chilling; hatches
-    ///   ice crawlers; calls down ice.
+    /// - Gravelord Mortis (BossAbilities.Mortis): a gravedigger; burrows, opens graves, throws his coffin.
+    /// - The Ashen Warlord (.Warlord): an empty suit of burning armour; drags fire, tosses embers, its plates fly.
+    /// - Rimeheart (.Rimeheart): a floating heart of ice; pulses rings of frost, spirals shards, raises mirrors.
+    /// - Bramblesow (.Bramblesow): a giant boar with a thicket on its back; charges, bursts roots, shakes thorns.
+    /// - Vex, the Tunnel King (.Vex): a small, quick goblin king; smoke and backstabs, tripwires, spores.
+    /// - The Bell-Ringer (.BellRinger): carries a cracked bell; tolls rings of sound, drops the bell on you.
+    /// - The Sunforged Idol (.SunIdol): a statue; sweeps sunbeams, slams stone hands, sinks and rises elsewhere.
+    /// - Hrimgar the Huntress (.Hrimgar): throws spears and nets, pounces, hunts with frost wolves.
     ///
-    /// At half life each boss roars into a second phase: a burst of its own, and its moves come
+    /// At half life each boss roars into a second phase: something of its own, and its moves come
     /// faster. While a move plays the boss is <see cref="Busy"/> (its controller and plain attacks
     /// wait). Added by <see cref="World.BossLair"/> when it places the boss.
     /// </summary>
     [RequireComponent(typeof(EnemyHealth))]
-    public class BossAbilities : MonoBehaviour
+    public partial class BossAbilities : MonoBehaviour
     {
-        private const float EngageRange = 18f;
-        private const float MoveEvery = 3.0f;
-        private const float MoveEveryEnraged = 2.0f;
-        private const int CalmMaxMinions = 2;
-        private const int EnragedMaxMinions = 4;
-
-        private enum Move
+        // One of the boss's moves: when it fits, and what it does.
+        private sealed class BossMove
         {
-            Leap,
-            Spin,
-            RaiseDead,
-            Fissure,
-            Rain,
-            Nova,
-            Brood
+            public string Name;
+            public float MinRange;
+            public float MaxRange = 99f;
+            public bool SecondPhaseOnly;
+            public Func<bool> Allowed;
+            public Func<IEnumerator> Run;
         }
 
         private static readonly Color Dust = new Color(0.72f, 0.64f, 0.5f, 1f);
@@ -52,24 +50,34 @@ namespace PoeClone.Enemies
         private int level;
         private GameObject minionPrefab;
         private PlayerStats player;
+        private PlayerController playerMotion;
         private CharacterController body;
-        private CharacterAttackAnimator attackAnimator;
-        private CharacterWalkAnimator walk;
-        private CreatureAnimator creature;
+        private CreatureAnimator anim;
         private EnemyController controller;
 
+        // Set up per boss (SetUp* in each boss's file).
+        private readonly List<BossMove> moves = new List<BossMove>();
+        private Func<IEnumerator> closer;           // how it gets to a player out of reach
+        private float closerRange = 6f;              // ...beyond this distance
+        private float closerEvery = 3.5f;
+        private Func<IEnumerator> enrage;            // its half-life roar's own effect
+        private float engageRange = 18f;
+        private float moveEvery = 3.0f;
+        private float moveEveryEnraged = 2.0f;
+        private int calmMaxMinions = 2;
+        private int enragedMaxMinions = 3;
+
         private float nextMove;
-        private float nextLeap;
+        private float nextCloser;
+        private bool busy;
+        private bool secondPhase;
+        private string last;
+        private readonly List<EnemyHealth> minions = new List<EnemyHealth>();
+        // Traps, orbiting plates, mirrors: gone with the boss.
+        private readonly List<GameObject> leftovers = new List<GameObject>();
 
         // The boss's tempo (EnemyKind.Tempo): every wind-up, flight and pause is divided by it.
         private float T => kind != null ? Mathf.Max(0.1f, kind.Tempo * (controller != null ? controller.AttackSpeedMultiplier : 1f)) : 1f;
-
-        // Leaping (the bosses' way of closing in) has its own, shorter timer than the other moves.
-        private const float LeapEvery = 3.5f;
-        private bool busy;
-        private bool secondPhase;
-        private Move last = Move.Rain;
-        private readonly List<EnemyHealth> minions = new List<EnemyHealth>();
 
         /// <summary>A move is playing: the boss's controller and its plain attacks wait.</summary>
         public bool Busy => busy || (shepherd != null && shepherd.IsPlaying);
@@ -87,6 +95,24 @@ namespace PoeClone.Enemies
             minionPrefab = enemyPrefab;
             if (kind.Boss == BossStyle.Shepherd && GetComponent<ShepherdFight>() == null)
                 gameObject.AddComponent<ShepherdFight>().Configure(kind, level);
+
+            moves.Clear();
+            switch (kind.Boss)
+            {
+                case BossStyle.Gravelord: SetUpMortis(); break;
+                case BossStyle.Warlord: SetUpWarlord(); break;
+                case BossStyle.FrostQueen: SetUpRimeheart(); break;
+                case BossStyle.Bramblesow: SetUpBramblesow(); break;
+                case BossStyle.TunnelKing: SetUpVex(); break;
+                case BossStyle.BellRinger: SetUpBellRinger(); break;
+                case BossStyle.SunIdol: SetUpSunIdol(); break;
+                case BossStyle.Huntress: SetUpHrimgar(); break;
+            }
+        }
+
+        private void Add(string name, Func<IEnumerator> run, float minRange = 0f, float maxRange = 99f, bool secondPhaseOnly = false, Func<bool> allowed = null)
+        {
+            moves.Add(new BossMove { Name = name, Run = run, MinRange = minRange, MaxRange = maxRange, SecondPhaseOnly = secondPhaseOnly, Allowed = allowed });
         }
 
         private void Awake()
@@ -99,30 +125,46 @@ namespace PoeClone.Enemies
 
         private void Start()
         {
-            attackAnimator = GetComponentInChildren<CharacterAttackAnimator>();
-            walk = GetComponentInChildren<CharacterWalkAnimator>();
-            creature = GetComponentInChildren<CreatureAnimator>();
+            anim = GetComponentInChildren<CreatureAnimator>();
             shepherd = GetComponentInChildren<ShepherdAnimator>();
+            OnStarted();
         }
 
-        // The raised dead and the brood fall with their master.
+        // Per-boss start: see each boss's file.
+        private void OnStarted()
+        {
+            if (kind == null)
+                return;
+            if (kind.Boss == BossStyle.Huntress)
+                nextPack = Time.time + 1f;
+        }
+
+        // The raised dead and the brood fall with their master; its traps go too.
         private void OnBossDied()
         {
             busy = false;
-            SetCrouch(0f);
+            StopAllCoroutines();
+            health.Immune = false;
+            SetVisible(true);
+            if (anim != null)
+            {
+                anim.Sunk = 0f;
+                anim.EndAct();
+            }
             foreach (EnemyHealth minion in minions)
             {
                 if (minion != null && !minion.IsDead)
                     minion.TakeDamage(minion.CurrentHealth + 1f);
             }
             minions.Clear();
+            ClearLeftovers();
         }
 
         private void OnEnable()
         {
             // The first move comes a little after the fight starts, not on the first frame.
-            nextMove = Time.time + 3.5f / T;
-            nextLeap = Time.time + 2f / T;
+            nextMove = Time.time + 3f / T;
+            nextCloser = Time.time + 2f / T;
         }
 
         private void OnDestroy()
@@ -132,11 +174,22 @@ namespace PoeClone.Enemies
                 if (minion != null && !minion.IsDead)
                     Destroy(minion.gameObject);
             }
+            ClearLeftovers();
+        }
+
+        private void ClearLeftovers()
+        {
+            foreach (GameObject go in leftovers)
+            {
+                if (go != null)
+                    Destroy(go);
+            }
+            leftovers.Clear();
         }
 
         private void Update()
         {
-            if (kind == null || health.IsDead || busy)
+            if (kind == null || health.IsDead)
                 return;
             // The act boss fights its own fight (ShepherdFight), not the field bosses' moves.
             if (kind.Boss == BossStyle.Shepherd)
@@ -147,102 +200,205 @@ namespace PoeClone.Enemies
                 player = FindAnyObjectByType<PlayerStats>();
                 if (player == null)
                     return;
+                playerMotion = player.GetComponent<PlayerController>();
             }
 
+            Tick();
+            if (busy)
+                return;
+
             float distance = Flat(player.transform.position - transform.position).magnitude;
-            if (player.IsDead || distance > EngageRange)
+            if (player.IsDead || distance > engageRange)
             {
                 // Out of the fight: the timer waits.
                 nextMove = Mathf.Max(nextMove, Time.time + 2f / T);
-                nextLeap = Mathf.Max(nextLeap, Time.time + 1f / T);
+                nextCloser = Mathf.Max(nextCloser, Time.time + 1f / T);
                 return;
             }
 
             if (!secondPhase && health.CurrentHealth <= health.MaxHealth * 0.5f)
             {
                 secondPhase = true;
-                StartCoroutine(Roar());
+                StartCoroutine(RunBusy(Roar()));
                 return;
             }
 
             // Its plain blow finishes first.
-            if (Time.time < Mathf.Min(nextMove, distance > 4.5f ? nextLeap : float.MaxValue) || (attackAnimator != null && attackAnimator.IsAttacking && !kind.IsCreature))
+            CharacterAttackAnimator swing = anim != null ? anim.GetComponent<CharacterAttackAnimator>() : null;
+            if (swing != null && swing.IsAttacking)
                 return;
 
-            // Out of reach: it leaps after the player on its own timer.
-            if (distance > 4.5f && Time.time >= nextLeap && kind.Boss != BossStyle.None)
+            // Out of reach: it closes in its own way, on its own timer.
+            if (closer != null && distance > closerRange && Time.time >= nextCloser)
             {
-                nextLeap = Time.time + LeapEvery / T;
-                StartCoroutine(LeapSlam());
+                nextCloser = Time.time + closerEvery / T;
+                nextMove = Mathf.Max(nextMove, Time.time + 1.2f / T);
+                StartCoroutine(RunBusy(closer()));
                 return;
             }
 
-            Move move = PickMove(distance);
-            last = move;
-            nextMove = Time.time + (secondPhase ? MoveEveryEnraged : MoveEvery) / T;
-            StartCoroutine(Run(move));
+            if (Time.time < nextMove)
+                return;
+
+            BossMove move = PickMove(distance);
+            if (move == null)
+                return;
+            last = move.Name;
+            nextMove = Time.time + (secondPhase ? moveEveryEnraged : moveEvery) / T;
+            EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
+            StartCoroutine(RunBusy(move.Run()));
         }
 
-        // The boss's moves in turn, skipping the one just used and any that make no sense from
-        // here (no leaping at someone standing next to it, no spinning at someone far away).
-        private Move PickMove(float distance)
+        /// <summary>
+        /// Plays one of its moves now, by name ("closer" for its way of closing in, "roar" for the
+        /// half-life roar), for demos and tests. Returns what happened.
+        /// </summary>
+        public string Play(string moveName)
         {
-            Move[] set;
+            if (kind == null || health.IsDead)
+                return "dead or not set up";
+            if (busy)
+                return "busy";
+            if (player == null)
+            {
+                player = FindAnyObjectByType<PlayerStats>();
+                playerMotion = player != null ? player.GetComponent<PlayerController>() : null;
+                if (player == null)
+                    return "no player";
+            }
+            if (moveName == "closer" && closer != null)
+            {
+                StartCoroutine(RunBusy(closer()));
+                return "closing in";
+            }
+            if (moveName == "roar")
+            {
+                secondPhase = true;
+                StartCoroutine(RunBusy(Roar()));
+                return "roaring";
+            }
+            foreach (BossMove m in moves)
+            {
+                if (m.Name != moveName)
+                    continue;
+                last = m.Name;
+                nextMove = Time.time + moveEvery / T;
+                StartCoroutine(RunBusy(m.Run()));
+                return "playing " + m.Name;
+            }
+            var names = new List<string>();
+            foreach (BossMove m in moves)
+                names.Add(m.Name);
+            return "no move " + moveName + " (has " + string.Join(", ", names) + ", closer, roar)";
+        }
+
+        // Things that run all fight long (orbiting plates, armed traps, the pack): each boss's own.
+        private void Tick()
+        {
             switch (kind.Boss)
             {
-                case BossStyle.Gravelord: set = new[] { Move.Spin, Move.RaiseDead }; break;
-                case BossStyle.Warlord: set = new[] { Move.Fissure, Move.Rain }; break;
-                default: set = new[] { Move.Nova, Move.Brood, Move.Rain }; break;
+                case BossStyle.Warlord: TickWarlord(); break;
+                case BossStyle.TunnelKing: TickVex(); break;
+                case BossStyle.Huntress: TickHrimgar(); break;
             }
+        }
 
-            var fitting = new List<Move>();
-            foreach (Move m in set)
+        // Runs a move, the boss busy for as long as it plays.
+        private IEnumerator RunBusy(IEnumerator routine)
+        {
+            busy = true;
+            while (routine != null)
             {
-                if (m == last && set.Length > 1)
+                bool more;
+                try
+                {
+                    more = routine.MoveNext();
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                    more = false;
+                }
+                if (!more || health.IsDead)
+                    break;
+                yield return routine.Current;
+            }
+            if (anim != null)
+                anim.EndAct();
+            busy = false;
+        }
+
+        // The boss's moves in turn, skipping the one just used and any that make no sense from here.
+        private BossMove PickMove(float distance)
+        {
+            var fitting = new List<BossMove>();
+            BossMove fallback = null;
+            foreach (BossMove m in moves)
+            {
+                if (m.SecondPhaseOnly && !secondPhase)
                     continue;
-                if (m == Move.Leap && distance < 4.5f)
+                if (m.Allowed != null && !m.Allowed())
                     continue;
-                if ((m == Move.Spin || m == Move.Nova) && distance > 7f)
+                if (distance < m.MinRange || distance > m.MaxRange)
                     continue;
-                if ((m == Move.RaiseDead || m == Move.Brood) && LiveMinions() >= CurrentMaxMinions)
+                fallback = fallback ?? m;
+                if (m.Name == last && moves.Count > 1)
                     continue;
                 fitting.Add(m);
             }
             if (fitting.Count == 0)
-                return set[0] == last && set.Length > 1 ? set[1] : set[0];
+                return fallback;
             return fitting[Random.Range(0, fitting.Count)];
         }
 
-        private IEnumerator Run(Move move)
+        // Half life: it stops, roars, and the fight changes gear.
+        private IEnumerator Roar()
         {
-            EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
-            switch (move)
+            CombatText.Show(transform.position + Vector3.up * health.BarHeight * transform.localScale.y,
+                kind.Name + " grows furious!", CombatText.ColorFor(kind.DamageType), 1.4f);
+            EnemySounds.Play(kind, EnemySounds.Event.Aggro, transform.position);
+            CameraSystem.CameraFollow.Shake(0.3f, 0.9f);
+            Act(CreatureAnimator.BossAct.Roar, 1.2f / T);
+
+            float roar = 1.2f / T;
+            for (float t = 0f; t < roar; t += Time.deltaTime)
             {
-                case Move.Leap: return LeapSlam();
-                case Move.Spin: return ReapingSpin();
-                case Move.RaiseDead: return RaiseDead(secondPhase ? 2 : 1);
-                case Move.Fissure: return Fissure();
-                case Move.Rain: return RainDown(kind.Boss == BossStyle.Warlord ? DamageType.Fire : DamageType.Cold, secondPhase ? 9 : 7);
-                case Move.Nova: return FrostBurst(7.5f);
-                default: return Brood(secondPhase ? 2 : 1);
+                if (Mathf.Repeat(t, 0.3f) < Time.deltaTime)
+                    SkillEffects.Shockwave(transform.position, 2f + 4f * t, GroundTelegraph.FillColor(kind.DamageType), 0.35f);
+                yield return null;
             }
+            if (enrage != null)
+                yield return enrage();
+            nextMove = Time.time + 1.2f / T;
         }
 
-        // ------------------------------------------------------------------ the moves
+        // ------------------------------------------------------------------ shared pieces
 
-        // Gathers itself, springs into the air, and comes down where the player stood at launch,
-        // weapon first. The landing glows on the ground from the moment it crouches.
-        private IEnumerator LeapSlam()
+        private Vector3 PlayerAt => player != null ? Flat(player.transform.position) + Vector3.up * transform.position.y : transform.position;
+
+        private Vector3 ToPlayer()
         {
-            busy = true;
-            float gather = 0.4f / T;
-            float air = 0.55f / T;
-            float scale = transform.localScale.x;
-            float radius = 3.0f + 0.6f * scale;
-            float gap = (body != null ? body.radius * scale : 1f) + 0.6f;
+            Vector3 to = Flat(player.transform.position - transform.position);
+            return to.sqrMagnitude > 0.01f ? to.normalized : transform.forward;
+        }
 
+        private float Size => transform.localScale.x;
+
+        private void Act(CreatureAnimator.BossAct act, float seconds)
+        {
+            if (anim != null)
+                anim.Perform(act, seconds);
+        }
+
+        // Gathers itself, springs into the air, and comes down where the player stood at launch.
+        // The landing glows on the ground from the moment it crouches.
+        private IEnumerator LeapAt(Vector3 landing, float radius, float damage, DamageType type, float gather, float air, Action<Vector3> landed = null,
+            float height = -1f)
+        {
+            gather /= T;
+            air /= T;
+            float gap = (body != null ? body.radius * Size : 1f) + 0.6f;
             Vector3 start = transform.position;
-            Vector3 landing = player.transform.position;
             Vector3 jump = Flat(landing - start);
             if (jump.magnitude > 18f)
                 landing = start + jump.normalized * 18f;
@@ -250,42 +406,27 @@ namespace PoeClone.Enemies
             landing = World.GroundObstacleMotion.Clamp(body, start, KeepClear(landing, gap));
             Face(landing - start);
 
-            bool landed = false;
-            StartCoroutine(GroundTelegraph.Run(landing, radius, gather + air, kind.DamageType, at =>
+            StartCoroutine(GroundTelegraph.Run(landing, radius, gather + air, type, at =>
             {
                 if (this == null || health.IsDead)
                     return;
-                landed = true;
-                HitIfInside(at, radius, 1.6f);
+                HitIfInside(at, radius, damage, type);
                 SkillEffects.Shockwave(at, radius, Dust, 0.45f);
-                SkillEffects.Shockwave(at, radius * 0.6f, GroundTelegraph.FillColor(kind.DamageType), 0.35f);
-                CameraSystem.CameraFollow.Shake(0.35f, 0.45f);
-                OnLanded(at);
+                CameraSystem.CameraFollow.Shake(0.3f, 0.4f);
+                landed?.Invoke(at);
             }));
 
-            // The weapon goes up as it gathers and comes down as it lands.
-            SwingTimed(gather + air);
-            if (creature != null)
-                creature.Crouch(gather);
+            if (anim != null)
+                anim.Crouch(gather);
+            yield return new WaitForSeconds(gather);
 
-            for (float t = 0f; t < gather; t += Time.deltaTime)
-            {
-                if (health.IsDead)
-                    yield break;
-                SetCrouch(Mathf.SmoothStep(0f, 1f, t / gather));
-                yield return null;
-            }
-
-            SkillEffects.Shockwave(start, 1.2f * scale, Dust, 0.3f);
-            float height = 3.2f + 0.8f * scale;
+            SkillEffects.Shockwave(start, 1.2f * Size, Dust, 0.3f);
+            if (height < 0f)
+                height = 3.2f + 0.8f * Size;
             Vector3 from = transform.position;
             for (float t = 0f; t < air; t += Time.deltaTime)
             {
-                if (health.IsDead)
-                    yield break;
                 float f = Mathf.Clamp01(t / air);
-                // Tucked at the top of the arc, stretching out for the landing.
-                SetCrouch(f < 0.5f ? Mathf.Lerp(1f, 0.35f, f * 2f) : Mathf.Lerp(0.35f, 0.7f, (f - 0.5f) * 2f));
                 Vector3 want = Vector3.Lerp(from, landing, f) + Vector3.up * height * 4f * f * (1f - f);
                 Vector3 grounded = new Vector3(transform.position.x, start.y, transform.position.z);
                 MoveTo(World.GroundObstacleMotion.Clamp(body, grounded, KeepClear(want, gap)));
@@ -293,256 +434,220 @@ namespace PoeClone.Enemies
             }
             Vector3 groundPosition = new Vector3(transform.position.x, start.y, transform.position.z);
             MoveTo(World.GroundObstacleMotion.Clamp(body, groundPosition, KeepClear(landing, gap)) + Vector3.down * 0.2f);
-
-            // Hold the landing crouch a beat, then rise.
-            float recover = 0.3f / T;
-            for (float t = 0f; t < recover; t += Time.deltaTime)
-            {
-                if (health.IsDead)
-                    yield break;
-                SetCrouch(Mathf.Lerp(landed ? 0.8f : 0.5f, 0f, t / recover));
-                yield return null;
-            }
-            SetCrouch(0f);
-            busy = false;
+            yield return Pause(0.3f);
         }
-
-        // What follows a leap's landing: the Gravelord's dead claw up round him (second phase),
-        // the Warlord's quake throws up a ring of fire, the Queen's frost bites.
-        private void OnLanded(Vector3 at)
-        {
-            if (kind.Boss == BossStyle.Gravelord && secondPhase)
-                StartCoroutine(RaiseDead(1));
-            else if (kind.Boss == BossStyle.Warlord)
-                Ring(at, 4.2f + transform.localScale.x, secondPhase ? 10 : 8, 0.9f, 1.0f / T, DamageType.Fire);
-            else if (kind.Boss == BossStyle.FrostQueen && player != null && Flat(player.transform.position - at).magnitude < 5f)
-                player.GetComponent<PlayerController>()?.Chill(2f);
-        }
-
-        // Draws the axe back while the ground all round glows, then whirls through a full turn.
-        private IEnumerator ReapingSpin()
-        {
-            busy = true;
-            float windUp = 0.8f / T;
-            float radius = 4.6f + 0.7f * transform.localScale.x;
-
-            if (attackAnimator != null)
-            {
-                attackAnimator.PlaybackSpeed = CharacterAttackAnimator.StrikeSeconds(WeaponType.Greatsword) / windUp;
-                attackAnimator.PlayAttack(WeaponType.Greatsword);
-            }
-            StartCoroutine(GroundTelegraph.Run(transform.position, radius, windUp, kind.DamageType, at =>
-            {
-                if (this == null || health.IsDead)
-                    return;
-                HitIfInside(at, radius, 1.4f);
-                SkillEffects.Shockwave(at, radius, Dust, 0.35f);
-                CameraSystem.CameraFollow.Shake(0.15f, 0.3f);
-            }));
-
-            for (float t = 0f; t < windUp; t += Time.deltaTime)
-            {
-                if (health.IsDead)
-                    yield break;
-                SetCrouch(0.4f * (t / windUp));
-                yield return null;
-            }
-
-            float yaw = transform.eulerAngles.y;
-            float spin = 0.4f / T;
-            for (float t = 0f; t < spin; t += Time.deltaTime)
-            {
-                if (health.IsDead)
-                    yield break;
-                transform.rotation = Quaternion.Euler(0f, yaw + 360f * (t / spin), 0f);
-                SetCrouch(0.4f * (1f - t / spin));
-                yield return null;
-            }
-            transform.rotation = Quaternion.Euler(0f, yaw, 0f);
-            SetCrouch(0f);
-            yield return Pause(0.15f);
-            busy = false;
-        }
-
-        // Raises the maul high and brings it down: the ground splits towards the player in a
-        // line of eruptions, one after another.
-        private IEnumerator Fissure()
-        {
-            busy = true;
-            float windUp = 0.7f / T;
-            Vector3 toPlayer = Flat(player.transform.position - transform.position);
-            Vector3 dir = toPlayer.sqrMagnitude > 0.01f ? toPlayer.normalized : transform.forward;
-            Face(dir);
-
-            SwingTimed(windUp);
-            // The patches overlap so the line reads as one crack: it hurts once per slam.
-            var once = new bool[1];
-            int count = secondPhase ? 9 : 7;
-            float step = 1.7f;
-            Vector3 origin = transform.position + dir * (1.2f * transform.localScale.x);
-            for (int k = 0; k < count; k++)
-            {
-                Vector3 at = origin + dir * step * k;
-                // A second phase splits into a fork on either side of the main line.
-                StartCoroutine(Eruption(at, 1.7f, windUp + k * 0.07f / T, DamageType.Fire, 1.2f, once, attack: true));
-                if (secondPhase && k > 1 && k % 2 == 0)
-                {
-                    Vector3 side = Vector3.Cross(Vector3.up, dir) * (0.35f * step * k);
-                    StartCoroutine(Eruption(at + side, 1.1f, windUp + (k * 0.07f + 0.1f) / T, DamageType.Fire, 1.0f, once, attack: true));
-                    StartCoroutine(Eruption(at - side, 1.1f, windUp + (k * 0.07f + 0.1f) / T, DamageType.Fire, 1.0f, once, attack: true));
-                }
-            }
-
-            for (float t = 0f; t < windUp; t += Time.deltaTime)
-            {
-                if (health.IsDead)
-                    yield break;
-                SetCrouch(t / windUp < 0.7f ? 0f : 0.6f);
-                yield return null;
-            }
-            CameraSystem.CameraFollow.Shake(0.3f, 0.4f);
-            SkillEffects.Shockwave(origin, 1.8f, Dust, 0.35f);
-            yield return Pause(0.25f);
-            SetCrouch(0f);
-            busy = false;
-        }
-
-        // Rimeheart rears and the frost bursts out of her all round, chilling whoever it catches.
-        private IEnumerator FrostBurst(float radius)
-        {
-            busy = true;
-            float windUp = 0.85f / T;
-            if (creature != null)
-                creature.Crouch(windUp);
-            StartCoroutine(GroundTelegraph.Run(transform.position, radius, windUp, DamageType.Cold, at =>
-            {
-                if (this == null || health.IsDead)
-                    return;
-                if (HitIfInside(at, radius, 1.3f, attack: false))
-                    player.GetComponent<PlayerController>()?.Chill(3f);
-                SkillEffects.Shockwave(at, radius, GroundTelegraph.FillColor(DamageType.Cold), 0.5f);
-                CameraSystem.CameraFollow.Shake(0.15f, 0.3f);
-            }));
-            yield return Pause(0.85f + 0.3f);
-            busy = false;
-        }
-
-        private IEnumerator RaiseDead(int count)
-        {
-            if (kind.Weapon != WeaponType.Unarmed)
-                SwingTimed(0.6f / T);
-            yield return Pause(0.6f);
-            if (health.IsDead)
-                yield break;
-            CameraSystem.CameraFollow.Shake(0.12f, 0.3f);
-            Summon(0, count, new Color(0.3f, 0.9f, 0.4f));
-        }
-
-        // Ice crawlers hatch round the queen.
-        private IEnumerator Brood(int count)
-        {
-            busy = true;
-            if (creature != null)
-                creature.Crouch(0.8f / T);
-            yield return Pause(0.8f);
-            if (!health.IsDead)
-                Summon(EnemyKinds.IndexOf("Ice Crawler"), count, GroundTelegraph.FillColor(DamageType.Cold));
-            busy = false;
-        }
-
-        // Patches round where the player stood when the attack began that burst after a beat.
-        private IEnumerator RainDown(DamageType type, int count)
-        {
-            Vector3 target = player.transform.position;
-            for (int k = 0; k < count; k++)
-            {
-                float windUp = (0.9f + k * 0.15f) / T;
-                Vector2 scatter = Random.insideUnitCircle * 3f;
-                Vector3 at = k == 0 ? target : target + new Vector3(scatter.x, 0f, scatter.y);
-                StartCoroutine(Eruption(at, 2.7f, windUp, type, 1.2f));
-            }
-            yield break;
-        }
-
-        // Half life: it stops, roars, and the fight changes gear.
-        private IEnumerator Roar()
-        {
-            busy = true;
-            CombatText.Show(transform.position + Vector3.up * health.BarHeight * transform.localScale.y,
-                kind.Name + " grows furious!", CombatText.ColorFor(kind.DamageType), 1.4f);
-            EnemySounds.Play(kind, EnemySounds.Event.Aggro, transform.position);
-            CameraSystem.CameraFollow.Shake(0.3f, 0.9f);
-            if (creature != null)
-                creature.Crouch(1.2f / T);
-
-            float roar = 1.2f / T;
-            for (float t = 0f; t < roar; t += Time.deltaTime)
-            {
-                if (health.IsDead)
-                    yield break;
-                // Rears back then hunches, roaring.
-                SetCrouch(Mathf.Sin(t / roar * Mathf.PI) * 0.8f);
-                if (Mathf.Repeat(t, 0.3f) < Time.deltaTime)
-                    SkillEffects.Shockwave(transform.position, 2f + 4f * t, GroundTelegraph.FillColor(kind.DamageType), 0.35f);
-                yield return null;
-            }
-            SetCrouch(0f);
-
-            switch (kind.Boss)
-            {
-                case BossStyle.Gravelord: Summon(0, 3, new Color(0.3f, 0.9f, 0.4f)); break;
-                case BossStyle.Warlord: Ring(transform.position, 5f + transform.localScale.x, 10, 0.9f, 1.5f / T, DamageType.Fire); break;
-                default: Summon(EnemyKinds.IndexOf("Ice Crawler"), 3, GroundTelegraph.FillColor(DamageType.Cold)); break;
-            }
-            nextMove = Time.time + 1.5f / T;
-            busy = false;
-        }
-
-        // ------------------------------------------------------------------ pieces
 
         // A glowing patch that fills in over the wind-up, then hurts the player if they're still on
         // it. Patches sharing a <paramref name="hitOnce"/> flag hurt at most once between them.
-        private IEnumerator Eruption(Vector3 center, float radius, float windUp, DamageType type, float damageMultiplier, bool[] hitOnce = null, bool attack = false)
+        private IEnumerator Eruption(Vector3 center, float radius, float windUp, DamageType type, float damageMultiplier, bool[] hitOnce = null,
+            Action<Vector3> burst = null)
         {
             return GroundTelegraph.Run(center, radius, windUp, type, at =>
             {
-                if (this == null || (health.IsDead && type != DamageType.Fire))
+                if (this == null || health.IsDead)
                     return;
                 if (hitOnce == null || !hitOnce[0])
                 {
-                    if (HitIfInside(at, radius, damageMultiplier, type, attack: attack) && hitOnce != null)
+                    if (HitIfInside(at, radius, damageMultiplier, type) && hitOnce != null)
                         hitOnce[0] = true;
                 }
-                SkillEffects.Shockwave(at, radius, GroundTelegraph.FillColor(type), 0.3f);
-            });
+                burst?.Invoke(at);
+            }, kind);
+        }
+
+        // Eruptions along a line from a point towards a direction, one after another (a crack in the ground).
+        private void EruptionLine(Vector3 origin, Vector3 dir, int count, float step, float radius, float windUp, float delayStep, DamageType type,
+            float damage, Action<Vector3> burst = null)
+        {
+            var once = new bool[1];
+            for (int k = 0; k < count; k++)
+                StartCoroutine(Eruption(origin + dir * step * k, radius, windUp + k * delayStep / T, type, damage, once, burst));
         }
 
         // Eruptions in a ring round a point, all at once after the wind-up.
-        private void Ring(Vector3 center, float ringRadius, int count, float patchRadius, float windUp, DamageType type)
+        private void Ring(Vector3 center, float ringRadius, int count, float patchRadius, float windUp, DamageType type, float damage = 0.9f)
         {
+            var once = new bool[1];
             for (int k = 0; k < count; k++)
             {
                 float a = k * Mathf.PI * 2f / count;
                 Vector3 at = center + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * ringRadius;
-                StartCoroutine(Eruption(at, patchRadius + 0.4f, windUp, type, 0.9f));
+                StartCoroutine(Eruption(at, patchRadius, windUp, type, damage, once));
             }
         }
 
-        private void Summon(int kindIndex, int count, Color glow)
+        /// <summary>
+        /// A wave going out from a point (a toll, a pulse of frost): a band of the given thickness
+        /// that grows to the max radius, with gaps (angles in degrees, each this wide) to slip
+        /// through. It hurts once whoever it passes over outside a gap.
+        /// </summary>
+        private IEnumerator Wave(Vector3 center, float maxRadius, float speed, float thickness, float[] gapAngles, float gapWidth,
+            DamageType type, float damage, Color color, Action<PlayerStats> onHit = null)
+        {
+            var root = new GameObject("BossWave");
+            leftovers.Add(root);
+            root.transform.position = new Vector3(center.x, Debris.GroundBelow(center + Vector3.up) + 0.1f, center.z);
+            const int pieces = 48;
+            var segments = new List<Transform>();
+            var angles = new List<float>();
+            for (int i = 0; i < pieces; i++)
+            {
+                float a = i * 360f / pieces;
+                if (InGap(a, gapAngles, gapWidth))
+                    continue;
+                GameObject seg = RuntimePrimitives.Create(PrimitiveType.Cube, root.transform, i % 2 == 0 ? color : Color.Lerp(color, Color.white, 0.35f));
+                segments.Add(seg.transform);
+                angles.Add(a);
+            }
+
+            bool hit = false;
+            for (float r = 0.8f; r < maxRadius; r += speed * Time.deltaTime)
+            {
+                if (this == null)
+                    yield break;
+                float chord = 2f * Mathf.PI * r / pieces * 1.05f;
+                for (int i = 0; i < segments.Count; i++)
+                {
+                    float rad = angles[i] * Mathf.Deg2Rad;
+                    Transform s = segments[i];
+                    s.localPosition = new Vector3(Mathf.Sin(rad), 0f, Mathf.Cos(rad)) * r + Vector3.up * 0.25f;
+                    s.localRotation = Quaternion.Euler(0f, angles[i], 0f);
+                    s.localScale = new Vector3(chord, 0.5f + 0.25f * Mathf.Sin(r * 2f + i), thickness * 0.6f);
+                }
+
+                if (!hit && player != null && !player.IsDead && !health.IsDead)
+                {
+                    Vector3 off = Flat(player.transform.position - center);
+                    float d = off.magnitude;
+                    float a = Mathf.Atan2(off.x, off.z) * Mathf.Rad2Deg;
+                    if (Mathf.Abs(d - r) < thickness * 0.5f + 0.3f && !InGap(a, gapAngles, gapWidth))
+                    {
+                        hit = true;
+                        if (player.TakeHit(DamageOf(damage), type, attack: false))
+                            onHit?.Invoke(player);
+                    }
+                }
+                yield return null;
+            }
+            Destroy(root);
+        }
+
+        private static bool InGap(float angle, float[] gaps, float width)
+        {
+            if (gaps == null)
+                return false;
+            foreach (float g in gaps)
+            {
+                if (Mathf.Abs(Mathf.DeltaAngle(angle, g)) < width * 0.5f)
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Throws a thing (a coffin, an ember, a net) in an arc onto a spot marked on the ground;
+        /// <paramref name="landed"/> gets the spot. The thing is destroyed on landing unless kept.
+        /// </summary>
+        private IEnumerator Lob(GameObject thing, Vector3 from, Vector3 to, float flight, float radius, DamageType type, Action<Vector3> landed,
+            bool keep = false, float spin = 360f, float hover = 0f)
+        {
+            to.y = Debris.GroundBelow(to + Vector3.up) + hover;
+            leftovers.Add(thing);
+            StartCoroutine(GroundTelegraph.Run(to, radius, flight, type, null));
+            float arc = Mathf.Max(2f, Flat(to - from).magnitude * 0.35f);
+            Quaternion rest = thing.transform.rotation;
+            for (float t = 0f; t < flight; t += Time.deltaTime)
+            {
+                if (thing == null)
+                    yield break;
+                float f = t / flight;
+                thing.transform.position = Vector3.Lerp(from, to, f) + Vector3.up * arc * 4f * f * (1f - f);
+                thing.transform.rotation = rest * Quaternion.Euler(spin * f, 0f, 0f);
+                yield return null;
+            }
+            if (thing != null)
+            {
+                thing.transform.position = to;
+                thing.transform.rotation = rest;
+            }
+            if (this != null && !health.IsDead)
+                landed?.Invoke(to);
+            if (!keep && thing != null)
+                Destroy(thing);
+        }
+
+        /// <summary>
+        /// A thing flying straight (a dagger, a spear, a thorn, a shard): hits the player once if it
+        /// passes within the radius, and is gone at the end of its range.
+        /// </summary>
+        private IEnumerator Missile(GameObject thing, Vector3 from, Vector3 direction, float speed, float range, float hitRadius,
+            DamageType type, float damage, Action<PlayerStats> onHit = null, bool spin = false)
+        {
+            leftovers.Add(thing);
+            direction = Flat(direction).normalized;
+            thing.transform.position = from;
+            thing.transform.rotation = Quaternion.LookRotation(direction);
+            for (float travelled = 0f; travelled < range; travelled += speed * Time.deltaTime)
+            {
+                if (thing == null)
+                    yield break;
+                thing.transform.position += direction * speed * Time.deltaTime;
+                if (spin)
+                    thing.transform.Rotate(0f, 0f, 900f * Time.deltaTime, Space.Self);
+                if (player != null && !player.IsDead && Flat(player.transform.position - thing.transform.position).magnitude < hitRadius)
+                {
+                    if (player.TakeHit(DamageOf(damage), type, attack: true))
+                        onHit?.Invoke(player);
+                    break;
+                }
+                yield return null;
+            }
+            if (thing != null)
+                Destroy(thing);
+        }
+
+        /// <summary>A lingering patch (fire, spores): every half second it does something to whoever stands in it.</summary>
+        private void Patch(Vector3 at, float radius, float seconds, Color color, Action<PlayerStats> inside)
+        {
+            GameObject pool = RuntimePrimitives.Create(PrimitiveType.Cylinder, null, color);
+            pool.name = "BossPatch";
+            at.y = Debris.GroundBelow(at + Vector3.up);
+            pool.transform.position = at + Vector3.up * 0.16f;
+            pool.transform.localScale = new Vector3(radius * 2f, 0.01f, radius * 2f);
+            VenomPuddle p = pool.AddComponent<VenomPuddle>();
+            p.Seconds = seconds;
+            p.Radius = radius;
+            p.Tick = 0.5f;
+            p.Inside = (center, r) =>
+            {
+                if (this == null || health.IsDead || player == null || player.IsDead)
+                    return;
+                if (Flat(player.transform.position - center).magnitude <= r)
+                    inside?.Invoke(player);
+            };
+            leftovers.Add(pool);
+        }
+
+        private void Summon(int kindIndex, int count, Color glow, Vector3? around = null, float spread = -1f)
         {
             minions.RemoveAll(m => m == null || m.IsDead);
             count = Mathf.Min(count, CurrentMaxMinions - minions.Count);
             if (minionPrefab == null || kindIndex < 0 || count <= 0)
                 return;
 
+            Vector3 center = around ?? transform.position;
+            if (spread < 0f)
+                spread = 2.2f + 1.2f * Size;
             for (int k = 0; k < count; k++)
             {
                 float a = (k / (float)count) * Mathf.PI * 2f + Random.value;
-                Vector3 at = transform.position + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * (2.2f + 1.2f * transform.localScale.x);
-                at.y = 1.1f;
+                Vector3 at = center + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * spread;
+                at.y = transform.position.y - Size + EnemyKinds.Get(kindIndex).Scale * 1.1f;
                 GameObject minion = Instantiate(minionPrefab, at, Quaternion.LookRotation(Flat(transform.position - at) + Vector3.forward * 0.001f), transform.parent);
                 EnemyKinds.Apply(minion, kindIndex, level);
-                minions.Add(minion.GetComponent<EnemyHealth>());
+                EnemyHealth h = minion.GetComponent<EnemyHealth>();
+                minions.Add(h);
+                minion.GetComponent<EnemyController>()?.Alert();
                 SkillEffects.Shockwave(at, 1.4f, glow, 0.5f);
             }
         }
@@ -553,31 +658,81 @@ namespace PoeClone.Enemies
             return minions.Count;
         }
 
-        private int CurrentMaxMinions => kind.Boss == BossStyle.FrostQueen
-            ? (secondPhase ? 3 : CalmMaxMinions)
-            : (secondPhase ? EnragedMaxMinions : CalmMaxMinions);
+        private int CurrentMaxMinions => secondPhase ? enragedMaxMinions : calmMaxMinions;
 
-        // Plays the boss's weapon swing so its blow lands after the given time.
-        private void SwingTimed(float seconds)
+        private float DamageOf(float multiplier)
         {
-            if (attackAnimator == null || kind.Weapon == WeaponType.Unarmed || kind.IsCreature)
-                return;
-            attackAnimator.PlaybackSpeed = CharacterAttackAnimator.StrikeSeconds(kind.Weapon) / Mathf.Max(0.1f, seconds);
-            attackAnimator.PlayAttack(kind.Weapon);
+            float rage = controller != null ? controller.DamageMultiplier : 1f;
+            return kind.Damage * multiplier * EnemyKinds.DamageScale(level, kind) * rage;
         }
 
-        private bool HitIfInside(Vector3 center, float radius, float damageMultiplier, DamageType? type = null, bool attack = true)
+        private bool HitIfInside(Vector3 center, float radius, float damageMultiplier, DamageType? type = null, bool attack = false)
         {
             if (player == null || player.IsDead || Flat(player.transform.position - center).magnitude > radius)
                 return false;
-            float rage = controller != null ? controller.DamageMultiplier : 1f;
-            return player.TakeHit(kind.Damage * damageMultiplier * EnemyKinds.DamageScale(level, kind) * rage, type ?? kind.DamageType, attack);
+            return player.TakeHit(DamageOf(damageMultiplier), type ?? kind.DamageType, attack);
         }
 
-        private void SetCrouch(float amount)
+        // Whether the player stands in a strip from start along dir.
+        private bool InStrip(Vector3 start, Vector3 dir, float length, float width)
         {
-            if (walk != null)
-                walk.Crouch = amount;
+            if (player == null || player.IsDead)
+                return false;
+            Vector3 off = Flat(player.transform.position - start);
+            float along = Vector3.Dot(off, dir);
+            float across = Mathf.Abs(Vector3.Dot(off, Vector3.Cross(Vector3.up, dir)));
+            return along >= -0.5f && along <= length + 0.5f && across <= width * 0.5f + 0.3f;
+        }
+
+        private IEnumerator KnockPlayer(Vector3 direction, float distance)
+        {
+            CharacterController playerBody = player != null ? player.GetComponent<CharacterController>() : null;
+            if (playerBody == null)
+                yield break;
+            direction = Flat(direction).normalized;
+            const float seconds = 0.22f;
+            for (float t = 0f; t < seconds; t += Time.deltaTime)
+            {
+                if (player == null || player.IsDead || !playerBody.enabled)
+                    yield break;
+                Vector3 from = player.transform.position;
+                Vector3 to = World.GroundObstacleMotion.Clamp(playerBody, from, from + direction * (distance / seconds) * Time.deltaTime);
+                playerBody.Move(to - from);
+                yield return null;
+            }
+        }
+
+        // Hides or shows the whole body (a smoke bomb, burrowing).
+        private void SetVisible(bool visible)
+        {
+            Transform model = transform.Find("Model");
+            if (model == null)
+                return;
+            foreach (Renderer r in model.GetComponentsInChildren<Renderer>(true))
+                r.enabled = visible;
+        }
+
+        // A named part of the body (the coffin, the bell, the spear), or null.
+        private Transform Part(string name)
+        {
+            foreach (Transform t in GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name == name)
+                    return t;
+            }
+            return null;
+        }
+
+        // A copy of a part of the body, loose in the world (thrown, dropped).
+        private GameObject Copy(Transform part)
+        {
+            GameObject copy = Instantiate(part.gameObject);
+            copy.transform.SetPositionAndRotation(part.position, part.rotation);
+            copy.transform.localScale = part.lossyScale;
+            copy.SetActive(true);
+            foreach (Renderer r in copy.GetComponentsInChildren<Renderer>(true))
+                r.enabled = true;
+            return copy;
         }
 
         private void MoveTo(Vector3 position)
@@ -586,6 +741,37 @@ namespace PoeClone.Enemies
                 body.Move(position - transform.position);
             else
                 transform.position = position;
+        }
+
+        // Puts the boss somewhere at once (a blink, rising elsewhere).
+        private void Teleport(Vector3 position)
+        {
+            position.y = transform.position.y;
+            bool was = body != null && body.enabled;
+            if (body != null)
+                body.enabled = false;
+            transform.position = position;
+            if (body != null)
+                body.enabled = was;
+        }
+
+        // Somewhere open near a point, inside the area (never inside a wall).
+        private Vector3 OpenNear(Vector3 want)
+        {
+            int area = World.AreaManager.Instance != null ? World.AreaManager.Instance.CurrentAreaIndex : -1;
+            if (area < 0)
+                return want;
+            World.AreaShape shape = World.WorldBuilder.Shape(area);
+            // Somewhere outside every layout (a test sandbox): nothing to keep inside.
+            if (shape.Contains(want, 2.5f) || !shape.Contains(transform.position))
+                return want;
+            for (int i = 1; i <= 8; i++)
+            {
+                Vector3 toward = Vector3.Lerp(want, transform.position, i / 8f);
+                if (shape.Contains(toward, 2.5f))
+                    return toward;
+            }
+            return transform.position;
         }
 
         // Never comes down on top of the player (the colliders would overlap and it would end up
@@ -621,6 +807,21 @@ namespace PoeClone.Enemies
         {
             v.y = 0f;
             return v;
+        }
+
+        // A loose prop made of primitives (thrown things, traps), parented to nothing.
+        private static GameObject Prop(string name)
+        {
+            return new GameObject(name);
+        }
+
+        private static GameObject Piece(Transform parent, PrimitiveType type, Color color, Vector3 position, Vector3 scale, Vector3 euler = default)
+        {
+            GameObject go = RuntimePrimitives.Create(type, parent, color);
+            go.transform.localPosition = position;
+            go.transform.localScale = scale;
+            go.transform.localRotation = Quaternion.Euler(euler);
+            return go;
         }
     }
 }

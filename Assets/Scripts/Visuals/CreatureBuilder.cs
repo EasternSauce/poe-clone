@@ -17,7 +17,16 @@ namespace PoeClone.Visuals
         RimeStalker,
         CinderPenitent,
         Hollowmaw,
-        BarrowCastellan
+        BarrowCastellan,
+        // The field bosses (CreatureBuilder.Bosses): every one a body of its own.
+        Gravedigger,  // Gravelord Mortis: a gaunt gravedigger with a coffin on his back and a shovel
+        HollowArmor,  // the Ashen Warlord: empty plate armour, embers in the joints, fire for a head
+        FrostHeart,   // Rimeheart: a floating heart of ice in a cage of shards
+        Boar,         // Bramblesow: a huge boar with a thicket growing on its back
+        TunnelKing,   // Vex: a small goblin king with a nail crown and two knives
+        BellRinger,   // a hunched ringer carrying a great cracked bell
+        SunIdol,      // a four-armed stone statue holding up a sun, on its own plinth
+        Huntress      // Hrimgar: a huntress in a wolf-pelt hood, with an ice spear
     }
 
     /// <summary>
@@ -38,7 +47,7 @@ namespace PoeClone.Visuals
     /// Colours: Main (body/fur/skin), Second (abdomen, shell, mane, wings), Accent (markings, lava
     /// cracks, belly), Eyes. Sizes are for scale 1; the enemy's own scale does the rest.
     /// </summary>
-    public static class CreatureBuilder
+    public static partial class CreatureBuilder
     {
         private static readonly Color Bone = new Color(0.90f, 0.86f, 0.74f);
         private static readonly Color Dark = new Color(0.08f, 0.06f, 0.06f);
@@ -85,6 +94,7 @@ namespace PoeClone.Visuals
                 case CreatureBody.CinderPenitent: BuildCinderPenitent(model, ctx); break;
                 case CreatureBody.Hollowmaw: BuildHollowmaw(model, ctx); break;
                 case CreatureBody.BarrowCastellan: BuildBarrowCastellan(model, ctx); break;
+                default: BuildBoss(model, body, ctx); break;
             }
             Adorn(body, ctx);
             ctx.Anim.CaptureRest();

@@ -24,8 +24,9 @@ namespace PoeClone.World
 
         public static WorldBuilder Instance { get; private set; }
 
-        public static readonly string[] AreaNames = { "Greenwood", "Haven", "Haunted Graveyard", "Ashen Ruins", "Frozen Hollow", "The Shed Sanctuary", "The Lost Hollows" };
-        public static readonly int[] MonsterLevels = { 1, 0, 17, 25, 34, 37, 9 };
+        public static readonly string[] AreaNames = { "Greenwood", "Haven", "Haunted Graveyard", "Ashen Ruins", "Frozen Hollow", "The Shed Sanctuary", "The Lost Hollows",
+            "The Warren", "The Drowned Belfry" };
+        public static readonly int[] MonsterLevels = { 1, 0, 17, 25, 34, 37, 9, 9, 17 };
 
         private static readonly Vector3[] Centers =
         {
@@ -35,7 +36,10 @@ namespace PoeClone.World
             new Vector3(840f, 0f, 0f),
             new Vector3(1260f, 0f, 0f),
             ActArenaCenter,
-            new Vector3(420f, 0f, -420f)
+            new Vector3(420f, 0f, -420f),
+            // The boss dens behind their gates (WorldBuilder.BossLairs).
+            new Vector3(840f, 0f, -420f),
+            new Vector3(1260f, 0f, -420f)
         };
 
         /// <summary>The colour that stands for an area (gate panels, its minimap ground).</summary>
@@ -52,7 +56,9 @@ namespace PoeClone.World
             new Color(0.58f, 0.44f, 0.36f),
             new Color(0.80f, 0.88f, 0.95f),
             new Color(0.50f, 0.44f, 0.38f),
-            new Color(0.31f, 0.35f, 0.37f)
+            new Color(0.31f, 0.35f, 0.37f),
+            new Color(0.42f, 0.36f, 0.28f),
+            new Color(0.38f, 0.44f, 0.46f)
         };
 
         // Explicit native rosters for opening spawns and respawns. Named entries keep additions
@@ -72,7 +78,10 @@ namespace PoeClone.World
             Roster(),
             // The Lost Hollows have cave dwellers, rather than the graveyard's entire undead mix.
             Roster(("Brute", 16f), ("Storm Caster", 12f), ("Grave Bat", 12f),
-                ("Corpse Ooze", 18f), ("Crypt Spider", 22f), ("Hollowmaw", 11f))
+                ("Corpse Ooze", 18f), ("Crypt Spider", 22f), ("Hollowmaw", 11f)),
+            // The boss dens behind their gates hold only their boss.
+            Roster(),
+            Roster()
         };
 
         private static float[] Roster(params (string name, float weight)[] entries)
@@ -179,6 +188,7 @@ namespace PoeClone.World
             Connect(Cave, new Vector3(40f, 0f, 0f), Graveyard, new Vector3(-40f, 0f, 0f));
             Connect(Graveyard, new Vector3(40f, 0f, 0f), Ruins, new Vector3(-40f, 0f, 0f));
             Connect(Ruins, new Vector3(0f, 0f, 40f), Frozen, new Vector3(-40f, 0f, 0f));
+            BuildFieldBossLairs();
             BuildBorders();
             BuildQuestSites();
 
@@ -201,6 +211,8 @@ namespace PoeClone.World
             }
 
             definitions[ActArena] = BuildActArena();
+            definitions[Warren] = BuildWarren();
+            definitions[Belfry] = BuildBelfry();
             ConfigureCaveLighting(player.transform);
             BuildAmbientDetails();
             gameObject.AddComponent<WorldAmbience>().Build(manager, player.transform);
@@ -657,6 +669,8 @@ namespace PoeClone.World
                 BossLair.Create(t, Ruins, BossIndex("Ashen Warlord"), MonsterLevels[Ruins], spawner.EnemyPrefab, altar, Vector3.back);
             if (Spots.TryGetValue("Throne", out Vector3 throne))
                 BossLair.Create(t, Frozen, BossIndex("Rimeheart"), MonsterLevels[Frozen], spawner.EnemyPrefab, throne, Vector3.back);
+            foreach (FieldLair lair in FieldLairs)
+                BossLair.Create(t, lair.Area, BossIndex(lair.Boss), MonsterLevels[lair.Area], spawner.EnemyPrefab, Center(lair.Area) + lair.Local, lair.Facing);
         }
 
         private static int BossIndex(string name)
@@ -800,7 +814,7 @@ namespace PoeClone.World
             Gate(b, gateB, a, arriveInA);
         }
 
-        private void Gate(int from, Vector3 position, int to, Transform arrival)
+        private void Gate(int from, Vector3 position, int to, Transform arrival, float? yaw = null)
         {
             gatePoints.Add((from, position));
             ClearSpot(position, 4.5f);
@@ -808,7 +822,7 @@ namespace PoeClone.World
             gate.name = "Gate_" + AreaNames[from] + "_to_" + AreaNames[to];
             gate.transform.position = new Vector3(position.x, gateTemplate.transform.position.y, position.z);
             // Face down the final approach, keeping the opening square across the path.
-            gate.transform.rotation = Quaternion.Euler(0f, AreaLayouts.GateYaw(from, to), 0f);
+            gate.transform.rotation = Quaternion.Euler(0f, yaw ?? AreaLayouts.GateYaw(from, to), 0f);
 
             AreaGate g = gate.GetComponent<AreaGate>();
             g.fromAreaIndex = from;

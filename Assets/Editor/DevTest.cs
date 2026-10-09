@@ -703,6 +703,72 @@ namespace PoeClone.EditorTools
             return "spawned " + kind.Name + " L" + level + " at " + at.ToString("0.0");
         }
 
+        /// <summary>
+        /// A field boss (by name, or "all" for a row of every one) spawned <paramref name="distance"/>
+        /// ahead of the player with its moves, at its lair's level unless <paramref name="level"/> is given.
+        /// </summary>
+        public static string FieldBoss(string name, float distance = 9f, int level = 0)
+        {
+            EnemySpawner spawner = UnityEngine.Object.FindAnyObjectByType<EnemySpawner>();
+            PlayerStats ps = Stats();
+            if (spawner == null || ps == null)
+                return "no spawner/player";
+            var names = new List<string>();
+            if (name == "all")
+            {
+                foreach (EnemyKind k in EnemyKinds.All)
+                    if (k.IsBoss && k.Boss != BossStyle.Shepherd)
+                        names.Add(k.Name);
+            }
+            else
+            {
+                names.Add(name);
+            }
+            Vector3 forward = ps.transform.forward;
+            forward.y = 0f;
+            forward = forward.sqrMagnitude > 0.01f ? forward.normalized : Vector3.forward;
+            Vector3 right = Vector3.Cross(Vector3.up, forward);
+            var spawned = new List<string>();
+            for (int i = 0; i < names.Count; i++)
+            {
+                int index = EnemyKinds.IndexOf(names[i]);
+                if (index < 0)
+                    return "no kind " + names[i];
+                EnemyKind kind = EnemyKinds.Get(index);
+                int lvl = level > 0 ? level : 10;
+                float across = (i - (names.Count - 1) * 0.5f) * 8f;
+                Vector3 at = ps.transform.position + forward * distance + right * across;
+                at.y = 1.1f * kind.Scale;
+                GameObject go = UnityEngine.Object.Instantiate(spawner.EnemyPrefab, at, Quaternion.LookRotation(-forward));
+                go.name = kind.Name;
+                EnemyKinds.Apply(go, index, lvl);
+                go.AddComponent<BossAbilities>().Configure(kind, lvl, spawner.EnemyPrefab);
+                spawned.Add(kind.Name);
+            }
+            Physics.SyncTransforms();
+            return "spawned " + string.Join(", ", spawned);
+        }
+
+        /// <summary>Makes the nearest field boss play one of its moves now (by its name: "Toll", "Charge", "closer", "roar"...).</summary>
+        public static string FieldMove(string move)
+        {
+            PlayerStats ps = Stats();
+            BossAbilities best = null;
+            float bestDistance = float.MaxValue;
+            foreach (BossAbilities b in UnityEngine.Object.FindObjectsByType<BossAbilities>())
+            {
+                float d = ps != null ? Vector3.Distance(b.transform.position, ps.transform.position) : 0f;
+                if (d < bestDistance && !b.GetComponent<EnemyHealth>().IsDead)
+                {
+                    best = b;
+                    bestDistance = d;
+                }
+            }
+            if (best == null)
+                return "no field boss";
+            return best.name + ": " + best.Play(move);
+        }
+
         /// <summary>Stops (or restarts) the boss's own AI, so it stands still for looking at or for a clip.</summary>
         public static string BossHold(bool hold = true)
         {
