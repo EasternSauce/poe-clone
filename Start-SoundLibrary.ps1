@@ -4,6 +4,7 @@ $libraryUrl = "http://127.0.0.1:$libraryPort"
 try {
     $libraryExisting = Invoke-RestMethod "$libraryUrl/api/library" -TimeoutSec 2
     if ($libraryExisting.app -ne 'sound-library') { throw 'Port is occupied by another application.' }
+    if ($libraryExisting.version -ne 2) { throw 'An older Sound Library server is running. Stop that Node process and launch this script again.' }
 } catch {
     if (Get-NetTCPConnection -LocalPort $libraryPort -State Listen -ErrorAction SilentlyContinue) {
         throw "Port $libraryPort is already in use. Set SOUND_LIBRARY_PORT to another port."

@@ -34,83 +34,63 @@ function cleanName(value) {
   }
   return value;
 }
-function createLibrary(root = path.resolve(__dirname, '../..'), stateFile = path.join(__dirname, 'choices.json')) {
-  const source = path.join(root, 'Assets/assets_for_inspiration');
-  const files = walk(source);
-  const rows = files.filter(file => MIME[path.extname(file).toLowerCase()]).map(file => {
-    const id = slash(path.relative(source, file));
-    const ext = path.extname(file).toLowerCase();
-    // Drop pack names from semantic classification; preserve inner folders and filenames.
-    const semantic = id.split('/').slice(1).join('/');
-    return { id, pack: id.split('/')[0], folder: slash(path.dirname(id)), category: categoryFor(semantic), name: path.basename(file, path.extname(file)).slice(0, 100).replace(/[. ]+$/, ''), ext, bytes: fs.statSync(file).size };
-  }).sort((a, b) => a.category.localeCompare(b.category) || a.id.localeCompare(b.id));
-  const byId = new Map(rows.map(row => [row.id, row]));
-  function validate(body) {
-    if (!body || !Array.isArray(body.sounds) || body.sounds.length !== rows.length) throw Error('Send one choice for every sound. Reload the page if the library changed.');
-    const seen = new Set();
-    return { sounds: body.sounds.map(value => {
-      if (!byId.has(value.id) || seen.has(value.id) || typeof value.selected !== 'boolean') throw Error('Invalid or duplicate sound selection.');
-      seen.add(value.id);
-      return { id: value.id, name: cleanName(value.name), selected: value.selected };
-    }) };
-  }
+function createLibrary(root = path.resolve(__dirname, '../..')) {
+  const source = path.join(root, 'Assets/Audio/SoundLibrary');
+  const manifestFile = path.join(source, 'manifest.json');
+  function manifest() { return fs.existsSync(manifestFile) ? JSON.parse(fs.readFileSync(manifestFile, 'utf8')) : { sounds: [] }; }
   function load() {
-    const stored = fs.existsSync(stateFile) ? JSON.parse(fs.readFileSync(stateFile, 'utf8')) : { sounds: [] };
-    const saved = new Map(stored.sounds.map(row => [row.id, row]));
-    return rows.map(row => ({ ...row, name: saved.get(row.id)?.name ?? row.name, selected: saved.get(row.id)?.selected ?? true }));
+    if (fs.existsSync(source) && fs.lstatSync(source).isSymbolicLink()) throw Error('The library directory must not be a symbolic link.');
+    const origins = new Map(manifest().sounds.map(row => [row.file, row.sources]));
+    return walk(source).filter(file => MIME[path.extname(file).toLowerCase()]).map(file => {
+      const id = slash(path.relative(source, file));
+      const sources = origins.get(id) || [];
+      const packs = [...new Set(sources.map(row => row.pack))];
+      return { id, packs: packs.length ? packs : ['Local files'], sources, category: id.includes('/') ? id.split('/')[0] : 'Other', name: path.basename(file, path.extname(file)), ext: path.extname(file), bytes: fs.statSync(file).size };
+    }).sort((a, b) => a.category.localeCompare(b.category) || a.id.localeCompare(b.id));
   }
-  function save(body) {
-    const value = validate(body);
-    fs.mkdirSync(path.dirname(stateFile), { recursive: true });
-    fs.writeFileSync(stateFile + '.tmp', JSON.stringify(value, null, 2) + '\n');
-    fs.renameSync(stateFile + '.tmp', stateFile);
-    return value;
+  function find(id) {
+    const row = load().find(row => row.id === id);
+    if (!row) throw Error('This file no longer exists. Refresh the library.');
+    const relative = path.relative(fs.realpathSync(source), fs.realpathSync(path.join(source, row.id)));
+    if (relative.startsWith('..') || path.isAbsolute(relative)) throw Error('File is outside the library.');
+    return row;
   }
-  function exportSounds(body) {
-    const selected = validate(body).sounds.filter(row => row.selected);
-    if (!selected.length) throw Error('Select at least one sound to export.');
-    const parent = path.join(root, 'Assets/SelectedSounds');
-    fs.mkdirSync(parent, { recursive: true });
-    const staging = fs.mkdtempSync(path.join(parent, '.export-'));
-    const destination = path.join(parent, 'Export-' + new Date().toISOString().replace(/[:.]/g, '-') + '-' + crypto.randomBytes(3).toString('hex'));
+  function mutate(body, deleting = false) {
+    const row = find(body?.id);
+    const oldFile = path.join(source, row.id);
+    const newId = deleting ? null : slash(path.join(path.dirname(row.id), cleanName(body.name) + row.ext));
+    if (newId === row.id) return { sounds: load(), message: 'Filename unchanged.' };
+    const newFile = newId && path.join(source, newId);
+    if (newId && load().some(other => other.id.toLowerCase() === newId.toLowerCase() && other.id !== row.id)) throw Error('A sound with that name already exists in this category.');
+    if (newFile && newId.toLowerCase() !== row.id.toLowerCase() && (fs.existsSync(newFile) || fs.existsSync(newFile + '.meta'))) throw Error('The destination filename or its Unity metadata already exists.');
+    const hasMeta = fs.existsSync(oldFile + '.meta');
+    if (hasMeta && fs.lstatSync(oldFile + '.meta').isSymbolicLink()) throw Error('Unity metadata must not be a symbolic link.');
+    const data = manifest();
+    data.sounds = deleting ? data.sounds.filter(item => item.file !== row.id) : data.sounds.map(item => item.file === row.id ? { ...item, file: newId } : item);
+    const staged = path.join(source, '.operation-' + crypto.randomUUID());
+    const moves = [];
+    const move = (from, to) => { fs.renameSync(from, to); moves.push([from, to]); };
     try {
-      const used = new Set();
-      const manifest = selected.map(choice => {
-        const row = byId.get(choice.id);
-        let relative = row.category + '/' + choice.name + row.ext;
-        // Windows paths are case insensitive. Never overwrite a colliding renamed clip.
-        if (used.has(relative.toLowerCase())) relative = row.category + '/' + choice.name + '-' + crypto.createHash('sha256').update(row.id).digest('hex').slice(0, 10) + row.ext;
-        let suffix = 2;
-        const base = relative;
-        while (used.has(relative.toLowerCase())) relative = base.slice(0, -row.ext.length) + '-' + suffix++ + row.ext;
-        used.add(relative.toLowerCase());
-        const target = path.join(staging, relative);
-        fs.mkdirSync(path.dirname(target), { recursive: true });
-        fs.copyFileSync(path.join(source, row.id), target, fs.constants.COPYFILE_EXCL);
-        return { source: row.id, file: relative, name: choice.name, category: row.category, pack: row.pack };
-      });
-      const packs = new Set(manifest.map(row => row.pack));
-      for (const file of files.filter(file => /\.(txt|md|pdf|url)$/i.test(file))) {
-        const relative = path.relative(source, file);
-        if (!packs.has(relative.split(path.sep)[0])) continue;
-        const target = path.join(staging, 'SourceNotes', relative);
-        fs.mkdirSync(path.dirname(target), { recursive: true });
-        fs.copyFileSync(file, target, fs.constants.COPYFILE_EXCL);
+      // Keep the audio and its GUID together, including case-only renames on Windows.
+      move(oldFile, staged);
+      if (hasMeta) move(oldFile + '.meta', staged + '.meta');
+      if (!deleting) {
+        if (hasMeta) move(staged + '.meta', newFile + '.meta');
+        move(staged, newFile);
       }
-      fs.writeFileSync(path.join(staging, 'manifest.json'), JSON.stringify({ exportedAt: new Date().toISOString(), sounds: manifest }, null, 2) + '\n');
-      fs.writeFileSync(path.join(staging, 'README.txt'), 'Independent sound library export. Audio files are real copies, organized by category.\nmanifest.json records original sources for reference only; playback does not require them.\nSourceNotes preserves included pack documentation and licenses.\nOriginal Unity .meta files are intentionally excluded so these copies receive new GUIDs.\nThe game soundboard has not been changed. Keep the inspiration folder until game references are migrated.\n');
-      fs.renameSync(staging, destination);
-      return { count: manifest.length, directory: slash(path.relative(root, destination)) };
+      fs.writeFileSync(manifestFile + '.tmp', JSON.stringify(data, null, 2) + '\n');
+      fs.renameSync(manifestFile + '.tmp', manifestFile);
     } catch (error) {
-      // Staging is created by mkdtemp directly under our verified export parent.
-      if (path.dirname(path.resolve(staging)) === path.resolve(parent)) fs.rmSync(staging, { recursive: true, force: true });
+      for (const [from, to] of moves.reverse()) fs.renameSync(to, from);
       throw error;
     }
+    if (deleting) { fs.unlinkSync(staged); if (hasMeta) fs.unlinkSync(staged + '.meta'); }
+    return { sounds: load(), message: deleting ? 'Deleted ' + row.name + row.ext : 'Renamed to ' + body.name + row.ext };
   }
-  return { rows, byId, source, validate, load, save, exportSounds };
+  return { source, load, find, rename: body => mutate(body), delete: body => mutate(body, true) };
 }
 function createServer(options = {}) {
-  const library = createLibrary(options.root, options.stateFile);
+  const library = createLibrary(options.root);
   const token = crypto.randomBytes(24).toString('hex');
   return http.createServer(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
@@ -123,10 +103,10 @@ function createServer(options = {}) {
         res.writeHead(200, { 'Content-Type': url.pathname === '/' ? 'text/html; charset=utf-8' : 'text/javascript; charset=utf-8' });
         return res.end(fs.readFileSync(path.join(__dirname, url.pathname === '/' ? 'index.html' : 'app.js')));
       }
-      if (req.method === 'GET' && url.pathname === '/api/library') return json(200, { app: 'sound-library', token, sounds: library.load() });
+      if (req.method === 'GET' && url.pathname === '/api/library') return json(200, { app: 'sound-library', version: 2, token, directory: 'Assets/Audio/SoundLibrary', sounds: library.load() });
       if (req.method === 'GET' && url.pathname === '/audio') {
-        const row = library.byId.get(url.searchParams.get('id'));
-        if (!row) return json(404, { error: 'Unknown sound.' });
+        let row;
+        try { row = library.find(url.searchParams.get('id')); } catch { return json(404, { error: 'Unknown sound.' }); }
         const file = path.join(library.source, row.id);
         const size = fs.statSync(file).size;
         let start = 0, end = size - 1, status = 200;
@@ -139,19 +119,18 @@ function createServer(options = {}) {
           status = 206;
           res.setHeader('Content-Range', `bytes ${start}-${end}/${size}`);
         }
-        res.writeHead(status, { 'Content-Type': MIME[row.ext], 'Content-Length': end - start + 1, 'Accept-Ranges': 'bytes' });
+        res.writeHead(status, { 'Content-Type': MIME[row.ext.toLowerCase()], 'Content-Length': end - start + 1, 'Accept-Ranges': 'bytes' });
         const stream = fs.createReadStream(file, { start, end });
         stream.on('error', () => res.destroy());
         res.on('close', () => stream.destroy());
         return stream.pipe(res);
       }
-      if (req.method === 'POST' && ['/api/save', '/api/export'].includes(url.pathname)) {
+      if (req.method === 'POST' && ['/api/rename', '/api/delete'].includes(url.pathname)) {
         if (req.headers['x-library-token'] !== token) return json(403, { error: 'Reload the page to reconnect.' });
         let body = '';
         for await (const chunk of req) { body += chunk; if (body.length > 4 * 1024 * 1024) throw Error('Request too large.'); }
         const value = JSON.parse(body);
-        const saved = library.save(value);
-        return json(200, url.pathname === '/api/export' ? library.exportSounds(saved) : { saved: true });
+        return json(200, url.pathname === '/api/rename' ? library.rename(value) : library.delete(value));
       }
       json(404, { error: 'Not found.' });
     } catch (error) { json(400, { error: error.message }); }
@@ -161,4 +140,4 @@ if (require.main === module) {
   const port = Number(process.env.SOUND_LIBRARY_PORT || 8101);
   createServer().listen(port, '127.0.0.1', () => console.log(`Sound Library: http://127.0.0.1:${port}`));
 }
-module.exports = { createServer, createLibrary, cleanName, categoryFor };
+module.exports = { createServer, createLibrary, cleanName, categoryFor, walk, MIME, slash };

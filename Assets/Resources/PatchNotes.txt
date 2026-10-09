@@ -1,3 +1,6 @@
+version: 2026-10-09-permanent-sound-library
+- Copied all inspiration sounds into permanent category folders under Assets/Audio/SoundLibrary, with identical files stored only once. The Sound Library browser now previews these assets and provides immediate Rename and Delete actions; renaming preserves Unity asset IDs. Removed selection and export steps. The existing soundboard remains unchanged.
+
 version: 2026-10-09-sound-library
 - Added a separate Sound Library page, launched with Start-SoundLibrary.cmd, to browse inspiration audio by category and pack, preview clips, rename copies, and select sounds with saved review choices. Export creates an independent collection under Assets/SelectedSounds with source notes and a manifest. Existing soundboard behavior is unchanged.
 

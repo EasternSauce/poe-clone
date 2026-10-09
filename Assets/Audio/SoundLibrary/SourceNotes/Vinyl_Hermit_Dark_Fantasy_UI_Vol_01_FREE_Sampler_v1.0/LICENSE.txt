@@ -1,0 +1,221 @@
+VINYL HERMIT AUDIO ASSET LICENSE
+Dark Fantasy UI – Free Sampler
+VH Game Audio 001
+License Version 1.1
+
+
+1. LICENSE GRANT
+----------------
+
+Upon lawful download from an official Vinyl Hermit distribution source, or another valid license grant, Vinyl Hermit grants the licensee a non-exclusive, non-transferable, royalty-free license to use the audio files included in Dark Fantasy UI – Free Sampler ("the Assets") in permitted end products, subject to the terms below.
+
+This license grants usage rights only. It does not transfer ownership of the Assets or any intellectual property rights in the underlying sound library.
+
+Vinyl Hermit retains ownership of the Assets and may license the same Assets to other users.
+
+
+2. PERMITTED USE
+----------------
+
+The Assets may be used in personal and commercial end products, including:
+
+- Video games
+- Interactive applications
+- Software and user interfaces
+- Films and animation
+- Videos and online content
+- Trailers and promotional media
+- Other audiovisual or interactive productions
+
+The Assets may be used in an unlimited number of end products created by the licensee, unless a marketplace-specific license applicable to the download states otherwise.
+
+The Assets may be:
+
+- Edited
+- Trimmed
+- Processed
+- Layered
+- Mixed with other audio
+- Converted to other formats
+- Implemented through game engines or audio middleware
+
+These modifications must form part of an end product or production workflow and do not create ownership of the original Assets or a right to distribute modified versions as standalone audio assets.
+
+
+3. TEAM AND CONTRACTOR USE
+--------------------------
+
+The licensee may share the Assets with employees, team members and contractors only when reasonably necessary for them to work on an end product belonging to or commissioned by the licensee.
+
+Such persons may not retain, reuse, redistribute, sell or otherwise use the Assets independently for unrelated projects unless they obtain their own valid license.
+
+The Assets may not be transferred to another person, company or studio as a reusable sound library.
+
+
+4. ATTRIBUTION
+--------------
+
+Attribution is not required.
+
+Credit is appreciated where practical and may be written as:
+
+Game Audio / Sound Effects: Vinyl Hermit
+
+Failure to provide credit does not invalidate an otherwise valid license.
+
+
+5. PROHIBITED USE
+-----------------
+
+You may not:
+
+- Resell the Assets in their original form.
+- Redistribute or share the raw audio files.
+- Upload the Assets to public or private asset repositories for use by unlicensed third parties.
+- Repackage the Assets as another sound-effects pack, sample pack, audio library or asset collection.
+- Sublicense the Assets as standalone audio files.
+- Claim exclusive ownership of the underlying Assets.
+- Register or otherwise assert rights that would prevent Vinyl Hermit or other valid licensees from using the Assets.
+- Register the Assets, or substantially unaltered versions of them, with Content ID, audio-fingerprinting or similar rights-management systems in a way that may generate ownership claims against Vinyl Hermit or other valid licensees.
+- Make the Assets available in a form whose primary purpose is to provide access to the original or substantially similar sound files.
+- Use the Assets, or modified standalone versions of them, as training or dataset material for generative AI, machine-learning or similar models without prior written permission from Vinyl Hermit.
+
+Modified versions of the Assets remain subject to these restrictions when they are distributed as standalone audio assets rather than incorporated into an end product.
+
+
+6. DISTRIBUTION IN END PRODUCTS
+-------------------------------
+
+The Assets may be distributed as part of a permitted end product.
+
+For example, the audio may be included inside a released video game, application, film, video or other audiovisual or interactive product.
+
+Distribution is permitted when the Assets are incorporated into the end product and are not being offered primarily as reusable standalone audio files or as a competing sound library.
+
+The fact that an Asset may be technically extractable from an end product does not grant any third party a license to reuse the extracted Asset.
+
+
+7. CLIENT WORK
+--------------
+
+The licensee may use the Assets in work produced for clients.
+
+The finished end product may be delivered to the client.
+
+The client does not automatically receive a separate license to extract or reuse the Assets outside that end product.
+
+If the client requires the raw Assets for independent reuse in other projects, the client must obtain a separate valid license.
+
+
+8. MARKETPLACE-SPECIFIC LICENSES
+--------------------------------
+
+If Dark Fantasy UI – Free Sampler is downloaded, obtained or licensed through a marketplace that applies a mandatory license agreement, EULA or other platform-specific terms, those terms may supplement or replace this license for that transaction.
+
+Where there is a conflict between this LICENSE.txt and mandatory terms imposed by the marketplace through which the sampler was obtained, the applicable marketplace terms take precedence.
+
+
+9. OWNERSHIP
+------------
+
+The Assets are licensed, not sold.
+
+Vinyl Hermit retains all rights, title and interest in the original sound library except for the limited usage rights expressly granted to the licensee under this license.
+
+This license is non-exclusive. Other users may legally obtain and use the same Assets under their own valid licenses.
+
+
+10. SUPPORT, UPDATES AND REFUNDS
+--------------------------------
+
+This license does not guarantee future updates, additional content or ongoing support unless explicitly stated on the storefront through which the sampler was obtained.
+
+Refunds, cancellations, support obligations and marketplace-specific services, where applicable, are governed by the policies of the storefront through which the sampler was obtained and by applicable law.
+
+If a downloaded file is materially defective or inaccessible, the licensee should contact the support address provided by the storefront so the issue can be reviewed.
+
+
+11. TERMINATION
+---------------
+
+The rights granted under this license apply only while the licensee complies with these terms.
+
+A material violation of this license may terminate the licensee's rights to use the Assets in future products.
+
+Termination does not create any right to redistribute, resell or otherwise exploit the Assets outside the permissions granted by this license.
+
+Any rights additionally provided by an applicable marketplace agreement remain subject to that marketplace's own terms.
+
+
+12. DISCLAIMER AND LIMITATION OF LIABILITY
+------------------------------------------
+
+The Assets are provided on an "as is" basis, except for warranties or rights that cannot legally be excluded.
+
+Vinyl Hermit does not guarantee that the Assets will be suitable for every particular project, engine, middleware, workflow or technical environment.
+
+To the maximum extent permitted by applicable law, Vinyl Hermit's total liability arising from the Assets or this license will not exceed the amount paid, if any, by the licensee for the affected sampler.
+
+Nothing in this license excludes or limits any consumer or statutory rights that cannot lawfully be excluded or limited.
+
+
+13. GENERAL
+-----------
+
+If any provision of this license is found to be invalid or unenforceable, the remaining provisions will remain in effect.
+
+Failure to enforce any provision of this license does not waive the right to enforce it later.
+
+This license applies to the copy of the Assets distributed with it, subject to any mandatory marketplace-specific terms and applicable law.
+
+
+14. SUMMARY
+-----------
+
+You MAY:
+
+- Use the sounds in personal projects.
+- Use the sounds in commercial projects.
+- Use the sounds in games and other audiovisual or interactive productions.
+- Edit, process, layer and convert the sounds.
+- Use the sounds in multiple end products.
+- Use the sounds in client work.
+- Allow your team or contractors to access the files when necessary for your projects.
+
+You MAY NOT:
+
+- Resell the raw sounds.
+- Redistribute or share the raw sounds.
+- Repackage them as another sound library.
+- Give the library to another user or studio for unrelated use.
+- Claim exclusive ownership of the original Assets.
+- Register the Assets with Content ID or similar systems in a way that may create claims against Vinyl Hermit or other valid licensees.
+- Use the Assets as training or dataset material for generative AI or machine-learning systems without prior written permission.
+
+Attribution is appreciated but not required.
+
+
+15. PRODUCT INFORMATION
+-----------------------
+
+Product:
+Dark Fantasy UI – Free Sampler
+
+Publisher:
+Vinyl Hermit
+
+Internal series:
+VH Game Audio 001
+
+Sampler version:
+1.0
+
+Package:
+5 unique UI sound effects
+
+Primary delivery format:
+Stereo WAV · 48 kHz · 24-bit
+
+
+Copyright © 2026 Vinyl Hermit.
+All rights reserved except for the rights expressly granted under this license.
