@@ -1,3 +1,6 @@
+version: 2026-10-09-audible-sword-misses
+- Fixed quiet or silent sword swings, including attacks that miss. World sound volume now follows the viewed character's position, so camera height and zoom no longer muffle nearby effects.
+
 version: 2026-10-09-restore-sword-swing-audio
 - Restored the original sword swoosh recordings as the default melee swing sounds.
 

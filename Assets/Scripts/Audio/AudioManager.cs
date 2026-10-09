@@ -3,6 +3,12 @@ using UnityEngine.Serialization;
 
 namespace PoeClone.Audio
 {
+    /// <summary>Lets a camera provide the viewed character as the world sound listening position.</summary>
+    public interface IWorldAudioListener
+    {
+        Transform Target { get; }
+    }
+
     /// <summary>
     /// Central SFX player. World/combat clips go through PlayAtPoint or PlayRandomAtPoint,
     /// which create temporary centered sources with distance-based volume falloff.
@@ -142,7 +148,12 @@ namespace PoeClone.Audio
         {
             Camera listener = Camera.main;
             if (listener == null) return 1f;
-            float distance = Vector3.Distance(listener.transform.position, position);
+            // The camera sits high above and behind the character. Its distance would
+            // attenuate even our own swings, and zooming out could silence them entirely.
+            var follow = listener.GetComponent<IWorldAudioListener>();
+            Vector3 listeningPosition = follow != null && follow.Target != null
+                ? follow.Target.position : listener.transform.position;
+            float distance = Vector3.Distance(listeningPosition, position);
             float fade = Mathf.Clamp01(1f - distance / 32f);
             return fade * fade;
         }

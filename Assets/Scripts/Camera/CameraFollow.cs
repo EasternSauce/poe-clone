@@ -3,9 +3,12 @@ using UnityEngine;
 
 namespace PoeClone.CameraSystem
 {
-    public class CameraFollow : MonoBehaviour
+    public class CameraFollow : MonoBehaviour, PoeClone.Audio.IWorldAudioListener
     {
         [SerializeField] private Transform target;
+
+        /// <summary>The character being viewed, also the listening position for world sounds.</summary>
+        public Transform Target => target;
 
         [Header("Angle (PoE style)")]
         [SerializeField, Range(30f, 80f)] private float pitch = 55f;
