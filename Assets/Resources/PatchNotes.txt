@@ -1,3 +1,6 @@
+version: 2026-10-09-restore-sword-swing-audio
+- Restored the original sword swoosh recordings as the default melee swing sounds.
+
 version: 2026-10-09-fewer-cats-rare-lantern-flicker
 - Halved the cats roaming Haven and made lantern light flicker in brief, occasional bursts.
 

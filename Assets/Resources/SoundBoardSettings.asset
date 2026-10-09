@@ -23,9 +23,9 @@ MonoBehaviour:
     - swing_3
     sharedIds: []
     defaults:
-    - {fileID: 8300000, guid: 8ad74534eab89c846af04b9d9d179729, type: 3}
-    - {fileID: 8300000, guid: 308e282a5120bd442b346f1d9691085b, type: 3}
-    - {fileID: 8300000, guid: 8d2ee1836ac2d2e4293a9782e5883c63, type: 3}
+    - {fileID: 8300000, guid: 3c6f39ae65d8a5d4b82c74978ed0b6b0, type: 3}
+    - {fileID: 8300000, guid: 96c0d6e4e43e1c14ab0f5fe923514579, type: 3}
+    - {fileID: 8300000, guid: 3c608d1f2d639f94ca6ed4c6ff2a98e4, type: 3}
     suggestions:
     - Assets/Audio/SoundLibrary/Combat & weapons/Sword_swing#4.mp3
     - "Assets/Audio/SoundLibrary/Combat & weapons/Sword_swing_\u2013_Fast_m_#4-1766763244157.mp3"

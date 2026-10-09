@@ -27,7 +27,6 @@ namespace PoeClone.EditorTools
         // Prefixes cover alternate takes whose filenames include generated timestamps.
         static readonly Dictionary<string, string[]> recordings = new Dictionary<string, string[]>
         {
-            { "player.swing", new[] { "swing_non_bass", "swing2_non_bass", "swing3_non_bass" } },
             { "player.bow", new[] { "Skill_Arrow02_arrow_release", "Skill_Arrow03_arrow_release" } },
             { "combat.hit", new[] { "Dagger_stab_" } },
             { "combat.block", new[] { "Shield_block_" } },
