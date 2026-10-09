@@ -1,3 +1,7 @@
+version: 2026-10-09-softer-bow-and-lightning
+- Bow releases now use a softer dedicated bow-and-arrow recording for player and enemy archers.
+- Lightning ground impacts now use a shorter, quieter electric effect for a less intrusive spell impact.
+
 version: 2026-10-09-gameplay-sound-groups
 - Gameplay effects now reference named recording groups for a specific purpose. Shared callers use the entire alternate pool and avoid immediate repeats across the group.
 - Added alternate takes for zombie, skeleton, humanoid grunt and magic-projectile attacks. Storm Casters share the player's lightning casting group.

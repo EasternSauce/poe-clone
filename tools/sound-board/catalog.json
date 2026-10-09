@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-09T13:01:11.5337595Z",
+    "generatedAt": "2026-10-09T13:10:01.4953522Z",
     "effects": [
         {
             "id": "player.swing",
@@ -35,8 +35,7 @@
             "soundGroup": "sound.player.bow",
             "purpose": "Bow releases",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Arrow02_arrow_release.wav",
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Arrow03_arrow_release.wav"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
             ],
             "usages": [
                 {
@@ -48,7 +47,7 @@
                         "Assets/Scripts/Player/PlayerCombat.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.800000011920929
                 },
                 {
                     "id": "enemy.Archer.Attack",
@@ -63,7 +62,7 @@
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.800000011920929
                 },
                 {
                     "id": "enemy.Skeleton Archer.Attack",
@@ -78,7 +77,7 @@
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.800000011920929
                 }
             ]
         },
@@ -898,10 +897,7 @@
             "soundGroup": "sound.combat.ground.Lightning",
             "purpose": "Lightning ground impacts",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#1-1766764720689.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#2-1766764718272.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#3-1766764718272.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#4-1766764715064.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Electric05.wav"
             ],
             "usages": [
                 {
@@ -915,7 +911,7 @@
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.44999998807907104
                 },
                 {
                     "id": "combat.ground.Lightning/Storm Caster",
@@ -926,7 +922,7 @@
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
                     "muted": false,
-                    "volume": 1.0
+                    "volume": 0.44999998807907104
                 }
             ]
         },
@@ -6185,17 +6181,6 @@
             "usages": []
         },
         {
-            "id": "clip:Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3",
-            "label": "Bow_and_arrow_shot_–_#3-1766764176083_arrow_release",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
-            ],
-            "usages": []
-        },
-        {
             "id": "clip:Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#4-1766764179015_arrow_lands_in_wood.mp3",
             "label": "Bow_and_arrow_shot_–_#4-1766764179015_arrow_lands_in_wood",
             "group": "Unassigned recordings",
@@ -9177,6 +9162,28 @@
             "usages": []
         },
         {
+            "id": "clip:Assets/Audio/SoundLibrary/Magic & spells/Skill_Arrow02_arrow_release.wav",
+            "label": "Skill_Arrow02_arrow_release",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Arrow02_arrow_release.wav"
+            ],
+            "usages": []
+        },
+        {
+            "id": "clip:Assets/Audio/SoundLibrary/Magic & spells/Skill_Arrow03_arrow_release.wav",
+            "label": "Skill_Arrow03_arrow_release",
+            "group": "Unassigned recordings",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Arrow03_arrow_release.wav"
+            ],
+            "usages": []
+        },
+        {
             "id": "clip:Assets/Audio/SoundLibrary/Magic & spells/Skill_Curse01.wav",
             "label": "Skill_Curse01",
             "group": "Unassigned recordings",
@@ -9569,17 +9576,6 @@
             "purpose": "",
             "current": [
                 "Assets/Audio/SoundLibrary/Magic & spells/Skill_Electric04.wav"
-            ],
-            "usages": []
-        },
-        {
-            "id": "clip:Assets/Audio/SoundLibrary/Magic & spells/Skill_Electric05.wav",
-            "label": "Skill_Electric05",
-            "group": "Unassigned recordings",
-            "soundGroup": "",
-            "purpose": "",
-            "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Electric05.wav"
             ],
             "usages": []
         },

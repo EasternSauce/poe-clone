@@ -41,7 +41,7 @@ MonoBehaviour:
     suggestions: []
     selected: {fileID: 0}
     muted: 0
-    volume: 1
+    volume: 0.8
   - id: combat.hit
     label: Hit impact
     group: Combat
@@ -128,7 +128,7 @@ MonoBehaviour:
     suggestions: []
     selected: {fileID: 0}
     muted: 0
-    volume: 1
+    volume: 0.45
   - id: combat.ground.Poison
     label: Poison ground impact
     group: Combat
@@ -2191,8 +2191,7 @@ MonoBehaviour:
   - id: sound.player.bow
     purpose: Bow releases
     clips:
-    - {fileID: 8300000, guid: 2160dd2462bd7b4488d1d4c5ce0d3c61, type: 3}
-    - {fileID: 8300000, guid: ed78aa3401f2ef04fab7295b2cf77b9f, type: 3}
+    - {fileID: 8300000, guid: e452f29912848904aa8fe6e4e14ca4af, type: 3}
   - id: sound.combat.hit
     purpose: Weapon hit impacts
     clips:
@@ -2232,10 +2231,7 @@ MonoBehaviour:
   - id: sound.combat.ground.Lightning
     purpose: Lightning ground impacts
     clips:
-    - {fileID: 8300000, guid: 930568f126afc52489657fd26c39e0e2, type: 3}
-    - {fileID: 8300000, guid: b6c92be9d13caa54996055dcaa75702b, type: 3}
-    - {fileID: 8300000, guid: 97e945ae92222c44390d90fdb4f64b92, type: 3}
-    - {fileID: 8300000, guid: dd9de4f76b1dab64eae434e9dc5f29b7, type: 3}
+    - {fileID: 8300000, guid: 8e9bd9596ae84c74d96709f431c8a509, type: 3}
   - id: sound.combat.ground.Poison
     purpose: Poison ground impacts
     clips:
