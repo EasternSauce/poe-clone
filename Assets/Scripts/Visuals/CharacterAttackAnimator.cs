@@ -479,6 +479,7 @@ namespace PoeClone.Visuals
 
         private AttackProfile activeProfile;
         private Pose rest;
+        private CharacterWalkAnimator walkAnimator;
         private float timer;
         private float castSpeedMultiplier = 1f;
         private bool strikeFired;
@@ -504,6 +505,9 @@ namespace PoeClone.Visuals
 
         /// <summary>True while a two-handed attack is posing the off arm (the walk cycle leaves it alone).</summary>
         public bool DrivesOffArm => IsAttacking && activeProfile != null && (activeProfile.UsesOffArm || activeProfile.TwoHandGrip);
+
+        /// <summary>True while a swing holds the weapon in both hands (the great weapons).</summary>
+        public bool SwingsTwoHanded => IsAttacking && activeProfile != null && activeProfile.TwoHandGrip;
 
         /// <summary>Swings started so far. Only ever increases, so an observer sampling it periodically can't miss a swing.</summary>
         public int AttackCount { get; private set; }
@@ -531,7 +535,7 @@ namespace PoeClone.Visuals
             if (offElbow == null && offArm != null)
                 offElbow = FindDescendant(offArm, "Elbow");
 
-            CharacterWalkAnimator walkAnimator = GetComponent<CharacterWalkAnimator>();
+            walkAnimator = GetComponent<CharacterWalkAnimator>();
             float restPitch = walkAnimator != null ? walkAnimator.ArmRestAngle : 0f;
             rest = new Pose(restPitch, 0f, 0f, 0f);
         }
@@ -696,6 +700,11 @@ namespace PoeClone.Visuals
             bool absolute = p.Absolute || p.TwoHandGrip;
             Pose windup = absolute ? p.WindupOffset : rest + p.WindupOffset;
             Pose strike = absolute ? p.StrikeOffset : rest + p.StrikeOffset;
+            // A great weapon is held at the guard between swings, so its arm leaves from and
+            // returns to that instead of hanging at rest.
+            Pose start = walkAnimator != null && walkAnimator.HoldsTwoHanded
+                ? new Pose(CharacterWalkAnimator.GuardPitch, CharacterWalkAnimator.GuardYaw, CharacterWalkAnimator.GuardRoll, CharacterWalkAnimator.GuardElbow)
+                : rest;
 
             Pose pose;
             Pose offPose = rest;
@@ -704,7 +713,7 @@ namespace PoeClone.Visuals
                 if (f < p.SwingStart)
                 {
                     float t = EaseOut(f / p.SwingStart);
-                    pose = Lerp(rest, windup, t);
+                    pose = Lerp(start, windup, t);
                     offPose = Lerp(rest, p.OffWindup, t);
                 }
                 else
@@ -717,14 +726,14 @@ namespace PoeClone.Visuals
             else if (f < p.StrikeTime)
             {
                 float t = EaseOut(p.StrikeTime > 0f ? f / p.StrikeTime : 1f);
-                pose = Lerp(rest, windup, t);
+                pose = Lerp(start, windup, t);
                 offPose = Lerp(rest, p.OffWindup, t);
             }
             else
             {
                 float recoverSpan = 1f - p.StrikeTime;
                 float t = recoverSpan > 0f ? (f - p.StrikeTime) / recoverSpan : 1f;
-                pose = Lerp(strike, rest, t);
+                pose = Lerp(strike, start, t);
                 offPose = Lerp(p.OffStrike, rest, t);
 
                 if (!strikeFired)

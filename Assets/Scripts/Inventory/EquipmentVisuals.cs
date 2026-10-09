@@ -16,6 +16,9 @@ namespace PoeClone.Inventory
         private BaseGear[] baseGear = new BaseGear[0];
         private EquipmentSet equipment;
 
+        /// <summary>The worn great weapon (greatsword, greataxe, maul), held in both hands; null otherwise. Its +Y runs from the grip to the head.</summary>
+        public Transform TwoHandedWeapon { get; private set; }
+
         private void Start()
         {
             if (equipment != null)
@@ -70,6 +73,7 @@ namespace PoeClone.Inventory
             foreach (EquipmentVisualInstance old in GetComponentsInChildren<EquipmentVisualInstance>(true))
                 Kill(old.gameObject);
             spawned.Clear();
+            TwoHandedWeapon = null;
 
             foreach (BaseGear g in GetComponentsInChildren<BaseGear>(true))
                 g.gameObject.SetActive(true);
@@ -112,6 +116,9 @@ namespace PoeClone.Inventory
                 spawned[slot] = list;
             }
 
+            if (slot == EquipSlot.MainHand)
+                TwoHandedWeapon = null;
+
             if (item != null)
             {
                 string model = ItemGenerator.ModelFor(item.ArtId, out Color modelTint);
@@ -147,6 +154,8 @@ namespace PoeClone.Inventory
                         instance.AddComponent<EquipmentVisualInstance>();
                         if (tint != Color.white)
                             Tint(instance, tint);
+                        if (slot == EquipSlot.MainHand && child.name == "Socket_MainHand" && SlotRules.IsTwoHandedMelee(item.WeaponType))
+                            TwoHandedWeapon = instance.transform;
                         list.Add(instance);
                     }
                 }

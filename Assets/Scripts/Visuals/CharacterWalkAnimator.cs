@@ -88,6 +88,22 @@ namespace PoeClone.Visuals
         private float idleSeed;
         private const float BreathRate = 1.9f;
 
+        // A great weapon is carried at the ready in both hands: the weapon arm brings the grip in
+        // front of the belly with the head raised ahead, and the off hand closes on the grip
+        // (solved onto the weapon itself, so it stays on the haft whatever the weapon's length).
+        // Real angles, like the great-weapon swings, so every rig holds it the same way.
+        public const float GuardPitch = -30f;
+        public const float GuardYaw = 5f;
+        public const float GuardRoll = -50f; // across the body, so the hands meet in front of it
+        public const float GuardElbow = 20f;
+        private const float OffGripAlong = -0.22f; // the off hand's place on the weapon, below the main hand
+        private PoeClone.Inventory.EquipmentVisuals equipmentVisuals;
+        private Transform offHand;
+        private float holdBlend;
+
+        /// <summary>True while this character carries a great weapon in both hands (see <see cref="GuardPitch"/>).</summary>
+        public bool HoldsTwoHanded => equipmentVisuals != null && equipmentVisuals.TwoHandedWeapon != null;
+
         /// <summary>The right/left arm's rest pitch (0 for the player, more raised for monsters). Shared with CharacterAttackAnimator so its swing offsets land correctly regardless of rig.</summary>
         public float ArmRestAngle => armRestAngle;
 
@@ -160,6 +176,8 @@ public void Configure(
             idleSeed = Random.value * 10f;
             attackAnimator = GetComponent<CharacterAttackAnimator>();
             stagger = GetComponentInParent<Stagger>();
+            equipmentVisuals = GetComponent<PoeClone.Inventory.EquipmentVisuals>();
+            offHand = leftElbow != null ? leftElbow.Find("Hand") : null;
 
             audioSource = GetComponent<AudioSource>();
             if (audioSource == null)
@@ -261,6 +279,40 @@ private void LateUpdate()
             transform.localPosition = baseLocalPosition + Vector3.up * (bob - 0.28f * crouch) + Vector3.forward * lunge;
             if (sweepingBroom != null && WorkSweep > 0f)
                 PoseSweepingBroom(!leftArmSuppressed, !rightArmSuppressed);
+
+            // The grip lets go only for a one-armed gesture (a spell cast); a great weapon's own
+            // swing poses both arms and starts and ends in this same guard.
+            bool oneArmed = attackAnimator != null && attackAnimator.IsAttacking && !attackAnimator.DrivesOffArm;
+            holdBlend = HoldsTwoHanded ? Mathf.MoveTowards(holdBlend, oneArmed ? 0f : 1f, 6f * dt) : 0f;
+            if (HoldsTwoHanded)
+                PoseTwoHandedHold(rightArmSuppressed, leftArmSuppressed, s * armAmp, breath);
+        }
+
+        private void PoseTwoHandedHold(bool rightArmSuppressed, bool leftArmSuppressed, float swing, float breath)
+        {
+            // The weapon arm keeps the guard throughout (every swing and cast starts and ends in it).
+            // Walking rocks the weapon a little instead of swinging the arm.
+            if (!rightArmSuppressed && rightArm != null)
+            {
+                rightArm.localRotation = Quaternion.Euler(GuardPitch + swing * 0.15f + breath * 2f, GuardYaw, GuardRoll);
+                if (rightElbow != null)
+                    rightElbow.localRotation = Quaternion.Euler(-GuardElbow, 0f, 0f);
+            }
+
+            // A great weapon's swing poses the off arm itself; ease from this grip into it and
+            // back again over the swing's first and last moments so the hand doesn't jump.
+            float weight = holdBlend;
+            if (leftArmSuppressed)
+            {
+                float edge = Mathf.Min(attackAnimator.Progress, 1f - attackAnimator.Progress);
+                weight = attackAnimator.SwingsTwoHanded ? 1f - Mathf.Clamp01(edge / 0.12f) : 0f;
+            }
+
+            if (weight > 0f)
+            {
+                Transform weapon = equipmentVisuals.TwoHandedWeapon;
+                PoseGrip(leftArm, leftElbow, offHand, weapon.TransformPoint(Vector3.up * OffGripAlong), -1f, weight);
+            }
         }
 
         private void PoseSweepingBroom(bool poseLeft, bool poseRight)

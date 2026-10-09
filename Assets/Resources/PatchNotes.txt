@@ -1,3 +1,6 @@
+version: 2026-10-09-two-handed-hold
+- Greatswords, greataxes and mauls are now held in both hands at the ready while standing and walking, not just while swinging. Bosses carrying them hold them the same way.
+
 version: 2026-10-09-rare-five-mods
 - Rare items can now roll 5 modifiers. 3 is still the most common, 4 a bit less common, and 5 the rarest.
 
