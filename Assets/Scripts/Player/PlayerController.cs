@@ -152,6 +152,10 @@ namespace PoeClone.Player
             if (stagger == null)
                 stagger = gameObject.AddComponent<Stagger>();
 
+            // Projectiles carry the player's movement; measure it from the first frame on.
+            if (GetComponent<MotionSampler>() == null)
+                gameObject.AddComponent<MotionSampler>();
+
             if ((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.DropsEnabled) && GetComponent<LootPicker>() == null)
                 gameObject.AddComponent<LootPicker>();
             if (GetComponent<Skills.PlayerSkills>() == null)

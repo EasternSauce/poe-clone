@@ -1,3 +1,6 @@
+version: 2026-10-09-projectile-momentum
+- Arrows, Fire Bolts and Ice Shards now carry your movement when loosed. Shooting while walking sideways no longer looks angled backwards on screen, and the shot lands where the cursor points. Lead stationary targets slightly when strafing.
+
 version: 2026-10-09-split-shot-aim
 - Split Shot now draws the bow pointed at the target instead of swinging it far to the side, so the arrows leave from where the bow is aimed.
 

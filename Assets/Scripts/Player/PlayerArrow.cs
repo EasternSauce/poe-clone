@@ -9,7 +9,8 @@ namespace PoeClone.Player
     /// <summary>
     /// An arrow from the player's bow (or a Fire Bolt spell). Flies straight ahead and hits the
     /// first thing in its path: an enemy takes the damage, anything else (a tree, a rock) just stops
-    /// it. A bolt also bursts, damaging every enemy around the impact. There is no ammo.
+    /// it. It keeps the shooter's movement at launch, so a shot loosed while walking flies straight
+    /// on screen (the camera moves with the player) and lands where the cursor points. A bolt also bursts, damaging every enemy around the impact. There is no ammo.
     /// Spectators get the same arrow as a harmless visual.
     /// </summary>
     public class PlayerArrow : MonoBehaviour
@@ -23,6 +24,7 @@ namespace PoeClone.Player
         private static readonly RaycastHit[] Hits = new RaycastHit[16];
 
         private Vector3 direction;
+        private Vector3 carry;   // the shooter's ground velocity when it was loosed
         private float travelLeft;
         private float damage;
         private Transform owner;   // the shooter, never hit by its own arrow
@@ -170,6 +172,7 @@ namespace PoeClone.Player
 
             var arrow = root.AddComponent<PlayerArrow>();
             arrow.direction = forward;
+            arrow.carry = MotionSampler.VelocityOf(shooter);
             arrow.travelLeft = range;
             arrow.damage = damage;
             arrow.owner = shooter;
@@ -187,18 +190,23 @@ namespace PoeClone.Player
                 return;
             }
 
+            // Its own flight plus the carried movement. Range counts only its own flight.
+            Vector3 motion = direction * step + carry * Time.deltaTime;
+            float length = motion.magnitude;
+            Vector3 heading = length > 0.0001f ? motion / length : direction;
+
             // Sweep this frame's stretch of the flight so a fast arrow can't skip through anything:
             // once wide for enemies, once narrow for everything else.
             RaycastHit? nearest = null;
-            Sweep(EnemyRadius, step, enemiesOnly: true, ref nearest);
-            Sweep(Radius, step, enemiesOnly: false, ref nearest);
+            Sweep(EnemyRadius, heading, length, enemiesOnly: true, ref nearest);
+            Sweep(Radius, heading, length, enemiesOnly: false, ref nearest);
 
             // A spectator's copy: its enemies have no colliders, so it stops (and bursts) at the
             // first one it passes close to, the way the player's real one did.
             if (harmless && nearest == null && pierced == null)
             {
                 Vector3 at;
-                if (PassesEnemy(step, out at))
+                if (PassesEnemy(heading, length, out at))
                 {
                     if (burstRadius > 0f)
                         Skills.SkillEffects.Shockwave(at, burstRadius, textColor, 0.25f);
@@ -236,11 +244,11 @@ namespace PoeClone.Player
                 return;
             }
 
-            transform.position += direction * step;
+            transform.position += motion;
             travelLeft -= step;
         }
 
-        private bool PassesEnemy(float step, out Vector3 at)
+        private bool PassesEnemy(Vector3 heading, float length, out Vector3 at)
         {
             at = Vector3.zero;
             float best = float.MaxValue;
@@ -251,22 +259,22 @@ namespace PoeClone.Player
                     continue;
                 Vector3 to = enemy.transform.position - from;
                 to.y = 0f;
-                float along = Vector3.Dot(to, direction);
-                if (along < 0f || along > step)
+                float along = Vector3.Dot(to, heading);
+                if (along < 0f || along > length)
                     continue;
                 float reach = EnemyRadius + 0.4f * enemy.transform.localScale.x;
-                if ((to - direction * along).sqrMagnitude <= reach * reach && along < best)
+                if ((to - heading * along).sqrMagnitude <= reach * reach && along < best)
                 {
                     best = along;
-                    at = from + direction * along;
+                    at = from + heading * along;
                 }
             }
             return best < float.MaxValue;
         }
 
-        private void Sweep(float radius, float step, bool enemiesOnly, ref RaycastHit? nearest)
+        private void Sweep(float radius, Vector3 heading, float length, bool enemiesOnly, ref RaycastHit? nearest)
         {
-            int count = Physics.SphereCastNonAlloc(transform.position, radius, direction, Hits, step,
+            int count = Physics.SphereCastNonAlloc(transform.position, radius, heading, Hits, length,
                 Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
 
             for (int k = 0; k < count; k++)
