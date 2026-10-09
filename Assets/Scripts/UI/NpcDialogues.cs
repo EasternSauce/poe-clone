@@ -206,7 +206,8 @@ namespace PoeClone.UI
 
         // ------------------------------------------------------------------ quests
 
-        private static void QuestPage(Npc npc, QuestDefinition quest)
+        // `lead` goes above the page's own text (the thanks and rewards when one quest leads into the next).
+        private static void QuestPage(Npc npc, QuestDefinition quest, string lead = null)
         {
             QuestLog log = QuestLog.Instance;
             if (log == null)
@@ -243,7 +244,18 @@ namespace PoeClone.UI
                     options.Add(new DialogueOption((quest.Goal == QuestGoal.Talk ? "<b>Deliver:</b> " : "<b>Hand in:</b> ") + quest.Title, () =>
                     {
                         List<string> got = log.HandIn(quest);
-                        Main(npc, quest.Thanks + "\n\n<color=" + GoldHex + ">Received: " + string.Join(", ", got) + "</color>");
+                        string thanks = quest.Thanks + "\n\n<color=" + GoldHex + ">Received: " + string.Join(", ", got) + "</color>";
+                        // Whatever this person has next is offered straight away.
+                        QuestDefinition next = log.At(npc.Role).Find(q => log.State(q) == QuestState.Available);
+                        if (next != null)
+                        {
+                            RefreshMarkers();
+                            QuestPage(npc, next, thanks);
+                        }
+                        else
+                        {
+                            Main(npc, thanks);
+                        }
                     }));
                     break;
 
@@ -252,7 +264,7 @@ namespace PoeClone.UI
                     return;
             }
 
-            DialogueUI.Show(npc, text, options);
+            DialogueUI.Show(npc, lead != null ? lead + "\n\n" + text : text, options);
         }
 
         /// <summary>"return to Seer Ysolde at the Emberwatch camp".</summary>
