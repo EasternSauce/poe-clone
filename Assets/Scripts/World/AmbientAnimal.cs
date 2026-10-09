@@ -7,7 +7,7 @@ namespace PoeClone.World
     /// <summary>Cosmetic wildlife: no combat components, colliders, drops or network identity.</summary>
     public sealed class AmbientAnimal : MonoBehaviour
     {
-        public enum Species { Squirrel, Sheep, Snake, Swan, FrostHare, EmberLizard }
+        public enum Species { Squirrel, Sheep, Snake, Swan, FrostHare, EmberLizard, Rabbit }
         public Species Kind { get; private set; }
         private AreaShape shape;
         private Transform player, visual, head, tail;
@@ -163,7 +163,7 @@ namespace PoeClone.World
             }
             for (int i = 0; i < legs.Length; i++)
                 legs[i].localRotation = Quaternion.Euler(Mathf.Sin(cycle + (i == 0 || i == 3 ? 0 : Mathf.PI)) * 27 * moving, 0, 0);
-            float hop = Kind == Species.FrostHare ? 0.14f : Kind == Species.Squirrel ? 0.07f : 0.02f;
+            float hop = Kind == Species.FrostHare || Kind == Species.Rabbit ? 0.14f : Kind == Species.Squirrel ? 0.07f : 0.02f;
             visual.localPosition = visualRest + Vector3.up * (Mathf.Abs(Mathf.Sin(cycle)) * hop * moving);
             // Sheep lower their heads to graze; squirrels sniff and twitch their bushy tails.
             head.localRotation = Quaternion.Euler(Kind == Species.Sheep ? (1 - moving) * (23 + Mathf.Sin(Time.time * 1.8f + phase) * 8) : Mathf.Sin(Time.time * 2 + phase) * 8 * (1 - moving), 0, 0);

@@ -21,8 +21,9 @@ namespace PoeClone.World
                 case AmbientAnimal.Species.Sheep: Sheep(visual, variant); break;
                 case AmbientAnimal.Species.Snake: Snake(visual, variant); break;
                 case AmbientAnimal.Species.Swan: Swan(root, visual); break;
-                case AmbientAnimal.Species.FrostHare: FrostHare(visual, variant); break;
+                case AmbientAnimal.Species.FrostHare: Rabbit(visual, variant, true); break;
                 case AmbientAnimal.Species.EmberLizard: EmberLizard(visual, variant); break;
+                case AmbientAnimal.Species.Rabbit: Rabbit(visual, variant, false); break;
             }
             return root;
         }
@@ -116,9 +117,12 @@ namespace PoeClone.World
             }
         }
 
-        private static void FrostHare(Transform visual, int variant)
+        private static void Rabbit(Transform visual, int variant, bool snowy)
         {
-            Color fur = variant % 3 == 0 ? new Color(0.69f, 0.74f, 0.79f) : new Color(0.87f, 0.91f, 0.93f);
+            Color fur = snowy
+                ? (variant % 3 == 0 ? new Color(0.69f, 0.74f, 0.79f) : new Color(0.87f, 0.91f, 0.93f))
+                : (variant % 3 == 0 ? new Color(0.48f, 0.44f, 0.39f) : variant % 3 == 1
+                    ? new Color(0.60f, 0.43f, 0.28f) : new Color(0.77f, 0.66f, 0.49f));
             Part(visual, "Body", new Vector3(0, 0.29f, -0.02f), new Vector3(0.40f, 0.43f, 0.66f), fur);
             Legs(visual, 0.14f, 0.19f, 0.18f, 0.10f, fur);
             foreach (float side in new[] { -1f, 1f })
@@ -129,11 +133,13 @@ namespace PoeClone.World
             foreach (float side in new[] { -1f, 1f })
             {
                 Part(head, "LongEar", new Vector3(side * 0.09f, 0.29f, -0.04f), new Vector3(0.10f, 0.44f, 0.10f), fur);
-                Part(head, "DarkEarTip", new Vector3(side * 0.09f, 0.49f, -0.04f), new Vector3(0.085f, 0.09f, 0.085f), Dark);
+                if (snowy)
+                    Part(head, "DarkEarTip", new Vector3(side * 0.09f, 0.49f, -0.04f), new Vector3(0.085f, 0.09f, 0.085f), Dark);
                 Part(head, "InnerEar", new Vector3(side * 0.09f, 0.28f, 0.01f), new Vector3(0.045f, 0.29f, 0.025f), new Color(0.65f, 0.57f, 0.59f));
             }
             Eyes(head, 0.136f, 0.045f, 0.09f, 0.05f);
-            Part(visual, "Tail", new Vector3(0, 0.30f, -0.39f), Vector3.one * 0.17f, fur);
+            Part(visual, "Tail", new Vector3(0, 0.30f, -0.39f), Vector3.one * 0.17f, snowy ? fur : Cream);
+            if (!snowy) visual.localScale = Vector3.one * 0.78f;
         }
 
         private static void EmberLizard(Transform visual, int variant)

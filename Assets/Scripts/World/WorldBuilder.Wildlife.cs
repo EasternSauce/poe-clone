@@ -14,6 +14,13 @@ namespace PoeClone.World
             PopulateWildlife(wildlife, player, random, Frozen, AmbientAnimal.Species.FrostHare, 24);
             PopulateWildlife(wildlife, player, random, Ruins, AmbientAnimal.Species.EmberLizard, 24);
 
+            // A separate seed leaves existing wildlife placements unchanged.
+            var rabbits = new System.Random(7902);
+            PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Rabbit, 28, 65);
+            PopulateWildlife(wildlife, player, rabbits, Greenwood, AmbientAnimal.Species.Rabbit, 20);
+            PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Rabbit, 12, 30, 65);
+            PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Squirrel, 12, 30, 75);
+
             // Broad wings and an outstretched neck distinguish these from the small scene birds.
             foreach (int area in new[] { Greenwood, Haven })
                 for (int i = 0; i < 8; i++)
@@ -37,7 +44,7 @@ namespace PoeClone.World
         }
 
         private void PopulateWildlife(Transform parent, Transform player, System.Random random,
-            int area, AmbientAnimal.Species species, int count)
+            int area, AmbientAnimal.Species species, int count, float minDistance = 0, float maxDistance = float.PositiveInfinity)
         {
             AreaShape shape = Shape(area);
             float radius = species == AmbientAnimal.Species.Sheep ? 0.65f : 0.3f;
@@ -47,6 +54,9 @@ namespace PoeClone.World
                 Vector3 position = Center(area) + new Vector3(
                     ((float)random.NextDouble() - 0.5f) * shape.Size.x, 0,
                     ((float)random.NextDouble() - 0.5f) * shape.Size.y);
+                float distanceSquared = (position - Center(area)).sqrMagnitude;
+                if (distanceSquared < minDistance * minDistance || distanceSquared > maxDistance * maxDistance)
+                    continue;
                 // Leave the town square and its busy central streets to the villagers.
                 if (species == AmbientAnimal.Species.Sheep && (position - Center(area)).sqrMagnitude < 45 * 45)
                     continue;

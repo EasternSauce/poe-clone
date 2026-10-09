@@ -1,3 +1,7 @@
+version: 2026-10-09-grassland-bunnies
+- Added small brown, grey and sandy-coloured bunnies to Haven's grasslands and Greenwood's clearings. They hop around and flee nearby threats without attacking or blocking movement.
+- Added bunnies and squirrels closer to Haven's quieter outskirts, bringing more wildlife within reach of town while leaving the central square clear.
+
 version: 2026-10-09-passive-wildlife
 - Added bushy-tailed squirrels to Greenwood, grazing sheep to Haven's grasslands and small slithering snakes to the Lost Hollows. They wander, idle and flee nearby players or enemies without attacking or blocking movement.
 - Added white swans with long necks and broad, slowly flapping wings above Greenwood and Haven. Swans stay airborne and never land.
