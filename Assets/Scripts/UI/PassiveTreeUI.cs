@@ -80,12 +80,16 @@ namespace PoeClone.UI
         public void ConfirmChanges()
         {
             if (Spectating) return;
-            if (!HasPendingChanges) { SetOpen(false); return; }
+            if (!HasPendingChanges) return;
             if (!passives.ConfirmDraft(draft, resetPending, respecMode)) return;
-            draft = null;
-            resetPending = false;
+            // Confirming applies the changes and keeps the tree open, unless it was the answer to closing it.
+            bool close = closeRequested;
             respecMode = false;
-            SetOpen(false);
+            BeginDraft();
+            hovered = null;
+            ShowInfo(null);
+            dirty = true;
+            if (close) SetOpen(false);
         }
 
         public void CancelChanges()

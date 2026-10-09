@@ -1,3 +1,9 @@
+version: 2026-10-09-loot-and-sound-tweaks
+- Sounds with several recordings now pick one at random each time, instead of avoiding the one just played (which made small sets alternate in a pattern).
+- Confirming passive points applies them and keeps the passive tree open.
+- Strength, Dexterity and Intelligence now roll on items as often as other modifiers, instead of twice as often.
+- Armour and Evasion modifiers roll twice as high at every tier.
+
 version: 2026-10-09-two-handed-hold
 - Greatswords, greataxes and mauls are now held in both hands at the ready while standing and walking, not just while swinging. Bosses carrying them hold them the same way.
 

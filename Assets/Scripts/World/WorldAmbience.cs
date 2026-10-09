@@ -18,7 +18,6 @@ namespace PoeClone.World
             public Transform anchor;
             // Level is the 0-1 fade; each recording's loudness is baked into its file.
             public float next, minDelay, maxDelay, level;
-            public int lastClip = -1;
             public bool loop;
         }
 
@@ -187,8 +186,6 @@ namespace PoeClone.World
                     voice.next -= Time.deltaTime;
                     if (voice.next > 0) continue;
                     int index = random.Next(voice.clips.Length);
-                    if (index == voice.lastClip && voice.clips.Length > 1) index = (index + 1) % voice.clips.Length;
-                    voice.lastClip = index;
                     AudioSource source = Source(voice);
                     source.clip = voice.clips[index];
                     source.volume = voice.level * master;

@@ -14,7 +14,6 @@ namespace PoeClone.Audio
             public AudioClip[] clips = Array.Empty<AudioClip>();
             [Tooltip("Minimum seconds between plays from this group, shared by every caller. Requests during it stay silent.")]
             [Min(0f)] public float cooldown;
-            [NonSerialized] private AudioClip lastPlayed;
             [NonSerialized] private float lastPlayedAt = float.NegativeInfinity;
 
             public AudioClip Choose(AudioClip fallback = null)
@@ -26,14 +25,9 @@ namespace PoeClone.Audio
                 AudioClip next = null;
                 int count = 0;
                 foreach (var clip in clips)
-                    if (clip != null && clip != lastPlayed && UnityEngine.Random.Range(0, ++count) == 0)
+                    if (clip != null && UnityEngine.Random.Range(0, ++count) == 0)
                         next = clip;
-                if (next == null)
-                    foreach (var clip in clips)
-                        if (clip != null) { next = clip; break; }
-                if (next == null) next = fallback;
-                lastPlayed = next;
-                return next;
+                return next != null ? next : fallback;
             }
         }
 
@@ -59,7 +53,7 @@ namespace PoeClone.Audio
             public AudioClip Choose(AudioClip fallback = null)
             {
                 if (muted) return null;
-                // All callers of this purpose share the group's repeat history.
+                // All callers of this purpose share the group's cooldown.
                 if (soundGroup != null) return soundGroup.Choose(fallback);
                 if (selected != null) return selected;
                 if (legacyGroup == null) legacyGroup = new SoundGroup { clips = defaults };
