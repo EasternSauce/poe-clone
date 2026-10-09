@@ -54,6 +54,9 @@ namespace PoeClone.Player
         private PoeClone.Skills.PlayerSkills skills;
 
         private float cooldownTimer;
+        // A press that went to something else (picking up an item, talking, a gate, the UI) doesn't
+        // turn into an attack while the button stays held, even once that thing is gone.
+        private bool pressSpentElsewhere;
         private float pendingDamage;
         // True between this script starting a swing and its strike frame. Skills replay the same
         // arm animations (Fire Bolt, Chain Lightning, Cleave), and their strike frames must not
@@ -177,14 +180,20 @@ namespace PoeClone.Player
                 Mouse mouse = Mouse.current;
                 // A focused UI text field (e.g. the chat box) should consume the click, not the attack,
                 // and so does an item on the ground (LootPicker picks it up instead).
-                attackPressed = mouse != null && mouse.leftButton.isPressed && !PlayerController.IsUiFocused() &&
-                                !PlayerController.IsPointerOverUi() &&
-                                !PlayerController.ClickConsumed &&
-                                LootPicker.PickableAt(mouse.position.ReadValue()) == null &&
-                                NpcInteractor.TalkableAt(mouse.position.ReadValue()) == null &&
-                                AreaGate.AtScreen(mouse.position.ReadValue()) == null &&
-                                !UI.DialogueUI.IsOpen &&
-                                !HoldingInventoryItem();
+                bool held = mouse != null && mouse.leftButton.isPressed;
+                bool blocked = held && (PlayerController.IsUiFocused() ||
+                                        PlayerController.IsPointerOverUi() ||
+                                        PlayerController.ClickConsumed ||
+                                        LootPicker.PickableAt(mouse.position.ReadValue()) != null ||
+                                        NpcInteractor.TalkableAt(mouse.position.ReadValue()) != null ||
+                                        AreaGate.AtScreen(mouse.position.ReadValue()) != null ||
+                                        UI.DialogueUI.IsOpen ||
+                                        HoldingInventoryItem());
+                if (!held)
+                    pressSpentElsewhere = false;
+                else if (blocked && mouse.leftButton.wasPressedThisFrame)
+                    pressSpentElsewhere = true;
+                attackPressed = held && !blocked && !pressSpentElsewhere;
             }
 
             if (attackPressed && cooldownTimer <= 0f && (controller == null || !controller.IsSkillCommitted) &&

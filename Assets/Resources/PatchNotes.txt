@@ -1,3 +1,6 @@
+version: 2026-10-09-pickup-no-punch
+- Clicking an item to pick it up no longer makes the character attack while the mouse button is still held. The same applies to clicks on NPCs, area gates and the interface.
+
 version: 2026-10-09-generic-loot-drop-audio
 - The generic loot drop sound now uses the standard ground drop recording after its old clip was removed.
 
