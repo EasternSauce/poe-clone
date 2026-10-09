@@ -81,11 +81,11 @@ namespace PoeClone.World
             LocalBox(gate, new Vector3(0f, 0.025f, 0f), new Vector3(7.2f, 0.05f, 3f), kit.Mat("TanDark"), false);
             SanctuarySkull(gate, new Vector3(0f, 7.65f, 0.92f), 0.72f);
             ScatterSanctuaryRemains(dressing, c);
-            // Large, broken moults stay beside the ribs, clear of the entrance and boss spawn.
-            SanctuaryShedSkin(dressing, c + new Vector3(-32f, 0f, -17f), -12f, 0);
-            SanctuaryShedSkin(dressing, c + new Vector3(32f, 0f, -13f), 16f, 1);
-            SanctuaryShedSkin(dressing, c + new Vector3(-29f, 0f, 16f), 20f, 2);
-            SanctuaryShedSkin(dressing, c + new Vector3(28f, 0f, 20f), -18f, 3);
+            // Unevenly scattered moults, clear of the entrance and boss spawn.
+            SanctuaryShedSkin(dressing, c + new Vector3(-32f, 0f, -20f), 67f, 0);
+            SanctuaryShedSkin(dressing, c + new Vector3(-18f, 0f, 24f), -41f, 2);
+            SanctuaryShedSkin(dressing, c + new Vector3(30f, 0f, 12f), 18f, 1);
+            SanctuaryShedSkin(dressing, c + new Vector3(9f, 0f, -14f), 123f, 3);
         }
 
         private void ScatterSanctuaryRemains(Transform parent, Vector3 c)
@@ -212,9 +212,9 @@ namespace PoeClone.World
         private void SanctuaryShedSkin(Transform parent, Vector3 at, float yaw, int variant)
         {
             Transform root = Holder(parent, "ColossalShedSkin", at, Quaternion.Euler(0f, yaw, 0f));
-            // The attack rig is 7.2m across at phase-three scale. Flatten its empty skin,
-            // widening it to roughly preserve circumference instead of shrinking the snake.
-            float radius = CarrionSaintLook.SerpentThickness * ShepherdLook.Phase2Scale * 0.5f;
+            // Match the actual attack body's world radius, without applying the boss's
+            // root scale again. Collapse the height while retaining the body's width.
+            float radius = SerpentPursuit.Radius;
             float length = CarrionSaintLook.SerpentLength * ShepherdLook.Phase2Scale * (0.25f + variant * 0.025f);
             const int rings = 32, sides = 32, stride = sides + 1;
             int surfaceCount = (rings + 1) * stride;
@@ -225,7 +225,7 @@ namespace PoeClone.World
             {
                 float t = ring / (float)rings;
                 float bend = Mathf.Sin(t * 5f + variant) * 0.65f;
-                float width = radius * 1.45f * (1f + 0.06f * Mathf.Sin(t * 19f + variant));
+                float width = radius * (1f + 0.06f * Mathf.Sin(t * 19f + variant));
                 for (int side = 0; side <= sides; side++)
                 {
                     float angle = side * Mathf.PI * 2f / sides;
@@ -258,13 +258,17 @@ namespace PoeClone.World
             var mesh = new Mesh { name = "DeflatedTornSerpentMoult", vertices = vertices, uv = uv, triangles = triangles };
             mesh.RecalculateNormals(); mesh.RecalculateBounds();
             // Reuse the build-safe runtime material and the serpent's existing scale pattern.
-            GameObject skin = PoeClone.Visuals.RuntimePrimitives.Create(PrimitiveType.Cube, root,
-                new Color(0.78f, 0.75f, 0.58f));
-            skin.name = "OpenEndedShedSkin";
-            skin.GetComponent<MeshFilter>().sharedMesh = mesh;
-            Renderer renderer = skin.GetComponent<Renderer>();
+            // Build a render-only object directly: no primitive or collider is created.
+            var skin = new GameObject("OpenEndedShedSkin");
+            skin.transform.SetParent(root, false);
+            skin.AddComponent<MeshFilter>().sharedMesh = mesh;
+            Renderer renderer = skin.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = Resources.Load<Material>("RuntimePrimitive");
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             var surface = new MaterialPropertyBlock();
-            renderer.GetPropertyBlock(surface);
+            var tint = new Color(0.78f, 0.75f, 0.58f);
+            surface.SetColor("_BaseColor", tint);
+            surface.SetColor("_Color", tint);
             surface.SetFloat("_SerpentScales", 1f);
             surface.SetFloat("_RimIntensity", 0f);
             renderer.SetPropertyBlock(surface);

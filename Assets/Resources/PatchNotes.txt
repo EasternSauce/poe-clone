@@ -1,3 +1,6 @@
+version: 2026-10-09-sanctuary-skin-scale-placement
+- Narrowed the shed skins to match the colossal serpent's actual body width and scattered them at uneven positions and angles. Shed skins have no colliders and cannot block movement or attacks.
+
 version: 2026-10-09-sanctuary-shed-skins
 - Replaced the Shepherd arena's small leather curls with four large, deflated skins from the third-phase colossal serpent. Pale, wrinkled sections have ragged, abruptly cut open ends and matching scale detail, placed along the arena sides.
 
