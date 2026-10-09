@@ -46,8 +46,7 @@ namespace PoeClone.Enemies
         private bool previousImmunity;
         private bool edgePass, missed, retained;
         private World.AreaShape passArena;
-        private Vector3 lastPassVelocity;
-        private float passSpeed;
+        private float passSpeed, passWeavePhase;
         public bool ReachedEdge => retained;
         public bool IsFinished => endedAt >= 0f;
         public bool Captured => capturedAt >= 0f;
@@ -89,7 +88,7 @@ namespace PoeClone.Enemies
                 if (pursuit.direction.sqrMagnitude < 0.01f)
                     pursuit.direction = Horizontal(edgeArena.Center - ground).normalized;
                 pursuit.passSpeed = EndSpeed;
-                pursuit.lastPassVelocity = pursuit.direction * EndSpeed;
+                pursuit.passWeavePhase = RearTellSeconds * 5.5f;
                 pursuit.route.Clear(); pursuit.route.Add(ground);
             }
             pursuit.head = Instantiate(source.MouthTransform.gameObject, go.transform).transform;
@@ -225,13 +224,11 @@ namespace PoeClone.Enemies
             if (!missed)
             {
                 // Track the player's live position with the pursuit's limited turn rate and weave.
-                // Once the jaws pass them, commit to the actual travelling direction, including
-                // the current sideways weave, so the exit never snaps back toward the player.
+                // Once the jaws pass them, lock the overall heading while continuing the weave.
                 Vector3 to = Horizontal(player.transform.position - oldMouth);
                 if (Vector3.Dot(to, direction) <= 0f)
                 {
                     missed = true;
-                    direction = lastPassVelocity.normalized;
                 }
                 else if (to.sqrMagnitude > 0.01f)
                     direction = Vector3.RotateTowards(direction, to.normalized,
@@ -240,8 +237,11 @@ namespace PoeClone.Enemies
             // Double the approach speed in 0.2 seconds: a distinct burst after the dodge.
             if (missed) passSpeed = Mathf.MoveTowards(passSpeed, EndSpeed * 2f, EndSpeed / 0.2f * Time.deltaTime);
             Vector3 side = Vector3.Cross(Vector3.up, direction).normalized;
-            velocity = direction * passSpeed + (missed ? Vector3.zero : side * Mathf.Sin(age * 5.5f) * 3.2f);
-            lastPassVelocity = velocity;
+            float speedRatio = passSpeed / EndSpeed;
+            // Advance the existing wave continuously: at double speed both its rhythm and
+            // sideways velocity double, preserving the zigzag's width and distance between bends.
+            passWeavePhase += 5.5f * speedRatio * Time.deltaTime;
+            velocity = direction * passSpeed + side * Mathf.Sin(passWeavePhase) * 3.2f * speedRatio;
             Vector3 next = nose + velocity * Time.deltaTime;
             bool atEdge = !passArena.Contains(next, 1.8f);
             if (atEdge)
@@ -265,7 +265,6 @@ namespace PoeClone.Enemies
             else if (!missed && Vector3.Dot(Horizontal(player.transform.position - Mouth), direction) <= 0f)
             {
                 missed = true;
-                direction = velocity.normalized;
             }
             if (!Captured && atEdge)
             {

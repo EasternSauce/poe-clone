@@ -1,3 +1,6 @@
+version: 2026-10-09-serpent-exit-zigzag
+- The four-pass serpent now keeps zigzagging after missing the player. Its weave speeds up with the double-speed exit burst, keeping the same width and spacing between bends while its overall heading stays locked toward the wall.
+
 version: 2026-10-09-serpent-gauntlet-wide-turns
 - Slowed the four-pass serpent's steering to 35 degrees per second for wider, easier-to-dodge turns. It still weaves at full approach speed and bursts to double speed after missing.
 
