@@ -10,7 +10,7 @@ namespace PoeClone.EditorTools
     /// <summary>Reviewed library recordings and semantic links between identical actions.</summary>
     public static class SoundBoardDefaults
     {
-        // A shared event has exactly one board row, selection, volume and variation pool.
+        // A shared event has exactly one board row, selection and variation pool.
         static readonly Dictionary<string, string> shared = new Dictionary<string, string>
         {
             { "enemy.Fire Caster.Attack", "skill.FireBolt" },
@@ -38,6 +38,7 @@ namespace PoeClone.EditorTools
             { "player.hurt", new[] { "Player_hurt_" } },
             { "world.explosion", new[] { "04_Fire_explosion_04_medium" } },
             { "world.shatter", new[] { "Ice_impact_" } },
+            { "combat.shatter", new[] { "Freeze_shatter_" } },
             { "skill.FireBolt", new[] { "Fire_spell_cast_" } },
             { "skill.IceShard", new[] { "Ice_spell_cast_" } },
             { "skill.FrostNova", new[] { "13_Ice_explosion_01" } },

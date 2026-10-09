@@ -215,7 +215,12 @@ namespace PoeClone.Player
                 CombatText.Show(at + Vector3.up * 2.2f, "Shatter", color, 0.9f);
             AudioManager audio = AudioManager.Instance;
             if (audio != null)
-                audio.PlayAtPoint(audio.Sfx(shatter ? "shatter" : "corpse_explosion"), at, 0.35f, Random.Range(0.92f, 1.08f));
+                {
+                float pitch = Random.Range(0.92f, 1.08f);
+                // Frequent freeze shatters use their own quieter recordings rather than the quest shatter.
+                if (shatter) audio.PlayEffect("combat.shatter", at, pitch: pitch);
+                else audio.PlayAtPoint(audio.Sfx("corpse_explosion"), at, pitch);
+            }
         }
 
         // A corpse explosion or a shatter: damages everything around the dead enemy (and a shatter chills it).

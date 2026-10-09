@@ -88,24 +88,13 @@ namespace PoeClone.Inventory
             }
         }
 
-        // Gold drops constantly (every kill, every autocollected pile) and its clip is much hotter
-        // at the source than the other drop clips, so it gets turned down on its own.
-        private const float GoldDropVolume = 0.3f;
-
-        // Same story for picking it up: the clip is just as hot, and gold is picked up far more
-        // often than anything else in the game (every kill, every walk-over). Still way too loud
-        // at 0.3 per user feedback - cut to a quarter of that.
-        private const float GoldPickupVolume = 0.075f;
-        private const float PotionPickupVolume = 0.5f;
-
         public static void PlayDrop(ItemData item, Vector3 at)
         {
             AudioClip clip = Drop(item);
             if (clip == null)
                 return;
 
-            float volume = item != null && item.Type == ItemType.Gold ? GoldDropVolume : 1f;
-            AudioManager.Instance.PlayAtPoint(clip, at, volume);
+            AudioManager.Instance.PlayAtPoint(clip, at);
         }
 
         public static void PlayPickup(ItemData item)
@@ -115,9 +104,7 @@ namespace PoeClone.Inventory
             if (audio == null || clip == null)
                 return;
 
-            float scale = item != null && item.Type == ItemType.Gold ? GoldPickupVolume
-                : item != null && item.Type == ItemType.Potion ? PotionPickupVolume : 1f;
-            audio.PlayUI(clip, audio.uiVolume * scale);
+            audio.PlayUI(clip);
         }
     }
 }

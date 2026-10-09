@@ -335,7 +335,7 @@ namespace PoeClone.UI
                     row == pickerGrants.Count + 1 ? 2 : 0);
             }
             if (Audio.AudioManager.Instance != null)
-                Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.uiItemPlace, 0.4f);
+                Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.Sfx("ui_click"));
             ClosePicker();
         }
 

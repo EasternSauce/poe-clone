@@ -178,16 +178,16 @@ namespace PoeClone.Quests
             switch (action)
             {
                 case PropAction.Smash:
-                    audio.PlayAtPoint(audio.Sfx("shatter"), transform.position, 0.9f);
+                    audio.PlayAtPoint(audio.Sfx("shatter"), transform.position);
                     break;
                 case PropAction.Light:
-                    audio.PlayAtPoint(audio.Sfx("corpse_explosion"), transform.position, 0.5f, 1.3f);
+                    audio.PlayAtPoint(audio.Sfx("corpse_explosion"), transform.position, 1.3f);
                     break;
                 case PropAction.Take:
-                    audio.PlayUI(audio.uiItemPickup, 0.5f);
+                    audio.PlayUI(audio.uiItemPickup);
                     break;
                 default:
-                    audio.PlayUI(audio.uiItemPlace, 0.4f);
+                    audio.PlayUI(audio.Sfx("ui_click"));
                     break;
             }
         }
@@ -216,7 +216,7 @@ namespace PoeClone.Quests
             Refresh();
             CombatText.Show(transform.position + Vector3.up * 2.6f, "The rite begins - stay in the circle!", LabelColor, 0.9f);
             if (AudioManager.Instance != null)
-                AudioManager.Instance.PlayAtPoint(AudioManager.Instance.Sfx("corpse_explosion"), transform.position, 0.5f, 0.7f);
+                AudioManager.Instance.PlayAtPoint(AudioManager.Instance.Sfx("corpse_explosion"), transform.position, 0.7f);
         }
 
         private void UpdateRite()
@@ -272,7 +272,7 @@ namespace PoeClone.Quests
                 log.UseProp(quest, PropId);
                 CombatText.Show(transform.position + Vector3.up * 2.6f, aftermath, Color.white, 1f);
                 if (AudioManager.Instance != null)
-                    AudioManager.Instance.PlayUI(AudioManager.Instance.playerLevelUp, 0.4f);
+                    AudioManager.Instance.PlayUI(AudioManager.Instance.playerLevelUp);
             }
             else
             {

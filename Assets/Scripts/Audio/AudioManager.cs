@@ -13,6 +13,8 @@ namespace PoeClone.Audio
     /// Central SFX player. World/combat clips go through PlayAtPoint or PlayRandomAtPoint,
     /// which create temporary centered sources with distance-based volume falloff.
     /// UI clips are also centered and share one source on this object.
+    /// Each recording's loudness is set in its audio file; code only applies the category,
+    /// master and distance gains below.
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
@@ -47,45 +49,34 @@ namespace PoeClone.Audio
         [Tooltip("Ambient area beds, water, fires and occasional environmental sounds. Also follows SFX volume.")]
         [Range(0f, 1f)] public float ambienceVolume = 0.65f;
         [Range(0f, 1f)] public float uiVolume = 0.6f;
-        [Tooltip("The bag-rustle open/close clips are much hotter at the source than the other UI clips, so they get their own scale instead of sharing uiVolume.")]
-        [Range(0f, 1f)] public float inventoryToggleVolume = 0.25f;
+
+        private const string MasterVolumeKey = "PoeClone.MasterVolume";
+
+        /// <summary>The player's overall volume setting, applied to every sound through the listener.</summary>
+        public static float MasterVolume
+        {
+            get => PlayerPrefs.GetFloat(MasterVolumeKey, 1f);
+            set
+            {
+                value = Mathf.Clamp01(value);
+                PlayerPrefs.SetFloat(MasterVolumeKey, value);
+                AudioListener.volume = value;
+            }
+        }
 
         private AudioSource uiSource;
         private SoundBoardSettings soundBoard;
 
         public void ReloadSoundBoard() => soundBoard = SoundBoardSettings.Load();
 
-        public void PlayEffect(string id, Vector3 position, AudioClip fallback = null, float volume = 1f, float pitch = 1f)
+        public void PlayEffect(string id, Vector3 position, AudioClip fallback = null, float pitch = 1f)
         {
             var effect = soundBoard != null ? soundBoard.Find(id) : null;
             AudioClip clip = effect != null ? effect.Choose(fallback) : fallback;
-            if (effect != null) volume *= effect.volume;
-            PlayWorld(clip, position, volume, pitch);
+            PlayWorld(clip, position, pitch);
         }
         private readonly System.Collections.Generic.Dictionary<string, AudioClip> loaded =
             new System.Collections.Generic.Dictionary<string, AudioClip>();
-
-        // Bright item and reward chimes cut through the mix much more than the other effects.
-        // Apply this at playback so ground pickup, inventory actions and quest/level rewards agree.
-        private const float DingVolumeScale = 1f / 3f;
-
-        private float ClipVolumeScale(AudioClip clip)
-        {
-            if (clip == playerLevelUp)
-                return DingVolumeScale;
-
-            switch (clip.name)
-            {
-                case "pickup_jewel":
-                case "place_jewel":
-                case "drop_magic":
-                case "drop_rare":
-                case "drop_unique":
-                    return DingVolumeScale;
-                default:
-                    return 1f;
-            }
-        }
 
         /// <summary>A clip from Assets/Audio/Resources/Sfx by file name (cached), or null if there's none.</summary>
         public AudioClip Sfx(string name)
@@ -102,34 +93,23 @@ namespace PoeClone.Audio
         {
             Instance = this;
             ReloadSoundBoard();
+            AudioListener.volume = MasterVolume;
 
             uiSource = gameObject.AddComponent<AudioSource>();
             uiSource.playOnAwake = false;
             uiSource.spatialBlend = 0f;
         }
 
-        public void PlayAtPoint(AudioClip clip, Vector3 position)
-        {
-            PlayAtPoint(clip, position, 1f);
-        }
-
-        public void PlayAtPoint(AudioClip clip, Vector3 position, float volumeScale)
-        {
-            PlayAtPoint(clip, position, volumeScale, 1f);
-        }
-
         /// <summary>Like PlayClipAtPoint, at a pitch of its own (a throwaway source that removes itself).</summary>
-        public void PlayAtPoint(AudioClip clip, Vector3 position, float volumeScale, float pitch)
+        public void PlayAtPoint(AudioClip clip, Vector3 position, float pitch = 1f)
         {
-            // Keep the original clip's mix correction even when its recording is replaced.
-            if (clip != null) volumeScale *= ClipVolumeScale(clip);
-            soundBoard?.Resolve(ref clip, ref volumeScale);
-            PlayWorld(clip, position, volumeScale, pitch);
+            soundBoard?.Resolve(ref clip);
+            PlayWorld(clip, position, pitch);
         }
 
-        private void PlayWorld(AudioClip clip, Vector3 position, float volumeScale, float pitch)
+        private void PlayWorld(AudioClip clip, Vector3 position, float pitch)
         {
-            if (clip == null || volumeScale <= 0f || sfxVolume <= 0f)
+            if (clip == null || sfxVolume <= 0f)
                 return;
 
             var go = new GameObject("One shot audio");
@@ -139,7 +119,7 @@ namespace PoeClone.Audio
             source.spatialBlend = 0f;
             source.panStereo = 0f;
             source.pitch = pitch;
-            source.volume = volumeScale * WorldSfxVolume(position);
+            source.volume = WorldSfxVolume(position);
             source.Play();
             Destroy(go, clip.length / Mathf.Max(0.1f, pitch) + 0.1f);
         }
@@ -171,17 +151,11 @@ namespace PoeClone.Audio
 
         public void PlayUI(AudioClip clip)
         {
-            PlayUI(clip, uiVolume);
-        }
-
-        public void PlayUI(AudioClip clip, float volume)
-        {
-            if (clip != null) volume *= ClipVolumeScale(clip);
-            soundBoard?.Resolve(ref clip, ref volume);
+            soundBoard?.Resolve(ref clip);
             if (clip == null)
                 return;
 
-            uiSource.PlayOneShot(clip, volume);
+            uiSource.PlayOneShot(clip, uiVolume);
         }
     }
 }

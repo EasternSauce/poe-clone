@@ -522,7 +522,7 @@ namespace PoeClone.UI
             else if (take && draft.Take(node.Id, passives.Level))
             {
                 if (Audio.AudioManager.Instance != null)
-                    Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.uiItemPlace, 0.4f);
+                    Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.Sfx("ui_click"));
             }
             dirty = true;
         }

@@ -312,7 +312,7 @@ namespace PoeClone.Player
                 if (CharacterAttackAnimator.IsRanged(weaponType))
                 {
                     if (bowSkillPending == null)
-                        AudioManager.Instance.PlayEffect("player.bow", transform.position, volume: 0.75f);
+                        AudioManager.Instance.PlayEffect("player.bow", transform.position);
                 }
                 else
                     AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.playerSwing, transform.position);

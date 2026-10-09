@@ -159,6 +159,8 @@ namespace PoeClone.UI
             notesViewport.gameObject.SetActive(false);
             UiKit.TopLeft(viewport, new Vector2(30, -126), new Vector2(W-60, H-220));
             float y = 0f;
+            RectTransform volumeRow = SettingsRow("Audio", "Volume", "Overall volume of all game sounds.", ref y);
+            VolumeSlider(volumeRow);
             RectTransform chatRow = SettingsRow("Communication", "Chat", "Show chat messages and chat controls.", ref y);
             Text chatLabel = null;
             GameObject chatButton = Button("ChatToggle", chatRow, ChatUI.Enabled ? "On" : "Off",
@@ -208,6 +210,41 @@ namespace PoeClone.UI
             UiKit.TopLeft(detail.rectTransform, new Vector2(18, -40), new Vector2(420, 32));
             y += 94f;
             return row.rectTransform;
+        }
+
+        private void VolumeSlider(RectTransform row)
+        {
+            Image track = UiKit.NewImage("VolumeTrack", row, new Color(.08f, .07f, .05f, 1f));
+            UiKit.TopLeft(track.rectTransform, new Vector2(W-374, -33), new Vector2(220, 12));
+            UiKit.AddOutline(track, UiKit.BorderColor, 1f);
+            track.raycastTarget = true;
+            RectTransform fillArea = UiKit.NewRect("FillArea", track.transform);
+            UiKit.Stretch(fillArea, 0f);
+            Image fill = UiKit.NewImage("Fill", fillArea, new Color(.55f, .42f, .2f, 1f));
+            fill.rectTransform.sizeDelta = Vector2.zero;
+            RectTransform handleArea = UiKit.NewRect("HandleArea", track.transform);
+            UiKit.Stretch(handleArea, 0f);
+            Image handle = UiKit.NewImage("Handle", handleArea, UiKit.Gold);
+            handle.raycastTarget = true;
+            handle.rectTransform.sizeDelta = new Vector2(14, 16); // Added to the track height by the slider anchors.
+
+            Text value = UiKit.NewText("VolumeValue", row, "", 18, UiKit.TextColor, TextAnchor.MiddleRight);
+            UiKit.TopLeft(value.rectTransform, new Vector2(W-144, -24), new Vector2(66, 30));
+
+            Slider slider = track.gameObject.AddComponent<Slider>();
+            slider.fillRect = fill.rectTransform;
+            slider.handleRect = handle.rectTransform;
+            slider.targetGraphic = handle;
+            slider.direction = Slider.Direction.LeftToRight;
+            slider.minValue = 0f;
+            slider.maxValue = 1f;
+            slider.value = Audio.AudioManager.MasterVolume;
+            value.text = Mathf.RoundToInt(slider.value * 100f) + "%";
+            slider.onValueChanged.AddListener(v =>
+            {
+                Audio.AudioManager.MasterVolume = v;
+                value.text = Mathf.RoundToInt(v * 100f) + "%";
+            });
         }
 
         private void SelectTab(bool settings)

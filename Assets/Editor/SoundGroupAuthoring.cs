@@ -17,6 +17,7 @@ namespace PoeClone.EditorTools
             { "combat.block", "Shield blocks" }, { "combat.bite", "Snake-arm bite impacts" },
             { "player.hurt", "Player hurt voice" }, { "player.reward", "Level-up and quest rewards" },
             { "player.steps", "Walking footsteps" }, { "world.shatter", "Ice and barrier shattering" },
+            { "combat.shatter", "Freeze shatter impacts" }, { "ui.click", "Interface clicks" },
             { "world.explosion", "Corpse and quest explosions" }, { "world.reveal", "Carrion Saint reveal" },
             { "skill.FireBolt", "Fire projectile casting" }, { "skill.IceShard", "Ice projectile casting" },
             { "skill.ChainLightning", "Lightning spell casting" }, { "enemy.Storm Caster.Attack", "Lightning spell casting" }
@@ -98,7 +99,7 @@ namespace PoeClone.EditorTools
             foreach (var assignment in assignments)
             {
                 assignment.Key.soundGroupId = assignment.Value.id;
-                // Recording ownership now lives only in the group. Keep event gain and mute unchanged.
+                // Recording ownership now lives only in the group. Keep mute unchanged.
                 assignment.Key.defaults = Array.Empty<AudioClip>();
                 assignment.Key.selected = null;
                 assignment.Key.suggestions = Array.Empty<string>();

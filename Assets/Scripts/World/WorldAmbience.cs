@@ -16,7 +16,8 @@ namespace PoeClone.World
             public AudioSource source;
             public Func<Vector3, float> gain;
             public Transform anchor;
-            public float volume, next, minDelay, maxDelay, level;
+            // Level is the 0-1 fade; each recording's loudness is baked into its file.
+            public float next, minDelay, maxDelay, level;
             public int lastClip = -1;
             public bool loop;
         }
@@ -38,13 +39,13 @@ namespace PoeClone.World
                 return;
             }
 
-            Loop(WorldBuilder.Haven, library.town, 0.22f,
+            Loop(WorldBuilder.Haven, library.town,
                 p => Falloff(FlatDistance(p, WorldBuilder.Center(WorldBuilder.Haven)), 24, 85));
-            Bed(WorldBuilder.Graveyard, library.night, 0.18f);
-            Bed(WorldBuilder.Ruins, library.lava, 0.10f);
-            Bed(WorldBuilder.Frozen, library.blizzard, 0.23f);
-            Bed(WorldBuilder.Cave, library.cave, 0.23f);
-            Bed(WorldBuilder.ActArena, library.dungeon, 0.19f);
+            Bed(WorldBuilder.Graveyard, library.night);
+            Bed(WorldBuilder.Ruins, library.lava);
+            Bed(WorldBuilder.Frozen, library.blizzard);
+            Bed(WorldBuilder.Cave, library.cave);
+            Bed(WorldBuilder.ActArena, library.dungeon);
 
             foreach (int area in WorldBuilder.WorldAreas)
             {
@@ -53,26 +54,26 @@ namespace PoeClone.World
                 // Separate river/lake/ocean fields prevent surf from playing at inland rivers.
                 if (shape.HasWater && area != WorldBuilder.Frozen)
                 {
-                    Loop(area, library.river, 0.38f,
+                    Loop(area, library.river,
                         p => Falloff(Mathf.Max(0, -shape.RiverSoundDistance(p)), 2, 27));
-                    Loop(area, library.pond, 0.19f,
+                    Loop(area, library.pond,
                         p => Falloff(Mathf.Max(0, -shape.LakeSoundDistance(p)), 2, 22));
                     if (shape.HasOcean)
-                        Loop(area, library.ocean, 0.30f,
+                        Loop(area, library.ocean,
                             p => Falloff(Mathf.Max(0, -shape.OceanSoundDistance(p)), 3, 38));
                 }
                 foreach (var bridge in shape.Bridges)
                 {
                     Vector3 position = shape.Center + new Vector3(bridge.center.x, 0, bridge.center.y);
-                    Occasional(area, library.creaks, 0.18f, 10, 25,
+                    Occasional(area, library.creaks, 10, 25,
                         p => shape.IsBridge(p, 1) ? Falloff(FlatDistance(p, position), 2, bridge.size.x + 3) : 0);
                 }
             }
 
             foreach (int area in new[] { WorldBuilder.Greenwood, WorldBuilder.Graveyard, WorldBuilder.Ruins, WorldBuilder.Frozen })
-                Occasional(area, new[] { library.gust }, area == WorldBuilder.Frozen ? 0.14f : 0.08f, 24, 55, p => 1);
+                Occasional(area, new[] { library.gust }, 24, 55, p => 1);
             foreach (int area in new[] { WorldBuilder.Cave, WorldBuilder.ActArena })
-                Occasional(area, library.stones, 0.14f, 16, 38, p => 1);
+                Occasional(area, library.stones, 16, 38, p => 1);
 
             // Attach sounds to the actual built scenery. Cluster adjacent flame tongues.
             var fires = new List<Vector3>();
@@ -83,14 +84,14 @@ namespace PoeClone.World
                 if (fires.Exists(p => FlatDistance(p, position) < 3)) continue;
                 fires.Add(position);
                 int area = NearestArea(position);
-                Loop(area, library.fire, 0.17f,
+                Loop(area, library.fire,
                     p => Falloff(FlatDistance(p, flame.transform.position), 2, 17), flame.transform);
             }
             foreach (var lava in GetComponentsInChildren<LavaSurface>())
             {
                 if (lava.name == "Backdrop") continue; // The distant lava sea already has an area bed.
                 Vector3 position = lava.transform.position;
-                Loop(WorldBuilder.Ruins, library.lava, 0.13f,
+                Loop(WorldBuilder.Ruins, library.lava,
                     p => Falloff(FlatDistance(p, position), 2, 16), lava.transform);
             }
         }
@@ -115,21 +116,21 @@ namespace PoeClone.World
         private static float Falloff(float distance, float near, float far) =>
             1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(near, far, distance));
 
-        private void Bed(int area, AudioClip clip, float volume) => Loop(area, clip, volume, p => 1);
+        private void Bed(int area, AudioClip clip) => Loop(area, clip, p => 1);
 
-        private void Loop(int area, AudioClip clip, float volume, Func<Vector3, float> gain, Transform anchor = null)
+        private void Loop(int area, AudioClip clip, Func<Vector3, float> gain, Transform anchor = null)
         {
             if (clip == null) return;
-            voices.Add(new Voice { area = area, clips = new[] { clip }, volume = volume,
+            voices.Add(new Voice { area = area, clips = new[] { clip },
                 gain = gain, anchor = anchor, loop = true });
         }
 
-        private void Occasional(int area, AudioClip[] clips, float volume, float min, float max, Func<Vector3, float> gain)
+        private void Occasional(int area, AudioClip[] clips, float min, float max, Func<Vector3, float> gain)
         {
             if (clips == null || clips.Length == 0) return;
             clips = Array.FindAll(clips, c => c != null);
             if (clips.Length == 0) return;
-            voices.Add(new Voice { area = area, clips = clips, volume = volume, gain = gain,
+            voices.Add(new Voice { area = area, clips = clips, gain = gain,
                 minDelay = min, maxDelay = max, next = Delay(min, max) });
         }
 
@@ -159,11 +160,11 @@ namespace PoeClone.World
             foreach (Voice voice in voices)
             {
                 bool active = manager.CurrentAreaIndex == voice.area && !manager.IsSwitching;
-                float target = active ? voice.gain(player.position) * voice.volume * master : 0;
-                voice.level = Mathf.MoveTowards(voice.level, target, Time.unscaledDeltaTime * 0.25f);
+                float target = active ? voice.gain(player.position) : 0;
+                voice.level = Mathf.MoveTowards(voice.level, target, Time.unscaledDeltaTime * 2.5f);
                 if (voice.source != null)
                 {
-                    voice.source.volume = voice.level;
+                    voice.source.volume = voice.level * master;
                     voice.source.panStereo = 0f;
                 }
                 if (voice.loop)
@@ -190,7 +191,7 @@ namespace PoeClone.World
                     voice.lastClip = index;
                     AudioSource source = Source(voice);
                     source.clip = voice.clips[index];
-                    source.volume = voice.level;
+                    source.volume = voice.level * master;
                     source.pitch = Delay(0.96f, 1.04f);
                     source.panStereo = 0f;
                     source.Play();

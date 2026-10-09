@@ -815,7 +815,7 @@ namespace PoeClone.Inventory
             if (!warming && AudioManager.Instance != null)
             {
                 AudioClip toggleClip = open ? AudioManager.Instance.uiInventoryOpen : AudioManager.Instance.uiInventoryClose;
-                AudioManager.Instance.PlayUI(toggleClip, AudioManager.Instance.inventoryToggleVolume);
+                AudioManager.Instance.PlayUI(toggleClip);
             }
         }
 

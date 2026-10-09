@@ -48,7 +48,6 @@ namespace PoeClone.Visuals
 
         [Header("Footsteps")]
         [SerializeField] private AudioClip[] footstepClips;
-        [SerializeField] private float footstepVolume = 0.6f;
         [Tooltip("Wide on purpose: with only a couple of source clips shared by the player and every enemy, narrow variation still reads as identical clicks once several characters are stepping near each other.")]
         [SerializeField] private Vector2 footstepPitchRange = new Vector2(0.75f, 1.3f);
         [SerializeField] private Vector2 footstepVolumeRange = new Vector2(0.7f, 1f);
@@ -346,8 +345,8 @@ private void LateUpdate()
                 return;
 
             audioSource.pitch = Random.Range(footstepPitchRange.x, footstepPitchRange.y);
-            float volume = footstepVolume * Random.Range(footstepVolumeRange.x, footstepVolumeRange.y);
-            soundBoard?.Resolve(ref clip, ref volume);
+            float volume = Random.Range(footstepVolumeRange.x, footstepVolumeRange.y);
+            soundBoard?.Resolve(ref clip);
             if (clip == null) return;
             // A single villager must not stack rustling recordings on top of itself.
             // Also cap rapid retriggers for all characters after unusually large movement.

@@ -17,7 +17,6 @@ namespace PoeClone.EditorTools
             public string id, label, enemy, portrait;
             public string[] sources;
             public bool muted;
-            public float volume;
         }
         [Serializable] public sealed class Row
         {
@@ -43,9 +42,9 @@ namespace PoeClone.EditorTools
                 { "item.pickup", "uiItemPickup" }, { "item.place", "uiItemPlace" }, { "world.gate", "gateOpen" }, { "world.loot", "lootDrop" }
             };
             var rows = new List<Row>();
-            Usage Use(string id, string label, string enemy, string[] files, bool muted = false, float volume = 1f) => new Usage {
+            Usage Use(string id, string label, string enemy, string[] files, bool muted = false) => new Usage {
                 id = id, label = label, enemy = enemy, portrait = string.IsNullOrEmpty(enemy) ? "" : SoundBoardPortraits.PathFor(enemy),
-                sources = files, muted = muted, volume = volume
+                sources = files, muted = muted
             };
             string[] Paths(IEnumerable<AudioClip> clips) => clips.Where(c => c != null).Select(AssetDatabase.GetAssetPath)
                 .Where(p => !p.StartsWith("Assets/assets_for_inspiration/", StringComparison.OrdinalIgnoreCase))
@@ -73,15 +72,15 @@ namespace PoeClone.EditorTools
                         "Assets/Scripts/Enemies/EnemySkills.cs", "Assets/Scripts/Enemies/BossAbilities.cs"
                     }).Distinct().ToArray();
                     if (id.StartsWith("combat.ground.")) files = new[] { "Assets/Scripts/Enemies/GroundTelegraph.cs", "Assets/Scripts/Enemies/EnemySkills.cs", "Assets/Scripts/Enemies/BossAbilities.cs" };
-                    usages.Add(Use(id, label, enemy, files, effect.muted, effect.volume));
+                    usages.Add(Use(id, label, enemy, files, effect.muted));
                 }
                 void EnemyUse(string name, string label, params string[] files) => usages.Add(Use(effect.id + "/" + name,
-                    name + " / " + label, name, files, effect.muted, effect.volume));
+                    name + " / " + label, name, files, effect.muted));
                 if (effect.id == "world.reveal") EnemyUse("Carrion Saint", "reveal", "Assets/Scripts/Enemies/CarrionSaintReveal.cs");
                 if (effect.id == "combat.bite") EnemyUse("The Shepherd", "snake-arm bite", "Assets/Scripts/Enemies/ShepherdFight.cs");
                 if (effect.id == "combat.ground.Physical") EnemyUse("The Shepherd", "crook and snake ground attacks", "Assets/Scripts/Enemies/ShepherdFight.cs");
                 if (effect.id == "player.steps") usages.Add(Use("player.steps/town", "Haven villagers / quieter footsteps", "",
-                    new[] { "Assets/Scripts/Visuals/CharacterWalkAnimator.cs" }, effect.muted, effect.volume));
+                    new[] { "Assets/Scripts/Visuals/CharacterWalkAnimator.cs" }, effect.muted));
                 if (effect.id == "enemy.The Shepherd.Death") EnemyUse("Carrion Saint", "final death", "Assets/Scripts/Enemies/CarrionSaintFight.cs");
                 if (effect.id == "player.steps" || effect.id == "combat.hit")
                     foreach (var kind in EnemyKinds.All.Where(k => effect.id == "combat.hit" || !k.IsCreature))

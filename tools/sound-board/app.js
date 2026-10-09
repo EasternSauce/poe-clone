@@ -79,7 +79,7 @@ function render() {
       const list = node('ul', undefined, 'uses');
       for (const use of row.usages) {
         const item = node('li', use.label);
-        if (use.muted || use.volume !== 1) item.append(node('span', use.muted ? 'Muted in game' : `Game gain ${Math.round(use.volume * 100)}%`, 'badge' + (use.muted ? ' muted' : '')));
+        if (use.muted) item.append(node('span', 'Muted in game', 'badge muted'));
         list.append(item);
       }
       card.append(list);

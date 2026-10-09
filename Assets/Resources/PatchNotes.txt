@@ -1,3 +1,9 @@
+version: 2026-10-09-master-volume
+- Settings now has a Volume slider that controls the overall volume of all game sounds. It is remembered between sessions.
+- Goblin-style attack grunts are 30% quieter.
+- Each sound's loudness now comes from its recording, so swapping a recording keeps a predictable level. Most sounds play at the same loudness as before, though some that were used at slightly different levels in different places now share one level.
+- Shattering a frozen enemy has its own quieter shatter sound, separate from quest barriers.
+
 version: 2026-10-09-goblin-grunt-cooldown
 - Goblin-style attack grunts from Raiders, Ember Knights, Rime Stalkers, Cinder Penitents, Hollowmaws and the Barrow Castellan now play at most once every 2.5 seconds, so packs no longer spam them.
 

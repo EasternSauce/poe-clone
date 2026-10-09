@@ -50,7 +50,6 @@ namespace PoeClone.Audio
             [HideInInspector] public string[] suggestions = Array.Empty<string>();
             [HideInInspector] public AudioClip selected;
             public bool muted;
-            [Range(0f, 1f)] public float volume = 1f;
             [NonSerialized] private SoundGroup legacyGroup;
 
             public SoundGroup AssignedGroup => soundGroup;
@@ -100,13 +99,12 @@ namespace PoeClone.Audio
             return byId.TryGetValue(id, out var effect) ? effect : null;
         }
 
-        public void Resolve(ref AudioClip clip, ref float volume)
+        public void Resolve(ref AudioClip clip)
         {
             if (clip == null) return;
             if (byClip == null) Rebuild();
             if (!byClip.TryGetValue(clip.name, out var effect)) return;
             clip = effect.Choose(clip);
-            volume *= effect.volume;
         }
 
         private void OnEnable() => Rebuild();

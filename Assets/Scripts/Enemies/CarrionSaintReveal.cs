@@ -88,7 +88,7 @@ namespace PoeClone.Enemies
             animator.Reveal = 1f;
             Stage = "roar";
             var audio = Audio.AudioManager.Instance;
-            if (audio != null) audio.PlayAtPoint(Resources.Load<AudioClip>("Sfx/Creatures/wolf_growl_1"), transform.position, 1f, 0.65f);
+            if (audio != null) audio.PlayAtPoint(Resources.Load<AudioClip>("Sfx/Creatures/wolf_growl_1"), transform.position, 0.65f);
             CameraSystem.CameraFollow.Shake(0.3f, 0.35f);
             ResumeMusic();
             yield return new WaitForSeconds(0.3f);

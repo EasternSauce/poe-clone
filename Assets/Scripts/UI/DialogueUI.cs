@@ -132,7 +132,7 @@ namespace PoeClone.UI
             if (index >= current.Count || !current[index].Enabled)
                 return;
             if (Audio.AudioManager.Instance != null)
-                Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.uiItemPlace, 0.25f);
+                Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.Sfx("ui_click"));
             current[index].Pick?.Invoke();
         }
 

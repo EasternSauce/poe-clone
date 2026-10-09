@@ -32,14 +32,12 @@ namespace PoeClone.Enemies
         {
             public string[] Clips;
             public float PitchMin, PitchMax;
-            public float Volume;
 
-            public Voice(float pitchMin, float pitchMax, float volume, params string[] clips)
+            public Voice(float pitchMin, float pitchMax, params string[] clips)
             {
                 Clips = clips;
                 PitchMin = pitchMin;
                 PitchMax = pitchMax;
-                Volume = volume;
             }
         }
 
@@ -51,32 +49,32 @@ namespace PoeClone.Enemies
             switch (set)
             {
                 case Set.Spider:
-                    if (e == Event.Aggro) return new Voice(0.85f, 1.1f, 0.9f, "spider_hiss_1", "spider_hiss_2");
-                    if (e == Event.Attack) return new Voice(0.9f, 1.2f, 0.7f, "spider_hiss_1", "spider_hiss_2");
-                    return new Voice(0.6f, 0.75f, 1f, "spider_hiss_1", "spider_hiss_2");
+                    if (e == Event.Aggro) return new Voice(0.85f, 1.1f, "spider_hiss_1", "spider_hiss_2");
+                    if (e == Event.Attack) return new Voice(0.9f, 1.2f, "spider_hiss_1", "spider_hiss_2");
+                    return new Voice(0.6f, 0.75f, "spider_hiss_1", "spider_hiss_2");
                 case Set.Wolf:
-                    if (e == Event.Aggro) return new Voice(0.95f, 1.1f, 0.9f, "wolf_growl_1", "wolf_growl_2", "wolf_growl_3");
-                    if (e == Event.Attack) return new Voice(1.0f, 1.25f, 0.6f, "wolf_snarl");
-                    return new Voice(1.2f, 1.4f, 0.9f, "beast_15", "beast_12");
+                    if (e == Event.Aggro) return new Voice(0.95f, 1.1f, "wolf_growl_1", "wolf_growl_2", "wolf_growl_3");
+                    if (e == Event.Attack) return new Voice(1.0f, 1.25f, "wolf_snarl");
+                    return new Voice(1.2f, 1.4f, "beast_15", "beast_12");
                 case Set.Hound:
-                    if (e == Event.Aggro) return new Voice(0.85f, 1.0f, 0.9f, "beast_1", "beast_3", "beast_4");
-                    if (e == Event.Attack) return new Voice(0.9f, 1.1f, 0.6f, "beast_8");
-                    return new Voice(0.8f, 0.95f, 1f, "beast_12", "beast_15");
+                    if (e == Event.Aggro) return new Voice(0.85f, 1.0f, "beast_1", "beast_3", "beast_4");
+                    if (e == Event.Attack) return new Voice(0.9f, 1.1f, "beast_8");
+                    return new Voice(0.8f, 0.95f, "beast_12", "beast_15");
                 case Set.Slime:
-                    if (e == Event.Aggro) return new Voice(0.85f, 1.15f, 0.9f, "slime_1", "slime_2", "slime_3");
-                    if (e == Event.Attack) return new Voice(0.85f, 1.15f, 0.8f, "slime_4", "slime_5", "slime_6", "slime_7");
-                    return new Voice(0.8f, 1.0f, 1f, "slime_8", "slime_9", "slime_10");
+                    if (e == Event.Aggro) return new Voice(0.85f, 1.15f, "slime_1", "slime_2", "slime_3");
+                    if (e == Event.Attack) return new Voice(0.85f, 1.15f, "slime_4", "slime_5", "slime_6", "slime_7");
+                    return new Voice(0.8f, 1.0f, "slime_8", "slime_9", "slime_10");
                 case Set.Bat:
-                    // Short, bass-filtered and pitched-up edits of shade_1/2/3, with quiet peaks baked in.
-                    if (e == Event.Aggro) return new Voice(0.95f, 1.1f, 0.45f, "bat_alert_1", "bat_alert_2", "bat_alert_3");
-                    if (e == Event.Attack) return new Voice(1.3f, 1.5f, 0.5f, "bat_alert_1", "bat_alert_2");
-                    return new Voice(1.6f, 1.8f, 0.8f, "shade_14");
+                    // Short, bass-filtered and pitched-up edits of shade_1/2/3.
+                    if (e == Event.Aggro) return new Voice(0.95f, 1.1f, "bat_alert_1", "bat_alert_2", "bat_alert_3");
+                    if (e == Event.Attack) return new Voice(1.3f, 1.5f, "bat_alert_1", "bat_alert_2");
+                    return new Voice(1.6f, 1.8f, "shade_14");
                 case Set.Beetle:
-                    if (e == Event.Aggro) return new Voice(0.7f, 0.85f, 0.8f, "slime_2", "slime_3");
-                    if (e == Event.Attack) return new Voice(0.6f, 0.75f, 0.8f, "slime_6", "slime_9");
-                    return new Voice(0.55f, 0.65f, 1f, "slime_8", "slime_10");
+                    if (e == Event.Aggro) return new Voice(0.7f, 0.85f, "slime_2", "slime_3");
+                    if (e == Event.Attack) return new Voice(0.6f, 0.75f, "slime_6", "slime_9");
+                    return new Voice(0.55f, 0.65f, "slime_8", "slime_10");
                 default:
-                    return new Voice(1f, 1f, 1f);
+                    return new Voice(1f, 1f);
             }
         }
 
@@ -96,7 +94,7 @@ namespace PoeClone.Enemies
                 else if (e == Event.Death)
                     audio.PlayEffect(id, at, Pick(audio.enemyDeath));
                 else
-                    audio.PlayEffect(id, at, volume: 0.65f);
+                    audio.PlayEffect(id, at);
                 return;
             }
 
@@ -104,7 +102,7 @@ namespace PoeClone.Enemies
             float pitch = Random.Range(voice.PitchMin, voice.PitchMax);
             if (kind.Scale < 0.7f)
                 pitch *= SmallPitchBoost;
-            audio.PlayEffect(id, at, clip, voice.Volume, pitch);
+            audio.PlayEffect(id, at, clip, pitch);
         }
 
         private static AudioClip Pick(AudioClip[] clips) => clips != null && clips.Length > 0 ? clips[Random.Range(0, clips.Length)] : null;

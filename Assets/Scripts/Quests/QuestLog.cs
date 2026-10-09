@@ -353,7 +353,7 @@ namespace PoeClone.Quests
             CombatText.Show(transform.position + Vector3.up * 2.4f, quest.Title + " complete - return to " + who,
                 new Color(1f, 0.85f, 0.35f), 0.9f);
             if (Audio.AudioManager.Instance != null)
-                Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.playerLevelUp, 0.35f);
+                Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.playerLevelUp);
         }
     }
 }

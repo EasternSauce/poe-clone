@@ -72,7 +72,7 @@ namespace PoeClone.Quests
                 open = true;
                 sinkStarted = Time.time;
                 if (AudioManager.Instance != null)
-                    AudioManager.Instance.PlayAtPoint(AudioManager.Instance.Sfx("shatter"), transform.position, 1f, 0.6f);
+                    AudioManager.Instance.PlayAtPoint(AudioManager.Instance.Sfx("shatter"), transform.position, 0.6f);
             }
         }
 

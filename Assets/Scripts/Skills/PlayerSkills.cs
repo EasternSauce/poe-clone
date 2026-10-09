@@ -1058,13 +1058,13 @@ namespace PoeClone.Skills
                 case SkillId.LungingThrust: sound = "skill_lunging_thrust"; break;
                 case SkillId.FangStrike: sound = "skill_fang_strike"; break;
                 default:
-                    PoeClone.Audio.AudioManager.Instance?.PlayEffect("skill." + skill, at, volume: 0.75f);
+                    PoeClone.Audio.AudioManager.Instance?.PlayEffect("skill." + skill, at);
                     return;
             }
 
             PoeClone.Audio.AudioManager audio = PoeClone.Audio.AudioManager.Instance;
             if (audio != null)
-                audio.PlayAtPoint(audio.Sfx(sound), at, 0.75f);
+                audio.PlayAtPoint(audio.Sfx(sound), at);
         }
 
         private static bool CanUseWithWeapon(SkillId id, WeaponType weapon)
@@ -1342,7 +1342,7 @@ namespace PoeClone.Skills
             SkillEffects.Shockwave(landing.Value, 1.6f, skill.Color, 0.35f);
             Record(skill, level, 0f, 0, new[] { landing.Value });
             if (Audio.AudioManager.Instance != null)
-                Audio.AudioManager.Instance.PlayEffect("skill.Teleport", transform.position, volume: 0.75f);
+                Audio.AudioManager.Instance.PlayEffect("skill.Teleport", transform.position);
         }
 
         // How far the mouse points from the player on the ground (null on touch: full range).

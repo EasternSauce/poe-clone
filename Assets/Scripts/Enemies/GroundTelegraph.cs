@@ -78,7 +78,7 @@ namespace PoeClone.Enemies
             if (source != null && source.Sounds == EnemySounds.Set.Slime)
                 EnemySounds.Play(source, EnemySounds.Event.Attack, center);
             else
-                Audio.AudioManager.Instance?.PlayEffect("combat.ground." + type, center, volume: 0.7f);
+                Audio.AudioManager.Instance?.PlayEffect("combat.ground." + type, center);
             burst?.Invoke(center);
         }
 

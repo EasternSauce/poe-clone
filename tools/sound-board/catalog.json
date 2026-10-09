@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-09T14:07:49.8004652Z",
+    "generatedAt": "2026-10-09T15:20:44.7301844Z",
     "effects": [
         {
             "id": "player.swing",
@@ -23,8 +23,7 @@
                         "Assets/Scripts/Network/SpectatorReplica.cs",
                         "Assets/Scripts/Player/PlayerCombat.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -47,8 +46,7 @@
                     "sources": [
                         "Assets/Scripts/Player/PlayerCombat.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.800000011920929
+                    "muted": false
                 },
                 {
                     "id": "enemy.Archer.Attack",
@@ -62,8 +60,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.800000011920929
+                    "muted": false
                 },
                 {
                     "id": "enemy.Skeleton Archer.Attack",
@@ -77,8 +74,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.800000011920929
+                    "muted": false
                 }
             ]
         },
@@ -89,7 +85,7 @@
             "soundGroup": "sound.combat.hit",
             "purpose": "Weapon hit impacts",
             "current": [
-                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.wav"
             ],
             "usages": [
                 {
@@ -103,8 +99,7 @@
                         "Assets/Scripts/Enemies/ShepherdFight.cs",
                         "Assets/Scripts/Network/SpectatorReplica.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Zombie",
@@ -114,8 +109,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Raider",
@@ -125,8 +119,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Brute",
@@ -136,8 +129,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Archer",
@@ -147,8 +139,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Fire Caster",
@@ -158,8 +149,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Frost Caster",
@@ -169,8 +159,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Storm Caster",
@@ -180,8 +169,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Skeleton",
@@ -191,8 +179,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Wraith",
@@ -202,8 +189,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Ember Knight",
@@ -213,8 +199,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Gravelord Mortis",
@@ -224,8 +209,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Ashen Warlord",
@@ -235,8 +219,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Rimeheart",
@@ -246,8 +229,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Forest Shaman",
@@ -257,8 +239,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Necromancer",
@@ -268,8 +249,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Skeleton Archer",
@@ -279,8 +259,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Frost Giant",
@@ -290,8 +269,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Giant Spider",
@@ -301,8 +279,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Dire Wolf",
@@ -312,8 +289,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Bog Slime",
@@ -323,8 +299,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Slimeling",
@@ -334,8 +309,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Grave Bat",
@@ -345,8 +319,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Corpse Ooze",
@@ -356,8 +329,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Oozeling",
@@ -367,8 +339,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Crypt Spider",
@@ -378,8 +349,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Magma Beetle",
@@ -389,8 +359,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Hellhound",
@@ -400,8 +369,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Frost Wolf",
@@ -411,8 +379,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Ice Crawler",
@@ -422,8 +389,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Skeleton Warrior",
@@ -433,8 +399,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Skeleton Mage",
@@ -444,8 +409,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Spirit Wolf",
@@ -455,8 +419,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Bone Golem",
@@ -466,8 +429,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/The Shepherd",
@@ -477,8 +439,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Briarbound",
@@ -488,8 +449,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Grave Siren",
@@ -499,8 +459,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Rime Stalker",
@@ -510,8 +469,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Cinder Penitent",
@@ -521,8 +479,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Hollowmaw",
@@ -532,8 +489,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/Barrow Castellan",
@@ -543,8 +499,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 },
                 {
                     "id": "combat.hit/The Shepherd",
@@ -554,8 +509,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/ShepherdFight.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.8500000238418579
+                    "muted": false
                 }
             ]
         },
@@ -579,8 +533,7 @@
                         "Assets/Scripts/Audio/AudioManager.cs",
                         "Assets/Scripts/Player/PlayerStats.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -591,7 +544,7 @@
             "soundGroup": "sound.combat.bite",
             "purpose": "Snake-arm bite impacts",
             "current": [
-                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.wav"
             ],
             "usages": [
                 {
@@ -602,8 +555,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/ShepherdFight.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "combat.bite/The Shepherd",
@@ -613,8 +565,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/ShepherdFight.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -638,8 +589,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.5
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Physical/The Shepherd",
@@ -649,8 +599,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/ShepherdFight.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.5
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Physical/Brute",
@@ -660,8 +609,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.5
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Physical/Gravelord Mortis",
@@ -671,8 +619,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.5
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Physical/Giant Spider",
@@ -682,8 +629,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.5
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Physical/Dire Wolf",
@@ -693,8 +639,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.5
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Physical/Briarbound",
@@ -704,8 +649,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.5
+                    "muted": false
                 }
             ]
         },
@@ -716,10 +660,10 @@
             "soundGroup": "sound.combat.ground.Fire",
             "purpose": "Fire ground impacts",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#1-1766764398952.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#2-1766764396374.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#3-1766764393616.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#4-1766764388701.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#1-1766764398952.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#2-1766764396374.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#3-1766764393616.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#4-1766764388701.wav"
             ],
             "usages": [
                 {
@@ -732,8 +676,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Fire/Fire Caster",
@@ -743,8 +686,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Fire/Ember Knight",
@@ -754,8 +696,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Fire/Ashen Warlord",
@@ -765,8 +706,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Fire/Magma Beetle",
@@ -776,8 +716,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Fire/Hellhound",
@@ -787,8 +726,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -799,10 +737,10 @@
             "soundGroup": "sound.combat.ground.Cold",
             "purpose": "Cold ground impacts",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#1-1766764678544.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#2-1766764676177.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#3-1766764673747.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#4-1766764669612.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#1-1766764678544.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#2-1766764676177.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#3-1766764673747.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#4-1766764669612.wav"
             ],
             "usages": [
                 {
@@ -815,8 +753,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Cold/Frost Caster",
@@ -826,8 +763,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Cold/Rimeheart",
@@ -837,8 +773,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Cold/Frost Giant",
@@ -848,8 +783,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Cold/Crypt Spider",
@@ -859,8 +793,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Cold/Frost Wolf",
@@ -870,8 +803,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Cold/Ice Crawler",
@@ -881,8 +813,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -906,8 +837,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.44999998807907104
+                    "muted": false
                 },
                 {
                     "id": "combat.ground.Lightning/Storm Caster",
@@ -917,8 +847,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/GroundTelegraph.cs"
                     ],
-                    "muted": false,
-                    "volume": 0.44999998807907104
+                    "muted": false
                 }
             ]
         },
@@ -943,8 +872,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -971,8 +899,7 @@
                         "Assets/Scripts/Network/SpectatorReplica.cs",
                         "Assets/Scripts/Player/PlayerStats.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -983,7 +910,7 @@
             "soundGroup": "sound.player.reward",
             "purpose": "Level-up and quest rewards",
             "current": [
-                "Assets/Audio/SFX/Player/level_up.mp3"
+                "Assets/Audio/SFX/Player/level_up.wav"
             ],
             "usages": [
                 {
@@ -998,8 +925,7 @@
                         "Assets/Scripts/Quests/QuestLog.cs",
                         "Assets/Scripts/Quests/QuestProp.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1021,8 +947,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/town",
@@ -1032,8 +957,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Zombie",
@@ -1043,8 +967,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Raider",
@@ -1054,8 +977,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Brute",
@@ -1065,8 +987,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Archer",
@@ -1076,8 +997,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Fire Caster",
@@ -1087,8 +1007,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Frost Caster",
@@ -1098,8 +1017,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Storm Caster",
@@ -1109,8 +1027,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Skeleton",
@@ -1120,8 +1037,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Wraith",
@@ -1131,8 +1047,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Ember Knight",
@@ -1142,8 +1057,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Gravelord Mortis",
@@ -1153,8 +1067,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Ashen Warlord",
@@ -1164,8 +1077,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Forest Shaman",
@@ -1175,8 +1087,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Necromancer",
@@ -1186,8 +1097,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Skeleton Archer",
@@ -1197,8 +1107,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Frost Giant",
@@ -1208,8 +1117,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Skeleton Warrior",
@@ -1219,8 +1127,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Skeleton Mage",
@@ -1230,8 +1137,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/Bone Golem",
@@ -1241,8 +1147,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "player.steps/The Shepherd",
@@ -1252,8 +1157,7 @@
                     "sources": [
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1276,8 +1180,7 @@
                         "Assets/Scripts/Audio/AudioManager.cs",
                         "Assets/Scripts/Inventory/InventoryUI.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1300,8 +1203,7 @@
                         "Assets/Scripts/Audio/AudioManager.cs",
                         "Assets/Scripts/Inventory/InventoryUI.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1324,8 +1226,32 @@
                         "Assets/Scripts/Audio/AudioManager.cs",
                         "Assets/Scripts/Inventory/InventoryUI.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
+                }
+            ]
+        },
+        {
+            "id": "ui.click",
+            "label": "Interface click",
+            "group": "Interface",
+            "soundGroup": "sound.ui.click",
+            "purpose": "Interface clicks",
+            "current": [
+                "Assets/Audio/Resources/Sfx/ui_click.wav"
+            ],
+            "usages": [
+                {
+                    "id": "ui.click",
+                    "label": "Interface click",
+                    "enemy": "",
+                    "portrait": "",
+                    "sources": [
+                        "Assets/Scripts/Quests/QuestProp.cs",
+                        "Assets/Scripts/UI/DialogueUI.cs",
+                        "Assets/Scripts/UI/PassiveTreeUI.cs",
+                        "Assets/Scripts/UI/SkillBarUI.cs"
+                    ],
+                    "muted": false
                 }
             ]
         },
@@ -1349,8 +1275,7 @@
                         "Assets/Scripts/Inventory/ItemSounds.cs",
                         "Assets/Scripts/Quests/QuestProp.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1371,14 +1296,9 @@
                     "portrait": "",
                     "sources": [
                         "Assets/Scripts/Audio/AudioManager.cs",
-                        "Assets/Scripts/Inventory/ItemSounds.cs",
-                        "Assets/Scripts/Quests/QuestProp.cs",
-                        "Assets/Scripts/UI/DialogueUI.cs",
-                        "Assets/Scripts/UI/PassiveTreeUI.cs",
-                        "Assets/Scripts/UI/SkillBarUI.cs"
+                        "Assets/Scripts/Inventory/ItemSounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1400,8 +1320,7 @@
                     "sources": [
                         "Assets/Scripts/Inventory/ItemSounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1423,8 +1342,7 @@
                     "sources": [
                         "Assets/Scripts/Inventory/ItemSounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1444,11 +1362,9 @@
                     "enemy": "",
                     "portrait": "",
                     "sources": [
-                        "Assets/Scripts/Audio/AudioManager.cs",
                         "Assets/Scripts/Inventory/ItemSounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1470,8 +1386,7 @@
                     "sources": [
                         "Assets/Scripts/Inventory/ItemSounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1493,8 +1408,7 @@
                     "sources": [
                         "Assets/Scripts/Inventory/ItemSounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1514,11 +1428,9 @@
                     "enemy": "",
                     "portrait": "",
                     "sources": [
-                        "Assets/Scripts/Audio/AudioManager.cs",
                         "Assets/Scripts/Inventory/ItemSounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1540,8 +1452,7 @@
                     "sources": [
                         "Assets/Scripts/Inventory/ItemSounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1561,11 +1472,9 @@
                     "enemy": "",
                     "portrait": "",
                     "sources": [
-                        "Assets/Scripts/Audio/AudioManager.cs",
                         "Assets/Scripts/Inventory/ItemSounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1585,11 +1494,9 @@
                     "enemy": "",
                     "portrait": "",
                     "sources": [
-                        "Assets/Scripts/Audio/AudioManager.cs",
                         "Assets/Scripts/Inventory/ItemSounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1609,11 +1516,9 @@
                     "enemy": "",
                     "portrait": "",
                     "sources": [
-                        "Assets/Scripts/Audio/AudioManager.cs",
                         "Assets/Scripts/Inventory/ItemSounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1635,8 +1540,7 @@
                     "sources": [
                         "Assets/Scripts/Inventory/ItemSounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1658,8 +1562,7 @@
                     "sources": [
                         "Assets/Scripts/Inventory/ItemSounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1681,8 +1584,7 @@
                     "sources": [
                         "Assets/Scripts/Player/PlayerPotions.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1705,8 +1607,7 @@
                         "Assets/Scripts/Audio/AudioManager.cs",
                         "Assets/Scripts/World/AreaGate.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1728,8 +1629,7 @@
                     "sources": [
                         "Assets/Scripts/Audio/AudioManager.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1740,10 +1640,10 @@
             "soundGroup": "sound.world.shatter",
             "purpose": "Ice and barrier shattering",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#1-1766764678544.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#2-1766764676177.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#3-1766764673747.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#4-1766764669612.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#1-1766764678544.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#2-1766764676177.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#3-1766764673747.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#4-1766764669612.wav"
             ],
             "usages": [
                 {
@@ -1752,12 +1652,35 @@
                     "enemy": "",
                     "portrait": "",
                     "sources": [
-                        "Assets/Scripts/Player/HitEffects.cs",
                         "Assets/Scripts/Quests/QuestBarrier.cs",
                         "Assets/Scripts/Quests/QuestProp.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
+                }
+            ]
+        },
+        {
+            "id": "combat.shatter",
+            "label": "Freeze shatter",
+            "group": "Combat",
+            "soundGroup": "sound.combat.shatter",
+            "purpose": "Freeze shatter impacts",
+            "current": [
+                "Assets/Audio/SoundLibrary/Magic & spells/Freeze_shatter_1.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Freeze_shatter_2.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Freeze_shatter_3.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Freeze_shatter_4.wav"
+            ],
+            "usages": [
+                {
+                    "id": "combat.shatter",
+                    "label": "Freeze shatter",
+                    "enemy": "",
+                    "portrait": "",
+                    "sources": [
+                        "Assets/Scripts/Player/HitEffects.cs"
+                    ],
+                    "muted": false
                 }
             ]
         },
@@ -1780,8 +1703,7 @@
                         "Assets/Scripts/Player/HitEffects.cs",
                         "Assets/Scripts/Quests/QuestProp.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1792,7 +1714,7 @@
             "soundGroup": "sound.world.reveal",
             "purpose": "Carrion Saint reveal",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_1.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_1.wav"
             ],
             "usages": [
                 {
@@ -1803,8 +1725,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/EnemySounds.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "world.reveal/Carrion Saint",
@@ -1814,8 +1735,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/CarrionSaintReveal.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1826,8 +1746,8 @@
             "soundGroup": "sound.skill.Cleave",
             "purpose": "Cleave",
             "current": [
-                "Assets/Audio/SoundLibrary/Combat & weapons/Skill_Warrior08_slash.ogg",
-                "Assets/Audio/SoundLibrary/Combat & weapons/Skill_Warrior09_slash.ogg"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Skill_Warrior08_slash.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Skill_Warrior09_slash.wav"
             ],
             "usages": [
                 {
@@ -1838,8 +1758,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1850,10 +1769,10 @@
             "soundGroup": "sound.skill.FireBolt",
             "purpose": "Fire projectile casting",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_cast_–_Ma_#1-1766763536495.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_cast_–_Ma_#2-1766763532663.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_cast_–_Ma_#3-1766763528875.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_cast_–_Ma_#4-1766763524728.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_cast_–_Ma_#1-1766763536495.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_cast_–_Ma_#2-1766763532663.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_cast_–_Ma_#3-1766763528875.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_cast_–_Ma_#4-1766763524728.wav"
             ],
             "usages": [
                 {
@@ -1864,8 +1783,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "enemy.Fire Caster.Attack",
@@ -1879,8 +1797,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1891,8 +1808,8 @@
             "soundGroup": "sound.skill.Dash",
             "purpose": "Dash",
             "current": [
-                "Assets/Audio/SoundLibrary/Combat & weapons/Heavy_weapon_whoosh,_#3-1766763893457.mp3",
-                "Assets/Audio/SoundLibrary/Combat & weapons/Heavy_weapon_whoosh,_#4-1766763889384.mp3"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Heavy_weapon_whoosh,_#3-1766763893457.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Heavy_weapon_whoosh,_#4-1766763889384.wav"
             ],
             "usages": [
                 {
@@ -1903,8 +1820,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1926,8 +1842,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1951,8 +1866,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1963,10 +1877,10 @@
             "soundGroup": "sound.skill.ChainLightning",
             "purpose": "Lightning spell casting",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#1-1766764720689.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#2-1766764718272.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#3-1766764718272.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#4-1766764715064.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#1-1766764720689.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#2-1766764718272.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#3-1766764718272.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#4-1766764715064.wav"
             ],
             "usages": [
                 {
@@ -1977,8 +1891,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -1989,10 +1902,10 @@
             "soundGroup": "sound.skill.IceShard",
             "purpose": "Ice projectile casting",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Ice_spell_cast_–_Col_#1-1766764638425.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Ice_spell_cast_–_Col_#2-1766764635940.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Ice_spell_cast_–_Col_#3-1766764633331.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Ice_spell_cast_–_Col_#4-1766764626746.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_spell_cast_–_Col_#1-1766764638425.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_spell_cast_–_Col_#2-1766764635940.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_spell_cast_–_Col_#3-1766764633331.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_spell_cast_–_Col_#4-1766764626746.wav"
             ],
             "usages": [
                 {
@@ -2003,8 +1916,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "enemy.Frost Caster.Attack",
@@ -2018,8 +1930,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2041,8 +1952,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2066,8 +1976,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "skill.SkeletonMages",
@@ -2077,8 +1986,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2089,7 +1997,7 @@
             "soundGroup": "sound.skill.DeathMark",
             "purpose": "Death Mark",
             "current": [
-                "Assets/Audio/SoundLibrary/Movement/Rune_activate_–_Anci_#2-1766768897281.mp3"
+                "Assets/Audio/SoundLibrary/Movement/Rune_activate_–_Anci_#2-1766768897281.wav"
             ],
             "usages": [
                 {
@@ -2100,8 +2008,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2123,8 +2030,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2147,8 +2053,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2170,8 +2075,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2193,8 +2097,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2216,8 +2119,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2240,8 +2142,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2263,8 +2164,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2286,8 +2186,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2309,8 +2208,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2332,8 +2230,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2355,8 +2252,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2379,8 +2275,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2403,8 +2298,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2428,8 +2322,7 @@
                     "sources": [
                         "Assets/Scripts/Skills/PlayerSkills.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2453,8 +2346,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2480,8 +2372,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2492,10 +2383,10 @@
             "soundGroup": "sound.enemy.Zombie.Attack",
             "purpose": "Zombie / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Creatures & voices/Zombie_moan_–_Slow_u_#1-1766768225594.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Zombie_moan_–_Slow_u_#2-1766768233458.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Zombie_moan_–_Slow_u_#3-1766768231428.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Zombie_moan_–_Slow_u_#4-1766768225595.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Zombie_moan_–_Slow_u_#1-1766768225594.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Zombie_moan_–_Slow_u_#2-1766768233458.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Zombie_moan_–_Slow_u_#3-1766768231428.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Zombie_moan_–_Slow_u_#4-1766768225595.wav"
             ],
             "usages": [
                 {
@@ -2510,8 +2401,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2535,8 +2425,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2562,8 +2451,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": true,
-                    "volume": 1.0
+                    "muted": true
                 }
             ]
         },
@@ -2574,9 +2462,9 @@
             "soundGroup": "sound.enemy.Raider.Attack",
             "purpose": "Humanoid grunts / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.wav"
             ],
             "usages": [
                 {
@@ -2591,8 +2479,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2616,8 +2503,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2643,8 +2529,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2670,8 +2555,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2695,8 +2579,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2722,8 +2605,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": true,
-                    "volume": 1.0
+                    "muted": true
                 }
             ]
         },
@@ -2748,8 +2630,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2775,8 +2656,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": true,
-                    "volume": 1.0
+                    "muted": true
                 }
             ]
         },
@@ -2801,8 +2681,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2828,8 +2707,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2854,8 +2732,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2881,8 +2758,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2893,10 +2769,10 @@
             "soundGroup": "sound.skill.ChainLightning",
             "purpose": "Lightning spell casting",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#1-1766764720689.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#2-1766764718272.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#3-1766764718272.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#4-1766764715064.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#1-1766764720689.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#2-1766764718272.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#3-1766764718272.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#4-1766764715064.wav"
             ],
             "usages": [
                 {
@@ -2911,8 +2787,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2937,8 +2812,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2964,8 +2838,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -2976,10 +2849,10 @@
             "soundGroup": "sound.enemy.Skeleton.Attack",
             "purpose": "Skeleton / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#1-1766768184245.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#2-1766768184245.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#3-1766768181651.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#4-1766768179054.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#1-1766768184245.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#2-1766768184245.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#3-1766768181651.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#4-1766768179054.wav"
             ],
             "usages": [
                 {
@@ -2994,8 +2867,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3020,8 +2892,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3047,8 +2918,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3074,8 +2944,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3100,8 +2969,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3127,8 +2995,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3139,9 +3006,9 @@
             "soundGroup": "sound.enemy.Raider.Attack",
             "purpose": "Humanoid grunts / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.wav"
             ],
             "usages": [
                 {
@@ -3156,8 +3023,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3182,8 +3048,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3209,8 +3074,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3236,8 +3100,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3262,8 +3125,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3289,8 +3151,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3316,8 +3177,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3342,8 +3202,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3354,8 +3213,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Aggro",
             "purpose": "Spider / alert calls",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.wav"
             ],
             "usages": [
                 {
@@ -3368,8 +3227,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3380,8 +3238,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Attack",
             "purpose": "Spider / attack voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.wav"
             ],
             "usages": [
                 {
@@ -3396,8 +3254,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3408,8 +3265,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Death",
             "purpose": "Spider / death voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.wav"
             ],
             "usages": [
                 {
@@ -3422,8 +3279,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3449,8 +3305,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3461,10 +3316,10 @@
             "soundGroup": "sound.enemy.Forest Shaman.Attack",
             "purpose": "Magic projectile / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#1-1766764866448.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#2-1766764864417.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#3-1766764862223.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#4-1766764858633.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#1-1766764866448.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#2-1766764864417.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#3-1766764862223.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#4-1766764858633.wav"
             ],
             "usages": [
                 {
@@ -3479,8 +3334,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3505,8 +3359,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3532,8 +3385,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3544,10 +3396,10 @@
             "soundGroup": "sound.enemy.Forest Shaman.Attack",
             "purpose": "Magic projectile / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#1-1766764866448.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#2-1766764864417.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#3-1766764862223.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#4-1766764858633.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#1-1766764866448.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#2-1766764864417.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#3-1766764862223.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#4-1766764858633.wav"
             ],
             "usages": [
                 {
@@ -3562,8 +3414,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3588,8 +3439,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3615,8 +3465,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3641,8 +3490,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3668,8 +3516,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3695,8 +3542,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3721,8 +3567,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3733,8 +3578,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Aggro",
             "purpose": "Spider / alert calls",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.wav"
             ],
             "usages": [
                 {
@@ -3747,8 +3592,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3759,8 +3603,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Attack",
             "purpose": "Spider / attack voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.wav"
             ],
             "usages": [
                 {
@@ -3775,8 +3619,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3787,8 +3630,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Death",
             "purpose": "Spider / death voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.wav"
             ],
             "usages": [
                 {
@@ -3801,8 +3644,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3813,9 +3655,9 @@
             "soundGroup": "sound.enemy.Dire Wolf.Aggro",
             "purpose": "Wolf / alert calls",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_2.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_3.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_3.wav"
             ],
             "usages": [
                 {
@@ -3828,8 +3670,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3855,8 +3696,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3881,8 +3721,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3908,8 +3747,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3938,8 +3776,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3965,8 +3802,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -3992,8 +3828,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4022,8 +3857,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4049,8 +3883,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4076,8 +3909,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4104,8 +3936,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4129,8 +3960,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4156,8 +3986,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4186,8 +4015,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4213,8 +4041,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4240,8 +4067,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4270,8 +4096,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4297,8 +4122,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4309,8 +4133,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Aggro",
             "purpose": "Spider / alert calls",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.wav"
             ],
             "usages": [
                 {
@@ -4323,8 +4147,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4335,8 +4158,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Attack",
             "purpose": "Spider / attack voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.wav"
             ],
             "usages": [
                 {
@@ -4351,8 +4174,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4363,8 +4185,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Death",
             "purpose": "Spider / death voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.wav"
             ],
             "usages": [
                 {
@@ -4377,8 +4199,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4403,8 +4224,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4431,8 +4251,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4457,8 +4276,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4484,8 +4302,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4511,8 +4328,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4537,8 +4353,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4549,9 +4364,9 @@
             "soundGroup": "sound.enemy.Dire Wolf.Aggro",
             "purpose": "Wolf / alert calls",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_2.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_3.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_3.wav"
             ],
             "usages": [
                 {
@@ -4564,8 +4379,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4591,8 +4405,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4617,8 +4430,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4629,8 +4441,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Aggro",
             "purpose": "Spider / alert calls",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.wav"
             ],
             "usages": [
                 {
@@ -4643,8 +4455,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4655,8 +4466,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Attack",
             "purpose": "Spider / attack voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.wav"
             ],
             "usages": [
                 {
@@ -4671,8 +4482,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4683,8 +4493,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Death",
             "purpose": "Spider / death voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.wav"
             ],
             "usages": [
                 {
@@ -4697,8 +4507,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4724,8 +4533,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4736,10 +4544,10 @@
             "soundGroup": "sound.enemy.Skeleton.Attack",
             "purpose": "Skeleton / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#1-1766768184245.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#2-1766768184245.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#3-1766768181651.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#4-1766768179054.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#1-1766768184245.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#2-1766768184245.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#3-1766768181651.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#4-1766768179054.wav"
             ],
             "usages": [
                 {
@@ -4754,8 +4562,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4780,8 +4587,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4807,8 +4613,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4819,10 +4624,10 @@
             "soundGroup": "sound.enemy.Forest Shaman.Attack",
             "purpose": "Magic projectile / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#1-1766764866448.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#2-1766764864417.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#3-1766764862223.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#4-1766764858633.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#1-1766764866448.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#2-1766764864417.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#3-1766764862223.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#4-1766764858633.wav"
             ],
             "usages": [
                 {
@@ -4837,8 +4642,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4863,8 +4667,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4875,9 +4678,9 @@
             "soundGroup": "sound.enemy.Dire Wolf.Aggro",
             "purpose": "Wolf / alert calls",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_1.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_2.mp3",
-                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_3.mp3"
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/wolf_growl_3.wav"
             ],
             "usages": [
                 {
@@ -4890,8 +4693,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4917,8 +4719,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4943,8 +4744,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4970,8 +4770,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -4997,8 +4796,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5023,8 +4821,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5050,8 +4847,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5077,8 +4873,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5103,8 +4898,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 },
                 {
                     "id": "enemy.The Shepherd.Death/Carrion Saint",
@@ -5114,8 +4908,7 @@
                     "sources": [
                         "Assets/Scripts/Enemies/CarrionSaintFight.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5141,8 +4934,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5153,10 +4945,10 @@
             "soundGroup": "sound.enemy.Forest Shaman.Attack",
             "purpose": "Magic projectile / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#1-1766764866448.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#2-1766764864417.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#3-1766764862223.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#4-1766764858633.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#1-1766764866448.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#2-1766764864417.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#3-1766764862223.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#4-1766764858633.wav"
             ],
             "usages": [
                 {
@@ -5171,8 +4963,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5197,8 +4988,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5224,8 +5014,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5236,10 +5025,10 @@
             "soundGroup": "sound.enemy.Forest Shaman.Attack",
             "purpose": "Magic projectile / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#1-1766764866448.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#2-1766764864417.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#3-1766764862223.mp3",
-                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#4-1766764858633.mp3"
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#1-1766764866448.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#2-1766764864417.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#3-1766764862223.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Magic_projectile_lau_#4-1766764858633.wav"
             ],
             "usages": [
                 {
@@ -5254,8 +5043,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5280,8 +5068,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5307,8 +5094,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5319,9 +5105,9 @@
             "soundGroup": "sound.enemy.Raider.Attack",
             "purpose": "Humanoid grunts / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.wav"
             ],
             "usages": [
                 {
@@ -5336,8 +5122,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5362,8 +5147,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5389,8 +5173,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5401,9 +5184,9 @@
             "soundGroup": "sound.enemy.Raider.Attack",
             "purpose": "Humanoid grunts / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.wav"
             ],
             "usages": [
                 {
@@ -5418,8 +5201,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5444,8 +5226,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5471,8 +5252,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5483,9 +5263,9 @@
             "soundGroup": "sound.enemy.Raider.Attack",
             "purpose": "Humanoid grunts / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.wav"
             ],
             "usages": [
                 {
@@ -5500,8 +5280,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5526,8 +5305,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5553,8 +5331,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyController.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5565,9 +5342,9 @@
             "soundGroup": "sound.enemy.Raider.Attack",
             "purpose": "Humanoid grunts / attack voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.mp3",
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.wav"
             ],
             "usages": [
                 {
@@ -5582,8 +5359,7 @@
                         "Assets/Scripts/Enemies/EnemySkills.cs",
                         "Assets/Scripts/Enemies/BossAbilities.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5608,8 +5384,7 @@
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyHealth.cs"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5620,7 +5395,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/SoundLibrary/World & ambience/Town_ambience_–_Dist_#1-1766768998365.mp3"
+                "Assets/Audio/SoundLibrary/World & ambience/Town_ambience_–_Dist_#1-1766768998365.wav"
             ],
             "usages": [
                 {
@@ -5632,8 +5407,7 @@
                         "Assets/Scripts/World/WorldAmbience.cs",
                         "Assets/Resources/AmbientSoundLibrary.asset"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5644,7 +5418,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/SoundLibrary/World & ambience/Night_ambience_–_Cri_#1-1766769107163.mp3"
+                "Assets/Audio/SoundLibrary/World & ambience/Night_ambience_–_Cri_#1-1766769107163.wav"
             ],
             "usages": [
                 {
@@ -5656,8 +5430,7 @@
                         "Assets/Scripts/World/WorldAmbience.cs",
                         "Assets/Resources/AmbientSoundLibrary.asset"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5668,7 +5441,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/SoundLibrary/World & ambience/Cave_ambience_–_Holl_#1-1766768454355.mp3"
+                "Assets/Audio/SoundLibrary/World & ambience/Cave_ambience_–_Holl_#1-1766768454355.wav"
             ],
             "usages": [
                 {
@@ -5680,8 +5453,7 @@
                         "Assets/Scripts/World/WorldAmbience.cs",
                         "Assets/Resources/AmbientSoundLibrary.asset"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5692,7 +5464,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/SoundLibrary/World & ambience/Dungeon_ambience_–_W_#1-1766768410723.mp3"
+                "Assets/Audio/SoundLibrary/World & ambience/Dungeon_ambience_–_W_#1-1766768410723.wav"
             ],
             "usages": [
                 {
@@ -5704,8 +5476,7 @@
                         "Assets/Scripts/World/WorldAmbience.cs",
                         "Assets/Resources/AmbientSoundLibrary.asset"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5728,8 +5499,7 @@
                         "Assets/Scripts/World/WorldAmbience.cs",
                         "Assets/Resources/AmbientSoundLibrary.asset"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5752,8 +5522,7 @@
                         "Assets/Scripts/World/WorldAmbience.cs",
                         "Assets/Resources/AmbientSoundLibrary.asset"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5764,7 +5533,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/SoundLibrary/World & ambience/River_flow_–_Calm_fl_#1-1766768653145.mp3"
+                "Assets/Audio/SoundLibrary/World & ambience/River_flow_–_Calm_fl_#1-1766768653145.wav"
             ],
             "usages": [
                 {
@@ -5776,8 +5545,7 @@
                         "Assets/Scripts/World/WorldAmbience.cs",
                         "Assets/Resources/AmbientSoundLibrary.asset"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5800,8 +5568,7 @@
                         "Assets/Scripts/World/WorldAmbience.cs",
                         "Assets/Resources/AmbientSoundLibrary.asset"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5824,8 +5591,7 @@
                         "Assets/Scripts/World/WorldAmbience.cs",
                         "Assets/Resources/AmbientSoundLibrary.asset"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5836,7 +5602,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/SoundLibrary/World & ambience/Campfire_–_Medium_fi_#1-1766768610324.mp3"
+                "Assets/Audio/SoundLibrary/World & ambience/Campfire_–_Medium_fi_#1-1766768610324.wav"
             ],
             "usages": [
                 {
@@ -5848,8 +5614,7 @@
                         "Assets/Scripts/World/WorldAmbience.cs",
                         "Assets/Resources/AmbientSoundLibrary.asset"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5872,8 +5637,7 @@
                         "Assets/Scripts/World/WorldAmbience.cs",
                         "Assets/Resources/AmbientSoundLibrary.asset"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         },
@@ -5884,7 +5648,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/SoundLibrary/World & ambience/Bridge_creak_–_Old_w_#1-1766767266448.mp3"
+                "Assets/Audio/SoundLibrary/World & ambience/Bridge_creak_–_Old_w_#1-1766767266448.wav"
             ],
             "usages": [
                 {
@@ -5896,8 +5660,7 @@
                         "Assets/Scripts/World/WorldAmbience.cs",
                         "Assets/Resources/AmbientSoundLibrary.asset"
                     ],
-                    "muted": false,
-                    "volume": 1.0
+                    "muted": false
                 }
             ]
         }
