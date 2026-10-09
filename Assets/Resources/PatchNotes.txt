@@ -1,3 +1,9 @@
+version: 2026-10-09-town-hearths-and-cats
+- Added softly drifting smoke from cottage chimneys. Replaced wobbling flame blobs with tapered flames and rising detail; town lantern flames now fit inside their iron housings.
+- Haven's well water is still, removing its repeating flashes.
+- Bunnies, squirrels and frost hares now react to people from much farther away and bolt at high speed. Wild animals also flee nearby townspeople and keep running until clear of danger; perched birds take flight when townspeople approach.
+- Reduced wildlife around Haven's central streets and kept wild animals on the outskirts. Added cats in several coat colours, mostly around the square; cats are comfortable around people but still flee enemies.
+
 version: 2026-10-09-grassland-bunnies
 - Added small brown, grey and sandy-coloured bunnies to Haven's grasslands and Greenwood's clearings. They hop around and flee nearby threats without attacking or blocking movement.
 - Added bunnies and squirrels closer to Haven's quieter outskirts, bringing more wildlife within reach of town while leaving the central square clear.

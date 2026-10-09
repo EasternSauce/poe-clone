@@ -8,7 +8,7 @@ namespace PoeClone.World
     /// Ambient-life behaviour. A bird wanders the sky heading in a direction that
     /// drifts and occasionally changes outright, sometimes loops into a circle for
     /// a while, and periodically lands on a prop or a patch of ground to idle for
-    /// a bit before taking off again. If the player or an enemy gets too close
+    /// a bit before taking off again. If a player, townsperson or enemy gets too close
     /// while it's landed, it flees back into the air. Purely cosmetic, no gameplay
     /// interaction. Uses scaled Time.deltaTime so it freezes correctly during
     /// area-transition loading screens, same as everything else.
@@ -375,7 +375,7 @@ private void IdleBob()
             float best = fleeRadius * fleeRadius;
             foreach (var t in threatsCache)
             {
-                if (t == null) continue;
+                if (t == null || !t.gameObject.activeInHierarchy) continue;
                 float d = (t.position - transform.position).sqrMagnitude;
                 if (d < best) { best = d; nearest = t; }
             }
@@ -392,7 +392,11 @@ private void IdleBob()
             GameObject playerGo = GameObject.Find("Player");
             if (playerGo != null) threatsCache.Add(playerGo.transform);
 
-            var enemies = Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
+            foreach (Npc npc in Npc.All)
+                if (npc != null && npc.Role != NpcRole.Waystone && npc.Role != NpcRole.Stash && npc.Role != NpcRole.QuestProp)
+                    threatsCache.Add(npc.transform);
+
+            var enemies = Object.FindObjectsByType<EnemyController>();
             foreach (var e in enemies)
                 threatsCache.Add(e.transform);
         }

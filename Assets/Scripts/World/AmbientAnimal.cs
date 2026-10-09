@@ -7,7 +7,7 @@ namespace PoeClone.World
     /// <summary>Cosmetic wildlife: no combat components, colliders, drops or network identity.</summary>
     public sealed class AmbientAnimal : MonoBehaviour
     {
-        public enum Species { Squirrel, Sheep, Snake, Swan, FrostHare, EmberLizard, Rabbit }
+        public enum Species { Squirrel, Sheep, Snake, Swan, FrostHare, EmberLizard, Rabbit, Cat }
         public Species Kind { get; private set; }
         private AreaShape shape;
         private Transform player, visual, head, tail;
@@ -16,6 +16,8 @@ namespace PoeClone.World
         private System.Random random;
         private float nextDecision, nextThreatCheck, fleeUntil, phase, motion;
         private float radius, walkSpeed;
+        private int areaId;
+        private bool Skittish => Kind == Species.Rabbit || Kind == Species.Squirrel || Kind == Species.FrostHare;
         private Vector3 headRest, visualRest;
         private static readonly List<Transform> enemies = new List<Transform>();
         private static float nextEnemyRefresh;
@@ -23,6 +25,7 @@ namespace PoeClone.World
         public void Initialize(Species species, int area, Transform playerTransform, int seed)
         {
             Kind = species;
+            areaId = area;
             shape = WorldBuilder.Shape(area);
             player = playerTransform;
             random = new System.Random(seed);
@@ -65,23 +68,27 @@ namespace PoeClone.World
             if (player != null && (player.position - transform.position).sqrMagnitude > 85 * 85) return;
             if (Time.time >= nextThreatCheck)
             {
-                nextThreatCheck = Time.time + 0.3f;
+                nextThreatCheck = Time.time + (Skittish ? 0.12f : 0.3f);
                 Transform threat = NearestThreat();
                 if (threat != null)
                 {
                     Vector3 away = transform.position - threat.position;
                     away.y = 0;
                     if (away.sqrMagnitude < 0.01f) away = transform.forward;
-                    ChooseTarget(away.normalized);
-                    fleeUntil = Time.time + 1.6f;
+                    ChooseTarget(away.normalized, true);
+                    fleeUntil = Time.time + (Skittish ? 3.5f : 2.2f);
                     nextDecision = fleeUntil + Range(1, 3);
                 }
             }
             bool fleeing = Time.time < fleeUntil;
+            // Keep escaping after reaching a waypoint, rather than stopping within sight of danger.
+            if (fleeing && (target - transform.position).sqrMagnitude < 0.25f)
+                ChooseTarget(transform.forward, true);
             if (!fleeing && Time.time >= nextDecision)
             {
                 Vector3 direction = home - transform.position;
-                if (direction.sqrMagnitude < 10 * 10)
+                float roamRadius = Kind == Species.Cat ? 5 : 10;
+                if (direction.sqrMagnitude < roamRadius * roamRadius)
                 {
                     float angle = Range(0, Mathf.PI * 2);
                     direction = new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle));
@@ -93,28 +100,37 @@ namespace PoeClone.World
             Vector3 toTarget = target - transform.position;
             toTarget.y = 0;
             bool moving = toTarget.sqrMagnitude > 0.04f;
-            float speed = walkSpeed * (fleeing ? 3.5f : 1);
+            float speed = fleeing ? (Skittish ? 10.5f : Kind == Species.Cat ? 7 : walkSpeed * 4.5f) : walkSpeed;
             if (moving)
             {
                 Quaternion facing = Quaternion.LookRotation(toTarget);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, facing, (fleeing ? 360 : 180) * Time.deltaTime);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, facing, (fleeing ? 900 : 180) * Time.deltaTime);
                 Vector3 step = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
                 // Check ahead of the body as well as its destination to avoid clipping scenery.
-                if (CanOccupy(shape, step + toTarget.normalized * 0.35f, radius)) transform.position = step;
+                bool clear = true;
+                float length = Vector3.Distance(transform.position, step);
+                for (float d = 0; d <= length + 0.3f; d += 0.25f)
+                    if (!CanOccupy(shape, transform.position + toTarget.normalized * d, radius)) { clear = false; break; }
+                if (clear) transform.position = step;
                 else { target = transform.position; nextDecision = Time.time + Range(0.5f, 1.5f); moving = false; }
             }
             motion = Mathf.MoveTowards(motion, moving ? 1 : 0, Time.deltaTime * 6);
             Animate(motion, fleeing);
         }
 
-        private void ChooseTarget(Vector3 direction)
+        private void ChooseTarget(Vector3 direction, bool escaping = false)
         {
-            // Fan out from the desired direction, accepting only a wholly clear short path.
-            for (int i = 0; i < 7; i++)
+            // Prefer a long escape, then try shorter steps around fences and trees.
+            for (int i = 0; i < (escaping ? 21 : 7); i++)
             {
-                float turn = i == 0 ? 0 : (i % 2 == 0 ? 1 : -1) * ((i + 1) / 2) * 35;
+                int fan = i % 7;
+                float turn = fan == 0 ? 0 : (fan % 2 == 0 ? 1 : -1) * ((fan + 1) / 2) * 28;
                 Vector3 heading = Quaternion.Euler(0, turn, 0) * direction;
-                float distance = Range(2, 4.5f);
+                float distance = escaping ? Range(6, 10) / (1 + i / 7) : Range(2, 4.5f);
+                Vector3 destination = transform.position + heading * distance;
+                // Wildlife stays on the outskirts; cats may roam through the square.
+                if (!escaping && areaId == WorldBuilder.Haven && Kind != Species.Cat &&
+                    (destination - WorldBuilder.Center(areaId)).sqrMagnitude < 55 * 55) continue;
                 bool clear = true;
                 for (float d = 0.4f; d <= distance + 0.4f; d += 0.4f)
                     if (!CanOccupy(shape, transform.position + heading * d, radius)) { clear = false; break; }
@@ -135,9 +151,19 @@ namespace PoeClone.World
                 nextEnemyRefresh = Time.time + 0.75f;
             }
             Transform nearest = null;
-            float best = 5.5f * 5.5f;
-            if (player != null && (player.position - transform.position).sqrMagnitude < best)
+            float distance = Skittish ? 16 : 8;
+            float best = distance * distance;
+            // Town cats are comfortable around people, but still escape hostile creatures.
+            if (Kind != Species.Cat && player != null && (player.position - transform.position).sqrMagnitude < best)
             { nearest = player; best = (player.position - transform.position).sqrMagnitude; }
+            if (Kind != Species.Cat)
+                foreach (Npc npc in Npc.All)
+                {
+                    if (npc == null || !npc.gameObject.activeInHierarchy || npc.Role == NpcRole.Waystone ||
+                        npc.Role == NpcRole.Stash || npc.Role == NpcRole.QuestProp) continue;
+                    float d = (npc.transform.position - transform.position).sqrMagnitude;
+                    if (d < best) { best = d; nearest = npc.transform; }
+                }
             foreach (Transform enemy in enemies)
             {
                 if (enemy == null || !enemy.gameObject.activeInHierarchy) continue;
@@ -149,7 +175,7 @@ namespace PoeClone.World
 
         private void Animate(float moving, bool fleeing)
         {
-            float cycle = Time.time * (fleeing ? 15 : 8) + phase;
+            float cycle = Time.time * (fleeing ? (Skittish ? 28 : 20) : 8) + phase;
             if (Kind == Species.Snake)
             {
                 for (int i = 0; i < segments.Length; i++)

@@ -3,110 +3,81 @@ using UnityEngine.Rendering;
 
 namespace PoeClone.Visuals
 {
-    /// <summary>Anchored flame tongues and wind-carried smoke; works on existing flame meshes too.</summary>
+    /// <summary>Fixed flame envelope with tapered, rising tongues instead of pulsing solid blobs.</summary>
     public sealed class LivingFlame : MonoBehaviour
     {
-        private Transform[] tongues;
-        private Vector3[] scales, origins;
-        private Quaternion[] rotations;
-        private ParticleSystem smoke;
-        private float seed, size;
-        private static Material smokeMaterial;
+        private static Mesh flameMesh;
+        private static Material flameMaterial;
+        private MaterialPropertyBlock properties;
+        private Renderer flameRenderer;
+        private float windExposure;
+        private static readonly int WindId = Shader.PropertyToID("_Wind");
 
         public static void Attach(GameObject flame, float shelter = 1f)
         {
             if (flame == null || flame.GetComponent<LivingFlame>() != null) return;
-            var effect = flame.AddComponent<LivingFlame>();
-            effect.Build(shelter);
+            flame.AddComponent<LivingFlame>().Build(shelter);
         }
 
         private void Build(float shelter)
         {
-            seed = transform.position.x * 1.73f + transform.position.z * 2.31f;
-            size = Mathf.Max(0.04f, transform.lossyScale.y);
-            // A separate sibling pivot avoids scaling smoke with each flame pulse.
-            var plume = new GameObject("WindborneSmoke");
-            plume.transform.SetParent(transform, false);
-            plume.transform.localPosition = Vector3.up * 0.5f;
-            smoke = plume.AddComponent<ParticleSystem>();
-            smoke.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-            var main = smoke.main;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(1.5f, 3.2f);
-            main.startSpeed = 0;
-            main.startSize = new ParticleSystem.MinMaxCurve(size * 0.2f, size * 0.4f);
-            main.startColor = new Color(0.27f, 0.28f, 0.30f, size < 0.2f ? 0.10f : 0.23f);
-            main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.scalingMode = ParticleSystemScalingMode.Shape;
-            main.maxParticles = size < 0.2f ? 10 : 30;
-            main.cullingMode = ParticleSystemCullingMode.PauseAndCatchup;
-            var emission = smoke.emission;
-            emission.rateOverTime = size < 0.2f ? 1.5f : 6f;
-            var shape = smoke.shape;
-            shape.shapeType = ParticleSystemShapeType.Sphere;
-            shape.radius = 0.1f;
-            var velocity = smoke.velocityOverLifetime;
-            velocity.enabled = true;
-            velocity.space = ParticleSystemSimulationSpace.World;
-            velocity.y = new ParticleSystem.MinMaxCurve(Mathf.Max(0.18f, size * 0.8f));
-            var color = smoke.colorOverLifetime;
-            color.enabled = true;
-            var gradient = new Gradient();
-            gradient.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) },
-                new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(1, 0.15f), new GradientAlphaKey(0, 1) });
-            color.color = gradient;
-            var growth = smoke.sizeOverLifetime;
-            growth.enabled = true;
-            growth.size = new ParticleSystem.MinMaxCurve(1, AnimationCurve.Linear(0, 0.4f, 1, 2.8f));
-            if (smokeMaterial == null) smokeMaterial = new Material(Shader.Find("PoeClone/AmbientParticle"));
-            var renderer = plume.GetComponent<ParticleSystemRenderer>();
-            renderer.sharedMaterial = smokeMaterial;
-            renderer.shadowCastingMode = ShadowCastingMode.Off;
-            renderer.receiveShadows = false;
-            smoke.Play();
-
-            tongues = new Transform[size > 0.25f ? 3 : 1];
-            scales = new Vector3[tongues.Length]; origins = new Vector3[tongues.Length]; rotations = new Quaternion[tongues.Length];
-            tongues[0] = transform;
-            for (int i = 1; i < tongues.Length; i++)
-            {
-                var tongue = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                DestroyImmediate(tongue.GetComponent<Collider>());
-                tongue.name = "DancingFlameTongue";
-                tongue.transform.SetParent(transform, false);
-                tongue.transform.localPosition = new Vector3(i == 1 ? -0.24f : 0.22f, 0.3f, i * 0.1f - 0.15f);
-                tongue.transform.localScale = new Vector3(0.48f, 0.85f, 0.48f);
-                tongue.GetComponent<Renderer>().sharedMaterial = GetComponent<Renderer>().sharedMaterial;
-                tongue.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
-                var tint = new MaterialPropertyBlock();
-                GetComponent<Renderer>().GetPropertyBlock(tint);
-                tongue.GetComponent<Renderer>().SetPropertyBlock(tint);
-                tongues[i] = tongue.transform;
-            }
-            for (int i = 0; i < tongues.Length; i++)
-            { scales[i] = tongues[i].localScale; origins[i] = tongues[i].localPosition; rotations[i] = tongues[i].localRotation; }
             windExposure = shelter;
             flameRenderer = GetComponent<Renderer>();
+            properties = new MaterialPropertyBlock();
+            flameRenderer.GetPropertyBlock(properties);
+            Color tint = properties.HasColor("_BaseColor") ? properties.GetColor("_BaseColor")
+                : flameRenderer.sharedMaterial.GetColor("_BaseColor");
+            // Preserve green spirit fires while ordinary fires use a yellow-white core and orange edge.
+            bool spirit = tint.g > tint.r * 1.2f;
+            properties.Clear();
+            properties.SetColor("_FlameColor", spirit ? tint : new Color(1f, 0.28f, 0.025f));
+            properties.SetColor("_CoreColor", spirit ? new Color(0.8f, 1f, 0.72f) : new Color(1f, 0.91f, 0.46f));
+            properties.SetFloat("_Seed", transform.position.x * 1.73f + transform.position.z * 2.31f);
+            if (flameMaterial == null) flameMaterial = new Material(Shader.Find("PoeClone/LivingFlame"));
+            flameRenderer.sharedMaterial = flameMaterial;
+            flameRenderer.shadowCastingMode = ShadowCastingMode.Off;
+            flameRenderer.receiveShadows = false;
+            GetComponent<MeshFilter>().sharedMesh = Mesh();
+            flameRenderer.SetPropertyBlock(properties);
+
+            // Enclosed lanterns have no smoke plume escaping through their roof.
+            float height = transform.lossyScale.y;
+            if (shelter > 0.25f)
+                WindborneSmoke.Create(transform, Vector3.up * 0.5f, Mathf.Max(0.04f, height * 0.22f),
+                    Mathf.Max(0.25f, height), shelter);
         }
 
-        private float windExposure;
-        private Renderer flameRenderer;
+        private static Mesh Mesh()
+        {
+            if (flameMesh != null) return flameMesh;
+            // Three intersecting cards give the flame volume from every camera direction.
+            var vertices = new Vector3[12];
+            var uv = new Vector2[12];
+            var triangles = new int[18];
+            for (int i = 0; i < 3; i++)
+            {
+                Vector3 side = Quaternion.Euler(0, i * 60, 0) * Vector3.right * 0.5f;
+                int v = i * 4, t = i * 6;
+                vertices[v] = -side - Vector3.up * 0.5f;
+                vertices[v + 1] = side - Vector3.up * 0.5f;
+                vertices[v + 2] = -side + Vector3.up * 0.5f;
+                vertices[v + 3] = side + Vector3.up * 0.5f;
+                uv[v] = new Vector2(0, 0); uv[v + 1] = new Vector2(1, 0);
+                uv[v + 2] = new Vector2(0, 1); uv[v + 3] = new Vector2(1, 1);
+                triangles[t] = v; triangles[t + 1] = v + 2; triangles[t + 2] = v + 1;
+                triangles[t + 3] = v + 1; triangles[t + 4] = v + 2; triangles[t + 5] = v + 3;
+            }
+            flameMesh = new Mesh { name = "CrossedFlameTongues", vertices = vertices, uv = uv, triangles = triangles };
+            flameMesh.RecalculateBounds();
+            return flameMesh;
+        }
+
         private void Update()
         {
-            if (tongues == null || (flameRenderer != null && !flameRenderer.isVisible)) return;
-            Vector3 wind = AmbientWind.At(transform.position) * windExposure;
-            Vector3 localWind = transform.parent != null ? transform.parent.InverseTransformDirection(wind) : wind;
-            for (int i = 0; i < tongues.Length; i++)
-            {
-                float pulse = Mathf.PerlinNoise(seed + i * 17, Time.time * (5 + i)) - 0.5f;
-                float stretch = 1 + pulse * 0.65f;
-                tongues[i].localScale = Vector3.Scale(scales[i], new Vector3(1 - pulse * 0.25f, stretch, 1 - pulse * 0.25f));
-                // Shift the centre up with the stretch so the flame remains seated on its wick/logs.
-                tongues[i].localPosition = origins[i] + Vector3.up * scales[i].y * (stretch - 1) * 0.5f;
-                tongues[i].localRotation = rotations[i] * Quaternion.Euler(localWind.z * 13 + pulse * 9, 0, -localWind.x * 13 + pulse * 12);
-            }
-            var velocity = smoke.velocityOverLifetime;
-            velocity.x = new ParticleSystem.MinMaxCurve(wind.x * 0.6f);
-            velocity.z = new ParticleSystem.MinMaxCurve(wind.z * 0.6f);
+            if (flameRenderer == null || !flameRenderer.isVisible) return;
+            Vector3 wind = transform.InverseTransformDirection(AmbientWind.At(transform.position)) * windExposure;
+            properties.SetVector(WindId, new Vector4(wind.x, wind.z, 0, 0));
+            flameRenderer.SetPropertyBlock(properties);
         }
     }
 }

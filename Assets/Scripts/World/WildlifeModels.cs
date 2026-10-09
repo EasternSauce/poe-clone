@@ -24,6 +24,7 @@ namespace PoeClone.World
                 case AmbientAnimal.Species.FrostHare: Rabbit(visual, variant, true); break;
                 case AmbientAnimal.Species.EmberLizard: EmberLizard(visual, variant); break;
                 case AmbientAnimal.Species.Rabbit: Rabbit(visual, variant, false); break;
+                case AmbientAnimal.Species.Cat: Cat(visual, variant); break;
             }
             return root;
         }
@@ -78,6 +79,42 @@ namespace PoeClone.World
             Part(tail, "BushyTail", new Vector3(0, 0.24f, -0.16f), new Vector3(0.28f, 0.58f, 0.26f), fur);
             Part(tail, "CurledTip", new Vector3(0, 0.51f, -0.09f), new Vector3(0.23f, 0.24f, 0.23f), fur);
             tail.localRotation = Quaternion.Euler(-20, 0, 0);
+        }
+
+        private static void Cat(Transform visual, int variant)
+        {
+            Color fur = variant % 4 == 0 ? new Color(0.16f, 0.15f, 0.14f) : variant % 4 == 1
+                ? new Color(0.70f, 0.38f, 0.16f) : variant % 4 == 2
+                ? new Color(0.48f, 0.47f, 0.45f) : Cream;
+            Part(visual, "Body", new Vector3(0, 0.34f, 0), new Vector3(0.32f, 0.36f, 0.74f), fur);
+            Legs(visual, 0.11f, 0.24f, 0.28f, 0.075f, fur);
+            Part(visual, "Chest", new Vector3(0, 0.38f, 0.26f), new Vector3(0.25f, 0.30f, 0.16f), Cream);
+            Transform head = Pivot(visual, "Head", new Vector3(0, 0.53f, 0.36f));
+            Part(head, "Skull", Vector3.zero, new Vector3(0.30f, 0.27f, 0.28f), fur);
+            Part(head, "Muzzle", new Vector3(0, -0.055f, 0.12f), new Vector3(0.19f, 0.11f, 0.12f), Cream);
+            Part(head, "Nose", new Vector3(0, -0.025f, 0.19f), Vector3.one * 0.045f, new Color(0.62f, 0.37f, 0.37f));
+            foreach (float side in new[] { -1f, 1f })
+            {
+                Transform ear = RuntimePrimitives.Create(PrimitiveType.Cube, head, fur).transform;
+                ear.name = "PointedEar";
+                ear.localPosition = new Vector3(side * 0.11f, 0.15f, -0.03f);
+                ear.localScale = new Vector3(0.12f, 0.16f, 0.065f);
+                ear.localRotation = Quaternion.Euler(0, 0, side * 35);
+                Part(head, "GreenEye", new Vector3(side * 0.11f, 0.025f, 0.12f), Vector3.one * 0.065f, new Color(0.53f, 0.72f, 0.20f));
+                Part(head, "Pupil", new Vector3(side * 0.11f, 0.025f, 0.15f), new Vector3(0.015f, 0.045f, 0.015f), Dark);
+                for (int i = 0; i < 3; i++)
+                {
+                    Transform whisker = RuntimePrimitives.Create(PrimitiveType.Cube, head, Cream).transform;
+                    whisker.name = "Whisker";
+                    whisker.localPosition = new Vector3(side * 0.18f, -0.04f + i * 0.025f, 0.15f);
+                    whisker.localScale = new Vector3(0.16f, 0.009f, 0.009f);
+                    whisker.localRotation = Quaternion.Euler(0, 0, side * (i - 1) * 12);
+                }
+            }
+            Transform tail = Pivot(visual, "Tail", new Vector3(0, 0.36f, -0.35f));
+            for (int i = 0; i < 7; i++)
+                Part(tail, "RaisedTail", new Vector3(0, i * 0.075f, -0.08f - Mathf.Sin(i * 0.4f) * 0.12f),
+                    Vector3.one * Mathf.Lerp(0.09f, 0.055f, i / 6f), i > 4 ? Dark : fur);
         }
 
         private static void Sheep(Transform visual, int variant)

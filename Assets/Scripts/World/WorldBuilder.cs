@@ -287,8 +287,8 @@ namespace PoeClone.World
             Cyl(t, c + new Vector3(0f, 0.02f, 0f), 11f, 0.04f, kit.Mat("Stone"), solid: false);
             Transform well = Holder(t, "HavenWell", c, Quaternion.identity);
             LocalCyl(well, new Vector3(0f, 0.45f, 0f), 1.3f, 0.9f, kit.Mat("Stone"));
-            var wellWater = new Material(kit.Mat("Water")) { name = "RipplingWellWater" };
-            wellWater.SetFloat("_LivingWater", 1);
+            var wellWater = new Material(kit.Mat("Water")) { name = "StillWellWater" };
+            wellWater.SetFloat("_LivingWater", 0);
             LocalCyl(well, new Vector3(0f, 0.92f, 0f), 1.05f, 0.04f, wellWater, solid: false);
             LocalBox(well, new Vector3(-1.2f, 1.4f, 0f), new Vector3(0.18f, 2.8f, 0.18f), kit.Mat("Wood"));
             LocalBox(well, new Vector3(1.2f, 1.4f, 0f), new Vector3(0.18f, 2.8f, 0.18f), kit.Mat("Wood"));
@@ -898,9 +898,13 @@ namespace PoeClone.World
 
         private void Lamp(Transform t, Vector3 p)
         {
-            Box(t, p + Vector3.up * 1.4f, new Vector3(0.14f, 2.8f, 0.14f), kit.Mat("Iron"));
+            Box(t, p + Vector3.up * 1.1f, new Vector3(0.14f, 2.2f, 0.14f), kit.Mat("Iron"));
+            Box(t, p + Vector3.up * 2.25f, new Vector3(0.5f, 0.08f, 0.5f), kit.Mat("Iron"), solid: false);
             Box(t, p + new Vector3(0f, 2.75f, 0f), new Vector3(0.5f, 0.08f, 0.5f), kit.Mat("Iron"), solid: false);
-            Flame(t, p + new Vector3(0f, 2.55f, 0f), 0.22f, kit.Mat("Lantern"), 1, 0.2f);
+            for (int x = -1; x <= 1; x += 2)
+                for (int z = -1; z <= 1; z += 2)
+                    Box(t, p + new Vector3(x * 0.21f, 2.5f, z * 0.21f), new Vector3(0.035f, 0.46f, 0.035f), kit.Mat("Iron"), solid: false);
+            Flame(t, p + new Vector3(0f, 2.46f, 0f), 0.12f, kit.Mat("Lantern"), 1.35f, 0.2f);
             Glow(t, p + new Vector3(0f, 2.3f, 0f), LanternLight, 10f, 8f, true);
             Claim(p, 0.6f);
         }

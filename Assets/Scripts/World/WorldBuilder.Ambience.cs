@@ -43,6 +43,13 @@ namespace PoeClone.World
                 }
             foreach (var renderer in FindObjectsByType<MeshRenderer>())
             {
+                if (renderer.name == "Chimney")
+                {
+                    // The cube's top is local Y=0.5, including scaled and rotated cottages.
+                    Transform chimney = renderer.transform;
+                    WindborneSmoke.Create(chimney, Vector3.up * 0.52f,
+                        chimney.lossyScale.x * 0.7f, 0.85f, chimney: true);
+                }
                 if ((renderer.name.StartsWith("Crown") || renderer.name.StartsWith("Cone")) && renderer.GetComponent<WindSway>() == null)
                     renderer.gameObject.AddComponent<WindSway>();
             }

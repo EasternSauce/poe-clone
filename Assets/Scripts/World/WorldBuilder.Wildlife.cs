@@ -14,12 +14,16 @@ namespace PoeClone.World
             PopulateWildlife(wildlife, player, random, Frozen, AmbientAnimal.Species.FrostHare, 24);
             PopulateWildlife(wildlife, player, random, Ruins, AmbientAnimal.Species.EmberLizard, 24);
 
-            // A separate seed leaves existing wildlife placements unchanged.
+            // Keep small wild mammals outside Haven's busiest streets.
             var rabbits = new System.Random(7902);
             PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Rabbit, 28, 65);
             PopulateWildlife(wildlife, player, rabbits, Greenwood, AmbientAnimal.Species.Rabbit, 20);
-            PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Rabbit, 12, 30, 65);
-            PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Squirrel, 12, 30, 75);
+            PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Rabbit, 5, 55, 80);
+            PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Squirrel, 6, 55, 85);
+
+            var cats = new System.Random(7903);
+            PopulateWildlife(wildlife, player, cats, Haven, AmbientAnimal.Species.Cat, 10, 0, 34);
+            PopulateWildlife(wildlife, player, cats, Haven, AmbientAnimal.Species.Cat, 3, 34, 80);
 
             // Broad wings and an outstretched neck distinguish these from the small scene birds.
             foreach (int area in new[] { Greenwood, Haven })
@@ -58,12 +62,12 @@ namespace PoeClone.World
                 if (distanceSquared < minDistance * minDistance || distanceSquared > maxDistance * maxDistance)
                     continue;
                 // Leave the town square and its busy central streets to the villagers.
-                if (species == AmbientAnimal.Species.Sheep && (position - Center(area)).sqrMagnitude < 45 * 45)
+                if (area == Haven && species != AmbientAnimal.Species.Cat && distanceSquared < 55 * 55)
                     continue;
                 if (!AmbientAnimal.CanOccupy(shape, position, radius)) continue;
                 bool crowded = false;
                 foreach (Vector3 other in occupied)
-                    if ((position - other).sqrMagnitude < 12 * 12) { crowded = true; break; }
+                    if ((position - other).sqrMagnitude < (species == AmbientAnimal.Species.Cat ? 8 * 8 : 12 * 12)) { crowded = true; break; }
                 if (crowded) continue;
                 Transform animal = WildlifeModels.Create(parent, species, made);
                 animal.SetPositionAndRotation(position, Quaternion.Euler(0, random.Next(360), 0));
