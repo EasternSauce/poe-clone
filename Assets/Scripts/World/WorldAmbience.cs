@@ -76,10 +76,6 @@ namespace PoeClone.World
             foreach (int area in new[] { WorldBuilder.Cave, WorldBuilder.ActArena })
                 Occasional(area, library.stones, 0.14f, 16, 38, p => 1);
 
-            if (WorldBuilder.Instance.Spots.TryGetValue("Smith", out Vector3 smith))
-                Occasional(WorldBuilder.Haven, library.smith, 0.16f, 9, 22,
-                    p => Falloff(FlatDistance(p, smith), 3, 22));
-
             // Attach sounds to the actual built scenery. Cluster adjacent flame tongues.
             var fires = new List<Vector3>();
             foreach (var flame in GetComponentsInChildren<LivingFlame>())

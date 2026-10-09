@@ -7,6 +7,6 @@ namespace PoeClone.Audio
     {
         public AudioClip forest, town, night, cave, dungeon, blizzard, lava;
         public AudioClip river, pond, ocean, fire, gust;
-        public AudioClip[] stones, creaks, smith;
+        public AudioClip[] stones, creaks;
     }
 }

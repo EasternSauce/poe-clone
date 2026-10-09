@@ -31,7 +31,3 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 5daf1c01c41cef443bf4e6991f6d539c, type: 3}
   creaks:
   - {fileID: 8300000, guid: 9efd46fd6de73d249aadb300d7aaa135, type: 3}
-  smith:
-  - {fileID: 8300000, guid: 176f899fb95a5fc48925c5eb276f09ea, type: 3}
-  - {fileID: 8300000, guid: 4c7def0378103474e932ba4a73de91a0, type: 3}
-  - {fileID: 8300000, guid: 8e2ac04ad8e8e3545a3d1e4ceeb47add, type: 3}
