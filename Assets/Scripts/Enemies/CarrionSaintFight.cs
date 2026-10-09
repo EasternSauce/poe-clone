@@ -14,8 +14,11 @@ namespace PoeClone.Enemies
         private CarrionSaintAnimator anim;
         private PlayerStats player;
         private SerpentPursuit pursuit;
+        private SerpentGauntlet gauntlet;
+        private bool useGauntlet = true;
         private ShepherdFight shepherd;
-        private float damage, nextAttack, nextPursuit, nextArenaSpecial, nextCharge;
+        // Both colossal-serpent attacks use this timer; recovery begins after all tails withdraw.
+        private float damage, nextAttack, nextSerpentAttack, nextArenaSpecial, nextCharge;
         private int arenaSpecial;
         private Vector3 chargeFrom;
         private float chargeLength;
@@ -30,7 +33,7 @@ namespace PoeClone.Enemies
             anim = GetComponentInChildren<CarrionSaintAnimator>();
             shepherd = GetComponent<ShepherdFight>();
             anim.Hit += Hit;
-            nextAttack = Time.time + 0.5f; nextPursuit = Time.time + 2f;
+            nextAttack = Time.time + 0.5f; nextSerpentAttack = Time.time + 2f;
             nextArenaSpecial = Time.time + 1.5f; nextCharge = Time.time + 3f;
         }
         private void Update()
@@ -38,8 +41,9 @@ namespace PoeClone.Enemies
             if (health == null || health.IsDead || anim == null) return;
             if (player == null) player = FindAnyObjectByType<PlayerStats>();
             if (player == null || player.IsDead) return;
-            if (pursuit == null && nextPursuit == float.PositiveInfinity)
-                nextPursuit = Time.time + 20f / Tempo;
+            if (gauntlet != null) return;
+            if (pursuit == null && nextSerpentAttack == float.PositiveInfinity)
+                nextSerpentAttack = Time.time + 20f / Tempo;
             Vector3 to = player.transform.position - transform.position; to.y = 0f;
             if (to.magnitude > 55f) return;
             if (Time.time >= nextArenaSpecial)
@@ -51,11 +55,13 @@ namespace PoeClone.Enemies
             if (pursuit != null) return;
             if (anim.IsPlaying || Time.time < nextAttack) return;
             if (to.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(to);
-            if (Time.time >= nextPursuit)
+            if (Time.time >= nextSerpentAttack)
             {
-                pursuit = SerpentPursuit.Spawn(health, player, damage);
+                if (useGauntlet) gauntlet = SerpentGauntlet.Spawn(health, player, damage);
+                else pursuit = SerpentPursuit.Spawn(health, player, damage);
+                useGauntlet = !useGauntlet;
                 // The recovery starts when the serpent has fully withdrawn.
-                nextPursuit = float.PositiveInfinity;
+                nextSerpentAttack = float.PositiveInfinity;
                 nextAttack = Time.time + 0.5f;
                 return;
             }
@@ -119,6 +125,11 @@ namespace PoeClone.Enemies
         {
             if (anim != null) anim.Hit -= Hit;
             if (pursuit != null) Destroy(pursuit.gameObject);
+            if (gauntlet != null) Destroy(gauntlet);
+        }
+        private void OnDisable()
+        {
+            if (gauntlet != null) Destroy(gauntlet);
         }
     }
 }

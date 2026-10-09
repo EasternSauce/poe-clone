@@ -43,13 +43,18 @@ namespace PoeClone.Enemies
         private bool modelVisible;
         private bool swallowHit;
         private bool previousImmunity;
+        private bool edgePass, missed, retained;
+        private Vector3 passTarget, passEnd;
+        private float passSpeed;
+        public bool ReachedEdge => retained;
         public bool IsFinished => endedAt >= 0f;
         public bool Captured => capturedAt >= 0f;
         public int RoutePoints => route.Count;
         public float LastSharedDamage { get; private set; }
         public Vector3 MouthPosition => head != null ? head.position + Vector3.up * 1.5f : nose + Vector3.up * 1.5f;
 
-        public static SerpentPursuit Spawn(EnemyHealth boss, PlayerStats target, float hitDamage)
+        public static SerpentPursuit Spawn(EnemyHealth boss, PlayerStats target, float hitDamage,
+            Vector3? edgeStart = null, Vector3? edgeEnd = null)
         {
             SnakeLimb source = boss.GetComponentInChildren<SnakeLimb>(true);
             foreach (SnakeLimb snake in boss.GetComponentsInChildren<SnakeLimb>(true))
@@ -59,7 +64,8 @@ namespace PoeClone.Enemies
             var pursuit = go.AddComponent<SerpentPursuit>();
             pursuit.owner = boss; pursuit.player = target; pursuit.damage = hitDamage;
             pursuit.previousImmunity = boss.Immune;
-            boss.Immune = true;
+            pursuit.edgePass = edgeStart.HasValue && edgeEnd.HasValue;
+            if (!pursuit.edgePass) boss.Immune = true;
             // Emerge from the very rear of the chimera, facing away from the player.
             pursuit.rearDirection = -boss.transform.forward;
             pursuit.direction = pursuit.rearDirection;
@@ -70,6 +76,18 @@ namespace PoeClone.Enemies
             Vector3 ground = anchor; ground.y = pursuit.floorY + Radius + 0.15f;
             pursuit.route.Add(anchor); pursuit.route.Add(ground);
             pursuit.nose = ground;
+            if (pursuit.edgePass)
+            {
+                ground = edgeStart.Value;
+                pursuit.floorY = Debris.GroundBelow(ground + Vector3.up * 5f);
+                ground.y = pursuit.floorY + Radius + 0.15f;
+                pursuit.nose = ground;
+                pursuit.passTarget = target.transform.position;
+                pursuit.passEnd = edgeEnd.Value;
+                pursuit.direction = Horizontal(pursuit.passEnd - ground).normalized;
+                pursuit.passSpeed = EndSpeed;
+                pursuit.route.Clear(); pursuit.route.Add(ground);
+            }
             pursuit.head = Instantiate(source.MouthTransform.gameObject, go.transform).transform;
             pursuit.head.name = "PursuitHead";
             pursuit.headScale = source.MouthTransform.lossyScale;
@@ -92,7 +110,7 @@ namespace PoeClone.Enemies
             pursuit.emergenceWarning.name = "Serpent emergence warning";
             pursuit.emergenceWarning.transform.position = new Vector3(ground.x, pursuit.floorY + 0.08f, ground.z);
             pursuit.emergenceWarning.transform.localScale = new Vector3(4.2f, 0.02f, 4.2f);
-            pursuit.UpdateHead(0.01f);
+            pursuit.UpdateHead(pursuit.edgePass ? 1f : 0.01f);
             CameraSystem.CameraFollow.SustainedShake = 0.12f;
             return pursuit;
         }
@@ -137,6 +155,10 @@ namespace PoeClone.Enemies
             if (Captured)
             {
                 Swallow(); UpdateHead(1f); BuildSkin(1f); return;
+            }
+            if (edgePass)
+            {
+                UpdateEdgePass(); return;
             }
             if (age < RearTellSeconds)
             {
@@ -186,6 +208,49 @@ namespace PoeClone.Enemies
                 }
             }
             UpdateHead(growth); BuildSkin(growth);
+        }
+
+        private void UpdateEdgePass()
+        {
+            if (retained) { DamageTail(); return; }
+            // The emergence tell does not ramp movement speed: launch at the old chase's maximum.
+            if (age < RearTellSeconds) { UpdateHead(1f); BuildSkin(1f); return; }
+            if (emergenceWarning != null) { Destroy(emergenceWarning); emergenceWarning = null; }
+            Vector3 oldMouth = Mouth;
+            if (missed) passSpeed = Mathf.MoveTowards(passSpeed, EndSpeed * 2f, 18f * Time.deltaTime);
+            float remaining = Mathf.Max(0f, Vector3.Dot(Horizontal(passEnd - nose), direction));
+            nose += direction * Mathf.Min(passSpeed * Time.deltaTime, remaining);
+            if ((nose - route[route.Count - 1]).sqrMagnitude >= 0.8f * 0.8f) route.Add(nose);
+            UpdateHead(1f);
+            // Sweep the jaws so fast exit movement cannot skip a player between frames.
+            if (DistanceToSegment(player.transform.position, oldMouth, Mouth) < 2.3f) Capture();
+            else if (Vector3.Dot(Horizontal(passTarget - Mouth), direction) <= 0f) missed = true;
+            if (!Captured && remaining <= passSpeed * Time.deltaTime)
+            {
+                retained = true;
+                head.gameObject.SetActive(false);
+            }
+            BuildSkin(1f);
+            if (!Captured) DamageTail();
+        }
+
+        private void DamageTail()
+        {
+            if (Time.time < nextSkinHit) return;
+            for (int i = 0; i < route.Count; i++)
+            {
+                Vector3 end = i + 1 < route.Count ? route[i + 1] : nose;
+                if (DistanceToSegment(player.transform.position, route[i], end) > Radius + 0.3f) continue;
+                nextSkinHit = Time.time + 0.5f;
+                if (player.TakeHit(damage * 1.2f, Combat.DamageType.Physical)) player.Poison(damage * 0.33333334f, 2f);
+                break;
+            }
+        }
+
+        public void Withdraw()
+        {
+            if (endedAt < 0f) endedAt = Time.time;
+            if (emergenceWarning != null) { Destroy(emergenceWarning); emergenceWarning = null; }
         }
 
         private void UpdateHead(float growth)
@@ -301,6 +366,6 @@ namespace PoeClone.Enemies
             float t = segment.sqrMagnitude > 0.001f ? Mathf.Clamp01(Vector3.Dot(offset, segment) / segment.sqrMagnitude) : 0f;
             return (offset - segment * t).magnitude;
         }
-        private void OnDestroy() { CameraSystem.CameraFollow.SustainedShake = 0f; Release(); if (owner != null && !owner.IsDead) owner.Immune = previousImmunity; if (mesh != null) Destroy(mesh); if (emergenceWarning != null) Destroy(emergenceWarning); }
+        private void OnDestroy() { CameraSystem.CameraFollow.SustainedShake = 0f; Release(); if (!edgePass && owner != null && !owner.IsDead) owner.Immune = previousImmunity; if (mesh != null) Destroy(mesh); if (emergenceWarning != null) Destroy(emergenceWarning); }
     }
 }

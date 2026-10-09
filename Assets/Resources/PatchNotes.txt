@@ -1,3 +1,8 @@
+version: 2026-10-09-carrion-saint-serpent-gauntlet
+- Carrion Saint now alternates his pursuit with a four-pass serpent attack. His main body freezes and becomes immune while colossal snakes rush from the arena edge at full speed.
+- Dodge the jaws: missed snakes accelerate straight to the far edge and leave damaging tails behind, constricting the arena with every pass. Being caught triggers the normal swallow and ends the sequence early; tails withdraw when the attack ends.
+- Both colossal-serpent attacks share a cooldown, starting after the active snake attack fully withdraws.
+
 version: 2026-10-08-unique-modifier-rolls
 - Removed modifier tier labels from unique item tooltips.
 - Unique items now roll several numeric bonuses within individual ranges, giving copies different stats while retaining their signature effects and skill grants. Applies to drops, rewards and Loot Simulator rolls.
