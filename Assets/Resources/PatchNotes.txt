@@ -1,3 +1,6 @@
+version: 2026-10-09-rare-five-mods
+- Rare items can now roll 5 modifiers. 3 is still the most common, 4 a bit less common, and 5 the rarest.
+
 version: 2026-10-09-trader-item-level
 - Traders only stock items up to your character level: no item level or base type above yours. Their goods are also restocked if you visit with a lower-level character.
 

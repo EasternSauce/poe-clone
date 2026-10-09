@@ -810,7 +810,11 @@ namespace PoeClone.Inventory
             if (rarity == ItemRarity.Magic)
                 affixCount = rng.Next(1, 3);
             else if (rarity == ItemRarity.Rare)
-                affixCount = rng.Next(3, 5);
+            {
+                // 3 is most common, 4 less so, 5 rarest (50% / 35% / 15%).
+                double roll = rng.NextDouble();
+                affixCount = roll < 0.5 ? 3 : roll < 0.85 ? 4 : 5;
+            }
 
             // Each stat at most once per item, and only stats that make sense on this kind of gear.
             var candidates = new List<Affix>();
