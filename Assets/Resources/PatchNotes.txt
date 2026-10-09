@@ -1,3 +1,6 @@
+version: 2026-10-09-dragging-breath-damage
+- Hollowmaw's pulling cone now deals damage every 0.5 seconds you remain inside it during the active channel, in addition to its final close-range hit. Leaving the cone resets the damage timer.
+
 version: 2026-10-09-serpent-tail-scales
 - Colossal serpent attack tails now have overlapping scales, recessed seams, mottled olive colouring and paler belly plates. Surface detail follows the curved tail without stretching, with softer rim lighting for a less plastic appearance.
 - Made both colossal serpent attack tails 20% thicker, with matching damage width and arena-edge clearance.

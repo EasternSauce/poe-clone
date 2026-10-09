@@ -223,6 +223,7 @@ namespace PoeClone.Enemies
         private const float BreathHalfAngle = 24f;
         private const float BreathWindUp = 0.65f;
         private const float BreathChannel = 1.2f;
+        private const float BreathDamageInterval = 0.5f;
         private const float WardWindUp = 0.65f;
 
         private bool CastAlive(int staggerCount) => this != null && health != null && !health.IsDead &&
@@ -265,6 +266,7 @@ namespace PoeClone.Enemies
             GetComponentInChildren<CreatureAnimator>()?.Crouch(duration);
             StartCoroutine(GroundTelegraph.RunCone(origin, facing, BreathRange, BreathHalfAngle, duration,
                 () => CastAlive(staggerCount)));
+            float exposure = 0f;
             try
             {
                 for (float t = 0f; t < duration; t += Time.deltaTime)
@@ -272,6 +274,13 @@ namespace PoeClone.Enemies
                     if (!CastAlive(staggerCount)) yield break;
                     if (t >= BreathWindUp && CanSpecialHit() && InsideBreath(origin, facing, player.transform.position))
                     {
+                        exposure += Time.deltaTime;
+                        if (exposure >= BreathDamageInterval)
+                        {
+                            exposure -= BreathDamageInterval;
+                            player.TakeHit(damage, kind.DamageType, attack: false);
+                            if (player.IsDead) yield break;
+                        }
                         CharacterController playerBody = player.GetComponent<CharacterController>();
                         PlayerController motion = player.GetComponent<PlayerController>();
                         if (playerBody != null && playerBody.enabled && (motion == null || !motion.IsDashing))
@@ -282,6 +291,10 @@ namespace PoeClone.Enemies
                             destination = World.GroundObstacleMotion.Clamp(playerBody, player.transform.position, destination);
                             playerBody.Move(destination - player.transform.position);
                         }
+                    }
+                    else
+                    {
+                        exposure = 0f;
                     }
                     yield return null;
                 }
