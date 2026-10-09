@@ -485,8 +485,9 @@ namespace PoeClone.World
                 Vector3 p = c + Flat(R(-140f, 140f), R(-110f, 110f));
                 if (Vector3.Distance(p, temple) < 11f || !Shape(Ruins).Contains(p, 5f))
                     continue;
-                Box(t, p + Vector3.up * 0.03f, new Vector3(R(0.25f, 0.5f), 0.05f, R(3f, 8f)), kit.Mat("Lava"), solid: false,
+                GameObject lava = Box(t, p + Vector3.up * 0.03f, new Vector3(R(0.25f, 0.5f), 0.05f, R(3f, 8f)), kit.Mat("Lava"), solid: false,
                     euler: new Vector3(0f, R(0f, 180f), 0f));
+                PoeClone.Visuals.LavaSurface.Attach(lava);
                 if (k % 2 == 0)
                     Glow(t, p + Vector3.up * 0.5f, LavaLight, 5.5f, 2.5f, flicker: true);
             }

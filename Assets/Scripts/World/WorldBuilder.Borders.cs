@@ -64,8 +64,10 @@ namespace PoeClone.World
                 shape.IsCave ? 3.2f : shape.IsCliff ? 0.25f : 1.3f, 0.025f);
             rim.AddComponent<MeshRenderer>().sharedMaterial = LayoutRockMaterial(area);
             // Backdrops are visual only: the enclosing rectangle and cliff bottoms cannot be walked on.
-            Box(group, shape.Center + new Vector3(0, floorY - (shape.IsCliff ? 12.5f : 1.5f), 0),
-                new Vector3(shape.Size.x + 24, 0.1f, shape.Size.y + 24), kit.Mat(shape.IsCliff ? "Lava" : "Charred"), false).name = "Backdrop";
+            GameObject backdrop = Box(group, shape.Center + new Vector3(0, floorY - (shape.IsCliff ? 12.5f : 1.5f), 0),
+                new Vector3(shape.Size.x + 24, 0.1f, shape.Size.y + 24), kit.Mat(shape.IsCliff ? "Lava" : "Charred"), false);
+            backdrop.name = "Backdrop";
+            if (shape.IsCliff) PoeClone.Visuals.LavaSurface.Attach(backdrop);
         }
 
         private Material LayoutRockMaterial(int area)

@@ -1,3 +1,6 @@
+version: 2026-10-09-living-lava
+- Lava beneath the Ashen Ruins cliffs and in its glowing cracks now flows with molten currents and drifting dark crust. Bubbles swell and burst into expanding ripples, while soft steam rises and drifts above the surface.
+
 version: 2026-10-09-town-hearths-and-cats
 - Added softly drifting smoke from cottage chimneys. Replaced wobbling flame blobs with tapered flames and rising detail; town lantern flames now fit inside their iron housings.
 - Haven's well water is still, removing its repeating flashes.
