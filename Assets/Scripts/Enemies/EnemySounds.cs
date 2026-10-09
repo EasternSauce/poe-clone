@@ -52,15 +52,15 @@ namespace PoeClone.Enemies
             {
                 case Set.Spider:
                     if (e == Event.Aggro) return new Voice(0.85f, 1.1f, 0.9f, "spider_hiss_1", "spider_hiss_2");
-                    if (e == Event.Attack) return new Voice(0.9f, 1.2f, 0.7f, "bite_1", "bite_2", "bite_3");
+                    if (e == Event.Attack) return new Voice(0.9f, 1.2f, 0.7f, "spider_hiss_1", "spider_hiss_2");
                     return new Voice(0.6f, 0.75f, 1f, "spider_hiss_1", "spider_hiss_2");
                 case Set.Wolf:
                     if (e == Event.Aggro) return new Voice(0.95f, 1.1f, 0.9f, "wolf_growl_1", "wolf_growl_2", "wolf_growl_3");
-                    if (e == Event.Attack) return new Voice(1.0f, 1.25f, 0.6f, "wolf_snarl", "bite_1", "bite_2");
+                    if (e == Event.Attack) return new Voice(1.0f, 1.25f, 0.6f, "wolf_snarl");
                     return new Voice(1.2f, 1.4f, 0.9f, "beast_15", "beast_12");
                 case Set.Hound:
                     if (e == Event.Aggro) return new Voice(0.85f, 1.0f, 0.9f, "beast_1", "beast_3", "beast_4");
-                    if (e == Event.Attack) return new Voice(0.9f, 1.1f, 0.6f, "beast_8", "bite_2", "bite_3");
+                    if (e == Event.Attack) return new Voice(0.9f, 1.1f, 0.6f, "beast_8");
                     return new Voice(0.8f, 0.95f, 1f, "beast_12", "beast_15");
                 case Set.Slime:
                     if (e == Event.Aggro) return new Voice(0.85f, 1.15f, 0.9f, "slime_1", "slime_2", "slime_3");
@@ -69,12 +69,12 @@ namespace PoeClone.Enemies
                 case Set.Bat:
                     // Short, bass-filtered and pitched-up edits of shade_1/2/3, with quiet peaks baked in.
                     if (e == Event.Aggro) return new Voice(0.95f, 1.1f, 0.45f, "bat_alert_1", "bat_alert_2", "bat_alert_3");
-                    if (e == Event.Attack) return new Voice(1.3f, 1.5f, 0.5f, "bite_1", "bite_2");
+                    if (e == Event.Attack) return new Voice(1.3f, 1.5f, 0.5f, "bat_alert_1", "bat_alert_2");
                     return new Voice(1.6f, 1.8f, 0.8f, "shade_14");
                 case Set.Beetle:
-                    if (e == Event.Aggro) return new Voice(0.7f, 0.85f, 0.8f, "bite_3", "bite_2");
+                    if (e == Event.Aggro) return new Voice(0.7f, 0.85f, 0.8f, "slime_2", "slime_3");
                     if (e == Event.Attack) return new Voice(0.6f, 0.75f, 0.8f, "slime_6", "slime_9");
-                    return new Voice(0.55f, 0.65f, 1f, "bite_3", "slime_8");
+                    return new Voice(0.55f, 0.65f, 1f, "slime_8", "slime_10");
                 default:
                     return new Voice(1f, 1f, 1f);
             }

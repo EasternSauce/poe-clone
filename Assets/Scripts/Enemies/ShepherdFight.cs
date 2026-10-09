@@ -819,8 +819,9 @@ namespace PoeClone.Enemies
             snakeArm.Strike(spot + Vector3.up * 0.3f, lands - BiteShoot, BiteShoot, 0.12f, 0.25f,
                 mouth =>
                 {
-                    Audio.AudioManager.Instance?.PlayEffect("combat.bite", mouth,
-                        Audio.AudioManager.Instance.Sfx("Creatures/bite_2"));
+                    var audio = Audio.AudioManager.Instance;
+                    audio?.PlayEffect("combat.bite", mouth,
+                        audio.meleeHit != null && audio.meleeHit.Length > 0 ? audio.meleeHit[0] : null);
                     HitInside(mouth, radius + 0.3f, 1.0f);
                 });
         }

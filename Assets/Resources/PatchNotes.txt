@@ -1,3 +1,6 @@
+version: 2026-10-09-replace-deleted-bites
+- Replaced deleted bite recordings with creature-specific hisses, snarls, bat squeaks and squishy beetle sounds. The Shepherd now uses a light contact sound for snake-arm impacts.
+
 version: 2026-10-09-complete-sound-library
 - Sound Library now includes all recordings under Assets/Audio, so assigned sounds such as bite recordings can be found, previewed and managed alongside imported sounds.
 

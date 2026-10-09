@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-09T13:23:32.0081195Z",
+    "generatedAt": "2026-10-09T13:36:51.0113996Z",
     "effects": [
         {
             "id": "player.swing",
@@ -590,9 +590,7 @@
             "soundGroup": "sound.combat.bite",
             "purpose": "Snake-arm bite impacts",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3"
             ],
             "usages": [
                 {
@@ -3381,9 +3379,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Attack",
             "purpose": "Spider / attack voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
             ],
             "usages": [
                 {
@@ -3761,9 +3758,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Attack",
             "purpose": "Spider / attack voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
             ],
             "usages": [
                 {
@@ -3843,8 +3839,6 @@
             "soundGroup": "sound.enemy.Dire Wolf.Attack",
             "purpose": "Wolf / attack voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
                 "Assets/Audio/Resources/Sfx/Creatures/wolf_snarl.wav"
             ],
             "usages": [
@@ -4093,8 +4087,8 @@
             "soundGroup": "sound.enemy.Grave Bat.Attack",
             "purpose": "Bat / attack voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/bat_alert_1.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/bat_alert_2.wav"
             ],
             "usages": [
                 {
@@ -4340,9 +4334,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Attack",
             "purpose": "Spider / attack voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
             ],
             "usages": [
                 {
@@ -4395,8 +4388,8 @@
             "soundGroup": "sound.enemy.Magma Beetle.Aggro",
             "purpose": "Beetle / alert calls",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/slime_2.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_3.wav"
             ],
             "usages": [
                 {
@@ -4449,7 +4442,7 @@
             "soundGroup": "sound.enemy.Magma Beetle.Death",
             "purpose": "Beetle / death voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav",
+                "Assets/Audio/Resources/Sfx/Creatures/slime_10.wav",
                 "Assets/Audio/Resources/Sfx/Creatures/slime_8.wav"
             ],
             "usages": [
@@ -4502,9 +4495,7 @@
             "soundGroup": "sound.enemy.Hellhound.Attack",
             "purpose": "Hound / attack voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/beast_8.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/beast_8.wav"
             ],
             "usages": [
                 {
@@ -4584,8 +4575,6 @@
             "soundGroup": "sound.enemy.Dire Wolf.Attack",
             "purpose": "Wolf / attack voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
                 "Assets/Audio/Resources/Sfx/Creatures/wolf_snarl.wav"
             ],
             "usages": [
@@ -4665,9 +4654,8 @@
             "soundGroup": "sound.enemy.Rimeheart.Attack",
             "purpose": "Spider / attack voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_3.wav"
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_1.mp3",
+                "Assets/Audio/Resources/Sfx/Creatures/spider_hiss_2.mp3"
             ],
             "usages": [
                 {
@@ -4913,8 +4901,6 @@
             "soundGroup": "sound.enemy.Dire Wolf.Attack",
             "purpose": "Wolf / attack voices",
             "current": [
-                "Assets/Audio/Resources/Sfx/Creatures/bite_1.wav",
-                "Assets/Audio/Resources/Sfx/Creatures/bite_2.wav",
                 "Assets/Audio/Resources/Sfx/Creatures/wolf_snarl.wav"
             ],
             "usages": [

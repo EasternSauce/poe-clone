@@ -2204,9 +2204,7 @@ MonoBehaviour:
   - id: sound.combat.bite
     purpose: Snake-arm bite impacts
     clips:
-    - {fileID: 8300000, guid: 64af864c1f0abe5448bf21d0929b026f, type: 3}
-    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
-    - {fileID: 8300000, guid: 66eff9a3b2843af43bf2194b8926fb65, type: 3}
+    - {fileID: 8300000, guid: cfa9bd3a439dd5d49a9bda17e114751a, type: 3}
   - id: sound.combat.ground.Physical
     purpose: Physical ground impacts
     clips:
@@ -2524,9 +2522,8 @@ MonoBehaviour:
   - id: sound.enemy.Rimeheart.Attack
     purpose: Spider / attack voices
     clips:
-    - {fileID: 8300000, guid: 64af864c1f0abe5448bf21d0929b026f, type: 3}
-    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
-    - {fileID: 8300000, guid: 66eff9a3b2843af43bf2194b8926fb65, type: 3}
+    - {fileID: 8300000, guid: 5e7af3fafaf214243a54ad8924078041, type: 3}
+    - {fileID: 8300000, guid: c501f94fb72f6144593aea70a5f228c5, type: 3}
   - id: sound.enemy.Rimeheart.Death
     purpose: Spider / death voices
     clips:
@@ -2549,8 +2546,6 @@ MonoBehaviour:
     purpose: Wolf / attack voices
     clips:
     - {fileID: 8300000, guid: e402be959cd62bd4dbdcad20f6168e5b, type: 3}
-    - {fileID: 8300000, guid: 64af864c1f0abe5448bf21d0929b026f, type: 3}
-    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
   - id: sound.enemy.Dire Wolf.Death
     purpose: Wolf / death voices
     clips:
@@ -2584,8 +2579,8 @@ MonoBehaviour:
   - id: sound.enemy.Grave Bat.Attack
     purpose: Bat / attack voices
     clips:
-    - {fileID: 8300000, guid: 64af864c1f0abe5448bf21d0929b026f, type: 3}
-    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
+    - {fileID: 8300000, guid: 119165e1f3b5c784980d1005fcd22664, type: 3}
+    - {fileID: 8300000, guid: 8acee8fc2a4f36547a8bd6df40600d4e, type: 3}
   - id: sound.enemy.Grave Bat.Death
     purpose: Bat / death voices
     clips:
@@ -2593,8 +2588,8 @@ MonoBehaviour:
   - id: sound.enemy.Magma Beetle.Aggro
     purpose: Beetle / alert calls
     clips:
-    - {fileID: 8300000, guid: 66eff9a3b2843af43bf2194b8926fb65, type: 3}
-    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
+    - {fileID: 8300000, guid: 3550e5c7ec7407140bd4b5db3643e64e, type: 3}
+    - {fileID: 8300000, guid: 54971cd781137b74998d604f3ed85ad7, type: 3}
   - id: sound.enemy.Magma Beetle.Attack
     purpose: Beetle / attack voices
     clips:
@@ -2603,8 +2598,8 @@ MonoBehaviour:
   - id: sound.enemy.Magma Beetle.Death
     purpose: Beetle / death voices
     clips:
-    - {fileID: 8300000, guid: 66eff9a3b2843af43bf2194b8926fb65, type: 3}
     - {fileID: 8300000, guid: 732f5ce8ea030804b9628677b8124f50, type: 3}
+    - {fileID: 8300000, guid: a4953c586c6df054ea71a3284722edbf, type: 3}
   - id: sound.enemy.Hellhound.Aggro
     purpose: Hound / alert calls
     clips:
@@ -2615,8 +2610,6 @@ MonoBehaviour:
     purpose: Hound / attack voices
     clips:
     - {fileID: 8300000, guid: 120f306106340914d92a0fb95839269d, type: 3}
-    - {fileID: 8300000, guid: fb45c6688ecec694387bf2ec455641f5, type: 3}
-    - {fileID: 8300000, guid: 66eff9a3b2843af43bf2194b8926fb65, type: 3}
   - id: sound.enemy.Hellhound.Death
     purpose: Hound / death voices
     clips:
