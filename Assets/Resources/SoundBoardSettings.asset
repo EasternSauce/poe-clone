@@ -277,18 +277,6 @@ MonoBehaviour:
     suggestions: []
     selected: {fileID: 0}
     muted: 0
-  - id: item.place.bow
-    label: "Place \u2014 bow"
-    group: Items
-    description: 
-    soundGroupId: sound.item.place.bow
-    aliases:
-    - place_bow
-    sharedIds: []
-    defaults: []
-    suggestions: []
-    selected: {fileID: 0}
-    muted: 0
   - id: item.place.potion
     label: "Place \u2014 potion"
     group: Items
@@ -2125,10 +2113,6 @@ MonoBehaviour:
     purpose: "Pickup \u2014 rings and amulets"
     clips:
     - {fileID: 8300000, guid: 71b3af81dc74a704c84099bbadeeac80, type: 3}
-  - id: sound.item.place.bow
-    purpose: "Place \u2014 bow"
-    clips:
-    - {fileID: 8300000, guid: 84d9fc5e7eeb4d042adc59db48b5119b, type: 3}
   - id: sound.item.place.potion
     purpose: "Place \u2014 potion"
     clips:

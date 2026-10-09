@@ -74,7 +74,6 @@ namespace PoeClone.Inventory
                 case ItemType.Amulet:
                     return "jewel";
                 case ItemType.Weapon:
-                    return item.WeaponType == WeaponType.Bow ? "bow" : "weapon";
                 case ItemType.Shield:
                     return "weapon";
                 case ItemType.Grimoire:

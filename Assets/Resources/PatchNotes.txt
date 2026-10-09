@@ -1,5 +1,6 @@
 version: 2026-10-09-bow-skill-release-audio
 - Split Shot, Piercing Shot, Burning Arrow and Venom Arrow now use the same bow release sound as basic bow attacks. Rain of Arrows keeps its volley sound.
+- Bows no longer have their own inventory place sound; they use the same sound as other weapons.
 
 version: 2026-10-09-bow-audio-and-starter-tiers
 - Basic bow attacks from the player and enemy archers use the softer bow recording again.

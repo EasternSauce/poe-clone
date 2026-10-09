@@ -91,12 +91,6 @@
       "volume": 1
     },
     {
-      "id": "item.place.bow",
-      "path": "",
-      "muted": false,
-      "volume": 1
-    },
-    {
       "id": "item.place.potion",
       "path": "",
       "muted": false,
