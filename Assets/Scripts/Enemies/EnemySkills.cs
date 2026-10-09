@@ -179,8 +179,8 @@ namespace PoeClone.Enemies
                 case EnemySkill.ThornGarden:
                     busyUntil = Time.time + RootWindUp;
                     GetComponentInChildren<CreatureAnimator>()?.Crouch(RootWindUp);
-                    StartCoroutine(ThornGarden(this, transform.position, target, kind,
-                        () => CanSpecialHit(), center => HitIfInside(center, RootRadius, damage * 0.35f)));
+                    StartCoroutine(CooldownAfter(ThornGarden(this, transform.position, target, kind,
+                        () => CanSpecialHit(), center => HitIfInside(center, RootRadius, damage * 0.35f))));
                     break;
                 case EnemySkill.Wail:
                     busyUntil = Time.time + WailWindUp;
@@ -329,6 +329,15 @@ namespace PoeClone.Enemies
         private const float FissureWindUp = 1.1f;
         private const float FissureHalfLength = 12.5f;
         private const float FissureWidth = 3.75f;
+
+        // Holds the skill until the cast fully ends (patches gone or cut short), then starts the
+        // full cooldown from there instead of from the cast.
+        private IEnumerator CooldownAfter(IEnumerator cast)
+        {
+            nextUse = float.MaxValue;
+            yield return StartCoroutine(cast);
+            nextUse = Time.time + kind.SkillCooldown;
+        }
 
         private bool CanSpecialHit() => this != null && health != null && !health.IsDead &&
             player != null && !player.IsDead && !Sanctuary.Contains(player.transform.position, 1f) &&
