@@ -1,3 +1,9 @@
+version: 2026-10-09-sound-review
+- Updated melee swings, impacts, blocks, bow releases, spell launches, war cries, weapon skills, loot and footsteps with fitting recordings from the reviewed permanent sound library. Rain of Arrows now uses volley recordings.
+- Repeated effects alternate between available recordings without playing the same take twice in a row. Explicit single-sound selections still play the chosen recording.
+- Fire Bolt and Fire Caster launches share one soundboard entry, as do Ice Shard and Frost Caster launches, basic player/enemy bow shots, and skeleton summons. Updating a shared sound, volume or mute setting updates every use.
+- The soundboard now uses permanent library assets for defaults, suggestions and saved choices.
+
 version: 2026-10-09-world-ambience
 - Added forest, town, graveyard, cave, sanctuary, lava and blizzard ambience with smooth fades between areas.
 - Rivers grow louder as you approach their banks, following bends and bridge crossings. Ponds, ocean surf, fires and lava cracks also fade with your distance; frozen water stays silent.

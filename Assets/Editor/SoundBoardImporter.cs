@@ -46,10 +46,12 @@ namespace PoeClone.EditorTools
                 AssetDatabase.CreateAsset(settings, SettingsPath);
             }
             var old = settings.effects.ToDictionary(e => e.id);
+            var choices = File.Exists(ChoicesPath) ? JsonUtility.FromJson<Choices>(File.ReadAllText(ChoicesPath)).effects : Array.Empty<Choice>();
             settings.effects.Clear();
-            string[] inspiration = AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets/assets_for_inspiration" })
+            string[] library = AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets/Audio/SoundLibrary" })
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Where(p => !p.Contains("__MACOSX") && !Path.GetFileName(p).StartsWith("._"))
+                .Where(p => !Path.GetFileNameWithoutExtension(p).Contains("8bit"))
                 .OrderBy(p => p, StringComparer.Ordinal).ToArray();
             AudioClip[] Clips(params string[] names) => names.SelectMany(n =>
                 AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets/Audio", "Assets/Resources/Sfx" })
@@ -57,18 +59,31 @@ namespace PoeClone.EditorTools
                 .Select(AssetDatabase.LoadAssetAtPath<AudioClip>)).ToArray();
             void Add(string id, string label, string group, AudioClip[] defaults, string terms, string description = "", bool aliases = true)
             {
+                if (SoundBoardDefaults.SharedId(id) != id) return;
                 defaults = (defaults ?? Array.Empty<AudioClip>()).Where(c => c != null).Distinct().ToArray();
                 string[] keywords = terms.ToLowerInvariant().Split('|');
-                var suggestions = inspiration.OrderByDescending(p => keywords.Select((k, i) =>
+                var reviewed = SoundBoardDefaults.Clips(id, library);
+                var suggestions = library.OrderByDescending(p => keywords.Select((k, i) =>
                     Path.GetFileNameWithoutExtension(p).ToLowerInvariant().Contains(k) ? 100 - i : 0).Max())
                     .ThenBy(p => p, StringComparer.Ordinal).Take(5).ToArray();
-                if (suggestions.Length != 5) throw new InvalidOperationException("Five inspiration clips are required for " + id);
+                if (suggestions.Length != 5) throw new InvalidOperationException("Five library clips are required for " + id);
+                // Keep legacy aliases so existing gameplay callers resolve to the reviewed pool.
+                var legacyAliases = defaults.Select(c => c.name).ToArray();
+                if (reviewed.Length > 0) defaults = reviewed;
+                string choicePath = choices.FirstOrDefault(c => c.id == id)?.path;
+                if (!string.IsNullOrEmpty(choicePath) && library.Contains(choicePath))
+                    suggestions = new[] { choicePath }.Concat(suggestions).Distinct().Take(5).ToArray();
                 var effect = new SoundBoardSettings.Effect {
                     id = id, label = label, group = group, description = description,
+                    sharedIds = SoundBoardDefaults.SharedIds(id),
                     defaults = defaults.Length > 0 ? defaults : new[] { AssetDatabase.LoadAssetAtPath<AudioClip>(suggestions[0]) },
-                    aliases = aliases ? defaults.Select(c => c.name).ToArray() : Array.Empty<string>(),
+                    aliases = aliases ? legacyAliases : Array.Empty<string>(),
                     suggestions = suggestions
                 };
+                if (effect.sharedIds.Length > 0)
+                    effect.description += " Also used by " + string.Join(", ", effect.sharedIds.Select(sharedId =>
+                        sharedId.StartsWith("enemy.") ? sharedId.Substring(6).Replace(".Attack", " attacks") :
+                        ObjectNames.NicifyVariableName(sharedId.Substring(6)))) + ". Sound, volume and mute changes apply to every use.";
                 if (old.TryGetValue(id, out var previous))
                 { effect.selected = previous.selected; effect.muted = previous.muted; effect.volume = previous.volume; }
                 settings.effects.Add(effect);

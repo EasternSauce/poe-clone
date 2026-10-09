@@ -44,7 +44,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219.mp3",
+      "file": "Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.mp3",
       "sha256": "48c5ac3fbb566e5d2faebd0ca53914316c50686f66befa5cee11940dbca18dc6",
       "sources": [
         {
@@ -54,7 +54,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183.mp3",
+      "file": "Combat & weapons/Axe_hit_armor_–_Deep_#2-1766764035183_punchy_bass_hit.mp3",
       "sha256": "53d95234aa6c7cd728aa6a58828e884ef9cf17a1155fd6a01b40d4046741d62f",
       "sources": [
         {
@@ -64,7 +64,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Axe_hit_armor_–_Deep_#3-1766764032292.mp3",
+      "file": "Combat & weapons/Axe_hit_armor_–_Deep_#3-1766764032292_break_wood.mp3",
       "sha256": "e646d9f246bdc5db765cc7add73da7d24c9d8217e8040842f5ab2ffee7ef1f24",
       "sources": [
         {
@@ -114,7 +114,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083.mp3",
+      "file": "Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3",
       "sha256": "7b6871303ba53955b4689c9c694fdbf0f4940be346b2a27e7b2509c039de6da9",
       "sources": [
         {
@@ -124,7 +124,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Bow_and_arrow_shot_–_#4-1766764179015.mp3",
+      "file": "Combat & weapons/Bow_and_arrow_shot_–_#4-1766764179015_arrow_lands_in_wood.mp3",
       "sha256": "37370aaeab46a859bfc5c231c93b614b99410bc6d5f00be1999f139bd117750f",
       "sources": [
         {
@@ -404,7 +404,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Dagger_stab_–_Quick__#1-1766764093333.mp3",
+      "file": "Combat & weapons/Dagger_stab_–_Quick__#1-1766764093333_punchy.mp3",
       "sha256": "16e3b6b32c054c5dc4da2893e3d1da77942ea5dcfab49dbf3fb06f93aafa12a6",
       "sources": [
         {
@@ -414,7 +414,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Dagger_stab_–_Quick__#2-1766764090266.mp3",
+      "file": "Combat & weapons/Dagger_stab_–_Quick__#2-1766764090266_punchy.mp3",
       "sha256": "2522fb13849fbb587d995e2a6e8009fc71fbdc938989fcbe6c655d778193ab32",
       "sources": [
         {
@@ -424,7 +424,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Dagger_stab_–_Quick__#3-1766764080183.mp3",
+      "file": "Combat & weapons/Dagger_stab_–_Quick__#3-1766764080183_punchy.mp3",
       "sha256": "0227ce17f2b9491918fe7ed55bb94ea1a7a6da3df100cb99ff3040a84a1fd0c8",
       "sources": [
         {
@@ -434,7 +434,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Dagger_stab_–_Quick__#4-1766764076280.mp3",
+      "file": "Combat & weapons/Dagger_stab_–_Quick__#4-1766764076280_punchy.mp3",
       "sha256": "0e831fe0438bc130cff0bc881492898770a0c1b4b4ac74c75ae8ce213d068697",
       "sources": [
         {
@@ -2068,7 +2068,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Sword_hit_flesh_–_Me_#1-1766763353113.mp3",
+      "file": "Combat & weapons/Sword_hit_flesh_–_Me_#1-1766763353113_long_stab_to_death.mp3",
       "sha256": "b458183cbf82f205409db3f3b12ebe492b7cf8de8ae4920e9bb26c25b1c59dff",
       "sources": [
         {
@@ -2078,7 +2078,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Sword_hit_flesh_–_Me_#4-1766763347247.mp3",
+      "file": "Combat & weapons/Sword_hit_flesh_–_Me_#4-1766763347247_long_stab_to_death.mp3",
       "sha256": "e219fee73c190d79aad2ac48efb9719ffc569f2640b793b049b66bde71061a17",
       "sources": [
         {
@@ -3398,7 +3398,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Skill_Warrior08.ogg",
+      "file": "Combat & weapons/Skill_Warrior08_slash.ogg",
       "sha256": "78155722ef69cb6583864b6a5ea722d2546e8eb0fee91c15706c9bbd880f1f23",
       "sources": [
         {
@@ -3408,7 +3408,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Skill_Warrior09.ogg",
+      "file": "Combat & weapons/Skill_Warrior09_slash.ogg",
       "sha256": "e52abab529f12dcc975b3d6076d4f4ac5f45494cde62a5eded7ef63c8c8c0df9",
       "sources": [
         {
@@ -3748,7 +3748,7 @@
       ]
     },
     {
-      "file": "Magic & spells/Skill_Arrow01.wav",
+      "file": "Magic & spells/Skill_Arrow01_rain_of_arrows_or_volley.wav",
       "sha256": "42621f1073d2335db144265c3435501e8384506cdc992b4443615029a04380f4",
       "sources": [
         {
@@ -3758,7 +3758,7 @@
       ]
     },
     {
-      "file": "Magic & spells/Skill_Arrow02.wav",
+      "file": "Magic & spells/Skill_Arrow02_arrow_release.wav",
       "sha256": "ae53a00d1ef499ae72f32c9c3b0315d9c45c2d617f9dd9b7ad068e7b124b16d2",
       "sources": [
         {
@@ -3768,7 +3768,7 @@
       ]
     },
     {
-      "file": "Magic & spells/Skill_Arrow03.wav",
+      "file": "Magic & spells/Skill_Arrow03_arrow_release.wav",
       "sha256": "c9597a4dac1010c9a0978372ec389cc4bf0b10b41d21f70a2e594397987a0ffd",
       "sources": [
         {
@@ -3778,7 +3778,7 @@
       ]
     },
     {
-      "file": "Magic & spells/Skill_Arrow04.wav",
+      "file": "Magic & spells/Skill_Arrow04_rain_of_barrage_of_arrows.wav",
       "sha256": "4bd5b52f01f985b4750b9500fca84e40e091053a10f0b39cc5a1206728649e4d",
       "sources": [
         {
@@ -3788,7 +3788,7 @@
       ]
     },
     {
-      "file": "Magic & spells/Skill_Arrow05.wav",
+      "file": "Magic & spells/Skill_Arrow05_special_attack_multiple_arrows.wav",
       "sha256": "73062dc6446b2fd097bcab8179c03d1f7bc53edfa32b8716381601ccf9268584",
       "sources": [
         {
@@ -3798,7 +3798,7 @@
       ]
     },
     {
-      "file": "Magic & spells/Skill_Arrow06.wav",
+      "file": "Magic & spells/Skill_Arrow06_arrow_flies.wav",
       "sha256": "d8d25118fe148a2f5673a062024b8ee69d0128a3e4776b89d5e930f07b7049ae",
       "sources": [
         {
@@ -5028,7 +5028,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Skill_Warrior02.wav",
+      "file": "Combat & weapons/Skill_Warrior02_warcry.wav",
       "sha256": "3ce4179f23c1ac06601addf3f4a61f1356c218e1dca160d63664e3634596ad63",
       "sources": [
         {
@@ -5038,7 +5038,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Skill_Warrior03.wav",
+      "file": "Combat & weapons/Skill_Warrior03_warcry.wav",
       "sha256": "95206dfb859021a9604acd75ec41ccfe4c823cbee3dcfc44be7d7c4c6eab714b",
       "sources": [
         {
@@ -5058,7 +5058,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Skill_Warrior05.wav",
+      "file": "Combat & weapons/Skill_Warrior05_warcry.wav",
       "sha256": "8c68ec3098cf5700f3783d35c749ca8fb64b11a7cc0fb2f943bcf9dc113a2fc7",
       "sources": [
         {
@@ -5088,7 +5088,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Skill_Warrior08.wav",
+      "file": "Combat & weapons/Skill_Warrior08_double_slash.wav",
       "sha256": "ed6fcbb3023a7c297f356fb924862144be7feeda7a4ce3091d629b76ef28a1c7",
       "sources": [
         {
@@ -5538,7 +5538,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Weapon_Arrow01.wav",
+      "file": "Combat & weapons/Weapon_Arrow01_arrow_flies.wav",
       "sha256": "f842bbd874a8f63a4c287a8402c446e825ee481048fc871ff6ea17f41f6f6ce2",
       "sources": [
         {
@@ -5548,7 +5548,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Weapon_Arrow02.wav",
+      "file": "Combat & weapons/Weapon_Arrow02_arrow_drawn.wav",
       "sha256": "6de4c7c8fd83e44579b9d951b1a03935063029bcccfa02d75f08503f32fa03f8",
       "sources": [
         {
@@ -5558,7 +5558,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/Weapon_Arrow03.wav",
+      "file": "Combat & weapons/Weapon_Arrow03_arrow_drawn.wav",
       "sha256": "0f06a1673f733e3f975df2d81d176e8e136187ad33810abc1663ae4af12da428",
       "sources": [
         {
@@ -7538,7 +7538,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/swing.wav",
+      "file": "Combat & weapons/swing_non_bass.wav",
       "sha256": "c7d50b9cb20ccda5aee6c023f4450915594061e36f3f9e78af241ca9fde0f817",
       "sources": [
         {
@@ -7548,7 +7548,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/swing2.wav",
+      "file": "Combat & weapons/swing2_non_bass.wav",
       "sha256": "2e4064e294d136e06c40cc562df969493907e6873f39895ca86b4a6b2e034c6e",
       "sources": [
         {
@@ -7558,7 +7558,7 @@
       ]
     },
     {
-      "file": "Combat & weapons/swing3.wav",
+      "file": "Combat & weapons/swing3_non_bass.wav",
       "sha256": "d725421956c9958de6d7a17c4fca299abe583a1800c59eaec358ec2e82d79bae",
       "sources": [
         {

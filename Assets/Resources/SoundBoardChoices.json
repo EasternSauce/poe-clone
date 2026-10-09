@@ -1,3 +1,1030 @@
 {
-  "effects": []
+  "effects": [
+    {
+      "id": "player.swing",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "player.bow",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "combat.hit",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "combat.block",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "player.hurt",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "player.reward",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "player.steps",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "ui.open",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "ui.close",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "ui.denied",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.pickup",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.place",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.pickup.gold",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.pickup.potion",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.pickup.jewel",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.place.bow",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.place.potion",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.place.jewel",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.drop.normal",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.drop.magic",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.drop.rare",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.drop.unique",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.drop.gold",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "item.drop.potion",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "player.potion",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "world.gate",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "world.loot",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "world.shatter",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "world.explosion",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "world.reveal",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.Cleave",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.FireBolt",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.Dash",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.FrostNova",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.WarCry",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.ChainLightning",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.IceShard",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.Teleport",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.RaiseSkeletons",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.DeathMark",
+      "path": "Assets/Audio/SoundLibrary/Movement/Rune_activate_–_Anci_#2-1766768897281.mp3",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.SpiritWolves",
+      "path": "Assets/Audio/SoundLibrary/Creatures & voices/shade1.wav",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.BoneGolem",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.GraveRot",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.SplitShot",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.PiercingShot",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.RainOfArrows",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.BurningArrow",
+      "path": "Assets/Audio/SoundLibrary/Magic & spells/04_Fire_explosion_04_medium.wav",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.FangStrike",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.VenomArrow",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.VenomSpout",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.SummonViper",
+      "path": "Assets/Audio/SoundLibrary/Creatures & voices/slime1.wav",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.Pulverize",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.ReapingArc",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "skill.LungingThrust",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Carrion Saint.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Zombie.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Zombie.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Zombie.Death",
+      "path": "Assets/Audio/SoundLibrary/Creatures & voices/mnstr1.wav",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Raider.Aggro",
+      "path": "",
+      "muted": true,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Raider.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Raider.Death",
+      "path": "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#4-1766768042374.mp3",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Brute.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Brute.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Brute.Death",
+      "path": "Assets/Audio/SoundLibrary/Creatures & voices/giant2.wav",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Archer.Aggro",
+      "path": "",
+      "muted": true,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Archer.Death",
+      "path": "Assets/Audio/SoundLibrary/Other/Player_hurt_–_Short__#1-1766764352490.mp3",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Fire Caster.Aggro",
+      "path": "",
+      "muted": true,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Fire Caster.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Frost Caster.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Frost Caster.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Storm Caster.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Storm Caster.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Storm Caster.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Skeleton.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Skeleton.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Skeleton.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Wraith.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Wraith.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Wraith.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Ember Knight.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Ember Knight.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Ember Knight.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Gravelord Mortis.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Gravelord Mortis.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Gravelord Mortis.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Ashen Warlord.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Ashen Warlord.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Ashen Warlord.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Rimeheart.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Rimeheart.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Rimeheart.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Forest Shaman.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Forest Shaman.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Forest Shaman.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Necromancer.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Necromancer.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Necromancer.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Skeleton Archer.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Skeleton Archer.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Frost Giant.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Frost Giant.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Frost Giant.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Giant Spider.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Giant Spider.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Giant Spider.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Dire Wolf.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Dire Wolf.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Dire Wolf.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Bog Slime.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Bog Slime.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Bog Slime.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Slimeling.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Slimeling.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Slimeling.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Grave Bat.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Grave Bat.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Grave Bat.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Corpse Ooze.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Corpse Ooze.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Corpse Ooze.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Oozeling.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Oozeling.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Oozeling.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Crypt Spider.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Crypt Spider.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Crypt Spider.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Magma Beetle.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Magma Beetle.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Magma Beetle.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Hellhound.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Hellhound.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Hellhound.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Frost Wolf.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Frost Wolf.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Frost Wolf.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Ice Crawler.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Ice Crawler.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Ice Crawler.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Skeleton Warrior.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Skeleton Warrior.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Skeleton Warrior.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Skeleton Mage.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Skeleton Mage.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Skeleton Mage.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Spirit Wolf.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Spirit Wolf.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Spirit Wolf.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Bone Golem.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Bone Golem.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Bone Golem.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.The Shepherd.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.The Shepherd.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.The Shepherd.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Briarbound.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Briarbound.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Briarbound.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Grave Siren.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Grave Siren.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Grave Siren.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Rime Stalker.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Rime Stalker.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Rime Stalker.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Cinder Penitent.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Cinder Penitent.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Cinder Penitent.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Hollowmaw.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Hollowmaw.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Hollowmaw.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Barrow Castellan.Aggro",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Barrow Castellan.Attack",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    },
+    {
+      "id": "enemy.Barrow Castellan.Death",
+      "path": "",
+      "muted": false,
+      "volume": 1
+    }
+  ]
 }

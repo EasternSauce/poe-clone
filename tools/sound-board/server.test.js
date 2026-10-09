@@ -7,14 +7,14 @@ const rows = require('./catalog.json').effects;
 const choicesFile = path.resolve(__dirname, '../../Assets/Resources/SoundBoardChoices.json');
 const defaults = () => rows.map(row => ({ id: row.id, path: '', muted: false, volume: 1 }));
 
-test('catalog covers each effect with five real inspiration suggestions and playable defaults', () => {
+test('catalog covers each effect with five permanent library suggestions and playable defaults', () => {
   assert.equal(new Set(rows.map(row => row.id)).size, rows.length);
   for (const row of rows) {
     assert.equal(row.suggestions.length, 5, row.id);
     assert.equal(new Set(row.suggestions).size, 5, row.id);
     assert.ok(row.current.length, row.id);
     for (const file of [...row.current, ...row.suggestions]) assert.ok(fs.existsSync(path.resolve(__dirname, '../..', file)), file);
-    assert.ok(row.suggestions.every(file => file.startsWith('Assets/assets_for_inspiration/')), row.id);
+    assert.ok(row.suggestions.every(file => file.startsWith('Assets/Audio/SoundLibrary/')), row.id);
   }
   for (const id of ['skill.Dash', 'skill.Teleport', 'skill.FireBolt', 'skill.ChainLightning', 'enemy.Carrion Saint.Attack']) assert.ok(rows.some(row => row.id === id));
 });
@@ -25,6 +25,26 @@ test('rejects incomplete, duplicate, foreign and invalid-volume choices', () => 
   for (const change of [{ id: value[1].id }, { path: '../../secret' }, { volume: -1 }, { volume: 2 }, { volume: NaN }, { muted: 'false' }]) {
     const invalid = defaults(); Object.assign(invalid[0], change);
     assert.throws(() => validate({ effects: invalid }, rows));
+  }
+});
+
+test('shared actions expose one editable sound and reviewed events offer distinct variations', () => {
+  for (const [id, linked] of [
+    ['skill.FireBolt', 'enemy.Fire Caster.Attack'],
+    ['skill.IceShard', 'enemy.Frost Caster.Attack'],
+    ['player.bow', 'enemy.Archer.Attack'],
+    ['player.bow', 'enemy.Skeleton Archer.Attack'],
+    ['skill.RaiseSkeletons', 'skill.SkeletonMages']
+  ]) {
+    const row = rows.find(row => row.id === id);
+    assert.ok(row, id);
+    assert.ok(row.description.includes('changes apply to every use'), id);
+    assert.ok(!rows.some(row => row.id === linked), linked);
+  }
+  for (const id of ['player.swing', 'player.bow', 'combat.block', 'player.steps', 'skill.FireBolt', 'skill.IceShard', 'skill.RainOfArrows']) {
+    const row = rows.find(row => row.id === id);
+    assert.ok(new Set(row.current).size > 1, id);
+    assert.ok(row.current.every(file => file.startsWith('Assets/Audio/SoundLibrary/') && !file.includes('8bit')), id);
   }
 });
 

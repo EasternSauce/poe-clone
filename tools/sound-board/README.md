@@ -6,8 +6,8 @@ The launcher starts a hidden local Node server and opens http://127.0.0.1:8100.
 Alternatively run `node tools/sound-board/server.js` and open that address yourself.
 Requires Node 18 or later. No npm packages or game session are needed.
 
-Each effect offers its current recording (including random variations), five suggestions
-from `Assets/assets_for_inspiration`, a volume slider, previews, and **No sound**.
+Each effect offers its current recording (including alternating variations), five suggestions
+from `Assets/Audio/SoundLibrary`, a volume slider, previews, and **No sound**.
 Filtering retains edits. **Discard edits** restores the last saved choices.
 Preview volume is a recording gain; in game, existing master volumes, spatial attenuation,
 creature pitch variation and deliberately quieter pickup/reward mixes still apply.
@@ -18,7 +18,7 @@ The settings apply to all characters and are included in builds. Existing builds
 The board never enters Play mode. The current sound means the authored default; the selected
 radio and volume show your saved override.
 
-After adding effects or inspiration clips, use Unity's **PoeClone > Audio > Refresh Standalone
+After adding effects or library clips, use Unity's **PoeClone > Audio > Refresh Standalone
 Sound Board Catalog**. This retains saved choices. Commit the JSON choices and generated
 settings asset when you want to share your mix. The local service binds only to 127.0.0.1.
 Set `SOUND_BOARD_PORT` to change its port. To stop it, end the Node process whose command
@@ -28,3 +28,5 @@ Run API checks with `node --test tools/sound-board/server.test.js`.
 
 Enemy sounds show a small portrait rendered from their game model. After changing enemy visuals,
 use **PoeClone > Audio > Refresh Sound Board Enemy Portraits** to regenerate the images.
+
+Shared actions have one board row: Fire Bolt / Fire Caster launch, Ice Shard / Frost Caster launch, basic player / enemy bow shots, and skeleton / skeleton mage summons. Changing a shared row updates every caller, including mute and volume. Single recording overrides remain fixed; authored pools avoid consecutive repeats.
