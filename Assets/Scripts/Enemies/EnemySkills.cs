@@ -122,6 +122,11 @@ namespace PoeClone.Enemies
                 case EnemySkill.LastOffering: return distance < 10f;
                 case EnemySkill.DraggingBreath: return distance > 2f && distance < BreathRange;
                 case EnemySkill.Graveward: return distance < 14f;
+                case EnemySkill.WebSpit: return distance > 3f && distance < 11f;
+                case EnemySkill.FireBreath: return distance < BreathOfFireRange - 1f;
+                case EnemySkill.Howl: return distance < 10f;
+                case EnemySkill.IceSpikes: return distance > 2f && distance < SpikeLength - 1.5f;
+                case EnemySkill.Shriek: return distance < ShriekRadius(transform) - 0.5f;
                 default: return false;
             }
         }
@@ -143,7 +148,9 @@ namespace PoeClone.Enemies
                 target = PlayerMotion.Intercept(player, EnemyCombat.BoltOrigin(transform), kind.ProjectileSpeed);
             if (kind.Skill == EnemySkill.Leap)
                 target = LeapLanding(transform.position, target, LeapGap(transform));
-            LastTarget = kind.Skill == EnemySkill.Slam || kind.Skill == EnemySkill.Wail ? transform.position : target;
+            bool centredOnSelf = kind.Skill == EnemySkill.Slam || kind.Skill == EnemySkill.Wail ||
+                kind.Skill == EnemySkill.Howl || kind.Skill == EnemySkill.Shriek;
+            LastTarget = centredOnSelf ? transform.position : target;
             float damage = kind.Damage * EnemyKinds.DamageScale(level, kind) * (controller != null ? controller.DamageMultiplier : 1f);
 
             switch (kind.Skill)
@@ -216,8 +223,244 @@ namespace PoeClone.Enemies
                 case EnemySkill.Graveward:
                     StartCoroutine(RaiseGraveward(target));
                     break;
+                case EnemySkill.WebSpit:
+                    WebSpit(target, damage);
+                    break;
+                case EnemySkill.FireBreath:
+                    StartCoroutine(BreatheFire(target, damage * 1.3f));
+                    break;
+                case EnemySkill.Howl:
+                    StartCoroutine(Howl(damage * 0.6f));
+                    break;
+                case EnemySkill.IceSpikes:
+                    StartCoroutine(IceSpikes(target, damage * 1.3f));
+                    break;
+                case EnemySkill.Shriek:
+                    Shriek(damage);
+                    break;
             }
         }
+
+        // ------------------------------------------------------------------ newer creature skills
+
+        private const float WebRadius = 2.4f;
+        private const float WebFlight = 0.75f;
+        private const float WebSeconds = 4f;
+        private static readonly Color WebColor = new Color(0.86f, 0.86f, 0.80f);
+        private static readonly Color WebWarning = new Color(0.30f, 0.30f, 0.28f);
+
+        // Lobs a ball of web at the player: it hits on landing, and leaves a sticky patch that
+        // slows whoever stands in it.
+        private void WebSpit(Vector3 target, float damage)
+        {
+            busyUntil = Time.time + 0.35f;
+            VenomGlob.Lob(EnemyCombat.BoltOrigin(transform), target, WebFlight, 0.45f, WebRadius, WebSeconds,
+                spot => HitIfInside(spot, WebRadius, damage),
+                (spot, radius) =>
+                {
+                    if (player != null && !player.IsDead && Flat(player.transform.position - spot).magnitude <= radius)
+                        player.GetComponent<PlayerController>()?.Chill(0.7f);
+                }, WebColor, WebWarning);
+        }
+
+        private const float BreathOfFireRange = 7f;
+        private const float BreathOfFireHalfAngle = 30f;
+        private const float BreathOfFireWindUp = 0.7f;
+
+        // Rears back with a burning wedge marked in front of it, then breathes fire over it.
+        private IEnumerator BreatheFire(Vector3 target, float damage)
+        {
+            Vector3 origin = transform.position;
+            Vector3 facing = FissureDirection(origin, target);
+            int staggerCount = stagger != null ? stagger.TriggerCount : 0;
+            busyUntil = Time.time + BreathOfFireWindUp + 0.35f;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(BreathOfFireWindUp);
+            StartCoroutine(GroundTelegraph.RunCone(origin, facing, BreathOfFireRange, BreathOfFireHalfAngle, BreathOfFireWindUp,
+                () => CastAlive(staggerCount), kind.DamageType));
+            yield return new WaitForSeconds(BreathOfFireWindUp);
+            if (!CastAlive(staggerCount)) yield break;
+            FlameCone(origin, facing, kind);
+            Audio.AudioManager.Instance?.PlayEffect("combat.ground." + kind.DamageType, origin);
+            if (CanSpecialHit())
+            {
+                Vector3 offset = Flat(player.transform.position - origin);
+                if (offset.magnitude <= BreathOfFireRange &&
+                    Vector3.Dot(offset.normalized, facing) >= Mathf.Cos(BreathOfFireHalfAngle * Mathf.Deg2Rad))
+                    player.TakeHit(damage, kind.DamageType, attack: false);
+            }
+        }
+
+        private static IEnumerator FireBreathVisual(MonoBehaviour host, Vector3 origin, Vector3 facing, EnemyKind kind)
+        {
+            host.StartCoroutine(GroundTelegraph.RunCone(origin, facing, BreathOfFireRange, BreathOfFireHalfAngle, BreathOfFireWindUp, null, kind.DamageType));
+            yield return new WaitForSeconds(BreathOfFireWindUp);
+            FlameCone(origin, facing, kind);
+        }
+
+        private static void FlameCone(Vector3 origin, Vector3 facing, EnemyKind kind)
+        {
+            Color fill = GroundTelegraph.FillColor(kind.DamageType);
+            for (int i = 1; i <= 4; i++)
+            {
+                float along = BreathOfFireRange * i / 4.5f;
+                float width = Mathf.Tan(BreathOfFireHalfAngle * Mathf.Deg2Rad) * along;
+                SkillEffects.Blast(origin + facing * along + Vector3.up * 0.6f, Mathf.Max(0.7f, width * 0.9f), i % 2 == 0 ? fill : kind.Pants, 0.35f);
+            }
+        }
+
+        private const float HowlWindUp = 0.7f;
+        private const float HowlRadius = 6f;
+        private const float HowlPackRadius = 10f;
+        private const float HowlHaste = 5f;
+        private static readonly Color HowlColor = new Color(0.65f, 0.9f, 1f);
+
+        // Throws its head back: a chilling ring goes out round it, and every beast of its pack in
+        // earshot runs and bites faster for a while.
+        private IEnumerator Howl(float damage)
+        {
+            int staggerCount = stagger != null ? stagger.TriggerCount : 0;
+            busyUntil = Time.time + HowlWindUp + 0.2f;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(HowlWindUp);
+            Vector3 at = transform.position;
+            bool cut = false;
+            StartCoroutine(GroundTelegraph.Run(at, HowlRadius, HowlWindUp, kind.DamageType, center =>
+            {
+                if (cut || !CanSpecialHit()) return;
+                if (Flat(player.transform.position - center).magnitude <= HowlRadius)
+                {
+                    player.TakeHit(damage, kind.DamageType, attack: false);
+                    player.GetComponent<PlayerController>()?.Chill(2.5f);
+                }
+            }));
+            yield return new WaitForSeconds(HowlWindUp);
+            if (!CastAlive(staggerCount)) { cut = true; yield break; }
+
+            foreach (Collider c in Physics.OverlapSphere(transform.position, HowlPackRadius))
+            {
+                EnemyController ally = c.GetComponentInParent<EnemyController>();
+                EnemyHealth allyHealth = ally != null ? ally.GetComponent<EnemyHealth>() : null;
+                // Only beasts answer a howl, never a boss.
+                if (ally == null || allyHealth == null || allyHealth.IsDead || ally.IsHasted)
+                    continue;
+                EnemyKind allyKind = EnemyKinds.Get(allyHealth.KindIndex);
+                if (!allyKind.IsCreature || allyKind.IsBoss)
+                    continue;
+                ally.Hasten(HowlHaste);
+                SkillEffects.Shockwave(ally.transform.position, 1.3f * ally.transform.localScale.x, HowlColor, 0.45f);
+            }
+        }
+
+        private const float SpikeLength = 11f;
+        private const float SpikeWidth = 1.8f;
+        private const float SpikeWindUp = 0.8f;
+
+        // A strip of ground from it to the player cracks and fills, then ice spikes burst up
+        // along it, hitting and chilling anyone still standing there.
+        private IEnumerator IceSpikes(Vector3 target, float damage)
+        {
+            Vector3 origin = transform.position;
+            Vector3 axis = FissureDirection(origin, target);
+            int staggerCount = stagger != null ? stagger.TriggerCount : 0;
+            busyUntil = Time.time + SpikeWindUp + 0.2f;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(SpikeWindUp);
+            bool cut = false;
+            StartCoroutine(GroundTelegraph.RunLine(origin + axis * 0.8f, axis, SpikeLength, SpikeWidth, SpikeWindUp, kind.DamageType, () =>
+            {
+                if (cut) return;
+                RaiseSpikes(origin + axis * 0.8f, axis, kind);
+                if (!CanSpecialHit()) return;
+                Vector3 offset = Flat(player.transform.position - (origin + axis * 0.8f));
+                float along = Vector3.Dot(offset, axis);
+                float across = Mathf.Abs(Vector3.Dot(offset, Vector3.Cross(Vector3.up, axis)));
+                if (along >= -0.5f && along <= SpikeLength + 0.5f && across <= SpikeWidth * 0.5f + 0.4f)
+                {
+                    player.TakeHit(damage, kind.DamageType, attack: false);
+                    player.GetComponent<PlayerController>()?.Chill(1.5f);
+                }
+            }));
+            yield return new WaitForSeconds(SpikeWindUp);
+            if (!CastAlive(staggerCount)) cut = true;
+        }
+
+        private static void RaiseSpikes(Vector3 start, Vector3 axis, EnemyKind kind)
+        {
+            var root = new GameObject("IceSpikes");
+            Object.Destroy(root, 1.1f);
+            Vector3 side = Vector3.Cross(Vector3.up, axis);
+            Color ice = GroundTelegraph.FillColor(kind.DamageType);
+            for (int i = 0; i < 10; i++)
+            {
+                float along = SpikeLength * (i + 0.5f) / 10f;
+                Vector3 at = start + axis * along + side * Random.Range(-0.45f, 0.45f);
+                at.y = Debris.GroundBelow(at + Vector3.up);
+                GameObject spike = RuntimePrimitives.Create(PrimitiveType.Cube, root.transform, i % 2 == 0 ? ice : kind.Cloth);
+                float height = Random.Range(0.9f, 1.6f);
+                spike.transform.position = at + Vector3.up * height * 0.35f;
+                spike.transform.localScale = new Vector3(0.3f, height, 0.3f);
+                spike.transform.rotation = Quaternion.Euler(Random.Range(-18f, 18f), Random.Range(0f, 90f), Random.Range(-18f, 18f)) * Quaternion.Euler(0f, 45f, 0f);
+            }
+            SkillEffects.Shockwave(start + axis * SpikeLength * 0.5f, 1.2f, ice, 0.3f);
+            Audio.AudioManager.Instance?.PlayEffect("combat.ground." + kind.DamageType, start + axis * SpikeLength * 0.5f);
+        }
+
+        private const float ShriekWindUp = 0.55f;
+        private const float ShriekKnockback = 4.5f;
+        private static float ShriekRadius(Transform body) => 3.6f;
+
+        // A piercing screech: a ring marks its reach, then it hurts and hurls back whoever is inside.
+        private void Shriek(float damage)
+        {
+            busyUntil = Time.time + ShriekWindUp + 0.2f;
+            int staggerCount = stagger != null ? stagger.TriggerCount : 0;
+            float radius = ShriekRadius(transform);
+            StartCoroutine(GroundTelegraph.Run(transform.position, radius, ShriekWindUp, kind.DamageType, center =>
+            {
+                if (!CastAlive(staggerCount) || !CanSpecialHit()) return;
+                SkillEffects.Shockwave(center, radius * 0.6f, kind.Eyes, 0.3f);
+                Vector3 away = Flat(player.transform.position - center);
+                if (away.magnitude > radius) return;
+                player.TakeHit(damage, kind.DamageType, attack: false);
+                StartCoroutine(KnockBack(away.sqrMagnitude > 0.01f ? away.normalized : transform.forward));
+            }));
+        }
+
+        private IEnumerator KnockBack(Vector3 direction)
+        {
+            CharacterController playerBody = player != null ? player.GetComponent<CharacterController>() : null;
+            if (playerBody == null) yield break;
+            const float seconds = 0.22f;
+            for (float t = 0f; t < seconds; t += Time.deltaTime)
+            {
+                if (player == null || player.IsDead || !playerBody.enabled) yield break;
+                Vector3 from = player.transform.position;
+                Vector3 to = from + direction * (ShriekKnockback / seconds) * Time.deltaTime;
+                to = World.GroundObstacleMotion.Clamp(playerBody, from, to);
+                playerBody.Move(to - from);
+                yield return null;
+            }
+        }
+
+        /// <summary>
+        /// An archer's shot loosed skywards (a Rain of Arrows kind's plain attack): a ring marks the
+        /// spot, arrows plunge into it, and whoever is still inside is hit once. Replicas pass no target.
+        /// </summary>
+        public static void RainOfArrows(MonoBehaviour host, EnemyKind kind, Vector3 at, PlayerStats target, float damage)
+        {
+            host.StartCoroutine(GroundTelegraph.Run(at, ArrowRainRadius, ArrowRainDelay, DamageType.Physical, center =>
+            {
+                if (target == null || target.IsDead || Sanctuary.Contains(target.transform.position, 1f)) return;
+                if (Flat(target.transform.position - center).magnitude <= ArrowRainRadius)
+                    target.TakeHit(damage, kind.DamageType);
+            }));
+            for (int i = 0; i < 6; i++)
+            {
+                Vector2 spot = Random.insideUnitCircle * ArrowRainRadius * 0.85f;
+                SkillEffects.FallingArrow(at + new Vector3(spot.x, 0f, spot.y), ArrowRainDelay - 0.2f + i * 0.04f, 0.4f, DustColor);
+            }
+        }
+
+        public const float ArrowRainDelay = 1.0f;
+        private const float ArrowRainRadius = 1.9f;
 
         private const float OfferingWindUp = 0.55f;
         private const float BreathRange = 22.5f;
@@ -709,6 +952,24 @@ namespace PoeClone.Enemies
                     break;
                 case EnemySkill.Summon:
                     SkillEffects.Shockwave(body.position, 2.5f, SummonColor, 0.5f);
+                    break;
+                case EnemySkill.WebSpit:
+                    VenomGlob.Lob(EnemyCombat.BoltOrigin(body), target, WebFlight, 0.45f, WebRadius, WebSeconds, null, null, WebColor, WebWarning);
+                    break;
+                case EnemySkill.FireBreath:
+                    host.StartCoroutine(FireBreathVisual(host, body.position, FissureDirection(body.position, target), kind));
+                    break;
+                case EnemySkill.Howl:
+                    host.StartCoroutine(GroundTelegraph.Run(body.position, HowlRadius, HowlWindUp, kind.DamageType, null));
+                    break;
+                case EnemySkill.IceSpikes:
+                    Vector3 spikeAxis = FissureDirection(body.position, target);
+                    Vector3 spikeStart = body.position + spikeAxis * 0.8f;
+                    host.StartCoroutine(GroundTelegraph.RunLine(spikeStart, spikeAxis, SpikeLength, SpikeWidth, SpikeWindUp, kind.DamageType,
+                        () => RaiseSpikes(spikeStart, spikeAxis, kind)));
+                    break;
+                case EnemySkill.Shriek:
+                    host.StartCoroutine(GroundTelegraph.Run(body.position, ShriekRadius(body), ShriekWindUp, kind.DamageType, null));
                     break;
                 case EnemySkill.Leap:
                     float leapRadius = LeapRadius(body);

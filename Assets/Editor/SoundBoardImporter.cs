@@ -90,7 +90,9 @@ namespace PoeClone.EditorTools
                 if (effect.id.StartsWith("combat.ground."))
                     foreach (var kind in EnemyKinds.All.Where(k => k.DamageType.ToString() == effect.id.Substring(14) &&
                         (k.IsBoss && k.Boss != BossStyle.Shepherd || k.Skill == EnemySkill.Slam || k.Skill == EnemySkill.Strike ||
-                         k.Skill == EnemySkill.Leap && k.Sounds != EnemySounds.Set.Slime || k.Skill == EnemySkill.ThornGarden)))
+                         k.Skill == EnemySkill.Leap && k.Sounds != EnemySounds.Set.Slime || k.Skill == EnemySkill.ThornGarden ||
+                         k.Skill == EnemySkill.FireBreath || k.Skill == EnemySkill.Howl || k.Skill == EnemySkill.IceSpikes ||
+                         k.Skill == EnemySkill.Shriek || k.RainOfArrows)))
                         EnemyUse(kind.Name, "ground impact", "Assets/Scripts/Enemies/GroundTelegraph.cs");
                 rows.Add(new Row { id = effect.id, label = effect.label, group = effect.group,
                     soundGroup = effect.soundGroupId, purpose = effect.AssignedGroup?.purpose,

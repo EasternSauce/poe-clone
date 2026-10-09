@@ -190,6 +190,16 @@ namespace PoeClone.Enemies
                 return;
             }
 
+            if (kind.RainOfArrows)
+            {
+                // The shot goes up and comes down where the player stands (enraged: where they'll be).
+                Vector3 spot = controller != null && controller.IsEnraged
+                    ? PlayerMotion.Predict(playerStats, EnemySkills.ArrowRainDelay)
+                    : playerStats.transform.position;
+                EnemySkills.RainOfArrows(this, kind, spot, playerStats, RollDamage());
+                return;
+            }
+
             if (kind.IsRanged)
             {
                 // Enraged, it leads its shot: aims where the player will be when the bolt gets there.

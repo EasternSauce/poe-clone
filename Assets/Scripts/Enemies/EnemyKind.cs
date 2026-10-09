@@ -28,7 +28,12 @@ namespace PoeClone.Enemies
         FrostFissures, // crossed frost fissures with safe diagonal gaps
         LastOffering,
         DraggingBreath,
-        Graveward
+        Graveward,
+        WebSpit,    // lobs a web that sticks where it lands: slows whoever walks through it
+        FireBreath, // a cone of flame in front of it, after a short wind-up
+        Howl,       // a chilling ring round itself; hastens the pack it runs with
+        IceSpikes,  // a line of ice spikes erupting from it towards the player
+        Shriek      // a screech round itself that hurls the player back
     }
 
     public enum BossStyle
@@ -86,6 +91,7 @@ namespace PoeClone.Enemies
         public string[] Gear = new string[0];
         public Color StaffOrb;   // casters: the orb on the staff and the colour of their bolts
         public bool Bow;         // archers: shoots arrows instead of bolts (the bow itself is in Gear)
+        public bool RainOfArrows; // archers: each shot is loosed skywards and rains down on a marked spot
 
         /// <summary>
         /// A humanoid that swings a real weapon (the one in its Gear) with that weapon's own
@@ -111,6 +117,8 @@ namespace PoeClone.Enemies
         public float SkillCooldown = 9f;
 
         public CreatureBody Body = CreatureBody.Humanoid;
+        /// <summary>Creatures: extra parts on the shared body (bone plating, ice, horns) so a later area's kind isn't just a recolour.</summary>
+        public CreatureVariant Variant = CreatureVariant.Plain;
         public EnemySounds.Set Sounds = EnemySounds.Set.Default;
 
         /// <summary>Slimes: the kind (index) it bursts into when killed, two of them; -1 for none.</summary>
@@ -350,7 +358,7 @@ namespace PoeClone.Enemies
                 SpeedRatio = 0.75f, Scale = 0.95f,
                 Cloth = new Color(0.82f, 0.80f, 0.72f), Skin = new Color(0.90f, 0.88f, 0.80f), Pants = new Color(0.32f, 0.30f, 0.27f), Eyes = new Color(1.0f, 0.25f, 0.1f), HideHorns = true,
                 Gear = new[] { "short_bow" },
-                Bow = true,
+                Bow = true, RainOfArrows = true,
                 Skill = EnemySkill.Volley, SkillCooldown = 9f,
                 DropChance = 0.3f
             },
@@ -424,7 +432,8 @@ namespace PoeClone.Enemies
                 SpeedRatio = 1.1f, Scale = 0.8f,
                 Body = CreatureBody.Bat, Sounds = EnemySounds.Set.Bat, PackSize = 2,
                 Skin = new Color(0.22f, 0.18f, 0.20f), Cloth = new Color(0.36f, 0.22f, 0.27f), Pants = new Color(0.55f, 0.42f, 0.44f), Eyes = new Color(1.0f, 0.2f, 0.2f),
-                Skill = EnemySkill.Charge, SkillCooldown = 6f,
+                Skill = EnemySkill.Shriek, SkillCooldown = 7f,
+                Variant = CreatureVariant.Crypt,
                 DropChance = 0.18f
             },
             new EnemyKind
@@ -436,6 +445,7 @@ namespace PoeClone.Enemies
                 SpeedRatio = 0.55f, Scale = 1.05f,
                 Body = CreatureBody.Slime, Sounds = EnemySounds.Set.Slime, SplitInto = OozelingIndex,
                 Skin = new Color(0.52f, 0.36f, 0.60f), Cloth = new Color(0.30f, 0.20f, 0.36f), Pants = new Color(0.90f, 0.88f, 0.80f), Eyes = new Color(0.5f, 1.0f, 0.6f),
+                Variant = CreatureVariant.Crypt,
                 Skill = EnemySkill.Leap, SkillCooldown = 10f,
                 DropChance = 0.35f
             },
@@ -459,7 +469,8 @@ namespace PoeClone.Enemies
                 SpeedRatio = 0.95f, Scale = 1.0f,
                 Body = CreatureBody.Spider, Sounds = EnemySounds.Set.Spider,
                 Skin = new Color(0.76f, 0.73f, 0.66f), Cloth = new Color(0.30f, 0.27f, 0.36f), Pants = new Color(0.45f, 1.0f, 0.6f), Eyes = new Color(0.45f, 1.0f, 0.6f),
-                Skill = EnemySkill.Leap, SkillCooldown = 7f,
+                Skill = EnemySkill.WebSpit, SkillCooldown = 8f,
+                Variant = CreatureVariant.Crypt,
                 DropChance = 0.35f
             },
             new EnemyKind
@@ -484,7 +495,8 @@ namespace PoeClone.Enemies
                 SpeedRatio = 1.1f, Scale = 1.05f,
                 Body = CreatureBody.Wolf, Sounds = EnemySounds.Set.Hound, PackSize = 2,
                 Skin = new Color(0.17f, 0.13f, 0.12f), Cloth = new Color(0.38f, 0.12f, 0.06f), Pants = new Color(1.0f, 0.45f, 0.1f), Eyes = new Color(1.0f, 0.5f, 0.1f),
-                Skill = EnemySkill.Leap, SkillCooldown = 8f,
+                Skill = EnemySkill.FireBreath, SkillCooldown = 7f,
+                Variant = CreatureVariant.Infernal,
                 DropChance = 0.4f
             },
             new EnemyKind
@@ -496,7 +508,8 @@ namespace PoeClone.Enemies
                 SpeedRatio = 1.05f, Scale = 1.05f,
                 Body = CreatureBody.Wolf, Sounds = EnemySounds.Set.Wolf, PackSize = 2,
                 Skin = new Color(0.70f, 0.78f, 0.88f), Cloth = new Color(0.42f, 0.52f, 0.66f), Pants = new Color(0.95f, 0.97f, 1.0f), Eyes = new Color(0.4f, 0.9f, 1.0f),
-                Skill = EnemySkill.Leap, SkillCooldown = 8f,
+                Skill = EnemySkill.Howl, SkillCooldown = 10f,
+                Variant = CreatureVariant.Frost,
                 DropChance = 0.4f
             },
             new EnemyKind
@@ -508,7 +521,8 @@ namespace PoeClone.Enemies
                 SpeedRatio = 0.95f, Scale = 1.05f,
                 Body = CreatureBody.Spider, Sounds = EnemySounds.Set.Spider,
                 Skin = new Color(0.58f, 0.74f, 0.90f), Cloth = new Color(0.82f, 0.92f, 1.0f), Pants = new Color(0.25f, 0.55f, 0.90f), Eyes = new Color(0.5f, 0.95f, 1.0f),
-                Skill = EnemySkill.Leap, SkillCooldown = 7f,
+                Skill = EnemySkill.IceSpikes, SkillCooldown = 7f,
+                Variant = CreatureVariant.Frost,
                 DropChance = 0.4f
             },
 
@@ -798,7 +812,8 @@ namespace PoeClone.Enemies
                 Main = kind.Skin,
                 Second = kind.Cloth,
                 Accent = kind.Pants,
-                Eyes = kind.Eyes
+                Eyes = kind.Eyes,
+                Variant = kind.Variant
             }, meshes);
 
             // Low bodies get a wider collider than the humanoid's (its bottom stays at the feet),

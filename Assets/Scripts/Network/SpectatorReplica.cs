@@ -1068,7 +1068,11 @@ namespace PoeClone.Network
                 Transform body = go.transform;
                 puppet.Attack.StrikeFrame += () =>
                 {
-                    if (body != null && playerStats != null)
+                    if (body == null || playerStats == null)
+                        return;
+                    if (kind.RainOfArrows)
+                        EnemySkills.RainOfArrows(this, kind, playerStats.transform.position, null, 0f);
+                    else
                         EnemyProjectile.LaunchVisual(EnemyCombat.BoltOrigin(body), playerStats.transform.position, kind);
                 };
             }

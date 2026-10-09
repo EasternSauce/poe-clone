@@ -154,9 +154,11 @@ namespace PoeClone.Enemies
             UnityEngine.Object.Destroy(ring);
         }
 
-        /// <summary>A fixed wedge: marks the exact cone a Hollowmaw will inhale through.</summary>
-        public static IEnumerator RunCone(Vector3 center, Vector3 facing, float radius, float halfAngle, float seconds, Func<bool> active = null)
+        /// <summary>A fixed wedge: marks the exact cone a Hollowmaw will inhale through (or a hound breathe fire over).</summary>
+        public static IEnumerator RunCone(Vector3 center, Vector3 facing, float radius, float halfAngle, float seconds, Func<bool> active = null,
+            DamageType type = DamageType.Physical)
         {
+            Color warning = WarningColor(type), fill = FillColor(type);
             const int segments = 24;
             var vertices = new Vector3[segments + 2];
             var triangles = new int[segments * 3];
@@ -172,7 +174,7 @@ namespace PoeClone.Enemies
             }
             var mesh = new Mesh { name = "DraggingBreathCone", vertices = vertices, triangles = triangles };
             mesh.RecalculateNormals();
-            GameObject cone = RuntimePrimitives.Create(PrimitiveType.Cylinder, null, PhysicalWarning);
+            GameObject cone = RuntimePrimitives.Create(PrimitiveType.Cylinder, null, warning);
             cone.name = "BreathTelegraph";
             cone.GetComponent<MeshFilter>().sharedMesh = mesh;
             cone.transform.position = new Vector3(center.x, GroundY(center) + 0.19f, center.z);
@@ -183,7 +185,7 @@ namespace PoeClone.Enemies
             for (float t = 0f; t < seconds; t += Time.deltaTime)
             {
                 if (active != null && !active()) break;
-                Color color = Color.Lerp(PhysicalWarning, PhysicalFill, Mathf.Clamp01(t / seconds));
+                Color color = Color.Lerp(warning, fill, Mathf.Clamp01(t / seconds));
                 block.SetColor("_BaseColor", color); block.SetColor("_Color", color);
                 renderer.SetPropertyBlock(block);
                 yield return null;

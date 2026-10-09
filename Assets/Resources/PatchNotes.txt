@@ -1,3 +1,13 @@
+version: 2026-10-09-enemy-skill-variety
+- Several creatures have new special attacks instead of the same jump or dash:
+  - Crypt Spiders spit webs that hit where they land and leave a sticky patch that slows you.
+  - Hellhounds breathe a cone of fire in front of them after a short wind-up.
+  - Frost Wolves howl: a chilling ring around them, and nearby beasts run and attack faster for a few seconds.
+  - Ice Crawlers send a line of ice spikes erupting towards you.
+  - Grave Bats shriek, hurting and knocking you back if you are close.
+- Skeleton Archers fire their shots into the sky: arrows rain down on a marked spot, so step out of the circle.
+- Crypt Spiders, Corpse Oozes and Grave Bats now have bone plating, skulls and ribs; Ice Crawlers and Frost Wolves are covered in ice crystals; Hellhounds have horns and glowing spines.
+
 version: 2026-10-09-loot-and-sound-tweaks
 - Sounds with several recordings now pick one at random each time, instead of avoiding the one just played (which made small sets alternate in a pattern).
 - Confirming passive points applies them and keeps the passive tree open.

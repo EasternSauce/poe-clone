@@ -23,12 +23,14 @@ namespace PoeClone.Enemies
         private Action<Vector3> landed;
         private Action<Vector3, float> inPuddle;
         private GameObject ring;
+        private Color color;
 
         /// <param name="inPuddle">Called every half second while the puddle lasts, with its centre and radius.</param>
         public static void Lob(Vector3 from, Vector3 to, float flight, float size, float radius, float puddleSeconds,
-            Action<Vector3> landed, Action<Vector3, float> inPuddle)
+            Action<Vector3> landed, Action<Vector3, float> inPuddle, Color? color = null, Color? warning = null)
         {
-            GameObject go = RuntimePrimitives.Create(PrimitiveType.Sphere, null, Venom);
+            Color glob = color ?? Venom;
+            GameObject go = RuntimePrimitives.Create(PrimitiveType.Sphere, null, glob);
             go.name = "VenomGlob";
             go.transform.position = from;
             go.transform.localScale = Vector3.one * size;
@@ -42,8 +44,9 @@ namespace PoeClone.Enemies
             g.puddleSeconds = puddleSeconds;
             g.landed = landed;
             g.inPuddle = inPuddle;
+            g.color = glob;
 
-            g.ring = RuntimePrimitives.Create(PrimitiveType.Cylinder, null, VenomDark);
+            g.ring = RuntimePrimitives.Create(PrimitiveType.Cylinder, null, warning ?? VenomDark);
             g.ring.name = "VenomWarning";
             g.ring.transform.position = to + Vector3.up * 0.17f;
             g.ring.transform.localScale = new Vector3(radius * 2f, 0.01f, radius * 2f);
@@ -59,7 +62,7 @@ namespace PoeClone.Enemies
 
             if (ring != null)
                 Destroy(ring);
-            SkillEffects.Shockwave(to, radius, Venom, 0.3f);
+            SkillEffects.Shockwave(to, radius, color, 0.3f);
             landed?.Invoke(to);
             Puddle();
             Destroy(gameObject);
@@ -67,7 +70,7 @@ namespace PoeClone.Enemies
 
         private void Puddle()
         {
-            GameObject pool = RuntimePrimitives.Create(PrimitiveType.Cylinder, null, Venom);
+            GameObject pool = RuntimePrimitives.Create(PrimitiveType.Cylinder, null, color);
             pool.name = "VenomPuddle";
             pool.transform.position = to + Vector3.up * 0.16f;
             pool.transform.localScale = new Vector3(radius * 2f, 0.01f, radius * 2f);

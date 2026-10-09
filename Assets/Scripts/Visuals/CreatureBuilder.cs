@@ -21,6 +21,18 @@ namespace PoeClone.Visuals
     }
 
     /// <summary>
+    /// Extra parts on a shared body, so a deeper area's spider, wolf, slime or bat looks like a
+    /// creature of its own rather than a recolour of the first area's.
+    /// </summary>
+    public enum CreatureVariant
+    {
+        Plain,
+        Crypt,    // bone plating, a skull, ribs: grave and cave things
+        Frost,    // ice crystals and icicles growing out of it
+        Infernal  // horns and a ridge of glowing spines
+    }
+
+    /// <summary>
     /// Builds a non-humanoid body out of primitives under an enemy's "Model" (feet at its origin,
     /// facing +Z), as a hierarchy of named pivots that <see cref="CreatureAnimator"/> then drives.
     /// Colours: Main (body/fur/skin), Second (abdomen, shell, mane, wings), Accent (markings, lava
@@ -37,6 +49,7 @@ namespace PoeClone.Visuals
             public Color Second;
             public Color Accent;
             public Color Eyes;
+            public CreatureVariant Variant;
         }
 
         private sealed class Ctx
@@ -73,6 +86,7 @@ namespace PoeClone.Visuals
                 case CreatureBody.Hollowmaw: BuildHollowmaw(model, ctx); break;
                 case CreatureBody.BarrowCastellan: BuildBarrowCastellan(model, ctx); break;
             }
+            Adorn(body, ctx);
             ctx.Anim.CaptureRest();
             return ctx.Anim;
         }
@@ -537,6 +551,143 @@ namespace PoeClone.Visuals
             }
             c.Anim.Legs.Add(new CreatureAnimator.Leg { Hip = hip, Knee = knee, Side = side, Front = arm, Group = side < 0 ? 0 : 1,
                 Lift = arm ? side * 22f : side * 7f, Bend = arm ? -20f : 25f });
+        }
+
+        // ------------------------------------------------------------------ variants
+
+        private static readonly Color Ice = new Color(0.78f, 0.93f, 1f);
+        private static readonly Color DeepIce = new Color(0.42f, 0.70f, 0.95f);
+
+        private static void Adorn(CreatureBody body, Ctx c)
+        {
+            switch (c.Colors.Variant)
+            {
+                case CreatureVariant.Crypt:
+                    if (body == CreatureBody.Spider) CryptSpider(c);
+                    else if (body == CreatureBody.Slime) CryptSlime(c);
+                    else if (body == CreatureBody.Bat) CryptBat(c);
+                    break;
+                case CreatureVariant.Frost:
+                    if (body == CreatureBody.Spider) FrostSpider(c);
+                    else if (body == CreatureBody.Wolf) FrostWolf(c);
+                    break;
+                case CreatureVariant.Infernal:
+                    if (body == CreatureBody.Wolf) InfernalWolf(c);
+                    break;
+            }
+        }
+
+        // A skull-faced bone carapace over the abdomen, ribs down its flanks, a horn on its head
+        // and bone spurs at every knee.
+        private static void CryptSpider(Ctx c)
+        {
+            Transform abdomen = c.Anim.Abdomen;
+            for (int i = 0; i < 3; i++)
+                Ico(c, abdomen, Bone, new Vector3(0f, 0.44f - i * 0.05f, -0.18f - i * 0.24f), new Vector3(0.66f - i * 0.12f, 0.18f, 0.3f));
+            Ico(c, abdomen, Bone, new Vector3(0f, 0.5f, -0.5f), new Vector3(0.38f, 0.24f, 0.36f));
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Part(abdomen, PrimitiveType.Sphere, Dark, new Vector3(side * 0.09f, 0.6f, -0.4f), new Vector3(0.1f, 0.06f, 0.09f), Vector3.zero, false);
+                Part(abdomen, PrimitiveType.Sphere, c.Colors.Eyes, new Vector3(side * 0.09f, 0.63f, -0.4f), Vector3.one * 0.04f, Vector3.zero, false);
+                for (int r = 0; r < 4; r++)
+                    Part(abdomen, PrimitiveType.Cube, Bone, new Vector3(side * 0.44f, 0.12f, -0.1f - r * 0.18f),
+                        new Vector3(0.05f, 0.42f, 0.05f), new Vector3(0f, 0f, side * -28f));
+            }
+            Cone(c, c.Anim.BodyPivot, Bone, new Vector3(0f, 0.2f, 0.18f), new Vector3(0.09f, 0.28f, 0.09f), new Vector3(-30f, 0f, 0f));
+            foreach (CreatureAnimator.Leg leg in c.Anim.Legs)
+                Cone(c, leg.Knee, Bone, new Vector3(0f, 0.05f, 0f), new Vector3(0.05f, 0.2f, 0.05f), Vector3.zero);
+        }
+
+        // A drowned corpse: its skull and ribcage showing through the ooze, an arm bone sticking out.
+        private static void CryptSlime(Ctx c)
+        {
+            Transform blob = c.Anim.BodyPivot;
+            Ico(c, blob, Bone, new Vector3(0.12f, 0.98f, -0.12f), new Vector3(0.34f, 0.3f, 0.34f));
+            for (int side = -1; side <= 1; side += 2)
+                Part(blob, PrimitiveType.Sphere, Dark, new Vector3(0.12f + side * 0.08f, 1.0f, 0.03f), new Vector3(0.08f, 0.07f, 0.05f), Vector3.zero, false);
+            for (int r = 0; r < 4; r++)
+            {
+                float y = 0.42f + r * 0.12f;
+                for (int side = -1; side <= 1; side += 2)
+                    Part(blob, PrimitiveType.Cube, Bone, new Vector3(side * 0.5f, y, -0.12f), new Vector3(0.05f, 0.05f, 0.42f), new Vector3(0f, side * 18f, side * 25f));
+            }
+            Part(blob, PrimitiveType.Cube, Bone, new Vector3(-0.42f, 0.7f, 0.2f), new Vector3(0.07f, 0.5f, 0.07f), new Vector3(-20f, 0f, 35f));
+            Part(blob, PrimitiveType.Sphere, Bone, new Vector3(-0.56f, 0.9f, 0.27f), Vector3.one * 0.1f, Vector3.zero);
+        }
+
+        // A bare skull for a face and bone spurs along the wings.
+        private static void CryptBat(Ctx c)
+        {
+            Ico(c, c.Anim.Head, Bone, new Vector3(0f, 0.07f, 0.12f), new Vector3(0.25f, 0.2f, 0.2f));
+            for (int side = -1; side <= 1; side += 2)
+                Part(c.Anim.Head, PrimitiveType.Sphere, c.Colors.Eyes, new Vector3(side * 0.06f, 0.09f, 0.21f), Vector3.one * 0.05f, Vector3.zero, false);
+            foreach (Transform wing in new[] { c.Anim.WingL, c.Anim.WingR })
+            {
+                if (wing == null) continue;
+                for (int i = 0; i < 3; i++)
+                    Cone(c, wing, Bone, new Vector3(0.1f + i * 0.14f, 0.04f, 0.15f), new Vector3(0.035f, 0.12f, 0.035f), new Vector3(-30f, 0f, 0f));
+            }
+            Cone(c, c.Anim.BodyPivot, Bone, new Vector3(0f, 0.2f, -0.08f), new Vector3(0.06f, 0.16f, 0.06f), new Vector3(-40f, 0f, 0f));
+        }
+
+        // Ice crystals jutting from the abdomen and back, and icicles hanging from every knee.
+        private static void FrostSpider(Ctx c)
+        {
+            Transform abdomen = c.Anim.Abdomen;
+            Vector3[] spots =
+            {
+                new Vector3(0f, 0.55f, -0.35f), new Vector3(0.22f, 0.48f, -0.5f), new Vector3(-0.22f, 0.48f, -0.5f),
+                new Vector3(0.12f, 0.42f, -0.75f), new Vector3(-0.14f, 0.5f, -0.2f), new Vector3(0.3f, 0.32f, -0.22f)
+            };
+            for (int i = 0; i < spots.Length; i++)
+            {
+                float lean = (i % 2 == 0 ? 1f : -1f) * (12f + i * 5f);
+                Cone(c, abdomen, i % 3 == 0 ? DeepIce : Ice, spots[i], new Vector3(0.14f, 0.38f + (i % 3) * 0.1f, 0.14f), new Vector3(-20f - i * 4f, i * 30f, lean));
+            }
+            for (int side = -1; side <= 1; side += 2)
+                Cone(c, c.Anim.BodyPivot, Ice, new Vector3(side * 0.14f, 0.2f, 0.12f), new Vector3(0.08f, 0.24f, 0.08f), new Vector3(-15f, 0f, side * -20f));
+            foreach (CreatureAnimator.Leg leg in c.Anim.Legs)
+                Cone(c, leg.Knee, Ice, new Vector3(0f, -0.08f, 0f), new Vector3(0.05f, 0.18f, 0.05f), new Vector3(180f, 0f, 0f));
+        }
+
+        // A ridge of ice shards down the spine, a frozen ruff and icicles on the jaw and tail.
+        private static void FrostWolf(Ctx c)
+        {
+            Transform body = c.Anim.BodyPivot;
+            for (int i = 0; i < 6; i++)
+            {
+                float z = 0.36f - i * 0.16f;
+                Cone(c, body, i % 2 == 0 ? Ice : DeepIce, new Vector3(0f, 0.27f, z), new Vector3(0.1f, 0.26f - i * 0.025f, 0.08f), new Vector3(-25f, 0f, i % 2 == 0 ? 8f : -8f));
+            }
+            for (int side = -1; side <= 1; side += 2)
+                for (int i = 0; i < 2; i++)
+                    Cone(c, body, Ice, new Vector3(side * 0.24f, 0.12f - i * 0.12f, 0.42f), new Vector3(0.07f, 0.22f, 0.07f), new Vector3(-50f, 0f, side * -70f));
+            if (c.Anim.Jaw != null)
+                for (int i = -1; i <= 1; i++)
+                    Cone(c, c.Anim.Jaw, Ice, new Vector3(i * 0.05f, -0.06f, 0.08f), new Vector3(0.03f, 0.1f, 0.03f), new Vector3(180f, 0f, 0f));
+            if (c.Anim.Tail != null)
+                Cone(c, c.Anim.Tail, Ice, new Vector3(0f, 0f, -0.66f), new Vector3(0.08f, 0.22f, 0.08f), new Vector3(-90f, 0f, 0f));
+        }
+
+        // Curved horns, a ridge of glowing spines down its back and a smouldering tail tip.
+        private static void InfernalWolf(Ctx c)
+        {
+            Transform body = c.Anim.BodyPivot;
+            Transform head = c.Anim.Head;
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Cone(c, head, Dark, new Vector3(side * 0.12f, 0.24f, 0.0f), new Vector3(0.07f, 0.3f, 0.07f), new Vector3(-55f, 0f, side * -25f));
+                Cone(c, head, c.Colors.Accent, new Vector3(side * 0.15f, 0.38f, -0.18f), new Vector3(0.04f, 0.12f, 0.04f), new Vector3(-100f, 0f, side * -25f));
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                float z = 0.3f - i * 0.18f;
+                Cone(c, body, Dark, new Vector3(0f, 0.25f, z), new Vector3(0.09f, 0.24f, 0.07f), new Vector3(-30f, 0f, 0f));
+                Cone(c, body, c.Colors.Accent, new Vector3(0f, 0.36f, z - 0.06f), new Vector3(0.05f, 0.12f, 0.04f), new Vector3(-30f, 0f, 0f));
+            }
+            if (c.Anim.Tail != null)
+                for (int i = -1; i <= 1; i++)
+                    Cone(c, c.Anim.Tail, c.Colors.Accent, new Vector3(i * 0.04f, 0.02f, -0.66f), new Vector3(0.06f, 0.2f, 0.06f), new Vector3(-70f, i * 20f, 0f));
         }
 
         // ------------------------------------------------------------------ helpers

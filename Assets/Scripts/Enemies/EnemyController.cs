@@ -90,10 +90,22 @@ namespace PoeClone.Enemies
 
         public bool IsChilled => Time.time < chilledUntil;
 
+        private const float HasteSpeed = 1.4f;
+        private const float HasteAttackSpeed = 1.3f;
+        private float hastedUntil = -1f;
+
+        /// <summary>Runs and attacks faster for a while (a pack leader's howl).</summary>
+        public void Hasten(float seconds)
+        {
+            hastedUntil = Mathf.Max(hastedUntil, Time.time + seconds);
+        }
+
+        public bool IsHasted => Time.time < hastedUntil;
+
         private float MoveSpeed =>
             (player != null
                 ? player.MoveSpeed * speedRatioToPlayer
-                : fallbackSpeed) * (Time.time < chilledUntil ? 0.5f : 1f) * (IsEnraged ? (kind != null && kind.IsBoss ? 1.25f : EnrageSpeed) : 1f);
+                : fallbackSpeed) * (Time.time < chilledUntil ? 0.5f : 1f) * (IsHasted ? HasteSpeed : 1f) * (IsEnraged ? (kind != null && kind.IsBoss ? 1.25f : EnrageSpeed) : 1f);
 
         // Ranged and minion hits enrage regardless of distance. Every such hit refreshes the timer.
         private const float EnrageSpreadRadius = 8f;
@@ -111,7 +123,7 @@ namespace PoeClone.Enemies
         public float DamageMultiplier => IsEnraged ? (kind != null && kind.IsBoss ? kind.BossEnrageDamage : EnrageDamage) : 1f;
 
         /// <summary>How much faster it attacks right now.</summary>
-        public float AttackSpeedMultiplier => IsEnraged ? (kind != null && kind.IsBoss ? 1.25f : 1.5f) : 1f;
+        public float AttackSpeedMultiplier => (IsEnraged ? (kind != null && kind.IsBoss ? 1.25f : 1.5f) : 1f) * (IsHasted ? HasteAttackSpeed : 1f);
 
         // spread: also rouses and enrages every living enemy within EnrageSpreadRadius (those
         // don't spread it further, so it can't run across the whole map).
