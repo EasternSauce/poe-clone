@@ -2327,7 +2327,7 @@ MonoBehaviour:
   - id: sound.world.loot
     purpose: Generic loot drop
     clips:
-    - {fileID: 8300000, guid: 8f7eaa9ac09b4ee47a3ddaa2af296db1, type: 3}
+    - {fileID: 8300000, guid: f20cfaf860dd0e64da88289a0d7f854a, type: 3}
   - id: sound.world.shatter
     purpose: Ice and barrier shattering
     clips:

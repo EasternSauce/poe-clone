@@ -1,3 +1,6 @@
+version: 2026-10-09-generic-loot-drop-audio
+- The generic loot drop sound now uses the standard ground drop recording after its old clip was removed.
+
 version: 2026-10-09-best-corpse-explosion
 - Corpse explosions and quest props sharing their effect now use the selected best_corpse_explosion recording.
 

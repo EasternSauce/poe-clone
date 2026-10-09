@@ -1717,7 +1717,7 @@
             "soundGroup": "sound.world.loot",
             "purpose": "Generic loot drop",
             "current": [
-                "Assets/Audio/SFX/World/loot_drop.wav"
+                "Assets/Audio/Resources/Sfx/drop_normal.wav"
             ],
             "usages": [
                 {

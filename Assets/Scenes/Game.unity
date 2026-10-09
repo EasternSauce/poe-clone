@@ -24580,7 +24580,7 @@ MonoBehaviour:
   uiItemPickup: {fileID: 8300000, guid: 7baf97f3279ffef40b747402df81ee46, type: 3}
   uiItemPlace: {fileID: 8300000, guid: 46190f48c471d1e47b59959d5fb422de, type: 3}
   gateOpen: {fileID: 8300000, guid: 255f0c0a1b85a6d4490764b5ca6fcfb6, type: 3}
-  lootDrop: {fileID: 8300000, guid: 8f7eaa9ac09b4ee47a3ddaa2af296db1, type: 3}
+  lootDrop: {fileID: 8300000, guid: f20cfaf860dd0e64da88289a0d7f854a, type: 3}
   sfxVolume: 0.8
   uiVolume: 0.6
   inventoryToggleVolume: 0.1
