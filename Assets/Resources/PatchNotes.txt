@@ -1,3 +1,6 @@
+version: 2026-10-09-sanctuary-shed-skins
+- Replaced the Shepherd arena's small leather curls with four large, deflated skins from the third-phase colossal serpent. Pale, wrinkled sections have ragged, abruptly cut open ends and matching scale detail, placed along the arena sides.
+
 version: 2026-10-09-dragging-breath-damage
 - Hollowmaw's pulling cone now deals damage every 0.5 seconds you remain inside it during the active channel, in addition to its final close-range hit. Leaving the cone resets the damage timer.
 

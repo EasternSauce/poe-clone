@@ -81,6 +81,11 @@ namespace PoeClone.World
             LocalBox(gate, new Vector3(0f, 0.025f, 0f), new Vector3(7.2f, 0.05f, 3f), kit.Mat("TanDark"), false);
             SanctuarySkull(gate, new Vector3(0f, 7.65f, 0.92f), 0.72f);
             ScatterSanctuaryRemains(dressing, c);
+            // Large, broken moults stay beside the ribs, clear of the entrance and boss spawn.
+            SanctuaryShedSkin(dressing, c + new Vector3(-32f, 0f, -17f), -12f, 0);
+            SanctuaryShedSkin(dressing, c + new Vector3(32f, 0f, -13f), 16f, 1);
+            SanctuaryShedSkin(dressing, c + new Vector3(-29f, 0f, 16f), 20f, 2);
+            SanctuaryShedSkin(dressing, c + new Vector3(28f, 0f, 20f), -18f, 3);
         }
 
         private void ScatterSanctuaryRemains(Transform parent, Vector3 c)
@@ -190,12 +195,7 @@ namespace PoeClone.World
         private void SanctuaryOffering(Transform parent, Vector3 at, float yaw, int variant)
         {
             Transform offering = Holder(parent, "ShedOffering", at, Quaternion.Euler(0f, yaw, 0f));
-            // A low, curled discarded hide, loose bones and wax: nothing to obstruct movement or shots.
-            Transform hide = Holder(offering, "ShedHide", at, offering.rotation);
-            hide.localScale = new Vector3(1f, 0.14f, 1f);
-            SanctuaryCurve(hide, "CurledHide", new Vector3(-0.7f, 0.4f, -0.8f),
-                new Vector3(-1.2f, 1f, 0f), new Vector3(1.1f, 0.6f, 0.7f),
-                new Vector3(0.65f, 0.8f, 1.4f), 0.65f, kit.Mat("Leather"));
+            // Loose bones and wax; shed skins are separate, serpent-sized scenery.
             SanctuarySkull(offering, new Vector3(0.5f, 0.25f, -0.3f), 0.28f);
             SanctuaryCurve(offering, "LooseBone", new Vector3(-0.8f, 0.12f, 0.3f),
                 new Vector3(-0.3f, 0.16f, 0.5f), new Vector3(0.4f, 0.17f, 0.3f),
@@ -207,6 +207,67 @@ namespace PoeClone.World
                 LocalCyl(offering, p + Vector3.up * h * 0.5f, 0.075f, h, kit.Mat("Candle"), false);
                 LocalBall(offering, p + Vector3.up * (h + 0.05f), 0.06f, kit.Mat("Lantern"));
             }
+        }
+
+        private void SanctuaryShedSkin(Transform parent, Vector3 at, float yaw, int variant)
+        {
+            Transform root = Holder(parent, "ColossalShedSkin", at, Quaternion.Euler(0f, yaw, 0f));
+            // The attack rig is 7.2m across at phase-three scale. Flatten its empty skin,
+            // widening it to roughly preserve circumference instead of shrinking the snake.
+            float radius = CarrionSaintLook.SerpentThickness * ShepherdLook.Phase2Scale * 0.5f;
+            float length = CarrionSaintLook.SerpentLength * ShepherdLook.Phase2Scale * (0.25f + variant * 0.025f);
+            const int rings = 32, sides = 32, stride = sides + 1;
+            int surfaceCount = (rings + 1) * stride;
+            var vertices = new Vector3[surfaceCount * 2];
+            var uv = new Vector2[vertices.Length];
+            var triangles = new int[rings * sides * 12];
+            for (int ring = 0; ring <= rings; ring++)
+            {
+                float t = ring / (float)rings;
+                float bend = Mathf.Sin(t * 5f + variant) * 0.65f;
+                float width = radius * 1.45f * (1f + 0.06f * Mathf.Sin(t * 19f + variant));
+                for (int side = 0; side <= sides; side++)
+                {
+                    float angle = side * Mathf.PI * 2f / sides;
+                    float across = Mathf.Cos(angle), up = Mathf.Sin(angle);
+                    // A low, wrinkled hollow sleeve. Both torn ends retain the full width:
+                    // no head, tail taper or end caps that could read as a living snake.
+                    float fold = 0.16f * Mathf.Sin(t * 31f + across * 8f + variant);
+                    float tear = 0.32f * Mathf.Sin(angle * 7f + variant) + 0.18f * Mathf.Cos(angle * 11f);
+                    float endWeight = Mathf.Pow(Mathf.Abs(t * 2f - 1f), 12f);
+                    int v = ring * stride + side;
+                    vertices[v] = new Vector3(bend + across * width,
+                        0.12f + (up + 1f) * (0.38f + fold) + 0.07f * Mathf.Sin(t * 43f + angle * 3f),
+                        (t - 0.5f) * length + tear * endWeight);
+                    vertices[v + surfaceCount] = vertices[v];
+                    // Same twelve scales around the skin and 0.7m row spacing as attack tails.
+                    uv[v] = uv[v + surfaceCount] = new Vector2(side * 12f / sides, t * length / 0.7f);
+                    if (ring == rings || side == sides) continue;
+                    int index = (ring * sides + side) * 12;
+                    triangles[index] = v; triangles[index + 1] = v + 1; triangles[index + 2] = v + stride;
+                    triangles[index + 3] = v + 1; triangles[index + 4] = v + stride + 1; triangles[index + 5] = v + stride;
+                    // Separate inside vertices give the open ends a correctly lit inner surface.
+                    for (int corner = 0; corner < 6; corner += 3)
+                    {
+                        triangles[index + 6 + corner] = triangles[index + corner + 2] + surfaceCount;
+                        triangles[index + 7 + corner] = triangles[index + corner + 1] + surfaceCount;
+                        triangles[index + 8 + corner] = triangles[index + corner] + surfaceCount;
+                    }
+                }
+            }
+            var mesh = new Mesh { name = "DeflatedTornSerpentMoult", vertices = vertices, uv = uv, triangles = triangles };
+            mesh.RecalculateNormals(); mesh.RecalculateBounds();
+            // Reuse the build-safe runtime material and the serpent's existing scale pattern.
+            GameObject skin = PoeClone.Visuals.RuntimePrimitives.Create(PrimitiveType.Cube, root,
+                new Color(0.78f, 0.75f, 0.58f));
+            skin.name = "OpenEndedShedSkin";
+            skin.GetComponent<MeshFilter>().sharedMesh = mesh;
+            Renderer renderer = skin.GetComponent<Renderer>();
+            var surface = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(surface);
+            surface.SetFloat("_SerpentScales", 1f);
+            surface.SetFloat("_RimIntensity", 0f);
+            renderer.SetPropertyBlock(surface);
         }
 
         private void SanctuarySkull(Transform parent, Vector3 p, float radius)
