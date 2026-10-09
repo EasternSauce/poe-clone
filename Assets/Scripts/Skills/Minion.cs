@@ -69,8 +69,8 @@ namespace PoeClone.Skills
 
         private const float FollowRadius = 2.5f;
         private const float EngageRadius = 8f;
-        private const float Leash = 9f;             // only enemies this close to the owner are fought...
-        private const float MarkLeash = 16f;        // ...or the marked one, a good deal further off
+        private const float Leash = 18f;            // only enemies this close to the owner are fought...
+        private const float MarkLeash = 32f;        // ...or the marked one, a good deal further off
         private const float TeleportDistance = 10f; // about half the screen: past this it blinks back to the owner
 
         private Transform owner;
@@ -123,8 +123,16 @@ namespace PoeClone.Skills
         /// <summary>Life at a summon level, before Minion Life: 5% more each level.</summary>
         public static float LifeAt(MinionKind kind, int level) => ProfileOf(kind).Life * Mathf.Pow(1.05f, Mathf.Max(1, level) - 1);
 
-        /// <summary>Damage per hit at a summon level, before Minion Damage: about 16% more each level.</summary>
-        public static float DamageAt(MinionKind kind, int level) => ProfileOf(kind).Damage * Mathf.Pow(1.16f, Mathf.Max(1, level) - 1);
+        /// <summary>
+        /// Damage per hit at a summon level, before Minion Damage: 16% more each level, with a
+        /// low-level bonus (2.5x at level 1) that fades out geometrically by level 10, so levels
+        /// 1-10 climb a smooth ~4.8% per level and level 10 onwards is unchanged.
+        /// </summary>
+        public static float DamageAt(MinionKind kind, int level)
+        {
+            int l = Mathf.Max(1, level);
+            return ProfileOf(kind).Damage * Mathf.Pow(1.16f, l - 1) * Mathf.Pow(2.5f, 1f - Mathf.Clamp01((l - 1) / 9f));
+        }
 
         /// <summary>A soft per-kind cap; the owner's global minion limit is the real army limit.</summary>
         public static int KindCap(MinionKind kind, StatSheet sheet)
