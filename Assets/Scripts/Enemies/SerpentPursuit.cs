@@ -17,6 +17,7 @@ namespace PoeClone.Enemies
         private const float EndSpeed = 13.5f;
         private const float SpeedRampSeconds = 5f;
         private const float TurnDegreesPerSecond = 75f;
+        private const float EdgePassTurnDegreesPerSecond = 35f;
         private const float UTurnSeconds = 1.75f;
         private const float UTurnSpeed = 5.5f;
         private const float ChaseSeconds = 12f;
@@ -234,7 +235,7 @@ namespace PoeClone.Enemies
                 }
                 else if (to.sqrMagnitude > 0.01f)
                     direction = Vector3.RotateTowards(direction, to.normalized,
-                        TurnDegreesPerSecond * Mathf.Deg2Rad * Time.deltaTime, 0f).normalized;
+                        EdgePassTurnDegreesPerSecond * Mathf.Deg2Rad * Time.deltaTime, 0f).normalized;
             }
             // Double the approach speed in 0.2 seconds: a distinct burst after the dodge.
             if (missed) passSpeed = Mathf.MoveTowards(passSpeed, EndSpeed * 2f, EndSpeed / 0.2f * Time.deltaTime);

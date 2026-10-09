@@ -1,3 +1,6 @@
+version: 2026-10-09-serpent-gauntlet-wide-turns
+- Slowed the four-pass serpent's steering to 35 degrees per second for wider, easier-to-dodge turns. It still weaves at full approach speed and bursts to double speed after missing.
+
 version: 2026-10-09-serpent-gauntlet-steering
 - Fixed the four-pass colossal serpent attack to weave and turn toward the player's current position at full speed. Only a missed jaw attack locks its direction and accelerates straight to the arena edge, retaining the curved tail behind it.
 - Missing the player now triggers a sharp burst to twice the approach speed within 0.2 seconds.
