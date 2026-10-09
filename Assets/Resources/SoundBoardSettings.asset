@@ -145,16 +145,9 @@ MonoBehaviour:
     - footstep_grass_1
     sharedIds: []
     defaults:
-    - {fileID: 8300000, guid: 6f34077254f14564c9735ee332fb9995, type: 3}
-    - {fileID: 8300000, guid: 247b320aecd167143a0a38f889af9d70, type: 3}
-    - {fileID: 8300000, guid: f7c561c5fd7ad704db75b2d02f04f9a8, type: 3}
-    - {fileID: 8300000, guid: 4eb605c4e10e90e4f93d0c5bc37bc4db, type: 3}
+    - {fileID: 8300000, guid: bf4f83921a7f06c44b147fc62cfcdf82, type: 3}
     suggestions:
-    - "Assets/Audio/SoundLibrary/Movement/Footstep_grass_\u2013_Sof_#1-1766767691077.mp3"
-    - "Assets/Audio/SoundLibrary/Movement/Footstep_grass_\u2013_Sof_#2-1766767688744.mp3"
-    - "Assets/Audio/SoundLibrary/Movement/Footstep_grass_\u2013_Sof_#3-1766767686377.mp3"
-    - "Assets/Audio/SoundLibrary/Movement/Footstep_grass_\u2013_Sof_#4-1766767680960.mp3"
-    - Assets/Audio/SoundLibrary/Movement/03_Step_grass_03.wav
+    - Assets/Audio/SFX/Movement/footstep_grass_1.wav
     selected: {fileID: 0}
     muted: 0
     volume: 1

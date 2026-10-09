@@ -1,3 +1,6 @@
+version: 2026-10-09-simple-walking-sounds
+- Restored the familiar short grass step for walking and removed the louder rotating footstep recordings.
+
 version: 2026-10-09-centered-audio
 - Centered all game sounds in the stereo mix so they cannot shift into one ear. World effects fade in volume with distance, and wind gusts have no directional pan.
 

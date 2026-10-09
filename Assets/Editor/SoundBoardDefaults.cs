@@ -32,7 +32,6 @@ namespace PoeClone.EditorTools
             { "combat.hit", new[] { "Dagger_stab_" } },
             { "combat.block", new[] { "Shield_block_" } },
             { "player.hurt", new[] { "Player_hurt_" } },
-            { "player.steps", new[] { "Footstep_grass_" } },
             { "item.pickup.gold", new[] { "handleCoins", "handleCoins2" } },
             { "item.drop.gold", new[] { "item_coins_" } },
             { "item.pickup.jewel", new[] { "item_gem_" } },
