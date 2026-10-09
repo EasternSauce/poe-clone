@@ -27,7 +27,7 @@ namespace PoeClone.EditorTools
         // Prefixes cover alternate takes whose filenames include generated timestamps.
         static readonly Dictionary<string, string[]> recordings = new Dictionary<string, string[]>
         {
-            { "player.bow", new[] { "Skill_Arrow02_arrow_release", "Skill_Arrow03_arrow_release" } },
+            { "player.bow", new[] { "Bow_and_arrow_shot_–_#3-1766764176083_arrow_release" } },
             { "combat.hit", new[] { "Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit" } },
             { "combat.block", new[] { "Shield_block_" } },
             { "combat.ground.Physical", new[] { "Skill_Earth04" } },
@@ -51,7 +51,7 @@ namespace PoeClone.EditorTools
             { "skill.ReapingArc", new[] { "Weapon_Scythe01", "Weapon_Scythe02" } },
             { "skill.Pulverize", new[] { "Weapon_Hammer01", "Weapon_Hammer02" } },
             { "skill.LungingThrust", new[] { "Weapon_Dagger01", "Weapon_Dagger02", "Weapon_Dagger03" } },
-            { "skill.SplitShot", new[] { "Skill_Arrow05_special_attack_multiple_arrows" } },
+            { "skill.SplitShot", new[] { "Skill_Arrow02_arrow_release", "Skill_Arrow03_arrow_release" } },
             { "skill.PiercingShot", new[] { "Skill_Arrow06_arrow_flies" } },
             { "skill.RainOfArrows", new[] { "Skill_Arrow01_rain_of_arrows_or_volley", "Skill_Arrow04_rain_of_barrage_of_arrows" } }
         };

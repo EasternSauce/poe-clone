@@ -66,6 +66,16 @@ namespace PoeClone.Inventory
         public static int RollSkillLevel(System.Random rng, int itemLevel) =>
             (int)RollTierValue(rng, ChooseTier(rng, SkillTiers, Math.Max(1, itemLevel)));
 
+        /// <summary>The tier number (T1 strongest) whose range holds this skill level, or 0 if none does.</summary>
+        public static int SkillTier(float level)
+        {
+            ModifierTier[] tiers = SkillTiers;
+            for (int i = 0; tiers != null && i < tiers.Length; i++)
+                if (tiers[i] != null && level >= tiers[i].Min && level <= tiers[i].Max)
+                    return tiers.Length - i;
+            return 0;
+        }
+
         // Which kind of character a base is made for. Its random stats lean that way (a silk robe
         // rolls caster stats more often, plate rolls Strength and Armour), so a build finds gear
         // that suits it without every item being for everyone.
@@ -644,6 +654,9 @@ namespace PoeClone.Inventory
                 int tier = m.Tier;
                 foreach (StatModifier implicitMod in b.Implicits)
                     if (implicitMod.Stat == m.Stat) { tier = -1; break; }
+                // Skills added to fixed items (the starter gear) used to carry no tier.
+                if (tier == 0 && SkillGrants.IsGrant(m.Stat))
+                    tier = SkillTier(legal.Value);
                 if (tier != m.Tier || !Mathf.Approximately(legal.Value, m.Value))
                     changed = true;
                 mods.Add(new StatModifier(m.Stat, legal.Value, tier == -1 ? -1 : Mathf.Approximately(legal.Value, m.Value) ? tier : 0));

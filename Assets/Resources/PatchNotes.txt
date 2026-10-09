@@ -1,3 +1,8 @@
+version: 2026-10-09-bow-audio-and-starter-tiers
+- Basic bow attacks from the player and enemy archers use the softer bow recording again.
+- Split Shot now uses plain arrow-release sounds. The multiple-arrows effect is kept for special attacks.
+- Skills on the starting gear in Haven now show their real tier instead of "Tier unknown", including on items already picked up.
+
 version: 2026-10-09-master-volume
 - Settings now has a Volume slider that controls the overall volume of all game sounds. It is remembered between sessions.
 - Goblin-style attack grunts are 30% quieter.

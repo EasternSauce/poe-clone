@@ -36,7 +36,7 @@ namespace PoeClone.Inventory
         // The same item with a skill added at the top of its stats.
         private static ItemData WithSkill(ItemData item, StatType grant, int level)
         {
-            var mods = new List<StatModifier> { new StatModifier(grant, level) };
+            var mods = new List<StatModifier> { new StatModifier(grant, level, ItemGenerator.SkillTier(level)) };
             mods.AddRange(item.Modifiers);
             var copy = new ItemData(item.Id, item.Name, item.Type, item.Width, item.Height, item.Tint, mods,
                 item.HasCape, item.WeaponType, item.Rarity);
