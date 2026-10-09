@@ -1,3 +1,8 @@
+version: 2026-10-09-world-ambience
+- Added forest, town, graveyard, cave, sanctuary, lava and blizzard ambience with smooth fades between areas.
+- Rivers grow louder as you approach their banks, following bends and bridge crossings. Ponds, ocean surf, fires and lava cracks also fade with your distance; frozen water stays silent.
+- Added occasional wind gusts, cave stone sounds, nearby bridge creaks and smithy noises, with varied timing and recordings. Ambient sounds follow the SFX volume and have their own mix control.
+
 version: 2026-10-09-sound-library-formats
 - Removed duplicate audio formats for sounds with the same name in the same Sound Library folder, keeping one copy and preferring WAV when available.
 

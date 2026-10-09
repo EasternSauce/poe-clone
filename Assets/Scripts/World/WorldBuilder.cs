@@ -203,6 +203,7 @@ namespace PoeClone.World
             definitions[ActArena] = BuildActArena();
             ConfigureCaveLighting(player.transform);
             BuildAmbientDetails();
+            gameObject.AddComponent<WorldAmbience>().Build(manager, player.transform);
 
             // Colliders made this frame aren't in the physics world until it syncs; the starter
             // loot below finds the ground by raycast.

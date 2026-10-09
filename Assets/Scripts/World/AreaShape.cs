@@ -88,6 +88,20 @@ namespace PoeClone.World
         public bool HasWater => ocean || waters.Count > 0;
         public bool HasOcean => ocean;
         public float WaterDistance(Vector3 world) => WaterDistance(new Vector2(world.x - Center.x, world.z - Center.z));
+        // Keep environmental audio aligned to the same authored water used by the ground and bridges.
+        public float RiverSoundDistance(Vector3 world) => WaterKindDistance(world, true);
+        public float LakeSoundDistance(Vector3 world) => WaterKindDistance(world, false);
+        public float OceanSoundDistance(Vector3 world) => ocean
+            ? -94f + Mathf.Sin((world.x - Center.x) * 0.045f) * 4f - (world.z - Center.z) : -10000f;
+
+        private float WaterKindDistance(Vector3 world, bool river)
+        {
+            Vector2 p = new Vector2(world.x - Center.x, world.z - Center.z);
+            float distance = -10000f;
+            foreach (Region water in waters)
+                if (water.corridor == river) distance = Mathf.Max(distance, water.Distance(p) + Roughness(p) * 0.4f);
+            return distance;
+        }
         private float WaterDistance(Vector2 p)
         {
             float d = ocean ? -94f + Mathf.Sin(p.x * 0.045f) * 4f - p.y : -10000f;

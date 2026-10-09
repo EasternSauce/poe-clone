@@ -38,6 +38,8 @@ namespace PoeClone.Audio
 
         [Header("Volumes")]
         [Range(0f, 1f)] public float sfxVolume = 0.8f;
+        [Tooltip("Ambient area beds, water, fires and occasional environmental sounds. Also follows SFX volume.")]
+        [Range(0f, 1f)] public float ambienceVolume = 0.65f;
         [Range(0f, 1f)] public float uiVolume = 0.6f;
         [Tooltip("The bag-rustle open/close clips are much hotter at the source than the other UI clips, so they get their own scale instead of sharing uiVolume.")]
         [Range(0f, 1f)] public float inventoryToggleVolume = 0.25f;
