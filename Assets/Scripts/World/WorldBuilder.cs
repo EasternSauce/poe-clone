@@ -224,6 +224,8 @@ namespace PoeClone.World
             if (cc != null) cc.enabled = false;
             player.transform.SetPositionAndRotation(to.position, to.rotation);
             if (cc != null) cc.enabled = true;
+            var walk = player.GetComponentInChildren<CharacterWalkAnimator>();
+            if (walk != null) walk.ResetAnimatorState();
 
             var stats = player.GetComponent<PlayerStats>();
             if (stats != null)

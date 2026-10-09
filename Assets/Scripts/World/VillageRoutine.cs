@@ -12,6 +12,7 @@ namespace PoeClone.World
     [DefaultExecutionOrder(-20)]
     public sealed class VillageRoutine : MonoBehaviour
     {
+        private const float WalkSpeed = 3.2f;
         private Npc npc;
         private CharacterController body;
         private CharacterWalkAnimator walk;
@@ -103,7 +104,8 @@ namespace PoeClone.World
             }
             transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(offset), 180 * Time.deltaTime);
             Vector3 before = transform.position;
-            Vector3 next = GroundObstacleMotion.Slide(body, before, before + offset.normalized * (1.15f * Time.deltaTime));
+            float step = Mathf.Min(offset.magnitude, WalkSpeed * Time.deltaTime);
+            Vector3 next = GroundObstacleMotion.Slide(body, before, before + offset.normalized * step);
             if (shape.Contains(next, 0.6f) && body != null && body.enabled) body.Move(next - before);
             blockedTime = (transform.position - before).sqrMagnitude < 0.00001f ? blockedTime + Time.deltaTime : 0;
             if (blockedTime > 2) { path.Clear(); wait = 2; blockedTime = 0; }

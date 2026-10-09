@@ -139,10 +139,13 @@ namespace PoeClone.Audio
             source.spatialBlend = 0f;
             source.panStereo = 0f;
             source.pitch = pitch;
-            source.volume = sfxVolume * volumeScale * DistanceVolume(position);
+            source.volume = volumeScale * WorldSfxVolume(position);
             source.Play();
             Destroy(go, clip.length / Mathf.Max(0.1f, pitch) + 0.1f);
         }
+
+        /// <summary>Master SFX gain and distance fade for persistent world sound sources.</summary>
+        public float WorldSfxVolume(Vector3 position) => sfxVolume * DistanceVolume(position);
 
         private static float DistanceVolume(Vector3 position)
         {

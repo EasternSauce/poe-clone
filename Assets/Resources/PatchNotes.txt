@@ -1,3 +1,8 @@
+version: 2026-10-09-natural-villager-walking
+- Villagers now walk at a normal pace instead of slowly shuffling between chores.
+- Townsfolk footsteps are quieter, fade with distance and follow the SFX volume setting, preventing distant villagers from producing a constant rustling chorus.
+- Fixed rapid leg wiggling and a burst of footsteps when the player is first placed in Haven or teleported. Added a footstep retrigger limit and prevented individual NPCs from overlapping their own footstep recordings.
+
 version: 2026-10-09-haven-residents-and-working-routines
 - Fixed a route-planning crash that left every chore villager standing still. Villagers now walk between stops and perform their chore animations, retrying blocked routes.
 - Added eighteen cottage residents across Haven's western, southern, northern and eastern neighborhoods, bringing the town to twenty-four ambient villagers plus its four service NPCs. Residents sweep doorsteps, tend vegetable beds and hang washing, with local routes instead of gathering in the square.

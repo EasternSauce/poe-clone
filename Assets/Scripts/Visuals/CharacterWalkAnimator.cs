@@ -64,6 +64,8 @@ namespace PoeClone.Visuals
 
         private Vector3 lastPosition;
         private Vector3 baseLocalPosition;
+        private bool basePoseCaptured;
+        private bool isTownNpc;
         private float speed;
         private float phase;
         private float blend;
@@ -81,6 +83,7 @@ namespace PoeClone.Visuals
         private AudioSource audioSource;
         private PoeClone.Audio.SoundBoardSettings soundBoard;
         private int lastStepIndex;
+        private float nextFootstepAt;
 
         // Idle: a slow breath and a little sway, out of step from one character to the next.
         private float idleSeed;
@@ -143,7 +146,8 @@ public void Configure(
         {
             soundBoard = PoeClone.Audio.SoundBoardSettings.Load();
             lastPosition = transform.position;
-            baseLocalPosition = transform.localPosition;
+            CaptureBasePose();
+            isTownNpc = GetComponentInParent<PoeClone.World.Npc>() != null;
             idleSeed = Random.value * 10f;
             attackAnimator = GetComponent<CharacterAttackAnimator>();
             stagger = GetComponentInParent<Stagger>();
@@ -158,6 +162,11 @@ public void Configure(
 
 private void LateUpdate()
         {
+            // Townsfolk share a close, quiet step sound. Distant neighborhoods must not
+            // pile their footsteps into the mix at the player's own footstep volume.
+            if (isTownNpc && audioSource != null)
+                audioSource.volume = PoeClone.Audio.AudioManager.Instance != null
+                    ? 0.25f * PoeClone.Audio.AudioManager.Instance.WorldSfxVolume(transform.position) : 0f;
             float dt = Time.deltaTime;
             if (dt <= 0f)
                 return;
@@ -165,6 +174,14 @@ private void LateUpdate()
             Vector3 delta = transform.position - lastPosition;
             delta.y = 0f;
             lastPosition = transform.position;
+
+            // Placement, warps and network corrections are not walking. Do not let a
+            // position jump feed a huge speed into the stride and footstep cadence.
+            if (delta.magnitude > Mathf.Max(2f, runFullSpeed * dt * 3f))
+            {
+                ResetAnimatorState();
+                return;
+            }
 
             float instantSpeed = delta.magnitude / dt;
             speed = Mathf.Lerp(speed, instantSpeed, 1f - Mathf.Exp(-12f * dt));
@@ -240,6 +257,7 @@ private void LateUpdate()
         // of movement speed, which jerks the pose for a frame or two.
         public void ResetAnimatorState()
         {
+            CaptureBasePose();
             lastPosition = transform.position;
             speed = 0f;
             phase = 0f;
@@ -256,11 +274,19 @@ private void LateUpdate()
             SetPivot(upperBody, 0f);
             transform.localPosition = baseLocalPosition;
             lastStepIndex = Mathf.FloorToInt(phase / Mathf.PI);
+            nextFootstepAt = Time.time;
+        }
+
+        private void CaptureBasePose()
+        {
+            if (basePoseCaptured) return;
+            baseLocalPosition = transform.localPosition;
+            basePoseCaptured = true;
         }
 
         private void PlayFootstep()
         {
-            if (audioSource == null || footstepClips == null || footstepClips.Length == 0)
+            if (Time.time < nextFootstepAt || audioSource == null || footstepClips == null || footstepClips.Length == 0)
                 return;
 
             AudioClip clip = footstepClips[Random.Range(0, footstepClips.Length)];
@@ -271,6 +297,10 @@ private void LateUpdate()
             float volume = footstepVolume * Random.Range(footstepVolumeRange.x, footstepVolumeRange.y);
             soundBoard?.Resolve(ref clip, ref volume);
             if (clip == null) return;
+            // A single villager must not stack rustling recordings on top of itself.
+            // Also cap rapid retriggers for all characters after unusually large movement.
+            nextFootstepAt = Time.time + (isTownNpc
+                ? Mathf.Max(0.22f, clip.length / Mathf.Max(0.1f, audioSource.pitch)) : 0.22f);
             audioSource.PlayOneShot(clip, volume);
         }
 
