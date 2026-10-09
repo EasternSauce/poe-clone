@@ -6,6 +6,15 @@ or hosting config files) when the deployment target and workflow are already
 documented here. Inspect additional files only to resolve a specific deployment
 question.
 
+The game source checkout is `EasternSauce/poe-clone`. The live GitHub Pages site
+(`https://easternsauce.github.io/poe-clone-web/`) is served from the separate
+`EasternSauce/poe-clone-web` repository. Pushing the source checkout alone does
+not update the site. Deploy both repositories: commit and push the source/build
+changes here, then copy the complete fresh `Builds/WebGL` output into a clean
+clone of `poe-clone-web`, commit it, and push that repository's `master` branch.
+Keep the second clone outside the source checkout so its Git metadata does not
+interfere with this repository.
+
 1. Review changes, commit intended source changes, and push `master`.
    Do not include generated Unity files. Run tests only when requested.
 
@@ -37,13 +46,18 @@ question.
    timeout or partially written/zero-length build file is not completion.
 
 4. In `Builds/WebGL`, review the changed files and confirm the WebGL data and
-   wasm outputs are present and non-empty. Stage all build changes, commit,
-   and push `master`.
+   wasm outputs are present and non-empty. Stage the build changes in this
+   source repository, commit, and push `master`. Then clone
+   `https://github.com/EasternSauce/poe-clone-web.git` into a separate temporary
+   directory, copy the contents of `Builds/WebGL` into the clone (including the
+   `Build` and `StreamingAssets` directories), review the diff, and commit and
+   push `master` there. Confirm both pushes succeeded before checking Pages.
 
 5. Verify the live version and build files:
    https://easternsauce.github.io/poe-clone-web/
-   GitHub Pages may still serve the old version just after the push. Keep
-   checking the live `version.json` until it matches the local build id, then
+   GitHub Pages and its CDN may still serve cached old files just after the
+   Pages-repository push. Fetch `version.json` with a changing query parameter
+   to bypass caches and keep checking until it matches the local build id, then
    confirm `index.html` contains that id and the data and wasm URLs return
    success with non-empty files. Do not push again just because Pages is still
    deploying. Gameplay visual verification is not required.
