@@ -333,17 +333,18 @@ namespace PoeClone.Visuals
         };
 
         // Bow skills' draws (see BowStyle): each replaces the plain shot while its skill is on.
-        // Split Shot sweeps the bow across the body as it looses, so the fan reads as thrown wide.
+        // Split Shot: aimed at the target like the plain shot (the arrows leave straight ahead), with
+        // only a slight sweep across the body as it looses so the fan reads as thrown wide.
         private static readonly AttackProfile BowFanProfile = new AttackProfile
         {
             Duration = 0.6f,
             StrikeTime = 0.62f,
             Absolute = true,
-            WindupOffset = new Pose(-80f, -55f, 0f, 125f),
-            StrikeOffset = new Pose(-80f, 20f, 0f, 95f),
+            WindupOffset = new Pose(-80f, -32f, 0f, 125f),
+            StrikeOffset = new Pose(-80f, -8f, 0f, 95f),
             UsesOffArm = true,
-            OffWindup = new Pose(-90f, -38f, 0f, 0f),
-            OffStrike = new Pose(-90f, 30f, 0f, 0f),
+            OffWindup = new Pose(-90f, -10f, 0f, 0f),
+            OffStrike = new Pose(-90f, 6f, 0f, 0f),
             BaseAttacksPerSecond = BowProfile.BaseAttacksPerSecond,
             Range = BowProfile.Range
         };

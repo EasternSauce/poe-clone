@@ -1,3 +1,6 @@
+version: 2026-10-09-split-shot-aim
+- Split Shot now draws the bow pointed at the target instead of swinging it far to the side, so the arrows leave from where the bow is aimed.
+
 version: 2026-10-09-bow-skill-release-audio
 - Split Shot, Piercing Shot, Burning Arrow and Venom Arrow now use the same bow release sound as basic bow attacks. Rain of Arrows keeps its volley sound.
 - Bows no longer have their own inventory place sound; they use the same sound as other weapons.
