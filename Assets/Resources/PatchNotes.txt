@@ -1,3 +1,6 @@
+version: 2026-10-09-sound-library-formats
+- Removed duplicate audio formats for sounds with the same name in the same Sound Library folder, keeping one copy and preferring WAV when available.
+
 version: 2026-10-09-permanent-sound-library
 - Copied all inspiration sounds into permanent category folders under Assets/Audio/SoundLibrary, with identical files stored only once. The Sound Library browser now previews these assets and provides immediate Rename and Delete actions; renaming preserves Unity asset IDs. Removed selection and export steps. The existing soundboard remains unchanged.
 
