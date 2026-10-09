@@ -84,7 +84,7 @@ namespace PoeClone.Enemies
         private Vector3 FindEdge(Vector3 inside, Vector3 direction)
         {
             // Keep the whole tube inside the boundary, including at oblique exit angles.
-            const float clearance = 1.8f;
+            const float clearance = SerpentPursuit.Radius + 0.3f;
             Vector3 last = inside;
             for (float distance = 0.5f; distance <= arena.Size.magnitude; distance += 0.5f)
             {

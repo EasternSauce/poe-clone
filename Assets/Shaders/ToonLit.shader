@@ -13,6 +13,7 @@ Shader "PoeClone/ToonLit"
         _AmbientBoost ("Ambient Fill", Range(0,1)) = 0.35
         _TriplanarTileSize ("Triplanar Tile Size (world units)", Float) = 2.0
         _TexInfluence ("Texture Influence", Range(0,1)) = 1.0
+        _SerpentScales ("Serpent Scale Surface", Range(0,1)) = 0
     }
     SubShader
     {
@@ -45,6 +46,7 @@ Shader "PoeClone/ToonLit"
             {
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
+                float2 uv : TEXCOORD0;
             };
 
             struct Varyings
@@ -53,6 +55,7 @@ Shader "PoeClone/ToonLit"
                 float3 positionWS : TEXCOORD0;
                 float3 normalWS : TEXCOORD1;
                 float fogCoord : TEXCOORD2;
+                float2 uv : TEXCOORD3;
             };
 
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
@@ -69,6 +72,7 @@ Shader "PoeClone/ToonLit"
                 float _AmbientBoost;
                 float _TriplanarTileSize;
                 float _TexInfluence;
+                float _SerpentScales;
             CBUFFER_END
 
             // ---------------------------------------------------------------
@@ -102,6 +106,7 @@ Shader "PoeClone/ToonLit"
                 OUT.positionWS = vpi.positionWS;
                 OUT.normalWS = vni.normalWS;
                 OUT.fogCoord = ComputeFogFactor(vpi.positionCS.z);
+                OUT.uv = IN.uv;
                 return OUT;
             }
 
@@ -128,9 +133,46 @@ Shader "PoeClone/ToonLit"
                 #endif
             }
 
+            // Staggered, overlapping scales anchored to the growing tube's UVs. No world-space
+            // projection: the scales stay wrapped around bends and keep their physical size.
+            half4 SerpentSurface(float2 uv)
+            {
+                float row = floor(uv.y);
+                float2 shifted = float2(uv.x + fmod(row, 2.0) * 0.5, uv.y);
+                float2 cell = frac(shifted) - 0.5;
+                float2 id = float2(fmod(floor(shifted.x), 12.0), row);
+                float variation = frac(sin(dot(id, float2(127.1, 311.7))) * 43758.5453);
+                float edge = abs(cell.x) * 1.35 + abs(cell.y + 0.08) * 0.85;
+                float seam = smoothstep(0.48, 0.61, edge);
+                float crown = 1.0 - smoothstep(0.12, 0.58, edge);
+                float weathering = sin(uv.y * 0.59 + sin(uv.x * 1.0472)) * cos(uv.x * 0.5236);
+                half3 scales = lerp(half3(0.68, 0.72, 0.52), half3(1.35, 1.22, 0.82), variation);
+                scales *= 0.96 + weathering * 0.18 + crown * 0.12;
+                scales = lerp(scales, half3(0.34, 0.38, 0.25), seam * 0.85);
+                // Broad, paler belly plates contrast with the mottled dorsal scales.
+                float belly = smoothstep(0.35, 0.70, -sin(uv.x * 0.5235988));
+                float bellySeam = smoothstep(0.38, 0.49, abs(cell.y));
+                scales = lerp(scales, half3(1.25, 1.18, 0.83) * (1.0 - bellySeam * 0.4), belly);
+                float relief = lerp(crown * 0.045 - seam * 0.02, -bellySeam * 0.018, belly);
+                return half4(scales, relief);
+            }
+
             half4 frag(Varyings IN) : SV_Target
             {
                 float3 normalWS = normalize(IN.normalWS);
+                half4 scales = half4(1, 1, 1, 0);
+                if (_SerpentScales > 0.0)
+                {
+                    scales = SerpentSurface(IN.uv);
+                    // Surface-gradient relief adds small, matte scale facets to all lighting,
+                    // including the sanctuary torches, without a glossy specular highlight.
+                    float3 dx = ddx(IN.positionWS), dy = ddy(IN.positionWS);
+                    float3 acrossX = cross(dy, normalWS), acrossY = cross(normalWS, dx);
+                    float determinant = dot(dx, acrossX);
+                    float3 gradient = (acrossX * ddx(scales.a) + acrossY * ddy(scales.a))
+                        * sign(determinant) / max(abs(determinant), 0.000001);
+                    normalWS = normalize(normalWS - gradient * _SerpentScales);
+                }
                 float4 shadowCoord = TransformWorldToShadowCoord(IN.positionWS);
                 Light mainLight = GetMainLight(shadowCoord);
 
@@ -142,6 +184,7 @@ Shader "PoeClone/ToonLit"
                 half3 texCol = SampleTriplanar(IN.positionWS, normalWS, _TriplanarTileSize);
                 texCol = lerp(half3(1, 1, 1), texCol, _TexInfluence);
                 half3 albedo = texCol * _BaseColor.rgb;
+                albedo *= lerp(half3(1, 1, 1), scales.rgb, _SerpentScales);
 
                 half3 litColor = albedo * mainLight.color.rgb;
                 half3 shadowedColor = albedo * _ShadowColor.rgb;

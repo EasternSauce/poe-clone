@@ -12,7 +12,7 @@ namespace PoeClone.Enemies
         // One fixed physical hit at area level 12: about seven Carrion Saint auto-attacks.
         // Tune this directly; enrage does not change it.
         private const float SwallowDamage = 400f;
-        private const float Radius = 1.5f;
+        internal const float Radius = 1.8f;
         private const float StartSpeed = 10f;
         private const float EndSpeed = 13.5f;
         private const float SpeedRampSeconds = 5f;
@@ -106,6 +106,11 @@ namespace PoeClone.Enemies
             for (int i = 0; i < originals.Length && i < copies.Length; i++) { originals[i].GetPropertyBlock(colour); copies[i].SetPropertyBlock(colour); }
             GameObject skin = RuntimePrimitives.Create(PrimitiveType.Cube, go.transform, new Color(0.22f, 0.29f, 0.16f));
             skin.name = "Extended serpent skin";
+            var skinSurface = new MaterialPropertyBlock();
+            skin.GetComponent<Renderer>().GetPropertyBlock(skinSurface);
+            skinSurface.SetFloat("_SerpentScales", 1f);
+            skinSurface.SetFloat("_RimIntensity", 0.025f);
+            skin.GetComponent<Renderer>().SetPropertyBlock(skinSurface);
             pursuit.mesh = new Mesh { name = "Growing serpent route" };
             pursuit.mesh.MarkDynamic();
             skin.GetComponent<MeshFilter>().sharedMesh = pursuit.mesh;
@@ -243,7 +248,7 @@ namespace PoeClone.Enemies
             passWeavePhase += 5.5f * speedRatio * Time.deltaTime;
             velocity = direction * passSpeed + side * Mathf.Sin(passWeavePhase) * 3.2f * speedRatio;
             Vector3 next = nose + velocity * Time.deltaTime;
-            bool atEdge = !passArena.Contains(next, 1.8f);
+            bool atEdge = !passArena.Contains(next, Radius + 0.3f);
             if (atEdge)
             {
                 // Clip the final step to the authored arena rather than the original aim line:
@@ -252,7 +257,7 @@ namespace PoeClone.Enemies
                 for (int i = 0; i < 8; i++)
                 {
                     float middle = (low + high) * 0.5f;
-                    if (passArena.Contains(Vector3.Lerp(nose, next, middle), 1.8f)) low = middle;
+                    if (passArena.Contains(Vector3.Lerp(nose, next, middle), Radius + 0.3f)) low = middle;
                     else high = middle;
                 }
                 next = Vector3.Lerp(nose, next, low);
@@ -377,27 +382,43 @@ namespace PoeClone.Enemies
         private void BuildSkin(float growth)
         {
             int count = route.Count + 1;
-            const int sides = 8;
-            var vertices = new Vector3[count * sides];
+            const int sides = 12;
+            const int ringVertices = sides + 1;
+            var vertices = new Vector3[count * ringVertices];
+            var uvs = new Vector2[vertices.Length];
             var indices = new int[(count - 1) * sides * 6];
+            float length = 0f;
             for (int i = 0; i < count; i++)
             {
                 Vector3 center = i < route.Count ? route[i] : nose;
+                if (i > 0) length += Vector3.Distance(center, route[i - 1]);
                 Vector3 tangent = i == count - 1 ? direction : (i + 1 < route.Count ? route[i + 1] - center : nose - center);
                 if (tangent.sqrMagnitude < 0.0001f) tangent = direction;
                 Vector3 across = Vector3.Cross(Vector3.up, tangent.normalized).normalized;
                 if (across.sqrMagnitude < 0.01f) across = Vector3.right;
-                for (int j = 0; j < sides; j++)
+                for (int j = 0; j <= sides; j++)
                 {
                     float a = j * Mathf.PI * 2f / sides;
-                    vertices[i * sides + j] = center + (across * Mathf.Cos(a) + Vector3.up * Mathf.Sin(a)) * Radius * growth;
-                    if (i == count - 1) continue;
-                    int at = (i * sides + j) * 6, v = i * sides + j, next = i * sides + (j + 1) % sides;
-                    indices[at] = v; indices[at + 1] = next; indices[at + 2] = v + sides;
-                    indices[at + 3] = next; indices[at + 4] = next + sides; indices[at + 5] = v + sides;
+                    int v = i * ringVertices + j;
+                    vertices[v] = center + (across * Mathf.Cos(a) + Vector3.up * Mathf.Sin(a)) * Radius * growth;
+                    // Twelve scales around the body; longitudinal spacing stays fixed in metres
+                    // as the route grows, rather than stretching a texture over the whole snake.
+                    uvs[v] = new Vector2(j, length / 0.7f);
+                    if (i == count - 1 || j == sides) continue;
+                    int at = (i * sides + j) * 6, next = v + 1;
+                    indices[at] = v; indices[at + 1] = next; indices[at + 2] = v + ringVertices;
+                    indices[at + 3] = next; indices[at + 4] = next + ringVertices; indices[at + 5] = v + ringVertices;
                 }
             }
-            mesh.Clear(); mesh.vertices = vertices; mesh.triangles = indices; mesh.RecalculateNormals(); mesh.RecalculateBounds();
+            mesh.Clear(); mesh.vertices = vertices; mesh.uv = uvs; mesh.triangles = indices; mesh.RecalculateNormals();
+            // Duplicate UV seam vertices must share a normal so the texture seam is not a ridge.
+            Vector3[] normals = mesh.normals;
+            for (int i = 0; i < count; i++)
+            {
+                int first = i * ringVertices, last = first + sides;
+                normals[first] = normals[last] = (normals[first] + normals[last]).normalized;
+            }
+            mesh.normals = normals; mesh.RecalculateBounds();
         }
 
         private static Vector3 Horizontal(Vector3 v) { v.y = 0f; return v; }
