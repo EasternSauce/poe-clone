@@ -372,6 +372,39 @@ namespace PoeClone.Inventory
         /// <summary>How likely a unique is to be chosen against the others that can drop.</summary>
         public static int DropWeight(int index) => All[index].Weight;
 
+        public static string NameOf(int index) => All[index].Name;
+        public static string BaseIdOf(int index) => All[index].BaseId;
+        public static bool IsShepherdOnly(int index) => All[index].ShepherdOnly;
+        public static int ShepherdRewardCount => ShepherdPool.Length;
+
+        /// <summary>The unique's modifier lines with their roll ranges, for debug tools.</summary>
+        public static string[] ModifierRanges(int index)
+        {
+            UniqueModifier[] mods = All[index].Mods;
+            var lines = new string[mods.Length];
+            for (int i = 0; i < mods.Length; i++)
+            {
+                UniqueModifier m = mods[i];
+                string line = StatFormatter.ItemLine(new StatModifier(m.Stat, m.Max));
+                lines[i] = m.Min == m.Max ? line
+                    : line + "  (" + StatFormatter.Number(m.Min) + " to " + StatFormatter.Number(m.Max) + ")";
+            }
+            return lines;
+        }
+
+        /// <summary>
+        /// Chance this unique is the one picked when an ordinary unique drops at this area level
+        /// (0 if it can't drop there).
+        /// </summary>
+        public static float ShareAtAreaLevel(int index, int areaLevel)
+        {
+            if (!CanDrop(index, areaLevel)) return 0f;
+            int total = 0;
+            foreach (int k in OrdinaryPool)
+                if (CanDrop(k, areaLevel)) total += All[k].Weight;
+            return total > 0 ? (float)All[index].Weight / total : 0f;
+        }
+
         /// <summary>Picks one of these unique indices, weighted by drop weight.</summary>
         public static int PickWeighted(System.Random rng, IList<int> indices)
         {

@@ -19,6 +19,11 @@ namespace PoeClone.UI
         private const int GearPrice = 150;
         private const int JewelleryPrice = 220;
 
+        /// <summary>The smith forges gear no higher than this level, whatever the character's level.</summary>
+        public const int SmithMaxLevel = 12;
+        /// <summary>Chance a smith commission comes out unique.</summary>
+        public const double SmithUniqueChance = 0.06;
+
         private static readonly string Dim = "#" + UiKit.Hex(UiKit.DimText);
         private static readonly string GoldHex = "#" + UiKit.Hex(new Color(1f, 0.84f, 0.3f));
 
@@ -457,7 +462,7 @@ namespace PoeClone.UI
         private static void BuyGear(Npc npc, PlayerInventory inventory, int price, System.Func<ItemType, bool> kind)
         {
             PlayerStats stats = inventory.GetComponent<PlayerStats>();
-            int level = Mathf.Clamp(stats != null ? stats.Level : 1, 1, 12);
+            int level = Mathf.Clamp(stats != null ? stats.Level : 1, 1, SmithMaxLevel);
 
             var bases = new List<string>();
             foreach (string id in ItemGenerator.BaseIds)
@@ -475,7 +480,7 @@ namespace PoeClone.UI
 
             var rng = new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
             double roll = rng.NextDouble();
-            ItemRarity rarity = roll < 0.06 ? ItemRarity.Unique : roll < 0.5 ? ItemRarity.Rare : ItemRarity.Magic;
+            ItemRarity rarity = roll < SmithUniqueChance ? ItemRarity.Unique : roll < 0.5 ? ItemRarity.Rare : ItemRarity.Magic;
             ItemData item = rarity == ItemRarity.Unique
                 ? UniqueItems.Random(rng, level, kind)
                 : ItemGenerator.Generate(rng, bases[rng.Next(bases.Count)], level, rarity);
