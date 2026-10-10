@@ -105,13 +105,22 @@ Shader "PoeClone/ToonLit"
                 return bounds.z > 0 && distance.x < bounds.z && distance.y < bounds.w ? 1.0 : 0.0;
             }
 
-            float WaterWave(float2 p, float4 motion)
+            // Slowly drifting low-frequency bends, so wave crests curve and break instead of
+            // running as straight parallel stripes.
+            float WaterWarp(float2 p)
             {
                 float t = _Time.y;
-                float still = sin(dot(p, float2(0.87, 0.54)) - t * 1.1) *
-                    0.035 + sin(dot(p, float2(-0.6, 1.3)) - t * 0.83) * 0.018;
-                float current = sin(motion.z * 2.6 - t * 3.8) * 0.035 +
-                    sin(dot(p, float2(-motion.y, motion.x)) * 4 + motion.z * 1.3 - t * 2) * 0.012;
+                return sin(p.y * 0.31 + t * 0.27) * 1.6 + sin(p.x * 0.23 - p.y * 0.11 - t * 0.19) * 1.3;
+            }
+
+            float WaterWave(float2 p, float4 motion)
+            {
+                float t = _Time.y, warp = WaterWarp(p);
+                float still = sin(dot(p, float2(0.87, 0.54)) + warp - t * 1.1) *
+                    0.035 + sin(dot(p, float2(-0.6, 1.3)) - warp * 0.7 - t * 0.83) * 0.018;
+                float across = dot(p, float2(-motion.y, motion.x));
+                float current = sin(motion.z * 2.6 + sin(across * 0.45 + motion.z * 0.21) * 1.4 - t * 3.8) * 0.035 +
+                    sin(across * 4 + motion.z * 1.3 - t * 2) * 0.012;
                 return lerp(still, current, motion.w) * (1 + _WaterOcean * 0.5);
             }
 
@@ -188,9 +197,17 @@ Shader "PoeClone/ToonLit"
                     float3 surfaceNormal = normalize(cross(ddy(IN.positionWS), ddx(IN.positionWS)));
                     normalWS = surfaceNormal.y < 0 ? -surfaceNormal : surfaceNormal;
                     // Fine travelling highlights remain visible even on the coarse low-poly mesh.
-                    float ripple = lerp(sin(dot(IN.positionWS.xz, float2(1.6, 0.7)) - _Time.y * 1.4),
-                        sin(IN.waterMotion.z * 3.4 - _Time.y * 4.9), IN.waterMotion.w);
-                    waterHighlight = smoothstep(0.72, 0.98, ripple) * 0.14 + wave * 0.7;
+                    // Two crossing, warped wave trains give scattered glints rather than even stripes.
+                    float2 p = IN.positionWS.xz;
+                    float warp = WaterWarp(p);
+                    float still = (sin(dot(p, float2(1.6, 0.7)) + warp - _Time.y * 1.4) +
+                        sin(dot(p, float2(-0.71, 1.83)) - warp * 0.8 - _Time.y * 1.1) +
+                        sin(dot(p, float2(0.93, -1.21)) + warp * 1.7 - _Time.y * 0.7)) * 0.42;
+                    float across = dot(p, float2(-IN.waterMotion.y, IN.waterMotion.x));
+                    float flowing = sin(IN.waterMotion.z * 3.4 + sin(across * 0.9 + IN.waterMotion.z * 0.37) * 1.8 - _Time.y * 4.9) *
+                        (0.55 + 0.45 * sin(across * 1.7 - IN.waterMotion.z * 0.6 + warp));
+                    float ripple = lerp(still, flowing, IN.waterMotion.w);
+                    waterHighlight = smoothstep(0.7, 0.98, ripple) * 0.12 + wave * 0.7;
                 }
                 half4 scales = half4(1, 1, 1, 0);
                 if (_SerpentScales > 0.0)

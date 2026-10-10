@@ -779,7 +779,7 @@ namespace PoeClone.UI
             UiKit.TopLeft(back.rectTransform, new Vector2(x, y), new Vector2(SlotSize, SlotSize));
 
             Text label = UiKit.NewText("Name", back.rectTransform, "", 19, UiKit.TextColor, TextAnchor.MiddleCenter);
-            label.fontStyle = FontStyle.Bold;
+            label.font = UiKit.BoldFont;
             UiKit.Stretch(label.rectTransform, 0f);
             Shadow labelShadow = label.gameObject.AddComponent<Shadow>();
             labelShadow.effectColor = Color.black;

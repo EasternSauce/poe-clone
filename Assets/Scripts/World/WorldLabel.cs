@@ -34,7 +34,7 @@ namespace PoeClone.World
 
             label.plate = UiKit.NewImage("Plate", label.canvasRect, new Color(0f, 0f, 0f, 0.75f));
             label.text = UiKit.NewText("Text", label.canvasRect, content, fontSize, color, TextAnchor.MiddleCenter);
-            label.text.fontStyle = FontStyle.Bold;
+            label.text.font = UiKit.BoldFont;
             label.Fit();
             return label;
         }

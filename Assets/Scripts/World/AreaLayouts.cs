@@ -107,7 +107,7 @@ namespace PoeClone.World
                         // Bramblesow's wallow, widened out of the north-east dead end.
                         .Room(138, 98, 21, 19)
                         .Lake(58, -38, 22, 16).Lake(72, 58, 23, 23)
-                        .River(12, 24, -152, 24, -65, 24, 0, 8, 50, -6, 100, -18, 152)
+                        .River(12, -18, 152, -6, 100, 8, 50, 24, 0, 24, -65, 24, -152)
                         .Bridge(24, -65, 26, 5.5f, 12).Bridge(24, 0, 26, 6, -9).Bridge(8, 50, 28, 5.5f, -17);
                 case WorldBuilder.Graveyard:
                     return new AreaShape(center, new Vector2(352, 276))
@@ -119,7 +119,7 @@ namespace PoeClone.World
                         // A lane off the north-east plots to the gate of the Drowned Belfry.
                         .Route(12, 108, 88, 152, 98)
                         .Lake(-30, -48, 23, 18).Exclude(36, -46, 22, 18)
-                        .River(18, -184, -111, -115, -123, -20, -132, 70, -126, 184, -115)
+                        .River(18, 184, -115, 70, -126, -20, -132, -115, -123, -184, -111)
                         .Exclude(-10, 29, 19, 10).Exclude(27, 80, 12, 18);
                 case WorldBuilder.Ruins:
                     return new AreaShape(center, new Vector2(340, 284), cliff: true)
@@ -147,7 +147,7 @@ namespace PoeClone.World
                         // Hrimgar's hunting camp, widened out of the north-east dead end.
                         .Room(92, 120, 20, 17)
                         .Route(14, -61, -89, -106, -117)
-                        .River(9, 26, -174, 26, -110, 26, -93, 32, -52, 26, 16, 20, 64, 26, 87, 26, 112, 38, 174)
+                        .River(9, 38, 174, 26, 112, 26, 87, 20, 64, 26, 16, 32, -52, 26, -93, 26, -110, 26, -174)
                         .Bridge(26, -93, 22, 5.5f, 8).Bridge(26, 16, 22, 6, -8).Bridge(26, 87, 22, 5.5f, 12)
                         .Lake(30, 0, 9, 12).Lake(-5, 65, 17, 12).Lake(94, -57, 10, 8);
                 case WorldBuilder.Cave:

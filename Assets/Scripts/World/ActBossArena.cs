@@ -23,6 +23,7 @@ namespace PoeClone.World
         private bool slain;
         private int introState;
         private string speech;
+        private GUIStyle speechStyle;
         public void Configure(GameObject enemyPrefab, Transform returnPoint, Vector3 bossPoint)
         {
             Instance = this; prefab = enemyPrefab; outside = returnPoint; spot = bossPoint;
@@ -72,7 +73,9 @@ namespace PoeClone.World
             if (speech == null || Boss == null || Camera.main == null) return;
             Vector3 screen = Camera.main.WorldToScreenPoint(Boss.transform.position + Vector3.up * 4.5f);
             if (screen.z <= 0f) return;
-            GUI.Box(new Rect(screen.x - 190f, Screen.height - screen.y - 55f, 380f, 52f), speech);
+            if (speechStyle == null)
+                speechStyle = new GUIStyle(GUI.skin.box) { font = UiKit.Font, fontSize = 17, wordWrap = true, alignment = TextAnchor.MiddleCenter };
+            GUI.Box(new Rect(screen.x - 190f, Screen.height - screen.y - 55f, 380f, 52f), speech, speechStyle);
         }
         private void SetBossActive(bool active)
         {

@@ -334,7 +334,7 @@ namespace PoeClone.World
             icon.sizeDelta = aspect >= 1f ? new Vector2(90f, 90f / aspect) : new Vector2(90f * aspect, 90f);
 
             Text label = UiKit.NewText("Name", canvasRect, Item.Name, 28, rarityColor, TextAnchor.MiddleCenter);
-            label.fontStyle = FontStyle.Bold;
+            label.font = UiKit.BoldFont;
             RectTransform labelRect = label.rectTransform;
             labelRect.anchoredPosition = new Vector2(0f, LabelBaseY);
             labelText = labelRect;

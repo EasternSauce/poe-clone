@@ -527,26 +527,14 @@ namespace PoeClone.World
             Claim(temple, 11f);
             Spots["Altar"] = temple;
 
-            // Broken walls: rows of blocks with gaps, a few fallen.
-            for (int w = 0; w < 9; w++)
+            // Broken walls: coursed stone piers with gaps, ragged tops and rubble.
+            for (int walls = 0, attempts = 0; walls < 6 && attempts < 80; attempts++)
             {
                 Vector3 start = c + Flat(R(-140f, 140f), R(-110f, 110f));
                 if (!Free(start, 5f) || !Shape(Ruins).Contains(start, 16f))
                     continue;
-                float yaw = R(0f, 180f);
-                Vector3 dir = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
-                int blocks = rng.Next(3, 7);
-                for (int b = 0; b < blocks; b++)
-                {
-                    if (rng.NextDouble() < 0.25)
-                        continue;
-                    Vector3 p = start + dir * (b * 2.1f);
-                    float height = R(0.8f, 2.6f);
-                    Box(t, p + Vector3.up * height * 0.5f, new Vector3(0.9f, height, 2f), kit.Mat("Sandstone"), euler: new Vector3(0f, yaw, 0f));
-                }
-                Box(t, start + dir * (blocks * 2.1f + 1.5f) + Vector3.up * 0.4f, new Vector3(1.6f, 0.8f, 0.9f), kit.Mat("Sandstone"),
-                    euler: new Vector3(R(-10f, 10f), R(0f, 360f), R(-15f, 15f)));
-                Claim(start + dir * (blocks * 1.05f), blocks * 1.1f + 1f);
+                RuinedWall(t, start, R(0f, 180f), rng.Next(3, 7));
+                walls++;
             }
 
             // Cracks of lava in the ash.
@@ -1192,6 +1180,81 @@ namespace PoeClone.World
             Cyl(t, p + Vector3.up * 0.55f, 0.55f, 3.5f, kit.Mat("Sandstone"), euler: new Vector3(90f, yaw, 0f));
         }
 
+        private Material sootyStone;
+        private Material SootyStone
+        {
+            get
+            {
+                if (sootyStone != null) return sootyStone;
+                sootyStone = new Material(kit.Mat("Sandstone")) { name = "SootyStone" };
+                sootyStone.SetColor("_BaseColor", sootyStone.GetColor("_BaseColor") * new Color(0.58f, 0.54f, 0.5f));
+                return sootyStone;
+            }
+        }
+
+        // A broken wall: piers of staggered stone courses on a wider footing, with ragged,
+        // fire-blackened tops, gaps where piers have fallen, and their rubble at the foot.
+        private void RuinedWall(Transform t, Vector3 start, float yaw, int piers)
+        {
+            const float pierLength = 2f, spacing = 2.1f, thickness = 0.9f, course = 0.42f;
+            Quaternion facing = Quaternion.Euler(0f, yaw, 0f);
+            Vector3 along = facing * Vector3.forward, across = facing * Vector3.right;
+            Material stone = kit.Mat("Sandstone");
+            Transform wall = new GameObject("RuinedWall").transform;
+            wall.SetParent(t, false);
+            var batch = new PrimitiveBatch();
+            Material Pick() => rng.NextDouble() < 0.3 ? SootyStone : stone;
+            void Rubble(Vector3 around, int count)
+            {
+                for (int k = 0; k < count; k++)
+                {
+                    Vector3 size = new Vector3(R(0.35f, 0.8f), R(0.22f, 0.4f), R(0.4f, 0.9f));
+                    Vector3 at = around + across * R(-1.6f, 1.6f) + along * R(-0.9f, 0.9f) + Vector3.up * (size.y * 0.4f);
+                    batch.Add(PrimitiveType.Cube, Pick(), at, Quaternion.Euler(R(-12f, 12f), R(0f, 360f), R(-12f, 12f)), size);
+                }
+            }
+            for (int b = 0; b < piers; b++)
+            {
+                Vector3 middle = start + along * (b * spacing);
+                if (rng.NextDouble() < 0.25)
+                {
+                    Rubble(middle, rng.Next(2, 5));
+                    continue;
+                }
+                float height = R(0.8f, 2.6f);
+                var pier = new GameObject("Pier").transform;
+                pier.SetParent(wall, false);
+                pier.SetPositionAndRotation(middle + Vector3.up * (height * 0.5f), facing);
+                pier.gameObject.AddComponent<BoxCollider>().size = new Vector3(thickness, height, pierLength);
+                batch.Add(PrimitiveType.Cube, stone, middle + Vector3.up * 0.12f, facing, new Vector3(thickness + 0.25f, 0.24f, pierLength + 0.1f));
+                int rows = Mathf.Max(1, Mathf.RoundToInt((height - 0.24f) / course));
+                for (int row = 0; row < rows; row++)
+                {
+                    bool top = row == rows - 1;
+                    // Odd courses start with a short stone so the joints stagger.
+                    float cursor = -pierLength * 0.5f, end = pierLength * 0.5f;
+                    float first = row % 2 == 1 ? R(0.3f, 0.5f) : R(0.6f, 0.9f);
+                    for (float length = first; cursor < end - 0.15f; length = R(0.55f, 0.95f))
+                    {
+                        length = Mathf.Min(length, end - cursor);
+                        float stoneHeight = (course - 0.03f) * (top ? R(0.45f, 1f) : 1f);
+                        if (!(top && rng.NextDouble() < 0.4))
+                        {
+                            Vector3 at = middle + along * (cursor + length * 0.5f) + across * R(-0.04f, 0.04f) +
+                                Vector3.up * (0.24f + row * course + stoneHeight * 0.5f);
+                            batch.Add(PrimitiveType.Cube, Pick(), at, facing * Quaternion.Euler(R(-2f, 2f), R(-3f, 3f), R(-2f, 2f)),
+                                new Vector3(thickness * R(0.92f, 1f), stoneHeight, length - 0.04f));
+                        }
+                        cursor += length;
+                    }
+                }
+                if (rng.NextDouble() < 0.5) Rubble(middle + across * (Coin() ? 1.1f : -1.1f), rng.Next(1, 3));
+            }
+            Rubble(start + along * (piers * spacing + 0.6f), rng.Next(2, 4));
+            batch.Build(wall, "Stones", shadows: true);
+            Claim(start + along * (piers * spacing * 0.5f), piers * 1.1f + 1f);
+        }
+
         private GameObject Brazier(Transform t, Vector3 p)
         {
             GameObject bowl = Cyl(t, p + Vector3.up * 0.5f, 0.45f, 1f, kit.Mat("Stone"));
@@ -1524,6 +1587,50 @@ namespace PoeClone.World
         private GameObject LocalBall(Transform t, Vector3 p, float radius, Material mat)
         {
             return Primitive(PrimitiveType.Sphere, t, p, Vector3.one * radius * 2f, mat, false, default, local: true);
+        }
+
+        // Many small primitives merged into one mesh per material: a draw call or two instead of hundreds.
+        private sealed class PrimitiveBatch
+        {
+            private static readonly Dictionary<PrimitiveType, Mesh> meshes = new Dictionary<PrimitiveType, Mesh>();
+            private readonly Dictionary<Material, List<CombineInstance>> parts = new Dictionary<Material, List<CombineInstance>>();
+
+            public void Add(PrimitiveType type, Material material, Vector3 position, Quaternion rotation, Vector3 scale)
+            {
+                if (!meshes.TryGetValue(type, out Mesh mesh) || mesh == null)
+                {
+                    GameObject probe = GameObject.CreatePrimitive(type);
+                    meshes[type] = mesh = probe.GetComponent<MeshFilter>().sharedMesh;
+                    DestroyImmediate(probe);
+                }
+                if (!parts.TryGetValue(material, out var list)) parts[material] = list = new List<CombineInstance>();
+                list.Add(new CombineInstance { mesh = mesh, transform = Matrix4x4.TRS(position, rotation, scale) });
+            }
+
+            public GameObject Build(Transform parent, string name, bool shadows)
+            {
+                if (parts.Count == 0) return null;
+                var submeshes = new List<CombineInstance>();
+                var materials = new List<Material>();
+                foreach (var part in parts)
+                {
+                    var merged = new Mesh { indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+                    merged.CombineMeshes(part.Value.ToArray(), true, true);
+                    submeshes.Add(new CombineInstance { mesh = merged, transform = Matrix4x4.identity });
+                    materials.Add(part.Key);
+                }
+                var mesh = new Mesh { name = name, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+                mesh.CombineMeshes(submeshes.ToArray(), false, true);
+                foreach (CombineInstance submesh in submeshes) DestroyImmediate(submesh.mesh);
+                var go = new GameObject(name);
+                go.transform.SetParent(parent, false);
+                go.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var renderer = go.AddComponent<MeshRenderer>();
+                renderer.sharedMaterials = materials.ToArray();
+                if (!shadows) renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                return go;
+            }
         }
 
         private static GameObject Primitive(PrimitiveType type, Transform t, Vector3 p, Vector3 scale, Material mat, bool solid, Vector3 euler, bool local)

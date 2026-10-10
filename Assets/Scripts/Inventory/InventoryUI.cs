@@ -1354,7 +1354,7 @@ private Vector2 CellSize(int w, int h)
             UiKit.Stretch(icon.rectTransform, 2f);
 
             Text count = UiKit.NewText("Count", rt, "", 15, Color.white, TextAnchor.LowerRight);
-            count.fontStyle = FontStyle.Bold;
+            count.font = UiKit.BoldFont;
             UiKit.Stretch(count.rectTransform, 3f);
             UiKit.AddOutline(count, Color.black, 1f);
 

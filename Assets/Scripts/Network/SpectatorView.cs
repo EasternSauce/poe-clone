@@ -240,9 +240,8 @@ namespace PoeClone.Network
             var liveGO = new GameObject("LiveText");
             liveGO.transform.SetParent(liveBadge.transform, false);
             liveText = liveGO.AddComponent<Text>();
-            liveText.font = font;
+            liveText.font = UiKit.BoldFont;
             liveText.fontSize = 22;
-            liveText.fontStyle = FontStyle.Bold;
             liveText.alignment = TextAnchor.MiddleCenter;
             liveText.color = Color.white;
             liveText.raycastTarget = false;
@@ -269,8 +268,8 @@ namespace PoeClone.Network
             hintRect.anchoredPosition = new Vector2(0f, -4f);
             hintRect.sizeDelta = new Vector2(0f, 26f);
 
-            prevButton = ArrowButton(liveBadge.transform, font, "<", -1);
-            nextButton = ArrowButton(liveBadge.transform, font, ">", 1);
+            prevButton = ArrowButton(liveBadge.transform, "<", -1);
+            nextButton = ArrowButton(liveBadge.transform, ">", 1);
             liveBadge.SetActive(false);
 
             stallNotice = new GameObject("StallNotice");
@@ -335,7 +334,7 @@ namespace PoeClone.Network
         }
 
         // A square button on the badge's left (-1) or right (+1) edge that switches player.
-        private static GameObject ArrowButton(Transform badge, Font font, string label, int step)
+        private static GameObject ArrowButton(Transform badge, string label, int step)
         {
             var go = new GameObject(step < 0 ? "Previous" : "Next");
             go.transform.SetParent(badge, false);
@@ -351,9 +350,8 @@ namespace PoeClone.Network
             var textGO = new GameObject("Text");
             textGO.transform.SetParent(go.transform, false);
             var text = textGO.AddComponent<Text>();
-            text.font = font;
+            text.font = UiKit.BoldFont;
             text.fontSize = 26;
-            text.fontStyle = FontStyle.Bold;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = Color.white;
             text.text = label;

@@ -1,3 +1,11 @@
+version: 2026-10-10-water-and-ruins
+- Lakes and ponds have uneven, lobed shores instead of perfect circles and ovals. Their banks are gravelly mud that widens and narrows, with clumps of reeds, scattered stones and, in the Greenwood and Haven, lily pads with the odd flower.
+- Rivers wind and change width instead of running between straight banks.
+- Water shimmers in scattered, drifting glints rather than even stripes, and river currents ripple in broken, curving bands.
+- Each river now starts at a waterfall: it pours over a rocky ledge into its channel, with foam and spray at the foot. The Greenwood, the Haunted Graveyard and the Frozen Hollow (where the fall is frozen solid) each have one.
+- The Ashen Ruins' broken walls are now built from staggered courses of stone on a wider footing, with ragged, fire-blackened tops and rubble where sections have fallen. More of them stand around the ruins.
+- NPC names, item names on the ground, potion counts and skill bar labels now use the game's real bold font instead of a stretched copy of the regular one. The Shepherd's speech bubble uses the game's font too.
+
 version: 2026-10-10-village-buildings
 - Haven's cottages no longer share one red box roof. Each has its own mix of roof and walls: steep thatch with a rolled ridge, red clay shingles or blue-grey slate, over half-timbered plaster, dressed stone with corner stones, grey fieldstone, or log walls with crossed corners. Gables match their walls, and chimneys rise through the roof under a stone cap.
 - The smithy is now a slate lean-to against a tall stone wall. The well has a tiled roof, a windlass and a bucket, and the notice board has a small tiled roof.

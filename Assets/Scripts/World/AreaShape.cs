@@ -16,6 +16,7 @@ namespace PoeClone.World
         private readonly List<Region> rooms = new List<Region>();
         public readonly List<(Vector2 center, Vector2 size, float yaw)> Bridges = new List<(Vector2, Vector2, float)>();
         private readonly List<Region> waters = new List<Region>();
+        private readonly List<int> sources = new List<int>();
         private bool ocean;
         private readonly List<Region> cuts = new List<Region>();
         public readonly List<(Vector3 a, Vector3 b)> Boundary = new List<(Vector3, Vector3)>();
@@ -29,14 +30,30 @@ namespace PoeClone.World
         {
             public Vector2 a, b, radii;
             public bool corridor;
+            // Water only: a non-zero seed bends lake outlines into lobes and makes river banks
+            // meander and change width. Start is the river's length before this segment.
+            public float seed, start;
             public float Distance(Vector2 p)
             {
                 if (!corridor)
-                    return (1f - new Vector2((p.x - a.x) / radii.x, (p.y - a.y) / radii.y).magnitude) * Mathf.Min(radii.x, radii.y);
+                {
+                    Vector2 q = new Vector2((p.x - a.x) / radii.x, (p.y - a.y) / radii.y);
+                    return (Edge(Mathf.Atan2(q.y, q.x)) - q.magnitude) * Mathf.Min(radii.x, radii.y);
+                }
                 Vector2 ab = b - a;
                 float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / Mathf.Max(0.001f, ab.sqrMagnitude));
-                return radii.x - Vector2.Distance(p, a + ab * t);
+                Vector2 closest = a + ab * t;
+                if (seed == 0f) return radii.x - Vector2.Distance(p, closest);
+                float length = ab.magnitude, along = start + t * length;
+                Vector2 axis = ab / Mathf.Max(0.001f, length), side = new Vector2(-axis.y, axis.x);
+                Vector2 offset = p - closest;
+                return BankWidth(along) - new Vector2(Vector2.Dot(offset, side) - Sway(along), Vector2.Dot(offset, axis)).magnitude;
             }
+            /// <summary>Lake outline radius (1 = the authored ellipse) in the given direction.</summary>
+            public float Edge(float angle) => seed == 0f ? 1f : 1f + 0.13f * Mathf.Sin(2f * angle + seed) +
+                0.08f * Mathf.Sin(3f * angle + seed * 1.7f) + 0.05f * Mathf.Sin(5f * angle + seed * 2.9f);
+            public float Sway(float along) => radii.x * (0.4f * Mathf.Sin(along * 0.055f + seed) + 0.14f * Mathf.Sin(along * 0.16f + seed * 3f));
+            public float BankWidth(float along) => radii.x * (1f + 0.2f * Mathf.Sin(along * 0.083f + seed * 2f) + 0.1f * Mathf.Sin(along * 0.23f + seed));
         }
 
         public AreaShape(Vector3 center, Vector2 size, bool cave = false, bool cliff = false)
@@ -72,16 +89,66 @@ namespace PoeClone.World
 
         public AreaShape Lake(float x, float z, float rx, float rz)
         {
-            waters.Add(new Region { a = new Vector2(x, z), radii = new Vector2(rx, rz) });
+            waters.Add(new Region { a = new Vector2(x, z), radii = new Vector2(rx, rz), seed = WaterSeed(x, z) });
             return this;
         }
 
+        /// <summary>A river through the given knots. It flows from the first knot to the last;
+        /// the first lies off the area's edge, where the river falls in.</summary>
         public AreaShape River(float width, params float[] points)
         {
+            float seed = WaterSeed(points[0], points[1]), along = 0f;
+            sources.Add(waters.Count);
             for (int i = 0; i + 3 < points.Length; i += 2)
-                waters.Add(new Region { a = new Vector2(points[i], points[i + 1]),
-                    b = new Vector2(points[i + 2], points[i + 3]), radii = Vector2.one * width * 0.5f, corridor = true });
+            {
+                var segment = new Region { a = new Vector2(points[i], points[i + 1]), b = new Vector2(points[i + 2], points[i + 3]),
+                    radii = Vector2.one * width * 0.5f, corridor = true, seed = seed, start = along };
+                waters.Add(segment);
+                along += Vector2.Distance(segment.a, segment.b);
+            }
             return this;
+        }
+        private static float WaterSeed(float x, float z) => 0.5f + Mathf.Repeat(x * 0.37f + z * 0.61f, 6f);
+
+        /// <summary>Each river's source: where it first meets land on either bank (local position,
+        /// downstream direction and the channel's half-width there).</summary>
+        public IEnumerable<(Vector2 point, Vector2 downstream, float halfWidth)> RiverSources()
+        {
+            foreach (int first in sources)
+                for (int i = first; i < waters.Count && waters[i].corridor && waters[i].seed == waters[first].seed; i++)
+                {
+                    Region segment = waters[i];
+                    Vector2 axis = (segment.b - segment.a).normalized, side = new Vector2(-axis.y, axis.x);
+                    float length = Vector2.Distance(segment.a, segment.b), found = -1f;
+                    for (float d = 0f; d < length && found < 0f; d += 1f)
+                    {
+                        float half = segment.BankWidth(segment.start + d);
+                        Vector2 middle = segment.a + axis * d + side * segment.Sway(segment.start + d);
+                        if (Mathf.Max(OpenDistance(middle + side * (half + 3f)), OpenDistance(middle - side * (half + 3f))) > 2f)
+                            found = d;
+                    }
+                    if (found < 0f) continue;
+                    float along = segment.start + found;
+                    yield return (segment.a + axis * found + side * segment.Sway(along), axis, segment.BankWidth(along));
+                    break;
+                }
+        }
+
+        /// <summary>Points round every lake's shore (local), each with its outward direction.</summary>
+        public IEnumerable<(Vector2 point, Vector2 outward)> LakeShores(float spacing)
+        {
+            foreach (Region lake in waters)
+            {
+                if (lake.corridor) continue;
+                int count = Mathf.Max(8, Mathf.RoundToInt(Mathf.PI * (lake.radii.x + lake.radii.y) / spacing));
+                for (int k = 0; k < count; k++)
+                {
+                    float angle = (k + 0.5f) * Mathf.PI * 2f / count;
+                    Vector2 round = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                    Vector2 point = lake.a + Vector2.Scale(round, lake.radii) * lake.Edge(angle);
+                    yield return (point, new Vector2(round.x / lake.radii.x, round.y / lake.radii.y).normalized);
+                }
+            }
         }
 
         public AreaShape Ocean() { ocean = true; return this; }
@@ -585,12 +652,13 @@ namespace PoeClone.World
             int[] indices = land.triangles;
             var vertices = new List<Vector3>();
             var triangles = new List<int>();
-            float width = ocean ? 7f : 2f;
+            // The bank narrows and widens along the water rather than running as an even band.
+            float Bank(Vector3 v) => (ocean ? 7f : 2f) * (1f + 0.55f * Mathf.Sin(v.x * 0.21f + Mathf.Sin(v.z * 0.13f) * 2f) *
+                Mathf.Sin(v.z * 0.17f - v.x * 0.05f + 1f)) + ShorelineDistance(new Vector2(v.x, v.z));
             for (int i = 0; i < indices.Length; i += 3)
             {
                 Vector3 a = points[indices[i]], b = points[indices[i + 1]], c = points[indices[i + 2]];
-                Clip(a, b, c, width + ShorelineDistance(new Vector2(a.x, a.z)), width + ShorelineDistance(new Vector2(b.x, b.z)),
-                    width + ShorelineDistance(new Vector2(c.x, c.z)), vertices, triangles, false);
+                Clip(a, b, c, Bank(a), Bank(b), Bank(c), vertices, triangles, false);
             }
             // Close the exposed earth between the water level and the grassy bank.
             foreach (var edge in landBoundary)
@@ -621,11 +689,23 @@ namespace PoeClone.World
             int nx = Mathf.CeilToInt((Size.x + padding * 2f) / Cell);
             int nz = Mathf.CeilToInt((Size.y + padding * 2f) / Cell);
             var samples = new float[nx + 1, nz + 1];
+            var falls = new List<(Vector2 point, Vector2 downstream, float halfWidth)>(RiverSources());
             for (int z = 0; z <= nz; z++)
                 for (int x = 0; x <= nx; x++)
+                {
+                    Vector2 p = start + new Vector2(x * Cell, z * Cell);
                     // A submerged overlap hides corner seams between separately clipped surfaces.
                     // It stays beneath the opaque land and bank; movement uses the authored water field.
-                    samples[x, z] = WaterDistance(start + new Vector2(x * Cell, z * Cell)) + 0.65f;
+                    float sample = WaterDistance(p) + 0.65f;
+                    // Above a waterfall the river runs on its ledge, not on at ground level behind it.
+                    foreach (var fall in falls)
+                    {
+                        Vector2 offset = p - fall.point;
+                        float across = Mathf.Abs(offset.x * fall.downstream.y - offset.y * fall.downstream.x);
+                        sample = Mathf.Min(sample, Mathf.Max(Vector2.Dot(offset, fall.downstream) + 2.5f, across - fall.halfWidth - 14f));
+                    }
+                    samples[x, z] = sample;
+                }
             var vertices = new List<Vector3>();
             var triangles = new List<int>();
             for (int z = 0; z < nz; z++)
