@@ -54,6 +54,27 @@ namespace PoeClone.World
         {
             Instance = this;
             mpb = new MaterialPropertyBlock();
+            AreaChanged += PlayAreaMusic;
+        }
+
+        private void PlayAreaMusic(int index)
+        {
+            string track;
+            switch (index)
+            {
+                case WorldBuilder.Greenwood: track = "Dark Quest"; break;
+                case WorldBuilder.Haven: track = "Adrift on the Currents of Time (Main Menu _ Ambience)"; break;
+                case WorldBuilder.Cave:
+                case WorldBuilder.Warren: track = "2.Dark Hall"; break;
+                case WorldBuilder.Graveyard:
+                case WorldBuilder.Belfry: track = "zombie main music"; break;
+                case WorldBuilder.Ruins: track = "Tower of Lava"; break;
+                // Keep Frozen Hollow's music through the sanctuary's opening dialogue.
+                case WorldBuilder.Frozen:
+                case WorldBuilder.ActArena: track = "11.Metal Echos"; break;
+                default: return;
+            }
+            PoeClone.Audio.MusicPlayer.Instance?.Play(track);
         }
 
         /// <summary>

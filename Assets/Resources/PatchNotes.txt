@@ -1,3 +1,8 @@
+version: 2026-10-10-area-music
+- Added music to the main menu, Haven and all adventure areas. Lairs keep their area's music, and connected areas sharing a track continue it without restarting.
+- The Shepherd's boss music starts when his opening dialogue ends and he begins fighting. It stops immediately if you die; reviving restores Frozen Hollow's music.
+- Music follows the Music and overall Volume settings independently of sound effects.
+
 version: 2026-10-10-coop-combat-and-areas
 - Monster special skills and field-boss moves now target either co-op player. Both players see the attacks and can dodge them in their own game; field bosses share their random attack patterns.
 - The Shepherd and Carrion Saint now send their ground warnings, venom attacks and hits to the guest. Their colossal serpent chase and gauntlet attacks still affect only the host.

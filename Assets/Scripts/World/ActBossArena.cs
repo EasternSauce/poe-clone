@@ -64,6 +64,7 @@ namespace PoeClone.World
             Boss.Immune = false;
             Boss.HideBossBar = false;
             SetBossActive(true);
+            Audio.MusicPlayer.Instance?.Play("Boss_01");
             introState = 2;
         }
         private void OnGUI()
@@ -105,6 +106,7 @@ namespace PoeClone.World
         private void PlayerDied()
         {
             if (manager == null || manager.CurrentAreaIndex != WorldBuilder.ActArena) return;
+            Audio.MusicPlayer.Instance?.Stop();
             StopAllCoroutines();
             SetBossActive(false);
             if (Boss != null && !Boss.IsDead)
@@ -146,7 +148,12 @@ namespace PoeClone.World
             speech = null;
             slain = false; respawnAt = -1f;
         }
-        private void BossDied() { slain = true; respawnAt = Time.time + 600f; }
+        private void BossDied()
+        {
+            slain = true;
+            respawnAt = Time.time + 600f;
+            Audio.MusicPlayer.Instance?.Play("11.Metal Echos");
+        }
         public bool Reawaken()
         {
             if (!slain || Time.time >= respawnAt || (Boss != null && !Boss.IsDead)) return false;

@@ -63,6 +63,7 @@ namespace PoeClone.Network
             startNotice = null;
         }
         private NamePromptUI namePrompt;
+        private AudioListener menuAudioListener;
         private GameObject scenePlayer;
         private readonly System.Collections.Generic.List<GameObject> suspendedRoots = new System.Collections.Generic.List<GameObject>();
         private bool gameplayCreated;
@@ -108,6 +109,7 @@ namespace PoeClone.Network
         {
             if (gameplayCreated) return;
             gameplayCreated = true;
+            if (menuAudioListener != null) menuAudioListener.enabled = false;
             foreach (GameObject root in suspendedRoots)
                 if (root != null) root.SetActive(true);
             suspendedRoots.Clear();
@@ -127,6 +129,9 @@ namespace PoeClone.Network
 
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            menuAudioListener = gameObject.AddComponent<AudioListener>();
+            gameObject.AddComponent<PoeClone.Audio.MusicPlayer>().Play("Dark Quest");
 
             // Pause while choosing and loading the local character.
             SetWorldActive(false);
