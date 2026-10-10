@@ -481,7 +481,6 @@ namespace PoeClone.Inventory
             { StatType.GrantSpiritWolves, "of the Pack" },
             { StatType.GrantBoneGolem, "of the Ossuary" },
             { StatType.GrantRainOfArrows, "of the Downpour" },
-            { StatType.ExtraArrowChance, "of Volleys" },
         };
 
         private static readonly string[] RareFirstWords =
@@ -938,7 +937,6 @@ namespace PoeClone.Inventory
                 case StatType.GrantPiercingShot:
                 case StatType.GrantRainOfArrows:
                 case StatType.GrantBurningArrow:
-                case StatType.ExtraArrowChance:
                     return Leaning.Dex;
                 case StatType.Intelligence:
                 case StatType.MaxMana:

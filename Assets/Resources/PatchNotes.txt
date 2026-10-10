@@ -1,3 +1,7 @@
+version: 2026-10-10-no-arrow-chance
+- Bows no longer have a chance to fire an extra arrow. Extra arrows are now always guaranteed: a bow shot fires one arrow plus your Additional Arrows, every time.
+- Whisperwind now fires 1 additional arrow on every shot instead of having a 35-50% chance to. Whisperwinds you already own are updated.
+
 version: 2026-10-09-unique-rework
 - Unique items have been reworked. Each now has a few stats suited to its build and one or two effects of its own, and nearly every stat rolls within a range, so two copies are rarely the same.
 - Uniques now have different level requirements, from level 1 up to level 34, and drop only in areas whose level reaches that requirement. The strongest are much rarer than the rest.

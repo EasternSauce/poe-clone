@@ -114,7 +114,7 @@ namespace PoeClone.Inventory
         GrantPiercingShot,
         GrantRainOfArrows,
         GrantBurningArrow,
-        ExtraArrowChance,           // % chance for a bow attack to fire one more arrow
+        ExtraArrowChance,           // retired (arrows are never left to chance); kept so saved stat ids stay put
         PoisonOnHit,               // % of attack damage dealt again as poison over three seconds
         VenomCloudOnHit,            // % of attack damage per second in a venom cloud
         FirePenetration,            // percentage points subtracted from enemy fire resistance
@@ -681,7 +681,6 @@ namespace PoeClone.Inventory
                 case StatType.SoulBond: return "Soul Bond";
                 case StatType.DeathsHerald: return "Death's Herald";
                 case StatType.BoneArmour: return "Minion Damage Taken";
-                case StatType.ExtraArrowChance: return "Extra Arrow Chance";
                 case StatType.PoisonOnHit: return "Poison on Hit";
                 case StatType.VenomCloudOnHit: return "Venom Clouds";
                 case StatType.BloodMagic: return "Blood Magic";
@@ -786,7 +785,6 @@ namespace PoeClone.Inventory
                 case StatType.MinionDuration:
                 case StatType.SoulBond:
                 case StatType.BoneArmour:
-                case StatType.ExtraArrowChance:
                 case StatType.SpellEcho:
                 case StatType.MeleeSplash:
                 case StatType.Rampage:
@@ -914,7 +912,6 @@ namespace PoeClone.Inventory
                 case StatType.MoreLightningDamage: return n + "% more Lightning Damage";
                 case StatType.MorePoisonDamage: return n + "% more Poison Damage";
                 case StatType.MoreMinionDamage: return n + "% more Minion Damage";
-                case StatType.ExtraArrowChance: return n + "% chance for Bow Attacks to fire an additional arrow";
                 case StatType.PoisonOnHit: return "Attacks inflict Poison for " + n + "% of base damage over 3 seconds";
                 case StatType.VenomCloudOnHit: return "Attacks create Venom Clouds dealing " + n + "% of base damage per second";
                 case StatType.FirePenetration: return n + "% Fire Penetration";

@@ -495,15 +495,10 @@ namespace PoeClone.Player
                 PoeClone.Skills.Minion.Mark(toMark, transform);
         }
 
-        // Arrows in a bow shot: one, plus Additional Arrows, plus maybe one more from the
-        // extra-arrow chance (bows and quivers).
+        // Arrows in a bow shot: one, plus Additional Arrows.
         private int ArrowCount()
         {
-            int arrows = 1 + Mathf.Max(0, Mathf.RoundToInt(inventory.Stats.Total(StatType.AdditionalArrows)));
-            float chance = inventory.Stats.Total(StatType.ExtraArrowChance);
-            if (chance > 0f && Random.value * 100f < chance)
-                arrows++;
-            return arrows;
+            return 1 + Mathf.Max(0, Mathf.RoundToInt(inventory.Stats.Total(StatType.AdditionalArrows)));
         }
 
         // Where a shot aimed at a spot (Rain of Arrows) comes down: the cursor on desktop; on touch

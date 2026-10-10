@@ -61,7 +61,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "short_bow", Name = "Whisperwind", RequiredLevel = 1, Weight = Common,
                 Flavour = "The arrow arrives before the sound.",
-                Mods = new[] { Roll(StatType.PhysicalDamage, 3, 5), Roll(StatType.AttackSpeed, 10, 15), Roll(StatType.Dexterity, 8, 12), Roll(StatType.ExtraArrowChance, 35, 50) }
+                Mods = new[] { Roll(StatType.PhysicalDamage, 3, 5), Roll(StatType.AttackSpeed, 10, 15), Roll(StatType.Dexterity, 8, 12), Mod(StatType.AdditionalArrows, 1) }
             },
             new Unique
             {
