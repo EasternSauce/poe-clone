@@ -14,6 +14,8 @@ namespace PoeClone.Audio
             public AudioClip[] clips = Array.Empty<AudioClip>();
             [Tooltip("Minimum seconds between plays from this group, shared by every caller. Requests during it stay silent.")]
             [Min(0f)] public float cooldown;
+            [Tooltip("Never dropped when too many sounds play at once; ordinary sounds are dropped first.")]
+            public bool topPriority;
             [NonSerialized] private float lastPlayedAt = float.NegativeInfinity;
 
             public AudioClip Choose(AudioClip fallback = null)
@@ -64,14 +66,21 @@ namespace PoeClone.Audio
         public List<Effect> effects = new List<Effect>();
         public List<SoundGroup> soundGroups = new List<SoundGroup>();
         private Dictionary<string, Effect> byId, byClip;
+        private Dictionary<AudioClip, SoundGroup> byRecording;
         public static SoundBoardSettings Load() => Resources.Load<SoundBoardSettings>("SoundBoardSettings");
 
         public void Rebuild()
         {
             byId = new Dictionary<string, Effect>();
             byClip = new Dictionary<string, Effect>();
+            byRecording = new Dictionary<AudioClip, SoundGroup>();
             var groups = new Dictionary<string, SoundGroup>();
-            foreach (var group in soundGroups) groups.Add(group.id, group);
+            foreach (var group in soundGroups)
+            {
+                groups.Add(group.id, group);
+                foreach (var clip in group.clips)
+                    if (clip != null && !byRecording.ContainsKey(clip)) byRecording.Add(clip, group);
+            }
             foreach (var effect in effects)
             {
                 effect.soundGroup = null;
@@ -99,6 +108,14 @@ namespace PoeClone.Audio
             if (byClip == null) Rebuild();
             if (!byClip.TryGetValue(clip.name, out var effect)) return;
             clip = effect.Choose(clip);
+        }
+
+        /// <summary>The group a recording belongs to (its takes share one), or null if it has none.</summary>
+        public SoundGroup GroupOf(AudioClip clip)
+        {
+            if (clip == null) return null;
+            if (byRecording == null) Rebuild();
+            return byRecording.TryGetValue(clip, out var group) ? group : null;
         }
 
         private void OnEnable() => Rebuild();

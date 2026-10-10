@@ -88,8 +88,12 @@ namespace PoeClone.EditorTools
                 if (!groups.TryGetValue(key, out var group))
                 {
                     string id = "sound." + effect.id;
-                    float cooldown = settings.soundGroups.FirstOrDefault(g => g.id == id)?.cooldown ?? 0f;
-                    group = new SoundBoardSettings.SoundGroup { id = id, purpose = purpose, clips = clips, cooldown = cooldown };
+                    var previous = settings.soundGroups.FirstOrDefault(g => g.id == id);
+                    group = new SoundBoardSettings.SoundGroup
+                    {
+                        id = id, purpose = purpose, clips = clips,
+                        cooldown = previous?.cooldown ?? 0f, topPriority = previous?.topPriority ?? false
+                    };
                     groups.Add(key, group);
                 }
                 assignments.Add(effect, group);

@@ -108,9 +108,40 @@ namespace PoeClone.Audio
             PlayWorld(clip, position, pitch);
         }
 
+        // A pack dying starts dozens of identical grunts and coin drops in one frame. They add nothing
+        // past the first few, and they push other sounds out of the limited voices. So copies of one
+        // sound (any take of its group) are spaced a little apart, and past a few they are dropped.
+        private const int MaxSameSoundStarts = 3;
+        private const float SameSoundWindow = 0.25f;
+        private const float MinSameSoundGap = 0.04f, MaxSameSoundGap = 0.08f;
+        private readonly System.Collections.Generic.Dictionary<object, System.Collections.Generic.List<float>> recentStarts =
+            new System.Collections.Generic.Dictionary<object, System.Collections.Generic.List<float>>();
+
+        // Seconds from now this sound should start, or a negative number if it should be dropped.
+        private float StartDelay(object key, bool topPriority)
+        {
+            float now = Time.unscaledTime;
+            if (!recentStarts.TryGetValue(key, out var starts))
+                recentStarts[key] = starts = new System.Collections.Generic.List<float>();
+            starts.RemoveAll(t => t < now - SameSoundWindow || t > now + 1f);
+            if (starts.Count >= MaxSameSoundStarts && !topPriority)
+                return -1f;
+            float start = now;
+            foreach (float t in starts)
+                start = Mathf.Max(start, t + Random.Range(MinSameSoundGap, MaxSameSoundGap));
+            starts.Add(start);
+            return start - now;
+        }
+
         private void PlayWorld(AudioClip clip, Vector3 position, float pitch)
         {
             if (clip == null || sfxVolume <= 0f)
+                return;
+
+            var group = soundBoard != null ? soundBoard.GroupOf(clip) : null;
+            bool topPriority = group != null && group.topPriority;
+            float delay = StartDelay(group != null ? group : (object)clip, topPriority);
+            if (delay < 0f)
                 return;
 
             var go = new GameObject("One shot audio");
@@ -122,8 +153,10 @@ namespace PoeClone.Audio
             source.pitch = pitch;
             // Gameplay one-shots always play at full SFX volume; only persistent world sources fade with distance.
             source.volume = sfxVolume;
-            source.Play();
-            Destroy(go, clip.length / Mathf.Max(0.1f, pitch) + 0.1f);
+            // When more sounds play than there are voices, Unity silences the lowest priority first (0 is highest).
+            source.priority = topPriority ? 0 : 128;
+            source.PlayDelayed(delay);
+            Destroy(go, delay + clip.length / Mathf.Max(0.1f, pitch) + 0.1f);
         }
 
         /// <summary>Master SFX gain and distance fade for persistent world sound sources.</summary>
