@@ -284,10 +284,14 @@ namespace PoeClone.Player
         public static void PlayBurstVisual(Vector3 at, float radius, bool shatter)
         {
             Color color = shatter ? CombatText.ColdColor : ExplosionColor;
-            SkillEffects.Shockwave(at, radius, color, 0.35f);
-            SkillEffects.Blast(at + Vector3.up * 0.7f, radius * 0.4f, color, 0.3f);
             if (shatter)
+            {
+                SkillEffects.Shockwave(at, radius, color, 0.35f);
+                SkillEffects.Blast(at + Vector3.up * 0.7f, radius * 0.4f, color, 0.3f);
                 CombatText.Show(at + Vector3.up * 2.2f, "Shatter", color, 0.9f);
+            }
+            else
+                SkillEffects.Explosion(at, radius, color);
             AudioManager audio = AudioManager.Instance;
             if (audio != null)
                 {

@@ -7,7 +7,7 @@ namespace PoeClone.Skills
     /// <summary>
     /// Short-lived visuals for skills, built from coloured primitives (no particle systems or
     /// special shaders, so they render in every build): an expanding ground ring, a lightning
-    /// arc between two points, and a rising glow around a character.
+    /// arc between two points, a fiery explosion, and a rising glow around a character.
     /// </summary>
     public class SkillEffects : MonoBehaviour
     {
@@ -89,6 +89,113 @@ namespace PoeClone.Skills
             GameObject ball = RuntimePrimitives.Create(PrimitiveType.Sphere, go.transform, color);
             ball.transform.localScale = Vector3.zero;
             go.AddComponent<SkillEffects>().StartCoroutine(Pop(go, ball.transform, radius, seconds));
+        }
+
+        /// <summary>
+        /// A fiery explosion standing up off the ground: a white-hot flash, a fireball billowing
+        /// upward and embers flung out to the radius. Over in about a third of a second, so a
+        /// chain of them never hides the fight.
+        /// </summary>
+        public static void Explosion(Vector3 center, float radius, Color color)
+        {
+            var go = new GameObject("Explosion");
+            go.transform.position = new Vector3(center.x, GroundY(center), center.z);
+            go.AddComponent<SkillEffects>().StartCoroutine(Explode(go, radius, color));
+        }
+
+        private static readonly int ShadowColorId = Shader.PropertyToID("_ShadowColor");
+        private static readonly int AmbientBoostId = Shader.PropertyToID("_AmbientBoost");
+
+        private enum PieceMotion { Flash, Billow, Ember }
+
+        private sealed class Piece
+        {
+            public Transform transform;
+            public PieceMotion motion;
+            public Vector3 from, velocity, spin;
+            public float start, life, size;
+        }
+
+        private static IEnumerator Explode(GameObject root, float radius, Color color)
+        {
+            Color flash = Color.Lerp(color, Color.white, 0.75f);
+            Color hot = Color.Lerp(color, new Color(1f, 0.88f, 0.3f), 0.5f);
+            Color deep = Color.Lerp(color, new Color(1f, 0.2f, 0.04f), 0.5f);
+            var pieces = new System.Collections.Generic.List<Piece>();
+            var glow = new MaterialPropertyBlock();
+            Piece Add(PrimitiveType type, Color c, PieceMotion motion, Vector3 from, Vector3 velocity, float start, float life, float size)
+            {
+                GameObject g = RuntimePrimitives.Create(type, root.transform, c);
+                // Fire gives off light: no toon shadow side, so it reads as glowing rather than solid.
+                Renderer r = g.GetComponent<Renderer>();
+                r.GetPropertyBlock(glow);
+                glow.SetColor(ShadowColorId, Color.white);
+                glow.SetFloat(AmbientBoostId, 1f);
+                r.SetPropertyBlock(glow);
+                g.transform.localPosition = from;
+                g.transform.localScale = Vector3.zero;
+                var piece = new Piece { transform = g.transform, motion = motion, from = from, velocity = velocity,
+                    start = start, life = life, size = size, spin = Random.insideUnitSphere * 720f };
+                pieces.Add(piece);
+                return piece;
+            }
+
+            Add(PrimitiveType.Sphere, flash, PieceMotion.Flash, Vector3.up * 0.9f, Vector3.zero, 0f, 0.12f, radius * 0.8f);
+            for (int k = 0; k < 6; k++)
+            {
+                Vector3 offset = Random.insideUnitSphere * radius * 0.25f;
+                offset.y = Mathf.Abs(offset.y) + 0.7f;
+                Add(PrimitiveType.Sphere, k % 2 == 0 ? hot : deep, PieceMotion.Billow, offset,
+                    new Vector3(offset.x * 3f, Random.Range(3f, 5f), offset.z * 3f),
+                    Random.Range(0f, 0.03f), Random.Range(0.18f, 0.26f), radius * Random.Range(0.35f, 0.5f));
+            }
+            for (int k = 0; k < 14; k++)
+            {
+                // Flung far enough to reach the edge of the blast, showing how far it hit.
+                float life = Random.Range(0.25f, 0.33f);
+                float a = (k + Random.value) / 14f * Mathf.PI * 2f;
+                float reach = radius * Random.Range(0.85f, 1.1f) / life;
+                Add(PrimitiveType.Cube, k % 3 == 0 ? flash : hot, PieceMotion.Ember, Vector3.up * 0.8f,
+                    new Vector3(Mathf.Cos(a) * reach, Random.Range(2f, 4f), Mathf.Sin(a) * reach),
+                    0f, life, Random.Range(0.12f, 0.2f));
+            }
+
+            float end = 0f;
+            foreach (Piece p in pieces) end = Mathf.Max(end, p.start + p.life);
+            for (float t = 0f; t < end; t += Time.deltaTime)
+            {
+                foreach (Piece p in pieces)
+                {
+                    float local = t - p.start;
+                    float f = local / p.life;
+                    if (f < 0f || f >= 1f)
+                    {
+                        p.transform.localScale = Vector3.zero;
+                        continue;
+                    }
+                    switch (p.motion)
+                    {
+                        case PieceMotion.Flash:
+                            // Out almost at once, then collapses.
+                            p.transform.localScale = Vector3.one * p.size * (f < 0.3f ? Mathf.Sqrt(f / 0.3f) : 1f - (f - 0.3f) / 0.7f);
+                            break;
+                        case PieceMotion.Billow:
+                            // Swells fast, drifts upward while slowing, and burns down to nothing.
+                            p.transform.localScale = Vector3.one * p.size * (f < 0.25f ? Mathf.Sin(f / 0.25f * Mathf.PI * 0.5f) : 1f - (f - 0.25f) / 0.75f);
+                            p.transform.localPosition = p.from + p.velocity * local * (1f - 0.5f * f);
+                            break;
+                        case PieceMotion.Ember:
+                            Vector3 at = p.from + p.velocity * local + 0.5f * local * local * new Vector3(0f, -14f, 0f);
+                            at.y = Mathf.Max(at.y, 0.05f);
+                            p.transform.localPosition = at;
+                            p.transform.localRotation = Quaternion.Euler(p.spin * local);
+                            p.transform.localScale = Vector3.one * p.size * (f < 0.5f ? 1f : 1f - (f - 0.5f) / 0.5f);
+                            break;
+                    }
+                }
+                yield return null;
+            }
+            Destroy(root);
         }
 
         /// <summary>A ring of small orbs rising around a character (healing, level-ups).</summary>
