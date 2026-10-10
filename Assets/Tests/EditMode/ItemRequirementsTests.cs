@@ -15,10 +15,10 @@ namespace PoeClone.Tests
             var equipment = new EquipmentSet { EnforceRequirements = true };
             equipment.Restore(EquipSlot.BodyArmour, Armour(), out _);
             var stats = new BaseStats { Level = 7 };
-            stats.Set(StatType.Dexterity, 16);
+            stats.Set(StatType.Dexterity, 23);
             StatSheet sheet = StatSheet.Build(stats, equipment);
             Assert.IsTrue(equipment.IsActive(EquipSlot.BodyArmour));
-            Assert.AreEqual(24, sheet.Total(StatType.Dexterity));
+            Assert.AreEqual(31, sheet.Total(StatType.Dexterity));
         }
 
         [Test]

@@ -745,12 +745,23 @@ namespace PoeClone.Inventory
             int level = b.RequiredLevel;
             if (uniqueName != null)
                 level = Math.Max(level, UniqueItems.RequiredLevelFor(uniqueName));
-            int attribute = 10 + b.RequiredLevel * 2;
+            int attribute = AttributeRequirement(b.RequiredLevel);
             bool hybrid = b.Line.EndsWith("_hyb");
             return new ItemRequirements(level,
                 b.Leaning == Leaning.Str || hybrid || b.Line == "sword" || b.Line == "ring_phys" ? attribute : 0,
                 b.Leaning == Leaning.Dex || hybrid ? attribute : 0,
                 b.Leaning == Leaning.Int ? attribute : 0);
+        }
+
+        /// <summary>
+        /// The attribute a base of this required level asks for: barely above the starting 10 early,
+        /// curving up to 45 at level 10, then rising by 5 a level (0: 10, 7: 31, 14: 65, 21: 100).
+        /// </summary>
+        public static int AttributeRequirement(int requiredLevel)
+        {
+            if (requiredLevel <= 10)
+                return Mathf.RoundToInt(10f + 2f * requiredLevel + 0.15f * requiredLevel * requiredLevel);
+            return 45 + 5 * (requiredLevel - 10);
         }
 
         /// <summary>Gives an item made from a base id the base's art (for loaded saves).</summary>
