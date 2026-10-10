@@ -1,3 +1,6 @@
+version: 2026-10-10-red-covenant-melee
+- The Red Covenant now gives 30-40% more Melee Damage instead of 35-45% more Damage. Copies you already own are updated.
+
 version: 2026-10-10-corpse-explosion-200
 - Corpse explosions chain: an enemy killed by an explosion rolls your Corpse Explosion chance again and can explode a moment later, rippling through the pack.
 - Corpse explosions now deal 200% of the killed enemy's Maximum Life as Fire damage, up from a sixth.

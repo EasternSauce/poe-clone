@@ -273,7 +273,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "warlord_plate", Name = "The Red Covenant", RequiredLevel = 30, Weight = Mythic,
                 Flavour = "Sign in blood. Every wound is paid for in kind, and then some.",
-                Mods = new[] { Roll(StatType.Armour, 120, 160), Roll(StatType.MaxLife, 60, 80), Roll(StatType.Strength, 15, 20), Roll(StatType.MoreDamage, 35, 45), Mod(StatType.NoLifeRegen, 1) }
+                Mods = new[] { Roll(StatType.Armour, 120, 160), Roll(StatType.MaxLife, 60, 80), Roll(StatType.Strength, 15, 20), Roll(StatType.MoreMeleeDamage, 30, 40), Mod(StatType.NoLifeRegen, 1) }
             },
             new Unique
             {

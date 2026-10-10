@@ -174,7 +174,8 @@ namespace PoeClone.Inventory
         CurseOnHit,                 // % chance for hits to curse the enemy with Grave Rot
         NoLifeRegen,                // 1: life does not regenerate
         ManaCostReduction,          // % less mana (or life) spent on skills
-        LifePercentOnKill           // % of maximum life recovered on kill
+        LifePercentOnKill,          // % of maximum life recovered on kill
+        MoreMeleeDamage             // % more damage with melee attacks
     }
 
     /// <summary>
@@ -370,7 +371,7 @@ namespace PoeClone.Inventory
         }
 
         private static bool IsMore(StatType stat) => stat == StatType.MoreLife ||
-            (stat >= StatType.MoreDamage && stat <= StatType.MoreMinionDamage);
+            (stat >= StatType.MoreDamage && stat <= StatType.MoreMinionDamage) || stat == StatType.MoreMeleeDamage;
 
         private void AddModifier(StatModifier modifier)
         {
@@ -401,6 +402,8 @@ namespace PoeClone.Inventory
                     increased += Total(StatType.BowDamage);
                     more *= Multiplier(StatType.MoreBowDamage);
                 }
+                else
+                    more *= Multiplier(StatType.MoreMeleeDamage);
             }
             else if (!damageOverTime && spell)
             {
@@ -697,6 +700,7 @@ namespace PoeClone.Inventory
                 case StatType.MoreLightningDamage: return "More Lightning Damage";
                 case StatType.MorePoisonDamage: return "More Poison Damage";
                 case StatType.MoreMinionDamage: return "More Minion Damage";
+                case StatType.MoreMeleeDamage: return "More Melee Damage";
                 case StatType.PhysicalToFire: return "Attacks Deal Fire";
                 case StatType.PhysicalToCold: return "Attacks Deal Cold";
                 case StatType.PhysicalToLightning: return "Attacks Deal Lightning";
@@ -728,7 +732,7 @@ namespace PoeClone.Inventory
         /// <summary>Stats that are shown as a percentage.</summary>
         public static bool IsPercent(StatType stat)
         {
-            if (stat >= StatType.MoreLife && stat <= StatType.MoreMinionDamage) return true;
+            if ((stat >= StatType.MoreLife && stat <= StatType.MoreMinionDamage) || stat == StatType.MoreMeleeDamage) return true;
             switch (stat)
             {
                 case StatType.BlockChance:
@@ -813,7 +817,7 @@ namespace PoeClone.Inventory
         {
             string n = Number(Math.Abs(m.Value));
             string sign = m.Value < 0f ? "-" : "+";
-            if (m.Stat >= StatType.MoreLife && m.Stat <= StatType.MoreMinionDamage)
+            if ((m.Stat >= StatType.MoreLife && m.Stat <= StatType.MoreMinionDamage) || m.Stat == StatType.MoreMeleeDamage)
                 return n + "% " + (m.Value < 0f ? "less " : "more ") + Label(m.Stat).Substring(5);
 
             switch (m.Stat)
