@@ -21,6 +21,9 @@ namespace PoeClone.Network
     /// loading fades) replay exactly when the playback clock reaches the snapshot that reported
     /// them, so they line up with the interpolated motion. Leg/arm walk cycles need no
     /// replication at all: CharacterWalkAnimator derives them from how fast the puppet moves.
+    /// A co-op guest uses the enemy half of it (<see cref="EnterCoopGuest"/>): the host's
+    /// enemies, puppeted the same way, but solid and hittable, with the guest's own character
+    /// left fully in play.
     /// </summary>
     public class SpectatorReplica : MonoBehaviour
     {
@@ -43,7 +46,14 @@ namespace PoeClone.Network
             public int BossLookPhase = 1;
         }
 
-        private readonly SnapshotTimeline timeline = new SnapshotTimeline();
+        private SnapshotTimeline timeline = new SnapshotTimeline();
+
+        // Co-op guest: only the host's enemies are puppeted (see EnterCoopGuest).
+        private bool coopGuest;
+        private float nextStrayCheck;
+        private const float CoopMinDelay = 0.05f;
+        private const float CoopSmoothingRate = 25f;
+        private const float CoopSmoothingMaxError = 1.5f;
         private readonly Dictionary<int, Puppet> puppets = new Dictionary<int, Puppet>();
         private readonly Dictionary<int, LootDrop> loot = new Dictionary<int, LootDrop>();
         private readonly Dictionary<int, GearItem> groundItems = new Dictionary<int, GearItem>(); // full stats by drop id
@@ -168,6 +178,45 @@ namespace PoeClone.Network
             cameraFollow = cam != null ? cam.GetComponent<CameraFollow>() : null;
             loadingScreen = FindAnyObjectByType<LoadingScreenUI>();
 
+            ReplaceLocalEnemies();
+
+            // Gear only needs to look right here, and the look is keyed by base id, so one display
+            // item per base covers every starter item and every drop.
+            itemsById = new Dictionary<string, ItemData>();
+            foreach (string id in ItemGenerator.BaseIds)
+                itemsById[id] = ItemGenerator.Display(id, null, ItemRarity.Normal);
+        }
+
+        /// <summary>
+        /// Co-op guest: this game's enemies give way to copies of the host's, posed from the
+        /// host's snapshots (<see cref="HandleCoopState"/>). The guest's own character, menus and
+        /// HUD stay its own. The ground's loot is the host's too (see CoopSession).
+        /// </summary>
+        public void EnterCoopGuest()
+        {
+            if (active)
+                return;
+            active = true;
+            coopGuest = true;
+            timeline = new SnapshotTimeline(CoopMinDelay);
+            ReplaceLocalEnemies();
+        }
+
+        /// <summary>Co-op guest: this game's copy of one of the host's enemies, or null.</summary>
+        public EnemyHealth PuppetHealth(int id)
+        {
+            return puppets.TryGetValue(id, out Puppet puppet) && puppet.Root != null ? puppet.Health : null;
+        }
+
+        public void HandleCoopState(StateSnapshot s)
+        {
+            if (active && coopGuest && s != null)
+                timeline.Add(s, Time.realtimeSinceStartupAsDouble);
+        }
+
+        // No spawning and none of this game's own enemies or loot: what's shown comes from the stream.
+        private void ReplaceLocalEnemies()
+        {
             var spawner = FindAnyObjectByType<EnemySpawner>();
             foreach (var each in FindObjectsByType<EnemySpawner>())
                 SetEnabled(each, false); // no respawning of this tab's own enemies
@@ -182,12 +231,41 @@ namespace PoeClone.Network
                 Destroy(enemy.gameObject);
             foreach (var drop in new List<LootDrop>(LootDrop.All))
                 Destroy(drop.gameObject);
+        }
 
-            // Gear only needs to look right here, and the look is keyed by base id, so one display
-            // item per base covers every starter item and every drop.
-            itemsById = new Dictionary<string, ItemData>();
-            foreach (string id in ItemGenerator.BaseIds)
-                itemsById[id] = ItemGenerator.Display(id, null, ItemRarity.Normal);
+        private void UpdateCoopGuest()
+        {
+            // Anything that spawns enemies of its own here (a quest ambush, a boss lair) is the
+            // host's to run: its copies arrive in the stream.
+            if (Time.unscaledTime >= nextStrayCheck)
+            {
+                nextStrayCheck = Time.unscaledTime + 1f;
+                foreach (EnemyHealth enemy in EnemyHealth.Active.ToArray())
+                {
+                    if (!enemy.IsRemote && !enemy.IsDead)
+                        Destroy(enemy.gameObject);
+                }
+            }
+
+            if (!timeline.HasData)
+                return;
+            timeline.Advance(Time.realtimeSinceStartupAsDouble);
+            due.Clear();
+            timeline.CollectDue(due);
+            foreach (StateSnapshot s in due)
+            {
+                foreach (EntityState e in s.e)
+                {
+                    if (e == null)
+                        continue;
+                    Puppet puppet = GetOrCreatePuppet(e);
+                    if (puppet != null)
+                        ApplyEnemyEvents(puppet, e);
+                }
+            }
+
+            if (timeline.TryGetFrame(out StateSnapshot from, out StateSnapshot to, out float alpha))
+                PoseEnemies(from, to, alpha);
         }
 
         /// <summary>Feeds one raw "state" message from the server.</summary>
@@ -281,6 +359,11 @@ namespace PoeClone.Network
         {
             if (!active)
                 return;
+            if (coopGuest)
+            {
+                UpdateCoopGuest();
+                return;
+            }
 
             UpdateLootPointer();
 
@@ -965,7 +1048,20 @@ namespace PoeClone.Network
                 bool teleported = !puppet.HasPose || (target - puppet.LastPosition).sqrMagnitude >
                                   SnapshotTimeline.TeleportDistance * SnapshotTimeline.TeleportDistance;
 
-                puppet.Root.transform.SetPositionAndRotation(target, Quaternion.Euler(0f, scratch.r, 0f));
+                Quaternion facing = Quaternion.Euler(0f, scratch.r, 0f);
+                Transform body = puppet.Root.transform;
+                Vector3 error = target - body.position;
+                if (coopGuest && !teleported && error.sqrMagnitude < CoopSmoothingMaxError * CoopSmoothingMaxError)
+                {
+                    // Co-op runs ahead of the newest snapshot (extrapolating); a guess that turned
+                    // out wrong is eased in over a few frames instead of snapping.
+                    float blend = 1f - Mathf.Exp(-CoopSmoothingRate * Time.deltaTime);
+                    body.SetPositionAndRotation(body.position + error * blend, Quaternion.Slerp(body.rotation, facing, blend));
+                }
+                else
+                {
+                    body.SetPositionAndRotation(target, facing);
+                }
                 if (scratch.bs > 0f)
                     puppet.Root.transform.localScale = Vector3.one * scratch.bs;
                 puppet.LastPosition = target;
@@ -1033,9 +1129,24 @@ namespace PoeClone.Network
             SetEnabled(go.GetComponent<BossAbilities>(), false);
             SetEnabled(go.GetComponent<ShepherdFight>(), false);
             SetEnabled(go.GetComponent<CarrionSaintFight>(), false);
+            // The player's own minions: a green bar like the player sees, and a mage's bolt isn't
+            // aimed at the player.
+            bool minion = e.i >= PoeClone.Skills.Minion.ReplicationIdBase;
+
+            // A spectator's puppets are placed directly and need no collider. A co-op guest's
+            // enemies stay solid (to walk into and to hit) and send their hits to the host; the
+            // host's minions are its partner's allies, so they can't be hit at all.
             var cc = go.GetComponent<CharacterController>();
+            var health = go.GetComponent<EnemyHealth>();
             if (cc != null)
-                cc.enabled = false;
+                cc.enabled = coopGuest && !minion;
+            if (coopGuest && health != null)
+            {
+                if (minion)
+                    health.enabled = false;
+                else
+                    health.RemoteId = e.i;
+            }
 
             var puppet = new Puppet
             {
@@ -1052,9 +1163,6 @@ namespace PoeClone.Network
             if (puppet.Stagger == null)
                 puppet.Stagger = go.AddComponent<Stagger>();
 
-            // The player's own minions: a green bar like the player sees, and a mage's bolt isn't
-            // aimed at the player.
-            bool minion = e.i >= PoeClone.Skills.Minion.ReplicationIdBase;
             if (minion)
             {
                 var bar = go.GetComponent<EnemyHealthBarUI>();
@@ -1062,8 +1170,9 @@ namespace PoeClone.Network
                     bar.Friendly = true;
             }
 
-            // A caster's or archer's replayed attack sends a harmless bolt/arrow at the player.
-            if (kind.IsRanged && puppet.Attack != null && !minion)
+            // A caster's or archer's replayed attack sends a harmless bolt/arrow at the player. (In
+            // co-op the host sends each bolt and arrow itself, aimed at whoever it was really for.)
+            if (kind.IsRanged && puppet.Attack != null && !minion && !coopGuest)
             {
                 Transform body = go.transform;
                 puppet.Attack.StrikeFrame += () =>

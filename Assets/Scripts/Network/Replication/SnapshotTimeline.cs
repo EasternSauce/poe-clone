@@ -34,6 +34,7 @@ namespace PoeClone.Network.Replication
         private const int MaxSnapshots = 64;
 
         private readonly List<StateSnapshot> snapshots = new List<StateSnapshot>();
+        private readonly float minDelay;
 
         private bool clockStarted;
         private double lastAdvanceLocal;
@@ -44,7 +45,17 @@ namespace PoeClone.Network.Replication
         private float interval = 0.1f;
 
         public double RenderTime { get; private set; }
-        public float InterpolationDelay { get; private set; } = MinDelay + 0.03f;
+        public float InterpolationDelay { get; private set; }
+
+        /// <summary>
+        /// <paramref name="minDelay"/>: the least buffering it settles on. Co-op runs leaner than
+        /// spectating (snapshots come twice as often and extrapolation covers a late one).
+        /// </summary>
+        public SnapshotTimeline(float minDelay = MinDelay)
+        {
+            this.minDelay = minDelay;
+            InterpolationDelay = minDelay + 0.03f;
+        }
         public float Jitter => jitter;
         public int Count => snapshots.Count;
         public bool HasData => snapshots.Count > 0;
@@ -66,7 +77,7 @@ namespace PoeClone.Network.Replication
             rate = 1f;
             jitter = 0f;
             interval = 0.1f;
-            InterpolationDelay = MinDelay + 0.03f;
+            InterpolationDelay = minDelay + 0.03f;
         }
 
         /// <summary>Adds a snapshot that just arrived. Returns false (and ignores it) if it's a duplicate or older than what we already have.</summary>
@@ -98,7 +109,7 @@ namespace PoeClone.Network.Replication
 
             // Enough buffer to cover one normal send interval plus a few standard jitters. Grows
             // quickly when the connection gets worse, shrinks slowly so it doesn't oscillate.
-            float target = Mathf.Clamp(interval + 3f * jitter + 0.03f, MinDelay, MaxDelay);
+            float target = Mathf.Clamp(interval + 3f * jitter + 0.03f, minDelay, MaxDelay);
             InterpolationDelay = target > InterpolationDelay
                 ? Mathf.Lerp(InterpolationDelay, target, 0.5f)
                 : Mathf.Lerp(InterpolationDelay, target, 0.05f);

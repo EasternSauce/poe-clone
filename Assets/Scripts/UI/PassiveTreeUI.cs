@@ -309,8 +309,8 @@ namespace PoeClone.UI
 
             // PlayerHUD uses screen pixels (OnGUI), while this badge lives on a scaled canvas.
             float scale = badge.canvas.scaleFactor;
-            float hudBottom = TouchMode.Active ? 124f * TouchMode.GuiScale
-                : PlayerHUD.ControlsHidden ? 326f : 378f;
+            float hudBottom = TouchMode.Active ? (124f + PlayerHUD.PartnerFrameExtent) * TouchMode.GuiScale
+                : (PlayerHUD.ControlsHidden ? 326f : 378f) + PlayerHUD.PartnerFrameExtent;
             badge.rectTransform.anchoredPosition = new Vector2(20f / scale, -(hudBottom + 10f) / scale);
 
             string text = "+" + unspent + " passive point" + (unspent > 1 ? "s" : "") + (TouchMode.Active ? "" : "  (P)");

@@ -16,6 +16,9 @@ const STATE_RATE_LIMIT_MS = 45;
 const MAX_PAYLOAD_BYTES = 64 * 1024;
 // Gear messages come only when a player's inventory changes; this just stops a flood.
 const GEAR_RATE_LIMIT_MS = 100;
+// Co-op traffic between two partners: ~20 world/character snapshots a second plus events
+// (hits, kills, enemy attacks), which come in bursts. Caps a flood without touching real play.
+const COOP_MESSAGES_PER_SECOND = 400;
 
 const room = new Room();
 
@@ -70,6 +73,16 @@ wss.on('connection', (ws) => {
 
   ws.on('message', (raw) => {
     const text = raw.toString();
+    // Co-op relay fast path: forwarded to the partner as is, never parsed here.
+    if (text.startsWith('{"type":"co",') || text.startsWith('{"type":"cev",')) {
+      const now = Date.now();
+      if (now - (ws.coopWindowAt || 0) >= 1000) {
+        ws.coopWindowAt = now;
+        ws.coopCount = 0;
+      }
+      if (++ws.coopCount <= COOP_MESSAGES_PER_SECOND) room.coopRelay(ws, text, Buffer.byteLength(text));
+      return;
+    }
     let msg;
     try {
       msg = JSON.parse(text);
@@ -113,6 +126,26 @@ wss.on('connection', (ws) => {
         if (now - ws.lastGearAt < GEAR_RATE_LIMIT_MS) return;
         ws.lastGearAt = now;
         room.submitGear(ws, msg, Buffer.byteLength(text));
+        break;
+      }
+
+      case 'coopHost': {
+        room.coopHost(ws, msg.name);
+        break;
+      }
+
+      case 'coopList': {
+        room.coopList(ws);
+        break;
+      }
+
+      case 'coopJoin': {
+        room.coopJoin(ws, Number(msg.id), msg.name);
+        break;
+      }
+
+      case 'coopLeave': {
+        room.coopLeave(ws);
         break;
       }
 

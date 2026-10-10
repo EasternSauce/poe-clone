@@ -31,6 +31,10 @@ namespace PoeClone.Network
         public string from;
         public string text;
         public long ts;
+        public string state;         // coop: hosting / started / failed / ended
+        public string coopRole;      // coop started: host / guest
+        public string partnerName;
+        public PlayerInfo[] hosts;   // lobby: players waiting for a partner
     }
 
     [Serializable]

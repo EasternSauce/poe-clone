@@ -15,10 +15,11 @@ namespace PoeClone.Network.Replication
     /// </summary>
     public static class SnapshotCodec
     {
-        public static string Serialize(StateSnapshot s)
+        /// <summary>Writes a snapshot; <paramref name="type"/> other than "state" is a co-op one (same shape).</summary>
+        public static string Serialize(StateSnapshot s, string type = StateSnapshot.MessageType)
         {
             var sb = new StringBuilder(512);
-            sb.Append("{\"type\":\"").Append(StateSnapshot.MessageType).Append('"');
+            sb.Append("{\"type\":\"").Append(type).Append('"');
             AppendInt(sb, "seq", s.seq, always: true);
             sb.Append(",\"t\":").Append(s.t.ToString("0.###", CultureInfo.InvariantCulture));
             AppendInt(sb, "pid", s.pid);
@@ -158,7 +159,7 @@ namespace PoeClone.Network.Replication
         }
 
         /// <summary>Parses a state message. Returns null for anything that isn't a usable snapshot.</summary>
-        public static StateSnapshot Deserialize(string json)
+        public static StateSnapshot Deserialize(string json, string type = StateSnapshot.MessageType)
         {
             if (string.IsNullOrEmpty(json))
                 return null;
@@ -178,7 +179,7 @@ namespace PoeClone.Network.Replication
                 return null;
             }
 
-            if (s == null || s.type != StateSnapshot.MessageType || s.p == null)
+            if (s == null || s.type != type || s.p == null)
                 return null;
 
             if (double.IsNaN(s.t) || double.IsInfinity(s.t))

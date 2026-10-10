@@ -80,7 +80,7 @@ namespace PoeClone.Player
         private void OnItemThrown(ItemData item)
         {
             Vector3 at = LootDrop.FreeSpotNear(transform.position + transform.forward * 1.3f, 0f);
-            LootDrop.Spawn(item, LootDrop.GroundBelow(at), interactive: true, id: 0);
+            LootDrop.Place(item, LootDrop.GroundBelow(at));
             ItemSounds.PlayDrop(item, at);
         }
 

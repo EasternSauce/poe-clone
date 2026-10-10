@@ -60,6 +60,72 @@ namespace PoeClone.World
 
         public bool IsInteractive => interactive;
 
+        // ------------------------------------------------------------------ co-op
+        // The host's ground is the only real one: its drops are copied to the guest (IsShared),
+        // and whoever claims a drop first gets it. Single player leaves these hooks unset.
+
+        /// <summary>Host: a drop appeared / is gone (picked up, expired), for the guest's copy.</summary>
+        public static System.Action<LootDrop> Spawned;
+        public static System.Action<LootDrop> Removed;
+
+        /// <summary>Guest: asks the host for a shared drop the player just took.</summary>
+        public static System.Action<LootDrop> SharedClaim;
+
+        /// <summary>Guest: puts an item on the host's ground instead of this one (item, where).</summary>
+        public static System.Action<ItemData, Vector3> SharedPlace;
+
+        /// <summary>Guest: a copy of one of the host's drops (same id).</summary>
+        public bool IsShared { get; private set; }
+
+        /// <summary>Where it's popping out from, while it is (the guest's copy pops the same way).</summary>
+        public Vector3? PoppingFrom => popping ? popFrom : (Vector3?)null;
+
+        private bool claimPending;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            Spawned = null;
+            Removed = null;
+            SharedClaim = null;
+            SharedPlace = null;
+        }
+
+        /// <summary>Guest: shows one of the host's drops (gold keeps its amount).</summary>
+        public static LootDrop SpawnShared(ItemData item, Vector3 groundPoint, int id, int amount, Vector3? popFrom)
+        {
+            LootDrop drop = Spawn(item, groundPoint, interactive: true, id: id);
+            drop.IsShared = true;
+            drop.Amount = amount;
+            if (popFrom.HasValue)
+            {
+                drop.PopFrom(popFrom.Value);
+                ItemSounds.PlayDrop(item, groundPoint);
+            }
+            return drop;
+        }
+
+        /// <summary>Puts an item the player threw out on the ground (in co-op: the host's, for both to see).</summary>
+        public static void Place(ItemData item, Vector3 groundPoint)
+        {
+            if (SharedPlace != null)
+                SharedPlace(item, groundPoint);
+            else
+                Spawn(item, groundPoint, interactive: true, id: 0);
+        }
+
+        /// <summary>Guest: the host gave this drop to us. False if it no longer fits (it's put back down).</summary>
+        public bool ClaimGranted(PlayerInventory inventory, Vector3 noticeAt)
+        {
+            claimPending = false;
+            gameObject.SetActive(true);
+            if (TakeInto(inventory, noticeAt))
+                return true;
+            SharedPlace?.Invoke(Item, transform.position);
+            Destroy(gameObject);
+            return false;
+        }
+
         /// <summary>Finished popping out and can be taken.</summary>
         public bool IsLanded => Time.time >= clickableAt;
 
@@ -152,6 +218,8 @@ namespace PoeClone.World
             drop.bobPhase = Random.value * Mathf.PI * 2f;
             drop.displayWorld = groundPoint + Vector3.up * CanvasHeight;
             drop.Build();
+            if (interactive)
+                Spawned?.Invoke(drop);
             return drop;
         }
 
@@ -216,6 +284,12 @@ namespace PoeClone.World
         private void OnEnable()
         {
             All.Add(this);
+        }
+
+        private void OnDestroy()
+        {
+            if (interactive && !IsShared)
+                Removed?.Invoke(this);
         }
 
         private void OnDisable()
@@ -372,6 +446,43 @@ namespace PoeClone.World
             if (inventory == null || !interactive)
                 return false;
 
+            if (IsShared)
+            {
+                // Gear needs room first; the host answers the claim, meanwhile it's hidden here.
+                if (claimPending || SharedClaim == null)
+                    return false;
+                if (!IsPickup && !HasRoom(inventory))
+                {
+                    NoticeFull(noticeAt, "Inventory full");
+                    return false;
+                }
+                claimPending = true;
+                gameObject.SetActive(false);
+                SharedClaim(this);
+                return true;
+            }
+
+            return TakeInto(inventory, noticeAt);
+        }
+
+        private bool HasRoom(PlayerInventory inventory)
+        {
+            if (!inventory.Grid.TryAutoPlace(Item))
+                return false;
+            inventory.Grid.Remove(Item);
+            return true;
+        }
+
+        private void NoticeFull(Vector3 noticeAt, string text)
+        {
+            if (Time.time < nextFullNotice)
+                return;
+            nextFullNotice = Time.time + 1f;
+            CombatText.Show(noticeAt, text, CombatText.AvoidColor, 0.8f);
+        }
+
+        private bool TakeInto(PlayerInventory inventory, Vector3 noticeAt)
+        {
             if (IsGold)
             {
                 inventory.AddGold(Amount);
@@ -390,11 +501,7 @@ namespace PoeClone.World
                     Destroy(gameObject);
                     return true;
                 }
-                if (Time.time >= nextFullNotice)
-                {
-                    nextFullNotice = Time.time + 1f;
-                    CombatText.Show(noticeAt, (health ? "Health" : "Mana") + " potions full", CombatText.AvoidColor, 0.8f);
-                }
+                NoticeFull(noticeAt, (health ? "Health" : "Mana") + " potions full");
                 return false;
             }
 
@@ -406,11 +513,7 @@ namespace PoeClone.World
                 return true;
             }
 
-            if (Time.time >= nextFullNotice)
-            {
-                nextFullNotice = Time.time + 1f;
-                CombatText.Show(noticeAt, "Inventory full", CombatText.AvoidColor, 0.8f);
-            }
+            NoticeFull(noticeAt, "Inventory full");
             return false;
         }
 
@@ -491,7 +594,7 @@ namespace PoeClone.World
                     popping = false;
             }
 
-            if (interactive && Time.time - bornAt > LifetimeSeconds)
+            if (interactive && !IsShared && Time.time - bornAt > LifetimeSeconds)
                 Destroy(gameObject);
         }
 

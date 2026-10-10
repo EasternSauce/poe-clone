@@ -1,3 +1,14 @@
+version: 2026-10-10-coop-preview
+- New start menu: choose Single Player or Co-op before picking a character. Every menu after the first has a Back button, including character select.
+- Co-op preview: play with one other person over the internet. Choose Co-op, then Host Game to wait for a partner or Join Game to see everyone who is hosting. Pick a character and you start together in the host's world.
+- You see each other move, attack and use skills, fight the same monsters and bump into each other. Players can't hurt each other.
+- Your partner's name, level, health and mana show in a frame under your own bars, and a health bar floats under their name above their character.
+- Monsters choose between the two of you: they go for whoever comes close first, then switch to whoever hurts them most, without flipping back and forth.
+- Items and gold on the ground are shared: whoever takes an item first gets it. Items you throw out of your bag land on the shared ground. Both players get experience for kills near them.
+- Your character, gear and progress stay your own and are saved as usual, so you can leave co-op and carry on with the same character alone.
+- In co-op the Escape menu no longer pauses the game, and neither do area changes, since the world is shared.
+- Preview limits: monster special skills and boss fights only go after the host, the host's minions can't be seen by the guest, and the guest's minions can't be seen by the host. If the host leaves, the guest returns to the menu.
+
 version: 2026-10-10-attribute-requirements
 - Gear asks for more Strength, Dexterity or Intelligence at higher levels, up to 50% more from level 10 onward. Starting items still need 10; level 7 items now need 32 (was 24), level 14 items 57 (was 38) and level 21 items 78 (was 52). Items you already own use the new requirements.
 

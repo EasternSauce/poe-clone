@@ -47,6 +47,21 @@ namespace PoeClone.Network
         private WebSocketClient client;
         private PlayerStateBroadcaster stateBroadcaster;
         private SpectatorReplica replica;
+
+        // Co-op: what the player picked in the co-op menu, until the game starts (then coop runs it).
+        private enum CoopIntent { None, Host, Join }
+        private CoopIntent coopIntent;
+        private CoopSession coop;
+        private PlayerInfo[] lobby = new PlayerInfo[0];
+
+        /// <summary>Shown on the start menu after a co-op game ended (the scene reloads for it).</summary>
+        private static string startNotice;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            startNotice = null;
+        }
         private NamePromptUI namePrompt;
         private GameObject scenePlayer;
         private readonly System.Collections.Generic.List<GameObject> suspendedRoots = new System.Collections.Generic.List<GameObject>();
@@ -177,15 +192,7 @@ namespace PoeClone.Network
                 if (Role == SessionRole.Player)
                 {
                     PoeClone.Player.SaveSystem.Profiles();
-                    namePrompt.ShowCharacters(() =>
-                    {
-                        PlayerName = SaveSystem.ActiveCharacterName;
-                        PlayGranted = true;
-                        PrepareGameplay();
-                        StartCoroutine(LoadChosenCharacter());
-                        StateChanged?.Invoke();
-                        StartCoroutine(ConnectToServer());
-                    });
+                    ShowStartMenu();
                     return;
                 }
                 namePrompt.Show(PlayerPrefs.GetString(NamePrefKey, string.Empty), confirmLabel, name =>
@@ -196,6 +203,143 @@ namespace PoeClone.Network
                     StartCoroutine(ConnectToServer());
                 });
             });
+        }
+
+        // ------------------------------------------------------------------ start menu and co-op
+
+        private void ShowStartMenu()
+        {
+            string notice = startNotice;
+            startNotice = null;
+            coopIntent = CoopIntent.None;
+            namePrompt.ShowStartMenu(() => ChooseCharacter(CoopIntent.None), ShowCoopMenu, notice);
+        }
+
+        private void ShowCoopMenu()
+        {
+            LeaveCoopLobby();
+            namePrompt.ShowCoopMenu(() => ChooseCharacter(CoopIntent.Host), () => ChooseCharacter(CoopIntent.Join), ShowStartMenu);
+        }
+
+        private void ChooseCharacter(CoopIntent intent)
+        {
+            LeaveCoopLobby();
+            namePrompt.ShowCharacters(() =>
+            {
+                PlayerName = SaveSystem.ActiveCharacterName;
+                if (intent == CoopIntent.None)
+                    StartGame();
+                else
+                    EnterCoopLobby(intent);
+            }, intent == CoopIntent.None ? (Action)ShowStartMenu : ShowCoopMenu);
+        }
+
+        private void StartGame()
+        {
+            namePrompt.HideScreens();
+            PlayGranted = true;
+            PrepareGameplay();
+            StartCoroutine(LoadChosenCharacter());
+            StateChanged?.Invoke();
+            if (!Connected)
+                StartCoroutine(ConnectToServer());
+        }
+
+        // Hosting needs the server: connect first if single player's background connection isn't up yet.
+        private void EnterCoopLobby(CoopIntent intent)
+        {
+            coopIntent = intent;
+            namePrompt.ShowCoopStatus("Connecting...", null, BackToCharacters);
+            if (Connected && serverPlayGranted)
+                RequestCoop();
+            else if (!Connected && reconnectRoutine == null)
+                StartCoroutine(ConnectToServer());
+        }
+
+        private void BackToCharacters()
+        {
+            CoopIntent intent = coopIntent;
+            LeaveCoopLobby();
+            ChooseCharacter(intent);
+        }
+
+        private void LeaveCoopLobby()
+        {
+            if (coopIntent != CoopIntent.None && Connected && coop == null)
+                client.Send(JsonUtility.ToJson(new CoopLeaveMessage()));
+            coopIntent = CoopIntent.None;
+        }
+
+        private void RequestCoop()
+        {
+            if (coopIntent == CoopIntent.Host)
+            {
+                client.Send(JsonUtility.ToJson(new CoopHostMessage { name = PlayerName }));
+                namePrompt.ShowCoopStatus("Waiting for another player...", "Your game is listed for others to join.", BackToCharacters);
+            }
+            else if (coopIntent == CoopIntent.Join)
+            {
+                client.Send(JsonUtility.ToJson(new CoopListMessage()));
+                ShowLobby();
+            }
+        }
+
+        private void ShowLobby()
+        {
+            namePrompt.ShowCoopLobby(lobby, JoinGame, BackToCharacters);
+        }
+
+        private void JoinGame(PlayerInfo host)
+        {
+            client.Send(JsonUtility.ToJson(new CoopJoinMessage { id = host.id, name = PlayerName }));
+            namePrompt.ShowCoopStatus("Joining " + host.name + "'s game...", null, BackToCharacters);
+        }
+
+        private void HandleCoopMessage(ServerMessage msg)
+        {
+            switch (msg.state)
+            {
+                case "failed":
+                    if (coopIntent == CoopIntent.Join)
+                        ShowLobby();
+                    break;
+
+                case "started":
+                    if (coopIntent == CoopIntent.None || coop != null)
+                        return;
+                    coopIntent = CoopIntent.None;
+                    StartGame();
+                    coop = gameObject.AddComponent<CoopSession>();
+                    coop.Begin(msg.coopRole == "host", msg.partnerName, stateBroadcaster, replica);
+                    break;
+
+                case "ended":
+                    if (coop == null)
+                        return;
+                    bool wasHost = coop.IsHost;
+                    string partner = coop.PartnerName;
+                    Destroy(coop);
+                    coop = null;
+                    if (wasHost)
+                    {
+                        // The world was ours all along: carry on alone.
+                        ChatReceived?.Invoke(new ChatEnvelope("", "system", partner + " left the game.", 0));
+                    }
+                    else
+                    {
+                        // Our enemies were the host's: back to the menu, character and progress saved.
+                        startNotice = partner + " ended the co-op game. Your character's progress is saved.";
+                        ReturnToCharacters();
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>Co-op: one already-serialized snapshot or event for the partner.</summary>
+        public void SendCoop(string json)
+        {
+            if (Connected && coop != null)
+                client.Send(json);
         }
 
         public void SendChat(string text)
@@ -296,6 +440,18 @@ namespace PoeClone.Network
                 return;
             }
 
+            if (json != null && json.StartsWith(CoopProtocol.SnapshotPrefix, StringComparison.Ordinal))
+            {
+                coop?.HandleSnapshot(json);
+                return;
+            }
+
+            if (json != null && json.StartsWith(CoopProtocol.EventPrefix, StringComparison.Ordinal))
+            {
+                coop?.HandleEvent(json);
+                return;
+            }
+
             ServerMessage msg;
             try
             {
@@ -324,7 +480,24 @@ namespace PoeClone.Network
                         chatDisconnected = false;
                         ChatReceived?.Invoke(new ChatEnvelope("", "system", "Reconnected to chat.", 0));
                     }
+                    if (coopIntent != CoopIntent.None)
+                    {
+                        if (msg.granted)
+                            RequestCoop();
+                        else
+                            namePrompt.ShowCoopStatus("Can't start co-op", msg.reason, BackToCharacters);
+                    }
                     StateChanged?.Invoke();
+                    break;
+
+                case "lobby":
+                    lobby = msg.hosts ?? new PlayerInfo[0];
+                    if (coopIntent == CoopIntent.Join)
+                        ShowLobby();
+                    break;
+
+                case "coop":
+                    HandleCoopMessage(msg);
                     break;
 
                 case "status":
@@ -356,6 +529,23 @@ namespace PoeClone.Network
             }
             if (!string.IsNullOrWhiteSpace(reason)) DisconnectReason = reason;
             if (string.IsNullOrWhiteSpace(DisconnectReason)) DisconnectReason = "Connection closed unexpectedly.";
+            if (coopIntent != CoopIntent.None)
+                namePrompt.ShowCoopStatus("Can't reach the co-op server", "Retrying... You can go back and play alone.", BackToCharacters);
+            if (coop != null)
+            {
+                // The server pairs the two games; without it the partner is gone for good. A guest's
+                // enemies were the host's, so it goes back to the menu (its progress is saved).
+                bool wasHost = coop.IsHost;
+                Destroy(coop);
+                coop = null;
+                if (!wasHost)
+                {
+                    startNotice = "Lost the connection to the co-op game. Your character's progress is saved.";
+                    ReturnToCharacters();
+                    return;
+                }
+                ChatReceived?.Invoke(new ChatEnvelope("", "system", "Co-op connection lost.", 0));
+            }
             Reconnecting = true;
             Connected = false;
             serverPlayGranted = false;
@@ -397,6 +587,8 @@ namespace PoeClone.Network
                 yield return NetworkConfig.Load(cfg => serverUrl = cfg.serverUrl);
             if (!returningToCharacters && !string.IsNullOrEmpty(serverUrl))
                 client.Connect(serverUrl);
+            else if (coopIntent != CoopIntent.None)
+                namePrompt.ShowCoopStatus("Co-op isn't available", "No server is configured for this build.", BackToCharacters);
         }
 
         private void ScheduleReconnect()

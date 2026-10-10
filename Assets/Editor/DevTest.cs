@@ -352,7 +352,12 @@ namespace PoeClone.EditorTools
             UnityEngine.Object ui = prompt != null ? UnityEngine.Object.FindAnyObjectByType(prompt) : null;
             if (ui != null && ((Component)ui).gameObject.activeInHierarchy && Time.timeScale == 0f)
             {
-                if (prompt.GetField("afterCharacter", Any)?.GetValue(ui) != null)
+                if (prompt.GetField("onSinglePlayer", Any)?.GetValue(ui) != null)
+                {
+                    prompt.GetMethod("PickSinglePlayer", Any)?.Invoke(ui, null);
+                    sb.Append("picked single player; ");
+                }
+                else if (prompt.GetField("afterCharacter", Any)?.GetValue(ui) != null)
                 {
                     prompt.GetMethod("FinishCharacters", Any)?.Invoke(ui, null);
                     sb.Append("selected character; ");
@@ -394,6 +399,65 @@ namespace PoeClone.EditorTools
         }
 
         /// <summary>Practically unkillable, with mana to spare (to watch minions/enemies without dying).</summary>
+        // ------------------------------------------------------------------ co-op
+
+        /// <summary>
+        /// In Play, on the start menu (after <see cref="Begin"/> + entering Play, not QuickStart,
+        /// whose Ready would pick single player): goes Co-op -> "host" or "join" -> the selected
+        /// character, as the menus would. Pair with server/test/coop-fake-partner.js for the other side.
+        /// </summary>
+        public static string Coop(string intent = "host")
+        {
+            if (!Application.isPlaying)
+                return "not playing";
+            var session = PoeClone.Network.GameSessionController.Instance;
+            if (session == null)
+                return "no session";
+            Type type = session.GetType();
+            object value = Enum.Parse(type.GetNestedType("CoopIntent", Any), intent == "host" ? "Host" : "Join");
+            type.GetMethod("ChooseCharacter", Any).Invoke(session, new[] { value });
+            var prompt = UnityEngine.Object.FindAnyObjectByType<PoeClone.Network.NamePromptUI>();
+            prompt.GetType().GetMethod("FinishCharacters", Any).Invoke(prompt, null);
+            return "co-op " + intent + ": character chosen";
+        }
+
+        /// <summary>Joins the first game in the co-op lobby (after Coop("join")).</summary>
+        public static string CoopJoinFirst()
+        {
+            var session = PoeClone.Network.GameSessionController.Instance;
+            var lobby = session != null ? session.GetType().GetField("lobby", Any).GetValue(session) as PoeClone.Network.PlayerInfo[] : null;
+            if (lobby == null || lobby.Length == 0)
+                return "nobody hosting";
+            session.GetType().GetMethod("JoinGame", Any).Invoke(session, new object[] { lobby[0] });
+            return "joining " + lobby[0].name;
+        }
+
+        public static string CoopStatus()
+        {
+            if (!Application.isPlaying)
+                return "not playing";
+            var sb = new StringBuilder();
+            sb.Append(PoeClone.Combat.Party.IsHost ? "host" : PoeClone.Combat.Party.IsGuest ? "guest" : "no party");
+            Transform partner = PoeClone.Combat.Party.Partner;
+            PlayerStats me = Stats();
+            if (me != null)
+                sb.Append(" | me ").Append(me.transform.position.ToString("0.0")).Append(" hp ").Append(me.CurrentHealth.ToString("0"))
+                  .Append(" area ").Append(AreaManager.Instance != null ? AreaManager.Instance.CurrentAreaIndex : -1);
+            sb.Append(" | partner ").Append(partner != null ? partner.position.ToString("0.0") : "not here");
+            int remote = 0, local = 0, chasingPartner = 0;
+            foreach (EnemyHealth e in EnemyHealth.Active)
+            {
+                if (e.IsRemote) remote++; else local++;
+                var ai = e.GetComponent<EnemyController>();
+                if (ai != null && ai.enabled && ai.TargetsPartner) chasingPartner++;
+            }
+            int shared = 0;
+            foreach (LootDrop d in LootDrop.All) if (d.IsShared) shared++;
+            sb.Append(" | enemies local ").Append(local).Append(" remote ").Append(remote).Append(" after partner ").Append(chasingPartner)
+              .Append(" | drops ").Append(LootDrop.All.Count).Append(" shared ").Append(shared);
+            return sb.ToString();
+        }
+
         public static string God(float life = 100000f, float mana = 10000f)
         {
             PlayerStats ps = Stats();

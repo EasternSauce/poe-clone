@@ -80,6 +80,30 @@ namespace PoeClone.Enemies
         /// <summary>The minion this enemy is fighting instead of the player, or null.</summary>
         public Minion TargetMinion => targetMinion != null && !targetMinion.IsDead ? targetMinion : null;
 
+        // Co-op aggro (host only): a threat score per player. Damage a player deals adds threat
+        // (scaled to this enemy's life), standing close builds a little over time, and all of it
+        // fades over a few seconds. The enemy changes target only when the other player clearly
+        // out-scores the current one, not mid-swing and not right after the last change, so it
+        // doesn't flicker between two players standing side by side. Without a partner the local
+        // player is always the target, exactly as in single player.
+        private const float ThreatMemorySeconds = 6f;
+        private const float DamageThreat = 150f;       // a hit for all of its life
+        private const float ProximityThreat = 4f;      // per second, standing right next to it
+        private const float ClosenessScore = 20f;      // bonus for the nearer player when choosing
+        private const float SwitchMargin = 1.25f;
+        private const float SwitchFlat = 5f;
+        private const float SwitchCooldown = 1.5f;
+        private float threatLocal;
+        private float threatPartner;
+        private bool targetsPartner;
+        private float switchedAt = -10f;
+
+        /// <summary>Co-op host: it's going for the partner's character instead of the local player.</summary>
+        public bool TargetsPartner => targetsPartner && Party.PartnerTargetable;
+
+        /// <summary>The player it's after (local or the co-op partner), or null.</summary>
+        public Transform TargetPlayer => TargetsPartner ? Party.Partner : player != null ? player.transform : null;
+
         private float chilledUntil = -1f;
 
         /// <summary>Slowed to half speed for a while (frost skills).</summary>
@@ -244,13 +268,88 @@ namespace PoeClone.Enemies
 
             health = GetComponent<EnemyHealth>();
             if (health != null)
+            {
                 health.Damaged += OnDamaged;
+                health.DamageApplied += AddThreat;
+            }
         }
 
         private void OnDestroy()
         {
             if (health != null)
+            {
                 health.Damaged -= OnDamaged;
+                health.DamageApplied -= AddThreat;
+            }
+        }
+
+        private void AddThreat(float amount)
+        {
+            float threat = DamageThreat * amount / Mathf.Max(1f, health.MaxHealth);
+            if (Party.ApplyingPartnerDamage)
+                threatPartner += threat;
+            else
+                threatLocal += threat;
+        }
+
+        // Picks which player to go for (see the threat fields). Single player: the local player.
+        private Transform ChooseTarget(bool localDead, bool attacking)
+        {
+            Transform local = player != null ? player.transform : null;
+            if (!Party.PartnerTargetable)
+            {
+                targetsPartner = false;
+                return local != null && !localDead ? local : null;
+            }
+
+            Transform partner = Party.Partner;
+            float decay = Mathf.Exp(-Time.deltaTime / ThreatMemorySeconds);
+            threatLocal *= decay;
+            threatPartner *= decay;
+
+            bool localOk = local != null && !localDead && !Sanctuary.Contains(local.position, 1f);
+            bool partnerOk = !Sanctuary.Contains(partner.position, 1f);
+            float localDistance = localOk ? FlatDistance(local.position) : float.MaxValue;
+            float partnerDistance = partnerOk ? FlatDistance(partner.position) : float.MaxValue;
+            if (localDistance > loseInterestRange) localOk = false;
+            if (partnerDistance > loseInterestRange) partnerOk = false;
+            if (localOk && localDistance < aggroRange)
+                threatLocal += Time.deltaTime * ProximityThreat * (1f - localDistance / aggroRange);
+            if (partnerOk && partnerDistance < aggroRange)
+                threatPartner += Time.deltaTime * ProximityThreat * (1f - partnerDistance / aggroRange);
+
+            bool wantPartner;
+            if (!localOk && !partnerOk)
+                wantPartner = local == null || localDead; // nobody in reach: the usual idle/lose-interest rules apply
+            else if (!localOk || !partnerOk)
+                wantPartner = partnerOk;
+            else if (state == State.Idle)
+                wantPartner = partnerDistance < localDistance; // first notice: whoever is nearer
+            else
+            {
+                float localScore = threatLocal + ClosenessScore * (1f - localDistance / loseInterestRange);
+                float partnerScore = threatPartner + ClosenessScore * (1f - partnerDistance / loseInterestRange);
+                float current = targetsPartner ? partnerScore : localScore;
+                float other = targetsPartner ? localScore : partnerScore;
+                bool mayChange = !attacking && Time.time - switchedAt >= SwitchCooldown;
+                wantPartner = mayChange && other > current * SwitchMargin + SwitchFlat ? !targetsPartner : targetsPartner;
+            }
+
+            if (wantPartner != targetsPartner)
+            {
+                targetsPartner = wantPartner;
+                switchedAt = Time.time;
+            }
+            if (targetsPartner)
+                return partner;
+            return local != null && !localDead ? local : null;
+        }
+
+        private float FlatDistance(Vector3 position)
+        {
+            Vector3 to = position - transform.position;
+            to.y = 0f;
+            return to.magnitude;
         }
 
         // A hit always aggroes, even from outside aggroRange (an arrow/spell from off-screen),
@@ -319,27 +418,28 @@ private void Update()
             bool staggered = stagger != null && stagger.IsStaggered;
             bool attacking = attackAnimator != null && attackAnimator.IsAttacking;
             bool playerDead = playerStats != null && playerStats.IsDead;
+            Transform target = ChooseTarget(playerDead, attacking);
 
             Vector3 horizontal = Vector3.zero;
             Vector3 facing = Vector3.zero;
 
             // A mini-stun: frozen in place, no tracking, until it wears off. A dead player is
             // treated the same as no target: stop chasing/facing rather than stand there tracking a corpse.
-            if (player != null && !staggered && !playerDead)
+            if (target != null && !staggered)
             {
                 // A minion nearer than the player (or a taunting golem) draws it off the player.
                 if (Time.time >= retargetAt)
                 {
                     retargetAt = Time.time + 0.35f;
-                    targetMinion = Minion.TargetFor(transform.position, player.transform.position);
+                    targetMinion = TargetsPartner ? null : Minion.TargetFor(transform.position, target.position);
                 }
                 Minion minion = TargetMinion;
-                Vector3 toPlayer = (minion != null ? minion.transform.position : player.transform.position) - transform.position;
+                Vector3 toPlayer = (minion != null ? minion.transform.position : target.position) - transform.position;
                 toPlayer.y = 0f;
                 float distance = toPlayer.magnitude;
 
                 // A player on warded ground can't be followed in (a minion out here still can).
-                if (minion == null && Sanctuary.Contains(player.transform.position, 1f))
+                if (minion == null && Sanctuary.Contains(target.position, 1f))
                     state = State.Idle;
                 else
                     UpdateState(distance);

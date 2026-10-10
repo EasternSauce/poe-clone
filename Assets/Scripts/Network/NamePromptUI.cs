@@ -13,7 +13,7 @@ namespace PoeClone.Network
     /// messages). Shown once before connecting; an empty name lets the server pick the default
     /// ("Player" / "Spectator N"). Built at runtime like the rest of this project's UI.
     /// </summary>
-    public class NamePromptUI : MonoBehaviour
+    public partial class NamePromptUI : MonoBehaviour
     {
         // Matches MAX_NAME_LENGTH in server/room.js.
         public const int MaxNameLength = 24;
@@ -23,6 +23,7 @@ namespace PoeClone.Network
         private Text buttonText;
         private Action<string> onDone;
         private Action afterCharacter;
+        private Action charactersBack;
         private float timeScaleBeforeStashRename;
 
         /// <summary>Use the character creation input as a full-screen, required stash tab name form.</summary>
@@ -66,7 +67,8 @@ namespace PoeClone.Network
             UiKit.IsStashNamePromptOpen = true;
             canvasRoot.SetActive(true);
             PlayerHUD.SetHiddenBy(this, true);
-            Time.timeScale = 0f;
+            if (!PoeClone.Combat.Party.Active)
+                Time.timeScale = 0f;
             StartCoroutine(FocusStashNameInput());
         }
 
@@ -91,9 +93,13 @@ namespace PoeClone.Network
             }
         }
 
-        public void ShowCharacters(Action done)
+        /// <summary>Character select. <paramref name="back"/> returns to the menu before it (kept for the create/remove screens).</summary>
+        public void ShowCharacters(Action done, Action back = null)
         {
             afterCharacter = done;
+            if (back != null)
+                charactersBack = back;
+            onSinglePlayer = null;
             canvasRoot.SetActive(true);
             PlayerHUD.SetHiddenBy(this, true);
             // Replace the name form with saved characters and their equipped models.
@@ -125,6 +131,11 @@ namespace PoeClone.Network
                 y -= 126;
             }
             MakeButton("Create New Character", font, new Vector2(0, y - 8), new Vector2(300, 54), () => ShowCreateCharacter(font));
+            if (charactersBack != null)
+            {
+                Action previous = charactersBack;
+                MakeBack(() => { afterCharacter = null; previous(); }, y - 78);
+            }
         }
 
         private void ShowRemoveConfirmation(string id, string name, Font font)

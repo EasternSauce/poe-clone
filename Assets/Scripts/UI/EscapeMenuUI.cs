@@ -108,7 +108,8 @@ namespace PoeClone.UI
             if (PatchNotesUI.IsShowing || (!IsOpen && Time.timeScale <= 0f)) return;
             ShowSettings();
             root.SetActive(true);
-            if (pausedByMenu) return;
+            // Co-op: the world is shared, so the menu opens over the running game.
+            if (pausedByMenu || PoeClone.Combat.Party.Active) return;
             timeScaleBeforeMenu = Time.timeScale;
             audioPausedBeforeMenu = AudioListener.pause;
             pausedByMenu = true;

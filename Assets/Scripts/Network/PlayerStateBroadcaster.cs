@@ -46,6 +46,7 @@ namespace PoeClone.Network
         private readonly List<EnemyHealth> enemies = new List<EnemyHealth>();
         private readonly List<EntityState> enemyStates = new List<EntityState>();
         private readonly Dictionary<EnemyHealth, int> enemyIds = new Dictionary<EnemyHealth, int>();
+        private readonly Dictionary<int, EnemyHealth> enemiesById = new Dictionary<int, EnemyHealth>();
         private int nextEnemyId = 1; // 0 is the player
         private readonly List<LootState> lootStates = new List<LootState>();
         private readonly StateSnapshot snapshot = new StateSnapshot
@@ -54,6 +55,14 @@ namespace PoeClone.Network
             hud = new PlayerHudState(),
             eq = new string[SlotRules.AllSlots.Length],
             ui = new UiState()
+        };
+
+        // Co-op's own snapshot (sent to the partner), so it never mixes with the spectators' one.
+        private readonly StateSnapshot coopSnapshot = new StateSnapshot
+        {
+            p = new EntityState(),
+            hud = new PlayerHudState(),
+            eq = new string[SlotRules.AllSlots.Length]
         };
 
         private readonly GearState gear = new GearState();
@@ -132,7 +141,34 @@ namespace PoeClone.Network
             return true;
         }
 
+        /// <summary>
+        /// Co-op: this player's snapshot for the partner, serialized. The host's carries every
+        /// monster near either player (the guest's copies of them are posed from it); the guest's
+        /// only its own character. No loot or menus: each player has their own.
+        /// </summary>
+        public string CaptureCoop(bool withEnemies, Vector3? alsoAround)
+        {
+            if (!ResolveReferences())
+                return null;
+            CaptureInto(coopSnapshot, Time.realtimeSinceStartupAsDouble, withEnemies, alsoAround, spectators: false);
+            return SnapshotCodec.Serialize(coopSnapshot, CoopProtocol.Snapshot);
+        }
+
+        /// <summary>An enemy's id in this player's snapshots.</summary>
+        public int IdOf(EnemyHealth enemy) => IdFor(enemy);
+
+        /// <summary>The enemy behind an id in this player's snapshots (co-op hit claims name enemies this way).</summary>
+        public EnemyHealth EnemyById(int id)
+        {
+            return enemiesById.TryGetValue(id, out EnemyHealth enemy) ? enemy : null;
+        }
+
         private StateSnapshot Capture(double now)
+        {
+            return CaptureInto(snapshot, now, withEnemies: true, alsoAround: null, spectators: true);
+        }
+
+        private StateSnapshot CaptureInto(StateSnapshot snapshot, double now, bool withEnemies, Vector3? alsoAround, bool spectators)
         {
             snapshot.seq = ++seq;
             snapshot.t = now;
@@ -175,16 +211,22 @@ namespace PoeClone.Network
                 snapshot.eq[k] = item?.Id ?? string.Empty;
             }
 
-            CaptureEnemies(pt.position);
-            CaptureLoot(pt.position);
-            CaptureCasts();
-            CaptureUi(snapshot.ui);
+            if (withEnemies)
+                CaptureEnemies(snapshot, pt.position, alsoAround);
+            else
+                snapshot.e = new EntityState[0];
+            CaptureCasts(snapshot);
+            if (spectators)
+            {
+                CaptureLoot(snapshot, pt.position);
+                CaptureUi(snapshot.ui);
+            }
             return snapshot;
         }
 
         // The player's last few skill casts (the last couple of seconds), so spectators draw them
         // too. Several snapshots repeat a cast; the spectator plays each number once.
-        private void CaptureCasts()
+        private void CaptureCasts(StateSnapshot snapshot)
         {
             List<PlayerSkills.CastRecord> casts = skills != null ? skills.RecentCasts(2f) : null;
             if (casts == null || casts.Count == 0)
@@ -338,7 +380,7 @@ namespace PoeClone.Network
             return items;
         }
 
-        private void CaptureEnemies(Vector3 center)
+        private void CaptureEnemies(StateSnapshot snapshot, Vector3 center, Vector3? alsoAround)
         {
             // Enemies only appear at scene start today, but rescanning once a second keeps this
             // correct if spawning ever becomes dynamic, without a FindObjects call every send.
@@ -358,9 +400,7 @@ namespace PoeClone.Network
                 if (enemy == null)
                     continue;
 
-                Vector3 offset = enemy.transform.position - center;
-                offset.y = 0f;
-                if (offset.sqrMagnitude > radiusSq)
+                if (!Near(enemy.transform.position, center, alsoAround, radiusSq))
                     continue;
 
                 if (count == enemyStates.Count)
@@ -435,11 +475,7 @@ namespace PoeClone.Network
             // the minion kinds at the end of EnemyKinds), so spectators see them fight alongside.
             foreach (Minion minion in Minion.All)
             {
-                if (minion == null)
-                    continue;
-                Vector3 offset = minion.transform.position - center;
-                offset.y = 0f;
-                if (offset.sqrMagnitude > radiusSq)
+                if (minion == null || !Near(minion.transform.position, center, alsoAround, radiusSq))
                     continue;
 
                 if (count == enemyStates.Count)
@@ -489,7 +525,20 @@ namespace PoeClone.Network
             return list.ToArray();
         }
 
-        private void CaptureLoot(Vector3 center)
+        private static bool Near(Vector3 position, Vector3 center, Vector3? alsoAround, float radiusSq)
+        {
+            Vector3 offset = position - center;
+            offset.y = 0f;
+            if (offset.sqrMagnitude <= radiusSq)
+                return true;
+            if (!alsoAround.HasValue)
+                return false;
+            offset = position - alsoAround.Value;
+            offset.y = 0f;
+            return offset.sqrMagnitude <= radiusSq;
+        }
+
+        private void CaptureLoot(StateSnapshot snapshot, Vector3 center)
         {
             float radiusSq = interestRadius * interestRadius;
             int count = 0;
@@ -527,6 +576,7 @@ namespace PoeClone.Network
             {
                 id = nextEnemyId++;
                 enemyIds[enemy] = id;
+                enemiesById[id] = enemy;
             }
             return id;
         }

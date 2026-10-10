@@ -41,6 +41,9 @@ namespace PoeClone.Enemies
         // The player's minion the swing was aimed at (the enemy went for it instead of the player).
         private Minion swingAtMinion;
 
+        // Co-op host: the swing was aimed at the partner's character.
+        private bool swingAtPartner;
+
         private void Awake()
         {
             Transform model = transform.Find("Model");
@@ -117,7 +120,8 @@ namespace PoeClone.Enemies
                 return;
             }
 
-            if (playerStats.IsDead)
+            bool atPartner = controller != null && controller.TargetsPartner;
+            if (playerStats.IsDead && !atPartner)
                 return;
             PlayerMotion.Track(playerStats);
 
@@ -136,7 +140,7 @@ namespace PoeClone.Enemies
                 return;
 
             Minion minion = controller != null ? controller.TargetMinion : null;
-            Vector3 targetAt = minion != null ? minion.transform.position : playerStats.transform.position;
+            Vector3 targetAt = minion != null ? minion.transform.position : atPartner ? Party.Partner.position : playerStats.transform.position;
             if (minion == null && Sanctuary.Contains(targetAt, 1f))
                 return;
             if (DistanceTo(targetAt) > attackRange + (minion != null ? 0.3f * minion.transform.localScale.x : 0f))
@@ -144,6 +148,7 @@ namespace PoeClone.Enemies
 
             Face(targetAt);
             swingAtMinion = minion;
+            swingAtPartner = minion == null && atPartner;
             attackAnimator.PlaybackSpeed = (controller != null ? controller.AttackSpeedMultiplier : 1f) * kind.Tempo;
             // Archers draw their bow like the player does; armed brutes swing their weapon;
             // everyone else swipes.
@@ -174,6 +179,12 @@ namespace PoeClone.Enemies
             if (!swingPending)
                 return;
             swingPending = false;
+            if (swingAtPartner)
+            {
+                swingAtPartner = false;
+                StrikePartner();
+                return;
+            }
             if (playerStats == null || playerStats.IsDead)
                 return;
 
@@ -196,7 +207,9 @@ namespace PoeClone.Enemies
                 Vector3 spot = controller != null && controller.IsEnraged
                     ? PlayerMotion.Predict(playerStats, EnemySkills.ArrowRainDelay)
                     : playerStats.transform.position;
-                EnemySkills.RainOfArrows(this, kind, spot, playerStats, RollDamage());
+                float rain = RollDamage();
+                EnemySkills.RainOfArrows(this, kind, spot, playerStats, rain);
+                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Rain, false, rain, 0f, transform.position, spot);
                 return;
             }
 
@@ -204,10 +217,12 @@ namespace PoeClone.Enemies
             {
                 // Enraged, it leads its shot: aims where the player will be when the bolt gets there.
                 Vector3 from = BoltOrigin(transform);
-                if (controller != null && controller.IsEnraged)
-                    EnemyProjectile.LaunchAt(from, PlayerMotion.Intercept(playerStats, from, kind.ProjectileSpeed), playerStats, kind, RollDamage());
-                else
-                    EnemyProjectile.Launch(from, playerStats, kind, RollDamage());
+                Vector3 aim = controller != null && controller.IsEnraged
+                    ? PlayerMotion.Intercept(playerStats, from, kind.ProjectileSpeed)
+                    : playerStats.transform.position;
+                float bolt = RollDamage();
+                EnemyProjectile.LaunchAt(from, aim, playerStats, kind, bolt);
+                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Bolt, false, bolt, 0f, from, aim);
                 return;
             }
 
@@ -221,6 +236,37 @@ namespace PoeClone.Enemies
 
             if (DistanceToPlayer() <= attackRange * ReachSlack)
                 playerStats.TakeHit(RollDamage(), kind.DamageType);
+        }
+
+        // Co-op host: the blow, bolt or arrow rain lands on the partner's character here only as a
+        // look; the partner's own game is told and decides whether it hit (it knows where they
+        // really are). Melee reach is checked there, against its copy of this enemy.
+        private void StrikePartner()
+        {
+            if (!Party.PartnerTargetable)
+                return;
+            Vector3 at = Party.Partner.position;
+            float damage = RollDamage();
+            if (kind.RainOfArrows)
+            {
+                EnemySkills.RainOfArrows(this, kind, at, null, 0f);
+                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Rain, true, damage, 0f, transform.position, at);
+            }
+            else if (kind.IsRanged)
+            {
+                Vector3 from = BoltOrigin(transform);
+                EnemyProjectile.LaunchVisual(from, at, kind);
+                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Bolt, true, damage, 0f, from, at);
+            }
+            else
+            {
+                if (kind.Weapon == WeaponType.Maul)
+                {
+                    Vector3 impact = transform.position + transform.forward * attackRange * 0.75f;
+                    Skills.SkillEffects.Shockwave(impact, 1.2f * transform.localScale.x, new Color(0.72f, 0.64f, 0.5f, 1f), 0.35f);
+                }
+                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Melee, true, damage, attackRange * ReachSlack, transform.position, at);
+            }
         }
 
         // Lightning is famously swingy in PoE; everything else varies a little.

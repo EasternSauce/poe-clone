@@ -91,6 +91,10 @@ namespace PoeClone.Enemies
 
             if (player.IsDead || Time.time < nextUse || Busy || Sanctuary.Contains(player.transform.position, 1f))
                 return;
+            // Co-op: its special skills are aimed at the local player only; while it's after the
+            // partner it fights with its plain attack.
+            if (controller != null && controller.TargetsPartner)
+                return;
             if ((stagger != null && stagger.IsStaggered) || (attackAnimator != null && attackAnimator.IsAttacking))
                 return;
 

@@ -435,3 +435,96 @@ test('chat from one player reaches the other players too', () => {
   assert.equal(got.from, 'Alice');
   assert.equal(got.role, 'player');
 });
+
+// ------------------------------------------------------------------ co-op
+
+function rawClient() {
+  const sent = [];
+  return {
+    sent,
+    send(json) {
+      sent.push(json);
+    },
+  };
+}
+
+test('a hosting player is listed to browsers, live', () => {
+  const room = new Room();
+  const host = fakeClient();
+  const browser = fakeClient();
+  room.join(host, 'player', 'Alice');
+  room.join(browser, 'player', 'Bob');
+  room.coopList(browser);
+  assert.deepEqual(browser.sent.at(-1), { type: 'lobby', hosts: [] });
+  room.coopHost(host, 'Alice the Bold');
+  assert.deepEqual(browser.sent.at(-1).hosts.map((h) => h.name), ['Alice the Bold']);
+  assert.equal(host.sent.at(-1).state, 'hosting');
+});
+
+test('joining pairs host and guest and takes the host off the lobby', () => {
+  const room = new Room();
+  const host = fakeClient();
+  const guest = fakeClient();
+  const other = fakeClient();
+  room.join(host, 'player', 'Alice');
+  room.join(guest, 'player', 'Bob');
+  room.join(other, 'player', 'Cid');
+  room.coopHost(host);
+  room.coopList(other);
+  const hostId = room.lobbyMessage().hosts[0].id;
+  assert.equal(room.coopJoin(guest, hostId, 'Bob'), true);
+  assert.deepEqual(host.sent.at(-1), { type: 'coop', state: 'started', coopRole: 'host', partnerName: 'Bob' });
+  assert.deepEqual(guest.sent.at(-1), { type: 'coop', state: 'started', coopRole: 'guest', partnerName: 'Alice' });
+  assert.deepEqual(other.sent.at(-1), { type: 'lobby', hosts: [] });
+  assert.equal(room.partnerOf(host), guest);
+});
+
+test('joining a game that is no longer open fails', () => {
+  const room = new Room();
+  const guest = fakeClient();
+  room.join(guest, 'player');
+  assert.equal(room.coopJoin(guest, 999), false);
+  assert.equal(guest.sent.find((m) => m.type === 'coop').state, 'failed');
+});
+
+test('co-op messages are relayed raw to the partner only', () => {
+  const room = new Room();
+  const host = rawClient();
+  const guest = rawClient();
+  const other = rawClient();
+  room.join(host, 'player');
+  room.join(guest, 'player');
+  room.join(other, 'player');
+  room.coopHost(host);
+  room.coopJoin(guest, room.lobbyMessage().hosts[0].id);
+  const before = other.sent.length;
+  assert.equal(room.coopRelay(host, '{"type":"co","seq":1}'), true);
+  assert.equal(guest.sent.at(-1), '{"type":"co","seq":1}');
+  assert.equal(other.sent.length, before);
+  assert.equal(room.coopRelay(other, '{"type":"co"}'), false);
+});
+
+test('a partner leaving ends the party for the other', () => {
+  const room = new Room();
+  const host = fakeClient();
+  const guest = fakeClient();
+  room.join(host, 'player');
+  room.join(guest, 'player');
+  room.coopHost(host);
+  room.coopJoin(guest, room.lobbyMessage().hosts[0].id);
+  room.leave(guest);
+  assert.equal(host.sent.at(-1).state, 'ended');
+  assert.equal(room.partnerOf(host), null);
+});
+
+test('a host who disconnects disappears from the lobby', () => {
+  const room = new Room();
+  const host = fakeClient();
+  const browser = fakeClient();
+  room.join(host, 'player');
+  room.join(browser, 'player');
+  room.coopHost(host);
+  room.coopList(browser);
+  room.leave(host);
+  assert.deepEqual(browser.sent.at(-1), { type: 'lobby', hosts: [] });
+});

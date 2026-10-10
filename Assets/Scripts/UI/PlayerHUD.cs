@@ -182,6 +182,52 @@ namespace PoeClone.UI
             pixel.Apply();
         }
 
+        /// <summary>What the co-op partner's frame shows (kept up to date by CoopPartner).</summary>
+        public class PartnerStatus
+        {
+            public string Name;
+            public int Level;
+            public float Health, MaxHealth, Mana, MaxMana;
+            public bool Dead;
+            public bool Here;   // in this player's area
+        }
+
+        /// <summary>Co-op: the partner's frame, drawn under this player's bars; null without a partner.</summary>
+        public static PartnerStatus Partner;
+
+        /// <summary>How much further down the partner's frame pushes what sits under the HUD (in HUD units).</summary>
+        public static float PartnerFrameExtent => Partner == null ? 0f : TouchMode.Active ? 80f : 92f;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetPartner()
+        {
+            Partner = null;
+        }
+
+        private static readonly Color HealthColor = new Color(0.75f, 0.15f, 0.15f);
+        private static readonly Color ManaColor = new Color(0.2f, 0.35f, 0.85f);
+
+        // The partner's name, level and their own health and mana bars, with the numbers on them.
+        private void DrawPartnerFrame(float x, float y, float width, bool backing)
+        {
+            PartnerStatus partner = Partner;
+            if (partner == null)
+                return;
+            if (backing)
+            {
+                Color previousColor = GUI.color;
+                GUI.color = new Color(0f, 0f, 0f, 0.32f);
+                GUI.DrawTexture(new Rect(x - 10f, y - 8f, width + 20f, 84f), pixel);
+                GUI.color = previousColor;
+            }
+            string state = partner.Dead ? "   <color=#ff7a70>dead</color>" : partner.Here ? "" : "   <color=#a0a0a0>in another area</color>";
+            GUI.Label(new Rect(x, y, width + 200f, 24f), $"<color=#8cd9ff>{partner.Name}</color>   Level {partner.Level}{state}", textStyle);
+            DrawLabeledBar(new Rect(x, y + 26f, width, 18f), SafeRatio(partner.Health, partner.MaxHealth), HealthColor,
+                $"{partner.Health:0} / {partner.MaxHealth:0}");
+            DrawLabeledBar(new Rect(x, y + 48f, width, 18f), SafeRatio(partner.Mana, partner.MaxMana), ManaColor,
+                $"{partner.Mana:0} / {partner.MaxMana:0}");
+        }
+
         private void OnGUI()
         {
             if (stats == null || AnyHider())
@@ -226,8 +272,10 @@ namespace PoeClone.UI
             Color previousColor = GUI.color;
             GUI.color = new Color(0f, 0f, 0f, 0.32f);
             bool showControls = !SpectatorMode && !ControlsHidden;
-            GUI.DrawTexture(new Rect(10f, 10f, showControls ? 750f : 400f, SpectatorMode ? 290f : showControls ? 368f : 316f), pixel);
+            float panelHeight = SpectatorMode ? 290f : showControls ? 368f : 316f;
+            GUI.DrawTexture(new Rect(10f, 10f, showControls ? 750f : 400f, panelHeight), pixel);
             GUI.color = previousColor;
+            DrawPartnerFrame(20f, 10f + panelHeight + 16f, 280f, backing: true);
 
             GUILayout.BeginArea(
                 new Rect(20f, 20f, 760f, 360f)
@@ -360,6 +408,7 @@ namespace PoeClone.UI
 
             if (!SpectatorMode)
                 GUI.Label(new Rect(x, y, 400f, 22f), PurseLine(), barLabelStyleLeft);
+            DrawPartnerFrame(x, y + 34f, barWidth, backing: false);
 
             GUI.matrix = previous;
         }

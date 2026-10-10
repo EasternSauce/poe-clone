@@ -59,6 +59,45 @@ namespace PoeClone.Enemies
         /// <summary>How high above the pivot (before scaling) its health bar floats.</summary>
         public float BarHeight => EnemyKinds.Get(KindIndex).BarHeight;
 
+        /// <summary>
+        /// Co-op guest: a copy of one of the host's enemies (its id in the host's snapshots). Hits
+        /// on it go to the host as claims (see <see cref="RemoteHit"/>); here they only lower the
+        /// bar at once, ahead of the host's answer. It never dies on its own.
+        /// </summary>
+        public int RemoteId { get; set; }
+        public bool IsRemote => RemoteId != 0;
+
+        /// <summary>A hit on a co-op copy, for the host to apply: everything TakeDamage was given.</summary>
+        public struct HitClaim
+        {
+            public float Amount;
+            public DamageType Type;
+            public float ArmourPenetration;
+            public float ElementalPenetration;
+            public bool ThroughExposedHead;
+            public bool CanEnrage;
+            public bool Flinch;
+            public bool HasOrigin;
+            public Vector3 Origin;
+        }
+
+        public static Action<EnemyHealth, HitClaim> RemoteHit;
+
+        /// <summary>Host: an enemy died (co-op shares the kill with the partner).</summary>
+        public static event Action<EnemyHealth> Killed;
+
+        // The bar keeps a co-op copy's predicted life until the host's snapshots have caught up
+        // with the hit, instead of jumping back up for a moment.
+        private const float PredictionHoldSeconds = 0.6f;
+        private float predictedUntil = -1f;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            RemoteHit = null;
+            Killed = null;
+        }
+
         public event Action Damaged;
         /// <summary>Damage after this enemy's defences, before the life pool clamps it.</summary>
         public event Action<float> DamageApplied;
@@ -131,6 +170,17 @@ namespace PoeClone.Enemies
             if (hitOrigin.HasValue && Graveward.Blocks(this, hitOrigin.Value))
                 return 0f;
 
+            if (IsRemote)
+            {
+                RemoteHit?.Invoke(this, new HitClaim
+                {
+                    Amount = amount, Type = type, ArmourPenetration = armourPenetration,
+                    ElementalPenetration = elementalPenetration, ThroughExposedHead = throughExposedHead,
+                    CanEnrage = canEnrage, Flinch = flinch, HasOrigin = hitOrigin.HasValue,
+                    Origin = hitOrigin ?? Vector3.zero
+                });
+            }
+
             if (Immune && !throughExposedHead)
             {
                 if (Time.time >= immuneShownAt)
@@ -143,7 +193,8 @@ namespace PoeClone.Enemies
 
             // Enrage takes effect before defenses, including on the first ranged/minion hit.
             EnemyController ai = GetComponent<EnemyController>();
-            ai?.OnIncomingHit(canEnrage);
+            if (!IsRemote)
+                ai?.OnIncomingHit(canEnrage);
 
             EnemyKind kind = EnemyKinds.Get(KindIndex);
             if (kind.IsBoss && ai != null && ai.IsEnraged)
@@ -160,6 +211,14 @@ namespace PoeClone.Enemies
                     break;
             }
             DamageApplied?.Invoke(amount);
+            if (IsRemote)
+            {
+                // The host decides the rest (stagger, death); its snapshots replay them here.
+                currentHealth = Mathf.Max(0f, currentHealth - amount);
+                predictedUntil = Time.time + PredictionHoldSeconds;
+                Damaged?.Invoke();
+                return amount;
+            }
             float least = Mathf.Max(0f, Floor);
             currentHealth = Mathf.Max(least, currentHealth - amount);
             Damaged?.Invoke();
@@ -266,6 +325,8 @@ namespace PoeClone.Enemies
                 maxHealth = max;
 
             float clamped = Mathf.Clamp(health, 0f, maxHealth);
+            if (clamped > currentHealth && Time.time < predictedUntil)
+                return;
             bool lost = clamped < currentHealth;
             currentHealth = clamped;
             if (lost)
@@ -324,30 +385,9 @@ namespace PoeClone.Enemies
 
             DisableLiveBehaviour();
 
-            PlayerStats player = FindAnyObjectByType<PlayerStats>();
-            if (player != null)
-                player.GainExperience(experienceReward);
-
             EnemyKind kind = EnemyKinds.Get(KindIndex);
-            if (LootDrop.EnemyDropsActive)
-            {
-                // Deeper areas drop better gear: the item level follows the monster level.
-                for (int k = 0; k < Mathf.Max(1, kind.Drops); k++)
-                    LootDrop.RollDrop(kind, transform.position, Mathf.Max(MonsterLevel, 1), MinimalCombatMode.GuaranteedGear);
-
-                // A boss always leaves one unique behind.
-                if (kind.IsBoss)
-                {
-                    var rng = new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
-                    LootDrop.Drop(kind.Boss == BossStyle.Shepherd ? Inventory.UniqueItems.ShepherdReward(rng) : Inventory.UniqueItems.Random(rng, MonsterLevel), transform.position, itemLevel: MonsterLevel);
-                }
-                var area = World.AreaManager.Instance;
-                if (area != null && area.CurrentAreaIndex >= World.WorldBuilder.Ruins && area.CurrentAreaIndex <= World.WorldBuilder.Frozen && UnityEngine.Random.value < ItemData.ReawakeningDropChance)
-                    LootDrop.Drop(World.ActBossArena.ReawakeningItem(), transform.position, itemLevel: MonsterLevel);
-                if (UnityEngine.Random.value < ItemData.RegretDropChance)
-                    LootDrop.Drop(ItemData.RegretItem(), transform.position, itemLevel: MonsterLevel);
-            }
-            KillRewards.Grant(kind, MonsterLevel, transform.position, LootDrop.EnemyDropsActive);
+            GrantKillRewards(KindIndex, MonsterLevel, experienceReward, transform.position, dropLoot: true);
+            Killed?.Invoke(this);
 
             if (kind.SplitInto >= 0)
                 SplitApart(kind.SplitInto);
@@ -359,6 +399,42 @@ namespace PoeClone.Enemies
             }
 
             StartCoroutine(Collapse(removeCorpse: true));
+        }
+
+        public int ExperienceReward => experienceReward;
+
+        /// <summary>
+        /// Experience to the local player and the kill counted for quests; with
+        /// <paramref name="dropLoot"/>, its loot rolled here too (a co-op guest gets the
+        /// experience of the host's kills, while the loot lands on the host's shared ground).
+        /// </summary>
+        public static void GrantKillRewards(int kindIndex, int monsterLevel, int experience, Vector3 at, bool dropLoot)
+        {
+            PlayerStats player = FindAnyObjectByType<PlayerStats>();
+            if (player != null)
+                player.GainExperience(experience);
+
+            EnemyKind kind = EnemyKinds.Get(kindIndex);
+            dropLoot &= LootDrop.EnemyDropsActive;
+            if (dropLoot)
+            {
+                // Deeper areas drop better gear: the item level follows the monster level.
+                for (int k = 0; k < Mathf.Max(1, kind.Drops); k++)
+                    LootDrop.RollDrop(kind, at, Mathf.Max(monsterLevel, 1), MinimalCombatMode.GuaranteedGear);
+
+                // A boss always leaves one unique behind.
+                if (kind.IsBoss)
+                {
+                    var rng = new System.Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
+                    LootDrop.Drop(kind.Boss == BossStyle.Shepherd ? Inventory.UniqueItems.ShepherdReward(rng) : Inventory.UniqueItems.Random(rng, monsterLevel), at, itemLevel: monsterLevel);
+                }
+                var area = World.AreaManager.Instance;
+                if (area != null && area.CurrentAreaIndex >= World.WorldBuilder.Ruins && area.CurrentAreaIndex <= World.WorldBuilder.Frozen && UnityEngine.Random.value < ItemData.ReawakeningDropChance)
+                    LootDrop.Drop(World.ActBossArena.ReawakeningItem(), at, itemLevel: monsterLevel);
+                if (UnityEngine.Random.value < ItemData.RegretDropChance)
+                    LootDrop.Drop(ItemData.RegretItem(), at, itemLevel: monsterLevel);
+            }
+            KillRewards.Grant(kind, monsterLevel, at, dropLoot);
         }
 
         // A creature has a death of its own (it lies where it falls, no topple); a humanoid gets

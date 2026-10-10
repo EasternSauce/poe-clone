@@ -25,6 +25,10 @@
 // - Chat messages from anyone are broadcast to everyone (players + spectators).
 // - A short rolling chat history is kept so newly joined clients aren't
 //   dropped into a conversation with no context.
+// - Co-op: a player can host ("coopHost"), which lists them in the lobby that browsing
+//   players ("coopList") see live. "coopJoin" pairs a browser with a host; from then on
+//   their "co"/"cev" messages (the host's world, the guest's character, hits and kills)
+//   are relayed raw to the partner. Either side leaving ends the party for the other.
 
 const MAX_PLAYERS = 10;
 const MAX_CHAT_HISTORY = 50;
@@ -38,6 +42,8 @@ const MAX_GEAR_BYTES = 60 * 1024;
 // snapshots: everything queued is that much behind the player, and a bigger queue showed up
 // as several seconds of lag (attacks and gear changes arriving long after they happened).
 const MAX_SPECTATOR_BACKLOG_BYTES = 48 * 1024;
+// A co-op world snapshot: the host, every monster near either player, recent skill casts.
+const MAX_COOP_BYTES = 48 * 1024;
 
 class Room {
   constructor({ now = () => Date.now(), maxPlayers = MAX_PLAYERS } = {}) {
@@ -48,6 +54,11 @@ class Room {
     this.waiting = []; // denied player connections, oldest first: { client, id, name }
     this.chatHistory = [];
     this.nextId = 1;
+    // Co-op, by player client: hosts waiting in the lobby (client -> name), browsing clients,
+    // and the pairs playing together (client -> partner client, both directions).
+    this.hosting = new Map();
+    this.browsing = new Set();
+    this.partners = new Map();
   }
 
   _allocId() {
@@ -97,6 +108,8 @@ class Room {
   }
 
   leave(client) {
+    this.coopLeave(client, 'Your partner left the game.');
+    this.browsing.delete(client);
     const player = this.players.get(client);
     if (player) {
       this.players.delete(client);
@@ -229,6 +242,97 @@ class Room {
     return message;
   }
 
+  // ------------------------------------------------------------------ co-op
+
+  // Lists a player in the lobby under the given name, until someone joins or they cancel.
+  coopHost(client, requestedName) {
+    const player = this.players.get(client);
+    if (!player || this.partners.has(client)) return false;
+    this.browsing.delete(client);
+    this.hosting.set(client, sanitizeName(requestedName) || player.name);
+    safeSend(client, { type: 'coop', state: 'hosting' });
+    this._broadcastLobby();
+    return true;
+  }
+
+  // A player starts browsing: sent the lobby now and whenever it changes.
+  coopList(client) {
+    if (!this.players.has(client) || this.partners.has(client)) return false;
+    this._stopHosting(client);
+    this.browsing.add(client);
+    safeSend(client, this.lobbyMessage());
+    return true;
+  }
+
+  // Pairs a browsing player with a waiting host. Returns true if the party started.
+  coopJoin(client, hostId, requestedName) {
+    const guest = this.players.get(client);
+    if (!guest || this.partners.has(client)) return false;
+    let host = null;
+    for (const [c] of this.hosting) {
+      if (c !== client && this.players.get(c)?.id === hostId) host = c;
+    }
+    if (!host) {
+      safeSend(client, { type: 'coop', state: 'failed', reason: 'That game is no longer open.' });
+      safeSend(client, this.lobbyMessage());
+      return false;
+    }
+    const hostName = this.hosting.get(host);
+    const guestName = sanitizeName(requestedName) || guest.name;
+    this.hosting.delete(host);
+    this.browsing.delete(client);
+    this.browsing.delete(host);
+    this.partners.set(host, client);
+    this.partners.set(client, host);
+    safeSend(host, { type: 'coop', state: 'started', coopRole: 'host', partnerName: guestName });
+    safeSend(client, { type: 'coop', state: 'started', coopRole: 'guest', partnerName: hostName });
+    this._broadcastLobby();
+    return true;
+  }
+
+  // Stops hosting/browsing, or ends the party (telling the partner why).
+  coopLeave(client, reason = 'Your partner left the game.') {
+    this.browsing.delete(client);
+    if (this._stopHosting(client)) return;
+    const partner = this.partners.get(client);
+    if (!partner) return;
+    this.partners.delete(client);
+    this.partners.delete(partner);
+    safeSend(partner, { type: 'coop', state: 'ended', reason });
+  }
+
+  // Relays a co-op message, as received, to the sender's partner. Returns whether it was sent.
+  coopRelay(client, raw, rawLength = 0) {
+    const partner = this.partners.get(client);
+    if (!partner || rawLength > MAX_COOP_BYTES) return false;
+    safeSendRaw(partner, raw);
+    return true;
+  }
+
+  partnerOf(client) {
+    return this.partners.get(client) || null;
+  }
+
+  lobbyMessage() {
+    const hosts = [];
+    for (const [client, name] of this.hosting) {
+      const player = this.players.get(client);
+      if (player) hosts.push({ id: player.id, name });
+    }
+    return { type: 'lobby', hosts };
+  }
+
+  _stopHosting(client) {
+    if (!this.hosting.delete(client)) return false;
+    this._broadcastLobby();
+    return true;
+  }
+
+  _broadcastLobby() {
+    const message = this.lobbyMessage();
+    for (const client of this.browsing) safeSend(client, message);
+  }
+
   // The status a client sees; for a spectator it includes who they are watching.
   statusMessage(client) {
     const spectator = client ? this.spectators.get(client) : undefined;
@@ -338,4 +442,5 @@ module.exports = {
   MAX_NAME_LENGTH,
   MAX_STATE_BYTES,
   MAX_SPECTATOR_BACKLOG_BYTES,
+  MAX_COOP_BYTES,
 };

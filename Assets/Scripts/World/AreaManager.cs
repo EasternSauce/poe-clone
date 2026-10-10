@@ -135,7 +135,9 @@ private IEnumerator SwitchRoutine(int index, Transform arrival)
             // is 0 everywhere, so player movement / physics / animation stop being
             // processed this frame onward. The loading screen fades in using
             // unscaled time so it can still animate while frozen.
-            Time.timeScale = 0f;
+            // (Not in co-op: the other player's game and the shared enemies keep going.)
+            if (!PoeClone.Combat.Party.Active)
+                Time.timeScale = 0f;
 
             if (loadingScreen != null)
                 yield return loadingScreen.FadeIn();
