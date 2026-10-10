@@ -48,3 +48,7 @@ When finishing a set of project changes, update `Assets/Resources/PatchNotes.txt
 After finishing every new feature or fix, refresh assets in the Unity Editor through Unity MCP `refresh_unity(scope="all", mode="force", compile="request", wait_for_ready=true)`. Wait for asset importing and script compilation to finish, then check the Unity console for errors before reporting completion.
 
 After completing a feature or fix and the required checks, commit the changes with a descriptive message and push the commit to the current branch's remote before reporting completion. Include only changes related to the completed work. If committing or pushing fails, report the blocker.
+
+# Class gauntlet (balance testing)
+
+The Editor-only class gauntlet compares builds at levels 1, 7, 14, 21, 28 and 34. Builds are data in `Assets/Scripts/World/Gauntlet/GauntletBuilds.cs` (weapons, armour attribute, skills, stat weights, passive targets, uniques). Start it from the PoeClone menu or through Unity MCP: `PoeClone.EditorTools.GauntletLauncher.Manual()`, or automated runs against frozen enemies with `GauntletLauncher.Auto("pyromancer,necromancer", "1,7,14")` (check `AutoStatus()`, cancel with `StopAuto()`). It runs in the minimal arena, needs no session server and never saves the character. Results go to `GauntletResults/` (gitignored). To retest a build, edit its entry and rerun `Auto` for it; each result row carries the build's fingerprint. Keep melee builds defensive rather than full damage.

@@ -47,13 +47,19 @@ namespace PoeClone.World
         public static bool MenusEnabled => InventoryMenuEnabled || CharacterMenuEnabled || SkillMenuEnabled || PassiveMenuEnabled;
         public static bool AudioEnabled => !Enabled || QueryValue("audio") != "0";
         public static bool GuaranteedGear => DropsEnabled && QueryValue("guaranteedGear") != "0";
+        /// <summary>The debug class gauntlet (see <see cref="GauntletMode"/>) instead of the one-enemy arena.</summary>
+        public static bool GauntletEnabled => Enabled && QueryValue("gauntlet") == "1";
+        /// <summary>Ground items can be picked up: with drops on, and in the gauntlet (its level 1 starter gear).</summary>
+        public static bool PickupEnabled => DropsEnabled || GauntletEnabled;
+        /// <summary>A launch option from the Editor's dev query ("" when absent).</summary>
+        public static string Option(string key) => Enabled ? QueryValue(key) : string.Empty;
 
         private GameObject enemyPrefab;
         private EnemyHealth enemy;
         private PlayerStats player;
         private int kindIndex;
         private bool respawning;
-        private Material arenaMaterial;
+        private static Material arenaMaterial;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
@@ -133,6 +139,14 @@ namespace PoeClone.World
                     (InventoryMenuEnabled && inventoryMenu != null) ||
                     (CharacterMenuEnabled && characterMenu != null) ||
                     (QuestsEnabled && root.GetComponent<AreaManager>() != null);
+                // Summons (minions, enemy necromancers, boss adds) find the enemy prefab on the
+                // spawner: it stays, switched off so it never populates the arena.
+                var areaSpawner = root.GetComponent<EnemySpawner>();
+                if (areaSpawner != null)
+                {
+                    areaSpawner.enabled = false;
+                    keep = true;
+                }
                 if (!keep)
                 {
                     root.SetActive(false);
@@ -142,27 +156,21 @@ namespace PoeClone.World
 
             if (QueryValue("touch") == "1") TouchMode.SetForced(true);
             Time.timeScale = 1f;
-            // The Resources material references a shader included in mobile WebGL builds.
-            // Unity's default primitive material can have its shader variants stripped.
-            arenaMaterial = Resources.Load<Material>("RuntimePrimitive");
-            var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            floor.name = "Minimal Arena Floor";
-            floor.transform.SetParent(transform, false);
-            floor.transform.position = new Vector3(0f, -0.5f, 0f);
-            floor.transform.localScale = new Vector3(48f, 1f, 48f);
-            ApplyArenaMaterial(floor, new Color(0.38f, 0.42f, 0.34f));
-            // Low walls keep both actors on the small, otherwise empty floor.
-            CreateWall(new Vector3(-24f, 1f, 0f), new Vector3(1f, 2f, 49f));
-            CreateWall(new Vector3(24f, 1f, 0f), new Vector3(1f, 2f, 49f));
-            CreateWall(new Vector3(0f, 1f, -24f), new Vector3(49f, 2f, 1f));
-            CreateWall(new Vector3(0f, 1f, 24f), new Vector3(49f, 2f, 1f));
-
-            var cc = player.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
-            player.transform.SetPositionAndRotation(new Vector3(0f, 1.1f, -3f), Quaternion.identity);
-            player.SetSpawnPoint(player.transform.position, player.transform.rotation);
-            if (cc != null) cc.enabled = true;
-            Camera.main?.GetComponent<CameraFollow>()?.SnapToTarget();
+            if (GauntletEnabled)
+            {
+                // The gauntlet builds its own rooms and places the player itself.
+                gameObject.AddComponent<GauntletMode>();
+            }
+            else
+            {
+                Block(transform, "Minimal Arena Floor", new Vector3(0f, -0.5f, 0f), new Vector3(48f, 1f, 48f), FloorColor);
+                // Low walls keep both actors on the small, otherwise empty floor.
+                Block(transform, "Minimal Arena Wall", new Vector3(-24f, 1f, 0f), new Vector3(1f, 2f, 49f), WallColor);
+                Block(transform, "Minimal Arena Wall", new Vector3(24f, 1f, 0f), new Vector3(1f, 2f, 49f), WallColor);
+                Block(transform, "Minimal Arena Wall", new Vector3(0f, 1f, -24f), new Vector3(49f, 2f, 1f), WallColor);
+                Block(transform, "Minimal Arena Wall", new Vector3(0f, 1f, 24f), new Vector3(49f, 2f, 1f), WallColor);
+                PlacePlayer(player, new Vector3(0f, 1.1f, -3f), Quaternion.identity);
+            }
             if (SkillMenuEnabled)
                 gameObject.AddComponent<SkillBarUI>();
             if (PassiveMenuEnabled)
@@ -179,30 +187,45 @@ namespace PoeClone.World
             Physics.SyncTransforms();
         }
 
-        private void CreateWall(Vector3 position, Vector3 scale)
-        {
-            var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            wall.name = "Minimal Arena Wall";
-            wall.transform.SetParent(transform, false);
-            wall.transform.position = position;
-            wall.transform.localScale = scale;
-            ApplyArenaMaterial(wall, new Color(0.3f, 0.32f, 0.28f));
-        }
+        public static readonly Color FloorColor = new Color(0.38f, 0.42f, 0.34f);
+        public static readonly Color WallColor = new Color(0.3f, 0.32f, 0.28f);
 
-        private void ApplyArenaMaterial(GameObject surface, Color color)
+        /// <summary>A plain coloured box for the debug arenas.</summary>
+        public static GameObject Block(Transform parent, string name, Vector3 position, Vector3 scale, Color color)
         {
-            var renderer = surface.GetComponent<Renderer>();
+            var box = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            box.name = name;
+            box.transform.SetParent(parent, false);
+            box.transform.position = position;
+            box.transform.localScale = scale;
+            // The Resources material references a shader included in mobile WebGL builds.
+            // Unity's default primitive material can have its shader variants stripped.
+            if (arenaMaterial == null) arenaMaterial = Resources.Load<Material>("RuntimePrimitive");
+            var renderer = box.GetComponent<Renderer>();
             if (arenaMaterial != null) renderer.sharedMaterial = arenaMaterial;
             else Debug.LogError("Minimal combat: Resources/RuntimePrimitive material is missing.");
             var block = new MaterialPropertyBlock();
             block.SetColor("_BaseColor", color);
             block.SetColor("_Color", color);
             renderer.SetPropertyBlock(block);
+            return box;
+        }
+
+        /// <summary>Moves the player (and where they revive) and brings the camera along.</summary>
+        public static void PlacePlayer(PlayerStats player, Vector3 position, Quaternion rotation)
+        {
+            var cc = player.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+            player.transform.SetPositionAndRotation(position, rotation);
+            player.SetSpawnPoint(position, rotation);
+            if (cc != null) cc.enabled = true;
+            Camera.main?.GetComponent<CameraFollow>()?.SnapToTarget();
+            Physics.SyncTransforms();
         }
 
         private IEnumerator Start()
         {
-            if (player == null || enemyPrefab == null) yield break;
+            if (player == null || enemyPrefab == null || GauntletEnabled) yield break;
             // Let equipment/skill listeners bind before equipping the temporary weapon.
             yield return null;
             string weapon = QueryValue("weapon");

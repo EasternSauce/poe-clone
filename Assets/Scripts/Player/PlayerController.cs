@@ -183,7 +183,7 @@ namespace PoeClone.Player
             if (GetComponent<MotionSampler>() == null)
                 gameObject.AddComponent<MotionSampler>();
 
-            if ((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.DropsEnabled) && GetComponent<LootPicker>() == null)
+            if ((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.PickupEnabled) && GetComponent<LootPicker>() == null)
                 gameObject.AddComponent<LootPicker>();
             if (GetComponent<Skills.PlayerSkills>() == null)
                 gameObject.AddComponent<Skills.PlayerSkills>();

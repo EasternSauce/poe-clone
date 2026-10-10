@@ -92,3 +92,6 @@ npm-debug.log*
 
 # Local sound library review choices
 tools/sound-library/choices.json
+
+# Class gauntlet results (local balance data)
+/GauntletResults/

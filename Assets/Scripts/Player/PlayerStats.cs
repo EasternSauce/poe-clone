@@ -59,6 +59,17 @@ namespace PoeClone.Player
         /// <summary>Fires with the new level each time the character levels up.</summary>
         public event Action<int> LeveledUp;
 
+        // For balance tracking (the debug gauntlet): life lost to damage, skill costs paid (true
+        // when paid with life through Blood Magic), skills refused for lack of mana or life, and
+        // hits soaked by mana (Mind over Matter).
+        public event Action<float> DamageTaken;
+        public event Action<float, bool> SkillCostPaid;
+        public event Action SkillCostRefused;
+        public event Action<float> ManaAbsorbedHit;
+
+        /// <summary>Kills give no experience (the debug gauntlet keeps the chosen level).</summary>
+        public bool ExperienceLocked { get; set; }
+
         // Bonuses from worn equipment. Set by PlayerStatsLink; the base values above are untouched.
         private int bonusStrength;
         private int bonusDexterity;
@@ -230,7 +241,7 @@ namespace PoeClone.Player
 
         public void GainExperience(int amount)
         {
-            if (amount <= 0)
+            if (amount <= 0 || ExperienceLocked)
                 return;
 
             experience += amount;
@@ -311,10 +322,16 @@ namespace PoeClone.Player
         /// <summary>Pays the skill cost from mana, or life with Blood Magic. Never kills the caster.</summary>
         public bool TrySpendMana(float amount)
         {
-            if (!CanAffordSkill(amount)) return false;
-            amount = AfterCostReduction(amount);
-            if (UsesBloodMagic) currentHealth -= Mathf.Max(0f, amount);
-            else currentMana -= Mathf.Max(0f, amount);
+            if (!CanAffordSkill(amount))
+            {
+                if (!dead) SkillCostRefused?.Invoke();
+                return false;
+            }
+            amount = Mathf.Max(0f, AfterCostReduction(amount));
+            bool life = UsesBloodMagic;
+            if (life) currentHealth -= amount;
+            else currentMana -= amount;
+            SkillCostPaid?.Invoke(amount, life);
             return true;
         }
 
@@ -382,6 +399,8 @@ namespace PoeClone.Player
 
             float absorbed = DefenceMath.ManaAbsorbed(damage, currentMana, sheet != null ? sheet.Total(StatType.ManaAbsorb) : 0f);
             currentMana -= absorbed;
+            if (absorbed > 0f)
+                ManaAbsorbedHit?.Invoke(absorbed);
 
             TakeDamage(damage - absorbed);
             return true;
@@ -435,6 +454,7 @@ namespace PoeClone.Player
             if (dead || amount <= 0f)
                 return;
 
+            DamageTaken?.Invoke(Mathf.Min(amount, currentHealth));
             currentHealth = Mathf.Max(
                 0f,
                 currentHealth - amount

@@ -96,12 +96,32 @@ namespace PoeClone.Inventory
             public RectTransform Rect;
             public Image Overlay;
             public Image Hint;
+            public Image Extra;     // the ExtraSlotButton, when one is set
         }
+
+        /// <summary>
+        /// A small button a debug mode adds to the corner of every equipment slot (the gauntlet's
+        /// "replace with a random rare"). Set it before the panel is built. Clicks on it never
+        /// reach the slot under it; <see cref="Enabled"/> greys it out when it can't be used.
+        /// </summary>
+        public sealed class SlotButton
+        {
+            public string Label;
+            public string Tooltip;
+            public System.Func<EquipSlot, bool> Enabled;
+            public System.Action<EquipSlot> Clicked;
+        }
+
+        public static SlotButton ExtraSlotButton;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetExtraSlotButton() => ExtraSlotButton = null;
 
         private struct Hover
         {
             public Vector2 Screen;
             public SlotView Slot;
+            public SlotView Extra;   // over the slot's ExtraSlotButton
             public bool OverGrid;
             public bool OverStash;
             public int Potion;       // 1 health slot, 2 mana slot, 0 neither
@@ -444,6 +464,7 @@ namespace PoeClone.Inventory
             if (cursorView != null)
                 cursorView.position = mousePos;
 
+            RefreshExtraButtons();
             Hover hover = Hit(mousePos);
             report = hover;
             reportPointer = mousePos;
@@ -1417,7 +1438,30 @@ private Vector2 CellSize(int w, int h)
             Image overlay = UiKit.NewImage("Overlay", rt, Color.clear);
             UiKit.Stretch(overlay.rectTransform, 0f);
 
-            slotViews.Add(new SlotView { Slot = l.Slot, Rect = rt, Overlay = overlay, Hint = hint });
+            Image extra = null;
+            if (ExtraSlotButton != null)
+            {
+                extra = UiKit.NewImage("ExtraButton", rt, Color.white);
+                UiKit.TopLeft(extra.rectTransform, new Vector2(rt.sizeDelta.x - 21f, -1f), new Vector2(20f, 20f));
+                Text label = UiKit.NewText("Label", extra.rectTransform, ExtraSlotButton.Label, 13, UiKit.TextColor, TextAnchor.MiddleCenter);
+                UiKit.Stretch(label.rectTransform, 0f);
+                UiKit.StyleButton(extra, label);
+            }
+
+            slotViews.Add(new SlotView { Slot = l.Slot, Rect = rt, Overlay = overlay, Hint = hint, Extra = extra });
+        }
+
+        private bool ExtraButtonEnabled(SlotView s) =>
+            ExtraSlotButton != null && (ExtraSlotButton.Enabled == null || ExtraSlotButton.Enabled(s.Slot));
+
+        private void RefreshExtraButtons()
+        {
+            foreach (SlotView s in slotViews)
+                if (s.Extra != null)
+                {
+                    s.Extra.color = ExtraButtonEnabled(s) ? Color.white : new Color(0.45f, 0.45f, 0.45f, 0.6f);
+                    s.Extra.transform.SetAsLastSibling();
+                }
         }
 
         private static readonly Color TooltipColor = new Color(0.075f, 0.065f, 0.06f, 0.97f);
@@ -1637,6 +1681,12 @@ private Vector2 CellSize(int w, int h)
 
             foreach (SlotView s in slotViews)
             {
+                if (s.Extra != null && s.Rect.gameObject.activeInHierarchy &&
+                    RectTransformUtility.RectangleContainsScreenPoint(s.Extra.rectTransform, screenPos, null))
+                {
+                    h.Extra = s;
+                    return h;
+                }
                 if (s.Rect.gameObject.activeInHierarchy && RectTransformUtility.RectangleContainsScreenPoint(s.Rect, screenPos, null))
                 {
                     h.Slot = s;
@@ -1936,6 +1986,12 @@ private Vector2 CellSize(int w, int h)
         // Also while an item is held, so the one it would swap with can be read first.
         private void UpdateTooltip(Hover h, Vector2 mousePos)
         {
+            if (h.Extra != null)
+            {
+                ShowTooltipText(ExtraSlotButton.Tooltip + (ExtraButtonEnabled(h.Extra) ? "" :
+                    "\n<color=#" + UiKit.Hex(UiKit.DimText) + ">Not available right now.</color>"), 3, mousePos);
+                return;
+            }
             if (h.Potion > 0)
             {
                 ShowTooltipText(PotionTooltip(h.Potion == 1, inventory.Potions(h.Potion == 1)), 8, mousePos);
@@ -2138,6 +2194,17 @@ private Vector2 CellSize(int w, int h)
 
         private void HandleClick(Hover h)
         {
+            if (h.Extra != null)
+            {
+                if (cursorItem == null && ExtraButtonEnabled(h.Extra))
+                {
+                    ExtraSlotButton.Clicked?.Invoke(h.Extra.Slot);
+                    PlayUISound(ItemSounds.Place(inventory.Equipment.Get(h.Extra.Slot)));
+                }
+                else
+                    PlayUISound(AudioManager.Instance != null ? AudioManager.Instance.uiDenied : null);
+                return;
+            }
             if (TryQuickMove(h))
             {
             }

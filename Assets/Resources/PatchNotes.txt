@@ -1,3 +1,11 @@
+version: 2026-10-10-class-gauntlet
+- Editor only, for balance testing: a new Class Gauntlet (PoeClone menu). Pick a level (1, 7, 14, 21, 28 or 34) and one of 15 builds. You get that build's passives, 20 health and 20 mana potions and 100 Orbs of Regret. For each slot, the best of 10 rolled rares is equipped, plus up to two of the build's uniques once the level allows them. At level 1 you get the usual starter gear on the floor instead.
+- In the gauntlet, each equipment slot in the inventory has an R button that swaps in a random rare of the same kind at your level, as often as you like (not at level 1).
+- Walking into the arena starts 20 encounters, one after another, from single enemies to packs and elites at your level. Three random field bosses follow. You get no experience, loot or gold.
+- Each run writes its numbers to GauntletResults in the project folder: deaths, time to kill and DPS (normal enemies, elites, each boss), mana use as a share of the pool, potions, skills used, and the gear and passives you had.
+- An automated version plays builds against frozen enemies at every level and writes one combined table to compare them.
+- Fixed: summoned minions, enemy necromancers' skeletons and boss adds now appear in the editor's minimal combat arena.
+
 version: 2026-10-10-belfry-and-knolls
 - The Drowned Belfry's pools are no longer bright blue circles. They are irregular pools of black water with muddy rims, dead reeds and stones along the banks, three of them still holding a fallen bell. The yard is now paved with dark, worn flagstones.
 - The Belfry's graves now stand in two small plots by the walls, in staggered rows that sink and tilt in the wet ground, with an open grave nearby. Larger dead trees grow along the walls and reach over the yard, instead of a few small ones scattered in the middle.
