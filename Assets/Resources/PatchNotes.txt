@@ -1,5 +1,5 @@
 version: 2026-10-10-attribute-requirements
-- Gear asks for more Strength, Dexterity or Intelligence, especially at higher levels. Starting items still need 10; level 7 items now need 31 (was 24), level 14 items 65 (was 38) and level 21 items 100 (was 52). Items you already own use the new requirements.
+- Gear asks for more Strength, Dexterity or Intelligence at higher levels, up to 50% more from level 10 onward. Starting items still need 10; level 7 items now need 32 (was 24), level 14 items 57 (was 38) and level 21 items 78 (was 52). Items you already own use the new requirements.
 
 version: 2026-10-10-double-life-rolls
 - The "+ to Maximum Life" stat on magic and rare items now rolls twice as high: 16-50 on the lowest tier, up to 44-140 on the highest. Items you already own keep their values.

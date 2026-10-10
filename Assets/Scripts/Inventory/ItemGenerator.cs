@@ -754,14 +754,13 @@ namespace PoeClone.Inventory
         }
 
         /// <summary>
-        /// The attribute a base of this required level asks for: barely above the starting 10 early,
-        /// curving up to 45 at level 10, then rising by 5 a level (0: 10, 7: 31, 14: 65, 21: 100).
+        /// The attribute a base of this required level asks for: 10 + 2 per level, scaled up by a
+        /// bonus that grows from none at level 0 to 50% at level 10 and stays there (7: 32, 14: 57, 21: 78).
         /// </summary>
         public static int AttributeRequirement(int requiredLevel)
         {
-            if (requiredLevel <= 10)
-                return Mathf.RoundToInt(10f + 2f * requiredLevel + 0.15f * requiredLevel * requiredLevel);
-            return 45 + 5 * (requiredLevel - 10);
+            float scale = 1f + 0.5f * Mathf.Min(requiredLevel, 10) / 10f;
+            return Mathf.RoundToInt((10f + 2f * requiredLevel) * scale);
         }
 
         /// <summary>Gives an item made from a base id the base's art (for loaded saves).</summary>
