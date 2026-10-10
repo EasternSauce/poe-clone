@@ -27,19 +27,35 @@ namespace PoeClone.UI
         {
             Canvas canvas = UiKit.NewCanvas("BossBarCanvas", transform, 45, out _);
 
-            Image back = UiKit.NewImage("BossBar", canvas.transform, new Color(0f, 0f, 0f, 0.7f));
+            Image back = UiKit.NewImage("BossBar", canvas.transform, new Color(0.03f, 0.025f, 0.02f, 0.85f));
             RectTransform rt = back.rectTransform;
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 1f);
             rt.anchoredPosition = new Vector2(0f, -54f);
             rt.sizeDelta = new Vector2(Width, 26f);
-            UiKit.AddOutline(back, UiKit.BorderColor, 2f);
             root = back.gameObject;
 
-            fill = UiKit.NewImage("Fill", rt, new Color(0.62f, 0.10f, 0.08f, 1f));
-            fill.sprite = UiKit.Square;
+            Image shade = UiKit.NewImage("Shadow", rt, new Color(0f, 0f, 0f, 0.5f));
+            shade.sprite = UiKit.Glow;
+            UiKit.Stretch(shade.rectTransform, -60f);
+            shade.transform.SetAsFirstSibling();
+
+            fill = UiKit.NewImage("Fill", rt, new Color(0.78f, 0.12f, 0.09f, 1f));
+            fill.sprite = UiKit.BarFillSprite;
             fill.type = Image.Type.Filled;
             fill.fillMethod = Image.FillMethod.Horizontal;
-            UiKit.Stretch(fill.rectTransform, 3f);
+            UiKit.Stretch(fill.rectTransform, 2f);
+            UiKit.Rim(rt, 1f);
+
+            // A gold stud capping each end.
+            for (int side = 0; side < 2; side++)
+            {
+                Image stud = UiKit.NewImage("Stud", rt, UiKit.Gold);
+                stud.sprite = UiKit.Diamond;
+                RectTransform sr = stud.rectTransform;
+                sr.anchorMin = sr.anchorMax = new Vector2(side, 0.5f);
+                sr.sizeDelta = new Vector2(20f, 34f);
+                UiKit.AddOutline(stud, new Color(0f, 0f, 0f, 0.8f), 1f);
+            }
 
             title = UiKit.NewText("Name", rt, "", 24, UiKit.Gold, TextAnchor.LowerCenter);
             title.font = UiKit.TitleFont;

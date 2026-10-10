@@ -287,7 +287,7 @@ namespace PoeClone.UI
                     k == pickerGrants.Count ? Player.PlayerPotions.PotionAt(slot) == 1 && skills.Slot(slot) == null :
                     k == pickerGrants.Count + 1 ? Player.PlayerPotions.PotionAt(slot) == 2 && skills.Slot(slot) == null :
                     skills.Slot(slot) == null && Player.PlayerPotions.PotionAt(slot) == 0;
-                pickerRows[k].GetComponent<Image>().color = here ? new Color(0.45f, 0.35f, 0.15f, 1f) : new Color(0.12f, 0.10f, 0.09f, 1f);
+                pickerRows[k].GetComponent<Image>().color = here ? new Color(0.62f, 0.48f, 0.22f, 1f) : new Color(0.22f, 0.19f, 0.16f, 1f);
             }
 
             picker.sizeDelta = new Vector2(PickerWidth, Mathf.Min(440f, pickerRows.Count * PickerRowHeight + 8f));
@@ -358,7 +358,7 @@ namespace PoeClone.UI
             picker = back.rectTransform;
             picker.anchorMin = picker.anchorMax = new Vector2(0.5f, 0f);
             picker.pivot = new Vector2(0.5f, 0f);
-            UiKit.AddOutline(back, UiKit.BorderColor, 2f);
+            UiKit.ThinFrame(picker);
 
             RectTransform viewport = UiKit.NewRect("Viewport", picker);
             UiKit.Stretch(viewport, 4f);
@@ -408,6 +408,7 @@ namespace PoeClone.UI
                 }
 
                 Image item = UiKit.NewImage("Pick_" + k, pickerContent, Color.black);
+                UiKit.Inset(item);
                 item.raycastTarget = true;
                 Text text = UiKit.NewText("Text", item.rectTransform, label, 18, UiKit.TextColor, TextAnchor.MiddleLeft);
                 UiKit.Stretch(text.rectTransform, 10f);
@@ -533,7 +534,7 @@ namespace PoeClone.UI
                     "Empty";
                 mobileLabels[k].text = "<b>Button " + (k + 1) + "</b>\n" + name;
                 mobileButtons[k].color = k == selectedMobileButton
-                    ? new Color(0.42f, 0.31f, 0.13f, 1f) : new Color(0.14f, 0.12f, 0.10f, 1f);
+                    ? new Color(0.62f, 0.46f, 0.2f, 1f) : new Color(0.24f, 0.21f, 0.17f, 1f);
             }
             selectionHint.text = SpectatorMirror.Active ? "Viewing skill buttons" :
                 "Choose a skill for Button " + (selectedMobileButton + 1);
@@ -558,7 +559,7 @@ namespace PoeClone.UI
                     (damage == null ? "" : (skill.Summon ? "Minions: " : "Damage: ") + damage + "\n") + skill.Description +
                     (bindings.Length == 0 ? "" : "\n<color=#" + UiKit.Hex(UiKit.Gold) + ">" + bindings + "</color>") + "</size>";
                 bool assigned = skills.MatchesGrant(selectedMobileButton, grant);
-                row.Back.color = assigned ? new Color(0.24f, 0.20f, 0.12f, 1f) : new Color(0.14f, 0.12f, 0.10f, 1f);
+                row.Back.color = assigned ? new Color(0.44f, 0.36f, 0.2f, 1f) : new Color(0.24f, 0.21f, 0.17f, 1f);
                 row.Assignment.text = SpectatorMirror.Active ? "" : assigned ? "Assigned" : "Assign";
                 float height = Mathf.Max(100f, row.Title.preferredHeight + 20f);
                 UiKit.TopLeft(row.Back.rectTransform, new Vector2(8f, y), new Vector2(panelWidth - 32f, height));
@@ -576,9 +577,10 @@ namespace PoeClone.UI
 
         private void BuildTooltip(Transform parent)
         {
-            Image back = UiKit.NewImage("SkillTooltip", parent, new Color(0.07f, 0.07f, 0.08f, 0.97f));
-            UiKit.AddOutline(back, UiKit.BorderColor, 2f);
+            Image back = UiKit.NewImage("SkillTooltip", parent, new Color(0.07f, 0.065f, 0.06f, 0.97f));
+            UiKit.Grain(back);
             tooltip = back.rectTransform;
+            UiKit.ThinFrame(tooltip);
             tooltip.anchorMin = tooltip.anchorMax = tooltip.pivot = Vector2.zero;
             tooltipText = UiKit.NewText("Text", tooltip, "", 16, UiKit.TextColor, TextAnchor.UpperLeft);
             tooltipText.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -775,7 +777,6 @@ namespace PoeClone.UI
             if (onClick != null)
                 back.gameObject.AddComponent<TouchPointerRelay>().Up += _ => onClick();
             UiKit.TopLeft(back.rectTransform, new Vector2(x, y), new Vector2(SlotSize, SlotSize));
-            UiKit.AddOutline(back, onClick != null ? UiKit.BorderColor : UiKit.Gold, 2f);
 
             Text label = UiKit.NewText("Name", back.rectTransform, "", 19, UiKit.TextColor, TextAnchor.MiddleCenter);
             label.fontStyle = FontStyle.Bold;
@@ -803,8 +804,13 @@ namespace PoeClone.UI
             UiKit.Stretch(cooldown.rectTransform, 0f);
 
             Text key = UiKit.NewText("Key", bar, keyLabel, keyLabel.Length > 1 ? 11 : 14, UiKit.Gold, TextAnchor.MiddleCenter);
+            key.font = UiKit.TitleFont;
             UiKit.TopLeft(key.rectTransform, new Vector2(x, y + 20f), new Vector2(SlotSize, 18f));
             key.raycastTarget = false;
+            UiKit.AddOutline(key, new Color(0f, 0f, 0f, 0.8f), 1f);
+
+            // The attack square (not rebindable) gets a brighter rim than the rest.
+            UiKit.Rim(back.rectTransform, 2f, onClick != null ? new Color(0.85f, 0.8f, 0.72f, 1f) : Color.white);
 
             Image ring = NewRing(back.rectTransform, -3f);
 
@@ -825,9 +831,22 @@ namespace PoeClone.UI
             bar.anchorMin = bar.anchorMax = new Vector2(0.5f, 0f);
             bar.pivot = new Vector2(0.5f, 0f);
             bar.anchoredPosition = new Vector2(0f, 18f);
-            bar.sizeDelta = new Vector2(SlotX(7), BarHeight);
+            bar.sizeDelta = new Vector2(SlotX(SkillBook.SlotCount - 1) + SlotSize + 4f, BarHeight);
             barRoot = bar.gameObject;
             barRect = bar;
+
+            // A dark, framed plate behind the squares, softly shadowed so it reads over bright ground.
+            Image shade = UiKit.NewImage("Shadow", bar, new Color(0f, 0f, 0f, 0.55f));
+            shade.sprite = UiKit.Glow;
+            UiKit.Stretch(shade.rectTransform, -50f);
+            Image plate = UiKit.NewImage("Plate", bar, new Color(0.07f, 0.06f, 0.05f, 0.82f));
+            UiKit.Grain(plate);
+            // Snug round the squares and the key labels over them.
+            plate.rectTransform.anchorMin = Vector2.zero;
+            plate.rectTransform.anchorMax = Vector2.one;
+            plate.rectTransform.offsetMin = new Vector2(-5f, -5f);
+            plate.rectTransform.offsetMax = new Vector2(5f, 1f);
+            UiKit.ThinFrame(plate.rectTransform);
 
             attackView = NewSlotView(bar, "Attack", 4f, BottomRowY, "LMB", null);
             attackIcon = UiKit.NewImage("Icon", attackView.Back.rectTransform, Color.white);
@@ -893,7 +912,8 @@ namespace PoeClone.UI
                 button.raycastTarget = true;
                 UiKit.TopLeft(button.rectTransform, new Vector2(16f + (k % 2) * (cardWidth + 12f), -72f - (k / 2) * 70f),
                     new Vector2(cardWidth, 60f));
-                UiKit.AddOutline(button, UiKit.BorderColor, 2f);
+                UiKit.Inset(button);
+                UiKit.Rim(button.rectTransform, 1f);
                 Text label = UiKit.NewText("Label", button.rectTransform, "", 18, UiKit.TextColor, TextAnchor.MiddleCenter);
                 UiKit.Stretch(label.rectTransform, 5f);
                 mobileButtons[k] = button;
@@ -907,11 +927,12 @@ namespace PoeClone.UI
 
             selectionHint = UiKit.NewText("SelectedButton", pr, "", 17, UiKit.Gold, TextAnchor.MiddleLeft);
             UiKit.TopLeft(selectionHint.rectTransform, new Vector2(16f, -214f), new Vector2(panelWidth - 154f, 42f));
-            Image clear = UiKit.NewImage("ClearButton", pr, new Color(0.25f, 0.10f, 0.08f, 1f));
+            Image clear = UiKit.NewImage("ClearButton", pr, Color.white);
             clear.raycastTarget = true;
             UiKit.TopLeft(clear.rectTransform, new Vector2(panelWidth - 126f, -212f), new Vector2(110f, 44f));
             Text clearText = UiKit.NewText("Label", clear.rectTransform, "Clear", 18, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(clearText.rectTransform, 0f);
+            UiKit.StyleButton(clear, clearText, UiKit.DangerTint);
             clear.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {
                 if (skills == null || SpectatorMirror.Active) return;
@@ -983,6 +1004,7 @@ namespace PoeClone.UI
         private void AddRow(SkillDefinition skill, PlayerSkills.SkillGrant grant, ref float y)
         {
             Image back = UiKit.NewImage("Row_" + skill.Id + "_" + grant.Source, panelContent, Color.black);
+            UiKit.Inset(back);
             back.raycastTarget = true;
             UiKit.TopLeft(back.rectTransform, new Vector2(8f, y), new Vector2(panelWidth - 32f, 100f));
             Image icon = UiKit.NewImage("Icon", back.rectTransform, skill.Color);
@@ -994,11 +1016,12 @@ namespace PoeClone.UI
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Overflow;
             UiKit.TopLeft(text.rectTransform, new Vector2(56f, -8f), new Vector2(panelWidth - 208f, 84f));
-            Image action = UiKit.NewImage("Assign", back.rectTransform, new Color(0.25f, 0.21f, 0.13f, 1f));
+            Image action = UiKit.NewImage("Assign", back.rectTransform, Color.white);
             action.raycastTarget = true;
             UiKit.TopLeft(action.rectTransform, new Vector2(panelWidth - 142f, -26f), new Vector2(102f, 48f));
             Text label = UiKit.NewText("Label", action.rectTransform, "Assign", 17, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(label.rectTransform, 0f);
+            UiKit.StyleButton(action, label);
             System.Action assign = () =>
             {
                 if (skills == null || SpectatorMirror.Active) return;

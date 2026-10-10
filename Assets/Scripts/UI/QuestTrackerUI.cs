@@ -23,19 +23,25 @@ namespace PoeClone.UI
         private bool dirty = true;
         private int npcCount = -1;
         private bool laidOutForTouch;
+        private const float HeadingHeight = 30f;
 
         private void Awake()
         {
             Canvas canvas = UiKit.NewCanvas("QuestTrackerCanvas", transform, 40, out _);
 
-            back = UiKit.NewImage("Tracker", canvas.transform, new Color(0.08f, 0.07f, 0.06f, 0.6f));
+            back = UiKit.NewImage("Tracker", canvas.transform, new Color(0.08f, 0.07f, 0.06f, 0.72f));
             UiKit.Grain(back);
             RectTransform rt = back.rectTransform;
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 1f);
+            UiKit.ThinFrame(rt);
+
+            Text heading = UiKit.Heading(UiKit.NewText("Heading", rt, "QUESTS", 15, UiKit.Gold, TextAnchor.MiddleLeft));
+            UiKit.TopLeft(heading.rectTransform, new Vector2(12f, -6f), new Vector2(200f, 20f));
 
             text = UiKit.NewText("Text", rt, "", 18, UiKit.TextColor, TextAnchor.UpperLeft);
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            UiKit.Stretch(text.rectTransform, 10f);
+            UiKit.Stretch(text.rectTransform, 12f);
+            text.rectTransform.offsetMax = new Vector2(-12f, -HeadingHeight);
             back.gameObject.SetActive(false);
         }
 
@@ -100,6 +106,8 @@ namespace PoeClone.UI
             back.rectTransform.anchoredPosition = new Vector2(TouchMode.Active ? -250f : -16f, -16f - MinimapUI.Bottom);
         }
 
+        private static readonly Color QuestTitle = new Color(0.96f, 0.88f, 0.66f, 1f);
+
         private void Rebuild()
         {
             var sb = new StringBuilder();
@@ -117,7 +125,7 @@ namespace PoeClone.UI
             {
                 if (sb.Length > 0)
                     sb.Append('\n');
-                sb.Append("<b>").Append(q.Title).Append("</b>\n");
+                sb.Append("<b><color=#").Append(UiKit.Hex(QuestTitle)).Append('>').Append(q.Title).Append("</color></b>\n");
                 if (log.State(q) == QuestState.Complete)
                 {
                     string line = NpcDialogues.ReturnLine(q);
@@ -133,10 +141,9 @@ namespace PoeClone.UI
             text.text = sb.ToString();
             float width = TouchMode.Active ? 360f : 440f;
             text.fontSize = TouchMode.Active ? 16 : 18;
-            text.rectTransform.sizeDelta = Vector2.zero;
             back.rectTransform.sizeDelta = new Vector2(width, 0f);
             float height = text.preferredHeight;
-            back.rectTransform.sizeDelta = new Vector2(width, height + 20f);
+            back.rectTransform.sizeDelta = new Vector2(width, height + HeadingHeight + 12f);
         }
     }
 }

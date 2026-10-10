@@ -43,6 +43,7 @@ namespace PoeClone.Network
         private RectTransform fieldRect;
         private RectTransform sendRect;
         private Image panelImage;
+        private Image panelFrame;
         private Canvas chatCanvas;
         private readonly List<string> history = new List<string>();
         private readonly List<float> historyTimes = new List<float>();
@@ -200,11 +201,13 @@ namespace PoeClone.Network
             if (!keyboard.enterKey.wasPressedThisFrame && !keyboard.numpadEnterKey.wasPressedThisFrame) return;
 
             // Only when nothing else has the UI focus (e.g. not while a menu button is selected).
-            // A spectator has nothing else to type into, so Enter always comes back to the chat.
+            // A selection left behind by a closed menu, or by the chat's own Send button, doesn't
+            // count. A spectator has nothing else to type into, so Enter always comes back to the chat.
             var es = EventSystem.current;
             if (es == null) return;
             GameObject selected = es.currentSelectedGameObject;
-            if (selected != null && !(StayInChat && selected.GetComponent<InputField>() == null)) return;
+            if (selected != null && selected.activeInHierarchy && !selected.transform.IsChildOf(panelRect) &&
+                !(StayInChat && selected.GetComponent<InputField>() == null)) return;
 
             inputField.Select();
             inputField.ActivateInputField();
@@ -293,6 +296,7 @@ namespace PoeClone.Network
 
             panelImage.color = active ? PanelColor : Color.clear;
             panelImage.raycastTarget = active;
+            panelFrame.enabled = active;
 
             string footer = active && scrollBack > 0
                 ? "<color=#8FA3B8><i>(" + scrollBack + " newer below - scroll down)</i></color>"
@@ -405,6 +409,7 @@ namespace PoeClone.Network
             panelRect.pivot = new Vector2(1f, 0f);
             panelRect.sizeDelta = new Vector2(460f, 220f);
             panelRect.anchoredPosition = new Vector2(-20f, 20f);
+            panelFrame = UiKit.ThinFrame(panelRect);
 
             // The log grows upwards from the bottom of a clipping viewport, so when long messages
             // wrap past the top it is the oldest lines that get cut. (Text's own Truncate always
@@ -433,17 +438,22 @@ namespace PoeClone.Network
             var fieldGO = new GameObject("Input");
             fieldGO.transform.SetParent(panelGO.transform, false);
             var fieldImage = fieldGO.AddComponent<Image>();
-            fieldImage.color = new Color(1f, 1f, 1f, 0.9f);
+            UiKit.Inset(fieldImage);
+            fieldImage.color = new Color(0.2f, 0.17f, 0.14f, 0.92f);
             fieldRect = fieldImage.rectTransform;
             fieldRect.anchorMin = new Vector2(0f, 0f);
             fieldRect.anchorMax = new Vector2(0.78f, 0f);
             fieldRect.pivot = new Vector2(0f, 0f);
             fieldRect.offsetMin = new Vector2(10f, 8f);
             fieldRect.offsetMax = new Vector2(0f, 42f);
+            UiKit.Rim(fieldRect, 1f, new Color(0.7f, 0.66f, 0.6f, 1f));
 
             inputField = fieldGO.AddComponent<InputField>();
             inputField.lineType = InputField.LineType.SingleLine;
             inputField.characterLimit = 200;
+            inputField.customCaretColor = true;
+            inputField.caretColor = UiKit.Gold;
+            inputField.selectionColor = new Color(UiKit.Gold.r, UiKit.Gold.g, UiKit.Gold.b, 0.35f);
             // Enter sends. This must be onSubmit: the field handles Enter itself (submit, then
             // deactivate) before any Update() of ours could see the key, and the same press then
             // reaches it as a UI "submit" that re-focuses it with all its text selected.
@@ -455,7 +465,7 @@ namespace PoeClone.Network
             fieldText = fieldTextGO.AddComponent<Text>();
             fieldText.font = UiKit.Font;
             fieldText.fontSize = 16;
-            fieldText.color = Color.black;
+            fieldText.color = UiKit.TextColor;
             fieldText.supportRichText = false;
             RuntimeUiUtil.StretchFull(fieldText.rectTransform);
             fieldText.rectTransform.offsetMin = new Vector2(8f, 4f);
@@ -469,7 +479,7 @@ namespace PoeClone.Network
             placeholder.font = fieldText.font;
             placeholder.fontSize = 16;
             placeholder.fontStyle = FontStyle.Italic;
-            placeholder.color = new Color(0f, 0f, 0f, 0.5f);
+            placeholder.color = new Color(UiKit.DimText.r, UiKit.DimText.g, UiKit.DimText.b, 0.8f);
             placeholder.text = "Say something...";
             RuntimeUiUtil.StretchFull(placeholder.rectTransform);
             placeholder.rectTransform.offsetMin = new Vector2(8f, 4f);
@@ -479,7 +489,6 @@ namespace PoeClone.Network
             var buttonGO = new GameObject("SendButton");
             buttonGO.transform.SetParent(panelGO.transform, false);
             var buttonImage = buttonGO.AddComponent<Image>();
-            buttonImage.color = new Color(0.2f, 0.5f, 0.9f, 1f);
             sendRect = buttonImage.rectTransform;
             var buttonRect = sendRect;
             buttonRect.anchorMin = new Vector2(0.78f, 0f);
@@ -500,6 +509,7 @@ namespace PoeClone.Network
             buttonText.color = Color.white;
             buttonText.text = "Send";
             RuntimeUiUtil.StretchFull(buttonText.rectTransform);
+            UiKit.StyleButton(buttonImage, buttonText);
         }
     }
 }

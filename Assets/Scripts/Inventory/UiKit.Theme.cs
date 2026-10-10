@@ -40,7 +40,7 @@ namespace PoeClone.Inventory
             return text;
         }
 
-        private static Sprite frame, button, vignette, glow, divider, diamond;
+        private static Sprite frame, thinFrame, barFrame, barFill, button, vignette, glow, divider, diamond;
         private static Texture2D fog;
 
         private const int FrameSize = 64;
@@ -51,6 +51,15 @@ namespace PoeClone.Inventory
 
         /// <summary>A gilded border with diamond studs in the corners (sliced, hollow middle).</summary>
         public static Sprite FrameSprite => frame != null ? frame : frame = MakeFrame();
+
+        /// <summary>A slim gilded border with small corner studs (sliced, hollow), for tooltips and HUD panels.</summary>
+        public static Sprite ThinFrameSprite => thinFrame != null ? thinFrame : thinFrame = MakeThinFrame(40, 12, true);
+
+        /// <summary>A slim gilded rim without studs (sliced, hollow), around resource bars and slots.</summary>
+        public static Sprite BarFrameSprite => barFrame != null ? barFrame : barFrame = MakeThinFrame(24, 6, false);
+
+        /// <summary>A white vertical sheen (bright top, darker bottom) to tint as a bar's fill.</summary>
+        public static Sprite BarFillSprite => barFill != null ? barFill : barFill = MakeBarFill();
 
         /// <summary>A bevelled, corner-cut button plate (sliced).</summary>
         public static Sprite ButtonSprite => button != null ? button : button = MakeButton();
@@ -83,6 +92,30 @@ namespace PoeClone.Inventory
             Stretch(border.rectTransform, -outset);
             border.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
             return border;
+        }
+
+        /// <summary>The slim frame (see <see cref="ThinFrameSprite"/>) round a tooltip or small HUD panel.</summary>
+        public static Image ThinFrame(RectTransform panel, float outset = 2f)
+        {
+            Image border = NewImage("Frame", panel, Color.white);
+            border.sprite = ThinFrameSprite;
+            border.type = Image.Type.Sliced;
+            border.fillCenter = false;
+            Stretch(border.rectTransform, -outset);
+            border.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+            return border;
+        }
+
+        /// <summary>A slim gilded rim (see <see cref="BarFrameSprite"/>) round a slot or bar, tinted <paramref name="tint"/>.</summary>
+        public static Image Rim(RectTransform target, float outset = 2f, Color? tint = null)
+        {
+            Image rim = NewImage("Rim", target, tint ?? Color.white);
+            rim.sprite = BarFrameSprite;
+            rim.type = Image.Type.Sliced;
+            rim.fillCenter = false;
+            Stretch(rim.rectTransform, -outset);
+            rim.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+            return rim;
         }
 
         /// <summary>
@@ -285,6 +318,66 @@ namespace PoeClone.Inventory
                 }
             }
             return MakeColorSprite(pixels, s, Vector4.one * FrameBorder);
+        }
+
+        // A dark edge, a gold band lit from the top-left, a dark inner line; studs optional.
+        private static Sprite MakeThinFrame(int s, int border, bool studs)
+        {
+            var pixels = new Color[s * s];
+            for (int y = 0; y < s; y++)
+            {
+                for (int x = 0; x < s; x++)
+                {
+                    float px = x + 0.5f, py = y + 0.5f;
+                    float dl = px, dr = s - px, db = py, dt = s - py;
+                    float d = Mathf.Min(Mathf.Min(dl, dr), Mathf.Min(db, dt));
+                    Color c = Color.clear;
+                    if (d < 1f) c = DarkEdge;
+                    else if (d < 3f)
+                    {
+                        float across = 1f - Mathf.Abs((d - 2f) / 1f);
+                        bool lit = Mathf.Min(dl, dt) <= Mathf.Min(dr, db);
+                        c = Color.Lerp(GoldDark, GoldLight, across * (lit ? 0.9f : 0.55f));
+                    }
+                    else if (d < 4f) c = new Color(DarkEdge.r, DarkEdge.g, DarkEdge.b, 0.8f);
+
+                    if (studs)
+                    {
+                        float cx = Mathf.Min(dl, dr), cy = Mathf.Min(db, dt);
+                        float diamondDist = Mathf.Abs(cx - 3f) + Mathf.Abs(cy - 3f);
+                        if (diamondDist < 6f)
+                        {
+                            float shade = 1f - diamondDist / 6f;
+                            c = diamondDist > 4.8f ? DarkEdge : Color.Lerp(GoldDark, GoldLight, 0.35f + shade * 0.65f);
+                            if (diamondDist < 1.6f) c = new Color(0.55f, 0.12f, 0.06f, 1f);
+                        }
+                    }
+                    pixels[y * s + x] = c;
+                }
+            }
+            return MakeColorSprite(pixels, s, Vector4.one * border);
+        }
+
+        private static Sprite MakeBarFill()
+        {
+            const int w = 4, h = 32;
+            var pixels = new Color[w * h];
+            for (int y = 0; y < h; y++)
+            {
+                float v = (y + 0.5f) / h;
+                float b = Mathf.Lerp(0.55f, 1f, v);
+                if (v > 0.62f && v < 0.82f) b = Mathf.Min(1f, b + 0.18f); // a glassy highlight
+                for (int x = 0; x < w; x++)
+                    pixels[y * w + x] = new Color(b, b, b, 1f);
+            }
+            var texture = new Texture2D(w, h, TextureFormat.RGBA32, false)
+            {
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear
+            };
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return Sprite.Create(texture, new Rect(0f, 0f, w, h), new Vector2(0.5f, 0.5f), 100f);
         }
 
         private static Sprite MakeButton()

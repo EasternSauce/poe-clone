@@ -29,6 +29,8 @@ namespace PoeClone.UI
         private static MinimapUI instance;
 
         private RectTransform frame;
+        private RectTransform namePlate;
+        private Text areaName;
         private RectTransform content;
         private RawImage terrain;
         private int terrainArea = -1;
@@ -43,7 +45,9 @@ namespace PoeClone.UI
         private CharacterPageUI characterUI;
 
         /// <summary>How far down from the top the map reaches (others stack below it), 0 when hidden.</summary>
-        public static float Bottom => instance != null && instance.frame != null && instance.frame.gameObject.activeSelf ? Size * Scale + 16f : 0f;
+        public static float Bottom => instance != null && instance.frame != null && instance.frame.gameObject.activeSelf ? (Size + NamePlateHeight + 6f) * Scale + 16f : 0f;
+
+        private const float NamePlateHeight = 26f;
 
         // Smaller on a phone, where the screen is already full of buttons.
         private static float Scale => TouchMode.Active ? 0.7f : 1f;
@@ -76,8 +80,27 @@ namespace PoeClone.UI
             playerDot.rectTransform.anchorMin = playerDot.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             UiKit.AddOutline(playerDot, Color.black, 1.5f);
 
-            // Last, so it sits over the map; inside the rect, since the mask clips anything outside.
+            // Last, so they sit over the map; inside the rect, since the mask clips anything outside.
+            Image edge = UiKit.NewImage("Vignette", frame, new Color(1f, 1f, 1f, 0.8f));
+            edge.sprite = UiKit.Vignette;
+            UiKit.Stretch(edge.rectTransform, 0f);
             UiKit.Frame(frame, 0f);
+
+            // The area's name on a small plate under the map. A child of the map, so it moves,
+            // scales and hides with it; the map's mask doesn't clip it, as it has its own canvas.
+            Image plate = UiKit.NewImage("AreaName", frame, new Color(0.07f, 0.06f, 0.05f, 0.85f));
+            UiKit.Grain(plate);
+            Canvas plateCanvas = plate.gameObject.AddComponent<Canvas>();
+            plateCanvas.overrideSorting = true;
+            plateCanvas.sortingOrder = canvas.sortingOrder;
+            namePlate = plate.rectTransform;
+            namePlate.anchorMin = namePlate.anchorMax = namePlate.pivot = new Vector2(0.5f, 1f);
+            namePlate.anchoredPosition = new Vector2(0f, -Size - 6f);
+            namePlate.sizeDelta = new Vector2(Size, NamePlateHeight);
+            UiKit.ThinFrame(namePlate);
+            areaName = UiKit.NewText("Name", namePlate, "", 15, UiKit.Gold, TextAnchor.MiddleCenter);
+            areaName.font = UiKit.TitleFont;
+            UiKit.Stretch(areaName.rectTransform, 4f);
 
             frame.gameObject.SetActive(false);
         }
@@ -119,6 +142,9 @@ namespace PoeClone.UI
 
             frame.anchoredPosition = new Vector2(TouchMode.Active ? -250f : -16f, -16f);
             frame.localScale = Vector3.one * Scale;
+            string name = areas.Current != null ? areas.Current.areaName : "";
+            if (areaName.text != name)
+                areaName.text = name;
 
             // Turn the map with the camera, so it matches what's on screen.
             Camera cam = Camera.main;

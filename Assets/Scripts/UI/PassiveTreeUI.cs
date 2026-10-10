@@ -309,9 +309,7 @@ namespace PoeClone.UI
 
             // PlayerHUD uses screen pixels (OnGUI), while this badge lives on a scaled canvas.
             float scale = badge.canvas.scaleFactor;
-            float hudBottom = TouchMode.Active ? (124f + PlayerHUD.PartnerFrameExtent) * TouchMode.GuiScale
-                : (PlayerHUD.ControlsHidden ? 326f : 378f) + PlayerHUD.PartnerFrameExtent;
-            badge.rectTransform.anchoredPosition = new Vector2(20f / scale, -(hudBottom + 10f) / scale);
+            badge.rectTransform.anchoredPosition = new Vector2(16f / scale, -(PlayerHUD.BottomPixels + 8f) / scale);
 
             string text = "+" + unspent + " passive point" + (unspent > 1 ? "s" : "") + (TouchMode.Active ? "" : "  (P)");
             if (badgeText.text != text)
@@ -418,9 +416,9 @@ namespace PoeClone.UI
             if (shown != node) placeTooltip = true;
             shown = node;
             tooltip.gameObject.SetActive(node != null);
-            infoText.text = PlayerHUD.ControlsHidden ? "" : TouchMode.Active
+            infoText.text = TouchMode.Active
                 ? "Tap a passive to inspect it; tap again to take it. Drag to look around, pinch to zoom."
-                : "Click to take a passive; click a pending end node again to undo it. Drag to look around, scroll to zoom. (H hides this.)";
+                : "Click to take a passive; click a pending end node again to undo it. Drag to look around, scroll to zoom.";
             if (closeRequested)
                 infoText.text = "You have unconfirmed changes. Confirm to spend your points, or Cancel to discard changes.";
             if (respecMode)
@@ -700,9 +698,10 @@ namespace PoeClone.UI
             br.anchorMin = br.anchorMax = new Vector2(0f, 1f);
             br.pivot = new Vector2(0f, 1f);
             br.sizeDelta = new Vector2(260f, 36f);
-            UiKit.AddOutline(badge, UiKit.Gold, 1.5f);
-            badgeText = UiKit.NewText("Text", br, "", 19, UiKit.Gold, TextAnchor.MiddleCenter);
-            badgeText.fontStyle = FontStyle.Bold;
+            UiKit.Grain(badge);
+            UiKit.ThinFrame(br);
+            badgeText = UiKit.NewText("Text", br, "", 17, UiKit.Gold, TextAnchor.MiddleCenter);
+            badgeText.font = UiKit.TitleFont;
             UiKit.Stretch(badgeText.rectTransform, 0f);
             badge.gameObject.AddComponent<TouchPointerRelay>().Up += _ => SetOpen(true);
             badge.gameObject.SetActive(false);
@@ -892,8 +891,9 @@ namespace PoeClone.UI
             // Outside the masked tree so details remain readable at every zoom level.
             tooltip = UiKit.NewImage("PassiveTooltip", pr, new Color(0.06f, 0.05f, 0.04f, 0.98f));
             tooltip.raycastTarget = false;
-            UiKit.AddOutline(tooltip, UiKit.BorderColor, 2f);
+            UiKit.Grain(tooltip);
             RectTransform tip = tooltip.rectTransform;
+            UiKit.ThinFrame(tip);
             tip.anchorMin = tip.anchorMax = new Vector2(0.5f, 0.5f);
             tip.pivot = new Vector2(0f, 1f);
             tooltipText = UiKit.NewText("Text", tip, "", 18, UiKit.TextColor, TextAnchor.UpperLeft);

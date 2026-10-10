@@ -75,7 +75,7 @@ namespace PoeClone.Network
         private string serverUrl;
         private float reconnectDelay = 2f;
         private Coroutine reconnectRoutine;
-        private bool returningToCharacters;
+        private bool returningToMainMenu;
         private bool serverPlayGranted;
         private bool chatDisconnected;
 
@@ -356,7 +356,7 @@ namespace PoeClone.Network
                     {
                         // Our enemies were the host's: back to the menu, character and progress saved.
                         startNotice = partner + " ended the co-op game. Your character's progress is saved.";
-                        ReturnToCharacters();
+                        ReturnToMainMenu();
                     }
                     break;
             }
@@ -555,7 +555,7 @@ namespace PoeClone.Network
 
         private void HandleClose(string reason)
         {
-            if (returningToCharacters) return;
+            if (returningToMainMenu) return;
             if (Connected)
             {
                 chatDisconnected = true;
@@ -575,7 +575,7 @@ namespace PoeClone.Network
                 if (!wasHost)
                 {
                     startNotice = "Lost the connection to the co-op game. Your character's progress is saved.";
-                    ReturnToCharacters();
+                    ReturnToMainMenu();
                     return;
                 }
                 SystemChat("Co-op connection lost. Your game will be listed again once reconnected.");
@@ -619,7 +619,7 @@ namespace PoeClone.Network
         {
             if (string.IsNullOrEmpty(serverUrl))
                 yield return NetworkConfig.Load(cfg => serverUrl = cfg.serverUrl);
-            if (!returningToCharacters && !string.IsNullOrEmpty(serverUrl))
+            if (!returningToMainMenu && !string.IsNullOrEmpty(serverUrl))
                 client.Connect(serverUrl);
             else if (coopIntent == CoopIntent.Join)
                 namePrompt.ShowCoopStatus("Co-op isn't available", "No server is configured for this build.", BackToCharacters);
@@ -637,29 +637,29 @@ namespace PoeClone.Network
         {
             // A background tab may have suspended its reconnect timer. Resume promptly when the
             // browser gives the game focus again; a healthy socket needs no new connection.
-            if (focused && !Connected && reconnectRoutine != null && !returningToCharacters && !string.IsNullOrEmpty(serverUrl) &&
+            if (focused && !Connected && reconnectRoutine != null && !returningToMainMenu && !string.IsNullOrEmpty(serverUrl) &&
                 !string.IsNullOrEmpty(PlayerName))
                 ScheduleReconnect();
         }
 
-        public void ReturnToCharacters()
+        public void ReturnToMainMenu()
         {
-            if (Role != SessionRole.Player || returningToCharacters) return;
+            if (Role != SessionRole.Player || returningToMainMenu) return;
             SaveSystem.SaveBeforeCharacterSwitch();
-            returningToCharacters = true;
+            returningToMainMenu = true;
             if (reconnectRoutine != null) StopCoroutine(reconnectRoutine);
             stateBroadcaster.enabled = false;
             client.Close();
             SetWorldActive(false);
-            SceneManager.sceneLoaded += RestartAfterCharacterSwitch;
+            SceneManager.sceneLoaded += RestartAfterMainMenu;
             Instance = null;
             Destroy(gameObject);
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
-        private static void RestartAfterCharacterSwitch(Scene scene, LoadSceneMode mode)
+        private static void RestartAfterMainMenu(Scene scene, LoadSceneMode mode)
         {
-            SceneManager.sceneLoaded -= RestartAfterCharacterSwitch;
+            SceneManager.sceneLoaded -= RestartAfterMainMenu;
             var session = new GameObject("GameSessionController").AddComponent<GameSessionController>();
             session.SuspendScene(scene);
         }

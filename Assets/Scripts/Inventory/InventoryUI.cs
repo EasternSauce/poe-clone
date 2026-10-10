@@ -342,6 +342,7 @@ namespace PoeClone.Inventory
             inventory.StatsChanged += OnGridChanged;
             inventory.PotionsChanged += OnGridChanged;
             inventory.StashTabNamesChanged += RefreshStashTabs;
+            inventory.GoldChanged += RefreshGold;
         }
 
         private void OnDestroy()
@@ -353,6 +354,7 @@ namespace PoeClone.Inventory
                 inventory.StatsChanged -= OnGridChanged;
                 inventory.PotionsChanged -= OnGridChanged;
                 inventory.StashTabNamesChanged -= RefreshStashTabs;
+                inventory.GoldChanged -= RefreshGold;
             }
         }
 
@@ -1315,6 +1317,23 @@ private Vector2 CellSize(int w, int h)
             gridHighlight = UiKit.NewImage("Highlight", gridArea, Color.clear);
             gridHighlight.enabled = false;
 
+            // Gold carried: in the gap between the equipment board and the bag, over its right edge.
+            Image coins = UiKit.NewImage("GoldIcon", bagArea, Color.white);
+            coins.sprite = Resources.Load<Sprite>("ItemIcons/gold_coins");
+            coins.preserveAspect = true;
+            RectTransform coinsRect = coins.rectTransform;
+            coinsRect.anchorMin = coinsRect.anchorMax = coinsRect.pivot = new Vector2(1f, 0f);
+            coinsRect.sizeDelta = new Vector2(24f, 24f);
+            coinsRect.anchoredPosition = new Vector2(-(panelW - gridW) * 0.5f, Pad + gridH + 1f);
+            goldText = UiKit.NewText("Gold", bagArea, "", 20, new Color(1f, 0.83f, 0.3f, 1f), TextAnchor.MiddleRight);
+            goldText.font = UiKit.BoldFont;
+            RectTransform goldRect = goldText.rectTransform;
+            goldRect.anchorMin = goldRect.anchorMax = goldRect.pivot = new Vector2(1f, 0f);
+            goldRect.sizeDelta = new Vector2(200f, 22f);
+            goldRect.anchoredPosition = coinsRect.anchoredPosition - new Vector2(26f, 0f);
+            UiKit.AddOutline(goldText, new Color(0f, 0f, 0f, 0.7f), 1f);
+            RefreshGold();
+
             BuildStash(panelW, panelH);
             closeButton.SetAsLastSibling(); // above the stash section added after it
 
@@ -1345,6 +1364,14 @@ private Vector2 CellSize(int w, int h)
             potionSlots[index] = rt;
             potionCounts[index] = count;
             potionOverlays[index] = overlay;
+        }
+
+        private Text goldText;
+
+        private void RefreshGold()
+        {
+            if (goldText != null)
+                goldText.text = inventory.Gold.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private void RefreshPotions()
@@ -1393,20 +1420,22 @@ private Vector2 CellSize(int w, int h)
             slotViews.Add(new SlotView { Slot = l.Slot, Rect = rt, Overlay = overlay, Hint = hint });
         }
 
+        private static readonly Color TooltipColor = new Color(0.075f, 0.065f, 0.06f, 0.97f);
+
         private void BuildTooltip()
         {
             CanvasGroup unusedGroup;
             tooltipCanvas = UiKit.NewCanvas("InventoryTooltipCanvas", transform, 820, out unusedGroup);
             tooltipCanvas.overrideSorting = true;
 
-            Image bg = UiKit.NewImage("Tooltip", tooltipCanvas.transform, new Color(0.07f, 0.07f, 0.08f, 0.97f));
+            Image bg = UiKit.NewImage("Tooltip", tooltipCanvas.transform, TooltipColor);
             UiKit.Grain(bg);
             tooltipRect = bg.rectTransform;
             tooltipRect.anchorMin = Vector2.zero;
             tooltipRect.anchorMax = Vector2.zero;
             tooltipRect.pivot = new Vector2(0f, 1f);
             tooltipRect.sizeDelta = new Vector2(270f, 100f);
-            UiKit.AddOutline(bg, UiKit.BorderColor, 1.5f);
+            UiKit.ThinFrame(tooltipRect).color = new Color(0.72f, 0.68f, 0.62f, 1f);
 
             // Only to read: a tooltip beside an item on the ground mustn't swallow taps on the world.
             bg.raycastTarget = false;
@@ -1420,14 +1449,15 @@ private Vector2 CellSize(int w, int h)
             // The item on the cursor's own stats, shown the whole time it's held (not just while
             // it's hovering a slot) so a drag-swap can be compared against what's underneath without
             // covering that slot's own tooltip (see ShowHeldTooltip for where they're kept apart).
-            Image heldBg = UiKit.NewImage("HeldTooltip", tooltipCanvas.transform, new Color(0.07f, 0.07f, 0.08f, 0.97f));
+            Image heldBg = UiKit.NewImage("HeldTooltip", tooltipCanvas.transform, TooltipColor);
             UiKit.Grain(heldBg);
             heldTooltipRect = heldBg.rectTransform;
             heldTooltipRect.anchorMin = Vector2.zero;
             heldTooltipRect.anchorMax = Vector2.zero;
             heldTooltipRect.pivot = new Vector2(0f, 1f);
             heldTooltipRect.sizeDelta = new Vector2(270f, 100f);
-            UiKit.AddOutline(heldBg, UiKit.Gold, 1.5f);
+            // The hover tooltip's frame is dimmer, so the held item's stats stand out from it.
+            UiKit.ThinFrame(heldTooltipRect);
 
             heldTooltipText = UiKit.NewText("Text", heldTooltipRect, "", 17, UiKit.TextColor, TextAnchor.UpperLeft);
             UiKit.Stretch(heldTooltipText.rectTransform, 10f);
@@ -1536,6 +1566,7 @@ private Vector2 CellSize(int w, int h)
             }
 
             RefreshPotions();
+            RefreshGold();
 
             // Items in the stash.
             if (stashOpen)

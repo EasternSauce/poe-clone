@@ -1,3 +1,12 @@
+version: 2026-10-10-themed-hud
+- New top-left frame: your level in a gold badge beside health, mana and experience bars. Health you just lost lingers as a pale strip before draining, and the bar throbs red when life is low. Hover the experience bar to see exact numbers. The frame scales with your screen size.
+- Attributes, gold, potion counts and the key list are no longer in the corner. Attributes are on the character page (C), gold is shown in the inventory above your bag, potion counts are on their skill bar squares, and the key list is in Settings under Controls. The H key (show/hide controls) is gone.
+- The skill bar sits on a framed plate with gilded slot rims. The skill list over the bar, skill and item tooltips, the passive tree tooltip, the quest tracker, the boss health bar and the chat box use the new gold-trimmed look.
+- The minimap shows the current area's name on a plate underneath.
+- Settings now fills the height of the screen. On phones, dragging up or down over a volume slider scrolls the settings list; tap or drag sideways to change the volume.
+- "Switch Character" in Settings is now "Exit to Main Menu", which saves your character and returns to the start menu.
+- Enter now opens the chat even right after you clicked a menu button or the chat's Send button.
+
 version: 2026-10-10-mobile-menus-fit
 - On phones, the character select, start menu, co-op screens and connecting spinner now fit on screen instead of running off the top (and off the bottom with several characters). Tall screens shift and shrink to fit.
 - Maximizing or fullscreening the browser while the game is still loading no longer leaves a black screen once it has loaded.

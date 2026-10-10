@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Globalization;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using PoeClone.Inventory;
@@ -17,7 +18,9 @@ namespace PoeClone.UI
     {
         [Serializable] private class Entry { public string version; public string notes; }
         [Serializable] private class Archive { public Entry[] entries; }
-        private const float W = 760f, H = 620f;
+        private const float W = 760f;
+        // The panel fills the screen's height, less this margin top and bottom; the lists stretch with it.
+        private const float Margin = 24f;
         private GameObject root;
         private RectTransform viewport, content, notesViewport, notesContent;
         private ScrollRect listScroll, notesScroll;
@@ -106,8 +109,11 @@ namespace PoeClone.UI
         public void OpenSettings()
         {
             if (PatchNotesUI.IsShowing || (!IsOpen && Time.timeScale <= 0f)) return;
-            ShowSettings();
+            // Active first: the list's height comes from the canvas, which only scales while active.
             root.SetActive(true);
+            ShowSettings();
+            // The HUD is drawn with OnGUI, over every canvas: it would show through the shade.
+            PlayerHUD.SetHiddenBy(this, true);
             // Co-op: the world is shared, so the menu opens over the running game.
             if (pausedByMenu || PoeClone.Combat.Party.Active) return;
             timeScaleBeforeMenu = Time.timeScale;
@@ -120,6 +126,7 @@ namespace PoeClone.UI
         private void Close()
         {
             root.SetActive(false);
+            PlayerHUD.SetHiddenBy(this, false);
             if (!pausedByMenu) return;
             pausedByMenu = false;
             GameSessionController session = GameSessionController.Instance;
@@ -134,23 +141,33 @@ namespace PoeClone.UI
             canvas.gameObject.AddComponent<GraphicRaycaster>(); group.interactable = true; group.blocksRaycasts = true; root = canvas.gameObject;
             Image shade = UiKit.NewImage("Shade", canvas.transform, new Color(0f,0f,0f,0.6f)); shade.raycastTarget = true; UiKit.Stretch(shade.rectTransform, 0f);
             Image panel = UiKit.NewImage("Panel", canvas.transform, UiKit.PanelColor); UiKit.Grain(panel); panel.raycastTarget = true;
-            RectTransform pr=panel.rectTransform; pr.anchorMin=pr.anchorMax=new Vector2(.5f,.5f); pr.sizeDelta=new Vector2(W,H); UiKit.Frame(pr); pr.gameObject.AddComponent<UiAppear>(); TouchMode.AddBlocker(pr);
+            RectTransform pr=panel.rectTransform; pr.anchorMin=new Vector2(.5f,0); pr.anchorMax=new Vector2(.5f,1); pr.sizeDelta=new Vector2(W,-Margin*2); UiKit.Frame(pr); pr.gameObject.AddComponent<UiAppear>(); TouchMode.AddBlocker(pr);
             title=UiKit.Heading(UiKit.NewText("Title",pr,"MENU",30,UiKit.Gold,TextAnchor.MiddleLeft)); UiKit.TopLeft(title.rectTransform,new Vector2(30,-16),new Vector2(W-100,40));
             settingsButton=Button("Settings",pr,"Settings",new Vector2(30,-68),new Vector2(180,42),ShowSettings);
             historyButton=Button("History",pr,"Patch History",new Vector2(222,-68),new Vector2(180,42),ShowHistory);
-            Button("Resume",pr,"Resume",new Vector2(W-210,-H+66),new Vector2(180,42),Close);
-            UiKit.DividerLine(pr,new Vector2(0,H*.5f-116),W-60);
+            GameObject resume=Button("Resume",pr,"Resume",Vector2.zero,new Vector2(180,42),Close); RectTransform rr=(RectTransform)resume.transform; rr.anchorMin=rr.anchorMax=rr.pivot=Vector2.zero; rr.anchoredPosition=new Vector2(W-210,24);
+            RectTransform divider=UiKit.DividerLine(pr,Vector2.zero,W-60).rectTransform; divider.anchorMin=divider.anchorMax=new Vector2(.5f,1); divider.anchoredPosition=new Vector2(0,-116);
             viewport=UiKit.NewRect("Viewport",pr); viewport.gameObject.AddComponent<RectMask2D>(); Image catcher=viewport.gameObject.AddComponent<Image>(); catcher.color=Color.clear;
-            UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(W-60,H-220));
+            PlaceList(viewport,30,W-60);
             content=UiKit.NewRect("Content",viewport); content.anchorMin=new Vector2(0,1); content.anchorMax=new Vector2(1,1); content.pivot=new Vector2(.5f,1); content.anchoredPosition=Vector2.zero;
             listScroll=viewport.gameObject.AddComponent<ScrollRect>(); listScroll.content=content; listScroll.viewport=viewport; listScroll.horizontal=false; listScroll.movementType=ScrollRect.MovementType.Clamped; listScroll.scrollSensitivity=30;
             notesViewport=UiKit.NewRect("NotesViewport",pr); notesViewport.gameObject.AddComponent<RectMask2D>(); Image notesCatcher=notesViewport.gameObject.AddComponent<Image>(); notesCatcher.color=Color.clear;
-            UiKit.TopLeft(notesViewport,new Vector2(300,-126),new Vector2(W-330,H-220));
+            PlaceList(notesViewport,300,W-330);
             notesContent=UiKit.NewRect("NotesContent",notesViewport); notesContent.anchorMin=new Vector2(0,1); notesContent.anchorMax=new Vector2(1,1); notesContent.pivot=new Vector2(.5f,1); notesContent.anchoredPosition=Vector2.zero;
             notesScroll=notesViewport.gameObject.AddComponent<ScrollRect>(); notesScroll.content=notesContent; notesScroll.viewport=notesViewport; notesScroll.horizontal=false; notesScroll.movementType=ScrollRect.MovementType.Clamped; notesScroll.scrollSensitivity=30;
             body=UiKit.NewText("Body",notesContent,"",18,UiKit.TextColor,TextAnchor.UpperLeft); body.horizontalOverflow=HorizontalWrapMode.Wrap; body.verticalOverflow=VerticalWrapMode.Overflow; body.raycastTarget=false;
             UiKit.TopLeft(body.rectTransform,new Vector2(8,-4),new Vector2(W-350,0));
             UiKit.CloseButton(pr, Close);
+        }
+
+        // A list area under the tabs, above the Resume button, as tall as the panel allows.
+        private static void PlaceList(RectTransform rt, float x, float width)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = new Vector2(0, 1);
+            rt.pivot = new Vector2(0, 1);
+            rt.offsetMin = new Vector2(x, 94);
+            rt.offsetMax = new Vector2(x + width, -126);
         }
 
         private void ShowSettings()
@@ -159,7 +176,7 @@ namespace PoeClone.UI
             ClearEntries();
             SelectTab(true);
             notesViewport.gameObject.SetActive(false);
-            UiKit.TopLeft(viewport, new Vector2(30, -126), new Vector2(W-60, H-220));
+            PlaceList(viewport, 30, W-60);
             float y = 0f;
             RectTransform volumeRow = SettingsRow("Audio", "Volume", "Overall volume of all game sounds.", ref y);
             VolumeSlider(volumeRow, Audio.AudioManager.MasterVolume, v => Audio.AudioManager.MasterVolume = v);
@@ -187,13 +204,14 @@ namespace PoeClone.UI
                         dashLabel.text = PlayerSkills.DashTowardsCursor ? "Cursor" : "Movement";
                     });
                 dashLabel = dashButton.GetComponentInChildren<Text>();
+                KeyList(ref y);
             }
             var session = GameSessionController.Instance;
             if (session != null && session.Role == SessionRole.Player && session.PlayGranted)
             {
-                RectTransform characterRow = SettingsRow("Session", "Characters", "Return to character selection.", ref y);
-                Button("Characters", characterRow, "Switch Character", new Vector2(W-294, -15),
-                    new Vector2(216, 48), () => session.ReturnToCharacters());
+                RectTransform menuRow = SettingsRow("Session", "Main menu", "Save your character and go back to the start menu.", ref y);
+                Button("MainMenu", menuRow, "Exit to Main Menu", new Vector2(W-334, -15),
+                    new Vector2(256, 48), () => session.ReturnToMainMenu());
             }
             content.sizeDelta = new Vector2(0, Mathf.Max(viewport.rect.height, y-16));
             listScroll.StopMovement();
@@ -223,6 +241,50 @@ namespace PoeClone.UI
             return row.rectTransform;
         }
 
+        private static readonly string[,] Keys =
+        {
+            { "W A S D", "Move" },
+            { "Shift", "Sprint" },
+            { "Left click", "Attack, pick up, talk" },
+            { "Q E R F  1 2 3 4", "Skills and potions" },
+            { "RMB  M4  M5", "More skill buttons" },
+            { "B", "Town portal" },
+            { "I", "Inventory" },
+            { "C", "Character" },
+            { "P", "Passive tree" },
+            { "M", "Show or hide the map" },
+            { "Enter", "Chat" },
+            { "Esc", "This menu" },
+        };
+
+        // The desktop keys, two to a line, under the Controls settings.
+        private void KeyList(ref float y)
+        {
+            const float lineHeight = 30f;
+            int lines = (Keys.GetLength(0) + 1) / 2;
+            Image box = UiKit.NewImage("KeysRow", content, new Color(.2f, .17f, .13f, 1f));
+            UiKit.Inset(box);
+            float height = 54f + lines * lineHeight + 10f;
+            UiKit.TopLeft(box.rectTransform, new Vector2(0, -y), new Vector2(W - 60, height));
+            Text name = UiKit.NewText("Name", box.transform, "Keys", 20, UiKit.TextColor, TextAnchor.MiddleLeft);
+            UiKit.TopLeft(name.rectTransform, new Vector2(18, -10), new Vector2(420, 26));
+            Text hint = UiKit.NewText("Hint", box.transform, "Click a square on the skill bar to choose its skill or potion.",
+                16, UiKit.DimText, TextAnchor.MiddleLeft);
+            UiKit.TopLeft(hint.rectTransform, new Vector2(18, -34), new Vector2(W - 100, 22));
+            float column = (W - 60) * 0.5f;
+            for (int k = 0; k < Keys.GetLength(0); k++)
+            {
+                float x = 18 + (k % 2) * column;
+                float top = -60 - (k / 2) * lineHeight;
+                Text key = UiKit.NewText("Key", box.transform, Keys[k, 0], 15, UiKit.Gold, TextAnchor.MiddleLeft);
+                key.font = UiKit.TitleFont;
+                UiKit.TopLeft(key.rectTransform, new Vector2(x, top), new Vector2(150, lineHeight));
+                Text action = UiKit.NewText("Action", box.transform, Keys[k, 1], 17, UiKit.TextColor, TextAnchor.MiddleLeft);
+                UiKit.TopLeft(action.rectTransform, new Vector2(x + 156, top), new Vector2(column - 180, lineHeight));
+            }
+            y += height + 16f;
+        }
+
         private void VolumeSlider(RectTransform row, float current, System.Action<float> apply)
         {
             Image track = UiKit.NewImage("VolumeTrack", row, new Color(.3f, .26f, .2f, 1f));
@@ -244,7 +306,7 @@ namespace PoeClone.UI
             Text value = UiKit.NewText("VolumeValue", row, "", 18, UiKit.TextColor, TextAnchor.MiddleRight);
             UiKit.TopLeft(value.rectTransform, new Vector2(W-144, -24), new Vector2(66, 30));
 
-            Slider slider = track.gameObject.AddComponent<Slider>();
+            Slider slider = track.gameObject.AddComponent<ScrollFriendlySlider>();
             slider.fillRect = fill.rectTransform;
             slider.handleRect = handle.rectTransform;
             slider.targetGraphic = handle;
@@ -288,7 +350,7 @@ namespace PoeClone.UI
             entries = combined.ToArray();
             title.text="PATCH HISTORY"; ClearEntries(); SelectTab(false); notesViewport.gameObject.SetActive(true);
             body.transform.SetParent(notesContent,false); UiKit.TopLeft(body.rectTransform,new Vector2(8,-4),new Vector2(W-350,0));
-            UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(250,H-220));
+            PlaceList(viewport,30,250);
             float y=-4;
             if(entries.Length==0) body.text="No patch history is available.";
             for (int i = 0; i < entries.Length; i++)
@@ -361,5 +423,59 @@ namespace PoeClone.UI
             return image.gameObject;
         }
         private static string Escape(string s) => (s??"").Replace("&","&amp;").Replace("<","&lt;").Replace(">","&gt;");
+
+        /// <summary>
+        /// A slider in the scrolling settings list. A plain Slider takes every drag that starts on
+        /// it, so on a phone a finger landing on one of the volume sliders could not scroll the
+        /// list. Here a mostly vertical drag scrolls the list instead; a tap or a sideways drag
+        /// sets the value.
+        /// </summary>
+        private sealed class ScrollFriendlySlider : Slider, IBeginDragHandler, IEndDragHandler
+        {
+            private ScrollRect scroll;
+            private bool dragged, scrolling;
+
+            private ScrollRect Scroll => scroll != null ? scroll : scroll = GetComponentInParent<ScrollRect>();
+
+            public override void OnInitializePotentialDrag(PointerEventData eventData)
+            {
+                // Keep the drag threshold, so the direction is known before anything moves.
+                eventData.useDragThreshold = true;
+                if (Scroll != null) Scroll.OnInitializePotentialDrag(eventData);
+            }
+
+            // The value waits until it's clear whether this is a tap, a sideways drag or a scroll.
+            public override void OnPointerDown(PointerEventData eventData)
+            {
+                dragged = scrolling = false;
+            }
+
+            public void OnBeginDrag(PointerEventData eventData)
+            {
+                dragged = true;
+                Vector2 moved = eventData.position - eventData.pressPosition;
+                scrolling = Scroll != null && Mathf.Abs(moved.y) > Mathf.Abs(moved.x);
+                if (scrolling) Scroll.OnBeginDrag(eventData);
+                else base.OnPointerDown(eventData);
+            }
+
+            public override void OnDrag(PointerEventData eventData)
+            {
+                if (scrolling) Scroll.OnDrag(eventData);
+                else base.OnDrag(eventData);
+            }
+
+            public void OnEndDrag(PointerEventData eventData)
+            {
+                if (scrolling) Scroll.OnEndDrag(eventData);
+                scrolling = false;
+            }
+
+            public override void OnPointerUp(PointerEventData eventData)
+            {
+                if (!dragged) base.OnPointerDown(eventData);
+                base.OnPointerUp(eventData);
+            }
+        }
     }
 }
