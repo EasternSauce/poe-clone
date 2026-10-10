@@ -19,9 +19,10 @@ namespace PoeClone.EditorTools
         [SerializeField] private int areaLevel = MaxAreaLevel;
         [SerializeField] private SortMode sort = SortMode.LevelThenChance;
         [SerializeField] private string search = "";
-        private readonly HashSet<int> expanded = new HashSet<int>();
         private Vector2 scroll;
-        private GUIStyle nameStyle;
+        private GUIStyle nameStyle, tooltipStyle;
+        private int hovered = -1;
+        private Vector2 hoveredAt;
 
         [MenuItem("PoeClone/Unique Item Browser", priority = 33)]
         public static void Open()
@@ -30,6 +31,8 @@ namespace PoeClone.EditorTools
             window.minSize = new Vector2(820, 400);
             window.Show();
         }
+
+        private void OnEnable() => wantsMouseMove = true;
 
         private static int LevelOf(int k) => UniqueItems.RequiredLevelFor(UniqueItems.NameOf(k));
 
@@ -105,10 +108,14 @@ namespace PoeClone.EditorTools
                 GUILayout.Label("Sources");
             }
 
+            if (Event.current.type == EventType.MouseMove) Repaint();
+            if (Event.current.type == EventType.Repaint) hovered = -1;
             scroll = EditorGUILayout.BeginScrollView(scroll);
             foreach (int k in Rows())
                 DrawRow(k);
             EditorGUILayout.EndScrollView();
+            if (hovered >= 0 && Event.current.type == EventType.Repaint)
+                DrawTooltip(hovered, hoveredAt);
         }
 
         private void DrawRow(int k)
@@ -117,11 +124,14 @@ namespace PoeClone.EditorTools
             int level = LevelOf(k);
             using (new EditorGUILayout.HorizontalScope())
             {
-                bool open = expanded.Contains(k);
-                Rect fold = GUILayoutUtility.GetRect(40, EditorGUIUtility.singleLineHeight, GUILayout.Width(40));
-                bool now = EditorGUI.Foldout(fold, open, level.ToString(), true);
-                if (now != open) { if (now) expanded.Add(k); else expanded.Remove(k); }
+                GUILayout.Label(level.ToString(), GUILayout.Width(40));
                 GUILayout.Label(UniqueItems.NameOf(k), nameStyle, GUILayout.Width(230));
+                Rect name = GUILayoutUtility.GetLastRect();
+                if (Event.current.type == EventType.Repaint && name.Contains(Event.current.mousePosition))
+                {
+                    hovered = k;
+                    hoveredAt = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
+                }
                 GUILayout.Label(ItemGenerator.BaseNameOf(UniqueItems.BaseIdOf(k)) ?? UniqueItems.BaseIdOf(k), GUILayout.Width(140));
                 GUILayout.Label(shepherd ? "-" : UniqueItems.DropWeight(k).ToString(), GUILayout.Width(50));
                 GUILayout.Label(Percent(ChanceOf(k, areaLevel)), GUILayout.Width(70));
@@ -133,17 +143,32 @@ namespace PoeClone.EditorTools
                         DropAtPlayer(k);
                 }
             }
+        }
 
-            if (!expanded.Contains(k)) return;
-            using (new EditorGUI.IndentLevelScope(2))
-            {
-                foreach (string line in UniqueItems.ModifierRanges(k))
-                    EditorGUILayout.LabelField(line);
-                string flavour = UniqueItems.FlavourFor(UniqueItems.Current(UniqueItems.NameOf(k)));
-                if (!string.IsNullOrEmpty(flavour))
-                    EditorGUILayout.LabelField(flavour, EditorStyles.miniLabel);
-            }
-            EditorGUILayout.Space(4);
+        /// <summary>An item tooltip beside the cursor: name, base, rolls with their ranges, flavour.</summary>
+        private void DrawTooltip(int k, Vector2 screenPoint)
+        {
+            tooltipStyle ??= new GUIStyle(EditorStyles.helpBox) { richText = true, fontSize = 12, wordWrap = true, padding = new RectOffset(10, 10, 8, 8) };
+            var text = new System.Text.StringBuilder();
+            text.Append("<b><color=#E68C33>").Append(UniqueItems.NameOf(k)).Append("</color></b>\n");
+            text.Append("<color=#C8C8C8>").Append(ItemGenerator.BaseNameOf(UniqueItems.BaseIdOf(k)) ?? UniqueItems.BaseIdOf(k))
+                .Append("  ·  Requires level ").Append(LevelOf(k)).Append("</color>\n");
+            foreach (string line in UniqueItems.ModifierRanges(k))
+                text.Append("\n<color=#8888FF>").Append(line).Append("</color>");
+            string flavour = UniqueItems.FlavourFor(UniqueItems.Current(UniqueItems.NameOf(k)));
+            if (!string.IsNullOrEmpty(flavour))
+                text.Append("\n\n<i><color=#B07A40>").Append(flavour).Append("</color></i>");
+
+            var content = new GUIContent(text.ToString());
+            const float width = 380f;
+            float height = tooltipStyle.CalcHeight(content, width);
+            Vector2 at = GUIUtility.ScreenToGUIPoint(screenPoint) + new Vector2(16f, 12f);
+            // Keep it inside the window.
+            at.x = Mathf.Min(at.x, position.width - width - 4f);
+            if (at.y + height > position.height - 4f) at.y -= height + 24f;
+            var rect = new Rect(at.x, at.y, width, height);
+            EditorGUI.DrawRect(rect, new Color(0.08f, 0.07f, 0.06f, 0.97f));
+            GUI.Label(rect, content, tooltipStyle);
         }
 
         private static string Percent(float chance) => chance <= 0f ? "-" : (chance * 100f).ToString("0.0") + "%";
