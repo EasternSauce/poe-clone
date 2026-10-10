@@ -72,7 +72,10 @@ namespace PoeClone.Network
             MakeText(title, 34, new Vector2(0, 60), new Vector2(1200, 60));
             // Still working on it ("Connecting...", "Joining ..."): show it's alive.
             if (title.EndsWith("..."))
-                Appear(UiKit.RuneSpinner(canvasRoot.transform, new Vector2(0, 220), 120f));
+            {
+                Appear(UiKit.RuneSpinner(screen, new Vector2(0, 170), 120f));
+                Extend(new Vector2(0, 170), new Vector2(120f, 120f));
+            }
             if (!string.IsNullOrEmpty(detail))
                 MakeText(detail, 22, new Vector2(0, 10), new Vector2(1200, 40));
             MakeBack(back, -80);

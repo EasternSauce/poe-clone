@@ -1,3 +1,7 @@
+version: 2026-10-10-mobile-menus-fit
+- On phones, the character select, start menu, co-op screens and connecting spinner now fit on screen instead of running off the top (and off the bottom with several characters). Tall screens shift and shrink to fit.
+- Maximizing or fullscreening the browser while the game is still loading no longer leaves a black screen once it has loaded.
+
 version: 2026-10-10-faster-loading
 - The game loads much faster in the browser. Music is no longer part of the initial download; each track downloads the first time it plays, so a new area's music may start a moment after you arrive.
 - Music tracks you've already heard stay cached by your browser between updates unless the track itself changes.

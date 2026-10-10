@@ -30,14 +30,11 @@ namespace PoeClone.Network
         {
             if (IsShowing || UiKit.IsStashNamePromptOpen) return;
 
-            foreach (Transform child in canvasRoot.transform)
-                if (child.name != "Background") child.gameObject.SetActive(false);
             ClearScreen();
 
             MakeText("Name your stash tab", 30, new Vector2(0, 100), new Vector2(800, 60));
-            inputField = MakeInput();
+            inputField = MakeInput(new Vector2(0, 10));
             inputField.characterLimit = PlayerInventory.StashTabNameLimit;
-            inputField.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 10);
             inputField.text = currentName ?? string.Empty;
 
             Action confirm = () =>
@@ -150,8 +147,7 @@ namespace PoeClone.Network
         {
             ClearScreen();
             MakeText("Name your character", 30, new Vector2(0, 100), new Vector2(800, 60));
-            inputField = MakeInput();
-            inputField.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 10);
+            inputField = MakeInput(new Vector2(0, 10));
             MakeButton("Create and Play", new Vector2(0, -70), new Vector2(260, 54), () =>
             {
                 string name = inputField.text.Trim();
@@ -163,12 +159,13 @@ namespace PoeClone.Network
             MakeButton("Back", new Vector2(0, -140), new Vector2(160, 46), () => ShowCharacters(afterCharacter), UiKit.MutedTint);
         }
 
-        private InputField MakeInput()
+        private InputField MakeInput(Vector2 at)
         {
-            var image = UiKit.NewImage("CharacterName", canvasRoot.transform, new Color(.05f, .04f, .035f, 1f));
+            var image = UiKit.NewImage("CharacterName", screen, new Color(.05f, .04f, .035f, 1f));
             UiKit.Inset(image);
             image.raycastTarget = true;
-            var rect = image.rectTransform; rect.anchorMin = rect.anchorMax = new Vector2(.5f, .5f); rect.sizeDelta = new Vector2(440, 56);
+            var rect = image.rectTransform; rect.anchorMin = rect.anchorMax = new Vector2(.5f, .5f); rect.anchoredPosition = at; rect.sizeDelta = new Vector2(440, 56);
+            Extend(at, rect.sizeDelta);
             UiKit.Frame(rect, 3f);
             var field = image.gameObject.AddComponent<InputField>(); field.characterLimit = MaxNameLength; field.lineType = InputField.LineType.SingleLine;
             field.customCaretColor = true; field.caretColor = UiKit.Gold; field.selectionColor = new Color(.86f, .62f, .25f, .45f);
@@ -188,8 +185,33 @@ namespace PoeClone.Network
             appearOrder = 0;
             animateScreen = key == null || key != screenKey;
             screenKey = key;
-            foreach (Transform child in canvasRoot.transform)
-                if (child.name != "Background") Destroy(child.gameObject);
+            contentTop = float.MinValue;
+            contentBottom = float.MaxValue;
+            foreach (Transform child in screen)
+                Destroy(child.gameObject);
+        }
+
+        // The screens are laid out for a 1080-high canvas; on a phone (a 660-high canvas, see
+        // TouchAwareScaler) the taller ones would run off the top and bottom, so the screen is
+        // shifted and, if that isn't enough, shrunk until its items fit.
+        private RectTransform screen;
+        private float contentTop, contentBottom;
+        private const float ScreenMargin = 16f;
+
+        private void Extend(Vector2 at, Vector2 size)
+        {
+            contentTop = Mathf.Max(contentTop, at.y + size.y * 0.5f);
+            contentBottom = Mathf.Min(contentBottom, at.y - size.y * 0.5f);
+        }
+
+        private void LateUpdate()
+        {
+            if (!canvasRoot.activeSelf || contentTop < contentBottom) return;
+            float half = ((RectTransform)canvasRoot.transform).rect.height * 0.5f - ScreenMargin;
+            float scale = Mathf.Min(1f, 2f * half / (contentTop - contentBottom));
+            float shift = Mathf.Clamp(0f, -half - contentBottom * scale, half - contentTop * scale);
+            screen.localScale = new Vector3(scale, scale, 1f);
+            screen.anchoredPosition = new Vector2(0f, shift);
         }
 
         private void Appear(RectTransform rect)
@@ -202,9 +224,10 @@ namespace PoeClone.Network
         private Text MakeText(string value, int size, Vector2 at, Vector2 dimensions)
         {
             bool heading = size >= 30;
-            var t = UiKit.NewText(value, canvasRoot.transform, value, size, heading ? UiKit.Gold : UiKit.TextColor, TextAnchor.MiddleCenter);
+            var t = UiKit.NewText(value, screen, value, size, heading ? UiKit.Gold : UiKit.TextColor, TextAnchor.MiddleCenter);
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             var r = t.rectTransform; r.anchorMin = r.anchorMax = new Vector2(.5f, .5f); r.anchoredPosition = at; r.sizeDelta = dimensions;
+            Extend(at, dimensions);
             if (heading)
             {
                 UiKit.Heading(t);
@@ -245,8 +268,9 @@ namespace PoeClone.Network
 
         private GameObject MakeButton(string label, Vector2 at, Vector2 dimensions, Action click, Color? tint = null)
         {
-            var image = UiKit.NewImage("ProfileButton", canvasRoot.transform, Color.white); image.raycastTarget = true;
+            var image = UiKit.NewImage("ProfileButton", screen, Color.white); image.raycastTarget = true;
             var r = image.rectTransform; r.anchorMin = r.anchorMax = new Vector2(.5f, .5f); r.anchoredPosition = at; r.sizeDelta = dimensions;
+            Extend(at, dimensions);
             var b = image.gameObject.AddComponent<Button>(); b.onClick.AddListener(() => click());
             var t = UiKit.NewText("Label", r, label, 22, UiKit.TextColor, TextAnchor.MiddleCenter); RuntimeUiUtil.StretchFull(t.rectTransform);
             UiKit.StyleButton(image, t, tint);
@@ -283,8 +307,7 @@ namespace PoeClone.Network
             ClearScreen();
             MakeText("Your name (optional)", 34, new Vector2(0f, 130f), new Vector2(900f, 60f));
             MakeText("Shown next to your chat messages", 22, new Vector2(0f, 72f), new Vector2(900f, 34f)).color = UiKit.DimText;
-            inputField = MakeInput();
-            inputField.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 10f);
+            inputField = MakeInput(new Vector2(0f, 10f));
             var placeholder = UiKit.NewText("Placeholder", inputField.transform, "Anonymous", 26, UiKit.DimText, TextAnchor.MiddleLeft);
             placeholder.fontStyle = FontStyle.Italic;
             RuntimeUiUtil.StretchFull(placeholder.rectTransform);
@@ -336,6 +359,9 @@ namespace PoeClone.Network
             canvasRoot.AddComponent<GraphicRaycaster>();
 
             UiKit.Backdrop(canvasRoot.transform);
+            screen = new GameObject("Screen", typeof(RectTransform)).GetComponent<RectTransform>();
+            screen.SetParent(canvasRoot.transform, false);
+            RuntimeUiUtil.StretchFull(screen);
         }
     }
 }
