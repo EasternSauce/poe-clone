@@ -131,6 +131,9 @@ namespace PoeClone.Audio
             uiSource = gameObject.AddComponent<AudioSource>();
             uiSource.playOnAwake = false;
             uiSource.spatialBlend = 0f;
+            // Interface and potion sounds answer the player's own input; a busy fight's one-shots
+            // must not take their voice.
+            uiSource.priority = 0;
         }
 
         /// <summary>Like PlayClipAtPoint, at a pitch of its own (a throwaway source that removes itself).</summary>

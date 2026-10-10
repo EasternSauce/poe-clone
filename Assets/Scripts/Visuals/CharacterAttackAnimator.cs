@@ -82,6 +82,10 @@ namespace PoeClone.Visuals
 
             // An absolute (bow) pose's lean: how far the body tips over the draw (forward +).
             public float Lean;
+
+            // An overhead wind-up lifts the arm out to the side by this much (roll) on the way up,
+            // so the weapon doesn't rise through the target and read as an upward blow.
+            public float SideLift;
         }
 
         private static readonly AttackProfile UnarmedProfile = new AttackProfile
@@ -161,15 +165,17 @@ namespace PoeClone.Visuals
             Range = 2.3f
         };
 
-        // A one-handed overhead smash: lift the head above the shoulder, then bring it down
-        // through the target. Maces and sceptres share this attack silhouette.
+        // A one-handed overhead smash: lift the arm up the side and cock the head behind the
+        // shoulder, then bring it down hard through the target. Maces and sceptres share this
+        // attack silhouette.
         private static readonly AttackProfile MaceProfile = new AttackProfile
         {
             Duration = 0.7f,
             StrikeTime = 0.55f,
-            SwingStart = 0.28f,
-            WindupOffset = new Pose(-135f, -12f, -8f, 25f),
-            StrikeOffset = new Pose(-8f, 5f, 5f, 5f),
+            SwingStart = 0.36f,
+            SideLift = 45f,
+            WindupOffset = new Pose(-160f, -10f, 0f, 75f),
+            StrikeOffset = new Pose(-35f, 5f, 5f, 5f),
             BaseAttacksPerSecond = 0.9f,
             Range = 2.2f
         };
@@ -260,9 +266,9 @@ namespace PoeClone.Visuals
 
         private static readonly AttackProfile PulverizeMaceProfile = new AttackProfile
         {
-            Duration = 0.9f, StrikeTime = 0.8f, SwingStart = 0.58f,
-            WindupOffset = new Pose(-145f, -4f, -8f, 25f),
-            StrikeOffset = new Pose(-8f, 2f, 0f, 0f),
+            Duration = 0.9f, StrikeTime = 0.8f, SwingStart = 0.6f, SideLift = 45f,
+            WindupOffset = new Pose(-165f, -4f, 0f, 80f),
+            StrikeOffset = new Pose(-30f, 2f, 0f, 0f),
             BaseAttacksPerSecond = 0.8f, Range = 2.5f
         };
 
@@ -464,7 +470,6 @@ namespace PoeClone.Visuals
             return profileId >= 0 && profileId < ProfilesById.Length && ProfilesById[profileId] == BowProfile;
         }
 
-        /// <summary>Whether a weapon type shoots instead of hitting what's in reach.</summary>
         /// <summary>Seconds from the start of a swing with this weapon to its strike, at normal speed.</summary>
         public static float StrikeSeconds(WeaponType weaponType)
         {
@@ -472,6 +477,7 @@ namespace PoeClone.Visuals
             return p.Duration * p.StrikeTime;
         }
 
+        /// <summary>Whether a weapon type shoots instead of hitting what's in reach.</summary>
         public static bool IsRanged(WeaponType weaponType)
         {
             return weaponType == WeaponType.Bow;
@@ -712,13 +718,17 @@ namespace PoeClone.Visuals
             {
                 if (f < p.SwingStart)
                 {
-                    float t = EaseOut(f / p.SwingStart);
+                    // An overhead lift gathers slowly up the side instead of whipping up in front.
+                    float t = p.SideLift > 0f ? Mathf.SmoothStep(0f, 1f, f / p.SwingStart) : EaseOut(f / p.SwingStart);
                     pose = Lerp(start, windup, t);
+                    pose.ArmRoll += p.SideLift * Mathf.Sin(t * Mathf.PI);
                     offPose = Lerp(rest, p.OffWindup, t);
                 }
                 else
                 {
                     float t = (f - p.SwingStart) / (p.StrikeTime - p.SwingStart);
+                    if (p.SideLift > 0f)
+                        t *= t; // and the blow gathers speed on the way down
                     pose = Lerp(windup, strike, t);
                     offPose = Lerp(p.OffWindup, p.OffStrike, t);
                 }
@@ -773,16 +783,20 @@ namespace PoeClone.Visuals
                     step = f < p.StrikeTime ? -0.3f * EaseOut(f / Mathf.Max(0.01f, p.StrikeTime)) : 1f - (f - p.StrikeTime) / Mathf.Max(0.01f, 1f - p.StrikeTime);
                 Lunge = f < p.StrikeTime ? step * 0.12f : Mathf.Sin(step * Mathf.PI * 0.5f) * 0.16f;
 
-                // A great weapon carries the whole body: it rears back while hauling the weapon up
-                // (whichever way the arm goes) and folds forward over the blow.
+                // A great weapon or an overhead smash carries the whole body: it rears back while
+                // hauling the weapon up (whichever way the arm goes) and folds forward over the blow.
+                if (p.TwoHandGrip || p.SideLift > 0f)
+                {
+                    float back = p.TwoHandGrip ? -12f : -8f, over = p.TwoHandGrip ? 22f : 14f;
+                    TorsoPitch = p.SwingStart > 0f && f < p.StrikeTime
+                        ? (f < p.SwingStart
+                            ? back * EaseOut(f / p.SwingStart)
+                            : Mathf.Lerp(back, over, (f - p.SwingStart) / (p.StrikeTime - p.SwingStart)))
+                        : (f < p.StrikeTime ? back * EaseOut(f / Mathf.Max(0.01f, p.StrikeTime)) : over * step);
+                }
                 if (p.TwoHandGrip)
                 {
                     TorsoYaw = fromRest.ArmYaw * 0.45f;
-                    TorsoPitch = p.SwingStart > 0f && f < p.StrikeTime
-                        ? (f < p.SwingStart
-                            ? -12f * EaseOut(f / p.SwingStart)
-                            : Mathf.Lerp(-12f, 22f, (f - p.SwingStart) / (p.StrikeTime - p.SwingStart)))
-                        : (f < p.StrikeTime ? -12f * EaseOut(f / Mathf.Max(0.01f, p.StrikeTime)) : 22f * step);
                     Lunge *= 1.6f;
                 }
             }

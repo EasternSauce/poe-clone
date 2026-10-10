@@ -98,7 +98,10 @@ namespace PoeClone.Visuals
         public const float GuardElbow = 20f;
         private const float OffGripAlong = -0.22f; // the off hand's place on the weapon, below the main hand
         private PoeClone.Inventory.EquipmentVisuals equipmentVisuals;
-        private Transform offHand;
+        private Transform offHand, mainHand;
+        private Transform mountedWeapon;
+        private Vector3 mountPosition;
+        private Quaternion mountRotation;
         private float holdBlend;
 
         /// <summary>True while this character carries a great weapon in both hands (see <see cref="GuardPitch"/>).</summary>
@@ -178,6 +181,7 @@ public void Configure(
             stagger = GetComponentInParent<Stagger>();
             equipmentVisuals = GetComponent<PoeClone.Inventory.EquipmentVisuals>();
             offHand = leftElbow != null ? leftElbow.Find("Hand") : null;
+            mainHand = rightElbow != null ? rightElbow.Find("Hand") : null;
 
             audioSource = GetComponent<AudioSource>();
             if (audioSource == null)
@@ -299,20 +303,52 @@ private void LateUpdate()
                     rightElbow.localRotation = Quaternion.Euler(-GuardElbow, 0f, 0f);
             }
 
-            // A great weapon's swing poses the off arm itself; ease from this grip into it and
-            // back again over the swing's first and last moments so the hand doesn't jump.
+            // A great weapon's swing keeps the off hand solved onto the haft the whole way through
+            // (the swing's own off-arm pose only seeds the solve); other off-arm poses let go.
             float weight = holdBlend;
             if (leftArmSuppressed)
+                weight = attackAnimator.SwingsTwoHanded ? 1f : 0f;
+
+            Transform weapon = equipmentVisuals.TwoHandedWeapon;
+            if (weapon != mountedWeapon)
             {
-                float edge = Mathf.Min(attackAnimator.Progress, 1f - attackAnimator.Progress);
-                weight = attackAnimator.SwingsTwoHanded ? 1f - Mathf.Clamp01(edge / 0.12f) : 0f;
+                mountedWeapon = weapon;
+                mountPosition = weapon.localPosition;
+                mountRotation = weapon.localRotation;
             }
+            weapon.localPosition = mountPosition;
+            weapon.localRotation = mountRotation;
 
             if (weight > 0f)
             {
-                Transform weapon = equipmentVisuals.TwoHandedWeapon;
+                if (weight >= 1f)
+                    BringGripInReach(weapon);
                 PoseGrip(leftArm, leftElbow, offHand, weapon.TransformPoint(Vector3.up * OffGripAlong), -1f, weight);
             }
+        }
+
+        // A swing poses the weapon arm at full stretch, where the off hand can't reach the haft.
+        // Draw the weapon hand in towards the chest until both hands can hold it, keeping the
+        // weapon pointing the way the swing aims it: the arms bend, the arc stays.
+        private void BringGripInReach(Transform weapon)
+        {
+            if (mainHand == null || offHand == null || leftArm == null || rightArm == null || rightElbow == null)
+                return;
+
+            float reach = 0.97f * (Vector3.Distance(leftArm.position, leftElbow.position) + Vector3.Distance(leftElbow.position, offHand.position));
+            Vector3 hand = mainHand.position;
+            Vector3 toGrip = weapon.TransformPoint(Vector3.up * OffGripAlong) - hand;
+            Vector3 anchor = (leftArm.position + rightArm.position) * 0.5f + transform.forward * 0.3f;
+            Vector3 target = hand;
+            for (int i = 0; i < 12 && (Vector3.Distance(target, rightArm.position) > reach || Vector3.Distance(target + toGrip, leftArm.position) > reach); i++)
+                target = Vector3.Lerp(target, anchor, 0.25f);
+            if (target == hand)
+                return;
+
+            Quaternion weaponRotation = weapon.rotation;
+            Vector3 offset = weapon.position - hand;
+            PoseGrip(rightArm, rightElbow, mainHand, target, 1f, 1f);
+            weapon.SetPositionAndRotation(mainHand.position + offset, weaponRotation);
         }
 
         private void PoseSweepingBroom(bool poseLeft, bool poseRight)

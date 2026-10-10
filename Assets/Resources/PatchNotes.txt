@@ -1,3 +1,8 @@
+version: 2026-10-11-overhead-and-grip
+- Mace and sceptre attacks (and Pulverize with a mace) are now a proper overhead smash. The arm lifts up the side, the head cocks behind your shoulder while you lean back, and the blow comes down hard as you fold forward over it. Before, the lift swept up through the target and looked like an uppercut.
+- Greatswords, greataxes and mauls stay in both hands for the whole swing. The off hand used to let go for most of the attack; now your arms bend to keep both hands on the grip, and the weapon still sweeps the same arc.
+- Fixed: the potion drinking sound and other interface sounds could go silent in busy fights when many other sounds were playing.
+
 version: 2026-10-11-class-balance
 - Fixed: melee attacks now reach large bosses. Before, a boss wide enough could stand out of reach of basic melee attacks even with you pressed against it.
 - Minions work as in Path of Exile: there is no longer one shared army limit. Each summon skill has its own: Raise Skeletons 2, Skeleton Mages 1, Spirit Wolves 2 per pack, Summon Viper 1, each +1 at skill levels 7 and 13. Maximum Minions from passives and gear adds to each of them, except the Bone Golem, which stays alone.
