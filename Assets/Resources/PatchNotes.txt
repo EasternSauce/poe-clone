@@ -1,6 +1,6 @@
 version: 2026-10-10-corpse-explosion-200
 - Corpse explosions now deal 200% of the killed enemy's Maximum Life as Fire damage, up from a sixth.
-- The corpse explosion sound is louder, so it is no longer drowned out by the hits and deaths around it.
+- The corpse explosion sound is much louder, so it is no longer drowned out by the hits and deaths around it.
 - Combat and other gameplay sounds now always play at full volume instead of getting quieter with distance from your character. Only ambient sounds such as rivers, waterfalls and town noise still fade with distance.
 - Packs dying no longer flood the mix: when the same sound would play many times at once, a few copies play slightly apart and the rest are skipped, so you can still hear that it happened several times.
 - Corpse explosion sounds are never cut off when many sounds play at once.
