@@ -269,6 +269,45 @@ namespace PoeClone.Network
             Send(e);
         }
 
+        // Host: an enemy's special skill, for the guest's copy to play.
+        private void SendSkill(Component enemy, bool atPartner, float damage, Vector3 target)
+        {
+            var health = enemy.GetComponent<EnemyHealth>();
+            if (health == null || !PartnerHere)
+                return;
+            CoopEvent e = NewEvent(CoopProtocol.Skill);
+            e.id = broadcaster.IdOf(health);
+            e.ek = health.KindIndex;
+            e.f = atPartner ? CoopProtocol.FlagAtYou : 0;
+            e.a = damage;
+            SetAt(e, enemy.transform.position);
+            SetAim(e, target);
+            Send(e);
+        }
+
+        // Host: a blow judged here against the partner's character landed.
+        private void SendDamage(float damage, DamageType type, bool attack, float poison, float poisonSeconds)
+        {
+            CoopEvent e = NewEvent(CoopProtocol.Damage);
+            e.a = damage;
+            e.dt = (int)type;
+            e.f = attack ? CoopProtocol.FlagAttack : 0;
+            e.ap = poison;
+            e.ep = poisonSeconds;
+            Send(e);
+        }
+
+        // Host: the partner is in this area (so its enemies' doings concern them).
+        private bool PartnerHere
+        {
+            get
+            {
+                StateSnapshot latest = partner != null ? partner.Newest : null;
+                var areas = AreaManager.Instance;
+                return latest != null && areas != null && latest.area == areas.CurrentAreaIndex;
+            }
+        }
+
         // Host: the guest gets the experience (and the quest credit) of kills near them.
         private void OnEnemyKilled(EnemyHealth enemy)
         {
@@ -518,6 +557,33 @@ namespace PoeClone.Network
                     EnemySkills.RainOfArrows(this, kind, aim, atUs ? stats : null, atUs ? e.a : 0f);
                     break;
             }
+        }
+
+        // Guest: the host's enemy used its special skill; our copy plays it.
+        private void PlaySkill(CoopEvent e)
+        {
+            EnemyHealth copy = replica.PuppetHealth(e.id);
+            EnemySkills skills = copy != null ? copy.GetComponent<EnemySkills>() : null;
+            if (skills != null)
+                skills.Mirror(new Vector3(e.tx, e.ty, e.tz), e.a, (e.f & CoopProtocol.FlagAtYou) != 0);
+        }
+
+        // Guest: the host's boss started a move; our copy plays it.
+        private void PlayBossMove(CoopEvent e)
+        {
+            EnemyHealth copy = replica.PuppetHealth(e.id);
+            BossAbilities boss = copy != null ? copy.GetComponent<BossAbilities>() : null;
+            if (boss != null)
+                boss.PlayMirror(e.mv, (e.f & CoopProtocol.FlagAtYou) != 0, e.sd, e.sp, e.dm, e.lv);
+        }
+
+        // Guest: a blow the host's game judged against our character.
+        private void TakeDamage(CoopEvent e)
+        {
+            if (stats == null || stats.IsDead)
+                return;
+            if (stats.TakeHit(e.a, (DamageType)e.dt, (e.f & CoopProtocol.FlagAttack) != 0) && e.ap > 0f && !stats.IsDead)
+                stats.Poison(e.ap, e.ep);
         }
 
         private void ShowDrop(CoopEvent e)
