@@ -214,44 +214,44 @@ MonoBehaviour:
     Weapons: 
     Tiers:
     - RequiredItemLevel: 1
-      Min: 8
-      Max: 20
+      Min: 12
+      Max: 30
       Weight: 1
     - RequiredItemLevel: 9
-      Min: 10
-      Max: 24
+      Min: 15
+      Max: 36
       Weight: 0.7
     - RequiredItemLevel: 17
-      Min: 11
-      Max: 28
+      Min: 17
+      Max: 42
       Weight: 0.48999998
     - RequiredItemLevel: 25
-      Min: 13
-      Max: 32
+      Min: 20
+      Max: 48
       Weight: 0.343
     - RequiredItemLevel: 34
-      Min: 14
-      Max: 36
+      Min: 21
+      Max: 54
       Weight: 0.24009998
     - RequiredItemLevel: 37
-      Min: 16
-      Max: 40
+      Min: 24
+      Max: 60
       Weight: 0.16806999
     - RequiredItemLevel: 50
-      Min: 18
-      Max: 44
+      Min: 27
+      Max: 66
       Weight: 0.11764899
     - RequiredItemLevel: 65
-      Min: 19
-      Max: 48
+      Min: 29
+      Max: 72
       Weight: 0.08235429
     - RequiredItemLevel: 80
-      Min: 21
-      Max: 52
+      Min: 32
+      Max: 78
       Weight: 0.057648003
     - RequiredItemLevel: 100
-      Min: 22
-      Max: 56
+      Min: 33
+      Max: 84
       Weight: 0.0403536
   - Label: Strength / 1
     Enabled: 1

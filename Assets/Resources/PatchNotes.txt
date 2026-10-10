@@ -1,6 +1,7 @@
 version: 2026-10-10-double-life-rolls
 - The "+ to Maximum Life" stat on magic and rare items now rolls twice as high: 16-50 on the lowest tier, up to 44-140 on the highest. Items you already own keep their values.
 - The "+ to Maximum Mana" stat can now also roll on body armour, boots, shields, quivers and grimoires, the same items as Maximum Life.
+- The "+ to Maximum Mana" stat on magic and rare items now rolls 50% higher: 12-30 on the lowest tier, up to 33-84 on the highest. Items you already own keep their values.
 
 version: 2026-10-10-red-covenant-melee
 - The Red Covenant now gives 30-40% more Melee Damage instead of 35-45% more Damage. Copies you already own are updated.
