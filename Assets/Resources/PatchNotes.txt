@@ -1,3 +1,6 @@
+version: 2026-10-10-late-skill-costs
+- Skills now cost 50% more mana (or life with Blood Magic) once your character reaches level 20. Costs below level 20 are unchanged. Skill tooltips show the new cost.
+
 version: 2026-10-10-grass
 - Greenwood and Haven have new grass: tufts of blades in muted greens that drift between lush and dry, with the odd bald patch of soil. It replaces Greenwood's flat bright green and Haven's fuzzy, carpet-like grass, so the fields sit better beside the paths and stones.
 

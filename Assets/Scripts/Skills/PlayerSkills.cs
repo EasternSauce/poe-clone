@@ -618,14 +618,23 @@ namespace PoeClone.Skills
                 CastRateMultiplier;
         }
 
-        public float ManaCostForGrant(SkillGrant grant) =>
-            SkillBook.Get(grant.Id).ManaCostAt(GrantLevelWithBonuses(grant));
+        /// <summary>Character level from which every skill costs <see cref="LateCostMultiplier"/> times as much.</summary>
+        public const int LateCostLevel = 20;
+        public const float LateCostMultiplier = 1.5f;
+
+        /// <summary>A skill's cost at a skill level for this character (late-game characters pay more).</summary>
+        public float CostOf(SkillId id, int level)
+        {
+            float cost = SkillBook.Get(id).ManaCostAt(Mathf.Max(1, level));
+            return stats != null && stats.Level >= LateCostLevel ? cost * LateCostMultiplier : cost;
+        }
+
+        public float ManaCostForGrant(SkillGrant grant) => CostOf(grant.Id, GrantLevelWithBonuses(grant));
 
         public float CooldownLeftAt(int slot) => slot >= 0 && slot < slots.Length ? Mathf.Max(0f, slotReadyAt[slot] - Time.time) : 0f;
         public float CooldownTotalAt(int slot) => slot >= 0 && slot < slots.Length
             ? (slotCooldownOf[slot] > 0f ? slotCooldownOf[slot] : CooldownAt(slot)) : 0f;
-        public float ManaCostAt(int slot) => Slot(slot) != null
-            ? SkillBook.Get(Slot(slot).Value).ManaCostAt(Mathf.Max(1, LevelAt(slot))) : 0f;
+        public float ManaCostAt(int slot) => Slot(slot) != null ? CostOf(Slot(slot).Value, LevelAt(slot)) : 0f;
         public bool CanAffordAt(int slot) => stats != null && stats.CanAffordSkill(ManaCostAt(slot));
         public string CostResource => stats != null && stats.UsesBloodMagic ? "life" : "mana";
 
@@ -640,10 +649,7 @@ namespace PoeClone.Skills
             return cooldownOf.TryGetValue(id, out float total) ? total : Cooldown(id);
         }
 
-        public float ManaCost(SkillId id)
-        {
-            return SkillBook.Get(id).ManaCostAt(Mathf.Max(1, Level(id)));
-        }
+        public float ManaCost(SkillId id) => CostOf(id, Level(id));
 
         public bool CanAfford(SkillId id)
         {

@@ -709,7 +709,7 @@ namespace PoeClone.UI
             if (bow != null)
             {
                 SkillDefinition skill = SkillBook.Get(bow.Value);
-                return SkillTooltip(skill, skills.ActiveBowLevel, skill.ManaCostAt(Mathf.Max(1, skills.ActiveBowLevel)), 0f, null, true);
+                return SkillTooltip(skill, skills.ActiveBowLevel, skills.CostOf(bow.Value, skills.ActiveBowLevel), 0f, null, true);
             }
             ItemData weapon = skills.GetComponent<PlayerInventory>()?.Equipment.GetActive(EquipSlot.MainHand);
             return "<size=20><b>" + (weapon != null ? weapon.Name : "Unarmed") + "</b></size>\n<color=#" +

@@ -66,9 +66,8 @@ namespace PoeClone.Skills
         public bool IsToggledOnAt(int slot) => ActiveBowSkill != null && toggledBowSlot == slot;
         public int ActiveBowLevel => ActiveBowSkill != null ? LevelAt(toggledBowSlot) : 0;
         public bool CanAffordBowShot => ActiveBowSkill != null && stats != null &&
-            stats.CanAffordSkill(SkillBook.Get(ActiveBowSkill.Value).ManaCostAt(ActiveBowLevel));
-        public bool TrySpendBowShot(SkillId id, int level) => stats != null &&
-            stats.TrySpendMana(SkillBook.Get(id).ManaCostAt(level));
+            stats.CanAffordSkill(CostOf(ActiveBowSkill.Value, ActiveBowLevel));
+        public bool TrySpendBowShot(SkillId id, int level) => stats != null && stats.TrySpendMana(CostOf(id, level));
 
         private bool ToggleBow(SkillDefinition skill, int slot)
         {
