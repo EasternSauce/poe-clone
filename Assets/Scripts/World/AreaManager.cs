@@ -9,14 +9,11 @@ namespace PoeClone.World
     public class AreaDefinition
     {
         public string areaName;
-        public Color groundColor = Color.white;
         public Transform spawnPoint;
 
         [Tooltip("Enemy level here (0 for a town). Shown when entering.")]
         public int monsterLevel;
         public bool isTown;
-        [Tooltip("False for areas with their own ground (WorldBuilder): only the original area retints the shared ground.")]
-        public bool tintsSharedGround = true;
     }
 
     /// <summary>
@@ -30,7 +27,6 @@ namespace PoeClone.World
 
         public AreaDefinition[] areas;
         public Transform player;
-        public Renderer groundRenderer;
         public LoadingScreenUI loadingScreen;
 
         [Tooltip("Extra pause while the loading screen is fully opaque, so a transition reads as an actual load even though it's instant under the hood.")]
@@ -47,13 +43,10 @@ namespace PoeClone.World
         public AreaDefinition Current => areas != null && CurrentAreaIndex >= 0 && CurrentAreaIndex < areas.Length ? areas[CurrentAreaIndex] : null;
 
         private bool switching;
-        private MaterialPropertyBlock mpb;
-        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
         private void Awake()
         {
             Instance = this;
-            mpb = new MaterialPropertyBlock();
             AreaChanged += PlayAreaMusic;
         }
 
@@ -84,23 +77,19 @@ namespace PoeClone.World
         {
             areas = definitions;
             CurrentAreaIndex = startIndex;
-            if (areas[startIndex].tintsSharedGround)
-                ApplyGroundColor(areas[startIndex].groundColor);
             AreaChanged?.Invoke(startIndex);
         }
 
         public bool IsSwitching => switching;
 
         /// <summary>
-        /// Spectator replica: shows an area's look (ground tint, gates) without any of the
+        /// Spectator replica: shows an area's look (gates, music) without any of the
         /// transition - the replicated player position and loading-screen state cover the rest.
         /// </summary>
         public void ApplyAreaImmediate(int index)
         {
             if (areas == null || index < 0 || index >= areas.Length || index == CurrentAreaIndex)
                 return;
-            if (areas[index].tintsSharedGround)
-                ApplyGroundColor(areas[index].groundColor);
             CurrentAreaIndex = index;
             AreaChanged?.Invoke(index);
         }
@@ -121,7 +110,6 @@ namespace PoeClone.World
         {
             if (CurrentAreaIndex != WorldBuilder.ActArena || index != WorldBuilder.Frozen) return;
             if (areas == null || index < 0 || index >= areas.Length || arrival == null) return;
-            if (areas[index].tintsSharedGround) ApplyGroundColor(areas[index].groundColor);
             CurrentAreaIndex = index;
             if (player != null)
             {
@@ -206,8 +194,6 @@ private IEnumerator SwitchRoutine(int index, Transform arrival)
                     cam.SnapToTarget();
             }
 
-            if (def.tintsSharedGround)
-                ApplyGroundColor(def.groundColor);
             CurrentAreaIndex = index;
             if (player != null)
                 AreaGate.DisarmAtArrival(index, player.position);
@@ -220,14 +206,6 @@ private IEnumerator SwitchRoutine(int index, Transform arrival)
                 yield return loadingScreen.FadeOut();
 
             switching = false;
-        }
-
-private void ApplyGroundColor(Color c)
-        {
-            if (groundRenderer == null) return;
-            groundRenderer.GetPropertyBlock(mpb);
-            mpb.SetColor(BaseColorId, c);
-            groundRenderer.SetPropertyBlock(mpb);
         }
     }
 }

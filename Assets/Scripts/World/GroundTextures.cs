@@ -3,19 +3,17 @@ using UnityEngine;
 namespace PoeClone.World
 {
     /// <summary>
-    /// Procedural ground textures for the areas WorldBuilder adds, so each has its own floor
-    /// (town grass, graveyard mud, ruins ash) instead of the forest's green grass tinted darker,
-    /// plus the packed dirt of roads and yards and the flagstones of Haven's square. All tileable
-    /// and deterministic.
+    /// Procedural ground textures, so each area has its own floor (forest and town grass,
+    /// graveyard mud, ruins ash), plus the packed dirt of roads and yards and the flagstones of
+    /// Haven's square. All tileable and deterministic.
     /// </summary>
     public static class GroundTextures
     {
         private const int Size = 512;
 
         /// <param name="grain">How much each pixel's brightness varies on its own (0 = smooth, which looks plastic).</param>
-        /// <param name="blades">How many grass blade strokes to scatter (0 for bare ground).</param>
         public static Texture2D Make(int seed, Color low, Color high, Color speck, float speckAmount, float scale,
-            float grain = 0.08f, int blades = 0)
+            float grain = 0.08f)
         {
             var texture = new Texture2D(Size, Size, TextureFormat.RGBA32, true)
             {
@@ -44,12 +42,101 @@ namespace PoeClone.World
                 }
             }
 
-            for (int i = 0; i < blades; i++)
-                Blade(pixels, random, low, high);
-
             texture.SetPixels32(pixels);
             texture.Apply(true);
             return texture;
+        }
+
+        /// <summary>
+        /// Grass seen from above: tufts of blades, dark at the root and catching the light at the
+        /// tip, over darker undergrowth. It drifts between lush and dry in broad patches, with
+        /// the odd bald patch of soil.
+        /// </summary>
+        /// <param name="bareness">How much bare soil shows through (0 for none).</param>
+        public static Texture2D Grass(int seed, Color under, Color lush, Color dry, Color soil, float bareness)
+        {
+            const int size = 1024;
+            // The broad maps are made coarse and sampled smoothly: their shapes span 40+ texels,
+            // so nothing is lost and most of the noise cost is saved.
+            const int coarse = 128;
+            const float toCoarse = coarse / (float)size;
+            var random = new System.Random(seed);
+            float ox = (float)random.NextDouble() * 100f;
+            float oy = (float)random.NextDouble() * 100f;
+            var dryMap = new float[coarse * coarse];
+            var bareMap = new float[coarse * coarse];
+            for (int y = 0; y < coarse; y++)
+            {
+                for (int x = 0; x < coarse; x++)
+                {
+                    float broad = Tileable(x, y, coarse, 3f, ox, oy) * 0.65f
+                        + Tileable(x, y, coarse, 9f, ox + 31f, oy + 17f) * 0.35f;
+                    float patches = Tileable(x, y, coarse, 5f, ox + 71f, oy + 5f) * 0.75f
+                        + Tileable(x, y, coarse, 24f, ox + 13f, oy + 41f) * 0.25f;
+                    dryMap[y * coarse + x] = Smooth(0.35f, 0.65f, broad);
+                    bareMap[y * coarse + x] = Smooth(0.56f, 0.7f, patches) * bareness;
+                }
+            }
+
+            var pixels = new Color[size * size];
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dryness = Sample(dryMap, coarse, x * toCoarse, y * toCoarse);
+                    float bare = Sample(bareMap, coarse, x * toCoarse, y * toCoarse);
+                    Color ground = Color.Lerp(Color.Lerp(under, Color.Lerp(under, dry, 0.35f), dryness), soil, bare * 2f);
+                    pixels[y * size + x] = ground * (1f + ((float)random.NextDouble() * 2f - 1f) * 0.07f);
+                }
+            }
+
+            // Scattered at random (a grid shows as rows) and drawn from the top of the texture
+            // down, so each tuft overlaps the ones behind it as the camera sees them.
+            int tufts = size * size / 70;
+            var xs = new float[tufts];
+            var ys = new float[tufts];
+            for (int i = 0; i < tufts; i++)
+            {
+                xs[i] = (float)random.NextDouble() * size;
+                ys[i] = (float)random.NextDouble() * size;
+            }
+            System.Array.Sort(ys, xs);
+            for (int i = tufts - 1; i >= 0; i--)
+            {
+                if (random.NextDouble() < Sample(bareMap, coarse, xs[i] * toCoarse, ys[i] * toCoarse) * 2f)
+                    continue;
+                float shade = (float)random.NextDouble();
+                float dryness = Sample(dryMap, coarse, xs[i] * toCoarse, ys[i] * toCoarse);
+                Color tone = Color.Lerp(lush, dry, Mathf.Clamp01(dryness * 0.75f + (shade - 0.5f) * 0.35f))
+                    * (0.88f + 0.24f * shade);
+                Tuft(pixels, size, random, xs[i], ys[i], tone);
+            }
+
+            return Finish(pixels, size, "Grass_" + seed);
+        }
+
+        // 5-10 blades fanning up from a shared root, the outer ones leaning outwards.
+        private static void Tuft(Color[] pixels, int size, System.Random random, float x, float y, Color tone)
+        {
+            int blades = 5 + random.Next(6);
+            for (int b = 0; b < blades; b++)
+            {
+                float offset = (float)random.NextDouble() - 0.5f;
+                float bx = x + offset * 7f;
+                float by = y + ((float)random.NextDouble() - 0.5f) * 2f;
+                float lean = ((float)random.NextDouble() - 0.5f) * 1.3f + offset * 0.9f;
+                float dx = Mathf.Sin(lean), dy = Mathf.Cos(lean);
+                float length = 5f + (float)random.NextDouble() * 7f;
+                Color blade = tone * (0.88f + 0.24f * (float)random.NextDouble());
+                Color root = blade * 0.6f;
+                Color tip = new Color(blade.r * 1.3f + 0.02f, blade.g * 1.22f + 0.015f, blade.b);
+                for (float k = 0f; k < length; k += 0.7f)
+                {
+                    float f = k / length;
+                    int index = Wrap(Mathf.RoundToInt(by + dy * k), size) * size + Wrap(Mathf.RoundToInt(bx + dx * k), size);
+                    pixels[index] = Color.Lerp(pixels[index], Color.Lerp(root, tip, f), 0.8f - f * 0.3f);
+                }
+            }
         }
 
         /// <summary>
@@ -172,37 +259,32 @@ namespace PoeClone.World
 
         private static int Wrap(int v, int size) => (v % size + size) % size;
 
+        // Shader-style smoothstep: 0 below from, 1 above to (Mathf.SmoothStep interpolates
+        // between its first two arguments instead).
+        private static float Smooth(float from, float to, float x)
+        {
+            float t = Mathf.Clamp01((x - from) / (to - from));
+            return t * t * (3f - 2f * t);
+        }
+
+        // Bilinear lookup in a square map that wraps at its edges.
+        private static float Sample(float[] map, int size, float x, float y)
+        {
+            x -= 0.5f;
+            y -= 0.5f;
+            int x0 = Mathf.FloorToInt(x), y0 = Mathf.FloorToInt(y);
+            float tx = x - x0, ty = y - y0;
+            int r0 = Wrap(y0, size) * size, r1 = Wrap(y0 + 1, size) * size;
+            int c0 = Wrap(x0, size), c1 = Wrap(x0 + 1, size);
+            return Mathf.Lerp(Mathf.Lerp(map[r0 + c0], map[r0 + c1], tx), Mathf.Lerp(map[r1 + c0], map[r1 + c1], tx), ty);
+        }
+
         // Three octaves of tileable noise, broad shapes weighted most.
         private static float Layered(int x, int y, int size, float scale, float ox, float oy)
         {
             return Tileable(x, y, size, scale, ox, oy) * 0.55f
                 + Tileable(x, y, size, scale * 3f, ox + 31f, oy + 17f) * 0.30f
                 + Tileable(x, y, size, scale * 9f, ox + 57f, oy + 83f) * 0.15f;
-        }
-
-        // A short stroke, 3-7 px, in a random direction, a bit lighter or darker than the ground
-        // under it; wraps at the edges so the texture still tiles.
-        private static void Blade(Color32[] pixels, System.Random random, Color low, Color high)
-        {
-            int x = random.Next(Size);
-            int y = random.Next(Size);
-            float angle = (float)random.NextDouble() * Mathf.PI * 2f;
-            float dx = Mathf.Cos(angle);
-            float dy = Mathf.Sin(angle);
-            int length = 3 + random.Next(5);
-            bool light = random.NextDouble() < 0.55;
-            Color tone = light ? Color.Lerp(high, Color.white, 0.12f) : low * 0.72f;
-            float strength = 0.35f + (float)random.NextDouble() * 0.35f;
-
-            for (int i = 0; i < length; i++)
-            {
-                int px = ((x + Mathf.RoundToInt(dx * i)) % Size + Size) % Size;
-                int py = ((y + Mathf.RoundToInt(dy * i)) % Size + Size) % Size;
-                int index = py * Size + px;
-                // Fades towards the tip.
-                float t = strength * (1f - i / (float)length * 0.6f);
-                pixels[index] = Color.Lerp(pixels[index], tone, t);
-            }
         }
 
         // Perlin noise that wraps at the texture's edges (blend of four offset samples).

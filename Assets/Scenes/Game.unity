@@ -27601,7 +27601,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PoeClone.World.AreaManager
   areas: []
   player: {fileID: 962017736}
-  groundRenderer: {fileID: 2042716592}
   loadingScreen: {fileID: 696188575}
   simulatedLoadSeconds: 0.25
   preUnfreezeDelay: 0.2

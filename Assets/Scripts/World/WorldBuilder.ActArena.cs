@@ -32,7 +32,7 @@ namespace PoeClone.World
             EnemySpawner spawner = FindAnyObjectByType<EnemySpawner>();
             var encounter = arena.gameObject.AddComponent<ActBossArena>();
             encounter.Configure(spawner != null ? spawner.EnemyPrefab : null, outside, c + Vector3.forward * 14f);
-            return new AreaDefinition { areaName = "The Shed Sanctuary", monsterLevel = MonsterLevels[ActArena], spawnPoint = entry, tintsSharedGround = false };
+            return new AreaDefinition { areaName = "The Shed Sanctuary", monsterLevel = MonsterLevels[ActArena], spawnPoint = entry };
         }
 
         private void BuildSanctuaryLair(Transform arena, Vector3 c)

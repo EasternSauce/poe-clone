@@ -302,7 +302,7 @@ namespace PoeClone.World
             }
             Glow(t, c + new Vector3(0f, 6f, 4f), CopperLight, 30f, 2f);
             Transform entry = Marker("WarrenEntry", c + DenGateLocal + Vector3.forward * 6f + Vector3.up * 1.1f, 0f);
-            return new AreaDefinition { areaName = AreaNames[Warren], groundColor = AreaColors[Warren], monsterLevel = MonsterLevels[Warren], spawnPoint = entry, tintsSharedGround = false };
+            return new AreaDefinition { areaName = AreaNames[Warren], monsterLevel = MonsterLevels[Warren], spawnPoint = entry };
         }
 
         // The Drowned Belfry: a flooded chapel yard, its walls broken, its bell tower fallen and
@@ -359,7 +359,7 @@ namespace PoeClone.World
             Glow(t, c + new Vector3(0f, 7f, 4f), BellLight, 32f, 1.6f);
             Glow(t, tower + Vector3.up * 3f, SpiritLight, 14f, 3f, flicker: true);
             Transform entry = Marker("BelfryEntry", c + DenGateLocal + Vector3.forward * 6f + Vector3.up * 1.1f, 0f);
-            return new AreaDefinition { areaName = AreaNames[Belfry], groundColor = AreaColors[Belfry], monsterLevel = MonsterLevels[Belfry], spawnPoint = entry, tintsSharedGround = false };
+            return new AreaDefinition { areaName = AreaNames[Belfry], monsterLevel = MonsterLevels[Belfry], spawnPoint = entry };
         }
     }
 }

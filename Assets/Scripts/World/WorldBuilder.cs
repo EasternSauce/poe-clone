@@ -164,7 +164,8 @@ namespace PoeClone.World
             InitShapes();
             foreach (int a in WorldAreas)
                 if (a != Greenwood) BuildGround(ground, a);
-            // The scene's own forest gets the same outline; its square walls go.
+            // The scene's own forest gets its own grass and the same outline; its square walls go.
+            UseGroundTexture(ground, Greenwood);
             ShapeGround(ground, Greenwood);
             RelocateOriginalScenery();
             GameObject sceneBounds = GameObject.Find("WorldBounds");
@@ -202,11 +203,9 @@ namespace PoeClone.World
                 definitions[a] = new AreaDefinition
                 {
                     areaName = AreaNames[a],
-                    groundColor = AreaColors[a],
                     spawnPoint = spawnPoints[a],
                     monsterLevel = MonsterLevels[a],
-                    isTown = a == Haven,
-                    tintsSharedGround = a == Greenwood
+                    isTown = a == Haven
                 };
             }
 
@@ -256,26 +255,34 @@ namespace PoeClone.World
             GameObject ground = Instantiate(template, root);
             ground.name = "Ground_" + AreaNames[area];
             ground.transform.position = new Vector3(c.x, template.transform.position.y, c.z);
+            UseGroundTexture(ground, area);
 
-            // Its own floor: a generated texture on a copy of the ground material.
+            // Cut to the area's outline, walled round its edge.
+            ShapeGround(ground, area);
+        }
+
+        // Its own floor: a generated texture on a copy of the ground material.
+        private static void UseGroundTexture(GameObject ground, int area)
+        {
             Renderer r = ground.GetComponent<Renderer>();
             var material = new Material(r.sharedMaterial);
             material.SetTexture("_BaseMap", GroundTexture(area));
             material.SetColor("_BaseColor", Color.white);
             r.sharedMaterial = material;
-
-            // Cut to the area's outline, walled round its edge.
-            ShapeGround(ground, area);
         }
 
         private static Texture2D GroundTexture(int area)
         {
             switch (area)
             {
+                case Greenwood:
+                    // Deep, cool forest grass with bald patches of soil.
+                    return GroundTextures.Grass(1, new Color(0.12f, 0.17f, 0.08f), new Color(0.21f, 0.31f, 0.12f),
+                        new Color(0.36f, 0.38f, 0.18f), new Color(0.24f, 0.19f, 0.13f), 0.5f);
                 case Haven:
-                    // Muted, olive town grass with blades and worn dirt flecks.
-                    return GroundTextures.Make(11, new Color(0.24f, 0.33f, 0.17f), new Color(0.42f, 0.48f, 0.25f),
-                        new Color(0.47f, 0.40f, 0.28f), 0.025f, 6f, grain: 0.14f, blades: 26000);
+                    // Kept town grass: a little warmer, and less worn through.
+                    return GroundTextures.Grass(11, new Color(0.15f, 0.19f, 0.09f), new Color(0.24f, 0.32f, 0.13f),
+                        new Color(0.40f, 0.40f, 0.20f), new Color(0.27f, 0.21f, 0.14f), 0.3f);
                 case Graveyard:
                     return GroundTextures.Make(22, new Color(0.17f, 0.20f, 0.17f), new Color(0.31f, 0.33f, 0.27f),
                         new Color(0.40f, 0.40f, 0.36f), 0.015f, 7f);

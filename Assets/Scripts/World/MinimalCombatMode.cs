@@ -172,7 +172,7 @@ namespace PoeClone.World
                 var area = FindAnyObjectByType<AreaManager>();
                 if (area != null)
                     area.SetAreas(new[] { new AreaDefinition { areaName = "Minimal Arena", monsterLevel = 1,
-                        spawnPoint = player.transform, tintsSharedGround = false } }, 0);
+                        spawnPoint = player.transform } }, 0);
                 gameObject.AddComponent<QuestTrackerUI>();
             }
             gameObject.AddComponent<TouchControlsUI>();

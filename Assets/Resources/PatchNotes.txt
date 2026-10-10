@@ -1,3 +1,6 @@
+version: 2026-10-10-grass
+- Greenwood and Haven have new grass: tufts of blades in muted greens that drift between lush and dry, with the odd bald patch of soil. It replaces Greenwood's flat bright green and Haven's fuzzy, carpet-like grass, so the fields sit better beside the paths and stones.
+
 version: 2026-10-10-ground-surfaces
 - Haven's town square is now paved with irregular flagstones edged by a ring of darker stones, instead of a grey speckled disc. The notice board and Haven's waystone now stand on the square instead of straddling its edge; the board faces the well.
 - Haven's lanes and cottage paths, garden yards, the village hearth, camp grounds, the Bramblesow clearing and the Warren floor are now packed dirt with pebbles instead of a flat brown fabric pattern. Path edges wander naturally, and lanes widen where they meet the square or another path.
