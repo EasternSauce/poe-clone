@@ -63,7 +63,7 @@ namespace PoeClone.EditorTools
                 }
             texture.SetPixels32(pixels);
             Dot(texture, shape, new Vector3(0, 0, area == WorldBuilder.ActArena ? -31 : -6), Color.cyan);
-            if (area != WorldBuilder.ActArena) Dot(texture, shape, new Vector3(0, 0, -11), Color.blue);
+            if (area != WorldBuilder.ActArena) Dot(texture, shape, WorldBuilder.WaystoneLocal(area), Color.blue);
             if (area != WorldBuilder.ActArena)
             {
                 Dot(texture, shape, AreaLayouts.GateLocal(area, false), new Color(0.9f, 0.4f, 1));
@@ -130,7 +130,7 @@ namespace PoeClone.EditorTools
                             if (next >= 0 && cells[next] && !seen[next]) { seen[next] = true; queue.Enqueue(next); }
                     }
                 }
-                bool placements = shape.Contains(new Vector3(0, 0, -6), 2) && shape.Contains(new Vector3(0, 0, -11), 3);
+                bool placements = shape.Contains(new Vector3(0, 0, -6), 2) && shape.Contains(WorldBuilder.WaystoneLocal(area), 3);
                 if (area != WorldBuilder.ActArena)
                     placements &= shape.Contains(AreaLayouts.GateLocal(area, false), 5) && shape.Contains(AreaLayouts.GateLocal(area, true), 5);
                 if (area == WorldBuilder.Graveyard || area == WorldBuilder.Ruins || area == WorldBuilder.Frozen)

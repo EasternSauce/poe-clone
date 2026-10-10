@@ -1145,7 +1145,13 @@ namespace PoeClone.World
         /// <summary>Each area's waystone: just south of its spawn point.</summary>
         public static Vector3 WaystoneSpot(int area)
         {
-            return Center(area) + new Vector3(0f, 0f, -11f);
+            return Center(area) + WaystoneLocal(area);
+        }
+
+        // Haven's stands inside the paved square rather than across its kerb.
+        public static Vector3 WaystoneLocal(int area)
+        {
+            return new Vector3(0f, 0f, area == Haven ? -8f : -11f);
         }
 
         private void BuildStashChest(Transform parent, Vector3 p, Vector3 faceTowards)

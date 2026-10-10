@@ -1,5 +1,5 @@
 version: 2026-10-10-ground-surfaces
-- Haven's town square is now paved with irregular flagstones edged by a ring of darker stones, instead of a grey speckled disc. The notice board now stands on the square, facing the well, instead of straddling its edge.
+- Haven's town square is now paved with irregular flagstones edged by a ring of darker stones, instead of a grey speckled disc. The notice board and Haven's waystone now stand on the square instead of straddling its edge; the board faces the well.
 - Haven's lanes and cottage paths, garden yards, the village hearth, camp grounds, the Bramblesow clearing and the Warren floor are now packed dirt with pebbles instead of a flat brown fabric pattern. Path edges wander naturally, and lanes widen where they meet the square or another path.
 - The Haunted Graveyard's track is now dark trodden mud instead of a busy speckled pattern.
 - Frozen Hollow's snow has softer blue drifts between brighter crests.
