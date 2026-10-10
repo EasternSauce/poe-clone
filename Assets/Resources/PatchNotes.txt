@@ -2,13 +2,13 @@ version: 2026-10-11-class-balance
 - Fixed: melee attacks now reach large bosses. Before, a boss wide enough could stand out of reach of basic melee attacks even with you pressed against it.
 - Minions work as in Path of Exile: there is no longer one shared army limit. Each summon skill has its own: Raise Skeletons 2, Skeleton Mages 1, Spirit Wolves 2 per pack, Summon Viper 1, each +1 at skill levels 7 and 13. Maximum Minions from passives and gear adds to each of them, except the Bone Golem, which stays alone.
 - Only one kind of lasting minion can serve you at a time: raising skeleton warriors dismisses your skeleton mages and the other way round. Golems, wolves and vipers can still be summoned alongside.
-- Summon skills cost much less at high levels and stop rising after level 10. The Bone Golem now costs at most about 260 mana.
+- Summon skills cost much less at high levels and rise evenly with their level. A level 15 Bone Golem costs 300 mana at character level 34.
 - New passive stat: regenerate a share of maximum mana per second. Clarity and Arcane Mind give 1%, Deep Well, Grave Ward and Grave Whispers 0.5%.
 - The Necromancy damage passives are stronger: Bone Servants 14% minion damage (was 7%), Grave Command 14% and 6% minion speed (was 8% and 4%), Grave Dominion 30% and 15% (was 16% and 10%).
-- Skill costs no longer jump 50% at character level 20. They now rise smoothly with your level, up to 30% more at level 34.
-- Damage spells cost less from level 8 on, and bonus levels past 10 add 5% of the level 10 cost each instead of much more.
+- Skill costs no longer jump 50% at character level 20. They now rise smoothly with your level, up to 30% more at level 34 (50% for summons and Grave Rot).
+- Damage spells cost less from level 8 on. Past level 10, every skill's cost keeps rising by the same step as from level 9 to 10 (bow skills, Dash and Teleport used to stop at their level 10 cost; other skills rose much faster).
 - Spell damage grows a little slower per skill level, and half as fast past level 10. Level 1 spells hit as hard as before.
-- Bow skills cost more as your character levels (about 8 times the base cost by level 34), so archers now have to manage their mana too.
+- Bow skills and Death Mark cost more as your character levels (about 8 times the base cost by level 34), so archers and summoners now have to manage their mana too. Death Mark's base cost is 2.6 times higher.
 - Bows have 10% base critical strike chance (was 5%), and bow skills deal 60% more damage.
 
 version: 2026-10-10-class-gauntlet

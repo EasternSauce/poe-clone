@@ -627,15 +627,17 @@ namespace PoeClone.Skills
 
         /// <summary>
         /// How much more a skill costs at a character level, rising smoothly from 1x at level 1:
-        /// to 1.3x at level 34 for most skills. Bow skills barely change cost with their own level,
-        /// so they climb steeply with the character instead (about 8x by level 34).
+        /// to 1.3x at level 34 for most skills, 1.5x for summons and Grave Rot. Bow skills and
+        /// Death Mark barely change cost with their own level (gear rarely raises it), so they climb
+        /// steeply with the character instead (about 8x by level 34).
         /// </summary>
         public static float CharacterCostMultiplier(SkillDefinition skill, int characterLevel)
         {
             float l = Mathf.Max(0, characterLevel - 1);
-            if (skill.Bow)
+            if (skill.Bow || skill.Id == SkillId.DeathMark)
                 return 1f + 0.15f * l + 0.0019f * l * l;
-            return 1f + 0.3f * Mathf.Clamp01(l / 33f);
+            float late = skill.Summon || skill.Id == SkillId.GraveRot ? 0.5f : 0.3f;
+            return 1f + late * Mathf.Clamp01(l / 33f);
         }
 
         public float ManaCostForGrant(SkillGrant grant) => CostOf(grant.Id, GrantLevelWithBonuses(grant));

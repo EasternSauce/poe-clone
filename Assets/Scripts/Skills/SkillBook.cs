@@ -78,8 +78,8 @@ namespace PoeClone.Skills
         /// Mana per use at a skill level, before the character-level multiplier (see
         /// PlayerSkills.CostOf), read from <see cref="ManaCosts"/>. Levels 1-4 stay cheap so early
         /// characters can keep using skills; damage spells climb steeply to level 7 and gently after,
-        /// summons climb evenly. Past level 10 (bonus levels), bow, movement and summon skills stay at
-        /// their level 10 cost and the rest grow 5% of it per level.
+        /// summons climb evenly (a level 15 Bone Golem costs 300 at character level 34). Past level 10
+        /// (bonus levels) every skill keeps climbing by its last step, from level 9 to 10.
         /// </summary>
         public float ManaCostAt(int level)
         {
@@ -87,9 +87,7 @@ namespace PoeClone.Skills
             int top = ManaCosts.Length;
             if (l <= top)
                 return ManaCosts[l - 1];
-            if (Bow || Summon || Id == SkillId.Dash || Id == SkillId.Teleport)
-                return ManaCosts[top - 1];
-            return ManaCosts[top - 1] * (1f + 0.05f * (l - top));
+            return ManaCosts[top - 1] + (ManaCosts[top - 1] - ManaCosts[top - 2]) * (l - top);
         }
 
         /// <summary>Cooldown (or time between casts for an attack spell) at a given skill level.</summary>
@@ -240,31 +238,31 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.RaiseSkeletons, Name = "Raise Skeletons", Short = "SKL", Grant = StatType.GrantRaiseSkeletons, RollsOn = "sceptres, grimoires, helmets",
-                Spell = true, ManaCosts = new[] { 21f, 29f, 37.1f, 45.1f, 53.2f, 61.2f, 69.3f, 77.3f, 85.3f, 93.4f }, Cooldown = 4f, Color = new Color(0.55f, 1f, 0.6f),
+                Spell = true, ManaCosts = new[] { 21f, 26.2f, 31.3f, 36.5f, 41.7f, 46.8f, 52f, 57.2f, 62.3f, 67.5f }, Cooldown = 4f, Color = new Color(0.55f, 1f, 0.6f),
                 Description = "Raise two skeleton warriors that stay until destroyed, up to 2 at once (+1 at levels 7 and 13). Maximum Minions from passives and gear raises the limit. Only one kind of lasting minion can serve you: raising skeleton warriors dismisses your skeleton mages."
             },
             new SkillDefinition
             {
                 Id = SkillId.DeathMark, Name = "Death Mark", Short = "DM", Grant = StatType.GrantDeathMark, RollsOn = "grimoires",
-                Spell = true, BaseDamage = 3f, ManaCosts = new[] { 1.2f, 1.9f, 2.8f, 3.7f, 5.5f, 7.8f, 10.6f, 11.2f, 11.9f, 12.5f }, Cooldown = 0.8f, Color = new Color(0.55f, 1f, 0.45f),
+                Spell = true, BaseDamage = 3f, ManaCosts = new[] { 3.1f, 4.9f, 7.3f, 9.6f, 14.3f, 20.3f, 27.6f, 29.1f, 30.9f, 32.5f }, Cooldown = 0.8f, Color = new Color(0.55f, 1f, 0.45f),
                 Description = "A grimoire's attack: a bolt of grave-light that marks the enemy it strikes. Your minions rush the marked enemy and deal 30% more damage to it (more with Death Mark Effect). The bolt itself barely hurts."
             },
             new SkillDefinition
             {
                 Id = SkillId.SkeletonMages, Name = "Skeleton Mages", Short = "SKM", Grant = StatType.GrantSkeletonMages, RollsOn = "sceptres, grimoires, gloves",
-                Spell = true, ManaCosts = new[] { 27f, 37.3f, 47.7f, 58f, 68.4f, 78.7f, 89f, 99.4f, 109.7f, 120.1f }, Cooldown = 5f, Color = new Color(0.5f, 0.85f, 1f),
+                Spell = true, ManaCosts = new[] { 27f, 33.6f, 40.3f, 46.9f, 53.6f, 60.2f, 66.9f, 73.5f, 80.1f, 86.8f }, Cooldown = 5f, Color = new Color(0.5f, 0.85f, 1f),
                 Description = "Raise a skeleton mage that hangs back and hurls bolts and stays until destroyed, up to 1 at once (+1 at levels 7 and 13). Maximum Minions from passives and gear raises the limit. Only one kind of lasting minion can serve you: raising skeleton mages dismisses your skeleton warriors."
             },
             new SkillDefinition
             {
                 Id = SkillId.SpiritWolves, Name = "Spirit Wolves", Short = "WLF", Grant = StatType.GrantSpiritWolves, RollsOn = "sceptres, grimoires, boots, amulets",
-                Spell = true, ManaCosts = new[] { 36f, 49.8f, 63.6f, 77.4f, 91.2f, 104.9f, 118.7f, 132.5f, 146.3f, 160.1f }, Cooldown = 18f, Color = new Color(0.6f, 0.9f, 1f),
+                Spell = true, ManaCosts = new[] { 36f, 44.9f, 53.7f, 62.6f, 71.4f, 80.3f, 89.1f, 98f, 106.9f, 115.7f }, Cooldown = 18f, Color = new Color(0.6f, 0.9f, 1f),
                 Description = "Call a pack of 2 ghostly wolves (+1 at levels 7 and 13, and with Maximum Minions) that hunt briefly. Wolves cannot be targeted."
             },
             new SkillDefinition
             {
                 Id = SkillId.BoneGolem, Name = "Bone Golem", Short = "GLM", Grant = StatType.GrantBoneGolem, RollsOn = "sceptres, grimoires, body armour, belts",
-                Spell = true, ManaCosts = new[] { 45f, 62.2f, 79.5f, 96.7f, 113.9f, 131.2f, 148.4f, 165.6f, 182.9f, 200.1f }, Cooldown = 30f, Color = new Color(0.92f, 0.88f, 0.7f),
+                Spell = true, ManaCosts = new[] { 45f, 56.1f, 67.1f, 78.2f, 89.3f, 100.4f, 111.4f, 122.5f, 133.6f, 144.6f }, Cooldown = 30f, Color = new Color(0.92f, 0.88f, 0.7f),
                 Description = "Raise a hulking golem of bone that taunts nearby enemies. Only one golem can stand at a time."
             },
             new SkillDefinition
@@ -300,7 +298,7 @@ namespace PoeClone.Skills
             new SkillDefinition { Id = SkillId.FangStrike, Name = "Fang Strike", Short = "FNG", Grant = StatType.GrantFangStrike, RollsOn = "daggers", ManaCosts = new[] { 7f, 9.8f, 12.6f, 15.4f, 21.2f, 28f, 35.7f, 39.9f, 44.1f, 48.3f }, Cooldown = 2f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Strike the aimed enemy for 156% weapon damage (+9.6% per level) and inflict a potent poison over 3 seconds." },
             new SkillDefinition { Id = SkillId.VenomArrow, Name = "Venom Arrow", Short = "VNM", Grant = StatType.GrantVenomArrow, RollsOn = "bows, quivers", ManaCosts = new[] { 4.5f, 4.7f, 4.8f, 4.9f, 5.9f, 7f, 8.1f, 8.3f, 8.5f, 8.8f }, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Bow skill (toggle): attacks inflict a stronger poison and leave a brief venom cloud." },
             new SkillDefinition { Id = SkillId.VenomSpout, Name = "Venom Spout", Short = "SPT", Grant = StatType.GrantVenomSpout, RollsOn = "staves, Shepherd sceptre", Spell = true, BaseDamage = 5f, ManaCosts = new[] { 7f, 10.9f, 15.4f, 20.5f, 30.7f, 43.6f, 59.5f, 63.1f, 66.6f, 70.2f }, Cooldown = 5f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Erupt poison beneath your target, damaging and poisoning enemies in the area." },
-            new SkillDefinition { Id = SkillId.SummonViper, Name = "Summon Viper", Short = "VIP", Grant = StatType.GrantSummonViper, RollsOn = "grimoires, sceptres", Spell = true, ManaCosts = new[] { 30f, 41.5f, 53f, 64.5f, 76f, 87.5f, 98.9f, 110.4f, 121.9f, 133.4f }, Cooldown = 12f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Call a viper spirit to fight at your side, up to 1 at once (+1 at levels 7 and 13). Maximum Minions from passives and gear raises the limit." },
+            new SkillDefinition { Id = SkillId.SummonViper, Name = "Summon Viper", Short = "VIP", Grant = StatType.GrantSummonViper, RollsOn = "grimoires, sceptres", Spell = true, ManaCosts = new[] { 30f, 37.4f, 44.8f, 52.1f, 59.5f, 66.9f, 74.3f, 81.7f, 89f, 96.4f }, Cooldown = 12f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Call a viper spirit to fight at your side, up to 1 at once (+1 at levels 7 and 13). Maximum Minions from passives and gear raises the limit." },
             new SkillDefinition { Id = SkillId.Pulverize, Name = "Pulverize", Short = "PVL", Grant = StatType.GrantPulverize, RollsOn = "maces and mauls", ManaCosts = new[] { 12f, 16.8f, 21.6f, 26.4f, 36.4f, 48f, 61.2f, 68.4f, 75.6f, 82.8f }, Cooldown = 4.5f, Color = new Color(0.95f, 0.65f, 0.28f), Description = "Plant your feet and bring a mace down in a crushing slam after a heavy windup, dealing 312% weapon damage (+21.6% per level) in a broad area. Maces and mauls only." },
             new SkillDefinition { Id = SkillId.ReapingArc, Name = "Reaping Arc", Short = "RPA", Grant = StatType.GrantReapingArc, RollsOn = "axes", ManaCosts = new[] { 10f, 14f, 18f, 22f, 30.3f, 40f, 51f, 57f, 63f, 69f }, Cooldown = 3.4f, Color = new Color(0.9f, 0.48f, 0.3f), Description = "Commit to a broad, forward axe sweep. After a deliberate windup, hit enemies in a wide arc for 264% weapon damage (+18% per level). Axes only." },
             new SkillDefinition { Id = SkillId.LungingThrust, Name = "Lunging Thrust", Short = "LTH", Grant = StatType.GrantLungingThrust, RollsOn = "swords", ManaCosts = new[] { 9f, 12.6f, 16.2f, 19.8f, 27.3f, 36f, 45.9f, 51.3f, 56.7f, 62.1f }, Cooldown = 2.8f, Color = new Color(0.85f, 0.82f, 0.65f), Description = "Brace, then drive a sword forward in a committed thrust for 288% weapon damage (+19.2% per level). Swords only." },
