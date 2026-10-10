@@ -166,44 +166,44 @@ MonoBehaviour:
     Weapons: 
     Tiers:
     - RequiredItemLevel: 1
-      Min: 8
-      Max: 25
-      Weight: 1
-    - RequiredItemLevel: 9
-      Min: 10
-      Max: 30
-      Weight: 0.7
-    - RequiredItemLevel: 17
-      Min: 11
-      Max: 35
-      Weight: 0.48999998
-    - RequiredItemLevel: 25
-      Min: 13
-      Max: 40
-      Weight: 0.343
-    - RequiredItemLevel: 34
-      Min: 14
-      Max: 45
-      Weight: 0.24009998
-    - RequiredItemLevel: 37
       Min: 16
       Max: 50
-      Weight: 0.16806999
-    - RequiredItemLevel: 50
-      Min: 18
-      Max: 55
-      Weight: 0.11764899
-    - RequiredItemLevel: 65
-      Min: 19
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 20
       Max: 60
-      Weight: 0.08235429
-    - RequiredItemLevel: 80
-      Min: 21
-      Max: 65
-      Weight: 0.057648003
-    - RequiredItemLevel: 100
+      Weight: 0.7
+    - RequiredItemLevel: 17
       Min: 22
       Max: 70
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 26
+      Max: 80
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 28
+      Max: 90
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 32
+      Max: 100
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 36
+      Max: 110
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 38
+      Max: 120
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 42
+      Max: 130
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 44
+      Max: 140
       Weight: 0.0403536
   - Label: MaxMana / 1
     Enabled: 1
