@@ -42,6 +42,9 @@ public static class WebBuilder
             return false;
         }
 
+        if (!PoeClone.EditorTools.MusicBundles.Build(BuildTarget.WebGL))
+            return false;
+
         BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerWithProfileOptions
         {
             buildProfile = profile,

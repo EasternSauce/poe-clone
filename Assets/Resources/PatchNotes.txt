@@ -1,3 +1,7 @@
+version: 2026-10-10-faster-loading
+- The game loads much faster in the browser. Music is no longer part of the initial download; each track downloads the first time it plays, so a new area's music may start a moment after you arrive.
+- Music tracks you've already heard stay cached by your browser between updates unless the track itself changes.
+
 version: 2026-10-10-coop-hosting
 - Hosting a co-op game now starts it straight away. Your game is listed for others to join while you play, and the chat tells you when someone joins or leaves.
 - If your guest leaves or loses their connection, your game is listed again, so they can rejoin from Co-op > Join Game with the same character.
