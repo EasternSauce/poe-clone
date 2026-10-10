@@ -1,4 +1,5 @@
 version: 2026-10-10-corpse-explosion-200
+- Corpse explosions chain: an enemy killed by an explosion rolls your Corpse Explosion chance again and can explode a moment later, rippling through the pack.
 - Corpse explosions now deal 200% of the killed enemy's Maximum Life as Fire damage, up from a sixth.
 - The corpse explosion sound is much louder, so it is no longer drowned out by the hits and deaths around it.
 - Combat and other gameplay sounds now always play at full volume instead of getting quieter with distance from your character. Only ambient sounds such as rivers, waterfalls and town noise still fade with distance.

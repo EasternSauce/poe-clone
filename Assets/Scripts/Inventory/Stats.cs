@@ -876,7 +876,7 @@ namespace PoeClone.Inventory
                 case StatType.PercentLifeRegen: return "Regenerate " + n + "% of Maximum Life per second";
                 case StatType.ManaOnKill: return "Gain " + n + " Mana per enemy killed";
                 case StatType.OnslaughtOnKill: return n + "% chance on kill to gain Onslaught";
-                case StatType.ExplodeOnKill: return n + "% chance for enemies you kill to explode, dealing 200% of their Maximum Life as Fire damage around them";
+                case StatType.ExplodeOnKill: return n + "% chance for enemies you kill to explode, dealing 200% of their Maximum Life as Fire damage around them. Enemies killed by an explosion can explode in turn";
                 case StatType.GlacialStep: return "Dash ends in a Frost Nova that chills everything around you";
                 case StatType.Shatter: return n + "% chance for Chilled enemies you kill to Shatter, dealing Cold damage and chilling those nearby";
                 case StatType.SecondWind: return "War Cry also restores a third of your Mana and extends Onslaught by 2 seconds";

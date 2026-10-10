@@ -28,6 +28,7 @@ namespace PoeClone.Player
         public const float OnslaughtSeconds = 4f;
         private const float ExplosionRadius = 3.2f;
         private const float ExplosionShare = 2f;
+        private const float ChainDelay = 0.1f;
         private const float ShatterRadius = 3f;
         private const float ShatterShare = 0.12f;
         private const float StormbladeShare = 0.5f;
@@ -43,12 +44,14 @@ namespace PoeClone.Player
         /// Damages the enemy, shows the number, and applies the attacker's on-hit stats.
         /// secondary: the hit is itself a passive's effect (an explosion, an arc), so it can't set
         /// off more of them (otherwise one kill could chain through a whole pack forever).
+        /// fromExplosion: the hit is a corpse explosion's. Its kills may explode in turn, a moment
+        /// later, so a chain ripples through a pack (it ends when a kill fails its roll or no one is left).
         /// igniteBonus: % chance to ignite on top of the attacker's own (a fire hit's skill, e.g. Burning Arrow).
         /// </summary>
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
             DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null,
             bool throughExposedHead = false, bool melee = false, float projectileDistance = -1f, int venomArrowLevel = 0,
-            Vector3? hitOrigin = null)
+            Vector3? hitOrigin = null, bool fromExplosion = false)
         {
             if (enemy == null || enemy.IsDead)
                 return;
@@ -186,7 +189,7 @@ namespace PoeClone.Player
             }
 
             if (enemy.IsDead)
-                OnKill(attacker, stats, sheet, enemy, at, enemyMaxLife, wasChilled || (ai != null && ai.IsChilled), secondary);
+                OnKill(attacker, stats, sheet, enemy, at, enemyMaxLife, wasChilled || (ai != null && ai.IsChilled), secondary, fromExplosion);
         }
 
         // Everything that adds up as "increased damage" for this hit, as one multiplier.
@@ -253,7 +256,7 @@ namespace PoeClone.Player
         }
 
         private static void OnKill(Transform attacker, PlayerStats stats, StatSheet sheet, EnemyHealth enemy, Vector3 at,
-            float enemyMaxLife, bool chilled, bool secondary)
+            float enemyMaxLife, bool chilled, bool secondary, bool fromExplosion)
         {
             float life = sheet.Total(StatType.LifeOnKill) + stats.MaxHealth * Mathf.Max(0f, sheet.Total(StatType.LifePercentOnKill)) / 100f;
             if (life > 0f)
@@ -271,6 +274,13 @@ namespace PoeClone.Player
                     controller.GrantOnslaught(OnslaughtSeconds);
             }
 
+            if (fromExplosion)
+            {
+                // A kill by an explosion can explode too, a beat later so the chain is seen spreading.
+                if (Roll(sheet, StatType.ExplodeOnKill))
+                    stats.StartCoroutine(ChainBurst(attacker, enemy, at, enemyMaxLife * ExplosionShare));
+                return;
+            }
             if (secondary)
                 return;
 
@@ -322,8 +332,15 @@ namespace PoeClone.Player
                     if (ai != null)
                         ai.Chill(ChillSeconds);
                 }
-                Deal(attacker, other, damage, false, color, type, secondary: true, hitOrigin: at);
+                Deal(attacker, other, damage, false, color, type, secondary: true, hitOrigin: at, fromExplosion: !shatter);
             }
+        }
+
+        private static System.Collections.IEnumerator ChainBurst(Transform attacker, EnemyHealth dead, Vector3 at, float damage)
+        {
+            yield return new WaitForSeconds(ChainDelay);
+            if (attacker != null)
+                Burst(attacker, dead, at, ExplosionRadius, damage, DamageType.Fire, ExplosionColor);
         }
 
         // Stormblade: lightning leaps from the struck enemy to up to three others close by.
