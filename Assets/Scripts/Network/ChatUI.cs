@@ -420,7 +420,7 @@ namespace PoeClone.Network
             var logGO = new GameObject("Log");
             logGO.transform.SetParent(viewportGO.transform, false);
             logText = logGO.AddComponent<Text>();
-            logText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            logText.font = UiKit.Font;
             logText.fontSize = 16;
             logText.color = Color.white;
             logText.supportRichText = true; // user text is escaped (see Escape)
@@ -453,7 +453,7 @@ namespace PoeClone.Network
             var fieldTextGO = new GameObject("Text");
             fieldTextGO.transform.SetParent(fieldGO.transform, false);
             fieldText = fieldTextGO.AddComponent<Text>();
-            fieldText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            fieldText.font = UiKit.Font;
             fieldText.fontSize = 16;
             fieldText.color = Color.black;
             fieldText.supportRichText = false;
@@ -494,7 +494,7 @@ namespace PoeClone.Network
             buttonTextGO.transform.SetParent(buttonGO.transform, false);
             sendText = buttonTextGO.AddComponent<Text>();
             var buttonText = sendText;
-            buttonText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            buttonText.font = UiKit.Font;
             buttonText.fontSize = 16;
             buttonText.alignment = TextAnchor.MiddleCenter;
             buttonText.color = Color.white;

@@ -70,8 +70,6 @@ namespace PoeClone.Network
             if (!canvasRoot.activeSelf)
                 return;
 
-            ConnectionSpinner.Rotate(waitingSpinner);
-
             // Arrow keys switch players, unless they're moving the caret in a half-typed message.
             var keyboard = Keyboard.current;
             var ctrl = GameSessionController.Instance;
@@ -211,22 +209,13 @@ namespace PoeClone.Network
             scaler.matchWidthOrHeight = 0.5f;
             canvasGO.AddComponent<GraphicRaycaster>();
 
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            Font font = UiKit.Font;
 
             // Waiting screen: opaque, so the idle local scene behind it never reads as "the game".
-            waitingRoot = new GameObject("Waiting");
-            waitingRoot.transform.SetParent(canvasGO.transform, false);
-            var bg = waitingRoot.AddComponent<Image>();
-            bg.color = Color.black;
-            RuntimeUiUtil.StretchFull(bg.rectTransform);
+            RectTransform waiting = UiKit.Backdrop(canvasGO.transform, "Waiting");
+            waitingRoot = waiting.gameObject;
 
-            var waitingGO = new GameObject("WaitingText");
-            waitingGO.transform.SetParent(waitingRoot.transform, false);
-            waitingText = waitingGO.AddComponent<Text>();
-            waitingText.font = font;
-            waitingText.fontSize = 32;
-            waitingText.alignment = TextAnchor.MiddleCenter;
-            waitingText.color = Color.white;
+            waitingText = UiKit.Heading(UiKit.NewText("WaitingText", waiting, "", 32, UiKit.Gold, TextAnchor.MiddleCenter));
             waitingText.horizontalOverflow = HorizontalWrapMode.Wrap;
             var waitingRect = waitingText.rectTransform;
             waitingRect.anchorMin = new Vector2(0.1f, 0.25f);
@@ -234,7 +223,7 @@ namespace PoeClone.Network
             waitingRect.offsetMin = Vector2.zero;
             waitingRect.offsetMax = Vector2.zero;
             waitingRect.anchoredPosition = new Vector2(0f, -45f);
-            waitingSpinner = ConnectionSpinner.Create(waitingRoot.transform);
+            waitingSpinner = UiKit.RuneSpinner(waiting, new Vector2(0f, 120f), 110f);
 
             // LIVE badge, top-centre so it stays clear of the HUD (top-left) and chat (bottom-right).
             liveBadge = new GameObject("LiveBadge");

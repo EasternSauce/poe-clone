@@ -71,7 +71,7 @@ namespace PoeClone.UI
 
             if (style == null)
             {
-                style = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+                style = new GUIStyle { font = UiKit.BoldFont, alignment = TextAnchor.MiddleCenter };
                 shadow = new GUIStyle(style);
                 shadow.normal.textColor = new Color(0f, 0f, 0f, 0.8f);
             }

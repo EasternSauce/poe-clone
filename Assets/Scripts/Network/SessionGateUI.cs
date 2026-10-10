@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using PoeClone.Inventory;
 using PoeClone.UI;
 
 namespace PoeClone.Network
@@ -13,6 +14,7 @@ namespace PoeClone.Network
         private CanvasGroup canvasGroup;
         private Text messageText;
         private RectTransform spinner;
+        private GameObject content;
 
         private void Awake()
         {
@@ -34,11 +36,6 @@ namespace PoeClone.Network
             ctrl.StateChanged -= Refresh;
         }
 
-        private void Update()
-        {
-            ConnectionSpinner.Rotate(spinner);
-        }
-
         private void Refresh()
         {
             var ctrl = GameSessionController.Instance;
@@ -48,12 +45,11 @@ namespace PoeClone.Network
 
             canvasGroup.alpha = shouldShow ? 1f : 0f;
             canvasGroup.blocksRaycasts = shouldShow;
+            // The animated backdrop only runs while the gate is up.
+            content.SetActive(shouldShow);
             PlayerHUD.SetHiddenBy(this, shouldShow);
             if (!shouldShow)
-            {
-                spinner.gameObject.SetActive(false);
                 return;
-            }
 
             spinner.gameObject.SetActive(ctrl.PlayGranted);
             messageText.text = ctrl.PlayGranted ? "Loading character..." : "";
@@ -76,19 +72,11 @@ namespace PoeClone.Network
             canvasGroup.alpha = 1f;
             canvasGroup.blocksRaycasts = true;
 
-            var bgGO = new GameObject("Background");
-            bgGO.transform.SetParent(canvasGO.transform, false);
-            var bg = bgGO.AddComponent<Image>();
-            bg.color = Color.black;
-            RuntimeUiUtil.StretchFull(bg.rectTransform);
+            RectTransform backdrop = UiKit.Backdrop(canvasGO.transform);
+            content = backdrop.gameObject;
 
-            var textGO = new GameObject("Message");
-            textGO.transform.SetParent(canvasGO.transform, false);
-            messageText = textGO.AddComponent<Text>();
-            messageText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            messageText.fontSize = 34;
-            messageText.alignment = TextAnchor.MiddleCenter;
-            messageText.color = Color.white;
+            messageText = UiKit.Heading(UiKit.NewText("Message", backdrop, "", 34, UiKit.Gold, TextAnchor.MiddleCenter));
+            messageText.horizontalOverflow = HorizontalWrapMode.Wrap;
             var textRect = messageText.rectTransform;
             textRect.anchorMin = new Vector2(0.1f, 0.25f);
             textRect.anchorMax = new Vector2(0.9f, 0.75f);
@@ -96,44 +84,7 @@ namespace PoeClone.Network
             textRect.offsetMax = Vector2.zero;
             textRect.anchoredPosition = new Vector2(0f, -45f);
 
-            spinner = ConnectionSpinner.Create(canvasGO.transform);
-        }
-    }
-
-    internal static class ConnectionSpinner
-    {
-        public static RectTransform Create(Transform parent)
-        {
-            var root = new GameObject("ConnectionSpinner", typeof(RectTransform));
-            root.transform.SetParent(parent, false);
-            var rect = (RectTransform)root.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = new Vector2(0f, 120f);
-            rect.sizeDelta = new Vector2(80f, 80f);
-
-            for (int i = 0; i < 12; i++)
-            {
-                var tick = new GameObject("Tick", typeof(RectTransform));
-                tick.transform.SetParent(rect, false);
-                var image = tick.AddComponent<Image>();
-                image.color = new Color(1f, 1f, 1f, 0.2f + 0.8f * (i + 1) / 12f);
-                image.raycastTarget = false;
-                var tickRect = image.rectTransform;
-                tickRect.anchorMin = tickRect.anchorMax = new Vector2(0.5f, 0.5f);
-                float angle = i * 30f;
-                float radians = angle * Mathf.Deg2Rad;
-                tickRect.anchoredPosition = new Vector2(Mathf.Sin(radians), Mathf.Cos(radians)) * 30f;
-                tickRect.sizeDelta = new Vector2(6f, 16f);
-                tickRect.localRotation = Quaternion.Euler(0f, 0f, -angle);
-            }
-
-            return rect;
-        }
-
-        public static void Rotate(RectTransform spinner)
-        {
-            if (spinner != null && spinner.gameObject.activeInHierarchy)
-                spinner.Rotate(0f, 0f, -180f * Time.unscaledDeltaTime);
+            spinner = UiKit.RuneSpinner(backdrop, new Vector2(0f, 120f), 110f);
         }
     }
 }

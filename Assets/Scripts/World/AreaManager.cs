@@ -161,7 +161,7 @@ private IEnumerator SwitchRoutine(int index, Transform arrival)
                 Time.timeScale = 0f;
 
             if (loadingScreen != null)
-                yield return loadingScreen.FadeIn();
+                yield return loadingScreen.FadeIn(areas[index].areaName);
             else
                 yield return new WaitForSecondsRealtime(0.25f);
 

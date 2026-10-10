@@ -712,12 +712,13 @@ namespace PoeClone.UI
             panel.raycastTarget = true;
             RectTransform pr = panel.rectTransform;
             UiKit.Stretch(pr, Margin);
-            UiKit.AddOutline(panel, UiKit.BorderColor, 3f);
+            UiKit.Frame(pr);
+            pr.gameObject.AddComponent<UiAppear>().offset = Vector2.zero;
             panelRoot = panel.gameObject;
             panelRect = pr;
             TouchMode.AddBlocker(pr);
 
-            Text title = UiKit.NewText("Title", pr, "PASSIVES", 26, UiKit.Gold, TextAnchor.UpperCenter);
+            Text title = UiKit.Heading(UiKit.NewText("Title", pr, "PASSIVES", 26, UiKit.Gold, TextAnchor.UpperCenter));
             TopStrip(title.rectTransform, -14f, 34f);
 
             pointsText = UiKit.NewText("Points", pr, "", 18, UiKit.TextColor, TextAnchor.UpperCenter);

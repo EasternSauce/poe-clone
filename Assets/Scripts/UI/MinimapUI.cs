@@ -57,7 +57,6 @@ namespace PoeClone.UI
             frame = back.rectTransform;
             frame.anchorMin = frame.anchorMax = frame.pivot = new Vector2(1f, 1f);
             frame.sizeDelta = new Vector2(Size, Size);
-            UiKit.AddOutline(back, UiKit.BorderColor, 2f);
             back.gameObject.AddComponent<RectMask2D>();
 
             content = UiKit.NewRect("Content", frame);
@@ -76,6 +75,9 @@ namespace PoeClone.UI
             playerDot.rectTransform.sizeDelta = new Vector2(17f, 17f);
             playerDot.rectTransform.anchorMin = playerDot.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             UiKit.AddOutline(playerDot, Color.black, 1.5f);
+
+            // Last, so it sits over the map; inside the rect, since the mask clips anything outside.
+            UiKit.Frame(frame, 0f);
 
             frame.gameObject.SetActive(false);
         }

@@ -868,15 +868,17 @@ namespace PoeClone.UI
             panel.color = UiKit.PanelColor;
             panel.raycastTarget = true;
             UiKit.Grain(panel);
-            UiKit.AddOutline(panel, UiKit.BorderColor, 3f);
+            UiKit.Frame(pr);
+            pr.gameObject.AddComponent<UiAppear>().offset = Vector2.zero;
 
-            Text title = UiKit.NewText("Title", pr, "SKILL BUTTONS", 26, UiKit.Gold, TextAnchor.MiddleLeft);
+            Text title = UiKit.Heading(UiKit.NewText("Title", pr, "SKILL BUTTONS", 26, UiKit.Gold, TextAnchor.MiddleLeft));
             UiKit.TopLeft(title.rectTransform, new Vector2(18f, -12f), new Vector2(panelWidth - 90f, 40f));
-            Image close = UiKit.NewImage("Close", pr, new Color(0.25f, 0.10f, 0.08f, 1f));
+            Image close = UiKit.NewImage("Close", pr, Color.white);
             close.raycastTarget = true;
             UiKit.TopLeft(close.rectTransform, new Vector2(panelWidth - 62f, -12f), new Vector2(48f, 48f));
             Text closeText = UiKit.NewText("Label", close.rectTransform, "X", 22, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(closeText.rectTransform, 0f);
+            UiKit.StyleButton(close, closeText, UiKit.DangerTint);
             close.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {
                 if (SpectatorMirror.Active) SpectatorMirror.Close(SpectatorMirror.Menu.Skills);

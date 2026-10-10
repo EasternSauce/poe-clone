@@ -133,13 +133,15 @@ namespace PoeClone.UI
             RectTransform pr = panel.rectTransform;
             pr.anchorMin = pr.anchorMax = new Vector2(0.5f, 0.5f);
             pr.sizeDelta = new Vector2(Width, Height);
-            UiKit.AddOutline(panel, UiKit.BorderColor, 3f);
+            UiKit.Frame(pr);
+            pr.gameObject.AddComponent<UiAppear>();
             TouchMode.AddBlocker(pr);
 
-            Text title = UiKit.NewText("Title", pr, "WHAT'S NEW", 28, UiKit.Gold, TextAnchor.UpperCenter);
+            Text title = UiKit.Heading(UiKit.NewText("Title", pr, "WHAT'S NEW", 30, UiKit.Gold, TextAnchor.UpperCenter));
             UiKit.TopLeft(title.rectTransform, new Vector2(0f, -16f), new Vector2(Width, 36f));
             Text sub = UiKit.NewText("Version", pr, version, 16, UiKit.DimText, TextAnchor.UpperCenter);
             UiKit.TopLeft(sub.rectTransform, new Vector2(0f, -52f), new Vector2(Width, 22f));
+            UiKit.DividerLine(pr, new Vector2(0f, Height * 0.5f - 80f), Width - 120f);
 
             // Scrollable notes.
             RectTransform viewport = UiKit.NewRect("Viewport", pr);
@@ -167,16 +169,16 @@ namespace PoeClone.UI
             scroll.movementType = ScrollRect.MovementType.Clamped;
             scroll.scrollSensitivity = 30f;
 
-            Image close = UiKit.NewImage("Close", pr, new Color(0.28f, 0.2f, 0.1f, 1f));
+            Image close = UiKit.NewImage("Close", pr, Color.white);
             close.raycastTarget = true;
             RectTransform cr = close.rectTransform;
             cr.anchorMin = cr.anchorMax = new Vector2(0.5f, 0f);
             cr.pivot = new Vector2(0.5f, 0f);
             cr.anchoredPosition = new Vector2(0f, 18f);
             cr.sizeDelta = new Vector2(180f, 44f);
-            UiKit.AddOutline(close, UiKit.Gold, 1.5f);
             Text closeText = UiKit.NewText("Text", cr, "Got it", 20, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(closeText.rectTransform, 0f);
+            UiKit.StyleButton(close, closeText);
             close.gameObject.AddComponent<TouchPointerRelay>().Up += _ => Close();
         }
     }

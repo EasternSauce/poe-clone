@@ -1,3 +1,11 @@
+version: 2026-10-10-themed-menus
+- New look for menus: carved-stone backgrounds with drifting smoke, rising embers and a dark vignette behind the start menu, character select, co-op screens and the character loading screen.
+- New fonts across the game: Cinzel for titles, buttons and area names, and Alegreya Sans for body text, tooltips, chat and the HUD.
+- Buttons are bevelled gold-trimmed plates with cut corners instead of flat rectangles. They glow and grow slightly when you point at them and dip when pressed.
+- Windows (Escape menu, What's New, inventory, stash, character, passives, skill buttons, NPC dialogue) have a gilded frame with corner studs and fade in when they open. Screen titles have a gold divider underneath.
+- Area changes show a loading screen with the destination's name, a turning rune circle and the animated background.
+- "YOU DIED" now fades in over a dark band and slowly grows.
+
 version: 2026-10-10-area-music
 - Added music to the main menu, Haven and all adventure areas. Lairs keep their area's music, and connected areas sharing a track continue it without restarting.
 - The Shepherd's boss music starts when his opening dialogue ends and he begins fighting. It stops immediately if you die; reviving restores Frozen Hollow's music.

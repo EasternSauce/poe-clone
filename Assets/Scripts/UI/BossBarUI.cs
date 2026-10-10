@@ -42,7 +42,7 @@ namespace PoeClone.UI
             UiKit.Stretch(fill.rectTransform, 3f);
 
             title = UiKit.NewText("Name", rt, "", 24, UiKit.Gold, TextAnchor.LowerCenter);
-            title.fontStyle = FontStyle.Bold;
+            title.font = UiKit.TitleFont;
             UiKit.AddOutline(title, Color.black, 1.5f);
             RectTransform tr = title.rectTransform;
             tr.anchorMin = new Vector2(0f, 1f);

@@ -152,18 +152,19 @@ namespace PoeClone.UI
             panel.anchorMin = panel.anchorMax = new Vector2(0.5f, 0f);
             panel.pivot = new Vector2(0.5f, 0f);
             panel.sizeDelta = new Vector2(Width, 300f);
-            UiKit.AddOutline(back, UiKit.BorderColor, 3f);
+            UiKit.Frame(panel);
+            panel.gameObject.AddComponent<UiAppear>().offset = Vector2.zero;
             TouchMode.AddBlocker(panel);
 
-            title = UiKit.NewText("Name", panel, "", 26, UiKit.Gold, TextAnchor.UpperLeft);
-            title.fontStyle = FontStyle.Bold;
+            title = UiKit.Heading(UiKit.NewText("Name", panel, "", 26, UiKit.Gold, TextAnchor.UpperLeft));
             UiKit.TopLeft(title.rectTransform, new Vector2(24f, -14f), new Vector2(Width - 100f, 34f));
 
-            Image close = UiKit.NewImage("Close", panel, new Color(0.25f, 0.1f, 0.08f, 1f));
+            Image close = UiKit.NewImage("Close", panel, Color.white);
             close.raycastTarget = true;
             UiKit.TopLeft(close.rectTransform, new Vector2(Width - 52f, -12f), new Vector2(40f, 40f));
             Text x = UiKit.NewText("X", close.rectTransform, "X", 20, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(x.rectTransform, 0f);
+            UiKit.StyleButton(close, x, UiKit.DangerTint);
             close.gameObject.AddComponent<TouchPointerRelay>().Up += _ => Close();
 
             body = UiKit.NewText("Body", panel, "", 21, UiKit.TextColor, TextAnchor.UpperLeft);

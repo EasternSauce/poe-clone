@@ -191,10 +191,11 @@ namespace PoeClone.Inventory
             float verticalOffset = Mathf.Min(0f, (canvasHeight - panelHeight) * 0.5f - 16f);
             panel.anchoredPosition = new Vector2(30f, verticalOffset);
             panel.sizeDelta = new Vector2(PanelWidth, panelHeight);
-            UiKit.AddOutline(bg, UiKit.BorderColor, 3f);
+            UiKit.Frame(panel);
+            panel.gameObject.AddComponent<UiAppear>().offset = Vector2.zero;
             TouchMode.AddMenuBlocker(panel);
 
-            Text title = UiKit.NewText("Title", panel, "CHARACTER", 26, UiKit.Gold, TextAnchor.UpperCenter);
+            Text title = UiKit.Heading(UiKit.NewText("Title", panel, "CHARACTER", 26, UiKit.Gold, TextAnchor.UpperCenter));
             UiKit.TopLeft(title.rectTransform, new Vector2(0f, -14f), new Vector2(PanelWidth, 34f));
 
             // The stats panel can be taller than a phone viewport. Keep its close control

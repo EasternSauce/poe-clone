@@ -1,20 +1,24 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using PoeClone.Inventory;
 
 namespace PoeClone.UI
 {
     /// <summary>
-    /// Simple full-screen black fade with a "Loading..." label, built at runtime
-    /// like the other UI in this project (InventoryUI, CharacterPageUI).
-    /// Uses unscaled time so it keeps animating while Time.timeScale is 0
-    /// (the game is frozen during the fade-in).
+    /// Full-screen loading cover: the animated menu backdrop, a rune spinner, the destination's
+    /// name and a breathing "Loading" line. Built at runtime like the other UI in this project.
+    /// Uses unscaled time so it keeps animating while Time.timeScale is 0 (the game is frozen
+    /// during the fade-in).
     /// </summary>
     public class LoadingScreenUI : MonoBehaviour
     {
         public float fadeDuration = 0.25f;
 
         private CanvasGroup canvasGroup;
+        private GameObject content;
+        private Text caption;
+        private GameObject captionDivider;
 
         private void Awake()
         {
@@ -41,36 +45,40 @@ namespace PoeClone.UI
             canvasGroup.blocksRaycasts = false;
             canvasGroup.interactable = false;
 
-            var bgGO = new GameObject("Background");
-            bgGO.transform.SetParent(canvasGO.transform, false);
-            var bgImage = bgGO.AddComponent<Image>();
-            bgImage.color = Color.black;
-            var bgRect = bgGO.GetComponent<RectTransform>();
-            bgRect.anchorMin = Vector2.zero;
-            bgRect.anchorMax = Vector2.one;
-            bgRect.offsetMin = Vector2.zero;
-            bgRect.offsetMax = Vector2.zero;
+            RectTransform backdrop = UiKit.Backdrop(canvasGO.transform);
+            content = backdrop.gameObject;
+            content.SetActive(false);
 
-            var textGO = new GameObject("LoadingText");
-            textGO.transform.SetParent(canvasGO.transform, false);
-            var text = textGO.AddComponent<Text>();
-            text.text = "Loading...";
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.alignment = TextAnchor.MiddleCenter;
-            text.fontSize = 42;
-            text.color = new Color(1f, 1f, 1f, 0.9f);
-            var textRect = textGO.GetComponent<RectTransform>();
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = Vector2.zero;
-            textRect.offsetMax = Vector2.zero;
+            UiKit.RuneSpinner(backdrop, new Vector2(0f, 40f), 150f);
+
+            caption = UiKit.Heading(UiKit.NewText("Area", backdrop, "", 46, UiKit.Gold, TextAnchor.MiddleCenter));
+            RectTransform cr = caption.rectTransform;
+            cr.anchorMin = cr.anchorMax = new Vector2(0.5f, 0.5f);
+            cr.anchoredPosition = new Vector2(0f, -110f);
+            cr.sizeDelta = new Vector2(1400f, 70f);
+            captionDivider = UiKit.DividerLine(cr, new Vector2(0f, -44f), 520f).gameObject;
+
+            Text loading = UiKit.NewText("LoadingText", backdrop, "Loading", 24, UiKit.DimText, TextAnchor.MiddleCenter);
+            loading.font = UiKit.TitleFont;
+            RectTransform lr = loading.rectTransform;
+            lr.anchorMin = lr.anchorMax = new Vector2(0.5f, 0.5f);
+            lr.anchoredPosition = new Vector2(0f, -190f);
+            lr.sizeDelta = new Vector2(600f, 40f);
+            loading.gameObject.AddComponent<UiPulse>().Init(loading, 0.35f, 0.95f, 0.9f);
         }
 
         /// <summary>True from the start of a fade-in until its fade-out finishes.</summary>
         public bool IsShowing => canvasGroup != null && canvasGroup.blocksRaycasts;
 
-        public IEnumerator FadeIn()
+        /// <summary>True while the cover is mostly opaque (IMGUI draws over it, so the HUD steps aside).</summary>
+        public bool Covering => canvasGroup != null && canvasGroup.alpha > 0.5f;
+
+        /// <param name="title">Shown large in the middle, e.g. the destination area's name.</param>
+        public IEnumerator FadeIn(string title = null)
         {
+            caption.text = title ?? string.Empty;
+            captionDivider.SetActive(!string.IsNullOrEmpty(title));
+            content.SetActive(true);
             canvasGroup.blocksRaycasts = true;
             yield return Fade(canvasGroup.alpha, 1f);
         }
@@ -79,6 +87,8 @@ namespace PoeClone.UI
         {
             yield return Fade(canvasGroup.alpha, 0f);
             canvasGroup.blocksRaycasts = false;
+            // The backdrop animates every frame; keep it off while nothing shows it.
+            content.SetActive(false);
         }
 
         // Unscaled: must keep animating even while Time.timeScale == 0.

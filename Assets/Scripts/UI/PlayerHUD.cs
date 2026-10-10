@@ -129,9 +129,9 @@ namespace PoeClone.UI
                 return;
 
             float alpha = age < 0.4f ? age / 0.4f : age > TitleSeconds - 1f ? (TitleSeconds - age) : 1f;
-            var big = new GUIStyle { fontSize = 34, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            var big = new GUIStyle { font = UiKit.TitleFont, fontSize = 36, alignment = TextAnchor.MiddleCenter };
             big.normal.textColor = new Color(0.95f, 0.85f, 0.6f, alpha);
-            var small = new GUIStyle { fontSize = 18, alignment = TextAnchor.MiddleCenter };
+            var small = new GUIStyle { font = UiKit.Font, fontSize = 19, alignment = TextAnchor.MiddleCenter };
             small.normal.textColor = new Color(0.85f, 0.82f, 0.75f, alpha);
             var shadow = new GUIStyle(big);
             shadow.normal.textColor = new Color(0f, 0f, 0f, 0.7f * alpha);
@@ -150,14 +150,15 @@ namespace PoeClone.UI
         {
             titleStyle = new GUIStyle
             {
-                fontSize = 24,
-                fontStyle = FontStyle.Bold
+                font = UiKit.TitleFont,
+                fontSize = 24
             };
 
             titleStyle.normal.textColor = Color.white;
 
             textStyle = new GUIStyle
             {
+                font = UiKit.Font,
                 fontSize = 18
             };
 
@@ -239,6 +240,8 @@ namespace PoeClone.UI
                 titlePending = false;
                 titleShownAt = Time.unscaledTime;
             }
+            if (loading != null && loading.Covering && !stats.IsDead)
+                return;
 
             // The passive tree fills the screen: nothing of the HUD shows over it.
             if (PassiveTreeUI.IsOpen && !stats.IsDead)
@@ -439,34 +442,55 @@ namespace PoeClone.UI
             GUI.Label(rect, label, barLabelStyle);
         }
 
+        // When the death overlay started showing (it fades in and slowly grows from there).
+        private float deathShownAt, deathLastDrawn = -1f;
+
         // YOU DIED stays up throughout; underneath it, a 3/2/1 countdown counts down to a
         // "press any button" prompt once PlayerStats promotes to AwaitingRevive.
-        private static void DrawDeathOverlay(PlayerStats stats, bool spectating, float screenWidth, float screenHeight)
+        private void DrawDeathOverlay(PlayerStats stats, bool spectating, float screenWidth, float screenHeight)
         {
+            float now = Time.unscaledTime;
+            if (now - deathLastDrawn > 0.5f)
+                deathShownAt = now;
+            deathLastDrawn = now;
+            float age = now - deathShownAt;
+            float alpha = Mathf.Clamp01(age / 1.2f);
+
+            // A dark band behind the words, fading out towards the sides.
+            float bandY = screenHeight * 0.32f - 20f;
+            Color previous = GUI.color;
+            for (int k = 0; k < 16; k++)
+            {
+                float edge = Mathf.Abs(k - 7.5f) / 8f;
+                GUI.color = new Color(0f, 0f, 0f, 0.55f * alpha * (1f - edge * edge));
+                GUI.DrawTexture(new Rect(screenWidth * k / 16f, bandY, screenWidth / 16f + 1f, 180f), pixel);
+            }
+            GUI.color = previous;
+
             GUIStyle titleOverlayStyle = new GUIStyle
             {
-                fontSize = 48,
-                fontStyle = FontStyle.Bold,
+                font = UiKit.TitleFont,
+                fontSize = Mathf.RoundToInt(Mathf.Lerp(52f, 60f, Mathf.Clamp01(age / 4f))),
                 alignment = TextAnchor.MiddleCenter
             };
-            titleOverlayStyle.normal.textColor = new Color(0.85f, 0.15f, 0.15f);
+            titleOverlayStyle.normal.textColor = new Color(0.8f, 0.12f, 0.1f, alpha);
 
             GUI.Label(new Rect(0f, screenHeight * 0.32f, screenWidth, 80f), spectating ? "THE PLAYER DIED" : "YOU DIED", titleOverlayStyle);
 
             GUIStyle subStyle = new GUIStyle
             {
-                fontSize = 32,
-                fontStyle = FontStyle.Bold,
+                font = UiKit.TitleFont,
+                fontSize = 30,
                 alignment = TextAnchor.MiddleCenter
             };
-            subStyle.normal.textColor = Color.white;
+            subStyle.normal.textColor = new Color(0.9f, 0.86f, 0.76f, alpha);
 
             string revivePrompt = TouchMode.Active ? "Tap to revive" : "Press any button to revive";
             string sub = stats.IsAwaitingRevive
                 ? (spectating ? "Waiting for them to revive..." : revivePrompt)
                 : stats.CountdownSecondsRemaining.ToString();
 
-            GUI.Label(new Rect(0f, screenHeight * 0.32f + 70f, screenWidth, 50f), sub, subStyle);
+            GUI.Label(new Rect(0f, screenHeight * 0.32f + 76f, screenWidth, 50f), sub, subStyle);
         }
 
         private static float SafeRatio(float current, float max)

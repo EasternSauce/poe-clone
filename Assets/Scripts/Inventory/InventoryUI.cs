@@ -945,7 +945,7 @@ namespace PoeClone.Inventory
             divider.rectTransform.anchoredPosition = Vector2.zero;
             divider.rectTransform.sizeDelta = new Vector2(2f, -Pad * 2f);
 
-            sideTitle = UiKit.NewText("Title", stashPanel, "STASH", 24, UiKit.Gold, TextAnchor.UpperCenter);
+            sideTitle = UiKit.Heading(UiKit.NewText("Title", stashPanel, "STASH", 24, UiKit.Gold, TextAnchor.UpperCenter));
             UiKit.TopLeft(sideTitle.rectTransform, new Vector2(0f, -12f), new Vector2(stashPanel.sizeDelta.x, 30f));
 
             sideNote = UiKit.NewText("Note", stashPanel, "", 16, UiKit.DimText, TextAnchor.MiddleCenter);
@@ -1232,7 +1232,10 @@ private Vector2 CellSize(int w, int h)
             panel.pivot = new Vector2(1f, 0.5f);
             panel.anchoredPosition = new Vector2(-30f, 0f);
             panel.sizeDelta = new Vector2(panelW, panelH);
-            UiKit.AddOutline(panelImage, UiKit.BorderColor, 3f);
+            UiKit.Frame(panel);
+            UiAppear panelFade = panel.gameObject.AddComponent<UiAppear>();
+            panelFade.offset = Vector2.zero;
+            panelFade.startScale = 1f; // touch mode scales this panel itself
             TouchMode.AddMenuBlocker(panel);
             RectTransform closeButton = UiKit.CloseButton(panel, Close);
 
@@ -1246,7 +1249,8 @@ private Vector2 CellSize(int w, int h)
             previewPanel.pivot = new Vector2(1f, 0.5f);
             previewPanel.anchoredPosition = new Vector2(-(30f + panelW + 16f), 0f);
             previewPanel.sizeDelta = new Vector2(panelH * 0.68f, panelH);
-            UiKit.AddOutline(previewBg, UiKit.BorderColor, 3f);
+            UiKit.Frame(previewPanel);
+            previewPanel.gameObject.AddComponent<UiAppear>().offset = Vector2.zero;
             TouchMode.AddMenuBlocker(previewPanel);
 
             if (hasPreview)

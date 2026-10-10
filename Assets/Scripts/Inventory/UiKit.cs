@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace PoeClone.Inventory
 {
     /// <summary>Small helpers for building uGUI at runtime, plus the shared colour scheme.</summary>
-    public static class UiKit
+    public static partial class UiKit
     {
         public static readonly Color PanelColor = new Color(0.07f, 0.06f, 0.05f, 0.96f);
         public static readonly Color BorderColor = new Color(0.55f, 0.43f, 0.22f, 1f);
@@ -253,22 +253,6 @@ namespace PoeClone.Inventory
             return Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f);
         }
 
-        private static Font font;
-
-        public static Font Font
-        {
-            get
-            {
-                if (font == null)
-                {
-                    font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                    if (font == null)
-                        font = Font.CreateDynamicFontFromOSFont("Arial", 16);
-                }
-                return font;
-            }
-        }
-
         public static string Hex(Color c)
         {
             return ColorUtility.ToHtmlStringRGB(c);
@@ -329,7 +313,7 @@ namespace PoeClone.Inventory
         /// </summary>
         public static RectTransform CloseButton(RectTransform panel, System.Action onClose)
         {
-            Image close = NewImage("Close", panel, new Color(0.25f, 0.1f, 0.08f, 1f));
+            Image close = NewImage("Close", panel, Color.white);
             close.raycastTarget = true;
             RectTransform rt = close.rectTransform;
             rt.anchorMin = Vector2.one;
@@ -337,9 +321,9 @@ namespace PoeClone.Inventory
             rt.pivot = Vector2.one;
             rt.anchoredPosition = new Vector2(-12f, -12f);
             rt.sizeDelta = new Vector2(38f, 38f);
-            AddOutline(close, BorderColor, 1.5f);
             Text x = NewText("X", rt, "X", 20, TextColor, TextAnchor.MiddleCenter);
             Stretch(x.rectTransform, 0f);
+            StyleButton(close, x, DangerTint);
             close.gameObject.AddComponent<ClickRelay>().Clicked += onClose;
             TouchMode.AddBlocker(rt);
             return rt;

@@ -134,11 +134,12 @@ namespace PoeClone.UI
             canvas.gameObject.AddComponent<GraphicRaycaster>(); group.interactable = true; group.blocksRaycasts = true; root = canvas.gameObject;
             Image shade = UiKit.NewImage("Shade", canvas.transform, new Color(0f,0f,0f,0.6f)); shade.raycastTarget = true; UiKit.Stretch(shade.rectTransform, 0f);
             Image panel = UiKit.NewImage("Panel", canvas.transform, UiKit.PanelColor); UiKit.Grain(panel); panel.raycastTarget = true;
-            RectTransform pr=panel.rectTransform; pr.anchorMin=pr.anchorMax=new Vector2(.5f,.5f); pr.sizeDelta=new Vector2(W,H); UiKit.AddOutline(panel,UiKit.BorderColor,3f); TouchMode.AddBlocker(pr);
-            title=UiKit.NewText("Title",pr,"MENU",28,UiKit.Gold,TextAnchor.MiddleLeft); UiKit.TopLeft(title.rectTransform,new Vector2(30,-16),new Vector2(W-100,40));
+            RectTransform pr=panel.rectTransform; pr.anchorMin=pr.anchorMax=new Vector2(.5f,.5f); pr.sizeDelta=new Vector2(W,H); UiKit.Frame(pr); pr.gameObject.AddComponent<UiAppear>(); TouchMode.AddBlocker(pr);
+            title=UiKit.Heading(UiKit.NewText("Title",pr,"MENU",30,UiKit.Gold,TextAnchor.MiddleLeft)); UiKit.TopLeft(title.rectTransform,new Vector2(30,-16),new Vector2(W-100,40));
             settingsButton=Button("Settings",pr,"Settings",new Vector2(30,-68),new Vector2(180,42),ShowSettings);
             historyButton=Button("History",pr,"Patch History",new Vector2(222,-68),new Vector2(180,42),ShowHistory);
             Button("Resume",pr,"Resume",new Vector2(W-210,-H+66),new Vector2(180,42),Close);
+            UiKit.DividerLine(pr,new Vector2(0,H*.5f-116),W-60);
             viewport=UiKit.NewRect("Viewport",pr); viewport.gameObject.AddComponent<RectMask2D>(); Image catcher=viewport.gameObject.AddComponent<Image>(); catcher.color=Color.clear;
             UiKit.TopLeft(viewport,new Vector2(30,-126),new Vector2(W-60,H-220));
             content=UiKit.NewRect("Content",viewport); content.anchorMin=new Vector2(0,1); content.anchorMax=new Vector2(1,1); content.pivot=new Vector2(.5f,1); content.anchoredPosition=Vector2.zero;
@@ -205,13 +206,14 @@ namespace PoeClone.UI
             if (section != null)
             {
                 Text heading = UiKit.NewText(section + "Heading", content, section.ToUpperInvariant(), 16, UiKit.Gold, TextAnchor.MiddleLeft);
+                heading.font = UiKit.TitleFont;
                 UiKit.TopLeft(heading.rectTransform, new Vector2(0, -y), new Vector2(W-60, 22));
                 y += 30f;
             }
 
-            Image row = UiKit.NewImage(label + "Row", content, new Color(.12f, .10f, .08f, 1f));
+            Image row = UiKit.NewImage(label + "Row", content, new Color(.2f, .17f, .13f, 1f));
+            UiKit.Inset(row);
             UiKit.TopLeft(row.rectTransform, new Vector2(0, -y), new Vector2(W-60, 78));
-            UiKit.AddOutline(row, UiKit.BorderColor, 1f);
             Text name = UiKit.NewText("Name", row.transform, label, 20, UiKit.TextColor, TextAnchor.MiddleLeft);
             UiKit.TopLeft(name.rectTransform, new Vector2(18, -10), new Vector2(420, 26));
             Text detail = UiKit.NewText("Description", row.transform, description, 16, UiKit.DimText, TextAnchor.UpperLeft);
@@ -223,19 +225,21 @@ namespace PoeClone.UI
 
         private void VolumeSlider(RectTransform row, float current, System.Action<float> apply)
         {
-            Image track = UiKit.NewImage("VolumeTrack", row, new Color(.08f, .07f, .05f, 1f));
+            Image track = UiKit.NewImage("VolumeTrack", row, new Color(.3f, .26f, .2f, 1f));
+            UiKit.Inset(track);
             UiKit.TopLeft(track.rectTransform, new Vector2(W-374, -33), new Vector2(220, 12));
-            UiKit.AddOutline(track, UiKit.BorderColor, 1f);
             track.raycastTarget = true;
             RectTransform fillArea = UiKit.NewRect("FillArea", track.transform);
             UiKit.Stretch(fillArea, 0f);
-            Image fill = UiKit.NewImage("Fill", fillArea, new Color(.55f, .42f, .2f, 1f));
+            Image fill = UiKit.NewImage("Fill", fillArea, new Color(.78f, .45f, .16f, 1f));
             fill.rectTransform.sizeDelta = Vector2.zero;
             RectTransform handleArea = UiKit.NewRect("HandleArea", track.transform);
             UiKit.Stretch(handleArea, 0f);
-            Image handle = UiKit.NewImage("Handle", handleArea, UiKit.Gold);
+            Image handle = UiKit.NewImage("Handle", handleArea, new Color(1f, .86f, .55f, 1f));
+            handle.sprite = UiKit.Diamond;
             handle.raycastTarget = true;
-            handle.rectTransform.sizeDelta = new Vector2(14, 16); // Added to the track height by the slider anchors.
+            handle.rectTransform.sizeDelta = new Vector2(20, 18); // Added to the track height by the slider anchors.
+            UiKit.AddOutline(handle, new Color(0f, 0f, 0f, .8f), 1f);
 
             Text value = UiKit.NewText("VolumeValue", row, "", 18, UiKit.TextColor, TextAnchor.MiddleRight);
             UiKit.TopLeft(value.rectTransform, new Vector2(W-144, -24), new Vector2(66, 30));
@@ -265,7 +269,7 @@ namespace PoeClone.UI
         private static void SetTab(GameObject tab, bool active)
         {
             tab.GetComponent<UnityEngine.UI.Button>().interactable = !active;
-            tab.GetComponent<Image>().color = active ? new Color(.36f, .28f, .15f, 1f) : new Color(.16f, .13f, .09f, 1f);
+            tab.GetComponent<Image>().color = active ? Color.white : UiKit.MutedTint * .8f;
             tab.GetComponentInChildren<Text>().color = active ? UiKit.Gold : UiKit.TextColor;
         }
         private void ShowHistory()
@@ -348,11 +352,12 @@ namespace PoeClone.UI
         }
         private GameObject Button(string name,Transform parent,string label,Vector2 pos,Vector2 size,Action action)
         {
-            Image image=UiKit.NewImage(name,parent,new Color(.25f,.19f,.11f,1)); image.raycastTarget=true; RectTransform r=image.rectTransform;
+            Image image=UiKit.NewImage(name,parent,Color.white); image.raycastTarget=true; RectTransform r=image.rectTransform;
             r.anchorMin=r.anchorMax=new Vector2(0,1);r.pivot=new Vector2(0,1);
-            r.anchoredPosition=pos;r.sizeDelta=size;UiKit.AddOutline(image,UiKit.Gold,1.5f);
+            r.anchoredPosition=pos;r.sizeDelta=size;
             Text t=UiKit.NewText("Label",r,label,18,UiKit.TextColor,TextAnchor.MiddleCenter);UiKit.Stretch(t.rectTransform,0);
             UnityEngine.UI.Button b=image.gameObject.AddComponent<UnityEngine.UI.Button>();b.targetGraphic=image;b.onClick.AddListener(()=>action());
+            UiKit.StyleButton(image,t);
             return image.gameObject;
         }
         private static string Escape(string s) => (s??"").Replace("&","&amp;").Replace("<","&lt;").Replace(">","&gt;");
