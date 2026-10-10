@@ -91,13 +91,13 @@ namespace PoeClone.Tests
                 {
                     new StatModifier(StatType.PhysicalDamage, 999, 1),
                     new StatModifier(StatType.AttackSpeed, 1, 2),
-                    new StatModifier(StatType.MaxLife, 15, 3),
+                    new StatModifier(StatType.MaxLife, 30, 3),
                     new StatModifier(StatType.LifeLeech, 99),
                     new StatModifier(StatType.AdditionalArrows, 4)
                 }, rarity: ItemRarity.Unique);
             ItemData current = ItemGenerator.Legalize(old);
             Assert.AreEqual(7f, Value(current, StatType.PhysicalDamage));
-            Assert.AreEqual(15f, Value(current, StatType.MaxLife));
+            Assert.AreEqual(30f, Value(current, StatType.MaxLife));
             Assert.AreEqual(10f, Value(current, StatType.Strength));
             Assert.AreEqual(2.5f, Value(current, StatType.LifePercentOnKill));
             Assert.AreEqual(0f, ValueOrZero(current, StatType.AttackSpeed));
@@ -130,7 +130,7 @@ namespace PoeClone.Tests
         {
             ItemData belt = UniqueItems.Current("Bloodroot Cord");
             Assert.IsNotNull(belt);
-            Assert.That(Value(belt, StatType.MaxLife), Is.InRange(25f, 35f));
+            Assert.That(Value(belt, StatType.MaxLife), Is.InRange(50f, 70f));
             Assert.That(Value(belt, StatType.HealthPotionRecovery), Is.InRange(20f, 30f));
             Assert.AreEqual(1f, Value(belt, StatType.PercentLifeRegen));
             Assert.AreEqual(0f, ValueOrZero(belt, StatType.OnslaughtOnHealthPotion));

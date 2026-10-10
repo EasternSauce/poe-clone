@@ -55,7 +55,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "hand_axe", Name = "Bonehew", RequiredLevel = 1, Weight = Common,
                 Flavour = "Mortis swung it for a thousand years. It remembers every one.",
-                Mods = new[] { Roll(StatType.PhysicalDamage, 4, 7), Roll(StatType.Strength, 8, 12), Roll(StatType.MaxLife, 12, 20), Roll(StatType.LifePercentOnKill, 2, 3) }
+                Mods = new[] { Roll(StatType.PhysicalDamage, 4, 7), Roll(StatType.Strength, 8, 12), Roll(StatType.MaxLife, 24, 40), Roll(StatType.LifePercentOnKill, 2, 3) }
             },
             new Unique
             {
@@ -73,7 +73,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "studded_vest", Name = "Sexton's Hide", RequiredLevel = 1, Weight = Common,
                 Flavour = "Dug a hundred graves. Filled them too.",
-                Mods = new[] { Roll(StatType.Armour, 30, 45), Roll(StatType.Evasion, 20, 30), Roll(StatType.MaxLife, 15, 25), Roll(StatType.CurseOnHit, 8, 12) }
+                Mods = new[] { Roll(StatType.Armour, 30, 45), Roll(StatType.Evasion, 20, 30), Roll(StatType.MaxLife, 30, 50), Roll(StatType.CurseOnHit, 8, 12) }
             },
             new Unique
             {
@@ -105,13 +105,13 @@ namespace PoeClone.Inventory
             {
                 BaseId = "kite_shield", Name = "The Keeper's Ward", RequiredLevel = 9, Weight = Common,
                 Flavour = "The graveyard's last keeper held the gate with this. For a while.",
-                Mods = new[] { Roll(StatType.Armour, 40, 60), Roll(StatType.BlockChance, 12, 16), Roll(StatType.MaxLife, 15, 25), Roll(StatType.BlockRetaliation, 25, 35) }
+                Mods = new[] { Roll(StatType.Armour, 40, 60), Roll(StatType.BlockChance, 12, 16), Roll(StatType.MaxLife, 30, 50), Roll(StatType.BlockRetaliation, 25, 35) }
             },
             new Unique
             {
                 BaseId = "cut_lapis_amulet", Name = "Elder's Charm", RequiredLevel = 9, Weight = Common,
                 Flavour = "Haven's elders have worn it since before the fire.",
-                Mods = new[] { Roll(StatType.Intelligence, 10, 14), Roll(StatType.MaxMana, 20, 30), Roll(StatType.ManaRegen, 20, 30), Roll(StatType.ManaCostReduction, 20, 25) }
+                Mods = new[] { Roll(StatType.Intelligence, 10, 14), Roll(StatType.MaxMana, 30, 45), Roll(StatType.ManaRegen, 20, 30), Roll(StatType.ManaCostReduction, 20, 25) }
             },
             new Unique
             {
@@ -129,7 +129,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "heavy_belt", Name = "Bloodroot Cord", RequiredLevel = 9, Weight = Common,
                 Flavour = "Braided from roots that drank the battlefield dry.",
-                Mods = new[] { Roll(StatType.MaxLife, 25, 35), Roll(StatType.Strength, 8, 12), Roll(StatType.HealthPotionRecovery, 20, 30), Mod(StatType.PercentLifeRegen, 1) }
+                Mods = new[] { Roll(StatType.MaxLife, 50, 70), Roll(StatType.Strength, 8, 12), Roll(StatType.HealthPotionRecovery, 20, 30), Mod(StatType.PercentLifeRegen, 1) }
             },
 
             // ---- Level 17: the Haunted Graveyard and the Drowned Belfry
@@ -137,13 +137,13 @@ namespace PoeClone.Inventory
             {
                 BaseId = "great_helm", Name = "Crown of Ash", RequiredLevel = 17, Weight = Uncommon,
                 Flavour = "Taken from the Warlord's brow, still warm.",
-                Mods = new[] { Roll(StatType.Armour, 50, 75), Roll(StatType.MaxLife, 25, 35), Roll(StatType.FireResistance, 20, 30), Roll(StatType.AreaOfEffect, 12, 18), Roll(StatType.ExplodeOnKill, 20, 25) }
+                Mods = new[] { Roll(StatType.Armour, 50, 75), Roll(StatType.MaxLife, 50, 70), Roll(StatType.FireResistance, 20, 30), Roll(StatType.AreaOfEffect, 12, 18), Roll(StatType.ExplodeOnKill, 20, 25) }
             },
             new Unique
             {
                 BaseId = "arcane_circlet", Name = "Stormcaller's Circlet", RequiredLevel = 17, Weight = Uncommon,
                 Flavour = "The sky listens to whoever wears it, and answers twice.",
-                Mods = new[] { Roll(StatType.Intelligence, 12, 16), Roll(StatType.MaxMana, 30, 40), Roll(StatType.LightningDamage, 20, 30), Roll(StatType.ShockChance, 20, 30), Mod(StatType.AdditionalChains, 2) }
+                Mods = new[] { Roll(StatType.Intelligence, 12, 16), Roll(StatType.MaxMana, 45, 60), Roll(StatType.LightningDamage, 20, 30), Roll(StatType.ShockChance, 20, 30), Mod(StatType.AdditionalChains, 2) }
             },
             new Unique
             {
@@ -167,7 +167,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "mystic_circlet", Name = "Mercy's Echo", RequiredLevel = 17, Weight = Common,
                 Flavour = "The last prayer is never spoken only once.",
-                Mods = new[] { Roll(StatType.MaxLife, 20, 30), Roll(StatType.MaxMana, 25, 35), Roll(StatType.CastSpeed, 6, 10), Roll(StatType.GrantWarCry, 5, 6), Mod(StatType.SecondWind, 1) }
+                Mods = new[] { Roll(StatType.MaxLife, 40, 60), Roll(StatType.MaxMana, 38, 53), Roll(StatType.CastSpeed, 6, 10), Roll(StatType.GrantWarCry, 5, 6), Mod(StatType.SecondWind, 1) }
             },
             new Unique
             {
@@ -185,19 +185,19 @@ namespace PoeClone.Inventory
             {
                 BaseId = "mithril_ring", Name = "The Last Draught", RequiredLevel = 17, Weight = Common,
                 Flavour = "Courage comes in a bottle, and leaves in a heartbeat.",
-                Mods = new[] { Roll(StatType.MaxLife, 20, 30), Roll(StatType.PhysicalDamage, 2, 4), Roll(StatType.HealthPotionRecovery, 25, 35), Mod(StatType.OnslaughtOnHealthPotion, 1) }
+                Mods = new[] { Roll(StatType.MaxLife, 40, 60), Roll(StatType.PhysicalDamage, 2, 4), Roll(StatType.HealthPotionRecovery, 25, 35), Mod(StatType.OnslaughtOnHealthPotion, 1) }
             },
             new Unique
             {
                 BaseId = "arcane_gloves", Name = "Spellweaver's Hands", RequiredLevel = 17, Weight = Uncommon,
                 Flavour = "A hundred gestures, between one heartbeat and the next.",
-                Mods = new[] { Roll(StatType.CastSpeed, 14, 20), Roll(StatType.MaxMana, 25, 35), Roll(StatType.Intelligence, 10, 14), Roll(StatType.SpellLeech, 2, 3) }
+                Mods = new[] { Roll(StatType.CastSpeed, 14, 20), Roll(StatType.MaxMana, 38, 53), Roll(StatType.Intelligence, 10, 14), Roll(StatType.SpellLeech, 2, 3) }
             },
             new Unique
             {
                 BaseId = "flawless_lapis_amulet", Name = "Gravesong Charm", RequiredLevel = 17, Weight = Common,
                 Flavour = "The dead hum softly to whoever keeps their names.",
-                Mods = new[] { Roll(StatType.Intelligence, 12, 16), Roll(StatType.MinionLife, 20, 30), Roll(StatType.MaxLife, 15, 25), Roll(StatType.SoulBond, 2, 3), Roll(StatType.BoneArmour, 12, 18) }
+                Mods = new[] { Roll(StatType.Intelligence, 12, 16), Roll(StatType.MinionLife, 20, 30), Roll(StatType.MaxLife, 30, 50), Roll(StatType.SoulBond, 2, 3), Roll(StatType.BoneArmour, 12, 18) }
             },
             new Unique
             {
@@ -211,7 +211,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "archon_vestment", Name = "Mantle of the Still Mind", RequiredLevel = 25, Weight = Rare,
                 Flavour = "Pain is a rumour. Mana is the truth.",
-                Mods = new[] { Roll(StatType.Evasion, 40, 60), Roll(StatType.MaxMana, 50, 70), Roll(StatType.IncreasedMana, 15, 20), Roll(StatType.ManaAbsorb, 25, 30), Roll(StatType.ManaAsDamage, 3, 5) }
+                Mods = new[] { Roll(StatType.Evasion, 40, 60), Roll(StatType.MaxMana, 75, 105), Roll(StatType.IncreasedMana, 15, 20), Roll(StatType.ManaAbsorb, 25, 30), Roll(StatType.ManaAsDamage, 3, 5) }
             },
             new Unique
             {
@@ -229,13 +229,13 @@ namespace PoeClone.Inventory
             {
                 BaseId = "executioner_axe", Name = "Gorebrand", RequiredLevel = 25, Weight = Rare,
                 Flavour = "It grows heavier with every life, and swings all the faster for it.",
-                Mods = new[] { Roll(StatType.PhysicalDamage, 18, 26), Roll(StatType.AttackSpeed, 8, 12), Roll(StatType.MaxLife, 30, 40), Roll(StatType.Rampage, 4, 6), Roll(StatType.LifePercentOnKill, 2, 3) }
+                Mods = new[] { Roll(StatType.PhysicalDamage, 18, 26), Roll(StatType.AttackSpeed, 8, 12), Roll(StatType.MaxLife, 60, 80), Roll(StatType.Rampage, 4, 6), Roll(StatType.LifePercentOnKill, 2, 3) }
             },
             new Unique
             {
                 BaseId = "bastion_shield", Name = "Stillstone Aegis", RequiredLevel = 25, Weight = Rare,
                 Flavour = "Behind it, even a wounded heart remembers its rhythm.",
-                Mods = new[] { Roll(StatType.Armour, 80, 120), Roll(StatType.BlockChance, 16, 20), Roll(StatType.MaxLife, 30, 45), Roll(StatType.AvoidStun, 25, 35), Roll(StatType.DamageTaken, -12, -8) }
+                Mods = new[] { Roll(StatType.Armour, 80, 120), Roll(StatType.BlockChance, 16, 20), Roll(StatType.MaxLife, 60, 90), Roll(StatType.AvoidStun, 25, 35), Roll(StatType.DamageTaken, -12, -8) }
             },
             new Unique
             {
@@ -273,7 +273,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "warlord_plate", Name = "The Red Covenant", RequiredLevel = 30, Weight = Mythic,
                 Flavour = "Sign in blood. Every wound is paid for in kind, and then some.",
-                Mods = new[] { Roll(StatType.Armour, 120, 160), Roll(StatType.MaxLife, 60, 80), Roll(StatType.Strength, 15, 20), Roll(StatType.MoreMeleeDamage, 30, 40), Mod(StatType.NoLifeRegen, 1) }
+                Mods = new[] { Roll(StatType.Armour, 120, 160), Roll(StatType.MaxLife, 120, 160), Roll(StatType.Strength, 15, 20), Roll(StatType.MoreMeleeDamage, 30, 40), Mod(StatType.NoLifeRegen, 1) }
             },
             new Unique
             {
@@ -285,7 +285,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "nightstalker_gloves", Name = "Hands of the Butcher-King", RequiredLevel = 34, Weight = Mythic,
                 Flavour = "No blow ends where it lands.",
-                Mods = new[] { Roll(StatType.AttackSpeed, 10, 14), Roll(StatType.PhysicalDamage, 5, 8), Roll(StatType.MaxLife, 30, 40), Roll(StatType.MeleeSplash, 30, 40), Roll(StatType.Rampage, 3, 4) }
+                Mods = new[] { Roll(StatType.AttackSpeed, 10, 14), Roll(StatType.PhysicalDamage, 5, 8), Roll(StatType.MaxLife, 60, 80), Roll(StatType.MeleeSplash, 30, 40), Roll(StatType.Rampage, 3, 4) }
             },
 
             // ---- The Shepherd's own: only he drops these.
