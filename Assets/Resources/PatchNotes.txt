@@ -1,3 +1,8 @@
+version: 2026-10-10-coop-hosting
+- Hosting a co-op game now starts it straight away. Your game is listed for others to join while you play, and the chat tells you when someone joins or leaves.
+- If your guest leaves or loses their connection, your game is listed again, so they can rejoin from Co-op > Join Game with the same character.
+- The partner frame under your bars is smaller and shows the name of the area your partner is in.
+
 version: 2026-10-10-themed-menus
 - New look for menus: carved-stone backgrounds with drifting smoke, rising embers and a dark vignette behind the start menu, character select, co-op screens and the character loading screen.
 - New fonts across the game: Cinzel for titles, buttons and area names, and Alegreya Sans for body text, tooltips, chat and the HUD.

@@ -528,3 +528,21 @@ test('a host who disconnects disappears from the lobby', () => {
   room.leave(host);
   assert.deepEqual(browser.sent.at(-1), { type: 'lobby', hosts: [] });
 });
+
+test('a host whose guest leaves is listed again, and the guest can rejoin', () => {
+  const room = new Room();
+  const host = fakeClient();
+  const guest = fakeClient();
+  room.join(host, 'player', 'Alice');
+  room.join(guest, 'player', 'Bob');
+  room.coopHost(host);
+  const hostId = room.lobbyMessage().hosts[0].id;
+  room.coopJoin(guest, hostId, 'Bob');
+  room.leave(guest);
+  assert.deepEqual(room.lobbyMessage().hosts.map((h) => h.name), ['Alice']);
+  const back = fakeClient();
+  room.join(back, 'player', 'Bob');
+  room.coopList(back);
+  assert.equal(room.coopJoin(back, hostId, 'Bob'), true);
+  assert.deepEqual(host.sent.at(-1), { type: 'coop', state: 'started', coopRole: 'host', partnerName: 'Bob' });
+});

@@ -28,7 +28,9 @@
 // - Co-op: a player can host ("coopHost"), which lists them in the lobby that browsing
 //   players ("coopList") see live. "coopJoin" pairs a browser with a host; from then on
 //   their "co"/"cev" messages (the host's world, the guest's character, hits and kills)
-//   are relayed raw to the partner. Either side leaving ends the party for the other.
+//   are relayed raw to the partner. A host plays from the start and stays hosting: when its
+//   guest leaves or drops, the game is listed again, so the guest (or anyone) can rejoin.
+//   The host leaving ends the party for the guest.
 
 const MAX_PLAYERS = 10;
 const MAX_CHAT_HISTORY = 50;
@@ -54,8 +56,8 @@ class Room {
     this.waiting = []; // denied player connections, oldest first: { client, id, name }
     this.chatHistory = [];
     this.nextId = 1;
-    // Co-op, by player client: hosts waiting in the lobby (client -> name), browsing clients,
-    // and the pairs playing together (client -> partner client, both directions).
+    // Co-op, by player client: hosts (client -> name, listed in the lobby while they have no
+    // guest), browsing clients, and the pairs playing together (client -> partner, both ways).
     this.hosting = new Map();
     this.browsing = new Set();
     this.partners = new Map();
@@ -244,7 +246,7 @@ class Room {
 
   // ------------------------------------------------------------------ co-op
 
-  // Lists a player in the lobby under the given name, until someone joins or they cancel.
+  // Lists a player in the lobby under the given name, while they have no guest, until they leave.
   coopHost(client, requestedName) {
     const player = this.players.get(client);
     if (!player || this.partners.has(client)) return false;
@@ -270,7 +272,7 @@ class Room {
     if (!guest || this.partners.has(client)) return false;
     let host = null;
     for (const [c] of this.hosting) {
-      if (c !== client && this.players.get(c)?.id === hostId) host = c;
+      if (c !== client && !this.partners.has(c) && this.players.get(c)?.id === hostId) host = c;
     }
     if (!host) {
       safeSend(client, { type: 'coop', state: 'failed', reason: 'That game is no longer open.' });
@@ -279,7 +281,6 @@ class Room {
     }
     const hostName = this.hosting.get(host);
     const guestName = sanitizeName(requestedName) || guest.name;
-    this.hosting.delete(host);
     this.browsing.delete(client);
     this.browsing.delete(host);
     this.partners.set(host, client);
@@ -290,15 +291,18 @@ class Room {
     return true;
   }
 
-  // Stops hosting/browsing, or ends the party (telling the partner why).
+  // Stops hosting/browsing and ends any party (telling the partner why). A host whose guest
+  // left keeps hosting: its game is listed again.
   coopLeave(client, reason = 'Your partner left the game.') {
     this.browsing.delete(client);
-    if (this._stopHosting(client)) return;
+    const wasHosting = this.hosting.delete(client);
     const partner = this.partners.get(client);
-    if (!partner) return;
-    this.partners.delete(client);
-    this.partners.delete(partner);
-    safeSend(partner, { type: 'coop', state: 'ended', reason });
+    if (partner) {
+      this.partners.delete(client);
+      this.partners.delete(partner);
+      safeSend(partner, { type: 'coop', state: 'ended', reason });
+    }
+    if (wasHosting || partner) this._broadcastLobby();
   }
 
   // Relays a co-op message, as received, to the sender's partner. Returns whether it was sent.
@@ -317,7 +321,7 @@ class Room {
     const hosts = [];
     for (const [client, name] of this.hosting) {
       const player = this.players.get(client);
-      if (player) hosts.push({ id: player.id, name });
+      if (player && !this.partners.has(client)) hosts.push({ id: player.id, name });
     }
     return { type: 'lobby', hosts };
   }

@@ -192,7 +192,12 @@ namespace PoeClone.Network
 
         private void ApplyDiscrete(StateSnapshot s)
         {
-            partnerArea = s.area;
+            if (partnerArea != s.area)
+            {
+                partnerArea = s.area;
+                AreaDefinition[] areas = AreaManager.Instance != null ? AreaManager.Instance.areas : null;
+                status.Area = areas != null && partnerArea >= 0 && partnerArea < areas.Length ? areas[partnerArea].areaName : null;
+            }
             loading = s.fade != 0;
             ApplyEquipment(s.eq);
             if (s.hud != null)

@@ -8,8 +8,8 @@ using PoeClone.UI;
 
 namespace PoeClone.Network
 {
-    // The start menu (Single Player / Co-op) and the co-op screens: host or join, the host's
-    // wait for a partner and the list of open games. Every screen past the first has a Back.
+    // The start menu (Single Player / Co-op) and the co-op screens: host or join and the list
+    // of open games (a host starts playing at once). Every screen past the first has a Back.
     public partial class NamePromptUI
     {
         // While the start menu is up (DevTest picks single player through it).
@@ -65,12 +65,12 @@ namespace PoeClone.Network
             MakeBack(back, -150);
         }
 
-        /// <summary>A co-op status line ("Waiting for another player...", an error) with a Back.</summary>
+        /// <summary>A co-op status line ("Connecting...", an error) with a Back.</summary>
         public void ShowCoopStatus(string title, string detail, Action back)
         {
             ShowScreen();
             MakeText(title, 34, new Vector2(0, 60), new Vector2(1200, 60));
-            // Still working on it ("Connecting...", "Waiting for another player..."): show it's alive.
+            // Still working on it ("Connecting...", "Joining ..."): show it's alive.
             if (title.EndsWith("..."))
                 Appear(UiKit.RuneSpinner(canvasRoot.transform, new Vector2(0, 220), 120f));
             if (!string.IsNullOrEmpty(detail))
