@@ -367,9 +367,15 @@ namespace PoeClone.World
             var wellWater = new Material(kit.Mat("Water")) { name = "StillWellWater" };
             wellWater.SetFloat("_LivingWater", 0);
             LocalCyl(well, new Vector3(0f, 0.92f, 0f), 1.05f, 0.04f, wellWater, solid: false);
-            LocalBox(well, new Vector3(-1.2f, 1.4f, 0f), new Vector3(0.18f, 2.8f, 0.18f), kit.Mat("Wood"));
-            LocalBox(well, new Vector3(1.2f, 1.4f, 0f), new Vector3(0.18f, 2.8f, 0.18f), kit.Mat("Wood"));
-            LocalBox(well, new Vector3(0f, 2.9f, 0f), new Vector3(3.2f, 0.25f, 2.2f), kit.Mat("Roof"));
+            LocalBox(well, new Vector3(-1.2f, 1.75f, 0f), new Vector3(0.18f, 3.5f, 0.18f), kit.Mat("Wood"));
+            LocalBox(well, new Vector3(1.2f, 1.75f, 0f), new Vector3(0.18f, 3.5f, 0.18f), kit.Mat("Wood"));
+            // A windlass between the posts, its bucket hanging over the water, under a tiled hood.
+            LocalBox(well, new Vector3(0f, 2.15f, 0f), new Vector3(2.3f, 0.16f, 0.16f), kit.Mat("Wood"), false);
+            LocalBox(well, new Vector3(0f, 1.7f, 0f), new Vector3(0.04f, 0.9f, 0.04f), kit.Mat("Rope"), false);
+            LocalCyl(well, new Vector3(0f, 1.1f, 0f), 0.2f, 0.32f, kit.Mat("Wood"), false);
+            var hood = new PieceMesh();
+            GableRoof(hood, RoofStyle.RedShingle, new Vector3(0f, 2.75f, 0f), 0.75f, 0.8f, 0.35f, 3.3f, 372);
+            hood.Build(LocalFrame(well, "WellRoof", Vector3.zero, 90f), "Roof");
             well.rotation = Quaternion.Euler(0f, -25f, 0f);
             Claim(c, 12f);
 
@@ -401,19 +407,6 @@ namespace PoeClone.World
             {
                 float rad = (k * 45f + 22f) * Mathf.Deg2Rad;
                 Lamp(t, c + new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad)) * 11.8f);
-            }
-
-            // Crates and barrels by the stalls and houses.
-            for (int k = 0; k < 16; k++)
-            {
-                Vector3 p = c + Flat(R(-24f, 24f), R(-24f, 24f));
-                if (Vector3.Distance(p, c) < 12.5f || !Free(p, 1f))
-                    continue;
-                if (k % 2 == 0)
-                    Box(t, p + Vector3.up * 0.4f, Vector3.one * 0.8f, kit.Mat("Wood"), euler: new Vector3(0f, R(0f, 90f), 0f));
-                else
-                    Cyl(t, p + Vector3.up * 0.5f, 0.38f, 1f, kit.Mat("Wood"));
-                Claim(p, 1f);
             }
 
             // Trees and bushes round the outskirts.
@@ -611,8 +604,33 @@ namespace PoeClone.World
 
             Scatter(t, 14, 8f, 46f, p => CrystalCluster(t, p), 1.6f);
             Scatter(t, 20, 14f, 46f, p => FrostedPine(t, p), 2f);
-            Scatter(t, 14, 6f, 46f, p => Ball(t, p, R(0.7f, 1.5f), kit.Mat("Snow"), flatten: 0.4f, solid: false), 1.2f);
+            Scatter(t, 14, 6f, 46f, p => SnowDrift(t, p, R(0.7f, 1.5f)), 1.2f);
             Scatter(t, 12, 8f, 46f, p => Prefab(kit.rock, t, p, R(0f, 360f), Vector3.one * R(0.8f, 1.6f)), 1.5f);
+        }
+
+        // Faceted lumps of snow banked against each other, highest on one side like a wind drift.
+        // Its own seed from the spot keeps the area's scatter sequence unchanged.
+        private GameObject SnowDrift(Transform t, Vector3 p, float size)
+        {
+            var random = new System.Random(Mathf.RoundToInt(p.x * 13f + p.z * 7f));
+            var drift = new GameObject("SnowDrift").transform;
+            drift.SetParent(t, false);
+            drift.SetPositionAndRotation(p, Quaternion.Euler(0f, (float)random.NextDouble() * 360f, 0f));
+            int lumps = 2 + random.Next(3);
+            for (int k = 0; k < lumps; k++)
+            {
+                float scale = size * (1f - k * 0.18f) * (0.8f + (float)random.NextDouble() * 0.3f);
+                var lump = new GameObject("SnowLump");
+                lump.transform.SetParent(drift, false);
+                lump.transform.localPosition = new Vector3(k * size * 0.75f, -scale * 0.12f, ((float)random.NextDouble() - 0.5f) * size * 0.6f);
+                lump.transform.localRotation = Quaternion.Euler(0f, (float)random.NextDouble() * 360f, 0f);
+                lump.transform.localScale = new Vector3(scale * 2.2f, scale * (0.75f - k * 0.12f), scale * 1.6f);
+                lump.AddComponent<MeshFilter>().sharedMesh = kit.icoHead;
+                var renderer = lump.AddComponent<MeshRenderer>();
+                renderer.sharedMaterial = kit.Mat("Snow");
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            return drift.gameObject;
         }
 
         // A tall cone of ice (a box where the kit has no cone mesh).
@@ -977,7 +995,51 @@ namespace PoeClone.World
             LocalBox(stall, new Vector3(0.5f, 1.25f, 0.7f), new Vector3(0.4f, 0.3f, 0.3f), kit.Mat("Pumpkin"), solid: false);
             for (int strip = -1; strip <= 1; strip++)
                 WindCloth.Create(stall, new Vector3(strip * 0.95f, 2.42f, -1.05f), 0.94f, 0.28f, cloth);
+            // Stock waits beside the counter.
+            Crate(t, stall.TransformPoint(new Vector3(-1.95f, 0f, 0.55f)), stall.eulerAngles.y + 12f);
+            Barrel(t, stall.TransformPoint(new Vector3(1.95f, 0f, 0.7f)));
             Claim(p, 2.6f);
+        }
+
+        // A plank crate bound with iron at its edges.
+        private void Crate(Transform t, Vector3 p, float yaw)
+        {
+            var mesh = new PieceMesh();
+            mesh.Block(mesh.Slot(kit.Mat("Wood")), Vector3.up * 0.4f, Vector3.right * 0.4f, Vector3.up * 0.4f, Vector3.forward * 0.4f);
+            int iron = mesh.Slot(kit.Mat("Iron"));
+            for (int a = -1; a <= 1; a += 2)
+                for (int b = -1; b <= 1; b += 2)
+                {
+                    mesh.Block(iron, new Vector3(a * 0.4f, 0.4f, b * 0.4f), Vector3.right * 0.05f, Vector3.up * 0.41f, Vector3.forward * 0.05f);
+                    mesh.Block(iron, new Vector3(0f, 0.4f + a * 0.4f, b * 0.4f), Vector3.right * 0.41f, Vector3.up * 0.05f, Vector3.forward * 0.05f);
+                    mesh.Block(iron, new Vector3(b * 0.4f, 0.4f + a * 0.4f, 0f), Vector3.right * 0.05f, Vector3.up * 0.05f, Vector3.forward * 0.41f);
+                }
+            GameObject crate = mesh.Build(t, "Crate");
+            crate.transform.SetPositionAndRotation(p, Quaternion.Euler(0f, yaw, 0f));
+            var collider = crate.AddComponent<BoxCollider>();
+            collider.center = Vector3.up * 0.4f;
+            collider.size = Vector3.one * 0.8f;
+        }
+
+        // A bellied barrel with three iron hoops.
+        private void Barrel(Transform t, Vector3 p)
+        {
+            var mesh = new PieceMesh();
+            int wood = mesh.Slot(kit.Mat("Wood"));
+            mesh.Frustum(wood, Vector3.zero, Vector3.up * 0.5f, 0.32f, 0.4f, 10, Vector3.forward);
+            mesh.Frustum(wood, Vector3.up * 0.5f, Vector3.up, 0.4f, 0.32f, 10, Vector3.forward);
+            int iron = mesh.Slot(kit.Mat("Iron"));
+            foreach (float y in new[] { 0.14f, 0.5f, 0.86f })
+            {
+                float r = 0.32f + 0.08f * (1f - Mathf.Abs(y - 0.5f) * 2f) + 0.025f;
+                mesh.Frustum(iron, Vector3.up * (y - 0.035f), Vector3.up * (y + 0.035f), r, r, 10, Vector3.forward);
+            }
+            GameObject barrel = mesh.Build(t, "Barrel");
+            barrel.transform.position = p;
+            var collider = barrel.AddComponent<CapsuleCollider>();
+            collider.center = Vector3.up * 0.5f;
+            collider.radius = 0.38f;
+            collider.height = 1f;
         }
 
         private void Lamp(Transform t, Vector3 p)

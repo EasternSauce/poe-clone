@@ -116,6 +116,7 @@ namespace PoeClone.World
             Vector3 hutAt = site - toCentre * 6f;
             GameObject hut = Prefab(kit.house, t, hutAt, 0f, Vector3.one * 0.72f);
             hut.transform.rotation = Facing(hutAt, c);
+            DressHouse(hut.transform, RoofStyle.Slate, WallFinish.Fieldstone, 611);
 
             // Ward candles round the edge, glowing spirit-green, and a lantern on a post.
             for (int k = 0; k < 14; k++)

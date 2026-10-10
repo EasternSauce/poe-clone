@@ -157,6 +157,9 @@ namespace PoeClone.World
                 foreach (Transform prop in group.transform)
                 {
                     float radius = name == "Houses" ? 8f : 4f;
+                    // The forest's lone houses: thatch over logs or timber, each its own.
+                    if (name == "Houses")
+                        DressHouse(prop, RoofStyle.Thatch, props.Count % 2 == 0 ? WallFinish.Logs : WallFinish.Timbered, 640 + props.Count);
                     props.Add((prop, radius));
                     if (shape.Contains(prop.position, radius + 1f) && !shape.IsBridge(prop.position, radius + 3f)) Claim(prop.position, radius);
                 }

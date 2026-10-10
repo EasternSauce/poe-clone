@@ -25,7 +25,6 @@ namespace PoeClone.World
         public Mesh cone;
         public Mesh cylinder;
         public Mesh icoHead;
-        public Mesh prism;
 
         [Header("Materials")]
         public NamedMaterial[] materials = new NamedMaterial[0];

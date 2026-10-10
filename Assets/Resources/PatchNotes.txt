@@ -1,3 +1,10 @@
+version: 2026-10-10-village-buildings
+- Haven's cottages no longer share one red box roof. Each has its own mix of roof and walls: steep thatch with a rolled ridge, red clay shingles or blue-grey slate, over half-timbered plaster, dressed stone with corner stones, grey fieldstone, or log walls with crossed corners. Gables match their walls, and chimneys rise through the roof under a stone cap.
+- The smithy is now a slate lean-to against a tall stone wall. The well has a tiled roof, a windlass and a bucket, and the notice board has a small tiled roof.
+- Market stalls have crates and barrels of stock beside them, and the smithy keeps a crate and a water barrel. Crates are iron-bound and barrels are hooped.
+- The houses in the Greenwood and the graveyard keeper's hut got the same treatment.
+- Frozen Hollow's snow mounds are now lumpy, faceted drifts instead of flat discs.
+
 version: 2026-10-10-late-skill-costs
 - Higher-level skills cost more: a skill's mana (or life with Blood Magic) cost rises steeply from level 5 and is 50% higher than before from level 7 on. Skills at levels 1 to 4 cost the same as before.
 

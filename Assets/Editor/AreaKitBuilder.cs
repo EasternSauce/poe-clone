@@ -48,6 +48,12 @@ namespace PoeClone.EditorTools
             ("Pumpkin", "Gold", "#d86e1e"),
             ("Ice", "Steel", "#9fd3ee"),
             ("Snow", "Stone", "#e9eff4"),
+            ("Thatch", "Bark", "#a3854a"),
+            ("ThatchDark", "Bark", "#8a7042"),
+            ("RoofDark", "Roof", "#5c2a21"),
+            ("Slate", "Stone", "#5a6372"),
+            ("SlateDark", "Stone", "#3e4552"),
+            ("Plaster", "Bone", "#d8cbab"),
         };
 
         [MenuItem("PoeClone/Build Area Kit")]
@@ -75,7 +81,6 @@ namespace PoeClone.EditorTools
             kit.cone = AssetDatabase.LoadAssetAtPath<Mesh>(MeshDir + "/Cone.asset");
             kit.cylinder = AssetDatabase.LoadAssetAtPath<Mesh>(MeshDir + "/Cylinder.asset");
             kit.icoHead = AssetDatabase.LoadAssetAtPath<Mesh>(MeshDir + "/IcoHead.asset");
-            kit.prism = AssetDatabase.LoadAssetAtPath<Mesh>(MeshDir + "/Prism.asset");
 
             var materials = new List<AreaKit.NamedMaterial>();
             foreach (string name in Existing)

@@ -131,13 +131,13 @@ namespace PoeClone.World
                 Claim(p, 7.5f);
                 Lamp(parent, doorstep + house.transform.right * 2.8f);
 
-                // Timber-framed fronts and small porches give the shared prefab a village scale.
-                LocalBox(house.transform, new Vector3(0, 2.3f, -1.76f), new Vector3(4.1f, 0.13f, 0.12f), kit.Mat("Wood"), false);
-                for (int side = -1; side <= 1; side += 2)
-                    LocalBox(house.transform, new Vector3(side * 1.9f, 1.2f, -1.76f), new Vector3(0.14f, 2.4f, 0.12f), kit.Mat("Wood"), false);
+                // Roofs and walls cycle on different periods, so neighbours never match.
+                RoofStyle roof = (RoofStyle)(i % 3);
+                DressHouse(house.transform, roof, (WallFinish)(i % 4), i);
+                // Thatched cottages get a cloth awning over the door; tiled ones a tiled hood.
                 LocalBox(house.transform, new Vector3(0, 1.95f, -2.1f), new Vector3(1.8f, 0.12f, 1f),
-                    kit.Mat(i % 3 == 0 ? "ClothRed" : "Roof"), false, new Vector3(-8, 0, 0));
-                LocalCyl(house.transform, new Vector3(2.7f, 0.45f, 0), 0.35f, 0.9f, kit.Mat("Wood"));
+                    kit.Mat(roof == RoofStyle.Thatch ? "ClothRed" : roof == RoofStyle.Slate ? "Slate" : "Roof"), false, new Vector3(-8, 0, 0));
+                Barrel(parent, house.transform.TransformPoint(new Vector3(2.7f, 0, 0)));
                 var home = new VillageHome
                 {
                     Door = doorstep - house.transform.forward * 1.5f,
@@ -252,7 +252,9 @@ namespace PoeClone.World
             for (int side = -1; side <= 1; side += 2)
                 LocalBox(board, new Vector3(side * 1.1f, 1.1f, 0), new Vector3(0.16f, 2.2f, 0.16f), kit.Mat("Wood"));
             LocalBox(board, new Vector3(0, 1.65f, 0), new Vector3(2.6f, 1.2f, 0.18f), kit.Mat("Wood"));
-            LocalBox(board, new Vector3(0, 2.35f, 0), new Vector3(3, 0.15f, 0.8f), kit.Mat("Roof"), false);
+            var hood = new PieceMesh();
+            GableRoof(hood, RoofStyle.RedShingle, new Vector3(0, 2.25f, 0), 0.2f, 0.35f, 0.15f, 3.1f, 246);
+            hood.Build(LocalFrame(board, "NoticeboardRoof", Vector3.zero, 90), "Roof");
             for (int note = -1; note <= 1; note++)
                 LocalBox(board, new Vector3(note * 0.65f, 1.65f + note * 0.1f, -0.105f), new Vector3(0.45f, 0.65f, 0.025f), kit.Mat("Bone"), false,
                     new Vector3(0, 0, note * 7));
@@ -408,14 +410,21 @@ namespace PoeClone.World
             workshop.SetParent(parent, false);
             workshop.position = p;
             LocalBox(workshop, new Vector3(0, 0.03f, 0), new Vector3(7, 0.06f, 5), kit.Mat("Stone"), false);
-            LocalBox(workshop, new Vector3(0, 1.5f, -2.3f), new Vector3(7, 3, 0.3f), kit.Mat("Wall"));
+            // A lean-to: slate pitched from a tall fieldstone back wall down onto a timber lintel.
+            LocalBox(workshop, new Vector3(0, 1.7f, -2.3f), new Vector3(7, 3.4f, 0.3f), kit.Mat("Stone"));
             for (int side = -1; side <= 1; side += 2)
-                LocalBox(workshop, new Vector3(side * 3.2f, 1.5f, 2), new Vector3(0.22f, 3, 0.22f), kit.Mat("Wood"));
-            LocalBox(workshop, new Vector3(0, 3.2f, 0), new Vector3(7.8f, 0.25f, 5.8f), kit.Mat("Roof"), false, new Vector3(9, 0, 0));
+                LocalBox(workshop, new Vector3(side * 3.2f, 1.3f, 2), new Vector3(0.22f, 2.6f, 0.22f), kit.Mat("Wood"));
+            LocalBox(workshop, new Vector3(0, 2.6f, 2), new Vector3(7, 0.22f, 0.26f), kit.Mat("Wood"), false);
+            // The frame's local Z runs along the workshop's width, so its +X points to the back wall.
+            var lean = new PieceMesh();
+            ShedRoof(lean, RoofStyle.Slate, new Vector3(2.6f, 3.46f, 0), new Vector3(-2.6f, 2.5f, 0), 7.8f, 405);
+            lean.Build(LocalFrame(workshop, "SmithRoof", Vector3.zero, 90), "Roof");
             LocalBox(workshop, new Vector3(2, 0.65f, -0.9f), new Vector3(1.5f, 1.3f, 1.3f), kit.Mat("Stone"));
             LocalBox(workshop, new Vector3(2, 1.35f, -0.9f), new Vector3(1.1f, 0.12f, 0.9f), kit.Mat("Ember"), false);
             LocalBox(workshop, new Vector3(-1.3f, 0.55f, 0), new Vector3(0.6f, 1.1f, 0.6f), kit.Mat("Wood"));
             LocalBox(workshop, new Vector3(-1.3f, 1.15f, 0), new Vector3(1.6f, 0.3f, 0.65f), kit.Mat("Iron"));
+            Crate(workshop, p + new Vector3(-2.7f, 0, -1.5f), 8);
+            Barrel(workshop, p + new Vector3(2.9f, 0, 0.9f));
             Flame(workshop, p + new Vector3(2, 1.58f, -0.9f), 0.25f, kit.Mat("Ember"), 1.1f, 0.25f);
             Glow(workshop, p + new Vector3(2, 1.7f, -0.9f), FireLight, 6, 2, true);
             Claim(p, 5f);

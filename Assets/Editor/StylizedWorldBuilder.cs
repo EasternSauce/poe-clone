@@ -317,24 +317,6 @@ private static void SaveMesh(string name, Mesh mesh)
             return b.ToMesh("Cylinder");
         }
 
-        // Unit roof prism: width 1 (x), rise 1 (y), length 1 (z), ridge along z.
-        private static Mesh MakePrism()
-        {
-            TriBuilder b = new TriBuilder(new Vector3(0f, 0.33f, 0f));
-            Vector3 l0 = new Vector3(-0.5f, 0f, -0.5f);
-            Vector3 r0 = new Vector3(0.5f, 0f, -0.5f);
-            Vector3 t0 = new Vector3(0f, 1f, -0.5f);
-            Vector3 l1 = new Vector3(-0.5f, 0f, 0.5f);
-            Vector3 r1 = new Vector3(0.5f, 0f, 0.5f);
-            Vector3 t1 = new Vector3(0f, 1f, 0.5f);
-            b.Tri(l0, r0, t0);
-            b.Tri(l1, r1, t1);
-            b.Quad(l0, t0, t1, l1);
-            b.Quad(r0, t0, t1, r1);
-            b.Quad(l0, r0, r1, l1);
-            return b.ToMesh("Prism");
-        }
-
         // Unit icosphere (radius 0.5), optionally subdivided and jittered for a chunky rock/foliage look.
         private static Mesh MakeIco(string name, int subdiv, float jitter, int seed)
         {
@@ -384,7 +366,6 @@ private static void SaveMesh(string name, Mesh mesh)
         {
             SaveMesh("Cone", MakeCone(7));
             SaveMesh("Cylinder", MakeCylinder(6));
-            SaveMesh("Prism", MakePrism());
             SaveMesh("IcoHead", MakeIco("IcoHead", 1, 0f, 0));
             SaveMesh("FoliageA", MakeIco("FoliageA", 0, 0.15f, 11));
             SaveMesh("FoliageB", MakeIco("FoliageB", 0, 0.15f, 23));
@@ -394,7 +375,7 @@ private static void SaveMesh(string name, Mesh mesh)
             // Flush to disk and reload so prefabs reference the persisted assets.
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            string[] names = { "Cone", "Cylinder", "Prism", "IcoHead", "FoliageA", "FoliageB", "RockA", "RockB" };
+            string[] names = { "Cone", "Cylinder", "IcoHead", "FoliageA", "FoliageB", "RockA", "RockB" };
             foreach (string n in names)
                 meshes[n] = AssetDatabase.LoadAssetAtPath<Mesh>(MeshDir + "/" + n + ".asset");
         }
@@ -635,11 +616,12 @@ private static GameObject BuildRock(bool solid)
             GameObject root = new GameObject("House");
             Transform t = root.transform;
             AddCube(t, "Walls", new Vector3(0f, 1.2f, 0f), new Vector3(4f, 2.4f, 3.4f), mats["Wall"]);
-            AddMesh(t, "Roof", meshes["Prism"], mats["Roof"], new Vector3(0f, 2.4f, 0f), new Vector3(5.0f, 1.7f, 4.0f));
+            // The roof and wall finish are dressed at runtime (WorldBuilder.DressHouse), so each
+            // house can differ; the chimney rises from the walls up through that roof.
             AddCube(t, "Door", new Vector3(0f, 0.75f, -1.7f), new Vector3(0.9f, 1.5f, 0.12f), mats["Wood"]);
             AddCube(t, "WindowL", new Vector3(-1.2f, 1.5f, -1.7f), new Vector3(0.6f, 0.6f, 0.12f), mats["Wood"]);
             AddCube(t, "WindowR", new Vector3(1.2f, 1.5f, -1.7f), new Vector3(0.6f, 0.6f, 0.12f), mats["Wood"]);
-            AddCube(t, "Chimney", new Vector3(1.3f, 3.1f, 0.6f), new Vector3(0.55f, 1.3f, 0.55f), mats["Stone"]);
+            AddCube(t, "Chimney", new Vector3(1.3f, 3.8f, 0.6f), new Vector3(0.55f, 2.8f, 0.55f), mats["Stone"]);
             BoxCollider c = root.AddComponent<BoxCollider>();
             c.center = new Vector3(0f, 1.5f, 0f);
             c.size = new Vector3(4f, 3f, 3.4f);

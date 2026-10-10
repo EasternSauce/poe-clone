@@ -95,7 +95,7 @@ namespace PoeClone.EditorTools
         private static void LoadMeshes()
         {
             Meshes.Clear();
-            foreach (string name in new[] { "Cone", "Cylinder", "IcoHead", "Prism" })
+            foreach (string name in new[] { "Cone", "Cylinder", "IcoHead" })
             {
                 Mesh m = AssetDatabase.LoadAssetAtPath<Mesh>(MeshDir + "/" + name + ".asset");
                 if (m == null)
