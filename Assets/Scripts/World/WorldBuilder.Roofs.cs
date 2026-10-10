@@ -83,6 +83,25 @@ namespace PoeClone.World
                 }
             }
 
+            // A faceted ellipsoid: `rings` bands from pole to pole, `sides` around (2 and 4 make an octahedron).
+            public void Lump(int slot, Vector3 c, Vector3 radii, int sides, int rings, Quaternion rotation)
+            {
+                Vector3 Point(int ring, int side)
+                {
+                    float polar = ring * Mathf.PI / rings, around = side * Mathf.PI * 2f / sides;
+                    var unit = new Vector3(Mathf.Sin(polar) * Mathf.Cos(around), Mathf.Cos(polar), Mathf.Sin(polar) * Mathf.Sin(around));
+                    return c + rotation * Vector3.Scale(unit, radii);
+                }
+                for (int ring = 0; ring < rings; ring++)
+                    for (int side = 0; side < sides; side++)
+                    {
+                        Vector3 a = Point(ring, side), b = Point(ring, side + 1), d = Point(ring + 1, side), e = Point(ring + 1, side + 1);
+                        Vector3 outward = (a + b + d + e) * 0.25f - c;
+                        if (ring > 0) Tri(slot, a, b, e, outward);
+                        if (ring < rings - 1) Tri(slot, a, e, d, outward);
+                    }
+            }
+
             public GameObject Build(Transform parent, string name)
             {
                 var mesh = new Mesh { name = name };

@@ -1,3 +1,11 @@
+version: 2026-10-10-graveyard-and-waystones
+- The Haunted Graveyard's crypt is now dug into a grassy barrow at the back of its clearing: stone steps lead up to a dark doorway behind a half-open iron gate, framed by retaining walls, a pediment with a carved skull and braziers of green spirit fire.
+- The graveyard's square fenced plots are gone. Its graves now lie in loose, staggered rows inside low drystone walls on irregular oval lines, some topped with iron railings. Each yard has a gateway and a trodden path, and a small mausoleum, a stone angel or an old dead tree in the middle. The headstones vary: arched and pointed slabs, plain and wheel-headed crosses, obelisks and snapped stones, some leaning, with earth mounds before them and candles at a few.
+- Dead trees are now gnarled, leaning trunks on flared roots that split into crooked, tapering branches, instead of a pole with sticks. This applies everywhere they grow, including the Ashen Ruins' charred trees.
+- Bones no longer lie scattered at random. They spill from open graves the dead have climbed out of (pits with a spoil heap, a spade, a thrown-off coffin lid and a toppled headstone) and lie at the crypt's door. Skulls and bones everywhere have a proper skull, knobbed long bones and sometimes a ribcage.
+- The graveyard's pumpkins are gone. Iron lanterns burning with green spirit fire now light the track and the way to the crypt.
+- Waystones are now rune-carved obelisks on a stepped stone dais, ringed by four standing stones. A glowing crystal turns slowly between four iron prongs at the top, with small shards circling it and faint motes drifting up from the base. Its light is a soft blue glow instead of a harsh white patch on the ground.
+
 version: 2026-10-10-water-and-ruins
 - Lakes and ponds have uneven, lobed shores instead of perfect circles and ovals. Their banks are gravelly mud that widens and narrows, with clumps of reeds, scattered stones and, in the Greenwood and Haven, lily pads with the odd flower.
 - Rivers wind and change width instead of running between straight banks.
