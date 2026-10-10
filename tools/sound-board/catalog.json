@@ -2490,7 +2490,7 @@
             "soundGroup": "sound.enemy.Raider.Death",
             "purpose": "Humanoid grunts / death voices",
             "current": [
-                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#4-1766768042374.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#4-1766768042374.wav"
             ],
             "usages": [
                 {
