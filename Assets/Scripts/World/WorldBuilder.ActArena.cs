@@ -78,7 +78,7 @@ namespace PoeClone.World
                 SanctuaryOffering(dressing, c + new Vector3(side * 7f, 0f, -34f), side * 30f, 2);
             }
             LocalBox(gate, new Vector3(0f, 7.5f, 0f), new Vector3(10f, 1f, 1.6f), kit.Mat("TombstoneDark"), false);
-            LocalBox(gate, new Vector3(0f, 0.025f, 0f), new Vector3(7.2f, 0.05f, 3f), kit.Mat("TanDark"), false);
+            LocalBox(gate, new Vector3(0f, 0.025f, 0f), new Vector3(7.2f, 0.05f, 3f), DirtFloor, false);
             SanctuarySkull(gate, new Vector3(0f, 7.65f, 0.92f), 0.72f);
             ScatterSanctuaryRemains(dressing, c);
             // Unevenly scattered moults follow the perimeter, leaving the fighting floor open.

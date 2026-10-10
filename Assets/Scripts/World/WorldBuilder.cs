@@ -280,8 +280,9 @@ namespace PoeClone.World
                     return GroundTextures.Make(22, new Color(0.17f, 0.20f, 0.17f), new Color(0.31f, 0.33f, 0.27f),
                         new Color(0.40f, 0.40f, 0.36f), 0.015f, 7f);
                 case Frozen:
-                    return GroundTextures.Make(44, new Color(0.78f, 0.84f, 0.90f), new Color(0.93f, 0.96f, 0.98f),
-                        new Color(0.55f, 0.72f, 0.88f), 0.012f, 7f);
+                    // Wind-packed drifts: cool blue hollows between bright crests, with glints.
+                    return GroundTextures.Make(44, new Color(0.64f, 0.73f, 0.86f), new Color(0.95f, 0.97f, 0.99f),
+                        new Color(1f, 1f, 1f), 0.012f, 4f, grain: 0.05f);
                 case Cave:
                     return GroundTextures.Make(66, new Color(0.18f, 0.20f, 0.21f), new Color(0.32f, 0.33f, 0.30f),
                         new Color(0.29f, 0.35f, 0.32f), 0.012f, 7f);
@@ -291,6 +292,59 @@ namespace PoeClone.World
             }
         }
 
+        // Floors laid over an area's ground: generated once, on copies of the kit's flat material.
+        private Material dirtFloor, mudFloor, flagstoneFloor, kerbFloor;
+
+        private Material DirtFloor => dirtFloor != null ? dirtFloor : dirtFloor = FloorMaterial("DirtFloor",
+            GroundTextures.Dirt(5, new Color(0.33f, 0.26f, 0.17f), new Color(0.50f, 0.40f, 0.27f),
+                new Color(0.46f, 0.42f, 0.36f), 90), 4f);
+
+        private Material MudFloor => mudFloor != null ? mudFloor : mudFloor = FloorMaterial("MudFloor",
+            GroundTextures.Dirt(9, new Color(0.17f, 0.16f, 0.15f), new Color(0.29f, 0.27f, 0.24f),
+                new Color(0.36f, 0.36f, 0.34f), 70), 4f);
+
+        private Material FlagstoneFloor => flagstoneFloor != null ? flagstoneFloor : flagstoneFloor = FloorMaterial("FlagstoneFloor",
+            GroundTextures.Flagstones(7, new Color(0.27f, 0.25f, 0.22f), new Color(0.09f, 0.08f, 0.07f), 6), 4.5f);
+
+        // The square's edging: the same stones, darker and larger.
+        private Material KerbFloor => kerbFloor != null ? kerbFloor : kerbFloor = FloorMaterial("KerbFloor",
+            FlagstoneFloor.GetTexture("_BaseMap"), 7f, new Color(0.72f, 0.7f, 0.68f));
+
+        private Material FloorMaterial(string name, Texture texture, float tileSize, Color? tint = null)
+        {
+            var material = new Material(kit.Mat("TanDark")) { name = name };
+            material.SetTexture("_BaseMap", texture);
+            material.SetColor("_BaseColor", tint ?? Color.white);
+            material.SetFloat("_TriplanarTileSize", tileSize);
+            return material;
+        }
+
+        // A flat, smooth-edged disc lying on the ground (Unity's cylinder shows its 20 sides).
+        private static void FloorDisc(Transform parent, string name, Vector3 center, float radius, Material material)
+        {
+            const int segments = 72;
+            var vertices = new Vector3[segments + 1];
+            var triangles = new int[segments * 3];
+            for (int k = 0; k < segments; k++)
+            {
+                float a = k * Mathf.PI * 2f / segments;
+                vertices[k + 1] = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * radius;
+                triangles[k * 3] = 0;
+                triangles[k * 3 + 1] = (k + 1) % segments + 1;
+                triangles[k * 3 + 2] = k + 1;
+            }
+            var mesh = new Mesh { name = name, vertices = vertices, triangles = triangles };
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            var disc = new GameObject(name);
+            disc.transform.SetParent(parent, false);
+            disc.transform.position = center;
+            disc.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var renderer = disc.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
+
         // Haven: cottages and working yards along winding lanes around a market square.
         private void BuildHaven()
         {
@@ -298,8 +352,9 @@ namespace PoeClone.World
             Vector3 c = Centers[Haven];
             Transform t = Group("Haven");
 
-            // Plaza and the well at its heart.
-            Cyl(t, c + new Vector3(0f, 0.02f, 0f), 11f, 0.04f, kit.Mat("Stone"), solid: false);
+            // Flagstone square, edged with a ring of darker stones, and the well at its heart.
+            FloorDisc(t, "HavenSquareKerb", c + new Vector3(0f, 0.045f, 0f), 11.7f, KerbFloor);
+            FloorDisc(t, "HavenSquare", c + new Vector3(0f, 0.055f, 0f), 11f, FlagstoneFloor);
             Transform well = Holder(t, "HavenWell", c, Quaternion.identity);
             LocalCyl(well, new Vector3(0f, 0.45f, 0f), 1.3f, 0.9f, kit.Mat("Stone"));
             var wellWater = new Material(kit.Mat("Water")) { name = "StillWellWater" };
@@ -401,7 +456,7 @@ namespace PoeClone.World
             Transform t = Group("Graveyard");
 
             // Worn winding track, still inside the broad central corridor.
-            WindingPath(t, "GraveyardTrack", Graveyard, 3.6f, kit.Mat("Ash"),
+            WindingPath(t, "GraveyardTrack", Graveyard, 3.6f, MudFloor,
                 AreaLayouts.GateLocal(Graveyard, false), AreaLayouts.GateApproachLocal(Graveyard, Cave), Flat(-65, 5), Flat(-33, -5),
                 Flat(0, 0), Flat(32, 6), Flat(63, -5), AreaLayouts.GateApproachLocal(Graveyard, Ruins), AreaLayouts.GateLocal(Graveyard, true));
             Claim(c + new Vector3(-30f, 0f, 0f), 3f);

@@ -198,18 +198,19 @@ namespace PoeClone.World
                 Physics.SyncTransforms();
             }
         }
-        // A dirt road from the town plaza out to each of Haven's gates.
+        // A dirt road from the town plaza out to each of Haven's gates, each opening out where it
+        // meets the square.
         private void BuildHavenRoads(Transform t)
         {
-            Material dirt = kit.Mat("TanDark");
-            WindingPath(t, "GateLane", Haven, 4.2f, dirt,
+            Material dirt = DirtFloor;
+            WindingPath(t, "GateLane", Haven, 4.2f, dirt, 1.3f,
                 Flat(10, 0), Flat(28, 3), Flat(48, -8), Flat(70, -5),
                 Flat(92, 8), AreaLayouts.GateApproachLocal(Haven, Greenwood), AreaLayouts.GateLocal(Haven, true));
-            WindingPath(t, "SouthLane", Haven, 3.6f, dirt,
+            WindingPath(t, "SouthLane", Haven, 3.6f, dirt, 1.3f,
                 Flat(0, -10), Flat(-3, -24), Flat(4, -39), Flat(-9, -58), Flat(-20, -80));
-            WindingPath(t, "NorthLane", Haven, 3.4f, dirt,
+            WindingPath(t, "NorthLane", Haven, 3.4f, dirt, 1.3f,
                 Flat(0, 10), Flat(-4, 25), Flat(8, 41), Flat(28, 55), Flat(42, 70));
-            WindingPath(t, "WestLane", Haven, 3.4f, dirt,
+            WindingPath(t, "WestLane", Haven, 3.4f, dirt, 1.3f,
                 Flat(-10, 1), Flat(-27, 6), Flat(-44, 0), Flat(-63, 12), Flat(-85, 25));
         }
 

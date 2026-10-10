@@ -162,7 +162,7 @@ namespace PoeClone.World
             Vector3 side = Vector3.Cross(Vector3.up, toCentre);
 
             // Packed earth, then the palisade: sharpened stakes, open towards the temple.
-            Cyl(t, site + Vector3.up * 0.03f, CampWard - 1f, 0.05f, kit.Mat("TanDark"), solid: false);
+            FloorDisc(t, "CampEarth", site + Vector3.up * 0.055f, CampWard - 1f, DirtFloor);
             const float wallRadius = 12f;
             for (float deg = 0f; deg < 360f; deg += 5.5f)
             {
@@ -238,7 +238,7 @@ namespace PoeClone.World
             tent.localScale = Vector3.one * size;
             for (int s = -1; s <= 1; s += 2)
                 LocalBox(tent, new Vector3(s * 0.85f, 1f, 0f), new Vector3(0.08f, 2.3f, 3f), cloth, euler: new Vector3(0f, 0f, s * 38f));
-            LocalBox(tent, new Vector3(0f, 0.03f, 0f), new Vector3(2.6f, 0.05f, 3f), kit.Mat("TanDark"), solid: false);
+            LocalBox(tent, new Vector3(0f, 0.03f, 0f), new Vector3(2.6f, 0.05f, 3f), DirtFloor, solid: false);
             LocalBox(tent, new Vector3(0f, 1.9f, 0f), new Vector3(0.12f, 0.12f, 3.2f), kit.Mat("Wood"), solid: false);
             Claim(p, 2.2f * size);
         }

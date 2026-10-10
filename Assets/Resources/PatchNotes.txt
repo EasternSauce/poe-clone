@@ -1,3 +1,9 @@
+version: 2026-10-10-ground-surfaces
+- Haven's town square is now paved with irregular flagstones edged by a ring of darker stones, instead of a grey speckled disc. The notice board now stands on the square, facing the well, instead of straddling its edge.
+- Haven's lanes and cottage paths, garden yards, the village hearth, camp grounds, the Bramblesow clearing and the Warren floor are now packed dirt with pebbles instead of a flat brown fabric pattern. Path edges wander naturally, and lanes widen where they meet the square or another path.
+- The Haunted Graveyard's track is now dark trodden mud instead of a busy speckled pattern.
+- Frozen Hollow's snow has softer blue drifts between brighter crests.
+
 version: 2026-10-10-themed-hud
 - New top-left frame: your level in a gold badge beside health, mana and experience bars. Health you just lost lingers as a pale strip before draining, and the bar throbs red when life is low. Hover the experience bar to see exact numbers. The frame scales with your screen size.
 - Attributes, gold, potion counts and the key list are no longer in the corner. Attributes are on the character page (C), gold is shown in the inventory above your bag, potion counts are on their skill bar squares, and the key list is in Settings under Controls. The H key (show/hide controls) is gone.

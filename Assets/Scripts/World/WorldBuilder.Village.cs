@@ -23,6 +23,14 @@ namespace PoeClone.World
         private void WindingPath(Transform parent, string name, int area, float width, Material material,
             params Vector3[] knots)
         {
+            WindingPath(parent, name, area, width, material, 0f, knots);
+        }
+
+        // flare widens the start into a mouth (1 = twice as wide), easing back over a few metres,
+        // so a lane opens onto a square instead of butting into it at full width.
+        private void WindingPath(Transform parent, string name, int area, float width, Material material,
+            float flare, params Vector3[] knots)
+        {
             if (knots.Length < 2) return;
             var points = new List<Vector3>();
             for (int segment = 0; segment < knots.Length - 1; segment++)
@@ -31,7 +39,7 @@ namespace PoeClone.World
                 Vector3 b = knots[segment];
                 Vector3 c = knots[segment + 1];
                 Vector3 d = knots[Mathf.Min(knots.Length - 1, segment + 2)];
-                int steps = Mathf.Max(4, Mathf.CeilToInt(Vector3.Distance(b, c) / 1.2f));
+                int steps = Mathf.Max(4, Mathf.CeilToInt(Vector3.Distance(b, c) / 0.8f));
                 for (int step = 0; step < steps; step++)
                 {
                     float u = (float)step / steps;
@@ -53,10 +61,13 @@ namespace PoeClone.World
                 if (i > 0) distance += Vector3.Distance(points[i - 1], points[i]);
                 Vector3 tangent = points[Mathf.Min(points.Count - 1, i + 1)] - points[Mathf.Max(0, i - 1)];
                 Vector3 side = Vector3.Cross(Vector3.up, tangent).normalized;
-                float half = width * 0.5f * (1f + 0.09f * Mathf.Sin(distance * 0.47f));
-                float drift = 0.12f * Mathf.Sin(distance * 0.91f);
-                vertices[i * 2] = points[i] + side * (half + drift) + Vector3.up * 0.035f;
-                vertices[i * 2 + 1] = points[i] - side * (half - drift) + Vector3.up * 0.035f;
+                // Each edge wanders on its own noise, so the verge looks trodden rather than ruled.
+                float half = width * 0.5f * (1f + 0.09f * Mathf.Sin(distance * 0.47f))
+                    * (1f + flare * Mathf.Exp(-distance / 3f));
+                float left = half * (1f + 0.22f * (Mathf.PerlinNoise(distance * 0.55f, width * 7.3f) - 0.5f));
+                float right = half * (1f + 0.22f * (Mathf.PerlinNoise(distance * 0.55f + 41f, width * 7.3f) - 0.5f));
+                vertices[i * 2] = points[i] + side * left + Vector3.up * 0.035f;
+                vertices[i * 2 + 1] = points[i] - side * right + Vector3.up * 0.035f;
                 uv[i * 2] = new Vector2(0, distance / width);
                 uv[i * 2 + 1] = new Vector2(1, distance / width);
                 bool inside = shape.Contains(center + vertices[i * 2]) &&
@@ -115,7 +126,7 @@ namespace PoeClone.World
                 Vector3 doorstep = house.transform.TransformPoint(new Vector3(0, 0, -2f));
                 Vector3 approach = lanes[i] + (doorstep - center - lanes[i]) * 0.5f;
                 approach += Vector3.Cross(Vector3.up, homes[i] - lanes[i]).normalized * 0.7f;
-                WindingPath(parent, "CottageFootpath_" + (i + 1), Haven, 1.5f, kit.Mat("TanDark"),
+                WindingPath(parent, "CottageFootpath_" + (i + 1), Haven, 1.5f, DirtFloor, 0.8f,
                     lanes[i], approach, doorstep - center);
                 Claim(p, 7.5f);
                 Lamp(parent, doorstep + house.transform.right * 2.8f);
@@ -155,7 +166,7 @@ namespace PoeClone.World
             var yard = new GameObject("KitchenGarden").transform;
             yard.SetParent(parent, false);
             yard.SetPositionAndRotation(house.TransformPoint(new Vector3(0, 0, 4.8f)), house.rotation);
-            LocalBox(yard, new Vector3(0, 0.025f, 0), new Vector3(4.8f, 0.05f, 3.4f), kit.Mat("TanDark"), false);
+            LocalBox(yard, new Vector3(0, 0.025f, 0), new Vector3(4.8f, 0.05f, 3.4f), DirtFloor, false);
             for (int row = -1; row <= 1; row++)
                 for (int plant = -2; plant <= 2; plant++)
                 {
@@ -234,7 +245,10 @@ namespace PoeClone.World
             Vector3 center = Center(Haven);
             var board = new GameObject("VillageNoticeboard").transform;
             board.SetParent(parent, false);
-            board.position = center + Flat(-8, 9);
+            // Inside the square's north-west edge, notices (local -Z) facing the well.
+            Vector3 outward = Flat(-8, 9).normalized;
+            board.SetPositionAndRotation(center + outward * 9f, Quaternion.LookRotation(outward));
+            Claim(board.position, 2f);
             for (int side = -1; side <= 1; side += 2)
                 LocalBox(board, new Vector3(side * 1.1f, 1.1f, 0), new Vector3(0.16f, 2.2f, 0.16f), kit.Mat("Wood"));
             LocalBox(board, new Vector3(0, 1.65f, 0), new Vector3(2.6f, 1.2f, 0.18f), kit.Mat("Wood"));
@@ -247,7 +261,7 @@ namespace PoeClone.World
             var nook = new GameObject("VillageHearth").transform;
             nook.SetParent(parent, false);
             nook.position = fire;
-            Cyl(nook, fire + Vector3.up * 0.03f, 5f, 0.06f, kit.Mat("TanDark"), false);
+            FloorDisc(nook, "HearthEarth", fire + Vector3.up * 0.06f, 5f, DirtFloor);
             for (int stone = 0; stone < 10; stone++)
             {
                 float angle = stone * Mathf.PI / 5f;

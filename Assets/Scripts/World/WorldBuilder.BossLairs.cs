@@ -102,8 +102,8 @@ namespace PoeClone.World
             Vector3 at = LairSpot("Bramblesow");
             ClearSite(Greenwood, at, 17f);
             Transform t = Group("BramblesowWallow");
-            Cyl(t, at + Vector3.up * 0.02f, 11f, 0.03f, kit.Mat("TanDark"), solid: false);
-            Ball(t, at + new Vector3(4f, 0.02f, 5f), 3.4f, kit.Mat("TanDark"), flatten: 0.05f, solid: false);
+            FloorDisc(t, "TrampledEarth", at + Vector3.up * 0.035f, 11f, DirtFloor);
+            Ball(t, at + new Vector3(4f, 0.02f, 5f), 3.4f, MudFloor, flatten: 0.05f, solid: false);
             Cyl(t, at + new Vector3(4f, 0.05f, 5f), 2.6f, 0.03f, kit.Mat("Water"), solid: false);
             for (int k = 0; k < 7; k++)
             {
@@ -246,7 +246,7 @@ namespace PoeClone.World
         private AreaDefinition BuildWarren()
         {
             Vector3 c = Center(Warren);
-            Transform t = Floor(Warren, "The Warren", kit.Mat("TanDark"));
+            Transform t = Floor(Warren, "The Warren", DirtFloor);
             Begin(Warren, 721);
             Vector3 throne = c + new Vector3(0f, 0f, 22f);
             Box(t, throne + new Vector3(0f, 0.5f, 0f), new Vector3(2.4f, 1f, 1.6f), kit.Mat("Wood"));
