@@ -201,6 +201,15 @@ namespace PoeClone.Player
             Sweep(EnemyRadius, heading, length, enemiesOnly: true, ref nearest);
             Sweep(Radius, heading, length, enemiesOnly: false, ref nearest);
 
+            // A Graveward in the way absorbs it before it reaches anything behind the ward.
+            if (Enemies.Graveward.Stops(transform.position, transform.position + motion, out Vector3 warded) &&
+                (nearest == null || nearest.Value.distance > Vector3.Distance(transform.position, warded)))
+            {
+                Skills.SkillEffects.Shockwave(warded, 0.6f, textColor, 0.2f);
+                Destroy(gameObject);
+                return;
+            }
+
             // A spectator's copy: its enemies have no colliders, so it stops (and bursts) at the
             // first one it passes close to, the way the player's real one did.
             if (harmless && nearest == null && pierced == null)
@@ -329,7 +338,6 @@ namespace PoeClone.Player
 
             if (target is Enemies.EnemyHealth enemy)
             {
-                if (Enemies.Graveward.Blocks(enemy, launchPosition)) return;
                 // Chilled before the hit lands, so "against chilled enemies" and Shatter count it.
                 if (chillSeconds > 0f)
                 {

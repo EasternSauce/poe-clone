@@ -372,7 +372,8 @@ namespace PoeClone.EditorTools
             if (line == "shield_int") return "600x600_0007_Conduit.png";
             if (line == "shield_str" && tier >= 2) return "600x600_0014_TowerShield.png";
             if (line == "shield_dex" && tier > 0) return "600x600_0016_SpikedShield.png";
-            if (line == "bow") return tier < 2 ? "600x600_0031_RecurveBow.png" : "600x1200_0013_Longbow.png";
+            // Never the ink longbow (600x1200_0013_Longbow): its icon looked bad.
+            if (line == "bow") return "600x600_0031_RecurveBow.png";
             if (line == "sword" && tier > 0) return tier == 1 ? "600x600_0043_ArmingSword.png" : "600x600_0044_Sword.png";
             if (line == "greatsword" && tier > 0) return tier == 1 ? "600x1200_0011_Claymore.png" : "600x1200_0002_Zweihander.png";
             if (line == "maul" && tier > 0) return tier == 1 ? "600x1200_0009_Warhammer.png" : "600x1200_0006_Maul.png";

@@ -33,7 +33,9 @@ namespace PoeClone.Enemies
         FireBreath, // a cone of flame in front of it, after a short wind-up
         Howl,       // a chilling ring round itself; hastens the pack it runs with
         IceSpikes,  // a line of ice spikes erupting from it towards the player
-        Shriek      // a screech round itself that hurls the player back
+        Shriek,     // a screech round itself that hurls the player back
+        BoneWhirl,  // spins its great weapon and wades at the player, cutting all round it
+        BonePrison  // a ring of bone spikes closes round the player: anyone inside can't leave for a while
     }
 
     public enum BossStyle
@@ -97,6 +99,10 @@ namespace PoeClone.Enemies
         public Color StaffOrb;   // casters: the orb on the staff and the colour of their bolts
         public bool Bow;         // archers: shoots arrows instead of bolts (the bow itself is in Gear)
         public bool RainOfArrows; // archers: each shot is loosed skywards and rains down on a marked spot
+        public bool Skeletal;     // humanoids: bones instead of flesh (SkeletonLook)
+
+        /// <summary>The first killing blow drops it into a bone pile that stands up again unless smashed.</summary>
+        public bool Reassembles;
 
         /// <summary>
         /// A humanoid that swings a real weapon (the one in its Gear) with that weapon's own
@@ -205,7 +211,7 @@ namespace PoeClone.Enemies
                 Name = "Brute", HealthMultiplier = 2.5f, DamageMultiplier = 1f, SpawnWeight = 12f,
                 MaxHealth = 35.5814f, Experience = 55,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
-                Damage = 45f, AttackCooldown = 2.2f, AttackRange = 2.6f,
+                Damage = 32f, AttackCooldown = 2.2f, AttackRange = 2.6f,
                 SpeedRatio = 0.62f, Scale = 1.35f, 
                 Cloth = new Color(0.22f, 0.22f, 0.25f), Skin = new Color(0.55f, 0.42f, 0.38f), Eyes = new Color(1.0f, 0.2f, 0.1f),
                 Gear = new[] { "studded_vest" },
@@ -271,7 +277,7 @@ namespace PoeClone.Enemies
                 Damage = 15.89362f, AttackCooldown = 1.0f, AttackRange = 2.0f,
                 SpeedRatio = 0.88f, Scale = 0.95f,
                 Cloth = new Color(0.82f, 0.80f, 0.72f), Skin = new Color(0.90f, 0.88f, 0.80f), Pants = new Color(0.32f, 0.30f, 0.27f), Eyes = new Color(1.0f, 0.25f, 0.1f), HideHorns = true,
-                Gear = new[] { "rusty_sword" },
+                Gear = new[] { "rusty_sword" }, Weapon = WeaponType.Sword, Skeletal = true,
                 DropChance = 0.3f
             },
             new EnemyKind
@@ -369,11 +375,11 @@ namespace PoeClone.Enemies
                 Name = "Skeleton Archer", SpawnWeight = 0f, Undead = true,
                 MaxHealth = 18.48361f, Experience = 28,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Physical,
-                Damage = 18.54255f, AttackCooldown = 1.9f, AttackRange = 12f, ProjectileSpeed = 20f,
+                Damage = 18.54255f, AttackCooldown = 1.46f, AttackRange = 12f, ProjectileSpeed = 20f,
                 SpeedRatio = 0.75f, Scale = 0.95f,
                 Cloth = new Color(0.82f, 0.80f, 0.72f), Skin = new Color(0.90f, 0.88f, 0.80f), Pants = new Color(0.32f, 0.30f, 0.27f), Eyes = new Color(1.0f, 0.25f, 0.1f), HideHorns = true,
                 Gear = new[] { "short_bow" },
-                Bow = true, RainOfArrows = true,
+                Bow = true, RainOfArrows = true, Skeletal = true,
                 Skill = EnemySkill.Volley, SkillCooldown = 9f,
                 DropChance = 0.3f
             },
@@ -548,14 +554,14 @@ namespace PoeClone.Enemies
                 Name = "Skeleton Warrior", SpawnWeight = 0f,
                 MaxHealth = 24f, Style = EnemyAttackStyle.Melee, AttackRange = 2.1f, SpeedRatio = 0.9f, Scale = 0.95f,
                 Cloth = new Color(0.62f, 0.78f, 0.62f), Skin = new Color(0.92f, 0.90f, 0.82f), Pants = new Color(0.22f, 0.30f, 0.24f), Eyes = new Color(0.45f, 1.0f, 0.5f), HideHorns = true,
-                Gear = new[] { "rusty_sword", "wooden_shield" }
+                Gear = new[] { "rusty_sword", "wooden_shield" }, Skeletal = true
             },
             new EnemyKind
             {
                 Name = "Skeleton Mage", SpawnWeight = 0f,
                 MaxHealth = 14f, Style = EnemyAttackStyle.Ranged, AttackRange = 8.5f, ProjectileSpeed = 14f, SpeedRatio = 0.85f, Scale = 0.92f,
                 Cloth = new Color(0.25f, 0.32f, 0.55f), Skin = new Color(0.92f, 0.90f, 0.82f), Pants = new Color(0.16f, 0.18f, 0.30f), Eyes = new Color(0.5f, 0.85f, 1.0f), HideHorns = true,
-                StaffOrb = new Color(0.5f, 0.85f, 1.0f)
+                StaffOrb = new Color(0.5f, 0.85f, 1.0f), Skeletal = true
             },
             new EnemyKind
             {
@@ -603,7 +609,7 @@ namespace PoeClone.Enemies
                 Name = "Grave Siren", HealthMultiplier = 3f, DamageMultiplier = 2f, SpawnWeight = 0f, Undead = true,
                 MaxHealth = 36.4071f, Armour = 61.22449f, ColdResistance = 25f, Experience = 48,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Cold,
-                Damage = 18.54255f, AttackCooldown = 2.5f, AttackRange = 9f, ProjectileSpeed = 10f,
+                Damage = 18.54255f, AttackCooldown = 1.6f, AttackRange = 9f, ProjectileSpeed = 10f,
                 SpeedRatio = 0.45f, Body = CreatureBody.GraveSiren,
                 StaffOrb = new Color(0.45f, 0.75f, 0.68f),
                 Skin = new Color(0.26f, 0.30f, 0.30f), Cloth = new Color(0.38f, 0.40f, 0.38f),
@@ -721,6 +727,34 @@ namespace PoeClone.Enemies
                 DropChance = 1f, RareBonus = 0.9f, Drops = 4,
                 IsBoss = true, Boss = BossStyle.Huntress
             },
+            // The Haunted Graveyard's heavy dead, built on the skeleton look.
+            new EnemyKind
+            {
+                // A big skeleton with a greataxe: wades in spinning it, and pulls itself back
+                // together once unless its bone pile is smashed.
+                Name = "Bone Reaver", HealthMultiplier = 2.5f, DamageMultiplier = 1f, SpawnWeight = 0f, Undead = true,
+                MaxHealth = 44f, Armour = 60f, Experience = 62,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 36f, AttackCooldown = 1.9f, AttackRange = 2.8f,
+                SpeedRatio = 0.7f, Scale = 1.35f,
+                Cloth = new Color(0.80f, 0.77f, 0.68f), Skin = new Color(0.86f, 0.83f, 0.74f), Pants = new Color(0.30f, 0.12f, 0.10f), Eyes = new Color(1.0f, 0.3f, 0.12f), HideHorns = true,
+                Gear = new[] { "woodsplitter" }, Weapon = WeaponType.Greataxe, Skeletal = true, Reassembles = true,
+                Skill = EnemySkill.BoneWhirl, SkillCooldown = 7f,
+                DropChance = 0.7f, RareBonus = 0.15f
+            },
+            new EnemyKind
+            {
+                // A shielded skeleton that cages the player in bone for the rest to catch up.
+                Name = "Bone Warden", HealthMultiplier = 2.5f, DamageMultiplier = 1f, SpawnWeight = 0f, Undead = true,
+                MaxHealth = 40f, Armour = 150f, Experience = 58,
+                Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
+                Damage = 27f, AttackCooldown = 1.4f, AttackRange = 2.3f,
+                SpeedRatio = 0.78f, Scale = 1.15f,
+                Cloth = new Color(0.80f, 0.77f, 0.68f), Skin = new Color(0.84f, 0.84f, 0.78f), Pants = new Color(0.18f, 0.24f, 0.26f), Eyes = new Color(0.45f, 0.9f, 1.0f), HideHorns = true,
+                Gear = new[] { "iron_mace", "wooden_shield" }, Weapon = WeaponType.Mace, Skeletal = true,
+                Skill = EnemySkill.BonePrison, SkillCooldown = 9f,
+                DropChance = 0.65f, RareBonus = 0.1f
+            },
         };
 
         public const int SlimelingIndex = 20;
@@ -835,6 +869,8 @@ namespace PoeClone.Enemies
 
             if (kind.Boss == BossStyle.Shepherd)
                 ShepherdLook.Build(model);
+            if (kind.Skeletal)
+                SkeletonLook.Build(model, kind);
 
             if (kind.Gear.Length > 0)
             {

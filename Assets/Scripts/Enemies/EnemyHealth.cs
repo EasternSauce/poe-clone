@@ -132,6 +132,7 @@ namespace PoeClone.Enemies
             maxHealth = kind.MaxHealth * EnemyKinds.LifeScale(MonsterLevel, kind);
             currentHealth = maxHealth;
             experienceReward = Mathf.RoundToInt(kind.Experience * EnemyKinds.ExperienceScale(MonsterLevel));
+            reassembled = false;
         }
 
         /// <summary>Spectator puppets: which kind to draw (their numbers come over the wire).</summary>
@@ -165,9 +166,6 @@ namespace PoeClone.Enemies
             bool canEnrage = false, bool flinch = true, Vector3? hitOrigin = null)
         {
             if (dead || amount <= 0f)
-                return 0f;
-
-            if (hitOrigin.HasValue && Graveward.Blocks(this, hitOrigin.Value))
                 return 0f;
 
             if (IsRemote)
@@ -232,11 +230,12 @@ namespace PoeClone.Enemies
                     shepherd.BeginPhase3();
                     return amount;
                 }
-                Die();
+                if (!CollapseIntoBones())
+                    Die();
                 return amount;
             }
 
-            if (!flinch)
+            if (!flinch || Reassembling)
                 return amount;
 
             // Bosses don't flinch.
@@ -301,6 +300,69 @@ namespace PoeClone.Enemies
                 TakeDamage(amount, DamageType.Fire, 0f, 0f, flinch: false);
             }
             burning = null;
+        }
+
+        // ------------------------------------------------------------------ reassembling (EnemyKind.Reassembles)
+
+        private const float PileLife = 0.25f;
+        private const float PileSeconds = 3.5f;
+        private const float RisenLife = 0.5f;
+
+        /// <summary>Lying in its bone pile: smash it before it stands up again.</summary>
+        public bool Reassembling { get; private set; }
+        private bool reassembled;
+
+        // The first killing blow: it falls into a pile of bones with a little life left.
+        private bool CollapseIntoBones()
+        {
+            if (reassembled || !EnemyKinds.Get(KindIndex).Reassembles)
+                return false;
+            reassembled = true;
+            StartCoroutine(Reassemble());
+            return true;
+        }
+
+        private IEnumerator Reassemble()
+        {
+            Reassembling = true;
+            currentHealth = maxHealth * PileLife;
+            Damaged?.Invoke();
+            EnemyController controller = GetComponent<EnemyController>();
+            EnemyCombat combat = GetComponent<EnemyCombat>();
+            if (controller != null) controller.enabled = false;
+            if (combat != null) combat.enabled = false;
+            UI.CombatText.Show(transform.position + Vector3.up * 1.5f * transform.localScale.y, "Collapses", UI.CombatText.AvoidColor, 0.9f);
+            SkillEffects.Shockwave(transform.position, 1.4f * transform.localScale.x, EnemyKinds.Get(KindIndex).Skin, 0.35f);
+
+            // The bones fold down into a heap where it stood, and later pull back up.
+            Transform model = transform.Find("Model");
+            Vector3 standing = model != null ? model.localScale : Vector3.one;
+            Vector3 heap = new Vector3(standing.x * 1.15f, standing.y * 0.22f, standing.z * 1.15f);
+            for (float t = 0f; t < 0.25f && !dead; t += Time.deltaTime)
+            {
+                if (model != null) model.localScale = Vector3.Lerp(standing, heap, t / 0.25f);
+                yield return null;
+            }
+            if (model != null && !dead) model.localScale = heap;
+
+            for (float t = 0f; t < PileSeconds && !dead; t += Time.deltaTime)
+                yield return null;
+            if (dead)
+                yield break;
+
+            for (float t = 0f; t < 0.4f && !dead; t += Time.deltaTime)
+            {
+                if (model != null) model.localScale = Vector3.Lerp(heap, standing, t / 0.4f);
+                yield return null;
+            }
+            if (dead)
+                yield break;
+            if (model != null) model.localScale = standing;
+            currentHealth = Mathf.Max(currentHealth, maxHealth * RisenLife);
+            Damaged?.Invoke();
+            Reassembling = false;
+            if (controller != null) controller.enabled = true;
+            if (combat != null) combat.enabled = true;
         }
 
         /// <summary>Restores life (a shaman's war cry), up to the maximum.</summary>

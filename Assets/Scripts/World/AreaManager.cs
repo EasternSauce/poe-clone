@@ -60,7 +60,7 @@ namespace PoeClone.World
                 case WorldBuilder.Cave:
                 case WorldBuilder.Warren: track = "2.Dark Hall"; break;
                 case WorldBuilder.Graveyard:
-                case WorldBuilder.Belfry: track = "zombie main music"; break;
+                case WorldBuilder.Belfry: track = "9.Dont look back"; break;
                 case WorldBuilder.Ruins: track = "Tower of Lava"; break;
                 // Keep Frozen Hollow's music through the sanctuary's opening dialogue.
                 case WorldBuilder.Frozen:

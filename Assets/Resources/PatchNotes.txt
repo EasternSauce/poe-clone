@@ -1,3 +1,16 @@
+version: 2026-10-11-dont-look-back
+- The Haunted Graveyard is far more dangerous. Two new skeletons join it: the Bone Reaver, a big skeleton with a greataxe that spins and wades into you, cutting everything around it (step out of the ring), and collapses into a bone pile when first killed. Smash the pile before it pulls itself back together, or it stands up again at half life. The Bone Warden carries a mace and shield and raises a ring of bone spikes around you: standing on the ring hurts, and if you're caught inside you can't leave for 3 seconds.
+- Skeletons finally look like skeletons: skulls with glowing eyes, ribcages and bony limbs instead of pale people. This includes the graveyard's skeletons and archers, necromancers' raised dead and your own Skeleton Warriors and Mages. Graveyard skeletons now swing their swords instead of clawing.
+- Skeleton Archers are much more dangerous: their arrow rain covers 50% more area, lands 30% sooner and they shoot 30% faster.
+- The Grave Siren's ring of ice covers half the area, but its basic attack is much faster.
+- The Barrow Castellan's ward is a third of the size and now only stops your projectiles (arrows, spell bolts and minion bolts that hit it from the front). Melee and area attacks go straight through it, and the Castellan keeps attacking right after raising it instead of standing still.
+- The Hollowmaw's dragging breath covers 20% less area and deals 20% less damage.
+- Brutes in the Lost Hollows hit about 30% softer.
+- The Haunted Graveyard has new music: Don't Look Back.
+- Requirements you don't meet show in red in item tooltips, and items you can't use yet have a red line inside their rarity frame.
+- Drinking a potion briefly quiets other sound effects, so you can hear it over a fight.
+- The Long Bow and Imperial Bow have new icons.
+
 version: 2026-10-11-tanks-and-critters
 - Enraged monsters no longer punish players who didn't enrage them. If you haven't enraged any monster (with ranged or minion hits) in the last 10 seconds, enraged monsters hit you softer: they still attack faster, but their damage per second against you stays where it was before the rage. Whoever enraged them still takes the full enraged damage. This mostly matters in co-op, where your partner's arrows and minions used to make every monster hit the melee player much harder.
 - The tank side of the tree (Might) now reduces the damage you take: Toughness 5% less, Brawn 3%, Endurance 3%, Thick Hide 2%, Juggernaut 5%, Stout Heart 4% and Steel Heart 2%. A Might melee build takes about 15% less damage by level 7 and 20-24% less from level 21 on.

@@ -806,6 +806,12 @@ namespace PoeClone.Skills
                 Vector3 to = aim - transform.position;
                 float step = Speed * Time.deltaTime;
                 transform.Rotate(400f * Time.deltaTime, 280f * Time.deltaTime, 0f);
+                if (Graveward.Stops(transform.position, transform.position + to.normalized * Mathf.Min(step, to.magnitude), out Vector3 warded))
+                {
+                    SkillEffects.Shockwave(warded, 0.5f, new Color(0.5f, 0.85f, 1f), 0.2f);
+                    Destroy(gameObject);
+                    return;
+                }
                 if (to.magnitude <= step + 0.3f)
                 {
                     if (caster != null)

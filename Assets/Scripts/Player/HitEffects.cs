@@ -244,7 +244,6 @@ namespace PoeClone.Player
             SkillEffects.Shockwave(at, RetaliationRadius, CombatText.BlockColor, 0.3f);
             foreach (EnemyHealth enemy in EnemiesNear(at, RetaliationRadius, null))
             {
-                if (Graveward.Blocks(enemy, at)) continue;
                 Deal(player, enemy, damage, false, CombatText.PhysicalColor, DamageType.Physical, secondary: true, hitOrigin: at);
             }
         }
@@ -325,7 +324,6 @@ namespace PoeClone.Player
 
             foreach (EnemyHealth other in EnemiesNear(at, radius, dead))
             {
-                if (Graveward.Blocks(other, at)) continue;
                 if (type == DamageType.Cold)
                 {
                     EnemyController ai = other.GetComponent<EnemyController>();

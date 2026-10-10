@@ -115,7 +115,7 @@ namespace PoeClone.Enemies
 
         private void Update()
         {
-            if (kind == null || mirror || health.IsDead)
+            if (kind == null || mirror || health.IsDead || health.Reassembling)
                 return;
             if (player == null)
             {
@@ -165,6 +165,8 @@ namespace PoeClone.Enemies
                 case EnemySkill.Howl: return distance < 10f;
                 case EnemySkill.IceSpikes: return distance > 2f && distance < SpikeLength - 1.5f;
                 case EnemySkill.Shriek: return distance < ShriekRadius(transform) - 0.5f;
+                case EnemySkill.BoneWhirl: return distance < 6f;
+                case EnemySkill.BonePrison: return distance > 2.5f && distance < 12f;
                 default: return false;
             }
         }
@@ -196,7 +198,7 @@ namespace PoeClone.Enemies
 
             UseCount++;
             bool centredOnSelf = kind.Skill == EnemySkill.Slam || kind.Skill == EnemySkill.Wail ||
-                kind.Skill == EnemySkill.Howl || kind.Skill == EnemySkill.Shriek;
+                kind.Skill == EnemySkill.Howl || kind.Skill == EnemySkill.Shriek || kind.Skill == EnemySkill.BoneWhirl;
             LastTarget = centredOnSelf ? transform.position : target;
 
             switch (kind.Skill)
@@ -270,7 +272,7 @@ namespace PoeClone.Enemies
                     StartCoroutine(Offering(target, damage * 1.4f, offeringStagger));
                     break;
                 case EnemySkill.DraggingBreath:
-                    StartCoroutine(DraggingBreath(target, damage * 1.4f));
+                    StartCoroutine(DraggingBreath(target, damage * 1.12f));
                     break;
                 case EnemySkill.Graveward:
                     StartCoroutine(RaiseGraveward(target));
@@ -290,7 +292,140 @@ namespace PoeClone.Enemies
                 case EnemySkill.Shriek:
                     Shriek(damage);
                     break;
+                case EnemySkill.BoneWhirl:
+                    StartCoroutine(BoneWhirl(damage * 0.55f));
+                    break;
+                case EnemySkill.BonePrison:
+                    StartCoroutine(BonePrison(target, damage * 1.2f));
+                    break;
             }
+        }
+
+        // ------------------------------------------------------------------ skeleton skills
+
+        private const float WhirlWindUp = 0.5f;
+        private const float WhirlSeconds = 1.6f;
+        private const float WhirlTick = 0.4f;
+        private const float WhirlSpeed = 3.6f;
+        private static float WhirlRadius(Transform body) => 2f * body.localScale.x;
+
+        // A ring marks its reach, then it spins its great weapon and wades at whoever it is after,
+        // cutting everything round it every few tenths of a second. Hits don't stop the spin.
+        private IEnumerator BoneWhirl(float damage)
+        {
+            float radius = WhirlRadius(transform);
+            busyUntil = Time.time + WhirlWindUp + WhirlSeconds + 0.2f;
+            StartCoroutine(GroundTelegraph.Run(transform.position, radius, WhirlWindUp, kind.DamageType, null));
+            yield return new WaitForSeconds(WhirlWindUp);
+            float nextTick = 0f;
+            for (float t = 0f; t < WhirlSeconds; t += Time.deltaTime)
+            {
+                if (health.IsDead || health.Reassembling)
+                    break;
+                transform.Rotate(0f, 1080f * Time.deltaTime, 0f);
+                if (!mirror && aim != null)
+                {
+                    Vector3 to = Flat(aim.position - transform.position);
+                    if (to.magnitude > radius * 0.4f)
+                        body.Move(to.normalized * WhirlSpeed * Time.deltaTime + Vector3.down * 2f * Time.deltaTime);
+                }
+                if (t >= nextTick)
+                {
+                    nextTick += WhirlTick;
+                    SkillEffects.Shockwave(transform.position, radius, DustColor, 0.25f);
+                    EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
+                    if (player != null && !player.IsDead && !Sanctuary.Contains(player.transform.position, 1f) &&
+                        Flat(player.transform.position - transform.position).magnitude <= radius)
+                        player.TakeHit(damage, kind.DamageType);
+                }
+                yield return null;
+            }
+            busyUntil = Time.time + 0.2f;
+        }
+
+        private static IEnumerator WhirlVisual(MonoBehaviour host, Transform body)
+        {
+            float radius = WhirlRadius(body);
+            host.StartCoroutine(GroundTelegraph.Run(body.position, radius, WhirlWindUp, DamageType.Physical, null));
+            yield return new WaitForSeconds(WhirlWindUp);
+            for (float t = 0f; t < WhirlSeconds && body != null; t += WhirlTick)
+            {
+                SkillEffects.Shockwave(body.position, radius, DustColor, 0.25f);
+                yield return new WaitForSeconds(WhirlTick);
+            }
+        }
+
+        private const float PrisonRadius = 3.4f;
+        private const float PrisonBand = 0.7f;
+        private const float PrisonWindUp = 1.0f;
+        private const float PrisonSeconds = 3f;
+
+        // A ring marked round the player fills, then bone spikes burst up along it: standing on
+        // the ring hurts, and anyone caught inside can't leave until the bones crumble (or the
+        // warden falls). It fights on while the ring closes.
+        private IEnumerator BonePrison(Vector3 centre, float damage)
+        {
+            busyUntil = Time.time + 0.5f;
+            StartCoroutine(GroundTelegraph.RunRing(centre, PrisonRadius - PrisonBand, PrisonRadius + PrisonBand, PrisonWindUp, kind.DamageType, null));
+            yield return new WaitForSeconds(PrisonWindUp);
+            if (health.IsDead)
+                yield break;
+            GameObject cage = RaisePrison(centre, kind);
+            if (player == null || player.IsDead || Sanctuary.Contains(player.transform.position, 1f))
+                yield break;
+
+            float range = Flat(player.transform.position - centre).magnitude;
+            if (Mathf.Abs(range - PrisonRadius) <= PrisonBand)
+                player.TakeHit(damage, kind.DamageType, attack: false);
+            if (range >= PrisonRadius || player.IsDead)
+                yield break;
+
+            UI.CombatText.Show(player.transform.position + Vector3.up * 2.4f, "Trapped!", kind.Eyes, 1.1f);
+            CharacterController playerBody = player.GetComponent<CharacterController>();
+            float limit = PrisonRadius - 0.6f;
+            for (float t = 0f; t < PrisonSeconds && cage != null && !health.IsDead && !player.IsDead; t += Time.deltaTime)
+            {
+                // After the player's own move this frame: back inside the bones.
+                Vector3 offset = Flat(player.transform.position - centre);
+                if (playerBody != null && playerBody.enabled && offset.magnitude > limit)
+                {
+                    Vector3 inside = centre + offset.normalized * limit;
+                    inside.y = player.transform.position.y;
+                    playerBody.Move(inside - player.transform.position);
+                }
+                yield return null;
+            }
+            if (cage != null)
+                Destroy(cage);
+        }
+
+        private static IEnumerator PrisonVisual(Vector3 centre, EnemyKind kind)
+        {
+            yield return new WaitForSeconds(PrisonWindUp);
+            RaisePrison(centre, kind);
+        }
+
+        private static GameObject RaisePrison(Vector3 centre, EnemyKind kind)
+        {
+            var root = new GameObject("BonePrison");
+            Object.Destroy(root, PrisonSeconds);
+            const int count = 16;
+            for (int i = 0; i < count; i++)
+            {
+                float a = i * Mathf.PI * 2f / count;
+                Vector3 outward = new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a));
+                Vector3 at = centre + outward * PrisonRadius;
+                at.y = Debris.GroundBelow(at + Vector3.up);
+                float height = Random.Range(1.5f, 2.1f);
+                GameObject spike = RuntimePrimitives.Create(PrimitiveType.Cube, root.transform, i % 2 == 0 ? kind.Skin : kind.Cloth);
+                spike.transform.position = at + Vector3.up * height * 0.4f;
+                spike.transform.localScale = new Vector3(0.22f, height, 0.22f);
+                // Leaning in over the trapped space, like the ribs of a great beast.
+                spike.transform.rotation = Quaternion.AngleAxis(-14f, Vector3.Cross(Vector3.up, outward)) * Quaternion.LookRotation(outward);
+            }
+            SkillEffects.Shockwave(centre, PrisonRadius, kind.Skin, 0.35f);
+            Audio.AudioManager.Instance?.PlayEffect("combat.ground." + kind.DamageType, centre);
+            return root;
         }
 
         // ------------------------------------------------------------------ newer creature skills
@@ -513,11 +648,11 @@ namespace PoeClone.Enemies
             }
         }
 
-        public const float ArrowRainDelay = 1.0f;
-        private const float ArrowRainRadius = 1.9f;
+        public const float ArrowRainDelay = 0.7f;
+        private const float ArrowRainRadius = 2.33f;
 
         private const float OfferingWindUp = 0.55f;
-        private const float BreathRange = 22.5f;
+        private const float BreathRange = 20.1f;
         private const float BreathHalfAngle = 24f;
         private const float BreathWindUp = 0.65f;
         private const float BreathChannel = 1.2f;
@@ -542,9 +677,7 @@ namespace PoeClone.Enemies
             GetComponentInChildren<CreatureAnimator>()?.Crouch(WardWindUp);
             yield return new WaitForSeconds(WardWindUp);
             if (!CastAlive(staggerCount)) yield break;
-            // The guardian holds its ground while the ward is up; flanking stays predictable.
-            busyUntil = Time.time + 5f;
-            Graveward.Raise(transform, Flat(target - transform.position), kind.Eyes, gameplay: true);
+            Graveward.Raise(transform, Flat(target - transform.position), kind.Eyes);
         }
 
         private static bool InsideBreath(Vector3 origin, Vector3 facing, Vector3 target)
@@ -615,13 +748,13 @@ namespace PoeClone.Enemies
         private static IEnumerator WardVisual(Transform caster, Vector3 target, EnemyKind kind)
         {
             yield return new WaitForSeconds(WardWindUp);
-            if (caster != null) Graveward.Raise(caster, Flat(target - caster.position), kind.Eyes, gameplay: false);
+            if (caster != null) Graveward.Raise(caster, Flat(target - caster.position), kind.Eyes);
         }
 
         private const float RootRadius = 3.125f;
         private const float RootWindUp = 1f;
-        private const float WailInnerRadius = 7.5f;
-        private const float WailOuterRadius = 18.75f;
+        private const float WailInnerRadius = 5.3f;
+        private const float WailOuterRadius = 13.25f;
         private const float WailWindUp = 1.25f;
         private const float FissureWindUp = 1.1f;
         private const float FissureHalfLength = 12.5f;
@@ -1038,6 +1171,13 @@ namespace PoeClone.Enemies
                     break;
                 case EnemySkill.Shriek:
                     host.StartCoroutine(GroundTelegraph.Run(body.position, ShriekRadius(body), ShriekWindUp, kind.DamageType, null));
+                    break;
+                case EnemySkill.BoneWhirl:
+                    host.StartCoroutine(WhirlVisual(host, body));
+                    break;
+                case EnemySkill.BonePrison:
+                    host.StartCoroutine(GroundTelegraph.RunRing(target, PrisonRadius - PrisonBand, PrisonRadius + PrisonBand, PrisonWindUp, kind.DamageType, null));
+                    host.StartCoroutine(PrisonVisual(target, kind));
                     break;
                 case EnemySkill.Leap:
                     float leapRadius = LeapRadius(body);

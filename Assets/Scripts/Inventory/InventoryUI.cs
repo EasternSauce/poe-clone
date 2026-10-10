@@ -47,6 +47,7 @@ namespace PoeClone.Inventory
         private static readonly Color MagicBorder = new Color(0.42f, 0.42f, 0.85f, 1f);
         private static readonly Color RareBorder = new Color(0.85f, 0.80f, 0.35f, 1f);
         private static readonly Color UniqueBorder = new Color(0.85f, 0.45f, 0.15f, 1f);
+        private static readonly Color UnmetBorder = new Color(1f, 0.31f, 0.25f, 1f);
         private static readonly Color GoodSoft = new Color(0.25f, 0.80f, 0.35f, 0.16f);
         private static readonly Color GoodStrong = new Color(0.25f, 0.85f, 0.35f, 0.40f);
         private static readonly Color Bad = new Color(0.90f, 0.20f, 0.20f, 0.40f);
@@ -1541,8 +1542,15 @@ private Vector2 CellSize(int w, int h)
             border.a = alpha;
             Image frame = UiKit.NewImage("Frame", outer, border);
             UiKit.Stretch(frame.rectTransform, 0f);
+            // Gear the character can't use yet gets a red line inside its rarity frame.
+            bool unmet = inventory != null && inventory.Stats != null && !item.Requirements.MetBy(inventory.Stats);
+            if (unmet)
+            {
+                Image warning = UiKit.NewImage("Unmet", frame.transform, new Color(UnmetBorder.r, UnmetBorder.g, UnmetBorder.b, alpha));
+                UiKit.Stretch(warning.rectTransform, 2f);
+            }
             Image face = UiKit.NewImage("Face", frame.transform, plate);
-            UiKit.Stretch(face.rectTransform, 2f);
+            UiKit.Stretch(face.rectTransform, unmet ? 4f : 2f);
 
             Image icon = UiKit.NewImage("Icon", outer, Color.white);
             icon.preserveAspect = true;
@@ -1818,7 +1826,8 @@ private Vector2 CellSize(int w, int h)
         // Reserve a text row; FitTooltip draws the divider as geometry rather than font glyphs.
         private const string TooltipDividerMarker = "<color=#00000000>-</color>";
 
-        public static string BuildTooltipText(ItemData item, out int lineCount)
+        /// <summary>With the character's <paramref name="stats"/>, requirements they don't meet show red.</summary>
+        public static string BuildTooltipText(ItemData item, out int lineCount, StatSheet stats = null)
         {
             // Weapons name their kind ("Bow", "Axe"); everything else its slot type ("Body Armour").
             string typeName = item.Type == ItemType.Weapon ? item.WeaponType.ToString() : item.Type.ToString();
@@ -1835,7 +1844,7 @@ private Vector2 CellSize(int w, int h)
             lineCount = 2;
             if (!string.IsNullOrEmpty(baseName))
             {
-                sb.Append("\n").Append(item.Requirements);
+                sb.Append("\n").Append(item.Requirements.Describe(stats));
                 lineCount++;
             }
             if (item.ItemLevel > 0 && item.Type != ItemType.Gold && item.Type != ItemType.Potion)
@@ -2026,7 +2035,7 @@ private Vector2 CellSize(int w, int h)
             if (vendor != null)
             {
                 int lines;
-                string text = BuildTooltipText(item, out lines);
+                string text = BuildTooltipText(item, out lines, inventory.Stats);
                 if (h.OverStash)
                 {
                     int price = Vendors.BuyPrice(item);
@@ -2047,7 +2056,7 @@ private Vector2 CellSize(int w, int h)
         private void ShowTooltip(ItemData item, Vector2 mousePos)
         {
             int lines;
-            string text = BuildTooltipText(item, out lines);
+            string text = BuildTooltipText(item, out lines, inventory.Stats);
             foreach (EquipSlot slot in SlotRules.AllSlots)
                 if (inventory.Equipment.Get(slot) == item && !inventory.Equipment.IsActive(slot))
                 {
@@ -2073,7 +2082,7 @@ private Vector2 CellSize(int w, int h)
             int lines;
             heldTooltipText.fontSize = touch ? 22 : 17;
             float lineHeight = touch ? 26f : 23f;
-            heldTooltipText.text = BuildTooltipText(cursorItem, out lines);
+            heldTooltipText.text = BuildTooltipText(cursorItem, out lines, inventory.Stats);
             heldTooltipRect.sizeDelta = FitTooltip(heldTooltipText, touch ? 340f : 270f, 24f + lines * lineHeight);
             heldTooltipRect.gameObject.SetActive(true);
             heldTooltipRect.SetAsLastSibling();

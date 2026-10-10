@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -15,7 +16,8 @@ namespace PoeClone.Audio
     /// UI clips are also centered and share one source on this object. Distance fade is only for
     /// persistent world sources (rivers, waterfalls, town noise) through WorldSfxVolume.
     /// Each recording's loudness is set in its audio file; code only applies the category,
-    /// the player's effects and master volumes, and the distance gains below.
+    /// the player's effects and master volumes, and the distance gains below. While a priority
+    /// sound (a potion) plays, the world one-shots duck so it is heard over a fight.
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
@@ -188,7 +190,8 @@ namespace PoeClone.Audio
             source.panStereo = 0f;
             source.pitch = pitch;
             // Gameplay one-shots always play at full SFX volume; only persistent world sources fade with distance.
-            source.volume = gain;
+            source.volume = gain * duck;
+            oneShots.Add(new OneShot { Source = source, Volume = gain });
             // When more sounds play than there are voices, Unity silences the lowest priority first (0 is highest).
             source.priority = topPriority ? 0 : 128;
             source.PlayDelayed(delay);
@@ -227,6 +230,41 @@ namespace PoeClone.Audio
                 return;
 
             uiSource.PlayOneShot(clip, uiVolume * EffectsVolume);
+        }
+
+        /// <summary>A UI sound that must be heard over combat: world one-shots duck while it plays.</summary>
+        public void PlayPriority(AudioClip clip)
+        {
+            soundBoard?.Resolve(ref clip);
+            if (clip == null)
+                return;
+
+            uiSource.PlayOneShot(clip, uiVolume * EffectsVolume);
+            duckUntil = Mathf.Max(duckUntil, Time.unscaledTime + clip.length);
+        }
+
+        private const float DuckedGain = 0.35f;
+        private const float DuckSpeed = 8f;
+
+        private struct OneShot
+        {
+            public AudioSource Source;
+            public float Volume;
+        }
+
+        private readonly List<OneShot> oneShots = new List<OneShot>();
+        private float duckUntil = float.NegativeInfinity;
+        private float duck = 1f;
+
+        private void Update()
+        {
+            float target = Time.unscaledTime < duckUntil ? DuckedGain : 1f;
+            if (duck == target && oneShots.Count == 0)
+                return;
+            duck = Mathf.MoveTowards(duck, target, DuckSpeed * Time.unscaledDeltaTime);
+            oneShots.RemoveAll(s => s.Source == null);
+            foreach (OneShot shot in oneShots)
+                shot.Source.volume = shot.Volume * duck;
         }
     }
 }
