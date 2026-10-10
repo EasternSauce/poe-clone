@@ -862,8 +862,8 @@ namespace PoeClone.Inventory
                 case StatType.FireDamage: return Increased(m, "Fire Damage");
                 case StatType.ColdDamage: return Increased(m, "Cold Damage");
                 case StatType.LightningDamage: return Increased(m, "Lightning Damage");
-                case StatType.IgniteChance: return n + "% chance to Ignite with Fire hits (60% of base Fire damage over 3s, scaled by Fire and Damage over Time bonuses)";
-                case StatType.ShockChance: return n + "% chance to Shock with Lightning hits (shocked enemies take 25% more damage)";
+                case StatType.IgniteChance: return n + "% chance to Ignite with Fire hits";
+                case StatType.ShockChance: return n + "% chance to Shock with Lightning hits";
                 case StatType.DamageVsChilled: return Increased(m, "Damage against Chilled enemies");
                 case StatType.CriticalChance: return Increased(m, "Critical Strike Chance");
                 case StatType.CriticalMultiplier: return sign + n + "% to Critical Strike Multiplier";
@@ -875,7 +875,7 @@ namespace PoeClone.Inventory
                 case StatType.IncreasedMana: return Increased(m, "Maximum Mana");
                 case StatType.PercentLifeRegen: return "Regenerate " + n + "% of Maximum Life per second";
                 case StatType.ManaOnKill: return "Gain " + n + " Mana per enemy killed";
-                case StatType.OnslaughtOnKill: return n + "% chance on kill to gain Onslaught (20% faster attacks, casts and movement for 4s)";
+                case StatType.OnslaughtOnKill: return n + "% chance on kill to gain Onslaught";
                 case StatType.ExplodeOnKill: return n + "% chance for enemies you kill to explode, dealing a sixth of their life as Fire damage around them";
                 case StatType.GlacialStep: return "Dash ends in a Frost Nova that chills everything around you";
                 case StatType.Shatter: return n + "% chance for Chilled enemies you kill to Shatter, dealing Cold damage and chilling those nearby";

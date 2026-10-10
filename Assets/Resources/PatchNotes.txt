@@ -1,4 +1,5 @@
 version: 2026-10-10-no-arrow-chance
+- Item stats for Ignite, Shock and Onslaught chances no longer include explanations of what those effects do.
 - Bows no longer have a chance to fire an extra arrow. Extra arrows are now always guaranteed: a bow shot fires one arrow plus your Additional Arrows, every time.
 - Whisperwind now fires 1 additional arrow on every shot instead of having a 35-50% chance to. Whisperwinds you already own are updated.
 
