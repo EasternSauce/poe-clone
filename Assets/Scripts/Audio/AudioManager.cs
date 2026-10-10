@@ -11,8 +11,9 @@ namespace PoeClone.Audio
 
     /// <summary>
     /// Central SFX player. World/combat clips go through PlayAtPoint or PlayRandomAtPoint,
-    /// which create temporary centered sources with distance-based volume falloff.
-    /// UI clips are also centered and share one source on this object.
+    /// which create temporary centered sources at full SFX volume, however far away they are.
+    /// UI clips are also centered and share one source on this object. Distance fade is only for
+    /// persistent world sources (rivers, waterfalls, town noise) through WorldSfxVolume.
     /// Each recording's loudness is set in its audio file; code only applies the category,
     /// master and distance gains below.
     /// </summary>
@@ -119,7 +120,8 @@ namespace PoeClone.Audio
             source.spatialBlend = 0f;
             source.panStereo = 0f;
             source.pitch = pitch;
-            source.volume = WorldSfxVolume(position);
+            // Gameplay one-shots always play at full SFX volume; only persistent world sources fade with distance.
+            source.volume = sfxVolume;
             source.Play();
             Destroy(go, clip.length / Mathf.Max(0.1f, pitch) + 0.1f);
         }
