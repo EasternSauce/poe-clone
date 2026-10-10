@@ -179,14 +179,28 @@
       }
 
       var unityInstance = null;
-      window.addEventListener("resize", function () {
-        // Unity re-reads this every time it sizes the canvas (window resize, fullscreen).
-        if (unityInstance) unityInstance.Module.devicePixelRatio = pixelRatio();
-      });
+      function syncCanvasSize() {
+        // Unity re-reads this every time it sizes the canvas (window resize, fullscreen). While
+        // loading, the config is the module Unity is being built from.
+        var module = unityInstance ? unityInstance.Module : config;
+        if (module) module.devicePixelRatio = pixelRatio();
+      }
+      window.addEventListener("resize", syncCanvasSize);
+      document.addEventListener("fullscreenchange", syncCanvasSize);
+      document.addEventListener("webkitfullscreenchange", syncCanvasSize);
+
+      // A window maximized or fullscreened while the game was still loading used to keep the
+      // pixel ratio picked for the old size, which on a big screen could exceed the GPU limit (a
+      // black screen until the window changed size again). Once the game is up, apply the
+      // current size and resize once more so Unity sizes everything to it.
+      function resyncAfterLoad() {
+        syncCanvasSize();
+        requestAnimationFrame(function () { window.dispatchEvent(new Event("resize")); });
+      }
 
       // Stamped into the published page by WebBuilder; "?v=" makes every build's files new URLs,
       // so a reload after an update never mixes in cached files from the old build.
-      var BUILD_ID = "2026-10-10-faster-loading-20261010132704";
+      var BUILD_ID = "2026-10-10-grass-20261010145022";
       var v = BUILD_ID.indexOf("__") === 0 ? "" : "?v=" + encodeURIComponent(BUILD_ID);
 
       var config = {
@@ -209,6 +223,7 @@
           document.getElementById("bar").setAttribute("aria-valuenow", Math.round(progress * 100));
         }).then(function (instance) {
           unityInstance = instance;
+          resyncAfterLoad();
           loading.classList.add("done");
           if (!standalone) fsButton.style.display = "flex";
           canvas.focus();
