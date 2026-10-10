@@ -377,10 +377,12 @@ namespace PoeClone.Enemies
                 return;
             Vector3 at = player.transform.position + Flat(Random.insideUnitSphere) * spread;
             float radius = 1.6f * Grow * (Phase >= 3 ? 1.25f : 1f);
-            VenomGlob.Lob(mouth, at, 0.55f, 0.35f * Grow * (Phase >= 3 ? 1.25f : 1f), radius, 4f,
+            ShowGlob(mouth, at, 0.55f, 0.35f * Grow * (Phase >= 3 ? 1.25f : 1f), radius, 4f,
                 spot => HitInside(spot, radius + 0.2f, 0.7f, attack: false),
                 (centre, r) =>
                 {
+                    if (Party.PartnerInside(p => Flat(p - centre).magnitude <= r))
+                        Party.PartnerDamaged?.Invoke(0f, kind.DamageType, false, BaseHit * 0.16666667f, 2f);
                     if (player != null && !player.IsDead && Flat(player.transform.position - centre).magnitude <= r)
                         player.PoisonFromPool(BaseHit * 0.16666667f, 2f);
                 });
@@ -423,7 +425,7 @@ namespace PoeClone.Enemies
             if (player == null)
                 yield break;
             float height = 3.2f * ShepherdLook.BaseScale * Mathf.Sqrt(Grow) * (Phase >= 3 ? 1.1f : 0.8f);
-            GroundSnake snake = GroundSnake.Spawn(spot, player.transform.position - spot, height, 1.6f);
+            GroundSnake snake = ShowSnake(spot, player.transform.position - spot, height, 1.6f);
             for (int k = 0; k < 2; k++)
             {
                 yield return new WaitForSeconds(k == 0 ? 0.45f : 0.6f);
@@ -447,6 +449,7 @@ namespace PoeClone.Enemies
             inner.transform.localPosition = Vector3.up * 0.02f;
 
             Vector3 at = transform.position;
+            bool warned = false;
             for (float t = 0f; t < Track + Lock; t += Time.deltaTime)
             {
                 if (player == null || health == null || health.IsDead)
@@ -455,6 +458,11 @@ namespace PoeClone.Enemies
                 {
                     at = player.transform.position;
                     at.y = Debris.GroundBelow(at + Vector3.up) + 0.17f;
+                }
+                if (!warned && t >= Track)
+                {
+                    warned = true;
+                    Party.EffectShown?.Invoke(Party.EffectKind.Circle, new[] { at.x, at.y, at.z, radius, Lock, (float)DamageType.Physical });
                 }
                 ring.transform.position = at;
                 float f = Mathf.Clamp01(t / (Track + Lock));
@@ -465,7 +473,7 @@ namespace PoeClone.Enemies
             if (player == null || health == null || health.IsDead)
                 yield break;
 
-            GroundSnake.Spawn(at, transform.position - at, 3.2f * ShepherdLook.BaseScale * Mathf.Sqrt(Grow) * (Phase >= 3 ? 1.4f : 1.15f), 0.4f);
+            ShowSnake(at, transform.position - at, 3.2f * ShepherdLook.BaseScale * Mathf.Sqrt(Grow) * (Phase >= 3 ? 1.4f : 1.15f), 0.4f);
             CameraSystem.CameraFollow.Shake(0.35f, 0.35f);
             HitInside(at, radius + 0.3f, 4f);
         }
@@ -489,9 +497,9 @@ namespace PoeClone.Enemies
             to.y = Debris.GroundBelow(to + Vector3.up * 3f);
             float width = 2.2f * Grow * (Phase >= 3 ? 1.3f : 1f);
             const float Flight = 0.9f;
-            StartCoroutine(GroundTelegraph.RunLine(from, across, length, width, 0.7f, DamageType.Physical, () =>
+            StartCoroutine(WarnLine(from, across, length, width, 0.7f, DamageType.Physical, () =>
             {
-                DivingSerpent.Launch(from, to, 4.5f * Grow * (Phase >= 3 ? 1.2f : 1f), 0.9f * Grow * (Phase >= 3 ? 1.3f : 1f), Flight);
+                ShowDive(from, to, 4.5f * Grow * (Phase >= 3 ? 1.2f : 1f), 0.9f * Grow * (Phase >= 3 ? 1.3f : 1f), Flight);
                 StartCoroutine(After(Flight * 0.5f, () => HitAlong(from, across, length, width * 0.5f + 0.3f, 1.5f)));
             }));
         }
@@ -765,7 +773,7 @@ namespace PoeClone.Enemies
                 case "Slam":
                 {
                     Vector3 at = transform.position + transform.forward * 1.8f * Scale;
-                    StartCoroutine(GroundTelegraph.Run(at, 1.3f * Scale, clip.Hits[0] / Pace, DamageType.Physical,
+                    StartCoroutine(WarnCircle(at, 1.3f * Scale, clip.Hits[0] / Pace, DamageType.Physical,
                         c => HitInside(c, 1.3f * Scale, 1.4f)));
                     break;
                 }
@@ -791,7 +799,7 @@ namespace PoeClone.Enemies
                     Vector3 from = transform.position;
                     Vector3 dir = transform.forward;
                     float length = LungeLength * Grow + 0.8f * Scale;
-                    StartCoroutine(GroundTelegraph.RunLine(from, dir, length, LungeWidth * Scale, clip.Hits[0] / Pace, DamageType.Physical,
+                    StartCoroutine(WarnLine(from, dir, length, LungeWidth * Scale, clip.Hits[0] / Pace, DamageType.Physical,
                         () => HitAlong(from, dir, length, LungeWidth * Scale * 0.5f + 0.3f, 1.8f)));
                     break;
                 }
@@ -885,11 +893,11 @@ namespace PoeClone.Enemies
             foreach (Vector3 spot in spots)
             {
                 Vector3 at = spot;
-                StartCoroutine(GroundTelegraph.Run(at, SnakeRadius * Scale, SnakeWindUp, DamageType.Physical, c =>
+                StartCoroutine(WarnCircle(at, SnakeRadius * Scale, SnakeWindUp, DamageType.Physical, c =>
                 {
                     Vector3 strike = player != null ? player.transform.position - c : Vector3.forward;
                     // Taller with him, but not so tall they wall off the view.
-                    GroundSnake.Spawn(c, strike, 3.2f * ShepherdLook.BaseScale * Mathf.Sqrt(Grow));
+                    ShowSnake(c, strike, 3.2f * ShepherdLook.BaseScale * Mathf.Sqrt(Grow));
                     HitInside(c, SnakeRadius * Scale + 0.2f, 1.1f);
                 }));
             }
@@ -897,6 +905,8 @@ namespace PoeClone.Enemies
 
         private bool HitInCone(float reach, float halfAngle, float multiplier)
         {
+            HitPartner(p => Flat(p - transform.position).magnitude <= reach &&
+                Vector3.Angle(transform.forward, Flat(p - transform.position)) <= halfAngle, multiplier);
             Vector3 to = Flat(player.transform.position - transform.position);
             if (to.magnitude > reach || Vector3.Angle(transform.forward, to) > halfAngle)
                 return false;
@@ -906,12 +916,15 @@ namespace PoeClone.Enemies
 
         private void HitInside(Vector3 centre, float radius, float multiplier, bool attack = true)
         {
+            HitPartner(p => Flat(p - centre).magnitude <= radius, multiplier, attack);
             if (player != null && !player.IsDead && Flat(player.transform.position - centre).magnitude <= radius)
                 Damage(multiplier, attack);
         }
 
         private void HitAlong(Vector3 from, Vector3 dir, float length, float halfWidth, float multiplier)
         {
+            HitPartner(p => Vector3.Dot(Flat(p - from), dir) >= -0.5f &&
+                Vector3.Dot(Flat(p - from), dir) <= length && Vector3.Cross(dir, Flat(p - from)).magnitude <= halfWidth, multiplier);
             if (player == null || player.IsDead)
                 return;
             Vector3 to = Flat(player.transform.position - from);
@@ -924,11 +937,49 @@ namespace PoeClone.Enemies
         private const float PoisonShare = 0.4f;
         private const float PoisonSeconds = 3f;
 
+        private void HitPartner(System.Func<Vector3, bool> inside, float multiplier, bool attack = true)
+        {
+            if (health == null || health.IsDead || !Party.PartnerInside(inside)) return;
+            float hit = BaseHit * multiplier;
+            Party.PartnerDamaged?.Invoke(hit, kind.DamageType, attack, Phase >= 2 ? hit * PoisonShare : 0f, PoisonSeconds);
+        }
+
         private void Damage(float multiplier, bool attack = true)
         {
             float hit = BaseHit * multiplier;
             if (player.TakeHit(hit, kind.DamageType, attack) && Phase >= 2 && !player.IsDead)
                 player.Poison(hit * PoisonShare, PoisonSeconds);
+        }
+
+        private static IEnumerator WarnCircle(Vector3 at, float radius, float seconds, DamageType type, System.Action<Vector3> hit)
+        {
+            Party.EffectShown?.Invoke(Party.EffectKind.Circle, new[] { at.x, at.y, at.z, radius, seconds, (float)type });
+            return GroundTelegraph.Run(at, radius, seconds, type, hit);
+        }
+
+        private static IEnumerator WarnLine(Vector3 at, Vector3 direction, float length, float width, float seconds, DamageType type, System.Action hit)
+        {
+            Party.EffectShown?.Invoke(Party.EffectKind.Line, new[] { at.x, at.y, at.z, direction.x, direction.z, length, width, seconds, (float)type });
+            return GroundTelegraph.RunLine(at, direction, length, width, seconds, type, hit);
+        }
+
+        private static GroundSnake ShowSnake(Vector3 at, Vector3 direction, float height, float seconds = 0.6f)
+        {
+            Party.EffectShown?.Invoke(Party.EffectKind.Snake, new[] { at.x, at.y, at.z, direction.x, direction.z, height, seconds });
+            return GroundSnake.Spawn(at, direction, height, seconds);
+        }
+
+        private static void ShowDive(Vector3 from, Vector3 to, float height, float width, float seconds)
+        {
+            Party.EffectShown?.Invoke(Party.EffectKind.Dive, new[] { from.x, from.y, from.z, to.x, to.y, to.z, height, width, seconds });
+            DivingSerpent.Launch(from, to, height, width, seconds);
+        }
+
+        private static void ShowGlob(Vector3 from, Vector3 to, float flight, float size, float radius, float seconds,
+            System.Action<Vector3> landed, System.Action<Vector3, float> inPuddle)
+        {
+            Party.EffectShown?.Invoke(Party.EffectKind.Glob, new[] { from.x, from.y, from.z, to.x, to.y, to.z, flight, size, radius, seconds });
+            VenomGlob.Lob(from, to, flight, size, radius, seconds, landed, inPuddle);
         }
 
         private void FacePlayer()

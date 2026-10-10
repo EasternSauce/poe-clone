@@ -91,6 +91,8 @@ namespace PoeClone.Enemies
             if (to.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(to);
             chargeFrom = transform.position;
             chargeLength = Mathf.Clamp(to.magnitude, 10f, 40f * AttackRangeMultiplier);
+            Party.EffectShown?.Invoke(Party.EffectKind.Line, new[] { chargeFrom.x, chargeFrom.y, chargeFrom.z,
+                transform.forward.x, transform.forward.z, chargeLength, ChargeWidth, 0.23f / Tempo, (float)DamageType.Physical });
             yield return StartCoroutine(GroundTelegraph.RunLine(chargeFrom, transform.forward, chargeLength,
                 ChargeWidth, 0.23f / Tempo, DamageType.Physical, null));
             if (health == null || health.IsDead || pursuit != null)
@@ -106,7 +108,19 @@ namespace PoeClone.Enemies
         }
         private void Hit(string clip)
         {
-            if (player == null || player.IsDead || health.IsDead) return;
+            if (health.IsDead) return;
+            float reach = (clip == "RearSlam" ? 11f : clip == "TentacleLash" ? 12f : 10f) * AttackRangeMultiplier;
+            bool atPartner = Party.PartnerInside(p =>
+            {
+                Vector3 offset = p - (clip == "Charge" ? chargeFrom : transform.position); offset.y = 0f;
+                if (clip == "Charge") return Vector3.Dot(offset, transform.forward) >= 0f &&
+                    Vector3.Dot(offset, transform.forward) <= chargeLength + 2f &&
+                    Mathf.Abs(Vector3.Cross(transform.forward, offset).y) <= ChargeWidth * 0.5f;
+                return offset.magnitude <= reach && (clip == "RearSlam" || Vector3.Dot(transform.forward, offset.normalized) >= -0.2f);
+            });
+            if (atPartner) Party.PartnerDamaged?.Invoke(HitDamage * (clip == "Charge" ? 1.3f : clip == "RearSlam" ? 1.5f : 1f),
+                DamageType.Physical, true, HitDamage * 0.2f, 2f);
+            if (player == null || player.IsDead) return;
             Vector3 d = player.transform.position - transform.position; d.y = 0f;
             if (clip == "Charge")
             {
@@ -117,7 +131,6 @@ namespace PoeClone.Enemies
                 CameraSystem.CameraFollow.Shake(0.2f, 0.3f);
                 return;
             }
-            float reach = (clip == "RearSlam" ? 11f : clip == "TentacleLash" ? 12f : 10f) * AttackRangeMultiplier;
             if (d.magnitude > reach) return;
             if (clip != "RearSlam" && Vector3.Dot(transform.forward, d.normalized) < -0.2f) return;
             if (player.TakeHit(HitDamage * (clip == "RearSlam" ? 1.5f : 1f), DamageType.Physical)) player.Poison(HitDamage * 0.2f, 2f);

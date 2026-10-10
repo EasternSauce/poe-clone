@@ -50,7 +50,7 @@ namespace PoeClone.Network
 
         // Co-op guest: only the host's enemies are puppeted (see EnterCoopGuest).
         private bool coopGuest;
-        private float nextStrayCheck;
+        private bool minionsOnly;
         private const float CoopMinDelay = 0.05f;
         private const float CoopSmoothingRate = 25f;
         private const float CoopSmoothingMaxError = 1.5f;
@@ -199,7 +199,23 @@ namespace PoeClone.Network
             active = true;
             coopGuest = true;
             timeline = new SnapshotTimeline(CoopMinDelay);
-            ReplaceLocalEnemies();
+            var spawner = FindAnyObjectByType<EnemySpawner>();
+            enemyPrefab = spawner != null ? spawner.EnemyPrefab : null;
+            puppetParent = transform;
+        }
+
+        public void PlayCoopMove(CoopEvent e)
+        {
+            if (!coopGuest || !Party.SharingArea) return;
+            Puppet puppet = GetOrCreatePuppet(new EntityState { i = e.id, k = e.ek,
+                x = e.x, y = e.y, z = e.z, r = e.r, hp = 1f, mhp = 1f });
+            if (puppet == null || puppet.Health.IsDead) return;
+            puppet.Root.transform.SetPositionAndRotation(new Vector3(e.x, e.y, e.z), Quaternion.Euler(0f, e.r, 0f));
+            bool atUs = (e.f & CoopProtocol.FlagAtYou) != 0;
+            if (e.k == CoopProtocol.Skill)
+                puppet.Root.GetComponent<EnemySkills>()?.Mirror(new Vector3(e.tx, e.ty, e.tz), e.a, atUs);
+            else
+                puppet.Root.GetComponent<BossAbilities>()?.PlayMirror(e.mv, atUs, e.sd, e.sp, e.dm, e.lv);
         }
 
         /// <summary>Co-op guest: this game's copy of one of the host's enemies, or null.</summary>
@@ -211,7 +227,27 @@ namespace PoeClone.Network
         public void HandleCoopState(StateSnapshot s)
         {
             if (active && coopGuest && s != null)
-                timeline.Add(s, Time.realtimeSinceStartupAsDouble);
+            {
+                var entities = new List<EntityState>();
+                foreach (EntityState e in s.e ?? System.Array.Empty<EntityState>())
+                    if (e != null && (e.i >= PoeClone.Skills.Minion.ReplicationIdBase) == minionsOnly)
+                        entities.Add(e);
+                timeline.Add(new StateSnapshot { seq = s.seq, t = s.t, area = s.area, e = entities.ToArray() }, Time.realtimeSinceStartupAsDouble);
+            }
+        }
+
+        public void EnterCoopMinions()
+        {
+            EnterCoopGuest();
+            minionsOnly = true;
+        }
+
+        public void ClearCoopEnemies()
+        {
+            timeline.Clear();
+            foreach (Puppet puppet in puppets.Values)
+                if (puppet.Root != null) Destroy(puppet.Root);
+            puppets.Clear();
         }
 
         // No spawning and none of this game's own enemies or loot: what's shown comes from the stream.
@@ -237,18 +273,17 @@ namespace PoeClone.Network
         {
             // Anything that spawns enemies of its own here (a quest ambush, a boss lair) is the
             // host's to run: its copies arrive in the stream.
-            if (Time.unscaledTime >= nextStrayCheck)
-            {
-                nextStrayCheck = Time.unscaledTime + 1f;
-                foreach (EnemyHealth enemy in EnemyHealth.Active.ToArray())
-                {
-                    if (!enemy.IsRemote && !enemy.IsDead)
-                        Destroy(enemy.gameObject);
-                }
-            }
+            if (!minionsOnly && !Party.SharingArea)
+                return;
 
             if (!timeline.HasData)
                 return;
+            if (minionsOnly && AreaManager.Instance != null && timeline.Newest.area != AreaManager.Instance.CurrentAreaIndex)
+            {
+                foreach (Puppet puppet in puppets.Values)
+                    if (puppet.Root != null) puppet.Root.SetActive(false);
+                return;
+            }
             timeline.Advance(Time.realtimeSinceStartupAsDouble);
             due.Clear();
             timeline.CollectDue(due);
@@ -903,7 +938,7 @@ namespace PoeClone.Network
                     EnemySounds.Play(EnemyKinds.Get(e.k), EnemySounds.Event.Attack, at);
             }
 
-            if (e.sk > prev.sk)
+            if (e.sk > prev.sk && !coopGuest)
                 EnemySkills.PlayVisual(this, EnemyKinds.Get(e.k), puppet.Root.transform, new Vector3(e.sx, puppet.Root.transform.position.y, e.sz));
 
             if (e.stg > prev.stg && puppet.Stagger != null)
@@ -1051,6 +1086,8 @@ namespace PoeClone.Network
                 Quaternion facing = Quaternion.Euler(0f, scratch.r, 0f);
                 Transform body = puppet.Root.transform;
                 Vector3 error = target - body.position;
+                if (coopGuest && puppet.Root.GetComponent<BossAbilities>() is BossAbilities boss && boss.MirrorBusy)
+                    continue;
                 if (coopGuest && !teleported && error.sqrMagnitude < CoopSmoothingMaxError * CoopSmoothingMaxError)
                 {
                     // Co-op runs ahead of the newest snapshot (extrapolating); a guess that turned
@@ -1126,12 +1163,27 @@ namespace PoeClone.Network
             // everything that would think for itself before it gets the chance.
             SetEnabled(go.GetComponent<EnemyController>(), false);
             SetEnabled(go.GetComponent<EnemyCombat>(), false);
+            SetEnabled(go.GetComponent<EnemySkills>(), false);
             SetEnabled(go.GetComponent<BossAbilities>(), false);
             SetEnabled(go.GetComponent<ShepherdFight>(), false);
             SetEnabled(go.GetComponent<CarrionSaintFight>(), false);
             // The player's own minions: a green bar like the player sees, and a mage's bolt isn't
             // aimed at the player.
             bool minion = e.i >= PoeClone.Skills.Minion.ReplicationIdBase;
+            if (coopGuest && !minion)
+            {
+                if (kind.Skill != EnemySkill.None)
+                {
+                    var skills = go.GetComponent<EnemySkills>() ?? go.AddComponent<EnemySkills>();
+                    skills.ConfigureMirror(kind);
+                }
+                if (kind.IsBoss && kind.Boss != BossStyle.Shepherd)
+                {
+                    var boss = go.GetComponent<BossAbilities>() ?? go.AddComponent<BossAbilities>();
+                    boss.ConfigureMirror(kind);
+                    boss.enabled = true;
+                }
+            }
 
             // A spectator's puppets are placed directly and need no collider. A co-op guest's
             // enemies stay solid (to walk into and to hit) and send their hits to the host; the

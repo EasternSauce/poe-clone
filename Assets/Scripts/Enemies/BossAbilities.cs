@@ -28,6 +28,11 @@ namespace PoeClone.Enemies
     /// At half life each boss roars into a second phase: something of its own, and its moves come
     /// faster. While a move plays the boss is <see cref="Busy"/> (its controller and plain attacks
     /// wait). Added by <see cref="World.BossLair"/> when it places the boss.
+    ///
+    /// Co-op: the host's boss aims each move at whichever player it's after (its controller's
+    /// threat) and tells the guest, whose copy of the boss plays the same move with the same
+    /// random rolls (<see cref="PlayMirror"/>). Each game judges only its own player: the move
+    /// hurts whoever stands in it, on both screens.
     /// </summary>
     [RequireComponent(typeof(EnemyHealth))]
     public partial class BossAbilities : MonoBehaviour
@@ -49,8 +54,17 @@ namespace PoeClone.Enemies
         private EnemyKind kind;
         private int level;
         private GameObject minionPrefab;
+        // The local player: the only one whose hits this game decides.
         private PlayerStats player;
         private PlayerController playerMotion;
+        // Who its moves go for: the local player, or (co-op) the partner's character.
+        private Transform aim;
+        private bool aimedAtLocal = true;
+        // Co-op guest: a copy of the host's boss, playing only the moves it's told about, at the
+        // host's boss's attack speed and damage.
+        private bool mirror;
+        private float mirrorSpeed = 1f;
+        private float mirrorRage = 1f;
         private CharacterController body;
         private CreatureAnimator anim;
         private EnemyController controller;
@@ -77,7 +91,9 @@ namespace PoeClone.Enemies
         private readonly List<GameObject> leftovers = new List<GameObject>();
 
         // The boss's tempo (EnemyKind.Tempo): every wind-up, flight and pause is divided by it.
-        private float T => kind != null ? Mathf.Max(0.1f, kind.Tempo * (controller != null ? controller.AttackSpeedMultiplier : 1f)) : 1f;
+        private float T => kind != null ? Mathf.Max(0.1f, kind.Tempo * SpeedMultiplier) : 1f;
+
+        private float SpeedMultiplier => mirror ? mirrorSpeed : controller != null ? controller.AttackSpeedMultiplier : 1f;
 
         /// <summary>A move is playing: the boss's controller and its plain attacks wait.</summary>
         public bool Busy => busy || (shepherd != null && shepherd.IsPlaying);
@@ -108,6 +124,59 @@ namespace PoeClone.Enemies
                 case BossStyle.SunIdol: SetUpSunIdol(); break;
                 case BossStyle.Huntress: SetUpHrimgar(); break;
             }
+        }
+
+        /// <summary>Co-op guest: makes this a copy of the host's boss (see <see cref="PlayMirror"/>).</summary>
+        public void ConfigureMirror(EnemyKind bossKind)
+        {
+            mirror = true;
+            Configure(bossKind, 1, null); // no prefab: the host's game raises its minions
+        }
+
+        /// <summary>
+        /// Co-op guest: the host's boss started a move (an index into its moves, or
+        /// <see cref="Party.BossMoveCloser"/> / <see cref="Party.BossMoveRoar"/>). Plays it here with
+        /// the same random rolls, aimed at us or at the host's character.
+        /// </summary>
+        public void PlayMirror(int move, bool atUs, int seed, float speed, float rage, int monsterLevel)
+        {
+            if (!mirror || kind == null || health.IsDead)
+                return;
+            if (player == null)
+            {
+                player = FindAnyObjectByType<PlayerStats>();
+                playerMotion = player != null ? player.GetComponent<PlayerController>() : null;
+            }
+            aimedAtLocal = atUs;
+            aim = atUs ? (player != null ? player.transform : null) : Party.Partner;
+            mirrorSpeed = speed;
+            mirrorRage = rage;
+            level = monsterLevel;
+
+            IEnumerator routine = null;
+            if (move == Party.BossMoveCloser)
+                routine = closer?.Invoke();
+            else if (move == Party.BossMoveRoar)
+            {
+                secondPhase = true;
+                routine = Roar();
+            }
+            else if (move >= 0 && move < moves.Count)
+                routine = moves[move].Run();
+            if (routine != null)
+                StartCoroutine(RunBusy(routine, seed));
+        }
+
+        /// <summary>Co-op guest: playing a move, so the copy follows the move rather than the host's snapshots.</summary>
+        public bool MirrorBusy => mirror && busy;
+
+        // Starts a move (the host tells the guest's copy about it).
+        private void StartMove(int index, IEnumerator routine)
+        {
+            int seed = Random.Range(int.MinValue, int.MaxValue);
+            Party.BossMoveStarted?.Invoke(this, index, !aimedAtLocal, seed, SpeedMultiplier,
+                controller != null ? controller.DamageMultiplier : 1f, level);
+            StartCoroutine(RunBusy(routine, seed));
         }
 
         private void Add(string name, Func<IEnumerator> run, float minRange = 0f, float maxRange = 99f, bool secondPhaseOnly = false, Func<bool> allowed = null)
@@ -204,11 +273,14 @@ namespace PoeClone.Enemies
             }
 
             Tick();
-            if (busy || Scripted)
+            if (busy || Scripted || mirror)
                 return;
 
-            float distance = Flat(player.transform.position - transform.position).magnitude;
-            if (player.IsDead || distance > engageRange)
+            // Co-op: whoever it's after (see EnemyController's threat); alone, the local player.
+            aimedAtLocal = controller == null || !controller.TargetsPartner;
+            aim = aimedAtLocal ? player.transform : controller.TargetPlayer;
+            float distance = Flat(AimPosition - transform.position).magnitude;
+            if (!AimAlive || distance > engageRange)
             {
                 // Out of the fight: the timer waits.
                 nextMove = Mathf.Max(nextMove, Time.time + 2f / T);
@@ -219,7 +291,7 @@ namespace PoeClone.Enemies
             if (!secondPhase && health.CurrentHealth <= health.MaxHealth * 0.5f)
             {
                 secondPhase = true;
-                StartCoroutine(RunBusy(Roar()));
+                StartMove(Party.BossMoveRoar, Roar());
                 return;
             }
 
@@ -233,7 +305,7 @@ namespace PoeClone.Enemies
             {
                 nextCloser = Time.time + closerEvery / T;
                 nextMove = Mathf.Max(nextMove, Time.time + 1.2f / T);
-                StartCoroutine(RunBusy(closer()));
+                StartMove(Party.BossMoveCloser, closer());
                 return;
             }
 
@@ -246,7 +318,7 @@ namespace PoeClone.Enemies
             last = move.Name;
             nextMove = Time.time + (secondPhase ? moveEveryEnraged : moveEvery) / T;
             EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
-            StartCoroutine(RunBusy(move.Run()));
+            StartMove(moves.IndexOf(move), move.Run());
         }
 
         /// <summary>For a showcase: picks no moves of its own (and no half-life roar); only <see cref="Play"/> runs them.</summary>
@@ -322,13 +394,28 @@ namespace PoeClone.Enemies
             }
         }
 
-        // Runs a move, the boss busy for as long as it plays.
-        private IEnumerator RunBusy(IEnumerator routine)
+        // Runs a move, the boss busy for as long as it plays. With a seed, the move rolls its
+        // random numbers from a sequence of its own, so a co-op guest's copy rolls the same spots.
+        private IEnumerator RunBusy(IEnumerator routine, int? seed = null)
         {
             busy = true;
-            while (routine != null)
+            Random.State rolls = default;
+            if (seed.HasValue)
             {
+                Random.State outside = Random.state;
+                Random.InitState(seed.Value);
+                rolls = Random.state;
+                Random.state = outside;
+            }
+            var stack = new Stack<IEnumerator>();
+            if (routine != null) stack.Push(routine);
+            while (stack.Count > 0)
+            {
+                routine = stack.Peek();
                 bool more;
+                Random.State outside = Random.state;
+                if (seed.HasValue)
+                    Random.state = rolls;
                 try
                 {
                     more = routine.MoveNext();
@@ -338,8 +425,25 @@ namespace PoeClone.Enemies
                     Debug.LogException(e);
                     more = false;
                 }
-                if (!more || health.IsDead)
+                if (seed.HasValue)
+                {
+                    rolls = Random.state;
+                    Random.state = outside;
+                }
+                if (health.IsDead)
                     break;
+                if (!more)
+                {
+                    stack.Pop();
+                    continue;
+                }
+                // Unity normally advances nested enumerators itself, outside our random state.
+                // Advance them here so nested moves use the same seeded sequence on both peers.
+                if (routine.Current is IEnumerator nested && !(nested is CustomYieldInstruction))
+                {
+                    stack.Push(nested);
+                    continue;
+                }
                 yield return routine.Current;
             }
             if (anim != null)
@@ -393,11 +497,16 @@ namespace PoeClone.Enemies
 
         // ------------------------------------------------------------------ shared pieces
 
-        private Vector3 PlayerAt => player != null ? Flat(player.transform.position) + Vector3.up * transform.position.y : transform.position;
+        // Where the player its moves go for is (the local player unless co-op says otherwise).
+        private Vector3 AimPosition => aim != null ? aim.position : player != null ? player.transform.position : transform.position;
+
+        private bool AimAlive => aimedAtLocal || aim == null ? player != null && !player.IsDead : Party.PartnerAlive;
+
+        private Vector3 PlayerAt => Flat(AimPosition) + Vector3.up * transform.position.y;
 
         private Vector3 ToPlayer()
         {
-            Vector3 to = Flat(player.transform.position - transform.position);
+            Vector3 to = Flat(AimPosition - transform.position);
             return to.sqrMagnitude > 0.01f ? to.normalized : transform.forward;
         }
 
@@ -681,7 +790,7 @@ namespace PoeClone.Enemies
 
         private float DamageOf(float multiplier)
         {
-            float rage = controller != null ? controller.DamageMultiplier : 1f;
+            float rage = mirror ? mirrorRage : controller != null ? controller.DamageMultiplier : 1f;
             return kind.Damage * multiplier * EnemyKinds.DamageScale(level, kind) * rage;
         }
 
@@ -793,17 +902,18 @@ namespace PoeClone.Enemies
             return transform.position;
         }
 
-        // Never comes down on top of the player (the colliders would overlap and it would end up
-        // standing on their head): wherever the player has moved to, it stays this far off.
+        // Never comes down on top of the player it's after (the colliders would overlap and it would
+        // end up standing on their head): wherever they've moved to, it stays this far off.
         private Vector3 KeepClear(Vector3 want, float gap)
         {
-            if (player == null)
+            if (aim == null && player == null)
                 return want;
-            Vector3 away = Flat(want - player.transform.position);
+            Vector3 target = AimPosition;
+            Vector3 away = Flat(want - target);
             if (away.magnitude >= gap)
                 return want;
-            Vector3 dir = away.sqrMagnitude > 0.0001f ? away.normalized : Flat(transform.position - player.transform.position).normalized;
-            Vector3 p = player.transform.position + dir * gap;
+            Vector3 dir = away.sqrMagnitude > 0.0001f ? away.normalized : Flat(transform.position - target).normalized;
+            Vector3 p = target + dir * gap;
             return new Vector3(p.x, want.y, p.z);
         }
 

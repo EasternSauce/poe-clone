@@ -1,3 +1,9 @@
+version: 2026-10-10-coop-combat-and-areas
+- Monster special skills and field-boss moves now target either co-op player. Both players see the attacks and can dodge them in their own game; field bosses share their random attack patterns.
+- The Shepherd and Carrion Saint now send their ground warnings, venom attacks and hits to the guest. Their colossal serpent chase and gauntlet attacks still affect only the host.
+- Guests can fight their own monsters while exploring a separate area. Monsters transfer between games when the players meet or split up, retaining their level and remaining health; killed monsters stay dead during the transfer.
+- Both players can now see their partner's summoned minions moving and fighting. Partner minions disappear from view when their owner is in another area.
+
 version: 2026-10-10-regen-and-volume
 - Might, the tanky side of the passive tree, now regenerates life: Thick Hide and Endurance give 0.2% of Maximum Life per second, Stout Heart 0.3%, Steel Heart 0.4% and Juggernaut 0.5%.
 - Settings now have separate Music and Sound Effects volume sliders under the overall Volume slider. Sound Effects covers combat, world, ambience and interface sounds.
@@ -11,7 +17,7 @@ version: 2026-10-10-coop-preview
 - Items and gold on the ground are shared: whoever takes an item first gets it. Items you throw out of your bag land on the shared ground. Both players get experience for kills near them.
 - Your character, gear and progress stay your own and are saved as usual, so you can leave co-op and carry on with the same character alone.
 - In co-op the Escape menu no longer pauses the game, and neither do area changes, since the world is shared.
-- Preview limits: monster special skills and boss fights only go after the host, the host's minions can't be seen by the guest, and the guest's minions can't be seen by the host. If the host leaves, the guest returns to the menu.
+- If the host leaves, the guest returns to the menu.
 
 version: 2026-10-10-attribute-requirements
 - Gear asks for more Strength, Dexterity or Intelligence at higher levels, up to 50% more from level 10 onward. Starting items still need 10; level 7 items now need 32 (was 24), level 14 items 57 (was 38) and level 21 items 78 (was 52). Items you already own use the new requirements.

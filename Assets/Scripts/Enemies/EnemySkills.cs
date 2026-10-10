@@ -15,6 +15,11 @@ namespace PoeClone.Enemies
     ///
     /// Spectators: <see cref="UseCount"/> and <see cref="LastTarget"/> go out in the snapshot, and the
     /// replica plays the same move's visuals (<see cref="PlayVisual"/>) with no damage.
+    ///
+    /// Co-op: the host's enemy aims at whichever player it's after (<see cref="EnemyController.TargetPlayer"/>)
+    /// and the guest's copy plays the same cast (<see cref="Mirror"/>). Each game judges its own
+    /// player: blasts, patches and pulls hurt whoever stands in them; a charge, volley or leap
+    /// only the player it was aimed at.
     /// </summary>
     [RequireComponent(typeof(EnemyHealth))]
     public class EnemySkills : MonoBehaviour
@@ -39,7 +44,13 @@ namespace PoeClone.Enemies
         private CharacterAttackAnimator attackAnimator;
         private EnemyController controller;
         private Stagger stagger;
+        // The local player: the only one whose hits this game decides.
         private PlayerStats player;
+        // Who this cast goes for: the local player, or (co-op) the partner's character.
+        private Transform aim;
+        private bool aimedAtLocal = true;
+        // Co-op guest: a copy of one of the host's enemies, only playing the casts it's told about.
+        private bool mirror;
         private float nextUse;
         private float busyUntil = -1f;
         private readonly List<EnemyHealth> minions = new List<EnemyHealth>();
@@ -51,6 +62,30 @@ namespace PoeClone.Enemies
             enabled = true;
             // The first use comes a little into a fight, not the moment it starts.
             nextUse = Time.time + Random.Range(2.5f, 5f);
+        }
+
+        /// <summary>Co-op guest: makes this a copy that only plays the host's casts (see <see cref="Mirror"/>).</summary>
+        public void ConfigureMirror(EnemyKind enemyKind)
+        {
+            kind = enemyKind;
+            mirror = true;
+            enabled = true;
+        }
+
+        /// <summary>
+        /// Co-op guest: the host's enemy cast its skill at <paramref name="target"/>. Plays it here,
+        /// hurting the local player wherever it should; a charge, volley or leap only if it was
+        /// aimed at us. The copy's movement comes from the host's snapshots.
+        /// </summary>
+        public void Mirror(Vector3 target, float damage, bool atUs)
+        {
+            if (kind == null || health.IsDead)
+                return;
+            if (player == null)
+                player = FindAnyObjectByType<PlayerStats>();
+            aimedAtLocal = atUs;
+            aim = atUs ? (player != null ? player.transform : null) : Party.Partner;
+            Cast(target, damage);
         }
 
         private void Awake()
@@ -80,7 +115,7 @@ namespace PoeClone.Enemies
 
         private void Update()
         {
-            if (kind == null || health.IsDead)
+            if (kind == null || mirror || health.IsDead)
                 return;
             if (player == null)
             {
@@ -89,16 +124,15 @@ namespace PoeClone.Enemies
                     return;
             }
 
-            if (player.IsDead || Time.time < nextUse || Busy || Sanctuary.Contains(player.transform.position, 1f))
-                return;
-            // Co-op: its special skills are aimed at the local player only; while it's after the
-            // partner it fights with its plain attack.
-            if (controller != null && controller.TargetsPartner)
+            // Co-op: whoever it's after (see EnemyController's threat); alone, the local player.
+            aimedAtLocal = controller == null || !controller.TargetsPartner;
+            aim = aimedAtLocal ? player.transform : controller.TargetPlayer;
+            if ((aimedAtLocal && player.IsDead) || aim == null || Time.time < nextUse || Busy || Sanctuary.Contains(aim.position, 1f))
                 return;
             if ((stagger != null && stagger.IsStaggered) || (attackAnimator != null && attackAnimator.IsAttacking))
                 return;
 
-            Vector3 toPlayer = Flat(player.transform.position - transform.position);
+            Vector3 toPlayer = Flat(aim.position - transform.position);
             float distance = toPlayer.magnitude;
             if (!InPosition(distance))
                 return;
@@ -137,25 +171,33 @@ namespace PoeClone.Enemies
 
         private void Use(float distance)
         {
+            Vector3 target = aim.position;
+            // Short attacks can lead the player; longer warnings mark their position at launch.
+            // (Only the local player's motion is tracked well enough to lead.)
+            bool enraged = controller != null && controller.IsEnraged;
+            if (enraged && aimedAtLocal && kind.Skill == EnemySkill.Strike && StrikeWindUp(kind) <= 0.7f)
+                target = PlayerMotion.Predict(player, StrikeWindUp(kind));
+            else if (enraged && aimedAtLocal && kind.Skill == EnemySkill.Volley)
+                target = PlayerMotion.Intercept(player, EnemyCombat.BoltOrigin(transform), kind.ProjectileSpeed);
+            if (kind.Skill == EnemySkill.Leap)
+                target = LeapLanding(transform.position, target, LeapGap(transform));
+            float damage = kind.Damage * EnemyKinds.DamageScale(level, kind) * (controller != null ? controller.DamageMultiplier : 1f);
+            Party.EnemySkillUsed?.Invoke(this, !aimedAtLocal, damage, target);
+            Cast(target, damage);
+        }
+
+        // The cast itself: on the host (or alone), and on a co-op guest's copy.
+        private void Cast(Vector3 target, float damage)
+        {
             EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
-            Vector3 target = player.transform.position;
             Vector3 facing = Flat(target - transform.position);
             if (facing.sqrMagnitude > 0.001f)
                 transform.rotation = Quaternion.LookRotation(facing);
 
             UseCount++;
-            // Short attacks can lead the player; longer warnings mark their position at launch.
-            bool enraged = controller != null && controller.IsEnraged;
-            if (enraged && kind.Skill == EnemySkill.Strike && StrikeWindUp(kind) <= 0.7f)
-                target = PlayerMotion.Predict(player, StrikeWindUp(kind));
-            else if (enraged && kind.Skill == EnemySkill.Volley)
-                target = PlayerMotion.Intercept(player, EnemyCombat.BoltOrigin(transform), kind.ProjectileSpeed);
-            if (kind.Skill == EnemySkill.Leap)
-                target = LeapLanding(transform.position, target, LeapGap(transform));
             bool centredOnSelf = kind.Skill == EnemySkill.Slam || kind.Skill == EnemySkill.Wail ||
                 kind.Skill == EnemySkill.Howl || kind.Skill == EnemySkill.Shriek;
             LastTarget = centredOnSelf ? transform.position : target;
-            float damage = kind.Damage * EnemyKinds.DamageScale(level, kind) * (controller != null ? controller.DamageMultiplier : 1f);
 
             switch (kind.Skill)
             {
@@ -170,7 +212,7 @@ namespace PoeClone.Enemies
                         center => HitIfInside(center, StrikeRadius, damage * 1.3f)));
                     break;
                 case EnemySkill.Volley:
-                    Volley(transform, kind, target, player, damage);
+                    Volley(transform, kind, target, aimedAtLocal ? player : null, damage);
                     break;
                 case EnemySkill.Charge:
                     StartCoroutine(Charge(damage * 1.3f));
@@ -179,10 +221,16 @@ namespace PoeClone.Enemies
                     Blink(target);
                     break;
                 case EnemySkill.WarCry:
-                    WarCry();
+                    if (mirror)
+                        SkillEffects.Shockwave(transform.position, WarCryRadius, HealColor, 0.5f);
+                    else
+                        WarCry();
                     break;
                 case EnemySkill.Summon:
-                    Summon();
+                    if (mirror)
+                        SkillEffects.Shockwave(transform.position, 2.5f, SummonColor, 0.5f);
+                    else
+                        Summon();
                     break;
                 case EnemySkill.Leap:
                     StartCoroutine(Leap(target, damage * 1.4f));
@@ -338,6 +386,8 @@ namespace PoeClone.Enemies
             }));
             yield return new WaitForSeconds(HowlWindUp);
             if (!CastAlive(staggerCount)) { cut = true; yield break; }
+            if (mirror)
+                yield break; // the host's game hastens the pack
 
             foreach (Collider c in Physics.OverlapSphere(transform.position, HowlPackRadius))
             {
@@ -671,7 +721,8 @@ namespace PoeClone.Enemies
         // A stagger while it's still crouched calls the jump off.
         private IEnumerator Leap(Vector3 landing, float damage)
         {
-            landing = World.GroundObstacleMotion.Clamp(body, transform.position, KeepClear(landing, LeapGap(transform)));
+            if (!mirror)
+                landing = World.GroundObstacleMotion.Clamp(body, transform.position, KeepClear(landing, LeapGap(transform)));
             LastTarget = landing;
             busyUntil = Time.time + LeapCrouch + LeapAir + 0.3f;
             GetComponentInChildren<CreatureAnimator>()?.Crouch(LeapCrouch);
@@ -703,7 +754,7 @@ namespace PoeClone.Enemies
             landing.y = start.y;
             Vector3 flat = Flat(landing - start);
             float height = Mathf.Lerp(1.0f, 2.2f, flat.magnitude / LeapMaxDistance) * Mathf.Max(0.6f, transform.localScale.y);
-            if (flat.sqrMagnitude > 0.01f)
+            if (flat.sqrMagnitude > 0.01f && !mirror)
                 transform.rotation = Quaternion.LookRotation(flat);
             SkillEffects.Shockwave(start, 1.0f * transform.localScale.x, DustColor, 0.3f);
 
@@ -714,12 +765,15 @@ namespace PoeClone.Enemies
                 float rise = height * 4f * f * (1f - f);
                 Vector3 want = Vector3.Lerp(start, landing, f) + Vector3.up * rise;
                 // Keep collision checks on the ground plane; the arc cannot clear scenery.
-                Vector3 grounded = new Vector3(transform.position.x, start.y, transform.position.z);
-                Vector3 clear = World.GroundObstacleMotion.Clamp(body, grounded, KeepClear(want, gap));
-                body.Move(clear - transform.position);
+                if (!mirror)
+                {
+                    Vector3 grounded = new Vector3(transform.position.x, start.y, transform.position.z);
+                    Vector3 clear = World.GroundObstacleMotion.Clamp(body, grounded, KeepClear(want, gap));
+                    body.Move(clear - transform.position);
+                }
 
                 // In the way: still low enough to bowl into the player rather than sail over them.
-                if (!struck && player != null && !player.IsDead && rise < 1.5f &&
+                if (!struck && aimedAtLocal && player != null && !player.IsDead && rise < 1.5f &&
                     Flat(player.transform.position - transform.position).magnitude < gap + 0.3f)
                 {
                     struck = true;
@@ -728,7 +782,7 @@ namespace PoeClone.Enemies
                 }
                 yield return null;
             }
-            if (!health.IsDead)
+            if (!health.IsDead && !mirror)
             {
                 Vector3 grounded = new Vector3(transform.position.x, start.y, transform.position.z);
                 Vector3 clear = World.GroundObstacleMotion.Clamp(body, grounded, KeepClear(landing, gap));
@@ -740,13 +794,13 @@ namespace PoeClone.Enemies
         // standing on their head): wherever the player has moved to, it stays this far off.
         private Vector3 KeepClear(Vector3 want, float gap)
         {
-            if (player == null)
+            if (aim == null)
                 return want;
-            Vector3 away = Flat(want - player.transform.position);
+            Vector3 away = Flat(want - aim.position);
             if (away.magnitude >= gap)
                 return want;
-            Vector3 dir = away.sqrMagnitude > 0.0001f ? away.normalized : Flat(transform.position - player.transform.position).normalized;
-            Vector3 p = player.transform.position + dir * gap;
+            Vector3 dir = away.sqrMagnitude > 0.0001f ? away.normalized : Flat(transform.position - aim.position).normalized;
+            Vector3 p = aim.position + dir * gap;
             return new Vector3(p.x, want.y, p.z);
         }
 
@@ -770,25 +824,30 @@ namespace PoeClone.Enemies
                 player.TakeHit(damage, kind.DamageType, attack: kind.Skill != EnemySkill.Strike);
         }
 
-        // Dashes straight at the player; hits them if it gets there.
+        // Dashes straight at whoever it's after; hits them if it gets there. A co-op guest's copy
+        // is carried by the host's snapshots (a little behind), so it watches a little longer.
         private IEnumerator Charge(float damage)
         {
             busyUntil = Time.time + ChargeMaxSeconds;
             SkillEffects.Shockwave(transform.position, 1.2f, DustColor, 0.3f);
-            float until = Time.time + ChargeMaxSeconds;
-            while (Time.time < until && !health.IsDead)
+            float until = Time.time + ChargeMaxSeconds + (mirror ? 0.3f : 0f);
+            while (Time.time < until && !health.IsDead && aim != null)
             {
                 if (stagger != null && stagger.IsStaggered)
                     break;
-                Vector3 toPlayer = Flat(player.transform.position - transform.position);
-                if (toPlayer.magnitude < 1.6f)
+                Vector3 toTarget = Flat(aim.position - transform.position);
+                if (toTarget.magnitude < (mirror ? 2f : 1.6f))
                 {
-                player.TakeHit(damage, kind.DamageType, attack: kind.Skill != EnemySkill.Strike);
-                    SkillEffects.Shockwave(player.transform.position, 1.4f, DustColor, 0.3f);
+                    if (aimedAtLocal && player != null && !player.IsDead)
+                        player.TakeHit(damage, kind.DamageType);
+                    SkillEffects.Shockwave(aim.position, 1.4f, DustColor, 0.3f);
                     break;
                 }
-                transform.rotation = Quaternion.LookRotation(toPlayer);
-                body.Move(toPlayer.normalized * ChargeSpeed * Time.deltaTime + Vector3.down * 2f * Time.deltaTime);
+                if (!mirror)
+                {
+                    transform.rotation = Quaternion.LookRotation(toTarget);
+                    body.Move(toTarget.normalized * ChargeSpeed * Time.deltaTime + Vector3.down * 2f * Time.deltaTime);
+                }
                 yield return null;
             }
             busyUntil = Time.time + 0.2f;
@@ -797,6 +856,11 @@ namespace PoeClone.Enemies
         // Reappears a couple of metres to one side of the player, if there's room.
         private void Blink(Vector3 target)
         {
+            if (mirror)
+            {
+                BlinkPuff(transform.position, kind); // the copy is moved by the host's snapshots
+                return;
+            }
             Vector3 away = Flat(transform.position - target).normalized;
             Vector3 side = Vector3.Cross(Vector3.up, away) * (Random.value < 0.5f ? 1f : -1f);
             for (int attempt = 0; attempt < 4; attempt++)

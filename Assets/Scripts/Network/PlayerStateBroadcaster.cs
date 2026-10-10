@@ -143,8 +143,8 @@ namespace PoeClone.Network
 
         /// <summary>
         /// Co-op: this player's snapshot for the partner, serialized. The host's carries every
-        /// monster near either player (the guest's copies of them are posed from it); the guest's
-        /// only its own character. No loot or menus: each player has their own.
+        /// monster in its area so the guest can take over a complete world when they split up.
+        /// Both sides also send their own minions. Loot uses separate co-op events.
         /// </summary>
         public string CaptureCoop(bool withEnemies, Vector3? alsoAround)
         {
@@ -156,6 +156,7 @@ namespace PoeClone.Network
 
         /// <summary>An enemy's id in this player's snapshots.</summary>
         public int IdOf(EnemyHealth enemy) => IdFor(enemy);
+        public void RescanEnemies() => nextEnemyScanAt = 0f;
 
         /// <summary>The enemy behind an id in this player's snapshots (co-op hit claims name enemies this way).</summary>
         public EnemyHealth EnemyById(int id)
@@ -211,10 +212,7 @@ namespace PoeClone.Network
                 snapshot.eq[k] = item?.Id ?? string.Empty;
             }
 
-            if (withEnemies)
-                CaptureEnemies(snapshot, pt.position, alsoAround);
-            else
-                snapshot.e = new EntityState[0];
+            CaptureEnemies(snapshot, pt.position, alsoAround, withEnemies, spectators);
             CaptureCasts(snapshot);
             if (spectators)
             {
@@ -380,7 +378,7 @@ namespace PoeClone.Network
             return items;
         }
 
-        private void CaptureEnemies(StateSnapshot snapshot, Vector3 center, Vector3? alsoAround)
+        private void CaptureEnemies(StateSnapshot snapshot, Vector3 center, Vector3? alsoAround, bool withEnemies, bool spectators)
         {
             // Enemies only appear at scene start today, but rescanning once a second keeps this
             // correct if spawning ever becomes dynamic, without a FindObjects call every send.
@@ -397,15 +395,17 @@ namespace PoeClone.Network
             for (int k = 0; k < enemies.Count; k++)
             {
                 EnemyHealth enemy = enemies[k];
-                if (enemy == null)
+                if (enemy == null || (enemy.IsRemote && !spectators) || !enemy.enabled || !enemy.gameObject.activeInHierarchy || !withEnemies)
                     continue;
 
-                if (!Near(enemy.transform.position, center, alsoAround, radiusSq))
+                if (spectators ? !Near(enemy.transform.position, center, alsoAround, radiusSq) : CoopSession.AreaAt(enemy.transform.position) != snapshot.area)
                     continue;
 
                 if (count == enemyStates.Count)
                     enemyStates.Add(new EntityState());
                 EntityState e = enemyStates[count++];
+
+                ClearBossState(e);
 
                 WritePose(e, enemy.transform);
                 e.i = IdFor(enemy);
@@ -425,6 +425,7 @@ namespace PoeClone.Network
                 e.ch = ai != null && ai.CurrentState == EnemyController.State.Chasing ? 1 : 0;
                 e.en = ai != null && ai.IsEnraged ? 1 : 0;
                 e.k = enemy.KindIndex;
+                e.lv = enemy.MonsterLevel;
 
                 var skills = enemy.GetComponent<EnemySkills>();
                 e.sk = skills != null ? skills.UseCount : 0;
@@ -481,6 +482,7 @@ namespace PoeClone.Network
                 if (count == enemyStates.Count)
                     enemyStates.Add(new EntityState());
                 EntityState e = enemyStates[count++];
+                ClearBossState(e);
                 WritePose(e, minion.transform);
                 e.i = Minion.ReplicationIdBase + minion.Id;
                 e.hp = minion.Life;
@@ -493,6 +495,7 @@ namespace PoeClone.Network
                 e.ch = 0;
                 e.en = 0;
                 e.k = minion.LookIndex;
+                e.lv = 0;
                 e.sk = 0;
                 e.sx = 0f;
                 e.sz = 0f;
@@ -505,6 +508,13 @@ namespace PoeClone.Network
         }
 
         // Loot never moves, so this is cheap; the list is short (drops expire, pickups remove them).
+        private static void ClearBossState(EntityState state)
+        {
+            state.bs = state.bt = 0f;
+            state.bh = state.bp = state.bm = state.ba = 0;
+            state.bl = null;
+        }
+
         // The same items CaptureLoot lists, with all their stats. Gold has nothing to read.
         private GearItem[] GroundItems(Vector3 pt)
         {

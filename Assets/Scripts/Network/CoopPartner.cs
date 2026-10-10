@@ -51,6 +51,7 @@ namespace PoeClone.Network
         private int partnerArea = -1;
         private bool loading;
         private bool hasPose;
+        private SpectatorReplica minionReplica;
 
         /// <summary>The partner's latest snapshot (where they are, which area), or null before the first.</summary>
         public StateSnapshot Newest => timeline.Newest;
@@ -105,6 +106,8 @@ namespace PoeClone.Network
             if (attack != null)
                 attack.StrikeFrame += OnStrike;
             SetShown(false);
+            minionReplica = gameObject.AddComponent<SpectatorReplica>();
+            minionReplica.EnterCoopMinions();
         }
 
         // A slim health bar under the floating name, turning with it to face the camera.
@@ -128,10 +131,16 @@ namespace PoeClone.Network
         public void Feed(StateSnapshot s)
         {
             timeline.Add(s, Time.realtimeSinceStartupAsDouble);
+            minionReplica?.HandleCoopState(s);
         }
 
         private void OnDestroy()
         {
+            if (minionReplica != null)
+            {
+                minionReplica.ClearCoopEnemies();
+                Destroy(minionReplica);
+            }
             if (PlayerHUD.Partner == status)
                 PlayerHUD.Partner = null;
             if (body != null)

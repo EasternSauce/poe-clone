@@ -16,6 +16,7 @@
 // Prints what it received at the end. Defaults: 30 seconds, ws://localhost:8099.
 
 const WebSocket = require('ws');
+const readline = require('node:readline');
 
 const mode = process.argv[2] === 'host' ? 'host' : 'guest';
 const seconds = Number(process.argv[3] || 30);
@@ -32,9 +33,27 @@ let attacks = 0;
 let me = { x: 0, y: 1.1, z: 0, r: 0, area: 0 };
 const zombie = { i: 1, hp: 60, mhp: 60, d: 0, atk: 0, x: 0, y: 1.1, z: 0 };
 const claimed = new Set();
+let manualPose = null;
+let fixtures = [];
+let passive = false;
+
+// Optional JSON commands on stdin let a DevTest run drive area splits, minions and attacks:
+// {"pose":{"area":0,"x":3,"y":1.1,"z":0}} / {"pose":null} resumes following.
+// {"entities":[...]} adds snapshot entities; {"event":{...}} sends one cev.
+// {"passive":true} stops hit/loot claims. {"inspect":true} reports the latest state.
+readline.createInterface({ input: process.stdin }).on('line', (line) => {
+  try {
+    const command = JSON.parse(line);
+    if ('pose' in command) manualPose = command.pose;
+    if (Array.isArray(command.entities)) fixtures = command.entities;
+    if ('passive' in command) passive = !!command.passive;
+    if (command.event && running) send({ type: 'cev', ...command.event });
+    if (command.inspect) console.log(JSON.stringify({ counts, partner }));
+  } catch (e) { console.error(`invalid command: ${e.message}`); }
+});
 
 const now = () => (Date.now() - started) / 1000;
-const send = (o) => ws.send(JSON.stringify(o));
+const send = (o) => ws.send(JSON.stringify(o.type === 'cev' ? { type: 'cev', ar: me.area, ...o } : o));
 const note = (s) => {
   log.push(`${now().toFixed(1)}s ${s}`);
 };
@@ -46,6 +65,7 @@ ws.on('message', (raw) => {
   if (text.startsWith('{"type":"co",')) {
     partner = JSON.parse(text);
     counts.snapshots = (counts.snapshots || 0) + 1;
+    counts.minionsSeen = Math.max(counts.minionsSeen || 0, (partner.e || []).filter(e => e.i >= 1000000).length);
     if (counts.snapshots === 1) note(`first partner snapshot: area ${partner.area}, at ${partner.p.x},${partner.p.z}, ${(partner.e || []).length} enemies`);
     return;
   }
@@ -69,10 +89,11 @@ ws.on('message', (raw) => {
 
 function onEvent(e) {
   if (e.k === 'atk') note(`enemy ${e.id} attack kind ${e.n} ${e.f & 16 ? 'AT ME' : 'at partner'} dmg ${e.a.toFixed(1)}`);
+  if (['skl', 'bmv', 'dmg', 'fx', 'wld'].includes(e.k)) note(`${e.k} enemy ${e.id || 0} area ${e.ar || 0}`);
   if (e.k === 'kill') note(`kill shared: kind ${e.ek} xp ${e.xp}`);
   if (e.k === 'drop') {
     note(`drop ${e.id}: ${e.it.n}`);
-    if (mode === 'guest') setTimeout(() => send({ type: 'cev', k: 'claim', id: e.id }), 1500);
+    if (mode === 'guest' && !passive) setTimeout(() => send({ type: 'cev', k: 'claim', id: e.id }), 1500);
   }
   if (e.k === 'got' || e.k === 'deny' || e.k === 'gone') note(`${e.k} ${e.id}`);
   if (e.k === 'hit' && mode === 'host' && e.id === zombie.i && !zombie.d) {
@@ -128,24 +149,26 @@ function tick() {
         Object.assign(zombie, { x: cx + 2, y: partner.p.y, z: cz + 1.5 });
       }
     } else if (still) {
+      if (me.area !== partner.area) me.placed = false;
       if (!me.placed) Object.assign(me, { x: cx + 3, y: partner.p.y, z: cz, r: 90, area: partner.area, placed: true });
     } else {
       Object.assign(me, { x: cx + Math.cos(a) * 4, y: partner.p.y, z: cz + Math.sin(a) * 4, r: (-a * 180) / Math.PI, area: partner.area });
     }
   }
+  if (manualPose) Object.assign(me, manualPose);
   const s = {
     type: 'co', seq: ++seq, t: now(), area: me.area,
     p: { i: 0, x: me.x, y: me.y, z: me.z, r: me.r, hp: 50, mhp: 50, atk: attacks, ap: 0 },
     hud: { lv: 3, hp: 50, mhp: 50, mp: 20, mmp: 20 },
     eq: [],
   };
-  if (mode === 'host') s.e = [{ i: zombie.i, x: zombie.x, y: zombie.y, z: zombie.z, r: 270, hp: Math.max(0, zombie.hp), mhp: zombie.mhp, d: zombie.d, atk: zombie.atk, k: 0, ch: 1 }];
+  s.e = mode === 'host' ? [{ i: zombie.i, x: zombie.x, y: zombie.y, z: zombie.z, r: 270, hp: Math.max(0, zombie.hp), mhp: zombie.mhp, d: zombie.d, atk: zombie.atk, k: 0, ch: 1 }, ...fixtures] : fixtures;
   ws.send(JSON.stringify(s));
 }
 
 // Twice a second: swing, and hit (guest) / attack the guest (host).
 function act() {
-  if (!partner) return;
+  if (!partner || passive) return;
   attacks++;
   if (mode === 'guest') {
     for (const e of partner.e || []) {
@@ -158,7 +181,7 @@ function act() {
     }
   } else if (!zombie.d && attacks % 3 === 0) {
     zombie.atk++;
-    send({ type: 'cev', k: 'atk', id: zombie.i, ek: 0, n: 0, f: 16, a: 3, r: 2.3, x: zombie.x, y: zombie.y, z: zombie.z, tx: partner.p.x, ty: partner.p.y, tz: partner.p.z });
+    send({ type: 'cev', k: 'atk', ar: me.area, id: zombie.i, ek: 0, n: 0, f: 16, a: 3, r: 2.3, x: zombie.x, y: zombie.y, z: zombie.z, tx: partner.p.x, ty: partner.p.y, tz: partner.p.z });
   }
 }
 

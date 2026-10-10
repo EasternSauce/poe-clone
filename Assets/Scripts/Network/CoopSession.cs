@@ -12,15 +12,15 @@ using PoeClone.World;
 namespace PoeClone.Network
 {
     /// <summary>
-    /// A running co-op game, on either side. The host's game is the world: it runs every enemy and
-    /// owns the ground's loot. Twenty times a second each side sends the other a snapshot - the
-    /// host its character and every enemy near either player, the guest its character - and
+    /// A running co-op game, on either side. The host runs shared-area enemies and loot; a guest
+    /// alone runs its own area. Twenty times a second each side sends the other a snapshot - the
+    /// host its character and area enemies, the guest its character, both their minions - and
     /// events go both ways as they happen: the guest's hits on enemies (applied by the host),
     /// enemy attacks on the guest and its share of kills, and every drop appearing, leaving or
     /// being claimed. Each player's character, gear and progress stay their own and are saved
     /// on their own machine, so leaving co-op carries on with the same character alone.
     /// </summary>
-    public class CoopSession : MonoBehaviour
+    public partial class CoopSession : MonoBehaviour
     {
         private const float SendInterval = 0.05f;
         // A kill this close to the partner (in the same area) counts for them too.
@@ -64,6 +64,10 @@ namespace PoeClone.Network
             if (host)
             {
                 Party.EnemyAttacked = SendEnemyAttack;
+                Party.EnemySkillUsed = SendEnemySkill;
+                Party.BossMoveStarted = SendBossMove;
+                Party.PartnerDamaged = SendPartnerDamage;
+                Party.EffectShown = SendEffect;
                 EnemyHealth.Killed += OnEnemyKilled;
                 LootDrop.Spawned = drop => newDrops.Add(drop);
                 LootDrop.Removed = OnDropRemoved;
@@ -71,6 +75,8 @@ namespace PoeClone.Network
             }
             else
             {
+                foreach (LootDrop drop in new List<LootDrop>(LootDrop.All))
+                    if (drop != null && !drop.IsShared) Destroy(drop.gameObject);
                 replica.EnterCoopGuest();
                 EnemyHealth.RemoteHit = SendHit;
                 LootDrop.SharedClaim = SendClaim;
@@ -99,6 +105,7 @@ namespace PoeClone.Network
         {
             if (session == null || !session.Connected)
                 return;
+            UpdateAreaAuthority();
 
             if (IsHost)
                 SendNewDrops();
@@ -126,11 +133,16 @@ namespace PoeClone.Network
         private CoopEvent NewEvent(string kind)
         {
             outgoing.k = kind;
+            outgoing.ar = AreaManager.Instance != null ? AreaManager.Instance.CurrentAreaIndex : 0;
             outgoing.id = 0;
             outgoing.a = outgoing.ap = outgoing.ep = outgoing.r = 0f;
             outgoing.dt = outgoing.f = outgoing.n = outgoing.ek = outgoing.xp = 0;
             outgoing.x = outgoing.y = outgoing.z = outgoing.tx = outgoing.ty = outgoing.tz = 0f;
             outgoing.it = null;
+            outgoing.mv = outgoing.sd = outgoing.lv = 0;
+            outgoing.sp = outgoing.dm = 0f;
+            outgoing.v = null;
+            outgoing.w = null;
             return outgoing;
         }
 
@@ -146,6 +158,82 @@ namespace PoeClone.Network
             e.tx = at.x;
             e.ty = at.y;
             e.tz = at.z;
+        }
+
+        private CoopEvent EnemyEvent(string kind, Component source, bool atPartner)
+        {
+            EnemyHealth health = source.GetComponent<EnemyHealth>();
+            CoopEvent e = NewEvent(kind);
+            e.id = broadcaster.IdOf(health);
+            e.ek = health.KindIndex;
+            e.lv = health.MonsterLevel;
+            e.f = atPartner ? CoopProtocol.FlagAtYou : 0;
+            SetAt(e, source.transform.position);
+            e.r = source.transform.eulerAngles.y;
+            return e;
+        }
+
+        private void SendEnemySkill(Component source, bool atPartner, float damage, Vector3 target)
+        {
+            CoopEvent e = EnemyEvent(CoopProtocol.Skill, source, atPartner);
+            e.a = damage;
+            SetAim(e, target);
+            Send(e);
+        }
+
+        private void SendBossMove(Component source, int move, bool atPartner, int seed, float speed, float rage, int level)
+        {
+            CoopEvent e = EnemyEvent(CoopProtocol.BossMove, source, atPartner);
+            e.mv = move;
+            e.sd = seed;
+            e.sp = speed;
+            e.dm = rage;
+            e.lv = level;
+            Send(e);
+        }
+
+        private void SendPartnerDamage(float damage, DamageType type, bool attack, float poison, float seconds)
+        {
+            CoopEvent e = NewEvent(CoopProtocol.Damage);
+            e.a = damage;
+            e.dt = (int)type;
+            e.f = attack ? CoopProtocol.FlagAttack : 0;
+            e.ap = poison;
+            e.ep = seconds;
+            Send(e);
+        }
+
+        private void SendEffect(Party.EffectKind kind, float[] values)
+        {
+            CoopEvent e = NewEvent(CoopProtocol.Effect);
+            e.n = (int)kind;
+            e.v = values;
+            Send(e);
+        }
+
+        private void PlayEffect(CoopEvent e)
+        {
+            float[] v = e.v;
+            if (v == null || v.Length < 3) return;
+            Vector3 at = new Vector3(v[0], v[1], v[2]);
+            switch ((Party.EffectKind)e.n)
+            {
+                case Party.EffectKind.Circle when v.Length >= 6:
+                    StartCoroutine(GroundTelegraph.Run(at, v[3], v[4], (DamageType)(int)v[5], null));
+                    break;
+                case Party.EffectKind.Line when v.Length >= 9:
+                    StartCoroutine(GroundTelegraph.RunLine(at, new Vector3(v[3], 0f, v[4]), v[5], v[6], v[7], (DamageType)(int)v[8], null));
+                    break;
+                case Party.EffectKind.Glob when v.Length >= 10:
+                    VenomGlob.Lob(at, new Vector3(v[3], v[4], v[5]), v[6], v[7], v[8], v[9], null, null);
+                    break;
+                case Party.EffectKind.Snake when v.Length >= 7:
+                    GroundSnake.Spawn(at, new Vector3(v[3], 0f, v[4]), v[5], v[6]);
+                    break;
+                case Party.EffectKind.Dive when v.Length >= 9:
+                    DivingSerpent.Launch(at, new Vector3(v[3], v[4], v[5]), v[6], v[7], v[8]);
+                    break;
+            }
         }
 
         // Guest: a hit on a copy of a host enemy, for the host to apply.
@@ -290,6 +378,7 @@ namespace PoeClone.Network
             if (s == null || partner == null)
                 return;
             partner.Feed(s);
+            ReceiveWorldSnapshot(s);
             if (!IsHost)
                 replica.HandleCoopState(s);
         }
@@ -307,6 +396,10 @@ namespace PoeClone.Network
             }
             if (e == null || string.IsNullOrEmpty(e.k))
                 return;
+            if ((e.k == CoopProtocol.Attack || e.k == CoopProtocol.Skill || e.k == CoopProtocol.BossMove ||
+                 e.k == CoopProtocol.Damage || e.k == CoopProtocol.Effect || e.k == CoopProtocol.Kill) &&
+                (!Party.SharingArea || AreaManager.Instance == null || e.ar != AreaManager.Instance.CurrentAreaIndex))
+                return;
 
             if (IsHost)
             {
@@ -315,12 +408,29 @@ namespace PoeClone.Network
                     case CoopProtocol.Hit: ApplyPartnerHit(e); break;
                     case CoopProtocol.Claim: AnswerClaim(e.id); break;
                     case CoopProtocol.Place: PlaceForPartner(e); break;
+                    case CoopProtocol.World: AcceptWorld(e); break;
                 }
                 return;
             }
 
             switch (e.k)
             {
+                case CoopProtocol.Skill:
+                case CoopProtocol.BossMove:
+                    replica.PlayCoopMove(e);
+                    break;
+                case CoopProtocol.Damage:
+                    if (stats != null && !stats.IsDead && Party.SharingArea)
+                    {
+                        if (e.a <= 0f)
+                            stats.PoisonFromPool(e.ap, e.ep);
+                        else if (stats.TakeHit(e.a, (DamageType)e.dt, (e.f & CoopProtocol.FlagAttack) != 0) && e.ap > 0f && !stats.IsDead)
+                            stats.Poison(e.ap, e.ep);
+                    }
+                    break;
+                case CoopProtocol.Effect:
+                    if (Party.SharingArea) PlayEffect(e);
+                    break;
                 case CoopProtocol.Attack: TakeEnemyAttack(e); break;
                 case CoopProtocol.Kill:
                     EnemyHealth.GrantKillRewards(e.ek, Mathf.RoundToInt(e.r), e.xp, new Vector3(e.x, e.y, e.z), dropLoot: false);

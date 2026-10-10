@@ -108,7 +108,7 @@ namespace PoeClone.World
         /// <summary>Puts an item the player threw out on the ground (in co-op: the host's, for both to see).</summary>
         public static void Place(ItemData item, Vector3 groundPoint)
         {
-            if (SharedPlace != null)
+            if (SharedPlace != null && PoeClone.Combat.Party.SharingArea)
                 SharedPlace(item, groundPoint);
             else
                 Spawn(item, groundPoint, interactive: true, id: 0);

@@ -173,10 +173,10 @@ namespace PoeClone.Enemies
         private IEnumerator FlingPlate(Transform plate, float delay)
         {
             yield return new WaitForSeconds(delay);
-            if (plate == null || player == null)
+            if (plate == null)
                 yield break;
             Vector3 from = Flat(plate.position);
-            Vector3 dir = Flat(player.transform.position - from);
+            Vector3 dir = Flat(AimPosition - from);
             dir = dir.sqrMagnitude > 0.01f ? dir.normalized : transform.forward;
             float length = 14f;
             const float width = 1.6f;

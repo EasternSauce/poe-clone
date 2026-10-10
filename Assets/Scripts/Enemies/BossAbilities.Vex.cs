@@ -113,7 +113,8 @@ namespace PoeClone.Enemies
         private IEnumerator SmokeBackstab()
         {
             yield return Vanish(secondPhase ? 0.6f : 0.85f);
-            Vector3 behind = PlayerAt - (player != null ? Flat(player.transform.forward) : Vector3.forward) * 2.2f;
+            Transform victim = aim != null ? aim : player != null ? player.transform : null;
+            Vector3 behind = PlayerAt - (victim != null ? Flat(victim.forward) : Vector3.forward) * 2.2f;
             yield return Reappear(behind);
             float windUp = 0.5f / T;
             const float radius = 2.4f;

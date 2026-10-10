@@ -29,6 +29,16 @@ namespace PoeClone.World
         private float diedAt = -1f;
         private bool spawned;
 
+        public bool Adopt(EnemyHealth enemy, int worldArea)
+        {
+            if (area != worldArea || enemy.KindIndex != kindIndex) return false;
+            boss = enemy;
+            enemy.transform.SetParent(transform, true);
+            spawned = true;
+            diedAt = -1f;
+            return true;
+        }
+
         public static BossLair Create(Transform parent, int area, int kindIndex, int level, GameObject enemyPrefab, Vector3 spot, Vector3 facing)
         {
             var go = new GameObject("Lair_" + EnemyKinds.Get(kindIndex).Name);

@@ -40,9 +40,10 @@ namespace PoeClone.Enemies
         // Her wolves come running the first time the player gets close.
         private void TickHrimgar()
         {
-            if (packCalled || player == null || Time.time < nextPack || health.IsDead)
+            // A co-op guest's copy leaves the pack to the host's game.
+            if (packCalled || mirror || player == null || Time.time < nextPack || health.IsDead)
                 return;
-            if (Flat(player.transform.position - transform.position).magnitude > engageRange)
+            if (Flat(AimPosition - transform.position).magnitude > engageRange)
                 return;
             packCalled = true;
             Summon(EnemyKinds.IndexOf("Frost Wolf"), 2, Frost);

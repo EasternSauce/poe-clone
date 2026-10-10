@@ -37,11 +37,11 @@ namespace PoeClone.Enemies
         {
             for (int n = 0; n < times; n++)
             {
-                if (player == null || player.IsDead)
+                if (!AimAlive)
                     yield break;
                 Vector3 dir = ToPlayer();
                 Face(dir);
-                float distance = Flat(player.transform.position - transform.position).magnitude;
+                float distance = Flat(AimPosition - transform.position).magnitude;
                 float length = Mathf.Clamp(distance + 6f, 10f, 24f);
                 float width = 1.4f * Size;
                 float windUp = (n == 0 ? 1.1f : 0.75f) / T;
@@ -82,7 +82,8 @@ namespace PoeClone.Enemies
                         }
                     }
                     // Stopped short by something solid (not the player it is bowling over).
-                    bool byPlayer = player != null && Flat(player.transform.position - transform.position).magnitude < width * 0.5f + 2.5f;
+                    bool byPlayer = (player != null && Flat(player.transform.position - transform.position).magnitude < width * 0.5f + 2.5f) ||
+                                    (aim != null && Flat(aim.position - transform.position).magnitude < width * 0.5f + 2.5f);
                     if (Time.deltaTime > 0f && moved < step.magnitude * 0.3f && !byPlayer)
                     {
                         rammed = true;

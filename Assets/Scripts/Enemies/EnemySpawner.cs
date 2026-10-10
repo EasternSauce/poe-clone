@@ -101,6 +101,13 @@ namespace PoeClone.Enemies
         /// <summary>The prefab spawned here; spectator replicas instantiate it as puppets for the player's enemies.</summary>
         public GameObject EnemyPrefab => enemyPrefab;
 
+        public void Adopt(EnemyHealth enemy)
+        {
+            enemy.transform.SetParent(transform, true);
+            Vector3 home = enemy.transform.position;
+            enemy.Died += () => OnEnemyDied(enemy != null ? enemy.transform.position : home);
+        }
+
         private void Start()
         {
             if (enemyPrefab == null)
