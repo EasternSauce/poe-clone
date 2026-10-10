@@ -5,7 +5,7 @@ version: 2026-10-10-corpse-explosion-200
 - Packs dying no longer flood the mix: when the same sound would play many times at once, a few copies play slightly apart and the rest are skipped, so you can still hear that it happened several times.
 - Corpse explosion sounds are never cut off when many sounds play at once.
 - Goblin attack grunts are half as loud.
-- Corpse explosions now look like explosions: a split-second flash and fireball rising off the body with embers flung out to the edge of the blast, instead of a coloured patch on the ground.
+- Corpse explosions now look like explosions: a split-second white-hot fireball and a bright ring above the enemies' heads that sweeps out to the edge of the blast, instead of a coloured patch on the ground hidden under the pack.
 
 version: 2026-10-10-no-arrow-chance
 - Item stats for Ignite, Shock and Onslaught chances no longer include explanations of what those effects do.

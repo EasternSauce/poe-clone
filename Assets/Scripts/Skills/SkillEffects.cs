@@ -92,9 +92,9 @@ namespace PoeClone.Skills
         }
 
         /// <summary>
-        /// A fiery explosion standing up off the ground: a white-hot flash, a fireball billowing
-        /// upward and embers flung out to the radius. Over in about a third of a second, so a
-        /// chain of them never hides the fight.
+        /// An explosion built to be seen in a crowd: a white-hot ball that swallows the bodies around
+        /// it for an instant, and a bright ring floating above their heads that sweeps out to the
+        /// radius. Over in about a quarter of a second, so a chain of them never hides the fight.
         /// </summary>
         public static void Explosion(Vector3 center, float radius, Color color)
         {
@@ -106,24 +106,13 @@ namespace PoeClone.Skills
         private static readonly int ShadowColorId = Shader.PropertyToID("_ShadowColor");
         private static readonly int AmbientBoostId = Shader.PropertyToID("_AmbientBoost");
 
-        private enum PieceMotion { Flash, Billow, Ember }
-
-        private sealed class Piece
-        {
-            public Transform transform;
-            public PieceMotion motion;
-            public Vector3 from, velocity, spin;
-            public float start, life, size;
-        }
+        private const float RingHeight = 2.3f;     // just above a character's head
+        private const int RingSegments = 32;
 
         private static IEnumerator Explode(GameObject root, float radius, Color color)
         {
-            Color flash = Color.Lerp(color, Color.white, 0.75f);
-            Color hot = Color.Lerp(color, new Color(1f, 0.88f, 0.3f), 0.5f);
-            Color deep = Color.Lerp(color, new Color(1f, 0.2f, 0.04f), 0.5f);
-            var pieces = new System.Collections.Generic.List<Piece>();
             var glow = new MaterialPropertyBlock();
-            Piece Add(PrimitiveType type, Color c, PieceMotion motion, Vector3 from, Vector3 velocity, float start, float life, float size)
+            Transform Glowing(PrimitiveType type, Color c)
             {
                 GameObject g = RuntimePrimitives.Create(type, root.transform, c);
                 // Fire gives off light: no toon shadow side, so it reads as glowing rather than solid.
@@ -132,66 +121,34 @@ namespace PoeClone.Skills
                 glow.SetColor(ShadowColorId, Color.white);
                 glow.SetFloat(AmbientBoostId, 1f);
                 r.SetPropertyBlock(glow);
-                g.transform.localPosition = from;
                 g.transform.localScale = Vector3.zero;
-                var piece = new Piece { transform = g.transform, motion = motion, from = from, velocity = velocity,
-                    start = start, life = life, size = size, spin = Random.insideUnitSphere * 720f };
-                pieces.Add(piece);
-                return piece;
+                return g.transform;
             }
 
-            Add(PrimitiveType.Sphere, flash, PieceMotion.Flash, Vector3.up * 0.9f, Vector3.zero, 0f, 0.12f, radius * 0.8f);
-            for (int k = 0; k < 6; k++)
-            {
-                Vector3 offset = Random.insideUnitSphere * radius * 0.25f;
-                offset.y = Mathf.Abs(offset.y) + 0.7f;
-                Add(PrimitiveType.Sphere, k % 2 == 0 ? hot : deep, PieceMotion.Billow, offset,
-                    new Vector3(offset.x * 3f, Random.Range(3f, 5f), offset.z * 3f),
-                    Random.Range(0f, 0.03f), Random.Range(0.18f, 0.26f), radius * Random.Range(0.35f, 0.5f));
-            }
-            for (int k = 0; k < 14; k++)
-            {
-                // Flung far enough to reach the edge of the blast, showing how far it hit.
-                float life = Random.Range(0.25f, 0.33f);
-                float a = (k + Random.value) / 14f * Mathf.PI * 2f;
-                float reach = radius * Random.Range(0.85f, 1.1f) / life;
-                Add(PrimitiveType.Cube, k % 3 == 0 ? flash : hot, PieceMotion.Ember, Vector3.up * 0.8f,
-                    new Vector3(Mathf.Cos(a) * reach, Random.Range(2f, 4f), Mathf.Sin(a) * reach),
-                    0f, life, Random.Range(0.12f, 0.2f));
-            }
+            Transform flash = Glowing(PrimitiveType.Sphere, Color.Lerp(color, new Color(1f, 0.97f, 0.8f), 0.8f));
+            flash.localPosition = Vector3.up * 1f;
+            var ring = new Transform[RingSegments];
+            for (int k = 0; k < RingSegments; k++)
+                ring[k] = Glowing(PrimitiveType.Cube, Color.Lerp(color, new Color(1f, 0.9f, 0.35f), 0.6f));
 
-            float end = 0f;
-            foreach (Piece p in pieces) end = Mathf.Max(end, p.start + p.life);
-            for (float t = 0f; t < end; t += Time.deltaTime)
+            const float flashTime = 0.15f, ringTime = 0.25f;
+            for (float t = 0f; t < ringTime; t += Time.deltaTime)
             {
-                foreach (Piece p in pieces)
+                // The white-hot ball is out almost at once, swallowing the bodies around it, and gone again.
+                float f = t / flashTime;
+                flash.localScale = Vector3.one * (f >= 1f ? 0f : radius * 1.5f * (f < 0.3f ? Mathf.Sqrt(f / 0.3f) : 1f - (f - 0.3f) / 0.7f));
+
+                // The ring sweeps out fast, slows as it reaches the blast radius, and thins away there.
+                f = t / ringTime;
+                float r = Mathf.Lerp(0.3f, radius, 1f - (1f - f) * (1f - f));
+                float width = 0.45f * (f < 0.6f ? 1f : 1f - (f - 0.6f) / 0.4f);
+                float length = 2f * Mathf.PI * r / RingSegments * 1.15f;
+                for (int k = 0; k < RingSegments; k++)
                 {
-                    float local = t - p.start;
-                    float f = local / p.life;
-                    if (f < 0f || f >= 1f)
-                    {
-                        p.transform.localScale = Vector3.zero;
-                        continue;
-                    }
-                    switch (p.motion)
-                    {
-                        case PieceMotion.Flash:
-                            // Out almost at once, then collapses.
-                            p.transform.localScale = Vector3.one * p.size * (f < 0.3f ? Mathf.Sqrt(f / 0.3f) : 1f - (f - 0.3f) / 0.7f);
-                            break;
-                        case PieceMotion.Billow:
-                            // Swells fast, drifts upward while slowing, and burns down to nothing.
-                            p.transform.localScale = Vector3.one * p.size * (f < 0.25f ? Mathf.Sin(f / 0.25f * Mathf.PI * 0.5f) : 1f - (f - 0.25f) / 0.75f);
-                            p.transform.localPosition = p.from + p.velocity * local * (1f - 0.5f * f);
-                            break;
-                        case PieceMotion.Ember:
-                            Vector3 at = p.from + p.velocity * local + 0.5f * local * local * new Vector3(0f, -14f, 0f);
-                            at.y = Mathf.Max(at.y, 0.05f);
-                            p.transform.localPosition = at;
-                            p.transform.localRotation = Quaternion.Euler(p.spin * local);
-                            p.transform.localScale = Vector3.one * p.size * (f < 0.5f ? 1f : 1f - (f - 0.5f) / 0.5f);
-                            break;
-                    }
+                    float a = k / (float)RingSegments * Mathf.PI * 2f;
+                    ring[k].localPosition = new Vector3(Mathf.Cos(a) * r, RingHeight, Mathf.Sin(a) * r);
+                    ring[k].localRotation = Quaternion.Euler(0f, -a * Mathf.Rad2Deg, 0f);
+                    ring[k].localScale = new Vector3(width, 0.08f, length);
                 }
                 yield return null;
             }
