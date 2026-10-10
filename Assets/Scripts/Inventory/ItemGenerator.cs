@@ -734,13 +734,17 @@ namespace PoeClone.Inventory
         public static string BaseNameOf(string baseId) => Find(baseId)?.Name;
 
         /// <summary>Requirements come from the saved base ID, never from the item's own bonuses or ilvl.</summary>
-        public static ItemRequirements RequirementsOf(ItemData item)
+        public static ItemRequirements RequirementsOf(ItemData item) => item == null ? default
+            : RequirementsOf(item.Id, item.Rarity == ItemRarity.Unique ? item.Name : null);
+
+        /// <summary>Requirements of a base, raised to the unique's level when <paramref name="uniqueName"/> is given.</summary>
+        public static ItemRequirements RequirementsOf(string baseId, string uniqueName)
         {
-            ItemBase b = item != null ? Find(item.Id) : null;
+            ItemBase b = Find(baseId);
             if (b == null || b.Line == null) return default;
             int level = b.RequiredLevel;
-            if (item.Rarity == ItemRarity.Unique)
-                level = Math.Max(level, UniqueItems.RequiredLevelFor(item.Name));
+            if (uniqueName != null)
+                level = Math.Max(level, UniqueItems.RequiredLevelFor(uniqueName));
             int attribute = 10 + b.RequiredLevel * 2;
             bool hybrid = b.Line.EndsWith("_hyb");
             return new ItemRequirements(level,

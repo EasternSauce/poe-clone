@@ -152,7 +152,7 @@ namespace PoeClone.EditorTools
             var text = new System.Text.StringBuilder();
             text.Append("<b><color=#E68C33>").Append(UniqueItems.NameOf(k)).Append("</color></b>\n");
             text.Append("<color=#C8C8C8>").Append(ItemGenerator.BaseNameOf(UniqueItems.BaseIdOf(k)) ?? UniqueItems.BaseIdOf(k))
-                .Append("  ·  Requires level ").Append(LevelOf(k)).Append("</color>\n");
+                .Append("  ·  ").Append(ItemGenerator.RequirementsOf(UniqueItems.BaseIdOf(k), UniqueItems.NameOf(k))).Append("</color>\n");
             foreach (string line in UniqueItems.ModifierRanges(k))
                 text.Append("\n<color=#8888FF>").Append(line).Append("</color>");
             string flavour = UniqueItems.FlavourFor(UniqueItems.Current(UniqueItems.NameOf(k)));
