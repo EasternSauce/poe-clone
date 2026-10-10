@@ -15,7 +15,7 @@ namespace PoeClone.Audio
     /// UI clips are also centered and share one source on this object. Distance fade is only for
     /// persistent world sources (rivers, waterfalls, town noise) through WorldSfxVolume.
     /// Each recording's loudness is set in its audio file; code only applies the category,
-    /// master and distance gains below.
+    /// the player's effects and master volumes, and the distance gains below.
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
@@ -52,6 +52,8 @@ namespace PoeClone.Audio
         [Range(0f, 1f)] public float uiVolume = 0.6f;
 
         private const string MasterVolumeKey = "PoeClone.MasterVolume";
+        private const string EffectsVolumeKey = "PoeClone.EffectsVolume";
+        private const string MusicVolumeKey = "PoeClone.MusicVolume";
 
         /// <summary>The player's overall volume setting, applied to every sound through the listener.</summary>
         public static float MasterVolume
@@ -64,6 +66,36 @@ namespace PoeClone.Audio
                 AudioListener.volume = value;
             }
         }
+
+        // Read every frame by looping sounds, so kept here rather than asked of PlayerPrefs each time.
+        private static float? effectsVolume, musicVolume;
+
+        /// <summary>The player's sound effects volume: combat, world, ambience and interface sounds.</summary>
+        public static float EffectsVolume
+        {
+            get => effectsVolume ?? (effectsVolume = PlayerPrefs.GetFloat(EffectsVolumeKey, 1f)).Value;
+            set
+            {
+                effectsVolume = Mathf.Clamp01(value);
+                PlayerPrefs.SetFloat(EffectsVolumeKey, effectsVolume.Value);
+            }
+        }
+
+        /// <summary>The player's music volume (see MusicPlayer).</summary>
+        public static float MusicVolume
+        {
+            get => musicVolume ?? (musicVolume = PlayerPrefs.GetFloat(MusicVolumeKey, 1f)).Value;
+            set
+            {
+                musicVolume = Mathf.Clamp01(value);
+                PlayerPrefs.SetFloat(MusicVolumeKey, musicVolume.Value);
+            }
+        }
+
+        private float SfxGain => sfxVolume * EffectsVolume;
+
+        /// <summary>Gain for ambient beds and environmental loops.</summary>
+        public float AmbienceGain => sfxVolume * ambienceVolume * EffectsVolume;
 
         private AudioSource uiSource;
         private SoundBoardSettings soundBoard;
@@ -135,7 +167,8 @@ namespace PoeClone.Audio
 
         private void PlayWorld(AudioClip clip, Vector3 position, float pitch)
         {
-            if (clip == null || sfxVolume <= 0f)
+            float gain = SfxGain;
+            if (clip == null || gain <= 0f)
                 return;
 
             var group = soundBoard != null ? soundBoard.GroupOf(clip) : null;
@@ -152,15 +185,15 @@ namespace PoeClone.Audio
             source.panStereo = 0f;
             source.pitch = pitch;
             // Gameplay one-shots always play at full SFX volume; only persistent world sources fade with distance.
-            source.volume = sfxVolume;
+            source.volume = gain;
             // When more sounds play than there are voices, Unity silences the lowest priority first (0 is highest).
             source.priority = topPriority ? 0 : 128;
             source.PlayDelayed(delay);
             Destroy(go, delay + clip.length / Mathf.Max(0.1f, pitch) + 0.1f);
         }
 
-        /// <summary>Master SFX gain and distance fade for persistent world sound sources.</summary>
-        public float WorldSfxVolume(Vector3 position) => sfxVolume * DistanceVolume(position);
+        /// <summary>SFX gain and distance fade for persistent world sound sources.</summary>
+        public float WorldSfxVolume(Vector3 position) => SfxGain * DistanceVolume(position);
 
         private static float DistanceVolume(Vector3 position)
         {
@@ -190,7 +223,7 @@ namespace PoeClone.Audio
             if (clip == null)
                 return;
 
-            uiSource.PlayOneShot(clip, uiVolume);
+            uiSource.PlayOneShot(clip, uiVolume * EffectsVolume);
         }
     }
 }

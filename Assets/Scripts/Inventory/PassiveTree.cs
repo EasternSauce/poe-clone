@@ -176,8 +176,8 @@ namespace PoeClone.Inventory
 
             // Left arm: defence.
             N("m3", "Iron Skin", 1.2f, -0.3f, Mod(StatType.Armour, 25), Mod(StatType.AvoidStun, 3));
-            N("m4", "Thick Hide", 1.5f, -0.45f, Mod(StatType.MaxLife, 15), Mod(StatType.Armour, 15), Mod(StatType.AvoidStun, 4));
-            Nt("m5", "Juggernaut", 1.85f, -0.55f, Mod(StatType.MaxLife, 30), Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 5), Mod(StatType.AvoidStun, 8));
+            N("m4", "Thick Hide", 1.5f, -0.45f, Mod(StatType.MaxLife, 15), Mod(StatType.Armour, 15), Mod(StatType.AvoidStun, 4), Mod(StatType.PercentLifeRegen, 0.2f));
+            Nt("m5", "Juggernaut", 1.85f, -0.55f, Mod(StatType.MaxLife, 30), Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 5), Mod(StatType.AvoidStun, 8), Mod(StatType.PercentLifeRegen, 0.5f));
             N("junction_m5", "", 1.85f, -0.55f, Mod(StatType.Strength, 6));
             Chain("m2", "m3", "m4", "junction_m5");
 
@@ -189,7 +189,7 @@ namespace PoeClone.Inventory
             Chain("m2", "m6", "m7", "junction_m8");
 
             // Straight up the middle.
-            N("m9", "Endurance", 1.45f, 0f, Mod(StatType.IncreasedLife, 4));
+            N("m9", "Endurance", 1.45f, 0f, Mod(StatType.IncreasedLife, 4), Mod(StatType.PercentLifeRegen, 0.2f));
             Chain("m2", "m9");
 
             // The wheel: a ring of six round Bloodbath, reached from either arm or the middle.
@@ -462,6 +462,9 @@ namespace PoeClone.Inventory
             OptionalBranch("m_life", "Stout Heart", "m2", 0.88f, -0.75f, true);
             OptionalBranch("m_life_guard", "Steel Heart", "m4", 1.7f, -1.05f, false);
             OptionalBranch("m_life_outer", "Mighty Physique", "m_w4", 2.7f, 0.85f, true, StatType.Strength);
+            // Might is the tank side: its life notables also regenerate.
+            AddMods("m_life_heart", Mod(StatType.PercentLifeRegen, 0.3f));
+            AddMods("m_life_guard", Mod(StatType.PercentLifeRegen, 0.4f));
             Sector(PassiveBranch.Fury, 270f);
             OptionalBranch("f_life_mid", "Battle Brawn", "f_a2", 1.5f, 0.7f, false, StatType.Strength);
             OptionalBranch("f_life_outer", "Combat Agility", "f_b2", 2.45f, 0.45f, true, StatType.Dexterity);
@@ -482,6 +485,14 @@ namespace PoeClone.Inventory
             OptionalBranch("n_life_inner", "Living Keeper", "n_ward", 1.85f, 0.5f, false);
             OptionalBranch("n_life_mid", "Grave Scholar", "n1", 2.7f, -1.45f, true, StatType.Intelligence);
             OptionalBranch("n_life_outer", "Deathless Heart", "n5", 3.15f, 1.35f, false);
+        }
+
+        private static void AddMods(string id, params StatModifier[] mods)
+        {
+            PassiveNode node = byId[id];
+            var all = new List<StatModifier>(node.Mods);
+            all.AddRange(mods);
+            node.Mods = all.ToArray();
         }
 
         private static void AddCriticalBranches()

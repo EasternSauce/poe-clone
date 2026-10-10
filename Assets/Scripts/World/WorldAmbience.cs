@@ -157,8 +157,7 @@ namespace PoeClone.World
         private void Update()
         {
             if (manager == null || player == null) return;
-            float master = AudioManager.Instance != null
-                ? AudioManager.Instance.sfxVolume * AudioManager.Instance.ambienceVolume : 0;
+            float master = AudioManager.Instance != null ? AudioManager.Instance.AmbienceGain : 0;
             foreach (Voice voice in voices)
             {
                 bool active = manager.CurrentAreaIndex == voice.area && !manager.IsSwitching;

@@ -1,3 +1,7 @@
+version: 2026-10-10-regen-and-volume
+- Might, the tanky side of the passive tree, now regenerates life: Thick Hide and Endurance give 0.2% of Maximum Life per second, Stout Heart 0.3%, Steel Heart 0.4% and Juggernaut 0.5%.
+- Settings now have separate Music and Sound Effects volume sliders under the overall Volume slider. Sound Effects covers combat, world, ambience and interface sounds.
+
 version: 2026-10-10-coop-preview
 - New start menu: choose Single Player or Co-op before picking a character. Every menu after the first has a Back button, including character select.
 - Co-op preview: play with one other person over the internet. Choose Co-op, then Host Game to wait for a partner or Join Game to see everyone who is hosting. Pick a character and you start together in the host's world.

@@ -161,7 +161,11 @@ namespace PoeClone.UI
             UiKit.TopLeft(viewport, new Vector2(30, -126), new Vector2(W-60, H-220));
             float y = 0f;
             RectTransform volumeRow = SettingsRow("Audio", "Volume", "Overall volume of all game sounds.", ref y);
-            VolumeSlider(volumeRow);
+            VolumeSlider(volumeRow, Audio.AudioManager.MasterVolume, v => Audio.AudioManager.MasterVolume = v);
+            RectTransform musicRow = SettingsRow(null, "Music", "Menu, area and boss fight music.", ref y);
+            VolumeSlider(musicRow, Audio.AudioManager.MusicVolume, v => Audio.AudioManager.MusicVolume = v);
+            RectTransform effectsRow = SettingsRow(null, "Sound Effects", "Combat, world, ambience and interface sounds.", ref y);
+            VolumeSlider(effectsRow, Audio.AudioManager.EffectsVolume, v => Audio.AudioManager.EffectsVolume = v);
             RectTransform chatRow = SettingsRow("Communication", "Chat", "Show chat messages and chat controls.", ref y);
             Text chatLabel = null;
             GameObject chatButton = Button("ChatToggle", chatRow, ChatUI.Enabled ? "On" : "Off",
@@ -195,13 +199,17 @@ namespace PoeClone.UI
             listScroll.verticalNormalizedPosition = 1f;
         }
 
+        // A null section continues the one above without a heading of its own.
         private RectTransform SettingsRow(string section, string label, string description, ref float y)
         {
-            Text heading = UiKit.NewText(section + "Heading", content, section.ToUpperInvariant(), 16, UiKit.Gold, TextAnchor.MiddleLeft);
-            UiKit.TopLeft(heading.rectTransform, new Vector2(0, -y), new Vector2(W-60, 22));
-            y += 30f;
+            if (section != null)
+            {
+                Text heading = UiKit.NewText(section + "Heading", content, section.ToUpperInvariant(), 16, UiKit.Gold, TextAnchor.MiddleLeft);
+                UiKit.TopLeft(heading.rectTransform, new Vector2(0, -y), new Vector2(W-60, 22));
+                y += 30f;
+            }
 
-            Image row = UiKit.NewImage(section + "Row", content, new Color(.12f, .10f, .08f, 1f));
+            Image row = UiKit.NewImage(label + "Row", content, new Color(.12f, .10f, .08f, 1f));
             UiKit.TopLeft(row.rectTransform, new Vector2(0, -y), new Vector2(W-60, 78));
             UiKit.AddOutline(row, UiKit.BorderColor, 1f);
             Text name = UiKit.NewText("Name", row.transform, label, 20, UiKit.TextColor, TextAnchor.MiddleLeft);
@@ -213,7 +221,7 @@ namespace PoeClone.UI
             return row.rectTransform;
         }
 
-        private void VolumeSlider(RectTransform row)
+        private void VolumeSlider(RectTransform row, float current, System.Action<float> apply)
         {
             Image track = UiKit.NewImage("VolumeTrack", row, new Color(.08f, .07f, .05f, 1f));
             UiKit.TopLeft(track.rectTransform, new Vector2(W-374, -33), new Vector2(220, 12));
@@ -239,11 +247,11 @@ namespace PoeClone.UI
             slider.direction = Slider.Direction.LeftToRight;
             slider.minValue = 0f;
             slider.maxValue = 1f;
-            slider.value = Audio.AudioManager.MasterVolume;
+            slider.value = current;
             value.text = Mathf.RoundToInt(slider.value * 100f) + "%";
             slider.onValueChanged.AddListener(v =>
             {
-                Audio.AudioManager.MasterVolume = v;
+                apply(v);
                 value.text = Mathf.RoundToInt(v * 100f) + "%";
             });
         }
