@@ -1,3 +1,10 @@
+version: 2026-10-11-tanks-and-critters
+- Enraged monsters no longer punish players who didn't enrage them. If you haven't enraged any monster (with ranged or minion hits) in the last 10 seconds, enraged monsters hit you softer: they still attack faster, but their damage per second against you stays where it was before the rage. Whoever enraged them still takes the full enraged damage. This mostly matters in co-op, where your partner's arrows and minions used to make every monster hit the melee player much harder.
+- The tank side of the tree (Might) now reduces the damage you take: Toughness 5% less, Brawn 3%, Endurance 3%, Thick Hide 2%, Juggernaut 5%, Stout Heart 4% and Steel Heart 2%. A Might melee build takes about 15% less damage by level 7 and 20-24% less from level 21 on.
+- The skill bar is now a single row: LMB, then Q E R F, then 1 2 3 4, then the mouse buttons, instead of the number keys sitting above the letters.
+- Squirrels, rabbits and hares run off in random directions when startled and change direction every second or so, instead of all being chased into one corner of the map.
+- Maximum Minions now reads simply "+N to maximum number of Minions".
+
 version: 2026-10-11-overhead-and-grip
 - Mace and sceptre attacks (and Pulverize with a mace) are now a proper overhead smash. The arm lifts up the side, the head cocks behind your shoulder while you lean back, and the blow comes down hard as you fold forward over it. Before, the lift swept up through the target and looked like an uppercut.
 - Greatswords, greataxes and mauls stay in both hands for the whole swing. The off hand used to let go for most of the attack; now your arms bend to keep both hands on the grip, and the weapon still sweeps the same arc.

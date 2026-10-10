@@ -26,6 +26,21 @@ namespace PoeClone.Combat
 
         public enum AttackKind { Melee, Bolt, Rain }
 
+        // When each player last enraged a monster (their own or their minions' hits). Monsters in a
+        // rage hit a player who enraged none lately with calm damage per second (see EnemyController).
+        public const float EnrageBlameSeconds = 10f;
+        private static float localEnragedAt = float.NegativeInfinity;
+        private static float partnerEnragedAt = float.NegativeInfinity;
+
+        public static void NoteEnrage(bool partner)
+        {
+            if (partner) partnerEnragedAt = Time.time;
+            else localEnragedAt = Time.time;
+        }
+
+        public static bool EnragedLately(bool partner) =>
+            Time.time - (partner ? partnerEnragedAt : localEnragedAt) < EnrageBlameSeconds;
+
         /// <summary>
         /// Host: a monster's attack the guest has to see or take. Bolts and arrow rain go out
         /// whoever they're aimed at (the guest flies its own copy from the launch data); a melee
@@ -94,6 +109,7 @@ namespace PoeClone.Combat
             Partner = null;
             PartnerAlive = false;
             ApplyingPartnerDamage = false;
+            localEnragedAt = partnerEnragedAt = float.NegativeInfinity;
             SharingArea = false;
             EnemyAttacked = null;
             EnemySkillUsed = null;

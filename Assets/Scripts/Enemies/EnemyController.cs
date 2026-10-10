@@ -143,11 +143,27 @@ namespace PoeClone.Enemies
 
         public bool IsEnraged => Time.time < enragedUntil;
 
-        /// <summary>What its hits are multiplied by right now (an enraged enemy hits harder).</summary>
-        public float DamageMultiplier => IsEnraged ? (kind != null && kind.IsBoss ? kind.BossEnrageDamage : EnrageDamage) : 1f;
+        private float RageAttackSpeed => kind != null && kind.IsBoss ? 1.25f : 1.5f;
+
+        /// <summary>
+        /// What its hits on the local player or the partner are multiplied by right now. An enraged
+        /// enemy hits harder, except a player who enraged nothing lately: its quicker hits land softer
+        /// on them, keeping their damage per second where it was before the rage.
+        /// </summary>
+        public float DamageMultiplierAgainst(bool partner)
+        {
+            if (!IsEnraged)
+                return 1f;
+            if (!Party.EnragedLately(partner))
+                return 1f / RageAttackSpeed;
+            return kind != null && kind.IsBoss ? kind.BossEnrageDamage : EnrageDamage;
+        }
+
+        /// <summary>The same for its special skill, whose cooldown the rage doesn't shorten.</summary>
+        public float SkillDamageMultiplierAgainst(bool partner) => Party.EnragedLately(partner) ? DamageMultiplierAgainst(partner) : 1f;
 
         /// <summary>How much faster it attacks right now.</summary>
-        public float AttackSpeedMultiplier => (IsEnraged ? (kind != null && kind.IsBoss ? 1.25f : 1.5f) : 1f) * (IsHasted ? HasteAttackSpeed : 1f);
+        public float AttackSpeedMultiplier => (IsEnraged ? RageAttackSpeed : 1f) * (IsHasted ? HasteAttackSpeed : 1f);
 
         // spread: also rouses and enrages every living enemy within EnrageSpreadRadius (those
         // don't spread it further, so it can't run across the whole map).
@@ -179,6 +195,7 @@ namespace PoeClone.Enemies
                 health = GetComponent<EnemyHealth>();
             if (!canEnrage || health == null || health.IsDead)
                 return;
+            Party.NoteEnrage(Party.ApplyingPartnerDamage);
             if (IsEnraged)
                 enragedUntil = Time.time + EnrageSeconds;
             else

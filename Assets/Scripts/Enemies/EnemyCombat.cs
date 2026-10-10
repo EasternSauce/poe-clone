@@ -246,7 +246,7 @@ namespace PoeClone.Enemies
             if (!Party.PartnerTargetable)
                 return;
             Vector3 at = Party.Partner.position;
-            float damage = RollDamage();
+            float damage = RollDamage(atPartner: true);
             if (kind.RainOfArrows)
             {
                 EnemySkills.RainOfArrows(this, kind, at, null, 0f);
@@ -270,10 +270,10 @@ namespace PoeClone.Enemies
         }
 
         // Lightning is famously swingy in PoE; everything else varies a little.
-        private float RollDamage()
+        private float RollDamage(bool atPartner = false)
         {
             float spread = kind.DamageType == DamageType.Lightning ? 0.6f : 0.15f;
-            float rage = controller != null ? controller.DamageMultiplier : 1f;
+            float rage = controller != null ? controller.DamageMultiplierAgainst(atPartner) : 1f;
             return damage * rage * Curse.DealtMultiplier(this) * Random.Range(1f - spread, 1f + spread);
         }
 

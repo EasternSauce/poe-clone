@@ -113,7 +113,7 @@ namespace PoeClone.World
             StatType.MaxLife, 1.7f, StatType.IncreasedLife, 1.7f, StatType.Armour, 1f, StatType.Strength, 0.8f,
             StatType.FireResistance, 0.9f, StatType.ColdResistance, 0.9f, StatType.LightningResistance, 0.9f,
             StatType.BlockChance, 0.8f, StatType.LifeLeech, 1.4f, StatType.LifeOnAttackHit, 1.2f, StatType.LifeRegen, 0.8f,
-            StatType.PercentLifeRegen, 1f, StatType.LifeOnKill, 0.6f, StatType.AvoidStun, 0.5f,
+            StatType.PercentLifeRegen, 1f, StatType.LifeOnKill, 0.6f, StatType.AvoidStun, 0.5f, StatType.DamageTaken, 1.6f,
             StatType.MaxMana, 0.4f, StatType.ManaRegen, 0.4f, StatType.ManaCostReduction, 0.5f,
             StatType.PhysicalDamage, 1.2f, StatType.AttackSpeed, 1.1f, StatType.AttackDamage, 1f, StatType.Damage, 0.9f,
             StatType.MeleeRange, 0.6f, StatType.AreaOfEffect, 0.6f, StatType.MovementSpeed, 0.5f

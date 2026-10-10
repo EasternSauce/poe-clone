@@ -900,7 +900,7 @@ namespace PoeClone.Inventory
                 case StatType.SpiritWolvesLevels: return sign + n + " to Level of Spirit Wolves";
                 case StatType.BoneGolemLevels: return sign + n + " to Level of Bone Golem";
                 case StatType.AdditionalSkeletons: return sign + n + " to maximum Skeleton Warriors and Skeleton Mages";
-                case StatType.AdditionalMinions: return sign + n + " to maximum number of Minions of each summon skill, except golems";
+                case StatType.AdditionalMinions: return sign + n + " to maximum number of Minions";
                 case StatType.MinionDamagePenalty: return "Minions deal " + n + "% less Damage";
                 case StatType.MarkEffect: return Increased(m, "effect of Death Mark");
                 case StatType.MinionDuration: return Increased(m, "duration of Spirit Wolves and the Bone Golem");

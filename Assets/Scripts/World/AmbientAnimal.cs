@@ -12,9 +12,9 @@ namespace PoeClone.World
         private AreaShape shape;
         private Transform player, visual, head, tail;
         private Transform[] legs, segments;
-        private Vector3 home, target;
+        private Vector3 home, target, threatPosition, fleeHeading;
         private System.Random random;
-        private float nextDecision, nextThreatCheck, fleeUntil, phase, motion;
+        private float nextDecision, nextThreatCheck, fleeUntil, nextFleeTurn, phase, motion;
         private float radius, walkSpeed;
         private int areaId;
         private bool Skittish => Kind == Species.Rabbit || Kind == Species.Squirrel || Kind == Species.FrostHare;
@@ -72,18 +72,24 @@ namespace PoeClone.World
                 Transform threat = NearestThreat();
                 if (threat != null)
                 {
-                    Vector3 away = transform.position - threat.position;
-                    away.y = 0;
-                    if (away.sqrMagnitude < 0.01f) away = transform.forward;
-                    ChooseTarget(away.normalized, true);
+                    threatPosition = threat.position;
+                    if (Time.time >= fleeUntil) nextFleeTurn = 0;
                     fleeUntil = Time.time + (Skittish ? 3.5f : 2.2f);
                     nextDecision = fleeUntil + Range(1, 3);
                 }
             }
             bool fleeing = Time.time < fleeUntil;
+            // Bolt in a random direction (just not at the threat) and switch it now and then,
+            // so a chased animal zigzags about instead of being herded into one corner.
+            if (fleeing && Time.time >= nextFleeTurn)
+            {
+                fleeHeading = FleeHeading();
+                nextFleeTurn = Time.time + Range(0.7f, 1.8f);
+                ChooseTarget(fleeHeading, true);
+            }
             // Keep escaping after reaching a waypoint, rather than stopping within sight of danger.
-            if (fleeing && (target - transform.position).sqrMagnitude < 0.25f)
-                ChooseTarget(transform.forward, true);
+            else if (fleeing && (target - transform.position).sqrMagnitude < 0.25f)
+                ChooseTarget(fleeHeading, true);
             if (!fleeing && Time.time >= nextDecision)
             {
                 Vector3 direction = home - transform.position;
@@ -139,6 +145,21 @@ namespace PoeClone.World
                 return;
             }
             target = transform.position;
+        }
+
+        private Vector3 FleeHeading()
+        {
+            Vector3 toThreat = threatPosition - transform.position;
+            toThreat.y = 0;
+            toThreat = toThreat.sqrMagnitude > 0.01f ? toThreat.normalized : Vector3.zero;
+            Vector3 heading = -toThreat;
+            for (int i = 0; i < 8; i++)
+            {
+                float angle = Range(0, Mathf.PI * 2);
+                heading = new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle));
+                if (Vector3.Dot(heading, toThreat) < 0.5f) break;
+            }
+            return heading;
         }
 
         private Transform NearestThreat()

@@ -363,8 +363,8 @@ namespace PoeClone.Enemies
 
         // ------------------------------------------------------------------ phase 2's specials
 
-        private float BaseHit => kind.Damage * EnemyKinds.DamageScale(level, kind)
-            * (walker != null ? walker.DamageMultiplier : 1f);
+        private float BaseHit(bool partner) => kind.Damage * EnemyKinds.DamageScale(level, kind)
+            * (walker != null ? walker.DamageMultiplierAgainst(partner) : 1f);
 
         // Special cooldowns are doubled while calm; enrage restores their current cadence.
         private float SpecialCooldownScale => walker != null && walker.IsEnraged ? 1f : 2f;
@@ -382,9 +382,9 @@ namespace PoeClone.Enemies
                 (centre, r) =>
                 {
                     if (Party.PartnerInside(p => Flat(p - centre).magnitude <= r))
-                        Party.PartnerDamaged?.Invoke(0f, kind.DamageType, false, BaseHit * 0.16666667f, 2f);
+                        Party.PartnerDamaged?.Invoke(0f, kind.DamageType, false, BaseHit(true) * 0.16666667f, 2f);
                     if (player != null && !player.IsDead && Flat(player.transform.position - centre).magnitude <= r)
-                        player.PoisonFromPool(BaseHit * 0.16666667f, 2f);
+                        player.PoisonFromPool(BaseHit(false) * 0.16666667f, 2f);
                 });
         }
 
@@ -940,13 +940,13 @@ namespace PoeClone.Enemies
         private void HitPartner(System.Func<Vector3, bool> inside, float multiplier, bool attack = true)
         {
             if (health == null || health.IsDead || !Party.PartnerInside(inside)) return;
-            float hit = BaseHit * multiplier;
+            float hit = BaseHit(true) * multiplier;
             Party.PartnerDamaged?.Invoke(hit, kind.DamageType, attack, Phase >= 2 ? hit * PoisonShare : 0f, PoisonSeconds);
         }
 
         private void Damage(float multiplier, bool attack = true)
         {
-            float hit = BaseHit * multiplier;
+            float hit = BaseHit(false) * multiplier;
             if (player.TakeHit(hit, kind.DamageType, attack) && Phase >= 2 && !player.IsDead)
                 player.Poison(hit * PoisonShare, PoisonSeconds);
         }

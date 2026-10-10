@@ -22,9 +22,9 @@ namespace PoeClone.UI
     {
         private const float SlotSize = 52f;
         private const float AttackGap = 12f;
-        private const float TopRowY = -24f;
-        private const float BottomRowY = -100f;
-        private const float BarHeight = 152f;
+        private const float GroupGap = 10f;
+        private const float RowY = -24f;
+        private const float BarHeight = 76f;
         private const float SkillsPanelWidth = 760f;
         private readonly Image[] mobileButtons = new Image[SkillBook.TouchSlotCount];
         private readonly Text[] mobileLabels = new Text[SkillBook.TouchSlotCount];
@@ -226,10 +226,10 @@ namespace PoeClone.UI
             }
         }
 
+        // One row: LMB, then Q E R F, 1 2 3 4 and RMB M4 M5, each group a little apart.
         private float SlotX(int slot)
         {
-            int column = slot >= 8 ? slot - 4 : slot % 4;
-            return SlotSize + AttackGap + column * (SlotSize + 6f) + 4f;
+            return SlotSize + AttackGap + slot * (SlotSize + 6f) + Mathf.Min(slot / 4, 2) * GroupGap + 4f;
         }
 
         // A spectator's copy of the watched player's skills panel (read-only): open while theirs
@@ -848,7 +848,7 @@ namespace PoeClone.UI
             plate.rectTransform.offsetMax = new Vector2(5f, 1f);
             UiKit.ThinFrame(plate.rectTransform);
 
-            attackView = NewSlotView(bar, "Attack", 4f, BottomRowY, "LMB", null);
+            attackView = NewSlotView(bar, "Attack", 4f, RowY, "LMB", null);
             attackIcon = UiKit.NewImage("Icon", attackView.Back.rectTransform, Color.white);
             attackIcon.preserveAspect = true;
             attackIcon.raycastTarget = false;
@@ -859,8 +859,7 @@ namespace PoeClone.UI
             for (int k = 0; k < SkillBook.SlotCount; k++)
             {
                 int clicked = k;
-                float slotY = k >= 4 && k < 8 ? TopRowY : BottomRowY;
-                slotViews.Add(NewSlotView(bar, "Slot" + k, SlotX(k), slotY, PlayerSkills.KeyLabel(k), () => OpenPicker(clicked)));
+                slotViews.Add(NewSlotView(bar, "Slot" + k, SlotX(k), RowY, PlayerSkills.KeyLabel(k), () => OpenPicker(clicked)));
             }
 
             BuildPicker(canvas.transform);

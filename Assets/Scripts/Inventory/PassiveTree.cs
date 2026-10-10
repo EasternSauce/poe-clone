@@ -170,14 +170,14 @@ namespace PoeClone.Inventory
         private static void BuildMight()
         {
             Sector(PassiveBranch.Might, 210f);
-            N("m1", "Toughness", 0.55f, 0f, Mod(StatType.MaxLife, 12));
-            N("m2", "Brawn", 0.9f, 0f, Mod(StatType.Strength, 12));
+            N("m1", "Toughness", 0.55f, 0f, Mod(StatType.MaxLife, 12), Mod(StatType.DamageTaken, -5));
+            N("m2", "Brawn", 0.9f, 0f, Mod(StatType.Strength, 12), Mod(StatType.DamageTaken, -3));
             Chain("m1", "m2");
 
             // Left arm: defence.
             N("m3", "Iron Skin", 1.2f, -0.3f, Mod(StatType.Armour, 25), Mod(StatType.AvoidStun, 3));
-            N("m4", "Thick Hide", 1.5f, -0.45f, Mod(StatType.MaxLife, 15), Mod(StatType.Armour, 15), Mod(StatType.AvoidStun, 4), Mod(StatType.PercentLifeRegen, 0.2f));
-            Nt("m5", "Juggernaut", 1.85f, -0.55f, Mod(StatType.MaxLife, 30), Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 5), Mod(StatType.AvoidStun, 8), Mod(StatType.PercentLifeRegen, 0.5f));
+            N("m4", "Thick Hide", 1.5f, -0.45f, Mod(StatType.MaxLife, 15), Mod(StatType.Armour, 15), Mod(StatType.AvoidStun, 4), Mod(StatType.PercentLifeRegen, 0.2f), Mod(StatType.DamageTaken, -2));
+            Nt("m5", "Juggernaut", 1.85f, -0.55f, Mod(StatType.MaxLife, 30), Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 5), Mod(StatType.AvoidStun, 8), Mod(StatType.PercentLifeRegen, 0.5f), Mod(StatType.DamageTaken, -5));
             N("junction_m5", "", 1.85f, -0.55f, Mod(StatType.Strength, 6));
             Chain("m2", "m3", "m4", "junction_m5");
 
@@ -189,7 +189,7 @@ namespace PoeClone.Inventory
             Chain("m2", "m6", "m7", "junction_m8");
 
             // Straight up the middle.
-            N("m9", "Endurance", 1.45f, 0f, Mod(StatType.IncreasedLife, 4), Mod(StatType.PercentLifeRegen, 0.2f));
+            N("m9", "Endurance", 1.45f, 0f, Mod(StatType.IncreasedLife, 4), Mod(StatType.PercentLifeRegen, 0.2f), Mod(StatType.DamageTaken, -3));
             Chain("m2", "m9");
 
             // The wheel: a ring of six round Bloodbath, reached from either arm or the middle.
@@ -462,9 +462,9 @@ namespace PoeClone.Inventory
             OptionalBranch("m_life", "Stout Heart", "m2", 0.88f, -0.75f, true);
             OptionalBranch("m_life_guard", "Steel Heart", "m4", 1.7f, -1.05f, false);
             OptionalBranch("m_life_outer", "Mighty Physique", "m_w4", 2.7f, 0.85f, true, StatType.Strength);
-            // Might is the tank side: its life notables also regenerate.
-            AddMods("m_life_heart", Mod(StatType.PercentLifeRegen, 0.3f));
-            AddMods("m_life_guard", Mod(StatType.PercentLifeRegen, 0.4f));
+            // Might is the tank side: its life notables also regenerate and soften hits.
+            AddMods("m_life_heart", Mod(StatType.PercentLifeRegen, 0.3f), Mod(StatType.DamageTaken, -4));
+            AddMods("m_life_guard", Mod(StatType.PercentLifeRegen, 0.4f), Mod(StatType.DamageTaken, -2));
             Sector(PassiveBranch.Fury, 270f);
             OptionalBranch("f_life_mid", "Battle Brawn", "f_a2", 1.5f, 0.7f, false, StatType.Strength);
             OptionalBranch("f_life_outer", "Combat Agility", "f_b2", 2.45f, 0.45f, true, StatType.Dexterity);

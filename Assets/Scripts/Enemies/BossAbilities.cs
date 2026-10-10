@@ -175,7 +175,7 @@ namespace PoeClone.Enemies
         {
             int seed = Random.Range(int.MinValue, int.MaxValue);
             Party.BossMoveStarted?.Invoke(this, index, !aimedAtLocal, seed, SpeedMultiplier,
-                controller != null ? controller.DamageMultiplier : 1f, level);
+                controller != null ? controller.DamageMultiplierAgainst(partner: true) : 1f, level);
             StartCoroutine(RunBusy(routine, seed));
         }
 
@@ -790,7 +790,7 @@ namespace PoeClone.Enemies
 
         private float DamageOf(float multiplier)
         {
-            float rage = mirror ? mirrorRage : controller != null ? controller.DamageMultiplier : 1f;
+            float rage = mirror ? mirrorRage : controller != null ? controller.DamageMultiplierAgainst(partner: false) : 1f;
             return kind.Damage * multiplier * EnemyKinds.DamageScale(level, kind) * rage;
         }
 

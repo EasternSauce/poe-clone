@@ -181,9 +181,9 @@ namespace PoeClone.Enemies
                 target = PlayerMotion.Intercept(player, EnemyCombat.BoltOrigin(transform), kind.ProjectileSpeed);
             if (kind.Skill == EnemySkill.Leap)
                 target = LeapLanding(transform.position, target, LeapGap(transform));
-            float damage = kind.Damage * EnemyKinds.DamageScale(level, kind) * (controller != null ? controller.DamageMultiplier : 1f);
-            Party.EnemySkillUsed?.Invoke(this, !aimedAtLocal, damage, target);
-            Cast(target, damage);
+            float damage = kind.Damage * EnemyKinds.DamageScale(level, kind);
+            Party.EnemySkillUsed?.Invoke(this, !aimedAtLocal, damage * (controller != null ? controller.SkillDamageMultiplierAgainst(partner: true) : 1f), target);
+            Cast(target, damage * (controller != null ? controller.SkillDamageMultiplierAgainst(partner: false) : 1f));
         }
 
         // The cast itself: on the host (or alone), and on a co-op guest's copy.
