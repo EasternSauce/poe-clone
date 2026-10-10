@@ -27,7 +27,7 @@ namespace PoeClone.Player
         private const float BaseCritMultiplier = 1.5f;
         public const float OnslaughtSeconds = 4f;
         private const float ExplosionRadius = 3.2f;
-        private const float ExplosionShare = 1f / 6f;
+        private const float ExplosionShare = 2f;
         private const float ShatterRadius = 3f;
         private const float ShatterShare = 0.12f;
         private const float StormbladeShare = 0.5f;

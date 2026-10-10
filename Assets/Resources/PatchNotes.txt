@@ -1,3 +1,6 @@
+version: 2026-10-10-corpse-explosion-200
+- Corpse explosions now deal 200% of the killed enemy's Maximum Life as Fire damage, up from a sixth.
+
 version: 2026-10-10-no-arrow-chance
 - Item stats for Ignite, Shock and Onslaught chances no longer include explanations of what those effects do.
 - Bows no longer have a chance to fire an extra arrow. Extra arrows are now always guaranteed: a bow shot fires one arrow plus your Additional Arrows, every time.
