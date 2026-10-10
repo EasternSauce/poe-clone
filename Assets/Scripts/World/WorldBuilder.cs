@@ -327,7 +327,9 @@ namespace PoeClone.World
         }
 
         // A flat, smooth-edged disc lying on the ground (Unity's cylinder shows its 20 sides).
-        private static void FloorDisc(Transform parent, string name, Vector3 center, float radius, Material material)
+        // Lobes above zero bend the rim into an irregular, puddle-like outline picked by seed.
+        private static void FloorDisc(Transform parent, string name, Vector3 center, float radius, Material material,
+            float lobes = 0f, float seed = 0f)
         {
             const int segments = 72;
             var vertices = new Vector3[segments + 1];
@@ -335,7 +337,8 @@ namespace PoeClone.World
             for (int k = 0; k < segments; k++)
             {
                 float a = k * Mathf.PI * 2f / segments;
-                vertices[k + 1] = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * radius;
+                float edge = 1f + lobes * (0.6f * Mathf.Sin(2f * a + seed) + 0.3f * Mathf.Sin(3f * a + seed * 1.7f) + 0.2f * Mathf.Sin(5f * a + seed * 2.9f));
+                vertices[k + 1] = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * radius * edge;
                 triangles[k * 3] = 0;
                 triangles[k * 3 + 1] = (k + 1) % segments + 1;
                 triangles[k * 3 + 2] = k + 1;

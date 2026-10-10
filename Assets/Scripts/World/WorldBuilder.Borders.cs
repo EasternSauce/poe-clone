@@ -105,7 +105,14 @@ namespace PoeClone.World
                     p += outward * 4.5f;
                     if (NearGate(area, p, 12f) || shape.Contains(p, -3f) || shape.WaterDistance(p) > -9f) continue;
                     GameObject prop;
-                    if (shape.IsCave || shape.IsCliff || rng.NextDouble() < 0.3)
+                    if (shape.InCut(p) && !shape.IsCave && !shape.IsCliff)
+                    {
+                        // Boulders strewn along a knoll's rock bank; the knoll brings its own trees.
+                        if (rng.NextDouble() < 0.25) continue;
+                        p += outward * R(-3f, -2f) + Vector3.up * 1.2f;
+                        prop = Prefab(kit.rock, group, p, R(0, 360), new Vector3(R(1.3f, 2.2f), R(0.8f, 1.5f), R(1.3f, 2.2f)));
+                    }
+                    else if (shape.IsCave || shape.IsCliff || rng.NextDouble() < 0.3)
                     {
                         prop = Prefab(kit.rock, group, p, R(0, 360), new Vector3(R(2, 3), R(1.7f, 2.6f), R(2, 3)));
                         if (area == Frozen) Tint(prop, new Color(0.65f, 0.78f, 0.9f));
@@ -114,7 +121,72 @@ namespace PoeClone.World
                     else prop = Prefab(Coin() ? kit.pine : kit.oak, group, p, R(0, 360), Vector3.one * R(1.1f, 1.5f));
                     NoShadows(prop);
                 }
+                if (!shape.IsCave && !shape.IsCliff)
+                    foreach (var cut in shape.Cuts)
+                        Knoll(group, area, shape.Center + Flat(cut.center.x, cut.center.y), cut.radii);
             }
+        }
+
+        // An exclusion in the open: a wooded knoll rising off its rock bank, instead of a pit.
+        private void Knoll(Transform parent, int area, Vector3 center, Vector2 radii)
+        {
+            // Inside the hole's rock bank, whose top (1.3 m) hides the seam.
+            float rx = radii.x - 2f, rz = radii.y - 2f;
+            float rise = Mathf.Min(rx, rz) * 0.14f;
+            float Height(float u) => 1.25f + rise * (1f - u * u);
+
+            const int rings = 8, segments = 56;
+            var vertices = new List<Vector3> { Vector3.up * Height(0f) };
+            var triangles = new List<int>();
+            for (int ring = 1; ring <= rings; ring++)
+            {
+                float u = ring / (float)rings;
+                for (int s = 0; s < segments; s++)
+                {
+                    float a = s * Mathf.PI * 2f / segments;
+                    vertices.Add(new Vector3(Mathf.Cos(a) * rx * u, Height(u), Mathf.Sin(a) * rz * u));
+                    int current = 1 + (ring - 1) * segments + s, next = 1 + (ring - 1) * segments + (s + 1) % segments;
+                    if (ring == 1)
+                        triangles.AddRange(new[] { 0, next, current });
+                    else
+                    {
+                        int below = current - segments, belowNext = next - segments;
+                        triangles.AddRange(new[] { below, belowNext, current, current, belowNext, next });
+                    }
+                }
+            }
+            var mesh = new Mesh { name = "Knoll" };
+            mesh.SetVertices(vertices);
+            mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            var knoll = new GameObject("Knoll");
+            knoll.transform.SetParent(parent, false);
+            knoll.transform.position = center;
+            knoll.AddComponent<MeshFilter>().sharedMesh = mesh;
+            knoll.AddComponent<MeshRenderer>().sharedMaterial = FloorMaterial("KnollTurf_" + AreaNames[area], GroundTexture(area), 7f,
+                new Color(0.92f, 0.92f, 0.9f));
+
+            // Thick woods on top, thinning to rocks and scrub round the edge.
+            bool graveyard = area == Graveyard;
+            for (float z = -rz; z <= rz; z += 3.4f)
+                for (float x = -rx; x <= rx; x += 3.4f)
+                {
+                    Vector3 local = new Vector3(x + R(-1.2f, 1.2f), 0f, z + R(-1.2f, 1.2f));
+                    float u = Mathf.Sqrt(local.x * local.x / (rx * rx) + local.z * local.z / (rz * rz));
+                    if (u > 0.94f) continue;
+                    Vector3 p = center + local + Vector3.up * (Height(u) - 0.05f);
+                    double roll = rng.NextDouble() + (u > 0.75f ? 0.25 : 0.0);
+                    GameObject prop;
+                    if (roll < 0.72)
+                        prop = graveyard ? DeadTree(knoll.transform, p, kit.Mat("DeadWood"), R(1f, 1.5f))
+                            : Prefab(Coin() ? kit.pine : kit.oak, knoll.transform, p, R(0f, 360f), Vector3.one * R(1.05f, 1.6f));
+                    else if (roll < 0.95 || graveyard)
+                        prop = Prefab(kit.rock, knoll.transform, p, R(0f, 360f), Vector3.one * R(0.7f, 1.5f));
+                    else
+                        prop = Prefab(kit.bushSmall, knoll.transform, p, R(0f, 360f), Vector3.one * R(0.4f, 0.65f));
+                    NoShadows(prop);
+                }
         }
 
         private void BuildCave()

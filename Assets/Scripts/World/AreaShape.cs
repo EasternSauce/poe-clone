@@ -87,6 +87,21 @@ namespace PoeClone.World
             return this;
         }
 
+        /// <summary>The authored exclusions (local centre and radii): holes cut out of the floor.</summary>
+        public IEnumerable<(Vector2 center, Vector2 radii)> Cuts
+        {
+            get { foreach (Region cut in cuts) yield return (cut.a, cut.radii); }
+        }
+
+        /// <summary>Whether a world point lies inside an authored exclusion.</summary>
+        public bool InCut(Vector3 world)
+        {
+            Vector2 p = new Vector2(world.x - Center.x, world.z - Center.z);
+            foreach (Region cut in cuts)
+                if (cut.Distance(p) > 0f) return true;
+            return false;
+        }
+
         public AreaShape Lake(float x, float z, float rx, float rz)
         {
             waters.Add(new Region { a = new Vector2(x, z), radii = new Vector2(rx, rz), seed = WaterSeed(x, z) });

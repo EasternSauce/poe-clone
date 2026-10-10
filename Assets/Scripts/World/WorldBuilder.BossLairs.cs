@@ -310,7 +310,7 @@ namespace PoeClone.World
         private AreaDefinition BuildBelfry()
         {
             Vector3 c = Center(Belfry);
-            Transform t = Floor(Belfry, "The Drowned Belfry", kit.Mat("Stone"));
+            Transform t = Floor(Belfry, "The Drowned Belfry", FloorMaterial("BelfryFlags", FlagstoneFloor.GetTexture("_BaseMap"), 5.5f, new Color(0.6f, 0.68f, 0.74f)));
             Begin(Belfry, 722);
             // Broken chapel walls round the yard, with gaps.
             for (int k = 0; k < 18; k++)
@@ -332,27 +332,73 @@ namespace PoeClone.World
             }
             Box(t, tower + new Vector3(0f, 9.6f, -1.5f), new Vector3(9f, 0.6f, 0.6f), kit.Mat("Wood"), solid: false, euler: new Vector3(0f, 0f, 6f));
             Box(t, tower + new Vector3(2f, 0.4f, -6f), new Vector3(7f, 0.6f, 0.6f), kit.Mat("Wood"), solid: false, euler: new Vector3(0f, 35f, 8f));
-            // Sunken bells and pools of black water.
-            Vector3[] bells = { new Vector3(-16f, 0f, 12f), new Vector3(17f, 0f, 6f), new Vector3(-10f, 0f, -14f) };
-            foreach (Vector3 local in bells)
+            // Pools of black water in the sunken flags, three of them holding a fallen bell.
+            var murk = new Material(kit.Mat("Water")) { name = "BelfryMurk" };
+            murk.SetColor("_BaseColor", new Color(0.06f, 0.11f, 0.11f));
+            murk.SetColor("_ShadowColor", new Color(0.03f, 0.06f, 0.06f));
+            murk.SetFloat("_RimIntensity", 0.06f);
+            murk.SetFloat("_TexInfluence", 0.1f);
+            murk.SetFloat("_LivingWater", 0);
+            var reeds = new PrimitiveBatch();
+            Material reed = new Material(kit.Mat("Moss")) { name = "DeadReed" };
+            reed.SetColor("_BaseColor", new Color(0.3f, 0.29f, 0.22f));
+            (Vector3 at, float radius, bool bell)[] pools =
             {
+                (new Vector3(-16f, 0f, 12f), 4.2f, true), (new Vector3(17f, 0f, 6f), 3.8f, true), (new Vector3(-10f, 0f, -14f), 3.6f, true),
+                (new Vector3(11f, 0f, -12f), 3f, false), (new Vector3(9f, 0f, 19f), 2.4f, false), (new Vector3(-3f, 0f, -21f), 2f, false)
+            };
+            foreach (var pool in pools)
+            {
+                Vector3 at = c + pool.at;
+                float seed = R(0f, 6.28f);
+                FloorDisc(t, "PoolMud", at + Vector3.up * 0.02f, pool.radius * 1.28f, MudFloor, 0.14f, seed);
+                FloorDisc(t, "Pool", at + Vector3.up * 0.045f, pool.radius, murk, 0.14f, seed);
+                // Dead reeds and a stone or two along the bank.
+                for (int clump = rng.Next(1, 4); clump > 0; clump--)
+                {
+                    Vector3 bank = at + AreaShape.Direction(R(0f, Mathf.PI * 2f)) * pool.radius * R(0.85f, 1.05f);
+                    for (int k = rng.Next(6, 12); k > 0; k--)
+                    {
+                        float tall = R(0.6f, 1.4f);
+                        Quaternion lean = Quaternion.Euler(R(-14f, 14f), R(0f, 360f), R(-14f, 14f));
+                        reeds.Add(PrimitiveType.Cube, reed, bank + Flat(R(-0.6f, 0.6f), R(-0.6f, 0.6f)) + lean * Vector3.up * (tall * 0.5f), lean,
+                            new Vector3(0.06f, tall, 0.06f));
+                    }
+                }
+                NoShadows(Prefab(kit.rockSmall, t, at + AreaShape.Direction(R(0f, Mathf.PI * 2f)) * pool.radius * 1.1f + Vector3.down * 0.1f,
+                    R(0f, 360f), Vector3.one * R(0.5f, 0.9f)));
+                if (!pool.bell)
+                    continue;
                 var bell = new GameObject("SunkBell").transform;
                 bell.SetParent(t, false);
-                bell.position = c + local + Vector3.up * 1.2f;
+                bell.position = at + Vector3.up * 1.2f;
                 bell.rotation = Quaternion.Euler(R(15f, 35f), R(0f, 360f), R(-15f, 15f));
                 bell.localScale = Vector3.one * R(1.8f, 2.4f);
                 CreatureBuilder.BuildBell(bell, new Color(0.45f, 0.34f, 0.18f), new Color(0.3f, 0.58f, 0.48f), new Color(0.15f, 0.13f, 0.1f));
-                Cyl(t, c + local + Vector3.up * 0.04f, 3.4f, 0.03f, kit.Mat("Water"), solid: false);
             }
-            for (int k = 0; k < 6; k++)
-                Tombstone(t, c + new Vector3(R(-20f, 20f), 0f, R(-16f, 20f)));
-            // Black water pooled all over the yard, and drowned trees.
-            for (int k = 0; k < 9; k++)
-                Cyl(t, c + new Vector3(R(-22f, 22f), 0.03f, R(-18f, 24f)), R(1.5f, 4f), 0.03f, kit.Mat("Water"), solid: false);
-            for (int k = 0; k < 4; k++)
-                DeadTree(t, c + new Vector3(R(-22f, 22f), 0f, R(-16f, 22f)), kit.Mat("DeadWood"));
-            for (int k = 0; k < 5; k++)
-                Candles(t, c + new Vector3(R(-18f, 18f), 0f, R(-14f, 18f)));
+            reeds.Build(t, "Reeds", shadows: false);
+            // The chapel's old graves in two plots by the walls, rows sinking and tilting in the wet.
+            foreach (var plot in new[] { (x: -23f, z: 2.5f), (x: 14f, z: -3f) })
+                for (int row = 0; row < 2; row++)
+                {
+                    float shift = R(0f, 0.8f);
+                    for (float x = plot.x + shift; x < plot.x + 8f; x += 1.6f)
+                    {
+                        if (rng.NextDouble() < 0.15)
+                            continue;
+                        GameObject grave = Grave(t, c + new Vector3(x + R(-0.2f, 0.2f), 0f, plot.z - row * 3.5f + R(-0.25f, 0.25f)), 180f + R(-12f, 12f));
+                        grave.transform.position += Vector3.down * R(0f, 0.15f);
+                        grave.transform.rotation *= Quaternion.Euler(R(-6f, 6f), 0f, R(-7f, 7f));
+                        if (rng.NextDouble() < 0.15)
+                            Candles(t, grave.transform.TransformPoint(new Vector3(0.45f, 0f, 0.3f)));
+                    }
+                }
+            OpenGrave(t, c + new Vector3(-11f, 0f, 3f), 200f);
+            // Drowned trees along the walls, reaching over the yard.
+            foreach (Vector3 local in new[] { new Vector3(-21f, 0f, 17f), new Vector3(22f, 0f, 18f), new Vector3(21f, 0f, -12f), new Vector3(-9f, 0f, 21f), new Vector3(-20f, 0f, -12f) })
+                DeadTree(t, c + local, kit.Mat("DeadWood"), R(1.4f, 1.9f));
+            Candles(t, tower + new Vector3(-2f, 0f, -4f));
+            Candles(t, tower + new Vector3(2.5f, 0f, -4.5f));
             for (int k = 0; k < 2; k++)
                 for (int s = -1; s <= 1; s += 2)
                     Lamp(t, c + new Vector3(s * 4f, 0f, -38f + k * 9f));

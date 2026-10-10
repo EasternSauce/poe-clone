@@ -1,3 +1,8 @@
+version: 2026-10-10-belfry-and-knolls
+- The Drowned Belfry's pools are no longer bright blue circles. They are irregular pools of black water with muddy rims, dead reeds and stones along the banks, three of them still holding a fallen bell. The yard is now paved with dark, worn flagstones.
+- The Belfry's graves now stand in two small plots by the walls, in staggered rows that sink and tilt in the wet ground, with an open grave nearby. Larger dead trees grow along the walls and reach over the yard, instead of a few small ones scattered in the middle.
+- The black pits in the middle of the Greenwood, Haven and the Haunted Graveyard are gone. Each is now a raised knoll on its rocky bank, thick with pines and oaks (dead trees in the graveyard) and strewn with boulders.
+
 version: 2026-10-10-graveyard-and-waystones
 - The Haunted Graveyard's crypt is now dug into a grassy barrow at the back of its clearing: stone steps lead up to a dark doorway behind a half-open iron gate, framed by retaining walls, a pediment with a carved skull and braziers of green spirit fire.
 - The graveyard's square fenced plots are gone. Its graves now lie in loose, staggered rows inside low drystone walls on irregular oval lines, some topped with iron railings. Each yard has a gateway and a trodden path, and a small mausoleum, a stone angel or an old dead tree in the middle. The headstones vary: arched and pointed slabs, plain and wheel-headed crosses, obelisks and snapped stones, some leaning, with earth mounds before them and candles at a few.
