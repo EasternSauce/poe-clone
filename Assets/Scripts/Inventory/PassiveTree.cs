@@ -122,13 +122,13 @@ namespace PoeClone.Inventory
         private static void BuildNecromancy()
         {
             Sector(PassiveBranch.Necromancy, 117f);
-            N("n_ward", "Grave Ward", 1.6f, 0.3f, Mod(StatType.MinionLife, 10), Mod(StatType.MinionArmour, 60));
-            N("n1", "Grave Whispers", 2.6f, 0f, Mod(StatType.MinionLife, 8), Mod(StatType.MinionArmour, 100), Mod(StatType.MinionResistances, 5));
-            N("n2", "Bone Servants", 2.9f, -0.35f, Mod(StatType.MinionDamage, 7));
+            N("n_ward", "Grave Ward", 1.6f, 0.3f, Mod(StatType.MinionLife, 10), Mod(StatType.MinionArmour, 60), Mod(StatType.PercentManaRegen, 0.5f));
+            N("n1", "Grave Whispers", 2.6f, 0f, Mod(StatType.MinionLife, 8), Mod(StatType.MinionArmour, 100), Mod(StatType.MinionResistances, 5), Mod(StatType.PercentManaRegen, 0.5f));
+            N("n2", "Bone Servants", 2.9f, -0.35f, Mod(StatType.MinionDamage, 14));
             N("n3", "Ossuary", 2.9f, 0.35f, Mod(StatType.MinionLife, 10), Mod(StatType.MinionArmour, 120), Mod(StatType.MinionResistances, 5));
             Nt("n_lord", "Lord of Bones", 3.2f, 0f, Mod(StatType.MinionLevels, 1), Mod(StatType.MinionLife, 20));
             N("junction_n_lord", "", 3.2f, 0f, Mod(StatType.Intelligence, 6));
-            N("n4", "Grave Command", 3.2f, -0.62f, Mod(StatType.MinionDamage, 8), Mod(StatType.MinionSpeed, 4));
+            N("n4", "Grave Command", 3.2f, -0.62f, Mod(StatType.MinionDamage, 14), Mod(StatType.MinionSpeed, 6));
             N("n5", "Pack Leader", 3.2f, 0.62f, Mod(StatType.MinionSpeed, 4), Mod(StatType.MinionDuration, 8));
             Chain("w2", "n_ward");
             Chain("b_fireward", "n1");
@@ -139,7 +139,7 @@ namespace PoeClone.Inventory
             Chain("n2", "k_legion");
             Nt("k_soulbond", "Undying Host", 3.6f, 0.28f, Mod(StatType.MinionLife, 20), Mod(StatType.MinionArmour, 250), Mod(StatType.MinionResistances, 10));
             Chain("n3", "k_soulbond");
-            Nt("k_herald", "Grave Dominion", 3.5f, -0.95f, Mod(StatType.MinionDamage, 16), Mod(StatType.MinionSpeed, 10));
+            Nt("k_herald", "Grave Dominion", 3.5f, -0.95f, Mod(StatType.MinionDamage, 30), Mod(StatType.MinionSpeed, 15));
             Chain("n4", "k_herald");
             Nt("k_spiritpact", "Spirit Pact", 3.5f, 0.95f, Mod(StatType.MinionDuration, 25), Mod(StatType.MinionSpeed, 12));
             Chain("n5", "k_spiritpact");
@@ -337,9 +337,9 @@ namespace PoeClone.Inventory
             LifeSpur("w_life", "Sound Body", "w2");
 
             // Mind: mana, ending in Mind over Matter.
-            N("w4", "Deep Well", 1.5f, -0.45f, Mod(StatType.MaxMana, 20));
-            N("w_l2", "Clarity", 1.85f, -0.5f, Mod(StatType.ManaRegen, 15));
-            Nt("w_l3", "Arcane Mind", 2.2f, -0.5f, Mod(StatType.CastSpeed, 8), Mod(StatType.MaxMana, 30), Mod(StatType.IncreasedMana, 10));
+            N("w4", "Deep Well", 1.5f, -0.45f, Mod(StatType.MaxMana, 20), Mod(StatType.PercentManaRegen, 0.5f));
+            N("w_l2", "Clarity", 1.85f, -0.5f, Mod(StatType.ManaRegen, 15), Mod(StatType.PercentManaRegen, 1f));
+            Nt("w_l3", "Arcane Mind", 2.2f, -0.5f, Mod(StatType.CastSpeed, 8), Mod(StatType.MaxMana, 30), Mod(StatType.IncreasedMana, 10), Mod(StatType.PercentManaRegen, 1f));
             N("junction_w_l3", "", 2.2f, -0.5f, Mod(StatType.Intelligence, 6));
             Chain("w3", "w4", "w_l2", "junction_w_l3");
             Ks("k_mom", "Mind over Matter", 2.65f, -0.6f, Mod(StatType.ManaAbsorb, 30));
@@ -714,7 +714,7 @@ namespace PoeClone.Inventory
             switch (b)
             {
                 case "k_legion": return Mod(StatType.MinionLife, 4);
-                case "k_herald": return Mod(StatType.MinionDamage, 3);
+                case "k_herald": return Mod(StatType.MinionDamage, 5);
                 case "k_viper": return Mod(StatType.PoisonDamage, 3);
                 case "k_frostbite": return Mod(StatType.Dexterity, 6);
                 case "k_thunderlord": return Mod(StatType.ShockChance, 3);

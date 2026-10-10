@@ -618,15 +618,24 @@ namespace PoeClone.Skills
                 CastRateMultiplier;
         }
 
-        /// <summary>Character level from which every skill costs <see cref="LateCostMultiplier"/> times as much.</summary>
-        public const int LateCostLevel = 20;
-        public const float LateCostMultiplier = 1.5f;
-
-        /// <summary>A skill's cost at a skill level for this character (late-game characters pay more).</summary>
+        /// <summary>A skill's cost at a skill level for this character (higher characters pay more).</summary>
         public float CostOf(SkillId id, int level)
         {
-            float cost = SkillBook.Get(id).ManaCostAt(Mathf.Max(1, level));
-            return stats != null && stats.Level >= LateCostLevel ? cost * LateCostMultiplier : cost;
+            SkillDefinition skill = SkillBook.Get(id);
+            return skill.ManaCostAt(Mathf.Max(1, level)) * CharacterCostMultiplier(skill, stats != null ? stats.Level : 1);
+        }
+
+        /// <summary>
+        /// How much more a skill costs at a character level, rising smoothly from 1x at level 1:
+        /// to 1.3x at level 34 for most skills. Bow skills barely change cost with their own level,
+        /// so they climb steeply with the character instead (about 8x by level 34).
+        /// </summary>
+        public static float CharacterCostMultiplier(SkillDefinition skill, int characterLevel)
+        {
+            float l = Mathf.Max(0, characterLevel - 1);
+            if (skill.Bow)
+                return 1f + 0.15f * l + 0.0019f * l * l;
+            return 1f + 0.3f * Mathf.Clamp01(l / 33f);
         }
 
         public float ManaCostForGrant(SkillGrant grant) => CostOf(grant.Id, GrantLevelWithBonuses(grant));
@@ -1182,7 +1191,7 @@ namespace PoeClone.Skills
                 return null;
             MinionKind kind = MinionKindOf(id);
             StatSheet sheet = inventory != null ? inventory.Stats : null;
-            string summary = "army max " + Minion.GlobalCap(transform) + " · this skill max " + Minion.KindCap(kind, sheet) + " · " +
+            string summary = "max " + Minion.KindCap(kind, level, sheet) + " · " +
                              Mathf.RoundToInt(Minion.LifeFor(kind, level, sheet)) + " life · " +
                              Mathf.RoundToInt(Minion.ArmourFor(sheet)) + " armour · " +
                              Mathf.RoundToInt(Minion.ResistanceFor(sheet)) + "% elemental/poison res · " +
@@ -1242,7 +1251,7 @@ namespace PoeClone.Skills
             }
         }
 
-        private static MinionKind MinionKindOf(SkillId id)
+        public static MinionKind MinionKindOf(SkillId id)
         {
             switch (id)
             {

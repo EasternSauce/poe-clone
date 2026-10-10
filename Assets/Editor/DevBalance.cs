@@ -228,8 +228,7 @@ namespace PoeClone.EditorTools
             nextArmyAt = EditorApplication.timeSinceStartup + 1;
         }
 
-        public static string ArmyStatus() => "casts=" + armyStep + "/" + armySkills.Length + " minions=" + Minion.All.Count + " cap=" +
-            (UnityEngine.Object.FindAnyObjectByType<PlayerStats>() != null ? Minion.GlobalCap(UnityEngine.Object.FindAnyObjectByType<PlayerStats>().transform) : 0);
+        public static string ArmyStatus() => "casts=" + armyStep + "/" + armySkills.Length + " minions=" + Minion.All.Count;
 
         /// <summary>One-call loadout, army, dummy, and timed damage sample. Defaults to a marked
         /// summoner, since Death Mark is its main attack. Returns immediately; poll BenchmarkStatus.</summary>

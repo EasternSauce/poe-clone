@@ -9,7 +9,7 @@ namespace PoeClone.World
     /// <summary>
     /// Plays the automated gauntlet through the touch inputs (the aim stick and skill presses):
     /// walks into range of the nearest enemy, holds the attack on it, uses bar skills when they're
-    /// ready, keeps summons up, and drinks potions when low. Out of potions, it gets 20 more
+    /// ready, keeps summons up (only into room under each kind's limit), and drinks potions when low. Out of potions, it gets 20 more
     /// (counted as refills in the results).
     /// </summary>
     public sealed class GauntletBot : MonoBehaviour
@@ -174,7 +174,11 @@ namespace PoeClone.World
                 if (skill.Bow || id == SkillId.Dash || id == SkillId.Teleport) continue;
                 if (skills.CooldownLeftAt(k) > 0f || !skills.CanAffordAt(k)) continue;
                 if (id == SkillId.FrostNova && distance > 4f) continue;
-                if ((id == SkillId.RaiseSkeletons || id == SkillId.SkeletonMages) && LivingMinions() >= Minion.GlobalCap(player.transform)) continue;
+                // Like a player keeping an army up: recast a summon only when its kind has room
+                // (wolves, the golem and vipers once theirs are gone or short).
+                // One permanent kind only: don't swap a living army for another.
+                if (skill.Summon && Minion.IsPermanent(PlayerSkills.MinionKindOf(id.Value)) && LivingPermanentOtherThan(PlayerSkills.MinionKindOf(id.Value))) continue;
+                if (skill.Summon && Living(PlayerSkills.MinionKindOf(id.Value)) >= Minion.KindCap(PlayerSkills.MinionKindOf(id.Value), skills.Level(id.Value), inventory.Stats)) continue;
                 if (skills.TryUse(k))
                 {
                     // One skill at a time, like a player: the next waits for this one's cast.
@@ -184,11 +188,18 @@ namespace PoeClone.World
             }
         }
 
-        private static int LivingMinions()
+        private static bool LivingPermanentOtherThan(MinionKind kind)
+        {
+            foreach (Minion m in Minion.All)
+                if (m != null && !m.IsDead && m.Kind != kind && Minion.IsPermanent(m.Kind)) return true;
+            return false;
+        }
+
+        private static int Living(MinionKind kind)
         {
             int n = 0;
             foreach (Minion m in Minion.All)
-                if (m != null && !m.IsDead) n++;
+                if (m != null && !m.IsDead && m.Kind == kind) n++;
             return n;
         }
     }

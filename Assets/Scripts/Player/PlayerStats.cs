@@ -193,7 +193,8 @@ namespace PoeClone.Player
                 float manaRegen = sheet != null ? sheet.Total(StatType.ManaRegen) : 0f;
                 bool regenerates = sheet == null || sheet.Total(StatType.NoLifeRegen) <= 0f;
                 float lifeRegen = sheet != null && regenerates ? sheet.Total(StatType.LifeRegen) : 0f;
-                currentMana = Mathf.Min(MaxMana, currentMana + DefenceMath.ManaRegenPerSecond(MaxMana, Intelligence, manaRegen) * Time.deltaTime);
+                currentMana = Mathf.Min(MaxMana, currentMana + DefenceMath.ManaRegenPerSecond(MaxMana, Intelligence, manaRegen,
+                    sheet != null ? sheet.Total(StatType.PercentManaRegen) : 0f) * Time.deltaTime);
                 float percentRegen = sheet != null && regenerates ? sheet.Total(StatType.PercentLifeRegen) : 0f;
                 currentHealth = Mathf.Min(MaxHealth, currentHealth + DefenceMath.LifeRegenPerSecond(MaxHealth, lifeRegen, percentRegen) * Time.deltaTime);
 

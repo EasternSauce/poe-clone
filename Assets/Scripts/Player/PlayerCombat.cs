@@ -235,19 +235,24 @@ namespace PoeClone.Player
                 (1f + Mathf.Max(0f, inventory.Stats.Total(StatType.MeleeRange)) / 100f);
         }
 
-        // Carrion Saint's body collider is intentionally broad to block movement, but the
-        // melee swing also tests enemy pivots. Let phase three's damageable radius extend by
-        // one collider radius, making its effective hitbox twice as wide without changing
-        // ordinary enemies or weapon reach.
+        // The melee swing tests enemy pivots, so a broad body (a large boss) would stay out of
+        // reach even with the player pressed against it. Reach extends by however much wider
+        // than an ordinary enemy the body is, leaving ordinary enemies and weapon reach as they
+        // are. Carrion Saint's phase three extends by its whole radius, twice as wide a hitbox.
+        private const float OrdinaryBodyRadius = 0.6f;
+
         private static float DamageableReach(EnemyHealth enemy, float range)
         {
             if (enemy == null)
                 return range;
-            ShepherdFight fight = enemy.GetComponent<ShepherdFight>();
-            if (fight == null || fight.Phase < 3)
+            CharacterController body = enemy.GetComponent<CharacterController>();
+            if (body == null)
                 return range;
-            CharacterController collider = enemy.GetComponent<CharacterController>();
-            return range + (collider != null ? collider.radius * enemy.transform.lossyScale.x : 0f);
+            float radius = body.radius * enemy.transform.lossyScale.x;
+            ShepherdFight fight = enemy.GetComponent<ShepherdFight>();
+            if (fight != null && fight.Phase >= 3)
+                return range + radius;
+            return range + Mathf.Max(0f, radius - OrdinaryBodyRadius);
         }
 
         private static float MeleeQueryRange(float range)
@@ -437,7 +442,7 @@ namespace PoeClone.Player
             if (weaponType == WeaponType.Maul)
                 CameraSystem.CameraFollow.Shake(0.12f, 0.18f);
 
-            // Expand the overlap query too, or the phase-three damageable edge would never
+            // Expand the overlap query too, or a broad body's damageable edge would never
             // enter the candidate set for short weapons.
             int count = Physics.OverlapSphereNonAlloc(transform.position, MeleeQueryRange(range), hitBuffer);
             var hitAlready = new HashSet<IDamageable>();

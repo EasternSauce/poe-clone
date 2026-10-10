@@ -134,18 +134,33 @@ namespace PoeClone.Skills
             return ProfileOf(kind).Damage * Mathf.Pow(1.16f, l - 1) * Mathf.Pow(2.5f, 1f - Mathf.Clamp01((l - 1) / 9f));
         }
 
-        /// <summary>A soft per-kind cap; the owner's global minion limit is the real army limit.</summary>
-        public static int KindCap(MinionKind kind, StatSheet sheet)
+        /// <summary>
+        /// How many of a kind can be alive at once (for wolves, the pack each cast calls). Each
+        /// summon skill has its own limit, as in Path of Exile; there is no shared army limit. It
+        /// grows by one at skill levels 7 and 13 (see <see cref="LevelBonus"/>), and Maximum Minions
+        /// adds to every kind but the golem, which stays alone. Extra Skeletons adds to warriors
+        /// and mages.
+        /// </summary>
+        public static int KindCap(MinionKind kind, int level, StatSheet sheet)
         {
-            int extra = sheet != null ? Mathf.RoundToInt(Mathf.Max(0f, sheet.Total(StatType.AdditionalSkeletons))) : 0;
+            if (kind == MinionKind.Golem)
+                return 1;
+            int extra = LevelBonus(level) + (sheet != null ? Mathf.RoundToInt(Mathf.Max(0f, sheet.Total(StatType.AdditionalMinions))) : 0);
+            if (kind == MinionKind.Warrior || kind == MinionKind.Mage)
+                extra += sheet != null ? Mathf.RoundToInt(Mathf.Max(0f, sheet.Total(StatType.AdditionalSkeletons))) : 0;
             switch (kind)
             {
-                case MinionKind.Warrior: return 4 + extra;
-                case MinionKind.Mage: return 3 + extra;
-                case MinionKind.Wolf: return 3;
-                default: return 1;
+                case MinionKind.Warrior: return 2 + extra;
+                case MinionKind.Wolf: return 2 + extra;
+                default: return 1 + extra;
             }
         }
+
+        /// <summary>Stays until destroyed (warriors and mages); only one such kind can be up at a time.</summary>
+        public static bool IsPermanent(MinionKind kind) => Duration(kind, 1, null) <= 0f;
+
+        /// <summary>One more minion at skill level 7 and another at 13.</summary>
+        public static int LevelBonus(int level) => (level >= 7 ? 1 : 0) + (level >= 13 ? 1 : 0);
 
         /// <summary>How long a temporary minion lasts (0: until destroyed).</summary>
         public static float Duration(MinionKind kind, int level, StatSheet sheet)
@@ -172,16 +187,6 @@ namespace PoeClone.Skills
                 (Stat(sheet, StatType.Intelligence) * 0.5f + Stat(sheet, StatType.MinionDamage)) / 100f) *
             (sheet != null ? sheet.Multiplier(StatType.MoreMinionDamage) * sheet.Multiplier(StatType.MinionDamagePenalty) : 1f);
 
-        /// <summary>The shared living-minion limit. Capacity comes from the tree and gear, not per-skill caps.</summary>
-        public const int BaseGlobalCap = 2;
-
-        public static int GlobalCap(Transform owner)
-        {
-            PlayerInventory inventory = owner != null ? owner.GetComponent<PlayerInventory>() : null;
-            StatSheet sheet = inventory != null ? inventory.Stats : null;
-            return Mathf.Max(1, BaseGlobalCap + (sheet != null ? Mathf.RoundToInt(sheet.Total(StatType.AdditionalMinions)) : 0));
-        }
-
         public static float ArmourFor(StatSheet sheet) =>
             Mathf.Max(0f, BaseArmour + Stat(sheet, StatType.MinionArmour));
 
@@ -202,9 +207,9 @@ namespace PoeClone.Skills
 
         /// <summary>
         /// Raises minions toward a chosen point, at most six metres from the owner.
-        /// Warriors and mages add to their type's limit
-        /// until the shared army limit is reached; then the oldest minion is replaced.
-        /// Wolves, the golem and viper replace their previous summon when recast.
+        /// Warriors, mages and vipers add up to their kind's limit; past it the oldest of the kind
+        /// is replaced. Wolves and the golem replace their previous summon when recast. Raising a
+        /// permanent kind (warriors or mages) dismisses the other permanent kind.
         /// </summary>
         public static void Summon(Transform owner, MinionKind kind, int level, Vector3 target)
         {
@@ -214,11 +219,16 @@ namespace PoeClone.Skills
 
             PlayerInventory inventory = owner.GetComponent<PlayerInventory>();
             StatSheet sheet = inventory != null ? inventory.Stats : null;
-            int cap = KindCap(kind, sheet);
-            int globalCap = GlobalCap(owner);
+            int cap = KindCap(kind, level, sheet);
 
             All.RemoveAll(m => m == null);
-            if (kind == MinionKind.Wolf || kind == MinionKind.Golem || kind == MinionKind.Viper)
+            // Only one kind of permanent minion at a time: raising one dismisses the others.
+            if (IsPermanent(kind))
+            {
+                foreach (Minion other in All.FindAll(m => m.owner == owner && m.Kind != kind && IsPermanent(m.Kind)))
+                    other.Crumble();
+            }
+            if (kind == MinionKind.Wolf || kind == MinionKind.Golem)
             {
                 foreach (Minion old in All.FindAll(m => m.owner == owner && m.Kind == kind))
                     old.Crumble();
@@ -230,12 +240,7 @@ namespace PoeClone.Skills
             {
                 List<Minion> same = All.FindAll(m => m.owner == owner && m.Kind == kind && !m.dead);
                 if (same.Count >= cap)
-                {
                     Oldest(same).Crumble();
-                }
-                List<Minion> owned = All.FindAll(m => m.owner == owner && !m.dead);
-                if (owned.Count >= globalCap)
-                    Oldest(owned).Crumble();
 
                 Vector3 forward = target - owner.position;
                 forward.y = 0f;

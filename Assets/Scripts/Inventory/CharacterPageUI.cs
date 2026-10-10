@@ -321,7 +321,7 @@ namespace PoeClone.Inventory
                     break;
                 case StatType.MaxMana:
                     float regen = DefenceMath.ManaRegenPerSecond(sheet.Total(StatType.MaxMana), sheet.Total(StatType.Intelligence),
-                        sheet.Total(StatType.ManaRegen));
+                        sheet.Total(StatType.ManaRegen), sheet.Total(StatType.PercentManaRegen));
                     hint = Percent(DefenceMath.TotalManaAbsorbShare(sheet.Total(StatType.ManaAbsorb))) + " of hits, +" +
                            regen.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "/s";
                     break;

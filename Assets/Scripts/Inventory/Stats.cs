@@ -175,7 +175,8 @@ namespace PoeClone.Inventory
         NoLifeRegen,                // 1: life does not regenerate
         ManaCostReduction,          // % less mana (or life) spent on skills
         LifePercentOnKill,          // % of maximum life recovered on kill
-        MoreMeleeDamage             // % more damage with melee attacks
+        MoreMeleeDamage,            // % more damage with melee attacks
+        PercentManaRegen            // % of maximum mana regenerated per second
     }
 
     /// <summary>
@@ -359,7 +360,7 @@ namespace PoeClone.Inventory
                 case WeaponType.Dagger: return 8f;
                 case WeaponType.Sword: return 6f;
                 case WeaponType.Greatsword: return 5.5f;
-                case WeaponType.Bow: return 5f;
+                case WeaponType.Bow: return 10f;
                 case WeaponType.Axe: return 5f;
                 case WeaponType.Greataxe: return 4.5f;
                 case WeaponType.Staff: return 4f;
@@ -659,6 +660,7 @@ namespace PoeClone.Inventory
                 case StatType.IncreasedLife: return "Increased Life";
                 case StatType.IncreasedMana: return "Increased Mana";
                 case StatType.PercentLifeRegen: return "Life Regen (% of max)";
+                case StatType.PercentManaRegen: return "Mana Regen (% of max)";
                 case StatType.ManaOnKill: return "Mana on Kill";
                 case StatType.OnslaughtOnKill: return "Onslaught on Kill";
                 case StatType.ExplodeOnKill: return "Corpse Explosion";
@@ -776,6 +778,7 @@ namespace PoeClone.Inventory
                 case StatType.IncreasedLife:
                 case StatType.IncreasedMana:
                 case StatType.PercentLifeRegen:
+                case StatType.PercentManaRegen:
                 case StatType.OnslaughtOnKill:
                 case StatType.ExplodeOnKill:
                 case StatType.Shatter:
@@ -878,6 +881,7 @@ namespace PoeClone.Inventory
                 case StatType.IncreasedLife: return Increased(m, "Maximum Life");
                 case StatType.IncreasedMana: return Increased(m, "Maximum Mana");
                 case StatType.PercentLifeRegen: return "Regenerate " + n + "% of Maximum Life per second";
+                case StatType.PercentManaRegen: return "Regenerate " + n + "% of Maximum Mana per second";
                 case StatType.ManaOnKill: return "Gain " + n + " Mana per enemy killed";
                 case StatType.OnslaughtOnKill: return n + "% chance on kill to gain Onslaught";
                 case StatType.ExplodeOnKill: return n + "% chance for enemies you kill to explode, dealing 200% of their Maximum Life as Fire damage around them. Enemies killed by an explosion can explode in turn";
@@ -896,7 +900,7 @@ namespace PoeClone.Inventory
                 case StatType.SpiritWolvesLevels: return sign + n + " to Level of Spirit Wolves";
                 case StatType.BoneGolemLevels: return sign + n + " to Level of Bone Golem";
                 case StatType.AdditionalSkeletons: return sign + n + " to maximum Skeleton Warriors and Skeleton Mages";
-                case StatType.AdditionalMinions: return sign + n + " to maximum number of Minions";
+                case StatType.AdditionalMinions: return sign + n + " to maximum number of Minions of each summon skill, except golems";
                 case StatType.MinionDamagePenalty: return "Minions deal " + n + "% less Damage";
                 case StatType.MarkEffect: return Increased(m, "effect of Death Mark");
                 case StatType.MinionDuration: return Increased(m, "duration of Spirit Wolves and the Bone Golem");

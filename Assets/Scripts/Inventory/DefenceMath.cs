@@ -100,9 +100,10 @@ namespace PoeClone.Inventory
             return Math.Min(0.9f, ManaAbsorbShare + Math.Max(0f, extraPercent) / 100f);
         }
 
-        public static float ManaRegenPerSecond(float maxMana, float intelligence, float increasedPercent = 0f)
+        /// <summary>Mana per second: a share of the pool (more with % of maximum mana regenerated) and some per Intelligence, then increased.</summary>
+        public static float ManaRegenPerSecond(float maxMana, float intelligence, float increasedPercent = 0f, float percentOfMax = 0f)
         {
-            float regen = maxMana * ManaRegenFraction + intelligence * ManaRegenPerIntelligence;
+            float regen = maxMana * (ManaRegenFraction + Math.Max(0f, percentOfMax) / 100f) + intelligence * ManaRegenPerIntelligence;
             return Math.Max(0f, regen * (1f + increasedPercent / 100f));
         }
 

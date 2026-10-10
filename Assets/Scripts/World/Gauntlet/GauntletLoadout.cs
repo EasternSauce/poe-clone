@@ -107,7 +107,7 @@ namespace PoeClone.World
                 case StatType.PoisonResistance: case StatType.MinionResistances: return 1f / 20f;
                 case StatType.LifeRegen: case StatType.LifeOnAttackHit: return 1f / 3f;
                 case StatType.LifeLeech: case StatType.SpellLeech: return 1f / 1.5f;
-                case StatType.PercentLifeRegen: return 2f;
+                case StatType.PercentLifeRegen: case StatType.PercentManaRegen: return 2f;
                 case StatType.CriticalChance: return 1f / 30f;
                 case StatType.CriticalMultiplier: return 1f / 20f;
                 case StatType.IncreasedLife: return 1f / 6f;
