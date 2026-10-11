@@ -181,7 +181,8 @@ namespace PoeClone.Inventory
         GrantFissure,
         GrantAftershock,
         GrantCrossSlash,
-        GrantVenomSlash
+        GrantVenomSlash,
+        FireDamageOverTime,         // % increased fire damage over time, including ignite; never hits
     }
 
     /// <summary>
@@ -439,7 +440,11 @@ namespace PoeClone.Inventory
             else if (element == StatType.ColdDamage) more *= Multiplier(StatType.MoreColdDamage);
             else if (element == StatType.LightningDamage) more *= Multiplier(StatType.MoreLightningDamage);
             else if (element == StatType.PoisonDamage) more *= Multiplier(StatType.MorePoisonDamage);
-            if (damageOverTime) increased += Total(StatType.DamageOverTime);
+            if (damageOverTime)
+            {
+                increased += Total(StatType.DamageOverTime);
+                if (element == StatType.FireDamage) increased += Total(StatType.FireDamageOverTime);
+            }
             if (lowLife) increased += Total(StatType.DamageWhileLowLife);
             if (chilled) increased += Total(StatType.DamageVsChilled);
             return Math.Max(0f, 1f + increased / 100f) * more;
@@ -640,6 +645,7 @@ namespace PoeClone.Inventory
                 case StatType.PoisonPenetration: return "Poison Penetration";
                 case StatType.PoisonDamage: return "Poison Damage";
                 case StatType.DamageOverTime: return "Damage over Time";
+                case StatType.FireDamageOverTime: return "Fire Damage over Time";
                 case StatType.FirePenetration: return "Fire Penetration";
                 case StatType.ColdPenetration: return "Cold Penetration";
                 case StatType.LightningPenetration: return "Lightning Penetration";
@@ -774,6 +780,7 @@ namespace PoeClone.Inventory
                 case StatType.PoisonPenetration:
                 case StatType.PoisonDamage:
                 case StatType.DamageOverTime:
+                case StatType.FireDamageOverTime:
                 case StatType.MovementSpeed:
                 case StatType.SpellDamage:
                 case StatType.AreaOfEffect:
@@ -866,6 +873,7 @@ namespace PoeClone.Inventory
                 case StatType.PoisonPenetration: return n + "% Poison Penetration";
                 case StatType.PoisonDamage: return n + "% increased Poison Damage";
                 case StatType.DamageOverTime: return n + "% increased Damage over Time";
+                case StatType.FireDamageOverTime: return n + "% increased Fire Damage over Time";
                 case StatType.MovementSpeed: return n + "% " + (m.Value < 0f ? "reduced" : "increased") + " Movement Speed";
                 case StatType.AdditionalArrows: return "Bow attacks fire " + n + " additional arrow" + (n == "1" ? "" : "s");
                 case StatType.AdditionalSpellProjectiles: return "Fire Bolt and Ice Shard fire " + n + " additional projectile" + (n == "1" ? "" : "s");

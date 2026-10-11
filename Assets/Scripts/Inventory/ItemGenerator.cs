@@ -428,6 +428,8 @@ namespace PoeClone.Inventory
             { StatType.PoisonPenetration, "Virulent" },
             { StatType.PoisonDamage, "Toxic" },
             { StatType.DamageOverTime, "Lingering" },
+            { StatType.FireDamageOverTime, "Smouldering" },
+            { StatType.IgniteChance, "Kindling" },
             { StatType.FirePenetration, "Searing" },
             { StatType.ColdPenetration, "Rimeforged" },
             { StatType.LightningPenetration, "Stormcharged" },

@@ -23,7 +23,7 @@ namespace PoeClone.Player
         private const float ChillSeconds = 2f;
         private const float ShockSeconds = 4f;
         public const float ShockedMore = 1.25f;
-        private const float IgniteShare = 0.6f;
+        private const float IgniteShare = 2.4f; // total base damage over the full burn
         private const float IgniteSeconds = 3f;
         private const float BaseCritMultiplier = 1.5f;
         public const float OnslaughtSeconds = 4f;
@@ -96,10 +96,14 @@ namespace PoeClone.Player
             if (enemy.IsShocked)
                 damage *= ShockedMore;
             damage *= Skills.Curse.TakenMultiplier(enemy);
-            float ailmentBaseDamage = sheet != null ? baseDamage * sheet.DamageMultiplier(false, false,
-                stats.CurrentHealth < stats.MaxHealth * 0.5f, wasChilled, StatType.FireDamage, damageOverTime: true) : baseDamage;
-            if (enemy.IsShocked) ailmentBaseDamage *= ShockedMore;
-            ailmentBaseDamage *= Skills.Curse.TakenMultiplier(enemy);
+            float ailmentBaseDamage = baseDamage;
+            if (sheet != null && type == DamageType.Fire)
+            {
+                ailmentBaseDamage *= sheet.DamageMultiplier(false, false,
+                    stats.CurrentHealth < stats.MaxHealth * 0.5f, wasChilled, StatType.FireDamage, damageOverTime: true);
+                if (enemy.IsShocked) ailmentBaseDamage *= ShockedMore;
+                ailmentBaseDamage *= Skills.Curse.TakenMultiplier(enemy);
+            }
 
             Vector3 at = enemy.transform.position;
             float scale = enemy.transform.localScale.y;

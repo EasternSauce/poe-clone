@@ -371,7 +371,7 @@ namespace PoeClone.Inventory
             N("z1", "Kindling", 0.55f, 0f, Mod(StatType.FireDamage, 6));
             N("z2", "Vigour", 0.9f, 0f, Road());
             N("z3", "Hearth", 1.25f, 0f, Road());
-            Nt("z_hub", "Sacred Flame", 1.65f, 0f, Mod(StatType.FireDamage, 18), Mod(StatType.IgniteChance, 15));
+            Nt("z_hub", "Sacred Flame", 1.65f, 0f, Mod(StatType.FireDamage, 18), Mod(StatType.IgniteChance, 35), Mod(StatType.FireDamageOverTime, 20));
             N("junction_z_hub", "", 1.65f, 0f, Road());
             Chain("z1", "z2", "z3", "junction_z_hub");
             LifeSpur("z_life", "Warm Blood", "z2");
@@ -380,9 +380,9 @@ namespace PoeClone.Inventory
             N("z_s2", "Combustion", 2.17f, -0.19f, Road());
             N("z_s3", "Renewal", 2.17f, 0.19f, Road());
             N("z_s4", "Fervent Heart", 1.93f, 0.48f, Road());
-            Nt("z_t1", "Wildfire", 2.15f, -0.9f, Mod(StatType.IgniteChance, 15), Mod(StatType.FireDamage, 12), Mod(StatType.FirePenetration, 8));
+            Nt("z_t1", "Wildfire", 2.15f, -0.9f, Mod(StatType.IgniteChance, 50), Mod(StatType.FireDamage, 12), Mod(StatType.FirePenetration, 8), Mod(StatType.FireDamageOverTime, 25));
             N("junction_z_t1", "", 2.15f, -0.9f, Road());
-            Nt("z_t2", "Funeral Pyre", 2.6f, -0.34f, Mod(StatType.FireDamage, 18), Mod(StatType.IgniteChance, 10));
+            Nt("z_t2", "Funeral Pyre", 2.6f, -0.34f, Mod(StatType.FireDamage, 18), Mod(StatType.IgniteChance, 50), Mod(StatType.FireDamageOverTime, 35));
             N("junction_z_t2", "", 2.6f, -0.34f, Road());
             Nt("z_t3", "Lifeblood", 2.6f, 0.34f, Mod(StatType.PercentLifeRegen, 0.6f), Mod(StatType.IncreasedLife, 6));
             N("junction_z_t3", "", 2.6f, 0.34f, Road());

@@ -1,3 +1,8 @@
+version: 2026-10-11-ignite-builds
+- Ignite deals four times as much damage: 240% of base fire damage over 3 seconds, before damage bonuses and enemy resistance. The strongest ignite still wins.
+- Sacred Flame, Wildfire and Funeral Pyre now grant 20%, 25% and 35% increased Fire Damage over Time, respectively. They grant 35%, 50% and 50% chance to Ignite: Wildfire and Funeral Pyre alone guarantee ignites, leaving gear slots free for damage or defence.
+- Weapons, quivers, grimoires, rings and amulets can now roll increased Fire Damage over Time and chance to Ignite, with stronger tiers at higher item levels. Ignite chance rolls start at 20-30%, offering other ways to reach 100%. Fire Damage over Time scales ignite alongside fire damage and general damage over time, without increasing hit damage.
+
 version: 2026-10-11-spell-mana-curve
 - Damage spells gain a character-level mana surcharge so even low-rank spells need mana management. Level 1 costs are unchanged; costs ramp up smoothly through level 7, reach roughly twice their previous cost at level 34, and keep growing smoothly through level 100. Faster spells pay a smaller surcharge per cast.
 
