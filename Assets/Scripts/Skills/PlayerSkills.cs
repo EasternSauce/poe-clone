@@ -914,9 +914,10 @@ namespace PoeClone.Skills
                             attackAnimator.PlayAttack(WeaponType.Unarmed);
                     }
                     var bolts = PlayerArrow.NewVolley();
-                    foreach (Vector3 direction in HitEffects.Spread(transform.forward, 1 + extraProjectiles, 12f))
+                    int boltCount = 1 + (level >= 6 ? 1 : 0) + (level >= 12 ? 1 : 0) + extraProjectiles;
+                    foreach (Vector3 direction in HitEffects.Spread(transform.forward, boltCount, 12f))
                         PlayerArrow.LaunchBolt(transform, BoltRange, damage, skill.Color, 1.6f * area, direction, volley: bolts);
-                    Record(skill, level, 1.6f * area, 1 + extraProjectiles);
+                    Record(skill, level, 1.6f * area, boltCount);
                     break;
 
                 case SkillId.IceShard:

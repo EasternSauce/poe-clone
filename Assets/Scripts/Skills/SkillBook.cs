@@ -226,7 +226,7 @@ namespace PoeClone.Skills
                 Id = SkillId.FireBolt, Name = "Fire Bolt", Short = "FB", Grant = StatType.GrantFireBolt, RollsOn = "staves",
                 Spell = true, Element = SkillElement.Fire, BaseDamage = 7f,
                 ManaCosts = new[] { 3.5f, 5.4f, 7.7f, 10.3f, 15.3f, 21.8f, 29.8f, 31.6f, 33.4f, 35.2f }, Cooldown = 1.0f, Color = new Color(1f, 0.5f, 0.15f),
-                Description = "Hurl a bolt of fire that bursts on the first enemy it hits."
+                Description = "Hurl a bolt of fire that bursts on the first enemy it hits. Fires an additional bolt at skill levels 6 and 12. Each enemy is hit by one bolt at most."
             },
             new SkillDefinition
             {
