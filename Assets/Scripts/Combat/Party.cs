@@ -14,10 +14,16 @@ namespace PoeClone.Combat
         public static bool IsGuest { get; private set; }
         public static bool Active => IsHost || IsGuest;
 
-        /// <summary>Co-op monsters (bosses too) are this much tougher than alone...</summary>
-        public static float MonsterLifeScale => Active ? 1.5f : 1f;
+        /// <summary>
+        /// The game was started from the Co-op menu (hosted or joined), whether or not anyone
+        /// has joined yet. Lasts until a game is started again from the menu.
+        /// </summary>
+        public static bool CoopGame { get; set; }
+
+        /// <summary>Monsters (bosses too) in a co-op game are this much tougher than alone...</summary>
+        public static float MonsterLifeScale => CoopGame ? 1.5f : 1f;
         /// <summary>...and pay this much more loot: gear rolls, gold and potion chances.</summary>
-        public static float LootScale => Active ? 1.25f : 1f;
+        public static float LootScale => CoopGame ? 1.25f : 1f;
 
         /// <summary>A fractional count rounded up or down at random, so it averages out to <paramref name="count"/>.</summary>
         public static int RandomRound(float count)
@@ -134,6 +140,7 @@ namespace PoeClone.Combat
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
+            CoopGame = false;
             End();
         }
     }

@@ -3,6 +3,8 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
+using PoeClone.Combat;
+using PoeClone.Enemies;
 using PoeClone.Inventory;
 using PoeClone.Player;
 using PoeClone.World;
@@ -240,15 +242,20 @@ namespace PoeClone.Network
                 else
                 {
                     hosting = intent == CoopIntent.Host;
-                    StartGame();
+                    StartGame(coopGame: hosting);
                     if (hosting && Connected && serverPlayGranted)
                         SendHost();
                 }
             }, intent == CoopIntent.None ? (Action)ShowStartMenu : ShowCoopMenu);
         }
 
-        private void StartGame()
+        private void StartGame(bool coopGame)
         {
+            // Monsters already spawned behind the menus take on the new life scale too.
+            float life = Party.MonsterLifeScale;
+            Party.CoopGame = coopGame;
+            EnemyHealth.RescaleLife(Party.MonsterLifeScale / life);
+
             namePrompt.HideScreens();
             PlayGranted = true;
             PrepareGameplay();
@@ -334,7 +341,7 @@ namespace PoeClone.Network
                     else
                     {
                         coopIntent = CoopIntent.None;
-                        StartGame();
+                        StartGame(coopGame: true);
                     }
                     coop = gameObject.AddComponent<CoopSession>();
                     coop.Begin(asHost, msg.partnerName, stateBroadcaster, replica);

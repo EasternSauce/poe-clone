@@ -136,7 +136,7 @@ namespace PoeClone.Enemies
         }
 
         /// <summary>
-        /// Co-op starting or ending: the living monsters this game runs take on the new life scale
+        /// A game starting in or out of co-op: the living monsters this game runs take on the new life scale
         /// (<paramref name="ratio"/>), keeping how hurt they are. Copies of the host's are left alone.
         /// </summary>
         public static void RescaleLife(float ratio)

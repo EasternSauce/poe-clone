@@ -1,5 +1,5 @@
 version: 2026-10-11-coop-scaling
-- In co-op, every monster (bosses included) has 50% more life and drops 25% more loot: more gear rolls, 25% more gold and potions a little more often. Monsters already around when a partner joins or leaves change to match, keeping how hurt they are.
+- Games started from the Co-op menu (hosted or joined) have every monster, bosses included, at 50% more life and dropping 25% more loot: more gear rolls, 25% more gold and potions a little more often. This holds for the whole game, even before anyone joins your hosted game or after they leave.
 
 version: 2026-10-11-bigger-bramblesow
 - The Bramblesow is 50% bigger and has 30% more life. Its abilities cover 50% more area: the charge path is wider, the roots burst in bigger patches spread further around you, and its thorn shake reaches further with thorns that fly further. Its bite reaches far enough to match its larger body.

@@ -57,7 +57,6 @@ namespace PoeClone.Network
             inventory = stats != null ? stats.GetComponent<PlayerInventory>() : null;
 
             Party.Begin(host);
-            EnemyHealth.RescaleLife(Party.MonsterLifeScale);
             partner = gameObject.AddComponent<CoopPartner>();
             if (stats != null)
                 partner.Begin(stats.transform, partnerName);
@@ -93,9 +92,7 @@ namespace PoeClone.Network
             LootDrop.Removed = null;
             LootDrop.SharedClaim = null;
             LootDrop.SharedPlace = null;
-            float life = Party.MonsterLifeScale;
             Party.End();
-            EnemyHealth.RescaleLife(Party.MonsterLifeScale / life);
             if (partner != null)
                 Destroy(partner);
             if (arrival != null)
