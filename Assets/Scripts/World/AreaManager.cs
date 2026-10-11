@@ -10,6 +10,8 @@ namespace PoeClone.World
     {
         public string areaName;
         public Transform spawnPoint;
+        [Tooltip("Optional fixed death origin, independent of gate and waypoint arrivals.")]
+        public Transform respawnPoint;
 
         [Tooltip("Enemy level here (0 for a town). Shown when entering.")]
         public int monsterLevel;
@@ -65,6 +67,8 @@ namespace PoeClone.World
                 // Keep Frozen Hollow's music through the sanctuary's opening dialogue.
                 case WorldBuilder.Frozen:
                 case WorldBuilder.ActArena: track = "11.Metal Echos"; break;
+                case WorldBuilder.Desert: track = "Dark Quest"; break;
+                case WorldBuilder.Sahret: track = "Adrift on the Currents of Time (Main Menu _ Ambience)"; break;
                 default: return;
             }
             PoeClone.Audio.MusicPlayer.Instance?.Play(track);
@@ -99,12 +103,6 @@ namespace PoeClone.World
             EnterArea(index, null);
         }
 
-        /// <summary>Goes to an area, arriving at the given spot (or the area's spawn point).</summary>
-        public void EnterArea(int index, Transform arrival)
-        {
-            EnterArea(index, arrival, false);
-        }
-
         /// <summary>Completes the arena exit under the revive routine's existing loading screen.</summary>
         public void EnterAreaAfterBossDeath(int index, Transform arrival)
         {
@@ -120,13 +118,14 @@ namespace PoeClone.World
             AreaChanged?.Invoke(index);
         }
 
-        private void EnterArea(int index, Transform arrival, bool bossDeathReset)
+        /// <summary>Goes to an area, arriving at the given spot (or the area's spawn point).</summary>
+        public void EnterArea(int index, Transform arrival)
         {
             if (switching) return;
             if (areas == null || index < 0 || index >= areas.Length) return;
             if (index == CurrentAreaIndex) return;
             var arena = ActBossArena.Instance;
-            if (!bossDeathReset && CurrentAreaIndex == WorldBuilder.ActArena && arena != null &&
+            if (CurrentAreaIndex == WorldBuilder.ActArena && !(index == WorldBuilder.Desert && ActTwoPassage.Unlocked) && arena != null &&
                 arena.Boss != null && !arena.Boss.IsDead)
             {
                 CombatText.Show(player != null ? player.position + Vector3.up * 2f : Vector3.zero,
@@ -136,7 +135,7 @@ namespace PoeClone.World
             StartCoroutine(SwitchRoutine(index, arrival));
         }
 
-private IEnumerator SwitchRoutine(int index, Transform arrival)
+        private IEnumerator SwitchRoutine(int index, Transform arrival)
         {
             switching = true;
 
@@ -184,10 +183,13 @@ private IEnumerator SwitchRoutine(int index, Transform arrival)
                 if (walkAnim != null)
                     walkAnim.ResetAnimatorState();
 
-                // Dying brings you back to where you entered this area, not to where the game began.
+                // Some areas have a fixed death origin, including when entered by waypoint.
                 var stats = player.GetComponent<PoeClone.Player.PlayerStats>();
                 if (stats != null)
-                    stats.SetSpawnPoint(target.position, target.rotation);
+                {
+                    Transform respawn = def.respawnPoint != null ? def.respawnPoint : target;
+                    stats.SetSpawnPoint(respawn.position, respawn.rotation);
+                }
 
                 var cam = Camera.main != null ? Camera.main.GetComponent<PoeClone.CameraSystem.CameraFollow>() : null;
                 if (cam != null)

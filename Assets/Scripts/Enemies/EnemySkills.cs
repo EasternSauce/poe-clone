@@ -23,7 +23,7 @@ namespace PoeClone.Enemies
     /// only the player it was aimed at.
     /// </summary>
     [RequireComponent(typeof(EnemyHealth))]
-    public class EnemySkills : MonoBehaviour
+    public partial class EnemySkills : MonoBehaviour
     {
         private const float ChargeSpeed = 16f;
         private const float ChargeMaxSeconds = 0.6f;
@@ -106,6 +106,7 @@ namespace PoeClone.Enemies
         // Raised skeletons fall with the necromancer.
         private void OnDied()
         {
+            RestoreBurrow();
             foreach (EnemyHealth minion in minions)
             {
                 if (minion != null && !minion.IsDead)
@@ -147,6 +148,12 @@ namespace PoeClone.Enemies
         {
             switch (kind.Skill)
             {
+                case EnemySkill.DesertCharge: return distance > 3f && distance < 12f;
+                case EnemySkill.ScorpionSting: return distance < 4f;
+                case EnemySkill.SandBurrow: return distance > 3f && distance < 12f;
+                case EnemySkill.JavelinFan: return distance < kind.AttackRange;
+                case EnemySkill.RollingSandstorm: return distance > 3f && distance < 15f;
+                case EnemySkill.Tollkeeper: return distance < 13f;
                 case EnemySkill.Slam: return distance < 3.2f * transform.localScale.y;
                 case EnemySkill.Charge: return distance > 4f && distance < 11f;
                 case EnemySkill.Volley: return distance < kind.AttackRange;
@@ -204,6 +211,24 @@ namespace PoeClone.Enemies
 
             switch (kind.Skill)
             {
+                case EnemySkill.DesertCharge:
+                    StartCoroutine(DesertRush(target, damage * 1.25f));
+                    break;
+                case EnemySkill.ScorpionSting:
+                    StartCoroutine(DesertSting(target, damage));
+                    break;
+                case EnemySkill.SandBurrow:
+                    StartCoroutine(DesertBurrow(target, damage * 1.3f));
+                    break;
+                case EnemySkill.JavelinFan:
+                    StartCoroutine(DesertFan(target, damage));
+                    break;
+                case EnemySkill.RollingSandstorm:
+                    StartCoroutine(CastSandstorm(target, damage));
+                    break;
+                case EnemySkill.Tollkeeper:
+                    StartCoroutine(TollkeeperMove(target, damage));
+                    break;
                 case EnemySkill.Slam:
                     busyUntil = Time.time + SlamWindUp;
                     StartCoroutine(GroundTelegraph.Run(transform.position, SlamRadius(kind, transform), SlamWindUp, kind.DamageType,
@@ -1114,10 +1139,18 @@ namespace PoeClone.Enemies
         /// Spectator replica: the look of a skill an enemy just used, with no damage. Movement
         /// (charges, blinks) arrives with the replicated pose; this adds the flashes and patches.
         /// </summary>
-        public static void PlayVisual(MonoBehaviour host, EnemyKind kind, Transform body, Vector3 target)
+        public static void PlayVisual(MonoBehaviour host, EnemyKind kind, Transform body, Vector3 target, int useCount = 1)
         {
             switch (kind.Skill)
             {
+                case EnemySkill.DesertCharge:
+                case EnemySkill.ScorpionSting:
+                case EnemySkill.SandBurrow:
+                case EnemySkill.JavelinFan:
+                case EnemySkill.RollingSandstorm:
+                case EnemySkill.Tollkeeper:
+                    host.StartCoroutine(DesertVisual(body, target, kind, useCount));
+                    break;
                 case EnemySkill.LastOffering:
                     host.StartCoroutine(OfferingVisual(target, kind));
                     break;

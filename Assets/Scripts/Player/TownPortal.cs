@@ -83,6 +83,12 @@ namespace PoeClone.Player
             if (areas == null || areas.IsSwitching || stats.IsDead)
                 return;
 
+            if (WorldBuilder.IsActTwo(areas.CurrentAreaIndex))
+            {
+                CombatText.Show(transform.position + Vector3.up * 2.2f, "Use a waypoint to travel", PortalColor, 1f);
+                return;
+            }
+
             if (areas.CurrentAreaIndex == WorldBuilder.Haven)
             {
                 CombatText.Show(transform.position + Vector3.up * 2.2f, "Already in Haven", new Color(0.8f, 0.8f, 0.8f), 0.8f);

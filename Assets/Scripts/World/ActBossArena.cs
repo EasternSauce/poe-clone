@@ -155,6 +155,8 @@ namespace PoeClone.World
         {
             slain = true;
             respawnAt = Time.time + 600f;
+            QuestLog.Instance?.RecordPropStage(ActTwoPassage.UnlockStage);
+            SaveSystem.SaveCharacterNow();
             Audio.MusicPlayer.Instance?.Play("11.Metal Echos");
         }
         public bool Reawaken()

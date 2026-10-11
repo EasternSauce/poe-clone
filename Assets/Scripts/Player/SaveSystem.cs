@@ -12,7 +12,7 @@ namespace PoeClone.Player
     /// <summary>
     /// Keeps the character between visits (browser storage via PlayerPrefs): loads the save once
     /// the player is let in, then saves every few seconds while playing, on changing area and when
-    /// the page is hidden or closed. A loaded character with gear starts in Haven without the
+    /// the page is hidden or closed. A loaded character resumes Act II or starts in Haven without the
     /// starter gear on the ground (one with none keeps it). Spectators never load or save. Installed by GameSessionController.
     /// </summary>
     public class SaveSystem : MonoBehaviour
@@ -125,6 +125,7 @@ namespace PoeClone.Player
         }
 
         private bool loaded;
+        private int resumeArea = -1;
         private bool erased;
         private float nextSave;
         private AreaManager areas;
@@ -205,6 +206,9 @@ namespace PoeClone.Player
             loaded = true;
             nextSave = Time.unscaledTime + SaveEvery;
             GameSessionController.Instance?.NotifyCharacterLoaded();
+            if (WorldBuilder.IsActTwo(resumeArea))
+                areas.EnterArea(resumeArea);
+            resumeArea = -1;
             return true;
         }
 
@@ -252,7 +256,9 @@ namespace PoeClone.Player
             var data = new SaveData
             {
                 level = stats.Level, experience = stats.Experience, gearSkills = true, barLayoutVersion = 1,
-                passiveAllocationVersion = SaveData.CurrentPassiveAllocationVersion
+                passiveAllocationVersion = SaveData.CurrentPassiveAllocationVersion,
+                currentArea = areas != null ? areas.CurrentAreaIndex : -1,
+                actTwoUnlocked = ActTwoPassage.Unlocked
             };
 
             PlayerInventory inventory = stats.GetComponent<PlayerInventory>();
@@ -317,6 +323,7 @@ namespace PoeClone.Player
 
         private void Load(PlayerStats stats)
         {
+            resumeArea = -1;
             if (!PlayerPrefs.HasKey(Key) && ActiveProfileId == "legacy" && PlayerPrefs.HasKey(LegacyKey))
                 PlayerPrefs.SetString(Key, PlayerPrefs.GetString(LegacyKey));
             if (!PlayerPrefs.HasKey(Key))
@@ -443,6 +450,10 @@ namespace PoeClone.Player
             skills?.RestoreToggle(data.activeBowSlot, data.activeBowSkill);
 
             QuestLog log = QuestLog.Instance;
+            if (log != null && data.actTwoUnlocked)
+                log.RecordPropStage(ActTwoPassage.UnlockStage);
+            if (WorldBuilder.IsActTwo(data.currentArea))
+                resumeArea = data.currentArea;
             // Quests saved under an older quest book start over (the places visited are kept).
             // Saves from before the one-time waystone reset forget the places visited (once).
             bool questsCurrent = data.questBook == QuestBook.Version;

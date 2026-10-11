@@ -24,6 +24,7 @@ namespace PoeClone.World
             floor.AddComponent<MeshCollider>().sharedMesh = mesh;
             BuildLayoutWalls(ActArena, 0f);
             BuildSanctuaryLair(arena, c);
+            BuildShepherdPassage(arena);
             Transform entry = Marker("SanctuaryEntry", c + new Vector3(0f, 1.1f, -31f), 0f);
             Vector3 door = SanctuaryDoorSpot + SanctuaryDoorRotation * new Vector3(0f, 1.1f, -3f);
             Transform outside = Marker("SanctuaryReturn", door + SanctuaryDoorRotation * Vector3.back * 6f, 155f);

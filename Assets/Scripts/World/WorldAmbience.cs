@@ -71,7 +71,7 @@ namespace PoeClone.World
                 }
             }
 
-            foreach (int area in new[] { WorldBuilder.Greenwood, WorldBuilder.Graveyard, WorldBuilder.Ruins, WorldBuilder.Frozen })
+            foreach (int area in new[] { WorldBuilder.Greenwood, WorldBuilder.Graveyard, WorldBuilder.Ruins, WorldBuilder.Frozen, WorldBuilder.Desert, WorldBuilder.Sahret })
                 Occasional(area, new[] { library.gust }, 24, 55, p => 1);
             foreach (int area in new[] { WorldBuilder.Cave, WorldBuilder.ActArena, WorldBuilder.Warren })
                 Occasional(area, library.stones, 16, 38, p => 1);

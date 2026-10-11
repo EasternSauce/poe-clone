@@ -49,7 +49,8 @@ namespace PoeClone.World
             (WorldBuilder.Greenwood, WorldBuilder.Cave),
             (WorldBuilder.Cave, WorldBuilder.Graveyard),
             (WorldBuilder.Cave, WorldBuilder.Ruins),
-            (WorldBuilder.Ruins, WorldBuilder.Frozen)
+            (WorldBuilder.Ruins, WorldBuilder.Frozen),
+            (WorldBuilder.Desert, WorldBuilder.Sahret)
         };
 
         // Gates sit in side passages and corners rather than across from each other, so the way
@@ -58,6 +59,8 @@ namespace PoeClone.World
         {
             switch (area)
             {
+                case WorldBuilder.Desert: return new Vector3(131, 0, 125);
+                case WorldBuilder.Sahret: return new Vector3(0, 0, -42);
                 case WorldBuilder.Haven: return new Vector3(132, 0, -2);
                 // The way into the Hollows: a hollow in the south-east woods, off the southern glade.
                 case WorldBuilder.Greenwood: return destination == WorldBuilder.Haven ? new Vector3(-131, 0, -4) : new Vector3(150, 0, -122);
@@ -77,6 +80,8 @@ namespace PoeClone.World
         {
             switch (area)
             {
+                case WorldBuilder.Desert: return new Vector3(108, 0, 112);
+                case WorldBuilder.Sahret: return new Vector3(0, 0, -25);
                 case WorldBuilder.Haven: return new Vector3(113, 0, 5);
                 case WorldBuilder.Greenwood: return destination == WorldBuilder.Haven ? new Vector3(-83, 0, -12) : new Vector3(130, 0, -110);
                 case WorldBuilder.Graveyard: return new Vector3(-95, 0, -5);
@@ -110,6 +115,21 @@ namespace PoeClone.World
         {
             switch (area)
             {
+                case WorldBuilder.Desert:
+                    return new AreaShape(center, new Vector2(348, 332))
+                        .Room(-135, -126, 23, 20).Room(-77, -76, 40, 30)
+                        .Room(-5, -31, 62, 48).Room(67, 28, 48, 42)
+                        .Room(-115, 18, 35, 30).Room(-43, 111, 34, 25)
+                        .Room(129, 123, 26, 24)
+                        .Route(18, -135, -126, -118, -99, -77, -76)
+                        .Route(32, -77, -76, -5, -31, 67, 28)
+                        .Route(26, -77, -76, -106, -24, -115, 18, -63, 51, 67, 28)
+                        .Route(22, -63, 51, -43, 111, 6, 88, 67, 28)
+                        .Route(24, 67, 28, 115, 45, 137, 74, 108, 103, 129, 123)
+                        .Exclude(-17, 22, 23, 16).Exclude(40, -37, 15, 15);
+                case WorldBuilder.Sahret:
+                    return new AreaShape(center, new Vector2(116, 120))
+                        .Room(0, 0, 40, 35).Route(18, 0, -44, 0, -18);
                 case WorldBuilder.Haven:
                     return new AreaShape(center, new Vector2(332, 276))
                         .Room(0, 0, 98, 78).Room(-70, 26, 72, 72).Room(68, -20, 80, 68)

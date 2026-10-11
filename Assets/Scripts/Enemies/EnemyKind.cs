@@ -35,7 +35,13 @@ namespace PoeClone.Enemies
         IceSpikes,  // a line of ice spikes erupting from it towards the player
         Shriek,     // a screech round itself that hurls the player back
         BoneWhirl,  // spins its great weapon and wades at the player, cutting all round it
-        BonePrison  // a ring of bone spikes closes round the player: anyone inside can't leave for a while
+        BonePrison, // a ring of bone spikes closes round the player: anyone inside can't leave for a while
+        DesertCharge,
+        ScorpionSting,
+        SandBurrow,
+        JavelinFan,
+        RollingSandstorm,
+        Tollkeeper
     }
 
     public enum BossStyle
@@ -101,6 +107,7 @@ namespace PoeClone.Enemies
         public string[] Gear = new string[0];
         public Color StaffOrb;   // casters: the orb on the staff and the colour of their bolts
         public bool Bow;         // archers: shoots arrows instead of bolts (the bow itself is in Gear)
+        public bool Javelin;
         public bool RainOfArrows; // archers: each shot is loosed skywards and rains down on a marked spot
         public bool Skeletal;     // humanoids: bones instead of flesh (SkeletonLook)
 
@@ -156,6 +163,8 @@ namespace PoeClone.Enemies
                     case CreatureBody.Slime: return 0.7f;
                     case CreatureBody.Bat: return 1.4f;
                     case CreatureBody.Beetle: return 0.6f;
+                    case CreatureBody.Scorpion: return 1.5f;
+                    case CreatureBody.Sandlurker: return 1.1f;
                     case CreatureBody.Briarbound: return 2.6f;
                     case CreatureBody.GraveSiren: return 2.8f;
                     case CreatureBody.RimeStalker: return 2.5f;
@@ -184,7 +193,7 @@ namespace PoeClone.Enemies
     /// WorldBuilder's per-area weights). Kinds are referred to by index (saves don't, but the
     /// spectator stream and the weights do), so new ones go on the end.
     /// </summary>
-    public static class EnemyKinds
+    public static partial class EnemyKinds
     {
         public static readonly EnemyKind[] All =
         {
@@ -758,6 +767,70 @@ namespace PoeClone.Enemies
                 Skill = EnemySkill.BonePrison, SkillCooldown = 9f,
                 DropChance = 0.65f, RareBonus = 0.1f
             },
+            new EnemyKind
+            {
+                Name = "Dune Skitter", SpawnWeight = 0, MaxHealth = 29, Experience = 30,
+                Damage = 15, DamageType = DamageType.Physical, AttackRange = 1.8f, AttackCooldown = 1.4f,
+                SpeedRatio = 0.92f, Scale = 0.95f, Body = CreatureBody.Beetle, PackSize = 2,
+                Skin = new Color(0.24f, 0.18f, 0.12f), Cloth = new Color(0.33f, 0.25f, 0.16f),
+                Pants = new Color(0.78f, 0.52f, 0.22f), Eyes = new Color(1, 0.65f, 0.2f),
+                Skill = EnemySkill.DesertCharge, SkillCooldown = 7, DropChance = 0.3f
+            },
+            new EnemyKind
+            {
+                Name = "Glassback Scorpion", SpawnWeight = 0, MaxHealth = 48, Armour = 80, Experience = 48,
+                Damage = 22, DamageType = DamageType.Physical, PoisonResistance = 35,
+                AttackRange = 2.2f, AttackCooldown = 1.8f, SpeedRatio = 0.65f, Scale = 1.3f,
+                Body = CreatureBody.Scorpion, Skin = new Color(0.62f, 0.34f, 0.10f), Cloth = new Color(0.88f, 0.61f, 0.24f),
+                Pants = new Color(0.32f, 0.18f, 0.08f), Eyes = new Color(0.15f, 0.10f, 0.03f),
+                Skill = EnemySkill.ScorpionSting, SkillCooldown = 6, DropChance = 0.5f
+            },
+            new EnemyKind
+            {
+                Name = "Sandlurker", SpawnWeight = 0, MaxHealth = 51, Experience = 52,
+                Damage = 24, DamageType = DamageType.Physical, AttackRange = 2.3f, AttackCooldown = 1.6f,
+                SpeedRatio = 0.74f, Scale = 1.25f, Body = CreatureBody.Sandlurker,
+                Skin = new Color(0.72f, 0.60f, 0.40f), Cloth = new Color(0.45f, 0.32f, 0.18f),
+                Pants = new Color(0.86f, 0.72f, 0.47f), Eyes = new Color(0.12f, 0.08f, 0.04f),
+                Skill = EnemySkill.SandBurrow, SkillCooldown = 8, DropChance = 0.5f
+            },
+            new EnemyKind
+            {
+                Name = "Dustroad Reaver", SpawnWeight = 0, MaxHealth = 52, Armour = 60, Experience = 48,
+                Damage = 23, DamageType = DamageType.Physical, AttackRange = 2.2f, AttackCooldown = 1.2f,
+                SpeedRatio = 0.82f, HideHorns = true, Weapon = WeaponType.Sword,
+                Skin = new Color(0.59f, 0.40f, 0.27f), Cloth = new Color(0.56f, 0.14f, 0.10f), Pants = new Color(0.25f, 0.20f, 0.15f),
+                Eyes = new Color(0.1f, 0.08f, 0.05f), Gear = new[] { "hunter_hood", "buckler" },
+                Skill = EnemySkill.DesertCharge, SkillCooldown = 7, DropChance = 0.5f
+            },
+            new EnemyKind
+            {
+                Name = "Dustroad Javelineer", SpawnWeight = 0, MaxHealth = 37, Experience = 44,
+                Style = EnemyAttackStyle.Ranged, Damage = 22, DamageType = DamageType.Physical,
+                AttackRange = 13, ProjectileSpeed = 19, AttackCooldown = 2.2f, SpeedRatio = 0.73f,
+                HideHorns = true, Javelin = true, Skin = new Color(0.62f, 0.43f, 0.29f),
+                Cloth = new Color(0.63f, 0.20f, 0.13f), Pants = new Color(0.28f, 0.24f, 0.17f), Eyes = new Color(0.1f, 0.08f, 0.05f),
+                Skill = EnemySkill.JavelinFan, SkillCooldown = 8, DropChance = 0.4f
+            },
+            new EnemyKind
+            {
+                Name = "Ashwind Caller", SpawnWeight = 0, MaxHealth = 39, Experience = 57,
+                Style = EnemyAttackStyle.Ranged, Damage = 21, DamageType = DamageType.Physical,
+                AttackRange = 12, ProjectileSpeed = 9, AttackCooldown = 2.6f, SpeedRatio = 0.6f,
+                HideHorns = true, Skin = new Color(0.55f, 0.36f, 0.24f), Cloth = new Color(0.39f, 0.10f, 0.08f),
+                Pants = new Color(0.24f, 0.18f, 0.12f), Eyes = new Color(0.95f, 0.72f, 0.32f), StaffOrb = new Color(0.77f, 0.52f, 0.23f),
+                Skill = EnemySkill.RollingSandstorm, SkillCooldown = 10, DropChance = 0.5f
+            },
+            new EnemyKind
+            {
+                Name = "Kharad, the Tollkeeper", SpawnWeight = 0, HealthMultiplier = 7, MaxHealth = 52,
+                Armour = 110, Experience = 180, Damage = 29, DamageType = DamageType.Physical,
+                AttackRange = 3.1f, AttackCooldown = 1.9f, SpeedRatio = 0.67f, Scale = 1.25f,
+                HideHorns = true, Weapon = WeaponType.Greataxe, Gear = new[] { "bronze_helmet" },
+                Skin = new Color(0.58f, 0.37f, 0.24f), Cloth = new Color(0.43f, 0.09f, 0.07f),
+                Pants = new Color(0.23f, 0.18f, 0.13f), Eyes = new Color(0.12f, 0.08f, 0.04f),
+                Skill = EnemySkill.Tollkeeper, SkillCooldown = 5, DropChance = 1, RareBonus = 0.25f, Drops = 2
+            },
         };
 
         public const int SlimelingIndex = 20;
@@ -895,7 +968,9 @@ namespace PoeClone.Enemies
             }
 
             // Archers carry the Short Bow from their gear list; casters get a staff.
-            if (kind.IsRanged && !kind.Bow)
+            if (kind.Javelin || kind.Skill == EnemySkill.DesertCharge && !kind.IsCreature || kind.Skill == EnemySkill.Tollkeeper)
+                AddDesertWeapon(model, kind);
+            if (kind.IsRanged && !kind.Bow && !kind.Javelin)
                 AddStaff(model, kind.StaffOrb);
         }
 

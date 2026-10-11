@@ -118,6 +118,9 @@ namespace PoeClone.Quests
             if (visited.Contains(WorldBuilder.Ruins) || done.Contains("news") || active.ContainsKey("news") ||
                 done.Contains("emberwatch") || active.ContainsKey("emberwatch"))
                 done.Add("deep_road");
+            if (done.Contains("shepherd") || (active.TryGetValue("shepherd", out int shepherdKills) && shepherdKills > 0) ||
+                visited.Contains(WorldBuilder.Desert) || visited.Contains(WorldBuilder.Sahret))
+                usedProps.Add(ActTwoPassage.UnlockStage);
             Changed?.Invoke();
         }
 
@@ -347,6 +350,8 @@ namespace PoeClone.Quests
 
         private void OnEnemyKilled(EnemyKind kind, int monsterLevel)
         {
+            if (kind.Boss == BossStyle.Shepherd)
+                RecordPropStage(ActTwoPassage.UnlockStage);
             int area = areas != null ? areas.CurrentAreaIndex : -1;
             Advance(q =>
                 (q.Goal == QuestGoal.KillInArea && (q.Area < 0 || q.Area == area)) ||

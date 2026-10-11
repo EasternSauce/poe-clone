@@ -108,6 +108,8 @@ namespace PoeClone.Inventory
         public int version = CurrentVersion;
         public int level = 1;
         public int experience;
+        public int currentArea = -1;
+        public bool actTwoUnlocked;
         public int gold;
         public int healthPotions;
         public int manaPotions;

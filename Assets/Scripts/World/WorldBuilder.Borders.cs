@@ -66,7 +66,9 @@ namespace PoeClone.World
             rim.AddComponent<MeshRenderer>().sharedMaterial = LayoutRockMaterial(area);
             // Backdrops are visual only: the enclosing rectangle and cliff bottoms cannot be walked on.
             GameObject backdrop = Box(group, shape.Center + new Vector3(0, floorY - (shape.IsCliff ? 12.5f : 1.5f), 0),
-                new Vector3(shape.Size.x + 24, 0.1f, shape.Size.y + 24), kit.Mat(shape.IsCliff ? "Lava" : "Charred"), false);
+                new Vector3(shape.Size.x + 24, 0.1f, shape.Size.y + 24), IsActTwo(area)
+                    ? FloorMaterial("DesertHorizon", GroundTexture(area), 8f)
+                    : kit.Mat(shape.IsCliff ? "Lava" : "Charred"), false);
             backdrop.name = "Backdrop";
             if (shape.IsCliff) PoeClone.Visuals.LavaSurface.Attach(backdrop);
         }
@@ -77,7 +79,7 @@ namespace PoeClone.World
             // Frozen walls are pale rock with ice tint, rather than the blue Steel copy
             // used for small ice props and water elsewhere in the world.
             var material = new Material(kit.Mat("RockDark")) { name = "LayoutRock_" + AreaNames[area] };
-            Color color = area == Frozen ? new Color(0.65f, 0.73f, 0.78f) :
+            Color color = IsActTwo(area) ? new Color(0.69f, 0.47f, 0.25f) : area == Frozen ? new Color(0.65f, 0.73f, 0.78f) :
                 area == Ruins ? new Color(0.32f, 0.27f, 0.24f) : new Color(0.34f, 0.33f, 0.31f);
             material.SetColor("_BaseColor", color);
             material.SetColor("_ShadowColor", new Color(color.r * 0.5f, color.g * 0.5f, color.b * 0.55f));
@@ -96,6 +98,7 @@ namespace PoeClone.World
                 Begin(area, 900 + area);
                 Transform group = Group("Border_" + AreaNames[area]);
                 AreaShape shape = Shape(area);
+                if (IsActTwo(area)) continue; // Desert dunes and sandstone are authored separately.
                 float walked = 0f;
                 foreach (var edge in shape.Boundary)
                 {

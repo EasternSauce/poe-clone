@@ -191,7 +191,7 @@ namespace PoeClone.UI
                 Array.Copy(seen, map.Seen, Math.Min(seen.Length, map.Seen.Length));
                 pendingFog.Remove(area);
             }
-            if (area == WorldBuilder.Haven)
+            if (area == WorldBuilder.Haven || area == WorldBuilder.Sahret)
             {
                 for (int i = 0; i < map.Seen.Length; i++)
                     map.Seen[i] = true;

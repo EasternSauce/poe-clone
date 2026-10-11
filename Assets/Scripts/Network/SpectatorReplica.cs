@@ -940,7 +940,7 @@ namespace PoeClone.Network
             }
 
             if (e.sk > prev.sk && !coopGuest)
-                EnemySkills.PlayVisual(this, EnemyKinds.Get(e.k), puppet.Root.transform, new Vector3(e.sx, puppet.Root.transform.position.y, e.sz));
+                EnemySkills.PlayVisual(this, EnemyKinds.Get(e.k), puppet.Root.transform, new Vector3(e.sx, puppet.Root.transform.position.y, e.sz), e.sk);
 
             if (e.stg > prev.stg && puppet.Stagger != null)
             {

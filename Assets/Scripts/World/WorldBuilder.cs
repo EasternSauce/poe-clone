@@ -22,13 +22,16 @@ namespace PoeClone.World
         public const int Ruins = 3;
         public const int Frozen = 4;
         public const int Cave = 6; // Preserve the final arena's saved area ID (5).
-        public static readonly int[] WorldAreas = { Greenwood, Haven, Graveyard, Ruins, Frozen, Cave };
+        public const int Desert = 9;
+        public const int Sahret = 10;
+        public static bool IsActTwo(int area) => area == Desert || area == Sahret;
+        public static readonly int[] WorldAreas = { Greenwood, Haven, Graveyard, Ruins, Frozen, Cave, Desert, Sahret };
 
         public static WorldBuilder Instance { get; private set; }
 
         public static readonly string[] AreaNames = { "Greenwood", "Haven", "Haunted Graveyard", "Ashen Ruins", "Frozen Hollow", "The Shed Sanctuary", "The Lost Hollows",
-            "The Warren", "The Drowned Belfry" };
-        public static readonly int[] MonsterLevels = { 1, 0, 17, 25, 34, 37, 9, 9, 17 };
+            "The Warren", "The Drowned Belfry", "The Sundered Expanse", "Sahret, the Sunken City" };
+        public static readonly int[] MonsterLevels = { 1, 0, 17, 25, 34, 37, 9, 9, 17, 38, 0 };
 
         private static readonly Vector3[] Centers =
         {
@@ -41,7 +44,9 @@ namespace PoeClone.World
             new Vector3(420f, 0f, -420f),
             // The boss dens behind their gates (WorldBuilder.BossLairs).
             new Vector3(840f, 0f, -420f),
-            new Vector3(1260f, 0f, -420f)
+            new Vector3(1260f, 0f, -420f),
+            new Vector3(2200f, 0f, 0f),
+            new Vector3(2720f, 0f, 0f)
         };
 
         /// <summary>The colour that stands for an area (gate panels, its minimap ground).</summary>
@@ -60,7 +65,9 @@ namespace PoeClone.World
             new Color(0.50f, 0.44f, 0.38f),
             new Color(0.31f, 0.35f, 0.37f),
             new Color(0.42f, 0.36f, 0.28f),
-            new Color(0.38f, 0.44f, 0.46f)
+            new Color(0.38f, 0.44f, 0.46f),
+            new Color(0.87f, 0.66f, 0.36f),
+            new Color(0.78f, 0.64f, 0.45f)
         };
 
         // Explicit native rosters for opening spawns and respawns. Named entries keep additions
@@ -83,6 +90,9 @@ namespace PoeClone.World
                 ("Corpse Ooze", 18f), ("Crypt Spider", 22f), ("Hollowmaw", 11f)),
             // The boss dens behind their gates hold only their boss.
             Roster(),
+            Roster(),
+            Roster(("Dune Skitter", 20f), ("Glassback Scorpion", 17f), ("Sandlurker", 13f),
+                ("Dustroad Reaver", 20f), ("Dustroad Javelineer", 17f), ("Ashwind Caller", 8f)),
             Roster()
         };
 
@@ -212,6 +222,8 @@ namespace PoeClone.World
             yield return null;
             BuildCave();
             yield return null;
+            BuildActTwo();
+            yield return null;
             BuildGlowshrooms();
             BuildGreenwoodOutskirts();
             yield return null;
@@ -234,6 +246,7 @@ namespace PoeClone.World
 
             yield return null;
             SetUpSpawners();
+            SetUpDesertEncounters();
             yield return null;
             BuildTownsfolk();
             yield return null;
@@ -247,7 +260,8 @@ namespace PoeClone.World
                     areaName = AreaNames[a],
                     spawnPoint = spawnPoints[a],
                     monsterLevel = MonsterLevels[a],
-                    isTown = a == Haven
+                    isTown = a == Haven || a == Sahret,
+                    respawnPoint = a == Desert ? spawnPoints[Desert] : null
                 };
             }
 
@@ -325,6 +339,10 @@ namespace PoeClone.World
         {
             switch (area)
             {
+                case Desert:
+                case Sahret:
+                    return GroundTextures.Make(99, new Color(0.57f, 0.39f, 0.20f), new Color(0.88f, 0.69f, 0.40f),
+                        new Color(0.97f, 0.81f, 0.53f), 0.007f, 5f, grain: 0.035f);
                 case Greenwood:
                     // Deep, cool forest grass with bald patches of soil.
                     return GroundTextures.Grass(1, new Color(0.12f, 0.17f, 0.08f), new Color(0.21f, 0.31f, 0.12f),
@@ -1244,6 +1262,7 @@ namespace PoeClone.World
         // Haven's stands inside the paved square rather than across its kerb.
         public static Vector3 WaystoneLocal(int area)
         {
+            if (area == Desert) return new Vector3(-76f, 0f, -76f);
             return new Vector3(0f, 0f, area == Haven ? -8f : -11f);
         }
 

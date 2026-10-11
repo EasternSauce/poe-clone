@@ -163,9 +163,11 @@ namespace PoeClone.Visuals
             {
                 case CreatureBody.Spider:
                 case CreatureBody.Beetle:
+                case CreatureBody.Scorpion:
                     AnimateInsect(dt, t, windUp, lunge, bite, recoil);
                     break;
                 case CreatureBody.Wolf:
+                case CreatureBody.Sandlurker:
                     AnimateWolf(dt, t, windUp, lunge, bite, recoil);
                     break;
                 case CreatureBody.Slime:
@@ -286,6 +288,8 @@ namespace PoeClone.Visuals
             }
 
             // Fangs chatter a little at rest, spread on the wind-up and snap shut on the bite.
+            if (Body == CreatureBody.Scorpion && Tail != null)
+                Tail.localRotation = tailBase * Quaternion.Euler(-windUp * 28f + lunge * 55f - crouchBlend * 25f, Mathf.Sin(t) * 4f, 0);
             float open = Mathf.Max(bite, 0.25f * Mathf.Max(0f, Mathf.Sin(t * 1.1f)) * (1f + Mathf.Sin(t * 14f)) * 0.5f);
             if (FangR != null)
                 FangR.localRotation = Quaternion.Euler(-open * 25f, open * 30f, 0f);
@@ -518,6 +522,7 @@ namespace PoeClone.Visuals
                     break;
                 case CreatureBody.Spider:
                 case CreatureBody.Beetle:
+                case CreatureBody.Scorpion:
                 {
                     // Flips onto its back, legs curling up.
                     float rest = Body == CreatureBody.Spider ? 0.52f : 0.46f;
@@ -532,6 +537,7 @@ namespace PoeClone.Visuals
                     break;
                 }
                 case CreatureBody.Wolf:
+                case CreatureBody.Sandlurker:
                 {
                     // Falls onto its side, legs stiff, jaw slack.
                     float side = Random.value < 0.5f ? 1f : -1f;

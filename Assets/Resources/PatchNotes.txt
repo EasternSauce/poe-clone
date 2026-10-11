@@ -1,3 +1,11 @@
+version: 2026-10-11-act-two-desert
+- Act II begins in The Sundered Expanse. Defeating the Shepherd breaks open a wall in his arena, revealing the desert beyond.
+- Cross dunes, a ruined caravan road, a scorpion basin, a buried shrine and the Windcut Narrows. Guarded caravan caches reward exploration.
+- New desert enemies: charging Dune Skitters, venomous Glassback Scorpions, burrowing Sandlurkers, shield-bearing Dustroad Reavers, Javelineers and Ashwind Callers with rolling sandstorms that break against scenery.
+- Kharad, the Tollkeeper, guards the city approach with a hooked polearm, committed rushes and ground fractures.
+- Death in the desert returns you to its sheltered starting point. There is no gate back to Act I; use a waypoint. Town portals cannot bypass this, and characters saved in Act II resume there.
+- The desert leads to Sahret, the Sunken City, the future Act II hub. Its safe entrance, waypoint and desert exit are available; the city interior remains a work in progress.
+
 version: 2026-10-11-whirlwind-centred
 - Whirlwind's hit circle is centred on you again instead of sitting ahead of you while you move, and it covers 30% less area.
 

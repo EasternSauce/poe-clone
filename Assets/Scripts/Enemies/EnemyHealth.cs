@@ -225,6 +225,7 @@ namespace PoeClone.Enemies
             EnemyKind kind = EnemyKinds.Get(KindIndex);
             if (kind.IsBoss && ai != null && ai.IsEnraged)
                 amount *= kind.BossEnrageDamageTaken;
+            amount *= GetComponent<EnemySkills>()?.DesertBraceMultiplier(hitOrigin) ?? 1f;
             switch (type)
             {
                 case DamageType.Fire: amount = DefenceMath.AfterResistance(amount, kind.FireResistance - elementalPenetration); break;

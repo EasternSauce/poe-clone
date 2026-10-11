@@ -26,6 +26,7 @@ namespace PoeClone.Enemies
         private PlayerStats target;   // null = visual only (or aimed at a minion)
         private Minion minion;        // aimed at one of the player's minions instead
         private bool spins;
+        private bool blockedByScenery;
         private float spin;
         private bool[] volleyHit;     // shared by arrows loosed together: only the first to land hurts
 
@@ -72,10 +73,11 @@ namespace PoeClone.Enemies
             var root = new GameObject(kind.Name + (kind.Bow ? " Arrow" : " Bolt"));
             root.transform.position = from;
 
-            if (kind.Bow)
+            if (kind.Bow || kind.Javelin)
             {
                 root.transform.rotation = Quaternion.LookRotation(direction);
                 RuntimePrimitives.BuildArrow(root.transform);
+                if (kind.Javelin) root.transform.localScale = new Vector3(1.6f, 1.6f, 2.1f);
             }
             else
             {
@@ -90,14 +92,15 @@ namespace PoeClone.Enemies
             }
 
             var bolt = root.AddComponent<EnemyProjectile>();
-            bolt.spins = !kind.Bow;
+            bolt.spins = !kind.Bow && !kind.Javelin;
+            bolt.blockedByScenery = kind.Javelin;
             bolt.velocity = direction * Mathf.Max(1f, kind.ProjectileSpeed);
             // A real bolt flies on past a dodge; a visual one just needs to reach its mark.
             bolt.travelLeft = target != null ? kind.AttackRange * 1.6f : Vector3.Distance(from, aimAt);
             bolt.damage = damage;
             bolt.rollSeed = target != null ? (rollSeed != 0 ? rollSeed : EventRandom.NextSeed()) : 0;
             bolt.damageType = kind.AttackDamageType;
-            bolt.isAttack = kind.Bow;
+            bolt.isAttack = kind.Bow || kind.Javelin;
             bolt.target = target;
             return bolt;
         }
@@ -105,6 +108,17 @@ namespace PoeClone.Enemies
         private void Update()
         {
             float step = velocity.magnitude * Time.deltaTime;
+            if (blockedByScenery && step > 0)
+            {
+                foreach (RaycastHit obstacle in Physics.RaycastAll(transform.position, velocity.normalized, step,
+                    Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                {
+                    if (obstacle.collider is CharacterController || obstacle.collider.GetComponentInParent<EnemyHealth>() != null ||
+                        obstacle.collider.GetComponentInParent<Minion>() != null || obstacle.collider.GetComponentInParent<PlayerStats>() != null) continue;
+                    Destroy(gameObject);
+                    return;
+                }
+            }
             transform.position += velocity * Time.deltaTime;
             travelLeft -= step;
 

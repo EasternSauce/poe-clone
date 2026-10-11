@@ -53,6 +53,11 @@ namespace PoeClone.Enemies
         private Vector3 center;
         private int monsterLevel = 1;
         private float[] kindWeights;
+        private System.Func<Vector3, int> kindAt;
+
+        /// <summary>Authored regional rosters, used by both opening packs and replacements.</summary>
+        public void SetKindSelector(System.Func<Vector3, int> selector) => kindAt = selector;
+        private int PickKind(Vector3 point) => kindAt != null ? kindAt(point) : EnemyKinds.PickIndex(kindWeights);
 
         public int MonsterLevel => monsterLevel;
 
@@ -132,7 +137,7 @@ namespace PoeClone.Enemies
                     continue;
                 }
 
-                int kindIndex = EnemyKinds.PickIndex(kindWeights);
+                int kindIndex = PickKind(point);
                 Spawn(point, kindIndex);
                 spawned++;
 
@@ -176,7 +181,7 @@ namespace PoeClone.Enemies
                 // A blocked spot (something moved in) is retried on a later check.
                 if (TryFindSpawnPointNear(v.Position, out Vector3 point))
                 {
-                    Spawn(point, EnemyKinds.PickIndex(kindWeights));
+                    Spawn(point, PickKind(point));
                     vacancies.RemoveAt(k);
                 }
             }
