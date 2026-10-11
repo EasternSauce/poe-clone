@@ -434,6 +434,7 @@ namespace PoeClone.Inventory
             { StatType.SpellDamage, "Apprentice's" },
             { StatType.GrantDash, "Fleet" },
             { StatType.GrantCleave, "Sweeping" },
+            { StatType.GrantWhirlwind, "Whirling" },
             { StatType.LifeOnKill, "Ravenous" },
             { StatType.LifeOnAttackHit, "Sustaining" },
             { StatType.MinionDamage, "Commanding" },
@@ -940,6 +941,7 @@ namespace PoeClone.Inventory
                 case StatType.MeleeRange:
                 case StatType.LifeLeech:
                 case StatType.GrantCleave:
+                case StatType.GrantWhirlwind:
                     return Leaning.Str;
                 case StatType.Dexterity:
                 case StatType.Evasion:

@@ -30,7 +30,8 @@ namespace PoeClone.Skills
         SummonViper,
         Pulverize,
         ReapingArc,
-        LungingThrust
+        LungingThrust,
+        Whirlwind
     }
 
     /// <summary>The element a spell belongs to, for "+1 to level of all Fire Spells" and the like.</summary>
@@ -73,6 +74,12 @@ namespace PoeClone.Skills
         /// while it's on, the bow's attack is this skill (see PlayerSkills.ReleaseBow).
         /// </summary>
         public bool Bow => SkillGrants.IsBowSkill(Grant);
+
+        /// <summary>
+        /// Held rather than pressed: it stays on while its button is held, paying its mana cost
+        /// every <see cref="PlayerSkills.ChannelTick"/> seconds (see PlayerSkills.Whirlwind.cs).
+        /// </summary>
+        public bool Channelled => Id == SkillId.Whirlwind;
 
         /// <summary>
         /// Mana per use at a skill level, before the character-level multiplier (see
@@ -133,6 +140,7 @@ namespace PoeClone.Skills
                 case SkillId.Pulverize: return 3.12f + 0.216f * l;
                 case SkillId.ReapingArc: return 2.64f + 0.18f * l;
                 case SkillId.LungingThrust: return 2.88f + 0.192f * l;
+                case SkillId.Whirlwind: return 0.5f + 0.035f * l;
                 case SkillId.FangStrike: return 1.56f + 0.096f * l;
                 case SkillId.SplitShot: return 1.2f + 0.04f * l;
                 case SkillId.PiercingShot: return 1.76f + 0.08f * l;
@@ -301,6 +309,7 @@ namespace PoeClone.Skills
             new SkillDefinition { Id = SkillId.SummonViper, Name = "Summon Viper", Short = "VIP", Grant = StatType.GrantSummonViper, RollsOn = "grimoires, sceptres", Spell = true, ManaCosts = new[] { 30f, 37.4f, 44.8f, 52.1f, 59.5f, 66.9f, 74.3f, 81.7f, 89f, 96.4f }, Cooldown = 12f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Call a viper spirit to fight at your side, up to 1 at once (+1 at levels 7 and 13). Maximum Minions from passives and gear raises the limit." },
             new SkillDefinition { Id = SkillId.Pulverize, Name = "Pulverize", Short = "PVL", Grant = StatType.GrantPulverize, RollsOn = "maces and mauls", ManaCosts = new[] { 12f, 16.8f, 21.6f, 26.4f, 36.4f, 48f, 61.2f, 68.4f, 75.6f, 82.8f }, Cooldown = 4.5f, Color = new Color(0.95f, 0.65f, 0.28f), Description = "Plant your feet and bring a mace down in a crushing slam after a heavy windup, dealing 312% weapon damage (+21.6% per level) in a broad area. Maces and mauls only." },
             new SkillDefinition { Id = SkillId.ReapingArc, Name = "Reaping Arc", Short = "RPA", Grant = StatType.GrantReapingArc, RollsOn = "axes", ManaCosts = new[] { 10f, 14f, 18f, 22f, 30.3f, 40f, 51f, 57f, 63f, 69f }, Cooldown = 3.4f, Color = new Color(0.9f, 0.48f, 0.3f), Description = "Commit to a broad, forward axe sweep. After a deliberate windup, hit enemies in a wide arc for 264% weapon damage (+18% per level). Axes only." },
+            new SkillDefinition { Id = SkillId.Whirlwind, Name = "Whirlwind", Short = "WHL", Grant = StatType.GrantWhirlwind, RollsOn = "melee weapons", ManaCosts = new[] { 2.5f, 3.1f, 3.7f, 4.3f, 5.8f, 7.5f, 9.4f, 10.4f, 11.4f, 12.4f }, Color = new Color(0.8f, 0.85f, 0.95f), Description = "Hold to spin with your weapon out, hitting every enemy in reach for 50% weapon damage (+3.5% per level) several times a second, faster with attack speed. While spinning you are carried towards the cursor, faster the further away it is, up to sprinting speed. Costs mana every half second until you let go or run dry. Needs a melee weapon." },
             new SkillDefinition { Id = SkillId.LungingThrust, Name = "Lunging Thrust", Short = "LTH", Grant = StatType.GrantLungingThrust, RollsOn = "swords", ManaCosts = new[] { 9f, 12.6f, 16.2f, 19.8f, 27.3f, 36f, 45.9f, 51.3f, 56.7f, 62.1f }, Cooldown = 2.8f, Color = new Color(0.85f, 0.82f, 0.65f), Description = "Brace, then drive a sword forward in a committed thrust for 288% weapon damage (+19.2% per level). Swords only." },
         };
 

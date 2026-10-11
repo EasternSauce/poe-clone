@@ -196,7 +196,7 @@ namespace PoeClone.Player
                 attackPressed = held && !blocked && !pressSpentElsewhere;
             }
 
-            if (attackPressed && cooldownTimer <= 0f && (controller == null || !controller.IsSkillCommitted) &&
+            if (attackPressed && cooldownTimer <= 0f && (controller == null || (!controller.IsSkillCommitted && !controller.IsChannelling)) &&
                 attackAnimator != null && !attackAnimator.IsAttacking)
                 StartAttack();
         }

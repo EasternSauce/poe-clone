@@ -547,7 +547,8 @@ namespace PoeClone.UI
                 var skill = SkillBook.Get(row.Id);
                 int level = skills.GrantLevelWithBonuses(grant);
                 string cost = Num(skills.ManaCostForGrant(grant)) + " " + skills.CostResource;
-                string timing = skill.Bow ? "per shot" : Num(skills.CooldownForGrant(grant)) + "s cooldown";
+                string timing = skill.Bow ? "per shot" : skill.Channelled ? "per " + Num(PlayerSkills.ChannelTick) + "s held" :
+                    Num(skills.CooldownForGrant(grant)) + "s cooldown";
                 string damage = skills.DamageSummary(skill.Id, level);
                 string bindings = "";
                 for (int k = 0; k < SkillBook.TouchSlotCount; k++)
@@ -735,7 +736,7 @@ namespace PoeClone.UI
                     text.Append(skill.Summon ? "Minions: " : "Damage: ").Append(damage).Append('\n');
                 if (cost > 0f)
                     text.Append("Cost: ").Append(Num(cost)).Append(' ').Append(skills.CostResource)
-                        .Append(skill.Bow ? " per shot" : "").Append('\n');
+                        .Append(skill.Bow ? " per shot" : skill.Channelled ? " per " + Num(PlayerSkills.ChannelTick) + "s" : "").Append('\n');
                 if (cooldown > 0f)
                     text.Append(attack ? "Cast time: " : "Cooldown: ").Append(Num(cooldown)).Append("s\n");
                 if (!string.IsNullOrEmpty(source))
@@ -744,6 +745,8 @@ namespace PoeClone.UI
             text.Append('\n').Append(skill.Description);
             if (skill.Bow && !attack)
                 text.Append("\n<color=#").Append(dim).Append(">Press to toggle; while on, it replaces your bow attack.</color>");
+            else if (skill.Channelled)
+                text.Append("\n<color=#").Append(dim).Append(">Hold the button to keep it going.</color>");
             return text.ToString();
         }
 

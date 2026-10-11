@@ -212,8 +212,8 @@ namespace PoeClone.Player
                 return;
             }
 
-            Vector2 input = skillCommitted || IsRooted ? Vector2.zero : ReadMovementInput();
-            if (skillCommitted || IsRooted)
+            Vector2 input = skillCommitted || IsRooted || channelling ? Vector2.zero : ReadMovementInput();
+            if (skillCommitted || IsRooted || channelling)
                 walking = false;
 
             // Move relative to the camera so W is always "up the screen",
@@ -237,6 +237,9 @@ namespace PoeClone.Player
                 1f
             );
 
+            if (channelling && !skillCommitted && !IsRooted)
+                movement = channelSteer;
+
             // Steering by hand always wins over walking to a clicked item.
             if (movement.sqrMagnitude > 0.001f)
                 walking = false;
@@ -247,7 +250,7 @@ namespace PoeClone.Player
             if (staggered)
                 movement = Vector3.zero;
 
-            float speed = (IsSprinting() ? moveSpeed * sprintMultiplier : moveSpeed) * speedMultiplier * (HasOnslaught ? OnslaughtMore : 1f);
+            float speed = (IsSprinting() || channelling ? moveSpeed * sprintMultiplier : moveSpeed) * speedMultiplier * (HasOnslaught ? OnslaughtMore : 1f);
             if (IsChilled)
                 speed *= chilledSpeed;
 
@@ -261,7 +264,7 @@ namespace PoeClone.Player
             // movement key fights the instant snap-to-click facing PlayerCombat just applied.
             bool attacking = attackAnimator != null && attackAnimator.IsAttacking;
 
-            if (movement.sqrMagnitude > 0.001f && !attacking)
+            if (movement.sqrMagnitude > 0.001f && !attacking && !channelling)
             {
                 Quaternion targetRotation =
                     Quaternion.LookRotation(movement);
@@ -275,6 +278,29 @@ namespace PoeClone.Player
             }
 
             ApplyGravity();
+        }
+
+        // A channelled skill (Whirlwind) steers the player itself and turns the body itself.
+        private bool channelling;
+        private Vector3 channelSteer;
+        public bool IsChannelling => channelling;
+
+        public void SetChannelling(bool on)
+        {
+            channelling = on;
+            channelSteer = Vector3.zero;
+            if (on)
+                CancelWalk();
+        }
+
+        /// <summary>
+        /// While channelling: where to move instead of the movement input, a flat direction whose
+        /// length (0 to 1) is the share of sprinting speed.
+        /// </summary>
+        public void SteerChannel(Vector3 steer)
+        {
+            steer.y = 0f;
+            channelSteer = Vector3.ClampMagnitude(steer, 1f);
         }
 
         /// <summary>Roots the player during a deliberate melee skill windup and strike.</summary>

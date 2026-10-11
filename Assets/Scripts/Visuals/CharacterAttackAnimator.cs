@@ -312,6 +312,23 @@ namespace PoeClone.Visuals
             BaseAttacksPerSecond = 0.82f, Range = 3.6f
         };
 
+        // Whirlwind holds the weapon out to the side while the body spins (see HoldSkillPose).
+        private static readonly AttackProfile WhirlwindProfile = new AttackProfile
+        {
+            Duration = 0.35f, StrikeTime = 0.9f,
+            WindupOffset = new Pose(-70f, 95f, 20f, 5f),
+            StrikeOffset = new Pose(-70f, 95f, 20f, 5f),
+            BaseAttacksPerSecond = 1f, Range = 3f
+        };
+
+        private static readonly AttackProfile WhirlwindGreatProfile = new AttackProfile
+        {
+            Duration = 0.35f, StrikeTime = 0.9f, TwoHandGrip = true,
+            WindupOffset = new Pose(-40f, 90f, 20f, 0f),
+            StrikeOffset = new Pose(-40f, 90f, 20f, 0f),
+            BaseAttacksPerSecond = 0.8f, Range = 3.3f
+        };
+
         private static readonly AttackProfile FangStrikeProfile = new AttackProfile
         {
             Duration = 0.3f, StrikeTime = 0.4f,
@@ -461,7 +478,9 @@ namespace PoeClone.Visuals
             ReapingGreataxeProfile,
             LungingSwordProfile,
             LungingGreatswordProfile,
-            FangStrikeProfile
+            FangStrikeProfile,
+            WhirlwindProfile,
+            WhirlwindGreatProfile
         };
 
         /// <summary>Whether the profile with this id shoots (an arrow) rather than hits.</summary>
@@ -489,6 +508,8 @@ namespace PoeClone.Visuals
         private float timer;
         private float castSpeedMultiplier = 1f;
         private bool strikeFired;
+        // A channelled skill's pose stays at its wind-up until released (see HoldSkillPose).
+        private bool holding;
 
         public bool IsAttacking { get; private set; }
 
@@ -586,8 +607,22 @@ namespace PoeClone.Visuals
                 case SkillId.ReapingArc: Play(weaponType == WeaponType.Greataxe ? ReapingGreataxeProfile : ReapingAxeProfile); break;
                 case SkillId.LungingThrust: Play(weaponType == WeaponType.Greatsword ? LungingGreatswordProfile : LungingSwordProfile); break;
                 case SkillId.FangStrike: Play(FangStrikeProfile); break;
+                case SkillId.Whirlwind: Play(SlotRules.IsTwoHandedMelee(weaponType) ? WhirlwindGreatProfile : WhirlwindProfile); break;
                 default: Play(PickProfile(weaponType)); break;
             }
+        }
+
+        /// <summary>Plays a skill's pose and holds it until <see cref="ReleaseHold"/> (a channelled skill).</summary>
+        public void HoldSkillPose(SkillId skill, WeaponType weaponType)
+        {
+            PlaySkillAttack(skill, weaponType);
+            holding = true;
+        }
+
+        /// <summary>Lets a held pose finish and return to rest.</summary>
+        public void ReleaseHold()
+        {
+            holding = false;
         }
 
         /// <summary>A bow shot drawn the way a bow skill draws it (Plain: the ordinary shot).</summary>
@@ -643,6 +678,7 @@ namespace PoeClone.Visuals
 
             bool offArmPosed = activeProfile != null && (activeProfile.UsesOffArm || activeProfile.TwoHandGrip);
             IsAttacking = false;
+            holding = false;
             TorsoPitch = TorsoYaw = Lunge = 0f;
             Apply(weaponArm, weaponElbow, rest);
             if (offArmPosed)
@@ -668,6 +704,7 @@ namespace PoeClone.Visuals
             activeProfile = profile;
             timer = 0f;
             strikeFired = false;
+            holding = false;
             IsAttacking = true;
         }
 
@@ -698,6 +735,8 @@ namespace PoeClone.Visuals
             }
 
             timer += Time.deltaTime * PlaybackSpeed * castSpeedMultiplier;
+            if (holding)
+                timer = Mathf.Min(timer, activeProfile.Duration * activeProfile.StrikeTime * 0.999f);
             float f = Mathf.Clamp01(timer / activeProfile.Duration);
 
             AttackProfile p = activeProfile;

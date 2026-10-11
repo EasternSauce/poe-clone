@@ -183,6 +183,10 @@ namespace PoeClone.Skills
                     SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, cast.Skill == SkillId.Cleave ? 0.3f : 0.4f);
                     break;
 
+                case SkillId.Whirlwind:
+                    SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, 0.22f);
+                    break;
+
                 case SkillId.ReapingArc:
                     SkillEffects.Shockwave(cast.At + facing * 1.8f, 2.8f, skill.Color, 0.34f);
                     break;
@@ -267,8 +271,14 @@ namespace PoeClone.Skills
                 inventory.StatsChanged -= OnStatsChanged;
         }
 
+        private void OnDisable()
+        {
+            EndWhirlwind();
+        }
+
         private void OnPlayerDied()
         {
+            EndWhirlwind();
             StopAllCoroutines();
             if (controller != null)
                 controller.SetSkillCommit(false);
@@ -724,6 +734,8 @@ namespace PoeClone.Skills
             VirtualInput.SkillPressed = -1;
 
             bool free = !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused();
+            if (IsWhirling)
+                UpdateWhirlwind(free);
             Keyboard keyboard = Keyboard.current;
             if (pressed < 0 && keyboard != null && free)
             {
@@ -768,9 +780,9 @@ namespace PoeClone.Skills
             if (CooldownLeftAt(slot) > 0f || controller.IsDashing || controller.IsSkillCommitted)
                 return false;
 
-            // Swinging skills wait for the current swing; Dash and War Cry can cut in.
+            // Swinging skills wait for the current swing (or spin); Dash and War Cry can cut in.
             bool usesArms = skill.Id != SkillId.Dash && skill.Id != SkillId.WarCry;
-            if (usesArms && attackAnimator != null && attackAnimator.IsAttacking)
+            if (usesArms && (IsWhirling || (attackAnimator != null && attackAnimator.IsAttacking)))
                 return false;
 
             // Melee skills belong to a weapon family; never let a bow or another weapon use them.
@@ -784,6 +796,12 @@ namespace PoeClone.Skills
             {
                 CombatText.Show(transform.position + Vector3.up * 2f, "Not enough " + CostResource, CombatText.ColdColor, 0.8f);
                 return false;
+            }
+
+            if (skill.Channelled)
+            {
+                BeginWhirlwind(slot, level);
+                return true;
             }
 
             float cooldown = CooldownAt(slot);
@@ -1090,6 +1108,7 @@ namespace PoeClone.Skills
                 case SkillId.ReapingArc: sound = "skill_reaping_arc"; break;
                 case SkillId.LungingThrust: sound = "skill_lunging_thrust"; break;
                 case SkillId.FangStrike: sound = "skill_fang_strike"; break;
+                case SkillId.Whirlwind: sound = "skill_cleave"; break;
                 default:
                     PoeClone.Audio.AudioManager.Instance?.PlayEffect("skill." + skill, at);
                     return;
@@ -1104,7 +1123,8 @@ namespace PoeClone.Skills
         {
             switch (id)
             {
-                case SkillId.Cleave: return weapon != WeaponType.Unarmed && !CharacterAttackAnimator.IsRanged(weapon);
+                case SkillId.Cleave:
+                case SkillId.Whirlwind: return weapon != WeaponType.Unarmed && !CharacterAttackAnimator.IsRanged(weapon);
                 case SkillId.Pulverize: return weapon == WeaponType.Mace || weapon == WeaponType.Maul;
                 case SkillId.ReapingArc: return weapon == WeaponType.Axe || weapon == WeaponType.Greataxe;
                 case SkillId.LungingThrust: return weapon == WeaponType.Sword || weapon == WeaponType.Greatsword;

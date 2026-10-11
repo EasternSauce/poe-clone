@@ -2553,6 +2553,38 @@ MonoBehaviour:
       Min: 7
       Max: 10
       Weight: 0.16806999
+  - Label: GrantWhirlwind / 1
+    Enabled: 1
+    Stat: 145
+    Weight: 0.38
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 01000000020000000300000004000000070000000800000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 8
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 16
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 23
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 31
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 34
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
   - Label: GrantDash / 1
     Enabled: 1
     Stat: 29

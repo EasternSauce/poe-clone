@@ -176,7 +176,8 @@ namespace PoeClone.Inventory
         ManaCostReduction,          // % less mana (or life) spent on skills
         LifePercentOnKill,          // % of maximum life recovered on kill
         MoreMeleeDamage,            // % more damage with melee attacks
-        PercentManaRegen            // % of maximum mana regenerated per second
+        PercentManaRegen,           // % of maximum mana regenerated per second
+        GrantWhirlwind              // a channelled melee skill (see PlayerSkills.Whirlwind.cs)
     }
 
     /// <summary>
@@ -197,7 +198,7 @@ namespace PoeClone.Inventory
                    stat == StatType.GrantRaiseSkeletons || (stat >= StatType.GrantDeathMark && stat <= StatType.GrantBoneGolem) ||
                    stat == StatType.GrantGraveRot || IsBowSkill(stat) ||
                    (stat >= StatType.GrantFangStrike && stat <= StatType.GrantSummonViper) ||
-                   (stat >= StatType.GrantPulverize && stat <= StatType.GrantLungingThrust);
+                   (stat >= StatType.GrantPulverize && stat <= StatType.GrantLungingThrust) || stat == StatType.GrantWhirlwind;
         }
 
         /// <summary>The bow skills: they roll on bows and quivers (never as the attack) and are toggled from the bar.</summary>
@@ -269,6 +270,7 @@ namespace PoeClone.Inventory
                 case StatType.GrantPulverize: return "Pulverize";
                 case StatType.GrantReapingArc: return "Reaping Arc";
                 case StatType.GrantLungingThrust: return "Lunging Thrust";
+                case StatType.GrantWhirlwind: return "Whirlwind";
                 default: return grant.ToString();
             }
         }

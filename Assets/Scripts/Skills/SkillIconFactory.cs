@@ -244,6 +244,13 @@ namespace PoeClone.Skills
                     a.Add(Ring(0.48f, 0.48f, 0.42f, 0.045f));
                     c.Add(Poly(0.03f, 0.02f, 0.5f, 0.02f, 0.03f, 0.5f));
                     break;
+                case SkillId.Whirlwind:
+                    Sword(a, 0.3f, 0.3f, 0.7f, 0.7f);
+                    a.Add(Ring(0.5f, 0.5f, 0.44f, 0.05f));
+                    a.Add(Ring(0.5f, 0.5f, 0.32f, 0.04f));
+                    c.Add(Poly(0.5f, 0.5f, 0.98f, 0.5f, 0.98f, 0.02f, 0.5f, 0.02f));
+                    c.Add(Poly(0.5f, 0.5f, 0.02f, 0.5f, 0.02f, 0.98f, 0.5f, 0.98f));
+                    break;
                 case SkillId.LungingThrust:
                     Sword(a, 0.18f, 0.16f, 0.73f, 0.72f);
                     a.Add(Line(0.08f, 0.53f, 0.34f, 0.53f, 0.045f));
