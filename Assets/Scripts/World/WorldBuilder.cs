@@ -69,7 +69,7 @@ namespace PoeClone.World
             Roster(("Raider", 18f), ("Archer", 16f), ("Forest Shaman", 10f),
                 ("Giant Spider", 14f), ("Dire Wolf", 9f), ("Bog Slime", 12f), ("Briarbound", 9f)),
             Roster(),
-            Roster(("Zombie", 16f), ("Skeleton", 20f), ("Skeleton Archer", 14f), ("Wraith", 12f), ("Necromancer", 10f),
+            Roster(("Zombie", 16f), ("Skeleton", 20f), ("Skeleton Archer", 14f), ("Wraith", 12f), ("Necromancer", 10f), ("Storm Caster", 8f),
                 ("Grave Siren", 11f), ("Barrow Castellan", 10f), ("Bone Reaver", 10f), ("Bone Warden", 9f)),
             Roster(("Fire Caster", 24f), ("Ember Knight", 24f), ("Magma Beetle", 20f), ("Hellhound", 12f),
                 ("Cinder Penitent", 12f)),

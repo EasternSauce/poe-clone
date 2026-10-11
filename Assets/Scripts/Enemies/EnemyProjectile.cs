@@ -96,7 +96,7 @@ namespace PoeClone.Enemies
             bolt.travelLeft = target != null ? kind.AttackRange * 1.6f : Vector3.Distance(from, aimAt);
             bolt.damage = damage;
             bolt.rollSeed = target != null ? (rollSeed != 0 ? rollSeed : EventRandom.NextSeed()) : 0;
-            bolt.damageType = kind.DamageType;
+            bolt.damageType = kind.AttackDamageType;
             bolt.isAttack = kind.Bow;
             bolt.target = target;
             return bolt;

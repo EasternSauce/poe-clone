@@ -64,7 +64,7 @@ namespace PoeClone.Enemies
         {
             kind = enemyKind;
             attackRange = enemyKind.AttackRange;
-            damage = enemyKind.Damage * EnemyKinds.DamageScale(level, enemyKind);
+            damage = enemyKind.Damage * EnemyKinds.HitScale(level, enemyKind, enemyKind.AttackDamageType);
             attackCooldown = enemyKind.AttackCooldown;
         }
 
@@ -198,7 +198,7 @@ namespace PoeClone.Enemies
                 if (kind.IsRanged)
                     EnemyProjectile.LaunchAt(BoltOrigin(transform), minion, kind, RollDamage());
                 else if (DistanceTo(minion.transform.position) <= (attackRange + 0.3f * minion.transform.localScale.x) * ReachSlack)
-                    minion.TakeHit(RollDamage(), kind.DamageType);
+                    minion.TakeHit(RollDamage(), kind.AttackDamageType);
                 return;
             }
 
@@ -238,7 +238,7 @@ namespace PoeClone.Enemies
             }
 
             if (DistanceToPlayer() <= attackRange * ReachSlack)
-                playerStats.TakeHit(RollDamage(), kind.DamageType);
+                playerStats.TakeHit(RollDamage(), kind.AttackDamageType);
         }
 
         // Co-op host: the blow, bolt or arrow rain lands on the partner's character here only as a
@@ -276,7 +276,7 @@ namespace PoeClone.Enemies
         // Lightning is famously swingy in PoE; everything else varies a little.
         private float RollDamage(bool atPartner = false)
         {
-            float spread = kind.DamageType == DamageType.Lightning ? 0.6f : 0.15f;
+            float spread = kind.AttackDamageType == DamageType.Lightning ? 0.6f : 0.15f;
             float rage = controller != null ? controller.DamageMultiplierAgainst(atPartner) : 1f;
             return damage * rage * Curse.DealtMultiplier(this) * Mathf.Lerp(1f - spread, 1f + spread, EventRandom.Value(EventRandom.NextSeed(), EventRandom.DamageSpread));
         }

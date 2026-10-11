@@ -177,9 +177,9 @@ namespace PoeClone.Inventory
             Chain("m1", "m2");
 
             // Left arm: defence.
-            N("m3", "Iron Skin", 1.2f, -0.3f, Road());
-            N("m4", "Thick Hide", 1.5f, -0.45f, Road());
-            Nt("m5", "Juggernaut", 1.85f, -0.55f, Mod(StatType.MaxLife, 30), Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 5), Mod(StatType.AvoidStun, 8), Mod(StatType.PercentLifeRegen, 0.5f), Mod(StatType.DamageTaken, -5));
+            N("m3", "Iron Skin", 1.2f, -0.3f, Road(), Mod(StatType.FireResistance, 5), Mod(StatType.ColdResistance, 5), Mod(StatType.LightningResistance, 5));
+            N("m4", "Thick Hide", 1.5f, -0.45f, Road(), Mod(StatType.FireResistance, 5), Mod(StatType.ColdResistance, 5), Mod(StatType.LightningResistance, 5));
+            Nt("m5", "Juggernaut", 1.85f, -0.55f, Mod(StatType.MaxLife, 30), Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 5), Mod(StatType.AvoidStun, 8), Mod(StatType.PercentLifeRegen, 0.5f), Mod(StatType.DamageTaken, -5), Mod(StatType.FireResistance, 10), Mod(StatType.ColdResistance, 10), Mod(StatType.LightningResistance, 10));
             N("junction_m5", "", 1.85f, -0.55f, Road());
             Chain("m2", "m3", "m4", "junction_m5");
 

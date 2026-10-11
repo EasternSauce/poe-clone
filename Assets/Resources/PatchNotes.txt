@@ -1,3 +1,9 @@
+version: 2026-10-11-elemental-defences
+- Enemy elemental attacks and regular enemy elemental skills ramp up to 25% more damage by the Lost Hollows. At 20% resistance those hits deal their previous damage; leaving a resistance at zero is more dangerous.
+- Forest Shamans now fire lightning bolts, Grave Bats shriek with lightning, and Bone Wardens cast lightning prisons. Storm Casters also appear in the Haunted Graveyard.
+- Elemental creatures and warriors now deal physical damage with their ordinary claws, bites and weapon blows, while keeping their elemental special attacks. Physical damage remains the main everyday threat, including in the Ashen Ruins and Frozen Hollow.
+- The two small tank passives leading toward Juggernaut each grant +5% fire, cold and lightning resistance; Juggernaut grants +10% to all three, for 20% along the defensive path. Existing allocations gain these bonuses too.
+
 version: 2026-10-11-player-skill-areas
 - Player skill damage areas now use animated frost, flame, lightning, cracked-earth and poison textures with soft fades and readable edges. Reaping Arc and Venom Slash show their actual cones, and Cross Slash shows its full damage strips. Co-op partners see the same effects.
 

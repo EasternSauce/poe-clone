@@ -184,7 +184,7 @@ namespace PoeClone.Enemies
                 target = PlayerMotion.Intercept(player, EnemyCombat.BoltOrigin(transform), kind.ProjectileSpeed);
             if (kind.Skill == EnemySkill.Leap)
                 target = LeapLanding(transform.position, target, LeapGap(transform));
-            float damage = kind.Damage * EnemyKinds.DamageScale(level, kind);
+            float damage = kind.Damage * EnemyKinds.HitScale(level, kind, kind.DamageType);
             Party.EnemySkillUsed?.Invoke(this, !aimedAtLocal, damage * (controller != null ? controller.SkillDamageMultiplierAgainst(partner: true) : 1f), target);
             Cast(target, damage * (controller != null ? controller.SkillDamageMultiplierAgainst(partner: false) : 1f));
         }
@@ -641,7 +641,7 @@ namespace PoeClone.Enemies
             {
                 if (target == null || target.IsDead || Sanctuary.Contains(target.transform.position, 1f)) return;
                 if (Flat(target.transform.position - center).magnitude <= ArrowRainRadius)
-                    target.TakeHit(damage, kind.DamageType, rollSeed: rollSeed);
+                    target.TakeHit(damage, kind.AttackDamageType, rollSeed: rollSeed);
             }));
             for (int i = 0; i < 6; i++)
             {

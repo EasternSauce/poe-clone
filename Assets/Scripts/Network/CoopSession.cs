@@ -573,7 +573,7 @@ namespace PoeClone.Network
                     Vector3 offset = stats.transform.position - enemyAt;
                     offset.y = 0f;
                     if (offset.magnitude <= e.r + MeleeLatencySlack)
-                        stats.TakeHit(e.a, kind.DamageType, rollSeed: e.sd);
+                        stats.TakeHit(e.a, kind.AttackDamageType, rollSeed: e.sd);
                     break;
                 case Party.AttackKind.Bolt:
                     if (atUs)
