@@ -15,7 +15,7 @@ namespace PoeClone.World
                 { "caravan", Points(107, -55, -56, 68, 110, 0) },
                 { "supplies", Points(-52, 78, -86, -65, 124, 33) },
                 { "shrine", Points(-26, -4) },
-                { "sunstones", Points(-10, 112, 15, 105, 54, 61) },
+                { "sunstones", Points(-10, 112, 15, 105, -44, 82) },
                 { "scouts", Points(-70, -88, 59, -94, -37, 89) }
             };
         public static string[] QuestGroups(int area)

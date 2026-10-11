@@ -260,7 +260,7 @@ namespace PoeClone.Quests
                 Goal = QuestGoal.Use, Area = WorldBuilder.Ruins, Count = 3,
                 Objective = "Wake the three sunstones and defeat their summons",
                 Offer = "The Warlord was a door-ward. Now he's gone, I can see what he was guarding: the north gate. It's sealed under ice that no fire of ours will melt - the Frost Queen's work.\n\nBut the old city had its own fire. Three sunstones still stand in the north of the ruins, cold for three hundred years. Wake them, and they will burn the gate open.",
-                Reminder = "Three sunstones, north of the temple. Lay your hand on each and wake it, then defeat everything drawn to its fire.",
+                Reminder = "Three sunstones in the north of the ruins: two by the iced-over north gate, one in the ruins west of it. Lay your hand on each and wake it, then defeat everything drawn to its fire.",
                 Thanks = "The ice is gone. I heard it crack from here.\n\nAnd I heard something else, under it. Breathing.",
                 RewardGold = 300, RewardExperience = 1500, RewardHealthPotions = 2
             },
