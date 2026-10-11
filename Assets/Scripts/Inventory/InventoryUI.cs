@@ -47,7 +47,7 @@ namespace PoeClone.Inventory
         private static readonly Color MagicBorder = new Color(0.42f, 0.42f, 0.85f, 1f);
         private static readonly Color RareBorder = new Color(0.85f, 0.80f, 0.35f, 1f);
         private static readonly Color UniqueBorder = new Color(0.85f, 0.45f, 0.15f, 1f);
-        private static readonly Color UnmetTint = new Color(1f, 0.15f, 0.1f, 0.35f);
+        private static readonly Color UnmetTint = new Color(1f, 0.15f, 0.1f, 0.15f);
         private static readonly Color GoodSoft = new Color(0.25f, 0.80f, 0.35f, 0.16f);
         private static readonly Color GoodStrong = new Color(0.25f, 0.85f, 0.35f, 0.40f);
         private static readonly Color Bad = new Color(0.90f, 0.20f, 0.20f, 0.40f);
