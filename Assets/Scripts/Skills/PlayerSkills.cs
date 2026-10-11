@@ -1552,14 +1552,8 @@ namespace PoeClone.Skills
                 return input.sqrMagnitude > 0.01f ? input : transform.forward;
             }
 
-            Mouse mouse = Mouse.current;
-            Camera cam = Camera.main;
-            if (mouse != null && cam != null)
-            {
-                Ray ray = cam.ScreenPointToRay(mouse.position.ReadValue());
-                if (new Plane(Vector3.up, transform.position).Raycast(ray, out float enter))
-                    return Flat(ray.GetPoint(enter) - transform.position);
-            }
+            if (PlayerCombat.CursorAimPoint(transform.position, out Vector3 point))
+                return Flat(point - transform.position);
             return transform.forward;
         }
 

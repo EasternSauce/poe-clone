@@ -1,3 +1,7 @@
+version: 2026-10-11-strafe-aim
+- Arrows, Fire Bolts and Ice Shards no longer drift with your movement. Shots loosed while strafing fly straight at what the cursor points to, with no need to lead.
+- With the cursor on an enemy, attacks and skills aim at that enemy itself rather than at the ground behind it, so aim no longer slides off as you move.
+
 version: 2026-10-11-whats-new-timing
 - The "What's new" window now waits until your character has finished loading, instead of appearing over the loading screen.
 - Staff skills (Fire Bolt, Ice Shard, Chain Lightning, Frost Nova, War Cry and Venom Spout) cost half as much mana for new characters. The discount shrinks gradually as you level and is gone at level 34, where costs are unchanged.

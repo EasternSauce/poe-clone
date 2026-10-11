@@ -9,8 +9,8 @@ namespace PoeClone.Player
     /// <summary>
     /// An arrow from the player's bow (or a Fire Bolt spell). Flies straight ahead and hits the
     /// first thing in its path: an enemy takes the damage, anything else (a tree, a rock) just stops
-    /// it. It keeps the shooter's movement at launch, so a shot loosed while walking flies straight
-    /// on screen (the camera moves with the player) and lands where the cursor points. A bolt also bursts, damaging every enemy around the impact. There is no ammo.
+    /// it. It ignores the shooter's movement, so a shot loosed while strafing still flies at what
+    /// was aimed at. A bolt also bursts, damaging every enemy around the impact. There is no ammo.
     /// Spectators get the same arrow as a harmless visual.
     /// </summary>
     public class PlayerArrow : MonoBehaviour
@@ -24,7 +24,6 @@ namespace PoeClone.Player
         private static readonly RaycastHit[] Hits = new RaycastHit[16];
 
         private Vector3 direction;
-        private Vector3 carry;   // the shooter's ground velocity when it was loosed
         private float travelLeft;
         private float damage;
         private Transform owner;   // the shooter, never hit by its own arrow
@@ -172,7 +171,6 @@ namespace PoeClone.Player
 
             var arrow = root.AddComponent<PlayerArrow>();
             arrow.direction = forward;
-            arrow.carry = MotionSampler.VelocityOf(shooter);
             arrow.travelLeft = range;
             arrow.damage = damage;
             arrow.owner = shooter;
@@ -190,16 +188,13 @@ namespace PoeClone.Player
                 return;
             }
 
-            // Its own flight plus the carried movement. Range counts only its own flight.
-            Vector3 motion = direction * step + carry * Time.deltaTime;
-            float length = motion.magnitude;
-            Vector3 heading = length > 0.0001f ? motion / length : direction;
+            Vector3 motion = direction * step;
 
             // Sweep this frame's stretch of the flight so a fast arrow can't skip through anything:
             // once wide for enemies, once narrow for everything else.
             RaycastHit? nearest = null;
-            Sweep(EnemyRadius, heading, length, enemiesOnly: true, ref nearest);
-            Sweep(Radius, heading, length, enemiesOnly: false, ref nearest);
+            Sweep(EnemyRadius, direction, step, enemiesOnly: true, ref nearest);
+            Sweep(Radius, direction, step, enemiesOnly: false, ref nearest);
 
             // A Graveward in the way absorbs it before it reaches anything behind the ward.
             if (Enemies.Graveward.Stops(transform.position, transform.position + motion, out Vector3 warded) &&
@@ -215,7 +210,7 @@ namespace PoeClone.Player
             if (harmless && nearest == null && pierced == null)
             {
                 Vector3 at;
-                if (PassesEnemy(heading, length, out at))
+                if (PassesEnemy(direction, step, out at))
                 {
                     if (burstRadius > 0f)
                         Skills.SkillEffects.Shockwave(at, burstRadius, textColor, 0.25f, type: damageType);

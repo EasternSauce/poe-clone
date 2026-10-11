@@ -386,15 +386,35 @@ namespace PoeClone.Player
                 return true;
             }
 
+            return CursorAimPoint(transform.position, out point);
+        }
+
+        /// <summary>
+        /// Where the mouse aims, on the ground plane through <paramref name="feet"/>. With the cursor
+        /// on an enemy's body, that enemy's own spot: the ground under the cursor lies behind the
+        /// body, so aiming there would drift off it as the player moves around.
+        /// </summary>
+        public static bool CursorAimPoint(Vector3 feet, out Vector3 point)
+        {
+            point = Vector3.zero;
             Mouse mouse = Mouse.current;
             Camera cam = Camera.main;
             if (mouse == null || cam == null)
                 return false;
 
             Ray ray = cam.ScreenPointToRay(mouse.position.ReadValue());
-            Plane ground = new Plane(Vector3.up, transform.position);
+            if (Physics.Raycast(ray, out RaycastHit hit, 300f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            {
+                EnemyHealth under = hit.collider.GetComponentInParent<EnemyHealth>();
+                if (under != null && !under.IsDead)
+                {
+                    point = under.transform.position;
+                    point.y = feet.y;
+                    return true;
+                }
+            }
 
-            if (!ground.Raycast(ray, out float enter))
+            if (!new Plane(Vector3.up, feet).Raycast(ray, out float enter))
                 return false;
 
             point = ray.GetPoint(enter);
