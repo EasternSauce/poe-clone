@@ -1,3 +1,9 @@
+version: 2026-10-11-basin-monsters
+- The Bleached Basin now has Saltback Crabs with shattering salt shells, Brine Spitters with marked venom bursts, and Saltbound Dredgers that fracture the ground in front of them.
+- Uruun, the Salt Matriarch, nests beside the western saltworks. Dodge her claws and spreading fractures; at half health she calls her brood and breaks the crust in a ring.
+- Namar, Keeper of the Dry Well, guards the ruined pump. His well eruptions and crossed channels leave room to dodge, while his second phase awakens saltbound dredgers.
+- Both level 40 bosses have full boss rewards, including a guaranteed unique. Ordinary packs stay clear of their fighting spaces.
+
 version: 2026-10-11-bleached-basin
 - Sahret's north gate now leads to The Bleached Basin, a new level 40 desert area opposite the city's Expanse entrance. Follow the lane between the northern homes.
 - Explore a pale, cracked salt lake framed by red mesas, abandoned evaporation beds, a dry watercourse and a stranded pump wheel. Branching routes loop around rock islands and lead to side spurs.

@@ -28,7 +28,9 @@ namespace PoeClone.Visuals
         SunIdol,      // a four-armed stone statue holding up a sun, on its own plinth
         Huntress,     // Hrimgar: a huntress in a wolf-pelt hood, with an ice spear
         Scorpion,
-        Sandlurker
+        Sandlurker,
+        SaltCrab,
+        BrineSpitter
     }
 
     /// <summary>
@@ -92,6 +94,8 @@ namespace PoeClone.Visuals
                 case CreatureBody.Beetle: BuildBeetle(model, ctx); break;
                 case CreatureBody.Scorpion: BuildScorpion(model, ctx); break;
                 case CreatureBody.Sandlurker: BuildSandlurker(model, ctx); break;
+                case CreatureBody.SaltCrab: BuildSaltCrab(model, ctx, false); break;
+                case CreatureBody.BrineSpitter: BuildSaltCrab(model, ctx, true); break;
                 case CreatureBody.Briarbound: BuildBriarbound(model, ctx); break;
                 case CreatureBody.GraveSiren: BuildGraveSiren(model, ctx); break;
                 case CreatureBody.RimeStalker: BuildRimeStalker(model, ctx); break;

@@ -124,6 +124,8 @@ namespace PoeClone.Enemies
                 case BossStyle.BellRinger: SetUpBellRinger(); break;
                 case BossStyle.SunIdol: SetUpSunIdol(); break;
                 case BossStyle.Huntress: SetUpHrimgar(); break;
+                case BossStyle.SaltMatriarch: SetUpSaltMatriarch(); break;
+                case BossStyle.DryWellKeeper: SetUpDryWellKeeper(); break;
             }
         }
 

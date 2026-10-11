@@ -41,7 +41,10 @@ namespace PoeClone.Enemies
         SandBurrow,
         JavelinFan,
         RollingSandstorm,
-        Tollkeeper
+        Tollkeeper,
+        SaltBurst,
+        BrineSpit,
+        DredgeFault
     }
 
     public enum BossStyle
@@ -55,7 +58,9 @@ namespace PoeClone.Enemies
         TunnelKing,  // Vex: smoke bombs and backstabs, tripwires, spore mushrooms, knife fans
         BellRinger,  // tolls rings of sound, drops its bell over the player, calls bats
         SunIdol,     // a statue that barely moves: sweeping sunbeams, stone hands, sinks and rises elsewhere
-        Huntress     // Hrimgar: spear throws, nets, pounces, a pack of frost wolves
+        Huntress,    // Hrimgar: spear throws, nets, pounces, a pack of frost wolves
+        SaltMatriarch,
+        DryWellKeeper
     }
 
     /// <summary>
@@ -165,6 +170,8 @@ namespace PoeClone.Enemies
                     case CreatureBody.Beetle: return 0.6f;
                     case CreatureBody.Scorpion: return 1.5f;
                     case CreatureBody.Sandlurker: return 1.1f;
+                    case CreatureBody.SaltCrab: return 1.2f;
+                    case CreatureBody.BrineSpitter: return 1.5f;
                     case CreatureBody.Briarbound: return 2.6f;
                     case CreatureBody.GraveSiren: return 2.8f;
                     case CreatureBody.RimeStalker: return 2.5f;
@@ -830,6 +837,56 @@ namespace PoeClone.Enemies
                 Skin = new Color(0.58f, 0.37f, 0.24f), Cloth = new Color(0.43f, 0.09f, 0.07f),
                 Pants = new Color(0.23f, 0.18f, 0.13f), Eyes = new Color(0.12f, 0.08f, 0.04f),
                 Skill = EnemySkill.Tollkeeper, SkillCooldown = 5, DropChance = 1, RareBonus = 0.25f, Drops = 2
+            },
+            new EnemyKind
+            {
+                Name = "Saltback Crab", SpawnWeight = 0, MaxHealth = 57, Armour = 110, Experience = 58,
+                Damage = 23, DamageType = DamageType.Physical, AttackRange = 2.1f, AttackCooldown = 1.9f,
+                SpeedRatio = 0.58f, Scale = 1.2f, Body = CreatureBody.SaltCrab, Sounds = EnemySounds.Set.Beetle,
+                Skin = new Color(0.42f, 0.26f, 0.20f), Cloth = new Color(0.90f, 0.87f, 0.73f),
+                Pants = new Color(0.65f, 0.46f, 0.32f), Eyes = new Color(0.15f, 0.45f, 0.45f),
+                Skill = EnemySkill.SaltBurst, SkillCooldown = 7, DropChance = 0.5f
+            },
+            new EnemyKind
+            {
+                Name = "Brine Spitter", SpawnWeight = 0, MaxHealth = 40, Experience = 56, PoisonResistance = 40,
+                Damage = 19, DamageType = DamageType.Physical, Style = EnemyAttackStyle.Ranged,
+                AttackRange = 11, ProjectileSpeed = 10, AttackCooldown = 2.6f, SpeedRatio = 0.56f,
+                Scale = 1.1f, Body = CreatureBody.BrineSpitter, Sounds = EnemySounds.Set.Beetle,
+                Skin = new Color(0.29f, 0.39f, 0.33f), Cloth = new Color(0.68f, 0.81f, 0.64f),
+                Pants = new Color(0.87f, 0.85f, 0.70f), Eyes = new Color(0.80f, 0.98f, 0.45f),
+                Skill = EnemySkill.BrineSpit, SkillCooldown = 8, DropChance = 0.45f
+            },
+            new EnemyKind
+            {
+                Name = "Saltbound Dredger", SpawnWeight = 0, MaxHealth = 53, Armour = 50, Experience = 61,
+                Damage = 24, DamageType = DamageType.Physical, AttackRange = 2.5f, AttackCooldown = 1.9f,
+                SpeedRatio = 0.65f, Scale = 1.12f, HideHorns = true, Skeletal = true, Undead = true,
+                Skin = new Color(0.81f, 0.77f, 0.63f), Cloth = new Color(0.26f, 0.42f, 0.43f),
+                Pants = new Color(0.34f, 0.28f, 0.21f), Eyes = new Color(0.54f, 0.90f, 0.85f),
+                Gear = new[] { "iron_mace" }, Weapon = WeaponType.Mace,
+                Skill = EnemySkill.DredgeFault, SkillCooldown = 7.5f, DropChance = 0.55f
+            },
+            new EnemyKind
+            {
+                Name = "Uruun, the Salt Matriarch", SpawnWeight = 0, IsBoss = true, Boss = BossStyle.SaltMatriarch,
+                MaxHealth = 65, HealthMultiplier = 18, Armour = 130, Experience = 420,
+                Damage = 27, DamageType = DamageType.Physical, AttackRange = 3.8f, AttackCooldown = 2.1f,
+                SpeedRatio = 0.48f, Scale = 2.2f, Body = CreatureBody.SaltCrab, Sounds = EnemySounds.Set.Beetle,
+                Skin = new Color(0.45f, 0.21f, 0.16f), Cloth = new Color(0.95f, 0.91f, 0.78f),
+                Pants = new Color(0.72f, 0.49f, 0.28f), Eyes = new Color(0.18f, 0.80f, 0.75f),
+                DropChance = 1, RareBonus = 0.4f, Drops = 4
+            },
+            new EnemyKind
+            {
+                Name = "Namar, Keeper of the Dry Well", SpawnWeight = 0, IsBoss = true, Boss = BossStyle.DryWellKeeper,
+                MaxHealth = 58, HealthMultiplier = 20, Armour = 75, Experience = 480,
+                Damage = 25, DamageType = DamageType.Physical, Style = EnemyAttackStyle.Ranged,
+                AttackRange = 13, ProjectileSpeed = 11, AttackCooldown = 2.5f, SpeedRatio = 0.53f, Scale = 1.45f,
+                HideHorns = true, Skeletal = true, Undead = true, Gear = new[] { "hunter_hood" },
+                Cloth = new Color(0.14f, 0.35f, 0.38f), Pants = new Color(0.34f, 0.27f, 0.19f),
+                Skin = new Color(0.88f, 0.84f, 0.70f), Eyes = new Color(0.55f, 0.98f, 0.90f),
+                StaffOrb = new Color(0.63f, 0.88f, 0.80f), DropChance = 1, RareBonus = 0.45f, Drops = 4
             },
         };
 

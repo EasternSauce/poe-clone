@@ -164,6 +164,8 @@ namespace PoeClone.Visuals
                 case CreatureBody.Spider:
                 case CreatureBody.Beetle:
                 case CreatureBody.Scorpion:
+                case CreatureBody.SaltCrab:
+                case CreatureBody.BrineSpitter:
                     AnimateInsect(dt, t, windUp, lunge, bite, recoil);
                     break;
                 case CreatureBody.Wolf:
@@ -523,6 +525,8 @@ namespace PoeClone.Visuals
                 case CreatureBody.Spider:
                 case CreatureBody.Beetle:
                 case CreatureBody.Scorpion:
+                case CreatureBody.SaltCrab:
+                case CreatureBody.BrineSpitter:
                 {
                     // Flips onto its back, legs curling up.
                     float rest = Body == CreatureBody.Spider ? 0.52f : 0.46f;

@@ -5,6 +5,9 @@ namespace PoeClone.World
 {
     public partial class WorldBuilder
     {
+        private static readonly Vector3 BasinMatriarchLocal = new Vector3(-115, 0, 48);
+        private static readonly Vector3 BasinKeeperLocal = new Vector3(-29, 0, 91);
+
         private void BuildSaltBasin()
         {
             Begin(SaltBasin, 11407);
@@ -81,7 +84,7 @@ namespace PoeClone.World
             BasinSaltworks(basin, c + new Vector3(68, 0, -8), red, salt);
             BasinSaltworks(basin, c + new Vector3(-116, 0, 57), red, salt);
 
-            // A ruined pump at the far end is the destination landmark for this first area pass.
+            // Namar's dry well stands behind the pump, leaving the fight's approach open.
             Vector3 pump = c + new Vector3(-29, 0, 103);
             for (int side = -1; side <= 1; side += 2)
             {
@@ -89,6 +92,13 @@ namespace PoeClone.World
                 DesertPillar(basin, pump + new Vector3(side * 10, 0, 4), side < 0 ? 6 : 3);
             }
             Box(basin, pump + new Vector3(0, 5.6f, 0), new Vector3(11, 0.7f, 1.2f), kit.Mat("Wood"), false);
+            for (int i = 0; i < 12; i++)
+            {
+                float angle = i * 30 * Mathf.Deg2Rad;
+                Box(basin, pump + new Vector3(Mathf.Sin(angle) * 2.5f, 0.4f, 4 + Mathf.Cos(angle) * 2.5f),
+                    new Vector3(1.3f, 0.8f, 0.6f), red, euler: new Vector3(0, i * 30, 0));
+            }
+            Cyl(basin, pump + new Vector3(0, 0.04f, 4), 2.3f, 0.05f, cracks, false);
             Transform wheel = Holder(basin, "StrandedPumpWheel", pump + new Vector3(0, 3.2f, -1.5f), Quaternion.Euler(12, 0, 0));
             for (int spoke = 0; spoke < 10; spoke++)
             {
@@ -103,6 +113,14 @@ namespace PoeClone.World
             for (int i = 0; i < 5; i++)
                 WeatheredSlab(basin, "SaltSpire", c + new Vector3(103 + i * 2.5f, 0, 97 + i % 2 * 3),
                     new Vector2(0.8f, 0.9f), R(2, 5), salt, R(-15, 15), topScale: 0.3f);
+
+            // Empty moulted shells and salt clutches announce the matriarch's side branch.
+            for (int i = 0; i < 7; i++)
+            {
+                Vector3 at = c + BasinMatriarchLocal + new Vector3(R(-7, 7), 0, R(6, 10));
+                WeatheredSlab(basin, "SaltBroodClutch", at, new Vector2(0.7f, 0.6f), 0.6f,
+                    salt, R(0, 180), false, 0.5f);
+            }
         }
 
         private void BasinMesa(Transform parent, Vector3 at, Vector2 radii, float height, Material rock, Material salt)

@@ -4,6 +4,36 @@ namespace PoeClone.Visuals
 {
     public static partial class CreatureBuilder
     {
+        private static void BuildSaltCrab(Transform model, Ctx c, bool spitter)
+        {
+            Transform body = Pivot(model, "Body", new Vector3(0, 0.48f, 0));
+            c.Anim.BodyPivot = body;
+            Ico(c, body, c.Colors.Main, Vector3.zero, new Vector3(1.35f, 0.55f, 0.9f));
+            Ico(c, body, c.Colors.Second, new Vector3(0, 0.24f, -0.05f),
+                spitter ? new Vector3(0.95f, 0.9f, 0.85f) : new Vector3(1.45f, 0.3f, 0.95f));
+            for (int i = 0; i < 3; i++)
+                for (int side = -1; side <= 1; side += 2)
+                    AddInsectLeg(c, body, side, new Vector3(side * 0.5f, 0, 0.24f - i * 0.26f),
+                        -25 + i * 30, 0.58f, 0.65f, 20, -95, (i + (side > 0 ? 0 : 1)) % 2);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Transform claw = Pivot(body, side < 0 ? "FangL" : "FangR", new Vector3(side * 0.55f, 0.05f, 0.35f));
+                if (side < 0) c.Anim.FangL = claw; else c.Anim.FangR = claw;
+                Ico(c, claw, c.Colors.Main, new Vector3(side * 0.18f, 0, 0.35f),
+                    new Vector3(0.38f, 0.28f, spitter ? 0.55f : 0.85f));
+                for (int jaw = -1; jaw <= 1; jaw += 2)
+                    Cone(c, claw, c.Colors.Second, new Vector3(side * 0.18f + jaw * 0.12f, 0, 0.78f),
+                        new Vector3(0.18f, 0.5f, 0.18f), new Vector3(90, jaw * -25, 0));
+                Ico(c, body, c.Colors.Main, new Vector3(side * 0.27f, 0.4f, 0.36f), new Vector3(0.09f, 0.32f, 0.09f));
+                Ico(c, body, c.Colors.Eyes, new Vector3(side * 0.27f, 0.56f, 0.4f), Vector3.one * 0.13f);
+            }
+            for (int i = 0; i < 7; i++)
+                Cone(c, body, c.Colors.Second, new Vector3((i % 3 - 1) * 0.32f, 0.32f, -0.38f + i / 3 * 0.25f),
+                    new Vector3(0.22f, spitter ? 0.25f : 0.55f, 0.22f), new Vector3(0, i * 51, (i % 3 - 1) * -18));
+            c.Anim.Mouth = Pivot(body, CreatureAnimator.MouthName, new Vector3(0, 0.2f, 0.65f));
+            Ico(c, c.Anim.Mouth, c.Colors.Accent, Vector3.zero, new Vector3(0.32f, 0.2f, 0.2f));
+        }
+
         private static void BuildScorpion(Transform model, Ctx c)
         {
             Transform body = Pivot(model, "Body", new Vector3(0, 0.42f, 0));

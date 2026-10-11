@@ -97,8 +97,8 @@ namespace PoeClone.World
             Roster(("Dune Skitter", 20f), ("Glassback Scorpion", 17f), ("Sandlurker", 13f),
                 ("Dustroad Reaver", 20f), ("Dustroad Javelineer", 17f), ("Ashwind Caller", 8f)),
             Roster(),
-            Roster(("Glassback Scorpion", 28f), ("Sandlurker", 24f),
-                ("Dustroad Javelineer", 20f), ("Ashwind Caller", 18f), ("Dustroad Reaver", 10f))
+            Roster(("Saltback Crab", 30f), ("Brine Spitter", 24f), ("Saltbound Dredger", 28f),
+                ("Glassback Scorpion", 10f), ("Sandlurker", 8f))
         };
 
         private static float[] Roster(params (string name, float weight)[] entries)
@@ -860,6 +860,10 @@ namespace PoeClone.World
                 BossLair.Create(t, Frozen, BossIndex("Rimeheart"), MonsterLevels[Frozen], spawner.EnemyPrefab, throne, Vector3.back);
             foreach (FieldLair lair in FieldLairs)
                 BossLair.Create(t, lair.Area, BossIndex(lair.Boss), MonsterLevels[lair.Area], spawner.EnemyPrefab, Center(lair.Area) + lair.Local, lair.Facing);
+            BossLair.Create(t, SaltBasin, BossIndex("Uruun, the Salt Matriarch"), MonsterLevels[SaltBasin],
+                spawner.EnemyPrefab, Center(SaltBasin) + BasinMatriarchLocal, Vector3.back);
+            BossLair.Create(t, SaltBasin, BossIndex("Namar, Keeper of the Dry Well"), MonsterLevels[SaltBasin],
+                spawner.EnemyPrefab, Center(SaltBasin) + BasinKeeperLocal, Vector3.back);
         }
 
         private static int BossIndex(string name)
@@ -927,6 +931,12 @@ namespace PoeClone.World
         private List<Vector3> SafeSpots(int area)
         {
             var spots = new List<Vector3> { spawnPoints[area].position };
+            // Keep ordinary opening packs and replacements out of the boss clearings.
+            if (area == SaltBasin)
+            {
+                spots.Add(Center(area) + BasinMatriarchLocal);
+                spots.Add(Center(area) + BasinKeeperLocal);
+            }
             // Quest props shouldn't have a monster standing on them when the player gets there.
             Transform sites = root.Find("QuestSites");
             if (sites != null)
