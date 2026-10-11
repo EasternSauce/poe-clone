@@ -298,8 +298,11 @@ namespace PoeClone.Inventory
     {
         public StatType Stat { get; }
         public float Value { get; }
-        // Positive: rolled tier (T1 strongest); -1: implicit; 0: legacy/untiered.
+        // Positive: rolled tier (T1 strongest); -1: implicit; -2: a weapon's base damage; 0: legacy/untiered.
         public int Tier { get; }
+        public const int ImplicitTier = -1;
+        public const int BaseTier = -2;
+        public bool IsBase => Tier == BaseTier;
 
         public StatModifier(StatType stat, float value, int tier = 0)
         {

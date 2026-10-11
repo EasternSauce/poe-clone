@@ -125,9 +125,6 @@ namespace PoeClone.Skills
                     Physics.IgnoreCollision(body, c, ignore);
         }
 
-        private float AttackRateMultiplier => (1f + Stat(StatType.AttackSpeed) / 100f) *
-            (controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f);
-
         private void WhirlHit(SkillDefinition skill, int level)
         {
             WeaponType weapon = CurrentWeapon();

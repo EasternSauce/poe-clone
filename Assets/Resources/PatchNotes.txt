@@ -1,3 +1,9 @@
+version: 2026-10-11-weapon-base-damage
+- Weapon tooltips now show the weapon's own Physical Damage and Attacks per Second at the top, above its implicit stats. This was always the weapon's damage (it used to be listed as "Adds X Physical Damage"); attack speed per weapon type was hidden until now.
+- A weapon's base damage is now the same on every copy of a base (an older weapon whose damage rolled a little high or low is set to its base's value). Unique weapons keep their own damage roll, now shown as their base damage.
+- "Adds X Physical Damage" is now a separate random affix that magic and rare weapons can roll on top of their base damage, instead of every weapon having it.
+- Attack speed now speeds up melee skills (Cleave, Pulverize, Reaping Arc, Lunging Thrust, Fang Strike): their windup and swing play faster and their cooldowns are shorter. These used to scale with cast speed instead.
+
 version: 2026-10-11-whirlwind
 - New melee skill: Whirlwind, which can roll on any melee weapon. Hold its button to spin with your weapon out, hitting every enemy around you 5 times a second (faster with attack speed) for 50% weapon damage per hit (+3.5% per level). While spinning you pass through enemies and are carried towards the cursor: the further away it is, the faster you go, up to your sprinting speed at about five body widths. The area you hit leans the way you're moving, so it doesn't trail behind you. It costs mana every half second and keeps going until you let go or run out of mana. On touch, hold the skill button and steer with the joystick.
 

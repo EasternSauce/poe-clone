@@ -1883,30 +1883,40 @@ private Vector2 CellSize(int w, int h)
                 lineCount++;
             }
 
-            if (item.Modifiers.Count > 0)
+            // A weapon's own damage and pace, then its implicit stats, then the rolled ones.
+            bool weapon = item.Type == ItemType.Weapon;
+            float baseDamage = 0f;
+            bool hasImplicits = false;
+            bool hasExplicits = false;
+            foreach (StatModifier m in item.Modifiers)
+            {
+                if (m.IsBase) baseDamage += m.Value;
+                else if (m.Tier == StatModifier.ImplicitTier) hasImplicits = true;
+                else hasExplicits = true;
+            }
+
+            if (weapon || hasImplicits || hasExplicits)
             {
                 sb.Append("\n");
                 lineCount++;
-
-                bool hasImplicits = false;
-                bool hasExplicits = false;
-                foreach (StatModifier m in item.Modifiers)
+                bool sectionAbove = false;
+                if (weapon)
                 {
-                    if (m.Tier == -1) hasImplicits = true;
-                    else hasExplicits = true;
+                    if (baseDamage > 0f)
+                        AppendTooltipProperty(sb, "Physical Damage", StatFormatter.Number(baseDamage), ref lineCount);
+                    AppendTooltipProperty(sb, "Attacks per Second",
+                        SlotRules.BaseAttacksPerSecond(item.WeaponType).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture), ref lineCount);
+                    sectionAbove = true;
                 }
-
                 if (hasImplicits)
                 {
+                    AppendTooltipDivider(sb, sectionAbove, ref lineCount);
                     AppendTooltipModifiers(sb, item, true, ref lineCount);
+                    sectionAbove = true;
                 }
                 if (hasExplicits)
                 {
-                    if (hasImplicits)
-                    {
-                        sb.Append("\n").Append(TooltipDividerMarker);
-                        lineCount++;
-                    }
+                    AppendTooltipDivider(sb, sectionAbove, ref lineCount);
                     AppendTooltipModifiers(sb, item, false, ref lineCount);
                 }
             }
@@ -1940,6 +1950,21 @@ private Vector2 CellSize(int w, int h)
             return sb.ToString();
         }
 
+        private static void AppendTooltipProperty(StringBuilder sb, string label, string value, ref int lineCount)
+        {
+            sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">").Append(label).Append(": </color><color=#")
+                .Append(UiKit.Hex(UiKit.TextColor)).Append(">").Append(value).Append("</color>");
+            lineCount++;
+        }
+
+        private static void AppendTooltipDivider(StringBuilder sb, bool sectionAbove, ref int lineCount)
+        {
+            if (!sectionAbove)
+                return;
+            sb.Append("\n").Append(TooltipDividerMarker);
+            lineCount++;
+        }
+
         private static void AppendTooltipModifiers(StringBuilder sb, ItemData item, bool implicits, ref int lineCount)
         {
             // Keep granted skills first within each modifier section.
@@ -1948,9 +1973,9 @@ private Vector2 CellSize(int w, int h)
                 bool skills = pass == 0;
                 foreach (StatModifier m in item.Modifiers)
                 {
-                    if ((m.Tier == -1) != implicits || SkillGrants.IsGrant(m.Stat) != skills)
+                    if (m.IsBase || (m.Tier == StatModifier.ImplicitTier) != implicits || SkillGrants.IsGrant(m.Stat) != skills)
                         continue;
-                    string tier = item.Rarity == ItemRarity.Unique || m.Tier == -1 ? null :
+                    string tier = item.Rarity == ItemRarity.Unique || m.Tier == StatModifier.ImplicitTier ? null :
                         m.Tier > 0 ? "T" + m.Tier : "Tier unknown";
                     sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.MagicBlue)).Append(">")
                         .Append(StatFormatter.ItemLine(m));
@@ -2135,32 +2160,36 @@ private Vector2 CellSize(int w, int h)
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             TextGenerationSettings settings = text.GetGenerationSettings(new Vector2(width - 20f, 0f));
             float laidOut = text.cachedTextGeneratorForLayout.GetPreferredHeight(text.text, settings) / Mathf.Max(0.01f, text.pixelsPerUnit);
-            UpdateTooltipDivider(text, settings, width - 20f);
+            UpdateTooltipDividers(text, settings, width - 20f);
             return new Vector2(width, Mathf.Max(estimatedHeight * 0.6f, laidOut + 26f));
         }
 
-        private static void UpdateTooltipDivider(Text text, TextGenerationSettings settings, float width)
+        // Draws a line at every section marker in the tooltip (base, implicit and rolled stats).
+        private static void UpdateTooltipDividers(Text text, TextGenerationSettings settings, float width)
         {
             int marker = text.text.IndexOf(TooltipDividerMarker, System.StringComparison.Ordinal);
-            Transform existing = text.transform.Find("ModifierDivider");
-            if (marker < 0)
+            int count = 0;
+            for (; marker >= 0; count++)
             {
-                if (existing != null) existing.gameObject.SetActive(false);
-                return;
+                string name = "ModifierDivider" + count;
+                Transform existing = text.transform.Find(name);
+                Image divider = existing != null ? existing.GetComponent<Image>() :
+                    UiKit.NewImage(name, text.transform, UiKit.TextColor);
+                divider.gameObject.SetActive(true);
+                divider.color = UiKit.TextColor;
+                // Measure the prefix with the same wrapping as the complete tooltip, so long
+                // modifier lines and the larger touch font move the divider with their section.
+                int end = marker + TooltipDividerMarker.Length;
+                string prefix = text.text.Substring(0, end);
+                float height = text.cachedTextGeneratorForLayout.GetPreferredHeight(prefix, settings) /
+                    Mathf.Max(0.01f, text.pixelsPerUnit);
+                float rowHeight = text.fontSize * text.lineSpacing;
+                UiKit.TopLeft(divider.rectTransform, new Vector2(0f, -height + rowHeight * 0.5f),
+                    new Vector2(width, 2f));
+                marker = text.text.IndexOf(TooltipDividerMarker, end, System.StringComparison.Ordinal);
             }
-
-            Image divider = existing != null ? existing.GetComponent<Image>() :
-                UiKit.NewImage("ModifierDivider", text.transform, UiKit.TextColor);
-            divider.gameObject.SetActive(true);
-            divider.color = UiKit.TextColor;
-            // Measure the prefix with the same wrapping as the complete tooltip, so long
-            // modifier lines and the larger touch font move the divider with their section.
-            string prefix = text.text.Substring(0, marker + TooltipDividerMarker.Length);
-            float height = text.cachedTextGeneratorForLayout.GetPreferredHeight(prefix, settings) /
-                Mathf.Max(0.01f, text.pixelsPerUnit);
-            float rowHeight = text.fontSize * text.lineSpacing;
-            UiKit.TopLeft(divider.rectTransform, new Vector2(0f, -height + rowHeight * 0.5f),
-                new Vector2(width, 2f));
+            for (Transform spare; (spare = text.transform.Find("ModifierDivider" + count)) != null; count++)
+                spare.gameObject.SetActive(false);
         }
 
         private void ShowTooltipText(string text, int lines, Vector2 mousePos)

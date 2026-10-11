@@ -244,6 +244,28 @@ namespace PoeClone.Inventory
             return weaponType == WeaponType.Bow || weaponType == WeaponType.Staff || IsTwoHandedMelee(weaponType);
         }
 
+        /// <summary>
+        /// Base attacks per second for a weapon type, before the AttackSpeed stat. Staves and
+        /// sceptres swing like a mace; Unarmed is the bare-handed punch.
+        /// </summary>
+        public static float BaseAttacksPerSecond(WeaponType weaponType)
+        {
+            switch (weaponType)
+            {
+                case WeaponType.Sword: return 1.2f;
+                case WeaponType.Axe: return 1.0f;
+                case WeaponType.Mace:
+                case WeaponType.Staff:
+                case WeaponType.Sceptre: return 0.9f;
+                case WeaponType.Dagger: return 2.0f;
+                case WeaponType.Bow: return 1.25f;
+                case WeaponType.Greatsword: return 0.85f;
+                case WeaponType.Greataxe: return 0.8f;
+                case WeaponType.Maul: return 0.72f;
+                default: return 1.8f;
+            }
+        }
+
         /// <summary>Greatsword, greataxe and maul: swung with both hands, nothing in the off hand.</summary>
         public static bool IsTwoHandedMelee(WeaponType weaponType)
         {

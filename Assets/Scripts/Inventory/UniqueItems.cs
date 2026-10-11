@@ -426,6 +426,9 @@ namespace PoeClone.Inventory
 
         private static ItemData Build(Unique u, System.Random rng, ItemData saved = null)
         {
+            ItemData shape = ItemGenerator.Display(u.BaseId, u.Name, ItemRarity.Unique);
+            // A unique weapon's Physical Damage roll is its base damage.
+            bool needsBase = shape.Type == ItemType.Weapon;
             var mods = new List<StatModifier>();
             foreach (UniqueModifier mod in u.Mods)
             {
@@ -441,9 +444,10 @@ namespace PoeClone.Inventory
                         break;
                     }
                 }
-                mods.Add(new StatModifier(mod.Stat, value));
+                bool isBase = needsBase && mod.Stat == StatType.PhysicalDamage;
+                needsBase &= !isBase;
+                mods.Add(new StatModifier(mod.Stat, value, isBase ? StatModifier.BaseTier : 0));
             }
-            ItemData shape = ItemGenerator.Display(u.BaseId, u.Name, ItemRarity.Unique);
             var item = new ItemData(shape.Id, u.Name, shape.Type, shape.Width, shape.Height, shape.Tint, mods,
                 hasCape: false, weaponType: shape.WeaponType, rarity: ItemRarity.Unique);
             item.ArtId = shape.ArtId;

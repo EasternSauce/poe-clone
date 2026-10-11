@@ -81,6 +81,9 @@ namespace PoeClone.Skills
         /// </summary>
         public bool Channelled => Id == SkillId.Whirlwind;
 
+        /// <summary>A melee weapon skill (Cleave, Pulverize, ...): attack speed speeds it up and shortens its cooldown.</summary>
+        public bool MeleeAttack => !Spell && !Bow && WeaponMultiplierAt(1) > 0f;
+
         /// <summary>
         /// Mana per use at a skill level, before the character-level multiplier (see
         /// PlayerSkills.CostOf), read from <see cref="ManaCosts"/>. Levels 1-4 stay cheap so early

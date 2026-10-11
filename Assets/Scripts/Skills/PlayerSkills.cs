@@ -598,16 +598,23 @@ namespace PoeClone.Skills
         public float CastRateMultiplier => (inventory != null && inventory.Stats != null ? inventory.Stats.CastRateMultiplier : 1f) *
             (controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f);
 
-        /// <summary>Cooldown at the skill's current level, after Cast Speed (including Onslaught).</summary>
+        /// <summary>Attack speed, including temporary Onslaught.</summary>
+        public float AttackRateMultiplier => Mathf.Max(0.5f, 1f + Stat(StatType.AttackSpeed) / 100f) *
+            (controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f);
+
+        /// <summary>
+        /// How much faster a skill comes out and recovers: melee attack skills with attack speed,
+        /// everything else with cast speed (both including Onslaught).
+        /// </summary>
+        public float RateFor(SkillDefinition skill) => skill.MeleeAttack ? AttackRateMultiplier : CastRateMultiplier;
+
+        /// <summary>Cooldown at the skill's current level, after attack or cast speed (see <see cref="RateFor"/>).</summary>
         public float Cooldown(SkillId id)
         {
             SkillDefinition skill = SkillBook.Get(id);
             if (skill.Bow)
                 return 0f;
-            float cooldown = skill.CooldownAt(Mathf.Max(1, Level(id)));
-            if (skill.Main && MainSkill == id)
-                return cooldown / CastRateMultiplier;
-            return cooldown / CastRateMultiplier;
+            return skill.CooldownAt(Mathf.Max(1, Level(id))) / RateFor(skill);
         }
 
         public float CooldownAt(int slot)
@@ -616,16 +623,14 @@ namespace PoeClone.Skills
             if (id == null) return 0f;
             SkillDefinition skill = SkillBook.Get(id.Value);
             if (skill.Bow) return 0f;
-            return skill.CooldownAt(Mathf.Max(1, LevelAt(slot))) /
-                CastRateMultiplier;
+            return skill.CooldownAt(Mathf.Max(1, LevelAt(slot))) / RateFor(skill);
         }
 
         public float CooldownForGrant(SkillGrant grant)
         {
             SkillDefinition skill = SkillBook.Get(grant.Id);
             if (skill.Bow) return 0f;
-            return skill.CooldownAt(GrantLevelWithBonuses(grant)) /
-                CastRateMultiplier;
+            return skill.CooldownAt(GrantLevelWithBonuses(grant)) / RateFor(skill);
         }
 
         /// <summary>A skill's cost at a skill level for this character (higher characters pay more).</summary>
@@ -1037,10 +1042,11 @@ namespace PoeClone.Skills
         {
             controller.SetSkillCommit(true);
             Face(AimDirection());
-            PlaySkillAnimation(skill.Id, CurrentWeapon());
-            yield return new WaitForSeconds(0.65f);
+            float rate = AttackRateMultiplier;
+            PlaySkillAnimation(skill.Id, CurrentWeapon(), rate);
+            yield return new WaitForSeconds(0.65f / rate);
 
-            const float seconds = 0.26f;
+            float seconds = 0.26f / rate;
             float startYaw = transform.eulerAngles.y;
             for (float t = 0f; t < seconds; t += Time.deltaTime)
             {
@@ -1067,14 +1073,15 @@ namespace PoeClone.Skills
         {
             controller.SetSkillCommit(true);
             Face(AimDirection());
-            PlaySkillAnimation(skill, animationWeapon);
-            yield return new WaitForSeconds(windup);
+            float rate = AttackRateMultiplier;
+            PlaySkillAnimation(skill, animationWeapon, rate);
+            yield return new WaitForSeconds(windup / rate);
             // Read the hammer position after the arm and body have applied their strike pose.
             if (skill == SkillId.Pulverize)
                 yield return new WaitForEndOfFrame();
             PlaySkillSound(skill, transform.position);
             release();
-            yield return new WaitForSeconds(0.18f);
+            yield return new WaitForSeconds(0.18f / rate);
             controller.SetSkillCommit(false);
         }
 
@@ -1082,20 +1089,21 @@ namespace PoeClone.Skills
         {
             controller.SetSkillCommit(true);
             Face(AimDirection());
-            PlaySkillAnimation(skill.Id, CurrentWeapon());
-            yield return new WaitForSeconds(0.34f);
-            controller.Dash(transform.forward, 2.4f, 0.16f);
-            yield return new WaitForSeconds(0.16f);
+            float rate = AttackRateMultiplier;
+            PlaySkillAnimation(skill.Id, CurrentWeapon(), rate);
+            yield return new WaitForSeconds(0.34f / rate);
+            controller.Dash(transform.forward, 2.4f, 0.16f / rate);
+            yield return new WaitForSeconds(0.16f / rate);
             PlaySkillSound(skill.Id, transform.position);
             LungingThrust(skill, level);
-            yield return new WaitForSeconds(0.16f);
+            yield return new WaitForSeconds(0.16f / rate);
             controller.SetSkillCommit(false);
         }
 
-        private void PlaySkillAnimation(SkillId skill, WeaponType weapon)
+        private void PlaySkillAnimation(SkillId skill, WeaponType weapon, float rate = 1f)
         {
             if (attackAnimator != null)
-                attackAnimator.PlaySkillAttack(skill, weapon);
+                attackAnimator.PlaySkillAttack(skill, weapon, rate);
         }
 
         private static void PlaySkillSound(SkillId skill, Vector3 at)

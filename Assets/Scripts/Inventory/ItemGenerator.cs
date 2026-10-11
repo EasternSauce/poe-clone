@@ -11,7 +11,8 @@ namespace PoeClone.Inventory
     /// id like the starter items), with the base's own fixed stats plus random extra stats by rarity:
     /// Normal none, Magic one or two, Rare three or four, rolled stronger as the item level rises.
     /// The base's own stats vary a little too (a 15 evasion base rolls 12 to 16), so two drops of
-    /// the same base aren't identical. Takes a System.Random so tests can make it repeatable.
+    /// the same base aren't identical. A weapon's base damage does not vary: extra flat Physical
+    /// Damage only comes from a rolled affix. Takes a System.Random so tests can make it repeatable.
     /// </summary>
     public static class ItemGenerator
     {
@@ -97,6 +98,7 @@ namespace PoeClone.Inventory
             public Color Tint;
             public WeaponType WeaponType = WeaponType.Sword;
             public StatModifier[] Implicits;
+            public float BaseDamage;           // weapons: the physical damage every one of this base deals
             public string ArtId;               // null: its own
             public Color ArtTint = Color.white;
             public int MinLevel = 1;           // drops only at this item level and up
@@ -304,54 +306,54 @@ namespace PoeClone.Inventory
             Gear("quiver", Leaning.Dex, "barbed_quiver", "Barbed Quiver", ItemType.Quiver, 2, 3, 12, "leather_quiver", Dark, Mod(StatType.PhysicalDamage, 8), Mod(StatType.AttackSpeed, 5)),
 
             // ---- One-handed weapons
-            Arm("sword", Leaning.None, "rusty_sword", "Rusty Sword", WeaponType.Sword, 1, 3, 1, null, Plain, Mod(StatType.PhysicalDamage, 8)),
-            Arm("sword", Leaning.None, "steel_sword", "Steel Sword", WeaponType.Sword, 1, 3, 4, "rusty_sword", Steel, Mod(StatType.PhysicalDamage, 13)),
-            Arm("sword", Leaning.None, "champion_blade", "Champion Blade", WeaponType.Sword, 1, 3, 8, "rusty_sword", Gilded, Mod(StatType.PhysicalDamage, 20)),
-            Arm("sword", Leaning.None, "royal_blade", "Royal Blade", WeaponType.Sword, 1, 3, 12, "rusty_sword", Royal, Mod(StatType.PhysicalDamage, 29)),
-            Arm("axe", Leaning.Str, "hand_axe", "Hand Axe", WeaponType.Axe, 2, 3, 1, null, Plain, Mod(StatType.PhysicalDamage, 7)),
-            Arm("axe", Leaning.Str, "war_axe", "War Axe", WeaponType.Axe, 2, 3, 4, "hand_axe", Steel, Mod(StatType.PhysicalDamage, 12)),
-            Arm("axe", Leaning.Str, "reaver_axe", "Reaver Axe", WeaponType.Axe, 2, 3, 8, "hand_axe", Gilded, Mod(StatType.PhysicalDamage, 18)),
-            Arm("axe", Leaning.Str, "butcher_axe", "Butcher Axe", WeaponType.Axe, 2, 3, 12, "hand_axe", Dark, Mod(StatType.PhysicalDamage, 25)),
-            Arm("mace", Leaning.Str, "iron_mace", "Iron Mace", WeaponType.Mace, 1, 3, 1, null, Plain, Mod(StatType.PhysicalDamage, 8)),
-            Arm("mace", Leaning.Str, "flanged_mace", "Flanged Mace", WeaponType.Mace, 1, 3, 4, "iron_mace", Steel, Mod(StatType.PhysicalDamage, 13)),
-            Arm("mace", Leaning.Str, "war_hammer", "War Hammer", WeaponType.Mace, 1, 3, 8, "iron_mace", Gilded, Mod(StatType.PhysicalDamage, 19)),
-            Arm("mace", Leaning.Str, "templar_mace", "Templar Mace", WeaponType.Mace, 1, 3, 12, "iron_mace", Royal, Mod(StatType.PhysicalDamage, 27)),
-            Arm("dagger", Leaning.Dex, "steel_dagger", "Steel Dagger", WeaponType.Dagger, 1, 2, 1, null, Plain, Mod(StatType.PhysicalDamage, 3)),
-            Arm("dagger", Leaning.Dex, "assassin_dagger", "Assassin Dagger", WeaponType.Dagger, 1, 2, 4, "steel_dagger", Dusk, Mod(StatType.PhysicalDamage, 6), Mod(StatType.AttackSpeed, 5)),
-            Arm("dagger", Leaning.Dex, "stiletto", "Stiletto", WeaponType.Dagger, 1, 2, 8, "steel_dagger", Shadow, Mod(StatType.PhysicalDamage, 9), Mod(StatType.AttackSpeed, 6)),
-            Arm("dagger", Leaning.Dex, "shadow_fang", "Shadow Fang", WeaponType.Dagger, 1, 2, 12, "steel_dagger", Dark, Mod(StatType.PhysicalDamage, 13), Mod(StatType.AttackSpeed, 8)),
+            Arm("sword", Leaning.None, "rusty_sword", "Rusty Sword", WeaponType.Sword, 1, 3, 1, null, Plain, 8),
+            Arm("sword", Leaning.None, "steel_sword", "Steel Sword", WeaponType.Sword, 1, 3, 4, "rusty_sword", Steel, 13),
+            Arm("sword", Leaning.None, "champion_blade", "Champion Blade", WeaponType.Sword, 1, 3, 8, "rusty_sword", Gilded, 20),
+            Arm("sword", Leaning.None, "royal_blade", "Royal Blade", WeaponType.Sword, 1, 3, 12, "rusty_sword", Royal, 29),
+            Arm("axe", Leaning.Str, "hand_axe", "Hand Axe", WeaponType.Axe, 2, 3, 1, null, Plain, 7),
+            Arm("axe", Leaning.Str, "war_axe", "War Axe", WeaponType.Axe, 2, 3, 4, "hand_axe", Steel, 12),
+            Arm("axe", Leaning.Str, "reaver_axe", "Reaver Axe", WeaponType.Axe, 2, 3, 8, "hand_axe", Gilded, 18),
+            Arm("axe", Leaning.Str, "butcher_axe", "Butcher Axe", WeaponType.Axe, 2, 3, 12, "hand_axe", Dark, 25),
+            Arm("mace", Leaning.Str, "iron_mace", "Iron Mace", WeaponType.Mace, 1, 3, 1, null, Plain, 8),
+            Arm("mace", Leaning.Str, "flanged_mace", "Flanged Mace", WeaponType.Mace, 1, 3, 4, "iron_mace", Steel, 13),
+            Arm("mace", Leaning.Str, "war_hammer", "War Hammer", WeaponType.Mace, 1, 3, 8, "iron_mace", Gilded, 19),
+            Arm("mace", Leaning.Str, "templar_mace", "Templar Mace", WeaponType.Mace, 1, 3, 12, "iron_mace", Royal, 27),
+            Arm("dagger", Leaning.Dex, "steel_dagger", "Steel Dagger", WeaponType.Dagger, 1, 2, 1, null, Plain, 3),
+            Arm("dagger", Leaning.Dex, "assassin_dagger", "Assassin Dagger", WeaponType.Dagger, 1, 2, 4, "steel_dagger", Dusk, 6, Mod(StatType.AttackSpeed, 5)),
+            Arm("dagger", Leaning.Dex, "stiletto", "Stiletto", WeaponType.Dagger, 1, 2, 8, "steel_dagger", Shadow, 9, Mod(StatType.AttackSpeed, 6)),
+            Arm("dagger", Leaning.Dex, "shadow_fang", "Shadow Fang", WeaponType.Dagger, 1, 2, 12, "steel_dagger", Dark, 13, Mod(StatType.AttackSpeed, 8)),
             // Sceptres: a summoner's one-handed mace. Its blows mark enemies for the minions, and it
             // rolls minion stats and summons; it pairs with a grimoire or a shield.
-            Arm("sceptre", Leaning.Int, "bone_sceptre", "Bone Sceptre", WeaponType.Sceptre, 1, 3, 1, null, Plain, Mod(StatType.PhysicalDamage, 4), Mod(StatType.MinionDamage, 5)),
-            Arm("sceptre", Leaning.Int, "grave_sceptre", "Grave Sceptre", WeaponType.Sceptre, 1, 3, 4, "bone_sceptre", Verdant, Mod(StatType.PhysicalDamage, 7), Mod(StatType.MinionDamage, 7)),
-            Arm("sceptre", Leaning.Int, "lich_sceptre", "Lich Sceptre", WeaponType.Sceptre, 1, 3, 8, "bone_sceptre", Shadow, Mod(StatType.PhysicalDamage, 10), Mod(StatType.MinionDamage, 10), Mod(StatType.MinionLife, 10)),
-            Arm("sceptre", Leaning.Int, "deathlord_sceptre", "Deathlord Sceptre", WeaponType.Sceptre, 1, 3, 12, "bone_sceptre", Royal, Mod(StatType.PhysicalDamage, 14), Mod(StatType.MinionDamage, 13), Mod(StatType.MinionLife, 15)),
+            Arm("sceptre", Leaning.Int, "bone_sceptre", "Bone Sceptre", WeaponType.Sceptre, 1, 3, 1, null, Plain, 4, Mod(StatType.MinionDamage, 5)),
+            Arm("sceptre", Leaning.Int, "grave_sceptre", "Grave Sceptre", WeaponType.Sceptre, 1, 3, 4, "bone_sceptre", Verdant, 7, Mod(StatType.MinionDamage, 7)),
+            Arm("sceptre", Leaning.Int, "lich_sceptre", "Lich Sceptre", WeaponType.Sceptre, 1, 3, 8, "bone_sceptre", Shadow, 10, Mod(StatType.MinionDamage, 10), Mod(StatType.MinionLife, 10)),
+            Arm("sceptre", Leaning.Int, "deathlord_sceptre", "Deathlord Sceptre", WeaponType.Sceptre, 1, 3, 12, "bone_sceptre", Royal, 14, Mod(StatType.MinionDamage, 13), Mod(StatType.MinionLife, 15)),
 
             // ---- Bows and staves (two-handed)
-            Arm("bow", Leaning.Dex, "short_bow", "Short Bow", WeaponType.Bow, 2, 3, 1, null, Plain, Mod(StatType.PhysicalDamage, 5)),
-            Arm("bow", Leaning.Dex, "crude_bow", "Crude Bow", WeaponType.Bow, 2, 3, 1, "short_bow", Pale, Mod(StatType.PhysicalDamage, 3), Mod(StatType.AttackSpeed, 5)),
-            Arm("bow", Leaning.Dex, "recurve_bow", "Recurve Bow", WeaponType.Bow, 2, 3, 4, "short_bow", Dusk, Mod(StatType.PhysicalDamage, 9)),
-            Arm("bow", Leaning.Dex, "long_bow", "Long Bow", WeaponType.Bow, 2, 3, 8, "short_bow", Gilded, Mod(StatType.PhysicalDamage, 13)),
-            Arm("bow", Leaning.Dex, "imperial_bow", "Imperial Bow", WeaponType.Bow, 2, 3, 12, "short_bow", Royal, Mod(StatType.PhysicalDamage, 19)),
-            Arm("staff", Leaning.Int, "gnarled_staff", "Gnarled Staff", WeaponType.Staff, 1, 4, 1, null, Plain, Mod(StatType.PhysicalDamage, 4), Mod(StatType.SpellDamage, 6)),
-            Arm("staff", Leaning.Int, "runed_staff", "Runed Staff", WeaponType.Staff, 1, 4, 4, "gnarled_staff", Lapis, Mod(StatType.PhysicalDamage, 7), Mod(StatType.SpellDamage, 10), Mod(StatType.Intelligence, 8)),
-            Arm("staff", Leaning.Int, "archmage_staff", "Archmage Staff", WeaponType.Staff, 1, 4, 8, "gnarled_staff", Gilded, Mod(StatType.PhysicalDamage, 10), Mod(StatType.SpellDamage, 15), Mod(StatType.Intelligence, 14)),
-            Arm("staff", Leaning.Int, "eldritch_staff", "Eldritch Staff", WeaponType.Staff, 1, 4, 12, "gnarled_staff", Royal, Mod(StatType.PhysicalDamage, 14), Mod(StatType.SpellDamage, 20), Mod(StatType.Intelligence, 20)),
+            Arm("bow", Leaning.Dex, "short_bow", "Short Bow", WeaponType.Bow, 2, 3, 1, null, Plain, 5),
+            Arm("bow", Leaning.Dex, "crude_bow", "Crude Bow", WeaponType.Bow, 2, 3, 1, "short_bow", Pale, 3, Mod(StatType.AttackSpeed, 5)),
+            Arm("bow", Leaning.Dex, "recurve_bow", "Recurve Bow", WeaponType.Bow, 2, 3, 4, "short_bow", Dusk, 9),
+            Arm("bow", Leaning.Dex, "long_bow", "Long Bow", WeaponType.Bow, 2, 3, 8, "short_bow", Gilded, 13),
+            Arm("bow", Leaning.Dex, "imperial_bow", "Imperial Bow", WeaponType.Bow, 2, 3, 12, "short_bow", Royal, 19),
+            Arm("staff", Leaning.Int, "gnarled_staff", "Gnarled Staff", WeaponType.Staff, 1, 4, 1, null, Plain, 4, Mod(StatType.SpellDamage, 6)),
+            Arm("staff", Leaning.Int, "runed_staff", "Runed Staff", WeaponType.Staff, 1, 4, 4, "gnarled_staff", Lapis, 7, Mod(StatType.SpellDamage, 10), Mod(StatType.Intelligence, 8)),
+            Arm("staff", Leaning.Int, "archmage_staff", "Archmage Staff", WeaponType.Staff, 1, 4, 8, "gnarled_staff", Gilded, 10, Mod(StatType.SpellDamage, 15), Mod(StatType.Intelligence, 14)),
+            Arm("staff", Leaning.Int, "eldritch_staff", "Eldritch Staff", WeaponType.Staff, 1, 4, 12, "gnarled_staff", Royal, 14, Mod(StatType.SpellDamage, 20), Mod(StatType.Intelligence, 20)),
 
             // ---- Great weapons: both hands, no shield; slower, but they hit much harder, reach
             // further and sweep a wider arc (see CharacterAttackAnimator).
-            Arm("greatsword", Leaning.Str, "bastard_sword", "Bastard Sword", WeaponType.Greatsword, 1, 4, 1, null, Plain, Mod(StatType.PhysicalDamage, 14)),
-            Arm("greatsword", Leaning.Str, "claymore", "Claymore", WeaponType.Greatsword, 1, 4, 4, "bastard_sword", Steel, Mod(StatType.PhysicalDamage, 23)),
-            Arm("greatsword", Leaning.Str, "zweihander", "Zweihander", WeaponType.Greatsword, 1, 4, 8, "bastard_sword", Gilded, Mod(StatType.PhysicalDamage, 35)),
-            Arm("greatsword", Leaning.Str, "colossus_blade", "Colossus Blade", WeaponType.Greatsword, 1, 4, 12, "bastard_sword", Royal, Mod(StatType.PhysicalDamage, 50)),
-            Arm("greataxe", Leaning.Str, "woodsplitter", "Woodsplitter", WeaponType.Greataxe, 2, 4, 1, null, Plain, Mod(StatType.PhysicalDamage, 12)),
-            Arm("greataxe", Leaning.Str, "double_axe", "Double Axe", WeaponType.Greataxe, 2, 4, 4, "woodsplitter", Steel, Mod(StatType.PhysicalDamage, 20)),
-            Arm("greataxe", Leaning.Str, "headsman_axe", "Headsman Axe", WeaponType.Greataxe, 2, 4, 8, "woodsplitter", Gilded, Mod(StatType.PhysicalDamage, 30)),
-            Arm("greataxe", Leaning.Str, "executioner_axe", "Executioner Axe", WeaponType.Greataxe, 2, 4, 12, "woodsplitter", Dark, Mod(StatType.PhysicalDamage, 42)),
-            Arm("maul", Leaning.Str, "great_mallet", "Great Mallet", WeaponType.Maul, 2, 4, 1, null, Plain, Mod(StatType.PhysicalDamage, 13)),
-            Arm("maul", Leaning.Str, "sledgehammer", "Sledgehammer", WeaponType.Maul, 2, 4, 4, "great_mallet", Steel, Mod(StatType.PhysicalDamage, 22)),
-            Arm("maul", Leaning.Str, "earthbreaker", "Earthbreaker", WeaponType.Maul, 2, 4, 8, "great_mallet", Gilded, Mod(StatType.PhysicalDamage, 32)),
-            Arm("maul", Leaning.Str, "titan_maul", "Titan Maul", WeaponType.Maul, 2, 4, 12, "great_mallet", Royal, Mod(StatType.PhysicalDamage, 45)),
+            Arm("greatsword", Leaning.Str, "bastard_sword", "Bastard Sword", WeaponType.Greatsword, 1, 4, 1, null, Plain, 14),
+            Arm("greatsword", Leaning.Str, "claymore", "Claymore", WeaponType.Greatsword, 1, 4, 4, "bastard_sword", Steel, 23),
+            Arm("greatsword", Leaning.Str, "zweihander", "Zweihander", WeaponType.Greatsword, 1, 4, 8, "bastard_sword", Gilded, 35),
+            Arm("greatsword", Leaning.Str, "colossus_blade", "Colossus Blade", WeaponType.Greatsword, 1, 4, 12, "bastard_sword", Royal, 50),
+            Arm("greataxe", Leaning.Str, "woodsplitter", "Woodsplitter", WeaponType.Greataxe, 2, 4, 1, null, Plain, 12),
+            Arm("greataxe", Leaning.Str, "double_axe", "Double Axe", WeaponType.Greataxe, 2, 4, 4, "woodsplitter", Steel, 20),
+            Arm("greataxe", Leaning.Str, "headsman_axe", "Headsman Axe", WeaponType.Greataxe, 2, 4, 8, "woodsplitter", Gilded, 30),
+            Arm("greataxe", Leaning.Str, "executioner_axe", "Executioner Axe", WeaponType.Greataxe, 2, 4, 12, "woodsplitter", Dark, 42),
+            Arm("maul", Leaning.Str, "great_mallet", "Great Mallet", WeaponType.Maul, 2, 4, 1, null, Plain, 13),
+            Arm("maul", Leaning.Str, "sledgehammer", "Sledgehammer", WeaponType.Maul, 2, 4, 4, "great_mallet", Steel, 22),
+            Arm("maul", Leaning.Str, "earthbreaker", "Earthbreaker", WeaponType.Maul, 2, 4, 8, "great_mallet", Gilded, 32),
+            Arm("maul", Leaning.Str, "titan_maul", "Titan Maul", WeaponType.Maul, 2, 4, 12, "great_mallet", Royal, 45),
         };
 
         // How often each kind of item drops, against the others (its lines share it equally).
@@ -620,7 +622,7 @@ namespace PoeClone.Inventory
         /// Brings an item in line with today's rules, for items made under older ones (saved
         /// characters, their stash): every stat its base no longer allows is removed, every value
         /// outside today's range is pulled into it, a stat listed twice keeps only its first line,
-        /// and a unique gets its current design. Returns the item itself if nothing needed fixing.
+        /// a weapon gets its base's damage, and a unique gets its current design. Returns the item itself if nothing needed fixing.
         /// </summary>
         public static ItemData Legalize(ItemData item)
         {
@@ -636,9 +638,25 @@ namespace PoeClone.Inventory
             var mods = new List<StatModifier>();
             var seen = new HashSet<StatType>();
             bool changed = false;
+
+            // A weapon's base damage is fixed by its base and listed first. Older saves kept it
+            // as the first Physical Damage line (an implicit, or untiered before tags existed).
+            bool savedBase = false, baseFound = false;
+            foreach (StatModifier m in item.Modifiers)
+                savedBase |= m.IsBase;
+            if (b.BaseDamage > 0f)
+                mods.Add(new StatModifier(StatType.PhysicalDamage, b.BaseDamage, StatModifier.BaseTier));
+
             foreach (StatModifier m in item.Modifiers)
             {
-                if (!seen.Add(m.Stat))
+                if (b.BaseDamage > 0f && !baseFound && m.Stat == StatType.PhysicalDamage && (m.IsBase || (!savedBase && m.Tier <= 0)))
+                {
+                    baseFound = true;
+                    if (!m.IsBase || !Mathf.Approximately(m.Value, b.BaseDamage))
+                        changed = true;
+                    continue;
+                }
+                if (m.IsBase || !seen.Add(m.Stat))
                 {
                     changed = true;
                     continue;
@@ -661,6 +679,8 @@ namespace PoeClone.Inventory
                     changed = true;
                 mods.Add(new StatModifier(m.Stat, legal.Value, tier == -1 ? -1 : Mathf.Approximately(legal.Value, m.Value) ? tier : 0));
             }
+            if (b.BaseDamage > 0f && !baseFound)
+                changed = true;
 
             if (!changed)
                 return item;
@@ -883,8 +903,10 @@ namespace PoeClone.Inventory
             foreach (Affix a in selected)
                 selectedTiers.Add(ChooseTier(rng, a.Tiers, level));
 
+            if (b.BaseDamage > 0f)
+                mods.Add(new StatModifier(StatType.PhysicalDamage, b.BaseDamage, StatModifier.BaseTier));
             foreach (StatModifier implicitMod in b.Implicits)
-                mods.Add(new StatModifier(implicitMod.Stat, RollImplicit(rng, implicitMod.Value), -1));
+                mods.Add(new StatModifier(implicitMod.Stat, RollImplicit(rng, implicitMod.Value), StatModifier.ImplicitTier));
             for (int i = 0; i < selected.Count; i++)
                 mods.Add(new StatModifier(selected[i].Stat, RollTierValue(rng, selectedTiers[i]), selected[i].Tiers.Length - Array.IndexOf(selected[i].Tiers, selectedTiers[i])));
 
@@ -1082,11 +1104,13 @@ namespace PoeClone.Inventory
             return b;
         }
 
+        // A weapon: like Gear, plus its type and base physical damage.
         private static ItemBase Arm(string line, Leaning leaning, string id, string name, WeaponType weaponType, int w, int h, int minLevel,
-            string art, Color artTint, params StatModifier[] implicits)
+            string art, Color artTint, float damage, params StatModifier[] implicits)
         {
             ItemBase b = Gear(line, leaning, id, name, ItemType.Weapon, w, h, minLevel, art, artTint, implicits);
             b.WeaponType = weaponType;
+            b.BaseDamage = damage;
             return b;
         }
 

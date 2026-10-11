@@ -60,7 +60,6 @@ namespace PoeClone.Visuals
             public float SwingStart; // optional fraction where the windup turns into a visible strike
             public Pose WindupOffset;
             public Pose StrikeOffset;
-            public float BaseAttacksPerSecond;
             public float Range;
 
             // Absolute: the poses are real angles, not offsets from rest. For a stance that must
@@ -94,7 +93,6 @@ namespace PoeClone.Visuals
             StrikeTime = 0.4f,
             WindupOffset = new Pose(25f, -10f, 0f, 110f),
             StrikeOffset = new Pose(-75f, 5f, 0f, 15f),
-            BaseAttacksPerSecond = 1.8f,
             Range = 1.6f
         };
 
@@ -107,7 +105,6 @@ namespace PoeClone.Visuals
             StrikeTime = 0.45f,
             WindupOffset = new Pose(30f, -55f, -40f, 65f),
             StrikeOffset = new Pose(-35f, 55f, 45f, 30f),
-            BaseAttacksPerSecond = 1.2f,
             Range = 2.2f
         };
 
@@ -120,7 +117,6 @@ namespace PoeClone.Visuals
             StrikeTime = 0.55f,
             WindupOffset = new Pose(45f, -8f, -5f, 95f),
             StrikeOffset = new Pose(-80f, 4f, 0f, 8f),
-            BaseAttacksPerSecond = SwordProfile.BaseAttacksPerSecond,
             Range = SwordProfile.Range
         };
 
@@ -132,7 +128,6 @@ namespace PoeClone.Visuals
             StrikeTime = SwordProfile.StrikeTime,
             WindupOffset = new Pose(SwordProfile.WindupOffset.ArmPitch, -SwordProfile.WindupOffset.ArmYaw, -SwordProfile.WindupOffset.ArmRoll, SwordProfile.WindupOffset.ElbowBend),
             StrikeOffset = new Pose(SwordProfile.StrikeOffset.ArmPitch, -SwordProfile.StrikeOffset.ArmYaw, -SwordProfile.StrikeOffset.ArmRoll, SwordProfile.StrikeOffset.ElbowBend),
-            BaseAttacksPerSecond = SwordProfile.BaseAttacksPerSecond,
             Range = SwordProfile.Range
         };
 
@@ -149,7 +144,6 @@ namespace PoeClone.Visuals
             StrikeTime = 0.45f,
             WindupOffset = new Pose(15f, -20f, 0f, 70f),
             StrikeOffset = new Pose(-40f, 15f, 0f, 20f),
-            BaseAttacksPerSecond = 1.0f,
             Range = 1.8f
         };
 
@@ -161,7 +155,6 @@ namespace PoeClone.Visuals
             SwingStart = 0.27f,
             WindupOffset = new Pose(35f, -70f, -35f, 60f),
             StrikeOffset = new Pose(-40f, 65f, 35f, 20f),
-            BaseAttacksPerSecond = 1.0f,
             Range = 2.3f
         };
 
@@ -176,7 +169,6 @@ namespace PoeClone.Visuals
             SideLift = 45f,
             WindupOffset = new Pose(-160f, -10f, 0f, 75f),
             StrikeOffset = new Pose(-35f, 5f, 5f, 5f),
-            BaseAttacksPerSecond = 0.9f,
             Range = 2.2f
         };
 
@@ -187,7 +179,6 @@ namespace PoeClone.Visuals
             StrikeTime = 0.5f,
             WindupOffset = new Pose(35f, -6f, 0f, 90f),
             StrikeOffset = new Pose(-72f, 3f, 0f, 10f),
-            BaseAttacksPerSecond = 2.0f,
             Range = 1.7f
         };
 
@@ -203,7 +194,6 @@ namespace PoeClone.Visuals
             StrikeTime = 0.5f,
             WindupOffset = new Pose(-35f, -95f, -30f, 0f),
             StrikeOffset = new Pose(-45f, 70f, 35f, 0f),
-            BaseAttacksPerSecond = 0.85f,
             Range = 2.9f,
             TwoHandGrip = true,
             ConeHalfAngle = 70f
@@ -215,7 +205,6 @@ namespace PoeClone.Visuals
             StrikeTime = GreatswordProfile.StrikeTime,
             WindupOffset = new Pose(-35f, 80f, 30f, 0f),
             StrikeOffset = new Pose(-45f, -70f, -35f, 0f),
-            BaseAttacksPerSecond = GreatswordProfile.BaseAttacksPerSecond,
             Range = GreatswordProfile.Range,
             TwoHandGrip = true,
             ConeHalfAngle = GreatswordProfile.ConeHalfAngle
@@ -228,7 +217,6 @@ namespace PoeClone.Visuals
             SwingStart = 0.32f,
             WindupOffset = new Pose(-85f, -75f, -30f, 10f),
             StrikeOffset = new Pose(-35f, 65f, 25f, 0f),
-            BaseAttacksPerSecond = 0.8f,
             Range = 2.8f,
             TwoHandGrip = true,
             ConeHalfAngle = 45f
@@ -240,7 +228,6 @@ namespace PoeClone.Visuals
             StrikeTime = 0.62f,
             WindupOffset = new Pose(-160f, 0f, 0f, 0f),
             StrikeOffset = new Pose(-2f, 0f, 0f, 0f),
-            BaseAttacksPerSecond = 0.72f,
             Range = 2.7f,
             TwoHandGrip = true,
             ConeHalfAngle = 55f
@@ -253,7 +240,7 @@ namespace PoeClone.Visuals
             Duration = 0.98f, StrikeTime = 0.93f,
             WindupOffset = new Pose(55f, -105f, -25f, 65f),
             StrikeOffset = new Pose(-60f, 100f, 20f, 0f),
-            BaseAttacksPerSecond = 1f, Range = 3f
+            Range = 3f
         };
 
         private static readonly AttackProfile CleaveGreatSkillProfile = new AttackProfile
@@ -261,7 +248,7 @@ namespace PoeClone.Visuals
             Duration = 0.98f, StrikeTime = 0.93f, TwoHandGrip = true,
             WindupOffset = new Pose(-55f, -105f, -25f, 0f),
             StrikeOffset = new Pose(-28f, 100f, 20f, 0f),
-            BaseAttacksPerSecond = 0.8f, Range = 3.3f, ConeHalfAngle = 75f
+            Range = 3.3f, ConeHalfAngle = 75f
         };
 
         private static readonly AttackProfile PulverizeMaceProfile = new AttackProfile
@@ -269,7 +256,7 @@ namespace PoeClone.Visuals
             Duration = 0.9f, StrikeTime = 0.8f, SwingStart = 0.6f, SideLift = 45f,
             WindupOffset = new Pose(-165f, -4f, 0f, 80f),
             StrikeOffset = new Pose(-30f, 2f, 0f, 0f),
-            BaseAttacksPerSecond = 0.8f, Range = 2.5f
+            Range = 2.5f
         };
 
         private static readonly AttackProfile PulverizeMaulProfile = new AttackProfile
@@ -277,7 +264,7 @@ namespace PoeClone.Visuals
             Duration = 0.9f, StrikeTime = 0.8f, SwingStart = 0.58f, TwoHandGrip = true,
             WindupOffset = new Pose(-165f, 0f, 0f, 0f),
             StrikeOffset = new Pose(-2f, 0f, 0f, 0f),
-            BaseAttacksPerSecond = 0.72f, Range = 2.7f
+            Range = 2.7f
         };
 
         private static readonly AttackProfile ReapingAxeProfile = new AttackProfile
@@ -285,7 +272,7 @@ namespace PoeClone.Visuals
             Duration = 0.82f, StrikeTime = 0.71f, SwingStart = 0.46f,
             WindupOffset = new Pose(22f, -78f, -35f, 60f),
             StrikeOffset = new Pose(-28f, 82f, 35f, 20f),
-            BaseAttacksPerSecond = 0.85f, Range = 3f
+            Range = 3f
         };
 
         private static readonly AttackProfile ReapingGreataxeProfile = new AttackProfile
@@ -293,7 +280,7 @@ namespace PoeClone.Visuals
             Duration = 0.82f, StrikeTime = 0.71f, SwingStart = 0.46f, TwoHandGrip = true,
             WindupOffset = new Pose(-45f, -85f, -22f, 0f),
             StrikeOffset = new Pose(-35f, 88f, 22f, 0f),
-            BaseAttacksPerSecond = 0.8f, Range = 3.2f, ConeHalfAngle = 72f
+            Range = 3.2f, ConeHalfAngle = 72f
         };
 
         private static readonly AttackProfile LungingSwordProfile = new AttackProfile
@@ -301,7 +288,7 @@ namespace PoeClone.Visuals
             Duration = 0.75f, StrikeTime = 0.67f,
             WindupOffset = new Pose(55f, -7f, -4f, 100f),
             StrikeOffset = new Pose(-105f, 2f, 0f, -43f),
-            BaseAttacksPerSecond = 0.9f, Range = 3.2f
+            Range = 3.2f
         };
 
         private static readonly AttackProfile LungingGreatswordProfile = new AttackProfile
@@ -309,7 +296,7 @@ namespace PoeClone.Visuals
             Duration = 0.75f, StrikeTime = 0.67f, TwoHandGrip = true,
             WindupOffset = new Pose(-100f, -12f, -5f, 0f),
             StrikeOffset = new Pose(-112f, 4f, 0f, 0f),
-            BaseAttacksPerSecond = 0.82f, Range = 3.6f
+            Range = 3.6f
         };
 
         // Whirlwind holds both arms out, the blade level, while the body spins (see HoldSkillPose).
@@ -320,7 +307,7 @@ namespace PoeClone.Visuals
             StrikeOffset = new Pose(-90f, 90f, 0f, 0f),
             OffWindup = new Pose(-90f, -60f, -50f, 0f),
             OffStrike = new Pose(-90f, -60f, -50f, 0f),
-            BaseAttacksPerSecond = 1f, Range = 3f
+            Range = 3f
         };
 
         private static readonly AttackProfile WhirlwindGreatProfile = new AttackProfile
@@ -328,7 +315,7 @@ namespace PoeClone.Visuals
             Duration = 0.35f, StrikeTime = 0.9f, TwoHandGrip = true,
             WindupOffset = new Pose(-20f, 90f, 40f, 0f),
             StrikeOffset = new Pose(-20f, 90f, 40f, 0f),
-            BaseAttacksPerSecond = 0.8f, Range = 3.3f
+            Range = 3.3f
         };
 
         private static readonly AttackProfile FangStrikeProfile = new AttackProfile
@@ -336,7 +323,7 @@ namespace PoeClone.Visuals
             Duration = 0.3f, StrikeTime = 0.4f,
             WindupOffset = new Pose(22f, -2f, -2f, 65f),
             StrikeOffset = new Pose(-105f, 1f, 0f, -43f),
-            BaseAttacksPerSecond = 2.2f, Range = 1.9f
+            Range = 1.9f
         };
 
         // Aim and loose: the off (left) arm raises the bow straight at the target, while the
@@ -353,7 +340,6 @@ namespace PoeClone.Visuals
             UsesOffArm = true,
             OffWindup = new Pose(-90f, -4f, 0f, 0f),
             OffStrike = new Pose(-90f, -4f, 0f, 0f),
-            BaseAttacksPerSecond = 1.25f,
             Range = 14f
         };
 
@@ -370,7 +356,6 @@ namespace PoeClone.Visuals
             UsesOffArm = true,
             OffWindup = new Pose(-90f, -10f, 0f, 0f),
             OffStrike = new Pose(-90f, 6f, 0f, 0f),
-            BaseAttacksPerSecond = BowProfile.BaseAttacksPerSecond,
             Range = BowProfile.Range
         };
 
@@ -386,7 +371,6 @@ namespace PoeClone.Visuals
             OffWindup = new Pose(-158f, -4f, 0f, 0f),
             OffStrike = new Pose(-160f, -4f, 0f, 0f),
             Lean = -14f,
-            BaseAttacksPerSecond = BowProfile.BaseAttacksPerSecond,
             Range = BowProfile.Range
         };
 
@@ -402,7 +386,6 @@ namespace PoeClone.Visuals
             OffWindup = new Pose(-92f, -6f, 0f, 0f),
             OffStrike = new Pose(-88f, -2f, 0f, 0f),
             Lean = 8f,
-            BaseAttacksPerSecond = BowProfile.BaseAttacksPerSecond,
             Range = BowProfile.Range
         };
 
@@ -417,7 +400,6 @@ namespace PoeClone.Visuals
             UsesOffArm = true,
             OffWindup = new Pose(-78f, -4f, 45f, 0f),
             OffStrike = new Pose(-96f, -4f, 35f, 0f),
-            BaseAttacksPerSecond = BowProfile.BaseAttacksPerSecond,
             Range = BowProfile.Range
         };
 
@@ -437,7 +419,6 @@ namespace PoeClone.Visuals
         {
             Duration = 0.6f,
             StrikeTime = 0.55f,
-            BaseAttacksPerSecond = 1.0f,
             Range = 1.8f
         };
 
@@ -445,7 +426,6 @@ namespace PoeClone.Visuals
         {
             Duration = 0.75f,
             StrikeTime = 0.6f,
-            BaseAttacksPerSecond = 0.8f,
             Range = 9f
         };
 
@@ -508,7 +488,7 @@ namespace PoeClone.Visuals
         private Pose rest;
         private CharacterWalkAnimator walkAnimator;
         private float timer;
-        private float castSpeedMultiplier = 1f;
+        private float speedMultiplier = 1f; // cast speed for casts, attack speed for melee skills
         private bool strikeFired;
         // A channelled skill's pose stays at its wind-up until released (see HoldSkillPose).
         private bool holding;
@@ -572,7 +552,7 @@ namespace PoeClone.Visuals
         /// <summary>Base attacks-per-second for a weapon type, before the AttackSpeed stat is applied.</summary>
         public static float BaseAttackSpeed(WeaponType weaponType)
         {
-            return ProfileFor(weaponType).BaseAttacksPerSecond;
+            return SlotRules.BaseAttacksPerSecond(weaponType);
         }
 
         /// <summary>Half-angle of the cone this weapon type's swing reaches, or 0 for the attacker's default.</summary>
@@ -596,11 +576,17 @@ namespace PoeClone.Visuals
         public void PlayCast(float castRateMultiplier)
         {
             Play(UnarmedProfile);
-            castSpeedMultiplier = Mathf.Max(0.5f, castRateMultiplier);
+            speedMultiplier = Mathf.Max(0.5f, castRateMultiplier);
         }
 
-        /// <summary>Plays the dedicated procedural pose for a committed melee skill.</summary>
-        public void PlaySkillAttack(SkillId skill, WeaponType weaponType)
+        /// <summary>Plays the dedicated procedural pose for a committed melee skill, sped up by <paramref name="rate"/> (attack speed).</summary>
+        public void PlaySkillAttack(SkillId skill, WeaponType weaponType, float rate = 1f)
+        {
+            PlaySkillPose(skill, weaponType);
+            speedMultiplier = Mathf.Max(0.5f, rate);
+        }
+
+        private void PlaySkillPose(SkillId skill, WeaponType weaponType)
         {
             switch (skill)
             {
@@ -700,7 +686,7 @@ namespace PoeClone.Visuals
 
         private void Play(AttackProfile profile)
         {
-            castSpeedMultiplier = 1f;
+            speedMultiplier = 1f;
             AttackCount++;
             ProfileId = Array.IndexOf(ProfilesById, profile);
             activeProfile = profile;
@@ -736,7 +722,7 @@ namespace PoeClone.Visuals
                 return;
             }
 
-            timer += Time.deltaTime * PlaybackSpeed * castSpeedMultiplier;
+            timer += Time.deltaTime * PlaybackSpeed * speedMultiplier;
             if (holding)
                 timer = Mathf.Min(timer, activeProfile.Duration * activeProfile.StrikeTime * 0.999f);
             float f = Mathf.Clamp01(timer / activeProfile.Duration);
