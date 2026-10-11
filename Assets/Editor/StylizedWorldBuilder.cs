@@ -767,6 +767,9 @@ private static void BuildCharacter(Transform parent, bool enemy)
                 TagBaseGear(pauldron, EquipSlot.BodyArmour);
             }
 
+            // The parts above are placeholders; the body's final shapes and proportions live there.
+            HumanoidBodyBuilder.Shape(m, enemy);
+
             CharacterWalkAnimator anim = model.AddComponent<CharacterWalkAnimator>();
             anim.Configure(legL, legR, arms[0], arms[1], armRest);
             anim.ConfigureJoints(upper, knees[0], knees[1], elbows[0], elbows[1]);

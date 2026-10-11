@@ -13,7 +13,7 @@ namespace PoeClone.Enemies
     /// </summary>
     public static class SkeletonLook
     {
-        private static readonly string[] Flesh = { "Thigh", "Boot", "BootCuff", "Torso", "TunicSkirt", "Belt", "Upper", "Forearm", "Hand" };
+        private static readonly string[] Flesh = { "Thigh", "Boot", "BootCuff", "Torso", "TunicSkirt", "Belt", "Upper", "Forearm", "Hand", "Neck" };
 
         // Every skeleton's bones are the same shapes, so each joint's merged mesh is built once.
         private static readonly Dictionary<string, Mesh> Merged = new Dictionary<string, Mesh>();
@@ -118,7 +118,7 @@ namespace PoeClone.Enemies
             var bones = new List<Bone>
             {
                 Cylinder(new Vector3(0f, 1.22f, -0.1f), new Vector3(0.075f, 0.38f, 0.075f)),
-                Cube(new Vector3(0f, 1.53f, 0.01f), new Vector3(0.88f, 0.055f, 0.07f)),
+                Cube(new Vector3(0f, 1.5f, 0.01f), new Vector3(0.74f, 0.055f, 0.07f)),
                 Cube(new Vector3(0f, 1.3f, 0.17f), new Vector3(0.06f, 0.3f, 0.04f))
             };
             float[] heights = { 1.44f, 1.32f, 1.2f, 1.08f };

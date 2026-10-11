@@ -1,3 +1,7 @@
+version: 2026-10-11-humanoid-bodies
+- The player, NPCs and human enemies have new bodies: smooth, tapered arms and legs instead of boxes, a slimmer chest that narrows at the waist, a neck and a smaller head. Starting cloaks hang in a flared cape.
+- Armour and helmets still fit the old shapes for now; a refit follows.
+
 version: 2026-10-11-strafe-aim
 - Arrows, Fire Bolts and Ice Shards no longer drift with your movement. Shots loosed while strafing fly straight at what the cursor points to, with no need to lead.
 - With the cursor on an enemy, attacks and skills aim at that enemy itself rather than at the ground behind it, so aim no longer slides off as you move.
