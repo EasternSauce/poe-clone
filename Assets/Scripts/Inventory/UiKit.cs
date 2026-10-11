@@ -12,7 +12,6 @@ namespace PoeClone.Inventory
         public static readonly Color Gold = new Color(0.86f, 0.72f, 0.42f, 1f);
         public static readonly Color TextColor = new Color(0.90f, 0.86f, 0.76f, 1f);
 
-        /// <summary>True while a text field (e.g. the chat box) has keyboard focus, so hotkeys must not fire.</summary>
         /// <summary>Frame in which a text box already used the Enter press (so the chat doesn't open on it).</summary>
         public static int EnterHandledFrame = -1;
 
@@ -21,20 +20,24 @@ namespace PoeClone.Inventory
         // Shared across the inventory and gameplay assemblies.
         public static int ClickConsumedFrame = -1;
 
-        // The full-screen name prompt is supplied by the session UI (a separate assembly).
-        public static System.Action<string, System.Action<string>> StashTabNamePrompt;
-        public static bool IsStashNamePromptOpen;
+        /// <summary>
+        /// The full-screen text prompt (stash tab names, searches), supplied by the session UI (a
+        /// separate assembly): title, current text, character limit, whether text is required, done.
+        /// </summary>
+        public static System.Action<string, string, int, bool, System.Action<string>> TextPrompt;
+        public static bool IsTextPromptOpen;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStashNamePrompt()
+        private static void ResetTextPrompt()
         {
-            StashTabNamePrompt = null;
-            IsStashNamePromptOpen = false;
+            TextPrompt = null;
+            IsTextPromptOpen = false;
         }
 
+        /// <summary>True while a text field (e.g. the chat box) has keyboard focus, so hotkeys must not fire.</summary>
         public static bool IsTypingInTextField()
         {
-            if (IsStashNamePromptOpen) return true;
+            if (IsTextPromptOpen) return true;
             if (TextEditEndedFrame == Time.frameCount) return true;
             GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
             if (selected == null) return false;
@@ -330,17 +333,17 @@ namespace PoeClone.Inventory
         }
 
         /// <summary>
-        /// A one-line search field with an X beside it that clears the search. The caller places the
-        /// returned row; <paramref name="changed"/> gets the trimmed text on every edit.
+        /// A one-line search box with an X beside it that clears the search. Clicking the box or
+        /// pressing Ctrl+F (while the row is shown) opens the full-screen text prompt to type the
+        /// search. The caller places the returned row; <paramref name="changed"/> gets the trimmed text.
         /// </summary>
-        public static RectTransform SearchBox(Transform parent, string placeholder, System.Action<string> changed, out InputField field)
+        public static RectTransform SearchBox(Transform parent, string title, string placeholder, System.Action<string> changed)
         {
             const float clearSize = 30f;
             RectTransform row = NewRect("Search", parent);
 
             Image back = NewImage("Field", row, new Color(0.05f, 0.04f, 0.035f, 1f));
             Inset(back);
-            back.raycastTarget = true;
             AddOutline(back, BorderColor, 1.5f);
             RectTransform br = back.rectTransform;
             br.anchorMin = Vector2.zero;
@@ -348,26 +351,13 @@ namespace PoeClone.Inventory
             br.offsetMin = Vector2.zero;
             br.offsetMax = new Vector2(-(clearSize + 6f), 0f);
 
-            InputField input = back.gameObject.AddComponent<InputField>();
-            input.lineType = InputField.LineType.SingleLine;
-            input.characterLimit = 40;
-            input.customCaretColor = true;
-            input.caretColor = Gold;
-            input.selectionColor = new Color(0.86f, 0.62f, 0.25f, 0.45f);
-            Text text = NewText("Text", br, "", 17, TextColor, TextAnchor.MiddleLeft);
+            Text text = NewText("Text", br, placeholder, 17, DimText, TextAnchor.MiddleLeft);
             text.supportRichText = false;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            Text hint = NewText("Placeholder", br, placeholder, 17, DimText, TextAnchor.MiddleLeft);
-            hint.fontStyle = FontStyle.Italic;
-            foreach (Text t in new[] { text, hint })
-            {
-                t.rectTransform.anchorMin = Vector2.zero;
-                t.rectTransform.anchorMax = Vector2.one;
-                t.rectTransform.offsetMin = new Vector2(10f, 2f);
-                t.rectTransform.offsetMax = new Vector2(-8f, -2f);
-            }
-            input.textComponent = text;
-            input.placeholder = hint;
+            text.rectTransform.anchorMin = Vector2.zero;
+            text.rectTransform.anchorMax = Vector2.one;
+            text.rectTransform.offsetMin = new Vector2(10f, 2f);
+            text.rectTransform.offsetMax = new Vector2(-8f, -2f);
 
             Image clear = NewImage("Clear", row, Color.white);
             RectTransform cr = clear.rectTransform;
@@ -377,24 +367,33 @@ namespace PoeClone.Inventory
             Text x = NewText("X", cr, "X", 16, TextColor, TextAnchor.MiddleCenter);
             Stretch(x.rectTransform, 0f);
             StyleButton(clear, x, MutedTint);
-            OnClick(clear, () =>
-            {
-                input.text = "";
-                if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == input.gameObject)
-                    EventSystem.current.SetSelectedGameObject(null);
-            });
-            clear.gameObject.SetActive(false);
 
-            input.onValueChanged.AddListener(s =>
+            string query = "";
+            void Set(string value)
             {
-                clear.gameObject.SetActive(s.Length > 0);
-                changed(s.Trim());
-            });
-            // Enter or Escape only leaves the field: no chat box, no closing the panel underneath.
-            input.onEndEdit.AddListener(_ => EnterHandledFrame = TextEditEndedFrame = Time.frameCount);
-            field = input;
+                query = value.Trim();
+                bool empty = query.Length == 0;
+                text.text = empty ? placeholder : query;
+                text.color = empty ? DimText : TextColor;
+                text.fontStyle = empty ? FontStyle.Italic : FontStyle.Normal;
+                // The X stays shown so it is clear how to cancel; dimmed while there is nothing to clear.
+                x.color = empty ? DimText : TextColor;
+                changed(query);
+            }
+            Set("");
+
+            void Open()
+            {
+                if (!IsTextPromptOpen)
+                    TextPrompt?.Invoke(title, query, SearchLimit, false, Set);
+            }
+            OnClick(back, Open);
+            OnClick(clear, () => Set(""));
+            row.gameObject.AddComponent<SearchHotkey>().Open = Open;
             return row;
         }
+
+        private const int SearchLimit = 40;
 
         /// <summary>True if <paramref name="text"/> (rich text tags ignored) contains <paramref name="query"/>, any case.</summary>
         public static bool SearchMatches(string text, string query)

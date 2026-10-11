@@ -420,7 +420,7 @@ namespace PoeClone.Inventory
             if (warming)
                 return;
 
-            if (UiKit.IsStashNamePromptOpen)
+            if (UiKit.IsTextPromptOpen)
                 return;
 
             if (SpectatorMirror.Active)
@@ -988,11 +988,11 @@ namespace PoeClone.Inventory
 
             // Search, PoE style: everything in the stash that doesn't match greys out, and the tabs
             // holding a match light up.
-            stashSearchRow = UiKit.SearchBox(stashPanel, "Search the stash (names and modifiers)", query =>
+            stashSearchRow = UiKit.SearchBox(stashPanel, "Search the stash", "Search the stash (names and modifiers)", query =>
             {
                 stashQuery = query;
                 gridDirty = true;
-            }, out _);
+            });
             stashSearchRow.anchorMin = new Vector2(0f, 0f);
             stashSearchRow.anchorMax = new Vector2(1f, 0f);
             stashSearchRow.pivot = new Vector2(0.5f, 0f);
@@ -1098,9 +1098,9 @@ namespace PoeClone.Inventory
 
         private void BeginRenameTab(int tab)
         {
-            if (!isOpen || !stashOpen || vendor != null || UiKit.IsStashNamePromptOpen)
+            if (!isOpen || !stashOpen || vendor != null || UiKit.IsTextPromptOpen)
                 return;
-            UiKit.StashTabNamePrompt?.Invoke(inventory.StashTabCustomName(tab), name => inventory.RenameStashTab(tab, name));
+            UiKit.TextPrompt?.Invoke("Name your stash tab", inventory.StashTabCustomName(tab), PlayerInventory.StashTabNameLimit, true, name => inventory.RenameStashTab(tab, name));
         }
 
         private void ShowStashHighlight(int x, int y, int w, int h, Color color)

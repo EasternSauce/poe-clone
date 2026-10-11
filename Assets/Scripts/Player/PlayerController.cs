@@ -389,7 +389,7 @@ namespace PoeClone.Player
 
         internal static bool IsUiFocused()
         {
-            if (PoeClone.Inventory.UiKit.IsStashNamePromptOpen) return true;
+            if (PoeClone.Inventory.UiKit.IsTextPromptOpen) return true;
             EventSystem es = EventSystem.current;
             return es != null && es.currentSelectedGameObject != null;
         }

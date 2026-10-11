@@ -917,11 +917,11 @@ namespace PoeClone.UI
             tr0.offsetMax = new Vector2(-310f, 0f);
 
             // Finds passives by name or bonus: everything else greys out.
-            RectTransform searchRow = UiKit.SearchBox(info.rectTransform, "Search passives", query =>
+            RectTransform searchRow = UiKit.SearchBox(info.rectTransform, "Search passives", "Search passives", query =>
             {
                 searchQuery = query;
                 dirty = true;
-            }, out _);
+            });
             UiKit.TopLeft(searchRow, new Vector2(12f, -10f), new Vector2(SearchWidth, 38f));
             searchCount = UiKit.NewText("Matches", info.rectTransform, "", 15, UiKit.DimText, TextAnchor.UpperLeft);
             UiKit.TopLeft(searchCount.rectTransform, new Vector2(14f, -52f), new Vector2(SearchWidth, 20f));

@@ -23,54 +23,68 @@ namespace PoeClone.Network
         private Action<string> onDone;
         private Action afterCharacter;
         private Action charactersBack;
-        private float timeScaleBeforeStashRename;
+        private float timeScaleBeforePrompt;
 
-        /// <summary>Use the character creation input as a full-screen, required stash tab name form.</summary>
-        public void ShowStashTabRename(string currentName, Action<string> done)
+        /// <summary>
+        /// Use the character creation input as a full-screen text form (stash tab names, searches).
+        /// A <paramref name="required"/> form only closes once text is given; otherwise it has a
+        /// Cancel button and an empty answer is allowed.
+        /// </summary>
+        public void ShowTextPrompt(string title, string current, int limit, bool required, Action<string> done)
         {
-            if (IsShowing || UiKit.IsStashNamePromptOpen) return;
+            if (IsShowing || UiKit.IsTextPromptOpen) return;
 
             ClearScreen();
 
-            MakeText("Name your stash tab", 30, new Vector2(0, 100), new Vector2(800, 60));
+            MakeText(title, 30, new Vector2(0, 100), new Vector2(800, 60));
             inputField = MakeInput(new Vector2(0, 10));
-            inputField.characterLimit = PlayerInventory.StashTabNameLimit;
-            inputField.text = currentName ?? string.Empty;
+            inputField.characterLimit = limit;
+            inputField.text = current ?? string.Empty;
 
-            Action confirm = () =>
+            Action close = () =>
             {
-                string name = inputField.text.Trim();
-                if (name.Length == 0)
-                {
-                    StartCoroutine(FocusStashNameInput());
-                    return;
-                }
-                UiKit.IsStashNamePromptOpen = false;
-                Time.timeScale = timeScaleBeforeStashRename;
+                UiKit.IsTextPromptOpen = false;
+                Time.timeScale = timeScaleBeforePrompt;
                 canvasRoot.SetActive(false);
                 PlayerHUD.SetHiddenBy(this, false);
                 UiKit.EnterHandledFrame = Time.frameCount;
                 UiKit.TextEditEndedFrame = Time.frameCount;
                 if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
-                done?.Invoke(name);
+            };
+            Action confirm = () =>
+            {
+                string text = inputField.text.Trim();
+                if (required && text.Length == 0)
+                {
+                    StartCoroutine(FocusPromptInput());
+                    return;
+                }
+                close();
+                done?.Invoke(text);
             };
             inputField.onSubmit.AddListener(_ => confirm());
-            MakeButton("Confirm", new Vector2(0, -70), new Vector2(240, 54), confirm);
+            if (required)
+                MakeButton("Confirm", new Vector2(0, -70), new Vector2(240, 54), confirm);
+            else
+            {
+                MakeButton("Confirm", new Vector2(-110, -70), new Vector2(200, 54), confirm);
+                MakeButton("Cancel", new Vector2(110, -70), new Vector2(200, 54), close, UiKit.MutedTint);
+            }
 
-            timeScaleBeforeStashRename = Time.timeScale;
-            UiKit.IsStashNamePromptOpen = true;
+            timeScaleBeforePrompt = Time.timeScale;
+            UiKit.IsTextPromptOpen = true;
             canvasRoot.SetActive(true);
             PlayerHUD.SetHiddenBy(this, true);
             if (!PoeClone.Combat.Party.Active)
                 Time.timeScale = 0f;
-            StartCoroutine(FocusStashNameInput());
+            StartCoroutine(FocusPromptInput());
         }
 
-        private IEnumerator FocusStashNameInput()
+        private IEnumerator FocusPromptInput()
         {
-            // The tab's double-click must finish before this field claims keyboard focus.
+            // The click (a tab's double-click, the search box) must finish before this field claims keyboard focus.
             yield return null;
-            if (!UiKit.IsStashNamePromptOpen) yield break;
+            if (!UiKit.IsTextPromptOpen) yield break;
             inputField.Select();
             inputField.ActivateInputField();
             inputField.selectionAnchorPosition = 0;
@@ -79,11 +93,11 @@ namespace PoeClone.Network
 
         private void OnDestroy()
         {
-            UiKit.StashTabNamePrompt = null;
-            if (UiKit.IsStashNamePromptOpen)
+            UiKit.TextPrompt = null;
+            if (UiKit.IsTextPromptOpen)
             {
-                UiKit.IsStashNamePromptOpen = false;
-                Time.timeScale = timeScaleBeforeStashRename;
+                UiKit.IsTextPromptOpen = false;
+                Time.timeScale = timeScaleBeforePrompt;
             }
         }
 
@@ -295,7 +309,7 @@ namespace PoeClone.Network
             UiEventSystemBootstrap.EnsureExists();
             Build();
             canvasRoot.SetActive(false);
-            UiKit.StashTabNamePrompt = ShowStashTabRename;
+            UiKit.TextPrompt = ShowTextPrompt;
         }
 
         /// <summary>The spectator's optional display name form.</summary>
