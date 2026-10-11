@@ -657,7 +657,9 @@ namespace PoeClone.Skills
         public float CostOf(SkillId id, int level)
         {
             SkillDefinition skill = SkillBook.Get(id);
-            float cost = skill.ManaCostAt(Mathf.Max(1, level)) * CharacterCostMultiplier(skill, stats != null ? stats.Level : 1);
+            int characterLevel = stats != null ? stats.Level : 1;
+            float cost = skill.ManaCostAt(Mathf.Max(1, level)) * CharacterCostMultiplier(skill, characterLevel)
+                + DamageSpellManaSurcharge(skill, characterLevel);
             if (skill.MeleeAttack && !skill.Channelled)
                 cost *= CharacterAttackAnimator.BaseAttackSpeed(WeaponType.Sword) /
                         Mathf.Max(0.1f, CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()));
@@ -669,15 +671,34 @@ namespace PoeClone.Skills
         /// to 1.3x at level 34 for most skills, 1.5x for summons and Grave Rot, 2x for melee skills
         /// used as the attack (not Whirlwind). Bow skills and Death Mark barely change cost with their
         /// own level (gear rarely raises it), so they climb steeply with the character instead
-        /// (about 8x by level 34).
+        /// (about 8x by level 34). Damage spells continue to 1.9x at level 100, and also pay
+        /// DamageSpellManaSurcharge; their costs never flatten out at level 34.
         /// </summary>
         public static float CharacterCostMultiplier(SkillDefinition skill, int characterLevel)
         {
             float l = Mathf.Max(0, characterLevel - 1);
             if (skill.Bow || skill.Id == SkillId.DeathMark)
                 return 1f + 0.15f * l + 0.0019f * l * l;
+            if (skill.DamageSpell)
+                return 1f + 0.3f * l / 33f;
             float late = skill.Summon || skill.Id == SkillId.GraveRot ? 0.5f : skill.MeleeAttack && !skill.Channelled ? 1f : 0.3f;
             return 1f + late * Mathf.Clamp01(l / 33f);
+        }
+
+        /// <summary>
+        /// Character-level mana pressure for damage spells, independent of their granted rank:
+        /// a low-rank staff should not bypass mana management on a higher-level character.
+        /// The early ramp adds about 12 mana at level 7, then grows smoothly to 52 at 34 and
+        /// 118 at 100. Faster spells pay less per cast; long-cooldown spells cap at the same
+        /// surcharge as a one-second spell. Level 1 adds nothing. Death Mark keeps its own curve.
+        /// </summary>
+        public static float DamageSpellManaSurcharge(SkillDefinition skill, int characterLevel)
+        {
+            if (!skill.DamageSpell || skill.Id == SkillId.DeathMark) return 0f;
+            float l = Mathf.Max(0, characterLevel - 1);
+            float earlyProgress = l / 10f;
+            float pressure = l + 19f * (1f - Mathf.Exp(-earlyProgress * earlyProgress));
+            return pressure * Mathf.Min(1f, skill.Cooldown);
         }
 
         public float ManaCostForGrant(SkillGrant grant) => CostOf(grant.Id, GrantLevelWithBonuses(grant));

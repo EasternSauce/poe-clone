@@ -1,3 +1,6 @@
+version: 2026-10-11-spell-mana-curve
+- Damage spells gain a character-level mana surcharge so even low-rank spells need mana management. Level 1 costs are unchanged; costs ramp up smoothly through level 7, reach roughly twice their previous cost at level 34, and keep growing smoothly through level 100. Faster spells pay a smaller surcharge per cast.
+
 version: 2026-10-11-mantle-chain-falloff
 - Mantle of the Still Mind's added mana damage now weakens with each Chain Lightning jump, following the same 60% falloff as the spell's damage.
 
