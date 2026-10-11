@@ -48,11 +48,12 @@ namespace PoeClone.Player
         /// fromExplosion: the hit is a corpse explosion's. Its kills may explode in turn, a moment
         /// later, so a chain ripples through a pack (it ends when a kill fails its roll or no one is left).
         /// igniteBonus: % chance to ignite on top of the attacker's own (a fire hit's skill, e.g. Burning Arrow).
+        /// manaDamageMultiplier: scales added mana damage with a skill's chain falloff.
         /// </summary>
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
             DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null,
             bool throughExposedHead = false, bool melee = false, float projectileDistance = -1f, int venomArrowLevel = 0,
-            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0)
+            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f)
         {
             if (enemy == null || enemy.IsDead)
                 return;
@@ -75,7 +76,7 @@ namespace PoeClone.Player
             }
             // Extra damage from the mana pool joins the hit's base, so every bonus scales it.
             if (sheet != null && !secondary)
-                damage += stats.MaxMana * Mathf.Max(0f, sheet.Total(StatType.ManaAsDamage)) / 100f;
+                damage += stats.MaxMana * Mathf.Max(0f, sheet.Total(StatType.ManaAsDamage)) / 100f * manaDamageMultiplier;
 
             bool crit = false;
             float baseDamage = damage;

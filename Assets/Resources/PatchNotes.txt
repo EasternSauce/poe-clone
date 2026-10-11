@@ -1,3 +1,6 @@
+version: 2026-10-11-mantle-chain-falloff
+- Mantle of the Still Mind's added mana damage now weakens with each Chain Lightning jump, following the same 60% falloff as the spell's damage.
+
 version: 2026-10-11-lightning-gauntlet
 - The class gauntlet now offers a Chain Lightning damage caster, with lightning-focused gear selection and a Storm/Wisdom passive plan, for comparing damage and mana use against other casters.
 - Automated gauntlet runs can hold a requested casting distance and use only a build's core skills. Lightning reports record actual first-target distances and how often casts qualify for the close-range bonus.

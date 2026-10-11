@@ -1232,15 +1232,18 @@ namespace PoeClone.Skills
 
             int jumps = 3 + (level >= 5 ? 1 : 0) + (level >= 9 ? 1 : 0) + Mathf.Max(0, Mathf.RoundToInt(Stat(StatType.AdditionalChains)));
             var arc = new List<Vector3> { from };
+            float chainMultiplier = 1f;
             for (int jump = 0; jump < jumps && target != null; jump++)
             {
                 Vector3 to = target.transform.position + Vector3.up * 0.4f * target.transform.localScale.y;
                 SkillEffects.Arc(from, to, skill.Color);
                 arc.Add(to);
-                Hit(target, damage, CombatText.LightningColor, attack: false, DamageType.Lightning);
+                Hit(target, damage, CombatText.LightningColor, attack: false, DamageType.Lightning,
+                    manaDamageMultiplier: chainMultiplier);
                 struck.Add(target);
 
                 damage *= 0.6f;
+                chainMultiplier *= 0.6f;
                 from = to;
                 target = Nearest(target.transform.position, ChainJump, struck);
             }
@@ -1248,9 +1251,9 @@ namespace PoeClone.Skills
         }
 
         private void Hit(EnemyHealth enemy, float damage, Color color, bool attack, DamageType type = DamageType.Physical,
-            bool melee = false)
+            bool melee = false, float manaDamageMultiplier = 1f)
         {
-            HitEffects.Deal(transform, enemy, damage, attack, color, type, melee: melee);
+            HitEffects.Deal(transform, enemy, damage, attack, color, type, melee: melee, manaDamageMultiplier: manaDamageMultiplier);
         }
 
         // ------------------------------------------------------------------ teleport
