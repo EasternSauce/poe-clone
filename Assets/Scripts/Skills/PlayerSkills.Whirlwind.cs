@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using PoeClone.Enemies;
@@ -10,7 +11,7 @@ namespace PoeClone.Skills
 {
     /// <summary>
     /// Whirlwind, the channelled melee skill: while its button is held the player spins, hitting
-    /// everything in reach several times a second, and drifts towards the cursor (faster the further
+    /// everything in reach several times a second, passes through enemies, and drifts towards the cursor (faster the further
     /// it is, sprinting speed at <see cref="WhirlFullSpeedDiameters"/> body widths away; on touch,
     /// the joystick or the aim stick). It costs mana every <see cref="ChannelTick"/> seconds, paid
     /// up front, and stops when the button is let go or the mana runs out.
@@ -21,13 +22,16 @@ namespace PoeClone.Skills
         public const float ChannelTick = 0.5f;
 
         private const float WhirlTurnsPerSecond = 2.5f;
-        private const float WhirlHitInterval = 0.3f;    // at no increased attack speed
+        private const float WhirlHitInterval = 0.2f;    // at no increased attack speed
         private const float WhirlFullSpeedDiameters = 5f;
 
         private int whirlSlot = -1;
         private int whirlLevel;
         private float whirlNextMana;
         private float whirlNextHit;
+        // Enemies whose colliders the player passes through while spinning, restored when it ends.
+        private readonly Dictionary<EnemyHealth, Collider[]> whirlIgnored = new Dictionary<EnemyHealth, Collider[]>();
+        private CharacterController body;
 
         /// <summary>Whirlwind is spinning.</summary>
         public bool IsWhirling => whirlSlot >= 0;
@@ -49,6 +53,9 @@ namespace PoeClone.Skills
             if (whirlSlot < 0)
                 return;
             whirlSlot = -1;
+            foreach (Collider[] colliders in whirlIgnored.Values)
+                IgnoreEnemy(colliders, false);
+            whirlIgnored.Clear();
             if (controller != null)
                 controller.SetChannelling(false);
             if (attackAnimator != null)
@@ -78,6 +85,7 @@ namespace PoeClone.Skills
 
             if (attackAnimator != null && !attackAnimator.IsAttacking)
                 attackAnimator.HoldSkillPose(SkillId.Whirlwind, CurrentWeapon());
+            IgnoreEnemiesWhileWhirling();
             controller.SteerChannel(WhirlSteer());
             transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y + 360f * WhirlTurnsPerSecond * Time.deltaTime, 0f);
 
@@ -86,6 +94,30 @@ namespace PoeClone.Skills
                 WhirlHit(SkillBook.Get(SkillId.Whirlwind), whirlLevel);
                 whirlNextHit = Time.time + WhirlHitInterval / AttackRateMultiplier;
             }
+        }
+
+        // Newly met enemies included: one that spawns mid-spin can't block it either.
+        private void IgnoreEnemiesWhileWhirling()
+        {
+            foreach (EnemyHealth enemy in EnemyHealth.Active)
+            {
+                if (enemy == null || whirlIgnored.ContainsKey(enemy))
+                    continue;
+                Collider[] colliders = enemy.GetComponentsInChildren<Collider>();
+                whirlIgnored[enemy] = colliders;
+                IgnoreEnemy(colliders, true);
+            }
+        }
+
+        private void IgnoreEnemy(Collider[] colliders, bool ignore)
+        {
+            if (body == null)
+                body = GetComponent<CharacterController>();
+            if (body == null)
+                return;
+            foreach (Collider c in colliders)
+                if (c != null)
+                    Physics.IgnoreCollision(body, c, ignore);
         }
 
         private float AttackRateMultiplier => (1f + Stat(StatType.AttackSpeed) / 100f) *
@@ -123,7 +155,8 @@ namespace PoeClone.Skills
                 return Vector3.zero;
             Vector3 offset = ray.GetPoint(enter) - transform.position;
             offset.y = 0f;
-            CharacterController body = GetComponent<CharacterController>();
+            if (body == null)
+                body = GetComponent<CharacterController>();
             float fullSpeedAt = WhirlFullSpeedDiameters * 2f * (body != null ? body.radius : 0.4f);
             return offset / fullSpeedAt;
         }
