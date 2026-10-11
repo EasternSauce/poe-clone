@@ -1,3 +1,7 @@
+version: 2026-10-11-attribute-spurs
+- New off-attribute branches on the passive tree (+10, then a +30 notable) in areas that normally lack that attribute, so you can meet an item's requirement without leaving your part of the tree: Intelligence and Dexterity in Strength's area, Strength and Intelligence in Dexterity's, Strength and Dexterity in Intelligence's, plus Intelligence in Fury, Strength in Storm and Dexterity in Zeal.
+- The small "road" passives between notables and on the bridges between areas now give +10 of their area's attribute (Strength, Dexterity or Intelligence), instead of +6 or a small themed bonus. The Skirmisher bridge gives +10 Dexterity.
+
 version: 2026-10-11-unmet-tint
 - Items whose requirements you don't meet now have a slight red tint instead of having a red line inside their frame.
 

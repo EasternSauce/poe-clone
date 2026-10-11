@@ -210,8 +210,8 @@ namespace PoeClone.Tests
                     themed++;
                 }
             }
-            Assert.AreEqual(30, attributes);
-            Assert.AreEqual(39, themed);
+            Assert.AreEqual(48, attributes);
+            Assert.AreEqual(21, themed);
         }
 
         [Test]
