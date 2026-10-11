@@ -38,6 +38,7 @@ namespace PoeClone.World
                 new[] { "River Return Sluice" },
                 new[] { "The main return sluice feeds Sahret's old waterways. Ishara's final seal can be broken, but her priests will try to close it again." },
                 new[] { "Bronze Sluiceguard", "Tithe Priest", "Drowned Courtier", "Reservoir Skimmer" }, true);
+            BuildRootQuestSites(sites);
         }
 
         private void BuildWaterObjectives(Transform sites, int area, string questId, PropAction action,
@@ -53,7 +54,30 @@ namespace PoeClone.World
                 Transform whole = Holder(site, "Objective", at, Quaternion.identity);
                 Light glow = null;
                 Transform spent = null;
-                if (questId == "act2_jars")
+                if (questId == "act2_grafts" || questId == "act2_heart")
+                {
+                    LocalCyl(site, Vector3.up * 0.1f, 1.6f, 0.2f, kit.Mat("Charred"), false);
+                    for (int root = -2; root <= 2; root++)
+                        LocalBox(whole, new Vector3(root * 0.35f, 1.1f, 0), new Vector3(0.25f, 2.2f, 0.35f),
+                            kit.Mat("DeadWood"), false, new Vector3(0, root * 28, root * 12));
+                    LocalCyl(whole, Vector3.up * 1.1f, 0.45f, 0.7f, kit.Mat("ClothRed"), false);
+                    spent = Holder(site, "SeveredGraft", at, Quaternion.identity);
+                    LocalCyl(spent, Vector3.up * 0.18f, 0.8f, 0.36f, kit.Mat("Charred"), false);
+                    if (questId == "act2_heart")
+                    {
+                        glow = QuestGlow(site, at + Vector3.up * 1.5f, new Color(1, 0.4f, 0.15f), 12, 6);
+                        GameObject flame = LocalBox(spent, Vector3.up * 1.3f, new Vector3(1.8f, 2.6f, 1.8f), kit.Mat("Ember"), false);
+                        PoeClone.Visuals.LivingFlame.Attach(flame, 0.15f);
+                    }
+                }
+                else if (questId == "act2_seed")
+                {
+                    LocalBox(site, Vector3.up * 0.3f, new Vector3(1.8f, 0.6f, 1.4f), desertStone, false);
+                    LocalBox(whole, Vector3.up * 0.9f, new Vector3(1.2f, 0.6f, 0.8f), kit.Mat("Iron"), false);
+                    for (int strip = -1; strip <= 1; strip += 2)
+                        LocalBox(whole, new Vector3(strip * 0.4f, 0.9f, 0), new Vector3(0.12f, 0.65f, 0.86f), desertStone, false);
+                }
+                else if (questId == "act2_jars")
                 {
                     for (int side = -1; side <= 1; side += 2)
                         LocalBox(site, new Vector3(side * 1.5f, 1.8f, 0), new Vector3(0.18f, 3.6f, 0.18f), kit.Mat("DeadWood"), false);
@@ -78,10 +102,10 @@ namespace PoeClone.World
                     LocalBox(whole, Vector3.up * 1, new Vector3(1, 0.12f, 0.7f), kit.Mat("ClothYellow"), false);
                     LocalBox(whole, new Vector3(0.35f, 1.1f, 0), new Vector3(0.15f, 0.05f, 0.2f), kit.Mat("Iron"), false);
                 }
-                string verb = action == PropAction.Smash ? "Break " : action == PropAction.Light ? "Release " : action == PropAction.Read ? "Read " : "Recover ";
+                string verb = questId == "act2_heart" ? "Burn " : questId == "act2_grafts" ? "Sever " : action == PropAction.Smash ? "Break " : action == PropAction.Light ? "Release " : action == PropAction.Read ? "Read " : "Recover ";
                 int count = ambush ? 8 : 6;
                 QuestProp prop = QuestProp.Attach(site.gameObject, questId, i, action, names[i], descriptions[i],
-                    verb + names[i], action == PropAction.Light ? "The seal breaks and water begins to flow." : "The court's defenders have been defeated.",
+                    verb + names[i], questId == "act2_heart" ? "The last tithe burns away. The stolen names fall silent." : questId == "act2_grafts" ? "The feeding graft is severed." : action == PropAction.Light ? "The seal breaks and water begins to flow." : "The court's defenders have been defeated.",
                     questId == "act2_jars" ? 4 : 2.3f, enemies, count);
                 if (!ambush) prop.SetGuarded(at, "Defeat the guardians of " + names[i]);
                 prop.SetLooks(whole.gameObject, spent != null ? spent.gameObject : null, glow);

@@ -66,7 +66,9 @@ namespace PoeClone.Enemies
         SluiceWarden,
         LastEngineer,
         HarvestMother,
-        Ishara
+        Ishara,
+        Ossan,
+        FirstRoot
     }
 
     /// <summary>
@@ -225,7 +227,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 42f, Experience = 30,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 15f, AttackCooldown = 0.9f, AttackRange = 2.0f,
-                SpeedRatio = 0.85f, Scale = 0.95f, 
+                SpeedRatio = 0.85f, Scale = 0.95f,
                 Cloth = new Color(0.62f, 0.42f, 0.25f), Skin = new Color(0.78f, 0.60f, 0.45f), Eyes = new Color(0.15f, 0.10f, 0.08f), HideHorns = true,
                 Gear = new[] { "bronze_helmet", "rusty_sword", "wooden_shield" },
                 Skill = EnemySkill.Charge, SkillCooldown = 7f,
@@ -237,7 +239,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 35.5814f, Experience = 55,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 32f, AttackCooldown = 2.2f, AttackRange = 2.6f,
-                SpeedRatio = 0.62f, Scale = 1.35f, 
+                SpeedRatio = 0.62f, Scale = 1.35f,
                 Cloth = new Color(0.22f, 0.22f, 0.25f), Skin = new Color(0.55f, 0.42f, 0.38f), Eyes = new Color(1.0f, 0.2f, 0.1f),
                 Gear = new[] { "studded_vest" },
                 Skill = EnemySkill.Slam, SkillCooldown = 8f,
@@ -249,7 +251,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 28f, Experience = 28,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Physical,
                 Damage = 21f, AttackCooldown = 1.8f, AttackRange = 12f, ProjectileSpeed = 20f,
-                SpeedRatio = 0.72f, Scale = 0.95f, 
+                SpeedRatio = 0.72f, Scale = 0.95f,
                 Cloth = new Color(0.28f, 0.55f, 0.24f), Skin = new Color(0.75f, 0.62f, 0.48f), Pants = new Color(0.42f, 0.33f, 0.20f), Eyes = new Color(0.15f, 0.10f, 0.08f), HideHorns = true,
                 Gear = new[] { "leather_gloves", "leather_boots", "short_bow" },
                 Bow = true,
@@ -262,7 +264,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 25.50633f, Experience = 30,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Fire,
                 Damage = 27f, AttackCooldown = 2.0f, AttackRange = 10f, ProjectileSpeed = 11f,
-                SpeedRatio = 0.62f, Scale = 0.95f, 
+                SpeedRatio = 0.62f, Scale = 0.95f,
                 Cloth = new Color(0.80f, 0.25f, 0.05f), Skin = new Color(0.55f, 0.35f, 0.30f), Eyes = new Color(1.0f, 0.6f, 0.1f), HideHorns = true,
                 StaffOrb = new Color(1.0f, 0.45f, 0.10f),
                 Skill = EnemySkill.Strike, SkillCooldown = 9f,
@@ -274,7 +276,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 27.17884f, Experience = 30,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Cold,
                 Damage = 22.23091f, AttackCooldown = 2.0f, AttackRange = 10f, ProjectileSpeed = 10f,
-                SpeedRatio = 0.62f, Scale = 0.95f, 
+                SpeedRatio = 0.62f, Scale = 0.95f,
                 Cloth = new Color(0.15f, 0.35f, 0.80f), Skin = new Color(0.75f, 0.85f, 0.95f), Eyes = new Color(0.5f, 0.95f, 1.0f), HideHorns = true,
                 StaffOrb = new Color(0.55f, 0.85f, 1.0f),
                 Skill = EnemySkill.Strike, SkillCooldown = 9f,
@@ -286,7 +288,7 @@ namespace PoeClone.Enemies
                 MaxHealth = 21.74419f, Experience = 30,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Lightning,
                 Damage = 24f, AttackCooldown = 1.6f, AttackRange = 11f, ProjectileSpeed = 16f,
-                SpeedRatio = 0.68f, Scale = 0.9f, 
+                SpeedRatio = 0.68f, Scale = 0.9f,
                 Cloth = new Color(0.38f, 0.20f, 0.60f), Skin = new Color(0.70f, 0.70f, 0.60f), Eyes = new Color(1.0f, 1.0f, 0.4f), HideHorns = true,
                 StaffOrb = new Color(1.0f, 0.95f, 0.35f),
                 Skill = EnemySkill.Strike, SkillCooldown = 7f,
@@ -1034,6 +1036,103 @@ namespace PoeClone.Enemies
                 Skin = new Color(0.62f, 0.74f, 0.63f), Cloth = new Color(0.20f, 0.49f, 0.43f),
                 Pants = new Color(0.68f, 0.54f, 0.29f), Eyes = new Color(0.5f, 1, 0.9f),
                 DropChance = 1, RareBonus = 0.5f, Drops = 5
+            },
+            new EnemyKind
+            {
+                Name = "Ward Gaoler", SpawnWeight = 0, MaxHealth = 72, Experience = 86,
+                Damage = 26, DamageType = DamageType.Physical, AttackRange = 2.6f,
+                AttackCooldown = 2.2f, SpeedRatio = 0.6f, Scale = 1f,
+                Body = CreatureBody.BarrowCastellan, Skill = EnemySkill.BonePrison, SkillCooldown = 9, DropChance = 0.55f,
+                Skin = new Color(0.33f, 0.46f, 0.43f), Cloth = new Color(0.51f, 0.46f, 0.30f), Pants = new Color(0.30f, 0.25f, 0.22f),
+                Eyes = new Color(0.40f, 0.95f, 0.85f),
+                Armour = 140, Undead = true,
+            },
+            new EnemyKind
+            {
+                Name = "Cistern Leech", SpawnWeight = 0, MaxHealth = 37, Experience = 65,
+                Damage = 20, DamageType = DamageType.Poison, AttackRange = 2.6f,
+                AttackCooldown = 2.2f, SpeedRatio = 0.85f, Scale = 0.8f,
+                Body = CreatureBody.Slime, Skill = EnemySkill.DraggingBreath, SkillCooldown = 9, DropChance = 0.55f,
+                Skin = new Color(0.20f, 0.37f, 0.30f), Cloth = new Color(0.42f, 0.64f, 0.49f), Pants = new Color(0.30f, 0.25f, 0.22f),
+                Eyes = new Color(0.63f, 0.95f, 0.38f),
+                PackSize = 1, PoisonResistance = 30,
+            },
+            new EnemyKind
+            {
+                Name = "Memory Scribe", SpawnWeight = 0, MaxHealth = 49, Experience = 92,
+                Damage = 23, DamageType = DamageType.Cold, AttackRange = 12f,
+                AttackCooldown = 2.7f, SpeedRatio = 0.6f, Scale = 1f,
+                Body = CreatureBody.Humanoid, Skill = EnemySkill.Wail, SkillCooldown = 9, DropChance = 0.55f,
+                Skin = new Color(0.66f, 0.70f, 0.55f), Cloth = new Color(0.20f, 0.39f, 0.38f), Pants = new Color(0.30f, 0.25f, 0.22f),
+                Eyes = new Color(0.50f, 0.98f, 0.92f), Style = EnemyAttackStyle.Ranged, ProjectileSpeed = 11, StaffOrb = new Color(0.50f, 0.98f, 0.92f),
+                HideHorns = true, Skeletal = true, Undead = true, Gear = new[] { "hunter_hood" },
+            },
+            new EnemyKind
+            {
+                Name = "Drowned Fugitive", SpawnWeight = 0, MaxHealth = 48, Experience = 78,
+                Damage = 23, DamageType = DamageType.Physical, AttackRange = 2.6f,
+                AttackCooldown = 2.2f, SpeedRatio = 0.98f, Scale = 1f,
+                Body = CreatureBody.RimeStalker, Skill = EnemySkill.Blink, SkillCooldown = 9, DropChance = 0.55f,
+                Skin = new Color(0.39f, 0.53f, 0.49f), Cloth = new Color(0.23f, 0.32f, 0.30f), Pants = new Color(0.30f, 0.25f, 0.22f),
+                Eyes = new Color(0.60f, 0.90f, 0.85f),
+                Undead = true,
+            },
+            new EnemyKind
+            {
+                Name = "Root Goliath", SpawnWeight = 0, MaxHealth = 85, Experience = 100,
+                Damage = 28, DamageType = DamageType.Physical, AttackRange = 2.6f,
+                AttackCooldown = 2.2f, SpeedRatio = 0.45f, Scale = 1.45f,
+                Body = CreatureBody.Briarbound, Skill = EnemySkill.DredgeFault, SkillCooldown = 9, DropChance = 0.55f,
+                Skin = new Color(0.39f, 0.22f, 0.19f), Cloth = new Color(0.55f, 0.36f, 0.27f), Pants = new Color(0.30f, 0.25f, 0.22f),
+                Eyes = new Color(0.95f, 0.37f, 0.48f),
+                Armour = 100, PoisonResistance = 25,
+            },
+            new EnemyKind
+            {
+                Name = "Marrow Tick", SpawnWeight = 0, MaxHealth = 32, Experience = 66,
+                Damage = 18, DamageType = DamageType.Poison, AttackRange = 2.6f,
+                AttackCooldown = 2.2f, SpeedRatio = 1.1f, Scale = 0.65f,
+                Body = CreatureBody.Spider, Skill = EnemySkill.WebSpit, SkillCooldown = 9, DropChance = 0.55f,
+                Skin = new Color(0.59f, 0.42f, 0.31f), Cloth = new Color(0.43f, 0.17f, 0.24f), Pants = new Color(0.30f, 0.25f, 0.22f),
+                Eyes = new Color(0.95f, 0.48f, 0.52f),
+                PackSize = 2, Sounds = EnemySounds.Set.Spider,
+            },
+            new EnemyKind
+            {
+                Name = "Sap Cantor", SpawnWeight = 0, MaxHealth = 52, Experience = 97,
+                Damage = 22, DamageType = DamageType.Poison, AttackRange = 12f,
+                AttackCooldown = 2.7f, SpeedRatio = 0.6f, Scale = 1f,
+                Body = CreatureBody.GraveSiren, Skill = EnemySkill.WarCry, SkillCooldown = 9, DropChance = 0.55f,
+                Skin = new Color(0.50f, 0.29f, 0.32f), Cloth = new Color(0.29f, 0.17f, 0.23f), Pants = new Color(0.30f, 0.25f, 0.22f),
+                Eyes = new Color(0.95f, 0.45f, 0.57f), Style = EnemyAttackStyle.Ranged, ProjectileSpeed = 11, StaffOrb = new Color(0.95f, 0.45f, 0.57f),
+                PoisonResistance = 35,
+            },
+            new EnemyKind
+            {
+                Name = "Grafted Stalker", SpawnWeight = 0, MaxHealth = 53, Experience = 90,
+                Damage = 25, DamageType = DamageType.Physical, AttackRange = 2.6f,
+                AttackCooldown = 2.2f, SpeedRatio = 0.92f, Scale = 1.05f,
+                Body = CreatureBody.Hollowmaw, Skill = EnemySkill.Leap, SkillCooldown = 9, DropChance = 0.55f,
+                Skin = new Color(0.53f, 0.37f, 0.26f), Cloth = new Color(0.37f, 0.20f, 0.23f), Pants = new Color(0.30f, 0.25f, 0.22f),
+                Eyes = new Color(0.98f, 0.36f, 0.48f)
+            },
+            new EnemyKind
+            {
+                Name = "Ossan, Warden of the Unremembered", SpawnWeight = 0, IsBoss = true, Boss = BossStyle.Ossan,
+                MaxHealth = 66, HealthMultiplier = 25, Armour = 130, Experience = 750,
+                Damage = 27, DamageType = DamageType.Cold, BasicDamageType = DamageType.Physical,
+                AttackRange = 4, AttackCooldown = 2.6f, SpeedRatio = 0.38f, Scale = 1.9f, Body = CreatureBody.Ossan,
+                Skin = new Color(0.35f, 0.48f, 0.43f), Cloth = new Color(0.60f, 0.52f, 0.31f), Pants = new Color(0.44f, 0.36f, 0.25f),
+                Eyes = new Color(0.50f, 1f, 0.90f), DropChance = 1, RareBonus = 0.5f, Drops = 5
+            },
+            new EnemyKind
+            {
+                Name = "The First Root, Heart of the Tithe", SpawnWeight = 0, IsBoss = true, Boss = BossStyle.FirstRoot,
+                MaxHealth = 72, HealthMultiplier = 28, Armour = 105, Experience = 750,
+                Damage = 28, DamageType = DamageType.Poison, BasicDamageType = DamageType.Physical,
+                AttackRange = 4, AttackCooldown = 2.6f, SpeedRatio = 0.38f, Scale = 1.9f, Body = CreatureBody.FirstRoot,
+                Skin = new Color(0.38f, 0.21f, 0.19f), Cloth = new Color(0.57f, 0.31f, 0.36f), Pants = new Color(0.44f, 0.36f, 0.25f),
+                Eyes = new Color(1f, 0.40f, 0.53f), DropChance = 1, RareBonus = 0.5f, Drops = 5
             },
         };
 

@@ -79,7 +79,7 @@ namespace PoeClone.World
             // Frozen walls are pale rock with ice tint, rather than the blue Steel copy
             // used for small ice props and water elsewhere in the world.
             var material = new Material(kit.Mat("RockDark")) { name = "LayoutRock_" + AreaNames[area] };
-            Color color = area == Reservoir ? new Color(0.70f, 0.70f, 0.54f) : area == Orchard ? new Color(0.35f, 0.33f, 0.20f) :
+            Color color = area == FirstRoot ? new Color(0.31f, 0.19f, 0.24f) : area == BuriedWard ? new Color(0.30f, 0.38f, 0.36f) : area == Reservoir ? new Color(0.70f, 0.70f, 0.54f) : area == Orchard ? new Color(0.35f, 0.33f, 0.20f) :
                 area == DrownedWorks ? new Color(0.22f, 0.32f, 0.29f) : area == Channels || area == SaltBasin ? new Color(0.57f, 0.29f, 0.20f) : IsActTwo(area) ? new Color(0.69f, 0.47f, 0.25f) : area == Frozen ? new Color(0.65f, 0.73f, 0.78f) :
                 area == Ruins ? new Color(0.32f, 0.27f, 0.24f) : new Color(0.34f, 0.33f, 0.31f);
             material.SetColor("_BaseColor", color);
@@ -213,10 +213,10 @@ namespace PoeClone.World
 
         private void ConfigureCaveLighting(Transform player)
         {
-            foreach (int area in new[] { Cave, Frozen, ActArena, DrownedWorks })
+            foreach (int area in new[] { Cave, Frozen, ActArena, DrownedWorks, BuriedWard, FirstRoot })
             {
                 AreaShape shape = Shape(area);
-                Shader.SetGlobalVector(area == Cave ? "_CaveBounds" : area == Frozen ? "_HollowBounds" : area == DrownedWorks ? "_WorksBounds" : "_SanctuaryBounds",
+                Shader.SetGlobalVector(area == BuriedWard ? "_WardBounds" : area == FirstRoot ? "_RootBounds" : area == Cave ? "_CaveBounds" : area == Frozen ? "_HollowBounds" : area == DrownedWorks ? "_WorksBounds" : "_SanctuaryBounds",
                     new Vector4(shape.Center.x, shape.Center.z, shape.Size.x * 0.5f + 10, shape.Size.y * 0.5f + 10));
             }
             var light = Glow(player, player.position + Vector3.up * 2.5f, new Color(0.60f, 0.70f, 0.80f), 13, 8);

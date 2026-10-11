@@ -80,7 +80,7 @@ namespace PoeClone.UI
 
             // Town first, then the wilds in the order they're reached.
             var order = new List<int> { WorldBuilder.Haven };
-            foreach (int a in new[] { WorldBuilder.Greenwood, WorldBuilder.Cave, WorldBuilder.Graveyard, WorldBuilder.Ruins, WorldBuilder.Frozen, WorldBuilder.Desert, WorldBuilder.Sahret, WorldBuilder.SaltBasin, WorldBuilder.Channels, WorldBuilder.DrownedWorks, WorldBuilder.Orchard, WorldBuilder.Reservoir })
+            foreach (int a in new[] { WorldBuilder.Greenwood, WorldBuilder.Cave, WorldBuilder.Graveyard, WorldBuilder.Ruins, WorldBuilder.Frozen, WorldBuilder.Desert, WorldBuilder.Sahret, WorldBuilder.SaltBasin, WorldBuilder.Channels, WorldBuilder.DrownedWorks, WorldBuilder.Orchard, WorldBuilder.Reservoir, WorldBuilder.BuriedWard, WorldBuilder.FirstRoot })
             {
                 if (a != WorldBuilder.Haven)
                     order.Add(a);

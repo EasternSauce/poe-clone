@@ -25,7 +25,7 @@ namespace PoeClone.World
 
         private void Enter(int area)
         {
-            bool desert = WorldBuilder.IsActTwo(area) && area != WorldBuilder.DrownedWorks;
+            bool desert = WorldBuilder.IsActTwo(area) && !WorldBuilder.Shape(area).IsCave;
             if (desert == applied) return;
             if (desert)
             {

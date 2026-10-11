@@ -100,6 +100,8 @@ Shader "PoeClone/ToonLit"
             float4 _HollowBounds;
             float4 _SanctuaryBounds;
             float4 _WorksBounds;
+            float4 _WardBounds;
+            float4 _RootBounds;
             float InCave(float3 p, float4 bounds)
             {
                 float2 distance = abs(p.xz - bounds.xy);
@@ -243,6 +245,7 @@ Shader "PoeClone/ToonLit"
                 half3 ambient = SampleSH(normalWS) * albedo;
                 color += ambient * _AmbientBoost;
                 float cave = max(max(InCave(IN.positionWS, _CaveBounds), InCave(IN.positionWS, _WorksBounds)), max(InCave(IN.positionWS, _HollowBounds), InCave(IN.positionWS, _SanctuaryBounds)));
+                cave = max(cave, max(InCave(IN.positionWS, _WardBounds), InCave(IN.positionWS, _RootBounds)));
                 color *= lerp(1.0, 0.23, cave);
 
                 #if defined(_ADDITIONAL_LIGHTS) || defined(_CLUSTER_LIGHT_LOOP)

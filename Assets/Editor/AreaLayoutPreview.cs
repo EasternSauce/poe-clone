@@ -66,7 +66,7 @@ namespace PoeClone.EditorTools
             if (area != WorldBuilder.ActArena) Dot(texture, shape, WorldBuilder.WaystoneLocal(area), Color.blue);
             foreach (Vector3 gate in Gates(area))
                 Dot(texture, shape, gate, new Color(0.9f, 0.4f, 1));
-            if (area == WorldBuilder.Graveyard || area == WorldBuilder.Ruins || area == WorldBuilder.Frozen || area == WorldBuilder.Channels || area == WorldBuilder.DrownedWorks || area == WorldBuilder.Orchard || area == WorldBuilder.Reservoir)
+            if (area == WorldBuilder.Graveyard || area == WorldBuilder.Ruins || area == WorldBuilder.Frozen || area == WorldBuilder.Channels || area == WorldBuilder.DrownedWorks || area == WorldBuilder.Orchard || area == WorldBuilder.Reservoir || area == WorldBuilder.BuriedWard || area == WorldBuilder.FirstRoot)
                 Dot(texture, shape, AreaLayouts.BossLocal(area), Color.yellow);
             foreach (string group in AreaLayouts.QuestGroups(area))
                 foreach (Vector3 anchor in AreaLayouts.QuestAnchors[group])
@@ -110,6 +110,7 @@ namespace PoeClone.EditorTools
 
         private static Vector3 SpawnLocal(int area)
         {
+            if (area == WorldBuilder.BuriedWard || area == WorldBuilder.FirstRoot) return new Vector3(0, 0, -116);
             if (area == WorldBuilder.Desert) return new Vector3(-135, 0, -126);
             if (area == WorldBuilder.SaltBasin) return new Vector3(0, 0, -128);
             if (area == WorldBuilder.Orchard) return new Vector3(0, 0, -114);
@@ -151,7 +152,7 @@ namespace PoeClone.EditorTools
                 bool placements = shape.Contains(SpawnLocal(area), 2) && shape.Contains(WorldBuilder.WaystoneLocal(area), 3);
                 foreach (Vector3 gate in Gates(area))
                     placements &= shape.Contains(gate, 5);
-                if (area == WorldBuilder.Graveyard || area == WorldBuilder.Ruins || area == WorldBuilder.Frozen || area == WorldBuilder.Channels || area == WorldBuilder.DrownedWorks || area == WorldBuilder.Orchard || area == WorldBuilder.Reservoir)
+                if (area == WorldBuilder.Graveyard || area == WorldBuilder.Ruins || area == WorldBuilder.Frozen || area == WorldBuilder.Channels || area == WorldBuilder.DrownedWorks || area == WorldBuilder.Orchard || area == WorldBuilder.Reservoir || area == WorldBuilder.BuriedWard || area == WorldBuilder.FirstRoot)
                     placements &= shape.Contains(AreaLayouts.BossLocal(area), 12);
                 foreach (string group in AreaLayouts.QuestGroups(area))
                     foreach (Vector3 anchor in AreaLayouts.QuestAnchors[group])

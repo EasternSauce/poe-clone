@@ -1,3 +1,11 @@
+version: 2026-10-11-first-root
+- Continue Act II beyond the restored river: the Reservoir's northeastern maintenance stair leads into The Buried Ward (level 48), then The First Root (level 50). Both dungeons have looping routes, waystones, sheltered arrivals, authored scenery and cave lighting.
+- Eight new monsters fill the descent: cell-binding Ward Gaolers, poisonous Cistern Leeches, Memory Scribes and blinking Drowned Fugitives; heavy Root Goliaths, web-spitting Marrow Ticks, healing Sap Cantors and leaping Grafted Stalkers. Each dungeon changes its enemy mix as you travel deeper.
+- Face Ossan, Warden of the Unremembered, with marked cell bars, tolling waves and summoned witnesses. Beyond his door, the First Root fights with radial veins, a two-stage heart pulse and a grafted brood. Both bosses have distinct bodies, second phases and full boss rewards.
+- Five new main quests uncover the connection between the Shepherd's dead and Ishara's water, recover erased names, defeat Ossan, sever three feeding grafts, destroy the First Root and burn its final tithe knot. Return to Nima to conclude Sahret's drought story and discover a lead toward the Choir of Wells.
+- Two side quests recover family tablets for Sahret's memorial and living orchard seeds from the root nursery. Nine guarded or defended objectives include dialogue, map markers, rewards and saved progress. Earlier quest progress is preserved.
+- Open the river return sluice to drain the lower stair; defeat Ossan to open the root door. Both passages always allow a return journey once reached.
+
 version: 2026-10-11-crownless-court
 - Act II continues from The Thirsting Channels into two new areas: The Orchard of Empty Jars (level 44) on the western track, and The Crownless Reservoir (level 46) along the eastern aqueduct road. Both have waystones and return passages.
 - The orchard has dead planting rows, hanging jars, a ruined village and a cursed well. Rootbound Harvesters spread thorns, Orchard Hounds leap, Jar Swarms attack in packs, and Jar Keepers shatter poisoned jars around you. Mother of the Last Harvest guards the northern well with spreading roots, bitter fruit and summoned brood.

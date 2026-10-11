@@ -100,7 +100,7 @@ namespace PoeClone.Quests
                     Objective = "Open the river return sluice behind Ishara's palace",
                     Offer = "Open the marked river return sluice behind Ishara's palace. Her last priests may try to seal it again. Hold the mechanism until they are defeated, then bring word home.",
                     Reminder = "Open the river return sluice in the northern palace of The Crownless Reservoir and defeat its remaining defenders. Return to Nima in Sahret.",
-                    Thanks = "Water is reaching the city again. For the first time in years, we can plan a harvest. But Ishara's orders name a door beneath the lower city, and the First Root is still there. We will find that door. Today, let Sahret drink.",
+                    Thanks = "Water is reaching the city again. For the first time in years, we can plan a harvest. But Ishara's orders name a door beneath the lower city, and the First Root is still there. The returning river has drained a stair on the Reservoir's northeastern terrace. It may be our way into the buried ward. Let Sahret drink, then follow that stair.",
                     RewardGold = 1000, RewardExperience = 10000, RewardHealthPotions = 5
                 },
                 new QuestDefinition
@@ -137,6 +137,7 @@ namespace PoeClone.Quests
                     RewardGold = 850, RewardExperience = 8500, RewardItem = ItemRarity.Rare, RewardItemLevel = 44
                 }
             });
+            all.AddRange(FirstRootQuests());
             return all.ToArray();
         }
     }

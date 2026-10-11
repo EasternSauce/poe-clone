@@ -34,7 +34,9 @@ namespace PoeClone.Visuals
         SluiceWarden,
         LastEngineer,
         HarvestMother,
-        Ishara
+        Ishara,
+        Ossan,
+        FirstRoot
     }
 
     /// <summary>
@@ -104,6 +106,8 @@ namespace PoeClone.Visuals
                 case CreatureBody.LastEngineer: BuildLastEngineer(model, ctx); break;
                 case CreatureBody.HarvestMother: BuildHarvestMother(model, ctx); break;
                 case CreatureBody.Ishara: BuildIshara(model, ctx); break;
+                case CreatureBody.Ossan: BuildOssan(model, ctx); break;
+                case CreatureBody.FirstRoot: BuildFirstRoot(model, ctx); break;
                 case CreatureBody.Briarbound: BuildBriarbound(model, ctx); break;
                 case CreatureBody.GraveSiren: BuildGraveSiren(model, ctx); break;
                 case CreatureBody.RimeStalker: BuildRimeStalker(model, ctx); break;

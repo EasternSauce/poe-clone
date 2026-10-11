@@ -60,6 +60,8 @@ namespace PoeClone.World
                 case WorldBuilder.Greenwood: track = "Dark Quest"; break;
                 case WorldBuilder.Haven: track = "Adrift on the Currents of Time (Main Menu _ Ambience)"; break;
                 case WorldBuilder.Cave:
+                case WorldBuilder.BuriedWard:
+                case WorldBuilder.FirstRoot:
                 case WorldBuilder.DrownedWorks:
                 case WorldBuilder.Warren: track = "2.Dark Hall"; break;
                 case WorldBuilder.Graveyard:

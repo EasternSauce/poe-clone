@@ -61,7 +61,8 @@ namespace PoeClone.Visuals
 
         private bool IsBossBody => (Body >= CreatureBody.Gravedigger && Body <= CreatureBody.Huntress) ||
             Body == CreatureBody.SluiceWarden || Body == CreatureBody.LastEngineer ||
-            Body == CreatureBody.HarvestMother || Body == CreatureBody.Ishara;
+            Body == CreatureBody.HarvestMother || Body == CreatureBody.Ishara ||
+            Body == CreatureBody.Ossan || Body == CreatureBody.FirstRoot;
 
         private void CaptureBossRest()
         {

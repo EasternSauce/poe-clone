@@ -130,6 +130,8 @@ namespace PoeClone.Enemies
                 case BossStyle.LastEngineer: SetUpLastEngineer(); break;
                 case BossStyle.HarvestMother: SetUpHarvestMother(); break;
                 case BossStyle.Ishara: SetUpIshara(); break;
+                case BossStyle.Ossan: SetUpOssan(); break;
+                case BossStyle.FirstRoot: SetUpFirstRoot(); break;
             }
         }
 
