@@ -27,6 +27,7 @@ namespace PoeClone.UI
         private string version;
         private bool decided;
         private NamePromptUI namePrompt;
+        private LoadingScreenUI loadingScreen;
         public static bool IsShowing { get; private set; }
 
         internal static List<KeyValuePair<string, string>> ParseReleases(string text)
@@ -85,6 +86,15 @@ namespace PoeClone.UI
                 // After the name prompt (which always comes up first, once the page has loaded), so
                 // the two don't fight over the screen.
                 if (namePrompt != null && (!namePrompt.HasConfirmed || namePrompt.IsShowing))
+                    return;
+                // Then until the character has loaded and no loading screen covers the game, so the
+                // notes open over the world rather than over "Loading character..." or an area fade.
+                var session = GameSessionController.Instance;
+                if (session != null && session.Role == SessionRole.Player && !PoeClone.Player.SaveSystem.CharacterLoaded)
+                    return;
+                if (loadingScreen == null)
+                    loadingScreen = FindAnyObjectByType<LoadingScreenUI>();
+                if (loadingScreen != null && loadingScreen.IsShowing)
                     return;
                 decided = true;
                 if (PlayerPrefs.GetString(SeenKey, "") != version)

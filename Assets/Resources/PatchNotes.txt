@@ -1,3 +1,6 @@
+version: 2026-10-11-whats-new-timing
+- The "What's new" window now waits until your character has finished loading, instead of appearing over the loading screen.
+
 version: 2026-10-11-late-quest-rework
 - Lost Supplies now has three different recoveries in the Ashen Ruins: kill the Ember Knights guarding the arrow cache, salvage bandages from a burnt wagon, and hunt down Ashfang, the hound that carried off the lamp oil.
 - The Frozen Gate's sunstones are now lit as a chain, in a set order: the western ruins first, then west of the north gate, then east of it. The next stone glows faintly, and the objective names it. Waking a sunstone no longer summons beetles.
