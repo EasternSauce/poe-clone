@@ -1,3 +1,6 @@
+version: 2026-10-11-character-loading-screen
+- Choosing a character now shows the loading screen before the world starts loading, instead of appearing frozen on character selection.
+
 version: 2026-10-11-search-prompt
 - Clicking the stash's search box (or the passive tree's), or pressing Ctrl+F while it is shown, opens a full-screen search form like the stash tab name form. Type the search and press Enter or Confirm; Cancel keeps the previous search, and confirming an empty search clears it.
 - The X beside a search box is always shown now (dim while there is no search) and clears the search.

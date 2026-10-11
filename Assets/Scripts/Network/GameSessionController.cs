@@ -258,9 +258,8 @@ namespace PoeClone.Network
 
             namePrompt.HideScreens();
             PlayGranted = true;
-            PrepareGameplay();
-            StartCoroutine(LoadChosenCharacter());
             StateChanged?.Invoke();
+            StartCoroutine(LoadChosenCharacter());
             if (!Connected)
                 StartCoroutine(ConnectToServer());
         }
@@ -384,6 +383,12 @@ namespace PoeClone.Network
 
         private IEnumerator LoadChosenCharacter()
         {
+            // Give the loading gate a rendered frame before activating scene roots and
+            // synchronously building the world. Two yields also cover starts from coroutines.
+            yield return null;
+            yield return null;
+            PrepareGameplay();
+
             // Allow the reactivated scene's Start methods to bind stats, gear and skills
             // before applying the character's saved values and bindings.
             yield return null;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using PoeClone.Combat;
@@ -53,15 +54,24 @@ namespace PoeClone.Network
             replica = enemyReplica;
             IsHost = host;
             PartnerName = partnerName;
+            StartCoroutine(PrepareGameplay());
+        }
+
+        private IEnumerator PrepareGameplay()
+        {
+            // Character selection now renders its loading gate before building the world.
+            // Keep the role available for disconnects, but bind scene objects only once ready.
+            while (!session.GameplayReady)
+                yield return null;
             stats = FindAnyObjectByType<PlayerStats>();
             inventory = stats != null ? stats.GetComponent<PlayerInventory>() : null;
 
-            Party.Begin(host);
+            Party.Begin(IsHost);
             partner = gameObject.AddComponent<CoopPartner>();
             if (stats != null)
-                partner.Begin(stats.transform, partnerName);
+                partner.Begin(stats.transform, PartnerName);
 
-            if (host)
+            if (IsHost)
             {
                 Party.EnemyAttacked = SendEnemyAttack;
                 Party.EnemySkillUsed = SendEnemySkill;
@@ -103,7 +113,7 @@ namespace PoeClone.Network
 
         private void LateUpdate()
         {
-            if (session == null || !session.Connected)
+            if (session == null || !session.Connected || partner == null)
                 return;
             UpdateAreaAuthority();
 
