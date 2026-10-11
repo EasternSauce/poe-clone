@@ -133,8 +133,8 @@ namespace PoeClone.UI
                 }
                 else
                 {
-                    sb.Append("<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">  ").Append(q.Objective)
-                        .Append(NpcDialogues.ProgressText(log, q)).Append("</color>");
+                    sb.Append("<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">  ")
+                        .Append(QuestBook.ObjectiveLine(log, q)).Append("</color>");
                 }
             }
 

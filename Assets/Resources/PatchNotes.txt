@@ -1,3 +1,9 @@
+version: 2026-10-11-quest-encounters
+- Quest-object ambushes now count only after all their summoned enemies are defeated. Packs contain 6-8 enemies with quest-specific compositions and tougher defenders in later areas.
+- The Ashen Shrine sends waves every two seconds, with up to 12 living summons. Hold its circle for 30 seconds, then defeat the survivors to break the ward.
+- Quest objectives now show their destination area, including NPC conversations, return trips and active encounters with remaining-enemy counts.
+- Dying or leaving an encounter's area resets only that unfinished encounter and removes its remaining enemies. Reloading restarts unfinished encounters; secured objectives and existing quest progress are preserved.
+
 version: 2026-10-11-item-and-passive-polish
 - Item tooltip section dividers are now centered and one third as long.
 - Recurve, Long and Imperial Bows now use painted bow icons. The old ink bow artwork is no longer used for equipment icons.

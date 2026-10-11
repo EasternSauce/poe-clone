@@ -234,7 +234,7 @@ namespace PoeClone.UI
                     break;
 
                 case QuestState.Active:
-                    text = quest.Reminder + "\n\n<color=" + Dim + ">" + quest.Objective + ProgressText(log, quest) + "</color>";
+                    text = quest.Reminder + "\n\n<color=" + Dim + ">" + QuestBook.ObjectiveLine(log, quest) + "</color>";
                     options.Add(new DialogueOption("Back", () => Main(npc, Greeting(npc.Role))));
                     break;
 
@@ -291,13 +291,6 @@ namespace PoeClone.UI
             if (Done("warlord"))
                 return "Ice. A queen with too many legs, singing to the dead as they pass her by. And behind her, a door.";
             return "Antlers, branching across the whole sky like a dead forest. And under them, a crown of ash on a man who will not fall while his ward stands.";
-        }
-
-        public static string ProgressText(QuestLog log, QuestDefinition quest)
-        {
-            if (quest.Count <= 1)
-                return "";
-            return " (" + log.Progress(quest) + "/" + quest.Count + ")";
         }
 
         private static string RewardSummary(QuestDefinition quest)

@@ -108,8 +108,8 @@ namespace PoeClone.Quests
             {
                 Id = "totems", Story = HollowCall, Title = "Bone Totems", Giver = NpcRole.Elder, After = "woods",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Greenwood, Count = 3,
-                Objective = "Smash the bone totems in the Greenwood",
-                Offer = "Our hunters found something in the woods: totems of lashed bone, humming like a struck bell. The dead gather round them like moths round a lamp.\n\nThere are three that they know of. Smash them. And be ready - whatever the totems call will come running when they break.",
+                Objective = "Smash the bone totems and defeat their summons in the Greenwood",
+                Offer = "Our hunters found something in the woods: totems of lashed bone, humming like a struck bell. The dead gather round them like moths round a lamp.\n\nThere are three that they know of. Smash them. And be ready - whatever the totems call will come running when they break. Defeat the whole pack before you move on.",
                 Reminder = "Three bone totems in the Greenwood. Your map will show where the hunters saw them.",
                 Thanks = "Antlers. Carved into every shard you brought back... Forgive me. My grandmother told a story about antlers, and the dead. It was only a story.\n\nIt was only a story.",
                 RewardGold = 90, RewardExperience = 260, RewardHealthPotions = 1
@@ -140,8 +140,8 @@ namespace PoeClone.Quests
             {
                 Id = "relics", Story = Gravelord, Title = "Bones of the Gravelord", Giver = NpcRole.Gravekeeper, After = "graves",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Graveyard, Count = 3,
-                Objective = "Break Mortis's reliquaries in the graveyard",
-                Offer = "I know who's raising them. Mortis - a priest, once, buried in the crypt with honours. He's awake, and he can't be put down for good while his bones are kept.\n\nHe had them split between three reliquaries, the vain old goat, so death could never find all of him. Break all three. His dead guard them.",
+                Objective = "Break Mortis's reliquaries and defeat their guardians in the Haunted Graveyard",
+                Offer = "I know who's raising them. Mortis - a priest, once, buried in the crypt with honours. He's awake, and he can't be put down for good while his bones are kept.\n\nHe had them split between three reliquaries, the vain old goat, so death could never find all of him. Break all three. His dead guard them; destroy every guardian each reliquary calls up.",
                 Reminder = "Three reliquaries, spread round the graveyard. Break them, then Mortis can die like anyone else.",
                 Thanks = "All three? Then he's mortal again, or near enough. I heard him howl when the last one broke.",
                 RewardGold = 140, RewardExperience = 500, RewardHealthPotions = 2
@@ -195,8 +195,8 @@ namespace PoeClone.Quests
             {
                 Id = "supplies", Story = EmbersOfWar, Title = "Lost Supplies", Giver = NpcRole.Commander, After = "hold",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Ruins, Count = 3,
-                Objective = "Recover the Emberwatch supply caches",
-                Offer = "When we marched in, we cached supplies along the road - and then the hounds ran us off it. Three caches: arrows, bandages, lamp oil. We need all three.\n\nThe hounds will have smelled them by now. Don't linger.",
+                Objective = "Secure the Emberwatch caches and defeat their attackers",
+                Offer = "When we marched in, we cached supplies along the road - and then the hounds ran us off it. Three caches: arrows, bandages, lamp oil. We need all three.\n\nThe hounds will have smelled them by now. Expect a pack and its handlers at each cache. Clear them before you carry the supplies back.",
                 Reminder = "Three supply caches, marked with our red cloth. Out in the ruins.",
                 Thanks = "Oil and arrows - we can hold another month. Take what you need from the bandages.",
                 RewardGold = 220, RewardExperience = 900, RewardHealthPotions = 3
@@ -215,9 +215,9 @@ namespace PoeClone.Quests
             {
                 Id = "rite", Story = EmbersOfWar, Title = "Breaking the Ward", Giver = NpcRole.Seer, After = "seer",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Ruins, Count = 1,
-                Objective = "Hold the rite at the Ashen Shrine",
-                Offer = "The Warlord drinks his strength from the old shrine west of the temple, where the city burned its dead. A ward of ash. While it stands, he cannot fall.\n\nI can break it, but the rite takes time, and every dead thing in the ruins will feel it. Begin the rite in the shrine's circle and stay inside it until the fire turns white. If you leave the circle, it fails.",
-                Reminder = "Go to the Ashen Shrine, west of the temple, and begin the rite. Stay in the circle until it's done.",
+                Objective = "Hold the rite at the Ashen Shrine, then clear its summons",
+                Offer = "The Warlord drinks his strength from the old shrine west of the temple, where the city burned its dead. A ward of ash. While it stands, he cannot fall.\n\nI can break it, but the rite takes time, and every dead thing in the ruins will feel it. Begin the rite in the shrine's circle and stay inside it until the fire turns white. The waves will come quickly. If you leave the circle, it fails. Once the fire turns white, kill every survivor to finish breaking the ward.",
+                Reminder = "Go to the Ashen Shrine, west of the temple in the Ashen Ruins, and begin the rite. Hold the circle for thirty seconds, then clear every remaining enemy.",
                 Thanks = "I felt it break from here - like a bone snapping. He is only a man in armour now. Well. A very large man in armour.",
                 RewardGold = 250, RewardExperience = 1200, RewardItem = ItemRarity.Magic, RewardItemLevel = 7
             },
@@ -238,9 +238,9 @@ namespace PoeClone.Quests
             {
                 Id = "sunstones", Story = FrozenSeal, Title = "The Frozen Gate", Giver = NpcRole.Seer, After = "warlord",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Ruins, Count = 3,
-                Objective = "Wake the three sunstones in the ruins",
+                Objective = "Wake the three sunstones and defeat their summons",
                 Offer = "The Warlord was a door-ward. Now he's gone, I can see what he was guarding: the north gate. It's sealed under ice that no fire of ours will melt - the Frost Queen's work.\n\nBut the old city had its own fire. Three sunstones still stand in the north of the ruins, cold for three hundred years. Wake them, and they will burn the gate open.",
-                Reminder = "Three sunstones, north of the temple. Lay your hand on each and wake it.",
+                Reminder = "Three sunstones, north of the temple. Lay your hand on each and wake it, then defeat everything drawn to its fire.",
                 Thanks = "The ice is gone. I heard it crack from here.\n\nAnd I heard something else, under it. Breathing.",
                 RewardGold = 300, RewardExperience = 1500, RewardHealthPotions = 2
             },
@@ -248,9 +248,9 @@ namespace PoeClone.Quests
             {
                 Id = "scouts", Story = FrozenSeal, Title = "Lost in the Snow", Giver = NpcRole.Seer, After = "sunstones",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Frozen, Count = 3,
-                Objective = "Find the lost Emberwatch scouts in the Frozen Hollow",
+                Objective = "Recover the scouts' journals and defeat their attackers in the Frozen Hollow",
                 Offer = "Before the ice closed, Varek sent three scouts north. None came back. I don't need the fire to tell me they're dead.\n\nFind them. They kept journals - every Emberwatch scout does. Whatever they saw in the Hollow, I need to know it before you face what lives there.",
-                Reminder = "Three scouts, somewhere in the Frozen Hollow, beyond the north gate. Bring back their journals.",
+                Reminder = "Three scouts, somewhere in the Frozen Hollow, beyond the north gate. Bring back their journals. The Hollow's hunters will come for you when you disturb the bodies; defeat them before moving on.",
                 Thanks = "\"Spiders the size of carts.\" \"A queen on a throne of ice.\" \"A door, north of the throne, taller than a house, with antlers cut into the stone.\"\n\nThe Shepherd's door. She is not its queen. She is its doorkeeper.",
                 RewardGold = 350, RewardExperience = 1800, RewardItem = ItemRarity.Rare, RewardItemLevel = 10
             },
@@ -302,8 +302,8 @@ namespace PoeClone.Quests
             {
                 Id = "patrol", Story = LostPatrol, Title = "The Lost Patrol", Giver = NpcRole.Guard,
                 Goal = QuestGoal.Use, Area = WorldBuilder.Greenwood, Count = 3,
-                Objective = "Find the fallen scouts in the Greenwood",
-                Offer = "Three of my scouts went into the Greenwood five days ago. Good lads, all of them. They didn't come back.\n\nI can't leave the gate. Find them - and if they're dead, bring me their badges. Their families should have something to bury.",
+                Objective = "Recover the fallen scouts' badges and defeat the wolves in the Greenwood",
+                Offer = "Three of my scouts went into the Greenwood five days ago. Good lads, all of them. They didn't come back.\n\nI can't leave the gate. Find them - and if they're dead, bring me their badges. Their families should have something to bury. Wolves are feeding there - clear each pack before moving on.",
                 Reminder = "Three scouts, somewhere in the Greenwood. Bring back their badges.",
                 Thanks = "All three. Damn it.\n\nRaider arrows in them, you say. Not the dead - raiders. Living men did this.",
                 RewardGold = 80, RewardExperience = 220
@@ -311,7 +311,7 @@ namespace PoeClone.Quests
             new QuestDefinition
             {
                 Id = "avenge", Story = LostPatrol, Title = "Blood for Blood", Giver = NpcRole.Guard, After = "patrol",
-                Goal = QuestGoal.KillKind, Target = "Raider", Count = 10,
+                Goal = QuestGoal.KillKind, Target = "Raider", Area = WorldBuilder.Greenwood, Count = 10,
                 Objective = "Slay Raiders",
                 Offer = "The raiders who shot my scouts are still out there, picking over the woods while the dead do their work for them. Ten of them. That's the price.",
                 Reminder = "Ten raiders. They roam the Greenwood.",
@@ -334,8 +334,8 @@ namespace PoeClone.Quests
             {
                 Id = "caravan", Story = LostCaravan, Title = "The Lost Caravan", Giver = NpcRole.Merchant, After = "keeper",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Graveyard, Count = 3,
-                Objective = "Recover Oda's crates from the graveyard",
-                Offer = "My last caravan took the old road through the graveyard. The drivers ran when the dead came - can't blame them - but they left my crates behind. Three of them, painted green, with my mark.\n\nBring back what's in them and I'll pay you a cut. A generous cut. For me.",
+                Objective = "Secure Oda's crates and defeat their attackers in the Haunted Graveyard",
+                Offer = "My last caravan took the old road through the graveyard. The drivers ran when the dead came - can't blame them - but they left my crates behind. Three of them, painted green, with my mark.\n\nClear whatever gathers when you open each crate, then bring back what's in them and I'll pay you a cut. A generous cut. For me.",
                 Reminder = "Three green crates, somewhere along the graveyard roads.",
                 Thanks = "Not even opened! Ha! Here's your cut, as promised - and don't tell Bram I can be generous.",
                 RewardGold = 220, RewardExperience = 400, RewardHealthPotions = 2
@@ -363,6 +363,40 @@ namespace PoeClone.Quests
             return null;
         }
 
+        /// <summary>Destination shared by the tracker, dialogue and encounter stages.</summary>
+        public static string Location(QuestDefinition quest)
+        {
+            if (quest.Goal == QuestGoal.Talk)
+                return Whereabouts(quest.TalkTo);
+            return quest.Area >= 0 && quest.Area < WorldBuilder.AreaNames.Length
+                ? "in " + WorldBuilder.AreaNames[quest.Area] : "in any combat area";
+        }
+
+        public static string ObjectiveLine(QuestLog log, QuestDefinition quest)
+        {
+            string encounter = log.EncounterObjective(quest);
+            if (!string.IsNullOrEmpty(encounter)) return encounter;
+            string objective = quest.Objective;
+            string location = Location(quest);
+            // Existing authored objectives often already name their destination area.
+            int destination = quest.Goal == QuestGoal.Talk ? NpcArea(quest.TalkTo) : quest.Area;
+            string area = destination >= 0 && destination < WorldBuilder.AreaNames.Length ? WorldBuilder.AreaNames[destination] : null;
+            if (area == null || objective.IndexOf(area, System.StringComparison.OrdinalIgnoreCase) < 0)
+                objective += " - " + location;
+            return objective + (quest.Count > 1 ? " (" + log.Progress(quest) + "/" + quest.Count + ")" : "");
+        }
+
+        private static int NpcArea(NpcRole role)
+        {
+            switch (role)
+            {
+                case NpcRole.Gravekeeper: return WorldBuilder.Graveyard;
+                case NpcRole.Commander:
+                case NpcRole.Seer: return WorldBuilder.Ruins;
+                default: return WorldBuilder.Haven;
+            }
+        }
+
         /// <summary>Where someone is found, for "Return to ..." lines.</summary>
         public static string Whereabouts(NpcRole role)
         {
@@ -372,7 +406,7 @@ namespace PoeClone.Quests
                     return "in the Haunted Graveyard";
                 case NpcRole.Commander:
                 case NpcRole.Seer:
-                    return "at the Emberwatch camp";
+                    return "at the Emberwatch camp in the Ashen Ruins";
                 default:
                     return "in Haven";
             }

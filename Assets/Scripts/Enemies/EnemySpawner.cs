@@ -190,7 +190,8 @@ namespace PoeClone.Enemies
         /// A quest ambush: this many of a kind (by name) round a spot, already hunting the player.
         /// They don't come back once killed (their spots aren't refilled).
         /// </summary>
-        public void SpawnAmbush(Vector3 near, string kindName, int count, float minRadius = 5f, float maxRadius = 9f)
+        public void SpawnAmbush(Vector3 near, string kindName, int count, float minRadius = 5f, float maxRadius = 9f,
+            List<EnemyHealth> spawned = null)
         {
             int kindIndex = EnemyKinds.IndexOf(kindName);
             if (kindIndex < 0 || enemyPrefab == null)
@@ -206,6 +207,13 @@ namespace PoeClone.Enemies
                         Physics.CheckSphere(candidate + Vector3.up * 0.5f, clearanceRadius))
                         continue;
                     GameObject enemy = Spawn(candidate, kindIndex, refills: false);
+                    EnemyHealth health = enemy.GetComponent<EnemyHealth>();
+                    if (health == null)
+                    {
+                        Destroy(enemy);
+                        continue;
+                    }
+                    spawned?.Add(health);
                     EnemyController ai = enemy.GetComponent<EnemyController>();
                     if (ai != null)
                         ai.Alert();

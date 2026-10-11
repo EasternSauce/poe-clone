@@ -26,6 +26,8 @@ namespace PoeClone.Quests
         private readonly Dictionary<string, int> active = new Dictionary<string, int>(); // id -> progress
         private readonly HashSet<int> visited = new HashSet<int>();
         private readonly HashSet<string> usedProps = new HashSet<string>(); // QuestProp ids already smashed/lit/taken
+        // Encounters are temporary: only their successfully cleared props are exported to saves.
+        private readonly Dictionary<string, string> encounterObjectives = new Dictionary<string, string>();
 
         private PlayerStats stats;
         private AreaManager areas;
@@ -140,6 +142,29 @@ namespace PoeClone.Quests
         public bool PropUsed(string propId)
         {
             return usedProps.Contains(propId);
+        }
+
+        public void SetEncounterObjective(string propId, string objective)
+        {
+            if (objective == null)
+            {
+                if (!encounterObjectives.Remove(propId)) return;
+            }
+            else
+            {
+                if (encounterObjectives.TryGetValue(propId, out string previous) && previous == objective) return;
+                encounterObjectives[propId] = objective;
+            }
+            Changed?.Invoke();
+        }
+
+        public string EncounterObjective(QuestDefinition quest)
+        {
+            var lines = new List<string>();
+            foreach (var pair in encounterObjectives)
+                if (pair.Key.StartsWith(quest.Id + "#", StringComparison.Ordinal))
+                    lines.Add(pair.Value);
+            return string.Join("\n  ", lines);
         }
 
         public int Progress(QuestDefinition quest)
@@ -350,7 +375,7 @@ namespace PoeClone.Quests
         {
             Npc giver = Npc.Find(quest.ReturnTo);
             string who = giver != null ? giver.DisplayName : quest.ReturnTo.ToString();
-            CombatText.Show(transform.position + Vector3.up * 2.4f, quest.Title + " complete - return to " + who,
+            CombatText.Show(transform.position + Vector3.up * 2.4f, quest.Title + " complete - return to " + who + " " + QuestBook.Whereabouts(quest.ReturnTo),
                 new Color(1f, 0.85f, 0.35f), 0.9f);
             if (Audio.AudioManager.Instance != null)
                 Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.playerLevelUp);

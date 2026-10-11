@@ -366,7 +366,7 @@ namespace PoeClone.World
             QuestProp prop = QuestProp.Attach(site.gameObject, "totems", index, PropAction.Smash, "Bone Totem",
                 "A pole of lashed grave-bone, taller than a man, crowned with a skull and a pair of carved antlers. It hums, low, like a bell that won't stop ringing. Every dead thing nearby has turned to face it.",
                 "Smash the totem", "The totem shatters - the dead come running!", 3.6f,
-                new[] { "Zombie", "Zombie", "Raider" }, 3);
+                new[] { "Zombie", "Zombie", "Zombie", "Skeleton", "Skeleton", "Archer" }, 6);
             prop.SetLooks(whole.gameObject, spent.gameObject, null);
         }
 
@@ -382,7 +382,7 @@ namespace PoeClone.World
             QuestProp prop = QuestProp.Attach(site.gameObject, "patrol", index, PropAction.Take, "Fallen Scout",
                 "One of Hale's scouts, " + name + ", face down in the leaves. Three raider arrows in his back; he never saw them. His sword is still sheathed.\n\nThe watch badge is still pinned to his coat.",
                 "Take " + name + "'s badge", name + "'s badge taken... wolves!", 1.6f,
-                new[] { "Dire Wolf" }, 2);
+                new[] { "Dire Wolf" }, 6);
             prop.SetLooks(badge.gameObject, null, null);
         }
 
@@ -422,7 +422,7 @@ namespace PoeClone.World
             QuestProp prop = QuestProp.Attach(site.gameObject, "relics", index, PropAction.Smash, "Reliquary of Mortis",
                 "A stone casket on a plinth, sealed with gold. Through a crack you can see bones wrapped in purple silk - part of the Gravelord, kept safe from death. The candles around it never burn down.",
                 "Break the reliquary", "The reliquary breaks - its guardians rise!", 2.3f,
-                new[] { "Skeleton", "Skeleton", "Skeleton Archer" }, 4);
+                new[] { "Bone Warden", "Skeleton", "Skeleton Archer", "Skeleton", "Bone Reaver", "Skeleton Archer", "Skeleton", "Skeleton" }, 8);
             prop.SetLooks(whole.gameObject, spent.gameObject, null);
         }
 
@@ -440,7 +440,7 @@ namespace PoeClone.World
             QuestProp prop = QuestProp.Attach(site.gameObject, "caravan", index, PropAction.Take, "Oda's Crate",
                 "A crate painted green, stencilled with Oda's mark: a coin with a smile. The lid is nailed down tight - the dead have no use for silk and spices.",
                 "Pry it open and take the goods", "Goods taken - something stirs in the dark!", 1.6f,
-                new[] { "Grave Bat", "Grave Bat", "Corpse Ooze" }, 3);
+                new[] { "Grave Bat", "Crypt Spider", "Grave Bat", "Bone Reaver", "Crypt Spider", "Grave Bat", "Crypt Spider", "Grave Bat" }, 8);
             prop.SetLooks(goods.gameObject, null, null);
         }
 
@@ -460,7 +460,7 @@ namespace PoeClone.World
             QuestProp prop = QuestProp.Attach(site.gameObject, "supplies", index, PropAction.Take, "Emberwatch Cache",
                 "Crates under a red cloth - the Emberwatch's colour - half buried in ash. Paw prints all round them, the size of your hand, and scorch marks where the hounds breathed on the wood.",
                 "Gather the supplies", "Supplies gathered - hounds!", 1.6f,
-                new[] { "Hellhound" }, 3);
+                new[] { "Hellhound", "Ember Knight", "Hellhound", "Fire Caster", "Hellhound", "Ember Knight", "Hellhound", "Fire Caster" }, 8);
             prop.SetLooks(whole.gameObject, spent.gameObject, null);
         }
 
@@ -487,7 +487,7 @@ namespace PoeClone.World
             QuestProp prop = QuestProp.Attach(site.gameObject, "rite", 0, PropAction.Rite, "Ashen Shrine",
                 "A ring of embers that never cool, round a stone bowl full of grey ash. The ash is warm. It shifts, slowly, as if something under it were breathing.\n\nYsolde's words come back to you: begin the rite, and do not leave the circle until the fire turns white.",
                 "Begin the rite", "The ward is broken!", 2.4f,
-                new[] { "Ember Knight", "Fire Caster", "Hellhound", "Raider" }, 0);
+                new[] { "Ember Knight", "Hellhound", "Fire Caster", "Hellhound", "Ember Knight", "Magma Beetle" }, 0);
             prop.SetLooks(null, null, glow);
         }
 
@@ -507,7 +507,7 @@ namespace PoeClone.World
             QuestProp prop = QuestProp.Attach(site.gameObject, "sunstones", index, PropAction.Light, "Sunstone",
                 "A sandstone pillar topped with a black stone sphere. Old sun-signs are carved round the base. Lay your palm on the sphere: it is cold as the grave - but deep inside, something answers, like an ember under ash.",
                 "Wake the sunstone", "The sunstone blazes - and the fire draws beetles!", 4.2f,
-                new[] { "Magma Beetle" }, 2);
+                new[] { "Magma Beetle", "Magma Beetle", "Fire Caster", "Magma Beetle", "Ember Knight", "Magma Beetle" }, 6);
             prop.SetLooks(cold.gameObject, lit.gameObject, glow);
         }
 
@@ -556,7 +556,7 @@ namespace PoeClone.World
             QuestProp prop = QuestProp.Attach(site.gameObject, "scouts", index, PropAction.Take, "Frozen Scout",
                 "An Emberwatch scout, frozen into the snow, red cloak gone white with frost. A journal lies by one hand. The last page reads:\n\n<i>" + journal + "</i>",
                 "Take the journal", "Journal taken - the cold stirs!", 1.6f,
-                new[] { "Frost Wolf", "Ice Crawler" }, 2);
+                new[] { "Frost Wolf", "Ice Crawler", "Frost Wolf", "Rime Stalker", "Frost Wolf", "Frost Caster", "Ice Crawler", "Frost Wolf" }, 8);
             prop.SetLooks(book.gameObject, null, null);
         }
 
