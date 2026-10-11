@@ -59,7 +59,8 @@ namespace PoeClone.Visuals
 
         private float ActProgress => act == BossAct.None ? 0f : Mathf.Clamp01((Time.time - actStart) / Mathf.Max(0.01f, actEnd - actStart));
 
-        private bool IsBossBody => Body >= CreatureBody.Gravedigger && Body <= CreatureBody.Huntress;
+        private bool IsBossBody => (Body >= CreatureBody.Gravedigger && Body <= CreatureBody.Huntress) ||
+            Body == CreatureBody.SluiceWarden || Body == CreatureBody.LastEngineer;
 
         private void CaptureBossRest()
         {

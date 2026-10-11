@@ -25,14 +25,16 @@ namespace PoeClone.World
         public const int Desert = 9;
         public const int Sahret = 10;
         public const int SaltBasin = 11;
-        public static bool IsActTwo(int area) => area == Desert || area == Sahret || area == SaltBasin;
-        public static readonly int[] WorldAreas = { Greenwood, Haven, Graveyard, Ruins, Frozen, Cave, Desert, Sahret, SaltBasin };
+        public const int Channels = 12;
+        public const int DrownedWorks = 13;
+        public static bool IsActTwo(int area) => area >= Desert && area <= DrownedWorks;
+        public static readonly int[] WorldAreas = { Greenwood, Haven, Graveyard, Ruins, Frozen, Cave, Desert, Sahret, SaltBasin, Channels, DrownedWorks };
 
         public static WorldBuilder Instance { get; private set; }
 
         public static readonly string[] AreaNames = { "Greenwood", "Haven", "Haunted Graveyard", "Ashen Ruins", "Frozen Hollow", "The Shed Sanctuary", "The Lost Hollows",
-            "The Warren", "The Drowned Belfry", "The Sundered Expanse", "Sahret, the Sunken City", "The Bleached Basin" };
-        public static readonly int[] MonsterLevels = { 1, 0, 17, 25, 34, 37, 9, 9, 17, 38, 0, 40 };
+            "The Warren", "The Drowned Belfry", "The Sundered Expanse", "Sahret, the Sunken City", "The Bleached Basin", "The Thirsting Channels", "The Drowned Works" };
+        public static readonly int[] MonsterLevels = { 1, 0, 17, 25, 34, 37, 9, 9, 17, 38, 0, 40, 42, 42 };
 
         private static readonly Vector3[] Centers =
         {
@@ -48,7 +50,9 @@ namespace PoeClone.World
             new Vector3(1260f, 0f, -420f),
             new Vector3(2200f, 0f, 0f),
             new Vector3(2720f, 0f, 0f),
-            new Vector3(3240f, 0f, 0f)
+            new Vector3(3240f, 0f, 0f),
+            new Vector3(3760f, 0f, 0f),
+            new Vector3(3240f, 0f, -520f)
         };
 
         /// <summary>The colour that stands for an area (gate panels, its minimap ground).</summary>
@@ -70,7 +74,9 @@ namespace PoeClone.World
             new Color(0.38f, 0.44f, 0.46f),
             new Color(0.87f, 0.66f, 0.36f),
             new Color(0.78f, 0.64f, 0.45f),
-            new Color(0.85f, 0.83f, 0.70f)
+            new Color(0.85f, 0.83f, 0.70f),
+            new Color(0.70f, 0.39f, 0.26f),
+            new Color(0.28f, 0.45f, 0.43f)
         };
 
         // Explicit native rosters for opening spawns and respawns. Named entries keep additions
@@ -98,7 +104,11 @@ namespace PoeClone.World
                 ("Dustroad Reaver", 20f), ("Dustroad Javelineer", 17f), ("Ashwind Caller", 8f)),
             Roster(),
             Roster(("Saltback Crab", 30f), ("Brine Spitter", 24f), ("Saltbound Dredger", 28f),
-                ("Glassback Scorpion", 10f), ("Sandlurker", 8f))
+                ("Glassback Scorpion", 10f), ("Sandlurker", 8f)),
+            Roster(("Channel Reaver", 30f), ("Clay Bearer", 24f), ("Sandlurker", 16f),
+                ("Dustroad Javelineer", 22f), ("Ashwind Caller", 8f)),
+            Roster(("Drowned Mechanic", 32f), ("Brine Spitter", 24f), ("Saltback Crab", 18f),
+                ("Corpse Ooze", 16f), ("Clay Bearer", 10f))
         };
 
         private static float[] Roster(params (string name, float weight)[] entries)
@@ -231,6 +241,10 @@ namespace PoeClone.World
             yield return null;
             BuildSaltBasin();
             yield return null;
+            BuildThirstingChannels();
+            yield return null;
+            BuildDrownedWorks();
+            yield return null;
             BuildGlowshrooms();
             BuildGreenwoodOutskirts();
             yield return null;
@@ -346,6 +360,11 @@ namespace PoeClone.World
         {
             switch (area)
             {
+                case Channels:
+                    return GroundTextures.Make(121, new Color(0.38f, 0.22f, 0.15f), new Color(0.73f, 0.47f, 0.29f),
+                        new Color(0.85f, 0.66f, 0.43f), 0.008f, 6f, grain: 0.04f);
+                case DrownedWorks:
+                    return GroundTextures.Flagstones(131, new Color(0.25f, 0.32f, 0.29f), new Color(0.07f, 0.12f, 0.11f), 6);
                 case SaltBasin:
                     return GroundTextures.Make(112, new Color(0.64f, 0.61f, 0.49f), new Color(0.92f, 0.90f, 0.78f),
                         new Color(1f, 0.98f, 0.90f), 0.015f, 9f, grain: 0.045f);
@@ -800,7 +819,7 @@ namespace PoeClone.World
             original.SetBounds(p => greenwood.Contains(p, 3f));
             spawnersByArea[Greenwood] = original;
 
-            foreach (int area in new[] { Graveyard, Ruins, Frozen, Cave, SaltBasin })
+            foreach (int area in new[] { Graveyard, Ruins, Frozen, Cave, SaltBasin, Channels, DrownedWorks })
             {
                 var go = new GameObject("Spawner_" + AreaNames[area]);
                 go.transform.SetParent(root, false);
@@ -864,6 +883,10 @@ namespace PoeClone.World
                 spawner.EnemyPrefab, Center(SaltBasin) + BasinMatriarchLocal, Vector3.back);
             BossLair.Create(t, SaltBasin, BossIndex("Namar, Keeper of the Dry Well"), MonsterLevels[SaltBasin],
                 spawner.EnemyPrefab, Center(SaltBasin) + BasinKeeperLocal, Vector3.back);
+            BossLair.Create(t, Channels, BossIndex("The Sluice Warden"), MonsterLevels[Channels],
+                spawner.EnemyPrefab, Center(Channels) + ChannelWardenLocal, Vector3.back);
+            BossLair.Create(t, DrownedWorks, BossIndex("The Last Engineer"), MonsterLevels[DrownedWorks],
+                spawner.EnemyPrefab, Center(DrownedWorks) + WorksEngineerLocal, Vector3.back);
         }
 
         private static int BossIndex(string name)
@@ -937,6 +960,8 @@ namespace PoeClone.World
                 spots.Add(Center(area) + BasinMatriarchLocal);
                 spots.Add(Center(area) + BasinKeeperLocal);
             }
+            if (area == Channels) spots.Add(Center(area) + ChannelWardenLocal);
+            if (area == DrownedWorks) spots.Add(Center(area) + WorksEngineerLocal);
             // Quest props shouldn't have a monster standing on them when the player gets there.
             Transform sites = root.Find("QuestSites");
             if (sites != null)
@@ -1284,6 +1309,8 @@ namespace PoeClone.World
         {
             if (area == Desert) return new Vector3(-76f, 0f, -76f);
             if (area == SaltBasin) return new Vector3(-9f, 0f, -108f);
+            if (area == Channels) return new Vector3(-106f, 0f, -93f);
+            if (area == DrownedWorks) return new Vector3(0f, 0f, -112f);
             return new Vector3(0f, 0f, area == Haven ? -8f : -11f);
         }
 

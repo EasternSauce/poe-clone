@@ -44,6 +44,7 @@ namespace PoeClone.World
             Bed(WorldBuilder.Ruins, library.lava);
             Bed(WorldBuilder.Frozen, library.blizzard);
             Bed(WorldBuilder.Cave, library.cave);
+            Bed(WorldBuilder.DrownedWorks, library.dungeon);
             Bed(WorldBuilder.ActArena, library.dungeon);
             Bed(WorldBuilder.Warren, library.cave);
             Bed(WorldBuilder.Belfry, library.night);
@@ -71,9 +72,9 @@ namespace PoeClone.World
                 }
             }
 
-            foreach (int area in new[] { WorldBuilder.Greenwood, WorldBuilder.Graveyard, WorldBuilder.Ruins, WorldBuilder.Frozen, WorldBuilder.Desert, WorldBuilder.Sahret, WorldBuilder.SaltBasin })
+            foreach (int area in new[] { WorldBuilder.Greenwood, WorldBuilder.Graveyard, WorldBuilder.Ruins, WorldBuilder.Frozen, WorldBuilder.Desert, WorldBuilder.Sahret, WorldBuilder.SaltBasin, WorldBuilder.Channels })
                 Occasional(area, new[] { library.gust }, 24, 55, p => 1);
-            foreach (int area in new[] { WorldBuilder.Cave, WorldBuilder.ActArena, WorldBuilder.Warren })
+            foreach (int area in new[] { WorldBuilder.Cave, WorldBuilder.ActArena, WorldBuilder.Warren, WorldBuilder.DrownedWorks })
                 Occasional(area, library.stones, 16, 38, p => 1);
             Occasional(WorldBuilder.Belfry, new[] { library.gust }, 24, 55, p => 1);
 

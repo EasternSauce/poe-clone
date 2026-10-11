@@ -126,6 +126,8 @@ namespace PoeClone.Enemies
                 case BossStyle.Huntress: SetUpHrimgar(); break;
                 case BossStyle.SaltMatriarch: SetUpSaltMatriarch(); break;
                 case BossStyle.DryWellKeeper: SetUpDryWellKeeper(); break;
+                case BossStyle.SluiceWarden: SetUpSluiceWarden(); break;
+                case BossStyle.LastEngineer: SetUpLastEngineer(); break;
             }
         }
 

@@ -30,7 +30,9 @@ namespace PoeClone.Visuals
         Scorpion,
         Sandlurker,
         SaltCrab,
-        BrineSpitter
+        BrineSpitter,
+        SluiceWarden,
+        LastEngineer
     }
 
     /// <summary>
@@ -96,6 +98,8 @@ namespace PoeClone.Visuals
                 case CreatureBody.Sandlurker: BuildSandlurker(model, ctx); break;
                 case CreatureBody.SaltCrab: BuildSaltCrab(model, ctx, false); break;
                 case CreatureBody.BrineSpitter: BuildSaltCrab(model, ctx, true); break;
+                case CreatureBody.SluiceWarden: BuildSluiceWarden(model, ctx); break;
+                case CreatureBody.LastEngineer: BuildLastEngineer(model, ctx); break;
                 case CreatureBody.Briarbound: BuildBriarbound(model, ctx); break;
                 case CreatureBody.GraveSiren: BuildGraveSiren(model, ctx); break;
                 case CreatureBody.RimeStalker: BuildRimeStalker(model, ctx); break;

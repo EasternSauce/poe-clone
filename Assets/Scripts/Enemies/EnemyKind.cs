@@ -60,7 +60,9 @@ namespace PoeClone.Enemies
         SunIdol,     // a statue that barely moves: sweeping sunbeams, stone hands, sinks and rises elsewhere
         Huntress,    // Hrimgar: spear throws, nets, pounces, a pack of frost wolves
         SaltMatriarch,
-        DryWellKeeper
+        DryWellKeeper,
+        SluiceWarden,
+        LastEngineer
     }
 
     /// <summary>
@@ -887,6 +889,53 @@ namespace PoeClone.Enemies
                 Cloth = new Color(0.14f, 0.35f, 0.38f), Pants = new Color(0.34f, 0.27f, 0.19f),
                 Skin = new Color(0.88f, 0.84f, 0.70f), Eyes = new Color(0.55f, 0.98f, 0.90f),
                 StaffOrb = new Color(0.63f, 0.88f, 0.80f), DropChance = 1, RareBonus = 0.45f, Drops = 4
+            },
+            new EnemyKind
+            {
+                Name = "Channel Reaver", SpawnWeight = 0, MaxHealth = 55, Armour = 65, Experience = 65,
+                Damage = 25, DamageType = DamageType.Physical, AttackRange = 2.4f, AttackCooldown = 1.8f,
+                SpeedRatio = 0.86f, HideHorns = true, Weapon = WeaponType.Sword, Gear = new[] { "rusty_sword" },
+                Skin = new Color(0.57f, 0.36f, 0.23f), Cloth = new Color(0.42f, 0.14f, 0.09f),
+                Pants = new Color(0.25f, 0.20f, 0.14f), Skill = EnemySkill.Charge, SkillCooldown = 8, DropChance = 0.55f
+            },
+            new EnemyKind
+            {
+                Name = "Clay Bearer", SpawnWeight = 0, MaxHealth = 65, Armour = 100, Experience = 68,
+                Damage = 26, DamageType = DamageType.Physical, AttackRange = 2.6f, AttackCooldown = 2.3f,
+                SpeedRatio = 0.52f, Scale = 1.25f, HideHorns = true,
+                Skin = new Color(0.70f, 0.43f, 0.27f), Cloth = new Color(0.58f, 0.34f, 0.20f),
+                Pants = new Color(0.39f, 0.25f, 0.17f), Eyes = new Color(0.45f, 0.85f, 0.82f),
+                Skill = EnemySkill.Slam, SkillCooldown = 8, DropChance = 0.55f
+            },
+            new EnemyKind
+            {
+                Name = "Drowned Mechanic", SpawnWeight = 0, MaxHealth = 54, Armour = 70, Experience = 64,
+                Damage = 24, DamageType = DamageType.Physical, AttackRange = 2.5f, AttackCooldown = 2,
+                SpeedRatio = 0.63f, HideHorns = true, Skeletal = true, Undead = true,
+                Skin = new Color(0.67f, 0.76f, 0.65f), Cloth = new Color(0.16f, 0.33f, 0.31f),
+                Pants = new Color(0.27f, 0.22f, 0.17f), Eyes = new Color(0.5f, 0.95f, 0.85f),
+                Gear = new[] { "iron_mace" }, Weapon = WeaponType.Mace,
+                Skill = EnemySkill.DredgeFault, SkillCooldown = 8, DropChance = 0.55f
+            },
+            new EnemyKind
+            {
+                Name = "The Sluice Warden", SpawnWeight = 0, IsBoss = true, Boss = BossStyle.SluiceWarden,
+                MaxHealth = 65, HealthMultiplier = 20, Armour = 125, Experience = 520,
+                Damage = 27, DamageType = DamageType.Physical, AttackRange = 3.5f, AttackCooldown = 2.2f,
+                SpeedRatio = 0.48f, Scale = 1.6f, Body = CreatureBody.SluiceWarden,
+                Skin = new Color(0.42f, 0.23f, 0.16f), Cloth = new Color(0.19f, 0.39f, 0.37f),
+                Pants = new Color(0.68f, 0.47f, 0.28f), Eyes = new Color(0.4f, 0.95f, 0.88f),
+                DropChance = 1, RareBonus = 0.45f, Drops = 4
+            },
+            new EnemyKind
+            {
+                Name = "The Last Engineer", SpawnWeight = 0, IsBoss = true, Boss = BossStyle.LastEngineer,
+                MaxHealth = 60, HealthMultiplier = 21, Armour = 100, Experience = 540,
+                Damage = 26, DamageType = DamageType.Physical, AttackRange = 3.5f, AttackCooldown = 2.4f,
+                SpeedRatio = 0.38f, Scale = 1.6f, Body = CreatureBody.LastEngineer, Undead = true,
+                Skin = new Color(0.28f, 0.43f, 0.37f), Cloth = new Color(0.64f, 0.48f, 0.25f),
+                Pants = new Color(0.34f, 0.29f, 0.23f), Eyes = new Color(0.63f, 0.98f, 0.80f),
+                DropChance = 1, RareBonus = 0.45f, Drops = 4
             },
         };
 

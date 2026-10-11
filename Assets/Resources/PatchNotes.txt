@@ -1,3 +1,11 @@
+version: 2026-10-11-water-routes
+- Follow the Bleached Basin's northern dry watercourse into The Thirsting Channels, a level 42 red sandstone gorge with branching irrigation routes, abandoned terraces and broken overhead aqueducts.
+- The Channels are patrolled by charging Channel Reavers, heavy Clay Bearers, javelineers, wind callers and sandlurkers. The Sluice Warden guards the upstream gate with crushing blows, marked torrents and a second-phase overflow.
+- A passage behind the Basin's ruined pump leads into The Drowned Works, a level 42 optional dungeon with flooded reservoirs, looping galleries, seized pump wheels and mineral-stained machinery.
+- Drowned Mechanics and brine creatures haunt the Works. The Last Engineer fights with piston sequences, steam vents and spreading rings of brine pressure.
+- Defeat the Last Engineer and open the Sahret Return Valve to restore the city's water. Its communal cistern visibly fills, and the repair is saved with your character.
+- Both new areas have waystones, return passages, sheltered arrivals, their own enemy mixes and full boss rewards.
+
 version: 2026-10-11-basin-monsters
 - The Bleached Basin now has Saltback Crabs with shattering salt shells, Brine Spitters with marked venom bursts, and Saltbound Dredgers that fracture the ground in front of them.
 - Uruun, the Salt Matriarch, nests beside the western saltworks. Dodge her claws and spreading fractures; at half health she calls her brood and breaks the crust in a ring.

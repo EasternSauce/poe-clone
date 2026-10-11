@@ -31,7 +31,8 @@ namespace PoeClone.World
             // A communal water supply is the visual centre of the surviving quarter.
             Transform cistern = Holder(city, "CommunalCistern", c + new Vector3(0, 0, 9), Quaternion.identity);
             LocalCyl(cistern, new Vector3(0, 0.24f, 0), 4.2f, 0.48f, desertStone);
-            LocalCyl(cistern, new Vector3(0, 0.5f, 0), 3.5f, 0.08f, kit.Mat("Water"), false);
+            Transform water = LocalCyl(cistern, new Vector3(0, 0.5f, 0), 3.5f, 0.08f, kit.Mat("Water"), false).transform;
+            cistern.gameObject.AddComponent<SahretWaterSupply>().ConfigureCistern(water);
             for (int i = 0; i < 16; i++)
             {
                 float angle = i * Mathf.PI / 8;

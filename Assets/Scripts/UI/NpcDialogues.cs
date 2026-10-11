@@ -29,6 +29,8 @@ namespace PoeClone.UI
 
         public static void Open(Npc npc)
         {
+            var supply = npc.GetComponent<SahretWaterSupply>();
+            if (supply != null) { supply.Interact(npc); return; }
             if (npc.Role == NpcRole.Villager)
                 VillagerPage(npc, npc.ConversationGreeting);
             else if (npc.Role == NpcRole.Waystone)
@@ -78,7 +80,7 @@ namespace PoeClone.UI
 
             // Town first, then the wilds in the order they're reached.
             var order = new List<int> { WorldBuilder.Haven };
-            foreach (int a in new[] { WorldBuilder.Greenwood, WorldBuilder.Cave, WorldBuilder.Graveyard, WorldBuilder.Ruins, WorldBuilder.Frozen, WorldBuilder.Desert, WorldBuilder.Sahret, WorldBuilder.SaltBasin })
+            foreach (int a in new[] { WorldBuilder.Greenwood, WorldBuilder.Cave, WorldBuilder.Graveyard, WorldBuilder.Ruins, WorldBuilder.Frozen, WorldBuilder.Desert, WorldBuilder.Sahret, WorldBuilder.SaltBasin, WorldBuilder.Channels, WorldBuilder.DrownedWorks })
             {
                 if (a != WorldBuilder.Haven)
                     order.Add(a);

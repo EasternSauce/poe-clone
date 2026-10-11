@@ -60,6 +60,7 @@ namespace PoeClone.World
                 case WorldBuilder.Greenwood: track = "Dark Quest"; break;
                 case WorldBuilder.Haven: track = "Adrift on the Currents of Time (Main Menu _ Ambience)"; break;
                 case WorldBuilder.Cave:
+                case WorldBuilder.DrownedWorks:
                 case WorldBuilder.Warren: track = "2.Dark Hall"; break;
                 case WorldBuilder.Graveyard:
                 case WorldBuilder.Belfry: track = "9.Dont look back"; break;
@@ -68,6 +69,7 @@ namespace PoeClone.World
                 case WorldBuilder.Frozen:
                 case WorldBuilder.ActArena: track = "11.Metal Echos"; break;
                 case WorldBuilder.Desert:
+                case WorldBuilder.Channels:
                 case WorldBuilder.SaltBasin: track = "Dark Quest"; break;
                 case WorldBuilder.Sahret: track = "Adrift on the Currents of Time (Main Menu _ Ambience)"; break;
                 default: return;
