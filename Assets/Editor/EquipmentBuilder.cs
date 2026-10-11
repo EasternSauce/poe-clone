@@ -192,6 +192,11 @@ namespace PoeClone.EditorTools
             return new GameObject(id);
         }
 
+        // Arms and legs were thickened after the gear below was fitted to them. Gear on the hands,
+        // feet and shoulders is widened by this much (not lengthened) through its socket node's scale,
+        // which EquipmentVisuals copies, so the sizes written below stay those of the slimmer limbs.
+        private const float LimbWidth = 1.25f;
+
         // A direct child of the prefab root, named for the character socket it attaches to.
         private static Transform Node(GameObject root, string socketName, Vector3 pos, Vector3 euler)
         {
@@ -200,6 +205,14 @@ namespace PoeClone.EditorTools
             go.transform.localPosition = pos;
             go.transform.localRotation = Quaternion.Euler(euler);
             return go.transform;
+        }
+
+        // A socket node on a limb (hands, feet, shoulders, rings), widened to fit the thicker arms and legs.
+        private static Transform LimbNode(GameObject root, string socketName)
+        {
+            Transform t = Node(root, socketName, Vector3.zero, Vector3.zero);
+            t.localScale = new Vector3(LimbWidth, 1f, LimbWidth);
+            return t;
         }
 
         private static void Cube(Transform parent, string name, string mat, Vector3 pos, Vector3 scale, Vector3 euler = default(Vector3))
@@ -361,8 +374,8 @@ namespace PoeClone.EditorTools
         {
             return new[]
             {
-                Node(root, "Socket_ShoulderL", Vector3.zero, Vector3.zero),
-                Node(root, "Socket_ShoulderR", Vector3.zero, Vector3.zero)
+                LimbNode(root, "Socket_ShoulderL"),
+                LimbNode(root, "Socket_ShoulderR")
             };
         }
 
@@ -472,7 +485,7 @@ namespace PoeClone.EditorTools
             foreach (string socket in new[] { "Socket_HandL", "Socket_HandR" })
             {
                 float s = socket == "Socket_HandL" ? -1f : 1f;
-                Transform hand = Node(root, socket, Vector3.zero, Vector3.zero);
+                Transform hand = LimbNode(root, socket);
                 Shape(hand, "Glove", "BodyLimb", glove, new Vector3(0f, -0.01f, 0f), plate ? new Vector3(0.135f, 0.2f, 0.16f) : new Vector3(0.125f, 0.19f, 0.15f));
                 Shape(hand, "Cuff", "GearCuff", cuff, new Vector3(0f, 0.14f, 0f), plate ? new Vector3(0.22f, 0.18f, 0.23f) : new Vector3(0.19f, 0.16f, 0.2f));
                 Shape(hand, "CuffTrim", "GearBand", trim, plate ? new Vector3(0f, 0.225f, 0f) : new Vector3(0f, 0.075f, 0f),
@@ -510,7 +523,7 @@ namespace PoeClone.EditorTools
             foreach (string socket in new[] { "Socket_FootL", "Socket_FootR" })
             {
                 float s = socket == "Socket_FootL" ? -1f : 1f;
-                Transform foot = Node(root, socket, Vector3.zero, Vector3.zero);
+                Transform foot = LimbNode(root, socket);
                 Shape(foot, "Boot", "BodyBoot", "TanLight", new Vector3(0f, -0.005f, 0f), new Vector3(0.235f, 0.475f, 0.335f));
                 Shape(foot, "Cuff", "GearCuff", "Tan", new Vector3(0f, 0.22f, -0.027f), new Vector3(0.23f, 0.1f, 0.25f));
                 Shape(foot, "StrapHigh", "GearBand", "TanDark", new Vector3(0f, 0.03f, -0.037f), new Vector3(0.205f, 0.03f, 0.225f));
@@ -527,7 +540,7 @@ namespace PoeClone.EditorTools
             GameObject root = NewRoot("iron_greaves");
             foreach (string socket in new[] { "Socket_FootL", "Socket_FootR" })
             {
-                Transform foot = Node(root, socket, Vector3.zero, Vector3.zero);
+                Transform foot = LimbNode(root, socket);
                 Shape(foot, "Greave", "BodyBoot", "Silver", new Vector3(0f, -0.005f, 0f), new Vector3(0.24f, 0.48f, 0.34f));
                 Shape(foot, "Trim", "GearBand", "Gold", new Vector3(0f, 0.23f, -0.027f), new Vector3(0.2f, 0.025f, 0.22f));
                 Shape(foot, "KneeCop", "GearDome", "Silver", new Vector3(0f, 0.22f, 0.05f), new Vector3(0.15f, 0.07f, 0.15f), new Vector3(90f, 0f, 0f));
@@ -543,7 +556,7 @@ namespace PoeClone.EditorTools
             GameObject root = NewRoot("silk_slippers");
             foreach (string socket in new[] { "Socket_FootL", "Socket_FootR" })
             {
-                Transform foot = Node(root, socket, Vector3.zero, Vector3.zero);
+                Transform foot = LimbNode(root, socket);
                 Shape(foot, "Boot", "BodyBoot", "GearCloth", new Vector3(0f, -0.01f, 0f), new Vector3(0.225f, 0.46f, 0.33f));
                 Shape(foot, "Cuff", "GearCuff", "GearCloth", new Vector3(0f, 0.19f, -0.027f), new Vector3(0.27f, 0.13f, 0.29f));
                 Shape(foot, "CuffTrim", "GearBand", "GearClothTrim", new Vector3(0f, 0.252f, -0.027f), new Vector3(0.275f, 0.02f, 0.295f));
@@ -594,7 +607,7 @@ namespace PoeClone.EditorTools
         private static void Ring(string id, string bandMat, string gemMat)
         {
             GameObject root = NewRoot(id);
-            Transform ring = Node(root, "Socket_Ring", Vector3.zero, Vector3.zero);
+            Transform ring = LimbNode(root, "Socket_Ring");
 
             Shape(ring, "Band", "GearBand", bandMat, new Vector3(0f, -0.05f, 0f), new Vector3(0.13f, 0.02f, 0.155f));
             Shape(ring, "Gem", "IcoHead", gemMat, new Vector3(0f, -0.05f, 0.08f), new Vector3(0.03f, 0.03f, 0.022f));

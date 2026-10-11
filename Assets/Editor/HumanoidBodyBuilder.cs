@@ -59,24 +59,24 @@ namespace PoeClone.EditorTools
             {
                 float s = side == "L" ? -1f : 1f;
 
-                // Legs: narrower hips, a thigh tapering to the knee.
+                // Legs: a sturdy thigh tapering to the knee.
                 Transform leg = model.Find("Leg" + side);
-                leg.localPosition = new Vector3(0.13f * s, 0.85f, 0f);
-                Part(leg, "Thigh", limb, new Vector3(0f, -0.21f, 0f), new Vector3(0.2f, 0.5f, 0.21f));
+                leg.localPosition = new Vector3(0.15f * s, 0.85f, 0f);
+                Part(leg, "Thigh", limb, new Vector3(0f, -0.21f, 0f), new Vector3(0.26f, 0.5f, 0.27f));
                 Transform knee = leg.Find("Knee");
-                Part(knee, "Shin", limb, new Vector3(0f, -0.2f, 0f), new Vector3(0.16f, 0.44f, 0.17f));
-                Part(knee, "Foot", head, new Vector3(0f, -0.38f, 0.06f), new Vector3(0.14f, 0.1f, 0.3f));
-                Part(knee, "Boot", m["BodyBoot"], new Vector3(0f, -0.2f, 0.02f), new Vector3(0.19f, 0.46f, 0.3f));
-                Part(knee, "BootCuff", limb, new Vector3(0f, 0.02f, -0.01f), new Vector3(0.22f, 0.08f, 0.22f));
+                Part(knee, "Shin", limb, new Vector3(0f, -0.2f, 0f), new Vector3(0.2f, 0.44f, 0.21f));
+                Part(knee, "Foot", head, new Vector3(0f, -0.38f, 0.06f), new Vector3(0.175f, 0.1f, 0.33f));
+                Part(knee, "Boot", m["BodyBoot"], new Vector3(0f, -0.2f, 0.02f), new Vector3(0.24f, 0.46f, 0.37f));
+                Part(knee, "BootCuff", limb, new Vector3(0f, 0.02f, -0.01f), new Vector3(0.27f, 0.08f, 0.27f));
 
-                // Arms: shoulders set in to the narrower chest, slim upper arm and forearm, small hands.
+                // Arms: shoulders set in to the narrower chest, a solid upper arm and forearm.
                 // The elbow and the hand/weapon sockets keep their places, so held items don't move.
                 Transform arm = model.Find("UpperBody/UpperOffset/Arm" + side);
-                arm.localPosition = new Vector3(0.38f * s, 1.5f, 0f);
-                Part(arm, "Upper", limb, new Vector3(0f, -0.2f, 0f), new Vector3(0.15f, 0.48f, 0.16f));
+                arm.localPosition = new Vector3(0.4f * s, 1.5f, 0f);
+                Part(arm, "Upper", limb, new Vector3(0f, -0.2f, 0f), new Vector3(0.2f, 0.48f, 0.21f));
                 Transform elbow = arm.Find("Elbow");
-                Part(elbow, "Forearm", limb, new Vector3(0f, -0.13f, 0f), new Vector3(0.13f, 0.32f, 0.14f));
-                Part(elbow, "Hand", limb, new Vector3(0f, -0.3f, 0f), new Vector3(0.1f, 0.15f, 0.12f));
+                Part(elbow, "Forearm", limb, new Vector3(0f, -0.13f, 0f), new Vector3(0.17f, 0.32f, 0.18f));
+                Part(elbow, "Hand", limb, new Vector3(0f, -0.3f, 0f), new Vector3(0.125f, 0.15f, 0.15f));
 
                 // Shoulder pads and sleeves hang on the shoulder joint, so they swing with the arm.
                 Socket(arm, "Socket_Shoulder" + side, Vector3.zero);

@@ -1,3 +1,6 @@
+version: 2026-10-11-sturdier-limbs
+- Arms and legs are thicker, so characters no longer look stick-thin after the body rework. Gloves, boots, rings and sleeves are widened to fit.
+
 version: 2026-10-11-gear-refit
 - All worn gear has been rebuilt to fit the new bodies, with rounded shapes instead of boxes.
 - Gear now looks like its icon: hoods are hoods, plate armour has a breastplate and layered pauldrons, robes reach mid-shin with wide sleeves, gauntlets, greaves and silk slippers have their own shapes, and belts have a leaf buckle.
