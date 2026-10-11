@@ -32,7 +32,9 @@ namespace PoeClone.Visuals
         SaltCrab,
         BrineSpitter,
         SluiceWarden,
-        LastEngineer
+        LastEngineer,
+        HarvestMother,
+        Ishara
     }
 
     /// <summary>
@@ -100,6 +102,8 @@ namespace PoeClone.Visuals
                 case CreatureBody.BrineSpitter: BuildSaltCrab(model, ctx, true); break;
                 case CreatureBody.SluiceWarden: BuildSluiceWarden(model, ctx); break;
                 case CreatureBody.LastEngineer: BuildLastEngineer(model, ctx); break;
+                case CreatureBody.HarvestMother: BuildHarvestMother(model, ctx); break;
+                case CreatureBody.Ishara: BuildIshara(model, ctx); break;
                 case CreatureBody.Briarbound: BuildBriarbound(model, ctx); break;
                 case CreatureBody.GraveSiren: BuildGraveSiren(model, ctx); break;
                 case CreatureBody.RimeStalker: BuildRimeStalker(model, ctx); break;

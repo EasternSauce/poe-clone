@@ -1,3 +1,12 @@
+version: 2026-10-11-crownless-court
+- Act II continues from The Thirsting Channels into two new areas: The Orchard of Empty Jars (level 44) on the western track, and The Crownless Reservoir (level 46) along the eastern aqueduct road. Both have waystones and return passages.
+- The orchard has dead planting rows, hanging jars, a ruined village and a cursed well. Rootbound Harvesters spread thorns, Orchard Hounds leap, Jar Swarms attack in packs, and Jar Keepers shatter poisoned jars around you. Mother of the Last Harvest guards the northern well with spreading roots, bitter fruit and summoned brood.
+- The reservoir has pale courts, turquoise pools, drained landings, headless royal statues and a northern palace. Bronze Sluiceguards shield their allies, Drowned Courtiers cast crossed fissures, Tithe Priests heal nearby enemies, and Reservoir Skimmers fire marked water jets. Ishara commands torrents, rising tides with safe gaps and a second-phase court guard.
+- Defeating the Shepherd now starts The Borrowed River, an eight-step Act II storyline led by Waterkeeper Nima beside Sahret's cistern. Existing characters already in Act II receive the lead on their next area arrival without resetting earlier quests.
+- Recover guarded survey records in the Expanse, inspect the Basin's water records, defeat the Sluice Warden, release the Channels' regulators, recover the Reservoir's ledgers and confront Ishara. Open the final return sluice and defeat its defenders to send water back to Sahret.
+- Added the Drowned Works water-repair side quest, which recognizes a valve you already opened, and a two-step orchard quest to break the hanging tithe jars and defeat their Mother. Completed boss kills are remembered for later quest acceptance.
+- Quest objectives, encounter defenders, map markers, dialogue, rewards and saved progress now cover the Act II areas. The new storyline reveals the First Root beneath Sahret as the next threat.
+
 version: 2026-10-11-water-routes
 - Follow the Bleached Basin's northern dry watercourse into The Thirsting Channels, a level 42 red sandstone gorge with branching irrigation routes, abandoned terraces and broken overhead aqueducts.
 - The Channels are patrolled by charging Channel Reavers, heavy Clay Bearers, javelineers, wind callers and sandlurkers. The Sluice Warden guards the upstream gate with crushing blows, marked torrents and a second-phase overflow.

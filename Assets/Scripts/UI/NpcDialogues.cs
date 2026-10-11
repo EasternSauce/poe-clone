@@ -80,7 +80,7 @@ namespace PoeClone.UI
 
             // Town first, then the wilds in the order they're reached.
             var order = new List<int> { WorldBuilder.Haven };
-            foreach (int a in new[] { WorldBuilder.Greenwood, WorldBuilder.Cave, WorldBuilder.Graveyard, WorldBuilder.Ruins, WorldBuilder.Frozen, WorldBuilder.Desert, WorldBuilder.Sahret, WorldBuilder.SaltBasin, WorldBuilder.Channels, WorldBuilder.DrownedWorks })
+            foreach (int a in new[] { WorldBuilder.Greenwood, WorldBuilder.Cave, WorldBuilder.Graveyard, WorldBuilder.Ruins, WorldBuilder.Frozen, WorldBuilder.Desert, WorldBuilder.Sahret, WorldBuilder.SaltBasin, WorldBuilder.Channels, WorldBuilder.DrownedWorks, WorldBuilder.Orchard, WorldBuilder.Reservoir })
             {
                 if (a != WorldBuilder.Haven)
                     order.Add(a);
@@ -130,6 +130,8 @@ namespace PoeClone.UI
                     return "Emberwatch holds. What do you need?";
                 case NpcRole.Seer:
                     return "The fire is restless tonight. Sit, if you like.";
+                case NpcRole.Waterkeeper:
+                    return "The cistern keeps this quarter alive. Tell me what you found beyond the walls.";
                 case NpcRole.Guide:
                     return "Mind the spiders, and never follow a lamp you didn't light. What do you need?";
                 default:
@@ -158,6 +160,9 @@ namespace PoeClone.UI
 
             switch (npc.Role)
             {
+                case NpcRole.Waterkeeper:
+                    options.Add(new DialogueOption("Ask about Sahret's water", () => Main(npc, npc.ConversationStory)));
+                    break;
                 case NpcRole.Merchant:
                     options.Add(new DialogueOption("Trade", () => OpenTrade(npc, "Oda's Wares", IsMerchantGoods)));
                     options.Add(new DialogueOption("Potions, and selling the whole bag", () => MerchantPage(npc, null)));
@@ -323,7 +328,8 @@ namespace PoeClone.UI
             QuestLog log = QuestLog.Instance;
             foreach (Npc npc in Npc.All)
             {
-                if (npc.Role == NpcRole.Waystone || npc.Role == NpcRole.Stash || npc.Role == NpcRole.QuestProp)
+                if (npc.Role == NpcRole.Waystone || npc.Role == NpcRole.Stash || npc.Role == NpcRole.QuestProp ||
+                    npc.GetComponent<SahretWaterSupply>() != null)
                     continue;
                 string marker = "";
                 if (log != null)

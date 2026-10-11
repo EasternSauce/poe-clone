@@ -79,6 +79,7 @@ namespace PoeClone.Quests
                 return QuestState.Done;
             if (active.TryGetValue(quest.Id, out int progress))
                 return progress >= quest.Count ? QuestState.Complete : QuestState.Active;
+            if (quest.RequiredStage != null && !usedProps.Contains(quest.RequiredStage)) return QuestState.Locked;
             if (quest.After == null || done.Contains(quest.After))
                 return QuestState.Available;
             return QuestState.Locked;
@@ -156,7 +157,9 @@ namespace PoeClone.Quests
         /// <summary>Save an intermediate world step without awarding quest progress (e.g. guards killed).</summary>
         public void RecordPropStage(string stageId)
         {
-            if (usedProps.Add(stageId)) Changed?.Invoke();
+            if (!usedProps.Add(stageId)) return;
+            Advance(q => q.Goal == QuestGoal.WorldStage && q.Target == stageId);
+            Changed?.Invoke();
         }
 
         public void SetEncounterObjective(string propId, string objective)
@@ -275,7 +278,10 @@ namespace PoeClone.Quests
                 return;
 
             // Somewhere already been counts straight away.
-            active[quest.Id] = quest.Goal == QuestGoal.ReachArea && visited.Contains(quest.Area) ? quest.Count : 0;
+            bool alreadyDone = (quest.Goal == QuestGoal.ReachArea && visited.Contains(quest.Area)) ||
+                (quest.Goal == QuestGoal.WorldStage && usedProps.Contains(quest.Target)) ||
+                (quest.Goal == QuestGoal.KillBoss && usedProps.Contains("boss:" + quest.Target));
+            active[quest.Id] = alreadyDone ? quest.Count : 0;
             Changed?.Invoke();
         }
 
@@ -351,7 +357,11 @@ namespace PoeClone.Quests
         private void OnEnemyKilled(EnemyKind kind, int monsterLevel)
         {
             if (kind.Boss == BossStyle.Shepherd)
+            {
                 RecordPropStage(ActTwoPassage.UnlockStage);
+                AutoStartQuests();
+            }
+            if (kind.IsBoss) RecordPropStage("boss:" + kind.Name);
             int area = areas != null ? areas.CurrentAreaIndex : -1;
             Advance(q =>
                 (q.Goal == QuestGoal.KillInArea && (q.Area < 0 || q.Area == area)) ||
@@ -362,7 +372,14 @@ namespace PoeClone.Quests
         private void OnAreaChanged(int index)
         {
             visited.Add(index);
+            if (WorldBuilder.IsActTwo(index)) AutoStartQuests();
             Advance(q => q.Goal == QuestGoal.ReachArea && q.Area == index);
+        }
+
+        private void AutoStartQuests()
+        {
+            foreach (var quest in QuestBook.All)
+                if (quest.AutoStart && State(quest) == QuestState.Available) Accept(quest);
         }
 
         private readonly List<string> scratch = new List<string>();

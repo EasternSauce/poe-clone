@@ -12,7 +12,7 @@ namespace PoeClone.World
     public sealed class SahretWaterSupply : MonoBehaviour
     {
         private const string EngineerStage = "act2.works.engineer_defeated";
-        private const string WaterStage = "act2.sahret.water_restored";
+        public const string WaterStage = "act2.sahret.water_restored";
         private Transform handle, water;
         private Npc npc;
         private EnemyHealth engineer;
@@ -33,7 +33,7 @@ namespace PoeClone.World
 
         private void Update()
         {
-            if (Restored)
+            if (Restored || (water != null && QuestLog.Instance != null && QuestLog.Instance.PropUsed("act2_release#0")))
             {
                 if (!applied)
                 {

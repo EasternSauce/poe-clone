@@ -333,6 +333,7 @@ namespace PoeClone.World
             for (int k = 0; k < frozen.Length; k++)
                 FrozenScout(t, frozen[k], k);
             StagDoor(t, SanctuaryDoorSpot);
+            BuildActTwoQuestSites(t);
         }
 
         private Light QuestGlow(Transform parent, Vector3 p, Color color, float range, float intensity)

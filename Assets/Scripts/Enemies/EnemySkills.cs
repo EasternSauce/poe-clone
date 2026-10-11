@@ -157,6 +157,8 @@ namespace PoeClone.Enemies
                 case EnemySkill.SaltBurst: return distance < 4.5f;
                 case EnemySkill.BrineSpit: return distance < 12f;
                 case EnemySkill.DredgeFault: return distance < 10f;
+                case EnemySkill.JarShatter: return distance < 12f;
+                case EnemySkill.SluiceJet: return distance > 2f && distance < 15f;
                 case EnemySkill.Slam: return distance < 3.2f * transform.localScale.y;
                 case EnemySkill.Charge: return distance > 4f && distance < 11f;
                 case EnemySkill.Volley: return distance < kind.AttackRange;
@@ -214,6 +216,10 @@ namespace PoeClone.Enemies
 
             switch (kind.Skill)
             {
+                case EnemySkill.JarShatter:
+                case EnemySkill.SluiceJet:
+                    StartCoroutine(CourtSkill(target, damage));
+                    break;
                 case EnemySkill.SaltBurst:
                 case EnemySkill.BrineSpit:
                 case EnemySkill.DredgeFault:
@@ -1151,6 +1157,10 @@ namespace PoeClone.Enemies
         {
             switch (kind.Skill)
             {
+                case EnemySkill.JarShatter:
+                case EnemySkill.SluiceJet:
+                    host.StartCoroutine(CourtPattern(host, kind, body, target, null));
+                    break;
                 case EnemySkill.SaltBurst:
                 case EnemySkill.BrineSpit:
                 case EnemySkill.DredgeFault:

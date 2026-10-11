@@ -44,7 +44,9 @@ namespace PoeClone.Enemies
         Tollkeeper,
         SaltBurst,
         BrineSpit,
-        DredgeFault
+        DredgeFault,
+        JarShatter,
+        SluiceJet
     }
 
     public enum BossStyle
@@ -62,7 +64,9 @@ namespace PoeClone.Enemies
         SaltMatriarch,
         DryWellKeeper,
         SluiceWarden,
-        LastEngineer
+        LastEngineer,
+        HarvestMother,
+        Ishara
     }
 
     /// <summary>
@@ -936,6 +940,100 @@ namespace PoeClone.Enemies
                 Skin = new Color(0.28f, 0.43f, 0.37f), Cloth = new Color(0.64f, 0.48f, 0.25f),
                 Pants = new Color(0.34f, 0.29f, 0.23f), Eyes = new Color(0.63f, 0.98f, 0.80f),
                 DropChance = 1, RareBonus = 0.45f, Drops = 4
+            },
+            new EnemyKind
+            {
+                Name = "Rootbound Harvester", SpawnWeight = 0, MaxHealth = 60, Armour = 65, Experience = 72,
+                Damage = 25, DamageType = DamageType.Physical, AttackRange = 2.8f, AttackCooldown = 2.1f,
+                SpeedRatio = 0.58f, Scale = 1.1f, Body = CreatureBody.Briarbound, Undead = true,
+                Skin = new Color(0.36f, 0.28f, 0.14f), Cloth = new Color(0.52f, 0.48f, 0.25f),
+                Pants = new Color(0.23f, 0.20f, 0.12f), Eyes = new Color(0.72f, 0.85f, 0.28f),
+                Skill = EnemySkill.ThornGarden, SkillCooldown = 8, DropChance = 0.55f
+            },
+            new EnemyKind
+            {
+                Name = "Jar Swarm", SpawnWeight = 0, MaxHealth = 29, Experience = 42,
+                Damage = 16, DamageType = DamageType.Poison, AttackRange = 1.7f, AttackCooldown = 1.6f,
+                SpeedRatio = 1.12f, Scale = 0.65f, PackSize = 2, Body = CreatureBody.Beetle, Sounds = EnemySounds.Set.Beetle,
+                Skin = new Color(0.30f, 0.25f, 0.11f), Cloth = new Color(0.69f, 0.57f, 0.25f),
+                Pants = new Color(0.16f, 0.20f, 0.10f), Eyes = new Color(0.75f, 0.9f, 0.3f),
+                DropChance = 0.3f
+            },
+            new EnemyKind
+            {
+                Name = "Orchard Hound", SpawnWeight = 0, MaxHealth = 43, Experience = 65,
+                Damage = 22, DamageType = DamageType.Physical, AttackRange = 2, AttackCooldown = 1.9f,
+                SpeedRatio = 1.06f, Scale = 1.05f, Body = CreatureBody.Wolf, Variant = CreatureVariant.Crypt,
+                Sounds = EnemySounds.Set.Wolf, Skin = new Color(0.40f, 0.33f, 0.20f),
+                Cloth = new Color(0.58f, 0.56f, 0.35f), Pants = new Color(0.26f, 0.23f, 0.15f),
+                Eyes = new Color(0.77f, 0.86f, 0.30f), Skill = EnemySkill.Leap, SkillCooldown = 9, DropChance = 0.45f
+            },
+            new EnemyKind
+            {
+                Name = "Jar Keeper", SpawnWeight = 0, MaxHealth = 46, Experience = 75,
+                Damage = 22, DamageType = DamageType.Poison, Style = EnemyAttackStyle.Ranged,
+                AttackRange = 11, ProjectileSpeed = 10, AttackCooldown = 2.8f, SpeedRatio = 0.56f,
+                HideHorns = true, Skeletal = true, Undead = true, Gear = new[] { "hunter_hood" },
+                Skin = new Color(0.70f, 0.66f, 0.46f), Cloth = new Color(0.41f, 0.35f, 0.16f),
+                Pants = new Color(0.25f, 0.22f, 0.14f), Eyes = new Color(0.8f, 0.9f, 0.35f),
+                StaffOrb = new Color(0.72f, 0.82f, 0.28f), Skill = EnemySkill.JarShatter, SkillCooldown = 8, DropChance = 0.55f
+            },
+            new EnemyKind
+            {
+                Name = "Bronze Sluiceguard", SpawnWeight = 0, MaxHealth = 66, Armour = 135, Experience = 82,
+                Damage = 25, DamageType = DamageType.Physical, AttackRange = 2.6f, AttackCooldown = 2.3f,
+                SpeedRatio = 0.55f, Scale = 1.2f, Body = CreatureBody.BarrowCastellan, Undead = true,
+                Skin = new Color(0.32f, 0.53f, 0.43f), Cloth = new Color(0.68f, 0.51f, 0.25f),
+                Pants = new Color(0.25f, 0.34f, 0.29f), Eyes = new Color(0.46f, 0.95f, 0.82f),
+                Skill = EnemySkill.Graveward, SkillCooldown = 9, DropChance = 0.6f
+            },
+            new EnemyKind
+            {
+                Name = "Drowned Courtier", SpawnWeight = 0, MaxHealth = 46, ColdResistance = 30, Experience = 79,
+                Damage = 23, DamageType = DamageType.Cold, AttackRange = 12, Style = EnemyAttackStyle.Ranged,
+                ProjectileSpeed = 11, AttackCooldown = 2.7f, SpeedRatio = 0.64f, Body = CreatureBody.GraveSiren,
+                Undead = true, Skin = new Color(0.42f, 0.61f, 0.53f), Cloth = new Color(0.76f, 0.77f, 0.60f),
+                Pants = new Color(0.24f, 0.40f, 0.35f), Eyes = new Color(0.52f, 0.98f, 0.9f),
+                Skill = EnemySkill.FrostFissures, SkillCooldown = 9, DropChance = 0.55f
+            },
+            new EnemyKind
+            {
+                Name = "Tithe Priest", SpawnWeight = 0, MaxHealth = 48, Experience = 85,
+                Damage = 20, DamageType = DamageType.Cold, AttackRange = 12, Style = EnemyAttackStyle.Ranged,
+                ProjectileSpeed = 10, AttackCooldown = 2.8f, SpeedRatio = 0.62f, HideHorns = true,
+                Skin = new Color(0.52f, 0.49f, 0.34f), Cloth = new Color(0.16f, 0.43f, 0.38f),
+                Pants = new Color(0.45f, 0.38f, 0.20f), Eyes = new Color(0.62f, 0.95f, 0.85f),
+                StaffOrb = new Color(0.37f, 0.83f, 0.72f), Gear = new[] { "hunter_hood" },
+                Skill = EnemySkill.WarCry, SkillCooldown = 11, DropChance = 0.6f
+            },
+            new EnemyKind
+            {
+                Name = "Reservoir Skimmer", SpawnWeight = 0, MaxHealth = 41, Experience = 71,
+                Damage = 21, DamageType = DamageType.Cold, AttackRange = 10, Style = EnemyAttackStyle.Ranged,
+                ProjectileSpeed = 13, AttackCooldown = 2.5f, SpeedRatio = 0.86f, Body = CreatureBody.BrineSpitter,
+                Sounds = EnemySounds.Set.Beetle, Skin = new Color(0.21f, 0.45f, 0.39f),
+                Cloth = new Color(0.62f, 0.79f, 0.63f), Pants = new Color(0.35f, 0.58f, 0.50f),
+                Eyes = new Color(0.6f, 0.98f, 0.9f), Skill = EnemySkill.SluiceJet, SkillCooldown = 8, DropChance = 0.5f
+            },
+            new EnemyKind
+            {
+                Name = "Mother of the Last Harvest", SpawnWeight = 0, IsBoss = true, Boss = BossStyle.HarvestMother,
+                MaxHealth = 65, HealthMultiplier = 22, Armour = 100, PoisonResistance = 40, Experience = 580,
+                Damage = 26, DamageType = DamageType.Poison, BasicDamageType = DamageType.Physical,
+                AttackRange = 3.8f, AttackCooldown = 2.4f, SpeedRatio = 0.35f, Scale = 1.8f, Body = CreatureBody.HarvestMother,
+                Skin = new Color(0.34f, 0.28f, 0.14f), Cloth = new Color(0.55f, 0.44f, 0.22f),
+                Pants = new Color(0.29f, 0.38f, 0.17f), Eyes = new Color(0.75f, 0.94f, 0.30f),
+                DropChance = 1, RareBonus = 0.45f, Drops = 4
+            },
+            new EnemyKind
+            {
+                Name = "Ishara, Keeper of the Borrowed River", SpawnWeight = 0, IsBoss = true, Boss = BossStyle.Ishara,
+                MaxHealth = 62, HealthMultiplier = 24, Armour = 85, ColdResistance = 35, Experience = 650,
+                Damage = 26, DamageType = DamageType.Cold, AttackRange = 13, Style = EnemyAttackStyle.Ranged,
+                ProjectileSpeed = 12, AttackCooldown = 2.6f, SpeedRatio = 0.53f, Scale = 1.7f, Body = CreatureBody.Ishara,
+                Skin = new Color(0.62f, 0.74f, 0.63f), Cloth = new Color(0.20f, 0.49f, 0.43f),
+                Pants = new Color(0.68f, 0.54f, 0.29f), Eyes = new Color(0.5f, 1, 0.9f),
+                DropChance = 1, RareBonus = 0.5f, Drops = 5
             },
         };
 

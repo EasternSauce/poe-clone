@@ -102,7 +102,7 @@ namespace PoeClone.World
             if (source == null || source.EnemyPrefab == null) return;
             SahretResident(source.EnemyPrefab, city, "Waterkeeper Nima", new Vector3(6, 0, 11), "ClothBlue",
                 "Drink slowly, traveller. This water has farther to go than either of us.",
-                "Ask about the cistern", "The old channels still reach the wells beneath the sand. We clear them every dawn. A city can lose its kings and keep living, but never its water.");
+                "Ask about the cistern", "The old channels still reach the wells beneath the sand. We clear them every dawn. A city can lose its kings and keep living, but never its water.", NpcRole.Waterkeeper);
             SahretResident(source.EnemyPrefab, city, "Caravaner Sef", new Vector3(-15, 0, -7), "ClothYellow",
                 "Shade, water, a wall at your back. After the Expanse, that is wealth.",
                 "Ask about the market", "Most of these stalls came here on wagons. The road grew dangerous, so the wagons stayed. Now we trade what we can mend, carry or grow.");
@@ -154,7 +154,7 @@ namespace PoeClone.World
         }
 
         private Npc SahretResident(GameObject prefab, Transform parent, string name, Vector3 local, string cloth,
-            string greeting, string topic, string story)
+            string greeting, string topic, string story, NpcRole role = NpcRole.Villager)
         {
             var look = new EnemyKind
             {
@@ -162,7 +162,7 @@ namespace PoeClone.World
                 Cloth = kit.Mat(cloth).GetColor("_BaseColor"), Pants = new Color(0.31f, 0.24f, 0.18f),
                 Skin = new Color(0.58f, 0.39f, 0.27f), Eyes = new Color(0.12f, 0.09f, 0.06f)
             };
-            Npc npc = Npc.Create(prefab, NpcRole.Villager, name, look,
+            Npc npc = Npc.Create(prefab, role, name, look,
                 Center(Sahret) + local + Vector3.up * 1.1f, -local.normalized, parent);
             npc.SetConversation(greeting, topic, story);
             return npc;

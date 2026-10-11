@@ -17,7 +17,13 @@ namespace PoeClone.World
                 { "shrine", Points(-26, -4) },
                 { "sunstones", Points(-10, 112, 15, 105, -44, 82) },
                 { "scouts", Points(-70, -88, 59, -94, -37, 89) },
-                { "captive", Points(58, -74) }
+                { "captive", Points(58, -74) },
+                { "act2_dispatch", Points(-115, 18, -43, 111) },
+                { "act2_basin", Points(-85, -10, 95, 87, -29, 75) },
+                { "act2_controls", Points(-57, 46, 117, 49) },
+                { "act2_ledgers", Points(-62, -18, 85, 35) },
+                { "act2_release", Points(50, 122) },
+                { "act2_jars", Points(-70, -47, 65, -12, 64, 70) }
             };
         public static string[] QuestGroups(int area)
         {
@@ -28,6 +34,11 @@ namespace PoeClone.World
                 case WorldBuilder.Ruins: return new[] { "supplies", "shrine", "sunstones" };
                 case WorldBuilder.Frozen: return new[] { "scouts" };
                 case WorldBuilder.Cave: return new[] { "captive" };
+                case WorldBuilder.Desert: return new[] { "act2_dispatch" };
+                case WorldBuilder.SaltBasin: return new[] { "act2_basin" };
+                case WorldBuilder.Channels: return new[] { "act2_controls" };
+                case WorldBuilder.Reservoir: return new[] { "act2_ledgers", "act2_release" };
+                case WorldBuilder.Orchard: return new[] { "act2_jars" };
                 default: return new string[0];
             }
         }
@@ -53,7 +64,9 @@ namespace PoeClone.World
             (WorldBuilder.Desert, WorldBuilder.Sahret),
             (WorldBuilder.Sahret, WorldBuilder.SaltBasin),
             (WorldBuilder.SaltBasin, WorldBuilder.Channels),
-            (WorldBuilder.SaltBasin, WorldBuilder.DrownedWorks)
+            (WorldBuilder.SaltBasin, WorldBuilder.DrownedWorks),
+            (WorldBuilder.Channels, WorldBuilder.Orchard),
+            (WorldBuilder.Channels, WorldBuilder.Reservoir)
         };
 
         // Gates sit in side passages and corners rather than across from each other, so the way
@@ -67,7 +80,11 @@ namespace PoeClone.World
                 case WorldBuilder.SaltBasin:
                     if (destination == WorldBuilder.Channels) return new Vector3(-46, 0, 143);
                     return destination == WorldBuilder.DrownedWorks ? new Vector3(-29, 0, 122) : new Vector3(0, 0, -139);
-                case WorldBuilder.Channels: return new Vector3(-125, 0, -118);
+                case WorldBuilder.Channels:
+                    if (destination == WorldBuilder.Orchard) return new Vector3(-130, 0, 91);
+                    return destination == WorldBuilder.Reservoir ? new Vector3(147, 0, 76) : new Vector3(-125, 0, -118);
+                case WorldBuilder.Orchard: return new Vector3(0, 0, -134);
+                case WorldBuilder.Reservoir: return new Vector3(-128, 0, -126);
                 case WorldBuilder.DrownedWorks: return new Vector3(0, 0, -135);
                 case WorldBuilder.Haven: return new Vector3(132, 0, -2);
                 // The way into the Hollows: a hollow in the south-east woods, off the southern glade.
@@ -93,7 +110,11 @@ namespace PoeClone.World
                 case WorldBuilder.SaltBasin:
                     if (destination == WorldBuilder.Channels) return new Vector3(-46, 0, 124);
                     return destination == WorldBuilder.DrownedWorks ? new Vector3(-29, 0, 112) : new Vector3(0, 0, -116);
-                case WorldBuilder.Channels: return new Vector3(-112, 0, -101);
+                case WorldBuilder.Channels:
+                    if (destination == WorldBuilder.Orchard) return new Vector3(-111, 0, 81);
+                    return destination == WorldBuilder.Reservoir ? new Vector3(130, 0, 66) : new Vector3(-112, 0, -101);
+                case WorldBuilder.Orchard: return new Vector3(0, 0, -114);
+                case WorldBuilder.Reservoir: return new Vector3(-113, 0, -109);
                 case WorldBuilder.DrownedWorks: return new Vector3(0, 0, -117);
                 case WorldBuilder.Haven: return new Vector3(113, 0, 5);
                 case WorldBuilder.Greenwood: return destination == WorldBuilder.Haven ? new Vector3(-83, 0, -12) : new Vector3(130, 0, -110);
@@ -122,6 +143,8 @@ namespace PoeClone.World
                 case WorldBuilder.Frozen: return new Vector3(61, 0, 37);
                 case WorldBuilder.Channels: return new Vector3(51, 0, 91);
                 case WorldBuilder.DrownedWorks: return new Vector3(0, 0, 115);
+                case WorldBuilder.Orchard: return new Vector3(-59, 0, 85);
+                case WorldBuilder.Reservoir: return new Vector3(50, 0, 100);
                 default: return Vector3.zero;
             }
         }
@@ -169,7 +192,31 @@ namespace PoeClone.World
                         .Route(22, -48, -48, -83, -2, -57, 46, -7, 68, 51, 91)
                         .Route(18, -57, 46, -18, 9, 59, -27)
                         .Route(16, 58, 33, 117, 49)
+                        .Route(18, 117, 49, 147, 76)
+                        .Route(18, -57, 46, -95, 70, -130, 91)
                         .Exclude(-17, -35, 12, 10).Exclude(12, 39, 12, 12);
+                case WorldBuilder.Orchard:
+                    return new AreaShape(center, new Vector2(320, 330))
+                        .Room(0, -111, 24, 23).Room(-70, -47, 40, 33)
+                        .Room(65, -12, 41, 35).Room(0, 15, 32, 31)
+                        .Room(-59, 85, 39, 34).Room(64, 70, 34, 31)
+                        .Route(18, 0, -134, 0, -111, -26, -78, -70, -47)
+                        .Route(22, -70, -47, -91, 9, -59, 85)
+                        .Route(22, -26, -78, 33, -65, 65, -12, 64, 70, -59, 85)
+                        .Route(20, -70, -47, 0, 15, 65, -12)
+                        .Route(18, 0, 15, -59, 85)
+                        .Exclude(-38, 13, 12, 12).Exclude(30, 49, 10, 12);
+                case WorldBuilder.Reservoir:
+                    return new AreaShape(center, new Vector2(340, 360))
+                        .Room(-114, -110, 24, 24).Room(-62, -18, 47, 42)
+                        .Room(46, -56, 43, 34).Room(85, 35, 43, 35)
+                        .Room(-52, 77, 37, 31).Room(50, 100, 42, 37)
+                        .Route(20, -128, -126, -114, -110, -85, -67, -62, -18)
+                        .Route(24, -62, -18, -36, -58, 46, -56, 85, 35, 50, 100)
+                        .Route(22, -62, -18, -94, 29, -52, 77, 50, 100)
+                        .Route(18, -62, -18, 5, 18, 85, 35)
+                        .Lake(-64, -18, 15, 13).Lake(45, -57, 16, 12).Lake(-49, 77, 12, 9)
+                        .Exclude(2, 63, 17, 13);
                 case WorldBuilder.DrownedWorks:
                     return new AreaShape(center, new Vector2(300, 330), cave: true)
                         .Room(0, -113, 24, 23).Room(-65, -57, 36, 30)

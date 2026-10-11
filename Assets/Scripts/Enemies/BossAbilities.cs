@@ -128,6 +128,8 @@ namespace PoeClone.Enemies
                 case BossStyle.DryWellKeeper: SetUpDryWellKeeper(); break;
                 case BossStyle.SluiceWarden: SetUpSluiceWarden(); break;
                 case BossStyle.LastEngineer: SetUpLastEngineer(); break;
+                case BossStyle.HarvestMother: SetUpHarvestMother(); break;
+                case BossStyle.Ishara: SetUpIshara(); break;
             }
         }
 

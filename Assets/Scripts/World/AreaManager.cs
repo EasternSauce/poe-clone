@@ -69,6 +69,8 @@ namespace PoeClone.World
                 case WorldBuilder.Frozen:
                 case WorldBuilder.ActArena: track = "11.Metal Echos"; break;
                 case WorldBuilder.Desert:
+                case WorldBuilder.Orchard:
+                case WorldBuilder.Reservoir:
                 case WorldBuilder.Channels:
                 case WorldBuilder.SaltBasin: track = "Dark Quest"; break;
                 case WorldBuilder.Sahret: track = "Adrift on the Currents of Time (Main Menu _ Ambience)"; break;

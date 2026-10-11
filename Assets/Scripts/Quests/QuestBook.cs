@@ -16,7 +16,9 @@ namespace PoeClone.Quests
         /// <summary>Use <see cref="QuestDefinition.Count"/> of the quest's props in the world (smash, light, take, read, hold a rite: see <see cref="QuestProp"/>).</summary>
         Use,
         /// <summary>Go and speak to <see cref="QuestDefinition.TalkTo"/>, who also hands out the reward.</summary>
-        Talk
+        Talk,
+        /// <summary>Complete a saved world action named by Target (e.g. restoring water).</summary>
+        WorldStage
     }
 
     public enum QuestState
@@ -43,6 +45,8 @@ namespace PoeClone.Quests
 
         /// <summary>The quest before it in its chain (null: available from the start).</summary>
         public string After;
+        public string RequiredStage;
+        public bool AutoStart;
 
         public string Offer;      // what the giver says when offering it
         public string Reminder;   // what they say while it's under way
@@ -77,7 +81,7 @@ namespace PoeClone.Quests
     ///   Captain Hale (Haven)      The Lost Patrol
     ///   Merchant Oda (Haven)      The Lost Caravan, and a letter for Varek
     /// </summary>
-    public static class QuestBook
+    public static partial class QuestBook
     {
         /// <summary>
         /// Bumped when the quests are rewritten: a save from an older book starts its quests over
@@ -92,7 +96,7 @@ namespace PoeClone.Quests
         private const string LostPatrol = "The Lost Patrol";
         private const string LostCaravan = "The Lost Caravan";
 
-        public static readonly QuestDefinition[] All =
+        private static readonly QuestDefinition[] ActOne =
         {
             // ---------------------------------------------------------------- The Hollow Call (Maren)
             new QuestDefinition
@@ -394,6 +398,8 @@ namespace PoeClone.Quests
 
         };
 
+        public static readonly QuestDefinition[] All = JoinActTwo(ActOne);
+
         public static QuestDefinition Get(string id)
         {
             foreach (QuestDefinition q in All)
@@ -431,6 +437,7 @@ namespace PoeClone.Quests
         {
             switch (role)
             {
+                case NpcRole.Waterkeeper: return WorldBuilder.Sahret;
                 case NpcRole.Gravekeeper: return WorldBuilder.Graveyard;
                 case NpcRole.Guide: return WorldBuilder.Cave;
                 case NpcRole.Commander:
@@ -444,6 +451,8 @@ namespace PoeClone.Quests
         {
             switch (role)
             {
+                case NpcRole.Waterkeeper:
+                    return "beside the communal cistern in Sahret";
                 case NpcRole.Gravekeeper:
                     return "in the Haunted Graveyard";
                 case NpcRole.Guide:

@@ -27,14 +27,16 @@ namespace PoeClone.World
         public const int SaltBasin = 11;
         public const int Channels = 12;
         public const int DrownedWorks = 13;
-        public static bool IsActTwo(int area) => area >= Desert && area <= DrownedWorks;
-        public static readonly int[] WorldAreas = { Greenwood, Haven, Graveyard, Ruins, Frozen, Cave, Desert, Sahret, SaltBasin, Channels, DrownedWorks };
+        public const int Orchard = 14;
+        public const int Reservoir = 15;
+        public static bool IsActTwo(int area) => area >= Desert && area <= Reservoir;
+        public static readonly int[] WorldAreas = { Greenwood, Haven, Graveyard, Ruins, Frozen, Cave, Desert, Sahret, SaltBasin, Channels, DrownedWorks, Orchard, Reservoir };
 
         public static WorldBuilder Instance { get; private set; }
 
         public static readonly string[] AreaNames = { "Greenwood", "Haven", "Haunted Graveyard", "Ashen Ruins", "Frozen Hollow", "The Shed Sanctuary", "The Lost Hollows",
-            "The Warren", "The Drowned Belfry", "The Sundered Expanse", "Sahret, the Sunken City", "The Bleached Basin", "The Thirsting Channels", "The Drowned Works" };
-        public static readonly int[] MonsterLevels = { 1, 0, 17, 25, 34, 37, 9, 9, 17, 38, 0, 40, 42, 42 };
+            "The Warren", "The Drowned Belfry", "The Sundered Expanse", "Sahret, the Sunken City", "The Bleached Basin", "The Thirsting Channels", "The Drowned Works", "The Orchard of Empty Jars", "The Crownless Reservoir" };
+        public static readonly int[] MonsterLevels = { 1, 0, 17, 25, 34, 37, 9, 9, 17, 38, 0, 40, 42, 42, 44, 46 };
 
         private static readonly Vector3[] Centers =
         {
@@ -52,7 +54,9 @@ namespace PoeClone.World
             new Vector3(2720f, 0f, 0f),
             new Vector3(3240f, 0f, 0f),
             new Vector3(3760f, 0f, 0f),
-            new Vector3(3240f, 0f, -520f)
+            new Vector3(3240f, 0f, -520f),
+            new Vector3(3760f, 0f, 520f),
+            new Vector3(4280f, 0f, 0f)
         };
 
         /// <summary>The colour that stands for an area (gate panels, its minimap ground).</summary>
@@ -76,7 +80,9 @@ namespace PoeClone.World
             new Color(0.78f, 0.64f, 0.45f),
             new Color(0.85f, 0.83f, 0.70f),
             new Color(0.70f, 0.39f, 0.26f),
-            new Color(0.28f, 0.45f, 0.43f)
+            new Color(0.28f, 0.45f, 0.43f),
+            new Color(0.48f, 0.49f, 0.25f),
+            new Color(0.61f, 0.75f, 0.65f)
         };
 
         // Explicit native rosters for opening spawns and respawns. Named entries keep additions
@@ -108,7 +114,9 @@ namespace PoeClone.World
             Roster(("Channel Reaver", 30f), ("Clay Bearer", 24f), ("Sandlurker", 16f),
                 ("Dustroad Javelineer", 22f), ("Ashwind Caller", 8f)),
             Roster(("Drowned Mechanic", 32f), ("Brine Spitter", 24f), ("Saltback Crab", 18f),
-                ("Corpse Ooze", 16f), ("Clay Bearer", 10f))
+                ("Corpse Ooze", 16f), ("Clay Bearer", 10f)),
+            Roster(("Rootbound Harvester", 30), ("Jar Swarm", 26), ("Orchard Hound", 24), ("Jar Keeper", 20)),
+            Roster(("Bronze Sluiceguard", 30), ("Drowned Courtier", 25), ("Tithe Priest", 20), ("Reservoir Skimmer", 25))
         };
 
         private static float[] Roster(params (string name, float weight)[] entries)
@@ -245,6 +253,10 @@ namespace PoeClone.World
             yield return null;
             BuildDrownedWorks();
             yield return null;
+            BuildEmptyOrchard();
+            yield return null;
+            BuildCrownlessReservoir();
+            yield return null;
             BuildGlowshrooms();
             BuildGreenwoodOutskirts();
             yield return null;
@@ -360,6 +372,11 @@ namespace PoeClone.World
         {
             switch (area)
             {
+                case Orchard:
+                    return GroundTextures.Make(141, new Color(0.21f, 0.22f, 0.12f), new Color(0.43f, 0.40f, 0.24f),
+                        new Color(0.62f, 0.55f, 0.34f), 0.009f, 6, grain: 0.05f);
+                case Reservoir:
+                    return GroundTextures.Flagstones(151, new Color(0.64f, 0.64f, 0.48f), new Color(0.22f, 0.31f, 0.26f), 6);
                 case Channels:
                     return GroundTextures.Make(121, new Color(0.38f, 0.22f, 0.15f), new Color(0.73f, 0.47f, 0.29f),
                         new Color(0.85f, 0.66f, 0.43f), 0.008f, 6f, grain: 0.04f);
@@ -819,13 +836,15 @@ namespace PoeClone.World
             original.SetBounds(p => greenwood.Contains(p, 3f));
             spawnersByArea[Greenwood] = original;
 
-            foreach (int area in new[] { Graveyard, Ruins, Frozen, Cave, SaltBasin, Channels, DrownedWorks })
+            foreach (int area in new[] { Graveyard, Ruins, Frozen, Cave, SaltBasin, Channels, DrownedWorks, Orchard, Reservoir })
             {
                 var go = new GameObject("Spawner_" + AreaNames[area]);
                 go.transform.SetParent(root, false);
                 go.transform.position = Centers[area];
                 var spawner = go.AddComponent<EnemySpawner>();
-                spawner.Configure(prefab, Centers[area], AreaShape.MaxRadius, 48, MonsterLevels[area], KindWeights[area]);
+                int count = area == Orchard ? 68 : area == Reservoir ? 72 : 48;
+                spawner.Configure(prefab, Centers[area], AreaShape.MaxRadius, count, MonsterLevels[area], KindWeights[area]);
+                ConfigureCourtPopulation(spawner, area);
                 spawner.SetSafeSpots(SafeSpots(area));
                 AreaShape shape = Shape(area);
                 spawner.SetBounds(p => shape.Contains(p, 3f));
@@ -887,6 +906,9 @@ namespace PoeClone.World
                 spawner.EnemyPrefab, Center(Channels) + ChannelWardenLocal, Vector3.back);
             BossLair.Create(t, DrownedWorks, BossIndex("The Last Engineer"), MonsterLevels[DrownedWorks],
                 spawner.EnemyPrefab, Center(DrownedWorks) + WorksEngineerLocal, Vector3.back);
+            foreach (int area in new[] { Orchard, Reservoir })
+                BossLair.Create(t, area, BossIndex(area == Orchard ? "Mother of the Last Harvest" : "Ishara, Keeper of the Borrowed River"),
+                    MonsterLevels[area], spawner.EnemyPrefab, Center(area) + AreaLayouts.BossLocal(area), Vector3.back);
         }
 
         private static int BossIndex(string name)
@@ -962,6 +984,7 @@ namespace PoeClone.World
             }
             if (area == Channels) spots.Add(Center(area) + ChannelWardenLocal);
             if (area == DrownedWorks) spots.Add(Center(area) + WorksEngineerLocal);
+            if (area == Orchard || area == Reservoir) spots.Add(Center(area) + AreaLayouts.BossLocal(area));
             // Quest props shouldn't have a monster standing on them when the player gets there.
             Transform sites = root.Find("QuestSites");
             if (sites != null)
@@ -1309,6 +1332,8 @@ namespace PoeClone.World
         {
             if (area == Desert) return new Vector3(-76f, 0f, -76f);
             if (area == SaltBasin) return new Vector3(-9f, 0f, -108f);
+            if (area == Orchard) return new Vector3(0, 0, -108);
+            if (area == Reservoir) return new Vector3(-109, 0, -100);
             if (area == Channels) return new Vector3(-106f, 0f, -93f);
             if (area == DrownedWorks) return new Vector3(0f, 0f, -112f);
             return new Vector3(0f, 0f, area == Haven ? -8f : -11f);
