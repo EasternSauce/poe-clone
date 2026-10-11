@@ -62,7 +62,7 @@ namespace PoeClone.EditorTools
                         shape.Contains(p) ? open : outside;
                 }
             texture.SetPixels32(pixels);
-            Dot(texture, shape, new Vector3(0, 0, area == WorldBuilder.ActArena ? -31 : -6), Color.cyan);
+            Dot(texture, shape, SpawnLocal(area), Color.cyan);
             if (area != WorldBuilder.ActArena) Dot(texture, shape, WorldBuilder.WaystoneLocal(area), Color.blue);
             foreach (Vector3 gate in Gates(area))
                 Dot(texture, shape, gate, new Color(0.9f, 0.4f, 1));
@@ -108,6 +108,13 @@ namespace PoeClone.EditorTools
             return directory;
         }
 
+        private static Vector3 SpawnLocal(int area)
+        {
+            if (area == WorldBuilder.Desert) return new Vector3(-135, 0, -126);
+            if (area == WorldBuilder.SaltBasin) return new Vector3(0, 0, -128);
+            return new Vector3(0, 0, area == WorldBuilder.ActArena ? -31 : -6);
+        }
+
         public static string ValidateAll()
         {
             var report = new List<string>();
@@ -137,7 +144,7 @@ namespace PoeClone.EditorTools
                             if (next >= 0 && cells[next] && !seen[next]) { seen[next] = true; queue.Enqueue(next); }
                     }
                 }
-                bool placements = shape.Contains(new Vector3(0, 0, -6), 2) && shape.Contains(WorldBuilder.WaystoneLocal(area), 3);
+                bool placements = shape.Contains(SpawnLocal(area), 2) && shape.Contains(WorldBuilder.WaystoneLocal(area), 3);
                 foreach (Vector3 gate in Gates(area))
                     placements &= shape.Contains(gate, 5);
                 if (area == WorldBuilder.Graveyard || area == WorldBuilder.Ruins || area == WorldBuilder.Frozen)

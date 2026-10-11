@@ -67,7 +67,8 @@ namespace PoeClone.World
                 // Keep Frozen Hollow's music through the sanctuary's opening dialogue.
                 case WorldBuilder.Frozen:
                 case WorldBuilder.ActArena: track = "11.Metal Echos"; break;
-                case WorldBuilder.Desert: track = "Dark Quest"; break;
+                case WorldBuilder.Desert:
+                case WorldBuilder.SaltBasin: track = "Dark Quest"; break;
                 case WorldBuilder.Sahret: track = "Adrift on the Currents of Time (Main Menu _ Ambience)"; break;
                 default: return;
             }

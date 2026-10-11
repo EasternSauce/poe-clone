@@ -50,6 +50,16 @@ namespace PoeClone.World
             SahretHouse(city, c + new Vector3(16, 0, 27), 180, 5.5f);
             SahretHouse(city, c + new Vector3(29, 0, 13), -90, 5.2f);
 
+            // A narrow lane between the northern homes opens onto the basin road.
+            for (int z = 21; z <= 39; z += 3)
+                WeatheredSlab(city, "NorthGateLane", c + new Vector3(8, 0.02f, z),
+                    new Vector2(1.3f, 1.35f), 0.035f, desertStone, R(-4, 4), false);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                DesertPillar(city, c + new Vector3(side * 8, 0, 47), 6);
+                WindBanner(city, Sahret, new Vector3(side * 9, 0, 45), side * 12, "ClothBlue", true);
+            }
+
             Stall(city, c + new Vector3(-18, 0, -8), c, kit.Mat("ClothBlue"));
             Stall(city, c + new Vector3(-20, 0, 1), c + new Vector3(0, 0, 1), kit.Mat("ClothYellow"));
             Stall(city, c + new Vector3(-18, 0, 12), c + new Vector3(0, 0, 12), kit.Mat("ClothRed"));

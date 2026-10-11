@@ -79,7 +79,7 @@ namespace PoeClone.World
             // Frozen walls are pale rock with ice tint, rather than the blue Steel copy
             // used for small ice props and water elsewhere in the world.
             var material = new Material(kit.Mat("RockDark")) { name = "LayoutRock_" + AreaNames[area] };
-            Color color = IsActTwo(area) ? new Color(0.69f, 0.47f, 0.25f) : area == Frozen ? new Color(0.65f, 0.73f, 0.78f) :
+            Color color = area == SaltBasin ? new Color(0.57f, 0.29f, 0.20f) : IsActTwo(area) ? new Color(0.69f, 0.47f, 0.25f) : area == Frozen ? new Color(0.65f, 0.73f, 0.78f) :
                 area == Ruins ? new Color(0.32f, 0.27f, 0.24f) : new Color(0.34f, 0.33f, 0.31f);
             material.SetColor("_BaseColor", color);
             material.SetColor("_ShadowColor", new Color(color.r * 0.5f, color.g * 0.5f, color.b * 0.55f));

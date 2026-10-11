@@ -24,14 +24,15 @@ namespace PoeClone.World
         public const int Cave = 6; // Preserve the final arena's saved area ID (5).
         public const int Desert = 9;
         public const int Sahret = 10;
-        public static bool IsActTwo(int area) => area == Desert || area == Sahret;
-        public static readonly int[] WorldAreas = { Greenwood, Haven, Graveyard, Ruins, Frozen, Cave, Desert, Sahret };
+        public const int SaltBasin = 11;
+        public static bool IsActTwo(int area) => area == Desert || area == Sahret || area == SaltBasin;
+        public static readonly int[] WorldAreas = { Greenwood, Haven, Graveyard, Ruins, Frozen, Cave, Desert, Sahret, SaltBasin };
 
         public static WorldBuilder Instance { get; private set; }
 
         public static readonly string[] AreaNames = { "Greenwood", "Haven", "Haunted Graveyard", "Ashen Ruins", "Frozen Hollow", "The Shed Sanctuary", "The Lost Hollows",
-            "The Warren", "The Drowned Belfry", "The Sundered Expanse", "Sahret, the Sunken City" };
-        public static readonly int[] MonsterLevels = { 1, 0, 17, 25, 34, 37, 9, 9, 17, 38, 0 };
+            "The Warren", "The Drowned Belfry", "The Sundered Expanse", "Sahret, the Sunken City", "The Bleached Basin" };
+        public static readonly int[] MonsterLevels = { 1, 0, 17, 25, 34, 37, 9, 9, 17, 38, 0, 40 };
 
         private static readonly Vector3[] Centers =
         {
@@ -46,7 +47,8 @@ namespace PoeClone.World
             new Vector3(840f, 0f, -420f),
             new Vector3(1260f, 0f, -420f),
             new Vector3(2200f, 0f, 0f),
-            new Vector3(2720f, 0f, 0f)
+            new Vector3(2720f, 0f, 0f),
+            new Vector3(3240f, 0f, 0f)
         };
 
         /// <summary>The colour that stands for an area (gate panels, its minimap ground).</summary>
@@ -67,7 +69,8 @@ namespace PoeClone.World
             new Color(0.42f, 0.36f, 0.28f),
             new Color(0.38f, 0.44f, 0.46f),
             new Color(0.87f, 0.66f, 0.36f),
-            new Color(0.78f, 0.64f, 0.45f)
+            new Color(0.78f, 0.64f, 0.45f),
+            new Color(0.85f, 0.83f, 0.70f)
         };
 
         // Explicit native rosters for opening spawns and respawns. Named entries keep additions
@@ -93,7 +96,9 @@ namespace PoeClone.World
             Roster(),
             Roster(("Dune Skitter", 20f), ("Glassback Scorpion", 17f), ("Sandlurker", 13f),
                 ("Dustroad Reaver", 20f), ("Dustroad Javelineer", 17f), ("Ashwind Caller", 8f)),
-            Roster()
+            Roster(),
+            Roster(("Glassback Scorpion", 28f), ("Sandlurker", 24f),
+                ("Dustroad Javelineer", 20f), ("Ashwind Caller", 18f), ("Dustroad Reaver", 10f))
         };
 
         private static float[] Roster(params (string name, float weight)[] entries)
@@ -224,6 +229,8 @@ namespace PoeClone.World
             yield return null;
             BuildActTwo();
             yield return null;
+            BuildSaltBasin();
+            yield return null;
             BuildGlowshrooms();
             BuildGreenwoodOutskirts();
             yield return null;
@@ -339,6 +346,9 @@ namespace PoeClone.World
         {
             switch (area)
             {
+                case SaltBasin:
+                    return GroundTextures.Make(112, new Color(0.64f, 0.61f, 0.49f), new Color(0.92f, 0.90f, 0.78f),
+                        new Color(1f, 0.98f, 0.90f), 0.015f, 9f, grain: 0.045f);
                 case Desert:
                 case Sahret:
                     return GroundTextures.Make(99, new Color(0.57f, 0.39f, 0.20f), new Color(0.88f, 0.69f, 0.40f),
@@ -790,7 +800,7 @@ namespace PoeClone.World
             original.SetBounds(p => greenwood.Contains(p, 3f));
             spawnersByArea[Greenwood] = original;
 
-            foreach (int area in new[] { Graveyard, Ruins, Frozen, Cave })
+            foreach (int area in new[] { Graveyard, Ruins, Frozen, Cave, SaltBasin })
             {
                 var go = new GameObject("Spawner_" + AreaNames[area]);
                 go.transform.SetParent(root, false);
@@ -1263,6 +1273,7 @@ namespace PoeClone.World
         public static Vector3 WaystoneLocal(int area)
         {
             if (area == Desert) return new Vector3(-76f, 0f, -76f);
+            if (area == SaltBasin) return new Vector3(-9f, 0f, -108f);
             return new Vector3(0f, 0f, area == Haven ? -8f : -11f);
         }
 

@@ -119,7 +119,7 @@ namespace PoeClone.Quests
                 done.Contains("emberwatch") || active.ContainsKey("emberwatch"))
                 done.Add("deep_road");
             if (done.Contains("shepherd") || (active.TryGetValue("shepherd", out int shepherdKills) && shepherdKills > 0) ||
-                visited.Contains(WorldBuilder.Desert) || visited.Contains(WorldBuilder.Sahret))
+                visited.Contains(WorldBuilder.Desert) || visited.Contains(WorldBuilder.Sahret) || visited.Contains(WorldBuilder.SaltBasin))
                 usedProps.Add(ActTwoPassage.UnlockStage);
             Changed?.Invoke();
         }

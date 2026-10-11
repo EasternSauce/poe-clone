@@ -1,3 +1,8 @@
+version: 2026-10-11-bleached-basin
+- Sahret's north gate now leads to The Bleached Basin, a new level 40 desert area opposite the city's Expanse entrance. Follow the lane between the northern homes.
+- Explore a pale, cracked salt lake framed by red mesas, abandoned evaporation beds, a dry watercourse and a stranded pump wheel. Branching routes loop around rock islands and lead to side spurs.
+- The basin has its own waystone, sheltered arrival and a desert enemy mix weighted toward scorpions, burrowers, javelineers and wind callers.
+
 version: 2026-10-11-sahret-residents
 - Sahret now has 17 residents, with twelve new locals walking between the market, homes, cistern and travellers' corner.
 - Residents sweep paths, sort spices and caravan goods, tend herb pots, hang washing and gather by the brazier. They pause their routines when you approach to talk.
