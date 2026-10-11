@@ -21,7 +21,9 @@ namespace PoeClone.Skills
         /// <summary>Seconds between a channelled skill's mana payments.</summary>
         public const float ChannelTick = 0.5f;
 
-        private const float WhirlTurnsPerSecond = 2.5f;
+        private const float WhirlTurnsPerSecond = 4f;
+        // How far ahead of the player, as a share of its reach, the hit circle sits at full speed.
+        private const float WhirlLead = 0.4f;
         private const float WhirlHitInterval = 0.2f;    // at no increased attack speed
         private const float WhirlFullSpeedDiameters = 5f;
 
@@ -29,6 +31,7 @@ namespace PoeClone.Skills
         private int whirlLevel;
         private float whirlNextMana;
         private float whirlNextHit;
+        private Vector3 whirlSteer;
         // Enemies whose colliders the player passes through while spinning, restored when it ends.
         private readonly Dictionary<EnemyHealth, Collider[]> whirlIgnored = new Dictionary<EnemyHealth, Collider[]>();
         private CharacterController body;
@@ -41,6 +44,7 @@ namespace PoeClone.Skills
         {
             whirlSlot = slot;
             whirlLevel = level;
+            whirlSteer = Vector3.zero;
             whirlNextMana = Time.time + ChannelTick;
             whirlNextHit = Time.time;
             controller.CancelWalk();
@@ -86,7 +90,8 @@ namespace PoeClone.Skills
             if (attackAnimator != null && !attackAnimator.IsAttacking)
                 attackAnimator.HoldSkillPose(SkillId.Whirlwind, CurrentWeapon());
             IgnoreEnemiesWhileWhirling();
-            controller.SteerChannel(WhirlSteer());
+            whirlSteer = Vector3.ClampMagnitude(WhirlSteer(), 1f);
+            controller.SteerChannel(whirlSteer);
             transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y + 360f * WhirlTurnsPerSecond * Time.deltaTime, 0f);
 
             if (Time.time >= whirlNextHit)
@@ -129,10 +134,12 @@ namespace PoeClone.Skills
             float melee = 1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f;
             float reach = Mathf.Max(2.4f, (CharacterAttackAnimator.AttackRange(weapon) + 0.4f) * melee) *
                           DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
-            SkillEffects.Shockwave(transform.position, reach, skill.Color, 0.22f);
-            Record(skill, level, reach);
+            // Moving, the circle leads the way the player goes, so it doesn't trail behind.
+            Vector3 center = transform.position + whirlSteer * reach * WhirlLead;
+            SkillEffects.Shockwave(center, reach, skill.Color, 0.22f);
+            Record(skill, level, reach, at: center);
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
-            foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
+            foreach (EnemyHealth enemy in EnemiesWithin(center, reach))
                 Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
         }
 

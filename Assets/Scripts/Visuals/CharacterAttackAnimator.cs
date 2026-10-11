@@ -312,20 +312,22 @@ namespace PoeClone.Visuals
             BaseAttacksPerSecond = 0.82f, Range = 3.6f
         };
 
-        // Whirlwind holds the weapon out to the side while the body spins (see HoldSkillPose).
+        // Whirlwind holds both arms out, the blade level, while the body spins (see HoldSkillPose).
         private static readonly AttackProfile WhirlwindProfile = new AttackProfile
         {
-            Duration = 0.35f, StrikeTime = 0.9f,
-            WindupOffset = new Pose(-70f, 95f, 20f, 5f),
-            StrikeOffset = new Pose(-70f, 95f, 20f, 5f),
+            Duration = 0.35f, StrikeTime = 0.9f, UsesOffArm = true,
+            WindupOffset = new Pose(-90f, 90f, 0f, 0f),
+            StrikeOffset = new Pose(-90f, 90f, 0f, 0f),
+            OffWindup = new Pose(-90f, -60f, -50f, 0f),
+            OffStrike = new Pose(-90f, -60f, -50f, 0f),
             BaseAttacksPerSecond = 1f, Range = 3f
         };
 
         private static readonly AttackProfile WhirlwindGreatProfile = new AttackProfile
         {
             Duration = 0.35f, StrikeTime = 0.9f, TwoHandGrip = true,
-            WindupOffset = new Pose(-40f, 90f, 20f, 0f),
-            StrikeOffset = new Pose(-40f, 90f, 20f, 0f),
+            WindupOffset = new Pose(-20f, 90f, 40f, 0f),
+            StrikeOffset = new Pose(-20f, 90f, 40f, 0f),
             BaseAttacksPerSecond = 0.8f, Range = 3.3f
         };
 
