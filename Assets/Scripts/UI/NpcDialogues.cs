@@ -291,8 +291,12 @@ namespace PoeClone.UI
         {
             QuestLog log = QuestLog.Instance;
             bool Done(string id) => log != null && log.State(QuestBook.Get(id)) == QuestState.Done;
+            if (Done("shepherd"))
+                return "Nothing. For the first time since spring, the fire is only fire. No antlers, no doors - just the camp, and the men around it, asleep.";
             if (Done("stag"))
-                return "A door in the ice. It is still shut. Behind it, something turns over in its sleep, and every fire in the camp leans north.\n\nNot yet. But soon.";
+                return "The door in the ice stands open now. Beyond it, in the Shed Sanctuary, something enormous waits with its head lowered, and every fire in the camp leans north.\n\nGo, before it comes to us.";
+            if (Done("door"))
+                return "A door in the ice, still shut. Behind it, something turns over in its sleep. Take what you read there to Maren.";
             if (Done("rimeheart"))
                 return "Three crowns lying in the snow: bone, ash and ice. And a fourth, made of antlers, that nobody wears yet.";
             if (Done("warlord"))

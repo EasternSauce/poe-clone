@@ -50,7 +50,8 @@ namespace PoeClone.Quests
 
         private GameObject whole;   // shown until used
         private GameObject spent;   // shown once used
-        private Light glow;         // on once used (a lit sunstone) / during a rite
+        private Light glow;         // on once used (a lit sunstone) / during a rite; dim on the next stone of a sequence
+        private float glowIntensity;
         private Npc npc;
         private QuestLog log;
         private bool used;
@@ -134,6 +135,7 @@ namespace PoeClone.Quests
             whole = before;
             spent = after;
             glow = light;
+            if (light != null) glowIntensity = light.intensity;
             Refresh();
         }
 
@@ -176,7 +178,12 @@ namespace PoeClone.Quests
             if (spent != null)
                 spent.SetActive(changed);
             if (glow != null)
-                glow.enabled = (used || encounterRunning) && (action == PropAction.Light || action == PropAction.Rite);
+            {
+                // The next stone of a lit sequence answers faintly, so the order is never a guess.
+                bool next = sequential && activeStage && action == PropAction.Light;
+                glow.enabled = next || ((used || encounterRunning) && (action == PropAction.Light || action == PropAction.Rite));
+                if (action == PropAction.Light) glow.intensity = used ? glowIntensity : glowIntensity * 0.3f;
+            }
             if (!encounterRunning && log != null)
             {
                 string objective = activeStage && (sequential || guarded || attackTarget != null)

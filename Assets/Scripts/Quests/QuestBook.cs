@@ -155,7 +155,7 @@ namespace PoeClone.Quests
                 Offer = "The dead are gathering whenever the funeral bell sounds from the Drowned Belfry. Thin the crowd here first - eight should give us breathing room. Then we can silence that bell.",
                 Reminder = "Put down eight monsters in the Haunted Graveyard, then return to Tobias.",
                 Thanks = "That gives us room. Now listen. That bell is ringing for people who are still alive.",
-                RewardGold = 150, RewardExperience = 450, RewardItem = ItemRarity.Magic, RewardItemLevel = 4
+                RewardGold = 150, RewardExperience = 900, RewardItem = ItemRarity.Magic, RewardItemLevel = 17
             },
             new QuestDefinition
             {
@@ -165,7 +165,7 @@ namespace PoeClone.Quests
                 Offer = "That bell is calling the dead out of their graves and gathering them for Mortis. Follow the north-east graveyard lane to the Drowned Belfry and destroy its keeper. Without him, Mortis will have to rely on the bones he hid here.",
                 Reminder = "Enter The Drowned Belfry from the Haunted Graveyard's north-east lane and defeat the Bell-Ringer.",
                 Thanks = "Silence. For the first time in weeks. But Mortis is still here, holding on to his scattered bones. Now we can reach them.",
-                RewardGold = 250, RewardExperience = 900, RewardHealthPotions = 2, RewardItem = ItemRarity.Rare, RewardItemLevel = 17
+                RewardGold = 250, RewardExperience = 2000, RewardHealthPotions = 2, RewardItem = ItemRarity.Rare, RewardItemLevel = 17
             },
             new QuestDefinition
             {
@@ -175,7 +175,7 @@ namespace PoeClone.Quests
                 Offer = "With the bell silent, Mortis has drawn his remaining strength into three reliquaries. Each has its own guard: shield-bearers, bone reavers, or spirits. Find them, defeat the assigned guardians, then break the casket. Smashing it before its guardians fall will do no good.",
                 Reminder = "Defeat each reliquary's stationed guardians in the Haunted Graveyard, then return to that reliquary and break it.",
                 Thanks = "All three? Then he's mortal again, or near enough. I heard him howl when the last one broke.",
-                RewardGold = 140, RewardExperience = 500, RewardHealthPotions = 2
+                RewardGold = 180, RewardExperience = 1200, RewardHealthPotions = 2
             },
             new QuestDefinition
             {
@@ -185,7 +185,7 @@ namespace PoeClone.Quests
                 Offer = "Now finish him. He's at the crypt doors, calling his dead to him. Don't let them surround you.",
                 Reminder = "Mortis waits by the crypt, north of the path. He calls the dead - keep moving.",
                 Thanks = "Mortis is gone. But before he fell he spoke of the Shepherd, sleeping under the northern ice. The priest was only a servant. The dead he stationed at the Hollows' deep road will still be there. We must clear that road ourselves before anyone can reach the ruins.",
-                RewardGold = 200, RewardExperience = 600, RewardHealthPotions = 3, RewardItem = ItemRarity.Rare, RewardItemLevel = 5,
+                RewardGold = 300, RewardExperience = 2500, RewardHealthPotions = 3, RewardItem = ItemRarity.Rare, RewardItemLevel = 18,
                 RewardRespec = 1
             },
             new QuestDefinition
@@ -196,7 +196,7 @@ namespace PoeClone.Quests
                 Offer = "Mortis stationed a heavy guard at the bone wall on the Lost Hollows' deep road. Go back into the Hollows and take the eastern tunnel toward the Ashen Ruins. Kill that assigned guard, then dismantle the wall yourself. The gateway is sealed until the wall is broken; jumping past the rubble will not open it.",
                 Reminder = "At the eastern deep-road gateway in The Lost Hollows: defeat the stationed guards, then click the bone blockade and dismantle it to unlock the Ashen Ruins gateway.",
                 Thanks = "The road is open. Now Haven must hear what Mortis told you, before anyone else follows that call north.",
-                RewardGold = 200, RewardExperience = 800, RewardHealthPotions = 2
+                RewardGold = 200, RewardExperience = 1500, RewardHealthPotions = 2
             },
             new QuestDefinition
             {
@@ -206,7 +206,7 @@ namespace PoeClone.Quests
                 Offer = "The deep road is open, but Maren must hear what Mortis told you. Tell her the Shepherd is waking, and that you cleared a way for the Emberwatch to return. I cannot leave my graves.",
                 Reminder = "Bring Tobias's warning to Elder Maren in Haven.",
                 Thanks = "The Shepherd. The great beast under the ice, whose call raises the dead, so the dead can carry it the living... Tobias would not say it if he did not believe it.\n\nThen we must find where the call is coming from.",
-                RewardGold = 100, RewardExperience = 300
+                RewardGold = 100, RewardExperience = 600
             },
 
             // ---------------------------------------------------------------- The Hollow Call, cont.
@@ -218,7 +218,7 @@ namespace PoeClone.Quests
                 Offer = "The Emberwatch marched into the Ashen Ruins through the Lost Hollows. You have cleared the blockade on that deep road. Follow it east from the Hollows and find Commander Varek at their camp. Whatever is gathering in the old city, he will be facing it.",
                 Reminder = "Travel through the Lost Hollows' cleared deep-road gateway into the Ashen Ruins. Find Commander Varek at the Emberwatch camp.",
                 Thanks = "Haven sent you? Then Haven has more sense than my generals. Welcome to Emberwatch. It isn't much - a fence and a fire - but nothing gets past that fence.",
-                RewardGold = 120, RewardExperience = 500
+                RewardGold = 120, RewardExperience = 1000
             },
 
             // ---------------------------------------------------------------- Embers of War (Varek)
@@ -230,17 +230,17 @@ namespace PoeClone.Quests
                 Offer = "Whatever gathers here is raising an army, and it's raising it faster than I can count. My lines are thin. Go out there and break it up before it marches - twenty-five of them should give us room to breathe.",
                 Reminder = "Twenty-five of the ruins' host. Bring potions - the casters burn.",
                 Thanks = "That's the first night my sentries will sleep in a week. Here - the pay of a soldier, and you've earned it twice.",
-                RewardGold = 300, RewardExperience = 1200, RewardItem = ItemRarity.Rare, RewardItemLevel = 7
+                RewardGold = 300, RewardExperience = 2000, RewardItem = ItemRarity.Rare, RewardItemLevel = 25
             },
             new QuestDefinition
             {
                 Id = "supplies", Story = EmbersOfWar, Title = "Lost Supplies", Giver = NpcRole.Commander, After = "hold",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Ruins, Count = 3,
-                Objective = "Secure the Emberwatch caches and defeat their attackers",
-                Offer = "When we marched in, we cached supplies along the road - and then the hounds ran us off it. Three caches: arrows, bandages, lamp oil. We need all three.\n\nThe hounds will have smelled them by now. Expect a pack and its handlers at each cache. Clear them before you carry the supplies back.",
-                Reminder = "Three supply caches, marked with our red cloth. Out in the ruins.",
-                Thanks = "Oil and arrows - we can hold another month. Take what you need from the bandages.",
-                RewardGold = 220, RewardExperience = 900, RewardHealthPotions = 3
+                Objective = "Recover the arrows, bandages and lamp oil",
+                Offer = "When we marched in, we cached supplies along the road - and then the hounds ran us off it. Arrows, bandages, lamp oil. We need all three, and each went a different way.\n\nThe arrow cache in the north-west ruins is still under our red cloth, but the host has put Ember Knights on it - kill them, then gather the arrows. The bandages were on a wagon the hounds burnt in the south-west; nothing guards a burnt wagon, so salvage what you can. The oil is worse. A big hound we call Ashfang dragged the casks east and lairs on them with its pack. Kill it and bring the oil home.",
+                Reminder = "Arrows: kill the Ember Knights at the north-west cache, then gather them. Bandages: salvage the burnt wagon in the south-west. Oil: hunt down Ashfang's pack in the east, then recover the casks. All in the Ashen Ruins.",
+                Thanks = "Oil and arrows - we can hold another month. And you put Ashfang down? My sentries will want its collar. Take what you need from the bandages.",
+                RewardGold = 300, RewardExperience = 2000, RewardHealthPotions = 3
             },
             new QuestDefinition
             {
@@ -250,7 +250,7 @@ namespace PoeClone.Quests
                 Offer = "The Warlord. You've seen his host; he leads it from the temple altar, and no blade of mine has got near him. Something shields him.\n\nYsolde says she knows what. She's our seer - she reads the fire. Talk to her; she's by the big tent.",
                 Reminder = "Ysolde is by the fire in the camp.",
                 Thanks = "Varek sent you. Good. I saw you coming three nights ago, in the coals - you and a crown of antlers behind you.\n\nDon't look like that. Sit, and I'll tell you about the Warlord's ward.",
-                RewardGold = 60, RewardExperience = 300
+                RewardGold = 60, RewardExperience = 600
             },
             new QuestDefinition
             {
@@ -260,7 +260,7 @@ namespace PoeClone.Quests
                 Offer = "The Warlord drinks his strength from the old shrine west of the temple, where the city burned its dead. A ward of ash. While it stands, he cannot fall.\n\nI can break it, but the rite takes time, and every dead thing in the ruins will feel it. Begin the rite in the shrine's circle and stay inside it until the fire turns white. The waves will come quickly. If you leave the circle, it fails. Once the fire turns white, kill every survivor to finish breaking the ward.",
                 Reminder = "Go to the Ashen Shrine, west of the temple in the Ashen Ruins, and begin the rite. Hold the circle for thirty seconds, then clear every remaining enemy.",
                 Thanks = "I felt it break from here - like a bone snapping. He is only a man in armour now. Well. A very large man in armour.",
-                RewardGold = 250, RewardExperience = 1200, RewardItem = ItemRarity.Magic, RewardItemLevel = 7
+                RewardGold = 250, RewardExperience = 2500, RewardItem = ItemRarity.Magic, RewardItemLevel = 25
             },
             new QuestDefinition
             {
@@ -270,7 +270,7 @@ namespace PoeClone.Quests
                 Offer = "The ward is down. Now we end him. He stands at the temple altar - my men will keep his host busy on the flanks, the rest is yours.\n\nWhen the ground glows, move.",
                 Reminder = "The Warlord stands at the temple altar. When the ground glows, move.",
                 Thanks = "It's over. The smoke over the ruins is thinning already.\n\nThough Ysolde has been staring north since it fell. She says the cold is coming. Talk to her before you rest.",
-                RewardGold = 600, RewardExperience = 2500, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 9,
+                RewardGold = 600, RewardExperience = 5000, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 27,
                 RewardRespec = 1
             },
 
@@ -279,21 +279,21 @@ namespace PoeClone.Quests
             {
                 Id = "sunstones", Story = FrozenSeal, Title = "The Frozen Gate", Giver = NpcRole.Seer, After = "warlord",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Ruins, Count = 3,
-                Objective = "Wake the three sunstones and defeat their summons",
-                Offer = "The Warlord was a door-ward. Now he's gone, I can see what he was guarding: the north gate. It's sealed under ice that no fire of ours will melt - the Frost Queen's work.\n\nBut the old city had its own fire. Three sunstones still stand in the north of the ruins, cold for three hundred years. Wake them, and they will burn the gate open.",
-                Reminder = "Three sunstones in the north of the ruins: two by the iced-over north gate, one in the ruins west of it. Lay your hand on each and wake it, then defeat everything drawn to its fire.",
+                Objective = "Wake the three sunstones in order",
+                Offer = "The Warlord was a door-ward. Now he's gone, I can see what he was guarding: the north gate. It's sealed under ice that no fire of ours will melt - the Frost Queen's work.\n\nBut the old city had its own fire. Three sunstones still stand in the north of the ruins, cold for three hundred years. They were built to be lit as a chain, the fire passed from one to the next. Start with the stone in the western ruins. When it burns, the next one, west of the gate, will glow to answer you; then the last, east of the gate. Wake them in that order and they will burn the gate open.",
+                Reminder = "Wake the sunstones in order: first the stone in the western ruins, then the stone west of the iced-over north gate, then the one east of it. The next stone in the chain glows faintly.",
                 Thanks = "The ice is gone. I heard it crack from here.\n\nAnd I heard something else, under it. Breathing.",
-                RewardGold = 300, RewardExperience = 1500, RewardHealthPotions = 2
+                RewardGold = 300, RewardExperience = 2500, RewardHealthPotions = 2
             },
             new QuestDefinition
             {
                 Id = "scouts", Story = FrozenSeal, Title = "Lost in the Snow", Giver = NpcRole.Seer, After = "sunstones",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Frozen, Count = 3,
-                Objective = "Recover the scouts' journals and defeat their attackers in the Frozen Hollow",
-                Offer = "Before the ice closed, Varek sent three scouts north. None came back. I don't need the fire to tell me they're dead.\n\nFind them. They kept journals - every Emberwatch scout does. Whatever they saw in the Hollow, I need to know it before you face what lives there.",
-                Reminder = "Three scouts, somewhere in the Frozen Hollow, beyond the north gate. Bring back their journals. The Hollow's hunters will come for you when you disturb the bodies; defeat them before moving on.",
+                Objective = "Follow the lost scouts' journals through the Frozen Hollow",
+                Offer = "Before the ice closed, Varek sent three scouts north: Mott, Teodor and Ilse. None came back. I don't need the fire to tell me they're dead.\n\nFind them. They kept journals - every Emberwatch scout does - and each will say where the others went. Mott was to make camp in the south-west pines. Start there, and follow the pages. Whatever they saw in the Hollow, I need to know it before you face what lives there.",
+                Reminder = "Start at Mott's body in the Frozen Hollow's south-west pines, then follow each journal to the next scout. Something hunted the last of them; it may still be there.",
                 Thanks = "\"Spiders the size of carts.\" \"A queen on a throne of ice.\" \"A door, north of the throne, taller than a house, with antlers cut into the stone.\"\n\nThe Shepherd's door. She is not its queen. She is its doorkeeper.",
-                RewardGold = 350, RewardExperience = 1800, RewardItem = ItemRarity.Rare, RewardItemLevel = 10
+                RewardGold = 400, RewardExperience = 4000, RewardItem = ItemRarity.Rare, RewardItemLevel = 34
             },
             new QuestDefinition
             {
@@ -303,7 +303,7 @@ namespace PoeClone.Quests
                 Offer = "Rimeheart. Many-legged, a brood of crawlers at her feet, and the cold of the deep north in her. She keeps the door shut from the outside, and she keeps the Shepherd fed with the dead.\n\nKill her, and we can see what she's been keeping.",
                 Reminder = "Her throne is at the heart of the Frozen Hollow. When the frost gathers at your feet, move.",
                 Thanks = "She's dead. The cold is already lifting off the camp; Varek's men are singing.\n\nBut I keep seeing that door. And it is warmer than it was.",
-                RewardGold = 1000, RewardExperience = 4000, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 10,
+                RewardGold = 1000, RewardExperience = 7000, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 35,
                 RewardRespec = 1
             },
             new QuestDefinition
@@ -313,8 +313,8 @@ namespace PoeClone.Quests
                 Objective = "Find the door north of Rimeheart's throne",
                 Offer = "One more thing, and then you can rest. Go to the door the scouts wrote of, north of the throne. Read what's written there. Don't try to open it.\n\nI mean that. Don't.",
                 Reminder = "The door is north of Rimeheart's throne in the Frozen Hollow. Read it. Don't open it.",
-                Thanks = "\"Three wardens hold his door: the priest, the king, the queen. When the last warden falls, he wakes.\"\n\nThe priest, the king, the queen. Mortis, the Warlord, Rimeheart - we killed his gaolers, one by one. We did his work for him.",
-                RewardGold = 400, RewardExperience = 2000
+                Thanks = "\"Three wardens hold his door: the priest, the king, the queen. When the last warden falls, he wakes.\"\n\nThe priest, the king, the queen. Mortis, the Warlord, Rimeheart - we killed his gaolers, one by one. Vex's totems, the funeral bell, the Warlord's host: all of it answered the Shepherd's call, and every warden we put down let it ring a little louder. We did his work for him.",
+                RewardGold = 400, RewardExperience = 3000
             },
             new QuestDefinition
             {
@@ -324,7 +324,7 @@ namespace PoeClone.Quests
                 Offer = "Go home. Tell Maren everything. Haven must be ready, and so must you - when he comes through that door, he will come for the valley.\n\nI will watch the fire. When he stirs, I'll know.",
                 Reminder = "Back to Haven, to Maren.",
                 Thanks = "The Shepherd has been calling our dead. His wardens are gone, and the seal can finally be broken.\n\nThe door beneath the ice is open to you now. Take these supplies. End his call before Haven becomes his flock.",
-                RewardGold = 800, RewardExperience = 3000, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 11
+                RewardGold = 800, RewardExperience = 4000, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 36
             },
 
             new QuestDefinition
@@ -335,7 +335,7 @@ namespace PoeClone.Quests
                 Offer = "The door north of Rimeheart's throne leads to the Shed Sanctuary. The Shepherd waits inside. Whatever hides beneath his robes, destroy it. End the call.",
                 Reminder = "Enter the Shed Sanctuary through the door in the Frozen Hollow and defeat the Shepherd.",
                 Thanks = "The call is gone. Our dead can rest, and Haven can live. You faced the Carrion Saint and returned. We will remember.",
-                RewardGold = 1200, RewardExperience = 5000, RewardHealthPotions = 5
+                RewardGold = 1200, RewardExperience = 8000, RewardHealthPotions = 5
             },
 
             // ---------------------------------------------------------------- The Lost Patrol (Hale)
@@ -379,7 +379,7 @@ namespace PoeClone.Quests
                 Offer = "My caravan broke down on the graveyard's old road. The drivers escaped, but someone took the cargo. Start at the wreck with my green paint on it. Follow the trail, find whoever carried the goods off, and bring back the whole shipment.",
                 Reminder = "Inspect the green-marked wreck in the Haunted Graveyard, follow the cargo trail, then defeat the Caravan Plunderer's group and recover the goods.",
                 Thanks = "The whole shipment! So the dead have taken to robbery as well. Here is your cut. And a letter for my brother - he should know what that road is like.",
-                RewardGold = 220, RewardExperience = 400, RewardHealthPotions = 2
+                RewardGold = 220, RewardExperience = 1200, RewardHealthPotions = 2
             },
             new QuestDefinition
             {
@@ -387,9 +387,9 @@ namespace PoeClone.Quests
                 Goal = QuestGoal.Talk, TalkTo = NpcRole.Commander,
                 Objective = "Deliver Oda's letter to Commander Varek",
                 Offer = "One more favour. My brother, Varek, commands the Emberwatch camp in the Ashen Ruins. He hasn't written in a month, the oaf. Take him this letter - and make sure he reads it, not just pockets it.",
-                Reminder = "The letter is for Commander Varek, at the Emberwatch camp in the Ashen Ruins. The deep road there, under the Lost Hollows, stays walled up while the Gravelord lives.",
+                Reminder = "The letter is for Commander Varek, at the Emberwatch camp in the Ashen Ruins. The deep road there, under the Lost Hollows, stays walled up until Tobias's deep-road blockade is broken.",
                 Thanks = "A letter from Oda? ...She says I'm an oaf. She's right. Here - she'd want you paid properly, and so do I.",
-                RewardGold = 200, RewardExperience = 900, RewardItem = ItemRarity.Rare, RewardItemLevel = 7
+                RewardGold = 200, RewardExperience = 1500, RewardItem = ItemRarity.Rare, RewardItemLevel = 25
             },
 
         };

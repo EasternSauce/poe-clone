@@ -1,3 +1,11 @@
+version: 2026-10-11-late-quest-rework
+- Lost Supplies now has three different recoveries in the Ashen Ruins: kill the Ember Knights guarding the arrow cache, salvage bandages from a burnt wagon, and hunt down Ashfang, the hound that carried off the lamp oil.
+- The Frozen Gate's sunstones are now lit as a chain, in a set order: the western ruins first, then west of the north gate, then east of it. The next stone glows faintly, and the objective names it. Waking a sunstone no longer summons beetles.
+- Lost in the Snow is now a trail. Each scout's journal points to the next, and the last scout's body is guarded by the Pale Stalker and its hunting pack. The first two bodies no longer trigger ambushes.
+- Quest rewards from the Haunted Graveyard onward now match the areas' levels: more experience, and reward items at the level of the area they come from.
+- Ysolde's visions and the door inscription now follow the whole journey, including Vex's totems and the funeral bell. Ysolde no longer calls the Shepherd's door shut after it has opened.
+- Characters with these quests already under way keep their secured objectives.
+
 version: 2026-10-11-melee-weapon-attacks
 - Melee weapons now carry exactly one melee skill, and it is the weapon's attack: left click (or the aim stick) uses it directly, just like a staff's spell. There is no more toggling melee skills on the bar.
 - Melee skills no longer take up skill bar slots. Without the mana for the skill, the weapon swings normally until the mana is back.

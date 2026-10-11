@@ -314,9 +314,11 @@ namespace PoeClone.World
             for (int k = 0; k < caches.Length; k++)
                 SupplyCache(t, caches[k], k);
             AshenShrine(t, QuestPoints(Ruins, "shrine")[0]);
+            // Woken in order: the western ruins' stone first, then the two at the gate, west then east.
             Vector3[] suns = QuestPoints(Ruins, "sunstones");
-            for (int k = 0; k < suns.Length; k++)
-                Sunstone(t, suns[k], k);
+            int[] sunOrder = { 2, 0, 1 };
+            for (int k = 0; k < sunOrder.Length; k++)
+                Sunstone(t, suns[sunOrder[k]], k);
             IceSeal(t);
 
             // The deep road from the Lost Hollows to the Ruins, walled up by the Gravelord's dead;
@@ -328,14 +330,8 @@ namespace PoeClone.World
             // The Frozen Seal: the lost scouts, the door beneath the ice.
             Begin(Frozen, 634);
             Vector3[] frozen = QuestPoints(Frozen, "scouts");
-            string[] journals =
-            {
-                "\"Day 3. Spiders the size of carts in the pines. Lost Mott to one. The cold is worse than the spiders.\"",
-                "\"Day 5. Saw her. A queen on a throne of ice, many-legged, crawlers swarming at her feet. She was singing. The dead walked past her, north, and she let them.\"",
-                "\"Day 6. Behind the throne, a door taller than a house. Antlers cut in the stone. It's warm. Why is it warm? Something breathes behind it. I can't feel my\""
-            };
             for (int k = 0; k < frozen.Length; k++)
-                FrozenScout(t, frozen[k], k, journals[k]);
+                FrozenScout(t, frozen[k], k);
             StagDoor(t, SanctuaryDoorSpot);
         }
 
@@ -503,10 +499,29 @@ namespace PoeClone.World
             Transform spent = Holder(site, "Emptied", p, site.rotation);
             LocalBox(spent, new Vector3(0.3f, 0.1f, 0.4f), new Vector3(1.6f, 0.05f, 1f), kit.Mat("ClothRed"), solid: false, euler: new Vector3(0f, 25f, 0f));
 
-            QuestProp prop = QuestProp.Attach(site.gameObject, "supplies", index, PropAction.Take, "Emberwatch Cache",
-                "Crates under a red cloth - the Emberwatch's colour - half buried in ash. Paw prints all round them, the size of your hand, and scorch marks where the hounds breathed on the wood.",
-                "Gather the supplies", "Supplies gathered - hounds!", 1.6f,
-                new[] { "Hellhound", "Ember Knight", "Hellhound", "Fire Caster", "Hellhound", "Ember Knight", "Hellhound", "Fire Caster" }, 8);
+            // Three ways to lose supplies: a cache the host still guards, a wagon burnt and left,
+            // and oil casks carried off by a named hound and its pack.
+            if (index == 1)
+                LocalCyl(site, new Vector3(1.15f, 0.45f, -0.5f), 0.45f, 0.12f, kit.Mat("Wood"), solid: false).transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            string[] names = { "Arrow Cache", "Burnt Supply Wagon", "Stolen Oil Casks" };
+            string[] descriptions =
+            {
+                "Arrow bundles under the Emberwatch's red cloth. The host found them first: Ember Knights stand watch over the crates, waiting for whoever comes back for them.",
+                "A supply wagon, burnt where it stopped. The hounds tore through it and moved on. Under the charred boards, the bandage rolls are still wrapped in oilcloth.",
+                "The lamp-oil casks, dragged to this hollow and gnawed at the seals. The hound that carried them off still lairs here with its pack."
+            };
+            string[] labels = { "Gather the arrows", "Salvage the bandages", "Recover the lamp oil" };
+            string[][] guards =
+            {
+                new[] { "Ember Knight", "Fire Caster", "Ember Knight", "Hellhound", "Fire Caster", "Ember Knight" },
+                null,
+                new[] { "Hellhound", "Hellhound", "Hellhound", "Fire Caster", "Hellhound", "Hellhound", "Fire Caster" }
+            };
+            string[] aftermath = { "Arrows recovered", "Bandages salvaged", "Lamp oil recovered" };
+            QuestProp prop = QuestProp.Attach(site.gameObject, "supplies", index, PropAction.Take, names[index],
+                descriptions[index], labels[index], aftermath[index], 1.6f, guards[index], guards[index] != null ? guards[index].Length : 0);
+            if (index == 0) prop.SetGuarded(p, "Defeat the Ember Knights guarding the arrow cache");
+            if (index == 2) prop.SetGuarded(p, "Hunt down Ashfang and its pack at the stolen oil casks", "Ashfang, the Oil-Thief");
             prop.SetLooks(whole.gameObject, spent.gameObject, null);
         }
 
@@ -550,10 +565,13 @@ namespace PoeClone.World
             LocalBall(lit, new Vector3(0f, 3.6f, 0f), 0.35f, kit.Mat("Lantern"));
             Light glow = QuestGlow(site, p + Vector3.up * 4f, new Color(1f, 0.7f, 0.3f), 14f, 6f);
 
-            QuestProp prop = QuestProp.Attach(site.gameObject, "sunstones", index, PropAction.Light, "Sunstone",
-                "A sandstone pillar topped with a black stone sphere. Old sun-signs are carved round the base. Lay your palm on the sphere: it is cold as the grave - but deep inside, something answers, like an ember under ash.",
-                "Wake the sunstone", "The sunstone blazes - and the fire draws beetles!", 4.2f,
-                new[] { "Magma Beetle", "Magma Beetle", "Fire Caster", "Magma Beetle", "Ember Knight", "Magma Beetle" }, 6);
+            string[] labels = { "Wake the first sunstone in the western ruins", "Wake the second sunstone, west of the north gate", "Wake the last sunstone, east of the north gate" };
+            string[] aftermath = { "The sunstone blazes - by the north gate, the next stone answers", "The fire leaps to the last stone, east of the gate", "All three blaze - the ice on the north gate cracks!" };
+            QuestProp prop = QuestProp.Attach(site.gameObject, "sunstones", index, PropAction.Light, "Sunstone " + (index + 1),
+                "A sandstone pillar topped with a black stone sphere. Old sun-signs are carved round the base. Lay your palm on the sphere: it is cold as the grave - but deep inside, something answers, like an ember under ash." +
+                (index > 0 ? "\n\nThe stone before it is burning, and this one is already warm." : ""),
+                labels[index], aftermath[index], 4.2f);
+            prop.SetSequence();
             prop.SetLooks(cold.gameObject, lit.gameObject, glow);
         }
 
@@ -683,7 +701,7 @@ namespace PoeClone.World
             prop.SetLooks(bars.gameObject, broken.gameObject, null);
         }
 
-        private void FrozenScout(Transform t, Vector3 p, int index, string journal)
+        private void FrozenScout(Transform t, Vector3 p, int index)
         {
             ClearSite(Frozen, p, 2.5f);
             Transform site = Holder(t, "FrozenScout", p, Quaternion.Euler(0f, R(0f, 360f), 0f));
@@ -693,10 +711,24 @@ namespace PoeClone.World
             LocalBox(book, new Vector3(0.75f, 0.06f, 0.4f), new Vector3(0.32f, 0.08f, 0.42f), kit.Mat("Leather"), solid: false, euler: new Vector3(0f, 20f, 0f));
             Glow(book, p + Vector3.up * 0.8f, LanternLight, 3.5f, 1.6f);
 
-            QuestProp prop = QuestProp.Attach(site.gameObject, "scouts", index, PropAction.Take, "Frozen Scout",
-                "An Emberwatch scout, frozen into the snow, red cloak gone white with frost. A journal lies by one hand. The last page reads:\n\n<i>" + journal + "</i>",
-                "Take the journal", "Journal taken - the cold stirs!", 1.6f,
-                new[] { "Frost Wolf", "Ice Crawler", "Frost Wolf", "Rime Stalker", "Frost Wolf", "Frost Caster", "Ice Crawler", "Frost Wolf" }, 8);
+            // A trail: each journal says where the next scout went. The last one was hunted down.
+            string[] names = { "Mott", "Teodor", "Ilse" };
+            string[] journals =
+            {
+                "\"Day 3. Spiders the size of carts in the pines. One got my leg. Teodor and Ilse went east along the cliffs to find a way round the webs. I'll catch them up once I can stand.\"",
+                "\"Day 5. Saw her. A queen on a throne of ice, many-legged, crawlers swarming at her feet. She was singing. The dead walked past her, north, and she let them. Ilse went north alone to see where they go.\"",
+                "\"Day 6. Behind the throne, a door taller than a house. Antlers cut in the stone. It's warm. Something breathes behind it. And something pale has followed me since the throne. It's\""
+            };
+            string[] labels = { "Search Mott's body in the south-west pines", "Search Teodor's body by the south-east cliffs", "Take Ilse's journal in the north-west, near the door" };
+            QuestProp prop = QuestProp.Attach(site.gameObject, "scouts", index, PropAction.Take, "Scout " + names[index],
+                "An Emberwatch scout, frozen into the snow, red cloak gone white with frost. A journal lies by one hand." +
+                (index == 2 ? " The snow around the body is trampled by something big, and it is still here." : "") +
+                " The last page reads:\n\n<i>" + journals[index] + "</i>",
+                labels[index], index == 2 ? "The last journal - the hunt is over" : "Journal taken - follow the trail", 1.6f,
+                index == 2 ? new[] { "Rime Stalker", "Frost Wolf", "Frost Wolf", "Ice Crawler", "Frost Caster", "Frost Wolf", "Ice Crawler", "Frost Caster", "Rime Stalker", "Frost Wolf" } : null,
+                index == 2 ? 10 : 0);
+            prop.SetSequence();
+            if (index == 2) prop.SetGuarded(p, "Defeat the Pale Stalker and its hunting pack", "The Pale Stalker");
             prop.SetLooks(book.gameObject, null, null);
         }
 
