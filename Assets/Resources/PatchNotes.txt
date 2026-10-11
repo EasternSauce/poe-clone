@@ -1,3 +1,6 @@
+version: 2026-10-11-corpse-explosion-tooltip
+- The Corpse Explosion modifier's description is shorter: it no longer mentions that enemies killed by an explosion can explode in turn (they still do).
+
 version: 2026-10-11-attribute-spurs
 - New off-attribute branches on the passive tree (+10, then a +30 notable) in areas that normally lack that attribute, so you can meet an item's requirement without leaving your part of the tree: Intelligence and Dexterity in Strength's area, Strength and Intelligence in Dexterity's, Strength and Dexterity in Intelligence's, plus Intelligence in Fury, Strength in Storm and Dexterity in Zeal.
 - Almost every small passive on the tree's roads now gives +10 of its area's attribute: Strength in Might and Zeal, Dexterity in Grace, Fury and the poison loop, Intelligence in Wisdom, Storm and Necromancy. This replaces their old bonuses (for example Thick Hide's life and armour, the Bloodbath wheel's area and attack damage, and Power's +16 Strength). The themed bonuses are on the notables, keystones and dead-end branches, which are unchanged. The first passive of each area and the passives in the middle of the bridges keep their bonuses, and the Skirmisher bridge now gives +10 Dexterity.
