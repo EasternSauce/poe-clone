@@ -104,6 +104,7 @@ namespace PoeClone.World
             SahretResident(source.EnemyPrefab, city, "Weaver Ilyet", new Vector3(17, 0, 13), "ClothGreen",
                 "Sit in the shade a while. I can finish this seam without you standing over me.",
                 "Ask about the blue cloth", "Blue for water, yellow for the road, red for a hearth that is still burning. Even a stranger can read our quarter from the gate.");
+            BuildSahretRoutines(source.EnemyPrefab, city);
         }
 
         private void SahretHouse(Transform city, Vector3 at, float yaw, float height)
@@ -141,7 +142,7 @@ namespace PoeClone.World
             LocalBox(seat, new Vector3(0, 0.64f, 0), new Vector3(2.6f, 0.08f, 0.75f), kit.Mat("ClothBlue"), false);
         }
 
-        private void SahretResident(GameObject prefab, Transform parent, string name, Vector3 local, string cloth,
+        private Npc SahretResident(GameObject prefab, Transform parent, string name, Vector3 local, string cloth,
             string greeting, string topic, string story)
         {
             var look = new EnemyKind
@@ -153,6 +154,7 @@ namespace PoeClone.World
             Npc npc = Npc.Create(prefab, NpcRole.Villager, name, look,
                 Center(Sahret) + local + Vector3.up * 1.1f, -local.normalized, parent);
             npc.SetConversation(greeting, topic, story);
+            return npc;
         }
     }
 }

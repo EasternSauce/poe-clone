@@ -365,6 +365,25 @@ namespace PoeClone.World
                 activity == VillageActivity.Produce ? (Center(Haven) + Flat(91, -5) - p).normalized : -local.normalized;
             if (home != null) { work = home.Work; face = home.Facing; }
             var walk = npc.GetComponentInChildren<CharacterWalkAnimator>();
+            GameObject tool = BuildTownChoreTool(walk, activity);
+            Vector3 social = Center(Haven) + (activity == VillageActivity.Produce ? Flat(84, 5) :
+                activity == VillageActivity.Laundry ? Flat(21, 31) :
+                activity == VillageActivity.Garden ? Flat(-21, 12) :
+                activity == VillageActivity.Sweep ? Flat(-8, 6) :
+                activity == VillageActivity.WarmHands ? Flat(-35, -5) : Flat(-20, -8));
+            work.y = p.y; social.y = p.y;
+            var routine = npc.gameObject.AddComponent<VillageRoutine>();
+            // Cottage residents stay in their own neighborhoods rather than converging on the square.
+            if (home != null)
+                routine.Configure(Shape(Haven), activity, face, tool, work, home.Lane, home.Door);
+            else
+                routine.Configure(Shape(Haven), activity, face, tool, work, social, p);
+            if (activity == VillageActivity.Laundry)
+                routine.BindLaundry(home != null ? home.Laundry : villageLaundry, home != null ? home.Basket : laundryBasket);
+        }
+
+        private GameObject BuildTownChoreTool(CharacterWalkAnimator walk, VillageActivity activity)
+        {
             GameObject tool = null;
             if (walk != null && walk.WorkHand != null && (activity == VillageActivity.Sweep || activity == VillageActivity.Garden))
             {
@@ -388,20 +407,7 @@ namespace PoeClone.World
                 }
                 tool.SetActive(false);
             }
-            Vector3 social = Center(Haven) + (activity == VillageActivity.Produce ? Flat(84, 5) :
-                activity == VillageActivity.Laundry ? Flat(21, 31) :
-                activity == VillageActivity.Garden ? Flat(-21, 12) :
-                activity == VillageActivity.Sweep ? Flat(-8, 6) :
-                activity == VillageActivity.WarmHands ? Flat(-35, -5) : Flat(-20, -8));
-            work.y = p.y; social.y = p.y;
-            var routine = npc.gameObject.AddComponent<VillageRoutine>();
-            // Cottage residents stay in their own neighborhoods rather than converging on the square.
-            if (home != null)
-                routine.Configure(Shape(Haven), activity, face, tool, work, home.Lane, home.Door);
-            else
-                routine.Configure(Shape(Haven), activity, face, tool, work, social, p);
-            if (activity == VillageActivity.Laundry)
-                routine.BindLaundry(home != null ? home.Laundry : villageLaundry, home != null ? home.Basket : laundryBasket);
+            return tool;
         }
 
         private void BuildSmithWorkshop(Transform parent, Vector3 p)

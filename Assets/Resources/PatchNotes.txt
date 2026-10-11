@@ -1,3 +1,8 @@
+version: 2026-10-11-sahret-residents
+- Sahret now has 17 residents, with twelve new locals walking between the market, homes, cistern and travellers' corner.
+- Residents sweep paths, sort spices and caravan goods, tend herb pots, hang washing and gather by the brazier. They pause their routines when you approach to talk.
+- New courtyard herb pots and a washing line give the quarter more signs of everyday life.
+
 version: 2026-10-11-sahret-cistern-quarter
 - Sahret's arrival court is now the Cistern Quarter: sandstone homes with blue shutters, colourful market stalls, a communal cistern, an open-air forge and a shaded travellers' camp.
 - Five local residents share stories about the city, its water and the caravan road. A stash chest stands beside the waystone court.
