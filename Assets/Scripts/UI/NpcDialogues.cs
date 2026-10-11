@@ -128,6 +128,8 @@ namespace PoeClone.UI
                     return "Emberwatch holds. What do you need?";
                 case NpcRole.Seer:
                     return "The fire is restless tonight. Sit, if you like.";
+                case NpcRole.Guide:
+                    return "Mind the spiders, and never follow a lamp you didn't light. What do you need?";
                 default:
                     return "Keep your blade sharp past this gate. I pay a bounty on certain heads.";
             }
@@ -185,6 +187,11 @@ namespace PoeClone.UI
                     break;
                 case NpcRole.Seer:
                     options.Add(new DialogueOption("Ask what she sees in the fire", () => Main(npc, SeerVision())));
+                    break;
+                case NpcRole.Guide:
+                    options.Add(new DialogueOption("Ask about the Hollows", () => Main(npc,
+                        "North-east to the graveyard, the east tunnel to the deep road and the old city, south-east to Vex's Warren. " +
+                        "Twenty years I've walked them, and I never saw the dead down here until this spring. They walk the tunnels the same way every night: up from the graveyard.")));
                     break;
             }
 

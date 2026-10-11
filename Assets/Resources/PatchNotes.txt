@@ -1,3 +1,9 @@
+version: 2026-10-11-captive-guide-and-tunnel-king
+- New main-story quest after the bone totems: Maren sends you to rescue Wren, a guide held captive by Vex's diggers in the Lost Hollows' southern cavern. Wren's captors are stationed when you accept. Defeat them, break the cage lock to free Wren, then speak to Wren. Unrelated kills and clicking the cage early do not count.
+- Vex, the Tunnel King, is now part of the main story. Wren reveals that Vex's diggers carved the bone totems and sends you into the Warren to stop them. Wren then gives directions to Tobias's graveyard.
+- Wren stays in the southern cavern after the rescue, with quest markers and directions through the Hollows.
+- Characters who already reached Tobias keep their progress. The rescue and the Vex quest remain optional for them.
+
 version: 2026-10-11-whirlwind-minimap-lava-polish
 - While spinning with Whirlwind, the minimap arrow points the way you are travelling instead of spinning with you.
 - Whirlwind's hit area now stays on the ground and travels with you for the whole spin instead of flashing on every hit. Other players see the same steady circle.

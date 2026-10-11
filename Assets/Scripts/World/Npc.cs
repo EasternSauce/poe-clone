@@ -17,7 +17,8 @@ namespace PoeClone.World
         Commander,
         Seer,
         QuestProp, // not a person: something a quest has the player use (see Quests.QuestProp)
-        Villager  // conversation only; appended to preserve existing saved role IDs
+        Villager, // conversation only; appended to preserve existing saved role IDs
+        Guide     // Wren, freed from Vex's captors in the Lost Hollows (see Quests.QuestCaptive)
     }
 
     /// <summary>

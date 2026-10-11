@@ -246,9 +246,10 @@ namespace PoeClone.Quests
                 return;
             int progress = active[quest.Id] + 1;
             active[quest.Id] = progress;
+            // Listeners first: freeing a captive brings the person to return to into the world.
+            Changed?.Invoke();
             if (progress >= quest.Count)
                 Announce(quest);
-            Changed?.Invoke();
         }
 
         /// <summary>The quests taken and not handed in yet, in book order.</summary>

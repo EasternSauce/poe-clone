@@ -67,7 +67,8 @@ namespace PoeClone.Quests
     /// something old is calling them - the Shepherd, sleeping under the ice in the north (the
     /// act's final boss, still to come). Each chain hands the player on to the next person:
     ///
-    ///   Elder Maren (Haven)       The Hollow Call: woods, bone totems, then off to the Gravekeeper
+    ///   Elder Maren (Haven)       The Hollow Call: woods, bone totems, then Wren, held captive in the Lost Hollows
+    ///   Wren (Lost Hollows)       ... Vex, who carved the totems, then on to the Gravekeeper
     ///   Tobias (Graveyard hut)    The Gravelord: the dead, Mortis's reliquaries, Mortis, back to Maren
     ///   Elder Maren               ... then on to the Emberwatch camp in the Ashen Ruins
     ///   Commander Varek (camp)    Embers of War: the host, lost supplies, Ysolde's rite, the Warlord
@@ -116,12 +117,32 @@ namespace PoeClone.Quests
             },
             new QuestDefinition
             {
-                Id = "keeper", Story = HollowCall, Title = "The Gravekeeper", Giver = NpcRole.Elder, After = "totems",
+                Id = "captive", Story = HollowCall, Title = "The Captive Guide", Giver = NpcRole.Elder, After = "totems", TurnIn = NpcRole.Guide,
+                Goal = QuestGoal.Use, Area = WorldBuilder.Cave, Count = 1,
+                Objective = "Defeat Wren's captors, then free Wren from the cage in The Lost Hollows' southern cavern",
+                Offer = "Grave-bone comes from one place: the graveyard beyond the Lost Hollows, the caves under the woods. Nobody in Haven knows the way through them any more - except Wren, who guided our carts down there for twenty years. Wren went down a week ago and never came back. Last night the hunters heard shouting from the Hollows' southern cavern, and saw lamps that weren't ours.\n\nThe way down is in the Greenwood's south-east thickets. If Wren is a prisoner, kill every captor before you touch the cage. They will cut a prisoner's throat sooner than lose them.",
+                Reminder = "Enter the Lost Hollows from the Greenwood's south-east thickets and go to the southern cavern, south-east of the central chamber. Defeat Wren's captors, open the cage, then speak to Wren.",
+                Thanks = "You came for me? Maren sent you. Of course she did.\n\nThose were Vex's lot - the Tunnel King's diggers. Not the dead. Worse, in a way: the dead don't take a cut.",
+                RewardGold = 110, RewardExperience = 350, RewardHealthPotions = 2
+            },
+            new QuestDefinition
+            {
+                Id = "tunnel_king", Story = HollowCall, Title = "The Tunnel King", Giver = NpcRole.Guide, After = "captive",
+                Goal = QuestGoal.KillBoss, Target = "Vex, the Tunnel King", Area = WorldBuilder.Warren,
+                Objective = "Defeat Vex, the Tunnel King, in The Warren, through the gate at the Lost Hollows' south-east dead end",
+                Offer = "Here's what I saw from that cage. Every night the dead came up the graveyard tunnels carrying bones, and Vex's diggers took the bones and carved them. Totems, antlers on every one. The dead carried them off to the Greenwood to call more of their own, and Vex was paid for every one.\n\nHe keeps his tally and his carving tools in the Warren, through the timber-propped hole at the end of this cavern's south-east tunnel. Kill him and no more totems leave these tunnels. Then I'll show you the way to the graveyard - I won't send you to Tobias with Vex at your back.",
+                Reminder = "Follow the tunnel south-east from the southern cavern to the Warren's gate in the Lost Hollows. Defeat Vex inside, then return to Wren.",
+                Thanks = "Vex is dead? Then the carving stops.\n\nLet me see that tally-book from his hoard... 'Grave-bone, paid in full by the bell.' The bell. There is a belfry in Tobias's graveyard, drowned these forty years. Someone down there has been buying.",
+                RewardGold = 260, RewardExperience = 900, RewardHealthPotions = 2, RewardItem = ItemRarity.Rare, RewardItemLevel = 9
+            },
+            new QuestDefinition
+            {
+                Id = "keeper", Story = HollowCall, Title = "The Gravekeeper", Giver = NpcRole.Guide, After = "tunnel_king",
                 Goal = QuestGoal.Talk, TalkTo = NpcRole.Gravekeeper,
                 Objective = "Find Tobias the Gravekeeper in the Haunted Graveyard",
-                Offer = "Those totems are grave-bone, old and yellow. Only one place it could come from: the graveyard beyond the Lost Hollows, the caves under the woods. The way down is somewhere in the Greenwood's south-east thickets; the hunters could never tell me exactly where.\n\nOld Tobias keeps it. He has kept it since before I was born, behind his candle-wards. If anyone knows what is stirring there, he does - if he still lives. Find him, and show him the shards.",
-                Reminder = "Tobias's hut is in the Haunted Graveyard. Find the way down into the Lost Hollows in the Greenwood's south-east, then search the caves for the graveyard gate. Look for the ring of candles.",
-                Thanks = "Maren sent you? Ha! Still alive, then, the old girl. Let me see those... Grave-bone, yes. My graves. Sit, sit - inside the candles you're safe. They don't cross the wards. Not yet.",
+                Offer = "The graveyard gate is in the Hollows' north-east chamber. From the central chamber, take the eastern passage north, then east. Tobias keeps the graveyard - an old man behind a ring of candles. Show him Vex's tally-book and Maren's shards. If anyone knows who rings that bell, he does.\n\nI'll stay here and keep the lamps lit. These tunnels are mine again.",
+                Reminder = "Take the north-east passage through the Lost Hollows to the Haunted Graveyard gate. Tobias's hut is in the graveyard's south-west corner, inside a ring of candles.",
+                Thanks = "Maren's shards and a goblin's tally-book? Ha! Let me see... Grave-bone, yes. My graves. And 'paid by the bell'...\n\nSit, sit - inside the candles you're safe. The dead don't cross the wards. Not yet.",
                 RewardGold = 80, RewardExperience = 300
             },
 
@@ -411,6 +432,7 @@ namespace PoeClone.Quests
             switch (role)
             {
                 case NpcRole.Gravekeeper: return WorldBuilder.Graveyard;
+                case NpcRole.Guide: return WorldBuilder.Cave;
                 case NpcRole.Commander:
                 case NpcRole.Seer: return WorldBuilder.Ruins;
                 default: return WorldBuilder.Haven;
@@ -424,6 +446,8 @@ namespace PoeClone.Quests
             {
                 case NpcRole.Gravekeeper:
                     return "in the Haunted Graveyard";
+                case NpcRole.Guide:
+                    return "in The Lost Hollows' southern cavern";
                 case NpcRole.Commander:
                 case NpcRole.Seer:
                     return "at the Emberwatch camp in the Ashen Ruins";

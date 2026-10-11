@@ -16,7 +16,8 @@ namespace PoeClone.World
                 { "supplies", Points(-52, 78, -86, -65, 124, 33) },
                 { "shrine", Points(-26, -4) },
                 { "sunstones", Points(-10, 112, 15, 105, -44, 82) },
-                { "scouts", Points(-70, -88, 59, -94, -37, 89) }
+                { "scouts", Points(-70, -88, 59, -94, -37, 89) },
+                { "captive", Points(58, -74) }
             };
         public static string[] QuestGroups(int area)
         {
@@ -26,6 +27,7 @@ namespace PoeClone.World
                 case WorldBuilder.Graveyard: return new[] { "relics", "caravan" };
                 case WorldBuilder.Ruins: return new[] { "supplies", "shrine", "sunstones" };
                 case WorldBuilder.Frozen: return new[] { "scouts" };
+                case WorldBuilder.Cave: return new[] { "captive" };
                 default: return new string[0];
             }
         }

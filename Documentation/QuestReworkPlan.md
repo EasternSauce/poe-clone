@@ -1,8 +1,16 @@
 # Quest rework — plan and session handoff
 
-Status: CHECKPOINT 2 COMPLETE / AWAITING USER REVIEW. Checkpoint 1 is committed as 7418dec. Checkpoint 2 parent: 0de1fcb (Lost Hollows crossroads restructure). Checkpoints 3-4 require separate approval.
+Status: CHECKPOINT 3 COMPLETE / AWAITING USER REVIEW. Checkpoint 1: 7418dec. Checkpoint 2: e3d2a70 (user tested and approved on 2026-10-11). Checkpoint 4 requires separate approval.
 
-## Live checkpoint 2 handoff (update during work)
+## Checkpoint 3 handoff
+
+- Implemented: new NpcRole.Guide (appended after Villager) = "Wren the Guide", caged in Vex's diggers' camp in the Lost Hollows' southern cavern (AreaLayouts anchor "captive", local 58,-74). QuestCaptive keeps Wren unclickable/unlabelled until the cage prop "captive#0" is used, then moves Wren to Spots["GuideFreed"].
+- New main chain: totems > captive (Maren; guarded cage prop, 7 captors incl. named "Vex's Jailer"; turn in to Wren = the speak stage) > tunnel_king (Wren; KillBoss Vex in the Warren) > keeper (now given by Wren, Talk to Tobias). Dialogue rewritten: Vex's diggers carved the totems from grave-bone, paid "by the bell", which leads into Tobias's Bell-Ringer quest.
+- Compatibility: no import migration needed. Characters with keeper active/done are unaffected; the rescue and Vex quest show as optional available content from Maren. QuestLog.UseProp now fires Changed before the completion announcement so the freed guide is findable by name.
+- Checks: forced refresh/compile, zero console errors; structural check: 28 quests, no duplicate/missing/cyclic prerequisites, valid areas, captor kinds exist and do not split. No Play-mode checks run (left to user). QuestTour includes "captive".
+- Next: STOP for user review of checkpoint 3. Checkpoint 4 needs explicit approval.
+
+## Checkpoint 2 handoff (historical)
 
 - User approved checkpoint 2 and emphasized keeping these notes current because usage may run out soon.
 - Correction to checkpoint 1: its 6-8 enemy packs spawned together, including Greenwood. Greenwood must instead spawn three at a time in multiple waves, clearing one group before the next.
@@ -116,7 +124,7 @@ Acceptance: the later route alternates retrieval, defence, activation, investiga
 - Planning baseline: master, aaba6ca. Inspected quest definitions, prop encounters, tracker, save version, cave route and boss lairs.
 - Confirmed scope added during checkpoint 1: every checkpoint must preserve a playable main questline; Vex and the Bell-Ringer must join the MAIN story (six of nine bosses). Bell-Ringer belongs to checkpoint 2, Vex to checkpoint 3.
 - Checkpoint 1: committed/pushed as 7418dec. User reviewed and approved checkpoint 2, requesting three-enemy Greenwood waves.
-- Checkpoint 2: COMPLETE / AWAITING REVIEW (see live handoff at the top). Checkpoints 3-4: NOT STARTED / NOT YET APPROVED.
+- Checkpoint 2: committed e3d2a70, tested and approved by the user. Checkpoint 3: COMPLETE / AWAITING REVIEW (see handoff at the top). Checkpoint 4: NOT STARTED / NOT YET APPROVED.
 - Checkpoint 2 final checks: forced Unity refresh and compilation finished; editor idle, not compiling/updating, Edit mode, zero console errors. Structural validation passed for all 26 quests, including valid areas and acyclic prerequisites. git diff --check passed. No gameplay checks were run; encounter feel and placement remain for user review.
 - Checkpoint 2 commit title: "Rework opening quests and add guarded deep-road blockade". Find its hash with git log -- Documentation/QuestReworkPlan.md; verify remote tracking state when resuming.
 - Commit: the commit containing this document, titled "Require quest encounter clears and improve objective guidance". Look it up with git log -- Documentation/QuestReworkPlan.md. Push outcome is reported in the session's final response; verify remote tracking state when resuming.
@@ -146,7 +154,7 @@ Acceptance: the later route alternates retrieval, defence, activation, investiga
 
 ### Exact next step
 
-STOP for checkpoint 2 review. Do not start checkpoint 3 without user approval. No gameplay checks were requested or run. Keep these notes current. The final rework must remove temporary rework Markdown files, as explicitly requested.
+STOP for checkpoint 3 review. Do not start checkpoint 4 without user approval. No gameplay checks were requested or run. Keep these notes current. The final rework must remove temporary rework Markdown files, as explicitly requested.
 
 Historical checkpoint 1 review guidance: Suggested player review: activate a totem and leave enemies alive; clear a pack; retry after death or area travel; reload mid-encounter; hold the shrine and clear survivors; inspect talk/boss/return objective locations. Fix any reported checkpoint 1 issue before progressing.
 

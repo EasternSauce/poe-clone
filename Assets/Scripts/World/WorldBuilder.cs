@@ -829,14 +829,14 @@ namespace PoeClone.World
             BuildOutpostFolk(spawner.EnemyPrefab);
         }
 
-        private void AddNpc(GameObject prefab, Transform parent, NpcRole role, string name, Vector3 faceTowards, EnemyKind look)
+        private Npc AddNpc(GameObject prefab, Transform parent, NpcRole role, string name, Vector3 faceTowards, EnemyKind look)
         {
             if (!Spots.TryGetValue(role.ToString(), out Vector3 spot))
-                return;
+                return null;
             Vector3 position = spot + Vector3.up * 1.1f * look.Scale;
             Vector3 facing = faceTowards - spot;
             facing.y = 0f;
-            Npc.Create(prefab, role, name, look, position, facing, parent);
+            return Npc.Create(prefab, role, name, look, position, facing, parent);
         }
 
         // Where players appear in an area (its spawn point and every gate arrival): kept clear of enemies.

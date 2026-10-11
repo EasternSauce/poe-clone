@@ -9,8 +9,8 @@ namespace PoeClone.World
     /// The story's places out in the wilds: Tobias's warded hut in the Haunted Graveyard, the
     /// Emberwatch camp deep in the Ashen Ruins (both safe ground: see <see cref="Sanctuary"/>),
     /// and everything the quests have the player use (<see cref="QuestProp"/>) - bone totems,
-    /// reliquaries, caches, sunstones, the ice over the north gate (<see cref="QuestBarrier"/>),
-    /// the door beneath the ice. Fixed spots, so every client builds the same thing.
+    /// Wren's cage in the Lost Hollows, reliquaries, caches, sunstones, the ice over the north gate
+    /// (<see cref="QuestBarrier"/>), the door beneath the ice. Fixed spots, so every client builds the same thing.
     /// </summary>
     public partial class WorldBuilder
     {
@@ -60,7 +60,7 @@ namespace PoeClone.World
                 }
             }
 
-            string group = area == Graveyard ? "Graveyard" : area == Ruins ? "Ruins" : area == Frozen ? "Frozen" : null;
+            string group = area == Graveyard ? "Graveyard" : area == Ruins ? "Ruins" : area == Frozen ? "Frozen" : area == Cave ? "Cave" : null;
             Transform decor = group != null ? root.Find(group) : null;
             if (decor == null)
                 return;
@@ -244,7 +244,7 @@ namespace PoeClone.World
             Claim(p, 2.2f * size);
         }
 
-        // The keeper, the commander and the seer, once the enemy rig is known.
+        // The keeper, the commander, the seer and Wren (caged until rescued), once the enemy rig is known.
         private void BuildOutpostFolk(GameObject prefab)
         {
             Transform t = Group("OutpostFolk");
@@ -270,6 +270,14 @@ namespace PoeClone.World
                 Skin = new Color(0.80f, 0.68f, 0.58f), Eyes = new Color(0.9f, 0.55f, 0.2f),
                 Gear = new[] { "gnarled_staff" }
             });
+            Spots.TryGetValue("GuideFreed", out Vector3 freed);
+            Npc wren = AddNpc(prefab, t, NpcRole.Guide, "Wren the Guide", freed, new EnemyKind
+            {
+                Name = "Guide", Scale = 0.95f, HideHorns = true,
+                Cloth = new Color(0.40f, 0.34f, 0.22f), Pants = new Color(0.24f, 0.22f, 0.18f),
+                Skin = new Color(0.70f, 0.56f, 0.44f), Eyes = new Color(0.12f, 0.1f, 0.08f)
+            });
+            if (wren != null) QuestCaptive.Attach(wren, "captive", freed);
         }
 
         // ------------------------------------------------------------------ quest sites
@@ -311,9 +319,11 @@ namespace PoeClone.World
                 Sunstone(t, suns[k], k);
             IceSeal(t);
 
-            // The deep road from the Lost Hollows to the Ruins, walled up by the Gravelord's dead.
+            // The deep road from the Lost Hollows to the Ruins, walled up by the Gravelord's dead;
+            // Wren's cage in Vex's diggers' camp in the southern cavern.
             Begin(Cave, 635);
             BoneWall(t);
+            WrenCage(t, QuestPoints(Cave, "captive")[0]);
 
             // The Frozen Seal: the lost scouts, the door beneath the ice.
             Begin(Frozen, 634);
@@ -616,6 +626,61 @@ namespace PoeClone.World
             blockade.SetGuarded(guardAt, "Defeat the deep-road blockade guards", "Deep-Road Warden");
             QuestBarrier.Create(wall.gameObject, "deep_road", gate,
                 "Gateway sealed: defeat its quest guards, then dismantle the bone blockade", 7f);
+        }
+
+        // Vex's diggers' camp: a timber cage round Wren, their fire, crates of carved bone.
+        private void WrenCage(Transform t, Vector3 p)
+        {
+            Vector3 toRoom = Center(Cave) + new Vector3(47f, 0f, -64f) - p;
+            toRoom.y = 0f;
+            toRoom = toRoom.sqrMagnitude > 1f ? toRoom.normalized : Vector3.forward;
+            Vector3 side = Vector3.Cross(Vector3.up, toRoom);
+            ClearSite(Cave, p + toRoom * 4f, 9f);
+            Transform site = Holder(t, "WrenCage", p, Quaternion.LookRotation(toRoom));
+
+            // The cage: corner posts and a lid stay; the bars and the lock go when it's opened.
+            LocalBox(site, new Vector3(0f, 0.05f, 0f), new Vector3(2.6f, 0.1f, 2.6f), kit.Mat("Wood"), solid: false);
+            LocalBox(site, new Vector3(0f, 2.55f, 0f), new Vector3(2.7f, 0.14f, 2.7f), kit.Mat("Wood"), solid: false);
+            for (int x = -1; x <= 1; x += 2)
+                for (int z = -1; z <= 1; z += 2)
+                    LocalBox(site, new Vector3(x * 1.25f, 1.3f, z * 1.25f), new Vector3(0.16f, 2.6f, 0.16f), kit.Mat("Wood"), solid: false);
+            Transform bars = Holder(site, "Bars", p, site.rotation);
+            for (int k = -2; k <= 2; k++)
+            {
+                LocalBox(bars, new Vector3(k * 0.45f, 1.3f, 1.25f), new Vector3(0.07f, 2.5f, 0.07f), kit.Mat("Iron"));
+                LocalBox(bars, new Vector3(k * 0.45f, 1.3f, -1.25f), new Vector3(0.07f, 2.5f, 0.07f), kit.Mat("Iron"));
+                LocalBox(bars, new Vector3(1.25f, 1.3f, k * 0.45f), new Vector3(0.07f, 2.5f, 0.07f), kit.Mat("Iron"));
+                LocalBox(bars, new Vector3(-1.25f, 1.3f, k * 0.45f), new Vector3(0.07f, 2.5f, 0.07f), kit.Mat("Iron"));
+            }
+            LocalBox(bars, new Vector3(0.3f, 1.2f, 1.32f), new Vector3(0.3f, 0.36f, 0.12f), kit.Mat("Iron"), solid: false);
+            Transform broken = Holder(site, "Opened", p, site.rotation);
+            for (int k = 0; k < 4; k++)
+                LocalBox(broken, new Vector3(-0.8f + k * 0.5f, 0.06f, 1.9f + (k % 2) * 0.3f), new Vector3(0.07f, 0.07f, 2.4f), kit.Mat("Iron"), solid: false,
+                    euler: new Vector3(0f, 70f + k * 9f, 0f));
+
+            // The diggers' fire, carved bone in crates, their lamp.
+            Vector3 fire = p + toRoom * 6f + side * 2.5f;
+            for (int k = 0; k < 3; k++)
+                Cyl(t, fire + Vector3.up * 0.12f, 0.1f, 1.3f, kit.Mat("Charred"), solid: false, euler: new Vector3(90f, k * 60f, 0f));
+            Flame(t, fire + Vector3.up * 0.3f, 0.32f, kit.Mat("Ember"), flatten: 0.6f);
+            Glow(t, fire + Vector3.up * 1.2f, new Color(1f, 0.62f, 0.3f), 11f, 4f, flicker: true);
+            for (int k = 0; k < 3; k++)
+            {
+                Vector3 crate = p - side * (3f + k * 1.1f) + toRoom * (k * 0.6f);
+                Box(t, crate + Vector3.up * 0.35f, Vector3.one * 0.7f, kit.Mat("Wood"), euler: new Vector3(0f, R(0f, 90f), 0f));
+                Bones(t, crate + toRoom * 0.9f);
+            }
+            Lamp(t, p + side * 3.2f + toRoom * 1.5f);
+
+            Spots["Guide"] = p;
+            Spots["GuideFreed"] = p + toRoom * 3.4f - side * 1.2f;
+            Vector3 guardAt = Shape(Cave).NearestOpen(p + toRoom * 8f, 4f);
+            QuestProp prop = QuestProp.Attach(site.gameObject, "captive", 0, PropAction.Smash, "Wren's Cage",
+                "A timber cage, its door chained shut, with iron bars thick enough for a bear. Wren sits inside, bruised and grinning, rattling the chain at you. \"The key went with the jailer. The lock's rusted through anyway - one good blow.\"",
+                "Break the lock and free Wren", "Wren is free!", 3f,
+                new[] { "Hollowmaw", "Brute", "Storm Caster", "Crypt Spider", "Brute", "Crypt Spider", "Storm Caster" }, 7);
+            prop.SetGuarded(guardAt, "Defeat Wren's captors", "Vex's Jailer");
+            prop.SetLooks(bars.gameObject, broken.gameObject, null);
         }
 
         private void FrozenScout(Transform t, Vector3 p, int index, string journal)

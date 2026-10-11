@@ -21,7 +21,7 @@ namespace PoeClone.EditorTools
     public static class QuestTour
     {
         private static readonly string[] Order =
-            { "totems", "patrol", "caravan", "relics", "deep_road", "supplies", "rite", "sunstones", "scouts", "door" };
+            { "totems", "captive", "patrol", "caravan", "relics", "deep_road", "supplies", "rite", "sunstones", "scouts", "door" };
         private const float Pause = 5f;
         private const BindingFlags Any = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
