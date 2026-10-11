@@ -220,7 +220,7 @@ namespace PoeClone.Tests
         {
             "Socket_Head", "Socket_Chest", "Socket_Waist", "Socket_Neck",
             "Socket_HandL", "Socket_HandR", "Socket_FootL", "Socket_FootR",
-            "Socket_Ring", "Socket_MainHand", "Socket_OffHand"
+            "Socket_Ring", "Socket_MainHand", "Socket_OffHand", "Socket_ShoulderL", "Socket_ShoulderR"
         };
 
         private static string[] ExpectedSockets(ItemData item)
@@ -279,7 +279,7 @@ namespace PoeClone.Tests
         {
             foreach (ItemData item in AllBaseItems())
             {
-                string model = ItemGenerator.ModelFor(item.ArtId, out _);
+                string model = ItemGenerator.ModelFor(item, out _);
                 GameObject prefab = Resources.Load<GameObject>("Equipment/" + model);
                 Assert.IsNotNull(prefab, item.Name + " has no prefab at Resources/Equipment/" + model);
 
@@ -301,7 +301,7 @@ namespace PoeClone.Tests
         {
             foreach (ItemData item in AllBaseItems())
             {
-                GameObject prefab = Resources.Load<GameObject>("Equipment/" + ItemGenerator.ModelFor(item.ArtId, out _));
+                GameObject prefab = Resources.Load<GameObject>("Equipment/" + ItemGenerator.ModelFor(item, out _));
                 Assert.IsNotNull(prefab, item.Id);
 
                 foreach (MeshFilter mf in prefab.GetComponentsInChildren<MeshFilter>(true))

@@ -871,7 +871,10 @@ namespace PoeClone.Enemies
             // Recolour first, so the gear added below keeps its own colours.
             Recolour(model, kind);
 
-            if (kind.HideHorns)
+            EquipmentSet gear = kind.Gear.Length > 0 ? GearOf(kind) : null;
+
+            // Horns would poke through a helmet.
+            if (kind.HideHorns || gear?.Get(EquipSlot.Helmet) != null)
             {
                 foreach (Transform t in model.GetComponentsInChildren<Transform>(true))
                 {
@@ -885,21 +888,8 @@ namespace PoeClone.Enemies
             if (kind.Skeletal)
                 SkeletonLook.Build(model, kind);
 
-            if (kind.Gear.Length > 0)
+            if (gear != null)
             {
-                var gear = new EquipmentSet();
-                foreach (string id in kind.Gear)
-                {
-                    ItemData item = ItemGenerator.Display(id, null, ItemRarity.Normal);
-                    if (item == null)
-                        continue;
-                    foreach (EquipSlot slot in SlotRules.AllSlots)
-                    {
-                        if (gear.Get(slot) == null && gear.TryEquip(slot, item, out _))
-                            break;
-                    }
-                }
-
                 EquipmentVisuals visuals = model.gameObject.AddComponent<EquipmentVisuals>();
                 visuals.Bind(gear);
             }
@@ -966,6 +956,24 @@ namespace PoeClone.Enemies
 
         // Swaps the colour of each of the rig's own materials (cloth, skin, pants, eyes) for the
         // kind's, through property blocks so the shared materials themselves stay untouched.
+        // The kind's gear list, each piece in the first free slot that takes it.
+        private static EquipmentSet GearOf(EnemyKind kind)
+        {
+            var gear = new EquipmentSet();
+            foreach (string id in kind.Gear)
+            {
+                ItemData item = ItemGenerator.Display(id, null, ItemRarity.Normal);
+                if (item == null)
+                    continue;
+                foreach (EquipSlot slot in SlotRules.AllSlots)
+                {
+                    if (gear.Get(slot) == null && gear.TryEquip(slot, item, out _))
+                        break;
+                }
+            }
+            return gear;
+        }
+
         private static void Recolour(Transform root, EnemyKind kind)
         {
             var block = new MaterialPropertyBlock();

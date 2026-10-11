@@ -83,9 +83,9 @@ namespace PoeClone.Tests
         {
             foreach (string id in ItemGenerator.BaseIds)
             {
-                string art = ItemGenerator.Display(id, null, ItemRarity.Normal).ArtId;
-                Assert.IsNotNull(Resources.Load<Sprite>("ItemIcons/" + art), "no icon for " + id);
-                Assert.IsNotNull(Resources.Load<GameObject>("Equipment/" + ItemGenerator.ModelFor(art, out _)), "no 3D look for " + id);
+                ItemData item = ItemGenerator.Display(id, null, ItemRarity.Normal);
+                Assert.IsNotNull(Resources.Load<Sprite>("ItemIcons/" + item.ArtId), "no icon for " + id);
+                Assert.IsNotNull(Resources.Load<GameObject>("Equipment/" + ItemGenerator.ModelFor(item, out _)), "no 3D look for " + id);
             }
         }
 

@@ -121,7 +121,7 @@ namespace PoeClone.Inventory
 
             if (item != null)
             {
-                string model = ItemGenerator.ModelFor(item.ArtId, out Color modelTint);
+                string model = ItemGenerator.ModelFor(item, out Color modelTint);
                 Color tint = item.ArtTint * modelTint;
                 GameObject prefab = Resources.Load<GameObject>("Equipment/" + model);
                 if (prefab == null)

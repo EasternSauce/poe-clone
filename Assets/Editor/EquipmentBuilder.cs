@@ -1,29 +1,32 @@
 using System.Collections.Generic;
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 
 namespace PoeClone.EditorTools
 {
     /// <summary>
-    /// Builds the 3D look of every piece of gear as a prefab in Resources/Equipment/{item id}.prefab,
+    /// Builds the 3D look of every piece of gear as a prefab in Resources/Equipment/{model}.prefab,
     /// using the same low-poly meshes and palette as the rest of the game, and styled after each item's icon.
     /// Each direct child of a prefab is named after the character socket it attaches to
     /// (Socket_Head, Socket_HandL, ...). "Socket_Ring" lands on whichever hand the ring slot uses.
-    /// Re-runnable: PoeClone > Build Equipment.
+    /// Worn pieces are shaped round the body of <see cref="HumanoidBodyBuilder"/>; see the socket
+    /// notes above each group. Re-runnable: PoeClone > Build Equipment.
     /// </summary>
     public static class EquipmentBuilder
     {
         private const string OutDir = "Assets/Resources/Equipment";
         private const string MatDir = "Assets/Materials/Stylized";
-        private const string MeshDir = "Assets/Meshes/Stylized";
 
         private static readonly string[] AllIds =
         {
-            "iron_helmet", "bronze_helmet", "studded_vest", "leather_gloves", "leather_boots", "rope_belt",
-            "jade_amulet", "iron_ring", "ruby_ring", "sapphire_ring", "rusty_sword", "wooden_shield",
-            "hand_axe", "iron_mace", "steel_dagger", "short_bow", "leather_quiver",
-            "sage_circlet", "bastard_sword", "woodsplitter", "great_mallet", "bone_sceptre", "grimoire"
+            "iron_helmet", "bronze_helmet", "hunter_hood", "sage_circlet",
+            "studded_vest", "chain_hauberk", "silk_robe",
+            "leather_gloves", "iron_gauntlets", "silk_gloves",
+            "leather_boots", "iron_greaves", "silk_slippers",
+            "rope_belt", "jade_amulet", "iron_ring", "ruby_ring", "sapphire_ring",
+            "wooden_shield", "kite_shield", "tower_shield", "buckler", "spiked_buckler", "spirit_focus",
+            "rusty_sword", "hand_axe", "iron_mace", "steel_dagger", "short_bow", "crude_bow", "leather_quiver",
+            "bastard_sword", "woodsplitter", "great_mallet", "sledgehammer", "bone_sceptre", "grimoire"
         };
 
         private static readonly Dictionary<string, Material> Mats = new Dictionary<string, Material>();
@@ -37,18 +40,17 @@ namespace PoeClone.EditorTools
             LoadMeshes();
             MakeMaterials();
 
-            IronHelmet();
-            BronzeHelmet();
-            StuddedVest();
-            LeatherGloves();
-            LeatherBoots();
-            RopeBelt();
+            Helmets();
+            BodyArmours();
+            Gloves();
+            Boots();
+            Belt();
             JadeAmulet();
             Ring("iron_ring", "SteelDark", "RustSteel");
             Ring("ruby_ring", "Steel", "GemRed");
             Ring("sapphire_ring", "Steel", "GemBlue");
+            Shields();
             RustySword();
-            WoodenShield();
             WeaponModels();
             VarietyModels();
             SummonerModels();
@@ -95,9 +97,11 @@ namespace PoeClone.EditorTools
         private static void LoadMeshes()
         {
             Meshes.Clear();
+            foreach (KeyValuePair<string, Mesh> pair in LowPolyMeshes.BuildShared())
+                Meshes[pair.Key] = pair.Value;
             foreach (string name in new[] { "Cone", "Cylinder", "IcoHead" })
             {
-                Mesh m = AssetDatabase.LoadAssetAtPath<Mesh>(MeshDir + "/" + name + ".asset");
+                Mesh m = AssetDatabase.LoadAssetAtPath<Mesh>(LowPolyMeshes.MeshDir + "/" + name + ".asset");
                 if (m == null)
                     Debug.LogError("EquipmentBuilder: missing mesh " + name + ". Run PoeClone > Build Stylized World first.");
                 Meshes[name] = m;
@@ -111,13 +115,17 @@ namespace PoeClone.EditorTools
             return c;
         }
 
-        private static void Mat(string name, string hex, float smoothness, bool glow)
+        // A gear material in the toon style. A new one starts as a copy of `template` (so it gets
+        // the same shader, texture and tiling); its colour, shadow and rim follow from `hex`, and
+        // `texture` (0..1, if given) sets how strongly the texture shows.
+        private static void Mat(string name, string hex, float smoothness, string template = null, float texture = -1f)
         {
             string path = MatDir + "/" + name + ".mat";
             Material m = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (m == null)
             {
-                m = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                Material from = template != null ? AssetDatabase.LoadAssetAtPath<Material>(MatDir + "/" + template + ".mat") : null;
+                m = from != null ? new Material(from) : new Material(Shader.Find("Universal Render Pipeline/Lit"));
                 AssetDatabase.CreateAsset(m, path);
             }
 
@@ -125,6 +133,14 @@ namespace PoeClone.EditorTools
             m.SetColor("_BaseColor", c);
             m.SetFloat("_Smoothness", smoothness);
             m.SetFloat("_Metallic", 0f);
+            if (m.HasProperty("_ShadowColor"))
+            {
+                m.SetColor("_ShadowColor", new Color(c.r * 0.5f, c.g * 0.5f, Mathf.Min(1f, c.b * 0.62f), 1f));
+                m.SetColor("_RimColor", Color.Lerp(c, Color.white, 0.6f));
+            }
+
+            if (texture >= 0f && m.HasProperty("_TexInfluence"))
+                m.SetFloat("_TexInfluence", texture);
 
             // No emission: it needs its own shader variant, which the editor compiles asynchronously
             // and shows as magenta until it finishes. Gems shine through smoothness instead.
@@ -135,31 +151,38 @@ namespace PoeClone.EditorTools
             Mats[name] = m;
         }
 
-        // Colours are chosen to match the painted icons.
+        // Colours are chosen to match the painted icons. Higher tiers tint these (ItemData.ArtTint),
+        // so the cloth and hood colours are pale enough to take a tier's colour.
         private static void MakeMaterials()
         {
             Mats.Clear();
-            Mat("Tan", "#c2a274", 0.05f, false);
-            Mat("TanDark", "#8a6a44", 0.05f, false);
-            Mat("TanLight", "#d8c197", 0.05f, false);
-            Mat("Steel", "#8b929c", 0.35f, false);
-            Mat("SteelDark", "#5d626b", 0.2f, false);
-            Mat("Bronze", "#b07b3c", 0.3f, false);
-            Mat("BronzeLight", "#d9a45a", 0.3f, false);
-            Mat("Gold", "#c9a227", 0.35f, false);
-            Mat("Rope", "#b89a63", 0.05f, false);
-            Mat("RopeDark", "#7d6640", 0.05f, false);
-            Mat("Leather", "#3b2a1d", 0.05f, false);
-            Mat("GemGreen", "#35d17f", 0.5f, true);
-            Mat("GemRed", "#e03a4a", 0.5f, true);
-            Mat("GemBlue", "#3f6ff0", 0.5f, true);
-            Mat("RustSteel", "#8a7e73", 0.1f, false);
-            Mat("Rust", "#9b4f2a", 0.05f, false);
-            Mat("ShieldWood", "#8a5e34", 0.05f, false);
-            Mat("ShieldWoodDark", "#5e3f22", 0.05f, false);
-            Mat("Silver", "#c9ced6", 0.45f, false);
-            Mat("PaleWood", "#d6c79a", 0.05f, false);
-            Mat("BowString", "#ece6d6", 0.05f, false);
+            Mat("Tan", "#c2a274", 0.05f);
+            Mat("TanDark", "#8a6a44", 0.05f);
+            Mat("TanLight", "#d8c197", 0.05f);
+            Mat("Steel", "#8b929c", 0.35f);
+            Mat("SteelDark", "#5d626b", 0.2f);
+            Mat("Bronze", "#b07b3c", 0.3f);
+            Mat("BronzeLight", "#d9a45a", 0.3f);
+            Mat("Gold", "#c9a227", 0.35f);
+            Mat("Rope", "#b89a63", 0.05f);
+            Mat("RopeDark", "#7d6640", 0.05f);
+            Mat("Leather", "#3b2a1d", 0.05f);
+            Mat("GemGreen", "#35d17f", 0.5f);
+            Mat("GemRed", "#e03a4a", 0.5f);
+            Mat("GemBlue", "#3f6ff0", 0.5f);
+            Mat("RustSteel", "#8a7e73", 0.1f);
+            Mat("Rust", "#9b4f2a", 0.05f);
+            Mat("ShieldWood", "#8a5e34", 0.05f);
+            Mat("ShieldWoodDark", "#5e3f22", 0.05f);
+            Mat("Silver", "#c9ced6", 0.45f);
+            Mat("PaleWood", "#d6c79a", 0.05f);
+            Mat("BowString", "#ece6d6", 0.05f);
+            Mat("GearCloth", "#f2ead6", 0.1f, "TanLight", 0.35f);
+            Mat("GearClothTrim", "#2f8f86", 0.05f, "TanLight");
+            Mat("HoodCloth", "#b4b4a8", 0.05f, "Tan");
+            Mat("Crystal", "#cfe0ff", 0.6f, "Silver");
+            Mat("Visor", "#1c1712", 0.05f, "Leather");
+            Mat("BookLeather", "#6e2f2c", 0.05f, "Leather");
         }
 
         // ------------------------------------------------------------------ builders
@@ -227,161 +250,488 @@ namespace PoeClone.EditorTools
             Object.DestroyImmediate(root);
         }
 
-        // ------------------------------------------------------------------ the gear
+        // ------------------------------------------------------------------ helmets
 
-        // Head socket is the centre of the head. The face sits at about z +0.2, so helmets sit back and up.
-        private static void IronHelmet()
+        // Socket_Head is the centre of the head (radius about 0.18). The player's hair reaches 0.215
+        // above it and 0.215 behind, so every helmet covers that.
+        private static void Helmets()
         {
-            GameObject root = NewRoot("iron_helmet");
-            Transform head = Node(root, "Socket_Head", Vector3.zero, Vector3.zero);
-
-            Shape(head, "Dome", "IcoHead", "Steel", new Vector3(0f, 0.12f, -0.08f), new Vector3(0.60f, 0.50f, 0.60f));
-            Shape(head, "Band", "Cylinder", "SteelDark", new Vector3(0f, 0.08f, -0.06f), new Vector3(0.58f, 0.07f, 0.58f));
-            Cube(head, "NoseGuard", "Steel", new Vector3(0f, 0f, 0.24f), new Vector3(0.05f, 0.2f, 0.04f));
-            Cube(head, "CheekL", "Steel", new Vector3(-0.235f, -0.02f, 0.03f), new Vector3(0.05f, 0.2f, 0.18f));
-            Cube(head, "CheekR", "Steel", new Vector3(0.235f, -0.02f, 0.03f), new Vector3(0.05f, 0.2f, 0.18f));
-            // Flat fins swept back along the head (like the icon's pointed ear guards), not upright cones.
-            Shape(head, "EarL", "Cone", "Steel", new Vector3(-0.27f, 0.03f, -0.03f), new Vector3(0.08f, 0.26f, 0.02f), new Vector3(-105f, 0f, 20f));
-            Shape(head, "EarR", "Cone", "Steel", new Vector3(0.27f, 0.03f, -0.03f), new Vector3(0.08f, 0.26f, 0.02f), new Vector3(-105f, 0f, -20f));
-            Cube(head, "Gem", "GemGreen", new Vector3(0f, 0.115f, 0.245f), new Vector3(0.07f, 0.07f, 0.04f), new Vector3(0f, 0f, 45f));
-
-            Save(root, "iron_helmet");
+            // Silver, open-faced: a dome, cheek guards round the sides and back, a nose guard,
+            // swept-back ear fins and a green gem on the brow.
+            OpenHelm("iron_helmet", "Steel", "SteelDark", "Steel");
+            ClosedHelm();
+            Hood();
+            SageCirclet();
         }
 
-        private static void BronzeHelmet()
+        private static void HelmDome(Transform head, string mat, string trim)
+        {
+            Shape(head, "Dome", "GearDome", mat, new Vector3(0f, 0.15f, -0.02f), new Vector3(0.45f, 0.2f, 0.47f));
+            Shape(head, "Brow", "GearBand", trim, new Vector3(0f, 0.055f, -0.02f), new Vector3(0.47f, 0.04f, 0.49f));
+        }
+
+        private static void EarFins(Transform head, string mat)
+        {
+            foreach (float s in new[] { -1f, 1f })
+                Shape(head, s < 0f ? "EarL" : "EarR", "Cone", mat, new Vector3(0.222f * s, 0.01f, -0.04f), new Vector3(0.018f, 0.15f, 0.055f), new Vector3(-55f, 0f, -12f * s));
+        }
+
+        private static void OpenHelm(string id, string mat, string trim, string fins)
+        {
+            GameObject root = NewRoot(id);
+            Transform head = Node(root, "Socket_Head", Vector3.zero, Vector3.zero);
+
+            HelmDome(head, mat, trim);
+            Shape(head, "Guard", "GearHelmGuard", mat, new Vector3(0f, -0.06f, -0.02f), new Vector3(0.45f, 0.22f, 0.47f));
+            Shape(head, "NoseGuard", "GearLeaf", mat, new Vector3(0f, -0.005f, 0.222f), new Vector3(0.05f, 0.15f, 0.03f));
+            EarFins(head, fins);
+            Shape(head, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.09f, 0.22f), new Vector3(0.06f, 0.075f, 0.04f));
+
+            Save(root, id);
+        }
+
+        // Bronze, closed-faced: the guard closes round the face, with a dark eye slit and nose slit
+        // (a T), a crest along the top and the same fins and gem.
+        private static void ClosedHelm()
         {
             GameObject root = NewRoot("bronze_helmet");
             Transform head = Node(root, "Socket_Head", Vector3.zero, Vector3.zero);
 
-            Shape(head, "Dome", "IcoHead", "Bronze", new Vector3(0f, 0.12f, -0.08f), new Vector3(0.60f, 0.50f, 0.60f));
-            Shape(head, "Trim", "Cylinder", "Gold", new Vector3(0f, 0.08f, -0.06f), new Vector3(0.58f, 0.06f, 0.58f));
-            Cube(head, "Crest", "BronzeLight", new Vector3(0f, 0.37f, -0.08f), new Vector3(0.04f, 0.12f, 0.42f));
-            // Swept-back side fins, flat against the head (no upright horn shapes).
-            Shape(head, "WingL", "Cone", "BronzeLight", new Vector3(-0.28f, 0.05f, -0.04f), new Vector3(0.09f, 0.30f, 0.02f), new Vector3(-100f, 0f, 25f));
-            Shape(head, "WingR", "Cone", "BronzeLight", new Vector3(0.28f, 0.05f, -0.04f), new Vector3(0.09f, 0.30f, 0.02f), new Vector3(-100f, 0f, -25f));
-            Cube(head, "NoseGuard", "Bronze", new Vector3(0f, 0f, 0.24f), new Vector3(0.05f, 0.2f, 0.04f));
-            Cube(head, "CheekL", "Bronze", new Vector3(-0.235f, -0.02f, 0.03f), new Vector3(0.05f, 0.2f, 0.18f));
-            Cube(head, "CheekR", "Bronze", new Vector3(0.235f, -0.02f, 0.03f), new Vector3(0.05f, 0.2f, 0.18f));
-            Cube(head, "Gem", "GemGreen", new Vector3(0f, 0.115f, 0.245f), new Vector3(0.07f, 0.07f, 0.04f), new Vector3(0f, 0f, 45f));
+            HelmDome(head, "Bronze", "Gold");
+            Shape(head, "Face", "GearCuff", "Bronze", new Vector3(0f, -0.06f, -0.02f), new Vector3(0.45f, 0.22f, 0.47f));
+            Cube(head, "EyeSlit", "Visor", new Vector3(0f, 0.015f, 0.214f), new Vector3(0.24f, 0.028f, 0.02f));
+            Cube(head, "MouthSlit", "Visor", new Vector3(0f, -0.065f, 0.2f), new Vector3(0.03f, 0.12f, 0.02f));
+            Cube(head, "Crest", "BronzeLight", new Vector3(0f, 0.225f, -0.03f), new Vector3(0.025f, 0.045f, 0.3f));
+            EarFins(head, "BronzeLight");
+            Shape(head, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.09f, 0.22f), new Vector3(0.06f, 0.075f, 0.04f));
 
             Save(root, "bronze_helmet");
         }
 
-        // Chest socket is the centre of the torso (0.78 x 0.75 x 0.44).
+        // A cloth hood open at the face, falling into a cowl round the neck and shoulders.
+        private static void Hood()
+        {
+            GameObject root = NewRoot("hunter_hood");
+            Transform head = Node(root, "Socket_Head", Vector3.zero, Vector3.zero);
+
+            Shape(head, "Hood", "GearHood", "HoodCloth", new Vector3(0f, 0.04f, -0.03f), new Vector3(0.47f, 0.5f, 0.5f));
+            Shape(head, "Cowl", "GearFlare", "HoodCloth", new Vector3(0f, -0.25f, -0.03f), new Vector3(0.58f, 0.2f, 0.48f));
+
+            Save(root, "hunter_hood");
+        }
+
+        // A gold band round the brow over a teal one, gold leaves rising from it and a green gem
+        // over the forehead.
+        private static void SageCirclet()
+        {
+            GameObject root = NewRoot("sage_circlet");
+            Transform head = Node(root, "Socket_Head", Vector3.zero, Vector3.zero);
+
+            Shape(head, "Band", "GearBand", "Gold", new Vector3(0f, 0.075f, -0.02f), new Vector3(0.42f, 0.035f, 0.45f));
+            Shape(head, "Underband", "GearBand", "GearClothTrim", new Vector3(0f, 0.05f, -0.02f), new Vector3(0.41f, 0.025f, 0.44f));
+            Shape(head, "LeafC", "GearLeaf", "Gold", new Vector3(0f, 0.13f, 0.2f), new Vector3(0.07f, 0.12f, 0.025f));
+            foreach (float s in new[] { -1f, 1f })
+            {
+                Shape(head, "Leaf", "GearLeaf", "Gold", new Vector3(0.12f * s, 0.11f, 0.16f), new Vector3(0.05f, 0.085f, 0.02f), new Vector3(0f, 35f * s, -18f * s));
+                Shape(head, "LeafSmall", "GearLeaf", "Gold", new Vector3(0.188f * s, 0.1f, 0.06f), new Vector3(0.04f, 0.065f, 0.02f), new Vector3(0f, 70f * s, -25f * s));
+            }
+            Shape(head, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.11f, 0.222f), new Vector3(0.05f, 0.065f, 0.035f));
+
+            Save(root, "sage_circlet");
+        }
+
+        // ------------------------------------------------------------------ body armour
+
+        // Socket_Chest is the centre of the torso (0.66 wide, 0.72 tall, 0.36 deep, BodyTorso);
+        // a shell of the same shape fits over it. Socket_ShoulderL/R are the shoulder joints, so
+        // pads and sleeves there swing with the arms.
+        private static void BodyArmours()
+        {
+            StuddedVest();
+            PlateArmour();
+            SilkRobe();
+        }
+
+        private static void Torso(Transform chest, string mat, Vector3 scale)
+        {
+            Shape(chest, "Body", "BodyTorso", mat, new Vector3(0f, -0.005f, 0f), scale);
+        }
+
+        private static Transform[] Shoulders(GameObject root)
+        {
+            return new[]
+            {
+                Node(root, "Socket_ShoulderL", Vector3.zero, Vector3.zero),
+                Node(root, "Socket_ShoulderR", Vector3.zero, Vector3.zero)
+            };
+        }
+
+        // Pale leather jerkin: puffed shoulders over short sleeves, a collar, toggles down the front,
+        // dark leaf stitching, a waist band and a flared hem.
         private static void StuddedVest()
         {
             GameObject root = NewRoot("studded_vest");
             Transform chest = Node(root, "Socket_Chest", Vector3.zero, Vector3.zero);
 
-            Cube(chest, "Body", "Tan", new Vector3(0f, 0.03f, 0f), new Vector3(0.83f, 0.68f, 0.49f));
-            Shape(chest, "Collar", "Cylinder", "TanDark", new Vector3(0f, 0.34f, 0f), new Vector3(0.40f, 0.08f, 0.32f));
-            Shape(chest, "ShoulderL", "Cylinder", "Tan", new Vector3(-0.47f, 0.30f, 0f), new Vector3(0.36f, 0.13f, 0.36f));
-            Shape(chest, "ShoulderR", "Cylinder", "Tan", new Vector3(0.47f, 0.30f, 0f), new Vector3(0.36f, 0.13f, 0.36f));
-            Shape(chest, "ShoulderTrimL", "Cylinder", "Gold", new Vector3(-0.47f, 0.29f, 0f), new Vector3(0.38f, 0.03f, 0.38f));
-            Shape(chest, "ShoulderTrimR", "Cylinder", "Gold", new Vector3(0.47f, 0.29f, 0f), new Vector3(0.38f, 0.03f, 0.38f));
-            Cube(chest, "StrapL", "TanDark", new Vector3(-0.16f, 0.02f, 0f), new Vector3(0.07f, 0.6f, 0.5f));
-            Cube(chest, "StrapR", "TanDark", new Vector3(0.16f, 0.02f, 0f), new Vector3(0.07f, 0.6f, 0.5f));
-
-            foreach (float y in new[] { 0.16f, 0f, -0.16f })
+            Torso(chest, "TanLight", new Vector3(0.71f, 0.7f, 0.41f));
+            Shape(chest, "Collar", "GearCuff", "Tan", new Vector3(0f, 0.34f, 0f), new Vector3(0.27f, 0.08f, 0.21f));
+            Shape(chest, "WaistBand", "GearBand", "Tan", new Vector3(0f, -0.3f, 0f), new Vector3(0.56f, 0.05f, 0.4f));
+            Shape(chest, "Hem", "GearFlare", "TanLight", new Vector3(0f, -0.42f, 0f), new Vector3(0.62f, 0.16f, 0.44f));
+            float[] ys = { 0.15f, 0.02f, -0.12f };
+            float[] zs = { 0.207f, 0.208f, 0.183f };
+            for (int i = 0; i < ys.Length; i++)
+                Cube(chest, "Toggle", "Gold", new Vector3(0f, ys[i], zs[i]), new Vector3(0.07f, 0.025f, 0.02f));
+            foreach (float s in new[] { -1f, 1f })
             {
-                Cube(chest, "BuckleL", "Gold", new Vector3(-0.16f, y, 0.255f), new Vector3(0.09f, 0.06f, 0.03f));
-                Cube(chest, "BuckleR", "Gold", new Vector3(0.16f, y, 0.255f), new Vector3(0.09f, 0.06f, 0.03f));
+                Shape(chest, "Stitch", "GearLeaf", "TanDark", new Vector3(0.14f * s, 0.12f, 0.2f), new Vector3(0.06f, 0.11f, 0.01f), new Vector3(0f, 18f * s, -20f * s));
+                Shape(chest, "Stud", "IcoHead", "Gold", new Vector3(0.21f * s, 0.24f, 0.15f), new Vector3(0.03f, 0.03f, 0.03f));
             }
+            Shape(chest, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.29f, 0.165f), new Vector3(0.045f, 0.05f, 0.03f));
 
-            // Studs on the chest plates.
-            foreach (float y in new[] { 0.2f, -0.06f })
+            foreach (Transform shoulder in Shoulders(root))
             {
-                Cube(chest, "StudL", "Gold", new Vector3(-0.31f, y, 0.255f), new Vector3(0.04f, 0.04f, 0.03f));
-                Cube(chest, "StudR", "Gold", new Vector3(0.31f, y, 0.255f), new Vector3(0.04f, 0.04f, 0.03f));
+                Shape(shoulder, "ShoulderPuff", "GearDome", "Tan", new Vector3(0f, 0.02f, 0f), new Vector3(0.22f, 0.13f, 0.24f));
+                Shape(shoulder, "Sleeve", "GearFlare", "TanLight", new Vector3(0f, -0.1f, 0f), new Vector3(0.26f, 0.16f, 0.27f));
             }
-
-            Cube(chest, "Gem", "GemGreen", new Vector3(0f, 0.27f, 0.255f), new Vector3(0.07f, 0.07f, 0.03f), new Vector3(0f, 0f, 45f));
-            Cube(chest, "Hem", "TanDark", new Vector3(0f, -0.3f, 0f), new Vector3(0.85f, 0.06f, 0.5f));
 
             Save(root, "studded_vest");
         }
 
-        // Hand socket is at the hand; the forearm is above it (+y).
-        private static void LeatherGloves()
+        // Polished plate: a breastplate with a ridge, leaf engraving and a gem, a gorget, layered
+        // pauldrons trimmed in gold, a steel belt and a flared fauld.
+        private static void PlateArmour()
         {
-            GameObject root = NewRoot("leather_gloves");
+            GameObject root = NewRoot("chain_hauberk");
+            Transform chest = Node(root, "Socket_Chest", Vector3.zero, Vector3.zero);
+
+            Torso(chest, "Silver", new Vector3(0.72f, 0.7f, 0.42f));
+            Cube(chest, "Ridge", "Steel", new Vector3(0f, 0.04f, 0.208f), new Vector3(0.025f, 0.4f, 0.02f));
+            Shape(chest, "Gorget", "GearCuff", "Silver", new Vector3(0f, 0.35f, 0f), new Vector3(0.29f, 0.09f, 0.23f));
+            Shape(chest, "Belt", "GearBand", "SteelDark", new Vector3(0f, -0.3f, 0f), new Vector3(0.57f, 0.05f, 0.41f));
+            Shape(chest, "Fauld", "GearFlare", "Silver", new Vector3(0f, -0.43f, 0f), new Vector3(0.62f, 0.18f, 0.45f));
+            Shape(chest, "FauldTrim", "GearBand", "Gold", new Vector3(0f, -0.515f, 0f), new Vector3(0.63f, 0.02f, 0.46f));
+            foreach (float s in new[] { -1f, 1f })
+                Shape(chest, "Engraving", "GearLeaf", "Steel", new Vector3(0.12f * s, 0.12f, 0.205f), new Vector3(0.06f, 0.13f, 0.01f), new Vector3(0f, 16f * s, -22f * s));
+            Shape(chest, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.22f, 0.205f), new Vector3(0.065f, 0.08f, 0.04f));
+
+            Transform[] shoulders = Shoulders(root);
+            for (int i = 0; i < 2; i++)
+            {
+                float s = i == 0 ? -1f : 1f;
+                Shape(shoulders[i], "ShoulderPlate", "GearDome", "Silver", new Vector3(0f, 0.03f, 0f), new Vector3(0.29f, 0.17f, 0.31f));
+                Shape(shoulders[i], "ShoulderTrim", "GearBand", "Gold", new Vector3(0f, -0.045f, 0f), new Vector3(0.3f, 0.025f, 0.32f));
+                Shape(shoulders[i], "ShoulderLame", "GearDome", "Silver", new Vector3(0.02f * s, -0.08f, 0f), new Vector3(0.24f, 0.12f, 0.27f), new Vector3(0f, 0f, 14f * s));
+            }
+
+            Save(root, "chain_hauberk");
+        }
+
+        // A long pale robe: a stand collar, wide short sleeves edged in teal, a sash, leaf stitching
+        // down the front and a skirt to mid-shin with a teal hem.
+        private static void SilkRobe()
+        {
+            GameObject root = NewRoot("silk_robe");
+            Transform chest = Node(root, "Socket_Chest", Vector3.zero, Vector3.zero);
+
+            Torso(chest, "GearCloth", new Vector3(0.7f, 0.7f, 0.4f));
+            Shape(chest, "Collar", "GearCuff", "GearCloth", new Vector3(0f, 0.35f, 0f), new Vector3(0.26f, 0.09f, 0.2f));
+            Shape(chest, "Skirt", "BodySkirt", "GearCloth", new Vector3(0f, -0.6f, 0f), new Vector3(0.66f, 0.5f, 0.5f));
+            Shape(chest, "Hem", "GearBand", "GearClothTrim", new Vector3(0f, -0.835f, 0f), new Vector3(0.68f, 0.04f, 0.52f));
+            Shape(chest, "Sash", "GearBand", "GearCloth", new Vector3(0f, -0.3f, 0f), new Vector3(0.56f, 0.07f, 0.4f));
+            Shape(chest, "SashTrim", "GearBand", "GearClothTrim", new Vector3(0f, -0.335f, 0f), new Vector3(0.565f, 0.015f, 0.405f));
+            float[] ys = { 0.18f, 0.04f, -0.1f };
+            float[] zs = { 0.205f, 0.21f, 0.188f };
+            for (int i = 0; i < ys.Length; i++)
+                Shape(chest, "Stitch", "GearLeaf", "GearClothTrim", new Vector3(0f, ys[i], zs[i]), new Vector3(0.05f, 0.08f, 0.01f));
+
+            foreach (Transform shoulder in Shoulders(root))
+            {
+                Shape(shoulder, "Sleeve", "GearFlare", "GearCloth", new Vector3(0f, -0.11f, 0f), new Vector3(0.29f, 0.25f, 0.31f));
+                Shape(shoulder, "SleeveTrim", "GearBand", "GearClothTrim", new Vector3(0f, -0.23f, 0f), new Vector3(0.3f, 0.025f, 0.32f));
+            }
+
+            Save(root, "silk_robe");
+        }
+
+        // ------------------------------------------------------------------ gloves
+
+        // Socket_HandL/R is the centre of the hand (0.1 x 0.15 x 0.12); the forearm runs up from it
+        // (+y) to the elbow at +0.3. The back of each hand faces away from the body (out along x).
+        private static void Gloves()
+        {
+            GloveSet("leather_gloves", "TanLight", "TanLight", "Gold", null);
+            GloveSet("iron_gauntlets", "Silver", "Silver", "Gold", "GemGreen");
+            GloveSet("silk_gloves", "GearCloth", "GearCloth", "GearClothTrim", "GemGreen");
+        }
+
+        private static void GloveSet(string id, string glove, string cuff, string trim, string gem)
+        {
+            GameObject root = NewRoot(id);
+            bool plate = id == "iron_gauntlets";
 
             foreach (string socket in new[] { "Socket_HandL", "Socket_HandR" })
             {
+                float s = socket == "Socket_HandL" ? -1f : 1f;
                 Transform hand = Node(root, socket, Vector3.zero, Vector3.zero);
-                Cube(hand, "Glove", "Tan", Vector3.zero, new Vector3(0.23f, 0.19f, 0.27f));
-                Cube(hand, "Knuckles", "TanDark", new Vector3(0f, -0.03f, 0.13f), new Vector3(0.23f, 0.07f, 0.06f));
-                Cube(hand, "Cuff", "TanLight", new Vector3(0f, 0.15f, 0f), new Vector3(0.29f, 0.16f, 0.32f));
-                Cube(hand, "CuffTrim", "Gold", new Vector3(0f, 0.235f, 0f), new Vector3(0.30f, 0.03f, 0.33f));
+                Shape(hand, "Glove", "BodyLimb", glove, new Vector3(0f, -0.01f, 0f), plate ? new Vector3(0.135f, 0.2f, 0.16f) : new Vector3(0.125f, 0.19f, 0.15f));
+                Shape(hand, "Cuff", "GearCuff", cuff, new Vector3(0f, 0.14f, 0f), plate ? new Vector3(0.22f, 0.18f, 0.23f) : new Vector3(0.19f, 0.16f, 0.2f));
+                Shape(hand, "CuffTrim", "GearBand", trim, plate ? new Vector3(0f, 0.225f, 0f) : new Vector3(0f, 0.075f, 0f),
+                    plate ? new Vector3(0.225f, 0.02f, 0.235f) : new Vector3(0.165f, 0.025f, 0.175f));
+                if (plate)
+                {
+                    Shape(hand, "Knuckles", "GearDome", "Silver", new Vector3(0.05f * s, -0.02f, 0f), new Vector3(0.13f, 0.05f, 0.14f), new Vector3(0f, 0f, -90f * s));
+                    Shape(hand, "Fingers", "GearBand", "SteelDark", new Vector3(0f, -0.065f, 0f), new Vector3(0.13f, 0.02f, 0.155f));
+                }
+                else
+                {
+                    Shape(hand, "Stud", "IcoHead", trim == "Gold" ? "Gold" : "TanDark", new Vector3(0.088f * s, 0.15f, 0.02f), new Vector3(0.025f, 0.025f, 0.025f));
+                }
+                if (gem != null)
+                    Shape(hand, "Gem", "IcoHead", gem, new Vector3((plate ? 0.105f : 0.095f) * s, 0.16f, 0f), new Vector3(0.025f, 0.05f, 0.04f));
             }
 
-            Save(root, "leather_gloves");
+            Save(root, id);
         }
 
-        // Foot socket is the centre of the boot (the shin, 0.46 tall).
+        // ------------------------------------------------------------------ boots
+
+        // Socket_FootL/R is the centre of the boot (BodyBoot, 0.19 x 0.46 x 0.3): from just below the
+        // knee to the ground, the foot reaching forward at the bottom. The shaft is drawn back a little.
+        private static void Boots()
+        {
+            LeatherBoots();
+            IronGreaves();
+            SilkSlippers();
+        }
+
         private static void LeatherBoots()
         {
             GameObject root = NewRoot("leather_boots");
-
             foreach (string socket in new[] { "Socket_FootL", "Socket_FootR" })
             {
+                float s = socket == "Socket_FootL" ? -1f : 1f;
                 Transform foot = Node(root, socket, Vector3.zero, Vector3.zero);
-                Cube(foot, "Boot", "Tan", Vector3.zero, new Vector3(0.31f, 0.47f, 0.37f));
-                Cube(foot, "Cuff", "TanLight", new Vector3(0f, 0.235f, 0f), new Vector3(0.37f, 0.11f, 0.42f));
-                Cube(foot, "StrapHigh", "TanDark", new Vector3(0f, 0.06f, 0f), new Vector3(0.33f, 0.04f, 0.39f));
-                Cube(foot, "StrapLow", "TanDark", new Vector3(0f, -0.07f, 0f), new Vector3(0.33f, 0.04f, 0.39f));
-                Cube(foot, "Buckle", "Gold", new Vector3(0.165f, 0.06f, 0.02f), new Vector3(0.03f, 0.06f, 0.06f));
-                Cube(foot, "ToeCap", "Tan", new Vector3(0f, -0.16f, 0.2f), new Vector3(0.26f, 0.14f, 0.12f));
-                Cube(foot, "Sole", "TanDark", new Vector3(0f, -0.245f, 0.03f), new Vector3(0.32f, 0.05f, 0.42f));
+                Shape(foot, "Boot", "BodyBoot", "TanLight", new Vector3(0f, -0.005f, 0f), new Vector3(0.235f, 0.475f, 0.335f));
+                Shape(foot, "Cuff", "GearCuff", "Tan", new Vector3(0f, 0.22f, -0.027f), new Vector3(0.23f, 0.1f, 0.25f));
+                Shape(foot, "StrapHigh", "GearBand", "TanDark", new Vector3(0f, 0.03f, -0.037f), new Vector3(0.205f, 0.03f, 0.225f));
+                Shape(foot, "StrapLow", "GearBand", "TanDark", new Vector3(0f, -0.1f, -0.027f), new Vector3(0.205f, 0.03f, 0.25f));
+                Cube(foot, "Buckle", "Gold", new Vector3(0.1f * s, 0.03f, -0.03f), new Vector3(0.015f, 0.045f, 0.045f));
+                Cube(foot, "BuckleLow", "Gold", new Vector3(0.1f * s, -0.1f, -0.02f), new Vector3(0.015f, 0.045f, 0.045f));
             }
-
             Save(root, "leather_boots");
         }
 
-        private static void RopeBelt()
+        // Tall polished greaves: a knee cop, a ridge down the shin, a gold top trim and a pointed toe cap.
+        private static void IronGreaves()
+        {
+            GameObject root = NewRoot("iron_greaves");
+            foreach (string socket in new[] { "Socket_FootL", "Socket_FootR" })
+            {
+                Transform foot = Node(root, socket, Vector3.zero, Vector3.zero);
+                Shape(foot, "Greave", "BodyBoot", "Silver", new Vector3(0f, -0.005f, 0f), new Vector3(0.24f, 0.48f, 0.34f));
+                Shape(foot, "Trim", "GearBand", "Gold", new Vector3(0f, 0.23f, -0.027f), new Vector3(0.2f, 0.025f, 0.22f));
+                Shape(foot, "KneeCop", "GearDome", "Silver", new Vector3(0f, 0.22f, 0.05f), new Vector3(0.15f, 0.07f, 0.15f), new Vector3(90f, 0f, 0f));
+                Cube(foot, "Ridge", "SteelDark", new Vector3(0f, 0.03f, 0.072f), new Vector3(0.018f, 0.26f, 0.02f));
+                Shape(foot, "ToeCap", "GearDome", "SteelDark", new Vector3(0f, -0.19f, 0.14f), new Vector3(0.13f, 0.07f, 0.08f), new Vector3(90f, 0f, 0f));
+            }
+            Save(root, "iron_greaves");
+        }
+
+        // Soft pale boots with a deep turned-down cuff edged in teal, leaf stitching and a curled toe.
+        private static void SilkSlippers()
+        {
+            GameObject root = NewRoot("silk_slippers");
+            foreach (string socket in new[] { "Socket_FootL", "Socket_FootR" })
+            {
+                Transform foot = Node(root, socket, Vector3.zero, Vector3.zero);
+                Shape(foot, "Boot", "BodyBoot", "GearCloth", new Vector3(0f, -0.01f, 0f), new Vector3(0.225f, 0.46f, 0.33f));
+                Shape(foot, "Cuff", "GearCuff", "GearCloth", new Vector3(0f, 0.19f, -0.027f), new Vector3(0.27f, 0.13f, 0.29f));
+                Shape(foot, "CuffTrim", "GearBand", "GearClothTrim", new Vector3(0f, 0.252f, -0.027f), new Vector3(0.275f, 0.02f, 0.295f));
+                Shape(foot, "Stitch", "GearLeaf", "GearClothTrim", new Vector3(0f, 0.02f, 0.072f), new Vector3(0.045f, 0.09f, 0.01f));
+                Shape(foot, "Toe", "Cone", "GearCloth", new Vector3(0f, -0.2f, 0.15f), new Vector3(0.05f, 0.08f, 0.04f), new Vector3(80f, 0f, 0f));
+            }
+            Save(root, "silk_slippers");
+        }
+
+        // ------------------------------------------------------------------ belt, amulet, rings
+
+        // Socket_Waist is at the waist (torso about 0.25 x 0.15 there, more over body armour): a
+        // band with a leaf-shaped buckle in a gold rim and a small gem either side.
+        private static void Belt()
         {
             GameObject root = NewRoot("rope_belt");
             Transform waist = Node(root, "Socket_Waist", Vector3.zero, Vector3.zero);
 
-            Cube(waist, "Band", "Rope", Vector3.zero, new Vector3(0.86f, 0.11f, 0.52f));
-
-            // Twisted-rope stripes.
-            for (int i = -2; i <= 2; i++)
-                Cube(waist, "Twist", "RopeDark", new Vector3(i * 0.16f, 0f, 0f), new Vector3(0.04f, 0.115f, 0.53f), new Vector3(0f, 25f, 0f));
-
-            Shape(waist, "Knot", "IcoHead", "Rope", new Vector3(0.10f, 0f, 0.27f), new Vector3(0.17f, 0.17f, 0.13f));
-            Cube(waist, "TailA", "Rope", new Vector3(0.07f, -0.2f, 0.28f), new Vector3(0.05f, 0.32f, 0.05f), new Vector3(8f, 0f, 6f));
-            Cube(waist, "TailB", "Rope", new Vector3(0.15f, -0.18f, 0.28f), new Vector3(0.05f, 0.28f, 0.05f), new Vector3(8f, 0f, -10f));
-            Cube(waist, "Gem", "GemGreen", new Vector3(0.10f, 0f, 0.34f), new Vector3(0.05f, 0.05f, 0.03f), new Vector3(0f, 0f, 45f));
+            Shape(waist, "Band", "GearBand", "TanLight", Vector3.zero, new Vector3(0.56f, 0.075f, 0.41f));
+            Shape(waist, "BuckleRim", "GearLeaf", "Gold", new Vector3(0f, 0f, 0.205f), new Vector3(0.115f, 0.15f, 0.02f), new Vector3(0f, 0f, 90f));
+            Shape(waist, "Buckle", "GearLeaf", "Tan", new Vector3(0f, 0f, 0.212f), new Vector3(0.09f, 0.125f, 0.02f), new Vector3(0f, 0f, 90f));
+            Cube(waist, "Vein", "TanDark", new Vector3(0f, 0f, 0.223f), new Vector3(0.1f, 0.006f, 0.006f));
+            foreach (float s in new[] { -1f, 1f })
+                Shape(waist, "Gem", "IcoHead", "GemGreen", new Vector3(0.09f * s, 0f, 0.198f), new Vector3(0.025f, 0.025f, 0.02f));
 
             Save(root, "rope_belt");
         }
 
-        // Neck socket is at the top of the chest.
+        // Socket_Neck is at the base of the neck: a chain down to a round pendant on the chest, low
+        // enough to show below the starting shoulder cape.
         private static void JadeAmulet()
         {
             GameObject root = NewRoot("jade_amulet");
             Transform neck = Node(root, "Socket_Neck", Vector3.zero, Vector3.zero);
 
-            Vector3 pendant = new Vector3(0f, -0.20f, 0.25f);
-            Bar(neck, "ChainL", "Steel", new Vector3(-0.17f, 0.04f, 0.02f), pendant, 0.03f);
-            Bar(neck, "ChainR", "Steel", new Vector3(0.17f, 0.04f, 0.02f), pendant, 0.03f);
-            Shape(neck, "Bezel", "Cylinder", "Steel", new Vector3(0f, -0.235f, 0.235f), new Vector3(0.17f, 0.04f, 0.17f), new Vector3(90f, 0f, 0f));
-            Shape(neck, "Gem", "IcoHead", "GemGreen", new Vector3(0f, -0.235f, 0.27f), new Vector3(0.12f, 0.12f, 0.05f));
+            Vector3 pendant = new Vector3(0f, -0.16f, 0.205f);
+            Bar(neck, "ChainL", "Steel", new Vector3(-0.08f, 0.07f, 0.0f), pendant, 0.015f);
+            Bar(neck, "ChainR", "Steel", new Vector3(0.08f, 0.07f, 0.0f), pendant, 0.015f);
+            Shape(neck, "Back", "GearDisc", "Silver", new Vector3(0f, -0.2f, 0.205f), new Vector3(0.075f, 0.015f, 0.075f), new Vector3(90f, 0f, 0f));
+            Shape(neck, "Bezel", "GearBand", "Steel", new Vector3(0f, -0.2f, 0.212f), new Vector3(0.08f, 0.02f, 0.08f), new Vector3(90f, 0f, 0f));
+            Shape(neck, "Gem", "BodyHead", "GemGreen", new Vector3(0f, -0.2f, 0.216f), new Vector3(0.055f, 0.065f, 0.03f));
 
             Save(root, "jade_amulet");
         }
 
+        // Socket_Ring is the hand's centre: a band round the hand (wide enough to show over a glove)
+        // with its stone on the back of the hand.
         private static void Ring(string id, string bandMat, string gemMat)
         {
             GameObject root = NewRoot(id);
             Transform ring = Node(root, "Socket_Ring", Vector3.zero, Vector3.zero);
 
-            Shape(ring, "Band", "Cylinder", bandMat, new Vector3(0f, -0.03f, 0.12f), new Vector3(0.11f, 0.04f, 0.11f), new Vector3(90f, 0f, 0f));
-            Cube(ring, "Gem", gemMat, new Vector3(0f, 0.03f, 0.145f), new Vector3(0.055f, 0.055f, 0.05f), new Vector3(0f, 0f, 45f));
+            Shape(ring, "Band", "GearBand", bandMat, new Vector3(0f, -0.05f, 0f), new Vector3(0.13f, 0.02f, 0.155f));
+            Shape(ring, "Gem", "IcoHead", gemMat, new Vector3(0f, -0.05f, 0.08f), new Vector3(0.03f, 0.03f, 0.022f));
 
             Save(root, id);
         }
+
+        // ------------------------------------------------------------------ shields
+
+        // Socket_OffHand is just past the off hand. Shields are strapped to the forearm, turned 40
+        // degrees outward, face forward (+z) and centred about 0.3 up the arm.
+        private static void Shields()
+        {
+            WoodenShield();
+            KiteShield();
+            TowerShield();
+            Buckler("buckler", false);
+            Buckler("spiked_buckler", true);
+            SpiritFocus();
+        }
+
+        private static Transform ShieldNode(GameObject root)
+        {
+            return Node(root, "Socket_OffHand", Vector3.zero, new Vector3(0f, -40f, 0f));
+        }
+
+        // Leaves set in a ring round a centre, lying flat on a shield's face.
+        private static void Wreath(Transform shield, Vector3 centre, float radius, int count, float size, string mat)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                float a = 360f * i / count;
+                Vector3 p = centre + new Vector3(Mathf.Cos(a * Mathf.Deg2Rad) * radius, Mathf.Sin(a * Mathf.Deg2Rad) * radius, 0f);
+                Shape(shield, "Leaf", "GearLeaf", mat, p, new Vector3(size * 0.55f, size, 0.02f), new Vector3(0f, 0f, a));
+            }
+        }
+
+        // Round, wooden, rimmed in steel, a carved wreath and a gem in a steel boss.
+        private static void WoodenShield()
+        {
+            GameObject root = NewRoot("wooden_shield");
+            Transform shield = ShieldNode(root);
+
+            Vector3 c = new Vector3(0f, 0.32f, 0.15f);
+            Shape(shield, "Face", "GearDisc", "ShieldWood", c, new Vector3(0.7f, 0.06f, 0.7f), new Vector3(90f, 0f, 0f));
+            Shape(shield, "Rim", "GearBand", "Steel", c, new Vector3(0.74f, 0.08f, 0.74f), new Vector3(90f, 0f, 0f));
+            Wreath(shield, c + new Vector3(0f, 0f, 0.035f), 0.22f, 10, 0.1f, "ShieldWoodDark");
+            Shape(shield, "Boss", "GearDome", "Steel", c + new Vector3(0f, 0f, 0.055f), new Vector3(0.2f, 0.05f, 0.2f), new Vector3(90f, 0f, 0f));
+            Shape(shield, "Gem", "BodyHead", "GemGreen", c + new Vector3(0f, 0f, 0.09f), new Vector3(0.08f, 0.08f, 0.04f));
+
+            Save(root, "wooden_shield");
+        }
+
+        // A silver kite with a dark rim, engraved leaves and a green gem near the top.
+        private static void KiteShield()
+        {
+            GameObject root = NewRoot("kite_shield");
+            Transform shield = ShieldNode(root);
+
+            Vector3 c = new Vector3(0f, 0.3f, 0.16f);
+            Shape(shield, "Rim", "GearKite", "SteelDark", c - new Vector3(0f, 0f, 0.008f), new Vector3(0.56f, 0.8f, 0.5f));
+            Shape(shield, "Face", "GearKite", "Silver", c, new Vector3(0.5f, 0.72f, 0.6f));
+            foreach (float s in new[] { -1f, 1f })
+                Shape(shield, "Leaf", "GearLeaf", "Steel", c + new Vector3(0.09f * s, -0.04f, 0.035f), new Vector3(0.07f, 0.2f, 0.02f), new Vector3(0f, 0f, 22f * s));
+            Shape(shield, "Setting", "GearDisc", "Gold", c + new Vector3(0f, 0.09f, 0.032f), new Vector3(0.1f, 0.02f, 0.12f), new Vector3(90f, 0f, 0f));
+            Shape(shield, "Gem", "BodyHead", "GemGreen", c + new Vector3(0f, 0.09f, 0.045f), new Vector3(0.07f, 0.09f, 0.04f));
+
+            Save(root, "kite_shield");
+        }
+
+        // A tall shield of pale planks with an arched top, studs down the edges and a ring emblem.
+        private static void TowerShield()
+        {
+            GameObject root = NewRoot("tower_shield");
+            Transform shield = ShieldNode(root);
+
+            Vector3 c = new Vector3(0f, 0.3f, 0.16f);
+            Shape(shield, "Face", "GearTower", "PaleWood", c, new Vector3(0.5f, 0.84f, 0.6f));
+            foreach (float x in new[] { -0.125f, 0f, 0.125f })
+                Cube(shield, "Seam", "ShieldWoodDark", c + new Vector3(x, -0.02f, 0.031f), new Vector3(0.01f, 0.76f, 0.006f));
+            foreach (float s in new[] { -1f, 1f })
+            {
+                foreach (float y in new[] { 0.3f, 0.05f, -0.2f, -0.36f })
+                    Shape(shield, "Stud", "IcoHead", "Steel", c + new Vector3(0.2f * s, y, 0.033f), new Vector3(0.03f, 0.03f, 0.02f));
+            }
+            Shape(shield, "Emblem", "GearBand", "Steel", c + new Vector3(0f, 0.06f, 0.035f), new Vector3(0.16f, 0.02f, 0.16f), new Vector3(90f, 0f, 0f));
+
+            Save(root, "tower_shield");
+        }
+
+        // A small round metal shield: leaf filigree round a domed boss and gem; the spiked one has
+        // spikes round the rim and one at the centre.
+        private static void Buckler(string id, bool spiked)
+        {
+            GameObject root = NewRoot(id);
+            Transform shield = ShieldNode(root);
+
+            Vector3 c = new Vector3(0f, 0.3f, 0.15f);
+            Shape(shield, "Face", "GearDisc", "Silver", c, new Vector3(0.46f, 0.05f, 0.46f), new Vector3(90f, 0f, 0f));
+            Shape(shield, "Rim", "GearBand", "SteelDark", c, new Vector3(0.49f, 0.065f, 0.49f), new Vector3(90f, 0f, 0f));
+            Wreath(shield, c + new Vector3(0f, 0f, 0.03f), 0.14f, 6, 0.08f, "SteelDark");
+            Shape(shield, "Boss", "GearDome", "Silver", c + new Vector3(0f, 0f, 0.045f), new Vector3(0.16f, 0.05f, 0.16f), new Vector3(90f, 0f, 0f));
+            if (spiked)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    float a = 360f * i / 8f;
+                    Vector3 p = c + new Vector3(Mathf.Cos(a * Mathf.Deg2Rad) * 0.23f, Mathf.Sin(a * Mathf.Deg2Rad) * 0.23f, 0f);
+                    Shape(shield, "Spike", "Cone", "Silver", p, new Vector3(0.03f, 0.09f, 0.03f), new Vector3(0f, 0f, a - 90f));
+                }
+                Shape(shield, "CentreSpike", "Cone", "Silver", c + new Vector3(0f, 0f, 0.07f), new Vector3(0.035f, 0.1f, 0.035f), new Vector3(90f, 0f, 0f));
+            }
+            else
+            {
+                Shape(shield, "Gem", "BodyHead", "GemGreen", c + new Vector3(0f, 0f, 0.08f), new Vector3(0.07f, 0.07f, 0.04f));
+            }
+
+            Save(root, id);
+        }
+
+        // A spellcaster's focus: a jagged crystal with two smaller shards on a short wrapped grip,
+        // held up like a wand in the off hand.
+        private static void SpiritFocus()
+        {
+            GameObject root = NewRoot("spirit_focus");
+            Transform focus = Node(root, "Socket_OffHand", new Vector3(0f, 0.1f, 0.03f), new Vector3(30f, 0f, 0f));
+
+            Shape(focus, "Grip", "BodyLimb", "Leather", new Vector3(0f, 0.05f, 0f), new Vector3(0.05f, 0.18f, 0.05f));
+            Shape(focus, "Collar", "GearBand", "Gold", new Vector3(0f, 0.15f, 0f), new Vector3(0.075f, 0.03f, 0.075f));
+            Shape(focus, "Crystal", "IcoHead", "Crystal", new Vector3(0f, 0.3f, 0f), new Vector3(0.11f, 0.3f, 0.11f), new Vector3(0f, 25f, 0f));
+            Shape(focus, "ShardA", "IcoHead", "Crystal", new Vector3(0.055f, 0.22f, 0.02f), new Vector3(0.05f, 0.15f, 0.05f), new Vector3(0f, 0f, -28f));
+            Shape(focus, "ShardB", "IcoHead", "Crystal", new Vector3(-0.045f, 0.24f, -0.03f), new Vector3(0.045f, 0.13f, 0.045f), new Vector3(10f, 0f, 24f));
+
+            Save(root, "spirit_focus");
+        }
+
+        // ------------------------------------------------------------------ weapons
 
         // Built along +y from the grip, then tipped so the blade points forward and slightly down
         // (the character's arms hang at the sides, so the sword is held out in front).
@@ -399,58 +749,6 @@ namespace PoeClone.EditorTools
             Shape(sword, "Tip", "Cone", "RustSteel", new Vector3(0f, 1.085f, 0f), new Vector3(0.05f, 0.14f, 0.014f));
 
             Save(root, "rusty_sword");
-        }
-
-        /// <summary>
-        /// Just the weapons added after the starter set (axe, mace, dagger, bow, quiver), leaving the
-        /// other prefabs untouched. Build Equipment also builds these.
-        /// </summary>
-        [MenuItem("PoeClone/Build Weapons")]
-        public static void BuildWeapons()
-        {
-            EnsureFolder(OutDir);
-            LoadMeshes();
-            MakeMaterials();
-            WeaponModels();
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log("EquipmentBuilder: built the weapon prefabs");
-        }
-
-        /// <summary>The circlet and the great (two-handed) weapons, leaving the other prefabs untouched.</summary>
-        [MenuItem("PoeClone/Build Great Weapons")]
-        public static void BuildVariety()
-        {
-            EnsureFolder(OutDir);
-            LoadMeshes();
-            MakeMaterials();
-            VarietyModels();
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log("EquipmentBuilder: built the circlet and great weapon prefabs");
-        }
-
-        private static void VarietyModels()
-        {
-            SageCirclet();
-            BastardSword();
-            Woodsplitter();
-            GreatMallet();
-        }
-
-        // A thin gold band around the brow with a gem over the forehead and three small points.
-        private static void SageCirclet()
-        {
-            GameObject root = NewRoot("sage_circlet");
-            Transform head = Node(root, "Socket_Head", Vector3.zero, Vector3.zero);
-
-            Shape(head, "Band", "Cylinder", "Gold", new Vector3(0f, 0.11f, -0.04f), new Vector3(0.57f, 0.035f, 0.57f));
-            Shape(head, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.13f, 0.245f), new Vector3(0.07f, 0.08f, 0.04f));
-            Shape(head, "PointC", "Cone", "Gold", new Vector3(0f, 0.20f, 0.235f), new Vector3(0.035f, 0.09f, 0.02f));
-            Shape(head, "PointL", "Cone", "Gold", new Vector3(-0.12f, 0.16f, 0.21f), new Vector3(0.025f, 0.06f, 0.02f), new Vector3(0f, -30f, 12f));
-            Shape(head, "PointR", "Cone", "Gold", new Vector3(0.12f, 0.16f, 0.21f), new Vector3(0.025f, 0.06f, 0.02f), new Vector3(0f, 30f, -12f));
-
-            Save(root, "sage_circlet");
         }
 
         // Great weapons are built like the one-handed ones (along +y from the hand), with a grip long
@@ -494,46 +792,6 @@ namespace PoeClone.EditorTools
             Save(root, "woodsplitter");
         }
 
-        private static void GreatMallet()
-        {
-            GameObject root = NewRoot("great_mallet");
-            Transform maul = Node(root, "Socket_MainHand", new Vector3(0f, 0f, 0.03f), GreatGrip);
-
-            Cube(maul, "Haft", "PaleWood", new Vector3(0f, 0.42f, 0f), new Vector3(0.075f, 1.28f, 0.075f));
-            Cube(maul, "Wrap", "Leather", new Vector3(0f, 0.08f, 0f), new Vector3(0.085f, 0.34f, 0.085f));
-            Shape(maul, "Pommel", "IcoHead", "Gold", new Vector3(0f, -0.24f, 0f), new Vector3(0.11f, 0.11f, 0.11f));
-            Cube(maul, "Head", "SteelDark", new Vector3(0f, 1.12f, 0f), new Vector3(0.50f, 0.28f, 0.28f));
-            Cube(maul, "FaceR", "Steel", new Vector3(0.26f, 1.12f, 0f), new Vector3(0.05f, 0.34f, 0.34f));
-            Cube(maul, "FaceL", "Steel", new Vector3(-0.26f, 1.12f, 0f), new Vector3(0.05f, 0.34f, 0.34f));
-            Cube(maul, "BandA", "Gold", new Vector3(0.11f, 1.12f, 0f), new Vector3(0.04f, 0.30f, 0.30f));
-            Cube(maul, "BandB", "Gold", new Vector3(-0.11f, 1.12f, 0f), new Vector3(0.04f, 0.30f, 0.30f));
-            Shape(maul, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 1.27f, 0f), new Vector3(0.08f, 0.08f, 0.08f));
-
-            Save(root, "great_mallet");
-        }
-
-        /// <summary>Just the summoner's sceptre and grimoire, leaving every other prefab untouched.</summary>
-        [MenuItem("PoeClone/Build Summoner Equipment")]
-        public static void BuildSummoner()
-        {
-            EnsureFolder("Assets/Resources");
-            EnsureFolder(OutDir);
-            LoadMeshes();
-            MakeMaterials();
-            SummonerModels();
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            foreach (string id in new[] { "bone_sceptre", "grimoire" })
-                AssetDatabase.ImportAsset(OutDir + "/" + id + ".prefab", ImportAssetOptions.ForceUpdate);
-            Debug.Log("EquipmentBuilder: built the summoner's sceptre and grimoire");
-        }
-
-        private static void SummonerModels()
-        {
-            BoneSceptre();
-            Grimoire();
-        }
-
         // A short rod of bone topped with a little horned skull, a green gem for an eye.
         private static void BoneSceptre()
         {
@@ -554,7 +812,7 @@ namespace PoeClone.EditorTools
             Save(root, "bone_sceptre");
         }
 
-        // A thick leather-bound tome held at the side: bone-white page edges, gold corners and
+        // A thick tome bound in red-brown leather, held at the side: bone-white page edges, gold corners and
         // clasp, a green gem set in the cover.
         private static void Grimoire()
         {
@@ -562,9 +820,9 @@ namespace PoeClone.EditorTools
             Transform book = Node(root, "Socket_OffHand", Vector3.zero, new Vector3(0f, -40f, 0f));
 
             Cube(book, "Pages", "BowString", new Vector3(0f, 0.24f, 0.14f), new Vector3(0.30f, 0.40f, 0.10f));
-            Cube(book, "CoverFront", "Leather", new Vector3(0f, 0.24f, 0.20f), new Vector3(0.34f, 0.44f, 0.025f));
-            Cube(book, "CoverBack", "Leather", new Vector3(0f, 0.24f, 0.08f), new Vector3(0.34f, 0.44f, 0.025f));
-            Cube(book, "Spine", "Leather", new Vector3(-0.16f, 0.24f, 0.14f), new Vector3(0.04f, 0.44f, 0.14f));
+            Cube(book, "CoverFront", "BookLeather", new Vector3(0f, 0.24f, 0.20f), new Vector3(0.34f, 0.44f, 0.025f));
+            Cube(book, "CoverBack", "BookLeather", new Vector3(0f, 0.24f, 0.08f), new Vector3(0.34f, 0.44f, 0.025f));
+            Cube(book, "Spine", "BookLeather", new Vector3(-0.16f, 0.24f, 0.14f), new Vector3(0.04f, 0.44f, 0.14f));
             Cube(book, "Band", "Gold", new Vector3(-0.16f, 0.36f, 0.14f), new Vector3(0.045f, 0.03f, 0.145f));
             Cube(book, "Band2", "Gold", new Vector3(-0.16f, 0.12f, 0.14f), new Vector3(0.045f, 0.03f, 0.145f));
             Cube(book, "Clasp", "Gold", new Vector3(0.17f, 0.24f, 0.14f), new Vector3(0.03f, 0.07f, 0.15f));
@@ -574,15 +832,6 @@ namespace PoeClone.EditorTools
             Shape(book, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.26f, 0.225f), new Vector3(0.06f, 0.06f, 0.03f));
 
             Save(root, "grimoire");
-        }
-
-        private static void WeaponModels()
-        {
-            HandAxe();
-            IronMace();
-            SteelDagger();
-            ShortBow();
-            LeatherQuiver();
         }
 
         // Like the sword: built along +y from the grip, tipped to point forward and slightly down.
@@ -632,28 +881,134 @@ namespace PoeClone.EditorTools
             Save(root, "steel_dagger");
         }
 
+        /// <summary>
+        /// Just the weapons added after the starter set (axe, mace, dagger, bow, quiver), leaving the
+        /// other prefabs untouched. Build Equipment also builds these.
+        /// </summary>
+        [MenuItem("PoeClone/Build Weapons")]
+        public static void BuildWeapons()
+        {
+            EnsureFolder(OutDir);
+            LoadMeshes();
+            MakeMaterials();
+            WeaponModels();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("EquipmentBuilder: built the weapon prefabs");
+        }
+
+        /// <summary>The great (two-handed) weapons, leaving the other prefabs untouched.</summary>
+        [MenuItem("PoeClone/Build Great Weapons")]
+        public static void BuildVariety()
+        {
+            EnsureFolder(OutDir);
+            LoadMeshes();
+            MakeMaterials();
+            VarietyModels();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("EquipmentBuilder: built the great weapon prefabs");
+        }
+
+        private static void VarietyModels()
+        {
+            BastardSword();
+            Woodsplitter();
+            GreatMallet();
+            Sledgehammer();
+        }
+
+        // A war hammer: a round striking face on one side of the head, a curved pick on the other,
+        // a gold collar and a gem where the head meets the haft.
+        private static void GreatMallet()
+        {
+            GameObject root = NewRoot("great_mallet");
+            Transform maul = Node(root, "Socket_MainHand", new Vector3(0f, 0f, 0.03f), GreatGrip);
+
+            Cube(maul, "Haft", "PaleWood", new Vector3(0f, 0.42f, 0f), new Vector3(0.07f, 1.28f, 0.07f));
+            Cube(maul, "Wrap", "Leather", new Vector3(0f, 0.08f, 0f), new Vector3(0.08f, 0.34f, 0.08f));
+            Shape(maul, "Pommel", "IcoHead", "Gold", new Vector3(0f, -0.24f, 0f), new Vector3(0.1f, 0.1f, 0.1f));
+            Shape(maul, "Collar", "GearBand", "Gold", new Vector3(0f, 1.02f, 0f), new Vector3(0.11f, 0.1f, 0.11f));
+            Cube(maul, "Head", "Silver", new Vector3(0.02f, 1.12f, 0f), new Vector3(0.2f, 0.17f, 0.15f));
+            Shape(maul, "Face", "GearDisc", "Silver", new Vector3(0.15f, 1.12f, 0f), new Vector3(0.22f, 0.12f, 0.22f), new Vector3(0f, 0f, 90f));
+            Shape(maul, "FaceRim", "GearBand", "Steel", new Vector3(0.2f, 1.12f, 0f), new Vector3(0.235f, 0.03f, 0.235f), new Vector3(0f, 0f, 90f));
+            Shape(maul, "Pick", "Cone", "Silver", new Vector3(-0.07f, 1.12f, 0f), new Vector3(0.06f, 0.3f, 0.045f), new Vector3(0f, 0f, 100f));
+            Shape(maul, "Gem", "IcoHead", "GemGreen", new Vector3(0.02f, 1.12f, 0.08f), new Vector3(0.06f, 0.06f, 0.04f));
+
+            Save(root, "great_mallet");
+        }
+
+        // A plain sledge: a heavy steel block with banded faces and a spike on top, on a long haft.
+        private static void Sledgehammer()
+        {
+            GameObject root = NewRoot("sledgehammer");
+            Transform maul = Node(root, "Socket_MainHand", new Vector3(0f, 0f, 0.03f), GreatGrip);
+
+            Cube(maul, "Haft", "PaleWood", new Vector3(0f, 0.42f, 0f), new Vector3(0.075f, 1.28f, 0.075f));
+            Cube(maul, "Wrap", "Leather", new Vector3(0f, 0.08f, 0f), new Vector3(0.085f, 0.34f, 0.085f));
+            Shape(maul, "Pommel", "IcoHead", "Steel", new Vector3(0f, -0.24f, 0f), new Vector3(0.11f, 0.11f, 0.11f));
+            Cube(maul, "Head", "Silver", new Vector3(0f, 1.12f, 0f), new Vector3(0.5f, 0.26f, 0.26f));
+            Cube(maul, "FaceR", "Steel", new Vector3(0.26f, 1.12f, 0f), new Vector3(0.05f, 0.31f, 0.31f));
+            Cube(maul, "FaceL", "Steel", new Vector3(-0.26f, 1.12f, 0f), new Vector3(0.05f, 0.31f, 0.31f));
+            Shape(maul, "Spike", "Cone", "Steel", new Vector3(0f, 1.24f, 0f), new Vector3(0.05f, 0.16f, 0.05f));
+
+            Save(root, "sledgehammer");
+        }
+
+        /// <summary>Just the summoner's sceptre and grimoire, leaving every other prefab untouched.</summary>
+        [MenuItem("PoeClone/Build Summoner Equipment")]
+        public static void BuildSummoner()
+        {
+            EnsureFolder("Assets/Resources");
+            EnsureFolder(OutDir);
+            LoadMeshes();
+            MakeMaterials();
+            SummonerModels();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            foreach (string id in new[] { "bone_sceptre", "grimoire" })
+                AssetDatabase.ImportAsset(OutDir + "/" + id + ".prefab", ImportAssetOptions.ForceUpdate);
+            Debug.Log("EquipmentBuilder: built the summoner's sceptre and grimoire");
+        }
+
+        private static void SummonerModels()
+        {
+            BoneSceptre();
+            Grimoire();
+        }
+
+        private static void WeaponModels()
+        {
+            HandAxe();
+            IronMace();
+            SteelDagger();
+            ShortBow("short_bow", "Silver");
+            ShortBow("crude_bow", "ShieldWood");
+            LeatherQuiver();
+        }
+
         // Held in the off (left) hand, like a real archer: the right hand draws. Built upright along
         // +y with the belly towards +z, then turned so that with the arm raised at the target (the
         // bow attack) the bow stands upright, belly to the target and string to the archer. With
         // the arm hanging at rest that leaves it carried level at the hip, pointing forward.
-        private static void ShortBow()
+        private static void ShortBow(string id, string limbs)
         {
-            GameObject root = NewRoot("short_bow");
+            GameObject root = NewRoot(id);
             // The grip sits at model z=0.22; offset it onto the palm after the 90-degree turn.
             Transform bow = Node(root, "Socket_OffHand", new Vector3(0f, 0.32f, -0.05f), new Vector3(90f, 0f, 0f));
 
             Cube(bow, "Grip", "Leather", new Vector3(0f, 0f, 0.22f), new Vector3(0.06f, 0.16f, 0.06f));
-            Bar(bow, "UpperInner", "Silver", new Vector3(0f, 0.07f, 0.22f), new Vector3(0f, 0.30f, 0.16f), 0.05f);
-            Bar(bow, "UpperOuter", "Silver", new Vector3(0f, 0.30f, 0.16f), new Vector3(0f, 0.52f, 0f), 0.04f);
-            Bar(bow, "LowerInner", "Silver", new Vector3(0f, -0.07f, 0.22f), new Vector3(0f, -0.30f, 0.16f), 0.05f);
-            Bar(bow, "LowerOuter", "Silver", new Vector3(0f, -0.30f, 0.16f), new Vector3(0f, -0.52f, 0f), 0.04f);
+            Bar(bow, "UpperInner", limbs, new Vector3(0f, 0.07f, 0.22f), new Vector3(0f, 0.30f, 0.16f), 0.05f);
+            Bar(bow, "UpperOuter", limbs, new Vector3(0f, 0.30f, 0.16f), new Vector3(0f, 0.52f, 0f), 0.04f);
+            Bar(bow, "LowerInner", limbs, new Vector3(0f, -0.07f, 0.22f), new Vector3(0f, -0.30f, 0.16f), 0.05f);
+            Bar(bow, "LowerOuter", limbs, new Vector3(0f, -0.30f, 0.16f), new Vector3(0f, -0.52f, 0f), 0.04f);
             Shape(bow, "TipTop", "Cone", "Gold", new Vector3(0f, 0.55f, 0f), new Vector3(0.03f, 0.07f, 0.03f));
             Shape(bow, "TipBottom", "Cone", "Gold", new Vector3(0f, -0.55f, 0f), new Vector3(0.03f, 0.07f, 0.03f), new Vector3(180f, 0f, 0f));
             Bar(bow, "String", "BowString", new Vector3(0f, 0.52f, 0f), new Vector3(0f, -0.52f, 0f), 0.01f);
             Shape(bow, "GemTop", "IcoHead", "GemGreen", new Vector3(0f, 0.14f, 0.22f), new Vector3(0.05f, 0.05f, 0.04f));
             Shape(bow, "GemBottom", "IcoHead", "GemGreen", new Vector3(0f, -0.14f, 0.22f), new Vector3(0.05f, 0.05f, 0.04f));
 
-            Save(root, "short_bow");
+            Save(root, id);
         }
 
         // Worn on the back, tilted over the right shoulder so the arrows are within the drawing
@@ -661,12 +1016,12 @@ namespace PoeClone.EditorTools
         private static void LeatherQuiver()
         {
             GameObject root = NewRoot("leather_quiver");
-            Transform quiver = Node(root, "Socket_Chest", new Vector3(0.06f, 0.05f, -0.30f), new Vector3(0f, 0f, -22f));
+            Transform quiver = Node(root, "Socket_Chest", new Vector3(0.06f, 0.05f, -0.31f), new Vector3(0f, 0f, -22f));
 
-            Shape(quiver, "Tube", "Cylinder", "Leather", new Vector3(0f, 0.05f, 0f), new Vector3(0.20f, 0.30f, 0.20f));
-            Shape(quiver, "Bottom", "Cylinder", "TanDark", new Vector3(0f, -0.26f, 0f), new Vector3(0.21f, 0.03f, 0.21f));
-            Shape(quiver, "BandTop", "Cylinder", "Gold", new Vector3(0f, 0.33f, 0f), new Vector3(0.215f, 0.03f, 0.215f));
-            Shape(quiver, "BandMid", "Cylinder", "Gold", new Vector3(0f, -0.05f, 0f), new Vector3(0.21f, 0.025f, 0.21f));
+            Shape(quiver, "Tube", "GearDisc", "Leather", new Vector3(0f, 0.05f, 0f), new Vector3(0.2f, 0.6f, 0.2f));
+            Shape(quiver, "Bottom", "GearDisc", "TanDark", new Vector3(0f, -0.25f, 0f), new Vector3(0.215f, 0.04f, 0.215f));
+            Shape(quiver, "BandTop", "GearBand", "Gold", new Vector3(0f, 0.32f, 0f), new Vector3(0.215f, 0.03f, 0.215f));
+            Shape(quiver, "BandMid", "GearBand", "Gold", new Vector3(0f, -0.05f, 0f), new Vector3(0.21f, 0.025f, 0.21f));
 
             float[] xs = { -0.05f, 0.0f, 0.05f };
             float[] zs = { 0.02f, -0.03f, 0.02f };
@@ -677,24 +1032,6 @@ namespace PoeClone.EditorTools
             }
 
             Save(root, "leather_quiver");
-        }
-
-        // Strapped to the off forearm and held facing forward.
-        private static void WoodenShield()
-        {
-            GameObject root = NewRoot("wooden_shield");
-            // Turned 40 degrees outward so it sits angled on the arm, while its face still points
-            // mostly forward (so it stays visible from the front, e.g. in the inventory preview).
-            Transform shield = Node(root, "Socket_OffHand", Vector3.zero, new Vector3(0f, -40f, 0f));
-
-            Shape(shield, "Rim", "Cylinder", "Steel", new Vector3(0f, 0.32f, 0.12f), new Vector3(0.76f, 0.05f, 0.76f), new Vector3(90f, 0f, 0f));
-            Shape(shield, "Face", "Cylinder", "ShieldWood", new Vector3(0f, 0.32f, 0.15f), new Vector3(0.70f, 0.06f, 0.70f), new Vector3(90f, 0f, 0f));
-            Cube(shield, "PlankL", "ShieldWoodDark", new Vector3(-0.17f, 0.32f, 0.212f), new Vector3(0.025f, 0.58f, 0.012f));
-            Cube(shield, "PlankR", "ShieldWoodDark", new Vector3(0.17f, 0.32f, 0.212f), new Vector3(0.025f, 0.58f, 0.012f));
-            Shape(shield, "Boss", "IcoHead", "Steel", new Vector3(0f, 0.32f, 0.235f), new Vector3(0.20f, 0.20f, 0.10f));
-            Shape(shield, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.32f, 0.26f), new Vector3(0.09f, 0.09f, 0.06f));
-
-            Save(root, "wooden_shield");
         }
     }
 }

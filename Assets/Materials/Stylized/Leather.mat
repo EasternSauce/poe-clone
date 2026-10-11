@@ -114,6 +114,7 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _LivingWater: 0
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
@@ -123,6 +124,7 @@ Material:
     - _RimPower: 3.5
     - _ScreenSpaceReflections: 1
     - _ScreenSpaceReflectionsContributeTransparent: 1
+    - _SerpentScales: 0
     - _ShadowBandSmooth: 0.08
     - _ShadowBandThreshold: 0.5
     - _Smoothness: 0.05
@@ -133,15 +135,16 @@ Material:
     - _Surface: 0
     - _TexInfluence: 1
     - _TriplanarTileSize: 0.35
+    - _WaterOcean: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.23137248, g: 0.16470581, b: 0.11372543, a: 1}
+    - _BaseColor: {r: 0.23137255, g: 0.16470589, b: 0.11372549, a: 1}
     - _Color: {r: 0.2313725, g: 0.16470584, b: 0.11372546, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _RimColor: {r: 0.692549, g: 0.66588235, b: 0.64549017, a: 1}
-    - _ShadowColor: {r: 0.11568624, g: 0.08235291, b: 0.07050977, a: 1}
+    - _RimColor: {r: 0.69254905, g: 0.66588235, b: 0.6454902, a: 1}
+    - _ShadowColor: {r: 0.115686275, g: 0.08235294, b: 0.07050981, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

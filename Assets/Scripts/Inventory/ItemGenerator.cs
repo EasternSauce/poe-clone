@@ -383,26 +383,42 @@ namespace PoeClone.Inventory
         // Within a line, the highest tier this item level allows drops most; older tiers fade out.
         private static readonly float[] TierPreference = { 1f, 0.3f, 0.1f, 0.05f };
 
-        // Art whose icon is its own but which has no 3D look of its own yet: worn as this model,
+        // Bases whose icon shows a different shape from the rest of their art line wear their own
+        // model (hoods among the bronze helmets, tower shields among the kites, ...). Keyed by base
+        // id, which uniques share with their base.
+        private static readonly Dictionary<string, string> OwnModels = new Dictionary<string, string>
+        {
+            { "hunter_hood", "hunter_hood" }, { "tracker_hood", "hunter_hood" }, { "shadow_hood", "hunter_hood" }, { "nightstalker_hood", "hunter_hood" },
+            { "tower_shield", "tower_shield" }, { "bastion_shield", "tower_shield" },
+            { "spiked_buckler", "spiked_buckler" }, { "duelist_buckler", "spiked_buckler" }, { "champion_buckler", "spiked_buckler" },
+            { "spirit_focus", "spirit_focus" }, { "runic_focus", "spirit_focus" }, { "arcane_focus", "spirit_focus" }, { "archon_focus", "spirit_focus" },
+            { "sledgehammer", "sledgehammer" }, { "earthbreaker", "sledgehammer" }, { "titan_maul", "sledgehammer" },
+            { "crude_bow", "crude_bow" },
+        };
+
+        // Art whose icon is its own but which is drawn like another model: worn as that model,
         // tinted to match the icon.
         private static readonly Dictionary<string, KeyValuePair<string, Color>> BorrowedModels = new Dictionary<string, KeyValuePair<string, Color>>
         {
-            { "chain_hauberk", new KeyValuePair<string, Color>("studded_vest", new Color(0.80f, 0.86f, 0.95f)) },
-            { "silk_robe", new KeyValuePair<string, Color>("studded_vest", new Color(0.95f, 0.95f, 0.85f)) },
-            { "iron_gauntlets", new KeyValuePair<string, Color>("leather_gloves", new Color(0.85f, 0.9f, 1.0f)) },
-            { "silk_gloves", new KeyValuePair<string, Color>("leather_gloves", new Color(0.95f, 0.95f, 0.85f)) },
-            { "iron_greaves", new KeyValuePair<string, Color>("leather_boots", new Color(0.85f, 0.9f, 1.0f)) },
-            { "silk_slippers", new KeyValuePair<string, Color>("leather_boots", new Color(0.95f, 0.95f, 0.85f)) },
-            { "leather_belt", new KeyValuePair<string, Color>("rope_belt", new Color(0.75f, 0.62f, 0.5f)) },
-            { "cloth_sash", new KeyValuePair<string, Color>("rope_belt", new Color(0.95f, 0.95f, 0.85f)) },
-            { "kite_shield", new KeyValuePair<string, Color>("wooden_shield", new Color(0.85f, 0.9f, 1.0f)) },
-            { "buckler", new KeyValuePair<string, Color>("wooden_shield", new Color(0.9f, 0.92f, 0.95f)) },
+            { "leather_belt", new KeyValuePair<string, Color>("rope_belt", new Color(0.95f, 0.95f, 0.92f)) },
+            { "cloth_sash", new KeyValuePair<string, Color>("rope_belt", new Color(1f, 1f, 0.95f)) },
         };
 
         /// <summary>
-        /// Which 3D look (Resources/Equipment) art is worn as, and the tint it gets on top of the
-        /// item's own: its own prefab for most art, a borrowed one for art that only has an icon.
+        /// Which 3D look (Resources/Equipment) an item is worn as, and the tint it gets on top of the
+        /// item's own.
         /// </summary>
+        public static string ModelFor(ItemData item, out Color tint)
+        {
+            if (OwnModels.TryGetValue(item.Id, out string own))
+            {
+                tint = Color.white;
+                return own;
+            }
+            return ModelFor(item.ArtId, out tint);
+        }
+
+        /// <summary>The 3D look of a piece of art: its own prefab, or a borrowed one.</summary>
         public static string ModelFor(string artId, out Color tint)
         {
             if (artId != null && BorrowedModels.TryGetValue(artId, out KeyValuePair<string, Color> borrowed))

@@ -46,6 +46,7 @@ public static class TextureAndThemeBuilder
             { "Bronze", stone }, { "BronzeLight", stone }, { "Gold", stone },
             { "Rope", bark }, { "RopeDark", bark },
             { "ShieldWood", bark }, { "ShieldWoodDark", bark },
+            { "GearClothTrim", cloth }, { "HoodCloth", cloth }, { "Visor", cloth }, { "BookLeather", cloth },
         };
 
         // World-units-per-tile for triplanar sampling (the custom meshes have no UVs,
@@ -65,6 +66,7 @@ public static class TextureAndThemeBuilder
             { "Bronze", 0.6f }, { "BronzeLight", 0.6f }, { "Gold", 0.4f },
             { "Rope", 0.2f }, { "RopeDark", 0.2f },
             { "ShieldWood", 0.5f }, { "ShieldWoodDark", 0.5f },
+            { "GearClothTrim", 0.3f }, { "HoodCloth", 0.3f }, { "Visor", 0.3f }, { "BookLeather", 0.35f },
         };
 
         Shader toon = Shader.Find("PoeClone/ToonLit");
