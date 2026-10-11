@@ -737,9 +737,9 @@ MonoBehaviour:
     Enabled: 1
     Stat: 9
     Weight: 1
-    On: 0200000006000000050000000900000007000000i
-    AnyWeapon: 0
-    Weapons: 0100000002000000030000000400000005000000070000000800000009000000i
+    On: 02000000060000000500000009000000i
+    AnyWeapon: 1
+    Weapons: 
     Tiers:
     - RequiredItemLevel: 1
       Min: 3
@@ -780,6 +780,54 @@ MonoBehaviour:
     - RequiredItemLevel: 100
       Min: 8
       Max: 28
+      Weight: 0.0403536
+  - Label: AttackSpeed / 2
+    Enabled: 1
+    Stat: 9
+    Weight: 1
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 0100000002000000030000000400000005000000070000000800000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 30
+      Max: 40
+      Weight: 1
+    - RequiredItemLevel: 9
+      Min: 45
+      Max: 58
+      Weight: 0.7
+    - RequiredItemLevel: 17
+      Min: 60
+      Max: 75
+      Weight: 0.48999998
+    - RequiredItemLevel: 25
+      Min: 72
+      Max: 90
+      Weight: 0.343
+    - RequiredItemLevel: 34
+      Min: 85
+      Max: 105
+      Weight: 0.24009998
+    - RequiredItemLevel: 37
+      Min: 88
+      Max: 110
+      Weight: 0.16806999
+    - RequiredItemLevel: 50
+      Min: 95
+      Max: 120
+      Weight: 0.11764899
+    - RequiredItemLevel: 65
+      Min: 100
+      Max: 130
+      Weight: 0.08235429
+    - RequiredItemLevel: 80
+      Min: 105
+      Max: 138
+      Weight: 0.057648003
+    - RequiredItemLevel: 100
+      Min: 110
+      Max: 145
       Weight: 0.0403536
   - Label: FireResistance / 1
     Enabled: 1

@@ -1,3 +1,6 @@
+version: 2026-10-11-weapon-attack-speed
+- Increased Attack Speed on weapons rolls much higher: 30-40% at item level 1, rising to about 85-105% by item level 34 and up to 145% on the highest item levels. Weapons you already own with this stat are raised to at least 30%. Attack speed on gloves, rings, amulets and quivers is unchanged.
+
 version: 2026-10-11-weapon-base-damage
 - Weapon tooltips now show the weapon's own Physical Damage and Attacks per Second at the top, above its implicit stats. This was always the weapon's damage (it used to be listed as "Adds X Physical Damage"); attack speed per weapon type was hidden until now.
 - A weapon's base damage is now the same on every copy of a base (an older weapon whose damage rolled a little high or low is set to its base's value). Unique weapons keep their own damage roll, now shown as their base damage.
