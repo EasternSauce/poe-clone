@@ -1,3 +1,8 @@
+version: 2026-10-11-sahret-cistern-quarter
+- Sahret's arrival court is now the Cistern Quarter: sandstone homes with blue shutters, colourful market stalls, a communal cistern, an open-air forge and a shaded travellers' camp.
+- Five local residents share stories about the city, its water and the caravan road. A stash chest stands beside the waystone court.
+- Braziers, gate banners, worn paving, water jars and stacked caravan goods bring the Act II town to life.
+
 version: 2026-10-11-act-two-desert
 - Act II begins in The Sundered Expanse. Defeating the Shepherd breaks open a wall in his arena, revealing the desert beyond.
 - Cross dunes, a ruined caravan road, a scorpion basin, a buried shrine and the Windcut Narrows. Guarded caravan caches reward exploration.

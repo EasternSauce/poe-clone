@@ -117,16 +117,7 @@ namespace PoeClone.World
             }
             Scatter(desert, 12, 20, 170, p => Bones(desert, p), 0.4f);
 
-            // The hub intentionally stops at an empty, safe arrival court.
-            Transform city = Group("Sahret - Work in Progress");
-            Vector3 town = Center(Sahret);
-            for (int side = -1; side <= 1; side += 2)
-            {
-                Box(city, town + new Vector3(side * 22, 4, -28), new Vector3(24, 8, 4), desertStone);
-                DesertPillar(city, town + new Vector3(side * 9, 0, -28), 10);
-            }
-            Transform notice = Holder(city, "UnfinishedCity", town + new Vector3(0, 0, 17), Quaternion.identity);
-            WorldLabel.Create(notice, "Sahret — Work in Progress", new Color(0.96f, 0.82f, 0.55f), 2.5f);
+            BuildSahret();
             gameObject.AddComponent<DesertAtmosphere>();
         }
 
