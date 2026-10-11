@@ -24,7 +24,9 @@ namespace PoeClone.Skills
         private const float WhirlTurnsPerSecond = 4f;
         // How far ahead of the player, as a share of its reach, the hit circle sits at full speed.
         private const float WhirlLead = 0.4f;
-        private const float WhirlHitInterval = 0.2f;    // at no increased attack speed
+        // Hits per second with a sword and no increased attack speed. Other weapons hit as much
+        // faster or slower as their own swings are, so a maul's big hits don't come at a sword's rate.
+        private const float WhirlSwordHitsPerSecond = 4f;
         private const float WhirlFullSpeedDiameters = 5f;
 
         private int whirlSlot = -1;
@@ -97,9 +99,12 @@ namespace PoeClone.Skills
             if (Time.time >= whirlNextHit)
             {
                 WhirlHit(SkillBook.Get(SkillId.Whirlwind), whirlLevel);
-                whirlNextHit = Time.time + WhirlHitInterval / AttackRateMultiplier;
+                whirlNextHit = Time.time + 1f / WhirlHitsPerSecond();
             }
         }
+
+        private float WhirlHitsPerSecond() => WhirlSwordHitsPerSecond * AttackRateMultiplier *
+            CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()) / CharacterAttackAnimator.BaseAttackSpeed(WeaponType.Sword);
 
         // Newly met enemies included: one that spawns mid-spin can't block it either.
         private void IgnoreEnemiesWhileWhirling()
