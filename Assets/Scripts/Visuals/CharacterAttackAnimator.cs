@@ -299,22 +299,25 @@ namespace PoeClone.Visuals
             Range = 3.6f
         };
 
-        // Whirlwind holds both arms out, the blade level, while the body spins (see HoldSkillPose).
+        // Whirlwind holds the sword arm out to the side, a little low, with the blade flat and
+        // pointing ahead of the spin, and the off arm out the other way, bent, for balance, while
+        // the body spins (see HoldSkillPose). The legs brace instead of striding (see IsHolding).
         private static readonly AttackProfile WhirlwindProfile = new AttackProfile
         {
             Duration = 0.35f, StrikeTime = 0.9f, UsesOffArm = true,
-            WindupOffset = new Pose(-90f, 90f, 0f, 0f),
-            StrikeOffset = new Pose(-90f, 90f, 0f, 0f),
-            OffWindup = new Pose(-90f, -60f, -50f, 0f),
-            OffStrike = new Pose(-90f, -60f, -50f, 0f),
+            WindupOffset = new Pose(0f, 15f, 70f, 0f),
+            StrikeOffset = new Pose(0f, 15f, 70f, 0f),
+            OffWindup = new Pose(0f, -25f, -55f, 35f),
+            OffStrike = new Pose(0f, -25f, -55f, 35f),
             Range = 3f
         };
 
+        // A great weapon: the same arm, the off hand on the grip in front, the blade flat out ahead.
         private static readonly AttackProfile WhirlwindGreatProfile = new AttackProfile
         {
             Duration = 0.35f, StrikeTime = 0.9f, TwoHandGrip = true,
-            WindupOffset = new Pose(-20f, 90f, 40f, 0f),
-            StrikeOffset = new Pose(-20f, 90f, 40f, 0f),
+            WindupOffset = WhirlwindProfile.WindupOffset,
+            StrikeOffset = WhirlwindProfile.StrikeOffset,
             Range = 3.3f
         };
 
@@ -514,6 +517,9 @@ namespace PoeClone.Visuals
         private bool holding;
 
         public bool IsAttacking { get; private set; }
+
+        /// <summary>True while a channelled skill's pose is held (Whirlwind): the legs brace instead of striding.</summary>
+        public bool IsHolding => IsAttacking && holding;
 
         /// <summary>How fast swings play (an enraged enemy swings faster). 1 is normal.</summary>
         public float PlaybackSpeed { get; set; } = 1f;

@@ -88,6 +88,11 @@ namespace PoeClone.Visuals
         private float idleSeed;
         private const float BreathRate = 1.9f;
 
+        // Braced for a held channel (see CharacterAttackAnimator.IsHolding): 0 striding, 1 planted.
+        private float plant;
+        private const float PlantCrouch = 0.35f;
+        private const float PlantSpread = 10f; // each leg out to its side, degrees
+
         // A great weapon is carried at the ready in both hands: the weapon arm brings the grip in
         // front of the belly with the head raised ahead, and the off hand closes on the grip
         // (solved onto the weapon itself, so it stays on the haft whatever the weapon's length).
@@ -231,12 +236,16 @@ private void LateUpdate()
 
             // One foot lands every half-cycle (PI radians of phase); fire a step each
             // time we cross into a new half-cycle while actually moving.
+            // A held channel (Whirlwind) plants the feet wide, knees bent, and glides instead of striding.
+            plant = Mathf.MoveTowards(plant, attackAnimator != null && attackAnimator.IsHolding ? 1f : 0f, 8f * dt);
+            float stepping = 1f - plant;
+
             int stepIndex = Mathf.FloorToInt(phase / Mathf.PI);
-            if (moving && stepIndex != lastStepIndex)
+            if (moving && plant < 0.5f && stepIndex != lastStepIndex)
                 PlayFootstep();
             lastStepIndex = stepIndex;
 
-            float legAmp = Mathf.Lerp(legSwing, runLegSwing, runBlend) * blend;
+            float legAmp = Mathf.Lerp(legSwing, runLegSwing, runBlend) * blend * stepping;
             float armAmp = Mathf.Lerp(armSwing, runArmSwing, runBlend) * blend;
 
             // Standing still: breathing lifts the chest and the arms drift with it.
@@ -247,16 +256,16 @@ private void LateUpdate()
             bool rightArmSuppressed = RightArmSuppressed;
             bool leftArmSuppressed = LeftArmSuppressed;
 
-            float crouch = Mathf.Clamp01(Crouch);
-            SetPivot(leftLeg, s * legAmp - 35f * crouch);
-            SetPivot(rightLeg, -s * legAmp - 35f * crouch);
+            float crouch = Mathf.Clamp01(Crouch + PlantCrouch * plant);
+            SetPivot(leftLeg, s * legAmp - 35f * crouch, -PlantSpread * plant);
+            SetPivot(rightLeg, -s * legAmp - 35f * crouch, PlantSpread * plant);
             if (!leftArmSuppressed)
                 SetPivot(leftArm, Mathf.Lerp(armRestAngle - s * armAmp + breath * 2.5f + sway * 1.5f, WorkArms.x, WorkBlend));
             if (!rightArmSuppressed)
                 SetPivot(rightArm, Mathf.Lerp(armRestAngle + s * armAmp + breath * 2.5f - sway * 1.5f, WorkArms.y, WorkBlend));
 
             // Knees bend while the leg swings forward (more so when running).
-            float kneeMax = Mathf.Lerp(walkKneeBend, runKneeBend, runBlend) * blend;
+            float kneeMax = Mathf.Lerp(walkKneeBend, runKneeBend, runBlend) * blend * stepping;
             SetPivot(leftKnee, Mathf.Max(0f, -c) * kneeMax + 70f * crouch);
             SetPivot(rightKnee, Mathf.Max(0f, c) * kneeMax + 70f * crouch);
 
@@ -278,7 +287,7 @@ private void LateUpdate()
                     torsoYaw + walkTwist + sway * 2f, 0f);
 
             float bobAmount = Mathf.Lerp(bobHeight, runBobHeight, runBlend);
-            float bob = Mathf.Abs(c) * bobAmount * blend;
+            float bob = Mathf.Abs(c) * bobAmount * blend * stepping;
             float lunge = attackAnimator != null ? attackAnimator.Lunge : 0f;
             transform.localPosition = baseLocalPosition + Vector3.up * (bob - 0.28f * crouch) + Vector3.forward * lunge;
             if (sweepingBroom != null && WorkSweep > 0f)
@@ -444,10 +453,10 @@ private void LateUpdate()
         }
 
         
-private static void SetPivot(Transform pivot, float angle)
+private static void SetPivot(Transform pivot, float angle, float roll = 0f)
         {
             if (pivot != null)
-                pivot.localRotation = Quaternion.Euler(angle, 0f, 0f);
+                pivot.localRotation = Quaternion.Euler(angle, 0f, roll);
         }
     }
 }

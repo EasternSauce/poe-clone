@@ -23,7 +23,8 @@ namespace PoeClone.Skills
         /// <summary>Seconds between a channelled skill's mana payments.</summary>
         public const float ChannelTick = 0.5f;
 
-        private const float WhirlTurnsPerSecond = 4f;
+        private const float WhirlMinTurnsPerSecond = 2.5f;
+        private const float WhirlMaxTurnsPerSecond = 6f;
         // How far ahead of the player, as a share of its reach, the hit circle sits at full speed.
         private const float WhirlLead = 0.4f;
         // Hits per second with a sword and no increased attack speed. Other weapons hit as much
@@ -98,7 +99,10 @@ namespace PoeClone.Skills
             IgnoreEnemiesWhileWhirling();
             whirlSteer = Vector3.ClampMagnitude(WhirlSteer(), 1f);
             controller.SteerChannel(whirlSteer);
-            transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y + 360f * WhirlTurnsPerSecond * Time.deltaTime, 0f);
+            // Counter-clockwise, so the sword arm sweeps forward and the blade leads (a forehand
+            // cut); a turn per hit, so a heavy weapon spins heavier.
+            float turns = Mathf.Clamp(WhirlHitsPerSecond(), WhirlMinTurnsPerSecond, WhirlMaxTurnsPerSecond);
+            transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y - 360f * turns * Time.deltaTime, 0f);
 
             if (Time.time >= whirlNextHit)
             {
