@@ -2764,7 +2764,7 @@ MonoBehaviour:
   - Label: GrantDash / 1
     Enabled: 1
     Stat: 29
-    Weight: 0.45
+    Weight: 1.5
     On: 03000000i
     AnyWeapon: 1
     Weapons: 

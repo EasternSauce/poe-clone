@@ -5,6 +5,7 @@ version: 2026-10-11-item-and-passive-polish
 - The Warren entrance's timber beam now rests across its support posts.
 - Passive tree search highlights matches with a large bright ring and uses the same search input as storage. Search by passive name or bonus, or press Ctrl+F while the tree is open.
 - Confirming passive point changes now plays a confirmation sound.
+- Dash rolls on boots about three times as often as before.
 
 version: 2026-10-11-fire-bolt-ignite-balance
 - Ignite now deals 500% of base fire damage over 3 seconds, up from 240%. The strongest ignite still wins.
