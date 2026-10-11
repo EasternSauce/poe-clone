@@ -85,7 +85,7 @@ namespace PoeClone.Skills
 
             toggled = skill.Id;
             toggledSlot = slot;
-            SkillEffects.Shockwave(transform.position, 1.4f, skill.Color, 0.3f);
+            SkillEffects.Shockwave(transform.position, 1.4f, skill.Color, 0.3f, type: SkillEffects.DamagePattern(skill));
             CombatText.Show(above, skill.Name, skill.Color, 0.9f);
             Changed?.Invoke();
             SaveSystem.SaveCharacterNow();

@@ -148,7 +148,7 @@ namespace PoeClone.Skills
                           DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
             // Moving, the circle leads the way the player goes, so it doesn't trail behind.
             Vector3 center = transform.position + whirlSteer * reach * WhirlLead;
-            SkillEffects.Shockwave(center, reach, skill.Color, 0.22f);
+            SkillEffects.Shockwave(center, reach, skill.Color, 0.22f, type: SkillEffects.DamagePattern(skill));
             Record(skill, level, reach, at: center);
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
             foreach (EnemyHealth enemy in EnemiesWithin(center, reach))

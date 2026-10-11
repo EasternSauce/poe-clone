@@ -169,27 +169,27 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.Dash:
-                    SkillEffects.Shockwave(cast.At, 1.2f, skill.Color, 0.25f);
+                    SkillEffects.Shockwave(cast.At, 1.2f, skill.Color, 0.25f, type: SkillEffects.DamagePattern(skill));
                     break;
 
                 case SkillId.Teleport:
-                    SkillEffects.Shockwave(cast.At, 1.4f, skill.Color, 0.3f);
+                    SkillEffects.Shockwave(cast.At, 1.4f, skill.Color, 0.3f, type: SkillEffects.DamagePattern(skill));
                     if (cast.Points != null && cast.Points.Length > 0)
-                        SkillEffects.Shockwave(cast.Points[0], 1.6f, skill.Color, 0.35f);
+                        SkillEffects.Shockwave(cast.Points[0], 1.6f, skill.Color, 0.35f, type: SkillEffects.DamagePattern(skill));
                     break;
 
                 case SkillId.FrostNova:
                 case SkillId.Cleave:
                 case SkillId.Pulverize:
-                    SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, cast.Skill == SkillId.Cleave ? 0.3f : 0.4f);
+                    SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, cast.Skill == SkillId.Cleave ? 0.3f : 0.4f, type: SkillEffects.DamagePattern(skill));
                     break;
 
                 case SkillId.Whirlwind:
-                    SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, 0.22f);
+                    SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, 0.22f, type: SkillEffects.DamagePattern(skill));
                     break;
 
                 case SkillId.ReapingArc:
-                    SkillEffects.Shockwave(cast.At + facing * 1.8f, 2.8f, skill.Color, 0.34f);
+                    SkillEffects.Cone(cast.At, facing, cast.Size, 72f, skill.Color, 0.34f);
                     break;
 
                 case SkillId.Fissure:
@@ -209,7 +209,7 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.VenomSlash:
-                    SkillEffects.Shockwave(cast.At + facing * cast.Size * 0.45f, cast.Size * 0.6f, skill.Color, 0.25f);
+                    SkillEffects.Cone(cast.At, facing, cast.Size, VenomSlashHalfAngle, skill.Color, 0.25f, SkillEffects.DamagePattern(skill));
                     break;
 
                 case SkillId.LungingThrust:
@@ -221,7 +221,7 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.WarCry:
-                    SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, 0.45f);
+                    SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, 0.45f, type: SkillEffects.DamagePattern(skill));
                     break;
 
                 case SkillId.RaiseSkeletons:
@@ -229,19 +229,19 @@ namespace PoeClone.Skills
                 case SkillId.SpiritWolves:
                 case SkillId.BoneGolem:
                 case SkillId.SummonViper:
-                    SkillEffects.Shockwave(cast.At, 1.6f, skill.Color, 0.4f);
+                    SkillEffects.Shockwave(cast.At, 1.6f, skill.Color, 0.4f, type: SkillEffects.DamagePattern(skill));
                     break;
 
                 case SkillId.GraveRot:
                     if (cast.Points != null && cast.Points.Length > 0)
-                        SkillEffects.Shockwave(cast.Points[0], cast.Size, skill.Color, 0.5f);
+                        SkillEffects.Shockwave(cast.Points[0], cast.Size, skill.Color, 0.5f, type: SkillEffects.DamagePattern(skill));
                     break;
 
                 case SkillId.DeathMark:
                     if (cast.Points != null && cast.Points.Length > 1)
                     {
                         SkillEffects.Arc(cast.Points[0], cast.Points[1], skill.Color, 0.25f);
-                        SkillEffects.Shockwave(cast.Points[1], 1.1f, skill.Color, 0.3f);
+                        SkillEffects.Shockwave(cast.Points[1], 1.1f, skill.Color, 0.3f, type: SkillEffects.DamagePattern(skill));
                     }
                     break;
 
@@ -938,7 +938,7 @@ namespace PoeClone.Skills
                     Vector3 dir = TouchMode.Active || !DashTowardsCursor ? controller.InputDirection() : AimDirection();
                     if (dir.sqrMagnitude < 0.01f)
                         dir = AimDirection();
-                    SkillEffects.Shockwave(transform.position, 1.2f, skill.Color, 0.25f);
+                    SkillEffects.Shockwave(transform.position, 1.2f, skill.Color, 0.25f, type: SkillEffects.DamagePattern(skill));
                     Record(skill, level);
                     controller.Dash(dir, 7f + 0.35f * (level - 1), 0.18f);
                     if (Stat(StatType.GlacialStep) > 0f)
@@ -947,7 +947,7 @@ namespace PoeClone.Skills
 
                 case SkillId.FrostNova:
                     float novaRadius = 5f * (1f + 0.03f * (level - 1)) * area;
-                    SkillEffects.Shockwave(transform.position, novaRadius, skill.Color, 0.4f);
+                    SkillEffects.Shockwave(transform.position, novaRadius, skill.Color, 0.4f, type: SkillEffects.DamagePattern(skill));
                     Record(skill, level, novaRadius);
                     foreach (EnemyHealth enemy in EnemiesWithin(transform.position, novaRadius))
                     {
@@ -960,7 +960,7 @@ namespace PoeClone.Skills
 
                 case SkillId.WarCry:
                     float cryRadius = 4f * area;
-                    SkillEffects.Shockwave(transform.position, cryRadius, skill.Color, 0.45f);
+                    SkillEffects.Shockwave(transform.position, cryRadius, skill.Color, 0.45f, type: SkillEffects.DamagePattern(skill));
                     foreach (EnemyHealth enemy in EnemiesWithin(transform.position, cryRadius))
                         Hit(enemy, damage, CombatText.PhysicalColor, attack: false, DamageType.Physical);
                     controller.GrantOnslaught(4f + 0.2f * (level - 1) + (Stat(StatType.SecondWind) > 0f ? 2f : 0f));
@@ -1004,7 +1004,7 @@ namespace PoeClone.Skills
                     EnemyHealth aimed = AimedEnemy(12f) ?? (TouchMode.Active ? EnemyInDirection(direction, 12f) : null);
                     Vector3 at = aimed != null ? aimed.transform.position : transform.position + direction * Mathf.Clamp(AimDistance() ?? 7f, 0f, 12f);
                     float radius = 2.6f * area;
-                    SkillEffects.Shockwave(at, radius, skill.Color, 0.45f);
+                    SkillEffects.Shockwave(at, radius, skill.Color, 0.45f, type: SkillEffects.DamagePattern(skill));
                     Record(skill, level, radius, 0, new[] { at });
                     foreach (EnemyHealth target in EnemiesWithin(at, radius))
                     {
@@ -1153,7 +1153,7 @@ namespace PoeClone.Skills
             Face(direction);
             if (attackAnimator != null)
                 attackAnimator.PlayAttack(WeaponType.Unarmed);
-            SkillEffects.Shockwave(at, radius, skill.Color, 0.5f);
+            SkillEffects.Shockwave(at, radius, skill.Color, 0.5f, type: SkillEffects.DamagePattern(skill));
 
             float seconds = 6f + 0.3f * (level - 1);
             float less = Mathf.Min(0.4f, 0.2f + 0.01f * (level - 1));
@@ -1282,12 +1282,12 @@ namespace PoeClone.Skills
             }
             if (landing == null)
             {
-                SkillEffects.Shockwave(start, 0.8f, skill.Color, 0.2f);
+                SkillEffects.Shockwave(start, 0.8f, skill.Color, 0.2f, type: SkillEffects.DamagePattern(skill));
                 Record(skill, level, 0f, 0, new[] { start });
                 return;
             }
 
-            SkillEffects.Shockwave(start, 1.4f, skill.Color, 0.3f);
+            SkillEffects.Shockwave(start, 1.4f, skill.Color, 0.3f, type: SkillEffects.DamagePattern(skill));
             Face(direction);
             CharacterController body = GetComponent<CharacterController>();
             bool wasEnabled = body != null && body.enabled;
@@ -1297,7 +1297,7 @@ namespace PoeClone.Skills
             if (body != null)
                 body.enabled = wasEnabled;
             Physics.SyncTransforms();
-            SkillEffects.Shockwave(landing.Value, 1.6f, skill.Color, 0.35f);
+            SkillEffects.Shockwave(landing.Value, 1.6f, skill.Color, 0.35f, type: SkillEffects.DamagePattern(skill));
             Record(skill, level, 0f, 0, new[] { landing.Value });
             if (Audio.AudioManager.Instance != null)
                 Audio.AudioManager.Instance.PlayEffect("skill.Teleport", transform.position);
@@ -1376,7 +1376,7 @@ namespace PoeClone.Skills
             yield return new WaitForSeconds(after);
             float radius = 3.5f * area;
             Color cold = CombatText.ColdColor;
-            SkillEffects.Shockwave(transform.position, radius, cold, 0.4f);
+            SkillEffects.Shockwave(transform.position, radius, cold, 0.4f, type: PoeClone.Combat.DamageType.Cold);
             float damage = (4f + 1.2f * (level - 1)) * spell;
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, radius))
             {

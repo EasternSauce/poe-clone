@@ -1,3 +1,6 @@
+version: 2026-10-11-player-skill-areas
+- Player skill damage areas now use animated frost, flame, lightning, cracked-earth and poison textures with soft fades and readable edges. Reaping Arc and Venom Slash show their actual cones, and Cross Slash shows its full damage strips. Co-op partners see the same effects.
+
 version: 2026-10-11-coop-hit-reconciliation
 - Co-op enemy health bars now reconcile individual guest hits with the host instead of waiting on a fixed timer. Recent hits stay visible while waiting for confirmation, while rejected hits and enemy healing correct properly. Unconfirmed hits are retried without dealing damage twice.
 - Combat critical strikes, defensive rolls and on-hit effects now use event-specific randomness independent of cosmetic effects. Co-op arrow rain shares its random arrow placement, and incoming attacks retain their roll seed through projectile flight.

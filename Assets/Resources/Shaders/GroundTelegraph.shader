@@ -8,11 +8,13 @@ Shader "PoeClone/GroundTelegraph"
         _WarnColor ("Warning", Color) = (0.3,0.05,0.03,1)
         _FillColor ("Fill", Color) = (1,0.45,0.1,1)
         _Progress ("Progress", Range(0,1)) = 0
-        _Type ("Pattern (0 fire, 1 cold, 2 lightning, 3 physical)", Float) = 0
+        _Type ("Pattern (0 fire, 1 cold, 2 lightning, 3 physical, 4 poison)", Float) = 0
         _Shape ("Shape (0 disc, 1 strip)", Float) = 0
         _Inner ("Inner radius fraction", Float) = 0
         _HalfAngle ("Half angle (radians)", Float) = 3.1416
         _Size ("Radius or length", Float) = 1
+        _Impact ("Player impact", Float) = 0
+        _Opacity ("Opacity", Range(0,1)) = 1
         _Width ("Strip width", Float) = 1
     }
     SubShader
@@ -31,7 +33,7 @@ Shader "PoeClone/GroundTelegraph"
 
             CBUFFER_START(UnityPerMaterial)
             float4 _WarnColor, _FillColor;
-            float _Progress, _Type, _Shape, _Inner, _HalfAngle, _Size, _Width;
+            float _Progress, _Type, _Shape, _Inner, _HalfAngle, _Size, _Width, _Impact, _Opacity;
             CBUFFER_END
 
             struct A { float4 vertex : POSITION; };
@@ -118,13 +120,25 @@ Shader "PoeClone/GroundTelegraph"
                 return float2(slab * 0.7 + grit * 0.6, crack);
             }
 
+            // Poison: oily eddies and small bubbling pockets.
+            float2 poison(float2 p, float t)
+            {
+                float2 drift = float2(t * 0.18, -t * 0.12);
+                float mist = fbm(p * 1.3 + drift + fbm(p * 0.7 - drift));
+                float3 cells = voronoi(p * 2.2 + drift);
+                float bubbles = (1 - smoothstep(0.02, 0.07, abs(cells.x - 0.23)))
+                    * smoothstep(0.55, 0.85, cells.z) * (0.5 + 0.5 * sin(t * 3 + cells.z * 20));
+                return float2(mist, bubbles);
+            }
+
             float2 pattern(float2 p, float t)
             {
                 float2 result;
                 if (_Type < 0.5) result = fire(p, t);
                 else if (_Type < 1.5) result = cold(p, t);
                 else if (_Type < 2.5) result = lightning(p, t);
-                else result = physical(p, t);
+                else if (_Type < 3.5) result = physical(p, t);
+                else result = poison(p, t);
                 return result;
             }
 
@@ -157,6 +171,16 @@ Shader "PoeClone/GroundTelegraph"
                 float front = (_Progress - along) * span;
                 float filled = smoothstep(-0.04, 0.04, front);
                 float2 pat = pattern(i.world.xz, t);
+                if (_Impact > 0.5)
+                {
+                    // Keep the true footprint visible from impact, with a wave travelling inside it.
+                    float rim = exp(-edge * 11);
+                    float wave = exp(-abs(front) * 8) * (1 - _Progress);
+                    half3 color = _FillColor.rgb * (0.4 + 0.65 * pat.x + 0.65 * pat.y);
+                    color += _FillColor.rgb * (rim * 0.45 + wave * 0.6);
+                    float alpha = 0.16 + pat.x * 0.2 + pat.y * 0.15 + rim * 0.3 + wave * 0.2;
+                    return half4(MixFog(color, i.fog), saturate(alpha) * aa * _Opacity);
+                }
                 float urgency = smoothstep(0.7, 1.0, _Progress);
 
                 half3 warn = _WarnColor.rgb * (0.75 + 0.7 * pat.x) + _FillColor.rgb * pat.y * 0.35;

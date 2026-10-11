@@ -70,7 +70,7 @@ namespace PoeClone.Enemies
             }
 
             UnityEngine.Object.Destroy(decal.Root);
-            SkillEffects.Shockwave(center, radius, FillColor(type), 0.3f);
+            SkillEffects.Shockwave(center, radius, FillColor(type), 0.3f, type: type);
             // A ground burst happens even on a miss: it is never a weapon hitting flesh/armour.
             if (source != null && source.Sounds == EnemySounds.Set.Slime)
                 EnemySounds.Play(source, EnemySounds.Event.Attack, center);
@@ -112,8 +112,8 @@ namespace PoeClone.Enemies
                 decal.SetProgress(t / windUp);
                 yield return null;
             }
-            SkillEffects.Shockwave(center, outerRadius, FillColor(type), 0.3f);
-            SkillEffects.Shockwave(center, innerRadius, FillColor(type), 0.3f);
+            SkillEffects.Shockwave(center, outerRadius, FillColor(type), 0.3f, type: type);
+            SkillEffects.Shockwave(center, innerRadius, FillColor(type), 0.3f, type: type);
             burst?.Invoke(center);
             UnityEngine.Object.Destroy(decal.Root);
         }
@@ -137,11 +137,17 @@ namespace PoeClone.Enemies
         }
 
         /// <summary>A telegraph's renderer and the property block that animates it.</summary>
-        private struct Decal
+        internal struct Decal
         {
             public GameObject Root;
             public Renderer Renderer;
             public MaterialPropertyBlock Block;
+
+            public void SetOpacity(float opacity)
+            {
+                Block.SetFloat("_Opacity", Mathf.Clamp01(opacity));
+                if (Renderer != null) Renderer.SetPropertyBlock(Block);
+            }
 
             public void SetProgress(float progress)
             {
@@ -149,6 +155,37 @@ namespace PoeClone.Enemies
                 Block.SetFloat(ProgressId, Mathf.Clamp01(progress));
                 Renderer.SetPropertyBlock(Block);
             }
+        }
+
+        // Player impacts share the damage patterns, but have no warning countdown or urgency flash.
+        internal static Decal ImpactDisc(Vector3 center, Vector3 facing, float radius, float halfAngle, Color color, DamageType type)
+        {
+            facing.y = 0f;
+            Decal decal = Disc("Skill damage area", center,
+                Quaternion.LookRotation(facing.sqrMagnitude > 0.001f ? facing : Vector3.forward),
+                radius, 0f, halfAngle * Mathf.Deg2Rad, type);
+            ConfigureImpact(decal, color);
+            return decal;
+        }
+
+        internal static Decal ImpactLine(Vector3 start, Vector3 direction, float length, float width, Color color, DamageType type)
+        {
+            direction.y = 0f;
+            Decal decal = Create("Skill damage strip", StripMesh, start,
+                Quaternion.LookRotation(direction.sqrMagnitude > 0.001f ? direction : Vector3.forward),
+                new Vector3(width, 1f, length), type);
+            decal.Block.SetFloat(ShapeId, 1f);
+            decal.Block.SetFloat(SizeId, length);
+            decal.Block.SetFloat(WidthId, width);
+            ConfigureImpact(decal, color);
+            return decal;
+        }
+
+        private static void ConfigureImpact(Decal decal, Color color)
+        {
+            decal.Block.SetColor(FillColorId, color);
+            decal.Block.SetFloat("_Impact", 1f);
+            decal.SetProgress(0f);
         }
 
         private static Decal Disc(string name, Vector3 center, Quaternion rotation, float radius, float innerFraction, float halfAngle, DamageType type)
@@ -188,6 +225,7 @@ namespace PoeClone.Enemies
                 case DamageType.Cold: return 1f;
                 case DamageType.Lightning: return 2f;
                 case DamageType.Physical: return 3f;
+                case DamageType.Poison: return 4f;
                 default: return 0f;
             }
         }

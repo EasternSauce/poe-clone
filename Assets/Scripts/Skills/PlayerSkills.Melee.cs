@@ -187,7 +187,7 @@ namespace PoeClone.Skills
             transform.rotation = Quaternion.Euler(0f, startYaw, 0f);
 
             float reach = Mathf.Max(2.6f, (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 0.6f) * MeleeRangeMultiplier) * AreaMultiplier;
-            SkillEffects.Shockwave(transform.position, reach, skill.Color, 0.3f);
+            SkillEffects.Shockwave(transform.position, reach, skill.Color, 0.3f, type: SkillEffects.DamagePattern(skill));
             Record(skill, level, reach);
 
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
@@ -279,7 +279,7 @@ namespace PoeClone.Skills
         {
             float radius = 3.6f * AreaMultiplier;
             Vector3 impact = SlamPoint();
-            SkillEffects.Shockwave(impact, radius, skill.Color, 0.42f);
+            SkillEffects.Shockwave(impact, radius, skill.Color, 0.42f, type: SkillEffects.DamagePattern(skill));
             // Match the impact treatment of a basic maul slam: ground burst plus a brief camera jolt.
             PoeClone.CameraSystem.CameraFollow.Shake(0.12f, 0.18f);
             Record(skill, level, radius, at: impact);
@@ -361,7 +361,7 @@ namespace PoeClone.Skills
                 if (to.sqrMagnitude > 0.01f && Vector3.Angle(transform.forward, to) <= 72f)
                     Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
             }
-            SkillEffects.Shockwave(transform.position + transform.forward * 1.8f, 2.8f, skill.Color, 0.34f);
+            SkillEffects.Cone(transform.position, transform.forward, reach, 72f, skill.Color, 0.34f);
             Record(skill, level, reach);
         }
 
@@ -423,7 +423,7 @@ namespace PoeClone.Skills
         {
             float reach = VenomSlashReach * MeleeRangeMultiplier * AreaMultiplier;
             Vector3 center = transform.position;
-            SkillEffects.Shockwave(center + transform.forward * reach * 0.45f, reach * 0.6f, skill.Color, 0.25f);
+            SkillEffects.Cone(center, transform.forward, reach, VenomSlashHalfAngle, skill.Color, 0.25f, SkillEffects.DamagePattern(skill));
             Record(skill, level, reach);
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
             float poison = 70f + 5f * (level - 1);

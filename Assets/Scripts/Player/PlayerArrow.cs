@@ -205,7 +205,7 @@ namespace PoeClone.Player
             if (Enemies.Graveward.Stops(transform.position, transform.position + motion, out Vector3 warded) &&
                 (nearest == null || nearest.Value.distance > Vector3.Distance(transform.position, warded)))
             {
-                Skills.SkillEffects.Shockwave(warded, 0.6f, textColor, 0.2f);
+                Skills.SkillEffects.Shockwave(warded, 0.6f, textColor, 0.2f, type: damageType);
                 Destroy(gameObject);
                 return;
             }
@@ -218,7 +218,7 @@ namespace PoeClone.Player
                 if (PassesEnemy(heading, length, out at))
                 {
                     if (burstRadius > 0f)
-                        Skills.SkillEffects.Shockwave(at, burstRadius, textColor, 0.25f);
+                        Skills.SkillEffects.Shockwave(at, burstRadius, textColor, 0.25f, type: damageType);
                     Destroy(gameObject);
                     return;
                 }
@@ -245,7 +245,7 @@ namespace PoeClone.Player
                     // A hit reported at distance 0 (started inside it) has no contact point.
                     Vector3 at = nearest.Value.distance > 0f ? nearest.Value.point : transform.position;
                     if (harmless)
-                        Skills.SkillEffects.Shockwave(at, burstRadius, textColor, 0.25f); // a spectator's copy: just the look
+                        Skills.SkillEffects.Shockwave(at, burstRadius, textColor, 0.25f, type: damageType); // a spectator's copy: just the look
                     else
                         Burst(at, nearest.Value.collider);
                 }
@@ -312,7 +312,7 @@ namespace PoeClone.Player
         // Splash damage around the impact (the enemy struck directly already took its share).
         private void Burst(Vector3 at, Collider struck)
         {
-            Skills.SkillEffects.Shockwave(at, burstRadius, textColor, 0.25f);
+            Skills.SkillEffects.Shockwave(at, burstRadius, textColor, 0.25f, type: damageType);
 
             IDamageable direct = struck.GetComponentInParent<IDamageable>();
             var done = new System.Collections.Generic.HashSet<IDamageable> { direct };

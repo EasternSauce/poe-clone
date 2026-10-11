@@ -142,7 +142,7 @@ namespace PoeClone.Skills
                             at => RainHit(at, hitRadius, each, shotOrigin));
                     }
                     // A puff at the feet as the volley goes up, so the shot reads before the rain lands.
-                    SkillEffects.Shockwave(transform.position, 0.9f, skill.Color, 0.2f);
+                    SkillEffects.Shockwave(transform.position, 0.9f, skill.Color, 0.2f, type: SkillEffects.DamagePattern(skill));
                     Record(skill, level, hitRadius, count, points);
                     break;
                 }

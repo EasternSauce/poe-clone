@@ -298,7 +298,7 @@ namespace PoeClone.Player
             Color color = shatter ? CombatText.ColdColor : ExplosionColor;
             if (shatter)
             {
-                SkillEffects.Shockwave(at, radius, color, 0.35f);
+                SkillEffects.Shockwave(at, radius, color, 0.35f, type: DamageType.Cold);
                 SkillEffects.Blast(at + Vector3.up * 0.7f, radius * 0.4f, color, 0.3f);
                 CombatText.Show(at + Vector3.up * 2.2f, "Shatter", color, 0.9f);
             }

@@ -1,25 +1,60 @@
 using System.Collections;
 using UnityEngine;
 using PoeClone.Visuals;
+using PoeClone.Combat;
+using PoeClone.Enemies;
+using PoeClone.Inventory;
 
 namespace PoeClone.Skills
 {
-    /// <summary>
-    /// Short-lived visuals for skills, built from coloured primitives (no particle systems or
-    /// special shaders, so they render in every build): an expanding ground ring, a lightning
-    /// arc between two points, a fiery explosion, a rising glow around a character, a cut along the
-    /// ground, a running fissure and a chain of tremors.
-    /// </summary>
+    /// <summary>Short-lived skill visuals, including textured ground footprints shared with enemy effects.</summary>
     public class SkillEffects : MonoBehaviour
     {
-        /// <summary>A flat ring that grows out to the radius and sinks away.</summary>
-        public static void Shockwave(Vector3 center, float radius, Color color, float seconds = 0.35f)
+        public static DamageType DamagePattern(SkillDefinition skill)
         {
-            var go = new GameObject("Shockwave");
-            go.transform.position = new Vector3(center.x, GroundY(center) + 0.05f, center.z);
-            GameObject disc = RuntimePrimitives.Create(PrimitiveType.Cylinder, go.transform, color);
-            disc.transform.localScale = new Vector3(0.1f, 0.02f, 0.1f);
-            go.AddComponent<SkillEffects>().StartCoroutine(Grow(go, disc.transform, radius, seconds));
+            if (skill.Id == SkillId.VenomSlash || skill.Id == SkillId.GraveRot) return DamageType.Poison;
+            switch (skill.DamageElement)
+            {
+                case StatType.FireDamage: return DamageType.Fire;
+                case StatType.ColdDamage: return DamageType.Cold;
+                case StatType.LightningDamage: return DamageType.Lightning;
+                case StatType.PoisonDamage: return DamageType.Poison;
+                default: return DamageType.Physical;
+            }
+        }
+
+        /// <summary>A textured impact at the full damage radius, with an outward pulse and soft fade.</summary>
+        public static void Shockwave(Vector3 center, float radius, Color color, float seconds = 0.35f,
+            DamageType type = DamageType.Physical)
+        {
+            Cone(center, Vector3.forward, radius, 180f, color, seconds, type);
+        }
+
+        /// <summary>A textured wedge matching a directional attack's reach and half angle.</summary>
+        public static void Cone(Vector3 center, Vector3 facing, float radius, float halfAngle, Color color,
+            float seconds = 0.35f, DamageType type = DamageType.Physical)
+        {
+            if (radius <= 0f || seconds <= 0f) return;
+            AnimateArea(GroundTelegraph.ImpactDisc(center, facing, radius, halfAngle, color, type), seconds);
+        }
+
+        private static void AnimateArea(GroundTelegraph.Decal decal, float seconds)
+        {
+            // Also clean up if the coroutine is interrupted.
+            Destroy(decal.Root, seconds + 0.1f);
+            decal.Root.AddComponent<SkillEffects>().StartCoroutine(FadeArea(decal, seconds));
+        }
+
+        private static IEnumerator FadeArea(GroundTelegraph.Decal decal, float seconds)
+        {
+            for (float t = 0f; t < seconds; t += Time.deltaTime)
+            {
+                float f = t / seconds;
+                decal.SetProgress(Mathf.Sqrt(f));
+                decal.SetOpacity(1f - Mathf.SmoothStep(0f, 1f, f));
+                yield return null;
+            }
+            Destroy(decal.Root);
         }
 
         /// <summary>A jagged bolt from one point to another, gone in a blink.</summary>
@@ -171,19 +206,6 @@ namespace PoeClone.Skills
             go.AddComponent<SkillEffects>().StartCoroutine(Climb(go, seconds));
         }
 
-        private static IEnumerator Grow(GameObject root, Transform disc, float radius, float seconds)
-        {
-            for (float t = 0f; t < seconds; t += Time.deltaTime)
-            {
-                float f = t / seconds;
-                float d = Mathf.Lerp(0.2f, radius * 2f, Mathf.Sqrt(f));
-                disc.localScale = new Vector3(d, 0.02f, d);
-                disc.localPosition = Vector3.down * (0.1f * f);
-                yield return null;
-            }
-            Destroy(root);
-        }
-
         private static IEnumerator Pop(GameObject root, Transform ball, float radius, float seconds)
         {
             for (float t = 0f; t < seconds; t += Time.deltaTime)
@@ -208,30 +230,13 @@ namespace PoeClone.Skills
             Destroy(root);
         }
 
-        /// <summary>A bright cut along the ground from one point to another that thins away (Cross Slash).</summary>
+        /// <summary>A textured damage strip along Cross Slash's full cut, fading without shrinking its footprint.</summary>
         public static void Slash(Vector3 from, Vector3 to, float width, Color color, float seconds = 0.25f)
         {
             Vector3 line = to - from;
             line.y = 0f;
-            Vector3 mid = (from + to) * 0.5f;
-            var go = new GameObject("Slash");
-            go.transform.SetPositionAndRotation(new Vector3(mid.x, GroundY(mid) + 0.08f, mid.z),
-                Quaternion.LookRotation(line.sqrMagnitude > 0.0001f ? line : Vector3.forward));
-            GameObject blade = RuntimePrimitives.Create(PrimitiveType.Cube, go.transform, color);
-            blade.transform.localScale = new Vector3(width, 0.03f, 0.1f);
-            go.AddComponent<SkillEffects>().StartCoroutine(Thin(go, blade.transform, width, line.magnitude, seconds));
-        }
-
-        private static IEnumerator Thin(GameObject root, Transform blade, float width, float length, float seconds)
-        {
-            for (float t = 0f; t < seconds; t += Time.deltaTime)
-            {
-                float f = t / seconds;
-                // Drawn out to its full length at once, then narrows away.
-                blade.localScale = new Vector3(width * (1f - f) * 0.5f, 0.03f, length * Mathf.Min(1f, f * 5f));
-                yield return null;
-            }
-            Destroy(root);
+            if (line.sqrMagnitude < 0.001f || width <= 0f || seconds <= 0f) return;
+            AnimateArea(GroundTelegraph.ImpactLine(from, line, line.magnitude, width, color, DamageType.Physical), seconds);
         }
 
         private const float FissureSpeed = 22f;
