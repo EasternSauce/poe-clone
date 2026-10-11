@@ -155,6 +155,16 @@ namespace PoeClone.Enemies
                 Block.SetFloat(ProgressId, Mathf.Clamp01(progress));
                 Renderer.SetPropertyBlock(Block);
             }
+
+            /// <summary>Moves a disc to a new centre and radius, kept on the ground (an area following its owner).</summary>
+            public void Follow(Vector3 at, float radius)
+            {
+                if (Renderer == null) return;
+                Root.transform.position = new Vector3(at.x, GroundY(at) + 0.18f, at.z);
+                Root.transform.localScale = new Vector3(radius, 1f, radius);
+                Block.SetFloat(SizeId, radius);
+                Renderer.SetPropertyBlock(Block);
+            }
         }
 
         // Player impacts share the damage patterns, but have no warning countdown or urgency flash.

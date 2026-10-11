@@ -185,7 +185,8 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.Whirlwind:
-                    SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, 0.22f, type: SkillEffects.DamagePattern(skill));
+                    // Each hit keeps the circle up a little past the slowest weapon's next one.
+                    HeldArea.Hold(caster, cast.At, cast.Size, skill.Color, SkillEffects.DamagePattern(skill), linger: 0.6f);
                     break;
 
                 case SkillId.ReapingArc:

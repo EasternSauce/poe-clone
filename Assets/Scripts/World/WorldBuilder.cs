@@ -495,9 +495,7 @@ namespace PoeClone.World
                 Vector3 p = c + Flat(R(-140f, 140f), R(-110f, 110f));
                 if (Vector3.Distance(p, temple) < 11f || !Shape(Ruins).Contains(p, 5f))
                     continue;
-                GameObject lava = Box(t, p + Vector3.up * 0.03f, new Vector3(R(0.25f, 0.5f), 0.05f, R(3f, 8f)), kit.Mat("Lava"), solid: false,
-                    euler: new Vector3(0f, R(0f, 180f), 0f));
-                PoeClone.Visuals.LavaSurface.Attach(lava);
+                LavaCrack(t, p, R(0.25f, 0.5f), R(3f, 8f), R(0f, 180f));
                 if (k % 2 == 0)
                     Glow(t, p + Vector3.up * 0.5f, LavaLight, 5.5f, 2.5f, flicker: true);
             }
@@ -506,6 +504,93 @@ namespace PoeClone.World
             Scatter(t, 14, 8f, 46f, p => DeadTree(t, p, kit.Mat("Charred")), 1.6f);
             Scatter(t, 10, 8f, 46f, p => Ball(t, p, R(0.6f, 1.2f), kit.Mat("Ash"), flatten: 0.35f, solid: false), 1f);
             Scatter(t, 14, 8f, 46f, p => Prefab(kit.rock, t, p, R(0f, 360f), Vector3.one * R(0.8f, 1.5f)), 1.5f);
+        }
+
+        // A crack of lava seeping through the ash: a channel that wanders, tapers to nothing at both
+        // ends and sometimes forks, with ragged sides, on a wider scorched margin. Its shape has its
+        // own seed, so the area's other scenery lands where it always has.
+        private void LavaCrack(Transform t, Vector3 p, float width, float length, float yaw)
+        {
+            var shape = new System.Random(Mathf.RoundToInt(p.x * 131f + p.z * 17f + yaw * 7f));
+            float Rand(float min, float max) => min + (float)shape.NextDouble() * (max - min);
+
+            // Strands, laid out along the crack's own forward (the way its lava flows): the main crack
+            // centred on the spot, then a fork or two off its middle.
+            var strands = new List<(List<Vector3> points, float width, bool fork)>();
+            List<Vector3> main = CrackPath(Vector3.back * length * 0.5f, 0f, length, Rand);
+            strands.Add((main, width, false));
+            for (int forks = shape.Next(0, 3), f = 0; f < forks; f++)
+            {
+                int at = shape.Next(main.Count / 4, main.Count * 3 / 4);
+                Vector3 along = main[at + 1] - main[at];
+                float turn = Rand(0.5f, 1.05f) * (shape.Next(2) == 0 ? -1f : 1f);
+                strands.Add((CrackPath(main[at], Mathf.Atan2(along.x, along.z) + turn, length * Rand(0.25f, 0.45f), Rand),
+                    width * Rand(0.45f, 0.65f), true));
+            }
+
+            var crack = new GameObject("LavaCrack");
+            crack.transform.SetParent(t, false);
+            crack.transform.SetPositionAndRotation(p + Vector3.up * 0.04f, Quaternion.Euler(0f, yaw, 0f));
+            crack.AddComponent<MeshFilter>().sharedMesh = CrackMesh("LavaCrack", strands, 1f, 0f, 0.65f, 1.15f, Rand);
+            crack.AddComponent<MeshRenderer>();
+            PoeClone.Visuals.LavaSurface.Attach(crack, emitFromMesh: true);
+
+            var scorch = new GameObject("Scorch");
+            scorch.transform.SetParent(crack.transform, false);
+            scorch.transform.localPosition = Vector3.down * 0.02f;
+            scorch.AddComponent<MeshFilter>().sharedMesh = CrackMesh("LavaScorch", strands, 2.4f, 0.12f, 0.55f, 1.35f, Rand);
+            var scorchRenderer = scorch.AddComponent<MeshRenderer>();
+            scorchRenderer.sharedMaterial = kit.Mat("Charred");
+            scorchRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
+
+        // A wandering line from start: the heading drifts a little each step but keeps its course.
+        private static List<Vector3> CrackPath(Vector3 start, float heading, float length, System.Func<float, float, float> rand)
+        {
+            int steps = Mathf.Max(5, Mathf.RoundToInt(length / 0.3f));
+            float step = length / steps, course = heading;
+            var points = new List<Vector3> { start };
+            for (int k = 0; k < steps; k++)
+            {
+                heading = Mathf.Lerp(heading + rand(-0.45f, 0.45f), course, 0.25f);
+                start += new Vector3(Mathf.Sin(heading), 0f, Mathf.Cos(heading)) * step;
+                points.Add(start);
+            }
+            return points;
+        }
+
+        // Flat ribbons along each strand, each side ragged on its own. The main crack swells in the
+        // middle and pinches out at both ends; a fork starts wide where it leaves and thins to a point.
+        private static Mesh CrackMesh(string name, List<(List<Vector3> points, float width, bool fork)> strands, float widen, float margin,
+            float raggedMin, float raggedMax, System.Func<float, float, float> rand)
+        {
+            var vertices = new List<Vector3>();
+            var triangles = new List<int>();
+            foreach (var strand in strands)
+            {
+                List<Vector3> points = strand.points;
+                int first = vertices.Count;
+                for (int k = 0; k < points.Count; k++)
+                {
+                    float u = k / (float)(points.Count - 1);
+                    float profile = strand.fork ? Mathf.Pow(1f - u, 0.7f) : Mathf.Pow(Mathf.Sin(u * Mathf.PI), 0.6f);
+                    float half = profile > 0.001f ? (strand.width * profile * widen + margin) * 0.5f : 0f;
+                    Vector3 tangent = points[Mathf.Min(k + 1, points.Count - 1)] - points[Mathf.Max(k - 1, 0)];
+                    Vector3 side = new Vector3(tangent.z, 0f, -tangent.x).normalized;
+                    vertices.Add(points[k] + side * half * rand(raggedMin, raggedMax));
+                    vertices.Add(points[k] - side * half * rand(raggedMin, raggedMax));
+                    if (k == 0)
+                        continue;
+                    int a = first + (k - 1) * 2;
+                    triangles.AddRange(new[] { a, a + 1, a + 2, a + 1, a + 3, a + 2 });
+                }
+            }
+            var mesh = new Mesh { name = name };
+            mesh.SetVertices(vertices);
+            mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
         }
 
         // The Frozen Hollow: snow, frosted pines, ice crystals and frozen ponds round the queen's

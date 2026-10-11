@@ -41,6 +41,7 @@ namespace PoeClone.UI
         private bool hidden;
 
         private Player.PlayerStats player;
+        private Skills.PlayerSkills playerSkills;
         private InventoryUI inventoryUI;
         private CharacterPageUI characterUI;
 
@@ -154,7 +155,9 @@ namespace PoeClone.UI
             Vector3 centre = WorldBuilder.Center(areas.CurrentAreaIndex);
             content.anchoredPosition = -Rotate(ToMap(player.transform.position, centre), yaw);
             playerDot.rectTransform.anchoredPosition = Vector2.zero;
-            Vector3 forward = player.transform.forward;
+            if (playerSkills == null)
+                playerSkills = player.GetComponent<Skills.PlayerSkills>();
+            Vector3 forward = playerSkills != null ? playerSkills.Heading : player.transform.forward;
             Vector2 heading = Rotate(new Vector2(forward.x, forward.z), yaw);
             playerDot.rectTransform.localRotation = Quaternion.Euler(0f, 0f, Vector2.SignedAngle(Vector2.up, heading));
 

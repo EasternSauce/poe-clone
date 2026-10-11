@@ -234,8 +234,11 @@ namespace PoeClone.World
             }
             return d;
         }
-        public bool IsBridge(Vector3 world, float margin = 0f) =>
-            BridgeDistance(new Vector2(world.x - Center.x, world.z - Center.z)) >= -margin;
+        public bool IsBridge(Vector3 world, float margin = 0f) => BridgeDistance(world) >= -margin;
+        /// <summary>How far inside a bridge's deck the point is (negative off it).</summary>
+        public float BridgeDistance(Vector3 world) => BridgeDistance(new Vector2(world.x - Center.x, world.z - Center.z));
+        /// <summary>How far inside the open ground the point is (negative outside), as <see cref="Contains"/> sees it.</summary>
+        public float InsideDistance(Vector3 world) => Distance(new Vector2(world.x - Center.x, world.z - Center.z));
 
         private float Distance(Vector2 p)
         {

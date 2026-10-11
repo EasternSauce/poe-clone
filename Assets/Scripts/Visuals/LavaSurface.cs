@@ -3,18 +3,19 @@ using UnityEngine.Rendering;
 
 namespace PoeClone.Visuals
 {
-    /// <summary>Animated molten surface and bounded steam for the world's lava boxes.</summary>
+    /// <summary>Animated molten surface and bounded steam for the world's lava: boxes, or flat meshes such as cracks.</summary>
     public sealed class LavaSurface : MonoBehaviour
     {
         private Material lavaMaterial;
         private Material steamMaterial;
 
-        public static void Attach(GameObject surface)
+        /// <summary>Steam rises from the box's top, or with <paramref name="emitFromMesh"/>, from the mesh's own shape.</summary>
+        public static void Attach(GameObject surface, bool emitFromMesh = false)
         {
-            surface.AddComponent<LavaSurface>().Build();
+            surface.AddComponent<LavaSurface>().Build(emitFromMesh);
         }
 
-        private void Build()
+        private void Build(bool emitFromMesh)
         {
             lavaMaterial = new Material(Resources.Load<Shader>("Shaders/LivingLava")) { name = "LivingLava" };
             var surfaceRenderer = GetComponent<Renderer>();
@@ -25,7 +26,7 @@ namespace PoeClone.Visuals
             Vector3 size = transform.lossyScale;
             var steam = new GameObject("LavaSteam");
             steam.transform.SetParent(transform, false);
-            steam.transform.localPosition = new Vector3(0, 0.5f, 0);
+            steam.transform.localPosition = new Vector3(0, emitFromMesh ? 0.02f : 0.5f, 0);
             steam.transform.localScale = new Vector3(1 / size.x, 1 / size.y, 1 / size.z);
             var particles = steam.AddComponent<ParticleSystem>();
             particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
@@ -42,10 +43,22 @@ namespace PoeClone.Visuals
             main.maxParticles = 320;
             main.cullingMode = ParticleSystemCullingMode.PauseAndCatchup;
             var emission = particles.emission;
-            emission.rateOverTime = Mathf.Clamp(size.x * size.z * 0.035f, 0.7f, 48f);
+            Mesh mesh = GetComponent<MeshFilter>().sharedMesh;
             var shape = particles.shape;
-            shape.shapeType = ParticleSystemShapeType.Box;
-            shape.scale = new Vector3(size.x * 0.9f, 0.015f, size.z * 0.9f);
+            if (emitFromMesh)
+            {
+                shape.shapeType = ParticleSystemShapeType.Mesh;
+                shape.meshShapeType = ParticleSystemMeshShapeType.Triangle;
+                shape.mesh = mesh;
+                shape.scale = size;
+            }
+            else
+            {
+                shape.shapeType = ParticleSystemShapeType.Box;
+                shape.scale = new Vector3(size.x * 0.9f, 0.015f, size.z * 0.9f);
+            }
+            float area = emitFromMesh ? SurfaceArea(mesh) * size.x * size.z : size.x * size.z;
+            emission.rateOverTime = Mathf.Clamp(area * 0.035f, 0.7f, 48f);
             var velocity = particles.velocityOverLifetime;
             velocity.enabled = true;
             velocity.space = ParticleSystemSimulationSpace.World;
@@ -67,6 +80,16 @@ namespace PoeClone.Visuals
             renderer.shadowCastingMode = ShadowCastingMode.Off;
             renderer.receiveShadows = false;
             particles.Play();
+        }
+
+        private static float SurfaceArea(Mesh mesh)
+        {
+            Vector3[] vertices = mesh.vertices;
+            int[] triangles = mesh.triangles;
+            float area = 0f;
+            for (int k = 0; k < triangles.Length; k += 3)
+                area += Vector3.Cross(vertices[triangles[k + 1]] - vertices[triangles[k]], vertices[triangles[k + 2]] - vertices[triangles[k]]).magnitude * 0.5f;
+            return area;
         }
 
         private void OnDestroy()

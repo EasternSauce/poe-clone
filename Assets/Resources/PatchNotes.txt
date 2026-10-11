@@ -1,3 +1,10 @@
+version: 2026-10-11-whirlwind-minimap-lava-polish
+- While spinning with Whirlwind, the minimap arrow points the way you are travelling instead of spinning with you.
+- Whirlwind's hit area now stays on the ground and travels with you for the whole spin instead of flashing on every hit. Other players see the same steady circle.
+- The minimap is much sharper: about four times the detail, with smooth edges along walls, water and the explored border instead of visible pixels.
+- Item tooltip section dividers now sit toward the left, centered a third of the way across, under the stat lines.
+- Lava in the Ashen Ruins now seeps through winding, ragged cracks that taper at the ends, sometimes fork and have scorched edges, instead of straight rectangular strips. Steam rises from the cracks themselves.
+
 version: 2026-10-11-quest-opening-rework
 - Greenwood quest encounters now arrive in groups of three. Defeat each group before the next arrives. Bone totems are destroyed with attacks and spells rather than a dialogue button.
 - The lost patrol now has a sequence of clues and quiet discoveries, ending in a raider encounter. Oda's caravan quest follows a wreck and cargo trail to a named plunderer and its escort.

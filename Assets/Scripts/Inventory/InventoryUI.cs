@@ -2228,7 +2228,8 @@ private Vector2 CellSize(int w, int h)
                 float height = text.cachedTextGeneratorForLayout.GetPreferredHeight(prefix, settings) /
                     Mathf.Max(0.01f, text.pixelsPerUnit);
                 float rowHeight = text.fontSize * text.lineSpacing;
-                UiKit.TopLeft(divider.rectTransform, new Vector2(width / 3f, -height + rowHeight * 0.5f),
+                // A third of the width, centred a third of the way across: under the left-aligned lines.
+                UiKit.TopLeft(divider.rectTransform, new Vector2(width / 6f, -height + rowHeight * 0.5f),
                     new Vector2(width / 3f, 2f));
                 marker = text.text.IndexOf(TooltipDividerMarker, end, System.StringComparison.Ordinal);
             }

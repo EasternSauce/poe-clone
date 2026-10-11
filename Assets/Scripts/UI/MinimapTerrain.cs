@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 using PoeClone.World;
 
@@ -14,7 +15,7 @@ namespace PoeClone.UI
     /// </summary>
     public static class MinimapTerrain
     {
-        public const int Resolution = 240;        // preserve corridor detail across the larger maps
+        public const int Resolution = 640;        // about a texel per screen pixel on the minimap
         public const int FogResolution = 80;      // seen/unseen cells across an area
         private const float RevealRadius = 22f;   // metres around the player that count as seen
 
@@ -22,7 +23,6 @@ namespace PoeClone.UI
         {
             public Texture2D Texture;
             public Color32[] Base;
-            public Color32[] Shown;
             public bool[] Seen;
             public bool Dirty;
         }
@@ -178,37 +178,63 @@ namespace PoeClone.UI
 
         private enum Cell : byte { Outside, Open, Solid, Water, Bridge }
 
+        // The ground is sampled (shape distances, a raycast for anything standing up) on a coarser
+        // grid than the texture, then interpolated per texel, so edges come out smooth, not blocky.
+        private const int SampleResolution = 320;
+        private const float FieldClamp = 4f;      // metres: distances past this don't move an edge
+        private const int RimWidth = 2;           // texels of lighter outline along the open ground
+        private const float GrainScale = 240f / Resolution; // keeps the grain's size in metres
+
         private static AreaMap Bake(int area)
         {
             Vector3 centre = WorldBuilder.Center(area);
             AreaShape shape = WorldBuilder.Shape(area);
-            float pixel = AreaSize / Resolution;
-            var cells = new Cell[Resolution * Resolution];
+            const int n = SampleResolution;
+            float step = AreaSize / n;
             float groundY = centre.y;
+            var inside = new float[n * n];
+            var water = new float[n * n];
+            var bridge = new float[n * n];
+            var solid = new float[n * n];
 
-            for (int y = 0; y < Resolution; y++)
+            for (int y = 0; y < n; y++)
             {
-                for (int x = 0; x < Resolution; x++)
+                for (int x = 0; x < n; x++)
                 {
-                    var p = new Vector3(centre.x - AreaSize * 0.5f + (x + 0.5f) * pixel, 0f, centre.z - AreaSize * 0.5f + (y + 0.5f) * pixel);
-                    Cell c = Cell.Outside;
-                    if (shape.Contains(p))
-                    {
-                        // Anything standing up out of the ground (a trunk, a rock, a wall, a house) is solid.
-                        c = Cell.Open;
-                        if (Physics.Raycast(new Vector3(p.x, groundY + 40f, p.z), Vector3.down, out RaycastHit hit, 60f,
-                                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) &&
-                            hit.point.y > groundY + 0.6f)
-                            c = Cell.Solid;
-                    }
-                    if (shape.WaterDistance(p) >= 0f) c = shape.Contains(p) && shape.IsBridge(p) ? Cell.Bridge : Cell.Water;
-                    cells[y * Resolution + x] = c;
+                    int i = y * n + x;
+                    var p = new Vector3(centre.x - AreaSize * 0.5f + (x + 0.5f) * step, 0f, centre.z - AreaSize * 0.5f + (y + 0.5f) * step);
+                    inside[i] = Mathf.Clamp(shape.InsideDistance(p), -FieldClamp, FieldClamp);
+                    water[i] = Mathf.Clamp(shape.WaterDistance(p), -FieldClamp, FieldClamp);
+                    bridge[i] = Mathf.Clamp(shape.BridgeDistance(p), -FieldClamp, FieldClamp);
+                    // Anything standing up out of the ground (a trunk, a rock, a wall, a house) is solid.
+                    if (inside[i] > -step &&
+                        Physics.Raycast(new Vector3(p.x, groundY + 40f, p.z), Vector3.down, out RaycastHit hit, 60f,
+                            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) &&
+                        hit.point.y > groundY + 0.6f)
+                        solid[i] = 1f;
                 }
             }
 
+            var cells = new Cell[Resolution * Resolution];
+            float toSample = (float)n / Resolution;
+            for (int y = 0; y < Resolution; y++)
+            {
+                float v = (y + 0.5f) * toSample - 0.5f;
+                for (int x = 0; x < Resolution; x++)
+                {
+                    float u = (x + 0.5f) * toSample - 0.5f;
+                    bool within = Sample(inside, n, u, v) >= 0f;
+                    Cell c = within ? (Sample(solid, n, u, v) >= 0.5f ? Cell.Solid : Cell.Open) : Cell.Outside;
+                    if (Sample(water, n, u, v) >= 0f)
+                        c = within && Sample(bridge, n, u, v) >= 0f ? Cell.Bridge : Cell.Water;
+                    cells[y * Resolution + x] = c;
+                }
+            }
+            bool[] rims = Rims(cells);
+
             Color tint = WorldBuilder.AreaColor(area);
             Color open = Color.Lerp(new Color(0.42f, 0.40f, 0.36f), tint, 0.45f) * 0.85f;
-            Color solid = open * 0.38f;
+            Color solidColor = open * 0.38f;
             Color rim = Color.Lerp(open, Color.white, 0.45f);
             var rng = new System.Random(area * 7919 + 13);
             float seedX = (float)rng.NextDouble() * 100f, seedY = (float)rng.NextDouble() * 100f;
@@ -227,18 +253,19 @@ namespace PoeClone.UI
                     }
 
                     // Grain: two octaves of noise so the ground isn't a flat fill.
-                    float n = Mathf.PerlinNoise(seedX + x * 0.09f, seedY + y * 0.09f) * 0.7f +
-                              Mathf.PerlinNoise(seedX + x * 0.35f, seedY + y * 0.35f) * 0.3f;
-                    float shade = 0.82f + 0.3f * n;
+                    float gx = x * GrainScale, gy = y * GrainScale;
+                    float noise = Mathf.PerlinNoise(seedX + gx * 0.09f, seedY + gy * 0.09f) * 0.7f +
+                                  Mathf.PerlinNoise(seedX + gx * 0.35f, seedY + gy * 0.35f) * 0.3f;
+                    float shade = 0.82f + 0.3f * noise;
                     Color col;
                     if (c == Cell.Water)
                         col = (area == WorldBuilder.Frozen ? new Color(0.40f, 0.65f, 0.77f) : new Color(0.12f, 0.36f, 0.47f)) * shade;
                     else if (c == Cell.Bridge)
                         col = new Color(0.66f, 0.48f, 0.27f) * shade;
                     else if (c == Cell.Solid)
-                        col = solid * shade;
+                        col = solidColor * shade;
                     else
-                        col = IsEdge(cells, x, y) ? rim : open * shade;
+                        col = rims[i] ? rim : open * shade;
                     col.a = c == Cell.Solid ? 0.9f : 0.85f;
                     pixels[i] = col;
                 }
@@ -254,61 +281,99 @@ namespace PoeClone.UI
             {
                 Texture = texture,
                 Base = pixels,
-                Shown = new Color32[pixels.Length],
                 Seen = new bool[FogResolution * FogResolution],
                 Dirty = true
             };
         }
 
-        // Open ground next to something solid or the outside: the line that shows where you can't go.
-        private static bool IsEdge(Cell[] cells, int x, int y)
+        // Bilinear read of a square sample grid, clamped at its edges.
+        private static float Sample(float[] field, int n, float u, float v)
         {
-            for (int dy = -1; dy <= 1; dy++)
-            {
-                for (int dx = -1; dx <= 1; dx++)
-                {
-                    int nx = x + dx, ny = y + dy;
-                    if (nx < 0 || ny < 0 || nx >= Resolution || ny >= Resolution)
-                        return true;
-                    if (cells[ny * Resolution + nx] != Cell.Open)
-                        return true;
-                }
-            }
-            return false;
+            u = Mathf.Clamp(u, 0f, n - 1);
+            v = Mathf.Clamp(v, 0f, n - 1);
+            int x = Mathf.Min((int)u, n - 2), y = Mathf.Min((int)v, n - 2);
+            float fx = u - x, fy = v - y;
+            int i = y * n + x;
+            return Mathf.Lerp(Mathf.Lerp(field[i], field[i + 1], fx), Mathf.Lerp(field[i + n], field[i + n + 1], fx), fy);
         }
 
-        // Unseen parts are hidden; the border of what's seen fades out rather than stopping hard.
-        private static void Redraw(AreaMap map, int area)
+        // Open ground within RimWidth texels of something solid or the outside: the line that shows
+        // where you can't go. A square neighbourhood, checked along rows and then along columns.
+        private static bool[] Rims(Cell[] cells)
         {
-            map.Dirty = false;
-            int ratio = Resolution / FogResolution;
+            var across = new bool[cells.Length];
             for (int y = 0; y < Resolution; y++)
             {
                 for (int x = 0; x < Resolution; x++)
                 {
                     int i = y * Resolution + x;
-                    int fx = x / ratio, fy = y / ratio;
+                    for (int d = -RimWidth; d <= RimWidth && !across[i]; d++)
+                    {
+                        int nx = x + d;
+                        across[i] = nx < 0 || nx >= Resolution || cells[i + d] != Cell.Open;
+                    }
+                }
+            }
+
+            var rims = new bool[cells.Length];
+            for (int y = 0; y < Resolution; y++)
+            {
+                for (int x = 0; x < Resolution; x++)
+                {
+                    int i = y * Resolution + x;
+                    if (cells[i] != Cell.Open)
+                        continue;
+                    for (int d = -RimWidth; d <= RimWidth && !rims[i]; d++)
+                    {
+                        int ny = y + d;
+                        rims[i] = ny < 0 || ny >= Resolution || across[ny * Resolution + x];
+                    }
+                }
+            }
+            return rims;
+        }
+
+        // Unseen parts are hidden; the border of what's seen fades out smoothly rather than stopping hard.
+        private static void Redraw(AreaMap map, int area)
+        {
+            map.Dirty = false;
+            const int n = FogResolution;
+            var visible = new float[n * n];
+            for (int y = 0; y < n; y++)
+            {
+                for (int x = 0; x < n; x++)
+                {
                     float seen = 0f;
                     int samples = 0;
                     for (int dy = -1; dy <= 1; dy++)
                     {
                         for (int dx = -1; dx <= 1; dx++)
                         {
-                            int sx = fx + dx, sy = fy + dy;
-                            if (sx < 0 || sy < 0 || sx >= FogResolution || sy >= FogResolution)
+                            int sx = x + dx, sy = y + dy;
+                            if (sx < 0 || sy < 0 || sx >= n || sy >= n)
                                 continue;
                             samples++;
-                            if (map.Seen[sy * FogResolution + sx])
+                            if (map.Seen[sy * n + sx])
                                 seen += 1f;
                         }
                     }
-                    float visible = samples > 0 ? seen / samples : 0f;
-                    Color32 c = map.Base[i];
-                    c.a = (byte)(c.a * visible);
-                    map.Shown[i] = c;
+                    visible[y * n + x] = seen / samples;
                 }
             }
-            map.Texture.SetPixels32(map.Shown);
+
+            NativeArray<Color32> shown = map.Texture.GetPixelData<Color32>(0);
+            float toFog = (float)n / Resolution;
+            for (int y = 0; y < Resolution; y++)
+            {
+                float v = (y + 0.5f) * toFog - 0.5f;
+                for (int x = 0; x < Resolution; x++)
+                {
+                    int i = y * Resolution + x;
+                    Color32 c = map.Base[i];
+                    c.a = (byte)(c.a * Sample(visible, n, (x + 0.5f) * toFog - 0.5f, v));
+                    shown[i] = c;
+                }
+            }
             map.Texture.Apply(false);
         }
     }

@@ -37,12 +37,16 @@ namespace PoeClone.Skills
         private float whirlNextMana;
         private float whirlNextHit;
         private Vector3 whirlSteer;
+        private Vector3 whirlFacing;
         // Enemies whose colliders the player passes through while spinning, restored when it ends.
         private readonly Dictionary<EnemyHealth, Collider[]> whirlIgnored = new Dictionary<EnemyHealth, Collider[]>();
         private CharacterController body;
 
         /// <summary>Whirlwind is spinning.</summary>
         public bool IsWhirling => whirling;
+
+        /// <summary>Where the player is headed: while spinning, the way Whirlwind drifts (or the facing it began with), not the spin.</summary>
+        public Vector3 Heading => whirling ? whirlFacing : transform.forward;
 
         /// <summary>Signed yaw speed for replicas, so fast spins keep their direction between snapshots.</summary>
         public float WhirlYawSpeed => whirling ? -360f * Mathf.Clamp(WhirlHitsPerSecond(), WhirlMinTurnsPerSecond, WhirlMaxTurnsPerSecond) : 0f;
@@ -56,6 +60,7 @@ namespace PoeClone.Skills
             whirling = true;
             whirlLevel = level;
             whirlSteer = Vector3.zero;
+            whirlFacing = transform.forward;
             whirlNextMana = Time.time + ChannelTick;
             whirlNextHit = Time.time;
             controller.CancelWalk();
@@ -71,6 +76,7 @@ namespace PoeClone.Skills
             foreach (Collider[] colliders in whirlIgnored.Values)
                 IgnoreEnemy(colliders, false);
             whirlIgnored.Clear();
+            HeldArea.Release(transform);
             if (controller != null)
                 controller.SetChannelling(false);
             if (attackAnimator != null)
@@ -101,14 +107,22 @@ namespace PoeClone.Skills
                 attackAnimator.HoldSkillPose(SkillId.Whirlwind, CurrentWeapon());
             IgnoreEnemiesWhileWhirling();
             whirlSteer = Vector3.ClampMagnitude(WhirlSteer(), 1f);
+            if (whirlSteer.sqrMagnitude > 0.01f)
+                whirlFacing = whirlSteer.normalized;
             controller.SteerChannel(whirlSteer);
             // Counter-clockwise, so the sword arm sweeps forward and the blade leads (a forehand
             // cut); a turn per hit, so a heavy weapon spins heavier.
             transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y + WhirlYawSpeed * Time.deltaTime, 0f);
 
+            // The hit circle stays on the ground and travels with the player while the spin lasts.
+            SkillDefinition skill = SkillBook.Get(SkillId.Whirlwind);
+            float reach = WhirlReach();
+            Vector3 center = WhirlCenter(reach);
+            HeldArea.Hold(transform, center, reach, skill.Color, SkillEffects.DamagePattern(skill), linger: 0.1f);
+
             if (Time.time >= whirlNextHit)
             {
-                WhirlHit(SkillBook.Get(SkillId.Whirlwind), whirlLevel);
+                WhirlHit(skill, whirlLevel, reach, center);
                 whirlNextHit = Time.time + 1f / WhirlHitsPerSecond();
             }
         }
@@ -140,15 +154,18 @@ namespace PoeClone.Skills
                     Physics.IgnoreCollision(body, c, ignore);
         }
 
-        private void WhirlHit(SkillDefinition skill, int level)
+        private float WhirlReach()
         {
-            WeaponType weapon = CurrentWeapon();
             float melee = 1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f;
-            float reach = Mathf.Max(2.4f, (CharacterAttackAnimator.AttackRange(weapon) + 0.4f) * melee) *
-                          DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
-            // Moving, the circle leads the way the player goes, so it doesn't trail behind.
-            Vector3 center = transform.position + whirlSteer * reach * WhirlLead;
-            SkillEffects.Shockwave(center, reach, skill.Color, 0.22f, type: SkillEffects.DamagePattern(skill));
+            return Mathf.Max(2.4f, (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 0.4f) * melee) *
+                   DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
+        }
+
+        // Moving, the circle leads the way the player goes, so it doesn't trail behind.
+        private Vector3 WhirlCenter(float reach) => transform.position + whirlSteer * reach * WhirlLead;
+
+        private void WhirlHit(SkillDefinition skill, int level, float reach, Vector3 center)
+        {
             Record(skill, level, reach, at: center);
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
             foreach (EnemyHealth enemy in EnemiesWithin(center, reach))
