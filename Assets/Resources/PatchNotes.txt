@@ -1,5 +1,6 @@
 version: 2026-10-11-whats-new-timing
 - The "What's new" window now waits until your character has finished loading, instead of appearing over the loading screen.
+- Staff skills (Fire Bolt, Ice Shard, Chain Lightning, Frost Nova, War Cry and Venom Spout) cost half as much mana for new characters. The discount shrinks gradually as you level and is gone at level 34, where costs are unchanged.
 
 version: 2026-10-11-late-quest-rework
 - Lost Supplies now has three different recoveries in the Ashen Ruins: kill the Ember Knights guarding the arrow cache, salvage bandages from a burnt wagon, and hunt down Ashfang, the hound that carried off the lamp oil.

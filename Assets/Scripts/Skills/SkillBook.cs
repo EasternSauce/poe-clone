@@ -66,6 +66,9 @@ namespace PoeClone.Skills
         /// <summary>A staff spell: on the staff it is the attack (left click / the aim stick).</summary>
         public bool Main => SkillGrants.IsMain(Grant);
 
+        /// <summary>Rolls on staves (Fire Bolt, Frost Nova, War Cry, ...): costs half at character level 1 (see PlayerSkills.CostOf).</summary>
+        public bool StaffSkill => RollsOn != null && RollsOn.StartsWith("staves");
+
         /// <summary>
         /// Raises minions. Its level only grows with summon levels ("+1 to level of all Summon
         /// Skills", "+1 to level of Raise Skeletons"), not with spell levels, and its minions never

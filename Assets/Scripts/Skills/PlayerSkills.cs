@@ -664,6 +664,9 @@ namespace PoeClone.Skills
                 float progress = Mathf.Clamp01((characterLevel - 7f) / 27f);
                 cost *= Mathf.Lerp(1f, 0.62f, Mathf.SmoothStep(0f, 1f, progress));
             }
+            // Staff skills cost half at character level 1, easing back to full cost at level 34.
+            if (skill.StaffSkill)
+                cost *= Mathf.Lerp(0.5f, 1f, Mathf.SmoothStep(0f, 1f, (characterLevel - 1f) / 33f));
             if (skill.MeleeAttack && !skill.Channelled)
                 cost *= CharacterAttackAnimator.BaseAttackSpeed(WeaponType.Sword) /
                         Mathf.Max(0.1f, CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()));
