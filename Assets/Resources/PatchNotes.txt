@@ -1,3 +1,7 @@
+version: 2026-10-11-search
+- The stash has a search box at the bottom. Type part of an item name or modifier (any case): every item that does not match greys out, tabs holding at least one match light up and the rest grey out. The X beside the box clears the search.
+- The passive tree has a search box too (bottom left): passives whose name or bonuses match light up, everything else greys out, and the number of matches shows under the box.
+
 version: 2026-10-11-field-boss-life
 - Every field boss has 50% more life: Gravelord Mortis, the Ashen Warlord, Rimeheart, Bramblesow, Vex the Tunnel King, the Bell-Ringer, the Sunforged Idol and Hrimgar the Huntress. The Shepherd is unchanged.
 

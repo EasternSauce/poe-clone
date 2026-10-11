@@ -285,6 +285,11 @@ namespace PoeClone.Inventory
         private RectTransform stashTabRow;
         private Image[] stashTabButtons;
         private Text[] stashTabLabels;
+        private RectTransform stashSearchRow;
+        private string stashQuery = "";
+        private const float SearchHeight = 40f;
+        private static readonly Color SearchHitLabel = new Color(1f, 0.95f, 0.62f, 1f);
+        private static readonly Color SearchMissLabel = new Color(0.62f, 0.59f, 0.52f, 0.4f);
         private const float StashReach = 5f;
         private RectTransform gridArea;
         private RectTransform gridItems;
@@ -823,6 +828,8 @@ namespace PoeClone.Inventory
             stashPanel.gameObject.SetActive(open && stashOpen);
             if (stashTabRow != null)
                 stashTabRow.gameObject.SetActive(open && stashOpen && vendor == null);
+            if (stashSearchRow != null)
+                stashSearchRow.gameObject.SetActive(open && stashOpen && vendor == null);
 
             if (preview != null)
                 preview.SetActive(open && !touch && !stashOpen);
@@ -958,7 +965,7 @@ namespace PoeClone.Inventory
             stashPanel.anchorMax = new Vector2(0f, 0.5f);
             stashPanel.pivot = new Vector2(0f, 0.5f);
             stashPanel.anchoredPosition = Vector2.zero;
-            stashPanel.sizeDelta = new Vector2(gridSize + Pad * 2f, gridSize + Pad * 2f + 34f + TabRowHeight + NoteHeight);
+            stashPanel.sizeDelta = new Vector2(gridSize + Pad * 2f, gridSize + Pad * 2f + 34f + TabRowHeight + SearchHeight + NoteHeight);
             TouchMode.AddMenuBlocker(stashPanel);
 
             // A divider between the stash section and the equipment/bag section.
@@ -978,6 +985,19 @@ namespace PoeClone.Inventory
             sideNote.rectTransform.pivot = new Vector2(0.5f, 0f);
             sideNote.rectTransform.anchoredPosition = new Vector2(0f, 10f);
             sideNote.rectTransform.sizeDelta = new Vector2(-20f, NoteHeight);
+
+            // Search, PoE style: everything in the stash that doesn't match greys out, and the tabs
+            // holding a match light up.
+            stashSearchRow = UiKit.SearchBox(stashPanel, "Search the stash (names and modifiers)", query =>
+            {
+                stashQuery = query;
+                gridDirty = true;
+            }, out _);
+            stashSearchRow.anchorMin = new Vector2(0f, 0f);
+            stashSearchRow.anchorMax = new Vector2(1f, 0f);
+            stashSearchRow.pivot = new Vector2(0.5f, 0f);
+            stashSearchRow.offsetMin = new Vector2(Pad, 10f + NoteHeight);
+            stashSearchRow.offsetMax = new Vector2(-Pad, 10f + NoteHeight + SearchHeight - 6f);
 
             stashArea = UiKit.NewRect("StashGrid", stashPanel);
             stashArea.anchorMin = new Vector2(0.5f, 1f);
@@ -1048,12 +1068,32 @@ namespace PoeClone.Inventory
         {
             if (stashTabButtons == null || inventory == null)
                 return;
+            bool searching = IsSearchingStash;
             for (int k = 0; k < stashTabButtons.Length; k++)
             {
-                stashTabButtons[k].color = k == inventory.StashTab ? UiKit.Gold * 0.6f : CellColor;
+                bool current = k == inventory.StashTab;
+                bool hit = searching && TabHasMatch(inventory.StashTabs[k]);
+                stashTabButtons[k].color = current ? UiKit.Gold * (searching && !hit ? 0.3f : 0.6f)
+                    : hit ? new Color(0.30f, 0.26f, 0.12f, 1f) : CellColor;
+                stashTabLabels[k].color = !searching ? UiKit.TextColor : hit ? SearchHitLabel : SearchMissLabel;
                 string name = inventory.StashTabName(k);
-                stashTabLabels[k].text = name.Length > 6 ? name.Substring(0, 6) + "â€¦" : name;
+                stashTabLabels[k].text = name.Length > 6 ? name.Substring(0, 6) + ".." : name;
             }
+        }
+
+        private bool IsSearchingStash => stashQuery.Length > 0 && vendor == null;
+
+        private bool MatchesStashSearch(ItemData item)
+        {
+            return UiKit.SearchMatches(BuildTooltipText(item, out _), stashQuery);
+        }
+
+        private bool TabHasMatch(InventoryGrid tab)
+        {
+            foreach (PlacedItem p in tab.Items)
+                if (MatchesStashSearch(p.Item))
+                    return true;
+            return false;
         }
 
         private void BeginRenameTab(int tab)
@@ -1623,10 +1663,13 @@ private Vector2 CellSize(int w, int h)
             // Items in the stash.
             if (stashOpen)
             {
+                bool searching = IsSearchingStash;
                 foreach (PlacedItem p in SideGrid.Items)
                 {
                     RectTransform rt = CreateItemView(stashItems, p.Item, StashCellSize(p.Item.Width, p.Item.Height), 1f);
                     rt.anchoredPosition = StashCellPos(p.X, p.Y);
+                    if (searching && !MatchesStashSearch(p.Item))
+                        UiKit.Stretch(UiKit.NewImage("SearchMiss", rt, new Color(0.03f, 0.03f, 0.04f, 0.78f)).rectTransform, 0f);
                     itemViews.Add(rt.gameObject);
                 }
             }

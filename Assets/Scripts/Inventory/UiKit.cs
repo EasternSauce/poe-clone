@@ -329,6 +329,80 @@ namespace PoeClone.Inventory
             return rt;
         }
 
+        /// <summary>
+        /// A one-line search field with an X beside it that clears the search. The caller places the
+        /// returned row; <paramref name="changed"/> gets the trimmed text on every edit.
+        /// </summary>
+        public static RectTransform SearchBox(Transform parent, string placeholder, System.Action<string> changed, out InputField field)
+        {
+            const float clearSize = 30f;
+            RectTransform row = NewRect("Search", parent);
+
+            Image back = NewImage("Field", row, new Color(0.05f, 0.04f, 0.035f, 1f));
+            Inset(back);
+            back.raycastTarget = true;
+            AddOutline(back, BorderColor, 1.5f);
+            RectTransform br = back.rectTransform;
+            br.anchorMin = Vector2.zero;
+            br.anchorMax = Vector2.one;
+            br.offsetMin = Vector2.zero;
+            br.offsetMax = new Vector2(-(clearSize + 6f), 0f);
+
+            InputField input = back.gameObject.AddComponent<InputField>();
+            input.lineType = InputField.LineType.SingleLine;
+            input.characterLimit = 40;
+            input.customCaretColor = true;
+            input.caretColor = Gold;
+            input.selectionColor = new Color(0.86f, 0.62f, 0.25f, 0.45f);
+            Text text = NewText("Text", br, "", 17, TextColor, TextAnchor.MiddleLeft);
+            text.supportRichText = false;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            Text hint = NewText("Placeholder", br, placeholder, 17, DimText, TextAnchor.MiddleLeft);
+            hint.fontStyle = FontStyle.Italic;
+            foreach (Text t in new[] { text, hint })
+            {
+                t.rectTransform.anchorMin = Vector2.zero;
+                t.rectTransform.anchorMax = Vector2.one;
+                t.rectTransform.offsetMin = new Vector2(10f, 2f);
+                t.rectTransform.offsetMax = new Vector2(-8f, -2f);
+            }
+            input.textComponent = text;
+            input.placeholder = hint;
+
+            Image clear = NewImage("Clear", row, Color.white);
+            RectTransform cr = clear.rectTransform;
+            cr.anchorMin = cr.anchorMax = cr.pivot = new Vector2(1f, 0.5f);
+            cr.anchoredPosition = Vector2.zero;
+            cr.sizeDelta = new Vector2(clearSize, clearSize);
+            Text x = NewText("X", cr, "X", 16, TextColor, TextAnchor.MiddleCenter);
+            Stretch(x.rectTransform, 0f);
+            StyleButton(clear, x, MutedTint);
+            OnClick(clear, () =>
+            {
+                input.text = "";
+                if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == input.gameObject)
+                    EventSystem.current.SetSelectedGameObject(null);
+            });
+            clear.gameObject.SetActive(false);
+
+            input.onValueChanged.AddListener(s =>
+            {
+                clear.gameObject.SetActive(s.Length > 0);
+                changed(s.Trim());
+            });
+            // Enter or Escape only leaves the field: no chat box, no closing the panel underneath.
+            input.onEndEdit.AddListener(_ => EnterHandledFrame = TextEditEndedFrame = Time.frameCount);
+            field = input;
+            return row;
+        }
+
+        /// <summary>True if <paramref name="text"/> (rich text tags ignored) contains <paramref name="query"/>, any case.</summary>
+        public static bool SearchMatches(string text, string query)
+        {
+            return !string.IsNullOrEmpty(text) && System.Text.RegularExpressions.Regex.Replace(text, "<[^>]*>", "")
+                .IndexOf(query, System.StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
         /// <summary>Calls back when the graphic is clicked or tapped.</summary>
         public static void OnClick(Graphic graphic, System.Action onClick)
         {

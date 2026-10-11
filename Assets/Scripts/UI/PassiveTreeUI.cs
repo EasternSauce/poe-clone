@@ -28,6 +28,7 @@ namespace PoeClone.UI
 
         // The panel fills the screen but for this margin, so the tree gets all the room there is.
         private const float Margin = 20f;
+        private const float SearchWidth = 300f;
         private static PassiveTreeUI instance;
 
         private class NodeView
@@ -36,6 +37,7 @@ namespace PoeClone.UI
             public Image Ring;
             public Image Body;
             public Text Label;
+            public string SearchText;   // name and bonuses, for the search box
         }
 
         private class LinkView
@@ -112,6 +114,8 @@ namespace PoeClone.UI
         private PassiveNode shown;          // the passive the tooltip describes
         private PassiveNode mirroredHover;  // spectators: the player's pointed-at passive last shown
         private bool dirty = true;
+        private string searchQuery = "";
+        private Text searchCount;
 
         public static bool IsOpen => instance != null && instance.panelRoot != null && instance.panelRoot.activeSelf;
 
@@ -325,6 +329,12 @@ namespace PoeClone.UI
         // ------------------------------------------------------------------ state
 
         private static readonly Color Locked = new Color(0.16f, 0.15f, 0.14f, 1f);
+        private static readonly Color SearchHit = new Color(0.55f, 1f, 1f, 1f);
+
+        private static Color Faded(Color c)
+        {
+            return new Color(c.r * 0.35f, c.g * 0.35f, c.b * 0.35f, c.a * 0.6f);
+        }
 
         private static Color BranchColor(PassiveBranch branch)
         {
@@ -365,6 +375,9 @@ namespace PoeClone.UI
             resetButton.color = charges > 0 ? new Color(0.18f, 0.14f, 0.10f, 1f) : new Color(0.12f, 0.10f, 0.08f, 1f);
             resetLabel.color = charges > 0 ? UiKit.TextColor : UiKit.DimText;
 
+            // Searching greys out every passive but the matches, whose rings light up.
+            bool searching = searchQuery.Length > 0;
+            int matches = 0;
             foreach (NodeView v in views)
             {
                 bool taken = allocation.Has(v.Node.Id);
@@ -375,12 +388,31 @@ namespace PoeClone.UI
                 v.Ring.color = removed ? new Color(1f, 0.35f, 0.3f) : taken ? UiKit.Gold : available && !respecMode ? new Color(1f, 0.85f, 0.4f, 0.9f) : new Color(0.35f, 0.32f, 0.28f, 1f);
                 if (v.Label != null)
                     v.Label.color = taken ? UiKit.Gold : available ? UiKit.TextColor : UiKit.DimText;
+                if (!searching)
+                    continue;
+                if (UiKit.SearchMatches(v.SearchText, searchQuery))
+                {
+                    matches++;
+                    v.Ring.color = SearchHit;
+                    if (v.Label != null)
+                        v.Label.color = SearchHit;
+                }
+                else
+                {
+                    v.Body.color = Faded(v.Body.color);
+                    v.Ring.color = Faded(v.Ring.color);
+                    if (v.Label != null)
+                        v.Label.color = Faded(v.Label.color);
+                }
             }
+            searchCount.text = !searching ? "" : matches == 1 ? "1 match" : matches + " matches";
 
             foreach (LinkView l in links)
             {
                 bool both = allocation.Has(l.A) && allocation.Has(l.B);
                 l.Line.color = both ? UiKit.Gold : new Color(0.30f, 0.27f, 0.23f, 1f);
+                if (searching)
+                    l.Line.color = Faded(l.Line.color);
             }
 
             ShowInfo(hovered ?? (TouchMode.Active || (Spectating && SpectatorMirror.FollowingPlayer) ? selected : null));
@@ -845,7 +877,10 @@ namespace PoeClone.UI
                 handler.Exit = OnHoverEnd;
                 handler.Click = button => OnClick(captured, button);
 
-                views.Add(new NodeView { Node = node, Ring = ring, Body = body });
+                var search = new StringBuilder(node.Name);
+                foreach (StatModifier mod in node.Mods)
+                    search.Append('\n').Append(StatFormatter.ItemLine(mod));
+                views.Add(new NodeView { Node = node, Ring = ring, Body = body, SearchText = search.ToString() });
             }
 
             // Notables and keystones are named on the tree, so it reads at a glance (after the
@@ -878,8 +913,18 @@ namespace PoeClone.UI
             RectTransform tr0 = infoText.rectTransform;
             tr0.anchorMin = Vector2.zero;
             tr0.anchorMax = Vector2.one;
-            tr0.offsetMin = new Vector2(12f, 0f);
+            tr0.offsetMin = new Vector2(12f + SearchWidth + 16f, 0f);
             tr0.offsetMax = new Vector2(-310f, 0f);
+
+            // Finds passives by name or bonus: everything else greys out.
+            RectTransform searchRow = UiKit.SearchBox(info.rectTransform, "Search passives", query =>
+            {
+                searchQuery = query;
+                dirty = true;
+            }, out _);
+            UiKit.TopLeft(searchRow, new Vector2(12f, -10f), new Vector2(SearchWidth, 38f));
+            searchCount = UiKit.NewText("Matches", info.rectTransform, "", 15, UiKit.DimText, TextAnchor.UpperLeft);
+            UiKit.TopLeft(searchCount.rectTransform, new Vector2(14f, -52f), new Vector2(SearchWidth, 20f));
 
             confirmButton = NewButton(info.rectTransform, "Confirm", "Confirm", Vector2.zero, new Vector2(130f, 40f));
             TopRight(confirmButton.rectTransform, new Vector2(156f, -20f), new Vector2(130f, 40f));
