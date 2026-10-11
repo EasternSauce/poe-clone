@@ -1,3 +1,6 @@
+version: 2026-10-11-whirlwind-centred
+- Whirlwind's hit circle is centred on you again instead of sitting ahead of you while you move, and it covers 30% less area.
+
 version: 2026-10-11-smooth-loading
 - The loading screen after choosing a character keeps animating while the world loads, instead of freezing until gameplay starts.
 - The first visit to an area no longer stalls the loading screen while the area's minimap is drawn.

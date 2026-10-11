@@ -25,8 +25,8 @@ namespace PoeClone.Skills
 
         private const float WhirlMinTurnsPerSecond = 2.5f;
         private const float WhirlMaxTurnsPerSecond = 6f;
-        // How far ahead of the player, as a share of its reach, the hit circle sits at full speed.
-        private const float WhirlLead = 0.4f;
+        // Whirlwind's hit circle covers 30% less area than the weapon's reach would give.
+        private static readonly float WhirlAreaScale = DefenceMath.RadiusMultiplier(-30f);
         // Hits per second with a sword and no increased attack speed. Other weapons hit as much
         // faster or slower as their own swings are, so a maul's big hits don't come at a sword's rate.
         private const float WhirlSwordHitsPerSecond = 4f;
@@ -36,7 +36,6 @@ namespace PoeClone.Skills
         private int whirlLevel;
         private float whirlNextMana;
         private float whirlNextHit;
-        private Vector3 whirlSteer;
         private Vector3 whirlFacing;
         // Enemies whose colliders the player passes through while spinning, restored when it ends.
         private readonly Dictionary<EnemyHealth, Collider[]> whirlIgnored = new Dictionary<EnemyHealth, Collider[]>();
@@ -59,7 +58,6 @@ namespace PoeClone.Skills
         {
             whirling = true;
             whirlLevel = level;
-            whirlSteer = Vector3.zero;
             whirlFacing = transform.forward;
             whirlNextMana = Time.time + ChannelTick;
             whirlNextHit = Time.time;
@@ -106,7 +104,7 @@ namespace PoeClone.Skills
             if (attackAnimator != null && !attackAnimator.IsAttacking)
                 attackAnimator.HoldSkillPose(SkillId.Whirlwind, CurrentWeapon());
             IgnoreEnemiesWhileWhirling();
-            whirlSteer = Vector3.ClampMagnitude(WhirlSteer(), 1f);
+            Vector3 whirlSteer = Vector3.ClampMagnitude(WhirlSteer(), 1f);
             if (whirlSteer.sqrMagnitude > 0.01f)
                 whirlFacing = whirlSteer.normalized;
             controller.SteerChannel(whirlSteer);
@@ -114,15 +112,14 @@ namespace PoeClone.Skills
             // cut); a turn per hit, so a heavy weapon spins heavier.
             transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y + WhirlYawSpeed * Time.deltaTime, 0f);
 
-            // The hit circle stays on the ground and travels with the player while the spin lasts.
+            // The hit circle stays on the ground, centred on the player, while the spin lasts.
             SkillDefinition skill = SkillBook.Get(SkillId.Whirlwind);
             float reach = WhirlReach();
-            Vector3 center = WhirlCenter(reach);
-            HeldArea.Hold(transform, center, reach, skill.Color, SkillEffects.DamagePattern(skill), linger: 0.1f);
+            HeldArea.Hold(transform, transform.position, reach, skill.Color, SkillEffects.DamagePattern(skill), linger: 0.1f);
 
             if (Time.time >= whirlNextHit)
             {
-                WhirlHit(skill, whirlLevel, reach, center);
+                WhirlHit(skill, whirlLevel, reach);
                 whirlNextHit = Time.time + 1f / WhirlHitsPerSecond();
             }
         }
@@ -158,14 +155,12 @@ namespace PoeClone.Skills
         {
             float melee = 1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f;
             return Mathf.Max(2.4f, (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 0.4f) * melee) *
-                   DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
+                   DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect)) * WhirlAreaScale;
         }
 
-        // Moving, the circle leads the way the player goes, so it doesn't trail behind.
-        private Vector3 WhirlCenter(float reach) => transform.position + whirlSteer * reach * WhirlLead;
-
-        private void WhirlHit(SkillDefinition skill, int level, float reach, Vector3 center)
+        private void WhirlHit(SkillDefinition skill, int level, float reach)
         {
+            Vector3 center = transform.position;
             Record(skill, level, reach, at: center);
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
             foreach (EnemyHealth enemy in EnemiesWithin(center, reach))
