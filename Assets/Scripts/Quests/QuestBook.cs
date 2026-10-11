@@ -97,20 +97,20 @@ namespace PoeClone.Quests
             new QuestDefinition
             {
                 Id = "woods", Story = HollowCall, Title = "Restless Woods", Giver = NpcRole.Elder,
-                Goal = QuestGoal.KillInArea, Area = WorldBuilder.Greenwood, Count = 12,
+                Goal = QuestGoal.KillInArea, Area = WorldBuilder.Greenwood, Count = 6,
                 Objective = "Slay monsters in the Greenwood",
-                Offer = "Welcome to Haven, traveller. We are glad of any sword arm.\n\nThe dead have been walking out of the Greenwood, east of the gate. Not wandering - walking, all the same way, as if something were calling them. Thin their numbers, a dozen at least, and I will make it worth your while.",
-                Reminder = "The Greenwood lies through the east gate. Come back when you have slain a dozen of those things.",
-                Thanks = "A dozen fewer at our gate. You have the town's thanks - and this purse, and something for your wounds.",
+                Offer = "The dead are pressing out of the Greenwood, east of Haven. Put down six on the road so our hunters can reach the bone totems calling them. Bring word of what you find.",
+                Reminder = "Clear six monsters from the Greenwood road, then return to Maren in Haven.",
+                Thanks = "The road is safer. Now we can deal with what is drawing them here.",
                 RewardGold = 60, RewardExperience = 150, RewardHealthPotions = 2
             },
             new QuestDefinition
             {
                 Id = "totems", Story = HollowCall, Title = "Bone Totems", Giver = NpcRole.Elder, After = "woods",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Greenwood, Count = 3,
-                Objective = "Smash the bone totems and defeat their summons in the Greenwood",
-                Offer = "Our hunters found something in the woods: totems of lashed bone, humming like a struck bell. The dead gather round them like moths round a lamp.\n\nThere are three that they know of. Smash them. And be ready - whatever the totems call will come running when they break. Defeat the whole pack before you move on.",
-                Reminder = "Three bone totems in the Greenwood. Your map will show where the hunters saw them.",
+                Objective = "Attack the bone totems and clear their defenders in the Greenwood",
+                Offer = "Three bone totems are calling the dead through the Greenwood. Break them with your weapons or spells. Their defenders will come in small groups; clear each group before moving on. I need all three silenced.",
+                Reminder = "Attack the three bone totems in the Greenwood, then defeat all of each totem's defenders. They arrive three at a time.",
                 Thanks = "Antlers. Carved into every shard you brought back... Forgive me. My grandmother told a story about antlers, and the dead. It was only a story.\n\nIt was only a story.",
                 RewardGold = 90, RewardExperience = 260, RewardHealthPotions = 1
             },
@@ -129,20 +129,30 @@ namespace PoeClone.Quests
             new QuestDefinition
             {
                 Id = "graves", Story = Gravelord, Title = "The Unquiet Dead", Giver = NpcRole.Gravekeeper, After = "keeper",
-                Goal = QuestGoal.KillInArea, Area = WorldBuilder.Graveyard, Count = 20,
+                Goal = QuestGoal.KillInArea, Area = WorldBuilder.Graveyard, Count = 8,
                 Objective = "Slay monsters in the Haunted Graveyard",
-                Offer = "Forty years I've kept these graves and never seen the like. They climb out at dusk and stand facing north. Just standing. Then they see the living.\n\nPut twenty of them back down, and I'll be able to think.",
-                Reminder = "Twenty of the dead. Come back to the candles when you need a breath.",
-                Thanks = "Quieter. Not quiet - quieter. Here, it's not much, but the dead don't need it.",
+                Offer = "The dead are gathering whenever the funeral bell sounds from the Drowned Belfry. Thin the crowd here first - eight should give us breathing room. Then we can silence that bell.",
+                Reminder = "Put down eight monsters in the Haunted Graveyard, then return to Tobias.",
+                Thanks = "That gives us room. Now listen. That bell is ringing for people who are still alive.",
                 RewardGold = 150, RewardExperience = 450, RewardItem = ItemRarity.Magic, RewardItemLevel = 4
             },
             new QuestDefinition
             {
-                Id = "relics", Story = Gravelord, Title = "Bones of the Gravelord", Giver = NpcRole.Gravekeeper, After = "graves",
+                Id = "bellringer", Story = Gravelord, Title = "The Funeral Bell", Giver = NpcRole.Gravekeeper, After = "graves",
+                Goal = QuestGoal.KillBoss, Target = "The Bell-Ringer", Area = WorldBuilder.Belfry,
+                Objective = "Silence the Bell-Ringer in The Drowned Belfry, entered from the Haunted Graveyard",
+                Offer = "That bell is calling the dead out of their graves and gathering them for Mortis. Follow the north-east graveyard lane to the Drowned Belfry and destroy its keeper. Without him, Mortis will have to rely on the bones he hid here.",
+                Reminder = "Enter The Drowned Belfry from the Haunted Graveyard's north-east lane and defeat the Bell-Ringer.",
+                Thanks = "Silence. For the first time in weeks. But Mortis is still here, holding on to his scattered bones. Now we can reach them.",
+                RewardGold = 250, RewardExperience = 900, RewardHealthPotions = 2, RewardItem = ItemRarity.Rare, RewardItemLevel = 17
+            },
+            new QuestDefinition
+            {
+                Id = "relics", Story = Gravelord, Title = "Bones of the Gravelord", Giver = NpcRole.Gravekeeper, After = "bellringer",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Graveyard, Count = 3,
-                Objective = "Break Mortis's reliquaries and defeat their guardians in the Haunted Graveyard",
-                Offer = "I know who's raising them. Mortis - a priest, once, buried in the crypt with honours. He's awake, and he can't be put down for good while his bones are kept.\n\nHe had them split between three reliquaries, the vain old goat, so death could never find all of him. Break all three. His dead guard them; destroy every guardian each reliquary calls up.",
-                Reminder = "Three reliquaries, spread round the graveyard. Break them, then Mortis can die like anyone else.",
+                Objective = "Defeat the reliquary guardians, then break Mortis's reliquaries in the Haunted Graveyard",
+                Offer = "With the bell silent, Mortis has drawn his remaining strength into three reliquaries. Each has its own guard: shield-bearers, bone reavers, or spirits. Find them, defeat the assigned guardians, then break the casket. Smashing it before its guardians fall will do no good.",
+                Reminder = "Defeat each reliquary's stationed guardians in the Haunted Graveyard, then return to that reliquary and break it.",
                 Thanks = "All three? Then he's mortal again, or near enough. I heard him howl when the last one broke.",
                 RewardGold = 140, RewardExperience = 500, RewardHealthPotions = 2
             },
@@ -153,17 +163,27 @@ namespace PoeClone.Quests
                 Objective = "Slay Gravelord Mortis at the crypt",
                 Offer = "Now finish him. He's at the crypt doors, calling his dead to him. Don't let them surround you.",
                 Reminder = "Mortis waits by the crypt, north of the path. He calls the dead - keep moving.",
-                Thanks = "Gone. Truly gone, I can feel it in the ground.\n\nBut... you say he spoke before the end? \"The Shepherd wakes, and the dead go home to him.\" The Shepherd. Gods. That's no priest's ravings, that's the oldest story there is.\n\nAnd did you feel the ground shake when he fell? His dead walled up the deep road under the Hollows, the one that runs east to the old city. With him gone, that wall will have come down.",
+                Thanks = "Mortis is gone. But before he fell he spoke of the Shepherd, sleeping under the northern ice. The priest was only a servant. The dead he stationed at the Hollows' deep road will still be there. We must clear that road ourselves before anyone can reach the ruins.",
                 RewardGold = 200, RewardExperience = 600, RewardHealthPotions = 3, RewardItem = ItemRarity.Rare, RewardItemLevel = 5,
                 RewardRespec = 1
             },
             new QuestDefinition
             {
-                Id = "news", Story = Gravelord, Title = "Word for Haven", Giver = NpcRole.Gravekeeper, After = "gravelord",
+                Id = "deep_road", Story = Gravelord, Title = "Break the Deep-Road Blockade", Giver = NpcRole.Gravekeeper, After = "gravelord",
+                Goal = QuestGoal.Use, Area = WorldBuilder.Cave, Count = 1,
+                Objective = "Defeat the blockade guards, then dismantle the bone wall at the Ashen Ruins gateway in The Lost Hollows",
+                Offer = "Mortis stationed a heavy guard at the bone wall on the Lost Hollows' deep road. Go back into the Hollows and take the eastern tunnel toward the Ashen Ruins. Kill that assigned guard, then dismantle the wall yourself. The gateway is sealed until the wall is broken; jumping past the rubble will not open it.",
+                Reminder = "At the eastern deep-road gateway in The Lost Hollows: defeat the stationed guards, then click the bone blockade and dismantle it to unlock the Ashen Ruins gateway.",
+                Thanks = "The road is open. Now Haven must hear what Mortis told you, before anyone else follows that call north.",
+                RewardGold = 200, RewardExperience = 800, RewardHealthPotions = 2
+            },
+            new QuestDefinition
+            {
+                Id = "news", Story = Gravelord, Title = "Word for Haven", Giver = NpcRole.Gravekeeper, After = "deep_road",
                 Goal = QuestGoal.Talk, TalkTo = NpcRole.Elder,
                 Objective = "Bring Tobias's warning to Elder Maren in Haven",
-                Offer = "Maren has to hear this, and I can't leave my graves. Tell her Mortis was only a servant. Tell her the Shepherd is waking.\n\nShe'll know the name. Every grandmother in the valley knows it.",
-                Reminder = "Take the warning to Maren in Haven.",
+                Offer = "The deep road is open, but Maren must hear what Mortis told you. Tell her the Shepherd is waking, and that you cleared a way for the Emberwatch to return. I cannot leave my graves.",
+                Reminder = "Bring Tobias's warning to Elder Maren in Haven.",
                 Thanks = "The Shepherd. The great beast under the ice, whose call raises the dead, so the dead can carry it the living... Tobias would not say it if he did not believe it.\n\nThen we must find where the call is coming from.",
                 RewardGold = 100, RewardExperience = 300
             },
@@ -174,8 +194,8 @@ namespace PoeClone.Quests
                 Id = "emberwatch", Story = HollowCall, Title = "Smoke over the Ruins", Giver = NpcRole.Elder, After = "news",
                 Goal = QuestGoal.Talk, TalkTo = NpcRole.Commander,
                 Objective = "Find Commander Varek's camp in the Ashen Ruins",
-                Offer = "We are not the only ones who have seen the signs. Soldiers from the south - the Emberwatch - marched past Haven a month ago, bound for the Ashen Ruins by the deep road under the Lost Hollows. The dead walled that road up behind them, but Tobias says it is open again. They have dug in there, in the middle of it all.\n\nFind their commander, Varek. Whatever is gathering in the old city, he will be facing it.",
-                Reminder = "The Emberwatch camp is in the Ashen Ruins. Take the deep road at the end of the Lost Hollows' east tunnels; Mortis's wall should be down. Look for their palisade, south-east of the temple.",
+                Offer = "The Emberwatch marched into the Ashen Ruins through the Lost Hollows. You have cleared the blockade on that deep road. Follow it east from the Hollows and find Commander Varek at their camp. Whatever is gathering in the old city, he will be facing it.",
+                Reminder = "Travel through the Lost Hollows' cleared deep-road gateway into the Ashen Ruins. Find Commander Varek at the Emberwatch camp.",
                 Thanks = "Haven sent you? Then Haven has more sense than my generals. Welcome to Emberwatch. It isn't much - a fence and a fire - but nothing gets past that fence.",
                 RewardGold = 120, RewardExperience = 500
             },
@@ -302,10 +322,10 @@ namespace PoeClone.Quests
             {
                 Id = "patrol", Story = LostPatrol, Title = "The Lost Patrol", Giver = NpcRole.Guard,
                 Goal = QuestGoal.Use, Area = WorldBuilder.Greenwood, Count = 3,
-                Objective = "Recover the fallen scouts' badges and defeat the wolves in the Greenwood",
-                Offer = "Three of my scouts went into the Greenwood five days ago. Good lads, all of them. They didn't come back.\n\nI can't leave the gate. Find them - and if they're dead, bring me their badges. Their families should have something to bury. Wolves are feeding there - clear each pack before moving on.",
-                Reminder = "Three scouts, somewhere in the Greenwood. Bring back their badges.",
-                Thanks = "All three. Damn it.\n\nRaider arrows in them, you say. Not the dead - raiders. Living men did this.",
+                Objective = "Follow the lost patrol's trail and recover its badges in the Greenwood",
+                Offer = "My three scouts never returned from the Greenwood. Aldo was last seen on the western trail. Start there, follow whatever signs they left, and bring their badges back. Find out who did this.",
+                Reminder = "Follow Aldo's trail through the Greenwood, then Bren's, then Corin's. Recover the badges and defeat the raiders at the final site.",
+                Thanks = "All three badges. Raider arrows, a stolen watch dispatch, and men waiting to finish the job. Living men did this. Now we know where to look.",
                 RewardGold = 80, RewardExperience = 220
             },
             new QuestDefinition
@@ -334,10 +354,10 @@ namespace PoeClone.Quests
             {
                 Id = "caravan", Story = LostCaravan, Title = "The Lost Caravan", Giver = NpcRole.Merchant, After = "keeper",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Graveyard, Count = 3,
-                Objective = "Secure Oda's crates and defeat their attackers in the Haunted Graveyard",
-                Offer = "My last caravan took the old road through the graveyard. The drivers ran when the dead came - can't blame them - but they left my crates behind. Three of them, painted green, with my mark.\n\nClear whatever gathers when you open each crate, then bring back what's in them and I'll pay you a cut. A generous cut. For me.",
-                Reminder = "Three green crates, somewhere along the graveyard roads.",
-                Thanks = "Not even opened! Ha! Here's your cut, as promised - and don't tell Bram I can be generous.",
+                Objective = "Investigate the caravan wreck, follow its trail and recover the stolen goods in the Haunted Graveyard",
+                Offer = "My caravan broke down on the graveyard's old road. The drivers escaped, but someone took the cargo. Start at the wreck with my green paint on it. Follow the trail, find whoever carried the goods off, and bring back the whole shipment.",
+                Reminder = "Inspect the green-marked wreck in the Haunted Graveyard, follow the cargo trail, then defeat the Caravan Plunderer's group and recover the goods.",
+                Thanks = "The whole shipment! So the dead have taken to robbery as well. Here is your cut. And a letter for my brother - he should know what that road is like.",
                 RewardGold = 220, RewardExperience = 400, RewardHealthPotions = 2
             },
             new QuestDefinition

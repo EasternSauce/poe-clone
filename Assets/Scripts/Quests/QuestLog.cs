@@ -112,6 +112,12 @@ namespace PoeClone.Quests
             }
             foreach (int area in visitedAreas)
                 visited.Add(area);
+            // New steps must not relock the route for characters already beyond them.
+            if (done.Contains("relics") || active.ContainsKey("relics") || done.Contains("gravelord") || active.ContainsKey("gravelord"))
+                done.Add("bellringer");
+            if (visited.Contains(WorldBuilder.Ruins) || done.Contains("news") || active.ContainsKey("news") ||
+                done.Contains("emberwatch") || active.ContainsKey("emberwatch"))
+                done.Add("deep_road");
             Changed?.Invoke();
         }
 
@@ -142,6 +148,12 @@ namespace PoeClone.Quests
         public bool PropUsed(string propId)
         {
             return usedProps.Contains(propId);
+        }
+
+        /// <summary>Save an intermediate world step without awarding quest progress (e.g. guards killed).</summary>
+        public void RecordPropStage(string stageId)
+        {
+            if (usedProps.Add(stageId)) Changed?.Invoke();
         }
 
         public void SetEncounterObjective(string propId, string objective)

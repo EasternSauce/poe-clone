@@ -1,3 +1,10 @@
+version: 2026-10-11-quest-opening-rework
+- Greenwood quest encounters now arrive in groups of three. Defeat each group before the next arrives. Bone totems are destroyed with attacks and spells rather than a dialogue button.
+- The lost patrol now has a sequence of clues and quiet discoveries, ending in a raider encounter. Oda's caravan quest follows a wreck and cargo trail to a named plunderer and its escort.
+- Mortis's reliquaries have distinct stationed guardian groups. Defeat each assigned group before breaking its reliquary. The Bell-Ringer is now part of Tobias's main story in the Drowned Belfry.
+- After Mortis, Tobias sends you to the deep-road blockade in the Lost Hollows. Its guards are stationed when you accept the quest; defeat them, then click the blockade to dismantle it and unlock the Ashen Ruins gateway. Teleporting past the rubble cannot activate the sealed gateway.
+- Early kill quotas are shorter. Saved completed quests remain intact; characters already beyond the new story steps keep their route open. Cleared guardian stages are saved separately from their final interactions.
+
 version: 2026-10-11-hollows-crossroads
 - The Lost Hollows are now the crossroads of the world. From their tunnels you can reach the Greenwood, the Haunted Graveyard, the Ashen Ruins and the Warren.
 - The Haunted Graveyard is now a dead-end branch, and its gate to the Ashen Ruins is gone. Bones and rubble block the deep road from the Hollows to the Ruins until Gravelord Mortis falls.

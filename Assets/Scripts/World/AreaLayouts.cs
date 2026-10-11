@@ -39,7 +39,7 @@ namespace PoeClone.World
         /// <summary>
         /// Every gate pair between travel areas. The Lost Hollows are the crossroads: the Greenwood
         /// comes in, the Haunted Graveyard is a dead-end branch, and the deep road on to the Ashen
-        /// Ruins stays walled up until Mortis falls (WorldBuilder.QuestSites).
+        /// Ruins stays walled up until the post-Mortis blockade quest is completed (WorldBuilder.QuestSites).
         /// </summary>
         public static readonly (int a, int b)[] Links =
         {

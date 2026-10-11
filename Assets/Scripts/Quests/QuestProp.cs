@@ -54,6 +54,18 @@ namespace PoeClone.Quests
         private Npc npc;
         private QuestLog log;
         private bool used;
+        private bool sequential;
+        private int index;
+        private bool guarded;
+        private Vector3 guardSpawnPoint;
+        private string guardObjective;
+        private string carrierName;
+        private EnemyHealth attackTarget;
+        private int queuedWaves;
+        private float nextGroupAt;
+
+        private bool StageCleared => log != null && log.PropUsed(PropId + ":guards");
+        private bool CurrentStage => !sequential || index == 0 || (log != null && log.PropUsed(QuestId + "#" + (index - 1)));
 
         // An encounter under way. Only completed props are saved; unfinished encounters restart.
         private bool riteRunning;
@@ -83,6 +95,7 @@ namespace PoeClone.Quests
         {
             QuestProp prop = go.AddComponent<QuestProp>();
             prop.QuestId = questId;
+            prop.index = index;
             prop.PropId = questId + "#" + index;
             prop.action = action;
             prop.displayName = displayName;
@@ -94,6 +107,25 @@ namespace PoeClone.Quests
             prop.npc = Npc.CreateFixed(go, NpcRole.QuestProp, displayName, labelHeight);
             prop.npc.Rename(displayName, LabelColor);
             return prop;
+        }
+
+        public void SetSequence() { sequential = true; }
+
+        /// <summary>Station guards on quest acceptance. Clearing them enables a separate final interaction.</summary>
+        public void SetGuarded(Vector3 spawnPoint, string objective, string namedCarrier = null)
+        {
+            guarded = true;
+            guardSpawnPoint = spawnPoint;
+            guardObjective = objective;
+            carrierName = namedCarrier;
+        }
+
+        public void SetAttackTarget(EnemyHealth target)
+        {
+            attackTarget = target;
+            target.IsQuestObject = true;
+            target.Died += Use;
+            Refresh();
         }
 
         /// <summary>The parts that change: what stands there before, what's left after, and its light.</summary>
@@ -116,6 +148,7 @@ namespace PoeClone.Quests
         {
             if (log != null)
                 log.Changed -= Refresh;
+            if (attackTarget != null) attackTarget.Died -= Use;
             ClearEncounter();
         }
 
@@ -124,20 +157,43 @@ namespace PoeClone.Quests
             QuestDefinition quest = Quest;
             QuestState state = log != null && quest != null ? log.State(quest) : QuestState.Locked;
             used = log != null && (log.PropUsed(PropId) || state == QuestState.Complete || state == QuestState.Done);
-            bool usable = state == QuestState.Active && !used && !encounterRunning;
+            bool activeStage = state == QuestState.Active && !used && CurrentStage;
+            bool usable = activeStage && !encounterRunning && (!guarded || StageCleared);
+            if (attackTarget != null)
+            {
+                attackTarget.enabled = activeStage && !encounterRunning;
+                attackTarget.Immune = !activeStage || encounterRunning;
+            }
 
             if (npc != null)
             {
-                npc.enabled = usable || encounterRunning;
-                npc.SetLabelVisible(usable || encounterRunning);
+                npc.enabled = (usable || encounterRunning) && (attackTarget == null || attackTarget.IsDead);
+                npc.SetLabelVisible(activeStage || encounterRunning);
             }
-            bool changed = used || encounterRunning;
+            bool changed = used || (encounterRunning && !guarded);
             if (whole != null)
                 whole.SetActive(!changed || action == PropAction.Read || action == PropAction.Light || action == PropAction.Rite);
             if (spent != null)
                 spent.SetActive(changed);
             if (glow != null)
                 glow.enabled = (used || encounterRunning) && (action == PropAction.Light || action == PropAction.Rite);
+            if (!encounterRunning && log != null)
+            {
+                string objective = activeStage && (sequential || guarded || attackTarget != null)
+                    ? (guarded && StageCleared ? actionLabel : attackTarget != null ? "Attack " + displayName : actionLabel) + " - " + QuestBook.Location(quest)
+                    : null;
+                log.SetEncounterObjective(PropId, objective);
+            }
+            EnsureGuards();
+        }
+
+        private void EnsureGuards()
+        {
+            if (!guarded || used || encounterRunning || StageCleared || !CurrentStage || log == null || Quest == null ||
+                log.State(Quest) != QuestState.Active) return;
+            if (player == null) player = log.GetComponent<PlayerStats>();
+            if (player == null || player.IsDead) return;
+            BeginEncounter();
         }
 
         private void Update()
@@ -149,8 +205,8 @@ namespace PoeClone.Quests
                 Refresh();
             }
 
-            if (encounterRunning)
-                UpdateEncounter();
+            EnsureGuards();
+            if (encounterRunning) UpdateEncounter();
         }
 
         // ------------------------------------------------------------------ using it
@@ -158,8 +214,8 @@ namespace PoeClone.Quests
         /// <summary>The player reached it (see NpcDialogues.Open): what's there, and what to do.</summary>
         public void Interact(Npc speaker)
         {
-            if (used || encounterRunning)
-                return;
+            if (used || encounterRunning || !CurrentStage || (guarded && !StageCleared) ||
+                (attackTarget != null && !attackTarget.IsDead)) return;
             var options = new List<DialogueOption>
             {
                 new DialogueOption("<b>" + actionLabel + "</b>", Use),
@@ -167,7 +223,8 @@ namespace PoeClone.Quests
             };
             string warning = action == PropAction.Rite
                 ? "\n\nHold the circle for 30 seconds, then defeat all remaining enemies. Leaving during the rite or dying resets this encounter."
-                : ambushCount > 0 ? "\n\nThis draws a hostile pack. Defeat every enemy it summons to secure this objective. Dying or leaving the area resets this encounter." : "";
+                : guarded ? "\n\nThe assigned guards are defeated. Finish this interaction to secure the objective."
+                : ambushCount > 0 ? "\n\nDefeat every enemy this draws to secure the objective. In Greenwood they arrive in groups of three; clear each group before the next. Dying or leaving the area resets an unfinished encounter." : "";
             DialogueUI.Show(speaker, description + warning, options);
         }
 
@@ -175,30 +232,39 @@ namespace PoeClone.Quests
         {
             DialogueUI.Close();
             QuestDefinition quest = Quest;
-            if (used || encounterRunning || log == null || quest == null || log.State(quest) != QuestState.Active)
+            if (used || encounterRunning || !CurrentStage || (guarded && !StageCleared) ||
+                (attackTarget != null && !attackTarget.IsDead) || log == null || quest == null || log.State(quest) != QuestState.Active)
                 return;
 
-            if (action == PropAction.Rite || ambushCount > 0)
+            if (!guarded && (action == PropAction.Rite || ambushCount > 0))
             {
-                encounterRunning = true;
-                riteRunning = action == PropAction.Rite;
-                riteStarted = Time.time;
-                nextWaveAt = Time.time;
-                nextSpawnAt = Time.time;
-                outsideSince = -1f;
-                combatStarted = false;
-                pendingEnemies = riteRunning ? 0 : ambushCount;
-                spawnedEnemies = 0;
+                BeginEncounter();
                 Effect();
-                Refresh();
                 ShowMessage(riteRunning ? "The rite begins - hold the circle!" : aftermath);
-                PublishObjective();
                 return;
             }
 
             Effect();
             log.UseProp(quest, PropId);
             ShowMessage(aftermath);
+        }
+
+        private void BeginEncounter()
+        {
+            encounterRunning = true;
+            riteRunning = action == PropAction.Rite;
+            riteStarted = Time.time;
+            nextWaveAt = Time.time;
+            nextSpawnAt = Time.time;
+            outsideSince = -1f;
+            combatStarted = false;
+            bool waves = !guarded && !riteRunning && Quest.Area == WorldBuilder.Greenwood;
+            pendingEnemies = riteRunning ? 0 : waves ? Mathf.Min(3, ambushCount) : ambushCount;
+            queuedWaves = waves ? ambushCount - pendingEnemies : 0;
+            spawnedEnemies = 0;
+            Refresh();
+            SpawnPending();
+            PublishObjective();
         }
 
         private void ShowMessage(string message)
@@ -255,9 +321,11 @@ namespace PoeClone.Quests
             {
                 spawned.Clear();
                 string kind = ambushKinds[spawnedEnemies % ambushKinds.Length];
-                spawner.SpawnAmbush(transform.position, kind, 1, riteRunning ? 8f : 5f, 13f, spawned);
+                spawner.SpawnAmbush(guarded ? guardSpawnPoint : transform.position, kind, 1,
+                    guarded ? 2f : riteRunning ? 8f : 5f, guarded ? 7f : 13f, spawned, alert: !guarded);
                 foreach (EnemyHealth health in spawned)
                 {
+                    if (spawnedEnemies == 0 && !string.IsNullOrEmpty(carrierName)) health.BossName = carrierName;
                     var enemy = new EncounterEnemy { Health = health };
                     enemy.Died = () => enemy.Defeated = true;
                     health.Died += enemy.Died;
@@ -275,7 +343,7 @@ namespace PoeClone.Quests
             QuestDefinition quest = Quest;
             if (player == null || quest == null) return;
             bool leftArea = AreaManager.Instance != null && AreaManager.Instance.CurrentAreaIndex != quest.Area;
-            if (player.IsDead || leftArea || log.State(quest) != QuestState.Active)
+            if ((player.IsDead && (!guarded || !leftArea)) || (leftArea && !guarded) || log.State(quest) != QuestState.Active)
             {
                 ResetEncounter(leftArea ? null : "Encounter reset - try again when you are ready");
                 return;
@@ -325,9 +393,21 @@ namespace PoeClone.Quests
                 }
             }
             else
+            {
+                if (pendingEnemies == 0 && LivingEnemies == 0 && queuedWaves > 0)
+                {
+                    if (nextGroupAt <= 0f) nextGroupAt = Time.time + 1.5f;
+                    if (Time.time >= nextGroupAt)
+                    {
+                        pendingEnemies = Mathf.Min(3, queuedWaves);
+                        queuedWaves -= pendingEnemies;
+                        nextGroupAt = 0f;
+                    }
+                }
                 SpawnPending();
+            }
 
-            if (!riteRunning && pendingEnemies == 0 && LivingEnemies == 0 && combatStarted)
+            if (!riteRunning && queuedWaves == 0 && pendingEnemies == 0 && LivingEnemies == 0 && combatStarted)
             {
                 CompleteEncounter();
                 return;
@@ -337,7 +417,7 @@ namespace PoeClone.Quests
 
         private void PublishObjective()
         {
-            int remaining = LivingEnemies + pendingEnemies;
+            int remaining = LivingEnemies + pendingEnemies + queuedWaves;
             string stage;
             if (riteRunning)
             {
@@ -349,7 +429,8 @@ namespace PoeClone.Quests
             }
             else
             {
-                stage = "Defeat " + displayName + "'s summoned enemies (" + remaining + " remaining)";
+                stage = (guarded ? guardObjective : "Defeat " + displayName + "'s summoned enemies") + " (" + remaining + " remaining)";
+                if (queuedWaves > 0) stage += "; groups of 3";
                 string label = displayName + ": " + remaining + " enemies";
                 if (npc != null && npc.DisplayName != label) npc.Rename(label, LabelColor);
             }
@@ -362,17 +443,19 @@ namespace PoeClone.Quests
             riteRunning = false;
             ReleaseEnemies(false);
             // Award only once, after the timer (if any), successful spawning and actual deaths.
-            log.UseProp(Quest, PropId);
-            log.SetEncounterObjective(PropId, null);
+            if (guarded) log.RecordPropStage(PropId + ":guards");
+            else log.UseProp(Quest, PropId);
+            if (!guarded) log.SetEncounterObjective(PropId, null);
             if (npc != null) npc.Rename(displayName, LabelColor);
             if (glow != null) glow.color = Color.white;
             Refresh();
-            ShowMessage(action == PropAction.Rite ? "The ward is broken!" : "Encounter cleared - objective secured");
+            ShowMessage(guarded ? "Guards defeated - " + actionLabel : action == PropAction.Rite ? "The ward is broken!" : "Encounter cleared - objective secured");
         }
 
         private void ResetEncounter(string message)
         {
             ClearEncounter();
+            if (attackTarget != null) attackTarget.RestoreQuestObject();
             if (npc != null) npc.Rename(displayName, LabelColor);
             if (glow != null) glow.color = Color.white;
             Refresh();
@@ -384,6 +467,8 @@ namespace PoeClone.Quests
             encounterRunning = false;
             riteRunning = false;
             pendingEnemies = 0;
+            queuedWaves = 0;
+            nextGroupAt = 0f;
             ReleaseEnemies(true);
             if (log != null) log.SetEncounterObjective(PropId, null);
         }

@@ -372,6 +372,15 @@ namespace PoeClone.World
                 "Smash the totem", "The totem shatters - the dead come running!", 3.6f,
                 new[] { "Zombie", "Zombie", "Zombie", "Skeleton", "Skeleton", "Archer" }, 6);
             prop.SetLooks(whole.gameObject, spent.gameObject, null);
+            CharacterController targetBody = whole.gameObject.AddComponent<CharacterController>();
+            targetBody.center = Vector3.up * 1.5f;
+            targetBody.height = 3f;
+            targetBody.radius = 0.6f;
+            EnemyHealth target = whole.gameObject.AddComponent<EnemyHealth>();
+            int kind = EnemyKinds.IndexOf("Zombie");
+            target.Configure(kind, EnemyKinds.Get(kind), MonsterLevels[Greenwood]);
+            target.BossName = "Bone Totem";
+            prop.SetAttackTarget(target);
         }
 
         private void FallenScout(Transform t, Vector3 p, int index, string name)
@@ -383,10 +392,17 @@ namespace PoeClone.World
             LocalBall(badge, new Vector3(0.15f, 0.42f, 0.1f), 0.08f, kit.Mat("Gold"));
             Glow(badge, p + Vector3.up * 0.9f, LanternLight, 3.5f, 1.6f);
 
-            QuestProp prop = QuestProp.Attach(site.gameObject, "patrol", index, PropAction.Take, "Fallen Scout",
-                "One of Hale's scouts, " + name + ", face down in the leaves. Three raider arrows in his back; he never saw them. His sword is still sheathed.\n\nThe watch badge is still pinned to his coat.",
-                "Take " + name + "'s badge", name + "'s badge taken... wolves!", 1.6f,
-                new[] { "Dire Wolf" }, 6);
+            string[] clues =
+            {
+                "Aldo lies beside the western trail, struck by raider arrows. His dispatch names Bren's southern watch post. Take his badge and follow that lead.",
+                "Bren's ruined watch post overlooks the southern trail. His badge is caught on a broken branch. Boot prints and a torn dispatch point east toward Corin.",
+                "Corin lies in the eastern glade beside a stolen dispatch. Raiders are watching the body. Recover his badge and defeat the attackers."
+            };
+            string[] labels = { "Recover Aldo's badge on the western trail", "Recover Bren's badge on the southern trail", "Recover Corin's badge in the eastern glade" };
+            QuestProp prop = QuestProp.Attach(site.gameObject, "patrol", index, PropAction.Take, name + "'s Patrol Trail",
+                clues[index], labels[index], index == 2 ? "Raiders emerge from the trees!" : "Badge recovered - follow the next trail marker", 1.6f,
+                index == 2 ? new[] { "Raider", "Raider", "Archer", "Raider", "Raider", "Archer" } : null, index == 2 ? 6 : 0);
+            prop.SetSequence();
             prop.SetLooks(badge.gameObject, null, null);
         }
 
@@ -423,10 +439,17 @@ namespace PoeClone.World
             for (int s = -1; s <= 1; s += 2)
                 Candles(site, p + site.right * s * 1.5f);
 
-            QuestProp prop = QuestProp.Attach(site.gameObject, "relics", index, PropAction.Smash, "Reliquary of Mortis",
-                "A stone casket on a plinth, sealed with gold. Through a crack you can see bones wrapped in purple silk - part of the Gravelord, kept safe from death. The candles around it never burn down.",
-                "Break the reliquary", "The reliquary breaks - its guardians rise!", 2.3f,
-                new[] { "Bone Warden", "Skeleton", "Skeleton Archer", "Skeleton", "Bone Reaver", "Skeleton Archer", "Skeleton", "Skeleton" }, 8);
+            string[][] defenders =
+            {
+                new[] { "Bone Warden", "Skeleton Archer", "Skeleton", "Skeleton Archer", "Skeleton", "Skeleton" },
+                new[] { "Bone Reaver", "Bone Reaver", "Skeleton", "Skeleton Archer", "Skeleton", "Skeleton" },
+                new[] { "Grave Siren", "Wraith", "Wraith", "Skeleton Archer", "Skeleton", "Skeleton" }
+            };
+            QuestProp prop = QuestProp.Attach(site.gameObject, "relics", index, PropAction.Smash, "Mortis's Reliquary " + (index + 1),
+                "The casket holds a fragment of Mortis's bones. Its assigned guardians must be defeated before the binding can be broken.",
+                "Break reliquary " + (index + 1), "The binding breaks - Mortis loses another fragment of his strength", 2.3f,
+                defenders[index], defenders[index].Length);
+            prop.SetGuarded(p, "Defeat reliquary " + (index + 1) + "'s guardians");
             prop.SetLooks(whole.gameObject, spent.gameObject, null);
         }
 
@@ -441,10 +464,19 @@ namespace PoeClone.World
             LocalBox(goods, new Vector3(0f, 0.86f, 0f), new Vector3(1.32f, 0.1f, 0.92f), kit.Mat("Wood"), solid: false);
             Glow(goods, p + Vector3.up * 1.2f, LanternLight, 3.5f, 1.4f);
 
-            QuestProp prop = QuestProp.Attach(site.gameObject, "caravan", index, PropAction.Take, "Oda's Crate",
-                "A crate painted green, stencilled with Oda's mark: a coin with a smile. The lid is nailed down tight - the dead have no use for silk and spices.",
-                "Pry it open and take the goods", "Goods taken - something stirs in the dark!", 1.6f,
-                new[] { "Grave Bat", "Crypt Spider", "Grave Bat", "Bone Reaver", "Crypt Spider", "Grave Bat", "Crypt Spider", "Grave Bat" }, 8);
+            string[] titles = { "Green-Marked Caravan Wreck", "Dragged Cargo Trail", "Stolen Caravan Goods" };
+            string[] descriptions =
+            {
+                "Oda's green mark is scraped across a broken wagon panel. The cargo was dragged away. Tracks lead to the western grave plots.",
+                "Torn green cloth and spilled spices mark the western plots. Heavy tracks lead back toward the eastern road, where someone has piled up the stolen shipment.",
+                "The Caravan Plunderer and its escort gathered Oda's entire shipment here. Defeat the assigned group, then recover the goods."
+            };
+            string[] labels = { "Inspect the green-marked wreck on the old road", "Inspect the cargo trail in the western plots", "Recover Oda's goods by the eastern road" };
+            QuestProp prop = QuestProp.Attach(site.gameObject, "caravan", index, index == 2 ? PropAction.Take : PropAction.Read, titles[index],
+                descriptions[index], labels[index], index == 2 ? "Oda's shipment recovered" : "The cargo trail continues", 1.6f,
+                index == 2 ? new[] { "Bone Reaver", "Crypt Spider", "Grave Bat", "Skeleton Archer", "Crypt Spider", "Skeleton" } : null, index == 2 ? 6 : 0);
+            prop.SetSequence();
+            if (index == 2) prop.SetGuarded(p, "Defeat the Caravan Plunderer and its escort", "Caravan Plunderer");
             prop.SetLooks(goods.gameObject, null, null);
         }
 
@@ -548,7 +580,7 @@ namespace PoeClone.World
         }
 
         // Rubble and bones heaped over the Hollows' gate to the Ruins until Mortis falls: the
-        // Graveyard is a dead end, but the way on runs through its master.
+        // After Mortis, clear the stationed guards and explicitly dismantle the wall to open the gateway.
         private void BoneWall(Transform t)
         {
             Transform gateTransform = root.Find("Gate_" + AreaNames[Cave] + "_to_" + AreaNames[Ruins]);
@@ -574,8 +606,16 @@ namespace PoeClone.World
             for (int k = 0; k < 7; k++)
                 Bones(wall, wall.TransformPoint(new Vector3(R(-4f, 4f), R(0.2f, 2.6f), R(2.4f, 3.4f))));
             Glow(wall, at + Vector3.up * 2.2f + inward * 2.5f, SpiritLight, 8f, 2.2f, flicker: true);
-            QuestBarrier.Create(wall.gameObject, "gravelord", gate,
-                "Bones and rubble wall the deep road shut. The Gravelord's dead piled them here", 7f);
+            Vector3 guardAt = Shape(Cave).NearestOpen(at + inward * 16f, 7f);
+            ClearSite(Cave, guardAt, 7f);
+            Transform reading = Holder(wall, "DismantlePoint", at + inward * 4.5f, gateTransform.rotation);
+            QuestProp blockade = QuestProp.Attach(reading.gameObject, "deep_road", 0, PropAction.Smash, "Deep-Road Bone Blockade",
+                "Bones and rubble seal the gateway to the Ashen Ruins. Defeat the assigned guard, then pull down the wall. The gateway itself remains sealed until the blockade is dismantled.",
+                "Dismantle the bone blockade at the Ashen Ruins gateway", "The deep-road gateway is unlocked!", 2.8f,
+                new[] { "Bone Warden", "Brute", "Storm Caster", "Bone Warden", "Brute", "Storm Caster" }, 6);
+            blockade.SetGuarded(guardAt, "Defeat the deep-road blockade guards", "Deep-Road Warden");
+            QuestBarrier.Create(wall.gameObject, "deep_road", gate,
+                "Gateway sealed: defeat its quest guards, then dismantle the bone blockade", 7f);
         }
 
         private void FrozenScout(Transform t, Vector3 p, int index, string journal)

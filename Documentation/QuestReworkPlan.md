@@ -1,10 +1,22 @@
 # Quest rework — plan and session handoff
 
-Status: CHECKPOINT 1 COMPLETE. Awaiting user review and approval before checkpoint 2. Later checkpoints are not authorized yet.
+Status: CHECKPOINT 2 COMPLETE / AWAITING USER REVIEW. Checkpoint 1 is committed as 7418dec. Checkpoint 2 parent: 0de1fcb (Lost Hollows crossroads restructure). Checkpoints 3-4 require separate approval.
+
+## Live checkpoint 2 handoff (update during work)
+
+- User approved checkpoint 2 and emphasized keeping these notes current because usage may run out soon.
+- Correction to checkpoint 1: its 6-8 enemy packs spawned together, including Greenwood. Greenwood must instead spawn three at a time in multiple waves, clearing one group before the next.
+- New requirement: a quest sends the player to a blockade; accepting the quest places a strong stationed group there immediately. Kill the assigned guards, THEN click to dismantle the blockade, THEN unlock its gateway. Teleporting past the physical wall must not bypass the disabled gateway.
+- World now branches: Haven -> Greenwood -> Lost Hollows; Hollows -> Haunted Graveyard (dead end) and Hollows -> Ashen Ruins. A bone wall currently auto-opens after Mortis. Convert that wall into the explicit guarded/dismantle quest, offered by Tobias after Mortis and before the warning to Haven.
+- Other checkpoint 2 scope remains: attackable totems; sequential patrol clues ending in raiders; stationed, distinct reliquary guardians; wreck/trail/carrier caravan hunt; Bell-Ringer main-story quest before relics. Vex/rescue remains checkpoint 3.
+- Inspection complete: reviewed updated layouts, bone wall, AreaGate lock checks, QuestBarrier, quest/save data, basic attack/projectile targeting, enemy area parking and boss lairs. Working tree was clean at checkpoint 2 start. Unity is in Edit mode.
+- Implementation now wired: QuestProp supports three-enemy Greenwood waves, sequential clues, guarded props that spawn on acceptance and require a final interaction, and attackable totems. QuestBook/world sites include Bell-Ringer and deep_road. Existing characters beyond new steps are grandfathered without resetting the quest book. EnemyHealth supports quest scenery without loot/kill credit; network capture/handoff skips these local scenery targets. First forced Unity refresh/compilation passed with zero console errors. Final forced refresh corrected a missing World namespace import in EnemySpawner; verifying the final console, then committing/pushing. Structural data check passed: all 26 quests have valid, acyclic prerequisites and areas; Bell-Ringer and deep_road are in the main chain; all new encounter enemy kinds exist and do not split.
+- Completion condition: preserve the full playable main story at checkpoint 2. Do not report completion until required asset refresh, compilation, console checks and commit/push succeed. Gameplay checks remain with the user unless requested.
 Planning baseline: master, aaba6ca. Current checkpoint parent: 0ae77a7 (an unrelated Dash adjustment was committed during this work and is preserved).
 
 ## Working agreement
 
+- User explicitly requests final documentation cleanup: once the ENTIRE main-questline rework is finished, remove this temporary plan/handoff and every other temporary Markdown file created for this rework. Update any permanent documentation that describes changed quests/world routes; do not leave obsolete plans behind. Keep the handoff until all checkpoints are completed and reviewed so interrupted sessions remain resumable.
 - Approve the plan first. Implement only the next approved checkpoint, finish it, and stop for user review before starting another.
 - The entire main questline must remain playable after EVERY checkpoint. Keep each checkpoint playable and independently resumable. Avoid leaving half-wired quest mechanics between checkpoints.
 - At each completed checkpoint: update user-facing patch notes, force Unity asset refresh and compilation through MCP, wait for readiness, inspect console errors, commit only related changes, and push the current branch. Report any blocker accurately.
@@ -103,8 +115,10 @@ Acceptance: the later route alternates retrieval, defence, activation, investiga
 
 - Planning baseline: master, aaba6ca. Inspected quest definitions, prop encounters, tracker, save version, cave route and boss lairs.
 - Confirmed scope added during checkpoint 1: every checkpoint must preserve a playable main questline; Vex and the Bell-Ringer must join the MAIN story (six of nine bosses). Bell-Ringer belongs to checkpoint 2, Vex to checkpoint 3.
-- Checkpoint 1: IMPLEMENTED AND CHECKED. Awaiting user review; do not start checkpoint 2 automatically.
-- Checkpoints 2-4: NOT STARTED / NOT YET APPROVED.
+- Checkpoint 1: committed/pushed as 7418dec. User reviewed and approved checkpoint 2, requesting three-enemy Greenwood waves.
+- Checkpoint 2: COMPLETE / AWAITING REVIEW (see live handoff at the top). Checkpoints 3-4: NOT STARTED / NOT YET APPROVED.
+- Checkpoint 2 final checks: forced Unity refresh and compilation finished; editor idle, not compiling/updating, Edit mode, zero console errors. Structural validation passed for all 26 quests, including valid areas and acyclic prerequisites. git diff --check passed. No gameplay checks were run; encounter feel and placement remain for user review.
+- Checkpoint 2 commit title: "Rework opening quests and add guarded deep-road blockade". Find its hash with git log -- Documentation/QuestReworkPlan.md; verify remote tracking state when resuming.
 - Commit: the commit containing this document, titled "Require quest encounter clears and improve objective guidance". Look it up with git log -- Documentation/QuestReworkPlan.md. Push outcome is reported in the session's final response; verify remote tracking state when resuming.
 
 ### Implemented in checkpoint 1
@@ -132,6 +146,8 @@ Acceptance: the later route alternates retrieval, defence, activation, investiga
 
 ### Exact next step
 
-Stop and collect checkpoint 1 feedback. Suggested player review: activate a totem and leave enemies alive; clear a pack; retry after death or area travel; reload mid-encounter; hold the shrine and clear survivors; inspect talk/boss/return objective locations. Fix any reported checkpoint 1 issue before progressing.
+STOP for checkpoint 2 review. Do not start checkpoint 3 without user approval. No gameplay checks were requested or run. Keep these notes current. The final rework must remove temporary rework Markdown files, as explicitly requested.
 
-Only after the user approves, begin checkpoint 2: opening-area quest variety plus Tobias's Bell-Ringer main-story quest. Preserve the whole main route at that checkpoint and migrate only affected unfinished stages. Do not add the cave rescue/Vex chain until checkpoint 3 is approved.
+Historical checkpoint 1 review guidance: Suggested player review: activate a totem and leave enemies alive; clear a pack; retry after death or area travel; reload mid-encounter; hold the shrine and clear survivors; inspect talk/boss/return objective locations. Fix any reported checkpoint 1 issue before progressing.
+
+After checkpoint 2 review, fix any reported issues first. Only after explicit approval begin checkpoint 3: the Lost Hollows captive rescue (kill captors, free captive, talk), cave story integration and Vex main-story quest. Preserve the whole playable main route and existing save progress. Checkpoint 4 remains unapproved.

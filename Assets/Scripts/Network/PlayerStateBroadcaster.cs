@@ -398,7 +398,7 @@ namespace PoeClone.Network
             for (int k = 0; k < enemies.Count; k++)
             {
                 EnemyHealth enemy = enemies[k];
-                if (enemy == null || (enemy.IsRemote && !spectators) || !enemy.enabled || !enemy.gameObject.activeInHierarchy || !withEnemies)
+                if (enemy == null || enemy.IsQuestObject || (enemy.IsRemote && !spectators) || !enemy.enabled || !enemy.gameObject.activeInHierarchy || !withEnemies)
                     continue;
 
                 if (spectators ? !Near(enemy.transform.position, center, alsoAround, radiusSq) : CoopSession.AreaAt(enemy.transform.position) != snapshot.area)

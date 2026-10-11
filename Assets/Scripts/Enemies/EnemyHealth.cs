@@ -37,6 +37,17 @@ namespace PoeClone.Enemies
         public float MaxHealth => maxHealth;
         public float CurrentHealth => currentHealth;
         public bool IsDead => dead;
+        /// <summary>Attackable quest scenery uses normal targeting, but awards no monster kills or loot.</summary>
+        public bool IsQuestObject { get; set; }
+
+        public void RestoreQuestObject()
+        {
+            if (!IsQuestObject) return;
+            dead = false;
+            currentHealth = maxHealth;
+            CharacterController body = GetComponent<CharacterController>();
+            if (body != null) body.enabled = true;
+        }
         /// <summary>A phase can reveal a new identity without changing the saved enemy kind.</summary>
         public string BossName { get; set; }
         public bool HideBossBar { get; set; }
@@ -458,6 +469,11 @@ namespace PoeClone.Enemies
         {
             dead = true;
             Died?.Invoke();
+            if (IsQuestObject)
+            {
+                DisableLiveBehaviour();
+                return;
+            }
 
             EnemySounds.Play(EnemyKinds.Get(KindIndex), EnemySounds.Event.Death, transform.position);
 

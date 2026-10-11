@@ -88,7 +88,7 @@ namespace PoeClone.Network
             {
                 foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None))
                 {
-                    if (!enemy.IsRemote && enemy.enabled && AreaAt(enemy.transform.position) == area)
+                    if (!enemy.IsQuestObject && !enemy.IsRemote && enemy.enabled && AreaAt(enemy.transform.position) == area)
                     {
                         suspended.Add(enemy.gameObject);
                         enemy.gameObject.SetActive(false);
@@ -110,7 +110,7 @@ namespace PoeClone.Network
         {
             var world = new List<EnemyHandoff>();
             foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (!enemy.IsRemote && enemy.enabled && AreaAt(enemy.transform.position) == area)
+                if (!enemy.IsQuestObject && !enemy.IsRemote && enemy.enabled && AreaAt(enemy.transform.position) == area)
                     world.Add(new EnemyHandoff { k = enemy.KindIndex, lv = enemy.MonsterLevel,
                         x = enemy.transform.position.x, y = enemy.transform.position.y, z = enemy.transform.position.z,
                         r = enemy.transform.eulerAngles.y, hp = enemy.IsDead ? 0f : enemy.CurrentHealth / enemy.MaxHealth });
@@ -132,7 +132,7 @@ namespace PoeClone.Network
                 if (AreaAt(candidate.transform.position) == area) { spawner = candidate; break; }
             if (spawner == null || spawner.EnemyPrefab == null) return;
             foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (!enemy.IsRemote && enemy.enabled && AreaAt(enemy.transform.position) == area)
+                if (!enemy.IsQuestObject && !enemy.IsRemote && enemy.enabled && AreaAt(enemy.transform.position) == area)
                 {
                     suspended.Remove(enemy.gameObject);
                     handedOver.Remove(enemy.gameObject);

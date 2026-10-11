@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using PoeClone.Player;
+using PoeClone.World;
 
 namespace PoeClone.Enemies
 {
@@ -191,7 +192,7 @@ namespace PoeClone.Enemies
         /// They don't come back once killed (their spots aren't refilled).
         /// </summary>
         public void SpawnAmbush(Vector3 near, string kindName, int count, float minRadius = 5f, float maxRadius = 9f,
-            List<EnemyHealth> spawned = null)
+            List<EnemyHealth> spawned = null, bool alert = true)
         {
             int kindIndex = EnemyKinds.IndexOf(kindName);
             if (kindIndex < 0 || enemyPrefab == null)
@@ -215,8 +216,13 @@ namespace PoeClone.Enemies
                     }
                     spawned?.Add(health);
                     EnemyController ai = enemy.GetComponent<EnemyController>();
-                    if (ai != null)
+                    if (ai != null && alert)
                         ai.Alert();
+                    // Quest acceptance can station guards in a currently parked area.
+                    AreaManager areas = AreaManager.Instance;
+                    if (areas != null && areas.CurrentAreaIndex >= 0 &&
+                        (WorldBuilder.Center(areas.CurrentAreaIndex) - center).sqrMagnitude > 1f)
+                        enemy.SetActive(false);
                     break;
                 }
             }
