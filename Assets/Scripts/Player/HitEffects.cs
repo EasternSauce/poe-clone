@@ -23,7 +23,7 @@ namespace PoeClone.Player
         private const float ChillSeconds = 2f;
         private const float ShockSeconds = 4f;
         public const float ShockedMore = 1.25f;
-        private const float IgniteShare = 2.4f; // total base damage over the full burn
+        private const float IgniteShare = 5f; // total base damage over the full burn
         private const float IgniteSeconds = 3f;
         private const float BaseCritMultiplier = 1.5f;
         public const float OnslaughtSeconds = 4f;

@@ -129,14 +129,15 @@ namespace PoeClone.Skills
         public bool DamageSpell => Spell && BaseDamage > 0f && !Summon;
 
         /// <summary>
-        /// A spell's damage at this level before Intelligence and Spell Damage (about 2.8x from
-        /// level 1 to 10, then half as fast per bonus level). Low levels get a bonus (30% at
-        /// level 1) that fades out by level 10.
+        /// A spell's damage before Intelligence and Spell Damage: about 2.8x from level 1 to 10,
+        /// or 3.9x for Fire Bolt, then half as fast per bonus level. Low levels get a 30% bonus
+        /// at level 1 that fades out by level 10.
         /// </summary>
         public float DamageAt(int level)
         {
             int l = Mathf.Max(1, level);
-            float growth = 1f + 0.3f * Mathf.Min(l - 1, 9) + 0.15f * Mathf.Max(0, l - 10);
+            float damagePerLevel = Id == SkillId.FireBolt ? 0.45f : 0.3f;
+            float growth = 1f + damagePerLevel * Mathf.Min(l - 1, 9) + damagePerLevel * 0.5f * Mathf.Max(0, l - 10);
             return BaseDamage * growth * Mathf.Lerp(1.3f, 1f, Mathf.Clamp01((l - 1) / 9f));
         }
 

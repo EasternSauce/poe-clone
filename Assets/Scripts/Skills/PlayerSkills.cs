@@ -660,6 +660,12 @@ namespace PoeClone.Skills
             int characterLevel = stats != null ? stats.Level : 1;
             float cost = skill.ManaCostAt(Mathf.Max(1, level)) * CharacterCostMultiplier(skill, characterLevel)
                 + DamageSpellManaSurcharge(skill, characterLevel);
+            if (skill.Spell)
+            {
+                // Preserve early character costs, then ease spell mana pressure through level 34.
+                float progress = Mathf.Clamp01((characterLevel - 7f) / 27f);
+                cost *= Mathf.Lerp(1f, 0.62f, Mathf.SmoothStep(0f, 1f, progress));
+            }
             if (skill.MeleeAttack && !skill.Channelled)
                 cost *= CharacterAttackAnimator.BaseAttackSpeed(WeaponType.Sword) /
                         Mathf.Max(0.1f, CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()));
