@@ -36,16 +36,36 @@ namespace PoeClone.World
             return result;
         }
 
-        public static Vector3 GateLocal(int area, bool forward)
+        /// <summary>
+        /// Every gate pair between travel areas. The Lost Hollows are the crossroads: the Greenwood
+        /// comes in, the Haunted Graveyard is a dead-end branch, and the deep road on to the Ashen
+        /// Ruins stays walled up until Mortis falls (WorldBuilder.QuestSites).
+        /// </summary>
+        public static readonly (int a, int b)[] Links =
+        {
+            (WorldBuilder.Haven, WorldBuilder.Greenwood),
+            (WorldBuilder.Greenwood, WorldBuilder.Cave),
+            (WorldBuilder.Cave, WorldBuilder.Graveyard),
+            (WorldBuilder.Cave, WorldBuilder.Ruins),
+            (WorldBuilder.Ruins, WorldBuilder.Frozen)
+        };
+
+        // Gates sit in side passages and corners rather than across from each other, so the way
+        // on has to be found.
+        public static Vector3 GateLocal(int area, int destination)
         {
             switch (area)
             {
                 case WorldBuilder.Haven: return new Vector3(132, 0, -2);
-                case WorldBuilder.Greenwood: return forward ? new Vector3(132, 0, 4) : new Vector3(-131, 0, -4);
-                case WorldBuilder.Graveyard: return new Vector3(forward ? 121 : -121, 0, 0);
-                case WorldBuilder.Ruins: return forward ? new Vector3(0, 0, 113) : new Vector3(-123, 0, -4);
+                // The way into the Hollows: a hollow in the south-east woods, off the southern glade.
+                case WorldBuilder.Greenwood: return destination == WorldBuilder.Haven ? new Vector3(-131, 0, -4) : new Vector3(150, 0, -122);
+                case WorldBuilder.Graveyard: return new Vector3(-121, 0, 0);
+                case WorldBuilder.Ruins: return destination == WorldBuilder.Frozen ? new Vector3(0, 0, 113) : new Vector3(-123, 0, -4);
                 case WorldBuilder.Frozen: return new Vector3(-113, 0, -48);
-                case WorldBuilder.Cave: return forward ? new Vector3(124, 0, 84) : new Vector3(-126, 0, -74);
+                case WorldBuilder.Cave:
+                    if (destination == WorldBuilder.Greenwood) return new Vector3(-126, 0, -74);
+                    // The deep road to the Ruins, at the end of a side tunnel off the east galleries.
+                    return destination == WorldBuilder.Ruins ? new Vector3(151, 0, -14) : new Vector3(124, 0, 84);
                 default: return new Vector3(0, 0, -37);
             }
         }
@@ -56,23 +76,20 @@ namespace PoeClone.World
             switch (area)
             {
                 case WorldBuilder.Haven: return new Vector3(113, 0, 5);
-                case WorldBuilder.Greenwood: return destination == WorldBuilder.Haven ? new Vector3(-83, 0, -12) : new Vector3(82, 0, 8);
-                case WorldBuilder.Graveyard: return destination == WorldBuilder.Cave ? new Vector3(-95, 0, -5) : new Vector3(94, 0, 4);
-                case WorldBuilder.Ruins: return destination == WorldBuilder.Graveyard ? new Vector3(-65, 0, -18) : new Vector3(0, 0, 108);
+                case WorldBuilder.Greenwood: return destination == WorldBuilder.Haven ? new Vector3(-83, 0, -12) : new Vector3(130, 0, -110);
+                case WorldBuilder.Graveyard: return new Vector3(-95, 0, -5);
+                case WorldBuilder.Ruins: return destination == WorldBuilder.Cave ? new Vector3(-65, 0, -18) : new Vector3(0, 0, 108);
                 case WorldBuilder.Frozen: return new Vector3(-70, 0, -30);
-                case WorldBuilder.Cave: return destination == WorldBuilder.Greenwood ? new Vector3(-87, 0, -74) : new Vector3(79, 0, 98);
+                case WorldBuilder.Cave:
+                    if (destination == WorldBuilder.Greenwood) return new Vector3(-87, 0, -74);
+                    return destination == WorldBuilder.Ruins ? new Vector3(131, 0, -6) : new Vector3(79, 0, 98);
                 default: return new Vector3(0, 0, -31);
             }
         }
 
         public static float GateYaw(int area, int destination)
         {
-            bool forward = area == WorldBuilder.Haven ||
-                (area == WorldBuilder.Greenwood && destination == WorldBuilder.Cave) ||
-                (area == WorldBuilder.Cave && destination == WorldBuilder.Graveyard) ||
-                (area == WorldBuilder.Graveyard && destination == WorldBuilder.Ruins) ||
-                (area == WorldBuilder.Ruins && destination == WorldBuilder.Frozen);
-            Vector3 inward = GateApproachLocal(area, destination) - GateLocal(area, forward);
+            Vector3 inward = GateApproachLocal(area, destination) - GateLocal(area, destination);
             return Mathf.Atan2(inward.x, inward.z) * Mathf.Rad2Deg;
         }
 
@@ -106,6 +123,8 @@ namespace PoeClone.World
                         .Exclude(-37, 35, 22, 20)
                         // Bramblesow's wallow, widened out of the north-east dead end.
                         .Room(138, 98, 21, 19)
+                        // A wooded hollow down a track off the southern glade: the way into the Lost Hollows.
+                        .Route(18, 92, -84, 122, -106, 142, -116).Room(143, -118, 17, 15)
                         .Lake(58, -38, 22, 16).Lake(72, 58, 23, 23)
                         .River(12, -18, 152, -6, 100, 8, 50, 24, 0, 24, -65, 24, -152)
                         .Bridge(24, -65, 26, 5.5f, 12).Bridge(24, 0, 26, 6, -9).Bridge(8, 50, 28, 5.5f, -17);
@@ -113,7 +132,7 @@ namespace PoeClone.World
                     return new AreaShape(center, new Vector2(352, 276))
                         .Room(0, 0, 64, 50).Room(-91, -50, 46, 44).Room(87, -46, 47, 46)
                         .Room(-76, 85, 52, 48).Room(62, 82, 59, 44).Room(-2, -99, 47, 36)
-                        .Route(26, -124, 0, -78, 0, 0, 0, 80, 0, 124, 0)
+                        .Route(26, -124, 0, -78, 0, 0, 0, 80, 0, 98, 0)
                         .Route(24, -78, 0, -91, -50, -2, -99, 87, -46, 80, 0)
                         .Route(24, -78, 0, -76, 85, -8, 65, 62, 82, 80, 0)
                         // A lane off the north-east plots to the gate of the Drowned Belfry.
@@ -163,7 +182,8 @@ namespace PoeClone.World
                         .Route(12, -87, -74, -79, -110, -113, -117)
                         .Route(12, -64, 62, -106, 77, -125, 112)
                         .Route(12, -17, 75, -14, 113, 16, 122)
-                        .Route(12, 37, 19, 75, 0, 112, 18, 135, -10)
+                        // The deep road to the Ashen Ruins, down the winding east tunnel.
+                        .Route(12, 37, 19, 75, 0, 112, 18, 135, -10).Room(141, -12, 19, 17)
                         .Route(12, 47, -64, 33, -109, 70, -120)
                         .Route(12, 91, -45, 124, -60, 138, -95)
                         .Route(12, 79, 58, 101, 33, 132, 40)

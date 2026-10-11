@@ -1,3 +1,9 @@
+version: 2026-10-11-hollows-crossroads
+- The Lost Hollows are now the crossroads of the world. From their tunnels you can reach the Greenwood, the Haunted Graveyard, the Ashen Ruins and the Warren.
+- The Haunted Graveyard is now a dead-end branch, and its gate to the Ashen Ruins is gone. Bones and rubble block the deep road from the Hollows to the Ruins until Gravelord Mortis falls.
+- Gates no longer sit straight across each area, so you have to search for the way on. The Greenwood's way into the Hollows is in a hidden hollow in the south-east woods, and the deep road to the Ruins is at the end of the Hollows' winding east tunnel.
+- Maren, Tobias and Oda's quest dialogue now describes the new route.
+
 version: 2026-10-11-quest-encounters
 - Quest-object ambushes now count only after all their summoned enemies are defeated. Packs contain 6-8 enemies with quest-specific compositions and tougher defenders in later areas.
 - The Ashen Shrine sends waves every two seconds, with up to 12 living summons. Hold its circle for 30 seconds, then defeat the survivors to break the ward.

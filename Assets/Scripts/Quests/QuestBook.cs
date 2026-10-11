@@ -119,8 +119,8 @@ namespace PoeClone.Quests
                 Id = "keeper", Story = HollowCall, Title = "The Gravekeeper", Giver = NpcRole.Elder, After = "totems",
                 Goal = QuestGoal.Talk, TalkTo = NpcRole.Gravekeeper,
                 Objective = "Find Tobias the Gravekeeper in the Haunted Graveyard",
-                Offer = "Those totems are grave-bone, old and yellow. Only one place it could come from: the graveyard past the woods.\n\nOld Tobias keeps it. He has kept it since before I was born, behind his candle-wards. If anyone knows what is stirring there, he does - if he still lives. Find him, and show him the shards.",
-                Reminder = "Tobias's hut is in the Haunted Graveyard, past the Greenwood. Look for the ring of candles.",
+                Offer = "Those totems are grave-bone, old and yellow. Only one place it could come from: the graveyard beyond the Lost Hollows, the caves under the woods. The way down is somewhere in the Greenwood's south-east thickets; the hunters could never tell me exactly where.\n\nOld Tobias keeps it. He has kept it since before I was born, behind his candle-wards. If anyone knows what is stirring there, he does - if he still lives. Find him, and show him the shards.",
+                Reminder = "Tobias's hut is in the Haunted Graveyard. Find the way down into the Lost Hollows in the Greenwood's south-east, then search the caves for the graveyard gate. Look for the ring of candles.",
                 Thanks = "Maren sent you? Ha! Still alive, then, the old girl. Let me see those... Grave-bone, yes. My graves. Sit, sit - inside the candles you're safe. They don't cross the wards. Not yet.",
                 RewardGold = 80, RewardExperience = 300
             },
@@ -153,7 +153,7 @@ namespace PoeClone.Quests
                 Objective = "Slay Gravelord Mortis at the crypt",
                 Offer = "Now finish him. He's at the crypt doors, calling his dead to him. Don't let them surround you.",
                 Reminder = "Mortis waits by the crypt, north of the path. He calls the dead - keep moving.",
-                Thanks = "Gone. Truly gone, I can feel it in the ground.\n\nBut... you say he spoke before the end? \"The Shepherd wakes, and the dead go home to him.\" The Shepherd. Gods. That's no priest's ravings, that's the oldest story there is.",
+                Thanks = "Gone. Truly gone, I can feel it in the ground.\n\nBut... you say he spoke before the end? \"The Shepherd wakes, and the dead go home to him.\" The Shepherd. Gods. That's no priest's ravings, that's the oldest story there is.\n\nAnd did you feel the ground shake when he fell? His dead walled up the deep road under the Hollows, the one that runs east to the old city. With him gone, that wall will have come down.",
                 RewardGold = 200, RewardExperience = 600, RewardHealthPotions = 3, RewardItem = ItemRarity.Rare, RewardItemLevel = 5,
                 RewardRespec = 1
             },
@@ -174,8 +174,8 @@ namespace PoeClone.Quests
                 Id = "emberwatch", Story = HollowCall, Title = "Smoke over the Ruins", Giver = NpcRole.Elder, After = "news",
                 Goal = QuestGoal.Talk, TalkTo = NpcRole.Commander,
                 Objective = "Find Commander Varek's camp in the Ashen Ruins",
-                Offer = "We are not the only ones who have seen the signs. Soldiers from the south - the Emberwatch - marched past Haven a month ago, bound for the Ashen Ruins beyond the graveyard. They have dug in there, in the middle of it all.\n\nFind their commander, Varek. Whatever is gathering in the old city, he will be facing it.",
-                Reminder = "The Emberwatch camp is in the Ashen Ruins, past the graveyard's east gate. Look for their palisade, south-east of the temple.",
+                Offer = "We are not the only ones who have seen the signs. Soldiers from the south - the Emberwatch - marched past Haven a month ago, bound for the Ashen Ruins by the deep road under the Lost Hollows. The dead walled that road up behind them, but Tobias says it is open again. They have dug in there, in the middle of it all.\n\nFind their commander, Varek. Whatever is gathering in the old city, he will be facing it.",
+                Reminder = "The Emberwatch camp is in the Ashen Ruins. Take the deep road at the end of the Lost Hollows' east tunnels; Mortis's wall should be down. Look for their palisade, south-east of the temple.",
                 Thanks = "Haven sent you? Then Haven has more sense than my generals. Welcome to Emberwatch. It isn't much - a fence and a fire - but nothing gets past that fence.",
                 RewardGold = 120, RewardExperience = 500
             },
@@ -346,7 +346,7 @@ namespace PoeClone.Quests
                 Goal = QuestGoal.Talk, TalkTo = NpcRole.Commander,
                 Objective = "Deliver Oda's letter to Commander Varek",
                 Offer = "One more favour. My brother, Varek, commands the Emberwatch camp in the Ashen Ruins. He hasn't written in a month, the oaf. Take him this letter - and make sure he reads it, not just pockets it.",
-                Reminder = "The letter is for Commander Varek, at the Emberwatch camp in the Ashen Ruins.",
+                Reminder = "The letter is for Commander Varek, at the Emberwatch camp in the Ashen Ruins. The deep road there, under the Lost Hollows, stays walled up while the Gravelord lives.",
                 Thanks = "A letter from Oda? ...She says I'm an oaf. She's right. Here - she'd want you paid properly, and so do I.",
                 RewardGold = 200, RewardExperience = 900, RewardItem = ItemRarity.Rare, RewardItemLevel = 7
             },

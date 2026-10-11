@@ -64,11 +64,8 @@ namespace PoeClone.EditorTools
             texture.SetPixels32(pixels);
             Dot(texture, shape, new Vector3(0, 0, area == WorldBuilder.ActArena ? -31 : -6), Color.cyan);
             if (area != WorldBuilder.ActArena) Dot(texture, shape, WorldBuilder.WaystoneLocal(area), Color.blue);
-            if (area != WorldBuilder.ActArena)
-            {
-                Dot(texture, shape, AreaLayouts.GateLocal(area, false), new Color(0.9f, 0.4f, 1));
-                Dot(texture, shape, AreaLayouts.GateLocal(area, true), new Color(0.9f, 0.4f, 1));
-            }
+            foreach (Vector3 gate in Gates(area))
+                Dot(texture, shape, gate, new Color(0.9f, 0.4f, 1));
             if (area == WorldBuilder.Graveyard || area == WorldBuilder.Ruins || area == WorldBuilder.Frozen)
                 Dot(texture, shape, AreaLayouts.BossLocal(area), Color.yellow);
             foreach (string group in AreaLayouts.QuestGroups(area))
@@ -76,6 +73,16 @@ namespace PoeClone.EditorTools
                     Dot(texture, shape, shape.NearestOpen(anchor, 5f), new Color(1f, 0.5f, 0.1f));
             texture.Apply();
             return texture;
+        }
+
+        // The area's gates to its neighbours on the travel map.
+        private static IEnumerable<Vector3> Gates(int area)
+        {
+            foreach (var link in AreaLayouts.Links)
+            {
+                if (link.a == area) yield return AreaLayouts.GateLocal(area, link.b);
+                if (link.b == area) yield return AreaLayouts.GateLocal(area, link.a);
+            }
         }
 
         private static void Dot(Texture2D texture, AreaShape shape, Vector3 local, Color color)
@@ -131,8 +138,8 @@ namespace PoeClone.EditorTools
                     }
                 }
                 bool placements = shape.Contains(new Vector3(0, 0, -6), 2) && shape.Contains(WorldBuilder.WaystoneLocal(area), 3);
-                if (area != WorldBuilder.ActArena)
-                    placements &= shape.Contains(AreaLayouts.GateLocal(area, false), 5) && shape.Contains(AreaLayouts.GateLocal(area, true), 5);
+                foreach (Vector3 gate in Gates(area))
+                    placements &= shape.Contains(gate, 5);
                 if (area == WorldBuilder.Graveyard || area == WorldBuilder.Ruins || area == WorldBuilder.Frozen)
                     placements &= shape.Contains(AreaLayouts.BossLocal(area), 12);
                 foreach (string group in AreaLayouts.QuestGroups(area))

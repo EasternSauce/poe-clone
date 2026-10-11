@@ -37,11 +37,6 @@ namespace PoeClone.World
             BuildWater(area, ground.transform.position.y);
         }
 
-        private Vector3 GatePoint(int area, Vector3 direction)
-        {
-            bool forward = Mathf.Abs(direction.z) > Mathf.Abs(direction.x) ? direction.z > 0 : direction.x > 0;
-            return Center(area) + AreaLayouts.GateLocal(area, forward);
-        }
         private bool NearGate(int area, Vector3 p, float radius)
         {
             foreach (var gate in gatePoints)
@@ -280,7 +275,7 @@ namespace PoeClone.World
             Material dirt = DirtFloor;
             WindingPath(t, "GateLane", Haven, 4.2f, dirt, 1.3f,
                 Flat(10, 0), Flat(28, 3), Flat(48, -8), Flat(70, -5),
-                Flat(92, 8), AreaLayouts.GateApproachLocal(Haven, Greenwood), AreaLayouts.GateLocal(Haven, true));
+                Flat(92, 8), AreaLayouts.GateApproachLocal(Haven, Greenwood), AreaLayouts.GateLocal(Haven, Greenwood));
             WindingPath(t, "SouthLane", Haven, 3.6f, dirt, 1.3f,
                 Flat(0, -10), Flat(-3, -24), Flat(4, -39), Flat(-9, -58), Flat(-20, -80));
             WindingPath(t, "NorthLane", Haven, 3.4f, dirt, 1.3f,

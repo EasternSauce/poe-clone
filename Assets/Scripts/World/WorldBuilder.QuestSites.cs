@@ -311,6 +311,10 @@ namespace PoeClone.World
                 Sunstone(t, suns[k], k);
             IceSeal(t);
 
+            // The deep road from the Lost Hollows to the Ruins, walled up by the Gravelord's dead.
+            Begin(Cave, 635);
+            BoneWall(t);
+
             // The Frozen Seal: the lost scouts, the door beneath the ice.
             Begin(Frozen, 634);
             Vector3[] frozen = QuestPoints(Frozen, "scouts");
@@ -541,6 +545,37 @@ namespace PoeClone.World
             }
             Glow(wall, at + Vector3.up * 2.5f - inward * 0.5f, IceLight, 9f, 4f);
             QuestBarrier.Create(wall.gameObject, "sunstones", gate, "Sealed under ice that no fire of yours will melt", 8f);
+        }
+
+        // Rubble and bones heaped over the Hollows' gate to the Ruins until Mortis falls: the
+        // Graveyard is a dead end, but the way on runs through its master.
+        private void BoneWall(Transform t)
+        {
+            Transform gateTransform = root.Find("Gate_" + AreaNames[Cave] + "_to_" + AreaNames[Ruins]);
+            AreaGate gate = gateTransform != null ? gateTransform.GetComponent<AreaGate>() : null;
+            if (gate == null)
+                return;
+            Vector3 at = gateTransform.position;
+            at.y = 0f;
+            Vector3 inward = gateTransform.forward;
+
+            var wall = new GameObject("BoneWall").transform;
+            wall.SetParent(t, false);
+            wall.SetPositionAndRotation(at, gateTransform.rotation);
+            // An opaque core over the whole frame, rubble heaped against it, bones caught in the heap.
+            WeatheredSlab(wall, "BoneWallCore", at - Vector3.up * 0.15f, new Vector2(4.4f, 3.2f),
+                5.6f, kit.Mat("RockDark"), gateTransform.eulerAngles.y, topScale: 0.7f);
+            for (int k = -5; k <= 5; k++)
+            {
+                float h = 5.4f - Mathf.Abs(k) * 0.5f + R(-0.3f, 0.3f);
+                Prefab(kit.rock, wall, wall.TransformPoint(new Vector3(k * 0.8f, 0f, R(0.6f, 1.6f))), R(0f, 360f),
+                    new Vector3(R(1f, 1.5f), h * 0.32f, R(1f, 1.5f)));
+            }
+            for (int k = 0; k < 7; k++)
+                Bones(wall, wall.TransformPoint(new Vector3(R(-4f, 4f), R(0.2f, 2.6f), R(2.4f, 3.4f))));
+            Glow(wall, at + Vector3.up * 2.2f + inward * 2.5f, SpiritLight, 8f, 2.2f, flicker: true);
+            QuestBarrier.Create(wall.gameObject, "gravelord", gate,
+                "Bones and rubble wall the deep road shut. The Gravelord's dead piled them here", 7f);
         }
 
         private void FrozenScout(Transform t, Vector3 p, int index, string journal)

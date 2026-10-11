@@ -9,7 +9,8 @@ namespace PoeClone.World
 {
     /// <summary>
     /// Builds fixed authored areas, themed scenery and existing story content identically on every client.
-    /// Route: Haven - Greenwood - The Lost Hollows - Haunted Graveyard - Ashen Ruins - Frozen Hollow.
+    /// Route: Haven - Greenwood - The Lost Hollows (the crossroads: a dead-end branch to the Haunted
+    /// Graveyard, the deep road on to the Ashen Ruins) - Frozen Hollow.
     /// Layout geometry and permanent anchors live in AreaLayouts; the game starts in Haven.
     /// </summary>
     public partial class WorldBuilder : MonoBehaviour
@@ -182,13 +183,11 @@ namespace PoeClone.World
             BuildWaystones();
             BuildOutposts();
 
-            // Gates: Haven - Greenwood - Lost Hollows - Graveyard - Ruins - Frozen Hollow. The way home is the
+            // Gates (AreaLayouts.Links): Haven - Greenwood - the Lost Hollows, which branch to the
+            // Graveyard and the Ruins; the Ruins lead on to the Frozen Hollow. The way home is the
             // town portal or a waystone.
-            Connect(Haven, new Vector3(40f, 0f, 0f), Greenwood, new Vector3(-40f, 0f, 2f));
-            Connect(Greenwood, new Vector3(40f, 0f, -2f), Cave, new Vector3(-40f, 0f, 0f));
-            Connect(Cave, new Vector3(40f, 0f, 0f), Graveyard, new Vector3(-40f, 0f, 0f));
-            Connect(Graveyard, new Vector3(40f, 0f, 0f), Ruins, new Vector3(-40f, 0f, 0f));
-            Connect(Ruins, new Vector3(0f, 0f, 40f), Frozen, new Vector3(-40f, 0f, 0f));
+            foreach (var link in AreaLayouts.Links)
+                Connect(link.a, link.b);
             BuildFieldBossLairs();
             BuildBorders();
             BuildQuestSites();
@@ -820,12 +819,12 @@ namespace PoeClone.World
             return gate;
         }
 
-        // A gate in each area leading to the other, at the edge of its outline in the given direction;
+        // A gate in each area leading to the other, at its authored spot (AreaLayouts.GateLocal);
         // you arrive a few steps in front of the gate back.
-        private void Connect(int a, Vector3 offsetA, int b, Vector3 offsetB)
+        private void Connect(int a, int b)
         {
-            Vector3 gateA = GatePoint(a, offsetA);
-            Vector3 gateB = GatePoint(b, offsetB);
+            Vector3 gateA = Center(a) + AreaLayouts.GateLocal(a, b);
+            Vector3 gateB = Center(b) + AreaLayouts.GateLocal(b, a);
             Transform arriveInA = Marker("Arrive_" + AreaNames[a] + "_from_" + AreaNames[b], InFront(a, b, gateA), AreaLayouts.GateYaw(a, b));
             Transform arriveInB = Marker("Arrive_" + AreaNames[b] + "_from_" + AreaNames[a], InFront(b, a, gateB), AreaLayouts.GateYaw(b, a));
             ClearSpot(arriveInA.position, 2f);

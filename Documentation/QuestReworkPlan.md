@@ -30,7 +30,7 @@ Planning baseline: master, aaba6ca. Current checkpoint parent: 0ae77a7 (an unrel
 - QuestProp.Use currently awards progress BEFORE spawning its ambush. This is the first behaviour to replace.
 - The Ashen Shrine is the existing timed rite: 30 seconds, waves every 6 seconds, 2–3 enemies per wave, spawning stops at 90% of the timer. Its success currently ignores surviving summons.
 - EnemySpawner.SpawnAmbush returns void. Encounter ownership and death tracking need a small extension rather than counting arbitrary area kills.
-- Actual world route: Haven → Greenwood → The Lost Hollows → Haunted Graveyard → Ashen Ruins → Frozen Hollow → The Shed Sanctuary.
+- World route (changed after checkpoint 1): Haven → Greenwood → The Lost Hollows, the crossroads. The Haunted Graveyard is a dead-end branch off the Hollows; the Hollows' deep road to the Ashen Ruins is a QuestBarrier (bone wall) opened by completing `gravelord`. Ruins → Frozen Hollow → The Shed Sanctuary. Gate spots live in AreaLayouts.Links/GateLocal.
 - The Lost Hollows has native cave monsters and access to The Warren / Vex, the Tunnel King, but no quest chain or quest NPCs.
 - QuestBook.Whereabouts says only 'at the Emberwatch camp' for Varek/Ysolde, omitting Ashen Ruins. Several active objectives omit their area too.
 - SaveSystem discards all quest progress if QuestBook.Version changes. Do not casually bump the version to introduce this rework.
