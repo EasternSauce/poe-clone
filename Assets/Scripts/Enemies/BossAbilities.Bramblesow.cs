@@ -134,9 +134,9 @@ namespace PoeClone.Enemies
             Vector3 target = PlayerAt;
             for (int k = 0; k < count; k++)
             {
-                Vector2 scatter = Random.insideUnitCircle * 3.5f;
+                Vector2 scatter = Random.insideUnitCircle * 5.25f;
                 Vector3 at = k == 0 ? target : OpenNear(target + new Vector3(scatter.x, 0f, scatter.y));
-                const float radius = 1.8f;
+                const float radius = 2.7f;
                 StartCoroutine(GroundTelegraph.Run(at, radius, (1.0f + k * 0.18f) / T, DamageType.Physical, spot =>
                 {
                     if (this == null || health.IsDead)
@@ -161,12 +161,12 @@ namespace PoeClone.Enemies
             for (int i = 0; i < 6; i++)
             {
                 float a = i * Mathf.PI * 2f / 6f + Random.value;
-                Vector3 p = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * Random.Range(0.3f, 1.3f);
+                Vector3 p = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * Random.Range(0.45f, 1.95f);
                 float h = Random.Range(0.9f, 1.8f);
                 Piece(roots.transform, PrimitiveType.Cube, i % 3 == 0 ? Thorn : Root, p + Vector3.up * h * 0.4f, new Vector3(0.18f, h, 0.18f),
                     new Vector3(Random.Range(-35f, 35f), Random.Range(0f, 90f), Random.Range(-35f, 35f)));
             }
-            Piece(roots.transform, PrimitiveType.Sphere, Leaf, Vector3.up * 0.2f, new Vector3(1.2f, 0.4f, 1.2f));
+            Piece(roots.transform, PrimitiveType.Sphere, Leaf, Vector3.up * 0.2f, new Vector3(1.8f, 0.4f, 1.8f));
             StartCoroutine(RiseUp(roots.transform, 0.15f));
             Destroy(roots, 1.3f);
         }
@@ -175,7 +175,7 @@ namespace PoeClone.Enemies
         private IEnumerator ThornShake()
         {
             float windUp = 0.9f / T;
-            float radius = 2.4f + 1.6f * Size;
+            float radius = 2.8f * Size;
             Act(CreatureAnimator.BossAct.Shake, windUp + 0.3f / T);
             StartCoroutine(Eruption(transform.position, radius, windUp, DamageType.Physical, 1.2f));
             yield return new WaitForSeconds(windUp);
@@ -187,7 +187,7 @@ namespace PoeClone.Enemies
                 GameObject thorn = Prop("Thorn");
                 Piece(thorn.transform, PrimitiveType.Cube, Thorn, Vector3.zero, new Vector3(0.12f, 0.12f, 0.8f));
                 Piece(thorn.transform, PrimitiveType.Sphere, Leaf, new Vector3(0f, 0f, -0.35f), Vector3.one * 0.18f);
-                StartCoroutine(Missile(thorn, transform.position + Vector3.up * 0.2f, dir, 13f, 13f, 0.65f, DamageType.Physical, 0.5f));
+                StartCoroutine(Missile(thorn, transform.position + Vector3.up * 0.2f, dir, 13f, 19.5f, 0.65f, DamageType.Physical, 0.5f));
             }
             yield return Pause(0.4f);
         }

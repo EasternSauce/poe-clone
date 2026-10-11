@@ -665,11 +665,11 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 // Greenwood's first boss: a boar the size of a cart, a thicket growing on its back.
-                Name = "Bramblesow", HealthMultiplier = 14f, DamageMultiplier = 2f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
+                Name = "Bramblesow", HealthMultiplier = 18.2f, DamageMultiplier = 2f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 20f, Armour = 30f, PoisonResistance = 20f, Experience = 90,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
-                Damage = 7f, AttackCooldown = 1.6f, AttackRange = 3.4f,
-                SpeedRatio = 0.75f, Scale = 2.0f,
+                Damage = 7f, AttackCooldown = 1.6f, AttackRange = 5.1f,
+                SpeedRatio = 0.75f, Scale = 3.0f,
                 Body = CreatureBody.Boar, Sounds = EnemySounds.Set.Hound,
                 Skin = new Color(0.38f, 0.26f, 0.17f), Cloth = new Color(0.17f, 0.12f, 0.09f), Pants = new Color(0.30f, 0.50f, 0.20f), Eyes = new Color(1.0f, 0.25f, 0.12f),
                 DropChance = 1f, RareBonus = 0.4f, Drops = 2,

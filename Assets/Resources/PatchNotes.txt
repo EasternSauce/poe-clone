@@ -1,3 +1,6 @@
+version: 2026-10-11-bigger-bramblesow
+- The Bramblesow is 50% bigger and has 30% more life. Its abilities cover 50% more area: the charge path is wider, the roots burst in bigger patches spread further around you, and its thorn shake reaches further with thorns that fly further. Its bite reaches far enough to match its larger body.
+
 version: 2026-10-11-dont-look-back
 - The Haunted Graveyard is far more dangerous. Two new skeletons join it: the Bone Reaver, a big skeleton with a greataxe that spins and wades into you, cutting everything around it (step out of the ring), and collapses into a bone pile when first killed. Smash the pile before it pulls itself back together, or it stands up again at half life. The Bone Warden carries a mace and shield and raises a ring of bone spikes around you: standing on the ring hurts, and if you're caught inside you can't leave for 3 seconds.
 - Skeletons finally look like skeletons: skulls with glowing eyes, ribcages and bony limbs instead of pale people. This includes the graveyard's skeletons and archers, necromancers' raised dead and your own Skeleton Warriors and Mages. Graveyard skeletons now swing their swords instead of clawing.
