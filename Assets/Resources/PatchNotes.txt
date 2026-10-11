@@ -1,3 +1,6 @@
+version: 2026-10-11-unmet-tint
+- Items whose requirements you don't meet are now tinted red instead of having a red line inside their frame.
+
 version: 2026-10-11-potion-sound
 - The potion drinking sound is twice as loud.
 

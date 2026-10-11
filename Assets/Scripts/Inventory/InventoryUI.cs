@@ -47,7 +47,7 @@ namespace PoeClone.Inventory
         private static readonly Color MagicBorder = new Color(0.42f, 0.42f, 0.85f, 1f);
         private static readonly Color RareBorder = new Color(0.85f, 0.80f, 0.35f, 1f);
         private static readonly Color UniqueBorder = new Color(0.85f, 0.45f, 0.15f, 1f);
-        private static readonly Color UnmetBorder = new Color(1f, 0.31f, 0.25f, 1f);
+        private static readonly Color UnmetTint = new Color(1f, 0.15f, 0.1f, 0.35f);
         private static readonly Color GoodSoft = new Color(0.25f, 0.80f, 0.35f, 0.16f);
         private static readonly Color GoodStrong = new Color(0.25f, 0.85f, 0.35f, 0.40f);
         private static readonly Color Bad = new Color(0.90f, 0.20f, 0.20f, 0.40f);
@@ -1582,15 +1582,8 @@ private Vector2 CellSize(int w, int h)
             border.a = alpha;
             Image frame = UiKit.NewImage("Frame", outer, border);
             UiKit.Stretch(frame.rectTransform, 0f);
-            // Gear the character can't use yet gets a red line inside its rarity frame.
-            bool unmet = inventory != null && inventory.Stats != null && !item.Requirements.MetBy(inventory.Stats);
-            if (unmet)
-            {
-                Image warning = UiKit.NewImage("Unmet", frame.transform, new Color(UnmetBorder.r, UnmetBorder.g, UnmetBorder.b, alpha));
-                UiKit.Stretch(warning.rectTransform, 2f);
-            }
             Image face = UiKit.NewImage("Face", frame.transform, plate);
-            UiKit.Stretch(face.rectTransform, unmet ? 4f : 2f);
+            UiKit.Stretch(face.rectTransform, 2f);
 
             Image icon = UiKit.NewImage("Icon", outer, Color.white);
             icon.preserveAspect = true;
@@ -1621,6 +1614,14 @@ private Vector2 CellSize(int w, int h)
                 Vector2 visibleSize = iconLimit.HasValue ? Vector2.Min(size, iconLimit.Value) : size;
                 float s = Mathf.Min(visibleSize.x, visibleSize.y) * 0.78f;
                 irt.sizeDelta = new Vector2(s, s);
+            }
+
+            // Gear the character can't use yet is tinted red inside its rarity frame.
+            if (inventory != null && inventory.Stats != null && !item.Requirements.MetBy(inventory.Stats))
+            {
+                Image unmet = UiKit.NewImage("Unmet", outer, new Color(UnmetTint.r, UnmetTint.g, UnmetTint.b, UnmetTint.a * alpha));
+                UiKit.Stretch(unmet.rectTransform, 2f);
+                unmet.raycastTarget = false;
             }
 
             if (item.StackCount > 1)
