@@ -65,7 +65,8 @@ namespace PoeClone.EditorTools
         /// at each level, with <paramref name="rolls"/> rares per slot, at <paramref name="speed"/>x game speed.
         /// The same seed gives every build the same enemies and bosses.
         /// </summary>
-        public static string Auto(string builds = "", string levels = "1,7,14,21,28,34", int rolls = 15, float speed = 3f, int seed = 1234)
+        public static string Auto(string builds = "", string levels = "1,7,14,21,28,34", int rolls = 15, float speed = 3f, int seed = 1234,
+            float distance = 0f, bool coreSkillsOnly = false)
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) return "Stop Play before starting automated runs.";
             var ids = string.IsNullOrWhiteSpace(builds) ? new List<string>(GauntletBuilds.AutomatedDefaults) : Split(builds);
@@ -77,7 +78,8 @@ namespace PoeClone.EditorTools
                     queue.Add(id + ":" + l);
             SessionState.SetString(QueueKey, string.Join(";", queue.ToArray()));
             SessionState.SetString(RowsKey, "");
-            SessionState.SetString(OptionsKey, "&rolls=" + rolls + "&speed=" + speed.ToString(CultureInfo.InvariantCulture) + "&seed=" + seed);
+            SessionState.SetString(OptionsKey, "&rolls=" + rolls + "&speed=" + speed.ToString(CultureInfo.InvariantCulture) + "&seed=" + seed +
+                "&distance=" + distance.ToString(CultureInfo.InvariantCulture) + "&coreonly=" + (coreSkillsOnly ? "1" : "0"));
             SessionState.SetString(StatusKey, "queued " + queue.Count + " runs");
             SessionState.SetBool(SummaryPendingKey, true);
             return "Queued " + queue.Count + " automated gauntlet runs (" + string.Join(", ", ids.ToArray()) + " at levels " + levels + ").";

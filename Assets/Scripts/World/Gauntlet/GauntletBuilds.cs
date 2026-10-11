@@ -145,6 +145,21 @@ namespace PoeClone.World
             // ---- Conventional
             new GauntletBuild
             {
+                Id = "lightning_caster", Name = "Lightning Caster",
+                Summary = "Chain Lightning damage caster: Conductor, Thunderlord, Eye of the Storm and Archmage. Mantle of the Still Mind adds mana as damage; Conductor's Reach competes with rare staves.",
+                MainHand = new[] { "staff" }, StaffSpell = StatType.GrantChainLightning, Armour = "int",
+                CoreSkills = new[] { StatType.GrantChainLightning },
+                Weights = Caster(StatType.SpellDamage, 2f, StatType.CastSpeed, 2f, StatType.LightningDamage, 2f,
+                    StatType.MaxMana, 2f, StatType.IncreasedMana, 2f, StatType.ManaRegen, 1.4f,
+                    StatType.LightningSpellLevels, 3f, StatType.AllSpellLevels, 3f, StatType.LightningPenetration, 1.5f,
+                    StatType.ElementalPenetration, 1.5f, StatType.ShockChance, 1.5f, StatType.AdditionalChains, 0.5f,
+                    StatType.MoreLightningDamage, 2.5f, StatType.MoreSpellDamage, 2.5f, StatType.ManaAsDamage, 2f,
+                    StatType.SpellEcho, 3f, StatType.PercentManaRegen, 1.5f),
+                Passives = new[] { "s_conductor", "k_thunderlord", "s_eye", "w_archmage", "w_l3", "w_life_heart", "s_life_mid_heart" },
+                Uniques = new[] { "!Mantle of the Still Mind", "Conductor's Reach", "Pendant of the Fleeting Thought", "Stormcaller's Circlet" }
+            },
+            new GauntletBuild
+            {
                 Id = "pyromancer", Name = "Pyromancer",
                 Summary = "Fire Bolt staff caster: Wisdom and Zeal, the Pyre keystone. The Unfinished Sentence from level 25.",
                 MainHand = new[] { "staff" }, StaffSpell = StatType.GrantFireBolt, Armour = "int",

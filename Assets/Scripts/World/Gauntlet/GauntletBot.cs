@@ -24,6 +24,8 @@ namespace PoeClone.World
         private float nextSkillAt;
         private Vector3 lastPosition;
         private float stuckFor;
+        private float preferredDistance;
+        private bool coreSkillsOnly;
 
         public void Bind(GauntletMode gauntlet, GauntletBuild playing)
         {
@@ -35,6 +37,9 @@ namespace PoeClone.World
             inventory = player.GetComponent<PlayerInventory>();
             TouchMode.SetForced(true);
             running = true;
+            float.TryParse(MinimalCombatMode.Option("distance"), System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out preferredDistance);
+            coreSkillsOnly = MinimalCombatMode.Option("coreonly") == "1";
             // Faster than real time: the numbers are in game seconds either way.
             if (float.TryParse(MinimalCombatMode.Option("speed"), System.Globalization.NumberStyles.Float,
                     System.Globalization.CultureInfo.InvariantCulture, out float speed) && speed > 0f)
@@ -74,12 +79,20 @@ namespace PoeClone.World
             // their edge, as a swing reaches them); big bodies keep ranged builds further off.
             float reach = build.Melee
                 ? PlayerCombat.DamageableReach(target, 0.75f * PoeClone.Visuals.CharacterAttackAnimator.AttackRange(Weapon()))
-                : 7f + 1.1f * EnemyKinds.Get(target.KindIndex).Scale;
+                : preferredDistance > 0f ? preferredDistance : 7f + 1.1f * EnemyKinds.Get(target.KindIndex).Scale;
             Vector2 stick = Stick(to);
             // Walking but not getting anywhere (pressed against the enemy): swing from here.
             float moved = (player.transform.position - lastPosition).magnitude;
             lastPosition = player.transform.position;
             stuckFor = VirtualInput.Move.sqrMagnitude > 0f && moved < 0.01f ? stuckFor + Time.deltaTime : 0f;
+            // A distance comparison must also back away from enemies spawned closer than requested.
+            if (!build.Melee && preferredDistance > 0f && to.magnitude < reach - 0.35f && stuckFor < 0.4f)
+            {
+                VirtualInput.Move = -stick;
+                VirtualInput.AttackHeld = false;
+                VirtualInput.Aim = Vector2.zero;
+                return;
+            }
             if (skills.ActiveMeleeSkill == SkillId.Whirlwind)
             {
                 // Whirlwind: the attack stays held the whole time (one spin, not repeated presses),
@@ -187,6 +200,7 @@ namespace PoeClone.World
                 SkillId? id = skills.Slot(k);
                 if (id == null) continue;
                 SkillDefinition skill = SkillBook.Get(id.Value);
+                if (coreSkillsOnly && System.Array.IndexOf(build.CoreSkills, skill.Grant) < 0) continue;
                 if (skill.Toggled || id == SkillId.Dash || id == SkillId.Teleport) continue;
                 if (skills.CooldownLeftAt(k) > 0f || !skills.CanAffordAt(k)) continue;
                 if (id == SkillId.FrostNova && distance > 4f) continue;

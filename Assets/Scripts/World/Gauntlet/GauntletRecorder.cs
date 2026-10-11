@@ -60,12 +60,30 @@ namespace PoeClone.World
         }
 
         [Serializable]
+        public sealed class ChainRangeSummary
+        {
+            public int casts, closeCasts;
+            public float totalDistance, minimumDistance, maximumDistance;
+
+            public void Add(float distance)
+            {
+                if (casts == 0) minimumDistance = distance;
+                casts++;
+                if (distance < 3.5f) closeCasts++;
+                totalDistance += distance;
+                minimumDistance = Mathf.Min(minimumDistance, distance);
+                maximumDistance = Mathf.Max(maximumDistance, distance);
+            }
+        }
+
+        [Serializable]
         public sealed class BossRecord
         {
             public string name;
             public int level, deaths, healthPotions, manaPotions;
             public float maxHealth, spawnedAt, firstHitAt = -1f, diedAt = -1f, timeToKill, dps, dpsFromSpawn, damageTakenByPlayer, manaSpent;
             public bool timedOut;
+            public ChainRangeSummary chainRange = new ChainRangeSummary();
         }
 
         [Serializable]
@@ -94,6 +112,9 @@ namespace PoeClone.World
         {
             public string mode, buildId, buildName, buildSummary, buildFingerprint, startedAt, finishedAt, unityVersion;
             public bool completed, enemiesFrozen;
+            public bool coreSkillsOnly;
+            public float requestedDistance;
+            public ChainRangeSummary chainRange = new ChainRangeSummary();
             public int level, rollsPerSlot, seed;
             public float durationSeconds, combatSeconds;
             // Life of everything killed in the encounters over their total time, spawn to clear (walking included).
@@ -151,6 +172,8 @@ namespace PoeClone.World
             Data.seed = seed;
             Data.startedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
             Data.unityVersion = Application.unityVersion;
+            Data.coreSkillsOnly = MinimalCombatMode.Option("coreonly") == "1";
+            float.TryParse(MinimalCombatMode.Option("distance"), NumberStyles.Float, CultureInfo.InvariantCulture, out Data.requestedDistance);
             lastCastNumber = skills != null ? skills.CastCount : 0;
 
             player.Died += OnDied;
@@ -182,6 +205,7 @@ namespace PoeClone.World
         {
             // Whatever was tried out in the start room doesn't count.
             Data.mana = new ManaSummary();
+            Data.chainRange = new ChainRangeSummary();
             Data.damageTaken = 0f;
             Data.deaths = 0;
             Data.deathLog.Clear();
@@ -212,7 +236,16 @@ namespace PoeClone.World
             {
                 foreach (PlayerSkills.CastRecord c in skills.RecentCasts(30f))
                     if (c.Number > lastCastNumber && c.Skill >= 0)
+                    {
                         casts[c.Skill] = (casts.TryGetValue(c.Skill, out int n) ? n : 0) + 1;
+                        if (c.Skill == SkillId.ChainLightning && c.Points != null && c.Points.Length > 1)
+                        {
+                            Vector3 offset = c.Points[1] - c.At;
+                            offset.y = 0f;
+                            Data.chainRange.Add(offset.magnitude);
+                            if (CurrentBoss != null) CurrentBoss.chainRange.Add(offset.magnitude);
+                        }
+                    }
                 lastCastNumber = skills.CastCount;
             }
 

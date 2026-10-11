@@ -1,3 +1,7 @@
+version: 2026-10-11-lightning-gauntlet
+- The class gauntlet now offers a Chain Lightning damage caster, with lightning-focused gear selection and a Storm/Wisdom passive plan, for comparing damage and mana use against other casters.
+- Automated gauntlet runs can hold a requested casting distance and use only a build's core skills. Lightning reports record actual first-target distances and how often casts qualify for the close-range bonus.
+
 version: 2026-10-11-fire-bolt-projectiles
 - Fire Bolt fires an additional projectile at skill level 6 and another at skill level 12, stacking with projectile bonuses from gear and passives. Bonus skill levels from gear count toward these milestones.
 
