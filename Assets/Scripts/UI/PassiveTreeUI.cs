@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using PoeClone.Inventory;
 using PoeClone.Network;
 using PoeClone.Player;
+using PoeClone.Audio;
 
 namespace PoeClone.UI
 {
@@ -35,6 +36,7 @@ namespace PoeClone.UI
         {
             public PassiveNode Node;
             public Image Ring;
+            public Image SearchRing;
             public Image Body;
             public Text Label;
             public string SearchText;   // name and bonuses, for the search box
@@ -84,6 +86,8 @@ namespace PoeClone.UI
             if (Spectating) return;
             if (!HasPendingChanges) return;
             if (!passives.ConfirmDraft(draft, resetPending, respecMode)) return;
+            var audio = AudioManager.Instance;
+            if (audio != null) audio.PlayUI(audio.Sfx("passive_confirm"));
             // Confirming applies the changes and keeps the tree open, unless it was the answer to closing it.
             bool close = closeRequested;
             respecMode = false;
@@ -388,9 +392,11 @@ namespace PoeClone.UI
                 v.Ring.color = removed ? new Color(1f, 0.35f, 0.3f) : taken ? UiKit.Gold : available && !respecMode ? new Color(1f, 0.85f, 0.4f, 0.9f) : new Color(0.35f, 0.32f, 0.28f, 1f);
                 if (v.Label != null)
                     v.Label.color = taken ? UiKit.Gold : available ? UiKit.TextColor : UiKit.DimText;
+                bool hit = searching && UiKit.SearchMatches(v.SearchText, searchQuery);
+                v.SearchRing.gameObject.SetActive(hit);
                 if (!searching)
                     continue;
-                if (UiKit.SearchMatches(v.SearchText, searchQuery))
+                if (hit)
                 {
                     matches++;
                     v.Ring.color = SearchHit;
@@ -867,6 +873,17 @@ namespace PoeClone.UI
                 rr.anchoredPosition = NodePosition(node);
                 rr.sizeDelta = new Vector2(size, size);
 
+                // A separate, generously sized ring remains visible at the overview zoom.
+                Image searchRing = UiKit.NewImage("SearchRing_" + node.Id, content, SearchHit);
+                searchRing.sprite = UiKit.Ring;
+                searchRing.raycastTarget = false;
+                RectTransform sr = searchRing.rectTransform;
+                sr.anchorMin = sr.anchorMax = sr.pivot = new Vector2(0.5f, 0.5f);
+                sr.anchoredPosition = rr.anchoredPosition;
+                float searchSize = (node.Keystone ? size * 1.414214f : size) + 32f;
+                sr.sizeDelta = new Vector2(searchSize, searchSize);
+                searchRing.gameObject.SetActive(false);
+
                 Image body = UiKit.NewImage("Body", rr, Color.white);
                 body.sprite = node.Keystone ? UiKit.Square : UiKit.Disc;
                 UiKit.Stretch(body.rectTransform, node.Notable ? 6f : 4f);
@@ -880,7 +897,7 @@ namespace PoeClone.UI
                 var search = new StringBuilder(node.Name);
                 foreach (StatModifier mod in node.Mods)
                     search.Append('\n').Append(StatFormatter.ItemLine(mod));
-                views.Add(new NodeView { Node = node, Ring = ring, Body = body, SearchText = search.ToString() });
+                views.Add(new NodeView { Node = node, Ring = ring, SearchRing = searchRing, Body = body, SearchText = search.ToString() });
             }
 
             // Notables and keystones are named on the tree, so it reads at a glance (after the
@@ -917,7 +934,7 @@ namespace PoeClone.UI
             tr0.offsetMax = new Vector2(-310f, 0f);
 
             // Finds passives by name or bonus: everything else greys out.
-            RectTransform searchRow = UiKit.SearchBox(info.rectTransform, "Search passives", "Search passives", query =>
+            RectTransform searchRow = UiKit.SearchBox(info.rectTransform, "Search passives (names and bonuses)", "Search names and bonuses", query =>
             {
                 searchQuery = query;
                 dirty = true;

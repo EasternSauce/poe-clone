@@ -920,7 +920,10 @@ namespace PoeClone.Inventory
                 Affix a = candidates[pick];
                 candidates.RemoveAt(pick);
                 candidateWeights.RemoveAt(pick);
-                if (rolled.Contains(a.Stat) || baseStats.Contains(a.Stat))
+                // The guaranteed staff attack is its only main spell; utility spells still roll.
+                if (rolled.Contains(a.Stat) || baseStats.Contains(a.Stat) ||
+                    (b.Type == ItemType.Weapon && b.WeaponType == WeaponType.Staff &&
+                     Array.IndexOf(SkillGrants.StaffMain, a.Stat) >= 0))
                     continue;
 
                 selected.Add(a);

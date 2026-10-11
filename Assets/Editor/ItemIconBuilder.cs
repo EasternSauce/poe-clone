@@ -19,6 +19,7 @@ namespace PoeClone.EditorTools
         private const string OutDir = "Assets/Resources/ItemIcons";
         private const int PxPerCell = 96;
         private const string HoodSource = "Assets/Editor/ItemIconSources/hunter_hood.png";
+        private const string BowSource = "Assets/Editor/ItemIconSources/painted_bow.png";
 
         private static readonly Color OutlineColor = new Color(0.06f, 0.045f, 0.035f, 1f);
 
@@ -242,7 +243,7 @@ namespace PoeClone.EditorTools
             Make("hand_axe", "Weapons/512x512/one-handed_hand_axe_03.png", 2, 3, b => b, 45f);
             Make("iron_mace", "Weapons/512x512/one-handed_mace_03.png", 1, 3, b => b, 45f);
             Make("steel_dagger", "Weapons/512x512/dagger_03.png", 1, 2, b => b, 45f);
-            Make("short_bow", "Weapons/512x512/bow_03.png", 2, 3, b => b, 45f);
+            Make("short_bow", BowSource, 2, 3, b => b, 45f);
             MakeQuiver();
         }
 
@@ -308,9 +309,15 @@ namespace PoeClone.EditorTools
         public static void BuildCrudeBowIcon()
         {
             // Match the painted equipment set, retaining the source's shading and detail.
-            Make("crude_bow", "Weapons/512x512/bow_03.png", 2, 3,
+            Make("crude_bow", BowSource, 2, 3,
                 b => GradientMap(b, new Color(0.10f, 0.065f, 0.035f),
                     new Color(0.48f, 0.32f, 0.16f), new Color(0.82f, 0.67f, 0.43f), false), 45f);
+        }
+
+        [MenuItem("PoeClone/Build Bow Icons")]
+        public static void BuildBowIcons()
+        {
+            BuildBaseIcons("short_bow");
         }
 
         [MenuItem("PoeClone/Build Sash Icons")]
@@ -372,8 +379,8 @@ namespace PoeClone.EditorTools
             if (line == "shield_int") return "600x600_0007_Conduit.png";
             if (line == "shield_str" && tier >= 2) return "600x600_0014_TowerShield.png";
             if (line == "shield_dex" && tier > 0) return "600x600_0016_SpikedShield.png";
-            // Never the ink longbow (600x1200_0013_Longbow): its icon looked bad.
-            if (line == "bow") return "600x600_0031_RecurveBow.png";
+            // Bows use the painted short bow with base-specific proportions and trim.
+            // Keep both rejected ink bow illustrations out of every equipment base.
             if (line == "sword" && tier > 0) return tier == 1 ? "600x600_0043_ArmingSword.png" : "600x600_0044_Sword.png";
             if (line == "greatsword" && tier > 0) return tier == 1 ? "600x1200_0011_Claymore.png" : "600x1200_0002_Zweihander.png";
             if (line == "maul" && tier > 0) return tier == 1 ? "600x1200_0009_Warhammer.png" : "600x1200_0006_Maul.png";
@@ -588,7 +595,7 @@ namespace PoeClone.EditorTools
 
         private static void Make(string id, string sourceRel, int cellsW, int cellsH, Recolor recolor, float rotateDegrees = 0f)
         {
-            Bitmap b = Load(Path.Combine(SourceRoot, sourceRel));
+            Bitmap b = Load(sourceRel.StartsWith("Assets/") ? sourceRel : Path.Combine(SourceRoot, sourceRel));
             if (Mathf.Abs(rotateDegrees) > 0.01f)
                 b = Rotate(b, rotateDegrees);
             b = Trim(b);

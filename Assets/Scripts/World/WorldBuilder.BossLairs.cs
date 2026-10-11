@@ -212,7 +212,9 @@ namespace PoeClone.World
                 Glow(t, gate + side * s * 3f + inward * 1f + Vector3.up * 2.4f, CopperLight, 8f, 3f, flicker: true);
                 Flame(t, gate + side * s * 3f + inward * 1f + Vector3.up * 2.3f, 0.15f, kit.Mat("Lantern"));
             }
-            Box(t, gate + Vector3.up * 3.7f, new Vector3(7f, 0.4f, 0.5f), kit.Mat("Wood"), solid: false, euler: new Vector3(0f, YawOf(side), 0f));
+            // The beam's long axis is local X; align its local forward with the tunnel
+            // so its ends sit on the two side posts.
+            Box(t, gate + Vector3.up * 3.7f, new Vector3(7f, 0.4f, 0.5f), kit.Mat("Wood"), solid: false, euler: new Vector3(0f, YawOf(inward), 0f));
             for (int k = 0; k < 4; k++)
                 Box(t, gate + inward * R(3f, 6f) + side * R(-4.5f, 4.5f) + Vector3.up * 0.35f, Vector3.one * 0.7f, kit.Mat("Wood"),
                     euler: new Vector3(0f, R(0f, 90f), 0f));

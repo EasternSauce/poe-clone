@@ -29,6 +29,7 @@ namespace PoeClone.Tests
                 {
                     ItemData staff = ItemGenerator.Generate(rng, "gnarled_staff", 1 + k % 15, rarity);
                     Assert.IsTrue(SkillGrants.IsMain(Grants(staff)[0].Stat), staff.Name + " has no attack spell");
+                    Assert.AreEqual(1, Grants(staff).Count(m => SkillGrants.IsMain(m.Stat)), staff.Name + " has multiple attack spells");
                 }
             }
         }

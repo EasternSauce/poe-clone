@@ -2228,8 +2228,8 @@ private Vector2 CellSize(int w, int h)
                 float height = text.cachedTextGeneratorForLayout.GetPreferredHeight(prefix, settings) /
                     Mathf.Max(0.01f, text.pixelsPerUnit);
                 float rowHeight = text.fontSize * text.lineSpacing;
-                UiKit.TopLeft(divider.rectTransform, new Vector2(0f, -height + rowHeight * 0.5f),
-                    new Vector2(width, 2f));
+                UiKit.TopLeft(divider.rectTransform, new Vector2(width / 3f, -height + rowHeight * 0.5f),
+                    new Vector2(width / 3f, 2f));
                 marker = text.text.IndexOf(TooltipDividerMarker, end, System.StringComparison.Ordinal);
             }
             for (Transform spare; (spare = text.transform.Find("ModifierDivider" + count)) != null; count++)

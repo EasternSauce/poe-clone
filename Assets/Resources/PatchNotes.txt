@@ -1,3 +1,11 @@
+version: 2026-10-11-item-and-passive-polish
+- Item tooltip section dividers are now centered and one third as long.
+- Recurve, Long and Imperial Bows now use painted bow icons. The old ink bow artwork is no longer used for equipment icons.
+- Staves roll only one main attack spell, while still allowing situational spells such as Frost Nova.
+- The Warren entrance's timber beam now rests across its support posts.
+- Passive tree search highlights matches with a large bright ring and uses the same search input as storage. Search by passive name or bonus, or press Ctrl+F while the tree is open.
+- Confirming passive point changes now plays a confirmation sound.
+
 version: 2026-10-11-fire-bolt-ignite-balance
 - Ignite now deals 500% of base fire damage over 3 seconds, up from 240%. The strongest ignite still wins.
 - Fire Bolt gains more damage from skill levels: level 10 deals about 36% more damage, with stronger scaling from bonus levels above 10. Level 1 damage is unchanged.
