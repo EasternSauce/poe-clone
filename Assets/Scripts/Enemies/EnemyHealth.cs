@@ -129,10 +129,26 @@ namespace PoeClone.Enemies
         {
             KindIndex = kindIndex;
             MonsterLevel = Mathf.Max(1, level);
-            maxHealth = kind.MaxHealth * EnemyKinds.LifeScale(MonsterLevel, kind);
+            maxHealth = kind.MaxHealth * EnemyKinds.LifeScale(MonsterLevel, kind) * Party.MonsterLifeScale;
             currentHealth = maxHealth;
             experienceReward = Mathf.RoundToInt(kind.Experience * EnemyKinds.ExperienceScale(MonsterLevel));
             reassembled = false;
+        }
+
+        /// <summary>
+        /// Co-op starting or ending: the living monsters this game runs take on the new life scale
+        /// (<paramref name="ratio"/>), keeping how hurt they are. Copies of the host's are left alone.
+        /// </summary>
+        public static void RescaleLife(float ratio)
+        {
+            foreach (EnemyHealth enemy in Active)
+            {
+                if (enemy.dead || enemy.IsRemote)
+                    continue;
+                enemy.maxHealth *= ratio;
+                enemy.currentHealth *= ratio;
+                enemy.Floor *= ratio;
+            }
         }
 
         /// <summary>Spectator puppets: which kind to draw (their numbers come over the wire).</summary>
@@ -481,7 +497,9 @@ namespace PoeClone.Enemies
             if (dropLoot)
             {
                 // Deeper areas drop better gear: the item level follows the monster level.
-                for (int k = 0; k < Mathf.Max(1, kind.Drops); k++)
+                // Co-op rolls a quarter more times on average.
+                int rolls = Party.RandomRound(Mathf.Max(1, kind.Drops) * Party.LootScale);
+                for (int k = 0; k < rolls; k++)
                     LootDrop.RollDrop(kind, at, Mathf.Max(monsterLevel, 1), MinimalCombatMode.GuaranteedGear);
 
                 // A boss always leaves one unique behind.

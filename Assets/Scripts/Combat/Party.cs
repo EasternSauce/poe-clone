@@ -14,6 +14,18 @@ namespace PoeClone.Combat
         public static bool IsGuest { get; private set; }
         public static bool Active => IsHost || IsGuest;
 
+        /// <summary>Co-op monsters (bosses too) are this much tougher than alone...</summary>
+        public static float MonsterLifeScale => Active ? 1.5f : 1f;
+        /// <summary>...and pay this much more loot: gear rolls, gold and potion chances.</summary>
+        public static float LootScale => Active ? 1.25f : 1f;
+
+        /// <summary>A fractional count rounded up or down at random, so it averages out to <paramref name="count"/>.</summary>
+        public static int RandomRound(float count)
+        {
+            int whole = Mathf.FloorToInt(count);
+            return whole + (Random.value < count - whole ? 1 : 0);
+        }
+
         /// <summary>
         /// The partner's character on this screen while it's in the same area (null otherwise).
         /// On the host, monsters can target it; their blows and bolts are sent to the partner.

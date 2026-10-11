@@ -1,4 +1,5 @@
 using UnityEngine;
+using PoeClone.Combat;
 using PoeClone.Enemies;
 using PoeClone.Inventory;
 using PoeClone.Player;
@@ -32,12 +33,13 @@ namespace PoeClone.World
                 return;
 
             float levelScale = 1f + 0.3f * (Mathf.Max(1, monsterLevel) - 1);
-            int gold = Mathf.Max(1, Mathf.RoundToInt(kind.Experience * 0.3f * levelScale * Random.Range(0.6f, 1.4f)));
+            float loot = Party.LootScale;
+            int gold = Mathf.Max(1, Mathf.RoundToInt(kind.Experience * 0.3f * levelScale * loot * Random.Range(0.6f, 1.4f)));
             LootDrop.DropGold(gold, at);
 
-            if (Random.value < HealthPotionChance)
+            if (Random.value < HealthPotionChance * loot)
                 LootDrop.DropPotion(health: true, at);
-            else if (Random.value < ManaPotionChance)
+            else if (Random.value < ManaPotionChance * loot)
                 LootDrop.DropPotion(health: false, at);
         }
     }
