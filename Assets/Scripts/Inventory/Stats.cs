@@ -215,6 +215,13 @@ namespace PoeClone.Inventory
             return Array.IndexOf(BowSkills, stat) >= 0 || stat == StatType.GrantVenomArrow;
         }
 
+        /// <summary>The melee skills: one that suits the weapon always rolls on every melee weapon.</summary>
+        public static readonly StatType[] MeleeSkills =
+        {
+            StatType.GrantCleave, StatType.GrantFangStrike, StatType.GrantPulverize, StatType.GrantReapingArc, StatType.GrantLungingThrust,
+            StatType.GrantWhirlwind, StatType.GrantFissure, StatType.GrantAftershock, StatType.GrantCrossSlash, StatType.GrantVenomSlash
+        };
+
         /// <summary>The attack spells a grimoire carries (one always rolls on every grimoire).</summary>
         public static readonly StatType[] GrimoireMain = { StatType.GrantDeathMark };
 

@@ -194,9 +194,9 @@ namespace PoeClone.World
                 line = lines[rng.Next(lines.Length)];
             }
             StatType? spell = null;
-            if (current != null && ItemGenerator.AlwaysHasMainSpell(current))
+            if (current != null && ItemGenerator.AlwaysHasMainSkill(current))
                 foreach (StatModifier m in current.Modifiers)
-                    if (SkillGrants.IsMain(m.Stat)) { spell = m.Stat; break; }
+                    if (SkillGrants.IsMain(m.Stat) || Array.IndexOf(SkillGrants.MeleeSkills, m.Stat) >= 0) { spell = m.Stat; break; }
             string id = BestBase(line, level, 0) ?? current?.Id;
             return id == null ? null : ItemGenerator.Generate(rng, id, Mathf.Max(1, level), ItemRarity.Rare, spell);
         }

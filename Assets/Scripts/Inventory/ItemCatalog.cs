@@ -19,15 +19,13 @@ namespace PoeClone.Inventory
             var items = new List<ItemData>();
             foreach (string id in StarterBases)
             {
-                ItemData item = ItemGenerator.Generate(rng, id, 1, ItemRarity.Normal, StatType.GrantFireBolt);
+                ItemData item = ItemGenerator.Generate(rng, id, 1, ItemRarity.Normal, id == "rusty_sword" ? StatType.GrantCleave : StatType.GrantFireBolt);
                 if (id == "leather_boots")
                     item = WithSkill(item, StatType.GrantDash, 1);
                 if (id == "bone_sceptre")
                     item = WithSkill(item, StatType.GrantRaiseSkeletons, 1);
                 if (id == "short_bow")
                     item = WithSkill(item, StatType.GrantSplitShot, 1);
-                if (id == "rusty_sword")
-                    item = WithSkill(item, StatType.GrantCleave, 1);
                 items.Add(item);
             }
             return items;

@@ -799,19 +799,20 @@ namespace PoeClone.Inventory
         }
 
         /// <summary>
-        /// A random item of the given base id (null if there is no such base). For a staff,
-        /// <paramref name="mainSpell"/> picks its spell (else it is random).
+        /// A random item of the given base id (null if there is no such base). For a staff, grimoire
+        /// or melee weapon, <paramref name="mainSkill"/> picks the skill it always carries (else it is random).
         /// </summary>
-        public static ItemData Generate(System.Random rng, string baseId, int itemLevel, ItemRarity rarity, StatType? mainSpell = null)
+        public static ItemData Generate(System.Random rng, string baseId, int itemLevel, ItemRarity rarity, StatType? mainSkill = null)
         {
             ItemBase b = Find(baseId);
-            return b != null ? Generate(rng, b, itemLevel, rarity, mainSpell) : null;
+            return b != null ? Generate(rng, b, itemLevel, rarity, mainSkill) : null;
         }
 
-        /// <summary>Whether an item rolled from this base would carry an attack spell (every staff does).</summary>
-        public static bool AlwaysHasMainSpell(ItemData item)
+        /// <summary>Whether an item of this kind always carries a skill (every staff, grimoire and melee weapon does).</summary>
+        public static bool AlwaysHasMainSkill(ItemData item)
         {
-            return item != null && ((item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Staff) || item.Type == ItemType.Grimoire);
+            return item != null && (item.Type == ItemType.Grimoire || (item.Type == ItemType.Weapon && item.WeaponType != WeaponType.Bow &&
+                item.WeaponType != WeaponType.Sceptre && item.WeaponType != WeaponType.Unarmed));
         }
 
         // The attack spells a base always carries one of (null for bases without one).
@@ -840,7 +841,7 @@ namespace PoeClone.Inventory
             return item;
         }
 
-        private static ItemData Generate(System.Random rng, ItemBase b, int itemLevel, ItemRarity rarity, StatType? mainSpell = null)
+        private static ItemData Generate(System.Random rng, ItemBase b, int itemLevel, ItemRarity rarity, StatType? mainSkill = null)
         {
             int level = Math.Max(1, Math.Min(MaxItemLevel, itemLevel));
 
@@ -875,10 +876,33 @@ namespace PoeClone.Inventory
             StatType[] mains = MainSpells(b);
             if (mains != null)
             {
-                StatType spell = mainSpell.HasValue && Array.IndexOf(mains, mainSpell.Value) >= 0 ? mainSpell.Value : mains[rng.Next(mains.Length)];
+                StatType spell = mainSkill.HasValue && Array.IndexOf(mains, mainSkill.Value) >= 0 ? mainSkill.Value : mains[rng.Next(mains.Length)];
                 var main = new Affix { Stat = spell, Tiers = SkillTiers };
                 selected.Add(main);
                 rolled.Add(spell);
+            }
+            else if (b.Type == ItemType.Weapon)
+            {
+                // Every melee weapon carries one of the melee skills that roll on it, also on top of the rarity's stats.
+                var meleeWeights = new List<float>();
+                float meleeTotal = 0f;
+                int wanted = -1;
+                for (int i = 0; i < candidates.Count; i++)
+                {
+                    bool melee = Array.IndexOf(SkillGrants.MeleeSkills, candidates[i].Stat) >= 0;
+                    meleeWeights.Add(melee ? candidateWeights[i] : 0f);
+                    meleeTotal += meleeWeights[i];
+                    if (melee && candidates[i].Stat == mainSkill)
+                        wanted = i;
+                }
+                if (meleeTotal > 0f)
+                {
+                    int pick = wanted >= 0 ? wanted : WeightedPick(rng, meleeWeights);
+                    selected.Add(candidates[pick]);
+                    rolled.Add(candidates[pick].Stat);
+                    candidates.RemoveAt(pick);
+                    candidateWeights.RemoveAt(pick);
+                }
             }
 
             // A stat the base already has never rolls again as an extra (no second Armour line on plate).
