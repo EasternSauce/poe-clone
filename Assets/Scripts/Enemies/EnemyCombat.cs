@@ -1,4 +1,5 @@
 using UnityEngine;
+using PoeClone.Network.Replication;
 using PoeClone.Combat;
 using PoeClone.Inventory;
 using PoeClone.Player;
@@ -208,8 +209,9 @@ namespace PoeClone.Enemies
                     ? PlayerMotion.Predict(playerStats, EnemySkills.ArrowRainDelay)
                     : playerStats.transform.position;
                 float rain = RollDamage();
-                EnemySkills.RainOfArrows(this, kind, spot, playerStats, rain);
-                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Rain, false, rain, 0f, transform.position, spot);
+                int seed = EventRandom.NextSeed();
+                EnemySkills.RainOfArrows(this, kind, spot, playerStats, rain, seed);
+                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Rain, false, rain, 0f, transform.position, spot, seed);
                 return;
             }
 
@@ -221,8 +223,9 @@ namespace PoeClone.Enemies
                     ? PlayerMotion.Intercept(playerStats, from, kind.ProjectileSpeed)
                     : playerStats.transform.position;
                 float bolt = RollDamage();
-                EnemyProjectile.LaunchAt(from, aim, playerStats, kind, bolt);
-                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Bolt, false, bolt, 0f, from, aim);
+                int seed = EventRandom.NextSeed();
+                EnemyProjectile.LaunchAt(from, aim, playerStats, kind, bolt, rollSeed: seed);
+                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Bolt, false, bolt, 0f, from, aim, seed);
                 return;
             }
 
@@ -247,16 +250,17 @@ namespace PoeClone.Enemies
                 return;
             Vector3 at = Party.Partner.position;
             float damage = RollDamage(atPartner: true);
+            int seed = EventRandom.NextSeed();
             if (kind.RainOfArrows)
             {
-                EnemySkills.RainOfArrows(this, kind, at, null, 0f);
-                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Rain, true, damage, 0f, transform.position, at);
+                EnemySkills.RainOfArrows(this, kind, at, null, 0f, seed);
+                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Rain, true, damage, 0f, transform.position, at, seed);
             }
             else if (kind.IsRanged)
             {
                 Vector3 from = BoltOrigin(transform);
                 EnemyProjectile.LaunchVisual(from, at, kind);
-                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Bolt, true, damage, 0f, from, at);
+                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Bolt, true, damage, 0f, from, at, seed);
             }
             else
             {
@@ -265,7 +269,7 @@ namespace PoeClone.Enemies
                     Vector3 impact = transform.position + transform.forward * attackRange * 0.75f;
                     Skills.SkillEffects.Shockwave(impact, 1.2f * transform.localScale.x, new Color(0.72f, 0.64f, 0.5f, 1f), 0.35f);
                 }
-                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Melee, true, damage, attackRange * ReachSlack, transform.position, at);
+                Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Melee, true, damage, attackRange * ReachSlack, transform.position, at, seed);
             }
         }
 
@@ -274,7 +278,7 @@ namespace PoeClone.Enemies
         {
             float spread = kind.DamageType == DamageType.Lightning ? 0.6f : 0.15f;
             float rage = controller != null ? controller.DamageMultiplierAgainst(atPartner) : 1f;
-            return damage * rage * Curse.DealtMultiplier(this) * Random.Range(1f - spread, 1f + spread);
+            return damage * rage * Curse.DealtMultiplier(this) * Mathf.Lerp(1f - spread, 1f + spread, EventRandom.Value(EventRandom.NextSeed(), EventRandom.DamageSpread));
         }
 
         private float DistanceToPlayer()

@@ -1,3 +1,7 @@
+version: 2026-10-11-coop-hit-reconciliation
+- Co-op enemy health bars now reconcile individual guest hits with the host instead of waiting on a fixed timer. Recent hits stay visible while waiting for confirmation, while rejected hits and enemy healing correct properly. Unconfirmed hits are retried without dealing damage twice.
+- Combat critical strikes, defensive rolls and on-hit effects now use event-specific randomness independent of cosmetic effects. Co-op arrow rain shares its random arrow placement, and incoming attacks retain their roll seed through projectile flight.
+
 version: 2026-10-11-coop-whirlwind
 - Co-op partners now see Whirlwind's weapon held out and legs braced for the whole spin, including when joining mid-spin. Fast spins keep their direction and speed instead of being softened or reversed by network smoothing. Spectators see the held pose too.
 

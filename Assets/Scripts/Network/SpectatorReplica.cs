@@ -232,7 +232,7 @@ namespace PoeClone.Network
                 foreach (EntityState e in s.e ?? System.Array.Empty<EntityState>())
                     if (e != null && (e.i >= PoeClone.Skills.Minion.ReplicationIdBase) == minionsOnly)
                         entities.Add(e);
-                timeline.Add(new StateSnapshot { seq = s.seq, t = s.t, area = s.area, e = entities.ToArray() }, Time.realtimeSinceStartupAsDouble);
+                timeline.Add(new StateSnapshot { seq = s.seq, hak = s.hak, t = s.t, area = s.area, e = entities.ToArray() }, Time.realtimeSinceStartupAsDouble);
             }
         }
 
@@ -295,7 +295,7 @@ namespace PoeClone.Network
                         continue;
                     Puppet puppet = GetOrCreatePuppet(e);
                     if (puppet != null)
-                        ApplyEnemyEvents(puppet, e);
+                        ApplyEnemyEvents(puppet, e, s.hak, s.seq);
                 }
             }
 
@@ -894,7 +894,7 @@ namespace PoeClone.Network
             }
         }
 
-        private void ApplyEnemyEvents(Puppet puppet, EntityState e)
+        private void ApplyEnemyEvents(Puppet puppet, EntityState e, int processedHit = 0, int snapshotSequence = 0)
         {
             EntityState prev = puppet.Applied;
             puppet.Applied = e.Clone();
@@ -902,7 +902,7 @@ namespace PoeClone.Network
                 return;
 
             Vector3 at = puppet.Root.transform.position;
-            puppet.Health.ApplyReplicatedHealth(e.hp, e.mhp);
+            puppet.Health.ApplyReplicatedHealth(e.hp, e.mhp, processedHit, snapshotSequence);
             puppet.Health.HideBossBar = e.bh != 0;
 
             if (puppet.Health.IsDead)

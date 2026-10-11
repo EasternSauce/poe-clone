@@ -1,4 +1,5 @@
 using UnityEngine;
+using PoeClone.Network.Replication;
 using PoeClone.Combat;
 using PoeClone.Player;
 using PoeClone.Skills;
@@ -19,6 +20,7 @@ namespace PoeClone.Enemies
         private Vector3 velocity;
         private float travelLeft;
         private float damage;
+        private int rollSeed;
         private DamageType damageType;
         private bool isAttack;
         private PlayerStats target;   // null = visual only (or aimed at a minion)
@@ -36,11 +38,12 @@ namespace PoeClone.Enemies
         }
 
         /// <summary>A real bolt aimed at a point (a volley's side arrows), that can still hit the player.</summary>
-        public static void LaunchAt(Vector3 from, Vector3 aimAt, PlayerStats target, EnemyKind kind, float damage, bool[] volleyHit = null)
+        public static void LaunchAt(Vector3 from, Vector3 aimAt, PlayerStats target, EnemyKind kind, float damage, bool[] volleyHit = null, int rollSeed = 0)
         {
             if (target == null)
                 return;
-            Create(from, new Vector3(aimAt.x, target.transform.position.y + AimHeight, aimAt.z), kind, damage, target).volleyHit = volleyHit;
+            EnemyProjectile bolt = Create(from, new Vector3(aimAt.x, target.transform.position.y + AimHeight, aimAt.z), kind, damage, target, rollSeed);
+            bolt.volleyHit = volleyHit;
         }
 
         /// <summary>A real bolt at one of the player's minions (an enemy drawn off the player by it).</summary>
@@ -59,7 +62,7 @@ namespace PoeClone.Enemies
             Create(from, targetPosition + Vector3.up * AimHeight, kind, 0f, null);
         }
 
-        private static EnemyProjectile Create(Vector3 from, Vector3 aimAt, EnemyKind kind, float damage, PlayerStats target)
+        private static EnemyProjectile Create(Vector3 from, Vector3 aimAt, EnemyKind kind, float damage, PlayerStats target, int rollSeed = 0)
         {
             Vector3 direction = aimAt - from;
             if (direction.sqrMagnitude < 0.0001f)
@@ -92,6 +95,7 @@ namespace PoeClone.Enemies
             // A real bolt flies on past a dodge; a visual one just needs to reach its mark.
             bolt.travelLeft = target != null ? kind.AttackRange * 1.6f : Vector3.Distance(from, aimAt);
             bolt.damage = damage;
+            bolt.rollSeed = target != null ? (rollSeed != 0 ? rollSeed : EventRandom.NextSeed()) : 0;
             bolt.damageType = kind.DamageType;
             bolt.isAttack = kind.Bow;
             bolt.target = target;
@@ -116,7 +120,7 @@ namespace PoeClone.Enemies
                 if (toTarget.sqrMagnitude <= HitRadius * HitRadius)
                 {
                     if (volleyHit == null || !volleyHit[0])
-                        target.TakeHit(damage, damageType, attack: isAttack);
+                        target.TakeHit(damage, damageType, attack: isAttack, rollSeed: rollSeed);
                     if (volleyHit != null)
                         volleyHit[0] = true;
                     Destroy(gameObject);

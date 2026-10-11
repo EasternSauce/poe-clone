@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using PoeClone.Network.Replication;
 using PoeClone.Combat;
 using PoeClone.Player;
 using PoeClone.Skills;
@@ -173,7 +174,7 @@ namespace PoeClone.Enemies
         // Starts a move (the host tells the guest's copy about it).
         private void StartMove(int index, IEnumerator routine)
         {
-            int seed = Random.Range(int.MinValue, int.MaxValue);
+            int seed = EventRandom.NextSeed();
             Party.BossMoveStarted?.Invoke(this, index, !aimedAtLocal, seed, SpeedMultiplier,
                 controller != null ? controller.DamageMultiplierAgainst(partner: true) : 1f, level);
             StartCoroutine(RunBusy(routine, seed));

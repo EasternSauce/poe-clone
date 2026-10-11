@@ -146,11 +146,12 @@ namespace PoeClone.Network
         /// monster in its area so the guest can take over a complete world when they split up.
         /// Both sides also send their own minions. Loot uses separate co-op events.
         /// </summary>
-        public string CaptureCoop(bool withEnemies, Vector3? alsoAround)
+        public string CaptureCoop(bool withEnemies, Vector3? alsoAround, int processedHit = 0)
         {
             if (!ResolveReferences())
                 return null;
             CaptureInto(coopSnapshot, Time.realtimeSinceStartupAsDouble, withEnemies, alsoAround, spectators: false);
+            coopSnapshot.hak = processedHit;
             return SnapshotCodec.Serialize(coopSnapshot, CoopProtocol.Snapshot);
         }
 

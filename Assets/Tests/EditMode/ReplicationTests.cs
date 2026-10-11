@@ -7,6 +7,17 @@ namespace PoeClone.Tests
     public class SnapshotCodecTests
     {
         [Test]
+        public void CoopHitAcknowledgement_TravelsWithTheWorldSnapshot()
+        {
+            StateSnapshot s = Sample();
+            s.hak = 127;
+            StateSnapshot back = SnapshotCodec.Deserialize(SnapshotCodec.Serialize(s, "co"), "co");
+            Assert.AreEqual(127, back.hak);
+            Assert.AreEqual(s.e[0].hp, back.e[0].hp);
+            Assert.AreEqual(0, SnapshotCodec.Deserialize(SnapshotCodec.Serialize(Sample())).hak);
+        }
+
+        [Test]
         public void ChannelledPoseAndSpin_SurviveTheRoundTrip()
         {
             StateSnapshot s = Sample();
@@ -400,6 +411,143 @@ namespace PoeClone.Tests
             var timeline = new SnapshotTimeline();
             Stream(timeline, 30.0);
             Assert.LessOrEqual(timeline.Count, 20);
+        }
+    }
+}
+
+namespace PoeClone.Tests
+{
+    public class PredictedHealthTests
+    {
+        private static PredictedHealth AtFullLife()
+        {
+            var health = new PredictedHealth();
+            health.ApplySnapshot(100f, 100f, 0, 1);
+            return health;
+        }
+
+        [Test]
+        public void PartialAcknowledgement_DoesNotSubtractConfirmedDamageTwice()
+        {
+            var health = AtFullLife();
+            health.Predict(1, 10f);
+            health.Predict(2, 20f);
+            Assert.AreEqual(70f, health.Health);
+            Assert.AreEqual(70f, health.ApplySnapshot(90f, 100f, 1, 2));
+            Assert.AreEqual(70f, health.ApplySnapshot(70f, 100f, 2, 3));
+        }
+
+        [Test]
+        public void SnapshotBeforeHostReceivesHit_PreservesThePrediction()
+        {
+            var health = AtFullLife();
+            health.Predict(1, 25f);
+            Assert.AreEqual(75f, health.ApplySnapshot(100f, 100f, 0, 2));
+            Assert.AreEqual(75f, health.ApplySnapshot(100f, 100f, 0, 3));
+        }
+
+        [Test]
+        public void RejectedHit_RestoresLifeAsSoonAsAcknowledged()
+        {
+            var health = AtFullLife();
+            health.Predict(1, 25f);
+            Assert.AreEqual(100f, health.ApplySnapshot(100f, 100f, 1, 2));
+        }
+
+        [Test]
+        public void HostHealingAndOtherPlayerDamage_RebasePendingHits()
+        {
+            var health = AtFullLife();
+            health.Predict(1, 10f);
+            Assert.AreEqual(60f, health.ApplySnapshot(70f, 100f, 0, 2));
+            Assert.AreEqual(80f, health.ApplySnapshot(90f, 100f, 0, 3));
+            Assert.AreEqual(80f, health.ApplySnapshot(80f, 100f, 1, 4));
+        }
+
+        [Test]
+        public void LateSnapshot_CannotUndoAConfirmedHit()
+        {
+            var health = AtFullLife();
+            health.Predict(1, 10f);
+            health.ApplySnapshot(90f, 100f, 1, 3);
+            Assert.AreEqual(90f, health.ApplySnapshot(100f, 100f, 0, 2));
+        }
+
+        [Test]
+        public void Overkill_IsClampedButAHostPhaseFloorStillWins()
+        {
+            var health = AtFullLife();
+            health.Predict(1, 150f);
+            Assert.AreEqual(0f, health.Health);
+            Assert.AreEqual(25f, health.ApplySnapshot(25f, 100f, 1, 2));
+        }
+
+        [Test]
+        public void CumulativeAcknowledgements_IncludeHitsOnOtherEnemies()
+        {
+            var health = AtFullLife();
+            health.Predict(2, 10f);
+            health.Predict(5, 20f);
+            Assert.AreEqual(70f, health.ApplySnapshot(90f, 100f, 4, 2));
+            Assert.AreEqual(70f, health.ApplySnapshot(70f, 100f, 8, 3));
+        }
+    }
+
+    public class EventRandomTests
+    {
+        [TestCase(12345, 1, 0, 11779120)]
+        [TestCase(-17, 2, 9, 7163879)]
+        [TestCase(0, 3, 42, 10287347)]
+        public void KnownEventKeys_ProduceStableRolls(int seed, int purpose, int target, int bits)
+        {
+            Assert.AreEqual(bits / 16777216f, EventRandom.Value(seed, purpose, target));
+        }
+
+        [Test]
+        public void RollOrderAndCosmeticRandomness_DoNotChangeAnEventOutcome()
+        {
+            UnityEngine.Random.State previous = UnityEngine.Random.state;
+            try
+            {
+                float expected = EventRandom.Value(123, EventRandom.Block, 7);
+                for (int i = 0; i < 100; i++)
+                {
+                    UnityEngine.Random.Range(-1000, 1000);
+                    EventRandom.NextSeed();
+                    EventRandom.Value(123, EventRandom.Critical, i);
+                    Assert.AreEqual(expected, EventRandom.Value(123, EventRandom.Block, 7));
+                }
+            }
+            finally { UnityEngine.Random.state = previous; }
+        }
+
+        [Test]
+        public void CombatRolls_DoNotConsumeUnityRandomState()
+        {
+            UnityEngine.Random.State previous = UnityEngine.Random.state;
+            try
+            {
+                UnityEngine.Random.InitState(876);
+                UnityEngine.Random.State start = UnityEngine.Random.state;
+                float expected = UnityEngine.Random.value;
+                UnityEngine.Random.state = start;
+                EventRandom.Value(EventRandom.NextSeed(), EventRandom.Evade);
+                Assert.AreEqual(expected, UnityEngine.Random.value);
+            }
+            finally { UnityEngine.Random.state = previous; }
+        }
+
+        [Test]
+        public void PurposeAndTarget_AreIndependentKeysAndRollsStayBelowOne()
+        {
+            Assert.AreNotEqual(EventRandom.Value(123, EventRandom.Block, 7), EventRandom.Value(123, EventRandom.Evade, 7));
+            Assert.AreNotEqual(EventRandom.Value(123, EventRandom.Block, 7), EventRandom.Value(123, EventRandom.Block, 8));
+            for (int seed = -1000; seed < 1000; seed++)
+            {
+                float roll = EventRandom.Value(seed, EventRandom.Critical);
+                Assert.GreaterOrEqual(roll, 0f);
+                Assert.Less(roll, 1f);
+            }
         }
     }
 }

@@ -63,9 +63,9 @@ namespace PoeClone.Combat
         /// Host: a monster's attack the guest has to see or take. Bolts and arrow rain go out
         /// whoever they're aimed at (the guest flies its own copy from the launch data); a melee
         /// blow only when it's at the partner. Arguments: the enemy, the attack, whether it's at
-        /// the partner, damage, melee reach, where it starts and where it's aimed.
+        /// the partner, damage, melee reach, where it starts, where it's aimed, and the event random seed.
         /// </summary>
-        public static System.Action<Component, AttackKind, bool, float, float, Vector3, Vector3> EnemyAttacked;
+        public static System.Action<Component, AttackKind, bool, float, float, Vector3, Vector3, int> EnemyAttacked;
 
         public static bool PartnerTargetable => IsHost && Partner != null && PartnerAlive && Partner.gameObject.activeInHierarchy;
 

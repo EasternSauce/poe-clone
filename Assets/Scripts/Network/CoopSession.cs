@@ -41,6 +41,9 @@ namespace PoeClone.Network
         private PlayerInventory inventory;
         private double nextSendAt;
         private bool placedNearHost;
+        private int nextHitSequence, processedHit;
+        private readonly SortedDictionary<int, string> pendingHits = new SortedDictionary<int, string>();
+        private double retryHitAt;
         private Transform arrival;
 
         private readonly List<LootDrop> newDrops = new List<LootDrop>();
@@ -116,6 +119,7 @@ namespace PoeClone.Network
             if (session == null || !session.Connected || partner == null)
                 return;
             UpdateAreaAuthority();
+            RetryPendingHit();
 
             if (IsHost)
                 SendNewDrops();
@@ -130,7 +134,7 @@ namespace PoeClone.Network
             StateSnapshot latest = partner != null ? partner.Newest : null;
             Vector3? partnerAt = IsHost && latest != null && latest.p != null
                 ? new Vector3(latest.p.x, latest.p.y, latest.p.z) : (Vector3?)null;
-            string json = broadcaster.CaptureCoop(withEnemies: IsHost, alsoAround: partnerAt);
+            string json = broadcaster.CaptureCoop(withEnemies: IsHost, alsoAround: partnerAt, processedHit: processedHit);
             if (json != null)
                 session.SendCoop(json);
         }
@@ -144,12 +148,13 @@ namespace PoeClone.Network
         {
             outgoing.k = kind;
             outgoing.ar = AreaManager.Instance != null ? AreaManager.Instance.CurrentAreaIndex : 0;
-            outgoing.id = 0;
+            outgoing.id = outgoing.sn = 0;
             outgoing.a = outgoing.ap = outgoing.ep = outgoing.r = 0f;
             outgoing.dt = outgoing.f = outgoing.n = outgoing.ek = outgoing.xp = 0;
             outgoing.x = outgoing.y = outgoing.z = outgoing.tx = outgoing.ty = outgoing.tz = 0f;
             outgoing.it = null;
-            outgoing.mv = outgoing.sd = outgoing.lv = 0;
+            outgoing.mv = outgoing.lv = 0;
+            outgoing.sd = 0;
             outgoing.sp = outgoing.dm = 0f;
             outgoing.v = null;
             outgoing.w = null;
@@ -205,6 +210,7 @@ namespace PoeClone.Network
         private void SendPartnerDamage(float damage, DamageType type, bool attack, float poison, float seconds)
         {
             CoopEvent e = NewEvent(CoopProtocol.Damage);
+            e.sd = EventRandom.NextSeed();
             e.a = damage;
             e.dt = (int)type;
             e.f = attack ? CoopProtocol.FlagAttack : 0;
@@ -247,10 +253,12 @@ namespace PoeClone.Network
         }
 
         // Guest: a hit on a copy of a host enemy, for the host to apply.
-        private void SendHit(EnemyHealth enemy, EnemyHealth.HitClaim hit)
+        private int SendHit(EnemyHealth enemy, EnemyHealth.HitClaim hit)
         {
             CoopEvent e = NewEvent(CoopProtocol.Hit);
             e.id = enemy.RemoteId;
+            e.sn = ++nextHitSequence;
+            e.sd = hit.RollSeed;
             e.a = hit.Amount;
             e.dt = (int)hit.Type;
             e.ap = hit.ArmourPenetration;
@@ -258,11 +266,39 @@ namespace PoeClone.Network
             e.f = (hit.ThroughExposedHead ? CoopProtocol.FlagHead : 0) | (hit.CanEnrage ? CoopProtocol.FlagEnrage : 0) |
                   (hit.Flinch ? CoopProtocol.FlagFlinch : 0) | (hit.HasOrigin ? CoopProtocol.FlagOrigin : 0);
             SetAt(e, hit.Origin);
-            Send(e);
+            string json = JsonUtility.ToJson(e);
+            if (pendingHits.Count == 0) retryHitAt = Time.realtimeSinceStartupAsDouble + 0.5;
+            pendingHits.Add(e.sn, json);
+            session.SendCoop(json);
+            return e.sn;
+        }
+
+        private void RetryPendingHit()
+        {
+            if (IsHost || pendingHits.Count == 0 || Time.realtimeSinceStartupAsDouble < retryHitAt) return;
+            retryHitAt = Time.realtimeSinceStartupAsDouble + 0.5;
+            // Retry a bounded, ordered batch to recover relay throttling without another burst.
+            int count = 0;
+            foreach (var hit in pendingHits)
+            {
+                session.SendCoop(hit.Value);
+                if (++count == 32) break;
+            }
+        }
+
+        private void AcknowledgeHits(int sequence)
+        {
+            while (pendingHits.Count > 0)
+            {
+                int first = 0;
+                foreach (int id in pendingHits.Keys) { first = id; break; }
+                if (first > sequence) break;
+                pendingHits.Remove(first);
+            }
         }
 
         // Host: an enemy attack the guest has to see (or take).
-        private void SendEnemyAttack(Component enemy, Party.AttackKind kind, bool atPartner, float damage, float reach, Vector3 from, Vector3 aim)
+        private void SendEnemyAttack(Component enemy, Party.AttackKind kind, bool atPartner, float damage, float reach, Vector3 from, Vector3 aim, int seed)
         {
             var health = enemy.GetComponent<EnemyHealth>();
             if (health == null)
@@ -271,39 +307,12 @@ namespace PoeClone.Network
             e.id = broadcaster.IdOf(health);
             e.ek = health.KindIndex;
             e.n = (int)kind;
+            e.sd = seed;
             e.f = atPartner ? CoopProtocol.FlagAtYou : 0;
             e.a = damage;
             e.r = reach;
             SetAt(e, from);
             SetAim(e, aim);
-            Send(e);
-        }
-
-        // Host: an enemy's special skill, for the guest's copy to play.
-        private void SendSkill(Component enemy, bool atPartner, float damage, Vector3 target)
-        {
-            var health = enemy.GetComponent<EnemyHealth>();
-            if (health == null || !PartnerHere)
-                return;
-            CoopEvent e = NewEvent(CoopProtocol.Skill);
-            e.id = broadcaster.IdOf(health);
-            e.ek = health.KindIndex;
-            e.f = atPartner ? CoopProtocol.FlagAtYou : 0;
-            e.a = damage;
-            SetAt(e, enemy.transform.position);
-            SetAim(e, target);
-            Send(e);
-        }
-
-        // Host: a blow judged here against the partner's character landed.
-        private void SendDamage(float damage, DamageType type, bool attack, float poison, float poisonSeconds)
-        {
-            CoopEvent e = NewEvent(CoopProtocol.Damage);
-            e.a = damage;
-            e.dt = (int)type;
-            e.f = attack ? CoopProtocol.FlagAttack : 0;
-            e.ap = poison;
-            e.ep = poisonSeconds;
             Send(e);
         }
 
@@ -427,6 +436,7 @@ namespace PoeClone.Network
             if (s == null || partner == null)
                 return;
             partner.Feed(s);
+            if (!IsHost) AcknowledgeHits(s.hak);
             ReceiveWorldSnapshot(s);
             if (!IsHost)
                 replica.HandleCoopState(s);
@@ -473,7 +483,7 @@ namespace PoeClone.Network
                     {
                         if (e.a <= 0f)
                             stats.PoisonFromPool(e.ap, e.ep);
-                        else if (stats.TakeHit(e.a, (DamageType)e.dt, (e.f & CoopProtocol.FlagAttack) != 0) && e.ap > 0f && !stats.IsDead)
+                        else if (stats.TakeHit(e.a, (DamageType)e.dt, (e.f & CoopProtocol.FlagAttack) != 0, rollSeed: e.sd) && e.ap > 0f && !stats.IsDead)
                             stats.Poison(e.ap, e.ep);
                     }
                     break;
@@ -495,8 +505,15 @@ namespace PoeClone.Network
         // credited to the partner for the enemy's aggro.
         private void ApplyPartnerHit(CoopEvent e)
         {
+            // Missing claims are retried by the guest. Never acknowledge across a gap.
+            if (e.sn != processedHit + 1) return;
+            // Rejected hits must be acknowledged too, otherwise prediction never clears.
+            processedHit = e.sn;
+            if (!PartnerHere || AreaManager.Instance == null || e.ar != AreaManager.Instance.CurrentAreaIndex)
+                return;
             EnemyHealth enemy = broadcaster.EnemyById(e.id);
-            if (enemy == null || enemy.IsDead)
+            if (enemy == null || enemy.IsDead || !enemy.gameObject.activeInHierarchy ||
+                AreaAt(enemy.transform.position) != e.ar || float.IsNaN(e.a) || float.IsInfinity(e.a))
                 return;
             Party.ApplyingPartnerDamage = true;
             try
@@ -505,7 +522,8 @@ namespace PoeClone.Network
                     throughExposedHead: (e.f & CoopProtocol.FlagHead) != 0,
                     canEnrage: (e.f & CoopProtocol.FlagEnrage) != 0,
                     flinch: (e.f & CoopProtocol.FlagFlinch) != 0,
-                    hitOrigin: (e.f & CoopProtocol.FlagOrigin) != 0 ? new Vector3(e.x, e.y, e.z) : (Vector3?)null);
+                    hitOrigin: (e.f & CoopProtocol.FlagOrigin) != 0 ? new Vector3(e.x, e.y, e.z) : (Vector3?)null,
+                    rollSeed: e.sd);
             }
             finally
             {
@@ -555,45 +573,18 @@ namespace PoeClone.Network
                     Vector3 offset = stats.transform.position - enemyAt;
                     offset.y = 0f;
                     if (offset.magnitude <= e.r + MeleeLatencySlack)
-                        stats.TakeHit(e.a, kind.DamageType);
+                        stats.TakeHit(e.a, kind.DamageType, rollSeed: e.sd);
                     break;
                 case Party.AttackKind.Bolt:
                     if (atUs)
-                        EnemyProjectile.LaunchAt(from, aim, stats, kind, e.a);
+                        EnemyProjectile.LaunchAt(from, aim, stats, kind, e.a, rollSeed: e.sd);
                     else
                         EnemyProjectile.LaunchVisual(from, aim, kind);
                     break;
                 case Party.AttackKind.Rain:
-                    EnemySkills.RainOfArrows(this, kind, aim, atUs ? stats : null, atUs ? e.a : 0f);
+                    EnemySkills.RainOfArrows(this, kind, aim, atUs ? stats : null, atUs ? e.a : 0f, rollSeed: e.sd);
                     break;
             }
-        }
-
-        // Guest: the host's enemy used its special skill; our copy plays it.
-        private void PlaySkill(CoopEvent e)
-        {
-            EnemyHealth copy = replica.PuppetHealth(e.id);
-            EnemySkills skills = copy != null ? copy.GetComponent<EnemySkills>() : null;
-            if (skills != null)
-                skills.Mirror(new Vector3(e.tx, e.ty, e.tz), e.a, (e.f & CoopProtocol.FlagAtYou) != 0);
-        }
-
-        // Guest: the host's boss started a move; our copy plays it.
-        private void PlayBossMove(CoopEvent e)
-        {
-            EnemyHealth copy = replica.PuppetHealth(e.id);
-            BossAbilities boss = copy != null ? copy.GetComponent<BossAbilities>() : null;
-            if (boss != null)
-                boss.PlayMirror(e.mv, (e.f & CoopProtocol.FlagAtYou) != 0, e.sd, e.sp, e.dm, e.lv);
-        }
-
-        // Guest: a blow the host's game judged against our character.
-        private void TakeDamage(CoopEvent e)
-        {
-            if (stats == null || stats.IsDead)
-                return;
-            if (stats.TakeHit(e.a, (DamageType)e.dt, (e.f & CoopProtocol.FlagAttack) != 0) && e.ap > 0f && !stats.IsDead)
-                stats.Poison(e.ap, e.ep);
         }
 
         private void ShowDrop(CoopEvent e)

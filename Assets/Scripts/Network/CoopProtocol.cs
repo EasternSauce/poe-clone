@@ -47,6 +47,7 @@ namespace PoeClone.Network
     {
         public string type = CoopProtocol.Event;
         public string k;
+        public int sn;        // guest hit sequence: acknowledged by host snapshot.hak
         public int ar;        // area where this event happened
         public int id;        // enemy id (hit, atk) or drop id (drop, gone, claim, got, deny)
         public float a;       // damage, or gold amount
@@ -62,7 +63,7 @@ namespace PoeClone.Network
         public float tx, ty, tz;  // attack/skill aim, drop's pop origin
         public GearItem it;       // drop, got, put: the item with all its stats
         public int mv;            // boss move: which (Party.BossMoveCloser / BossMoveRoar for those)
-        public int sd;            // boss move: random seed, so both games roll the same spots
+        public int sd;            // event seed: boss patterns, attack visuals and defensive rolls
         public float sp;          // boss move: attack speed multiplier (rage, haste)
         public float dm;          // boss move: damage multiplier (rage)
         public int lv;            // boss move: monster level; world: the area

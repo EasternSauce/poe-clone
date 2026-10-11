@@ -9,6 +9,7 @@ using PoeClone.Skills;
 using PoeClone.Visuals;
 using PoeClone.World;
 using PoeClone.Inventory;
+using PoeClone.Network.Replication;
 
 namespace PoeClone.Enemies
 {
@@ -71,6 +72,7 @@ namespace PoeClone.Enemies
         public struct HitClaim
         {
             public float Amount;
+            public int RollSeed;
             public DamageType Type;
             public float ArmourPenetration;
             public float ElementalPenetration;
@@ -81,15 +83,12 @@ namespace PoeClone.Enemies
             public Vector3 Origin;
         }
 
-        public static Action<EnemyHealth, HitClaim> RemoteHit;
+        public static Func<EnemyHealth, HitClaim, int> RemoteHit;
 
         /// <summary>Host: an enemy died (co-op shares the kill with the partner).</summary>
         public static event Action<EnemyHealth> Killed;
 
-        // The bar keeps a co-op copy's predicted life until the host's snapshots have caught up
-        // with the hit, instead of jumping back up for a moment.
-        private const float PredictionHoldSeconds = 0.6f;
-        private float predictedUntil = -1f;
+        private readonly PredictedHealth predictedHealth = new PredictedHealth();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
@@ -179,20 +178,22 @@ namespace PoeClone.Enemies
         }
 
         public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration, bool throughExposedHead = false,
-            bool canEnrage = false, bool flinch = true, Vector3? hitOrigin = null)
+            bool canEnrage = false, bool flinch = true, Vector3? hitOrigin = null, int rollSeed = 0)
         {
             if (dead || amount <= 0f)
                 return 0f;
 
+            int hitSequence = 0;
             if (IsRemote)
             {
-                RemoteHit?.Invoke(this, new HitClaim
+                hitSequence = RemoteHit?.Invoke(this, new HitClaim
                 {
-                    Amount = amount, Type = type, ArmourPenetration = armourPenetration,
+                    Amount = amount, RollSeed = rollSeed != 0 ? rollSeed : EventRandom.NextSeed(),
+                    Type = type, ArmourPenetration = armourPenetration,
                     ElementalPenetration = elementalPenetration, ThroughExposedHead = throughExposedHead,
                     CanEnrage = canEnrage, Flinch = flinch, HasOrigin = hitOrigin.HasValue,
                     Origin = hitOrigin ?? Vector3.zero
-                });
+                }) ?? 0;
             }
 
             if (Immune && !throughExposedHead)
@@ -228,8 +229,7 @@ namespace PoeClone.Enemies
             if (IsRemote)
             {
                 // The host decides the rest (stagger, death); its snapshots replay them here.
-                currentHealth = Mathf.Max(0f, currentHealth - amount);
-                predictedUntil = Time.time + PredictionHoldSeconds;
+                currentHealth = predictedHealth.Predict(hitSequence, amount);
                 Damaged?.Invoke();
                 return amount;
             }
@@ -394,7 +394,7 @@ namespace PoeClone.Enemies
         /// of the gameplay side effects (no stagger, sound or death here - the replica drives those
         /// from the replicated counters itself).
         /// </summary>
-        public void ApplyReplicatedHealth(float health, float max)
+        public void ApplyReplicatedHealth(float health, float max, int processedHit = 0, int snapshotSequence = 0)
         {
             if (dead)
                 return;
@@ -402,9 +402,9 @@ namespace PoeClone.Enemies
             if (max > 0f)
                 maxHealth = max;
 
-            float clamped = Mathf.Clamp(health, 0f, maxHealth);
-            if (clamped > currentHealth && Time.time < predictedUntil)
-                return;
+            float clamped = IsRemote
+                ? predictedHealth.ApplySnapshot(health, maxHealth, processedHit, snapshotSequence)
+                : Mathf.Clamp(health, 0f, maxHealth);
             bool lost = clamped < currentHealth;
             currentHealth = clamped;
             if (lost)

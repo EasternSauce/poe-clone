@@ -116,6 +116,7 @@ namespace PoeClone.Network.Replication
 
         public string type = MessageType;
         public int seq;        // monotonically increasing per player session
+        public int hak;        // co-op host: highest guest hit processed (including rejected hits)
         public double t;       // sender clock, seconds (unscaled, so it keeps ticking through loading-screen freezes)
         public int pid;        // player session id, stamped by the server - a change means "new player, reset the replica"
         public int area;

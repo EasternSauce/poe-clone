@@ -21,6 +21,7 @@ namespace PoeClone.Network.Replication
             var sb = new StringBuilder(512);
             sb.Append("{\"type\":\"").Append(type).Append('"');
             AppendInt(sb, "seq", s.seq, always: true);
+            AppendInt(sb, "hak", s.hak);
             sb.Append(",\"t\":").Append(s.t.ToString("0.###", CultureInfo.InvariantCulture));
             AppendInt(sb, "pid", s.pid);
             AppendInt(sb, "area", s.area, always: true);

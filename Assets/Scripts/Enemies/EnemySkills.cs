@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using PoeClone.Network.Replication;
 using PoeClone.Combat;
 using PoeClone.Player;
 using PoeClone.Skills;
@@ -633,17 +634,20 @@ namespace PoeClone.Enemies
         /// An archer's shot loosed skywards (a Rain of Arrows kind's plain attack): a ring marks the
         /// spot, arrows plunge into it, and whoever is still inside is hit once. Replicas pass no target.
         /// </summary>
-        public static void RainOfArrows(MonoBehaviour host, EnemyKind kind, Vector3 at, PlayerStats target, float damage)
+        public static void RainOfArrows(MonoBehaviour host, EnemyKind kind, Vector3 at, PlayerStats target, float damage, int rollSeed = 0)
         {
+            if (rollSeed == 0) rollSeed = EventRandom.NextSeed();
             host.StartCoroutine(GroundTelegraph.Run(at, ArrowRainRadius, ArrowRainDelay, DamageType.Physical, center =>
             {
                 if (target == null || target.IsDead || Sanctuary.Contains(target.transform.position, 1f)) return;
                 if (Flat(target.transform.position - center).magnitude <= ArrowRainRadius)
-                    target.TakeHit(damage, kind.DamageType);
+                    target.TakeHit(damage, kind.DamageType, rollSeed: rollSeed);
             }));
             for (int i = 0; i < 6; i++)
             {
-                Vector2 spot = Random.insideUnitCircle * ArrowRainRadius * 0.85f;
+                float angle = EventRandom.Value(rollSeed, EventRandom.RainAngle, i) * Mathf.PI * 2f;
+                float radius = Mathf.Sqrt(EventRandom.Value(rollSeed, EventRandom.RainRadius, i)) * ArrowRainRadius * 0.85f;
+                Vector2 spot = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
                 SkillEffects.FallingArrow(at + new Vector3(spot.x, 0f, spot.y), ArrowRainDelay - 0.2f + i * 0.04f, 0.4f, DustColor);
             }
         }

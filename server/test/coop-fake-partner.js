@@ -29,6 +29,9 @@ const log = [];
 let partner = null; // latest partner snapshot
 let running = false;
 let seq = 0;
+let hitSequence = 0;
+let processedHit = 0;
+let eventSeed = 0;
 let attacks = 0;
 let me = { x: 0, y: 1.1, z: 0, r: 0, area: 0 };
 const zombie = { i: 1, hp: 60, mhp: 60, d: 0, atk: 0, x: 0, y: 1.1, z: 0 };
@@ -53,7 +56,14 @@ readline.createInterface({ input: process.stdin }).on('line', (line) => {
 });
 
 const now = () => (Date.now() - started) / 1000;
-const send = (o) => ws.send(JSON.stringify(o.type === 'cev' ? { type: 'cev', ar: me.area, ...o } : o));
+const send = (o) => {
+  if (o.type === 'cev') {
+    o = { type: 'cev', ar: me.area, ...o };
+    if (o.k === 'hit' && o.sn === undefined) o.sn = ++hitSequence;
+    if (['hit', 'atk', 'dmg', 'bmv'].includes(o.k) && o.sd === undefined) o.sd = ++eventSeed;
+  }
+  ws.send(JSON.stringify(o));
+};
 const note = (s) => {
   log.push(`${now().toFixed(1)}s ${s}`);
 };
@@ -96,7 +106,11 @@ function onEvent(e) {
     if (mode === 'guest' && !passive) setTimeout(() => send({ type: 'cev', k: 'claim', id: e.id }), 1500);
   }
   if (e.k === 'got' || e.k === 'deny' || e.k === 'gone') note(`${e.k} ${e.id}`);
-  if (e.k === 'hit' && mode === 'host' && e.id === zombie.i && !zombie.d) {
+  if (e.k === 'hit' && mode === 'host') {
+    if (e.sn !== processedHit + 1) return;
+    processedHit = e.sn; // acknowledge rejected/dead-target hits too; retries cannot hurt twice
+  }
+  if (e.k === 'hit' && mode === 'host' && e.ar === me.area && e.id === zombie.i && !zombie.d) {
     zombie.hp -= e.a;
     note(`hit on zombie for ${e.a.toFixed(1)} -> ${Math.max(0, zombie.hp).toFixed(1)}`);
     if (zombie.hp <= 0) {
@@ -157,7 +171,7 @@ function tick() {
   }
   if (manualPose) Object.assign(me, manualPose);
   const s = {
-    type: 'co', seq: ++seq, t: now(), area: me.area,
+    type: 'co', seq: ++seq, hak: processedHit, t: now(), area: me.area,
     p: { i: 0, x: me.x, y: me.y, z: me.z, r: me.r, hp: 50, mhp: 50, atk: attacks, ap: 0 },
     hud: { lv: 3, hp: 50, mhp: 50, mp: 20, mmp: 20 },
     eq: [],

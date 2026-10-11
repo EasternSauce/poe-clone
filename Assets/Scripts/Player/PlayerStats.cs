@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using PoeClone.Network.Replication;
 using UnityEngine.InputSystem;
 using PoeClone.Audio;
 using PoeClone.Combat;
@@ -360,23 +361,24 @@ namespace PoeClone.Player
         }
 
         /// <summary>A blow from an enemy: evasion and block first, then mitigation. False if it never landed.</summary>
-        public bool TakeHit(float damage, DamageType type, bool attack = true)
+        public bool TakeHit(float damage, DamageType type, bool attack = true, int rollSeed = 0)
         {
             if (dead || damage <= 0f)
                 return false;
 
+            if (rollSeed == 0) rollSeed = EventRandom.NextSeed();
             Vector3 textAt = transform.position + Vector3.up * 1.2f;
             StatSheet sheet = inventory != null ? inventory.Stats : null;
 
             if (sheet != null)
             {
-                if (attack && UnityEngine.Random.value < DefenceMath.EvadeChance(sheet.Total(StatType.Evasion)))
+                if (attack && EventRandom.Value(rollSeed, EventRandom.Evade) < DefenceMath.EvadeChance(sheet.Total(StatType.Evasion)))
                 {
                     CombatText.Show(textAt, "Evaded", CombatText.AvoidColor, 0.8f);
                     return false;
                 }
 
-                if (attack && UnityEngine.Random.value < DefenceMath.BlockChance(sheet.Total(StatType.BlockChance)))
+                if (attack && EventRandom.Value(rollSeed, EventRandom.Block) < DefenceMath.BlockChance(sheet.Total(StatType.BlockChance)))
                 {
                     CombatText.Show(textAt, "Blocked", CombatText.BlockColor, 0.8f);
                     HitEffects.Retaliate(transform, sheet);
@@ -403,7 +405,7 @@ namespace PoeClone.Player
             if (absorbed > 0f)
                 ManaAbsorbedHit?.Invoke(absorbed);
 
-            TakeDamage(damage - absorbed);
+            ApplyDamage(damage - absorbed, rollSeed);
             return true;
         }
 
@@ -450,7 +452,9 @@ namespace PoeClone.Player
             }
         }
 
-        public void TakeDamage(float amount)
+        public void TakeDamage(float amount) => ApplyDamage(amount, EventRandom.NextSeed());
+
+        private void ApplyDamage(float amount, int rollSeed)
         {
             if (dead || amount <= 0f)
                 return;
@@ -471,14 +475,14 @@ namespace PoeClone.Player
             if (stagger == null)
                 stagger = gameObject.AddComponent<Stagger>();
             float avoidStun = inventory != null ? inventory.Stats.Total(StatType.AvoidStun) : 0f;
-            if (UnityEngine.Random.value < DefenceMath.StaggerChance(amount, MaxHealth, avoidStun))
+            if (EventRandom.Value(rollSeed, EventRandom.Stagger) < DefenceMath.StaggerChance(amount, MaxHealth, avoidStun))
                 stagger.Trigger();
 
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.playerHurt, transform.position);
         }
 
-public void Heal(float amount)
+        public void Heal(float amount)
         {
             if (dead || amount <= 0f)
                 return;

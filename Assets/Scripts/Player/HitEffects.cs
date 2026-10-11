@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using PoeClone.Network.Replication;
 using PoeClone.Audio;
 using PoeClone.Combat;
 using PoeClone.Enemies;
@@ -51,11 +52,12 @@ namespace PoeClone.Player
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
             DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null,
             bool throughExposedHead = false, bool melee = false, float projectileDistance = -1f, int venomArrowLevel = 0,
-            Vector3? hitOrigin = null, bool fromExplosion = false)
+            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0)
         {
             if (enemy == null || enemy.IsDead)
                 return;
 
+            if (rollSeed == 0) rollSeed = EventRandom.NextSeed();
             PlayerStats stats = attacker != null ? attacker.GetComponent<PlayerStats>() : null;
             PlayerInventory inventory = attacker != null ? attacker.GetComponent<PlayerInventory>() : null;
             StatSheet sheet = stats != null && inventory != null && !stats.IsDead ? inventory.Stats : null;
@@ -84,7 +86,7 @@ namespace PoeClone.Player
                 if (projectileDistance >= 0f && sheet.Total(StatType.PointBlank) > 0f)
                     damage *= StatSheet.PointBlankMultiplier(projectileDistance);
                 float critChance = sheet.AttackCriticalChance;
-                if (attack && !secondary && critChance > 0f && Random.value * 100f < critChance)
+                if (attack && !secondary && critChance > 0f && EventRandom.Value(rollSeed, EventRandom.Critical) * 100f < critChance)
                 {
                     crit = true;
                     damage *= BaseCritMultiplier + sheet.Total(StatType.CriticalMultiplier) / 100f;
@@ -111,7 +113,7 @@ namespace PoeClone.Player
                 else if (type == DamageType.Poison) elementalPenetration += sheet.Total(StatType.PoisonPenetration);
             }
             damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration, throughExposedHead,
-                canEnrage: !melee, hitOrigin: hitOrigin ?? (attacker != null ? (Vector3?)attacker.position : null));
+                canEnrage: !melee, hitOrigin: hitOrigin ?? (attacker != null ? (Vector3?)attacker.position : null), rollSeed: rollSeed);
             // A warded hit cannot apply ailments, cull, or grant on-hit recovery.
             if (damage <= 0f) return;
             string number = Mathf.Max(1, Mathf.RoundToInt(damage)).ToString();
@@ -139,7 +141,7 @@ namespace PoeClone.Player
                     stats.Heal(damage * spellLeech / 100f);
             }
 
-            if (!secondary && !enemy.IsDead && Roll(sheet, StatType.CurseOnHit))
+            if (!secondary && !enemy.IsDead && Roll(sheet, StatType.CurseOnHit, rollSeed))
             {
                 if (Skills.Curse.TakenMultiplier(enemy) <= 1f)
                     CombatText.Show(at + Vector3.up * 2.1f * scale, "Rotting", Skills.Curse.RotColor, 0.7f);
@@ -157,23 +159,22 @@ namespace PoeClone.Player
                 if (leech > 0f)
                     stats.Heal(damage * leech / 100f);
 
-                float chill = sheet.Total(StatType.ChillOnHit);
-                if (chill > 0f && !enemy.IsDead && ai != null && Random.value * 100f < chill)
+                if (!enemy.IsDead && ai != null && Roll(sheet, StatType.ChillOnHit, rollSeed))
                     ai.Chill(ChillSeconds);
 
-                if (crit && !secondary && Random.value * 100f < sheet.Total(StatType.Stormblade))
+                if (crit && !secondary && Roll(sheet, StatType.Stormblade, rollSeed))
                     Stormblade(attacker, enemy, baseDamage * StormbladeShare, melee);
             }
 
             if (!enemy.IsDead)
             {
-                if (type == DamageType.Fire && Random.value * 100f < sheet.Total(StatType.IgniteChance) + igniteBonus)
+                if (type == DamageType.Fire && EventRandom.Value(rollSeed, EventRandom.StatPurposeOffset + (int)StatType.IgniteChance) * 100f < sheet.Total(StatType.IgniteChance) + igniteBonus)
                 {
                     if (!enemy.IsBurning)
                         CombatText.Show(at + Vector3.up * 2.1f * scale, "Ignited", CombatText.FireColor, 0.7f);
                     enemy.Ignite(ailmentBaseDamage * IgniteShare, IgniteSeconds);
                 }
-                if (type == DamageType.Lightning && Roll(sheet, StatType.ShockChance))
+                if (type == DamageType.Lightning && Roll(sheet, StatType.ShockChance, rollSeed))
                 {
                     if (!enemy.IsShocked)
                         CombatText.Show(at + Vector3.up * 2.1f * scale, "Shocked", CombatText.LightningColor, 0.7f);
@@ -189,7 +190,7 @@ namespace PoeClone.Player
             }
 
             if (enemy.IsDead)
-                OnKill(attacker, stats, sheet, enemy, at, enemyMaxLife, wasChilled || (ai != null && ai.IsChilled), secondary, fromExplosion, melee);
+                OnKill(attacker, stats, sheet, enemy, at, enemyMaxLife, wasChilled || (ai != null && ai.IsChilled), secondary, fromExplosion, melee, rollSeed);
         }
 
         // Everything that adds up as "increased damage" for this hit, as one multiplier.
@@ -248,16 +249,16 @@ namespace PoeClone.Player
             }
         }
 
-        private static bool Roll(StatSheet sheet, StatType chance)
+        private static bool Roll(StatSheet sheet, StatType chance, int rollSeed)
         {
             float percent = sheet.Total(chance);
-            return percent > 0f && Random.value * 100f < percent;
+            return percent > 0f && EventRandom.Value(rollSeed, EventRandom.StatPurposeOffset + (int)chance) * 100f < percent;
         }
 
         // melee: the kill came from a melee hit (or what one set off), so what it sets off is melee
         // too and never enrages (see EnemyController.OnIncomingHit).
         private static void OnKill(Transform attacker, PlayerStats stats, StatSheet sheet, EnemyHealth enemy, Vector3 at,
-            float enemyMaxLife, bool chilled, bool secondary, bool fromExplosion, bool melee)
+            float enemyMaxLife, bool chilled, bool secondary, bool fromExplosion, bool melee, int rollSeed)
         {
             float life = sheet.Total(StatType.LifeOnKill) + stats.MaxHealth * Mathf.Max(0f, sheet.Total(StatType.LifePercentOnKill)) / 100f;
             if (life > 0f)
@@ -268,7 +269,7 @@ namespace PoeClone.Player
             if (mana > 0f)
                 stats.RestoreMana(mana);
 
-            if (Roll(sheet, StatType.OnslaughtOnKill))
+            if (Roll(sheet, StatType.OnslaughtOnKill, rollSeed))
             {
                 PlayerController controller = attacker.GetComponent<PlayerController>();
                 if (controller != null)
@@ -278,16 +279,16 @@ namespace PoeClone.Player
             if (fromExplosion)
             {
                 // A kill by an explosion can explode too, a beat later so the chain is seen spreading.
-                if (Roll(sheet, StatType.ExplodeOnKill))
+                if (Roll(sheet, StatType.ExplodeOnKill, rollSeed))
                     stats.StartCoroutine(ChainBurst(attacker, enemy, at, enemyMaxLife * ExplosionShare, melee));
                 return;
             }
             if (secondary)
                 return;
 
-            if (Roll(sheet, StatType.ExplodeOnKill))
+            if (Roll(sheet, StatType.ExplodeOnKill, rollSeed))
                 Burst(attacker, enemy, at, ExplosionRadius, enemyMaxLife * ExplosionShare, DamageType.Fire, ExplosionColor, melee);
-            else if (chilled && Roll(sheet, StatType.Shatter))
+            else if (chilled && Roll(sheet, StatType.Shatter, rollSeed))
                 Burst(attacker, enemy, at, ShatterRadius, enemyMaxLife * ShatterShare, DamageType.Cold, CombatText.ColdColor, melee);
         }
 
