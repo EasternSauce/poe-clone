@@ -74,7 +74,7 @@ namespace PoeClone.Enemies
         // while it rings.
         private IEnumerator BellDrop()
         {
-            float windUp = 0.75f / T;
+            float windUp = 0.55f / T;
             Act(CreatureAnimator.BossAct.Throw, windUp);
             Face(ToPlayer());
             yield return new WaitForSeconds(windUp * 0.8f);
@@ -89,37 +89,53 @@ namespace PoeClone.Enemies
             CreatureBuilder.BuildBell(bell.transform, Bronze, new Color(0.3f, 0.58f, 0.48f), Knell);
             bell.transform.localScale = Vector3.one * 2.2f;
             Vector3 target = PlayerAt;
-            const float radius = 2.4f;
+            const float radius = 2.8f;
+            const float bellHeight = 1.8f;
             Vector3 from = onBack.position;
-            bool trapped = false;
-            yield return Lob(bell, from, target, 0.9f / T, radius, DamageType.Lightning, at =>
+            Vector3 ground = target;
+            yield return Lob(bell, from, target, 0.45f / T, radius, DamageType.Lightning, at =>
             {
+                ground = at - Vector3.up * bellHeight;
                 CameraSystem.CameraFollow.Shake(0.35f, 0.4f);
-                SkillEffects.Shockwave(at, radius + 0.6f, Knell, 0.4f);
-                if (HitIfInside(at, radius, 1.5f, DamageType.Lightning))
+                SkillEffects.Shockwave(ground, radius, Knell, 0.4f);
+                if (HitIfInside(ground, radius, 1.5f, DamageType.Lightning))
                 {
-                    trapped = true;
                     playerMotion?.Root(1.3f);
                     CombatText.Show(player.transform.position + Vector3.up * 2.4f, "Trapped!", Knell, 1.1f);
                 }
-            }, keep: true, spin: 0f, hover: 1.8f);
+            }, keep: true, spin: 0f, hover: bellHeight);
 
-            // It rings where it lies, then it is hauled back.
+            // Each toll threatens the marked area, even if the landing missed.
             for (int i = 0; i < 3; i++)
             {
-                yield return new WaitForSeconds(0.45f);
                 if (bell == null)
                     break;
-                SkillEffects.Shockwave(bell.transform.position, 2.8f, Knell, 0.3f);
-                if (trapped && i < 2)
-                    HitIfInside(bell.transform.position, radius, 0.3f, DamageType.Lightning);
+                yield return GroundTelegraph.Run(ground, radius, 0.45f, DamageType.Lightning,
+                    at => HitIfInside(at, radius, 0.3f, DamageType.Lightning));
             }
+
+            // Return to the actual yoke, without a second ground-targeted attack warning.
             if (bell != null)
             {
-                yield return Lob(bell, bell.transform.position, transform.position + Vector3.up * 2f * Size, 0.5f / T, 0.1f, DamageType.Lightning, null, spin: 0f);
+                Vector3 returnFrom = bell.transform.position;
+                Vector3 returnScale = bell.transform.localScale;
+                Quaternion returnRotation = bell.transform.rotation;
+                float returnTime = 0.3f / T;
+                for (float t = 0f; t < returnTime && bell != null && onBack != null; t += Time.deltaTime)
+                {
+                    float f = Mathf.SmoothStep(0f, 1f, t / returnTime);
+                    bell.transform.position = Vector3.Lerp(returnFrom, onBack.position, f)
+                        + Vector3.up * 2f * f * (1f - f);
+                    bell.transform.rotation = Quaternion.Slerp(returnRotation, onBack.rotation, f);
+                    bell.transform.localScale = Vector3.Lerp(returnScale, onBack.lossyScale, f);
+                    yield return null;
+                }
+                if (bell != null)
+                    Destroy(bell);
             }
-            foreach (Renderer r in onBack.GetComponentsInChildren<Renderer>())
-                r.enabled = true;
+            if (onBack != null)
+                foreach (Renderer r in onBack.GetComponentsInChildren<Renderer>())
+                    r.enabled = true;
             bellOnBack = true;
         }
 

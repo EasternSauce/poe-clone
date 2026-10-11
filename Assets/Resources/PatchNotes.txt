@@ -1,3 +1,6 @@
+version: 2026-10-11-bell-drop
+- The Bell-Ringer throws its bell faster and covers a slightly wider area. All three warning pulses now deal lightning damage to anyone still nearby, even if the landing missed. The bell's rings appear on the ground and it flies back onto his shoulders after ringing.
+
 version: 2026-10-11-character-loading-screen
 - Choosing a character now shows the loading screen before the world starts loading, instead of appearing frozen on character selection.
 
