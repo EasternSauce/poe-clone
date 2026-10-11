@@ -1,3 +1,6 @@
+version: 2026-10-11-field-boss-life
+- Every field boss has 50% more life: Gravelord Mortis, the Ashen Warlord, Rimeheart, Bramblesow, Vex the Tunnel King, the Bell-Ringer, the Sunforged Idol and Hrimgar the Huntress. The Shepherd is unchanged.
+
 version: 2026-10-11-whirlwind-feel
 - Holding the attack no longer stops when the cursor passes over an item, a person or an area exit: Whirlwind keeps spinning, and a held plain attack keeps swinging. A fresh click on them still picks up, talks or travels as before.
 - Whirlwind looks better: your sword arm is held out to the side with the blade flat and pointing into the spin (a two-handed weapon is held out in both hands), the other arm is out for balance, and your legs brace wide and low instead of running in place while you spin. You now spin the other way, so the blade leads the cut, and one full turn takes as long as one hit, so slow weapons spin heavier and attack speed spins you faster.

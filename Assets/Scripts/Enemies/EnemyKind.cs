@@ -307,7 +307,7 @@ namespace PoeClone.Enemies
             // Bosses: weight 0, so only their lairs place them.
             new EnemyKind
             {
-                Name = "Gravelord Mortis", HealthMultiplier = 20f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
+                Name = "Gravelord Mortis", HealthMultiplier = 30f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 16.72131f, Armour = 255.102f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 150,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 9.333333f, AttackCooldown = 1.4f, AttackRange = 3.0f,
@@ -320,7 +320,7 @@ namespace PoeClone.Enemies
             },
             new EnemyKind
             {
-                Name = "Ashen Warlord", HealthMultiplier = 20f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5625f, BossEnrageDamageTaken = 0.8f,
+                Name = "Ashen Warlord", HealthMultiplier = 30f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5625f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 22.92722f, Armour = 204.918f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 220,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Fire,
                 Damage = 11.67816f, AttackCooldown = 1.5f, AttackRange = 4.8f,
@@ -334,7 +334,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 // The frozen heart of the Hollow: a heart of ice the size of a man, floating in a cage of shards.
-                Name = "Rimeheart", HealthMultiplier = 20f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
+                Name = "Rimeheart", HealthMultiplier = 30f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 26.07053f, Armour = 167.7852f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 300,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Cold,
                 Damage = 10.60983f, AttackCooldown = 1.3f, AttackRange = 11f, ProjectileSpeed = 13f,
@@ -665,7 +665,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 // Greenwood's first boss: a boar the size of a cart, a thicket growing on its back.
-                Name = "Bramblesow", HealthMultiplier = 18.2f, DamageMultiplier = 2f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
+                Name = "Bramblesow", HealthMultiplier = 27.3f, DamageMultiplier = 2f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 20f, Armour = 30f, PoisonResistance = 20f, Experience = 90,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 7f, AttackCooldown = 1.6f, AttackRange = 5.1f,
@@ -678,7 +678,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 // King of the tunnels under the Lost Hollows: small, quick and full of tricks.
-                Name = "Vex, the Tunnel King", HealthMultiplier = 16f, DamageMultiplier = 2.5f, SpawnWeight = 0f, Tempo = 0.85f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
+                Name = "Vex, the Tunnel King", HealthMultiplier = 24f, DamageMultiplier = 2.5f, SpawnWeight = 0f, Tempo = 0.85f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 15f, Armour = 60f, PoisonResistance = 40f, Experience = 130,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 8f, AttackCooldown = 0.8f, AttackRange = 1.9f,
@@ -691,7 +691,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 // Rings the graveyard's sunken bell for the dead; it carries it on its back.
-                Name = "The Bell-Ringer", HealthMultiplier = 20f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
+                Name = "The Bell-Ringer", HealthMultiplier = 30f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 16f, Armour = 180f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 40f, Experience = 160,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Lightning,
                 Damage = 9f, AttackCooldown = 1.5f, AttackRange = 2.9f,
@@ -704,7 +704,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 // The ruins' old god: a four-armed statue holding up a sun. It hardly moves.
-                Name = "The Sunforged Idol", HealthMultiplier = 20f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
+                Name = "The Sunforged Idol", HealthMultiplier = 30f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 24f, Armour = 320f, FireResistance = 50f, ColdResistance = 20f, LightningResistance = 20f, Experience = 240,
                 Style = EnemyAttackStyle.Ranged, DamageType = DamageType.Fire,
                 Damage = 11f, AttackCooldown = 1.8f, AttackRange = 15f, ProjectileSpeed = 12f,
@@ -717,7 +717,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 // A huntress of the Hollow's ice, with her frost wolves.
-                Name = "Hrimgar the Huntress", HealthMultiplier = 20f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.85f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
+                Name = "Hrimgar the Huntress", HealthMultiplier = 30f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.85f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 24f, Armour = 160f, FireResistance = 10f, ColdResistance = 50f, LightningResistance = 20f, Experience = 300,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Cold,
                 Damage = 10f, AttackCooldown = 1.1f, AttackRange = 2.7f,
