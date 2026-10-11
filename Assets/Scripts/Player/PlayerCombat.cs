@@ -31,7 +31,7 @@ namespace PoeClone.Player
     /// A bow shoots instead (<see cref="PlayerArrow"/>, no ammo); its "reach" is how far arrows fly,
     /// so the same aiming and highlighting work for it unchanged. A staff casts its spell instead
     /// (<see cref="PoeClone.Skills.PlayerSkills.MainSkill"/>), or is swung like a mace when there's no mana for it.
-    /// A bow or melee skill toggled on replaces the shot or swing while there's mana for it.
+    /// A bow skill toggled on, or the melee skill on the weapon, replaces the shot or swing while there's mana for it.
     ///
     /// Where a shot or swing goes is decided when it leaves - the strike frame - not when the
     /// wind-up starts: the player turns to the cursor (or the aim stick) at that moment.
@@ -307,7 +307,7 @@ namespace PoeClone.Player
             if (HasMainSkill)
                 CombatText.Show(transform.position + Vector3.up * 2f, "Not enough " + SkillSet.CostResource, CombatText.ColdColor, 0.6f);
 
-            // A melee skill that's on replaces the swing: its own move, at its own pace.
+            // The weapon's melee skill replaces the swing: its own move, at its own pace.
             if (!CharacterAttackAnimator.IsRanged(weaponType) && SkillSet != null && SkillSet.TryStartMeleeSkill(out float skillInterval))
             {
                 cooldownTimer = skillInterval;

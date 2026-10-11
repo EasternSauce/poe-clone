@@ -144,7 +144,7 @@ namespace PoeClone.UI
         }
 
         // The equipped weapon's painted icon, or the plain sword silhouette unarmed. A bow shows
-        // an arrow; a bow or melee skill that's on shows its icon.
+        // an arrow; the weapon's attack skill (a staff spell, melee skill or bow skill that's on) shows its icon.
         private void UpdateAimIcon()
         {
             PlayerInventory inventory = stats != null ? stats.GetComponent<PlayerInventory>() : null;

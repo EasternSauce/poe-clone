@@ -185,8 +185,8 @@ namespace PoeClone.UI
             UpdateTooltip();
         }
 
-        // The attack square: the staff's spell, the bow or melee skill that's on, an arrow for a
-        // plain bow, else the icon of whatever is in the main hand.
+        // The attack square: the staff's spell, the melee weapon's skill, the bow skill that's on,
+        // an arrow for a plain bow, else the icon of whatever is in the main hand.
         private void UpdateAttack()
         {
             SkillId? main = skills.MainSkill ?? skills.ActiveAttackSkill;
@@ -547,8 +547,7 @@ namespace PoeClone.UI
                 var skill = SkillBook.Get(row.Id);
                 int level = skills.GrantLevelWithBonuses(grant);
                 string cost = Num(skills.ManaCostForGrant(grant)) + " " + skills.CostResource;
-                string timing = skill.Bow ? "per shot" : skill.Channelled ? "per " + Num(PlayerSkills.ChannelTick) + "s spinning" :
-                    skill.Toggled ? "per attack" : Num(skills.CooldownForGrant(grant)) + "s cooldown";
+                string timing = skill.Bow ? "per shot" : Num(skills.CooldownForGrant(grant)) + "s cooldown";
                 string damage = skills.DamageSummary(skill.Id, level);
                 string bindings = "";
                 for (int k = 0; k < SkillBook.TouchSlotCount; k++)
@@ -706,11 +705,11 @@ namespace PoeClone.UI
             if (main != null)
                 return SkillTooltip(SkillBook.Get(main.Value), skills.Level(main.Value), skills.ManaCost(main.Value),
                     skills.Cooldown(main.Value), null, true);
-            SkillId? toggled = skills.ActiveAttackSkill;
-            if (toggled != null)
+            SkillId? weaponSkill = skills.ActiveAttackSkill;
+            if (weaponSkill != null)
             {
-                SkillDefinition skill = SkillBook.Get(toggled.Value);
-                return SkillTooltip(skill, skills.ActiveAttackLevel, skills.CostOf(toggled.Value, skills.ActiveAttackLevel), 0f, null, true);
+                SkillDefinition skill = SkillBook.Get(weaponSkill.Value);
+                return SkillTooltip(skill, skills.ActiveAttackLevel, skills.CostOf(weaponSkill.Value, skills.ActiveAttackLevel), 0f, null, true);
             }
             ItemData weapon = skills.GetComponent<PlayerInventory>()?.Equipment.GetActive(EquipSlot.MainHand);
             return "<size=20><b>" + (weapon != null ? weapon.Name : "Unarmed") + "</b></size>\n<color=#" +
@@ -737,7 +736,7 @@ namespace PoeClone.UI
                 if (cost > 0f)
                     text.Append("Cost: ").Append(Num(cost)).Append(' ').Append(skills.CostResource)
                         .Append(skill.Bow ? " per shot" : skill.Channelled ? " per " + Num(PlayerSkills.ChannelTick) + "s" :
-                            skill.Toggled ? " per attack" : "").Append('\n');
+                            skill.MeleeAttack ? " per attack" : "").Append('\n');
                 if (skill.MeleeAttack && !skill.Channelled)
                     text.Append("Attack time: ").Append(Num(skills.MeleeInterval(skill.Id))).Append("s\n");
                 else if (cooldown > 0f)
@@ -747,11 +746,9 @@ namespace PoeClone.UI
             }
             text.Append('\n').Append(skill.Description);
             if (skill.Channelled)
-                text.Append("\n<color=#").Append(dim).Append(">").Append(attack ? "Hold the attack to spin towards the cursor."
-                    : "Press to toggle; while on, hold the attack to spin towards the cursor.").Append("</color>");
+                text.Append("\n<color=#").Append(dim).Append(">Hold the attack to spin towards the cursor.</color>");
             else if (skill.Toggled && !attack)
-                text.Append("\n<color=#").Append(dim).Append(">Press to toggle; while on, it replaces your ")
-                    .Append(skill.Bow ? "bow attack" : "weapon attack").Append(".</color>");
+                text.Append("\n<color=#").Append(dim).Append(">Press to toggle; while on, it replaces your bow attack.</color>");
             return text.ToString();
         }
 

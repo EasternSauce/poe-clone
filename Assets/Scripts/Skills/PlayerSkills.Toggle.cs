@@ -6,12 +6,12 @@ using PoeClone.UI;
 namespace PoeClone.Skills
 {
     /// <summary>
-    /// Toggled skills (<see cref="SkillDefinition.Toggled"/>): bow skills (PlayerSkills.Bow.cs) and
-    /// melee skills (PlayerSkills.Melee.cs). They sit on the bar like any skill, but pressing one
-    /// toggles it instead of using it. One can be on at a time (turning another on swaps them;
-    /// pressing it again turns it off). While one is on and the weapon in hand can use it, the
-    /// weapon's attack (left click / the aim stick) is that skill, paid per use; without the mana
-    /// for it the plain attack is used until the mana is back.
+    /// Toggled skills (<see cref="SkillDefinition.Toggled"/>): the bow skills (PlayerSkills.Bow.cs).
+    /// They sit on the bar like any skill, but pressing one toggles it instead of using it. One can
+    /// be on at a time (turning another on swaps them; pressing it again turns it off). While one is
+    /// on and a bow is in hand, the bow's attack (left click / the aim stick) is that skill, paid
+    /// per use; without the mana for it the plain shot is used until the mana is back. A melee
+    /// weapon's skill is never toggled: it is always the weapon's attack (see PlayerSkills.Melee.cs).
     /// </summary>
     public partial class PlayerSkills
     {
@@ -33,37 +33,28 @@ namespace PoeClone.Skills
             Changed?.Invoke();
         }
 
-        /// <summary>The toggled skill the weapon attacks with right now (on, granted, and usable with the weapon in hand), or null.</summary>
-        public SkillId? ActiveAttackSkill
+        /// <summary>The bow skill the bow shoots right now (on, granted, and a bow in hand), or null.</summary>
+        public SkillId? ActiveBowSkill
         {
             get
             {
                 if (toggled == null || toggledSlot < 0 || Slot(toggledSlot) != toggled || LevelAt(toggledSlot) <= 0)
                     return null;
-                return UsableWithWeapon(SkillBook.Get(toggled.Value)) ? toggled : null;
+                return CurrentWeapon() == WeaponType.Bow ? toggled : null;
             }
         }
 
-        /// <summary>The bow skill the bow shoots right now, or null.</summary>
-        public SkillId? ActiveBowSkill => ActiveAttackSkill is SkillId id && SkillBook.Get(id).Bow ? id : (SkillId?)null;
-
-        /// <summary>The melee skill the weapon swings right now, or null.</summary>
-        public SkillId? ActiveMeleeSkill => ActiveAttackSkill is SkillId id && !SkillBook.Get(id).Bow ? id : (SkillId?)null;
+        /// <summary>The skill the weapon attacks with right now: the melee weapon's skill or the bow skill that's on, or null.</summary>
+        public SkillId? ActiveAttackSkill => ActiveMeleeSkill ?? ActiveBowSkill;
 
         /// <summary>Whether this skill is toggled on (for the bar's spinning ring).</summary>
-        public bool IsToggledOn(SkillId id) => ActiveAttackSkill == id;
+        public bool IsToggledOn(SkillId id) => ActiveBowSkill == id;
 
-        public bool IsToggledOnAt(int slot) => ActiveAttackSkill != null && toggledSlot == slot;
-        public int ActiveAttackLevel => ActiveAttackSkill != null ? LevelAt(toggledSlot) : 0;
+        public bool IsToggledOnAt(int slot) => ActiveBowSkill != null && toggledSlot == slot;
+        public int ActiveAttackLevel => ActiveMeleeSkill is SkillId melee ? Level(melee) : ActiveBowSkill != null ? LevelAt(toggledSlot) : 0;
         public bool CanAffordAttackSkill => ActiveAttackSkill != null && stats != null &&
             stats.CanAffordSkill(CostOf(ActiveAttackSkill.Value, ActiveAttackLevel));
         public bool TrySpendAttackSkill(SkillId id, int level) => stats != null && stats.TrySpendMana(CostOf(id, level));
-
-        private bool UsableWithWeapon(SkillDefinition skill)
-        {
-            WeaponType weapon = CurrentWeapon();
-            return skill.Bow ? weapon == WeaponType.Bow : CanUseWithWeapon(skill.Id, weapon);
-        }
 
         private bool Toggle(SkillDefinition skill, int slot)
         {
@@ -77,9 +68,9 @@ namespace PoeClone.Skills
                 SaveSystem.SaveCharacterNow();
                 return true;
             }
-            if (!UsableWithWeapon(skill))
+            if (CurrentWeapon() != WeaponType.Bow)
             {
-                CombatText.Show(above, skill.Bow ? "Needs a bow" : RequiredWeaponText(skill.Id), CombatText.PhysicalColor, 0.8f);
+                CombatText.Show(above, "Needs a bow", CombatText.PhysicalColor, 0.8f);
                 return false;
             }
 
@@ -92,11 +83,10 @@ namespace PoeClone.Skills
             return true;
         }
 
-        // Gear changed: a toggled skill that's no longer granted, or can't be used with the weapon
-        // now in hand, switches off.
+        // Gear changed: a toggled skill that's no longer granted, or no bow in hand, switches off.
         private void CheckToggle()
         {
-            if (toggled != null && ActiveAttackSkill == null)
+            if (toggled != null && ActiveBowSkill == null)
             {
                 toggled = null;
                 toggledSlot = -1;

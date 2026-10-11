@@ -12,8 +12,8 @@ namespace PoeClone.Skills
 {
     /// <summary>
     /// Melee skills (Cleave, Pulverize, Fissure, Aftershock, Reaping Arc, Lunging Thrust, Cross
-    /// Slash, Fang Strike, Venom Slash): each belongs to a weapon family and is toggled from the bar like a bow
-    /// skill (see PlayerSkills.Toggle.cs). While one is on, the weapon's attack is that skill:
+    /// Slash, Fang Strike, Venom Slash): each belongs to a weapon family, and every melee weapon carries
+    /// exactly one (<see cref="ActiveMeleeSkill"/>). Like a staff's spell, it is the weapon's attack:
     /// <see cref="PlayerCombat"/> starts each use through <see cref="TryStartMeleeSkill"/>. There is
     /// no cooldown: like a swing, the time between uses is the weapon's attack time, shortened by
     /// attack speed and stretched by the skill's own pace (<see cref="MeleeSpeed"/>). Their hits are
@@ -64,10 +64,32 @@ namespace PoeClone.Skills
             CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()) * AttackRateMultiplier * MeleeSpeed(id));
 
         /// <summary>
-        /// The attack, while a melee skill is on: pays for one use and starts it (Whirlwind: starts
-        /// spinning, for as long as the attack is held). False if none is on, or without the mana
-        /// for it (the plain swing is used instead). <paramref name="interval"/>: seconds until the
-        /// next attack may start.
+        /// The melee skill on the weapon in hand (the first, in case an older item carries more),
+        /// which is the weapon's attack; null without one, or if it doesn't suit the weapon.
+        /// </summary>
+        public SkillId? ActiveMeleeSkill
+        {
+            get
+            {
+                ItemData weapon = inventory != null ? inventory.Equipment.GetActive(EquipSlot.MainHand) : null;
+                if (weapon == null)
+                    return null;
+                foreach (StatModifier m in weapon.Modifiers)
+                {
+                    if (Array.IndexOf(SkillGrants.MeleeSkills, m.Stat) < 0 || Mathf.RoundToInt(m.Value) <= 0)
+                        continue;
+                    SkillDefinition skill = SkillBook.ForGrant(m.Stat);
+                    return skill != null && CanUseWithWeapon(skill.Id, CurrentWeapon()) ? skill.Id : (SkillId?)null;
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// The attack, with the weapon's melee skill: pays for one use and starts it (Whirlwind:
+        /// starts spinning, for as long as the attack is held). False without one, or without the
+        /// mana for it (the plain swing is used instead). <paramref name="interval"/>: seconds until
+        /// the next attack may start.
         /// </summary>
         public bool TryStartMeleeSkill(out float interval)
         {
@@ -140,22 +162,6 @@ namespace PoeClone.Skills
                 case SkillId.FangStrike:
                 case SkillId.VenomSlash: return weapon == WeaponType.Dagger;
                 default: return true;
-            }
-        }
-
-        private static string RequiredWeaponText(SkillId id)
-        {
-            switch (id)
-            {
-                case SkillId.Pulverize:
-                case SkillId.Fissure:
-                case SkillId.Aftershock: return "Needs a mace or maul";
-                case SkillId.ReapingArc: return "Needs an axe";
-                case SkillId.LungingThrust: return "Needs a sword";
-                case SkillId.CrossSlash:
-                case SkillId.FangStrike:
-                case SkillId.VenomSlash: return "Needs a dagger";
-                default: return "Needs a sword or axe";
             }
         }
 

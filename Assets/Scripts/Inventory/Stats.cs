@@ -216,7 +216,7 @@ namespace PoeClone.Inventory
             return Array.IndexOf(BowSkills, stat) >= 0 || stat == StatType.GrantVenomArrow;
         }
 
-        /// <summary>The melee skills: one that suits the weapon always rolls on every melee weapon.</summary>
+        /// <summary>The melee skills: exactly one that suits the weapon rolls on every melee weapon, and it is the weapon's attack.</summary>
         public static readonly StatType[] MeleeSkills =
         {
             StatType.GrantCleave, StatType.GrantFangStrike, StatType.GrantPulverize, StatType.GrantReapingArc, StatType.GrantLungingThrust,

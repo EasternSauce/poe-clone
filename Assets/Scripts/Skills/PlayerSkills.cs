@@ -20,8 +20,9 @@ namespace PoeClone.Skills
     /// Every other skill goes in a bar slot: Q, E, R, F, 1-4, then right, back and forward mouse
     /// buttons (touch has round buttons for the first four). A skill that new gear grants
     /// drops into the first free slot; the bar picker moves them around. Each costs mana; spells
-    /// have a cooldown, while bow and melee skills are toggled and replace the weapon's attack
-    /// (see PlayerSkills.Toggle.cs). Aiming works like attacks: the mouse on desktop,
+    /// have a cooldown, while bow skills are toggled and replace the bow's shot (see
+    /// PlayerSkills.Toggle.cs). A melee weapon's one melee skill is its attack, like a staff's
+    /// spell (see PlayerSkills.Melee.cs). Aiming works like attacks: the mouse on desktop,
     /// <see cref="VirtualInput.Aim"/> on touch. Self-added by <see cref="PlayerController"/>.
     /// </summary>
     public partial class PlayerSkills : MonoBehaviour
@@ -406,7 +407,7 @@ namespace PoeClone.Skills
                 foreach (StatModifier mod in item.Modifiers)
                 {
                     SkillDefinition skill = SkillBook.ForGrant(mod.Stat);
-                    if (skill == null || !CanUseWithWeapon(skill.Id, CurrentWeapon()) ||
+                    if (skill == null || skill.MeleeAttack ||
                         (skill.Bow && CurrentWeapon() != WeaponType.Bow) || MainSkill == skill.Id)
                         continue;
                     int grantLevel = Mathf.RoundToInt(mod.Value);
@@ -475,20 +476,16 @@ namespace PoeClone.Skills
             return null;
         }
 
-        /// <summary>Gear grants it and it isn't the staff's attack: it can go on the bar.</summary>
+        /// <summary>Gear grants it and it isn't a weapon's attack (a staff spell or a melee skill): it can go on the bar.</summary>
         public bool IsUnlocked(SkillId id)
         {
-            return Level(id) > 0 && MainSkill != id;
+            return Level(id) > 0 && MainSkill != id && !SkillBook.Get(id).MeleeAttack;
         }
 
         /// <summary>Whether the current gear both grants this skill and can use it.</summary>
         public bool CanBind(SkillId id)
         {
-            if (!IsUnlocked(id))
-                return false;
-            SkillDefinition skill = SkillBook.Get(id);
-            WeaponType weapon = CurrentWeapon();
-            return (!skill.Bow || weapon == WeaponType.Bow) && CanUseWithWeapon(id, weapon);
+            return IsUnlocked(id) && (!SkillBook.Get(id).Bow || CurrentWeapon() == WeaponType.Bow);
         }
 
         /// <summary>Which worn item grants the skill (the one at the highest level), for the skills panel.</summary>
@@ -624,11 +621,11 @@ namespace PoeClone.Skills
         public float AttackRateMultiplier => Mathf.Max(0.5f, 1f + Stat(StatType.AttackSpeed) / 100f) *
             (controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f);
 
-        /// <summary>Cooldown at the skill's current level, after cast speed. Toggled skills have none.</summary>
+        /// <summary>Cooldown at the skill's current level, after cast speed. Bow and melee skills have none.</summary>
         public float Cooldown(SkillId id)
         {
             SkillDefinition skill = SkillBook.Get(id);
-            if (skill.Toggled)
+            if (skill.Toggled || skill.MeleeAttack)
                 return 0f;
             return skill.CooldownAt(Mathf.Max(1, Level(id))) / CastRateMultiplier;
         }

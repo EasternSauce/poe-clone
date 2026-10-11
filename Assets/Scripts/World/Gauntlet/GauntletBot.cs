@@ -175,7 +175,7 @@ namespace PoeClone.World
         }
 
         // The build's bow skill if it has one, else its first core skill that toggles, else any
-        // toggled skill the gear brought.
+        // toggled skill the gear brought (a melee weapon's skill is always its attack).
         private void ToggleAttackSkill()
         {
             int best = -1, bestRank = int.MaxValue;

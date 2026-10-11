@@ -628,7 +628,7 @@ namespace PoeClone.Inventory
         /// Brings an item in line with today's rules, for items made under older ones (saved
         /// characters, their stash): every stat its base no longer allows is removed, every value
         /// outside today's range is pulled into it, a stat listed twice keeps only its first line,
-        /// a weapon gets its base's damage, and a unique gets its current design. Returns the item itself if nothing needed fixing.
+        /// a weapon keeps only its first melee skill, a weapon gets its base's damage, and a unique gets its current design. Returns the item itself if nothing needed fixing.
         /// </summary>
         public static ItemData Legalize(ItemData item)
         {
@@ -643,7 +643,7 @@ namespace PoeClone.Inventory
 
             var mods = new List<StatModifier>();
             var seen = new HashSet<StatType>();
-            bool changed = false;
+            bool changed = false, meleeSkill = false;
 
             // A weapon's base damage is fixed by its base and listed first. Older saves kept it
             // as the first Physical Damage line (an implicit, or untiered before tags existed).
@@ -666,6 +666,16 @@ namespace PoeClone.Inventory
                 {
                     changed = true;
                     continue;
+                }
+                // A weapon carries one melee skill, its attack (older drops could roll more).
+                if (Array.IndexOf(SkillGrants.MeleeSkills, m.Stat) >= 0)
+                {
+                    if (meleeSkill)
+                    {
+                        changed = true;
+                        continue;
+                    }
+                    meleeSkill = true;
                 }
                 float? legal = LegalValue(b, m.Stat, m.Value);
                 if (legal == null)
@@ -885,7 +895,8 @@ namespace PoeClone.Inventory
             }
             else if (b.Type == ItemType.Weapon)
             {
-                // Every melee weapon carries one of the melee skills that roll on it, also on top of the rarity's stats.
+                // Every melee weapon carries exactly one of the melee skills that roll on it, its
+                // attack, also on top of the rarity's stats.
                 var meleeWeights = new List<float>();
                 float meleeTotal = 0f;
                 int wanted = -1;
@@ -920,10 +931,11 @@ namespace PoeClone.Inventory
                 Affix a = candidates[pick];
                 candidates.RemoveAt(pick);
                 candidateWeights.RemoveAt(pick);
-                // The guaranteed staff attack is its only main spell; utility spells still roll.
+                // The guaranteed staff spell or melee skill is the weapon's only attack skill; other skills still roll.
                 if (rolled.Contains(a.Stat) || baseStats.Contains(a.Stat) ||
                     (b.Type == ItemType.Weapon && b.WeaponType == WeaponType.Staff &&
-                     Array.IndexOf(SkillGrants.StaffMain, a.Stat) >= 0))
+                     Array.IndexOf(SkillGrants.StaffMain, a.Stat) >= 0) ||
+                    Array.IndexOf(SkillGrants.MeleeSkills, a.Stat) >= 0)
                     continue;
 
                 selected.Add(a);

@@ -10,8 +10,8 @@ using PoeClone.Visuals;
 namespace PoeClone.Skills
 {
     /// <summary>
-    /// Whirlwind, the channelled melee skill: toggled from the bar like the other melee skills, and
-    /// while it's on, holding the attack (left click / the aim stick) spins the player, hitting
+    /// Whirlwind, the channelled melee skill: on a weapon it is the weapon's attack like the other
+    /// melee skills, and holding the attack (left click / the aim stick) spins the player, hitting
     /// everything in reach several times a second, passing through enemies and drifting towards the
     /// cursor (faster the further it is, sprinting speed at <see cref="WhirlFullSpeedDiameters"/>
     /// body widths away; on touch, the joystick or the aim stick). It costs mana every

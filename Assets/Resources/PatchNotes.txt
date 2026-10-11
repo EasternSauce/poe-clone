@@ -1,3 +1,9 @@
+version: 2026-10-11-melee-weapon-attacks
+- Melee weapons now carry exactly one melee skill, and it is the weapon's attack: left click (or the aim stick) uses it directly, just like a staff's spell. There is no more toggling melee skills on the bar.
+- Melee skills no longer take up skill bar slots. Without the mana for the skill, the weapon swings normally until the mana is back.
+- Weapons you already own that rolled more than one melee skill keep only the first.
+- Bow skills still toggle from the bar as before.
+
 version: 2026-10-11-captive-guide-and-tunnel-king
 - New main-story quest after the bone totems: Maren sends you to rescue Wren, a guide held captive by Vex's diggers in the Lost Hollows' southern cavern. Wren's captors are stationed when you accept. Defeat them, break the cage lock to free Wren, then speak to Wren. Unrelated kills and clicking the cage early do not count.
 - Vex, the Tunnel King, is now part of the main story. Wren reveals that Vex's diggers carved the bone totems and sends you into the Warren to stop them. Wren then gives directions to Tobias's graveyard.
