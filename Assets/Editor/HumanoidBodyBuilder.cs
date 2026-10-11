@@ -113,20 +113,18 @@ namespace PoeClone.EditorTools
                 Part(u, "Head", head, new Vector3(0f, 1.8f, 0.04f), new Vector3(0.34f, 0.38f, 0.36f));
                 Part(u, "Hair", head, new Vector3(0f, 1.85f, 0.01f), new Vector3(0.37f, 0.33f, 0.39f));
 
-                // The face: a band of darker skin across the eyes, like the shadow under a brow,
-                // with narrow eye slits in it. A flattened copy of the head shifted forward, so it
-                // only shows on the front of the face and follows its curve. Low enough to stay
-                // clear of the hood's rim and the hair once the hood comes off.
-                Transform shade = u.Find("BrowShade");
-                if (shade == null)
+                // The face, in flat bold marks that read from a distance: thick brows angled down
+                // towards the nose, small dark eyes and a mouth line. Low enough to stay clear of
+                // the hood's rim and of the hair once the hood comes off.
+                Material skin = headPart.GetComponent<Renderer>().sharedMaterial;
+                Material brow = Tinted(u.Find("Hair").GetComponent<Renderer>().sharedMaterial, "Brow", new Color(0.14f, 0.09f, 0.06f));
+                foreach (string side in new[] { "L", "R" })
                 {
-                    shade = Object.Instantiate(headPart.gameObject, u).transform;
-                    shade.name = "BrowShade";
+                    float s = side == "L" ? -1f : 1f;
+                    FacePart(u, headPart, "Brow" + side, brow, 0.064f * s, 1.79f, 0.002f, new Vector3(0.08f, 0.022f, 0.03f), -10f * s);
+                    FacePart(u, headPart, "Eye" + side, null, 0.06f * s, 1.764f, 0.001f, new Vector3(0.03f, 0.02f, 0.02f), 0f);
                 }
-                shade.GetComponent<Renderer>().sharedMaterial = SkinShade(headPart.GetComponent<Renderer>().sharedMaterial);
-                Part(u, "BrowShade", head, new Vector3(0f, 1.785f, 0.055f), new Vector3(0.33f, 0.075f, 0.35f));
-                Part(u, "EyeL", head, new Vector3(-0.06f, 1.78f, 0.222f), new Vector3(0.05f, 0.022f, 0.02f));
-                Part(u, "EyeR", head, new Vector3(0.06f, 1.78f, 0.222f), new Vector3(0.05f, 0.022f, 0.02f));
+                FacePart(u, headPart, "Mouth", Tinted(skin, "Lip", new Color(0.45f, 0.2f, 0.16f)), 0f, 1.675f, 0.002f, new Vector3(0.07f, 0.016f, 0.02f), 0f);
 
                 // Bare feet would poke out of the front of worn boots.
                 foreach (string side in new[] { "L", "R" })
@@ -152,19 +150,39 @@ namespace PoeClone.EditorTools
             }
         }
 
-        // The skin material darkened, for the shade across the eyes.
-        private static Material SkinShade(Material skin)
+        // A small mark on the face (null material keeps the part's own), sitting on the head's
+        // surface at x, y and turned with it, made from a copy of the head if the rig lacks it.
+        private static void FacePart(Transform u, Transform head, string name, Material mat, float x, float y, float lift, Vector3 scale, float roll)
         {
-            string path = "Assets/Materials/Stylized/SkinShade.mat";
+            Transform t = u.Find(name);
+            if (t == null)
+            {
+                t = Object.Instantiate(head.gameObject, u).transform;
+                t.name = name;
+            }
+            if (mat != null)
+                t.GetComponent<Renderer>().sharedMaterial = mat;
+            t.GetComponent<MeshFilter>().sharedMesh = head.GetComponent<MeshFilter>().sharedMesh;
+
+            Vector3 c = head.localPosition, r = head.localScale * 0.5f;
+            float dx = x / r.x, dy = (y - c.y) / r.y;
+            float z = c.z + r.z * Mathf.Sqrt(Mathf.Max(0f, 1f - dx * dx - dy * dy));
+            t.localPosition = new Vector3(x, y, z + lift);
+            t.localRotation = Quaternion.Euler(0f, Mathf.Asin(Mathf.Clamp(dx, -1f, 1f)) * Mathf.Rad2Deg * 0.8f, roll);
+            t.localScale = scale;
+        }
+
+        // A flat-coloured copy of a body material, saved beside it.
+        private static Material Tinted(Material from, string name, Color c)
+        {
+            string path = "Assets/Materials/Stylized/" + name + ".mat";
             Material m = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (m == null)
             {
-                m = new Material(skin);
+                m = new Material(from);
                 AssetDatabase.CreateAsset(m, path);
             }
-            m.CopyPropertiesFromMaterial(skin);
-            Color c = skin.GetColor("_BaseColor") * 0.66f;
-            c.a = 1f;
+            m.CopyPropertiesFromMaterial(from);
             m.SetColor("_BaseColor", c);
             if (m.HasProperty("_ShadowColor"))
             {

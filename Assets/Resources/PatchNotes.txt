@@ -1,6 +1,6 @@
 version: 2026-10-11-sturdier-limbs
 - Arms and legs are thicker, so characters no longer look stick-thin after the body rework. Gloves, boots, rings and sleeves are widened to fit.
-- Your character has a face again: narrow eyes in a soft shadow across the brow, visible with or without the starting hood and under open helmets. The Bronze Helmet's eye slit lines up with them.
+- Your character has a face again: thick brows, small dark eyes and a mouth, visible with or without the starting hood and under open helmets. The Bronze Helmet's eye slit lines up with them.
 
 version: 2026-10-11-gear-refit
 - All worn gear has been rebuilt to fit the new bodies, with rounded shapes instead of boxes.
