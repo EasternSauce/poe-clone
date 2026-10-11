@@ -717,6 +717,22 @@ namespace PoeClone.Visuals
             Play(ProfilesById[profileId]);
         }
 
+        /// <summary>Adopts an ongoing held pose, including when an observer joins mid-channel.</summary>
+        public void ApplyReplicatedHold(int profileId, bool held)
+        {
+            if (!held)
+            {
+                if (IsHolding)
+                    ReleaseHold();
+                return;
+            }
+            if (profileId < 0 || profileId >= ProfilesById.Length)
+                return;
+            if (!IsHolding || ProfileId != profileId)
+                PlayReplicated(profileId);
+            holding = true;
+        }
+
         private void Play(AttackProfile profile)
         {
             speedMultiplier = 1f;

@@ -44,6 +44,9 @@ namespace PoeClone.Skills
         /// <summary>Whirlwind is spinning.</summary>
         public bool IsWhirling => whirling;
 
+        /// <summary>Signed yaw speed for replicas, so fast spins keep their direction between snapshots.</summary>
+        public float WhirlYawSpeed => whirling ? -360f * Mathf.Clamp(WhirlHitsPerSecond(), WhirlMinTurnsPerSecond, WhirlMaxTurnsPerSecond) : 0f;
+
         /// <summary>Whether the attack is held right now (set by <see cref="PlayerCombat"/>): Whirlwind spins while it is.</summary>
         public bool AttackHeld { get; set; }
 
@@ -101,8 +104,7 @@ namespace PoeClone.Skills
             controller.SteerChannel(whirlSteer);
             // Counter-clockwise, so the sword arm sweeps forward and the blade leads (a forehand
             // cut); a turn per hit, so a heavy weapon spins heavier.
-            float turns = Mathf.Clamp(WhirlHitsPerSecond(), WhirlMinTurnsPerSecond, WhirlMaxTurnsPerSecond);
-            transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y - 360f * turns * Time.deltaTime, 0f);
+            transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y + WhirlYawSpeed * Time.deltaTime, 0f);
 
             if (Time.time >= whirlNextHit)
             {

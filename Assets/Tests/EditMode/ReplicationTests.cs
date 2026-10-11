@@ -7,6 +7,30 @@ namespace PoeClone.Tests
     public class SnapshotCodecTests
     {
         [Test]
+        public void ChannelledPoseAndSpin_SurviveTheRoundTrip()
+        {
+            StateSnapshot s = Sample();
+            s.p.ah = 1;
+            s.p.rs = -2160f;
+            StateSnapshot back = SnapshotCodec.Deserialize(SnapshotCodec.Serialize(s));
+            Assert.AreEqual(1, back.p.ah);
+            Assert.AreEqual(-2160f, back.p.rs);
+        }
+
+        [TestCase(0.1f, 144f, -108f)]
+        [TestCase(0.2f, 288f, -216f)]
+        public void FastSpin_PreservesDirectionAndFullTurns(float seconds, float endYaw, float halfwayYaw)
+        {
+            var start = new EntityState { r = 0f, ah = 1, rs = -2160f };
+            var end = new EntityState { r = endYaw, ah = 1, rs = -2160f };
+            var result = new EntityState();
+            SnapshotTimeline.Interpolate(start, end, 0.5f, result, seconds);
+            Assert.AreEqual(halfwayYaw, result.r, 0.01f);
+            Assert.AreEqual(1, result.ah);
+            Assert.AreEqual(-2160f, result.rs);
+        }
+
+        [Test]
         public void SkillCasts_SurviveTheRoundTrip()
         {
             StateSnapshot s = Sample();

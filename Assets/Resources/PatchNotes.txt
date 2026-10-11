@@ -1,3 +1,6 @@
+version: 2026-10-11-coop-whirlwind
+- Co-op partners now see Whirlwind's weapon held out and legs braced for the whole spin, including when joining mid-spin. Fast spins keep their direction and speed instead of being softened or reversed by network smoothing. Spectators see the held pose too.
+
 version: 2026-10-11-bell-drop
 - The Bell-Ringer throws its bell faster and covers a slightly wider area. All three warning pulses now deal lightning damage to anyone still nearby, even if the landing missed. The bell's rings appear on the ground and it flies back onto his shoulders after ringing.
 

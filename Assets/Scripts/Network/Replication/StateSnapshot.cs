@@ -22,6 +22,8 @@ namespace PoeClone.Network.Replication
         public int d;      // 1 = dead
         public int atk;    // attacks started so far - a counter, so a swing that starts and finishes between two snapshots is never lost
         public int ap;     // attack profile id of the latest swing (see CharacterAttackAnimator.ProfileId)
+        public int ah;     // player: 1 = holding the attack pose for a channelled skill
+        public float rs;   // player: signed yaw degrees per second while spinning
         public int stg;    // staggers (non-lethal hits taken) so far - same counter trick as atk
         public int ch;     // enemies: 1 = chasing the player (drives the aggro sound)
         public int k;      // enemies: kind (index into EnemyKinds) - decides the look

@@ -217,8 +217,8 @@ namespace PoeClone.Network.Replication
             }
         }
 
-        /// <summary>Linear position / shortest-arc yaw blend of one entity. Snaps on teleports and doesn't extrapolate the dead.</summary>
-        public static void Interpolate(EntityState a, EntityState b, float alpha, EntityState result)
+        /// <summary>Linear position / yaw blend. Spin speed preserves full turns; other yaw takes the shortest arc.</summary>
+        public static void Interpolate(EntityState a, EntityState b, float alpha, EntityState result, float secondsBetweenSnapshots = 0f)
         {
             if (b == null || ReferenceEquals(a, b))
             {
@@ -240,7 +240,13 @@ namespace PoeClone.Network.Replication
             result.x = a.x + dx * alpha;
             result.y = a.y + dy * alpha;
             result.z = a.z + dz * alpha;
-            result.r = a.r + Mathf.DeltaAngle(a.r, b.r) * alpha;
+            float yawDelta = Mathf.DeltaAngle(a.r, b.r);
+            if (a.rs != 0f && b.rs != 0f && secondsBetweenSnapshots > 0f && a.d == 0 && b.d == 0)
+            {
+                float expected = (a.rs + b.rs) * 0.5f * secondsBetweenSnapshots;
+                yawDelta += 360f * Mathf.Round((expected - yawDelta) / 360f);
+            }
+            result.r = a.r + yawDelta * alpha;
             result.bs = a.bs + (b.bs - a.bs) * alpha;
         }
 
@@ -268,6 +274,8 @@ namespace PoeClone.Network.Replication
             dst.d = src.d;
             dst.atk = src.atk;
             dst.ap = src.ap;
+            dst.ah = src.ah;
+            dst.rs = src.rs;
             dst.stg = src.stg;
             dst.ch = src.ch;
             dst.bs = src.bs;

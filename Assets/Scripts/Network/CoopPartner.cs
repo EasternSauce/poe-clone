@@ -221,6 +221,7 @@ namespace PoeClone.Network
                 return;
             EntityState prev = applied;
             applied = p.Clone();
+            attack?.ApplyReplicatedHold(p.ap, p.ah != 0 && p.d == 0);
             Transform t = body.transform;
             if (prev == null)
             {
@@ -237,7 +238,7 @@ namespace PoeClone.Network
                 hasPose = false; // revived at a spawn point: snap there
             }
 
-            if (p.d == 0 && p.atk > prev.atk && attack != null && body.activeInHierarchy)
+            if (p.d == 0 && p.ah == 0 && p.atk > prev.atk && attack != null && body.activeInHierarchy)
             {
                 attack.PlayReplicated(p.ap);
                 PlaySfx(AudioManager.Instance != null ? Pick(AudioManager.Instance.playerSwing) : null, t.position);
@@ -334,7 +335,7 @@ namespace PoeClone.Network
 
         private void Pose(StateSnapshot from, StateSnapshot to, float alpha)
         {
-            SnapshotTimeline.Interpolate(from.p, to.p, alpha, scratch);
+            SnapshotTimeline.Interpolate(from.p, to.p, alpha, scratch, (float)(to.t - from.t));
             Vector3 target = new Vector3(scratch.x, scratch.y, scratch.z);
             Quaternion facing = Quaternion.Euler(0f, scratch.r, 0f);
             Transform t = body.transform;
@@ -352,7 +353,8 @@ namespace PoeClone.Network
             // Small corrections (a guess past the newest snapshot that turned out wrong) are eased
             // in over a few frames instead of snapping.
             float blend = 1f - Mathf.Exp(-SmoothingRate * Time.deltaTime);
-            t.SetPositionAndRotation(t.position + error * blend, Quaternion.Slerp(t.rotation, facing, blend));
+            t.SetPositionAndRotation(t.position + error * blend,
+                scratch.rs != 0f ? facing : Quaternion.Slerp(t.rotation, facing, blend));
         }
 
         private static AudioClip Pick(AudioClip[] clips)

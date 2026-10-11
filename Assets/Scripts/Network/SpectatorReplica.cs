@@ -859,6 +859,7 @@ namespace PoeClone.Network
 
             EntityState prev = playerApplied;
             playerApplied = p.Clone();
+            playerAttack?.ApplyReplicatedHold(p.ap, p.ah != 0 && p.d == 0);
 
             if (prev == null)
             {
@@ -880,7 +881,7 @@ namespace PoeClone.Network
                 playerHasPose = false; // revive teleports to spawn: snap, don't slide
             }
 
-            if (p.d == 0 && p.atk > prev.atk && playerAttack != null)
+            if (p.d == 0 && p.ah == 0 && p.atk > prev.atk && playerAttack != null)
             {
                 playerAttack.PlayReplicated(p.ap);
                 PlaySfx(AudioManager.Instance != null ? Pick(AudioManager.Instance.playerSwing) : null, at);
@@ -1036,7 +1037,7 @@ namespace PoeClone.Network
             if (playerStats == null)
                 return;
 
-            SnapshotTimeline.Interpolate(from.p, to.p, alpha, scratch);
+            SnapshotTimeline.Interpolate(from.p, to.p, alpha, scratch, (float)(to.t - from.t));
             Transform t = playerStats.transform;
             Vector3 target = new Vector3(scratch.x, scratch.y, scratch.z);
 
