@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
@@ -160,7 +161,31 @@ namespace PoeClone.UI
             if (maps.TryGetValue(area, out AreaMap map) && map.Texture != null)
                 return map;
 
-            map = Bake(area);
+            IEnumerator bake = Bake(area, map = new AreaMap(), float.PositiveInfinity);
+            while (bake.MoveNext()) { }
+            return Store(area, map);
+        }
+
+        /// <summary>
+        /// Bakes the area's map a slice per frame, for a loading screen to run so it keeps
+        /// animating instead of stalling on the first frame the map is shown.
+        /// </summary>
+        public static IEnumerator Prepare(int area)
+        {
+            if (maps.TryGetValue(area, out AreaMap baked) && baked.Texture != null)
+                yield break;
+
+            Physics.SyncTransforms();
+            var map = new AreaMap();
+            IEnumerator bake = Bake(area, map, SliceMs);
+            while (bake.MoveNext())
+                yield return null;
+            if (!maps.TryGetValue(area, out baked) || baked.Texture == null)
+                Store(area, map);
+        }
+
+        private static AreaMap Store(int area, AreaMap map)
+        {
             if (pendingFog.TryGetValue(area, out bool[] seen))
             {
                 Array.Copy(seen, map.Seen, Math.Min(seen.Length, map.Seen.Length));
@@ -184,9 +209,12 @@ namespace PoeClone.UI
         private const float FieldClamp = 4f;      // metres: distances past this don't move an edge
         private const int RimWidth = 2;           // texels of lighter outline along the open ground
         private const float GrainScale = 240f / Resolution; // keeps the grain's size in metres
+        private const float SliceMs = 12f;        // work per frame when baking behind a loading screen
 
-        private static AreaMap Bake(int area)
+        // Fills in the map, yielding between rows once a slice has used up its time.
+        private static IEnumerator Bake(int area, AreaMap map, float sliceMs)
         {
+            var clock = System.Diagnostics.Stopwatch.StartNew();
             Vector3 centre = WorldBuilder.Center(area);
             AreaShape shape = WorldBuilder.Shape(area);
             const int n = SampleResolution;
@@ -213,6 +241,11 @@ namespace PoeClone.UI
                         hit.point.y > groundY + 0.6f)
                         solid[i] = 1f;
                 }
+                if (clock.Elapsed.TotalMilliseconds > sliceMs)
+                {
+                    yield return null;
+                    clock.Restart();
+                }
             }
 
             var cells = new Cell[Resolution * Resolution];
@@ -228,6 +261,11 @@ namespace PoeClone.UI
                     if (Sample(water, n, u, v) >= 0f)
                         c = within && Sample(bridge, n, u, v) >= 0f ? Cell.Bridge : Cell.Water;
                     cells[y * Resolution + x] = c;
+                }
+                if (clock.Elapsed.TotalMilliseconds > sliceMs)
+                {
+                    yield return null;
+                    clock.Restart();
                 }
             }
             bool[] rims = Rims(cells);
@@ -269,21 +307,22 @@ namespace PoeClone.UI
                     col.a = c == Cell.Solid ? 0.9f : 0.85f;
                     pixels[i] = col;
                 }
+                if (clock.Elapsed.TotalMilliseconds > sliceMs)
+                {
+                    yield return null;
+                    clock.Restart();
+                }
             }
 
-            var texture = new Texture2D(Resolution, Resolution, TextureFormat.RGBA32, false)
+            map.Texture = new Texture2D(Resolution, Resolution, TextureFormat.RGBA32, false)
             {
                 name = "Minimap_" + area,
                 filterMode = FilterMode.Bilinear,
                 wrapMode = TextureWrapMode.Clamp
             };
-            return new AreaMap
-            {
-                Texture = texture,
-                Base = pixels,
-                Seen = new bool[FogResolution * FogResolution],
-                Dirty = true
-            };
+            map.Base = pixels;
+            map.Seen = new bool[FogResolution * FogResolution];
+            map.Dirty = true;
         }
 
         // Bilinear read of a square sample grid, clamped at its edges.

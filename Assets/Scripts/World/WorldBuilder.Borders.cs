@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,11 +22,14 @@ namespace PoeClone.World
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetShapes() { shapes = null; }
 
-        private void ShapeGround(GameObject ground, int area)
+        // Yields between its heavy parts, so the loading screen keeps moving.
+        private IEnumerator ShapeGround(GameObject ground, int area)
         {
             AreaShape shape = Shape(area);
             shape.BuildGroundMesh(0f); // Keep the walkable contour for boundary collision.
+            yield return null;
             Mesh mesh = shape.BuildGroundMesh(0f, omitBridges: true);
+            yield return null;
             ground.transform.position = new Vector3(shape.Center.x, ground.transform.position.y, shape.Center.z);
             ground.transform.rotation = Quaternion.identity;
             ground.transform.localScale = Vector3.one;
@@ -33,7 +37,9 @@ namespace PoeClone.World
             var collider = ground.GetComponent<MeshCollider>();
             if (collider == null) collider = ground.AddComponent<MeshCollider>();
             collider.sharedMesh = mesh;
+            yield return null;
             BuildLayoutWalls(area, ground.transform.position.y);
+            yield return null;
             BuildWater(area, ground.transform.position.y);
         }
 
@@ -81,10 +87,12 @@ namespace PoeClone.World
             return material;
         }
 
-        private void BuildBorders()
+        // An area per frame, for the loading screen.
+        private IEnumerator BuildBorders()
         {
             foreach (int area in WorldAreas)
             {
+                yield return null;
                 Begin(area, 900 + area);
                 Transform group = Group("Border_" + AreaNames[area]);
                 AreaShape shape = Shape(area);
@@ -212,8 +220,10 @@ namespace PoeClone.World
             light.gameObject.AddComponent<CaveVisibility>();
         }
 
-        private void RelocateOriginalScenery()
+        // Yields between props once a slice of time is used, for the loading screen.
+        private IEnumerator RelocateOriginalScenery()
         {
+            var clock = System.Diagnostics.Stopwatch.StartNew();
             Begin(Greenwood, 640);
             AreaShape shape = Shape(Greenwood);
             var props = new List<(Transform prop, float radius)>();
@@ -266,6 +276,11 @@ namespace PoeClone.World
                     if (torch.Value == prop) torch.Key.position += delta;
                 Claim(target, entry.radius);
                 Physics.SyncTransforms();
+                if (clock.ElapsedMilliseconds > 50)
+                {
+                    yield return null;
+                    clock.Restart();
+                }
             }
         }
         // A dirt road from the town plaza out to each of Haven's gates, each opening out where it

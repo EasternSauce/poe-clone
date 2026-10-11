@@ -199,6 +199,10 @@ private IEnumerator SwitchRoutine(int index, Transform arrival)
                 AreaGate.DisarmAtArrival(index, player.position);
             AreaChanged?.Invoke(index);
 
+            // The first visit bakes the area's minimap: do it in slices here, behind the cover,
+            // rather than in one long frame when the map first shows.
+            yield return PoeClone.UI.MinimapTerrain.Prepare(index);
+
             if (simulatedLoadSeconds > 0f)
                 yield return new WaitForSeconds(simulatedLoadSeconds);
 

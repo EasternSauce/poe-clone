@@ -112,7 +112,14 @@ namespace PoeClone.Network
 
         private void PrepareGameplay()
         {
-            if (gameplayCreated) return;
+            IEnumerator prepare = PrepareGameplayRoutine();
+            while (prepare.MoveNext()) { }
+        }
+
+        // A step per frame, so the loading gate keeps animating while the world is built.
+        private IEnumerator PrepareGameplayRoutine()
+        {
+            if (gameplayCreated) yield break;
             gameplayCreated = true;
             if (menuAudioListener != null) menuAudioListener.enabled = false;
             foreach (GameObject root in suspendedRoots)
@@ -120,8 +127,23 @@ namespace PoeClone.Network
             suspendedRoots.Clear();
             var player = FindAnyObjectByType<PlayerStats>();
             scenePlayer = player != null ? player.gameObject : null;
-            WorldBuilder.EnsureBuilt();
-            CreateGameplaySystems();
+            yield return null;
+
+            IEnumerator build = WorldBuilder.BuildRoutine();
+            while (build.MoveNext())
+                yield return null;
+
+            IEnumerator systems = CreateGameplaySystems();
+            while (systems.MoveNext())
+                yield return null;
+
+            // The town's minimap, baked here rather than on the first frame of play.
+            if (WorldBuilder.Instance != null)
+            {
+                IEnumerator map = PoeClone.UI.MinimapTerrain.Prepare(WorldBuilder.Haven);
+                while (map.MoveNext())
+                    yield return null;
+            }
         }
 
         private void Awake()
@@ -160,16 +182,18 @@ namespace PoeClone.Network
             replica = gameObject.AddComponent<SpectatorReplica>();
         }
 
-        private void CreateGameplaySystems()
+        private IEnumerator CreateGameplaySystems()
         {
             gameObject.AddComponent<SpectatorView>();
             gameObject.AddComponent<ChatUI>();
             gameObject.AddComponent<PoeClone.UI.TouchControlsUI>();
             gameObject.AddComponent<PoeClone.UI.SkillBarUI>();
+            yield return null;
             gameObject.AddComponent<PoeClone.UI.DialogueUI>();
             gameObject.AddComponent<PoeClone.UI.MinimapUI>();
             gameObject.AddComponent<PoeClone.UI.QuestTrackerUI>();
             gameObject.AddComponent<PoeClone.UI.BossBarUI>();
+            yield return null;
             gameObject.AddComponent<PoeClone.UI.PassiveTreeUI>();
         }
 
@@ -384,10 +408,10 @@ namespace PoeClone.Network
         private IEnumerator LoadChosenCharacter()
         {
             // Give the loading gate a rendered frame before activating scene roots and
-            // synchronously building the world. Two yields also cover starts from coroutines.
+            // building the world. Two yields also cover starts from coroutines.
             yield return null;
             yield return null;
-            PrepareGameplay();
+            yield return PrepareGameplayRoutine();
 
             // Allow the reactivated scene's Start methods to bind stats, gear and skills
             // before applying the character's saved values and bindings.

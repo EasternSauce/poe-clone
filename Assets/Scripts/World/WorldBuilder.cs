@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using PoeClone.Enemies;
@@ -123,15 +124,30 @@ namespace PoeClone.World
         /// <summary>Scene reloads during character selection do not rerun runtime-init hooks.</summary>
         public static void EnsureBuilt()
         {
+            IEnumerator build = BuildRoutine();
+            while (build.MoveNext()) { }
+        }
+
+        /// <summary>
+        /// Builds the world a step per frame, so a loading screen keeps animating while it runs.
+        /// Does nothing if the world is already built or shouldn't be built yet.
+        /// </summary>
+        public static IEnumerator BuildRoutine()
+        {
 #if UNITY_EDITOR
-            if (UnityEditor.SessionState.GetBool("PoeClone.LootSimulator.Active", false)) return;
+            if (UnityEditor.SessionState.GetBool("PoeClone.LootSimulator.Active", false)) return Nothing();
 #endif
-            if (MinimalCombatMode.Enabled) return;
+            if (MinimalCombatMode.Enabled) return Nothing();
             var session = PoeClone.Network.GameSessionController.Instance;
-            if (session != null && session.Role == PoeClone.Network.SessionRole.Player && !session.PlayGranted) return;
-            if (Instance != null) return;
+            if (session != null && session.Role == PoeClone.Network.SessionRole.Player && !session.PlayGranted) return Nothing();
+            if (Instance != null) return Nothing();
             var go = new GameObject("World");
-            go.AddComponent<WorldBuilder>().Build();
+            return go.AddComponent<WorldBuilder>().Build();
+        }
+
+        private static IEnumerator Nothing()
+        {
+            yield break;
         }
 
         private void OnDestroy()
@@ -140,7 +156,7 @@ namespace PoeClone.World
                 Instance = null;
         }
 
-        private void Build()
+        private IEnumerator Build()
         {
             Instance = this;
             root = transform;
@@ -153,7 +169,7 @@ namespace PoeClone.World
             if (kit == null || manager == null || ground == null || player == null)
             {
                 Debug.LogError("WorldBuilder: missing area kit, area manager, ground or player; the world cannot be built.");
-                return;
+                yield break;
             }
 
             gateTemplate = CreateGateTemplate();
@@ -164,22 +180,41 @@ namespace PoeClone.World
 
             InitShapes();
             foreach (int a in WorldAreas)
-                if (a != Greenwood) BuildGround(ground, a);
+            {
+                if (a == Greenwood) continue;
+                IEnumerator area = BuildGround(ground, a);
+                while (area.MoveNext())
+                    yield return null;
+                yield return null;
+            }
             // The scene's own forest gets its own grass and the same outline; its square walls go.
             UseGroundTexture(ground, Greenwood);
-            ShapeGround(ground, Greenwood);
-            RelocateOriginalScenery();
+            yield return null;
+            IEnumerator shaping = ShapeGround(ground, Greenwood);
+            while (shaping.MoveNext())
+                yield return null;
+            yield return null;
+            IEnumerator relocating = RelocateOriginalScenery();
+            while (relocating.MoveNext())
+                yield return null;
             GameObject sceneBounds = GameObject.Find("WorldBounds");
             if (sceneBounds != null)
                 sceneBounds.SetActive(false);
 
+            yield return null;
             BuildHaven();
+            yield return null;
             BuildGraveyard();
+            yield return null;
             BuildRuins();
+            yield return null;
             BuildFrozen();
+            yield return null;
             BuildCave();
+            yield return null;
             BuildGlowshrooms();
             BuildGreenwoodOutskirts();
+            yield return null;
             BuildWaystones();
             BuildOutposts();
 
@@ -188,12 +223,20 @@ namespace PoeClone.World
             // town portal or a waystone.
             foreach (var link in AreaLayouts.Links)
                 Connect(link.a, link.b);
+            yield return null;
             BuildFieldBossLairs();
-            BuildBorders();
+            yield return null;
+            IEnumerator borders = BuildBorders();
+            while (borders.MoveNext())
+                yield return null;
+            yield return null;
             BuildQuestSites();
 
+            yield return null;
             SetUpSpawners();
+            yield return null;
             BuildTownsfolk();
+            yield return null;
             PlaceBosses();
 
             var definitions = new AreaDefinition[Centers.Length];
@@ -208,13 +251,18 @@ namespace PoeClone.World
                 };
             }
 
+            yield return null;
             definitions[ActArena] = BuildActArena();
+            yield return null;
             definitions[Warren] = BuildWarren();
+            yield return null;
             definitions[Belfry] = BuildBelfry();
+            yield return null;
             ConfigureCaveLighting(player.transform);
             BuildAmbientDetails();
             gameObject.AddComponent<WorldAmbience>().Build(manager, player.transform);
 
+            yield return null;
             // Colliders made this frame aren't in the physics world until it syncs; the starter
             // loot below finds the ground by raycast.
             Physics.SyncTransforms();
@@ -248,16 +296,19 @@ namespace PoeClone.World
 
         // ------------------------------------------------------------------ areas
 
-        private void BuildGround(GameObject template, int area)
+        private IEnumerator BuildGround(GameObject template, int area)
         {
             Vector3 c = Centers[area];
             GameObject ground = Instantiate(template, root);
             ground.name = "Ground_" + AreaNames[area];
             ground.transform.position = new Vector3(c.x, template.transform.position.y, c.z);
             UseGroundTexture(ground, area);
+            yield return null;
 
             // Cut to the area's outline, walled round its edge.
-            ShapeGround(ground, area);
+            IEnumerator shaping = ShapeGround(ground, area);
+            while (shaping.MoveNext())
+                yield return null;
         }
 
         // Its own floor: a generated texture on a copy of the ground material.
@@ -733,6 +784,11 @@ namespace PoeClone.World
                 spawner.SetBounds(p => shape.Contains(p, 3f));
                 spawnersByArea[area] = spawner;
             }
+
+            // Off until OnAreaChanged switches on the current area's: the build spans several
+            // frames, and a spawner's Start (its first wave) must wait for its area's first visit.
+            foreach (EnemySpawner spawner in spawnersByArea)
+                if (spawner != null) spawner.enabled = false;
         }
 
         // One EnemySpawner per area (null for Haven, the town), so its enemies can be parked while

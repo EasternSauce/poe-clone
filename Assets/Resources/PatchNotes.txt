@@ -1,3 +1,9 @@
+version: 2026-10-11-smooth-loading
+- The loading screen after choosing a character keeps animating while the world loads, instead of freezing until gameplay starts.
+- The first visit to an area no longer stalls the loading screen while the area's minimap is drawn.
+- The gold counter in the inventory sits a little higher, clear of the bag grid.
+- The inventory opens twice as fast.
+
 version: 2026-10-11-sturdier-limbs
 - Arms and legs are thicker, so characters no longer look stick-thin after the body rework. Gloves, boots, rings and sleeves are widened to fit.
 - Your character has a face again: thick brows, small dark eyes and a mouth, visible with or without the starting hood and under open helmets. The Bronze Helmet's eye slit lines up with them.

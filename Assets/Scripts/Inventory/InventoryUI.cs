@@ -32,6 +32,7 @@ namespace PoeClone.Inventory
         private const float Gap = 2f;
         private const float SlotGap = 10f;
         private const float Pad = 20f;
+        private const float OpenFade = 0.14f; // seconds to fade in on opening
         private const int EquipCols = 8;
         private const int EquipRows = 6;
 
@@ -1299,6 +1300,7 @@ private Vector2 CellSize(int w, int h)
             UiKit.Frame(panel);
             UiAppear panelFade = panel.gameObject.AddComponent<UiAppear>();
             panelFade.offset = Vector2.zero;
+            panelFade.duration = OpenFade;
             panelFade.startScale = 1f; // touch mode scales this panel itself
             TouchMode.AddMenuBlocker(panel);
             RectTransform closeButton = UiKit.CloseButton(panel, Close);
@@ -1314,7 +1316,9 @@ private Vector2 CellSize(int w, int h)
             previewPanel.anchoredPosition = new Vector2(-(30f + panelW + 16f), 0f);
             previewPanel.sizeDelta = new Vector2(panelH * 0.68f, panelH);
             UiKit.Frame(previewPanel);
-            previewPanel.gameObject.AddComponent<UiAppear>().offset = Vector2.zero;
+            UiAppear previewFade = previewPanel.gameObject.AddComponent<UiAppear>();
+            previewFade.offset = Vector2.zero;
+            previewFade.duration = OpenFade;
             TouchMode.AddMenuBlocker(previewPanel);
 
             if (hasPreview)
@@ -1386,7 +1390,7 @@ private Vector2 CellSize(int w, int h)
             RectTransform coinsRect = coins.rectTransform;
             coinsRect.anchorMin = coinsRect.anchorMax = coinsRect.pivot = new Vector2(1f, 0f);
             coinsRect.sizeDelta = new Vector2(24f, 24f);
-            coinsRect.anchoredPosition = new Vector2(-(panelW - gridW) * 0.5f, Pad + gridH + 1f);
+            coinsRect.anchoredPosition = new Vector2(-(panelW - gridW) * 0.5f, Pad + gridH + 9f);
             goldText = UiKit.NewText("Gold", bagArea, "", 20, new Color(1f, 0.83f, 0.3f, 1f), TextAnchor.MiddleRight);
             goldText.font = UiKit.BoldFont;
             RectTransform goldRect = goldText.rectTransform;
