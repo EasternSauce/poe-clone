@@ -437,6 +437,10 @@ namespace PoeClone.Inventory
             { StatType.GrantDash, "Fleet" },
             { StatType.GrantCleave, "Sweeping" },
             { StatType.GrantWhirlwind, "Whirling" },
+            { StatType.GrantFissure, "Rending" },
+            { StatType.GrantAftershock, "Quaking" },
+            { StatType.GrantCrossSlash, "Crossing" },
+            { StatType.GrantVenomSlash, "Viperous" },
             { StatType.LifeOnKill, "Ravenous" },
             { StatType.LifeOnAttackHit, "Sustaining" },
             { StatType.MinionDamage, "Commanding" },
@@ -964,6 +968,8 @@ namespace PoeClone.Inventory
                 case StatType.LifeLeech:
                 case StatType.GrantCleave:
                 case StatType.GrantWhirlwind:
+                case StatType.GrantFissure:
+                case StatType.GrantAftershock:
                     return Leaning.Str;
                 case StatType.Dexterity:
                 case StatType.Evasion:
@@ -975,6 +981,8 @@ namespace PoeClone.Inventory
                 case StatType.GrantPiercingShot:
                 case StatType.GrantRainOfArrows:
                 case StatType.GrantBurningArrow:
+                case StatType.GrantCrossSlash:
+                case StatType.GrantVenomSlash:
                     return Leaning.Dex;
                 case StatType.Intelligence:
                 case StatType.MaxMana:

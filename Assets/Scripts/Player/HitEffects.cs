@@ -162,7 +162,7 @@ namespace PoeClone.Player
                     ai.Chill(ChillSeconds);
 
                 if (crit && !secondary && Random.value * 100f < sheet.Total(StatType.Stormblade))
-                    Stormblade(attacker, enemy, baseDamage * StormbladeShare);
+                    Stormblade(attacker, enemy, baseDamage * StormbladeShare, melee);
             }
 
             if (!enemy.IsDead)
@@ -189,7 +189,7 @@ namespace PoeClone.Player
             }
 
             if (enemy.IsDead)
-                OnKill(attacker, stats, sheet, enemy, at, enemyMaxLife, wasChilled || (ai != null && ai.IsChilled), secondary, fromExplosion);
+                OnKill(attacker, stats, sheet, enemy, at, enemyMaxLife, wasChilled || (ai != null && ai.IsChilled), secondary, fromExplosion, melee);
         }
 
         // Everything that adds up as "increased damage" for this hit, as one multiplier.
@@ -254,8 +254,10 @@ namespace PoeClone.Player
             return percent > 0f && Random.value * 100f < percent;
         }
 
+        // melee: the kill came from a melee hit (or what one set off), so what it sets off is melee
+        // too and never enrages (see EnemyController.OnIncomingHit).
         private static void OnKill(Transform attacker, PlayerStats stats, StatSheet sheet, EnemyHealth enemy, Vector3 at,
-            float enemyMaxLife, bool chilled, bool secondary, bool fromExplosion)
+            float enemyMaxLife, bool chilled, bool secondary, bool fromExplosion, bool melee)
         {
             float life = sheet.Total(StatType.LifeOnKill) + stats.MaxHealth * Mathf.Max(0f, sheet.Total(StatType.LifePercentOnKill)) / 100f;
             if (life > 0f)
@@ -277,16 +279,16 @@ namespace PoeClone.Player
             {
                 // A kill by an explosion can explode too, a beat later so the chain is seen spreading.
                 if (Roll(sheet, StatType.ExplodeOnKill))
-                    stats.StartCoroutine(ChainBurst(attacker, enemy, at, enemyMaxLife * ExplosionShare));
+                    stats.StartCoroutine(ChainBurst(attacker, enemy, at, enemyMaxLife * ExplosionShare, melee));
                 return;
             }
             if (secondary)
                 return;
 
             if (Roll(sheet, StatType.ExplodeOnKill))
-                Burst(attacker, enemy, at, ExplosionRadius, enemyMaxLife * ExplosionShare, DamageType.Fire, ExplosionColor);
+                Burst(attacker, enemy, at, ExplosionRadius, enemyMaxLife * ExplosionShare, DamageType.Fire, ExplosionColor, melee);
             else if (chilled && Roll(sheet, StatType.Shatter))
-                Burst(attacker, enemy, at, ShatterRadius, enemyMaxLife * ShatterShare, DamageType.Cold, CombatText.ColdColor);
+                Burst(attacker, enemy, at, ShatterRadius, enemyMaxLife * ShatterShare, DamageType.Cold, CombatText.ColdColor, melee);
         }
 
         /// <summary>A corpse explosion's (or shatter's) look and sound, without the damage.</summary>
@@ -313,7 +315,7 @@ namespace PoeClone.Player
 
         // A corpse explosion or a shatter: damages everything around the dead enemy (and a shatter chills it).
         private static void Burst(Transform attacker, EnemyHealth dead, Vector3 at, float radius, float damage,
-            DamageType type, Color color)
+            DamageType type, Color color, bool melee)
         {
             bool shatter = type == DamageType.Cold;
             PlayBurstVisual(at, radius, shatter);
@@ -330,19 +332,20 @@ namespace PoeClone.Player
                     if (ai != null)
                         ai.Chill(ChillSeconds);
                 }
-                Deal(attacker, other, damage, false, color, type, secondary: true, hitOrigin: at, fromExplosion: !shatter);
+                Deal(attacker, other, damage, false, color, type, secondary: true, hitOrigin: at, fromExplosion: !shatter, melee: melee);
             }
         }
 
-        private static System.Collections.IEnumerator ChainBurst(Transform attacker, EnemyHealth dead, Vector3 at, float damage)
+        private static System.Collections.IEnumerator ChainBurst(Transform attacker, EnemyHealth dead, Vector3 at, float damage, bool melee)
         {
             yield return new WaitForSeconds(ChainDelay);
             if (attacker != null)
-                Burst(attacker, dead, at, ExplosionRadius, damage, DamageType.Fire, ExplosionColor);
+                Burst(attacker, dead, at, ExplosionRadius, damage, DamageType.Fire, ExplosionColor, melee);
         }
 
-        // Stormblade: lightning leaps from the struck enemy to up to three others close by.
-        private static void Stormblade(Transform attacker, EnemyHealth from, float damage)
+        // Stormblade: lightning leaps from the struck enemy to up to three others close by. From a
+        // melee crit the arcs count as melee too (they never enrage).
+        private static void Stormblade(Transform attacker, EnemyHealth from, float damage, bool melee)
         {
             var struck = new HashSet<EnemyHealth> { from };
             Vector3 origin = from.transform.position + Vector3.up * 0.8f;
@@ -366,7 +369,7 @@ namespace PoeClone.Player
                 Vector3 to = next.transform.position + Vector3.up * 0.8f;
                 SkillEffects.Arc(origin, to, CombatText.LightningColor);
                 struck.Add(next);
-                Deal(attacker, next, damage, false, CombatText.LightningColor, DamageType.Lightning, secondary: true, hitOrigin: origin);
+                Deal(attacker, next, damage, false, CombatText.LightningColor, DamageType.Lightning, secondary: true, hitOrigin: origin, melee: melee);
                 origin = to;
             }
         }

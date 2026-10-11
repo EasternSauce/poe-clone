@@ -19,9 +19,10 @@ namespace PoeClone.Skills
     /// swinging (<see cref="MainSkill"/>, <see cref="TrySpendMain"/>, <see cref="ReleaseMain"/>).
     /// Every other skill goes in a bar slot: Q, E, R, F, 1-4, then right, back and forward mouse
     /// buttons (touch has round buttons for the first four). A skill that new gear grants
-    /// drops into the first free slot; the bar picker moves them around. Each costs mana and
-    /// has a cooldown, except bow skills, which are toggled (see PlayerSkills.Bow.cs). Aiming works like attacks: the mouse on desktop, <see cref="VirtualInput.Aim"/>
-    /// on touch. Self-added by <see cref="PlayerController"/>.
+    /// drops into the first free slot; the bar picker moves them around. Each costs mana; spells
+    /// have a cooldown, while bow and melee skills are toggled and replace the weapon's attack
+    /// (see PlayerSkills.Toggle.cs). Aiming works like attacks: the mouse on desktop,
+    /// <see cref="VirtualInput.Aim"/> on touch. Self-added by <see cref="PlayerController"/>.
     /// </summary>
     public partial class PlayerSkills : MonoBehaviour
     {
@@ -191,6 +192,26 @@ namespace PoeClone.Skills
                     SkillEffects.Shockwave(cast.At + facing * 1.8f, 2.8f, skill.Color, 0.34f);
                     break;
 
+                case SkillId.Fissure:
+                    if (cast.Points != null && cast.Points.Length > 1)
+                        SkillEffects.Fissure(cast.Points[0], cast.Points[1] - cast.Points[0],
+                            Vector3.Distance(cast.Points[0], cast.Points[1]), cast.Size, skill.Color);
+                    break;
+
+                case SkillId.Aftershock:
+                    if (cast.Points != null)
+                        SkillEffects.Ripple(cast.Points, AftershockRadii(cast.Size, cast.Points.Length), AftershockStep, skill.Color);
+                    break;
+
+                case SkillId.CrossSlash:
+                    if (cast.Points != null && cast.Points.Length > 1)
+                        SkillEffects.Slash(cast.Points[0], cast.Points[1], cast.Size, skill.Color);
+                    break;
+
+                case SkillId.VenomSlash:
+                    SkillEffects.Shockwave(cast.At + facing * cast.Size * 0.45f, cast.Size * 0.6f, skill.Color, 0.25f);
+                    break;
+
                 case SkillId.LungingThrust:
                     SkillEffects.Arc(cast.At + Vector3.up, cast.At + Vector3.up + facing * cast.Size, skill.Color, 0.25f);
                     break;
@@ -299,7 +320,7 @@ namespace PoeClone.Skills
             {
                 boundMainHand = item;
             }
-            CheckBowToggle();
+            CheckToggle();
             if (item == null)
                 ClearUnavailableSlots();
             else
@@ -308,7 +329,7 @@ namespace PoeClone.Skills
 
         private void OnStatsChanged()
         {
-            CheckBowToggle();
+            CheckToggle();
             Changed?.Invoke();
         }
 
@@ -509,7 +530,7 @@ namespace PoeClone.Skills
             slots[slot] = null;
             slotItems[slot] = null;
             slotReadyAt[slot] = slotCooldownOf[slot] = 0f;
-            CheckBowToggle();
+            CheckToggle();
             Changed?.Invoke();
         }
 
@@ -568,7 +589,7 @@ namespace PoeClone.Skills
                 slotGrants[slot] = grantLevel;
                 slotReadyAt[slot] = sharedReady;
                 slotCooldownOf[slot] = sharedCooldown;
-                CheckBowToggle();
+                CheckToggle();
                 Changed?.Invoke();
                 return;
             }
@@ -589,7 +610,7 @@ namespace PoeClone.Skills
             }
             if (changed)
             {
-                CheckBowToggle();
+                CheckToggle();
                 Changed?.Invoke();
             }
         }
@@ -602,19 +623,13 @@ namespace PoeClone.Skills
         public float AttackRateMultiplier => Mathf.Max(0.5f, 1f + Stat(StatType.AttackSpeed) / 100f) *
             (controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f);
 
-        /// <summary>
-        /// How much faster a skill comes out and recovers: melee attack skills with attack speed,
-        /// everything else with cast speed (both including Onslaught).
-        /// </summary>
-        public float RateFor(SkillDefinition skill) => skill.MeleeAttack ? AttackRateMultiplier : CastRateMultiplier;
-
-        /// <summary>Cooldown at the skill's current level, after attack or cast speed (see <see cref="RateFor"/>).</summary>
+        /// <summary>Cooldown at the skill's current level, after cast speed. Toggled skills have none.</summary>
         public float Cooldown(SkillId id)
         {
             SkillDefinition skill = SkillBook.Get(id);
-            if (skill.Bow)
+            if (skill.Toggled)
                 return 0f;
-            return skill.CooldownAt(Mathf.Max(1, Level(id))) / RateFor(skill);
+            return skill.CooldownAt(Mathf.Max(1, Level(id))) / CastRateMultiplier;
         }
 
         public float CooldownAt(int slot)
@@ -622,36 +637,46 @@ namespace PoeClone.Skills
             SkillId? id = Slot(slot);
             if (id == null) return 0f;
             SkillDefinition skill = SkillBook.Get(id.Value);
-            if (skill.Bow) return 0f;
-            return skill.CooldownAt(Mathf.Max(1, LevelAt(slot))) / RateFor(skill);
+            if (skill.Toggled) return 0f;
+            return skill.CooldownAt(Mathf.Max(1, LevelAt(slot))) / CastRateMultiplier;
         }
 
         public float CooldownForGrant(SkillGrant grant)
         {
             SkillDefinition skill = SkillBook.Get(grant.Id);
-            if (skill.Bow) return 0f;
-            return skill.CooldownAt(GrantLevelWithBonuses(grant)) / RateFor(skill);
+            if (skill.Toggled) return 0f;
+            return skill.CooldownAt(GrantLevelWithBonuses(grant)) / CastRateMultiplier;
         }
 
-        /// <summary>A skill's cost at a skill level for this character (higher characters pay more).</summary>
+        /// <summary>
+        /// A skill's cost at a skill level for this character (higher characters pay more). A melee
+        /// skill's use costs less with a faster weapon and more with a slower one (in step with its
+        /// base attack speed, a sword paying the listed cost), so it costs about the same per second
+        /// whatever the weapon.
+        /// </summary>
         public float CostOf(SkillId id, int level)
         {
             SkillDefinition skill = SkillBook.Get(id);
-            return skill.ManaCostAt(Mathf.Max(1, level)) * CharacterCostMultiplier(skill, stats != null ? stats.Level : 1);
+            float cost = skill.ManaCostAt(Mathf.Max(1, level)) * CharacterCostMultiplier(skill, stats != null ? stats.Level : 1);
+            if (skill.MeleeAttack && !skill.Channelled)
+                cost *= CharacterAttackAnimator.BaseAttackSpeed(WeaponType.Sword) /
+                        Mathf.Max(0.1f, CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()));
+            return cost;
         }
 
         /// <summary>
         /// How much more a skill costs at a character level, rising smoothly from 1x at level 1:
-        /// to 1.3x at level 34 for most skills, 1.5x for summons and Grave Rot. Bow skills and
-        /// Death Mark barely change cost with their own level (gear rarely raises it), so they climb
-        /// steeply with the character instead (about 8x by level 34).
+        /// to 1.3x at level 34 for most skills, 1.5x for summons and Grave Rot, 2x for melee skills
+        /// used as the attack (not Whirlwind). Bow skills and Death Mark barely change cost with their
+        /// own level (gear rarely raises it), so they climb steeply with the character instead
+        /// (about 8x by level 34).
         /// </summary>
         public static float CharacterCostMultiplier(SkillDefinition skill, int characterLevel)
         {
             float l = Mathf.Max(0, characterLevel - 1);
             if (skill.Bow || skill.Id == SkillId.DeathMark)
                 return 1f + 0.15f * l + 0.0019f * l * l;
-            float late = skill.Summon || skill.Id == SkillId.GraveRot ? 0.5f : 0.3f;
+            float late = skill.Summon || skill.Id == SkillId.GraveRot ? 0.5f : skill.MeleeAttack && !skill.Channelled ? 1f : 0.3f;
             return 1f + late * Mathf.Clamp01(l / 33f);
         }
 
@@ -780,33 +805,20 @@ namespace PoeClone.Skills
                 CombatText.Show(transform.position + Vector3.up * 2f, skill.Name + ": not on your gear", UiKit.DimText, 0.8f);
                 return false;
             }
-            if (skill.Bow)
-                return ToggleBow(skill, slot);
+            if (skill.Toggled)
+                return Toggle(skill, slot);
             if (CooldownLeftAt(slot) > 0f || controller.IsDashing || controller.IsSkillCommitted)
                 return false;
 
-            // Swinging skills wait for the current swing (or spin); Dash and War Cry can cut in.
+            // Gestures wait for the current swing (or spin); Dash and War Cry can cut in.
             bool usesArms = skill.Id != SkillId.Dash && skill.Id != SkillId.WarCry;
             if (usesArms && (IsWhirling || (attackAnimator != null && attackAnimator.IsAttacking)))
                 return false;
-
-            // Melee skills belong to a weapon family; never let a bow or another weapon use them.
-            if (!CanUseWithWeapon(skill.Id, CurrentWeapon()))
-            {
-                CombatText.Show(transform.position + Vector3.up * 2f, RequiredWeaponText(skill.Id), CombatText.PhysicalColor, 0.8f);
-                return false;
-            }
 
             if (!stats.TrySpendMana(ManaCostAt(slot)))
             {
                 CombatText.Show(transform.position + Vector3.up * 2f, "Not enough " + CostResource, CombatText.ColdColor, 0.8f);
                 return false;
-            }
-
-            if (skill.Channelled)
-            {
-                BeginWhirlwind(slot, level);
-                return true;
             }
 
             float cooldown = CooldownAt(slot);
@@ -884,10 +896,8 @@ namespace PoeClone.Skills
         {
             if (!echo && Echoes(skill) && UnityEngine.Random.value * 100f < Stat(StatType.SpellEcho))
                 StartCoroutine(Echo(skill, level));
-            // Committed melee skills play at impact; teleport plays only after finding a landing.
-            if (skill.Id != SkillId.Cleave && skill.Id != SkillId.Pulverize &&
-                skill.Id != SkillId.ReapingArc && skill.Id != SkillId.LungingThrust &&
-                skill.Id != SkillId.FangStrike && skill.Id != SkillId.Teleport)
+            // Teleport plays only after finding a landing.
+            if (skill.Id != SkillId.Teleport)
                 PlaySkillSound(skill.Id, transform.position);
             float spell = 1f; // Intelligence and spell/elemental increases share HitEffects' sum.
             float area = DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
@@ -896,19 +906,6 @@ namespace PoeClone.Skills
 
             switch (skill.Id)
             {
-                case SkillId.Cleave:
-                    StartCoroutine(Spin(skill, level));
-                    break;
-                case SkillId.Pulverize:
-                    StartCoroutine(CommittedStrike(skill.Id, 0.72f, CurrentWeapon(), () => Pulverize(skill, level)));
-                    break;
-                case SkillId.ReapingArc:
-                    StartCoroutine(CommittedStrike(skill.Id, 0.58f, CurrentWeapon(), () => ReapingArc(skill, level)));
-                    break;
-                case SkillId.LungingThrust:
-                    StartCoroutine(Lunge(skill, level));
-                    break;
-
                 case SkillId.FireBolt:
                     if (!asAttack)
                     {
@@ -1001,9 +998,6 @@ namespace PoeClone.Skills
                     GraveRot(skill, level, area);
                     break;
 
-                case SkillId.FangStrike:
-                    StartCoroutine(CommittedStrike(skill.Id, 0.12f, WeaponType.Dagger, () => FangStrike(skill, level)));
-                    break;
                 case SkillId.VenomSpout:
                 {
                     Vector3 direction = AimDirection();
@@ -1037,75 +1031,6 @@ namespace PoeClone.Skills
             Cast(skill, level, asAttack: true, echo: true);
         }
 
-        // A full turn on the spot, then everything in reach takes the blow.
-        private IEnumerator Spin(SkillDefinition skill, int level)
-        {
-            controller.SetSkillCommit(true);
-            Face(AimDirection());
-            float rate = AttackRateMultiplier;
-            PlaySkillAnimation(skill.Id, CurrentWeapon(), rate);
-            yield return new WaitForSeconds(0.65f / rate);
-
-            float seconds = 0.26f / rate;
-            float startYaw = transform.eulerAngles.y;
-            for (float t = 0f; t < seconds; t += Time.deltaTime)
-            {
-                transform.rotation = Quaternion.Euler(0f, startYaw + 360f * (t / seconds), 0f);
-                yield return null;
-            }
-            transform.rotation = Quaternion.Euler(0f, startYaw, 0f);
-
-            WeaponType weapon = CurrentWeapon();
-            float melee = 1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f;
-            float reach = Mathf.Max(2.6f, CharacterAttackAnimator.IsRanged(weapon) ? 2.6f : (CharacterAttackAnimator.AttackRange(weapon) + 0.6f) * melee) *
-                          DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
-            SkillEffects.Shockwave(transform.position, reach, skill.Color, 0.3f);
-            Record(skill, level, reach);
-
-            float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
-            PlaySkillSound(skill.Id, transform.position);
-            foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
-                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
-            controller.SetSkillCommit(false);
-        }
-
-        private IEnumerator CommittedStrike(SkillId skill, float windup, WeaponType animationWeapon, Action release)
-        {
-            controller.SetSkillCommit(true);
-            Face(AimDirection());
-            float rate = AttackRateMultiplier;
-            PlaySkillAnimation(skill, animationWeapon, rate);
-            yield return new WaitForSeconds(windup / rate);
-            // Read the hammer position after the arm and body have applied their strike pose.
-            if (skill == SkillId.Pulverize)
-                yield return new WaitForEndOfFrame();
-            PlaySkillSound(skill, transform.position);
-            release();
-            yield return new WaitForSeconds(0.18f / rate);
-            controller.SetSkillCommit(false);
-        }
-
-        private IEnumerator Lunge(SkillDefinition skill, int level)
-        {
-            controller.SetSkillCommit(true);
-            Face(AimDirection());
-            float rate = AttackRateMultiplier;
-            PlaySkillAnimation(skill.Id, CurrentWeapon(), rate);
-            yield return new WaitForSeconds(0.34f / rate);
-            controller.Dash(transform.forward, 2.4f, 0.16f / rate);
-            yield return new WaitForSeconds(0.16f / rate);
-            PlaySkillSound(skill.Id, transform.position);
-            LungingThrust(skill, level);
-            yield return new WaitForSeconds(0.16f / rate);
-            controller.SetSkillCommit(false);
-        }
-
-        private void PlaySkillAnimation(SkillId skill, WeaponType weapon, float rate = 1f)
-        {
-            if (attackAnimator != null)
-                attackAnimator.PlaySkillAttack(skill, weapon, rate);
-        }
-
         private static void PlaySkillSound(SkillId skill, Vector3 at)
         {
             string sound;
@@ -1115,8 +1040,12 @@ namespace PoeClone.Skills
                 case SkillId.Pulverize: sound = "skill_pulverize"; break;
                 case SkillId.ReapingArc: sound = "skill_reaping_arc"; break;
                 case SkillId.LungingThrust: sound = "skill_lunging_thrust"; break;
-                case SkillId.FangStrike: sound = "skill_fang_strike"; break;
-                case SkillId.Whirlwind: sound = "skill_cleave"; break;
+                case SkillId.FangStrike:
+                case SkillId.VenomSlash: sound = "skill_fang_strike"; break;
+                case SkillId.Whirlwind:
+                case SkillId.CrossSlash: sound = "skill_cleave"; break;
+                case SkillId.Fissure:
+                case SkillId.Aftershock: sound = "skill_pulverize"; break;
                 default:
                     PoeClone.Audio.AudioManager.Instance?.PlayEffect("skill." + skill, at);
                     return;
@@ -1125,87 +1054,6 @@ namespace PoeClone.Skills
             PoeClone.Audio.AudioManager audio = PoeClone.Audio.AudioManager.Instance;
             if (audio != null)
                 audio.PlayAtPoint(audio.Sfx(sound), at);
-        }
-
-        private static bool CanUseWithWeapon(SkillId id, WeaponType weapon)
-        {
-            switch (id)
-            {
-                case SkillId.Cleave:
-                case SkillId.Whirlwind: return weapon != WeaponType.Unarmed && !CharacterAttackAnimator.IsRanged(weapon);
-                case SkillId.Pulverize: return weapon == WeaponType.Mace || weapon == WeaponType.Maul;
-                case SkillId.ReapingArc: return weapon == WeaponType.Axe || weapon == WeaponType.Greataxe;
-                case SkillId.LungingThrust: return weapon == WeaponType.Sword || weapon == WeaponType.Greatsword;
-                case SkillId.FangStrike: return weapon == WeaponType.Dagger;
-                default: return true;
-            }
-        }
-
-        private static string RequiredWeaponText(SkillId id)
-        {
-            switch (id)
-            {
-                case SkillId.Pulverize: return "Needs a mace or maul";
-                case SkillId.ReapingArc: return "Needs an axe";
-                case SkillId.LungingThrust: return "Needs a sword";
-                case SkillId.FangStrike: return "Needs a dagger";
-                default: return "Needs a melee weapon";
-            }
-        }
-
-        private void Pulverize(SkillDefinition skill, int level)
-        {
-            float radius = 3.6f * DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
-            Vector3 impact = transform.position + transform.forward * CharacterAttackAnimator.AttackRange(CurrentWeapon());
-            EquipmentVisuals visuals = GetComponentInChildren<EquipmentVisuals>();
-            if (visuals != null && visuals.TryGetMainHandHeadPosition(out Vector3 head))
-                impact = new Vector3(head.x, transform.position.y, head.z);
-            SkillEffects.Shockwave(impact, radius, skill.Color, 0.42f);
-            // Match the impact treatment of a basic maul slam: ground burst plus a brief camera jolt.
-            PoeClone.CameraSystem.CameraFollow.Shake(0.12f, 0.18f);
-            Record(skill, level, radius, at: impact);
-            float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
-            foreach (EnemyHealth enemy in EnemiesWithin(impact, radius))
-                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
-        }
-
-        private void ReapingArc(SkillDefinition skill, int level)
-        {
-            float reach = 4.6f * (1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f);
-            float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
-            foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
-            {
-                Vector3 to = enemy.transform.position - transform.position;
-                to.y = 0f;
-                if (to.sqrMagnitude > 0.01f && Vector3.Angle(transform.forward, to) <= 72f)
-                    Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
-            }
-            SkillEffects.Shockwave(transform.position + transform.forward * 1.8f, 2.8f, skill.Color, 0.34f);
-            Record(skill, level, reach);
-        }
-
-        private void LungingThrust(SkillDefinition skill, int level)
-        {
-            float reach = 3f * (1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f);
-            float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
-            EnemyHealth target = AimedEnemy(reach) ?? EnemyInDirection(transform.forward, reach);
-            SkillEffects.Arc(transform.position + Vector3.up, transform.position + Vector3.up + transform.forward * reach, skill.Color, 0.25f);
-            if (target != null)
-                Hit(target, damage, CombatText.PhysicalColor, attack: true, melee: true);
-            Record(skill, level, reach);
-        }
-
-        private void FangStrike(SkillDefinition skill, int level)
-        {
-            float reach = 2.4f * (1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f);
-            EnemyHealth target = AimedEnemy(reach) ?? EnemyInDirection(transform.forward, reach);
-            Record(skill, level, reach);
-            if (target != null)
-            {
-                Hit(target, WeaponDamage() * skill.WeaponMultiplierAt(level), skill.Color, true, melee: true);
-                WeaponVenom.Apply(transform, target, WeaponDamage() * 1.2f, 150f + 15f * (level - 1), 0f, inventory.Stats,
-                    canEnrage: false);
-            }
         }
 
         /// <summary>
@@ -1604,12 +1452,12 @@ namespace PoeClone.Skills
                 return null;
 
             EnemyHealth best = null;
-            float bestSq = reach * reach;
+            float bestSq = float.MaxValue;
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
             {
                 Vector3 toEnemy = enemy.transform.position - transform.position;
                 toEnemy.y = 0f;
-                if (Vector3.Angle(direction, toEnemy) > AimConeHalfAngle)
+                if (Vector3.Angle(direction, toEnemy) > AimConeHalfAngle || !Within(enemy, reach))
                     continue;
 
                 float distSq = toEnemy.sqrMagnitude;
@@ -1648,11 +1496,14 @@ namespace PoeClone.Skills
             return near != null && Within(near, reach) ? near : null;
         }
 
+        // Within reach of the enemy's body, not just its centre: a big boss is reached at its edge
+        // (as by a plain swing, see PlayerCombat.DamageableReach).
         private bool Within(EnemyHealth enemy, float reach)
         {
             Vector3 d = enemy.transform.position - transform.position;
             d.y = 0f;
-            return d.sqrMagnitude <= reach * reach;
+            float bodyReach = PlayerCombat.DamageableReach(enemy, reach);
+            return d.sqrMagnitude <= bodyReach * bodyReach;
         }
 
         // Where a cast should go: the mouse on desktop; on touch, the aim stick's direction, else

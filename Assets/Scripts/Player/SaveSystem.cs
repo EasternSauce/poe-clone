@@ -285,8 +285,8 @@ namespace PoeClone.Player
             PlayerSkills skills = stats.GetComponent<PlayerSkills>();
             if (skills != null)
             {
-                data.activeBowSlot = skills.SavedBowSlot;
-                data.activeBowSkill = skills.SavedBowSkill;
+                data.activeBowSlot = skills.SavedToggleSlot;
+                data.activeBowSkill = skills.SavedToggleSkill;
                 for (int k = 0; k < SkillBook.SlotCount; k++)
                 {
                     SkillId? id = skills.Slot(k);
@@ -440,7 +440,7 @@ namespace PoeClone.Player
                 }
             }
 
-            skills?.RestoreBowToggle(data.activeBowSlot, data.activeBowSkill);
+            skills?.RestoreToggle(data.activeBowSlot, data.activeBowSkill);
 
             QuestLog log = QuestLog.Instance;
             // Quests saved under an older quest book start over (the places visited are kept).

@@ -144,12 +144,12 @@ namespace PoeClone.UI
         }
 
         // The equipped weapon's painted icon, or the plain sword silhouette unarmed. A bow shows
-        // an arrow, or the icon of the bow skill that's on.
+        // an arrow; a bow or melee skill that's on shows its icon.
         private void UpdateAimIcon()
         {
             PlayerInventory inventory = stats != null ? stats.GetComponent<PlayerInventory>() : null;
             ItemData weapon = inventory != null ? inventory.Equipment.GetActive(EquipSlot.MainHand) : null;
-            Skills.SkillId? attackSkill = skills != null ? skills.MainSkill ?? skills.ActiveBowSkill : null;
+            Skills.SkillId? attackSkill = skills != null ? skills.MainSkill ?? skills.ActiveAttackSkill : null;
             string id = (weapon != null ? weapon.Id : "") + "|" + attackSkill;
             if (id == aimIconFor)
                 return;
@@ -506,8 +506,7 @@ namespace PoeClone.UI
 
                 int slot = k;
                 var relay = back.gameObject.AddComponent<TouchPointerRelay>();
-                relay.Down += _ => VirtualInput.SkillPressed = VirtualInput.SkillHeld = slot;
-                relay.Up += _ => { if (VirtualInput.SkillHeld == slot) VirtualInput.SkillHeld = -1; };
+                relay.Down += _ => VirtualInput.SkillPressed = slot;
                 TouchMode.AddBlocker(back.rectTransform);
                 Image ring = SkillBarUI.NewRing(back.rectTransform, 6f);
                 Text number = UiKit.NewText("ButtonNumber", back.rectTransform, (k + 1).ToString(),

@@ -7,7 +7,8 @@ namespace PoeClone.Skills
     /// <summary>
     /// Short-lived visuals for skills, built from coloured primitives (no particle systems or
     /// special shaders, so they render in every build): an expanding ground ring, a lightning
-    /// arc between two points, a fiery explosion, and a rising glow around a character.
+    /// arc between two points, a fiery explosion, a rising glow around a character, a cut along the
+    /// ground, a running fissure and a chain of tremors.
     /// </summary>
     public class SkillEffects : MonoBehaviour
     {
@@ -203,6 +204,113 @@ namespace PoeClone.Skills
                 root.transform.localPosition = Vector3.up * (1.8f * t / seconds);
                 root.transform.localRotation = Quaternion.Euler(0f, 240f * t, 0f);
                 yield return null;
+            }
+            Destroy(root);
+        }
+
+        /// <summary>A bright cut along the ground from one point to another that thins away (Cross Slash).</summary>
+        public static void Slash(Vector3 from, Vector3 to, float width, Color color, float seconds = 0.25f)
+        {
+            Vector3 line = to - from;
+            line.y = 0f;
+            Vector3 mid = (from + to) * 0.5f;
+            var go = new GameObject("Slash");
+            go.transform.SetPositionAndRotation(new Vector3(mid.x, GroundY(mid) + 0.08f, mid.z),
+                Quaternion.LookRotation(line.sqrMagnitude > 0.0001f ? line : Vector3.forward));
+            GameObject blade = RuntimePrimitives.Create(PrimitiveType.Cube, go.transform, color);
+            blade.transform.localScale = new Vector3(width, 0.03f, 0.1f);
+            go.AddComponent<SkillEffects>().StartCoroutine(Thin(go, blade.transform, width, line.magnitude, seconds));
+        }
+
+        private static IEnumerator Thin(GameObject root, Transform blade, float width, float length, float seconds)
+        {
+            for (float t = 0f; t < seconds; t += Time.deltaTime)
+            {
+                float f = t / seconds;
+                // Drawn out to its full length at once, then narrows away.
+                blade.localScale = new Vector3(width * (1f - f) * 0.5f, 0.03f, length * Mathf.Min(1f, f * 5f));
+                yield return null;
+            }
+            Destroy(root);
+        }
+
+        private const float FissureSpeed = 22f;
+        private const float FissureStep = 0.7f;
+
+        /// <summary>
+        /// A crack that runs along the ground from <paramref name="start"/>, throwing up shards of
+        /// rock as it goes, which sink back once it's done. <paramref name="reached"/> runs for each
+        /// stretch it opens (from, to), for the damage.
+        /// </summary>
+        public static void Fissure(Vector3 start, Vector3 direction, float length, float halfWidth, Color color,
+            System.Action<Vector3, Vector3> reached = null)
+        {
+            var host = new GameObject("Fissure").AddComponent<SkillEffects>();
+            host.StartCoroutine(Crack(host.gameObject, start, direction, length, halfWidth, color, reached));
+        }
+
+        private static IEnumerator Crack(GameObject root, Vector3 start, Vector3 direction, float length, float halfWidth, Color color,
+            System.Action<Vector3, Vector3> reached)
+        {
+            direction.y = 0f;
+            direction = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.forward;
+            Vector3 side = new Vector3(direction.z, 0f, -direction.x);
+            Color dark = Color.Lerp(color, Color.black, 0.6f);
+            Vector3 from = start;
+            for (float d = FissureStep; d <= length + 0.001f; d += FissureStep)
+            {
+                Vector3 to = start + direction * d;
+                float ground = GroundY(to);
+                GameObject crack = RuntimePrimitives.Create(PrimitiveType.Cube, root.transform, dark);
+                crack.transform.SetPositionAndRotation(new Vector3((from.x + to.x) * 0.5f, ground + 0.03f, (from.z + to.z) * 0.5f),
+                    Quaternion.LookRotation(direction) * Quaternion.Euler(0f, Random.Range(-12f, 12f), 0f));
+                crack.transform.localScale = new Vector3(halfWidth * 0.35f, 0.04f, FissureStep * 1.1f);
+
+                // A shard of rock thrust up beside the crack, tilted away from it.
+                float lean = Random.value < 0.5f ? -1f : 1f;
+                GameObject shard = RuntimePrimitives.Create(PrimitiveType.Cube, root.transform, color);
+                float height = Random.Range(0.5f, 0.9f) * Mathf.Max(0.8f, halfWidth);
+                shard.transform.SetPositionAndRotation(
+                    new Vector3(to.x, ground, to.z) + side * lean * Random.Range(0.15f, 0.45f) * halfWidth + Vector3.up * height * 0.3f,
+                    Quaternion.LookRotation(direction) * Quaternion.Euler(Random.Range(-15f, 15f), Random.Range(0f, 90f), lean * Random.Range(10f, 30f)));
+                shard.transform.localScale = new Vector3(Random.Range(0.25f, 0.4f), height, Random.Range(0.25f, 0.4f));
+
+                reached?.Invoke(from, to);
+                from = to;
+                yield return new WaitForSeconds(FissureStep / FissureSpeed);
+            }
+
+            yield return new WaitForSeconds(0.3f);
+            // The shards sink back into the ground.
+            const float sink = 0.4f;
+            Vector3 top = root.transform.position;
+            for (float t = 0f; t < sink; t += Time.deltaTime)
+            {
+                root.transform.position = top + Vector3.down * (1.2f * t / sink);
+                yield return null;
+            }
+            Destroy(root);
+        }
+
+        /// <summary>
+        /// Tremors one after another, <paramref name="step"/> seconds apart (Aftershock): a ring and a
+        /// burst at each point, at its radius. <paramref name="landed"/> runs with each one's index.
+        /// </summary>
+        public static void Ripple(Vector3[] centers, float[] radii, float step, Color color, System.Action<int> landed = null)
+        {
+            var host = new GameObject("Ripple").AddComponent<SkillEffects>();
+            host.StartCoroutine(Tremors(host.gameObject, centers, radii, step, color, landed));
+        }
+
+        private static IEnumerator Tremors(GameObject root, Vector3[] centers, float[] radii, float step, Color color, System.Action<int> landed)
+        {
+            for (int k = 0; k < centers.Length && k < radii.Length; k++)
+            {
+                if (k > 0)
+                    yield return new WaitForSeconds(step);
+                Shockwave(centers[k], radii[k], color, 0.32f);
+                Blast(new Vector3(centers[k].x, GroundY(centers[k]), centers[k].z), radii[k] * 0.35f, color, 0.22f);
+                landed?.Invoke(k);
             }
             Destroy(root);
         }

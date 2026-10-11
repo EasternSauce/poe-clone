@@ -9,34 +9,15 @@ using PoeClone.Visuals;
 namespace PoeClone.Skills
 {
     /// <summary>
-    /// Bow skills (Split Shot, Piercing Shot, Rain of Arrows, Burning Arrow): they roll on bows and
-    /// quivers and sit on the bar like any skill, but pressing one toggles it instead of using it.
-    /// One can be on at a time (turning another on swaps them; pressing it again turns it off).
-    /// While one is on, the bow's attack (left click / the aim stick) is that skill: its own draw
-    /// animation (<see cref="CharacterAttackAnimator.BowStyle"/>) and its own shot, released by
+    /// Bow skills (Split Shot, Piercing Shot, Rain of Arrows, Burning Arrow, Venom Arrow): they roll
+    /// on bows and quivers and are toggled from the bar (see PlayerSkills.Toggle.cs). While one is
+    /// on, the bow's attack is that skill: its own draw animation
+    /// (<see cref="CharacterAttackAnimator.BowStyle"/>) and its own shot, released by
     /// <see cref="PlayerCombat"/> through <see cref="ReleaseBow"/>. Each shot costs a little mana
     /// (life with Blood Magic): Additional Arrows, attack speed and attack damage apply to them.
     /// </summary>
     public partial class PlayerSkills
     {
-        private SkillId? toggledBow;
-        private int toggledBowSlot = -1;
-
-        public int SavedBowSlot => toggledBowSlot + 1;
-        public int SavedBowSkill => toggledBow.HasValue ? (int)toggledBow.Value + 1 : 0;
-
-        /// <summary>Restore only after this character's equipment and bindings have loaded.</summary>
-        public void RestoreBowToggle(int savedSlot, int savedSkill)
-        {
-            toggledBow = savedSkill > 0 ? (SkillId?)(SkillId)(savedSkill - 1) : null;
-            toggledBowSlot = savedSlot - 1;
-            if (toggledBow.HasValue && !SkillBook.Get(toggledBow.Value).Bow)
-                toggledBow = null;
-            CheckBowToggle();
-            if (!toggledBow.HasValue) toggledBowSlot = -1;
-            Changed?.Invoke();
-        }
-
         // Degrees between arrows: Split Shot's wide fan, Piercing Shot's tight one.
         private const float SplitSpread = 13f;
         private const float PierceSpread = 5f;
@@ -44,67 +25,6 @@ namespace PoeClone.Skills
         private const float RainRadius = 2.4f;     // where the arrows land round the aimed spot
         private const float RainHitRadius = 1.1f;  // what each one hits where it lands
         private const float BurnRadius = 1.5f;
-
-        /// <summary>The bow skill the bow shoots right now (on, granted, and a bow in hand), or null.</summary>
-        public SkillId? ActiveBowSkill
-        {
-            get
-            {
-                if (toggledBow == null || toggledBowSlot < 0 || Slot(toggledBowSlot) != toggledBow ||
-                    LevelAt(toggledBowSlot) <= 0 || CurrentWeapon() != WeaponType.Bow)
-                    return null;
-                return toggledBow;
-            }
-        }
-
-        /// <summary>Whether this bow skill is toggled on (for the bar's spinning ring).</summary>
-        public bool IsToggledOn(SkillId id)
-        {
-            return ActiveBowSkill == id;
-        }
-
-        public bool IsToggledOnAt(int slot) => ActiveBowSkill != null && toggledBowSlot == slot;
-        public int ActiveBowLevel => ActiveBowSkill != null ? LevelAt(toggledBowSlot) : 0;
-        public bool CanAffordBowShot => ActiveBowSkill != null && stats != null &&
-            stats.CanAffordSkill(CostOf(ActiveBowSkill.Value, ActiveBowLevel));
-        public bool TrySpendBowShot(SkillId id, int level) => stats != null && stats.TrySpendMana(CostOf(id, level));
-
-        private bool ToggleBow(SkillDefinition skill, int slot)
-        {
-            Vector3 above = transform.position + Vector3.up * 2.2f;
-            if (toggledBowSlot == slot && toggledBow == skill.Id)
-            {
-                toggledBow = null;
-                toggledBowSlot = -1;
-                CombatText.Show(above, skill.Name + " off", UiKit.DimText, 0.8f);
-                Changed?.Invoke();
-                SaveSystem.SaveCharacterNow();
-                return true;
-            }
-            if (CurrentWeapon() != WeaponType.Bow)
-            {
-                CombatText.Show(above, "Needs a bow", CombatText.PhysicalColor, 0.8f);
-                return false;
-            }
-
-            toggledBow = skill.Id;
-            toggledBowSlot = slot;
-            SkillEffects.Shockwave(transform.position, 1.4f, skill.Color, 0.3f);
-            CombatText.Show(above, skill.Name, skill.Color, 0.9f);
-            Changed?.Invoke();
-            SaveSystem.SaveCharacterNow();
-            return true;
-        }
-
-        // Gear changed: a bow skill that's no longer granted, or no bow in hand, switches off.
-        private void CheckBowToggle()
-        {
-            if (toggledBow != null && ActiveBowSkill == null)
-            {
-                toggledBow = null;
-                toggledBowSlot = -1;
-            }
-        }
 
         /// <summary>How the bow is drawn while this skill is on.</summary>
         public static CharacterAttackAnimator.BowStyle BowStyleOf(SkillId id)

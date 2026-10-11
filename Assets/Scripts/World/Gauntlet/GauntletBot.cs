@@ -8,8 +8,8 @@ namespace PoeClone.World
 {
     /// <summary>
     /// Plays the automated gauntlet through the touch inputs (the aim stick and skill presses):
-    /// walks into range of the nearest enemy, holds the attack on it, uses bar skills when they're
-    /// ready, keeps summons up (only into room under each kind's limit), and drinks potions when low. Out of potions, it gets 20 more
+    /// toggles on the build's bow or melee skill, walks into range of the nearest enemy, holds the
+    /// attack on it, uses bar skills when they're ready, keeps summons up (only into room under each kind's limit), and drinks potions when low. Out of potions, it gets 20 more
     /// (counted as refills in the results).
     /// </summary>
     public sealed class GauntletBot : MonoBehaviour
@@ -39,7 +39,7 @@ namespace PoeClone.World
             if (float.TryParse(MinimalCombatMode.Option("speed"), System.Globalization.NumberStyles.Float,
                     System.Globalization.CultureInfo.InvariantCulture, out float speed) && speed > 0f)
                 Time.timeScale = speed;
-            ToggleBowSkill();
+            ToggleAttackSkill();
         }
 
         public void Stop()
@@ -70,13 +70,26 @@ namespace PoeClone.World
 
             Vector3 to = target.transform.position - player.transform.position;
             to.y = 0f;
-            // Big bodies (bosses) keep the player further from their centre.
-            float reach = (build.Melee ? 1.3f : 7f) + 1.1f * EnemyKinds.Get(target.KindIndex).Scale;
+            // Melee closes to well inside the weapon's reach of the body (big bosses are reached at
+            // their edge, as a swing reaches them); big bodies keep ranged builds further off.
+            float reach = build.Melee
+                ? PlayerCombat.DamageableReach(target, 0.75f * PoeClone.Visuals.CharacterAttackAnimator.AttackRange(Weapon()))
+                : 7f + 1.1f * EnemyKinds.Get(target.KindIndex).Scale;
             Vector2 stick = Stick(to);
             // Walking but not getting anywhere (pressed against the enemy): swing from here.
             float moved = (player.transform.position - lastPosition).magnitude;
             lastPosition = player.transform.position;
             stuckFor = VirtualInput.Move.sqrMagnitude > 0f && moved < 0.01f ? stuckFor + Time.deltaTime : 0f;
+            if (skills.ActiveMeleeSkill == SkillId.Whirlwind)
+            {
+                // Whirlwind: the attack stays held the whole time (one spin, not repeated presses),
+                // steered with the aim stick, easing off near the target so the spin lingers on it.
+                VirtualInput.Move = Vector2.zero;
+                VirtualInput.Aim = stick * Mathf.Clamp(to.magnitude / 4f, 0.2f, 1f);
+                VirtualInput.AttackHeld = true;
+                UseSkills(to.magnitude);
+                return;
+            }
             if (to.magnitude > reach && stuckFor < 0.4f)
             {
                 VirtualInput.Move = stick;
@@ -88,6 +101,12 @@ namespace PoeClone.World
             VirtualInput.Aim = stick;
             VirtualInput.AttackHeld = true;
             UseSkills(to.magnitude);
+        }
+
+        private WeaponType Weapon()
+        {
+            ItemData weapon = inventory.Equipment.GetActive(EquipSlot.MainHand);
+            return weapon != null ? weapon.WeaponType : WeaponType.Unarmed;
         }
 
         // A world direction as the screen-relative stick input PlayerController reads back.
@@ -142,25 +161,22 @@ namespace PoeClone.World
             }
         }
 
-        private void ToggleBowSkill()
+        // The build's bow skill if it has one, else its first core skill that toggles, else any
+        // toggled skill the gear brought.
+        private void ToggleAttackSkill()
         {
-            if (build.BowSkill == null && !HasBowSkillOnBar()) return;
-            int fallback = -1;
+            int best = -1, bestRank = int.MaxValue;
             for (int k = 0; k < SkillBook.SlotCount; k++)
             {
                 SkillId? id = skills.Slot(k);
-                if (id == null || !SkillBook.Get(id.Value).Bow) continue;
-                if (id == build.BowSkill) { skills.TryUse(k); return; }
-                if (fallback < 0) fallback = k;
+                if (id == null || skills.LevelAt(k) <= 0) continue;
+                SkillDefinition skill = SkillBook.Get(id.Value);
+                if (!skill.Toggled) continue;
+                int core = System.Array.IndexOf(build.CoreSkills, skill.Grant);
+                int rank = id == build.BowSkill ? -1 : core >= 0 ? core : 100;
+                if (rank < bestRank) { best = k; bestRank = rank; }
             }
-            if (fallback >= 0) skills.TryUse(fallback);
-        }
-
-        private bool HasBowSkillOnBar()
-        {
-            for (int k = 0; k < SkillBook.SlotCount; k++)
-                if (skills.Slot(k) != null && SkillBook.Get(skills.Slot(k).Value).Bow) return true;
-            return false;
+            if (best >= 0) skills.TryUse(best);
         }
 
         private void UseSkills(float distance)
@@ -171,7 +187,7 @@ namespace PoeClone.World
                 SkillId? id = skills.Slot(k);
                 if (id == null) continue;
                 SkillDefinition skill = SkillBook.Get(id.Value);
-                if (skill.Bow || id == SkillId.Dash || id == SkillId.Teleport) continue;
+                if (skill.Toggled || id == SkillId.Dash || id == SkillId.Teleport) continue;
                 if (skills.CooldownLeftAt(k) > 0f || !skills.CanAffordAt(k)) continue;
                 if (id == SkillId.FrostNova && distance > 4f) continue;
                 // Like a player keeping an army up: recast a summon only when its kind has room

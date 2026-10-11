@@ -318,6 +318,24 @@ namespace PoeClone.Visuals
             Range = 3.3f
         };
 
+        // Cross Slash's cuts (and Venom Slash's one): from high on one side down across the body,
+        // quick, the mirrored one from the other side so two of them draw an X.
+        private static readonly AttackProfile CrossCutProfile = new AttackProfile
+        {
+            Duration = 0.28f, StrikeTime = 0.7f,
+            WindupOffset = new Pose(-120f, -60f, -40f, 60f),
+            StrikeOffset = new Pose(-20f, 60f, 45f, 10f),
+            Range = 2.2f
+        };
+
+        private static readonly AttackProfile CrossCutMirroredProfile = new AttackProfile
+        {
+            Duration = CrossCutProfile.Duration, StrikeTime = CrossCutProfile.StrikeTime,
+            WindupOffset = new Pose(-120f, 60f, 40f, 60f),
+            StrikeOffset = new Pose(-20f, -60f, -45f, 10f),
+            Range = CrossCutProfile.Range
+        };
+
         private static readonly AttackProfile FangStrikeProfile = new AttackProfile
         {
             Duration = 0.3f, StrikeTime = 0.4f,
@@ -462,7 +480,9 @@ namespace PoeClone.Visuals
             LungingGreatswordProfile,
             FangStrikeProfile,
             WhirlwindProfile,
-            WhirlwindGreatProfile
+            WhirlwindGreatProfile,
+            CrossCutProfile,
+            CrossCutMirroredProfile
         };
 
         /// <summary>Whether the profile with this id shoots (an arrow) rather than hits.</summary>
@@ -579,19 +599,26 @@ namespace PoeClone.Visuals
             speedMultiplier = Mathf.Max(0.5f, castRateMultiplier);
         }
 
-        /// <summary>Plays the dedicated procedural pose for a committed melee skill, sped up by <paramref name="rate"/> (attack speed).</summary>
-        public void PlaySkillAttack(SkillId skill, WeaponType weaponType, float rate = 1f)
+        /// <summary>
+        /// Plays the dedicated procedural pose for a melee skill, sped up by <paramref name="rate"/>
+        /// (attack speed). <paramref name="mirrored"/>: the cut from the other side, where there is one.
+        /// </summary>
+        public void PlaySkillAttack(SkillId skill, WeaponType weaponType, float rate = 1f, bool mirrored = false)
         {
-            PlaySkillPose(skill, weaponType);
+            PlaySkillPose(skill, weaponType, mirrored);
             speedMultiplier = Mathf.Max(0.5f, rate);
         }
 
-        private void PlaySkillPose(SkillId skill, WeaponType weaponType)
+        private void PlaySkillPose(SkillId skill, WeaponType weaponType, bool mirrored = false)
         {
             switch (skill)
             {
                 case SkillId.Cleave: Play(SlotRules.IsTwoHandedMelee(weaponType) ? CleaveGreatSkillProfile : CleaveSkillProfile); break;
-                case SkillId.Pulverize: Play(weaponType == WeaponType.Maul ? PulverizeMaulProfile : PulverizeMaceProfile); break;
+                case SkillId.Pulverize:
+                case SkillId.Fissure:
+                case SkillId.Aftershock: Play(weaponType == WeaponType.Maul ? PulverizeMaulProfile : PulverizeMaceProfile); break;
+                case SkillId.CrossSlash:
+                case SkillId.VenomSlash: Play(mirrored ? CrossCutMirroredProfile : CrossCutProfile); break;
                 case SkillId.ReapingArc: Play(weaponType == WeaponType.Greataxe ? ReapingGreataxeProfile : ReapingAxeProfile); break;
                 case SkillId.LungingThrust: Play(weaponType == WeaponType.Greatsword ? LungingGreatswordProfile : LungingSwordProfile); break;
                 case SkillId.FangStrike: Play(FangStrikeProfile); break;

@@ -256,6 +256,35 @@ namespace PoeClone.Skills
                     a.Add(Line(0.08f, 0.53f, 0.34f, 0.53f, 0.045f));
                     a.Add(Line(0.16f, 0.68f, 0.46f, 0.68f, 0.045f));
                     break;
+                case SkillId.Fissure:
+                    // A jagged crack running away from the corner, shards beside it.
+                    a.Add(Line(0.1f, 0.1f, 0.3f, 0.3f, 0.07f));
+                    a.Add(Line(0.3f, 0.3f, 0.28f, 0.48f, 0.06f));
+                    a.Add(Line(0.28f, 0.48f, 0.52f, 0.56f, 0.055f));
+                    a.Add(Line(0.52f, 0.56f, 0.5f, 0.74f, 0.045f));
+                    a.Add(Line(0.5f, 0.74f, 0.74f, 0.82f, 0.04f));
+                    a.Add(Line(0.74f, 0.82f, 0.92f, 0.93f, 0.03f));
+                    a.Add(Poly(0.5f, 0.3f, 0.62f, 0.48f, 0.68f, 0.22f));
+                    a.Add(Poly(0.12f, 0.58f, 0.2f, 0.74f, 0.3f, 0.6f));
+                    a.Add(Poly(0.72f, 0.55f, 0.84f, 0.68f, 0.9f, 0.46f));
+                    break;
+                case SkillId.Aftershock:
+                    a.Add(Disc(0.18f, 0.18f, 0.09f));
+                    a.Add(Ring(0.4f, 0.4f, 0.15f, 0.05f));
+                    a.Add(Ring(0.7f, 0.7f, 0.24f, 0.06f));
+                    break;
+                case SkillId.CrossSlash:
+                    a.Add(Line(0.14f, 0.14f, 0.86f, 0.86f, 0.065f));
+                    a.Add(Line(0.14f, 0.86f, 0.86f, 0.14f, 0.065f));
+                    c.Add(Disc(0.5f, 0.5f, 0.07f));
+                    break;
+                case SkillId.VenomSlash:
+                    a.Add(Ring(0.5f, 0.2f, 0.6f, 0.08f));
+                    c.Add(Poly(0f, 0f, 1f, 0f, 1f, 0.32f, 0f, 0.32f));
+                    a.Add(Disc(0.3f, 0.52f, 0.07f));
+                    a.Add(Disc(0.53f, 0.42f, 0.055f));
+                    a.Add(Disc(0.72f, 0.55f, 0.065f));
+                    break;
             }
         }
     }

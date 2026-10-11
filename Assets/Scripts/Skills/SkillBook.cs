@@ -31,7 +31,11 @@ namespace PoeClone.Skills
         Pulverize,
         ReapingArc,
         LungingThrust,
-        Whirlwind
+        Whirlwind,
+        Fissure,
+        Aftershock,
+        CrossSlash,
+        VenomSlash
     }
 
     /// <summary>The element a spell belongs to, for "+1 to level of all Fire Spells" and the like.</summary>
@@ -76,13 +80,19 @@ namespace PoeClone.Skills
         public bool Bow => SkillGrants.IsBowSkill(Grant);
 
         /// <summary>
-        /// Held rather than pressed: it stays on while its button is held, paying its mana cost
-        /// every <see cref="PlayerSkills.ChannelTick"/> seconds (see PlayerSkills.Whirlwind.cs).
+        /// Held rather than repeated: while it's on, it lasts as long as the attack is held, paying
+        /// its mana cost every <see cref="PlayerSkills.ChannelTick"/> seconds (see PlayerSkills.Whirlwind.cs).
         /// </summary>
         public bool Channelled => Id == SkillId.Whirlwind;
 
-        /// <summary>A melee weapon skill (Cleave, Pulverize, ...): attack speed speeds it up and shortens its cooldown.</summary>
+        /// <summary>A melee weapon skill (Cleave, Pulverize, ...): toggled like a bow skill, it replaces the weapon's swing (see PlayerSkills.Melee.cs).</summary>
         public bool MeleeAttack => !Spell && !Bow && WeaponMultiplierAt(1) > 0f;
+
+        /// <summary>
+        /// Toggled on and off from the bar instead of used (bow and melee skills, one at a time):
+        /// while it's on, the weapon's attack is this skill. No cooldown; it costs a little per use.
+        /// </summary>
+        public bool Toggled => Bow || MeleeAttack;
 
         /// <summary>
         /// Mana per use at a skill level, before the character-level multiplier (see
@@ -139,12 +149,16 @@ namespace PoeClone.Skills
             int l = Mathf.Max(1, level) - 1;
             switch (Id)
             {
-                case SkillId.Cleave: return 1.68f + 0.12f * l;
-                case SkillId.Pulverize: return 3.12f + 0.216f * l;
-                case SkillId.ReapingArc: return 2.64f + 0.18f * l;
-                case SkillId.LungingThrust: return 2.88f + 0.192f * l;
-                case SkillId.Whirlwind: return 0.5f + 0.028f * l;
-                case SkillId.FangStrike: return 1.56f + 0.096f * l;
+                case SkillId.Cleave: return 1.1f + 0.045f * l;
+                case SkillId.Pulverize: return 1.75f + 0.08f * l;
+                case SkillId.ReapingArc: return 1.4f + 0.06f * l;
+                case SkillId.LungingThrust: return 1.65f + 0.07f * l;
+                case SkillId.Whirlwind: return 0.32f + 0.018f * l;
+                case SkillId.FangStrike: return 0.9f + 0.04f * l;
+                case SkillId.VenomSlash: return 0.6f + 0.025f * l;
+                case SkillId.Fissure: return 1.5f + 0.065f * l;
+                case SkillId.Aftershock: return 0.92f + 0.04f * l;
+                case SkillId.CrossSlash: return 1.15f + 0.05f * l;
                 case SkillId.SplitShot: return 1.2f + 0.04f * l;
                 case SkillId.PiercingShot: return 1.76f + 0.08f * l;
                 case SkillId.BurningArrow: return 1.6f + 0.064f * l;
@@ -181,7 +195,8 @@ namespace PoeClone.Skills
     /// gear can carry skills at a level (1 to 10 as drops, higher with "+N to level" gear), and a
     /// higher level hits harder, costs a little more and comes back sooner. A staff always carries
     /// a spell, which is its attack; any other skill goes in one of the bar slots (Q E R F and
-    /// the spare mouse buttons), costs mana and has a cooldown.
+    /// the spare mouse buttons) and costs mana. Spells have a cooldown; bow and melee skills are
+    /// toggled instead, and while one is on it replaces the weapon's attack.
     /// Damage spells scale with Intelligence, Cleave with the weapon and Strength.
     /// </summary>
     public static class SkillBook
@@ -192,13 +207,19 @@ namespace PoeClone.Skills
         /// <summary>The slots the touch layout has round buttons for (the first four).</summary>
         public const int TouchSlotCount = 4;
 
+        // Melee skills cost a little per use, not a cooldown skill's price (with a sword; see
+        // PlayerSkills.CostOf for other weapons and higher character levels).
+        private static readonly float[] LightMeleeCosts = { 3f, 3.2f, 3.3f, 3.5f, 4.2f, 5f, 5.9f, 6.1f, 6.3f, 6.5f };
+        private static readonly float[] MeleeCosts = { 4f, 4.2f, 4.3f, 4.5f, 5.4f, 6.4f, 7.5f, 7.7f, 7.9f, 8.2f };
+        private static readonly float[] HeavyMeleeCosts = { 5.5f, 5.7f, 5.8f, 5.9f, 7.1f, 8.3f, 9.6f, 9.8f, 10f, 10.2f };
+
         public static readonly SkillDefinition[] All =
         {
             new SkillDefinition
             {
-                Id = SkillId.Cleave, Name = "Cleave", Short = "CLV", Grant = StatType.GrantCleave, RollsOn = "melee weapons",
-                ManaCosts = new[] { 8f, 11.2f, 14.4f, 17.6f, 24.3f, 32f, 40.8f, 45.6f, 50.4f, 55.2f }, Cooldown = 3f, Color = new Color(0.85f, 0.75f, 0.55f),
-                Description = "Plant your feet for a brief windup, then swing all around you, hitting every enemy in reach for 168% weapon damage (+12% per level). Needs a melee weapon."
+                Id = SkillId.Cleave, Name = "Cleave", Short = "CLV", Grant = StatType.GrantCleave, RollsOn = "swords and axes",
+                ManaCosts = MeleeCosts, Color = new Color(0.85f, 0.75f, 0.55f),
+                Description = "Melee skill (toggle): plant your feet for a brief windup, then swing all around you, hitting every enemy in reach for 110% weapon damage (+4.5% per level). 15% slower. Swords and axes only."
             },
             new SkillDefinition
             {
@@ -306,14 +327,18 @@ namespace PoeClone.Skills
                 Color = new Color(1f, 0.5f, 0.2f),
                 Description = "Bow skill (toggle): arrows of fire for 160% damage (+6.4% per level) as Fire, bursting to scorch those around the target, with a 20% chance (+2% per level) to set it burning."
             },
-            new SkillDefinition { Id = SkillId.FangStrike, Name = "Fang Strike", Short = "FNG", Grant = StatType.GrantFangStrike, RollsOn = "daggers", ManaCosts = new[] { 7f, 9.8f, 12.6f, 15.4f, 21.2f, 28f, 35.7f, 39.9f, 44.1f, 48.3f }, Cooldown = 2f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Strike the aimed enemy for 156% weapon damage (+9.6% per level) and inflict a potent poison over 3 seconds." },
+            new SkillDefinition { Id = SkillId.FangStrike, Name = "Fang Strike", Short = "FNG", Grant = StatType.GrantFangStrike, RollsOn = "daggers", ManaCosts = LightMeleeCosts, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Melee skill (toggle): strike the aimed enemy for 90% weapon damage (+4% per level) and inflict a potent poison that deals 95% weapon damage (+7% per level) over 3 seconds. Poisons stack. Daggers only." },
             new SkillDefinition { Id = SkillId.VenomArrow, Name = "Venom Arrow", Short = "VNM", Grant = StatType.GrantVenomArrow, RollsOn = "bows, quivers", ManaCosts = new[] { 4.5f, 4.7f, 4.8f, 4.9f, 5.9f, 7f, 8.1f, 8.3f, 8.5f, 8.8f }, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Bow skill (toggle): attacks inflict a stronger poison and leave a brief venom cloud." },
             new SkillDefinition { Id = SkillId.VenomSpout, Name = "Venom Spout", Short = "SPT", Grant = StatType.GrantVenomSpout, RollsOn = "staves, Shepherd sceptre", Spell = true, BaseDamage = 5f, ManaCosts = new[] { 7f, 10.9f, 15.4f, 20.5f, 30.7f, 43.6f, 59.5f, 63.1f, 66.6f, 70.2f }, Cooldown = 5f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Erupt poison beneath your target, damaging and poisoning enemies in the area." },
             new SkillDefinition { Id = SkillId.SummonViper, Name = "Summon Viper", Short = "VIP", Grant = StatType.GrantSummonViper, RollsOn = "grimoires, sceptres", Spell = true, ManaCosts = new[] { 30f, 37.4f, 44.8f, 52.1f, 59.5f, 66.9f, 74.3f, 81.7f, 89f, 96.4f }, Cooldown = 12f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Call a viper spirit to fight at your side, up to 1 at once (+1 at levels 7 and 13). Maximum Minions from passives and gear raises the limit." },
-            new SkillDefinition { Id = SkillId.Pulverize, Name = "Pulverize", Short = "PVL", Grant = StatType.GrantPulverize, RollsOn = "maces and mauls", ManaCosts = new[] { 12f, 16.8f, 21.6f, 26.4f, 36.4f, 48f, 61.2f, 68.4f, 75.6f, 82.8f }, Cooldown = 4.5f, Color = new Color(0.95f, 0.65f, 0.28f), Description = "Plant your feet and bring a mace down in a crushing slam after a heavy windup, dealing 312% weapon damage (+21.6% per level) in a broad area. Maces and mauls only." },
-            new SkillDefinition { Id = SkillId.ReapingArc, Name = "Reaping Arc", Short = "RPA", Grant = StatType.GrantReapingArc, RollsOn = "axes", ManaCosts = new[] { 10f, 14f, 18f, 22f, 30.3f, 40f, 51f, 57f, 63f, 69f }, Cooldown = 3.4f, Color = new Color(0.9f, 0.48f, 0.3f), Description = "Commit to a broad, forward axe sweep. After a deliberate windup, hit enemies in a wide arc for 264% weapon damage (+18% per level). Axes only." },
-            new SkillDefinition { Id = SkillId.Whirlwind, Name = "Whirlwind", Short = "WHL", Grant = StatType.GrantWhirlwind, RollsOn = "melee weapons", ManaCosts = new[] { 2.5f, 3.1f, 3.7f, 4.3f, 5.8f, 7.5f, 9.4f, 10.4f, 11.4f, 12.4f }, Color = new Color(0.8f, 0.85f, 0.95f), Description = "Hold to spin with your weapon out, hitting every enemy in reach for 50% weapon damage (+2.8% per level) 4 times a second with a sword (slower weapons hit less often, faster ones more), faster with attack speed. While spinning you pass through enemies and are carried towards the cursor, faster the further away it is, up to sprinting speed. Costs mana every half second until you let go or run dry. Needs a melee weapon." },
-            new SkillDefinition { Id = SkillId.LungingThrust, Name = "Lunging Thrust", Short = "LTH", Grant = StatType.GrantLungingThrust, RollsOn = "swords", ManaCosts = new[] { 9f, 12.6f, 16.2f, 19.8f, 27.3f, 36f, 45.9f, 51.3f, 56.7f, 62.1f }, Cooldown = 2.8f, Color = new Color(0.85f, 0.82f, 0.65f), Description = "Brace, then drive a sword forward in a committed thrust for 288% weapon damage (+19.2% per level). Swords only." },
+            new SkillDefinition { Id = SkillId.Pulverize, Name = "Pulverize", Short = "PVL", Grant = StatType.GrantPulverize, RollsOn = "maces and mauls", ManaCosts = HeavyMeleeCosts, Color = new Color(0.95f, 0.65f, 0.28f), Description = "Melee skill (toggle): plant your feet and bring a mace down in a crushing slam after a heavy windup, dealing 175% weapon damage (+8% per level) in a broad area. 30% slower. Maces and mauls only." },
+            new SkillDefinition { Id = SkillId.ReapingArc, Name = "Reaping Arc", Short = "RPA", Grant = StatType.GrantReapingArc, RollsOn = "axes", ManaCosts = MeleeCosts, Color = new Color(0.9f, 0.48f, 0.3f), Description = "Melee skill (toggle): commit to a broad, forward axe sweep. After a deliberate windup, hit enemies in a wide arc for 140% weapon damage (+6% per level). 20% slower. Axes only." },
+            new SkillDefinition { Id = SkillId.Whirlwind, Name = "Whirlwind", Short = "WHL", Grant = StatType.GrantWhirlwind, RollsOn = "swords and axes", ManaCosts = new[] { 2.5f, 3.1f, 3.7f, 4.3f, 5.8f, 7.5f, 9.4f, 10.4f, 11.4f, 12.4f }, Color = new Color(0.8f, 0.85f, 0.95f), Description = "Melee skill (toggle): while it's on, hold the attack to spin with your weapon out, hitting every enemy in reach for 32% weapon damage (+1.8% per level) 4 times a second with a sword (slower weapons hit less often, faster ones more), faster with attack speed. While spinning you pass through enemies and are carried towards the cursor, faster the further away it is, up to sprinting speed. Costs mana every half second until you let go or run dry. Swords and axes only." },
+            new SkillDefinition { Id = SkillId.Fissure, Name = "Fissure", Short = "FIS", Grant = StatType.GrantFissure, RollsOn = "maces and mauls", ManaCosts = HeavyMeleeCosts, Color = new Color(0.86f, 0.55f, 0.3f), Description = "Melee skill (toggle): slam the ground and split it open in a fissure that races ahead of you, hitting every enemy along its path for 150% weapon damage (+6.5% per level). 25% slower. Maces and mauls only." },
+            new SkillDefinition { Id = SkillId.Aftershock, Name = "Aftershock", Short = "AFT", Grant = StatType.GrantAftershock, RollsOn = "maces and mauls", ManaCosts = HeavyMeleeCosts, Color = new Color(0.95f, 0.78f, 0.4f), Description = "Melee skill (toggle): slam the ground and send 3 tremors (+1 at level 6) rolling ahead of you, each further out and wider than the last, each hitting what it lands on for 92% weapon damage (+4% per level). 25% slower. Maces and mauls only." },
+            new SkillDefinition { Id = SkillId.CrossSlash, Name = "Cross Slash", Short = "XSL", Grant = StatType.GrantCrossSlash, RollsOn = "daggers", ManaCosts = MeleeCosts, Color = new Color(0.75f, 0.9f, 1f), Description = "Melee skill (toggle): two quick crossing cuts carve an X around you, each hitting every enemy along its line, in front and behind, for 115% weapon damage (+5% per level). 10% slower. Daggers only." },
+            new SkillDefinition { Id = SkillId.VenomSlash, Name = "Venom Slash", Short = "VSL", Grant = StatType.GrantVenomSlash, RollsOn = "daggers", ManaCosts = LightMeleeCosts, Color = new Color(0.55f, 0.85f, 0.25f), Description = "Melee skill (toggle): a quick, wide slash that hits every enemy in front of you for 60% weapon damage (+2.5% per level) and poisons each one for 70% weapon damage (+5% per level) over 3 seconds. Poisons stack. Daggers only." },
+            new SkillDefinition { Id = SkillId.LungingThrust, Name = "Lunging Thrust", Short = "LTH", Grant = StatType.GrantLungingThrust, RollsOn = "swords", ManaCosts = MeleeCosts, Color = new Color(0.85f, 0.82f, 0.65f), Description = "Melee skill (toggle): brace, then lunge at the aimed enemy (up to a few steps away) and drive a sword into it for 165% weapon damage (+7% per level). 15% slower. Swords only." },
         };
 
         public static SkillDefinition Get(SkillId id)

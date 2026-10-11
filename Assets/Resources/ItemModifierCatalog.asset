@@ -2447,7 +2447,7 @@ MonoBehaviour:
     Weight: 0.6
     On: 07000000i
     AnyWeapon: 0
-    Weapons: 01000000020000000300000004000000070000000800000009000000i
+    Weapons: 01000000020000000700000008000000i
     Tiers:
     - RequiredItemLevel: 1
       Min: 1
@@ -2476,7 +2476,7 @@ MonoBehaviour:
   - Label: GrantFangStrike / 1
     Enabled: 1
     Stat: 98
-    Weight: 0.28
+    Weight: 0.5
     On: 07000000i
     AnyWeapon: 0
     Weapons: 04000000i
@@ -2607,7 +2607,135 @@ MonoBehaviour:
     Weight: 0.38
     On: 07000000i
     AnyWeapon: 0
-    Weapons: 01000000020000000300000004000000070000000800000009000000i
+    Weapons: 01000000020000000700000008000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 8
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 16
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 23
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 31
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 34
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantFissure / 1
+    Enabled: 1
+    Stat: 146
+    Weight: 0.38
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 0300000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 8
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 16
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 23
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 31
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 34
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantAftershock / 1
+    Enabled: 1
+    Stat: 147
+    Weight: 0.38
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 0300000009000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 8
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 16
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 23
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 31
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 34
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantCrossSlash / 1
+    Enabled: 1
+    Stat: 148
+    Weight: 0.5
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 04000000i
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 8
+      Min: 1
+      Max: 2
+      Weight: 0.7
+    - RequiredItemLevel: 16
+      Min: 2
+      Max: 4
+      Weight: 0.48999998
+    - RequiredItemLevel: 23
+      Min: 3
+      Max: 6
+      Weight: 0.343
+    - RequiredItemLevel: 31
+      Min: 5
+      Max: 8
+      Weight: 0.24009998
+    - RequiredItemLevel: 34
+      Min: 7
+      Max: 10
+      Weight: 0.16806999
+  - Label: GrantVenomSlash / 1
+    Enabled: 1
+    Stat: 149
+    Weight: 0.5
+    On: 07000000i
+    AnyWeapon: 0
+    Weapons: 04000000i
     Tiers:
     - RequiredItemLevel: 1
       Min: 1

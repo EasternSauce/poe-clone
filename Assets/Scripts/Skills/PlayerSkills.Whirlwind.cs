@@ -10,11 +10,13 @@ using PoeClone.Visuals;
 namespace PoeClone.Skills
 {
     /// <summary>
-    /// Whirlwind, the channelled melee skill: while its button is held the player spins, hitting
-    /// everything in reach several times a second, passes through enemies, and drifts towards the cursor (faster the further
-    /// it is, sprinting speed at <see cref="WhirlFullSpeedDiameters"/> body widths away; on touch,
-    /// the joystick or the aim stick). It costs mana every <see cref="ChannelTick"/> seconds, paid
-    /// up front, and stops when the button is let go or the mana runs out.
+    /// Whirlwind, the channelled melee skill: toggled from the bar like the other melee skills, and
+    /// while it's on, holding the attack (left click / the aim stick) spins the player, hitting
+    /// everything in reach several times a second, passing through enemies and drifting towards the
+    /// cursor (faster the further it is, sprinting speed at <see cref="WhirlFullSpeedDiameters"/>
+    /// body widths away; on touch, the joystick or the aim stick). It costs mana every
+    /// <see cref="ChannelTick"/> seconds, paid up front, and stops when the attack is let go or the
+    /// mana runs out.
     /// </summary>
     public partial class PlayerSkills
     {
@@ -29,7 +31,7 @@ namespace PoeClone.Skills
         private const float WhirlSwordHitsPerSecond = 4f;
         private const float WhirlFullSpeedDiameters = 5f;
 
-        private int whirlSlot = -1;
+        private bool whirling;
         private int whirlLevel;
         private float whirlNextMana;
         private float whirlNextHit;
@@ -39,12 +41,15 @@ namespace PoeClone.Skills
         private CharacterController body;
 
         /// <summary>Whirlwind is spinning.</summary>
-        public bool IsWhirling => whirlSlot >= 0;
+        public bool IsWhirling => whirling;
 
-        // TryUse already paid the first tick.
-        private void BeginWhirlwind(int slot, int level)
+        /// <summary>Whether the attack is held right now (set by <see cref="PlayerCombat"/>): Whirlwind spins while it is.</summary>
+        public bool AttackHeld { get; set; }
+
+        // TryStartMeleeSkill already paid the first tick.
+        private void BeginWhirlwind(int level)
         {
-            whirlSlot = slot;
+            whirling = true;
             whirlLevel = level;
             whirlSteer = Vector3.zero;
             whirlNextMana = Time.time + ChannelTick;
@@ -56,9 +61,9 @@ namespace PoeClone.Skills
 
         private void EndWhirlwind()
         {
-            if (whirlSlot < 0)
+            if (!whirling)
                 return;
-            whirlSlot = -1;
+            whirling = false;
             foreach (Collider[] colliders in whirlIgnored.Values)
                 IgnoreEnemy(colliders, false);
             whirlIgnored.Clear();
@@ -70,8 +75,7 @@ namespace PoeClone.Skills
 
         private void UpdateWhirlwind(bool free)
         {
-            if (!free || !SlotHeld(whirlSlot) || Slot(whirlSlot) != SkillId.Whirlwind || LevelAt(whirlSlot) <= 0 ||
-                !CanUseWithWeapon(SkillId.Whirlwind, CurrentWeapon()))
+            if (!free || !AttackHeld || ActiveMeleeSkill != SkillId.Whirlwind)
             {
                 EndWhirlwind();
                 return;
@@ -79,7 +83,7 @@ namespace PoeClone.Skills
 
             if (Time.time >= whirlNextMana)
             {
-                if (!stats.TrySpendMana(ManaCostAt(whirlSlot)))
+                if (!stats.TrySpendMana(CostOf(SkillId.Whirlwind, ActiveAttackLevel)))
                 {
                     CombatText.Show(transform.position + Vector3.up * 2f, "Not enough " + CostResource, CombatText.ColdColor, 0.8f);
                     EndWhirlwind();
@@ -170,26 +174,5 @@ namespace PoeClone.Skills
             return offset / fullSpeedAt;
         }
 
-        // Whether the button for a bar slot is still held down.
-        private static bool SlotHeld(int slot)
-        {
-            if (VirtualInput.SkillHeld == slot)
-                return true;
-            if (TouchMode.Active)
-                return false;
-            Keyboard keyboard = Keyboard.current;
-            if (slot < SlotKeys.Length)
-                return keyboard != null && keyboard[SlotKeys[slot]].isPressed;
-            Mouse mouse = Mouse.current;
-            if (mouse == null)
-                return false;
-            switch (slot)
-            {
-                case 8: return mouse.rightButton.isPressed;
-                case 9: return mouse.backButton.isPressed;
-                case 10: return mouse.forwardButton.isPressed;
-                default: return false;
-            }
-        }
     }
 }

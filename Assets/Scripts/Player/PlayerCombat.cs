@@ -31,6 +31,7 @@ namespace PoeClone.Player
     /// A bow shoots instead (<see cref="PlayerArrow"/>, no ammo); its "reach" is how far arrows fly,
     /// so the same aiming and highlighting work for it unchanged. A staff casts its spell instead
     /// (<see cref="PoeClone.Skills.PlayerSkills.MainSkill"/>), or is swung like a mace when there's no mana for it.
+    /// A bow or melee skill toggled on replaces the shot or swing while there's mana for it.
     ///
     /// Where a shot or swing goes is decided when it leaves - the strike frame - not when the
     /// wind-up starts: the player turns to the cursor (or the aim stick) at that moment.
@@ -196,6 +197,10 @@ namespace PoeClone.Player
                 attackPressed = held && !blocked && !pressSpentElsewhere;
             }
 
+            // Whirlwind spins for as long as the attack is held.
+            if (SkillSet != null)
+                SkillSet.AttackHeld = attackPressed;
+
             if (attackPressed && cooldownTimer <= 0f && (controller == null || (!controller.IsSkillCommitted && !controller.IsChannelling)) &&
                 attackAnimator != null && !attackAnimator.IsAttacking)
                 StartAttack();
@@ -241,7 +246,7 @@ namespace PoeClone.Player
         // are. Carrion Saint's phase three extends by its whole radius, twice as wide a hitbox.
         private const float OrdinaryBodyRadius = 0.6f;
 
-        private static float DamageableReach(EnemyHealth enemy, float range)
+        public static float DamageableReach(EnemyHealth enemy, float range)
         {
             if (enemy == null)
                 return range;
@@ -291,11 +296,18 @@ namespace PoeClone.Player
             if (HasMainSkill)
                 CombatText.Show(transform.position + Vector3.up * 2f, "Not enough " + SkillSet.CostResource, CombatText.ColdColor, 0.6f);
 
+            // A melee skill that's on replaces the swing: its own move, at its own pace.
+            if (!CharacterAttackAnimator.IsRanged(weaponType) && SkillSet != null && SkillSet.TryStartMeleeSkill(out float skillInterval))
+            {
+                cooldownTimer = skillInterval;
+                return;
+            }
+
             // A bow skill that's on replaces the plain shot: its own draw, and its own pace.
             bowSkillPending = CharacterAttackAnimator.IsRanged(weaponType) && SkillSet != null ? SkillSet.ActiveBowSkill : null;
-            bowLevelPending = bowSkillPending != null ? SkillSet.ActiveBowLevel : 0;
+            bowLevelPending = bowSkillPending != null ? SkillSet.ActiveAttackLevel : 0;
             // Keep the toggle, but fall back to a free basic shot while resources recover.
-            if (bowSkillPending != null && !SkillSet.CanAffordBowShot)
+            if (bowSkillPending != null && !SkillSet.CanAffordAttackSkill)
             {
                 bowSkillPending = null;
                 bowLevelPending = 0;
@@ -422,7 +434,7 @@ namespace PoeClone.Player
             if (CharacterAttackAnimator.IsRanged(weaponType))
             {
                 int arrows = ArrowCount();
-                if (bowSkillPending != null && SkillSet != null && SkillSet.TrySpendBowShot(bowSkillPending.Value, bowLevelPending))
+                if (bowSkillPending != null && SkillSet != null && SkillSet.TrySpendAttackSkill(bowSkillPending.Value, bowLevelPending))
                 {
                     SkillSet.ReleaseBow(bowSkillPending.Value, bowLevelPending, pendingDamage, range, arrows,
                         BowTarget(range * PlayerArrow.BowRangeMultiplier));

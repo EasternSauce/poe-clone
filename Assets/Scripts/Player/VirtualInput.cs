@@ -26,9 +26,6 @@ namespace PoeClone.Player
         /// <summary>A touch skill button was pressed this frame (its slot), or -1. PlayerSkills consumes it.</summary>
         public static int SkillPressed = -1;
 
-        /// <summary>The touch skill button held down right now (its slot), or -1. Channelled skills last while it's held.</summary>
-        public static int SkillHeld = -1;
-
         /// <summary>Touch potion buttons pressed this frame: bit 1 health, bit 2 mana.</summary>
         public static int PotionPresses;
 
@@ -38,7 +35,6 @@ namespace PoeClone.Player
             Aim = Vector2.zero;
             AttackHeld = false;
             SkillPressed = -1;
-            SkillHeld = -1;
             PotionPresses = 0;
         }
 

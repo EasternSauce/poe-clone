@@ -177,7 +177,11 @@ namespace PoeClone.Inventory
         LifePercentOnKill,          // % of maximum life recovered on kill
         MoreMeleeDamage,            // % more damage with melee attacks
         PercentManaRegen,           // % of maximum mana regenerated per second
-        GrantWhirlwind              // a channelled melee skill (see PlayerSkills.Whirlwind.cs)
+        GrantWhirlwind,             // a channelled melee skill (see PlayerSkills.Whirlwind.cs)
+        GrantFissure,
+        GrantAftershock,
+        GrantCrossSlash,
+        GrantVenomSlash
     }
 
     /// <summary>
@@ -198,7 +202,8 @@ namespace PoeClone.Inventory
                    stat == StatType.GrantRaiseSkeletons || (stat >= StatType.GrantDeathMark && stat <= StatType.GrantBoneGolem) ||
                    stat == StatType.GrantGraveRot || IsBowSkill(stat) ||
                    (stat >= StatType.GrantFangStrike && stat <= StatType.GrantSummonViper) ||
-                   (stat >= StatType.GrantPulverize && stat <= StatType.GrantLungingThrust) || stat == StatType.GrantWhirlwind;
+                   (stat >= StatType.GrantPulverize && stat <= StatType.GrantLungingThrust) ||
+                   (stat >= StatType.GrantWhirlwind && stat <= StatType.GrantVenomSlash);
         }
 
         /// <summary>The bow skills: they roll on bows and quivers (never as the attack) and are toggled from the bar.</summary>
@@ -271,6 +276,10 @@ namespace PoeClone.Inventory
                 case StatType.GrantReapingArc: return "Reaping Arc";
                 case StatType.GrantLungingThrust: return "Lunging Thrust";
                 case StatType.GrantWhirlwind: return "Whirlwind";
+                case StatType.GrantFissure: return "Fissure";
+                case StatType.GrantAftershock: return "Aftershock";
+                case StatType.GrantCrossSlash: return "Cross Slash";
+                case StatType.GrantVenomSlash: return "Venom Slash";
                 default: return grant.ToString();
             }
         }

@@ -181,9 +181,9 @@ namespace PoeClone.World
             new GauntletBuild
             {
                 Id = "mace_juggernaut", Name = "Mace Juggernaut", Melee = true,
-                Summary = "Pulverize and Cleave with a maul: Might and Iron Reflexes, built tanky. Cinderwake (melee splash) from level 17.",
+                Summary = "Pulverize and Fissure with a maul: Might and Iron Reflexes, built tanky. Cinderwake (melee splash) from level 17.",
                 MainHand = new[] { "maul", "mace" }, OffHand = new[] { "shield_str" }, Armour = "str",
-                CoreSkills = new[] { StatType.GrantPulverize, StatType.GrantCleave }, SupportSkills = new[] { StatType.GrantWarCry },
+                CoreSkills = new[] { StatType.GrantPulverize, StatType.GrantFissure }, SupportSkills = new[] { StatType.GrantWarCry },
                 Weights = Melee(StatType.ArmourPenetration, 0.8f, StatType.MeleeSplash, 2f, StatType.MoreMeleeDamage, 2f),
                 Passives = new[] { "m_life_heart", "m8", "m_bloodbath", "m5", "k_unbreakable", "f_feast", "m_life_guard", "f_life_heart" },
                 Uniques = new[] { "Cinderwake", "Bloodroot Cord" }
@@ -204,9 +204,9 @@ namespace PoeClone.World
             new GauntletBuild
             {
                 Id = "venom_assassin", Name = "Venom Assassin", Melee = true,
-                Summary = "Fang Strike daggers stacking poison, with a buckler. Leechfang from level 9.",
+                Summary = "Fang Strike and Venom Slash daggers stacking poison, with a buckler. Leechfang from level 9.",
                 MainHand = new[] { "dagger" }, OffHand = new[] { "shield_dex" }, Armour = "dex",
-                CoreSkills = new[] { StatType.GrantFangStrike },
+                CoreSkills = new[] { StatType.GrantFangStrike, StatType.GrantVenomSlash },
                 Weights = Melee(StatType.Armour, 0.4f, StatType.Evasion, 1f, StatType.Dexterity, 0.8f, StatType.Strength, 0.2f,
                     StatType.PoisonDamage, 1.6f, StatType.DamageOverTime, 1.4f, StatType.PoisonOnHit, 1.6f, StatType.PoisonPenetration, 1.2f,
                     StatType.VenomCloudOnHit, 1f, StatType.MorePoisonDamage, 2f),
@@ -265,6 +265,15 @@ namespace PoeClone.World
                 Weights = Melee(StatType.Rampage, 1.5f, StatType.OnslaughtOnKill, 0.6f, StatType.LifePercentOnKill, 1f, StatType.MoreMeleeDamage, 2f),
                 Passives = new[] { "m8", "f_berserk", "m_bloodbath", "f_feast", "k_pain", "m_life_heart", "m5" },
                 Uniques = new[] { "!Gorebrand", "!Hands of the Butcher-King", "Bonehew" }
+            },
+            new GauntletBuild
+            {
+                Id = "whirling_blademaster", Name = "Whirling Blademaster", Melee = true,
+                Summary = "Whirlwind with a greatsword, the attack held down to spin through packs, War Cry for Onslaught.",
+                MainHand = new[] { "greatsword", "sword" }, OffHand = new[] { "shield_str" }, Armour = "str",
+                CoreSkills = new[] { StatType.GrantWhirlwind }, SupportSkills = new[] { StatType.GrantWarCry },
+                Weights = Melee(StatType.MoreMeleeDamage, 2f, StatType.MeleeSplash, 1f),
+                Passives = new[] { "m8", "m_bloodbath", "f_feast", "m_life_heart", "m5", "f_life_heart" }
             },
             new GauntletBuild
             {
