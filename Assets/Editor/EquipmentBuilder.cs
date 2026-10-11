@@ -312,8 +312,9 @@ namespace PoeClone.EditorTools
 
             HelmDome(head, "Bronze", "Gold");
             Shape(head, "Face", "GearCuff", "Bronze", new Vector3(0f, -0.06f, -0.02f), new Vector3(0.45f, 0.22f, 0.47f));
-            Cube(head, "EyeSlit", "Visor", new Vector3(0f, 0.015f, 0.214f), new Vector3(0.24f, 0.028f, 0.02f));
-            Cube(head, "MouthSlit", "Visor", new Vector3(0f, -0.065f, 0.2f), new Vector3(0.03f, 0.12f, 0.02f));
+            // The eye slit lines up with the face's eyes, which sit just behind it.
+            Cube(head, "EyeSlit", "Visor", new Vector3(0f, -0.02f, 0.226f), new Vector3(0.24f, 0.04f, 0.02f));
+            Cube(head, "MouthSlit", "Visor", new Vector3(0f, -0.08f, 0.2f), new Vector3(0.03f, 0.11f, 0.02f));
             Cube(head, "Crest", "BronzeLight", new Vector3(0f, 0.225f, -0.03f), new Vector3(0.025f, 0.045f, 0.3f));
             EarFins(head, "BronzeLight");
             Shape(head, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.09f, 0.22f), new Vector3(0.06f, 0.075f, 0.04f));

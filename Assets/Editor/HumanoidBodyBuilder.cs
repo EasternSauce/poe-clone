@@ -111,9 +111,22 @@ namespace PoeClone.EditorTools
             else
             {
                 Part(u, "Head", head, new Vector3(0f, 1.8f, 0.04f), new Vector3(0.34f, 0.38f, 0.36f));
-                Part(u, "EyeL", head, new Vector3(-0.07f, 1.82f, 0.212f), new Vector3(0.045f, 0.04f, 0.03f));
-                Part(u, "EyeR", head, new Vector3(0.07f, 1.82f, 0.212f), new Vector3(0.045f, 0.04f, 0.03f));
                 Part(u, "Hair", head, new Vector3(0f, 1.85f, 0.01f), new Vector3(0.37f, 0.33f, 0.39f));
+
+                // The face: a band of darker skin across the eyes, like the shadow under a brow,
+                // with narrow eye slits in it. A flattened copy of the head shifted forward, so it
+                // only shows on the front of the face and follows its curve. Low enough to stay
+                // clear of the hood's rim and the hair once the hood comes off.
+                Transform shade = u.Find("BrowShade");
+                if (shade == null)
+                {
+                    shade = Object.Instantiate(headPart.gameObject, u).transform;
+                    shade.name = "BrowShade";
+                }
+                shade.GetComponent<Renderer>().sharedMaterial = SkinShade(headPart.GetComponent<Renderer>().sharedMaterial);
+                Part(u, "BrowShade", head, new Vector3(0f, 1.785f, 0.055f), new Vector3(0.33f, 0.075f, 0.35f));
+                Part(u, "EyeL", head, new Vector3(-0.06f, 1.78f, 0.222f), new Vector3(0.05f, 0.022f, 0.02f));
+                Part(u, "EyeR", head, new Vector3(0.06f, 1.78f, 0.222f), new Vector3(0.05f, 0.022f, 0.02f));
 
                 // Bare feet would poke out of the front of worn boots.
                 foreach (string side in new[] { "L", "R" })
@@ -137,6 +150,29 @@ namespace PoeClone.EditorTools
                     Part(pauldron.parent, "Pauldron", m["GearDome"], new Vector3(0f, 0.03f, 0f), new Vector3(0.22f, 0.14f, 0.24f));
                 }
             }
+        }
+
+        // The skin material darkened, for the shade across the eyes.
+        private static Material SkinShade(Material skin)
+        {
+            string path = "Assets/Materials/Stylized/SkinShade.mat";
+            Material m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null)
+            {
+                m = new Material(skin);
+                AssetDatabase.CreateAsset(m, path);
+            }
+            m.CopyPropertiesFromMaterial(skin);
+            Color c = skin.GetColor("_BaseColor") * 0.66f;
+            c.a = 1f;
+            m.SetColor("_BaseColor", c);
+            if (m.HasProperty("_ShadowColor"))
+            {
+                m.SetColor("_ShadowColor", new Color(c.r * 0.5f, c.g * 0.5f, Mathf.Min(1f, c.b * 0.62f), 1f));
+                m.SetColor("_RimColor", Color.Lerp(c, Color.white, 0.6f));
+            }
+            EditorUtility.SetDirty(m);
+            return m;
         }
 
         // An empty attachment point for gear, created if the rig doesn't have it yet.
