@@ -59,7 +59,11 @@ namespace PoeClone.Player
 
         private void Update()
         {
-            if (Time.timeScale <= 0f) return;
+            if (Time.timeScale <= 0f || AreaManager.Instance != null && AreaManager.Instance.IsSwitching)
+            {
+                target = null;
+                return;
+            }
             if (stats != null && stats.IsDead)
             {
                 target = null;

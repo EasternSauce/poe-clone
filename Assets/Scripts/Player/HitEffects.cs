@@ -55,7 +55,8 @@ namespace PoeClone.Player
             bool throughExposedHead = false, bool melee = false, float projectileDistance = -1f, int venomArrowLevel = 0,
             Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f)
         {
-            if (enemy == null || enemy.IsDead)
+            // Utility effects must never become hits through added mana damage or on-hit stats.
+            if (enemy == null || enemy.IsDead || damage <= 0f)
                 return;
 
             if (rollSeed == 0) rollSeed = EventRandom.NextSeed();

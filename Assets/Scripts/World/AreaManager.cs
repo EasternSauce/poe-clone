@@ -34,7 +34,7 @@ namespace PoeClone.World
         [Tooltip("Extra pause while the loading screen is fully opaque, so a transition reads as an actual load even though it's instant under the hood.")]
         public float simulatedLoadSeconds = 0.25f;
 
-        [Tooltip("Real-time pause after the fade-in finishes (screen fully black) before unfreezing the game, so transitions don't feel instant.")]
+        [Tooltip("Real-time pause after the loading cover becomes opaque, before moving to the destination.")]
         public float preUnfreezeDelay = 0.2f;
 
         public int CurrentAreaIndex { get; private set; } = -1;
@@ -146,82 +146,90 @@ namespace PoeClone.World
         {
             switching = true;
 
-            // Freeze the game immediately: Time.timeScale = 0 means Time.deltaTime
-            // is 0 everywhere, so player movement / physics / animation stop being
-            // processed this frame onward. The loading screen fades in using
-            // unscaled time so it can still animate while frozen.
-            // (Not in co-op: the other player's game and the shared enemies keep going.)
+            float previousTimeScale = Time.timeScale;
+            if (player != null)
+            {
+                player.GetComponent<PoeClone.Player.PlayerStats>()?.ProtectArrival();
+                player.GetComponent<PoeClone.Skills.PlayerSkills>()?.CancelActions();
+                player.GetComponent<PoeClone.Player.PlayerController>()?.StopMovement();
+            }
+            DialogueUI.Close();
+
+            // Co-op keeps the partner's world running; local input and damage stay blocked.
             if (!PoeClone.Combat.Party.Active)
                 Time.timeScale = 0f;
 
-            if (loadingScreen != null)
-                yield return loadingScreen.FadeIn(areas[index].areaName);
-            else
-                yield return new WaitForSecondsRealtime(0.25f);
-
-            // Fade-in is fully done (screen fully opaque). Hold here a little longer,
-            // still frozen, before unfreezing - avoids the game feeling like it snaps
-            // back to life the instant the screen goes black.
-            if (preUnfreezeDelay > 0f)
-                yield return new WaitForSecondsRealtime(preUnfreezeDelay);
-
-            Time.timeScale = 1f;
-
-            var def = areas[index];
-            Transform target = arrival != null ? arrival : def.spawnPoint;
-
-            if (player != null && target != null)
+            try
             {
-                // A click-to-walk command aimed at the old gate must not keep moving after arrival.
-                var playerController = player.GetComponent<PoeClone.Player.PlayerController>();
-                if (playerController != null)
-                    playerController.CancelWalk();
-                var controller = player.GetComponent<CharacterController>();
-                if (controller != null) controller.enabled = false;
-                player.position = target.position;
-                player.rotation = target.rotation;
-                if (controller != null)
+                if (loadingScreen != null)
+                    yield return loadingScreen.FadeIn(areas[index].areaName);
+                else
+                    yield return new WaitForSecondsRealtime(0.25f);
+
+                if (preUnfreezeDelay > 0f)
+                    yield return new WaitForSecondsRealtime(preUnfreezeDelay);
+
+                var def = areas[index];
+                Transform target = arrival != null ? arrival : def.spawnPoint;
+
+                if (player != null && target != null)
                 {
-                    var alive = player.GetComponent<PoeClone.Player.PlayerStats>();
-                    controller.enabled = alive == null || !alive.IsDead;
+                    // A click-to-walk command aimed at the old gate must not keep moving after arrival.
+                    var playerController = player.GetComponent<PoeClone.Player.PlayerController>();
+                    if (playerController != null)
+                        playerController.CancelWalk();
+                    var controller = player.GetComponent<CharacterController>();
+                    if (controller != null) controller.enabled = false;
+                    player.position = target.position;
+                    player.rotation = target.rotation;
+                    if (controller != null)
+                    {
+                        var alive = player.GetComponent<PoeClone.Player.PlayerStats>();
+                        controller.enabled = alive == null || !alive.IsDead;
+                    }
+
+                    var walkAnim = player.GetComponentInChildren<PoeClone.Visuals.CharacterWalkAnimator>();
+                    if (walkAnim != null)
+                        walkAnim.ResetAnimatorState();
+
+                    // Some areas have a fixed death origin, including when entered by waypoint.
+                    var stats = player.GetComponent<PoeClone.Player.PlayerStats>();
+                    if (stats != null)
+                    {
+                        Transform respawn = def.respawnPoint != null ? def.respawnPoint : target;
+                        stats.SetSpawnPoint(respawn.position, respawn.rotation);
+                        stats.ProtectArrival();
+                    }
+
+                    var cam = Camera.main != null ? Camera.main.GetComponent<PoeClone.CameraSystem.CameraFollow>() : null;
+                    if (cam != null)
+                        cam.SnapToTarget();
                 }
 
-                var walkAnim = player.GetComponentInChildren<PoeClone.Visuals.CharacterWalkAnimator>();
-                if (walkAnim != null)
-                    walkAnim.ResetAnimatorState();
+                CurrentAreaIndex = index;
+                if (player != null)
+                    AreaGate.DisarmAtArrival(index, player.position);
+                AreaChanged?.Invoke(index);
 
-                // Some areas have a fixed death origin, including when entered by waypoint.
-                var stats = player.GetComponent<PoeClone.Player.PlayerStats>();
-                if (stats != null)
-                {
-                    Transform respawn = def.respawnPoint != null ? def.respawnPoint : target;
-                    stats.SetSpawnPoint(respawn.position, respawn.rotation);
-                    stats.ProtectArrival();
-                }
+                // The first visit bakes the area's minimap: do it in slices here, behind the cover,
+                // rather than in one long frame when the map first shows.
+                PoeClone.UI.LoadingStatus.Set("Minimap");
+                yield return PoeClone.UI.MinimapTerrain.Prepare(index);
+                PoeClone.UI.LoadingStatus.Clear();
 
-                var cam = Camera.main != null ? Camera.main.GetComponent<PoeClone.CameraSystem.CameraFollow>() : null;
-                if (cam != null)
-                    cam.SnapToTarget();
+                if (simulatedLoadSeconds > 0f)
+                    yield return new WaitForSecondsRealtime(simulatedLoadSeconds);
+
+                if (loadingScreen != null)
+                    yield return loadingScreen.FadeOut();
+
             }
-
-            CurrentAreaIndex = index;
-            if (player != null)
-                AreaGate.DisarmAtArrival(index, player.position);
-            AreaChanged?.Invoke(index);
-
-            // The first visit bakes the area's minimap: do it in slices here, behind the cover,
-            // rather than in one long frame when the map first shows.
-            PoeClone.UI.LoadingStatus.Set("Minimap");
-            yield return PoeClone.UI.MinimapTerrain.Prepare(index);
-            PoeClone.UI.LoadingStatus.Clear();
-
-            if (simulatedLoadSeconds > 0f)
-                yield return new WaitForSeconds(simulatedLoadSeconds);
-
-            if (loadingScreen != null)
-                yield return loadingScreen.FadeOut();
-
-            switching = false;
+            finally
+            {
+                LoadingStatus.Clear();
+                Time.timeScale = previousTimeScale;
+                switching = false;
+            }
         }
     }
 }

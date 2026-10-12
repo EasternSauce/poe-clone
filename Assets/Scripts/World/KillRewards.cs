@@ -15,6 +15,22 @@ namespace PoeClone.World
     {
         public static readonly Color GoldColor = new Color(1f, 0.84f, 0.3f);
 
+        /// <summary>Maximum horizontal distance from a kill for local or shared experience.</summary>
+        public const float ExperienceRange = 60f;
+
+        public static bool CanReceiveExperience(PlayerStats player, Vector3 at)
+        {
+            if (player == null || player.IsDead)
+                return false;
+            AreaManager areas = AreaManager.Instance;
+            if (areas != null && (areas.IsSwitching ||
+                Network.CoopSession.AreaAt(at) != areas.CurrentAreaIndex))
+                return false;
+            Vector3 offset = player.transform.position - at;
+            offset.y = 0f;
+            return offset.sqrMagnitude <= ExperienceRange * ExperienceRange;
+        }
+
         private const float HealthPotionChance = 0.12f;
         private const float ManaPotionChance = 0.07f;
 

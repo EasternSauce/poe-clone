@@ -97,6 +97,15 @@ namespace PoeClone.Player
             walking = false;
         }
 
+        /// <summary>Discard movement in progress so it cannot resume on the far side of a gate.</summary>
+        public void StopMovement()
+        {
+            CancelWalk();
+            dashTimeLeft = 0f;
+            dashVelocity = Vector3.zero;
+            verticalVelocity = Vector3.zero;
+        }
+
         // Walking speed. Enemies scale off this, so sprinting does not change their speed.
         public float MoveSpeed => moveSpeed;
 

@@ -511,7 +511,7 @@ namespace PoeClone.Enemies
         public static void GrantKillRewards(int kindIndex, int monsterLevel, int experience, Vector3 at, bool dropLoot)
         {
             PlayerStats player = FindAnyObjectByType<PlayerStats>();
-            if (player != null)
+            if (KillRewards.CanReceiveExperience(player, at))
                 player.GainExperience(experience);
 
             EnemyKind kind = EnemyKinds.Get(kindIndex);

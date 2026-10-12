@@ -58,7 +58,11 @@ namespace PoeClone.Player
             poisonShown = 0f;
         }
 
-        public void EndArrivalProtection() => ArrivalProtected = false;
+        public void EndArrivalProtection()
+        {
+            if (World.AreaManager.Instance == null || !World.AreaManager.Instance.IsSwitching)
+                ArrivalProtected = false;
+        }
 
         public bool IsDead => dead;
         public bool IsAwaitingRevive => respawnPhase == RespawnPhase.AwaitingRevive;

@@ -301,6 +301,12 @@ namespace PoeClone.Skills
 
         private void OnPlayerDied()
         {
+            CancelActions();
+        }
+
+        /// <summary>Cancel pending casts and committed attacks when leaving an area or dying.</summary>
+        public void CancelActions()
+        {
             EndWhirlwind();
             StopAllCoroutines();
             if (controller != null)
@@ -777,7 +783,7 @@ namespace PoeClone.Skills
 
         private void Update()
         {
-            if (Time.timeScale <= 0f)
+            if (Time.timeScale <= 0f || PoeClone.World.AreaManager.Instance != null && PoeClone.World.AreaManager.Instance.IsSwitching)
             {
                 VirtualInput.SkillPressed = -1;
                 return;

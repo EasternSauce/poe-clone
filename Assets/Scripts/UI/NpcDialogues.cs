@@ -48,7 +48,7 @@ namespace PoeClone.UI
                 // Any message someone sent the player to deliver here arrives.
                 if (QuestLog.Instance != null)
                     QuestLog.Instance.TalkedTo(npc.Role);
-                Main(npc, Greeting(npc.Role));
+                NextQuest(npc);
             }
         }
 
@@ -142,22 +142,6 @@ namespace PoeClone.UI
         private static void Main(Npc npc, string text)
         {
             var options = new List<DialogueOption>();
-            QuestLog log = QuestLog.Instance;
-
-            if (log != null)
-            {
-                foreach (QuestDefinition quest in log.At(npc.Role))
-                {
-                    QuestState state = log.State(quest);
-                    bool handIn = state == QuestState.Complete && quest.ReturnTo == npc.Role;
-                    string label = handIn ? (quest.Goal == QuestGoal.Talk ? "<b>Deliver:</b> " : "<b>Hand in:</b> ") + quest.Title
-                        : state == QuestState.Available ? "<b>Quest:</b> " + quest.Title + "  <color=#FFD040>(new)</color>"
-                        : "<b>Quest:</b> " + quest.Title;
-                    QuestDefinition q = quest;
-                    options.Add(new DialogueOption(label, () => QuestPage(npc, q)));
-                }
-            }
-
             switch (npc.Role)
             {
                 case NpcRole.Waterkeeper:
@@ -225,65 +209,38 @@ namespace PoeClone.UI
 
         // ------------------------------------------------------------------ quests
 
-        // `lead` goes above the page's own text (the thanks and rewards when one quest leads into the next).
-        private static void QuestPage(Npc npc, QuestDefinition quest, string lead = null)
+        // Accept/hand in before displaying the page: closing it cannot replay the dialogue.
+        private static void NextQuest(Npc npc)
         {
             QuestLog log = QuestLog.Instance;
-            if (log == null)
-                return;
-
-            var options = new List<DialogueOption>();
-            string text;
-            switch (log.State(quest))
+            QuestDefinition quest = log?.At(npc.Role).Find(q =>
+                log.State(q) == QuestState.Available ||
+                log.State(q) == QuestState.Complete && q.ReturnTo == npc.Role);
+            if (quest == null)
             {
-                case QuestState.Available:
-                    text = (quest.Story != null ? "<color=" + Dim + "><i>" + quest.Story + "</i></color>\n" : "") +
-                           quest.Offer + "\n\n<color=" + Dim + ">Reward: " + RewardSummary(quest) + "</color>";
-                    options.Add(new DialogueOption("<b>Accept</b>", () =>
-                    {
-                        log.Accept(quest);
-                        Main(npc, quest.Reminder);
-                    }));
-                    options.Add(new DialogueOption("Not now", () => Main(npc, Greeting(npc.Role))));
-                    break;
-
-                case QuestState.Active:
-                    text = quest.Reminder + "\n\n<color=" + Dim + ">" + QuestBook.ObjectiveLine(log, quest) + "</color>";
-                    options.Add(new DialogueOption("Back", () => Main(npc, Greeting(npc.Role))));
-                    break;
-
-                case QuestState.Complete:
-                    if (quest.ReturnTo != npc.Role)
-                    {
-                        text = quest.Reminder + "\n\n<color=" + Dim + ">Done - " + ReturnLine(quest) + "</color>";
-                        options.Add(new DialogueOption("Back", () => Main(npc, Greeting(npc.Role))));
-                        break;
-                    }
-                    text = quest.Goal == QuestGoal.Talk ? "<color=" + Dim + "><i>You pass on what you were asked to bring.</i></color>" : "You're back, and it's done?";
-                    options.Add(new DialogueOption((quest.Goal == QuestGoal.Talk ? "<b>Deliver:</b> " : "<b>Hand in:</b> ") + quest.Title, () =>
-                    {
-                        List<string> got = log.HandIn(quest);
-                        string thanks = quest.Thanks + "\n\n<color=" + GoldHex + ">Received: " + string.Join(", ", got) + "</color>";
-                        // Whatever this person has next is offered straight away.
-                        QuestDefinition next = log.At(npc.Role).Find(q => log.State(q) == QuestState.Available);
-                        if (next != null)
-                        {
-                            RefreshMarkers();
-                            QuestPage(npc, next, thanks);
-                        }
-                        else
-                        {
-                            Main(npc, thanks);
-                        }
-                    }));
-                    break;
-
-                default:
-                    Main(npc, Greeting(npc.Role));
-                    return;
+                Main(npc, Greeting(npc.Role));
+                return;
             }
 
-            DialogueUI.Show(npc, lead != null ? lead + "\n\n" + text : text, options);
+            string text;
+            if (log.State(quest) == QuestState.Available)
+            {
+                log.Accept(quest);
+                text = (quest.Story != null ? "<color=" + Dim + "><i>" + quest.Story + "</i></color>\n" : "") +
+                       quest.Offer + "\n\n<color=" + Dim + ">" + QuestBook.ObjectiveLine(log, quest) +
+                       "\nReward: " + RewardSummary(quest) + "</color>";
+            }
+            else
+            {
+                List<string> got = log.HandIn(quest);
+                text = quest.Thanks + "\n\n<color=" + GoldHex + ">Received: " + string.Join(", ", got) + "</color>";
+            }
+
+            RefreshMarkers();
+            DialogueUI.Show(npc, text, new List<DialogueOption>
+            {
+                new DialogueOption("Continue", () => NextQuest(npc))
+            });
         }
 
         /// <summary>"return to Seer Ysolde at the Emberwatch camp".</summary>

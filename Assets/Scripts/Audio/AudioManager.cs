@@ -12,9 +12,9 @@ namespace PoeClone.Audio
 
     /// <summary>
     /// Central SFX player. World/combat clips go through PlayAtPoint or PlayRandomAtPoint,
-    /// which create temporary centered sources at full SFX volume, however far away they are.
-    /// UI clips are also centered and share one source on this object. Distance fade is only for
-    /// persistent world sources (rivers, waterfalls, town noise) through WorldSfxVolume.
+    /// which create temporary centered sources that fade out with distance from the character.
+    /// UI clips are also centered and share one source on this object. Persistent world sources
+    /// (rivers, waterfalls, town noise) use the same distance fade through WorldSfxVolume.
     /// Each recording's loudness is set in its audio file; code only applies the category,
     /// the player's effects and master volumes, and the distance gains below. While a priority
     /// sound (a potion) plays, the world one-shots duck so it is heard over a fight.
@@ -172,7 +172,7 @@ namespace PoeClone.Audio
 
         private void PlayWorld(AudioClip clip, Vector3 position, float pitch)
         {
-            float gain = SfxGain;
+            float gain = WorldSfxVolume(position);
             if (clip == null || gain <= 0f)
                 return;
 
@@ -189,16 +189,15 @@ namespace PoeClone.Audio
             source.spatialBlend = 0f;
             source.panStereo = 0f;
             source.pitch = pitch;
-            // Gameplay one-shots always play at full SFX volume; only persistent world sources fade with distance.
             source.volume = gain * duck;
-            oneShots.Add(new OneShot { Source = source, Volume = gain });
+            oneShots.Add(new OneShot { Source = source, Volume = SfxGain });
             // When more sounds play than there are voices, Unity silences the lowest priority first (0 is highest).
             source.priority = topPriority ? 0 : 128;
             source.PlayDelayed(delay);
             Destroy(go, delay + clip.length / Mathf.Max(0.1f, pitch) + 0.1f);
         }
 
-        /// <summary>SFX gain and distance fade for persistent world sound sources.</summary>
+        /// <summary>SFX gain and distance fade for world sound sources, silent at 32 metres.</summary>
         public float WorldSfxVolume(Vector3 position) => SfxGain * DistanceVolume(position);
 
         private static float DistanceVolume(Vector3 position)
@@ -264,7 +263,7 @@ namespace PoeClone.Audio
             duck = Mathf.MoveTowards(duck, target, DuckSpeed * Time.unscaledDeltaTime);
             oneShots.RemoveAll(s => s.Source == null);
             foreach (OneShot shot in oneShots)
-                shot.Source.volume = shot.Volume * duck;
+                shot.Source.volume = shot.Volume * DistanceVolume(shot.Source.transform.position) * duck;
         }
     }
 }

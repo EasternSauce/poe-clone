@@ -1,3 +1,10 @@
+version: 2026-10-12-quests-and-travel
+- Quest offers and hand-ins open automatically when you speak to the right NPC. Quests are accepted and rewards collected automatically; each dialogue appears once, with no quest menu or replay option. Objectives now include the quest's directions and encounter instructions.
+- Entering a gate immediately protects you from damage and stops movement, dashes and pending attacks. You remain still through the loading fade and only regain control after the new area is ready and visible.
+- Non-damaging effects cannot trigger damage bonuses, on-hit effects or enrage. Grave Rot remains a curse without a damaging hit.
+- Kill experience now requires you to be alive, in the same area and within 60 metres of the defeated enemy, including co-op kills.
+- World sound effects, including another player's attacks and nearby monster deaths, now fade with distance and become silent at 32 metres. Interface sounds keep their usual volume.
+
 version: 2026-10-12-coop-chat
 - Enemy spawns now check the terrain surface and scenery clearance together, including packs, replacements, quest ambushes and summoned enemies, so raised terrain no longer hides enemies that can attack you.
 - After entering an area or reviving, you cannot take damage or draw enemy aggro until you move or attack/use a skill. Enemies no longer avoid large circles around area entrances and waystones.

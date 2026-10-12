@@ -24,8 +24,6 @@ namespace PoeClone.Network
     public partial class CoopSession : MonoBehaviour
     {
         private const float SendInterval = 0.05f;
-        // A kill this close to the partner (in the same area) counts for them too.
-        private const float SharedKillRange = 60f;
         // Melee blows are judged on the guest against its copy of the enemy, which runs a little
         // behind the host's: a bit of extra reach so a blow that visibly connects still lands.
         private const float MeleeLatencySlack = 0.6f;
@@ -354,7 +352,8 @@ namespace PoeClone.Network
                 return;
             Vector3 at = enemy.transform.position;
             Vector3 offset = new Vector3(latest.p.x - at.x, 0f, latest.p.z - at.z);
-            if (offset.sqrMagnitude > SharedKillRange * SharedKillRange)
+            if (offset.sqrMagnitude > KillRewards.ExperienceRange * KillRewards.ExperienceRange ||
+                AreaAt(at) != latest.area)
                 return;
             CoopEvent e = NewEvent(CoopProtocol.Kill);
             e.ek = enemy.KindIndex;

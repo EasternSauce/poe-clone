@@ -422,7 +422,6 @@ namespace PoeClone.Quests
         public static string ObjectiveLine(QuestLog log, QuestDefinition quest)
         {
             string encounter = log.EncounterObjective(quest);
-            if (!string.IsNullOrEmpty(encounter)) return encounter;
             string objective = quest.Objective;
             string location = Location(quest);
             // Existing authored objectives often already name their destination area.
@@ -430,7 +429,12 @@ namespace PoeClone.Quests
             string area = destination >= 0 && destination < WorldBuilder.AreaNames.Length ? WorldBuilder.AreaNames[destination] : null;
             if (area == null || objective.IndexOf(area, System.StringComparison.OrdinalIgnoreCase) < 0)
                 objective += " - " + location;
-            return objective + (quest.Count > 1 ? " (" + log.Progress(quest) + "/" + quest.Count + ")" : "");
+            objective += quest.Count > 1 ? " (" + log.Progress(quest) + "/" + quest.Count + ")" : "";
+            if (!string.IsNullOrEmpty(quest.Reminder) && quest.Reminder != quest.Objective)
+                objective += "\n  " + quest.Reminder;
+            if (!string.IsNullOrEmpty(encounter))
+                objective += "\n  " + encounter;
+            return objective;
         }
 
         private static int NpcArea(NpcRole role)
