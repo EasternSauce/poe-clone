@@ -256,7 +256,7 @@ namespace PoeClone.UI
             Vector3 me = player.transform.position;
             foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>())
             {
-                if (enemy.IsDead || !InArea(enemy.transform.position, centre))
+                if (enemy.IsDead || enemy.IsAlly || !InArea(enemy.transform.position, centre))
                     continue;
                 Vector3 offset = enemy.transform.position - me;
                 offset.y = 0f;

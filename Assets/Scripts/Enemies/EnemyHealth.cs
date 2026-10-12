@@ -79,6 +79,9 @@ namespace PoeClone.Enemies
         public int RemoteId { get; set; }
         public bool IsRemote => RemoteId != 0;
 
+        /// <summary>A copy of a player's minion (a spectator's or co-op partner's view): an ally, not a monster.</summary>
+        public bool IsAlly { get; set; }
+
         /// <summary>A hit on a co-op copy, for the host to apply: everything TakeDamage was given.</summary>
         public struct HitClaim
         {

@@ -1191,6 +1191,8 @@ namespace PoeClone.Network
             // host's minions are its partner's allies, so they can't be hit at all.
             var cc = go.GetComponent<CharacterController>();
             var health = go.GetComponent<EnemyHealth>();
+            if (health != null)
+                health.IsAlly = minion;
             if (cc != null)
                 cc.enabled = coopGuest && !minion;
             if (coopGuest && health != null)
