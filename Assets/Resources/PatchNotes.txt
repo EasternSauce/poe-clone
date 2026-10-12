@@ -1,4 +1,5 @@
 version: 2026-10-12-coop-chat
+- Co-op now asks you to choose a character first, then offers Host Game or Join Game. Going back from the game list returns to those options with your character selected.
 - Chat messages in co-op now arrive promptly. On a slow connection, chat no longer waits behind seconds of queued position updates; stale updates are skipped instead.
 - A dropped co-op connection no longer ends the game. Both players keep playing while it reconnects, the partner frame shows "reconnecting...", and co-op resumes on its own. The party only ends if a partner stays away for 90 seconds or leaves through the menu.
 - Closing the browser tab or the game now ends a co-op party at once, the same as leaving through the menu. Before, your partner waited 90 seconds for a reconnect that could never happen.

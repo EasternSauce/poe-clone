@@ -55,7 +55,7 @@ namespace PoeClone.Network
 
         // Co-op: what the player picked in the co-op menu. Joining lasts until the game starts;
         // a host plays at once and stays hosting (listed while it has no guest) for the session.
-        private enum CoopIntent { None, Host, Join }
+        private enum CoopIntent { None, Join }
         private CoopIntent coopIntent;
         private bool hosting;
         private bool hostAnnounced;
@@ -255,31 +255,34 @@ namespace PoeClone.Network
             string notice = startNotice;
             startNotice = null;
             coopIntent = CoopIntent.None;
-            namePrompt.ShowStartMenu(() => ChooseCharacter(CoopIntent.None), ShowCoopMenu, notice);
+            namePrompt.ShowStartMenu(() => ChooseCharacter(false), () => ChooseCharacter(true), notice);
         }
 
         private void ShowCoopMenu()
         {
             LeaveCoopLobby();
-            namePrompt.ShowCoopMenu(() => ChooseCharacter(CoopIntent.Host), () => ChooseCharacter(CoopIntent.Join), ShowStartMenu);
+            namePrompt.ShowCoopMenu(HostGame, EnterCoopLobby, () => ChooseCharacter(true));
         }
 
-        private void ChooseCharacter(CoopIntent intent)
+        private void ChooseCharacter(bool coopGame)
         {
             LeaveCoopLobby();
             namePrompt.ShowCharacters(() =>
             {
                 PlayerName = SaveSystem.ActiveCharacterName;
-                if (intent == CoopIntent.Join)
-                    EnterCoopLobby();
+                if (coopGame)
+                    ShowCoopMenu();
                 else
-                {
-                    hosting = intent == CoopIntent.Host;
-                    StartGame(coopGame: hosting);
-                    if (hosting && Connected && serverPlayGranted)
-                        SendHost();
-                }
-            }, intent == CoopIntent.None ? (Action)ShowStartMenu : ShowCoopMenu);
+                    StartGame(coopGame: false);
+            }, ShowStartMenu);
+        }
+
+        private void HostGame()
+        {
+            hosting = true;
+            StartGame(coopGame: true);
+            if (Connected && serverPlayGranted)
+                SendHost();
         }
 
         private void StartGame(bool coopGame)
@@ -301,17 +304,11 @@ namespace PoeClone.Network
         private void EnterCoopLobby()
         {
             coopIntent = CoopIntent.Join;
-            namePrompt.ShowCoopStatus("Connecting...", null, BackToCharacters);
+            namePrompt.ShowCoopStatus("Connecting...", null, ShowCoopMenu);
             if (Connected && serverPlayGranted)
                 RequestLobby();
             else if (!Connected && reconnectRoutine == null)
                 StartCoroutine(ConnectToServer());
-        }
-
-        private void BackToCharacters()
-        {
-            LeaveCoopLobby();
-            ChooseCharacter(CoopIntent.Join);
         }
 
         private void LeaveCoopLobby()
@@ -340,13 +337,13 @@ namespace PoeClone.Network
 
         private void ShowLobby()
         {
-            namePrompt.ShowCoopLobby(lobby, JoinGame, BackToCharacters);
+            namePrompt.ShowCoopLobby(lobby, JoinGame, ShowCoopMenu);
         }
 
         private void JoinGame(PlayerInfo host)
         {
             client.Send(JsonUtility.ToJson(new CoopJoinMessage { id = host.id, name = PlayerName }));
-            namePrompt.ShowCoopStatus("Joining " + host.name + "'s game...", null, BackToCharacters);
+            namePrompt.ShowCoopStatus("Joining " + host.name + "'s game...", null, ShowCoopMenu);
         }
 
         private void HandleCoopMessage(ServerMessage msg)
@@ -588,7 +585,7 @@ namespace PoeClone.Network
                         if (msg.granted)
                             RequestLobby();
                         else
-                            namePrompt.ShowCoopStatus("Can't start co-op", msg.reason, BackToCharacters);
+                            namePrompt.ShowCoopStatus("Can't start co-op", msg.reason, ShowCoopMenu);
                     }
                     if (coop != null)
                     {
@@ -651,7 +648,7 @@ namespace PoeClone.Network
             if (!string.IsNullOrWhiteSpace(reason)) DisconnectReason = reason;
             if (string.IsNullOrWhiteSpace(DisconnectReason)) DisconnectReason = "Connection closed unexpectedly.";
             if (coopIntent == CoopIntent.Join)
-                namePrompt.ShowCoopStatus("Can't reach the co-op server", "Retrying... You can go back and play alone.", BackToCharacters);
+                namePrompt.ShowCoopStatus("Can't reach the co-op server", "Retrying... You can go back and play alone.", ShowCoopMenu);
             if (coop != null)
             {
                 // Both games carry on; once reconnected, the server pairs them up again (or ends
@@ -701,7 +698,7 @@ namespace PoeClone.Network
             if (!returningToMainMenu && !string.IsNullOrEmpty(serverUrl))
                 client.Connect(serverUrl);
             else if (coopIntent == CoopIntent.Join)
-                namePrompt.ShowCoopStatus("Co-op isn't available", "No server is configured for this build.", BackToCharacters);
+                namePrompt.ShowCoopStatus("Co-op isn't available", "No server is configured for this build.", ShowCoopMenu);
             else if (hosting)
                 SystemChat("Co-op isn't available: no server is configured for this build.");
         }
