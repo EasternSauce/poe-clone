@@ -10,7 +10,7 @@ namespace PoeClone.Enemies
     /// scene starts. Every kill is remembered: once the player has walked far enough away from where
     /// it died (and a little time has passed), a new enemy of a random kind appears there, so a
     /// cleared spot is populated again when you come back, but never refills while you stand in it.
-    /// Avoids spawning on top of props, other enemies, or too close to the player.
+    /// Avoids spawning inside scenery or other enemies; arrival safety is handled by the player.
     /// </summary>
     public class EnemySpawner : MonoBehaviour
     {
@@ -27,7 +27,6 @@ namespace PoeClone.Enemies
 
         [Header("Area")]
         [SerializeField] private float areaHalfSize = 40f;
-        [SerializeField] private float minDistanceFromPlayer = 14f;
         [SerializeField] private float clearanceRadius = 1.2f;
         [SerializeField] private float spawnHeight = 1.1f;
         [SerializeField] private int maxAttemptsPerEnemy = 40;
@@ -39,10 +38,6 @@ namespace PoeClone.Enemies
         }
 
         private const float CheckInterval = 1f;
-
-        // The opening spawns keep at least this clear around the player: ranged kinds notice the
-        // player from 15 m, and the game shouldn't open with arrows already in the air.
-        private const float StartSafeRadius = 20f;
 
         private readonly List<Vacancy> vacancies = new List<Vacancy>();
         private PlayerController player;
@@ -61,10 +56,9 @@ namespace PoeClone.Enemies
 
         public int MonsterLevel => monsterLevel;
 
-        // Arrival points (spawn, gate exits) that no enemy may spawn near, so stepping into an area
-        // never drops the player straight into a fight.
+        // Boss clearings and quest sites stay free of ordinary packs.
         private const float SafeRadius = 16f;
-        private readonly System.Collections.Generic.List<Vector3> safeSpots = new System.Collections.Generic.List<Vector3>();
+        private readonly List<Vector3> safeSpots = new List<Vector3>();
 
         public void SetSafeSpots(System.Collections.Generic.IEnumerable<Vector3> spots)
         {
@@ -130,14 +124,12 @@ namespace PoeClone.Enemies
             int misses = 0;
             while (spawned < enemyCount && misses < enemyCount)
             {
-                Vector3 playerPos = player != null ? player.transform.position : Vector3.zero;
-                if (!TryFindSpawnPoint(playerPos, Mathf.Max(minDistanceFromPlayer, StartSafeRadius), out Vector3 point))
+                if (!TryFindSpawnPoint(out Vector3 point, out int kindIndex))
                 {
                     misses++;
                     continue;
                 }
 
-                int kindIndex = PickKind(point);
                 Spawn(point, kindIndex);
                 spawned++;
 
@@ -146,7 +138,7 @@ namespace PoeClone.Enemies
                     pack = Random.Range(1, pack + 1);
                 for (int k = 0; k < pack && spawned < enemyCount; k++)
                 {
-                    if (TryFindSpawnPointNear(point, out Vector3 near) && (near - playerPos).magnitude > StartSafeRadius)
+                    if (TryFindSpawnPointNear(point, out Vector3 near, out _, kindIndex))
                     {
                         Spawn(near, kindIndex);
                         spawned++;
@@ -179,9 +171,9 @@ namespace PoeClone.Enemies
                     continue;
 
                 // A blocked spot (something moved in) is retried on a later check.
-                if (TryFindSpawnPointNear(v.Position, out Vector3 point))
+                if (TryFindSpawnPointNear(v.Position, out Vector3 point, out int kindIndex))
                 {
-                    Spawn(point, PickKind(point));
+                    Spawn(point, kindIndex);
                     vacancies.RemoveAt(k);
                 }
             }
@@ -210,7 +202,7 @@ namespace PoeClone.Enemies
                     float radius = Random.Range(minRadius, maxRadius);
                     Vector3 candidate = new Vector3(near.x + Mathf.Cos(angle) * radius, spawnHeight, near.z + Mathf.Sin(angle) * radius);
                     if ((inside != null && !inside(candidate)) || Sanctuary.Contains(candidate, 2f) ||
-                        Physics.CheckSphere(candidate + Vector3.up * 0.5f, clearanceRadius))
+                        !TryPrepareSpawnPoint(candidate, kindIndex, out candidate, clearanceRadius, spawnHeight))
                         continue;
                     GameObject enemy = Spawn(candidate, kindIndex, refills: false);
                     EnemyHealth health = enemy.GetComponent<EnemyHealth>();
@@ -235,14 +227,6 @@ namespace PoeClone.Enemies
 
         private GameObject Spawn(Vector3 point, int kindIndex, bool refills = true)
         {
-            // The generated areas have uneven ground. A fixed world Y can put an enemy below a
-            // raised slope, where its AI still works but its body and hit colliders are buried.
-            // Anchor to the area's ground mesh, then lift the pivot for taller kinds.
-            if (TryGetGroundHeight(point, out float groundY))
-                point.y = groundY + spawnHeight * EnemyKinds.Get(kindIndex).Scale;
-            else
-                point.y = spawnHeight * EnemyKinds.Get(kindIndex).Scale;
-
             Quaternion rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
             GameObject enemy = Instantiate(enemyPrefab, point, rotation, transform);
             EnemyKinds.Apply(enemy, kindIndex, monsterLevel);
@@ -258,28 +242,53 @@ namespace PoeClone.Enemies
             return enemy;
         }
 
-        private static bool TryGetGroundHeight(Vector3 point, out float height)
+        // Validate at the final surface height, never at the old fixed world Y. Every spawn
+        // path (opening packs, replacements and quest ambushes) goes through this check.
+        internal static bool TryPrepareSpawnPoint(Vector3 candidate, int kindIndex, out Vector3 point,
+            float clearanceRadius = 1.2f, float spawnHeight = 1.1f)
         {
-            Vector3 origin = point + Vector3.up * 100f;
-            foreach (RaycastHit hit in Physics.RaycastAll(origin, Vector3.down, 200f,
-                         Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            point = candidate;
+            float groundY = float.NegativeInfinity;
+            float groundNormalY = 0f;
+            foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(candidate.x, 100f, candidate.z),
+                         Vector3.down, 200f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {
-                if (hit.collider == null || hit.collider.GetComponentInParent<CharacterController>() != null)
-                    continue;
-
-                string objectName = hit.collider.gameObject.name;
-                if (objectName == "Ground" || objectName.StartsWith("Ground_"))
+                if (IsGround(hit.collider) && hit.point.y > groundY)
                 {
-                    height = hit.point.y;
-                    return true;
+                    groundY = hit.point.y;
+                    groundNormalY = hit.normal.y;
                 }
             }
+            // No floor is a rejected candidate, not a spawn at Y=0.
+            if (float.IsNegativeInfinity(groundY) || groundNormalY < 0.7f)
+                return false;
 
-            height = 0f;
-            return false;
+            float scale = EnemyKinds.Get(kindIndex).Scale;
+            point.y = groundY + spawnHeight * scale;
+            // Cover the full body and footprint, including large kinds. Ignore the floor itself,
+            // but reject walls, rocks, scenery and characters at the actual spawn elevation.
+            float radius = clearanceRadius * Mathf.Max(1f, scale);
+            float height = Mathf.Max(2.2f * scale, 1.8f);
+            Vector3 half = new Vector3(radius, height * 0.5f, radius);
+            Vector3 probe = new Vector3(point.x, groundY + 0.1f + half.y, point.z);
+            foreach (Collider obstacle in Physics.OverlapBox(probe, half, Quaternion.identity,
+                         Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            {
+                if (!IsGround(obstacle))
+                    return false;
+            }
+            return true;
         }
 
-        private bool TryFindSpawnPointNear(Vector3 center, out Vector3 point)
+        private static bool IsGround(Collider collider)
+        {
+            if (collider == null || collider.GetComponentInParent<CharacterController>() != null)
+                return false;
+            string name = collider.gameObject.name;
+            return name == "Ground" || name.StartsWith("Ground_");
+        }
+
+        private bool TryFindSpawnPointNear(Vector3 center, out Vector3 point, out int kindIndex, int requestedKind = -1)
         {
             for (int attempt = 0; attempt < maxAttemptsPerEnemy; attempt++)
             {
@@ -290,15 +299,16 @@ namespace PoeClone.Enemies
                     Mathf.Clamp(center.z + scatter.y, this.center.z - areaHalfSize, this.center.z + areaHalfSize)
                 );
 
+                kindIndex = requestedKind >= 0 ? requestedKind : PickKind(candidate);
                 if ((inside == null || inside(candidate)) && !NearSafeSpot(candidate) &&
-                    !Physics.CheckSphere(candidate + Vector3.up * 0.5f, clearanceRadius))
+                    TryPrepareSpawnPoint(candidate, kindIndex, out point, clearanceRadius, spawnHeight))
                 {
-                    point = candidate;
                     return true;
                 }
             }
 
             point = Vector3.zero;
+            kindIndex = -1;
             return false;
         }
 
@@ -316,7 +326,7 @@ namespace PoeClone.Enemies
                 transform.GetChild(i).gameObject.SetActive(active);
         }
 
-        private bool TryFindSpawnPoint(Vector3 playerPos, float minDistance, out Vector3 point)
+        private bool TryFindSpawnPoint(out Vector3 point, out int kindIndex)
         {
             for (int attempt = 0; attempt < maxAttemptsPerEnemy; attempt++)
             {
@@ -326,22 +336,18 @@ namespace PoeClone.Enemies
                     center.z + Random.Range(-areaHalfSize, areaHalfSize)
                 );
 
-                Vector3 flatOffset = candidate - playerPos;
-                flatOffset.y = 0f;
-
-                if (flatOffset.magnitude < minDistance || NearSafeSpot(candidate) || (inside != null && !inside(candidate)))
+                if (NearSafeSpot(candidate) || (inside != null && !inside(candidate)))
                     continue;
 
-                // Check a sphere above the ground so the floor itself doesn't count.
-                Vector3 probe = candidate + Vector3.up * 0.5f;
-                if (Physics.CheckSphere(probe, clearanceRadius))
+                kindIndex = PickKind(candidate);
+                if (!TryPrepareSpawnPoint(candidate, kindIndex, out point, clearanceRadius, spawnHeight))
                     continue;
 
-                point = candidate;
                 return true;
             }
 
             point = Vector3.zero;
+            kindIndex = -1;
             return false;
         }
     }

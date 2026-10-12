@@ -175,7 +175,7 @@ namespace PoeClone.Enemies
                 if (player == null)
                     return;
             }
-            if (player.IsDead)
+            if (player.IsDead || player.ArrivalProtected)
                 return;
 
             // A move that follows straight on from the last one (the Sweep after a pull).

@@ -160,7 +160,7 @@ namespace PoeClone.Player
 
         private void Update()
         {
-            if (Time.timeScale <= 0f) return;
+            if (Time.timeScale <= 0f || PoeClone.World.AreaManager.Instance != null && PoeClone.World.AreaManager.Instance.IsSwitching) return;
             if (cooldownTimer > 0f)
                 cooldownTimer -= Time.deltaTime;
 
@@ -281,6 +281,7 @@ namespace PoeClone.Player
 
         private void StartAttack()
         {
+            GetComponent<PlayerStats>()?.EndArrivalProtection();
             WeaponType weaponType = CurrentWeaponType();
 
             // Attacking means the player has changed their mind about walking to an item.

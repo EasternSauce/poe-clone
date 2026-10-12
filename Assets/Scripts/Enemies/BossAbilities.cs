@@ -509,7 +509,7 @@ namespace PoeClone.Enemies
         // Where the player its moves go for is (the local player unless co-op says otherwise).
         private Vector3 AimPosition => aim != null ? aim.position : player != null ? player.transform.position : transform.position;
 
-        private bool AimAlive => aimedAtLocal || aim == null ? player != null && !player.IsDead : Party.PartnerAlive;
+        private bool AimAlive => aimedAtLocal || aim == null ? player != null && !player.IsDead && !player.ArrivalProtected : Party.PartnerTargetable;
 
         private Vector3 PlayerAt => Flat(AimPosition) + Vector3.up * transform.position.y;
 
@@ -779,7 +779,8 @@ namespace PoeClone.Enemies
             {
                 float a = (k / (float)count) * Mathf.PI * 2f + Random.value;
                 Vector3 at = center + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * spread;
-                at.y = transform.position.y - Size + EnemyKinds.Get(kindIndex).Scale * 1.1f;
+                if (!EnemySpawner.TryPrepareSpawnPoint(at, kindIndex, out at))
+                    continue;
                 GameObject minion = Instantiate(minionPrefab, at, Quaternion.LookRotation(Flat(transform.position - at) + Vector3.forward * 0.001f), transform.parent);
                 EnemyKinds.Apply(minion, kindIndex, level);
                 EnemyHealth h = minion.GetComponent<EnemyHealth>();

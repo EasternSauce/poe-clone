@@ -822,6 +822,8 @@ namespace PoeClone.Skills
         /// <summary>Uses the skill in a slot if gear grants it and it's ready and affordable.</summary>
         public bool TryUse(int slot)
         {
+            if (PoeClone.World.AreaManager.Instance != null && PoeClone.World.AreaManager.Instance.IsSwitching)
+                return false;
             SkillId? id = Slot(slot);
             if (id == null)
                 return false;
@@ -856,6 +858,7 @@ namespace PoeClone.Skills
                     slotCooldownOf[k] = cooldown;
                     slotReadyAt[k] = Time.time + cooldown;
                 }
+            stats.EndArrivalProtection();
             controller.CancelWalk();
             Cast(skill, level);
             return true;

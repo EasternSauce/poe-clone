@@ -353,8 +353,19 @@ namespace PoeClone.Enemies
             Aggro();
         }
 
+        private bool HasTargetablePlayer
+        {
+            get
+            {
+                // Quest ambushes can alert a newly instantiated enemy before its Start runs.
+                if (playerStats == null) playerStats = FindAnyObjectByType<PlayerStats>();
+                return (playerStats != null && !playerStats.IsDead && !playerStats.ArrivalProtected) || Party.PartnerTargetable;
+            }
+        }
+
         private void Aggro()
         {
+            if (!HasTargetablePlayer) return;
             if (state == State.Chasing)
                 return;
             state = State.Chasing;
@@ -373,7 +384,7 @@ namespace PoeClone.Enemies
             foreach (Collider hit in hits)
             {
                 EnemyController other = hit.GetComponentInParent<EnemyController>();
-                if (other != null && other != this && other.state == State.Idle)
+                if (other != null && other != this && other.state == State.Idle && other.HasTargetablePlayer)
                 {
                     other.state = State.Chasing;
                     other.PlayAggroSound();
@@ -381,7 +392,7 @@ namespace PoeClone.Enemies
             }
         }
 
-private void Update()
+        private void Update()
         {
             if (player == null)
             {
@@ -405,7 +416,7 @@ private void Update()
 
             bool staggered = stagger != null && stagger.IsStaggered;
             bool attacking = attackAnimator != null && attackAnimator.IsAttacking;
-            bool playerDead = playerStats != null && playerStats.IsDead;
+            bool playerDead = playerStats != null && (playerStats.IsDead || playerStats.ArrivalProtected);
             Transform target = ChooseTarget(playerDead, attacking);
 
             Vector3 horizontal = Vector3.zero;
@@ -450,6 +461,12 @@ private void Update()
                         facing = horizontal;
                     }
                 }
+            }
+
+            if (target == null)
+            {
+                state = State.Idle;
+                targetMinion = null;
             }
 
             // Wandered onto warded ground: back out the way it came.

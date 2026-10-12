@@ -381,7 +381,10 @@ namespace PoeClone.World
 
             var stats = player.GetComponent<PlayerStats>();
             if (stats != null)
+            {
                 stats.SetSpawnPoint(to.position, to.rotation);
+                stats.ProtectArrival();
+            }
 
             var cam = Camera.main != null ? Camera.main.GetComponent<CameraSystem.CameraFollow>() : null;
             if (cam != null)
@@ -1026,10 +1029,10 @@ namespace PoeClone.World
             return Npc.Create(prefab, role, name, look, position, facing, parent);
         }
 
-        // Where players appear in an area (its spawn point and every gate arrival): kept clear of enemies.
+        // Keep boss clearings and quest props clear; arrivals use player protection instead.
         private List<Vector3> SafeSpots(int area)
         {
-            var spots = new List<Vector3> { spawnPoints[area].position };
+            var spots = new List<Vector3>();
             // Keep ordinary opening packs and replacements out of the boss clearings.
             if (area == SaltBasin)
             {
@@ -1048,11 +1051,6 @@ namespace PoeClone.World
                     if (Shape(area).Contains(site.position))
                         spots.Add(site.position);
                 }
-            }
-            foreach (Transform child in root)
-            {
-                if (child.name.StartsWith("Arrive_" + AreaNames[area] + "_"))
-                    spots.Add(child.position);
             }
             return spots;
         }

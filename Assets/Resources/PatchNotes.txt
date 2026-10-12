@@ -1,5 +1,6 @@
 version: 2026-10-12-coop-chat
-- Enemies now spawn at the actual ground height across uneven terrain, so hills and raised paths no longer bury them out of sight.
+- Enemy spawns now check the terrain surface and scenery clearance together, including packs, replacements, quest ambushes and summoned enemies, so raised terrain no longer hides enemies that can attack you.
+- After entering an area or reviving, you cannot take damage or draw enemy aggro until you move or attack/use a skill. Enemies no longer avoid large circles around area entrances and waystones.
 - Co-op now asks you to choose a character first, then offers Host Game or Join Game. Going back from the game list returns to those options with your character selected.
 - Chat messages in co-op now arrive promptly. On a slow connection, chat no longer waits behind seconds of queued position updates; stale updates are skipped instead.
 - A dropped co-op connection no longer ends the game. Both players keep playing while it reconnects, the partner frame shows "reconnecting...", and co-op resumes on its own. The party only ends if a partner stays away for 90 seconds or leaves through the menu.

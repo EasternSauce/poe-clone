@@ -48,6 +48,18 @@ namespace PoeClone.Player
         private Vector3 spawnPosition;
         private Quaternion spawnRotation;
 
+        /// <summary>Area arrival grace lasts until the player moves or starts an attack/skill.</summary>
+        public bool ArrivalProtected { get; private set; }
+
+        public void ProtectArrival()
+        {
+            ArrivalProtected = true;
+            poison.Clear();
+            poisonShown = 0f;
+        }
+
+        public void EndArrivalProtection() => ArrivalProtected = false;
+
         public bool IsDead => dead;
         public bool IsAwaitingRevive => respawnPhase == RespawnPhase.AwaitingRevive;
 
@@ -142,7 +154,7 @@ namespace PoeClone.Player
 
         private void AddPoison(float damage, float seconds, bool fromPool)
         {
-            if (dead || damage <= 0f || seconds <= 0f)
+            if (dead || ArrivalProtected || damage <= 0f || seconds <= 0f)
                 return;
             StatSheet defensiveSheet = inventory != null ? inventory.Stats : null;
             if (defensiveSheet != null)
@@ -363,7 +375,7 @@ namespace PoeClone.Player
         /// <summary>A blow from an enemy: evasion and block first, then mitigation. False if it never landed.</summary>
         public bool TakeHit(float damage, DamageType type, bool attack = true, int rollSeed = 0)
         {
-            if (dead || damage <= 0f)
+            if (dead || ArrivalProtected || damage <= 0f)
                 return false;
 
             if (rollSeed == 0) rollSeed = EventRandom.NextSeed();
@@ -456,7 +468,7 @@ namespace PoeClone.Player
 
         private void ApplyDamage(float amount, int rollSeed)
         {
-            if (dead || amount <= 0f)
+            if (dead || ArrivalProtected || amount <= 0f)
                 return;
 
             DamageTaken?.Invoke(Mathf.Min(amount, currentHealth));
@@ -532,6 +544,7 @@ namespace PoeClone.Player
             currentMana = MaxMana;
 
             transform.SetPositionAndRotation(spawnPosition, spawnRotation);
+            ProtectArrival();
 
             PlayerController controller = GetComponent<PlayerController>();
             if (controller != null)

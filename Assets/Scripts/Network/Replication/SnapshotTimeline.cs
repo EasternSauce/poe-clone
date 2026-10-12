@@ -272,6 +272,7 @@ namespace PoeClone.Network.Replication
             dst.hp = src.hp;
             dst.mhp = src.mhp;
             dst.d = src.d;
+            dst.gp = src.gp;
             dst.atk = src.atk;
             dst.ap = src.ap;
             dst.ah = src.ah;

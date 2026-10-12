@@ -129,7 +129,7 @@ namespace PoeClone.Enemies
             // Co-op: whoever it's after (see EnemyController's threat); alone, the local player.
             aimedAtLocal = controller == null || !controller.TargetsPartner;
             aim = aimedAtLocal ? player.transform : controller.TargetPlayer;
-            if ((aimedAtLocal && player.IsDead) || aim == null || Time.time < nextUse || Busy || Sanctuary.Contains(aim.position, 1f))
+            if ((aimedAtLocal && (player.IsDead || player.ArrivalProtected)) || aim == null || Time.time < nextUse || Busy || Sanctuary.Contains(aim.position, 1f))
                 return;
             if ((stagger != null && stagger.IsStaggered) || (attackAnimator != null && attackAnimator.IsAttacking))
                 return;
@@ -1102,6 +1102,8 @@ namespace PoeClone.Enemies
             {
                 float a = (k / (float)count) * Mathf.PI * 2f + Random.value;
                 Vector3 at = transform.position + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * 2.5f;
+                if (!EnemySpawner.TryPrepareSpawnPoint(at, EnemyKinds.SkeletonIndex, out at))
+                    continue;
                 GameObject skeleton = Instantiate(spawner.EnemyPrefab, at, transform.rotation, transform.parent);
                 EnemyKinds.Apply(skeleton, EnemyKinds.SkeletonIndex, level);
                 minions.Add(skeleton.GetComponent<EnemyHealth>());

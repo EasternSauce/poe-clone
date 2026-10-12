@@ -187,6 +187,7 @@ namespace PoeClone.Network
             p.hp = stats.CurrentHealth;
             p.mhp = stats.MaxHealth;
             p.d = stats.IsDead ? 1 : 0;
+            p.gp = stats.ArrivalProtected ? 1 : 0;
             p.atk = attackAnimator != null ? attackAnimator.AttackCount : 0;
             p.ap = attackAnimator != null ? attackAnimator.ProfileId : 0;
             p.ah = attackAnimator != null && attackAnimator.IsHolding ? 1 : 0;

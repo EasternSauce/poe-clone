@@ -206,6 +206,7 @@ namespace PoeClone.Network.Replication
             AppendFloat(sb, "hp", e.hp, 1);
             AppendFloat(sb, "mhp", e.mhp, 1);
             AppendInt(sb, "d", e.d);
+            AppendInt(sb, "gp", e.gp);
             AppendInt(sb, "atk", e.atk);
             AppendInt(sb, "ap", e.ap);
             AppendInt(sb, "ah", e.ah);

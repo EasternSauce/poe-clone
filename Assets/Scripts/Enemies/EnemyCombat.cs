@@ -122,7 +122,7 @@ namespace PoeClone.Enemies
             }
 
             bool atPartner = controller != null && controller.TargetsPartner;
-            if (playerStats.IsDead && !atPartner)
+            if ((playerStats.IsDead || playerStats.ArrivalProtected) && !atPartner)
                 return;
             PlayerMotion.Track(playerStats);
 

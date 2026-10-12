@@ -39,6 +39,7 @@ namespace PoeClone.Combat
         /// </summary>
         public static Transform Partner { get; set; }
         public static bool PartnerAlive { get; set; }
+        public static bool PartnerArrivalProtected { get; set; }
 
         /// <summary>Host: true while the partner's hit (a claim from the guest) is being applied.</summary>
         public static bool ApplyingPartnerDamage { get; set; }
@@ -68,7 +69,7 @@ namespace PoeClone.Combat
         /// </summary>
         public static System.Action<Component, AttackKind, bool, float, float, Vector3, Vector3, int> EnemyAttacked;
 
-        public static bool PartnerTargetable => IsHost && Partner != null && PartnerAlive && Partner.gameObject.activeInHierarchy;
+        public static bool PartnerTargetable => IsHost && Partner != null && PartnerAlive && !PartnerArrivalProtected && Partner.gameObject.activeInHierarchy;
 
         /// <summary>
         /// Guest: the host is in this area too, so the monsters here are copies of the host's.
@@ -140,6 +141,7 @@ namespace PoeClone.Combat
             IsHost = IsGuest = false;
             Partner = null;
             PartnerAlive = false;
+            PartnerArrivalProtected = false;
             ApplyingPartnerDamage = false;
             localEnragedAt = partnerEnragedAt = float.NegativeInfinity;
             SharingArea = false;

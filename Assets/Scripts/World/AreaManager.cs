@@ -196,6 +196,7 @@ namespace PoeClone.World
                 {
                     Transform respawn = def.respawnPoint != null ? def.respawnPoint : target;
                     stats.SetSpawnPoint(respawn.position, respawn.rotation);
+                    stats.ProtectArrival();
                 }
 
                 var cam = Camera.main != null ? Camera.main.GetComponent<PoeClone.CameraSystem.CameraFollow>() : null;

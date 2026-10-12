@@ -608,13 +608,12 @@ namespace PoeClone.Enemies
             if (spawner == null || spawner.EnemyPrefab == null)
                 return;
 
-            float ground = transform.position.y - transform.localScale.y;
-            float childScale = EnemyKinds.Get(kindIndex).Scale;
             Vector3 side = transform.right;
             for (int k = -1; k <= 1; k += 2)
             {
                 Vector3 at = transform.position + side * (k * 0.9f * transform.localScale.x);
-                at.y = ground + childScale;
+                if (!EnemySpawner.TryPrepareSpawnPoint(at, kindIndex, out at, clearanceRadius: 0.6f))
+                    continue;
                 GameObject child = Instantiate(spawner.EnemyPrefab, at, transform.rotation * Quaternion.Euler(0f, k * 50f, 0f), transform.parent);
                 EnemyKinds.Apply(child, kindIndex, MonsterLevel);
                 EnemyController ai = child.GetComponent<EnemyController>();

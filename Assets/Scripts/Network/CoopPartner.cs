@@ -184,6 +184,7 @@ namespace PoeClone.Network
 
             Party.Partner = here ? body.transform : null;
             Party.PartnerAlive = !PartnerDead;
+            Party.PartnerArrivalProtected = applied != null && applied.gp != 0;
             status.Here = here;
             status.Dead = PartnerDead;
         }

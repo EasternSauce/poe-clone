@@ -19,6 +19,7 @@ namespace PoeClone.Network.Replication
         public float r;    // yaw in degrees (characters only ever rotate around Y while alive)
         public float hp;
         public float mhp;
+        public int gp;     // player: 1 = protected after area arrival
         public int d;      // 1 = dead
         public int atk;    // attacks started so far - a counter, so a swing that starts and finishes between two snapshots is never lost
         public int ap;     // attack profile id of the latest swing (see CharacterAttackAnimator.ProfileId)

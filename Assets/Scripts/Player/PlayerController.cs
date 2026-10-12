@@ -199,7 +199,7 @@ namespace PoeClone.Player
 
         private void Update()
         {
-            if (Time.timeScale <= 0f) return;
+            if (Time.timeScale <= 0f || World.AreaManager.Instance != null && World.AreaManager.Instance.IsSwitching) return;
             if (dashTimeLeft > 0f)
             {
                 dashTimeLeft -= Time.deltaTime;
@@ -393,7 +393,12 @@ namespace PoeClone.Player
         private void MoveAlongGround(Vector3 motion)
         {
             Vector3 target = World.GroundObstacleMotion.Slide(controller, transform.position, transform.position + motion);
-            controller.Move(target - transform.position);
+            Vector3 before = transform.position;
+            controller.Move(target - before);
+            Vector3 moved = transform.position - before;
+            moved.y = 0f;
+            if (motion.sqrMagnitude > 0.000001f && moved.sqrMagnitude > 0.000001f)
+                GetComponent<PlayerStats>()?.EndArrivalProtection();
         }
 
         private void ApplyGravity()
