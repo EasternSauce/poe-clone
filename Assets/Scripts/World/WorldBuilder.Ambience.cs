@@ -29,7 +29,7 @@ namespace PoeClone.World
             // Small tied offerings on actual branches, rather than floating cloth near trees.
             GameObject trees = GameObject.Find("Trees");
             int count = 0;
-            if (trees != null)
+            if (NeedsArea(Greenwood) && trees != null)
                 foreach (Transform tree in trees.transform)
                 {
                     if (!tree.gameObject.activeInHierarchy) continue;
@@ -49,6 +49,7 @@ namespace PoeClone.World
                 }
             foreach (var renderer in FindObjectsByType<MeshRenderer>())
             {
+                if (PoeClone.Network.CoopSession.AreaAt(renderer.transform.position) != loadingArea) continue;
                 if (renderer.name == "Chimney")
                 {
                     // The cube's top is local Y=0.5, including scaled and rotated cottages.
@@ -67,6 +68,7 @@ namespace PoeClone.World
 
         private void WindBanner(Transform parent, int area, Vector3 local, float yaw, string cloth, bool torn)
         {
+            if (!NeedsArea(area)) return;
             AreaShape shape = Shape(area);
             Vector3 desired = Center(area) + local;
             if (!shape.Contains(desired, 1)) return;

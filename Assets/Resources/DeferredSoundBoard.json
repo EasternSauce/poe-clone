@@ -1,0 +1,3744 @@
+{
+    "effects": [
+        {
+            "id": "player.swing",
+            "label": "Melee attack swing",
+            "group": "Combat",
+            "description": "",
+            "soundGroupId": "sound.player.swing",
+            "aliases": [
+                "swing_1",
+                "swing_2",
+                "swing_3"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "player.bow",
+            "label": "Basic bow shot",
+            "group": "Combat",
+            "description": " Also used by Archer attacks, Skeleton Archer attacks. Sound, volume and mute changes apply to every use.",
+            "soundGroupId": "sound.player.bow",
+            "aliases": [],
+            "sharedIds": [
+                "enemy.Archer.Attack",
+                "enemy.Skeleton Archer.Attack"
+            ],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "combat.hit",
+            "label": "Hit impact",
+            "group": "Combat",
+            "description": "",
+            "soundGroupId": "sound.combat.hit",
+            "aliases": [
+                "melee_hit_6",
+                "melee_hit_7"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "combat.block",
+            "label": "Shield block",
+            "group": "Combat",
+            "description": "",
+            "soundGroupId": "sound.combat.block",
+            "aliases": [
+                "shield_block"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "combat.bite",
+            "label": "Snake bite impact",
+            "group": "Combat",
+            "description": "The Shepherd's snake-arm bite. Independent of weapon hits.",
+            "soundGroupId": "sound.combat.bite",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "combat.ground.Physical",
+            "label": "Physical ground impact",
+            "group": "Combat",
+            "description": "Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.",
+            "soundGroupId": "sound.combat.ground.Physical",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "combat.ground.Fire",
+            "label": "Fire ground impact",
+            "group": "Combat",
+            "description": "Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.",
+            "soundGroupId": "sound.combat.ground.Fire",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "combat.ground.Cold",
+            "label": "Cold ground impact",
+            "group": "Combat",
+            "description": "Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.",
+            "soundGroupId": "sound.combat.ground.Cold",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "combat.ground.Lightning",
+            "label": "Lightning ground impact",
+            "group": "Combat",
+            "description": "Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.",
+            "soundGroupId": "sound.combat.ground.Lightning",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "combat.ground.Poison",
+            "label": "Poison ground impact",
+            "group": "Combat",
+            "description": "Enemy ground bursts and landings, including misses. Slime landings use their own attack voice.",
+            "soundGroupId": "sound.combat.ground.Poison",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "player.hurt",
+            "label": "Player hurt",
+            "group": "Player",
+            "description": "",
+            "soundGroupId": "sound.player.hurt",
+            "aliases": [
+                "hurt_1",
+                "hurt_2",
+                "hurt_3"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "player.reward",
+            "label": "Level up / quest reward",
+            "group": "Player",
+            "description": "Level ups and quest rewards currently share this sound.",
+            "soundGroupId": "sound.player.reward",
+            "aliases": [
+                "level_up"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "player.steps",
+            "label": "Footsteps",
+            "group": "Player",
+            "description": "",
+            "soundGroupId": "sound.player.steps",
+            "aliases": [
+                "footstep_grass_1"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "ui.open",
+            "label": "Inventory open",
+            "group": "Interface",
+            "description": "",
+            "soundGroupId": "sound.ui.open",
+            "aliases": [
+                "inventory_open"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "ui.close",
+            "label": "Inventory close",
+            "group": "Interface",
+            "description": "",
+            "soundGroupId": "sound.ui.close",
+            "aliases": [
+                "inventory_close"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "ui.denied",
+            "label": "Denied action",
+            "group": "Interface",
+            "description": "",
+            "soundGroupId": "sound.ui.denied",
+            "aliases": [
+                "denied"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "ui.click",
+            "label": "Interface click",
+            "group": "Interface",
+            "description": "Dialogue choices, passive tree allocation, skill bar assignment and quest prop placement.",
+            "soundGroupId": "sound.ui.click",
+            "aliases": [
+                "ui_click"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "item.pickup",
+            "label": "Pickup — equipment",
+            "group": "Items",
+            "description": "All weapons, bows, armour, shields, grimoires and other equipment except rings and amulets. Also used by some quest interactions.",
+            "soundGroupId": "sound.item.pickup",
+            "aliases": [
+                "item_pickup"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "item.place",
+            "label": "Place — general equipment",
+            "group": "Items",
+            "description": "Armour, melee weapons, shields and grimoires.",
+            "soundGroupId": "sound.item.place",
+            "aliases": [
+                "item_place"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "item.pickup.gold",
+            "label": "Pickup — gold",
+            "group": "Items",
+            "description": "",
+            "soundGroupId": "sound.item.pickup.gold",
+            "aliases": [
+                "pickup_gold"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "item.pickup.potion",
+            "label": "Pickup — potion",
+            "group": "Items",
+            "description": "",
+            "soundGroupId": "sound.item.pickup.potion",
+            "aliases": [
+                "pickup_potion"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "item.pickup.jewel",
+            "label": "Pickup — rings and amulets",
+            "group": "Items",
+            "description": "",
+            "soundGroupId": "sound.item.pickup.jewel",
+            "aliases": [
+                "pickup_jewel"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "item.place.potion",
+            "label": "Place — potion",
+            "group": "Items",
+            "description": "",
+            "soundGroupId": "sound.item.place.potion",
+            "aliases": [
+                "place_potion"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "item.place.jewel",
+            "label": "Place — rings and amulets",
+            "group": "Items",
+            "description": "",
+            "soundGroupId": "sound.item.place.jewel",
+            "aliases": [
+                "place_jewel"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "item.drop.normal",
+            "label": "Ground drop — normal",
+            "group": "Items",
+            "description": "Equipment drops share a sound by rarity; gold and potions have their own.",
+            "soundGroupId": "sound.item.drop.normal",
+            "aliases": [
+                "drop_normal"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "item.drop.magic",
+            "label": "Ground drop — magic",
+            "group": "Items",
+            "description": "Equipment drops share a sound by rarity; gold and potions have their own.",
+            "soundGroupId": "sound.item.drop.magic",
+            "aliases": [
+                "drop_magic"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "item.drop.rare",
+            "label": "Ground drop — rare",
+            "group": "Items",
+            "description": "Equipment drops share a sound by rarity; gold and potions have their own.",
+            "soundGroupId": "sound.item.drop.rare",
+            "aliases": [
+                "drop_rare"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "item.drop.unique",
+            "label": "Ground drop — unique",
+            "group": "Items",
+            "description": "Equipment drops share a sound by rarity; gold and potions have their own.",
+            "soundGroupId": "sound.item.drop.unique",
+            "aliases": [
+                "drop_unique"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "item.drop.gold",
+            "label": "Ground drop — gold",
+            "group": "Items",
+            "description": "Equipment drops share a sound by rarity; gold and potions have their own.",
+            "soundGroupId": "sound.item.drop.gold",
+            "aliases": [
+                "drop_gold"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "item.drop.potion",
+            "label": "Ground drop — potion",
+            "group": "Items",
+            "description": "Equipment drops share a sound by rarity; gold and potions have their own.",
+            "soundGroupId": "sound.item.drop.potion",
+            "aliases": [
+                "drop_potion"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "player.potion",
+            "label": "Drink potion",
+            "group": "Player",
+            "description": "",
+            "soundGroupId": "sound.player.potion",
+            "aliases": [
+                "potion_drink"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "world.gate",
+            "label": "Area gate",
+            "group": "World",
+            "description": "",
+            "soundGroupId": "sound.world.gate",
+            "aliases": [
+                "gate_open"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "world.loot",
+            "label": "Generic loot drop",
+            "group": "World",
+            "description": "",
+            "soundGroupId": "sound.world.loot",
+            "aliases": [
+                "loot_drop"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "world.shatter",
+            "label": "Ice / barrier shatter",
+            "group": "World",
+            "description": "",
+            "soundGroupId": "sound.world.shatter",
+            "aliases": [
+                "shatter"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "combat.shatter",
+            "label": "Freeze shatter",
+            "group": "Combat",
+            "description": "Shattering a frozen enemy. Quieter takes than the quest shatter.",
+            "soundGroupId": "sound.combat.shatter",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "world.explosion",
+            "label": "Corpse / quest explosion",
+            "group": "World",
+            "description": "",
+            "soundGroupId": "sound.world.explosion",
+            "aliases": [
+                "corpse_explosion"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "world.reveal",
+            "label": "Carrion Saint reveal growl",
+            "group": "World",
+            "description": "",
+            "soundGroupId": "sound.world.reveal",
+            "aliases": [
+                "wolf_growl_1"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.Cleave",
+            "label": "Cleave",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.Cleave",
+            "aliases": [
+                "skill_cleave"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.FireBolt",
+            "label": "Fire Bolt",
+            "group": "Skills",
+            "description": " Also used by Fire Caster attacks. Sound, volume and mute changes apply to every use.",
+            "soundGroupId": "sound.skill.FireBolt",
+            "aliases": [],
+            "sharedIds": [
+                "enemy.Fire Caster.Attack"
+            ],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.Dash",
+            "label": "Dash",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.Dash",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.FrostNova",
+            "label": "Frost Nova",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.FrostNova",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.WarCry",
+            "label": "War Cry",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.WarCry",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.ChainLightning",
+            "label": "Chain Lightning",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.ChainLightning",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.IceShard",
+            "label": "Ice Shard",
+            "group": "Skills",
+            "description": " Also used by Frost Caster attacks. Sound, volume and mute changes apply to every use.",
+            "soundGroupId": "sound.skill.IceShard",
+            "aliases": [],
+            "sharedIds": [
+                "enemy.Frost Caster.Attack"
+            ],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.Teleport",
+            "label": "Teleport",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.Teleport",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.RaiseSkeletons",
+            "label": "Raise Skeletons",
+            "group": "Skills",
+            "description": " Also used by Skeleton Mages. Sound, volume and mute changes apply to every use.",
+            "soundGroupId": "sound.skill.RaiseSkeletons",
+            "aliases": [],
+            "sharedIds": [
+                "skill.SkeletonMages"
+            ],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.DeathMark",
+            "label": "Death Mark",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.DeathMark",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.SpiritWolves",
+            "label": "Spirit Wolves",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.SpiritWolves",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.BoneGolem",
+            "label": "Bone Golem",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.BoneGolem",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.GraveRot",
+            "label": "Grave Rot",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.GraveRot",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.SplitShot",
+            "label": "Split Shot",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.SplitShot",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.PiercingShot",
+            "label": "Piercing Shot",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.PiercingShot",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.RainOfArrows",
+            "label": "Rain Of Arrows",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.RainOfArrows",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.BurningArrow",
+            "label": "Burning Arrow",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.BurningArrow",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.FangStrike",
+            "label": "Fang Strike",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.FangStrike",
+            "aliases": [
+                "skill_fang_strike"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.VenomArrow",
+            "label": "Venom Arrow",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.VenomArrow",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.VenomSpout",
+            "label": "Venom Spout",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.VenomSpout",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.SummonViper",
+            "label": "Summon Viper",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.SummonViper",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.Pulverize",
+            "label": "Pulverize",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.Pulverize",
+            "aliases": [
+                "skill_pulverize"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.ReapingArc",
+            "label": "Reaping Arc",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.ReapingArc",
+            "aliases": [
+                "skill_reaping_arc"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "skill.LungingThrust",
+            "label": "Lunging Thrust",
+            "group": "Skills",
+            "description": "",
+            "soundGroupId": "sound.skill.LungingThrust",
+            "aliases": [
+                "skill_lunging_thrust"
+            ],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Carrion Saint.Attack",
+            "label": "Carrion Saint — Attack",
+            "group": "Enemies",
+            "description": "Carrion Saint's melee attacks and charge. Its final death shares the Shepherd's death effect.",
+            "soundGroupId": "sound.enemy.Carrion Saint.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Zombie.Aggro",
+            "label": "Zombie — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Zombie. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Zombie.Attack",
+            "label": "Zombie — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Zombie. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Zombie.Death",
+            "label": "Zombie — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Zombie. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Raider.Aggro",
+            "label": "Raider — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Raider. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": true
+        },
+        {
+            "id": "enemy.Raider.Attack",
+            "label": "Raider — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Raider. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Raider.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Raider.Death",
+            "label": "Raider — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Raider. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Raider.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Brute.Aggro",
+            "label": "Brute — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Brute. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Brute.Attack",
+            "label": "Brute — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Brute. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Brute.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Brute.Death",
+            "label": "Brute — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Brute. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Brute.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Archer.Aggro",
+            "label": "Archer — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Archer. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": true
+        },
+        {
+            "id": "enemy.Archer.Death",
+            "label": "Archer — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Archer. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Fire Caster.Aggro",
+            "label": "Fire Caster — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Fire Caster. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": true
+        },
+        {
+            "id": "enemy.Fire Caster.Death",
+            "label": "Fire Caster — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Fire Caster. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Frost Caster.Aggro",
+            "label": "Frost Caster — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Frost Caster. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Frost Caster.Death",
+            "label": "Frost Caster — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Frost Caster. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Storm Caster.Aggro",
+            "label": "Storm Caster — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Storm Caster. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Storm Caster.Attack",
+            "label": "Storm Caster — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Storm Caster. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.skill.ChainLightning",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Storm Caster.Death",
+            "label": "Storm Caster — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Storm Caster. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Skeleton.Aggro",
+            "label": "Skeleton — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Skeleton. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Skeleton.Attack",
+            "label": "Skeleton — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Skeleton. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Skeleton.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Skeleton.Death",
+            "label": "Skeleton — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Skeleton. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Wraith.Aggro",
+            "label": "Wraith — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Wraith. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Wraith.Attack",
+            "label": "Wraith — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Wraith. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Wraith.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Wraith.Death",
+            "label": "Wraith — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Wraith. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Ember Knight.Aggro",
+            "label": "Ember Knight — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Ember Knight. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Ember Knight.Attack",
+            "label": "Ember Knight — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Ember Knight. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Raider.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Ember Knight.Death",
+            "label": "Ember Knight — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Ember Knight. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Gravelord Mortis.Aggro",
+            "label": "Gravelord Mortis — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Gravelord Mortis. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Gravelord Mortis.Attack",
+            "label": "Gravelord Mortis — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Gravelord Mortis. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Brute.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Gravelord Mortis.Death",
+            "label": "Gravelord Mortis — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Gravelord Mortis. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Ashen Warlord.Aggro",
+            "label": "Ashen Warlord — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Ashen Warlord. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Ashen Warlord.Attack",
+            "label": "Ashen Warlord — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Ashen Warlord. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Brute.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Ashen Warlord.Death",
+            "label": "Ashen Warlord — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Ashen Warlord. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Rimeheart.Aggro",
+            "label": "Rimeheart — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Rimeheart. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Rimeheart.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Rimeheart.Attack",
+            "label": "Rimeheart — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Rimeheart. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Rimeheart.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Rimeheart.Death",
+            "label": "Rimeheart — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Rimeheart. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Rimeheart.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Forest Shaman.Aggro",
+            "label": "Forest Shaman — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Forest Shaman. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Forest Shaman.Attack",
+            "label": "Forest Shaman — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Forest Shaman. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Forest Shaman.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Forest Shaman.Death",
+            "label": "Forest Shaman — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Forest Shaman. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Necromancer.Aggro",
+            "label": "Necromancer — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Necromancer. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Necromancer.Attack",
+            "label": "Necromancer — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Necromancer. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Forest Shaman.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Necromancer.Death",
+            "label": "Necromancer — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Necromancer. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Skeleton Archer.Aggro",
+            "label": "Skeleton Archer — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Skeleton Archer. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Skeleton Archer.Death",
+            "label": "Skeleton Archer — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Skeleton Archer. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Frost Giant.Aggro",
+            "label": "Frost Giant — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Frost Giant. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Frost Giant.Attack",
+            "label": "Frost Giant — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Frost Giant. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Brute.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Frost Giant.Death",
+            "label": "Frost Giant — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Frost Giant. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Giant Spider.Aggro",
+            "label": "Giant Spider — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Giant Spider. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Rimeheart.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Giant Spider.Attack",
+            "label": "Giant Spider — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Giant Spider. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Rimeheart.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Giant Spider.Death",
+            "label": "Giant Spider — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Giant Spider. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Rimeheart.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Dire Wolf.Aggro",
+            "label": "Dire Wolf — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Dire Wolf. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Dire Wolf.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Dire Wolf.Attack",
+            "label": "Dire Wolf — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Dire Wolf. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Dire Wolf.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Dire Wolf.Death",
+            "label": "Dire Wolf — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Dire Wolf. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Dire Wolf.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Bog Slime.Aggro",
+            "label": "Bog Slime — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Bog Slime. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Bog Slime.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Bog Slime.Attack",
+            "label": "Bog Slime — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Bog Slime. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Bog Slime.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Bog Slime.Death",
+            "label": "Bog Slime — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Bog Slime. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Bog Slime.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Slimeling.Aggro",
+            "label": "Slimeling — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Slimeling. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Bog Slime.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Slimeling.Attack",
+            "label": "Slimeling — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Slimeling. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Bog Slime.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Slimeling.Death",
+            "label": "Slimeling — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Slimeling. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Bog Slime.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Grave Bat.Aggro",
+            "label": "Grave Bat — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Grave Bat. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Grave Bat.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Grave Bat.Attack",
+            "label": "Grave Bat — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Grave Bat. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Grave Bat.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Grave Bat.Death",
+            "label": "Grave Bat — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Grave Bat. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Grave Bat.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Corpse Ooze.Aggro",
+            "label": "Corpse Ooze — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Corpse Ooze. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Bog Slime.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Corpse Ooze.Attack",
+            "label": "Corpse Ooze — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Corpse Ooze. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Bog Slime.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Corpse Ooze.Death",
+            "label": "Corpse Ooze — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Corpse Ooze. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Bog Slime.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Oozeling.Aggro",
+            "label": "Oozeling — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Oozeling. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Bog Slime.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Oozeling.Attack",
+            "label": "Oozeling — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Oozeling. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Bog Slime.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Oozeling.Death",
+            "label": "Oozeling — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Oozeling. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Bog Slime.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Crypt Spider.Aggro",
+            "label": "Crypt Spider — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Crypt Spider. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Rimeheart.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Crypt Spider.Attack",
+            "label": "Crypt Spider — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Crypt Spider. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Rimeheart.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Crypt Spider.Death",
+            "label": "Crypt Spider — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Crypt Spider. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Rimeheart.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Magma Beetle.Aggro",
+            "label": "Magma Beetle — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Magma Beetle. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Magma Beetle.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Magma Beetle.Attack",
+            "label": "Magma Beetle — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Magma Beetle. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Magma Beetle.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Magma Beetle.Death",
+            "label": "Magma Beetle — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Magma Beetle. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Magma Beetle.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Hellhound.Aggro",
+            "label": "Hellhound — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Hellhound. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Hellhound.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Hellhound.Attack",
+            "label": "Hellhound — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Hellhound. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Hellhound.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Hellhound.Death",
+            "label": "Hellhound — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Hellhound. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Hellhound.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Frost Wolf.Aggro",
+            "label": "Frost Wolf — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Frost Wolf. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Dire Wolf.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Frost Wolf.Attack",
+            "label": "Frost Wolf — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Frost Wolf. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Dire Wolf.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Frost Wolf.Death",
+            "label": "Frost Wolf — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Frost Wolf. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Dire Wolf.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Ice Crawler.Aggro",
+            "label": "Ice Crawler — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Ice Crawler. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Rimeheart.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Ice Crawler.Attack",
+            "label": "Ice Crawler — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Ice Crawler. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Rimeheart.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Ice Crawler.Death",
+            "label": "Ice Crawler — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Ice Crawler. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Rimeheart.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Skeleton Warrior.Aggro",
+            "label": "Skeleton Warrior — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Skeleton Warrior. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Skeleton Warrior.Attack",
+            "label": "Skeleton Warrior — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Skeleton Warrior. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Skeleton.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Skeleton Warrior.Death",
+            "label": "Skeleton Warrior — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Skeleton Warrior. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Skeleton Mage.Aggro",
+            "label": "Skeleton Mage — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Skeleton Mage. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Skeleton Mage.Attack",
+            "label": "Skeleton Mage — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Skeleton Mage. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Forest Shaman.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Skeleton Mage.Death",
+            "label": "Skeleton Mage — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Skeleton Mage. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Spirit Wolf.Aggro",
+            "label": "Spirit Wolf — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Spirit Wolf. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Dire Wolf.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Spirit Wolf.Attack",
+            "label": "Spirit Wolf — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Spirit Wolf. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Dire Wolf.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Spirit Wolf.Death",
+            "label": "Spirit Wolf — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Spirit Wolf. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Dire Wolf.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Bone Golem.Aggro",
+            "label": "Bone Golem — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Bone Golem. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Bone Golem.Attack",
+            "label": "Bone Golem — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Bone Golem. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Brute.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Bone Golem.Death",
+            "label": "Bone Golem — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Bone Golem. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.The Shepherd.Aggro",
+            "label": "The Shepherd — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for The Shepherd. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.The Shepherd.Attack",
+            "label": "The Shepherd — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for The Shepherd. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Brute.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.The Shepherd.Death",
+            "label": "The Shepherd — Death",
+            "group": "Enemies",
+            "description": "Independent voice for The Shepherd. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Briarbound.Aggro",
+            "label": "Briarbound — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Briarbound. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Briarbound.Attack",
+            "label": "Briarbound — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Briarbound. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Forest Shaman.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Briarbound.Death",
+            "label": "Briarbound — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Briarbound. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Grave Siren.Aggro",
+            "label": "Grave Siren — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Grave Siren. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Grave Siren.Attack",
+            "label": "Grave Siren — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Grave Siren. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Forest Shaman.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Grave Siren.Death",
+            "label": "Grave Siren — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Grave Siren. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Rime Stalker.Aggro",
+            "label": "Rime Stalker — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Rime Stalker. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Rime Stalker.Attack",
+            "label": "Rime Stalker — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Rime Stalker. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Raider.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Rime Stalker.Death",
+            "label": "Rime Stalker — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Rime Stalker. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Cinder Penitent.Aggro",
+            "label": "Cinder Penitent — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Cinder Penitent. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Cinder Penitent.Attack",
+            "label": "Cinder Penitent — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Cinder Penitent. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Raider.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Cinder Penitent.Death",
+            "label": "Cinder Penitent — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Cinder Penitent. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Hollowmaw.Aggro",
+            "label": "Hollowmaw — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Hollowmaw. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Hollowmaw.Attack",
+            "label": "Hollowmaw — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Hollowmaw. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Raider.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Hollowmaw.Death",
+            "label": "Hollowmaw — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Hollowmaw. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Barrow Castellan.Aggro",
+            "label": "Barrow Castellan — Aggro",
+            "group": "Enemies",
+            "description": "Independent voice for Barrow Castellan. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Zombie.Aggro",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Barrow Castellan.Attack",
+            "label": "Barrow Castellan — Attack",
+            "group": "Enemies",
+            "description": "Independent voice for Barrow Castellan. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Raider.Attack",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        },
+        {
+            "id": "enemy.Barrow Castellan.Death",
+            "label": "Barrow Castellan — Death",
+            "group": "Enemies",
+            "description": "Independent voice for Barrow Castellan. Pitch and distance variation remain active in game.",
+            "soundGroupId": "sound.enemy.Fire Caster.Death",
+            "aliases": [],
+            "sharedIds": [],
+            "defaults": [],
+            "suggestions": [],
+            "selected": {
+                "instanceID": 0
+            },
+            "muted": false
+        }
+    ],
+    "soundGroups": [
+        {
+            "id": "sound.player.swing",
+            "purpose": "Melee swings",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/3c6f39ae65d8a5d4b82c74978ed0b6b0/swing_1",
+                "DeferredAudio/96c0d6e4e43e1c14ab0f5fe923514579/swing_2",
+                "DeferredAudio/3c608d1f2d639f94ca6ed4c6ff2a98e4/swing_3"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.player.bow",
+            "purpose": "Bow releases",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/e452f29912848904aa8fe6e4e14ca4af/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.combat.hit",
+            "purpose": "Weapon hit impacts",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/cfa9bd3a439dd5d49a9bda17e114751a/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.combat.block",
+            "purpose": "Shield blocks",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/25116355f0bab0a4783cbf7970fc6b0e/Shield_block_–_Metal_#1-1766764259584",
+                "DeferredAudio/b05ed5164b5fe5f458494bd853e9d590/Shield_block_–_Metal_#4-1766764263919"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.combat.bite",
+            "purpose": "Snake-arm bite impacts",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/cfa9bd3a439dd5d49a9bda17e114751a/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.combat.ground.Physical",
+            "purpose": "Physical ground impacts",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/035d4ac07f532014dbef52a5982a2c58/Skill_Earth04"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.combat.ground.Fire",
+            "purpose": "Fire ground impacts",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/b6ac0d81b294c1c469116a2abf7dc203/Fire_spell_impact_–__#1-1766764398952",
+                "DeferredAudio/206d0858514daa24b820483f918732f2/Fire_spell_impact_–__#2-1766764396374",
+                "DeferredAudio/c1d37e81fe7b6be43ad4eb2e90ea8297/Fire_spell_impact_–__#3-1766764393616",
+                "DeferredAudio/5ba3fb1c77358404faa53a309dc852f5/Fire_spell_impact_–__#4-1766764388701"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.combat.ground.Cold",
+            "purpose": "Cold ground impacts",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/d170febca97f1304186a715fe6c0e6de/Ice_impact_–_Ice_sha_#1-1766764678544",
+                "DeferredAudio/c116096b92069294fae8395cf0261d22/Ice_impact_–_Ice_sha_#2-1766764676177",
+                "DeferredAudio/c638bbb2e560ec542a9a35b9f7bd6471/Ice_impact_–_Ice_sha_#3-1766764673747",
+                "DeferredAudio/83a318a4623c6934ba8e5c9e59dd23a3/Ice_impact_–_Ice_sha_#4-1766764669612"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.combat.ground.Lightning",
+            "purpose": "Lightning ground impacts",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/8e9bd9596ae84c74d96709f431c8a509/Skill_Electric05"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.combat.ground.Poison",
+            "purpose": "Poison ground impacts",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/a68f118bb0f707249a8d19af894e3f43/slime6",
+                "DeferredAudio/d7de322055b75ab4eb1f81f31af80124/slime7"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.player.hurt",
+            "purpose": "Player hurt voice",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/53346a3d498e76e4daeb7ae7899bdce4/Player_hurt_–_Short__#1-1766764352490",
+                "DeferredAudio/c9231fc3231190746981c42ec7a39ea7/Player_hurt_–_Short__#2-1766764349848",
+                "DeferredAudio/f522f31d1b03ba4429e43ef6ca4978db/Player_hurt_–_Short__#3-1766764346956",
+                "DeferredAudio/faaf481ebebb292429d7c6328210e57c/Player_hurt_–_Short__#4-1766764341901"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.player.reward",
+            "purpose": "Level-up and quest rewards",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/02c09b0084c54cc43850d935b952c200/level_up"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.player.steps",
+            "purpose": "Walking footsteps",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/bf4f83921a7f06c44b147fc62cfcdf82/footstep_grass_1"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.ui.open",
+            "purpose": "Inventory open",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/9df4dba7b36659f48a08668689523534/inventory_open"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.ui.close",
+            "purpose": "Inventory close",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/e62ed051481e07d47bad072848f78967/inventory_close"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.ui.denied",
+            "purpose": "Denied action",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/a1be5d23278eec44386ec4494ebbbadd/denied"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.item.pickup",
+            "purpose": "Pickup — equipment",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/7baf97f3279ffef40b747402df81ee46/item_pickup"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.item.place",
+            "purpose": "Place — general equipment",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/46190f48c471d1e47b59959d5fb422de/item_place"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.item.pickup.gold",
+            "purpose": "Pickup — gold",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/pickup_gold"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.item.pickup.potion",
+            "purpose": "Pickup — potion",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/pickup_potion"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.item.pickup.jewel",
+            "purpose": "Pickup — rings and amulets",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/pickup_jewel"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.item.place.potion",
+            "purpose": "Place — potion",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/place_potion"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.item.place.jewel",
+            "purpose": "Place — rings and amulets",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/place_jewel"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.item.drop.normal",
+            "purpose": "Ground drop — normal",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/drop_normal"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.item.drop.magic",
+            "purpose": "Ground drop — magic",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/drop_magic"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.item.drop.rare",
+            "purpose": "Ground drop — rare",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/drop_rare"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.item.drop.unique",
+            "purpose": "Ground drop — unique",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/drop_unique"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.item.drop.gold",
+            "purpose": "Ground drop — gold",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/drop_gold"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.item.drop.potion",
+            "purpose": "Ground drop — potion",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/drop_potion"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.player.potion",
+            "purpose": "Drink potion",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/potion_drink"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.world.gate",
+            "purpose": "Area gate",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/255f0c0a1b85a6d4490764b5ca6fcfb6/gate_open"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.world.loot",
+            "purpose": "Generic loot drop",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/drop_normal"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.world.shatter",
+            "purpose": "Ice and barrier shattering",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/d170febca97f1304186a715fe6c0e6de/Ice_impact_–_Ice_sha_#1-1766764678544",
+                "DeferredAudio/c116096b92069294fae8395cf0261d22/Ice_impact_–_Ice_sha_#2-1766764676177",
+                "DeferredAudio/c638bbb2e560ec542a9a35b9f7bd6471/Ice_impact_–_Ice_sha_#3-1766764673747",
+                "DeferredAudio/83a318a4623c6934ba8e5c9e59dd23a3/Ice_impact_–_Ice_sha_#4-1766764669612"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.combat.shatter",
+            "purpose": "Freeze shatter impacts",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/42cd39830fe04363b0a6e0a5ef732399/Freeze_shatter_1",
+                "DeferredAudio/841b191074a84b67a6b809f770e93718/Freeze_shatter_2",
+                "DeferredAudio/1413fd013f1c423c9b7bdaa3e0580011/Freeze_shatter_3",
+                "DeferredAudio/9d0f11b337334f87b090243b7c97daa7/Freeze_shatter_4"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.ui.click",
+            "purpose": "Interface clicks",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/ui_click"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.world.explosion",
+            "purpose": "Corpse and quest explosions",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/e7dfd1b3bebb3554e8e17a1e856cfe5f/best_corpse_explosion"
+            ],
+            "cooldown": 0.0,
+            "topPriority": true
+        },
+        {
+            "id": "sound.world.reveal",
+            "purpose": "Carrion Saint reveal",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/wolf_growl_1"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.Cleave",
+            "purpose": "Cleave",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/11f715b1c8f197444a40883ec7abffe9/Skill_Warrior08_slash",
+                "DeferredAudio/c4a60c91fccae564fb4ff984a6f34c8e/Skill_Warrior09_slash"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.FireBolt",
+            "purpose": "Fire projectile casting",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/1245c323736a13c42907875be83718b4/Fire_spell_cast_–_Ma_#1-1766763536495",
+                "DeferredAudio/0baa0ce2e866e4148be378ed358e9cfc/Fire_spell_cast_–_Ma_#2-1766763532663",
+                "DeferredAudio/9e354d1480751074f9acaf05e867e765/Fire_spell_cast_–_Ma_#3-1766763528875",
+                "DeferredAudio/80973afbd0af4e54887c1d71eba65338/Fire_spell_cast_–_Ma_#4-1766763524728"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.Dash",
+            "purpose": "Dash",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/e47cac14cd6eb9d41827b58ce8068688/Heavy_weapon_whoosh,_#3-1766763893457",
+                "DeferredAudio/82457c5c2e8fe8b49af6460c9440c7a9/Heavy_weapon_whoosh,_#4-1766763889384"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.FrostNova",
+            "purpose": "Frost Nova",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/befeaf8be63b1ca408fde06b5ec1a044/13_Ice_explosion_01"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.WarCry",
+            "purpose": "War Cry",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/e6cee02b9ccb0ee44b27aab26d38647a/Skill_Warrior02_warcry",
+                "DeferredAudio/36e6fb9b32783334e89099c932c772ac/Skill_Warrior03_warcry",
+                "DeferredAudio/95b4faaea37a0ec4686ca30780a2e629/Skill_Warrior05_warcry"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.ChainLightning",
+            "purpose": "Lightning spell casting",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/930568f126afc52489657fd26c39e0e2/Lightning_cast_–_Ele_#1-1766764720689",
+                "DeferredAudio/b6c92be9d13caa54996055dcaa75702b/Lightning_cast_–_Ele_#2-1766764718272",
+                "DeferredAudio/97e945ae92222c44390d90fdb4f64b92/Lightning_cast_–_Ele_#3-1766764718272",
+                "DeferredAudio/dd9de4f76b1dab64eae434e9dc5f29b7/Lightning_cast_–_Ele_#4-1766764715064"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.IceShard",
+            "purpose": "Ice projectile casting",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/dca7bf23617b8d94e831631973b189cf/Ice_spell_cast_–_Col_#1-1766764638425",
+                "DeferredAudio/baebd906a7b26f8488065c779d86a236/Ice_spell_cast_–_Col_#2-1766764635940",
+                "DeferredAudio/248bf64a66391f342ad88f75667b5195/Ice_spell_cast_–_Col_#3-1766764633331",
+                "DeferredAudio/8e5af03101da8614488f2cacfbb197ab/Ice_spell_cast_–_Col_#4-1766764626746"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.Teleport",
+            "purpose": "Teleport",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/d6db9b0f706b9f44ab573ff623bdd80f/88_Teleport_02"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.RaiseSkeletons",
+            "purpose": "Raise Skeletons",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/7cf214a211511994ab81d9a4040bf591/shade1",
+                "DeferredAudio/89f5b9dde8bbc014782a4f78b81ee4fd/shade2",
+                "DeferredAudio/d5691548e075a484ebd59eeb78b79e80/shade3"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.DeathMark",
+            "purpose": "Death Mark",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/d632a08f948dde844ba9d76d0b850fb9/Rune_activate_–_Anci_#2-1766768897281"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.SpiritWolves",
+            "purpose": "Spirit Wolves",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/7cf214a211511994ab81d9a4040bf591/shade1"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.BoneGolem",
+            "purpose": "Bone Golem",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/90017fa58bd917c4c9a9f6f55984bd59/Skill_Golem01",
+                "DeferredAudio/543a9c5eb91184d488c7cbefbcd6a286/Skill_Golem02"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.GraveRot",
+            "purpose": "Grave Rot",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/63d66c806b870864f956a713fa805ac8/Skill_Poison04"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.SplitShot",
+            "purpose": "Split Shot",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/e452f29912848904aa8fe6e4e14ca4af/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.PiercingShot",
+            "purpose": "Piercing Shot",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/e452f29912848904aa8fe6e4e14ca4af/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.RainOfArrows",
+            "purpose": "Rain Of Arrows",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/6137abbe3c91d6a4aa83bc9fe5ec0b0c/Skill_Arrow01_rain_of_arrows_or_volley",
+                "DeferredAudio/bb7bc20a872fae9448751bc20ed1a0b1/Skill_Arrow04_rain_of_barrage_of_arrows"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.BurningArrow",
+            "purpose": "Burning Arrow",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/e452f29912848904aa8fe6e4e14ca4af/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.FangStrike",
+            "purpose": "Fang Strike",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/skill_fang_strike"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.VenomArrow",
+            "purpose": "Venom Arrow",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/e452f29912848904aa8fe6e4e14ca4af/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.VenomSpout",
+            "purpose": "Venom Spout",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/612fa68abc7eb7545805eda4de8f77cd/Skill_Poison02"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.SummonViper",
+            "purpose": "Summon Viper",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/4e7a0dd692f52b04ca8954a5669176ee/slime1"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.Pulverize",
+            "purpose": "Pulverize",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/7115ddf875125fe4184a2e86e2dc2ec2/Weapon_Hammer01",
+                "DeferredAudio/0d34f70c76723dc4491b68349ab710eb/Weapon_Hammer02"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.ReapingArc",
+            "purpose": "Reaping Arc",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/11e8e45bb20ed4847a20eebcd566d8df/Weapon_Scythe01",
+                "DeferredAudio/bcc0c9117d5e06349a06300b34c23c85/Weapon_Scythe02"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.skill.LungingThrust",
+            "purpose": "Lunging Thrust",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/477e2ac8cbdb9734cbe6c7b7190a8539/Weapon_Dagger01",
+                "DeferredAudio/c580aed8e2f4aa74799a6c7699ac3b2e/Weapon_Dagger02",
+                "DeferredAudio/76816d8514db62d44853ae881bab1f1b/Weapon_Dagger03"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Carrion Saint.Attack",
+            "purpose": "Carrion Saint / attack voice",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/9eebe2b36c407154ba474f0edada8c37/mnstr1"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Zombie.Aggro",
+            "purpose": "Humanoid / alert calls",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2",
+                "DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3",
+                "DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Zombie.Attack",
+            "purpose": "Zombie / attack voices",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/6b9dc44f97fad134a8d71a982364e622/Zombie_moan_–_Slow_u_#1-1766768225594",
+                "DeferredAudio/2fac7e5e9bdcc6940a234e62370e525a/Zombie_moan_–_Slow_u_#2-1766768233458",
+                "DeferredAudio/7b262f15006fc4f40997ce2d939ddc12/Zombie_moan_–_Slow_u_#3-1766768231428",
+                "DeferredAudio/1a30b7825fe05cf4a9f9c90c7237e15d/Zombie_moan_–_Slow_u_#4-1766768225595"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Zombie.Death",
+            "purpose": "mnstr / death voices",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/9eebe2b36c407154ba474f0edada8c37/mnstr1"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Raider.Attack",
+            "purpose": "Humanoid grunts / attack voices",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/7f546aab911c796469bc86aa483bc3c1/Goblin_attack_–_Smal_#1-1766768039592",
+                "DeferredAudio/8c6b9f048d26b7d4f9083f5a2a51a1fb/Goblin_attack_–_Smal_#2-1766768045094",
+                "DeferredAudio/e54b84efebc0e3140824e6af94c7fd52/Goblin_attack_–_Smal_#3-1766768042373"
+            ],
+            "cooldown": 2.5,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Raider.Death",
+            "purpose": "Humanoid grunts / death voices",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/fd5a645aa0a8dab43bc784ef58e7e2c3/Goblin_attack_–_Smal_#4-1766768042374"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Brute.Attack",
+            "purpose": "giant / attack voices",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/a2b8b8cdeff89c2448613d5735632aea/giant1"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Brute.Death",
+            "purpose": "giant / death voices",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/d9bf550722614fc4e8214f91b243d4b2/giant2"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Fire Caster.Death",
+            "purpose": "Humanoid / death voices",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1",
+                "DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Skeleton.Attack",
+            "purpose": "Skeleton / attack voices",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/c2325df0784d83f429ca366f6a48baf1/Skeleton_attack_–_Bo_#1-1766768184245",
+                "DeferredAudio/7a4691fc63546a4449e253e381aadb76/Skeleton_attack_–_Bo_#2-1766768184245",
+                "DeferredAudio/21976b785f5667d4db786eb1be748f04/Skeleton_attack_–_Bo_#3-1766768181651",
+                "DeferredAudio/2d30a6c688412ee45bf5dab5bcf3cd3e/Skeleton_attack_–_Bo_#4-1766768179054"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Wraith.Attack",
+            "purpose": "shade / attack voices",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/7cf214a211511994ab81d9a4040bf591/shade1"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Rimeheart.Aggro",
+            "purpose": "Spider / alert calls",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/spider_hiss_1",
+                "Sfx/Creatures/spider_hiss_2"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Rimeheart.Attack",
+            "purpose": "Spider / attack voices",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/spider_hiss_1",
+                "Sfx/Creatures/spider_hiss_2"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Rimeheart.Death",
+            "purpose": "Spider / death voices",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/spider_hiss_1",
+                "Sfx/Creatures/spider_hiss_2"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Forest Shaman.Attack",
+            "purpose": "Magic projectile / attack voices",
+            "clips": [],
+            "clipPaths": [
+                "DeferredAudio/355b235ee981d3f4c8be6af0ec53cbba/Magic_projectile_lau_#1-1766764866448",
+                "DeferredAudio/6a63def20b20d9f4a87544ea5f02adb9/Magic_projectile_lau_#2-1766764864417",
+                "DeferredAudio/b38388df553e1c54b81d24471c4c78ab/Magic_projectile_lau_#3-1766764862223",
+                "DeferredAudio/02c1defc161216d46b98d4b14ac4bbc6/Magic_projectile_lau_#4-1766764858633"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Dire Wolf.Aggro",
+            "purpose": "Wolf / alert calls",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/wolf_growl_1",
+                "Sfx/Creatures/wolf_growl_2",
+                "Sfx/Creatures/wolf_growl_3"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Dire Wolf.Attack",
+            "purpose": "Wolf / attack voices",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/wolf_snarl"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Dire Wolf.Death",
+            "purpose": "Wolf / death voices",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/beast_15",
+                "Sfx/Creatures/beast_12"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Bog Slime.Aggro",
+            "purpose": "Slime / alert calls",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/slime_1",
+                "Sfx/Creatures/slime_2",
+                "Sfx/Creatures/slime_3"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Bog Slime.Attack",
+            "purpose": "Slime / attack voices",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/slime_4",
+                "Sfx/Creatures/slime_5",
+                "Sfx/Creatures/slime_6",
+                "Sfx/Creatures/slime_7"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Bog Slime.Death",
+            "purpose": "Slime / death voices",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/slime_8",
+                "Sfx/Creatures/slime_9",
+                "Sfx/Creatures/slime_10"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Grave Bat.Aggro",
+            "purpose": "Bat / alert calls",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/bat_alert_1",
+                "Sfx/Creatures/bat_alert_2",
+                "Sfx/Creatures/bat_alert_3"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Grave Bat.Attack",
+            "purpose": "Bat / attack voices",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/bat_alert_1",
+                "Sfx/Creatures/bat_alert_2"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Grave Bat.Death",
+            "purpose": "Bat / death voices",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/shade_14"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Magma Beetle.Aggro",
+            "purpose": "Beetle / alert calls",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/slime_2",
+                "Sfx/Creatures/slime_3"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Magma Beetle.Attack",
+            "purpose": "Beetle / attack voices",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/slime_6",
+                "Sfx/Creatures/slime_9"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Magma Beetle.Death",
+            "purpose": "Beetle / death voices",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/slime_8",
+                "Sfx/Creatures/slime_10"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Hellhound.Aggro",
+            "purpose": "Hound / alert calls",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/beast_1",
+                "Sfx/Creatures/beast_3",
+                "Sfx/Creatures/beast_4"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Hellhound.Attack",
+            "purpose": "Hound / attack voices",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/beast_8"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        },
+        {
+            "id": "sound.enemy.Hellhound.Death",
+            "purpose": "Hound / death voices",
+            "clips": [],
+            "clipPaths": [
+                "Sfx/Creatures/beast_12",
+                "Sfx/Creatures/beast_15"
+            ],
+            "cooldown": 0.0,
+            "topPriority": false
+        }
+    ]
+}

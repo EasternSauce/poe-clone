@@ -2019,387 +2019,625 @@ MonoBehaviour:
   - id: sound.player.swing
     purpose: Melee swings
     clips:
-    - {fileID: 8300000, guid: 3c6f39ae65d8a5d4b82c74978ed0b6b0, type: 3}
-    - {fileID: 8300000, guid: 96c0d6e4e43e1c14ab0f5fe923514579, type: 3}
-    - {fileID: 8300000, guid: 3c608d1f2d639f94ca6ed4c6ff2a98e4, type: 3}
+    - {fileID: 8300000, guid: e405209ce74e4ab4e8450cfba3817bce, type: 3}
+    - {fileID: 8300000, guid: 8f90a0f1e54660940af1dcc247f142f6, type: 3}
+    - {fileID: 8300000, guid: 6ab384a9bf5714942ab1fa2f699c05c2, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.player.bow
     purpose: Bow releases
     clips:
-    - {fileID: 8300000, guid: e452f29912848904aa8fe6e4e14ca4af, type: 3}
+    - {fileID: 8300000, guid: f373f799363f0ed4383c3bf7ff747c43, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.combat.hit
     purpose: Weapon hit impacts
     clips:
-    - {fileID: 8300000, guid: cfa9bd3a439dd5d49a9bda17e114751a, type: 3}
+    - {fileID: 8300000, guid: a168e87801594c44fa64a9498cbb30ed, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.combat.block
     purpose: Shield blocks
     clips:
-    - {fileID: 8300000, guid: 25116355f0bab0a4783cbf7970fc6b0e, type: 3}
-    - {fileID: 8300000, guid: b05ed5164b5fe5f458494bd853e9d590, type: 3}
+    - {fileID: 8300000, guid: 5a090c1f5c3e8c54f8155803179f086a, type: 3}
+    - {fileID: 8300000, guid: bd0aa0b8767ca7249ae0ecb4f07495bf, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.combat.bite
     purpose: Snake-arm bite impacts
     clips:
-    - {fileID: 8300000, guid: cfa9bd3a439dd5d49a9bda17e114751a, type: 3}
+    - {fileID: 8300000, guid: a168e87801594c44fa64a9498cbb30ed, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.combat.ground.Physical
     purpose: Physical ground impacts
     clips:
-    - {fileID: 8300000, guid: 035d4ac07f532014dbef52a5982a2c58, type: 3}
+    - {fileID: 8300000, guid: 535c78eb53edb4b4fbaadf3d1e44e6b2, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.combat.ground.Fire
     purpose: Fire ground impacts
     clips:
-    - {fileID: 8300000, guid: b6ac0d81b294c1c469116a2abf7dc203, type: 3}
-    - {fileID: 8300000, guid: 206d0858514daa24b820483f918732f2, type: 3}
-    - {fileID: 8300000, guid: c1d37e81fe7b6be43ad4eb2e90ea8297, type: 3}
-    - {fileID: 8300000, guid: 5ba3fb1c77358404faa53a309dc852f5, type: 3}
+    - {fileID: 8300000, guid: 2c5a54b276b0e8442ba9c3fe8339fc8b, type: 3}
+    - {fileID: 8300000, guid: 342ceb4c4f2c10c47b9fc8e4c117b46f, type: 3}
+    - {fileID: 8300000, guid: 3bb4ebff38e48bb40bf7bef5c135f96b, type: 3}
+    - {fileID: 8300000, guid: 76d93bd9c367d574c9421c59705454b7, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.combat.ground.Cold
     purpose: Cold ground impacts
     clips:
-    - {fileID: 8300000, guid: d170febca97f1304186a715fe6c0e6de, type: 3}
-    - {fileID: 8300000, guid: c116096b92069294fae8395cf0261d22, type: 3}
-    - {fileID: 8300000, guid: c638bbb2e560ec542a9a35b9f7bd6471, type: 3}
-    - {fileID: 8300000, guid: 83a318a4623c6934ba8e5c9e59dd23a3, type: 3}
+    - {fileID: 8300000, guid: 905c9c3274a8abd46a5bc07327730588, type: 3}
+    - {fileID: 8300000, guid: 1fda45067fab1de48bebc847f0155e2b, type: 3}
+    - {fileID: 8300000, guid: 81deb2eee7e31c047b3e7369b7d5bde3, type: 3}
+    - {fileID: 8300000, guid: 53c2f6ae9af16f44ab9d3f377603bdc8, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.combat.ground.Lightning
     purpose: Lightning ground impacts
     clips:
-    - {fileID: 8300000, guid: 8e9bd9596ae84c74d96709f431c8a509, type: 3}
+    - {fileID: 8300000, guid: c5687ddc2934c7047a95392628ff5740, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.combat.ground.Poison
     purpose: Poison ground impacts
     clips:
-    - {fileID: 8300000, guid: a68f118bb0f707249a8d19af894e3f43, type: 3}
-    - {fileID: 8300000, guid: d7de322055b75ab4eb1f81f31af80124, type: 3}
+    - {fileID: 8300000, guid: 13f26db008c56c84497a5acfae4fac75, type: 3}
+    - {fileID: 8300000, guid: 088e793141bebb54a84a728d2cf5be4d, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.player.hurt
     purpose: Player hurt voice
     clips:
-    - {fileID: 8300000, guid: 53346a3d498e76e4daeb7ae7899bdce4, type: 3}
-    - {fileID: 8300000, guid: c9231fc3231190746981c42ec7a39ea7, type: 3}
-    - {fileID: 8300000, guid: f522f31d1b03ba4429e43ef6ca4978db, type: 3}
-    - {fileID: 8300000, guid: faaf481ebebb292429d7c6328210e57c, type: 3}
+    - {fileID: 8300000, guid: 05fe5e647abd08b4188b940bdc6c3742, type: 3}
+    - {fileID: 8300000, guid: 5854aacf85e8ac7409716f4fb2f74dc5, type: 3}
+    - {fileID: 8300000, guid: b067e7c52b9b5644fb7367c3f949bacc, type: 3}
+    - {fileID: 8300000, guid: 5135b201ec8a838438f72c195d34265c, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.player.reward
     purpose: Level-up and quest rewards
     clips:
-    - {fileID: 8300000, guid: 02c09b0084c54cc43850d935b952c200, type: 3}
+    - {fileID: 8300000, guid: ef1b7bb95332b7b4ca09916e68cefd5a, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.player.steps
     purpose: Walking footsteps
     clips:
-    - {fileID: 8300000, guid: bf4f83921a7f06c44b147fc62cfcdf82, type: 3}
+    - {fileID: 8300000, guid: 7f7a0231b21167146bd2e6082030430e, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.ui.open
     purpose: Inventory open
     clips:
-    - {fileID: 8300000, guid: 9df4dba7b36659f48a08668689523534, type: 3}
+    - {fileID: 8300000, guid: 0752a88b155b2e54092999d6df1595d6, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.ui.close
     purpose: Inventory close
     clips:
-    - {fileID: 8300000, guid: e62ed051481e07d47bad072848f78967, type: 3}
+    - {fileID: 8300000, guid: 35f123141c5240e44a3a13a243331722, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.ui.denied
     purpose: Denied action
     clips:
-    - {fileID: 8300000, guid: a1be5d23278eec44386ec4494ebbbadd, type: 3}
+    - {fileID: 8300000, guid: 4a1fb0b5c024b8545adc757c260d88d6, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.item.pickup
     purpose: "Pickup \u2014 equipment"
     clips:
-    - {fileID: 8300000, guid: 7baf97f3279ffef40b747402df81ee46, type: 3}
+    - {fileID: 8300000, guid: 44fb3609527a0b448a0ede7a77eea8a5, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.item.place
     purpose: "Place \u2014 general equipment"
     clips:
-    - {fileID: 8300000, guid: 46190f48c471d1e47b59959d5fb422de, type: 3}
+    - {fileID: 8300000, guid: 16927d602d774214b94f5ec46e2f4553, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.item.pickup.gold
     purpose: "Pickup \u2014 gold"
     clips:
     - {fileID: 8300000, guid: c10538ce40746744bb6e43bd419f63d4, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.item.pickup.potion
     purpose: "Pickup \u2014 potion"
     clips:
     - {fileID: 8300000, guid: 48dc07097b4960c49822dfac4dae978b, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.item.pickup.jewel
     purpose: "Pickup \u2014 rings and amulets"
     clips:
     - {fileID: 8300000, guid: 71b3af81dc74a704c84099bbadeeac80, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.item.place.potion
     purpose: "Place \u2014 potion"
     clips:
     - {fileID: 8300000, guid: 9973ccb2e142b494ca697d024d12e9ba, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.item.place.jewel
     purpose: "Place \u2014 rings and amulets"
     clips:
     - {fileID: 8300000, guid: 8a1c8a00b70f74a43a4743311aecb003, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.item.drop.normal
     purpose: "Ground drop \u2014 normal"
     clips:
     - {fileID: 8300000, guid: f20cfaf860dd0e64da88289a0d7f854a, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.item.drop.magic
     purpose: "Ground drop \u2014 magic"
     clips:
     - {fileID: 8300000, guid: a41c418f5eb75214fb1ddf473851e160, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.item.drop.rare
     purpose: "Ground drop \u2014 rare"
     clips:
     - {fileID: 8300000, guid: cda51f50f8a7b3e44948f060936e7a89, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.item.drop.unique
     purpose: "Ground drop \u2014 unique"
     clips:
     - {fileID: 8300000, guid: 654ce9f5d4ea9c6458ffce9de4efa358, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.item.drop.gold
     purpose: "Ground drop \u2014 gold"
     clips:
     - {fileID: 8300000, guid: 123c9bdd52e8e53409cf847f178211c6, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.item.drop.potion
     purpose: "Ground drop \u2014 potion"
     clips:
     - {fileID: 8300000, guid: d4d4f30a690867a4394a1681897d7b9f, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.player.potion
     purpose: Drink potion
     clips:
     - {fileID: 8300000, guid: 3fa9f81615a440d6802d4faf90c5654f, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.world.gate
     purpose: Area gate
     clips:
-    - {fileID: 8300000, guid: 255f0c0a1b85a6d4490764b5ca6fcfb6, type: 3}
+    - {fileID: 8300000, guid: a92f6c284eef0ed4da0fe2220043bdd9, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.world.loot
     purpose: Generic loot drop
     clips:
     - {fileID: 8300000, guid: f20cfaf860dd0e64da88289a0d7f854a, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.world.shatter
     purpose: Ice and barrier shattering
     clips:
-    - {fileID: 8300000, guid: d170febca97f1304186a715fe6c0e6de, type: 3}
-    - {fileID: 8300000, guid: c116096b92069294fae8395cf0261d22, type: 3}
-    - {fileID: 8300000, guid: c638bbb2e560ec542a9a35b9f7bd6471, type: 3}
-    - {fileID: 8300000, guid: 83a318a4623c6934ba8e5c9e59dd23a3, type: 3}
+    - {fileID: 8300000, guid: 905c9c3274a8abd46a5bc07327730588, type: 3}
+    - {fileID: 8300000, guid: 1fda45067fab1de48bebc847f0155e2b, type: 3}
+    - {fileID: 8300000, guid: 81deb2eee7e31c047b3e7369b7d5bde3, type: 3}
+    - {fileID: 8300000, guid: 53c2f6ae9af16f44ab9d3f377603bdc8, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.combat.shatter
     purpose: Freeze shatter impacts
     clips:
-    - {fileID: 8300000, guid: 42cd39830fe04363b0a6e0a5ef732399, type: 3}
-    - {fileID: 8300000, guid: 841b191074a84b67a6b809f770e93718, type: 3}
-    - {fileID: 8300000, guid: 1413fd013f1c423c9b7bdaa3e0580011, type: 3}
-    - {fileID: 8300000, guid: 9d0f11b337334f87b090243b7c97daa7, type: 3}
+    - {fileID: 8300000, guid: 029a9b6b2127197479f29957e63cb39c, type: 3}
+    - {fileID: 8300000, guid: 45a2c5ed99a685c40803112f61defdb5, type: 3}
+    - {fileID: 8300000, guid: a05aa502cf776174b85e960546115142, type: 3}
+    - {fileID: 8300000, guid: fcc98f1dbac4d3d4580b27b5f392fc36, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.ui.click
     purpose: Interface clicks
     clips:
     - {fileID: 8300000, guid: c7b7c60a940e451db54dff86da5f84f5, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.world.explosion
     purpose: Corpse and quest explosions
     clips:
-    - {fileID: 8300000, guid: e7dfd1b3bebb3554e8e17a1e856cfe5f, type: 3}
+    - {fileID: 8300000, guid: 9e98b22c443a3d04a8712e80c5abf3a2, type: 3}
+    clipPaths: []
+    cooldown: 0
     topPriority: 1
   - id: sound.world.reveal
     purpose: Carrion Saint reveal
     clips:
     - {fileID: 8300000, guid: 2d320c0db266dfe47b2037dbc2730b53, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.Cleave
     purpose: Cleave
     clips:
-    - {fileID: 8300000, guid: 11f715b1c8f197444a40883ec7abffe9, type: 3}
-    - {fileID: 8300000, guid: c4a60c91fccae564fb4ff984a6f34c8e, type: 3}
+    - {fileID: 8300000, guid: c328b49e0d64c134b8cad082ba620256, type: 3}
+    - {fileID: 8300000, guid: d2f2146e0f25b6a45a941253d0e7f4c4, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.FireBolt
     purpose: Fire projectile casting
     clips:
-    - {fileID: 8300000, guid: 1245c323736a13c42907875be83718b4, type: 3}
-    - {fileID: 8300000, guid: 0baa0ce2e866e4148be378ed358e9cfc, type: 3}
-    - {fileID: 8300000, guid: 9e354d1480751074f9acaf05e867e765, type: 3}
-    - {fileID: 8300000, guid: 80973afbd0af4e54887c1d71eba65338, type: 3}
+    - {fileID: 8300000, guid: fdeb056cff7d70b4c85146bd3242f2ec, type: 3}
+    - {fileID: 8300000, guid: efd9aafea20a37e46b8813f994f234f5, type: 3}
+    - {fileID: 8300000, guid: 4cc68de9a6f589849be5813cd13501ed, type: 3}
+    - {fileID: 8300000, guid: 74d3a645bcc8ffa46bddf73401cf00be, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.Dash
     purpose: Dash
     clips:
-    - {fileID: 8300000, guid: e47cac14cd6eb9d41827b58ce8068688, type: 3}
-    - {fileID: 8300000, guid: 82457c5c2e8fe8b49af6460c9440c7a9, type: 3}
+    - {fileID: 8300000, guid: 0de8e4caeb1d71c4aa966a231de888b5, type: 3}
+    - {fileID: 8300000, guid: 4d0e6dd91fe0e294c967e5e7bc200f5b, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.FrostNova
     purpose: Frost Nova
     clips:
-    - {fileID: 8300000, guid: befeaf8be63b1ca408fde06b5ec1a044, type: 3}
+    - {fileID: 8300000, guid: e13e3db2fa84219408166cc771a67184, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.WarCry
     purpose: War Cry
     clips:
-    - {fileID: 8300000, guid: e6cee02b9ccb0ee44b27aab26d38647a, type: 3}
-    - {fileID: 8300000, guid: 36e6fb9b32783334e89099c932c772ac, type: 3}
-    - {fileID: 8300000, guid: 95b4faaea37a0ec4686ca30780a2e629, type: 3}
+    - {fileID: 8300000, guid: 2913662462bde054fa92fa908cefda33, type: 3}
+    - {fileID: 8300000, guid: 46d4f7929875eb44fa498bf754ef0611, type: 3}
+    - {fileID: 8300000, guid: 09e793982e0dbc84c8ed447ac0080018, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.ChainLightning
     purpose: Lightning spell casting
     clips:
-    - {fileID: 8300000, guid: 930568f126afc52489657fd26c39e0e2, type: 3}
-    - {fileID: 8300000, guid: b6c92be9d13caa54996055dcaa75702b, type: 3}
-    - {fileID: 8300000, guid: 97e945ae92222c44390d90fdb4f64b92, type: 3}
-    - {fileID: 8300000, guid: dd9de4f76b1dab64eae434e9dc5f29b7, type: 3}
+    - {fileID: 8300000, guid: 0b20b6543a7a1744894de1214692fca6, type: 3}
+    - {fileID: 8300000, guid: df96b1eeb0dd1b748a3aac0f44483dcf, type: 3}
+    - {fileID: 8300000, guid: 3f675c4d45e6c3745af264a524b661b1, type: 3}
+    - {fileID: 8300000, guid: c6919304f932e3c428c049c06b9af957, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.IceShard
     purpose: Ice projectile casting
     clips:
-    - {fileID: 8300000, guid: dca7bf23617b8d94e831631973b189cf, type: 3}
-    - {fileID: 8300000, guid: baebd906a7b26f8488065c779d86a236, type: 3}
-    - {fileID: 8300000, guid: 248bf64a66391f342ad88f75667b5195, type: 3}
-    - {fileID: 8300000, guid: 8e5af03101da8614488f2cacfbb197ab, type: 3}
+    - {fileID: 8300000, guid: 8304262baef268a49a948d8a5307f5b3, type: 3}
+    - {fileID: 8300000, guid: 22dfb3214136195469b261f7a69f8130, type: 3}
+    - {fileID: 8300000, guid: 59c0570ad14dfc2449b5aec6ab955979, type: 3}
+    - {fileID: 8300000, guid: cd23c67fdd60d2f43b7cf6834f4ef514, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.Teleport
     purpose: Teleport
     clips:
-    - {fileID: 8300000, guid: d6db9b0f706b9f44ab573ff623bdd80f, type: 3}
+    - {fileID: 8300000, guid: e0a5679a39e7c2c409267d9183790977, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.RaiseSkeletons
     purpose: Raise Skeletons
     clips:
-    - {fileID: 8300000, guid: 7cf214a211511994ab81d9a4040bf591, type: 3}
-    - {fileID: 8300000, guid: 89f5b9dde8bbc014782a4f78b81ee4fd, type: 3}
-    - {fileID: 8300000, guid: d5691548e075a484ebd59eeb78b79e80, type: 3}
+    - {fileID: 8300000, guid: e97cfd9fd59a44645b071ea8b141f61c, type: 3}
+    - {fileID: 8300000, guid: ff59c79c67781ed43b7c7562d179fa24, type: 3}
+    - {fileID: 8300000, guid: 2f211002c21ccdb4eafa30918f87b1d9, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.DeathMark
     purpose: Death Mark
     clips:
-    - {fileID: 8300000, guid: d632a08f948dde844ba9d76d0b850fb9, type: 3}
+    - {fileID: 8300000, guid: 62b170d7745a1b145a595ed9237d44b8, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.SpiritWolves
     purpose: Spirit Wolves
     clips:
-    - {fileID: 8300000, guid: 7cf214a211511994ab81d9a4040bf591, type: 3}
+    - {fileID: 8300000, guid: e97cfd9fd59a44645b071ea8b141f61c, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.BoneGolem
     purpose: Bone Golem
     clips:
-    - {fileID: 8300000, guid: 90017fa58bd917c4c9a9f6f55984bd59, type: 3}
-    - {fileID: 8300000, guid: 543a9c5eb91184d488c7cbefbcd6a286, type: 3}
+    - {fileID: 8300000, guid: 7cacf0421d9411342ad5b47c995250a4, type: 3}
+    - {fileID: 8300000, guid: df8e7a479f53e2244b12de2712c0d97a, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.GraveRot
     purpose: Grave Rot
     clips:
-    - {fileID: 8300000, guid: 63d66c806b870864f956a713fa805ac8, type: 3}
+    - {fileID: 8300000, guid: 0a36757317cbb794fbdc5961c0f576e5, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.SplitShot
     purpose: Split Shot
     clips:
-    - {fileID: 8300000, guid: e452f29912848904aa8fe6e4e14ca4af, type: 3}
+    - {fileID: 8300000, guid: f373f799363f0ed4383c3bf7ff747c43, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.PiercingShot
     purpose: Piercing Shot
     clips:
-    - {fileID: 8300000, guid: e452f29912848904aa8fe6e4e14ca4af, type: 3}
+    - {fileID: 8300000, guid: f373f799363f0ed4383c3bf7ff747c43, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.RainOfArrows
     purpose: Rain Of Arrows
     clips:
-    - {fileID: 8300000, guid: 6137abbe3c91d6a4aa83bc9fe5ec0b0c, type: 3}
-    - {fileID: 8300000, guid: bb7bc20a872fae9448751bc20ed1a0b1, type: 3}
+    - {fileID: 8300000, guid: 6eed53cbc08612f4eb8efe02e7db74a1, type: 3}
+    - {fileID: 8300000, guid: c2e0294a9fb354b4490b70b258d4641a, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.BurningArrow
     purpose: Burning Arrow
     clips:
-    - {fileID: 8300000, guid: e452f29912848904aa8fe6e4e14ca4af, type: 3}
+    - {fileID: 8300000, guid: f373f799363f0ed4383c3bf7ff747c43, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.FangStrike
     purpose: Fang Strike
     clips:
     - {fileID: 8300000, guid: 7285bbda112280d4eb15141e7d3c4ec9, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.VenomArrow
     purpose: Venom Arrow
     clips:
-    - {fileID: 8300000, guid: e452f29912848904aa8fe6e4e14ca4af, type: 3}
+    - {fileID: 8300000, guid: f373f799363f0ed4383c3bf7ff747c43, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.VenomSpout
     purpose: Venom Spout
     clips:
-    - {fileID: 8300000, guid: 612fa68abc7eb7545805eda4de8f77cd, type: 3}
+    - {fileID: 8300000, guid: 65296c8bd17c1eb4fb96c2020cad1b4b, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.SummonViper
     purpose: Summon Viper
     clips:
-    - {fileID: 8300000, guid: 4e7a0dd692f52b04ca8954a5669176ee, type: 3}
+    - {fileID: 8300000, guid: d35c9d057b33586489b60696faadb632, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.Pulverize
     purpose: Pulverize
     clips:
-    - {fileID: 8300000, guid: 7115ddf875125fe4184a2e86e2dc2ec2, type: 3}
-    - {fileID: 8300000, guid: 0d34f70c76723dc4491b68349ab710eb, type: 3}
+    - {fileID: 8300000, guid: 6b90935afab68a241a32d174b6cb8579, type: 3}
+    - {fileID: 8300000, guid: 453fbe932a2f759408180b128e07638e, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.ReapingArc
     purpose: Reaping Arc
     clips:
-    - {fileID: 8300000, guid: 11e8e45bb20ed4847a20eebcd566d8df, type: 3}
-    - {fileID: 8300000, guid: bcc0c9117d5e06349a06300b34c23c85, type: 3}
+    - {fileID: 8300000, guid: 205fadc98a6af7d49ab9da2d5a983dd0, type: 3}
+    - {fileID: 8300000, guid: 0e3efeec0298c9e4d8809073e6d14f84, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.skill.LungingThrust
     purpose: Lunging Thrust
     clips:
-    - {fileID: 8300000, guid: 477e2ac8cbdb9734cbe6c7b7190a8539, type: 3}
-    - {fileID: 8300000, guid: c580aed8e2f4aa74799a6c7699ac3b2e, type: 3}
-    - {fileID: 8300000, guid: 76816d8514db62d44853ae881bab1f1b, type: 3}
+    - {fileID: 8300000, guid: c8c081ece07de8047893638d01e00819, type: 3}
+    - {fileID: 8300000, guid: 395665e572bbe084f864c4481ccf2c94, type: 3}
+    - {fileID: 8300000, guid: 72087f1870fc98b438f0d6abfeeac1ac, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Carrion Saint.Attack
     purpose: Carrion Saint / attack voice
     clips:
-    - {fileID: 8300000, guid: 9eebe2b36c407154ba474f0edada8c37, type: 3}
+    - {fileID: 8300000, guid: 4d00ef304f834c14dbac91f7b907da59, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Zombie.Aggro
     purpose: Humanoid / alert calls
     clips:
-    - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
-    - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
-    - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
+    - {fileID: 8300000, guid: 8c68ee06a4952fe4eba5c1c12041f919, type: 3}
+    - {fileID: 8300000, guid: ead936d85e9833d4181d940f25099ce2, type: 3}
+    - {fileID: 8300000, guid: 67b3a1429cf6de14eae4d5d76d254c92, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Zombie.Attack
     purpose: Zombie / attack voices
     clips:
-    - {fileID: 8300000, guid: 6b9dc44f97fad134a8d71a982364e622, type: 3}
-    - {fileID: 8300000, guid: 2fac7e5e9bdcc6940a234e62370e525a, type: 3}
-    - {fileID: 8300000, guid: 7b262f15006fc4f40997ce2d939ddc12, type: 3}
-    - {fileID: 8300000, guid: 1a30b7825fe05cf4a9f9c90c7237e15d, type: 3}
+    - {fileID: 8300000, guid: b48b279709ef8544ab4405c0489b5bda, type: 3}
+    - {fileID: 8300000, guid: c94084c81a31ef04d8ea86838f9f2af5, type: 3}
+    - {fileID: 8300000, guid: 28b1e7042b510d84884ab7bd856e5a90, type: 3}
+    - {fileID: 8300000, guid: b7d73c78d9e4b90418ad2826d5e8ac8c, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Zombie.Death
     purpose: mnstr / death voices
     clips:
-    - {fileID: 8300000, guid: 9eebe2b36c407154ba474f0edada8c37, type: 3}
+    - {fileID: 8300000, guid: 4d00ef304f834c14dbac91f7b907da59, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Raider.Attack
     purpose: Humanoid grunts / attack voices
     clips:
-    - {fileID: 8300000, guid: 7f546aab911c796469bc86aa483bc3c1, type: 3}
-    - {fileID: 8300000, guid: 8c6b9f048d26b7d4f9083f5a2a51a1fb, type: 3}
-    - {fileID: 8300000, guid: e54b84efebc0e3140824e6af94c7fd52, type: 3}
+    - {fileID: 8300000, guid: 138691cf5496f3a47906a5e1b3a543e9, type: 3}
+    - {fileID: 8300000, guid: 256a873a90905c54bb44f211e61023ec, type: 3}
+    - {fileID: 8300000, guid: c34e71bd571254d49ba62f9e78df33e3, type: 3}
+    clipPaths: []
     cooldown: 2.5
+    topPriority: 0
   - id: sound.enemy.Raider.Death
     purpose: Humanoid grunts / death voices
     clips:
-    - {fileID: 8300000, guid: fd5a645aa0a8dab43bc784ef58e7e2c3, type: 3}
+    - {fileID: 8300000, guid: 49846ce5b4f75b04e9e6533ba2d182f1, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Brute.Attack
     purpose: giant / attack voices
     clips:
-    - {fileID: 8300000, guid: a2b8b8cdeff89c2448613d5735632aea, type: 3}
+    - {fileID: 8300000, guid: 80fd792a8fa1bbe4ebf8e177367b89d4, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Brute.Death
     purpose: giant / death voices
     clips:
-    - {fileID: 8300000, guid: d9bf550722614fc4e8214f91b243d4b2, type: 3}
+    - {fileID: 8300000, guid: 594bcb4cb1f45b547bd98da310a0d880, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Fire Caster.Death
     purpose: Humanoid / death voices
     clips:
-    - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
-    - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+    - {fileID: 8300000, guid: 080a50faf2eb5e24cadf53f55cf5d26f, type: 3}
+    - {fileID: 8300000, guid: c1c7c7f6dfbdb364da6974cd170b1fef, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Skeleton.Attack
     purpose: Skeleton / attack voices
     clips:
-    - {fileID: 8300000, guid: c2325df0784d83f429ca366f6a48baf1, type: 3}
-    - {fileID: 8300000, guid: 7a4691fc63546a4449e253e381aadb76, type: 3}
-    - {fileID: 8300000, guid: 21976b785f5667d4db786eb1be748f04, type: 3}
-    - {fileID: 8300000, guid: 2d30a6c688412ee45bf5dab5bcf3cd3e, type: 3}
+    - {fileID: 8300000, guid: d012a606ca3d75143ac28af48ba8739f, type: 3}
+    - {fileID: 8300000, guid: 4e502e5e49fefec42b28a27879e4935b, type: 3}
+    - {fileID: 8300000, guid: 867819ecb98a38e4ca4d188c0a8d10b7, type: 3}
+    - {fileID: 8300000, guid: f71b9c457c3d5d04e8ed85ad6ac6c726, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Wraith.Attack
     purpose: shade / attack voices
     clips:
-    - {fileID: 8300000, guid: 7cf214a211511994ab81d9a4040bf591, type: 3}
+    - {fileID: 8300000, guid: e97cfd9fd59a44645b071ea8b141f61c, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Rimeheart.Aggro
     purpose: Spider / alert calls
     clips:
     - {fileID: 8300000, guid: 5e7af3fafaf214243a54ad8924078041, type: 3}
     - {fileID: 8300000, guid: c501f94fb72f6144593aea70a5f228c5, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Rimeheart.Attack
     purpose: Spider / attack voices
     clips:
     - {fileID: 8300000, guid: 5e7af3fafaf214243a54ad8924078041, type: 3}
     - {fileID: 8300000, guid: c501f94fb72f6144593aea70a5f228c5, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Rimeheart.Death
     purpose: Spider / death voices
     clips:
     - {fileID: 8300000, guid: 5e7af3fafaf214243a54ad8924078041, type: 3}
     - {fileID: 8300000, guid: c501f94fb72f6144593aea70a5f228c5, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Forest Shaman.Attack
     purpose: Magic projectile / attack voices
     clips:
-    - {fileID: 8300000, guid: 355b235ee981d3f4c8be6af0ec53cbba, type: 3}
-    - {fileID: 8300000, guid: 6a63def20b20d9f4a87544ea5f02adb9, type: 3}
-    - {fileID: 8300000, guid: b38388df553e1c54b81d24471c4c78ab, type: 3}
-    - {fileID: 8300000, guid: 02c1defc161216d46b98d4b14ac4bbc6, type: 3}
+    - {fileID: 8300000, guid: 2af5f2b3674536646bf386a613f32d3f, type: 3}
+    - {fileID: 8300000, guid: a9d60e955826b3646853d31502129213, type: 3}
+    - {fileID: 8300000, guid: f0cbe1b2d3ea8f341b07128fcb7cf0c7, type: 3}
+    - {fileID: 8300000, guid: 6b33a560ff66a6e4281b9b7a2b71e9ec, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Dire Wolf.Aggro
     purpose: Wolf / alert calls
     clips:
     - {fileID: 8300000, guid: 2d320c0db266dfe47b2037dbc2730b53, type: 3}
     - {fileID: 8300000, guid: a59ac154a6d47704f8ac432900cf797a, type: 3}
     - {fileID: 8300000, guid: 0e30b0bad8fea074ab3df675778e59ca, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Dire Wolf.Attack
     purpose: Wolf / attack voices
     clips:
     - {fileID: 8300000, guid: e402be959cd62bd4dbdcad20f6168e5b, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Dire Wolf.Death
     purpose: Wolf / death voices
     clips:
     - {fileID: 8300000, guid: b169f030ce8ffe34bb22fe7fe32d65e7, type: 3}
     - {fileID: 8300000, guid: ed09cc3eeb12320408c99a64df6ea003, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Bog Slime.Aggro
     purpose: Slime / alert calls
     clips:
     - {fileID: 8300000, guid: ea4878184e1e4614790a81fdff157b09, type: 3}
     - {fileID: 8300000, guid: 3550e5c7ec7407140bd4b5db3643e64e, type: 3}
     - {fileID: 8300000, guid: 54971cd781137b74998d604f3ed85ad7, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Bog Slime.Attack
     purpose: Slime / attack voices
     clips:
@@ -2407,54 +2645,87 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 06af3b12774eceb4586bf3e4b0121ef9, type: 3}
     - {fileID: 8300000, guid: a63da36a32f6d434c961578150eee88e, type: 3}
     - {fileID: 8300000, guid: 8acd833c80b21b04486623ed4003d5f2, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Bog Slime.Death
     purpose: Slime / death voices
     clips:
     - {fileID: 8300000, guid: 732f5ce8ea030804b9628677b8124f50, type: 3}
     - {fileID: 8300000, guid: bf2ab5f30b8471944b9f5ad370c21ef8, type: 3}
     - {fileID: 8300000, guid: a4953c586c6df054ea71a3284722edbf, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Grave Bat.Aggro
     purpose: Bat / alert calls
     clips:
     - {fileID: 8300000, guid: 119165e1f3b5c784980d1005fcd22664, type: 3}
     - {fileID: 8300000, guid: 8acee8fc2a4f36547a8bd6df40600d4e, type: 3}
     - {fileID: 8300000, guid: 23f4d92412764ed44bd0ea391bf5d297, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Grave Bat.Attack
     purpose: Bat / attack voices
     clips:
     - {fileID: 8300000, guid: 119165e1f3b5c784980d1005fcd22664, type: 3}
     - {fileID: 8300000, guid: 8acee8fc2a4f36547a8bd6df40600d4e, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Grave Bat.Death
     purpose: Bat / death voices
     clips:
     - {fileID: 8300000, guid: 2b2b502864464ec4ca4d466405aa241d, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Magma Beetle.Aggro
     purpose: Beetle / alert calls
     clips:
     - {fileID: 8300000, guid: 3550e5c7ec7407140bd4b5db3643e64e, type: 3}
     - {fileID: 8300000, guid: 54971cd781137b74998d604f3ed85ad7, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Magma Beetle.Attack
     purpose: Beetle / attack voices
     clips:
     - {fileID: 8300000, guid: a63da36a32f6d434c961578150eee88e, type: 3}
     - {fileID: 8300000, guid: bf2ab5f30b8471944b9f5ad370c21ef8, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Magma Beetle.Death
     purpose: Beetle / death voices
     clips:
     - {fileID: 8300000, guid: 732f5ce8ea030804b9628677b8124f50, type: 3}
     - {fileID: 8300000, guid: a4953c586c6df054ea71a3284722edbf, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Hellhound.Aggro
     purpose: Hound / alert calls
     clips:
     - {fileID: 8300000, guid: b61b61a571c025949b9615239cab0380, type: 3}
     - {fileID: 8300000, guid: 26262797443213245a0c559de5491c1c, type: 3}
     - {fileID: 8300000, guid: d69a2a9b4f3cefd4da3415381b4be902, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Hellhound.Attack
     purpose: Hound / attack voices
     clips:
     - {fileID: 8300000, guid: 120f306106340914d92a0fb95839269d, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0
   - id: sound.enemy.Hellhound.Death
     purpose: Hound / death voices
     clips:
     - {fileID: 8300000, guid: ed09cc3eeb12320408c99a64df6ea003, type: 3}
     - {fileID: 8300000, guid: b169f030ce8ffe34bb22fe7fe32d65e7, type: 3}
+    clipPaths: []
+    cooldown: 0
+    topPriority: 0

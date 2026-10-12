@@ -10,16 +10,21 @@ namespace PoeClone.World
         private Material desertStone, desertSand;
         private static Vector3 DesertOrigin => Center(Desert) + new Vector3(-135, 1.1f, -126);
 
+        private void EnsureDesertMaterials()
+        {
+            if (desertStone != null) return;
+            desertStone = new Material(kit.Mat("Stone")) { name = "SunwornSandstone" };
+            desertStone.SetColor("_BaseColor", new Color(0.72f, 0.51f, 0.30f));
+        }
+
         private void BuildActTwo()
         {
             Begin(Desert, 9917);
-            desertStone = new Material(kit.Mat("Stone")) { name = "SunwornSandstone" };
-            desertStone.SetColor("_BaseColor", new Color(0.72f, 0.51f, 0.30f));
+            EnsureDesertMaterials();
             desertSand = FloorMaterial("DuneSand", GroundTexture(Desert), 6f);
             spawnPoints[Desert].SetPositionAndRotation(DesertOrigin, Quaternion.Euler(0, 40, 0));
             Sanctuary.Add(DesertOrigin, 14f);
             Sanctuary.Add(WaystoneSpot(Desert), 9f);
-            Sanctuary.Add(Center(Sahret), 75f);
             Transform desert = Group("The Sundered Expanse");
             Vector3 c = Center(Desert);
 
@@ -117,7 +122,6 @@ namespace PoeClone.World
             }
             Scatter(desert, 12, 20, 170, p => Bones(desert, p), 0.4f);
 
-            BuildSahret();
             gameObject.AddComponent<DesertAtmosphere>();
         }
 

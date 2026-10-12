@@ -110,19 +110,8 @@ namespace PoeClone.Audio
             AudioClip clip = effect != null ? effect.Choose(fallback) : fallback;
             PlayWorld(clip, position, pitch);
         }
-        private readonly System.Collections.Generic.Dictionary<string, AudioClip> loaded =
-            new System.Collections.Generic.Dictionary<string, AudioClip>();
-
-        /// <summary>A clip from Assets/Audio/Resources/Sfx by file name (cached), or null if there's none.</summary>
-        public AudioClip Sfx(string name)
-        {
-            if (!loaded.TryGetValue(name, out AudioClip clip))
-            {
-                clip = Resources.Load<AudioClip>("Sfx/" + name);
-                loaded[name] = clip;
-            }
-            return clip;
-        }
+        /// <summary>Starts loading a recording on first use; unavailable cues stay silent.</summary>
+        public AudioClip Sfx(string name) => DeferredAudio.Get("Sfx/" + name);
 
         private void Awake()
         {

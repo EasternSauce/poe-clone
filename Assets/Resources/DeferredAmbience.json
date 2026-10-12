@@ -1,0 +1,80 @@
+{
+    "entries": [
+        {
+            "name": "town",
+            "paths": [
+                "DeferredAudio/99c2a2eab45cc9c4e987fed32a6ad088/Town_ambience_–_Dist_#1-1766768998365"
+            ]
+        },
+        {
+            "name": "night",
+            "paths": [
+                "DeferredAudio/5c0fac3889ebab5409249a7eaa49ece5/Night_ambience_–_Cri_#1-1766769107163"
+            ]
+        },
+        {
+            "name": "cave",
+            "paths": [
+                "DeferredAudio/186286c1a37cbfc44a8ef0e817f8ec20/Cave_ambience_–_Holl_#1-1766768454355"
+            ]
+        },
+        {
+            "name": "dungeon",
+            "paths": [
+                "DeferredAudio/13bbdc148f8a33943a6354bc5d0534f1/Dungeon_ambience_–_W_#1-1766768410723"
+            ]
+        },
+        {
+            "name": "blizzard",
+            "paths": [
+                "DeferredAudio/9997a642aa2eb70489f97b2a8fe7dd44/Ambience_Blizzard"
+            ]
+        },
+        {
+            "name": "lava",
+            "paths": [
+                "DeferredAudio/79cab01d1f50ab14290e56eabca29922/Ambience_Lava"
+            ]
+        },
+        {
+            "name": "river",
+            "paths": [
+                "DeferredAudio/679f809f3ba2b164fa3a7cde55d56627/River_flow_–_Calm_fl_#1-1766768653145"
+            ]
+        },
+        {
+            "name": "pond",
+            "paths": [
+                "DeferredAudio/b8c79fdb98e1eac4ebdf382eeb02c369/Ambience_Pond"
+            ]
+        },
+        {
+            "name": "ocean",
+            "paths": [
+                "DeferredAudio/a021fdad7304c154087f1c5e9954bc67/Ambience_Ocean"
+            ]
+        },
+        {
+            "name": "fire",
+            "paths": [
+                "DeferredAudio/914b85ad31c126b488f0f7594656f551/Campfire_–_Medium_fi_#1-1766768610324"
+            ]
+        },
+        {
+            "name": "gust",
+            "paths": [
+                "DeferredAudio/cb84086d88e83a24484594a05021cdf7/Ambience_Gust"
+            ]
+        },
+        {
+            "name": "stones",
+            "paths": []
+        },
+        {
+            "name": "creaks",
+            "paths": [
+                "DeferredAudio/9efd46fd6de73d249aadb300d7aaa135/Bridge_creak_–_Old_w_#1-1766767266448"
+            ]
+        }
+    ]
+}

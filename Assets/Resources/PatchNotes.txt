@@ -1,3 +1,8 @@
+version: 2026-10-12-area-loading
+- Entering the game now builds Haven first. Other areas build their terrain, scenery, quest objects and monster spawners when first needed, then stay cached for return visits. Saved waystone destinations still work before their areas have been built.
+- Monster recordings load on demand and area ambience loads in the background. Missing or still-loading sounds stay silent instead of delaying play.
+- Removed the artificial pause after area loading. After a five-second soft loading budget, optional wildlife and wind details finish in the background; terrain, collision and encounters always finish before control returns.
+
 version: 2026-10-12-mobile-and-objectives
 - Touch play now supports both portrait and landscape. Portrait keeps movement, aiming, skills and potions on screen, fits menus to the narrow display, places the minimap and objectives below the menu buttons, and pulls the camera back to show more of the fight. Rotating releases held controls.
 - Clicking or tapping a quest object now performs its action as soon as you reach it, without an action/leave dialogue. Guarded objectives still require their guards to be defeated, and rituals and ambushes still need to be cleared.

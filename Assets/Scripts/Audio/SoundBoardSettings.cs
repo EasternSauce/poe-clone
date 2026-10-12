@@ -12,6 +12,19 @@ namespace PoeClone.Audio
         {
             public string id, purpose;
             public AudioClip[] clips = Array.Empty<AudioClip>();
+            public string[] clipPaths = Array.Empty<string>();
+            public IEnumerable<AudioClip> LoadedClips
+            {
+                get
+                {
+                    foreach (var clip in clips) if (clip != null) yield return clip;
+                    foreach (string path in clipPaths)
+                    {
+                        var clip = DeferredAudio.Get(path);
+                        if (clip != null) yield return clip;
+                    }
+                }
+            }
             [Tooltip("Minimum seconds between plays from this group, shared by every caller. Requests during it stay silent.")]
             [Min(0f)] public float cooldown;
             [Tooltip("Never dropped when too many sounds play at once; ordinary sounds are dropped first.")]
@@ -26,7 +39,7 @@ namespace PoeClone.Audio
                 lastPlayedAt = Time.time;
                 AudioClip next = null;
                 int count = 0;
-                foreach (var clip in clips)
+                foreach (var clip in LoadedClips)
                     if (clip != null && UnityEngine.Random.Range(0, ++count) == 0)
                         next = clip;
                 return next != null ? next : fallback;
@@ -67,7 +80,26 @@ namespace PoeClone.Audio
         public List<SoundGroup> soundGroups = new List<SoundGroup>();
         private Dictionary<string, Effect> byId, byClip;
         private Dictionary<AudioClip, SoundGroup> byRecording;
-        public static SoundBoardSettings Load() => Resources.Load<SoundBoardSettings>("SoundBoardSettings");
+        private static SoundBoardSettings runtime;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetRuntime() => runtime = null;
+        public static SoundBoardSettings Load()
+        {
+#if UNITY_EDITOR
+            if (!Application.isPlaying) return Resources.Load<SoundBoardSettings>("SoundBoardSettings");
+#endif
+            if (runtime != null) return runtime;
+            var catalog = Resources.Load<TextAsset>("DeferredSoundBoard");
+            if (catalog == null)
+            {
+                Debug.LogError("DeferredSoundBoard catalog is missing; regenerate deferred audio catalogs.");
+                return null;
+            }
+            runtime = CreateInstance<SoundBoardSettings>();
+            JsonUtility.FromJsonOverwrite(catalog.text, runtime);
+            runtime.Rebuild();
+            return runtime;
+        }
 
         public void Rebuild()
         {
@@ -115,7 +147,15 @@ namespace PoeClone.Audio
         {
             if (clip == null) return null;
             if (byRecording == null) Rebuild();
-            return byRecording.TryGetValue(clip, out var group) ? group : null;
+            if (byRecording.TryGetValue(clip, out var found)) return found;
+            foreach (var group in soundGroups)
+                foreach (string path in group.clipPaths)
+                    if (System.IO.Path.GetFileName(path) == clip.name)
+                    {
+                        byRecording[clip] = group;
+                        return group;
+                    }
+            return null;
         }
 
         private void OnEnable() => Rebuild();

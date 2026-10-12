@@ -16,6 +16,7 @@ namespace PoeClone.World
             Transform t = Group("Waystones");
             foreach (int a in WorldAreas)
             {
+                if (!NeedsArea(a)) continue;
                 Vector3 p = WaystoneSpot(a);
                 if (a == Greenwood)
                     ClearSpot(p, 2.5f);
@@ -25,7 +26,7 @@ namespace PoeClone.World
                 stone.transform.position = p;
                 BuildWaystone(stone.transform);
 
-                Transform arrival = Marker("Arrive_" + AreaNames[a] + "_waystone", p + new Vector3(0f, 1.1f, 2.6f), 0f);
+                Transform arrival = waystoneArrivals[a];
                 Waystone.Attach(stone, a, arrival);
                 Npc.CreateFixed(stone, NpcRole.Waystone, "Waystone", 3.9f);
             }

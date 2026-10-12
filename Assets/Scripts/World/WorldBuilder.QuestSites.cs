@@ -97,8 +97,8 @@ namespace PoeClone.World
         // Before the spawners: their wards keep monsters from spawning inside.
         private void BuildOutposts()
         {
-            BuildKeeperHut();
-            BuildEmberwatch();
+            if (NeedsArea(Graveyard)) BuildKeeperHut();
+            if (NeedsArea(Ruins)) BuildEmberwatch();
         }
 
         // Tobias's hut, in the graveyard's south-west corner, inside a ring of ward candles.
@@ -249,21 +249,21 @@ namespace PoeClone.World
         {
             Transform t = Group("OutpostFolk");
             Spots.TryGetValue("CampFire", out Vector3 fire);
-            AddNpc(prefab, t, NpcRole.Gravekeeper, "Tobias the Gravekeeper", Centers[Graveyard], new EnemyKind
+            if (NeedsArea(Graveyard)) AddNpc(prefab, t, NpcRole.Gravekeeper, "Tobias the Gravekeeper", Centers[Graveyard], new EnemyKind
             {
                 Name = "Gravekeeper", Scale = 0.94f, HideHorns = true,
                 Cloth = new Color(0.30f, 0.31f, 0.28f), Pants = new Color(0.22f, 0.20f, 0.18f),
                 Skin = new Color(0.72f, 0.64f, 0.58f), Eyes = new Color(0.2f, 0.2f, 0.2f),
                 Gear = new[] { "gnarled_staff" }
             });
-            AddNpc(prefab, t, NpcRole.Commander, "Commander Varek", Centers[Ruins], new EnemyKind
+            if (NeedsArea(Ruins)) AddNpc(prefab, t, NpcRole.Commander, "Commander Varek", Centers[Ruins], new EnemyKind
             {
                 Name = "Commander", Scale = 1.08f, HideHorns = true,
                 Cloth = new Color(0.58f, 0.16f, 0.12f), Pants = new Color(0.26f, 0.22f, 0.22f),
                 Skin = new Color(0.66f, 0.50f, 0.40f), Eyes = new Color(0.1f, 0.08f, 0.06f),
                 Gear = new[] { "iron_helmet", "rusty_sword", "wooden_shield" }
             });
-            AddNpc(prefab, t, NpcRole.Seer, "Seer Ysolde", fire, new EnemyKind
+            if (NeedsArea(Ruins)) AddNpc(prefab, t, NpcRole.Seer, "Seer Ysolde", fire, new EnemyKind
             {
                 Name = "Seer", Scale = 0.98f, HideHorns = true,
                 Cloth = new Color(0.62f, 0.34f, 0.12f), Pants = new Color(0.30f, 0.16f, 0.10f),
@@ -271,12 +271,12 @@ namespace PoeClone.World
                 Gear = new[] { "gnarled_staff" }
             });
             Spots.TryGetValue("GuideFreed", out Vector3 freed);
-            Npc wren = AddNpc(prefab, t, NpcRole.Guide, "Wren the Guide", freed, new EnemyKind
+            Npc wren = NeedsArea(Cave) ? AddNpc(prefab, t, NpcRole.Guide, "Wren the Guide", freed, new EnemyKind
             {
                 Name = "Guide", Scale = 0.95f, HideHorns = true,
                 Cloth = new Color(0.40f, 0.34f, 0.22f), Pants = new Color(0.24f, 0.22f, 0.18f),
                 Skin = new Color(0.70f, 0.56f, 0.44f), Eyes = new Color(0.12f, 0.1f, 0.08f)
-            });
+            }) : null;
             if (wren != null) QuestCaptive.Attach(wren, "captive", freed);
         }
 
@@ -288,52 +288,67 @@ namespace PoeClone.World
             Transform t = Group("QuestSites");
 
             // The Hollow Call: bone totems in the Greenwood.
-            Begin(Greenwood, 631);
-            Vector3[] totems = QuestPoints(Greenwood, "totems");
-            for (int k = 0; k < totems.Length; k++)
-                Totem(t, totems[k], k);
+            if (NeedsArea(Greenwood))
+            {
+                Begin(Greenwood, 631);
+                Vector3[] totems = QuestPoints(Greenwood, "totems");
+                for (int k = 0; k < totems.Length; k++)
+                    Totem(t, totems[k], k);
 
-            // The Lost Patrol: Hale's scouts.
-            Vector3[] scouts = QuestPoints(Greenwood, "patrol");
-            string[] names = { "Aldo", "Bren", "Corin" };
-            for (int k = 0; k < scouts.Length; k++)
-                FallenScout(t, scouts[k], k, names[k]);
+                // The Lost Patrol: Hale's scouts.
+                Vector3[] scouts = QuestPoints(Greenwood, "patrol");
+                string[] names = { "Aldo", "Bren", "Corin" };
+                for (int k = 0; k < scouts.Length; k++)
+                    FallenScout(t, scouts[k], k, names[k]);
+            }
 
             // The Gravelord: Mortis's reliquaries; the Lost Caravan: Oda's crates.
-            Begin(Graveyard, 632);
-            Vector3[] relics = QuestPoints(Graveyard, "relics");
-            for (int k = 0; k < relics.Length; k++)
-                Reliquary(t, relics[k], k);
-            Vector3[] crates = QuestPoints(Graveyard, "caravan");
-            for (int k = 0; k < crates.Length; k++)
-                OdaCrate(t, crates[k], k);
+            if (NeedsArea(Graveyard))
+            {
+                Begin(Graveyard, 632);
+                Vector3[] relics = QuestPoints(Graveyard, "relics");
+                for (int k = 0; k < relics.Length; k++)
+                    Reliquary(t, relics[k], k);
+                Vector3[] crates = QuestPoints(Graveyard, "caravan");
+                for (int k = 0; k < crates.Length; k++)
+                    OdaCrate(t, crates[k], k);
+            }
 
             // Embers of War: supply caches, the Ashen Shrine. The Frozen Seal: sunstones, the ice.
-            Begin(Ruins, 633);
-            Vector3[] caches = QuestPoints(Ruins, "supplies");
-            for (int k = 0; k < caches.Length; k++)
-                SupplyCache(t, caches[k], k);
-            AshenShrine(t, QuestPoints(Ruins, "shrine")[0]);
-            // Woken in order: the western ruins' stone first, then the two at the gate, west then east.
-            Vector3[] suns = QuestPoints(Ruins, "sunstones");
-            int[] sunOrder = { 2, 0, 1 };
-            for (int k = 0; k < sunOrder.Length; k++)
-                Sunstone(t, suns[sunOrder[k]], k);
-            IceSeal(t);
+            if (NeedsArea(Ruins))
+            {
+                Begin(Ruins, 633);
+                Vector3[] caches = QuestPoints(Ruins, "supplies");
+                for (int k = 0; k < caches.Length; k++)
+                    SupplyCache(t, caches[k], k);
+                AshenShrine(t, QuestPoints(Ruins, "shrine")[0]);
+                // Woken in order: the western ruins' stone first, then the two at the gate, west then east.
+                Vector3[] suns = QuestPoints(Ruins, "sunstones");
+                int[] sunOrder = { 2, 0, 1 };
+                for (int k = 0; k < sunOrder.Length; k++)
+                    Sunstone(t, suns[sunOrder[k]], k);
+                IceSeal(t);
+            }
 
             // The deep road from the Lost Hollows to the Ruins, walled up by the Gravelord's dead;
             // Wren's cage in Vex's diggers' camp in the southern cavern.
-            Begin(Cave, 635);
-            BoneWall(t);
-            WrenCage(t, QuestPoints(Cave, "captive")[0]);
+            if (NeedsArea(Cave))
+            {
+                Begin(Cave, 635);
+                BoneWall(t);
+                WrenCage(t, QuestPoints(Cave, "captive")[0]);
+            }
 
             // The Frozen Seal: the lost scouts, the door beneath the ice.
-            Begin(Frozen, 634);
-            Vector3[] frozen = QuestPoints(Frozen, "scouts");
-            for (int k = 0; k < frozen.Length; k++)
-                FrozenScout(t, frozen[k], k);
-            StagDoor(t, SanctuaryDoorSpot);
-            BuildActTwoQuestSites(t);
+            if (NeedsArea(Frozen))
+            {
+                Begin(Frozen, 634);
+                Vector3[] frozen = QuestPoints(Frozen, "scouts");
+                for (int k = 0; k < frozen.Length; k++)
+                    FrozenScout(t, frozen[k], k);
+                StagDoor(t, SanctuaryDoorSpot);
+            }
+            if (IsActTwo(loadingArea)) BuildActTwoQuestSites(t);
         }
 
         private Light QuestGlow(Transform parent, Vector3 p, Color color, float range, float intensity)

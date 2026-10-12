@@ -27,17 +27,47 @@ namespace PoeClone.World
         private AreaManager manager;
         private Transform player;
 
-        public void Build(AreaManager areaManager, Transform listener)
+        private int buildingArea;
+        private readonly HashSet<int> prepared = new HashSet<int>();
+        public void Build(AreaManager areaManager, Transform listener, int area)
         {
             manager = areaManager;
             player = listener;
-            var library = Resources.Load<AmbientSoundLibrary>("AmbientSoundLibrary");
-            if (library == null)
-            {
-                Debug.LogWarning("World ambience: AmbientSoundLibrary is missing.");
-                return;
-            }
+            if (prepared.Add(area)) StartCoroutine(LoadAreaAudio(area));
+        }
 
+        private System.Collections.IEnumerator LoadAreaAudio(int area)
+        {
+            // The catalog contains paths only: other areas' recordings remain unloaded.
+            var catalog = AmbientSoundLibrary.LoadCatalog();
+            var library = ScriptableObject.CreateInstance<AmbientSoundLibrary>();
+            string bed = area == WorldBuilder.Haven ? "town" : area == WorldBuilder.Graveyard || area == WorldBuilder.Belfry || area == WorldBuilder.Orchard ? "night" :
+                area == WorldBuilder.Ruins ? "lava" : area == WorldBuilder.Frozen ? "blizzard" :
+                area == WorldBuilder.Cave || area == WorldBuilder.Warren ? "cave" :
+                area == WorldBuilder.ActArena || area == WorldBuilder.DrownedWorks || area == WorldBuilder.BuriedWard || area == WorldBuilder.FirstRoot ? "dungeon" : "";
+            var fields = new HashSet<string> { bed, "fire", "creaks" };
+            AreaShape shape = WorldBuilder.Shape(area);
+            if (shape.HasWater && area != WorldBuilder.Frozen) { fields.Add("river"); fields.Add("pond"); }
+            if (shape.HasOcean) fields.Add("ocean");
+            fields.Add(bed == "cave" || bed == "dungeon" ? "stones" : "gust");
+            foreach (var entry in catalog.entries)
+            {
+                if (!fields.Contains(entry.name)) continue;
+                foreach (string path in entry.paths)
+                    while (!DeferredAudio.Finished(path)) yield return null;
+                var field = typeof(AmbientSoundLibrary).GetField(entry.name);
+                if (field == null) continue;
+                if (field.FieldType == typeof(AudioClip))
+                    field.SetValue(library, entry.paths.Length > 0 ? DeferredAudio.Get(entry.paths[0]) : null);
+                else field.SetValue(library, Array.ConvertAll(entry.paths, DeferredAudio.Get));
+            }
+            buildingArea = area;
+            AddAreaVoices(library);
+            Destroy(library);
+        }
+
+        private void AddAreaVoices(AmbientSoundLibrary library)
+        {
             Loop(WorldBuilder.Haven, library.town,
                 p => Falloff(FlatDistance(p, WorldBuilder.Center(WorldBuilder.Haven)), 24, 85));
             Bed(WorldBuilder.Graveyard, library.night);
@@ -54,6 +84,7 @@ namespace PoeClone.World
 
             foreach (int area in WorldBuilder.WorldAreas)
             {
+                if (area != buildingArea) continue;
                 AreaShape shape = WorldBuilder.Shape(area);
                 // Signed shape distances are positive in water, negative on the bank.
                 // Separate river/lake/ocean fields prevent surf from playing at inland rivers.
@@ -90,11 +121,13 @@ namespace PoeClone.World
                 if (fires.Exists(p => FlatDistance(p, position) < 3)) continue;
                 fires.Add(position);
                 int area = NearestArea(position);
+                if (area != buildingArea) continue;
                 Loop(area, library.fire,
                     p => Falloff(FlatDistance(p, flame.transform.position), 2, 17), flame.transform);
             }
             foreach (var lava in GetComponentsInChildren<LavaSurface>())
             {
+                if (buildingArea != WorldBuilder.Ruins) continue;
                 if (lava.name == "Backdrop") continue; // The distant lava sea already has an area bed.
                 Vector3 position = lava.transform.position;
                 Loop(WorldBuilder.Ruins, library.lava,
@@ -126,14 +159,14 @@ namespace PoeClone.World
 
         private void Loop(int area, AudioClip clip, Func<Vector3, float> gain, Transform anchor = null)
         {
-            if (clip == null) return;
+            if (area != buildingArea || clip == null) return;
             voices.Add(new Voice { area = area, clips = new[] { clip },
                 gain = gain, anchor = anchor, loop = true });
         }
 
         private void Occasional(int area, AudioClip[] clips, float min, float max, Func<Vector3, float> gain)
         {
-            if (clips == null || clips.Length == 0) return;
+            if (area != buildingArea || clips == null || clips.Length == 0) return;
             clips = Array.FindAll(clips, c => c != null);
             if (clips.Length == 0) return;
             voices.Add(new Voice { area = area, clips = clips, gain = gain,

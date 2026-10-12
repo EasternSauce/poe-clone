@@ -44,6 +44,7 @@ namespace PoeClone.World
         private void BuildWaterObjectives(Transform sites, int area, string questId, PropAction action,
             string[] names, string[] descriptions, string[] enemies, bool ambush = false)
         {
+            if (!NeedsArea(area)) return;
             Begin(area, 18000 + area * 31 + questId.Length);
             Vector3[] points = QuestPoints(area, questId);
             for (int i = 0; i < points.Length; i++)

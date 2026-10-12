@@ -128,6 +128,9 @@ namespace PoeClone.Network
             foreach (GameObject root in suspendedRoots)
                 if (root != null) root.SetActive(true);
             suspendedRoots.Clear();
+            // Restoring scene roots must not start Greenwood's packs before its first visit.
+            foreach (var spawner in FindObjectsByType<PoeClone.Enemies.EnemySpawner>())
+                spawner.enabled = false;
             var player = FindAnyObjectByType<PlayerStats>();
             scenePlayer = player != null ? player.gameObject : null;
             yield return null;

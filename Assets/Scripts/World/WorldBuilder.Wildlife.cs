@@ -27,7 +27,7 @@ namespace PoeClone.World
 
             // Broad wings and an outstretched neck distinguish these from the small scene birds.
             foreach (int area in new[] { Greenwood, Haven })
-                for (int i = 0; i < 8; i++)
+                if (NeedsArea(area)) for (int i = 0; i < 8; i++)
                 {
                     Vector3 home = Center(area) + new Vector3((i % 4 - 1.5f) * 64, 0, (i / 4 - 0.5f) * 100);
                     Transform swan = WildlifeModels.Create(wildlife, AmbientAnimal.Species.Swan, i);
@@ -50,6 +50,7 @@ namespace PoeClone.World
         private void PopulateWildlife(Transform parent, Transform player, System.Random random,
             int area, AmbientAnimal.Species species, int count, float minDistance = 0, float maxDistance = float.PositiveInfinity)
         {
+            if (!NeedsArea(area)) return;
             AreaShape shape = Shape(area);
             float radius = species == AmbientAnimal.Species.Sheep ? 0.65f : 0.3f;
             var occupied = new System.Collections.Generic.List<Vector3>();

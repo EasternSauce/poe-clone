@@ -47,13 +47,11 @@ namespace PoeClone.World
         // Before the borders (which keep clear of gates) and the spawners.
         private void BuildFieldBossLairs()
         {
-            BuildWallow();
-            BuildSunCourt();
-            BuildHuntingCamp();
-            ConnectDen(Cave, WarrenGateLocal, WarrenGateInward, Warren);
-            ConnectDen(Graveyard, BelfryGateLocal, BelfryGateInward, Belfry);
-            DressWarrenGate();
-            DressBelfryGate();
+            if (NeedsArea(Greenwood)) BuildWallow();
+            if (NeedsArea(Ruins)) BuildSunCourt();
+            if (NeedsArea(Frozen)) BuildHuntingCamp();
+            if (NeedsArea(Cave)) DressWarrenGate();
+            if (NeedsArea(Graveyard)) DressBelfryGate();
         }
 
         private static Vector3 LairSpot(string boss)

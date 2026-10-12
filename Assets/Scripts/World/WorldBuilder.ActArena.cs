@@ -11,6 +11,17 @@ namespace PoeClone.World
         public static Vector3 SanctuaryDoorSpot => Center(Frozen) + new Vector3(0f, 0f, 128f);
         public static Quaternion SanctuaryDoorRotation => Quaternion.Euler(0f, -25f, 0f);
         private static Vector3 SanctuaryInnerGateSpot => ActArenaCenter + new Vector3(0f, 0f, -42f);
+        private Transform sanctuaryReturn;
+        private void BuildSanctuaryTravel()
+        {
+            Transform travel = Group("SanctuaryTravel");
+            spawnPoints[ActArena].position = ActArenaCenter + new Vector3(0, 1.1f, -31);
+            Vector3 door = SanctuaryDoorSpot + SanctuaryDoorRotation * new Vector3(0, 1.1f, -3);
+            sanctuaryReturn = Marker("SanctuaryReturn", door + SanctuaryDoorRotation * Vector3.back * 6, 155);
+            MakeActGate(travel, "Sanctuary entrance", door, Frozen, ActArena, spawnPoints[ActArena], true);
+            MakeActGate(travel, "Sanctuary exit", SanctuaryInnerGateSpot + new Vector3(0, 1.1f, 1), ActArena, Frozen, sanctuaryReturn, false);
+        }
+
         private AreaDefinition BuildActArena()
         {
             Transform arena = Group("The Shed Sanctuary");
@@ -25,11 +36,8 @@ namespace PoeClone.World
             BuildLayoutWalls(ActArena, 0f);
             BuildSanctuaryLair(arena, c);
             BuildShepherdPassage(arena);
-            Transform entry = Marker("SanctuaryEntry", c + new Vector3(0f, 1.1f, -31f), 0f);
-            Vector3 door = SanctuaryDoorSpot + SanctuaryDoorRotation * new Vector3(0f, 1.1f, -3f);
-            Transform outside = Marker("SanctuaryReturn", door + SanctuaryDoorRotation * Vector3.back * 6f, 155f);
-            MakeActGate(arena, "Sanctuary entrance", door, Frozen, ActArena, entry, true);
-            MakeActGate(arena, "Sanctuary exit", SanctuaryInnerGateSpot + new Vector3(0f, 1.1f, 1f), ActArena, Frozen, outside, false);
+            Transform entry = spawnPoints[ActArena];
+            Transform outside = sanctuaryReturn;
             EnemySpawner spawner = FindAnyObjectByType<EnemySpawner>();
             var encounter = arena.gameObject.AddComponent<ActBossArena>();
             encounter.Configure(spawner != null ? spawner.EnemyPrefab : null, outside, c + Vector3.forward * 14f);

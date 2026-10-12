@@ -95,6 +95,7 @@ namespace PoeClone.World
         {
             foreach (int area in WorldAreas)
             {
+                if (!NeedsArea(area)) continue;
                 yield return null;
                 Begin(area, 900 + area);
                 Transform group = Group("Border_" + AreaNames[area]);

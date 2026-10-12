@@ -166,7 +166,7 @@ namespace PoeClone.World
         public static void EnsureBuilt()
         {
             IEnumerator build = BuildRoutine();
-            while (build.MoveNext()) { }
+            Drain(build);
         }
 
         /// <summary>
@@ -183,7 +183,20 @@ namespace PoeClone.World
             if (session != null && session.Role == PoeClone.Network.SessionRole.Player && !session.PlayGranted) return Nothing();
             if (Instance != null) return Nothing();
             var go = new GameObject("World");
-            return go.AddComponent<WorldBuilder>().Build();
+            return Flatten(go.AddComponent<WorldBuilder>().Build());
+        }
+
+        private static IEnumerator Flatten(IEnumerator routine)
+        {
+            while (routine.MoveNext())
+            {
+                if (routine.Current is IEnumerator nested)
+                {
+                    IEnumerator steps = Flatten(nested);
+                    while (steps.MoveNext()) yield return steps.Current;
+                }
+                else yield return routine.Current;
+            }
         }
 
         private static IEnumerator Nothing()
@@ -213,159 +226,177 @@ namespace PoeClone.World
                 yield break;
             }
 
-            Loading("Area gates and spawn points");
-            yield return null;
+            groundTemplate = ground;
+            originalSpawner = FindAnyObjectByType<EnemySpawner>();
+            if (originalSpawner != null) originalSpawner.enabled = false;
+            spawnersByArea = new EnemySpawner[Centers.Length];
             gateTemplate = CreateGateTemplate();
-
             spawnPoints = new Transform[Centers.Length];
-            foreach (int a in WorldAreas)
-                spawnPoints[a] = Marker("Spawn_" + AreaNames[a], Centers[a] + new Vector3(0f, 1.1f, -6f), 0f);
-
-            InitShapes();
-            foreach (int a in WorldAreas)
-            {
-                if (a == Greenwood) continue;
-                Loading("Terrain: " + AreaNames[a]);
-                yield return null;
-                IEnumerator area = BuildGround(ground, a);
-                while (area.MoveNext())
-                    yield return null;
-            }
-            // The scene's own forest gets its own grass and the same outline; its square walls go.
-            Loading("Terrain: " + AreaNames[Greenwood]);
-            yield return null;
-            UseGroundTexture(ground, Greenwood);
-            yield return null;
-            IEnumerator shaping = ShapeGround(ground, Greenwood);
-            while (shaping.MoveNext())
-                yield return null;
-            Loading("Forest scenery");
-            yield return null;
-            IEnumerator relocating = RelocateOriginalScenery();
-            while (relocating.MoveNext())
-                yield return null;
-            GameObject sceneBounds = GameObject.Find("WorldBounds");
-            if (sceneBounds != null)
-                sceneBounds.SetActive(false);
-
-            Loading("Town: Haven");
-            yield return null;
-            BuildHaven();
-            Loading("Scenery: Graveyard");
-            yield return null;
-            BuildGraveyard();
-            Loading("Scenery: Ruins");
-            yield return null;
-            BuildRuins();
-            Loading("Scenery: Frozen Hollow");
-            yield return null;
-            BuildFrozen();
-            Loading("Scenery: Caves");
-            yield return null;
-            BuildCave();
-            Loading("Scenery: Act 2 desert");
-            yield return null;
-            BuildActTwo();
-            Loading("Scenery: Salt Basin");
-            yield return null;
-            BuildSaltBasin();
-            Loading("Scenery: Thirsting Channels");
-            yield return null;
-            BuildThirstingChannels();
-            Loading("Scenery: Drowned Works");
-            yield return null;
-            BuildDrownedWorks();
-            Loading("Scenery: Empty Orchard");
-            yield return null;
-            BuildEmptyOrchard();
-            Loading("Scenery: Crownless Reservoir");
-            yield return null;
-            BuildCrownlessReservoir();
-            Loading("Scenery: Buried Ward");
-            yield return null;
-            BuildRootDescent(BuriedWard);
-            Loading("Scenery: First Root");
-            yield return null;
-            BuildRootDescent(FirstRoot);
-            Loading("Glowshrooms and Greenwood outskirts");
-            yield return null;
-            BuildGlowshrooms();
-            BuildGreenwoodOutskirts();
-            Loading("Waystones and outposts");
-            yield return null;
-            BuildWaystones();
-            BuildOutposts();
-
-            // Gates (AreaLayouts.Links): Haven - Greenwood - the Lost Hollows, which branch to the
-            // Graveyard and the Ruins; the Ruins lead on to the Frozen Hollow. The way home is the
-            // town portal or a waystone.
-            foreach (var link in AreaLayouts.Links)
-                Connect(link.a, link.b);
-            Loading("Field boss lairs");
-            yield return null;
-            BuildFieldBossLairs();
-            Loading("Area borders");
-            yield return null;
-            IEnumerator borders = BuildBorders();
-            while (borders.MoveNext())
-                yield return null;
-            Loading("Quest sites");
-            yield return null;
-            BuildQuestSites();
-
-            Loading("Monster spawners");
-            yield return null;
-            SetUpSpawners();
-            SetUpDesertEncounters();
-            Loading("Townsfolk");
-            yield return null;
-            BuildTownsfolk();
-            Loading("Bosses");
-            yield return null;
-            PlaceBosses();
-
             var definitions = new AreaDefinition[Centers.Length];
-            foreach (int a in WorldAreas)
+            for (int area = 0; area < Centers.Length; area++)
             {
-                definitions[a] = new AreaDefinition
+                spawnPoints[area] = Marker("Spawn_" + AreaNames[area], Center(area) + new Vector3(0, 1.1f, -6), 0);
+                definitions[area] = new AreaDefinition
                 {
-                    areaName = AreaNames[a],
-                    spawnPoint = spawnPoints[a],
-                    monsterLevel = MonsterLevels[a],
-                    isTown = a == Haven || a == Sahret,
-                    respawnPoint = a == Desert ? spawnPoints[Desert] : null
+                    areaName = AreaNames[area], spawnPoint = spawnPoints[area],
+                    monsterLevel = MonsterLevels[area], isTown = area == Haven || area == Sahret,
+                    respawnPoint = area == Desert ? spawnPoints[area] : null
                 };
             }
-
-            Loading("Act boss arena");
-            yield return null;
-            definitions[ActArena] = BuildActArena();
-            Loading("Warren");
-            yield return null;
-            definitions[Warren] = BuildWarren();
-            Loading("Belfry");
-            yield return null;
-            definitions[Belfry] = BuildBelfry();
-            Loading("Lighting, ambient details and ambience");
-            yield return null;
+            foreach (int area in WorldAreas)
+                waystoneArrivals[area] = Marker("Arrive_" + AreaNames[area] + "_waystone", WaystoneSpot(area) + new Vector3(0, 1.1f, 2.6f), 0);
+            InitShapes();
+            // Travel anchors are cheap and remain valid before the destination is built.
+            foreach (var link in AreaLayouts.Links) Connect(link.a, link.b);
+            ConnectDen(Cave, WarrenGateLocal, WarrenGateInward, Warren);
+            ConnectDen(Graveyard, BelfryGateLocal, BelfryGateInward, Belfry);
+            BuildSanctuaryTravel();
             ConfigureCaveLighting(player.transform);
-            BuildAmbientDetails();
-            gameObject.AddComponent<WorldAmbience>().Build(manager, player.transform);
-
-            Loading("Wildlife, lights and starter loot");
-            yield return null;
-            // Colliders made this frame aren't in the physics world until it syncs; the starter
-            // loot below finds the ground by raycast.
-            Physics.SyncTransforms();
-            BuildWildlife(player.transform);
-            ManualPointLightManager.Refresh();
-
-            // Start in town.
+            ambience = gameObject.AddComponent<WorldAmbience>();
+            yield return EnsureArea(Haven);
             MovePlayer(player, spawnPoints[Haven]);
             manager.AreaChanged += OnAreaChanged;
             manager.SetAreas(definitions, Haven);
             StarterLoot.PlaceAt(starterSpots, spawnPoints[Haven].position + Vector3.down * 1.1f);
             UI.LoadingStatus.Clear();
+        }
+
+        private readonly Dictionary<int, Transform> waystoneArrivals = new Dictionary<int, Transform>();
+        public Transform WaystoneArrival(int area) => waystoneArrivals.TryGetValue(area, out var arrival) ? arrival : null;
+        private GameObject groundTemplate;
+        private EnemySpawner originalSpawner;
+        private WorldAmbience ambience;
+        private readonly HashSet<int> builtAreas = new HashSet<int>();
+        private int loadingArea = -1;
+        private bool buildingArea;
+        private bool NeedsArea(int area) => area == loadingArea;
+        public bool IsAreaReady(int area) => builtAreas.Contains(area);
+
+        // Serialize builds: the authored builders share their current area and random generator.
+        public IEnumerator EnsureArea(int area)
+        {
+            while (buildingArea) yield return null;
+            if (builtAreas.Contains(area)) yield break;
+            if (area < 0 || area >= Centers.Length) yield break;
+            buildingArea = true;
+            loadingArea = area;
+            float started = Time.realtimeSinceStartup;
+            try
+            {
+                Loading("Terrain: " + AreaNames[area]);
+                yield return null;
+                if (area == Greenwood)
+                {
+                    UseGroundTexture(groundTemplate, Greenwood);
+                    yield return ShapeGround(groundTemplate, Greenwood);
+                    yield return RelocateOriginalScenery();
+                    GameObject bounds = GameObject.Find("WorldBounds");
+                    if (bounds != null) bounds.SetActive(false);
+                }
+                else if (area != ActArena && area != Warren && area != Belfry)
+                    yield return BuildGround(groundTemplate, area);
+                Loading("Scenery: " + AreaNames[area]);
+                yield return null;
+                if (IsActTwo(area) || area == ActArena) EnsureDesertMaterials();
+                switch (area)
+                {
+                    case Haven: BuildHaven(); break;
+                    case Greenwood: BuildGlowshrooms(); BuildGreenwoodOutskirts(); break;
+                    case Graveyard: BuildGraveyard(); break;
+                    case Ruins: BuildRuins(); break;
+                    case Frozen: BuildFrozen(); break;
+                    case Cave: BuildCave(); break;
+                    case Desert: BuildActTwo(); break;
+                    case Sahret: BuildSahret(); break;
+                    case SaltBasin: BuildSaltBasin(); break;
+                    case Channels: BuildThirstingChannels(); break;
+                    case DrownedWorks: BuildDrownedWorks(); break;
+                    case Orchard: BuildEmptyOrchard(); break;
+                    case Reservoir: BuildCrownlessReservoir(); break;
+                    case BuriedWard: case FirstRoot: BuildRootDescent(area); break;
+                    case ActArena: CopySpawn(BuildActArena(), area); break;
+                    case Warren: CopySpawn(BuildWarren(), area); break;
+                    case Belfry: CopySpawn(BuildBelfry(), area); break;
+                }
+                BuildWaystones();
+                BuildOutposts();
+                BuildFieldBossLairs();
+                Loading("Encounters: " + AreaNames[area]);
+                yield return null;
+                yield return BuildBorders();
+                ClearAreaTravel(area);
+                BuildQuestSites();
+                SetUpSpawners();
+                if (area == Desert) SetUpDesertEncounters();
+                if (area == Haven) BuildTownsfolk();
+                else if ((area == Graveyard || area == Ruins || area == Cave) && originalSpawner != null)
+                    BuildOutpostFolk(originalSpawner.EnemyPrefab);
+                PlaceBosses();
+                Physics.SyncTransforms();
+                ManualPointLightManager.Refresh();
+                builtAreas.Add(area);
+                // Five seconds is a soft cover budget. Never expose missing collision or enemies.
+                // Optional wildlife and wind decoration can finish after the cover lifts.
+                if (Time.realtimeSinceStartup - started >= 5f)
+                    StartCoroutine(FinishAreaDetails(area));
+                else
+                    yield return AreaDetails(area);
+                // Audio is optional and never blocks entry.
+                ambience.Build(FindAnyObjectByType<AreaManager>(), FindAnyObjectByType<PlayerController>().transform, area);
+            }
+            finally { loadingArea = -1; buildingArea = false; }
+        }
+
+        private void ClearAreaTravel(int area)
+        {
+            // Gates were registered before scenery; clear their approaches after construction.
+            Physics.SyncTransforms();
+            foreach (var gate in gatePoints)
+                if (gate.area == area) ClearSpot(gate.position, 4.5f);
+            string prefix = "Arrive_" + AreaNames[area] + "_";
+            foreach (Transform marker in root)
+                if (marker.name.StartsWith(prefix)) ClearSpot(marker.position, 2f);
+        }
+
+        private void CopySpawn(AreaDefinition definition, int area)
+        {
+            spawnPoints[area].SetPositionAndRotation(definition.spawnPoint.position, definition.spawnPoint.rotation);
+        }
+
+        private IEnumerator FinishAreaDetails(int area)
+        {
+            var manager = FindAnyObjectByType<AreaManager>();
+            while (buildingArea || Time.timeScale <= 0f ||
+                (manager != null && (manager.IsSwitching || (manager.loadingScreen != null && manager.loadingScreen.IsShowing))))
+                yield return null;
+            buildingArea = true;
+            loadingArea = area;
+            try { yield return AreaDetails(area); }
+            finally { loadingArea = -1; buildingArea = false; }
+        }
+
+        private IEnumerator AreaDetails(int area)
+        {
+            yield return null;
+            BuildAmbientDetails();
+            yield return null;
+            BuildWildlife(FindAnyObjectByType<PlayerController>().transform);
+            ManualPointLightManager.Refresh();
+        }
+
+        // Replicas need terrain before applying a snapshot; ordinary travel uses the coroutine.
+        public bool EnsureAreaImmediate(int area)
+        {
+            if (builtAreas.Contains(area)) return true;
+            if (buildingArea) return false;
+            Drain(EnsureArea(area));
+            return builtAreas.Contains(area);
+        }
+
+        private static void Drain(IEnumerator routine)
+        {
+            while (routine.MoveNext())
+                if (routine.Current is IEnumerator nested) Drain(nested);
         }
 
         private static void Loading(string step) => UI.LoadingStatus.Set(step);
@@ -878,21 +909,25 @@ namespace PoeClone.World
 
         private void SetUpSpawners()
         {
-            spawnersByArea = new EnemySpawner[Centers.Length];
-
-            EnemySpawner original = FindAnyObjectByType<EnemySpawner>();
+            EnemySpawner original = originalSpawner;
             if (original == null || original.EnemyPrefab == null)
                 return;
 
             GameObject prefab = original.EnemyPrefab;
-            original.Configure(prefab, Centers[Greenwood], AreaShape.MaxRadius, 48, MonsterLevels[Greenwood], KindWeights[Greenwood]);
-            original.SetSafeSpots(SafeSpots(Greenwood));
-            AreaShape greenwood = Shape(Greenwood);
-            original.SetBounds(p => greenwood.Contains(p, 3f));
-            spawnersByArea[Greenwood] = original;
+            if (NeedsArea(Greenwood))
+            {
+                original.Configure(prefab, Centers[Greenwood], AreaShape.MaxRadius, 48, MonsterLevels[Greenwood], KindWeights[Greenwood]);
+                original.SetSafeSpots(SafeSpots(Greenwood));
+                AreaShape greenwood = Shape(Greenwood);
+                original.SetBounds(p => greenwood.Contains(p, 3f));
+                spawnersByArea[Greenwood] = original;
+
+                original.enabled = false;
+            }
 
             foreach (int area in new[] { Graveyard, Ruins, Frozen, Cave, SaltBasin, Channels, DrownedWorks, Orchard, Reservoir, BuriedWard, FirstRoot })
             {
+                if (!NeedsArea(area)) continue;
                 var go = new GameObject("Spawner_" + AreaNames[area]);
                 go.transform.SetParent(root, false);
                 go.transform.position = Centers[area];
@@ -910,7 +945,7 @@ namespace PoeClone.World
             // Off until OnAreaChanged switches on the current area's: the build spans several
             // frames, and a spawner's Start (its first wave) must wait for its area's first visit.
             foreach (EnemySpawner spawner in spawnersByArea)
-                if (spawner != null) spawner.enabled = false;
+                if (spawner != null && spawner == spawnersByArea[loadingArea]) spawner.enabled = false;
         }
 
         // One EnemySpawner per area (null for Haven, the town), so its enemies can be parked while
@@ -946,24 +981,24 @@ namespace PoeClone.World
                 return;
 
             Transform t = Group("Bosses");
-            if (Spots.TryGetValue("Crypt", out Vector3 crypt))
+            if (NeedsArea(Graveyard) && Spots.TryGetValue("Crypt", out Vector3 crypt))
                 BossLair.Create(t, Graveyard, BossIndex("Gravelord Mortis"), MonsterLevels[Graveyard], spawner.EnemyPrefab, crypt, Vector3.back);
-            if (Spots.TryGetValue("Altar", out Vector3 altar))
+            if (NeedsArea(Ruins) && Spots.TryGetValue("Altar", out Vector3 altar))
                 BossLair.Create(t, Ruins, BossIndex("Ashen Warlord"), MonsterLevels[Ruins], spawner.EnemyPrefab, altar, Vector3.back);
-            if (Spots.TryGetValue("Throne", out Vector3 throne))
+            if (NeedsArea(Frozen) && Spots.TryGetValue("Throne", out Vector3 throne))
                 BossLair.Create(t, Frozen, BossIndex("Rimeheart"), MonsterLevels[Frozen], spawner.EnemyPrefab, throne, Vector3.back);
             foreach (FieldLair lair in FieldLairs)
-                BossLair.Create(t, lair.Area, BossIndex(lair.Boss), MonsterLevels[lair.Area], spawner.EnemyPrefab, Center(lair.Area) + lair.Local, lair.Facing);
-            BossLair.Create(t, SaltBasin, BossIndex("Uruun, the Salt Matriarch"), MonsterLevels[SaltBasin],
+                if (NeedsArea(lair.Area)) BossLair.Create(t, lair.Area, BossIndex(lair.Boss), MonsterLevels[lair.Area], spawner.EnemyPrefab, Center(lair.Area) + lair.Local, lair.Facing);
+            if (NeedsArea(SaltBasin)) BossLair.Create(t, SaltBasin, BossIndex("Uruun, the Salt Matriarch"), MonsterLevels[SaltBasin],
                 spawner.EnemyPrefab, Center(SaltBasin) + BasinMatriarchLocal, Vector3.back);
-            BossLair.Create(t, SaltBasin, BossIndex("Namar, Keeper of the Dry Well"), MonsterLevels[SaltBasin],
+            if (NeedsArea(SaltBasin)) BossLair.Create(t, SaltBasin, BossIndex("Namar, Keeper of the Dry Well"), MonsterLevels[SaltBasin],
                 spawner.EnemyPrefab, Center(SaltBasin) + BasinKeeperLocal, Vector3.back);
-            BossLair.Create(t, Channels, BossIndex("The Sluice Warden"), MonsterLevels[Channels],
+            if (NeedsArea(Channels)) BossLair.Create(t, Channels, BossIndex("The Sluice Warden"), MonsterLevels[Channels],
                 spawner.EnemyPrefab, Center(Channels) + ChannelWardenLocal, Vector3.back);
-            BossLair.Create(t, DrownedWorks, BossIndex("The Last Engineer"), MonsterLevels[DrownedWorks],
+            if (NeedsArea(DrownedWorks)) BossLair.Create(t, DrownedWorks, BossIndex("The Last Engineer"), MonsterLevels[DrownedWorks],
                 spawner.EnemyPrefab, Center(DrownedWorks) + WorksEngineerLocal, Vector3.back);
             foreach (int area in new[] { Orchard, Reservoir, BuriedWard, FirstRoot })
-                BossLair.Create(t, area, BossIndex(area == Orchard ? "Mother of the Last Harvest" : area == Reservoir ? "Ishara, Keeper of the Borrowed River" :
+                if (NeedsArea(area)) BossLair.Create(t, area, BossIndex(area == Orchard ? "Mother of the Last Harvest" : area == Reservoir ? "Ishara, Keeper of the Borrowed River" :
                     area == BuriedWard ? "Ossan, Warden of the Unremembered" : "The First Root, Heart of the Tithe"),
                     MonsterLevels[area], spawner.EnemyPrefab, Center(area) + AreaLayouts.BossLocal(area), Vector3.back);
         }
@@ -1016,7 +1051,7 @@ namespace PoeClone.World
             });
 
             BuildVillageFolk(spawner.EnemyPrefab, t);
-            BuildOutpostFolk(spawner.EnemyPrefab);
+
         }
 
         private Npc AddNpc(GameObject prefab, Transform parent, NpcRole role, string name, Vector3 faceTowards, EnemyKind look)
@@ -1518,6 +1553,8 @@ namespace PoeClone.World
 
         private Transform Group(string name)
         {
+            Transform existing = root.Find(name);
+            if (existing != null) return existing;
             var g = new GameObject(name).transform;
             g.SetParent(root, false);
             return g;

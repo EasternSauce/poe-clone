@@ -19,8 +19,8 @@ namespace PoeClone.World
     }
 
     /// <summary>
-    /// Area switcher: fade to a loading screen, teleport the player into the target area (its
-    /// spawn point, or a given arrival point such as in front of the gate back), fade back in.
+    /// Area switcher: fade to a loading screen, build the destination on first visit, then teleport to its
+    /// spawn point or a given gate arrival point and fade back in.
     /// <see cref="WorldBuilder"/> supplies the real areas at start-up.
     /// </summary>
     public class AreaManager : MonoBehaviour
@@ -30,9 +30,6 @@ namespace PoeClone.World
         public AreaDefinition[] areas;
         public Transform player;
         public LoadingScreenUI loadingScreen;
-
-        [Tooltip("Extra pause while the loading screen is fully opaque, so a transition reads as an actual load even though it's instant under the hood.")]
-        public float simulatedLoadSeconds = 0.25f;
 
         [Tooltip("Real-time pause after the loading cover becomes opaque, before moving to the destination.")]
         public float preUnfreezeDelay = 0.2f;
@@ -101,6 +98,7 @@ namespace PoeClone.World
         {
             if (areas == null || index < 0 || index >= areas.Length || index == CurrentAreaIndex)
                 return;
+            if (WorldBuilder.Instance != null && !WorldBuilder.Instance.EnsureAreaImmediate(index)) return;
             CurrentAreaIndex = index;
             AreaChanged?.Invoke(index);
         }
@@ -169,6 +167,9 @@ namespace PoeClone.World
                 if (preUnfreezeDelay > 0f)
                     yield return new WaitForSecondsRealtime(preUnfreezeDelay);
 
+                if (WorldBuilder.Instance != null)
+                    yield return WorldBuilder.Instance.EnsureArea(index);
+
                 var def = areas[index];
                 Transform target = arrival != null ? arrival : def.spawnPoint;
 
@@ -216,9 +217,6 @@ namespace PoeClone.World
                 PoeClone.UI.LoadingStatus.Set("Minimap");
                 yield return PoeClone.UI.MinimapTerrain.Prepare(index);
                 PoeClone.UI.LoadingStatus.Clear();
-
-                if (simulatedLoadSeconds > 0f)
-                    yield return new WaitForSecondsRealtime(simulatedLoadSeconds);
 
                 if (loadingScreen != null)
                     yield return loadingScreen.FadeOut();

@@ -9,6 +9,7 @@ namespace PoeClone.World
         private void BuildSahret()
         {
             Begin(Sahret, 9921);
+            Sanctuary.Add(Center(Sahret), 75f);
             Transform city = Group("Sahret - Cistern Quarter");
             Vector3 c = Center(Sahret);
             for (int side = -1; side <= 1; side += 2)

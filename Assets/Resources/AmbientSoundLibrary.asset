@@ -12,17 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 656d0e30f76348e42b23f5a39d41bade, type: 3}
   m_Name: AmbientSoundLibrary
   m_EditorClassIdentifier: PoeClone.Audio::PoeClone.Audio.AmbientSoundLibrary
-  town: {fileID: 8300000, guid: 99c2a2eab45cc9c4e987fed32a6ad088, type: 3}
-  night: {fileID: 8300000, guid: 5c0fac3889ebab5409249a7eaa49ece5, type: 3}
-  cave: {fileID: 8300000, guid: 186286c1a37cbfc44a8ef0e817f8ec20, type: 3}
-  dungeon: {fileID: 8300000, guid: 13bbdc148f8a33943a6354bc5d0534f1, type: 3}
-  blizzard: {fileID: 8300000, guid: 9997a642aa2eb70489f97b2a8fe7dd44, type: 3}
-  lava: {fileID: 8300000, guid: 79cab01d1f50ab14290e56eabca29922, type: 3}
-  river: {fileID: 8300000, guid: 679f809f3ba2b164fa3a7cde55d56627, type: 3}
-  pond: {fileID: 8300000, guid: b8c79fdb98e1eac4ebdf382eeb02c369, type: 3}
-  ocean: {fileID: 8300000, guid: a021fdad7304c154087f1c5e9954bc67, type: 3}
-  fire: {fileID: 8300000, guid: 914b85ad31c126b488f0f7594656f551, type: 3}
-  gust: {fileID: 8300000, guid: cb84086d88e83a24484594a05021cdf7, type: 3}
+  town: {fileID: 8300000, guid: 2bb61bd095bd84240adfa57d68a405f5, type: 3}
+  night: {fileID: 8300000, guid: 561f635d87c65bc4fa718a9231ff218e, type: 3}
+  cave: {fileID: 8300000, guid: 4a2e01fc93a58324d8977a3548320191, type: 3}
+  dungeon: {fileID: 8300000, guid: af83f923ca26590449fdca485903d8bf, type: 3}
+  blizzard: {fileID: 8300000, guid: dc00ceda08aa5724b82ee7f4db5b8b3f, type: 3}
+  lava: {fileID: 8300000, guid: 426caa63da865984ba9cb062502831a3, type: 3}
+  river: {fileID: 8300000, guid: 04371fcb226551e4f923e0fa9a12d39d, type: 3}
+  pond: {fileID: 8300000, guid: 4ef1734e5f885dd4095976e93a60d1bf, type: 3}
+  ocean: {fileID: 8300000, guid: cea933188974dcb4abe550b6789ee38a, type: 3}
+  fire: {fileID: 8300000, guid: 7d941d59707c81d449f043e7f52dd1af, type: 3}
+  gust: {fileID: 8300000, guid: df420e8c3eaf81c4e9f4eb116cdff2bf, type: 3}
   stones: []
   creaks:
-  - {fileID: 8300000, guid: 9efd46fd6de73d249aadb300d7aaa135, type: 3}
+  - {fileID: 8300000, guid: 30aed2aefd408a44d8ecb82cdd0a0581, type: 3}

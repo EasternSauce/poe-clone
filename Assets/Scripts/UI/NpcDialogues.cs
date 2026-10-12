@@ -111,7 +111,7 @@ namespace PoeClone.UI
             if (areas == null || areas.IsSwitching)
                 return;
             Waystone stone = Waystone.In(area);
-            areas.EnterArea(area, stone != null ? stone.Arrival : null);
+            areas.EnterArea(area, stone != null ? stone.Arrival : WorldBuilder.Instance?.WaystoneArrival(area));
         }
 
         private static string Greeting(NpcRole role)
