@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using PoeClone.Combat;
 using PoeClone.Enemies;
 using PoeClone.Inventory;
 using PoeClone.Network;
@@ -12,9 +13,10 @@ namespace PoeClone.UI
     /// <summary>
     /// A small map of the current area, top right: the ground the player has explored (see
     /// <see cref="MinimapTerrain"/>: open ground, obstacles and dead ends, hidden until seen), and on
-    /// it, once discovered, gates (gold), the waystone (blue), townsfolk (yellow), monsters (red, bosses bigger) and
-    /// the player (white), turned to match the camera so "up" on the map is "up" on screen. No
-    /// second camera, cheap on the web.
+    /// it, once discovered, gates (gold), the waystone (blue), townsfolk (yellow), monsters (red, bosses bigger),
+    /// a co-op partner in the same area (light blue, an arrow on the edge pointing their way when
+    /// they're off the map) and the player (white), turned to match the camera so "up" on the map
+    /// is "up" on screen. No second camera, cheap on the web.
     /// M hides/shows it. Installed by GameSessionController.
     /// </summary>
     [DefaultExecutionOrder(100)]
@@ -25,6 +27,8 @@ namespace PoeClone.UI
         private const float ViewSize = 110f; // metres across the view, centred on the player
         private const float Refresh = 0.25f;
         private const float MonsterRange = 34f; // about twice the screen's reach: you see what's coming
+        private const float PartnerEdge = Size * 0.5f - 10f; // where the off-map partner arrow sits
+        private static readonly Color PartnerColor = new Color(0.55f, 0.85f, 1f); // as their nameplate
 
         private static MinimapUI instance;
 
@@ -35,6 +39,7 @@ namespace PoeClone.UI
         private RawImage terrain;
         private int terrainArea = -1;
         private Image playerDot;
+        private Image partnerMark;
         private readonly List<Image> pool = new List<Image>();
         private int used;
         private float nextRefresh;
@@ -80,6 +85,11 @@ namespace PoeClone.UI
             playerDot.rectTransform.sizeDelta = new Vector2(17f, 17f);
             playerDot.rectTransform.anchorMin = playerDot.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             UiKit.AddOutline(playerDot, Color.black, 1.5f);
+
+            partnerMark = UiKit.NewImage("Partner", frame, PartnerColor);
+            partnerMark.rectTransform.anchorMin = partnerMark.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            UiKit.AddOutline(partnerMark, Color.black, 1.5f);
+            partnerMark.gameObject.SetActive(false);
 
             // Last, so they sit over the map; inside the rect, since the mask clips anything outside.
             Image edge = UiKit.NewImage("Vignette", frame, new Color(1f, 1f, 1f, 0.8f));
@@ -160,6 +170,7 @@ namespace PoeClone.UI
             Vector3 forward = playerSkills != null ? playerSkills.Heading : player.transform.forward;
             Vector2 heading = Rotate(new Vector2(forward.x, forward.z), yaw);
             playerDot.rectTransform.localRotation = Quaternion.Euler(0f, 0f, Vector2.SignedAngle(Vector2.up, heading));
+            UpdatePartner(yaw);
 
             bool firstFrame = !frame.gameObject.activeSelf || terrainArea != areas.CurrentAreaIndex;
             frame.gameObject.SetActive(true);
@@ -168,6 +179,36 @@ namespace PoeClone.UI
             nextRefresh = Time.unscaledTime + Refresh;
             UpdateTerrain(areas.CurrentAreaIndex);
             Redraw(areas.CurrentAreaIndex, centre);
+        }
+
+        // Every frame, as they move: a dot where the partner is, or an arrow on the edge of the
+        // map pointing their way when they're further off than it shows.
+        private void UpdatePartner(float yaw)
+        {
+            Transform partner = Party.Partner;
+            bool shown = partner != null && partner.gameObject.activeInHierarchy;
+            if (partnerMark.gameObject.activeSelf != shown)
+                partnerMark.gameObject.SetActive(shown);
+            if (!shown)
+                return;
+
+            Vector2 at = Rotate(ToMap(partner.position, Vector3.zero) - ToMap(player.transform.position, Vector3.zero), yaw);
+            float reach = Mathf.Max(Mathf.Abs(at.x), Mathf.Abs(at.y));
+            RectTransform rt = partnerMark.rectTransform;
+            if (reach <= PartnerEdge)
+            {
+                partnerMark.sprite = UiKit.Disc;
+                rt.sizeDelta = new Vector2(12f, 12f);
+                rt.anchoredPosition = at;
+                rt.localRotation = Quaternion.identity;
+            }
+            else
+            {
+                partnerMark.sprite = IconFactory.Facing;
+                rt.sizeDelta = new Vector2(16f, 16f);
+                rt.anchoredPosition = at * (PartnerEdge / reach);
+                rt.localRotation = Quaternion.Euler(0f, 0f, Vector2.SignedAngle(Vector2.up, at));
+            }
         }
 
         // The explored ground: baked the first time the area is shown (once its colliders are in

@@ -1,6 +1,7 @@
 version: 2026-10-12-coop-chat
 - Chat messages in co-op now arrive promptly. On a slow connection, chat no longer waits behind seconds of queued position updates; stale updates are skipped instead.
 - A dropped co-op connection no longer ends the game. Both players keep playing while it reconnects, the partner frame shows "reconnecting...", and co-op resumes on its own. The party only ends if a partner stays away for 90 seconds or leaves through the menu.
+- Your co-op partner now shows on the minimap as a light blue dot when they're in the same area. When they're beyond the map's edge, a light blue arrow at the edge points toward them.
 
 version: 2026-10-11-first-root
 - Continue Act II beyond the restored river: the Reservoir's northeastern maintenance stair leads into The Buried Ward (level 48), then The First Root (level 50). Both dungeons have looping routes, waystones, sheltered arrivals, authored scenery and cave lighting.
