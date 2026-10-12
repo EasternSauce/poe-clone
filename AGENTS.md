@@ -1,3 +1,9 @@
+# Deployment
+
+For deployment requests, start with `DEPLOYMENT.md` and `git status`. It documents
+the target, fresh-build requirement, reusable Pages checkout, and timed live
+verification. Do not begin with a generic repository discovery scan.
+
 # Unity gameplay demos and visual checks
 
 Do not run complex Unity tests unless the user specifically asks. Leave gameplay checks to the user unless requested; routine asset refresh, compilation, and console checks remain required.
