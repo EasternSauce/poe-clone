@@ -38,6 +38,7 @@
       #loading.done { opacity: 0; pointer-events: none; }
       #bar { width: min(360px, 70vw); height: 8px; border-radius: 4px; background: #2a2622; overflow: hidden; }
       #bar-fill { width: 0; height: 100%; background: #b3412e; transition: width .2s; }
+      #detail { min-height: 5.2em; color: #9a9284; font-weight: 400; font-size: 14px; text-align: center; white-space: pre-line; }
       #error { display: none; max-width: 80vw; color: #f2b8a8; font-weight: 400; font-size: 15px; text-align: center; }
       #fullscreen { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); width: 40px; height: 40px; border: 0; border-radius: 6px; cursor: pointer;
                     background: rgba(0,0,0,.45); color: #fff; opacity: .7; display: none; align-items: center; justify-content: center; }
@@ -65,6 +66,7 @@
     <div id="loading" role="status" aria-live="polite">
       <div>{{{ PRODUCT_NAME }}}</div>
       <div id="bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100"><div id="bar-fill"></div></div>
+      <div id="detail"></div>
       <div id="error"></div>
     </div>
     <button id="fullscreen" type="button" aria-label="Toggle fullscreen" title="Fullscreen (F11 also works)">
@@ -236,8 +238,47 @@
         productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
         productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
         devicePixelRatio: pixelRatio(),
+        // The loader copies this object into its module and fills in each file's bytes, keyed by URL.
+        downloadProgress: {},
         showBanner: function (msg, type) { if (type === "error") showError(msg); else console.warn(msg); }
       };
+
+      // What is downloading under the bar, then how long engine startup takes, so a slow load
+      // can be pinned on a file or on startup. Each finished step is also logged to the console.
+      var detail = document.getElementById("detail");
+      var loadFiles = [
+        { match: ".data", label: "Game assets (scenes, models, textures, sounds)" },
+        { match: ".wasm", label: "Game code" },
+        { match: ".framework.js", label: "Engine scripts" }
+      ];
+      var loadStart = performance.now(), startupStart = 0;
+      function mb(bytes) { return (bytes / 1048576).toFixed(1) + " MB"; }
+      function secs(ms) { return (ms / 1000).toFixed(1) + " s"; }
+      function showLoadDetail() {
+        var now = performance.now(), allDone = true, lines = [];
+        loadFiles.forEach(function (f) {
+          var url = Object.keys(config.downloadProgress).filter(function (u) { return u.indexOf(f.match) >= 0; })[0];
+          var p = url ? config.downloadProgress[url] : null;
+          if (p && p.finished && !f.end) {
+            f.end = now;
+            console.log("[Loading] " + f.label + ": " + mb(p.loaded) + " in " + secs(now - loadStart));
+          }
+          if (!f.end) allDone = false;
+          lines.push(f.label + ": " + (f.end ? "done, " + mb(p.loaded) + " in " + secs(f.end - loadStart)
+            : p && p.started ? mb(p.loaded) + (p.lengthComputable ? " of " + mb(p.total) : "") : "waiting"));
+        });
+        if (allDone) {
+          if (!startupStart) startupStart = now;
+          lines.push("Unpacking, starting the engine and the main menu: " + secs(now - startupStart));
+        }
+        detail.textContent = lines.join("\n");
+      }
+      var loadDetailTimer = setInterval(showLoadDetail, 200);
+      function stopLoadDetail() {
+        clearInterval(loadDetailTimer);
+        if (startupStart) console.log("[Loading] Engine startup: " + secs(performance.now() - startupStart));
+        console.log("[Loading] Total: " + secs(performance.now() - loadStart));
+      }
 
       var script = document.createElement("script");
       script.src = "Build/{{{ LOADER_FILENAME }}}" + v;
@@ -247,6 +288,7 @@
           document.getElementById("bar").setAttribute("aria-valuenow", Math.round(progress * 100));
         }).then(function (instance) {
           unityInstance = instance;
+          stopLoadDetail();
           resyncAfterLoad();
           loading.classList.add("done");
           if (!standalone) fsButton.style.display = "flex";
@@ -254,6 +296,7 @@
           maybeShowIosHintOnce();
           watchForUpdates();
         }).catch(function (message) {
+          clearInterval(loadDetailTimer);
           showError(String(message));
         });
       };

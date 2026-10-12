@@ -12,6 +12,7 @@ version: 2026-10-12-coop-chat
 - The web version no longer downloads all its music again after every update. Tracks you've already heard play from your browser's cache unless the track itself changed.
 - The web version loads faster. Item icons and the ground texture are now compressed, which cuts the initial download by several megabytes.
 - Loading screens now show what is being loaded, such as an area's terrain, scenery, townsfolk or the minimap.
+- The web version's first loading screen now shows each download (game assets, game code, engine scripts) with its size and progress, then how long the engine takes to start.
 - In Chrome and Edge, pressing Esc in fullscreen (entered with the fullscreen button) now opens the game menu straight away instead of leaving fullscreen first. Hold Esc to leave fullscreen.
 
 version: 2026-10-11-first-root
