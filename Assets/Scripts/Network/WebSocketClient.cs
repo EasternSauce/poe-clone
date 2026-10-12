@@ -25,6 +25,8 @@ namespace PoeClone.Network
         public event Action<string> OnMessage;
         public event Action<string> OnClose;
         public event Action<string> OnError;
+        /// <summary>The page or application is closing: last chance to send while still connected.</summary>
+        public event Action OnPageClosing;
 
         // The WebGL bridge dispatches callbacks via SendMessage(gameObject.name, method, arg),
         // so this object's name must be fixed and unique in the scene.
@@ -121,6 +123,11 @@ namespace PoeClone.Network
         public void OnWSMessage(string data) => OnMessage?.Invoke(data);
         public void OnWSClose(string reason) => OnClose?.Invoke(reason);
         public void OnWSError(string message) => OnError?.Invoke(message);
+        public void OnWSPageClosing(string _) => OnPageClosing?.Invoke();
+
+        // Desktop and Editor: quitting (or leaving Play) is closing the page. Runs before
+        // OnDestroy closes the socket, which still sends what was queued.
+        private void OnApplicationQuit() => OnPageClosing?.Invoke();
 
         public void OnLocationSearch(string search)
         {

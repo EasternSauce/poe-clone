@@ -173,6 +173,7 @@ namespace PoeClone.Network
             client.OnMessage += HandleMessage;
             client.OnClose += HandleClose;
             client.OnError += HandleError;
+            client.OnPageClosing += SendCoopLeave;
 
             gameObject.AddComponent<SessionGateUI>();
             gameObject.AddComponent<PoeClone.Player.SaveSystem>();
@@ -712,14 +713,20 @@ namespace PoeClone.Network
                 ScheduleReconnect();
         }
 
+        // Leaving on purpose (back to the menu, closing the tab or game): end the party now
+        // rather than have the partner wait for a reconnect that can't come.
+        private void SendCoopLeave()
+        {
+            if (coop != null && Connected)
+                client.Send(JsonUtility.ToJson(new CoopLeaveMessage()));
+        }
+
         public void ReturnToMainMenu()
         {
             if (Role != SessionRole.Player || returningToMainMenu) return;
             SaveSystem.SaveBeforeCharacterSwitch();
             returningToMainMenu = true;
-            // Leaving on purpose: end the party now rather than have the partner wait for a reconnect.
-            if (coop != null && Connected)
-                client.Send(JsonUtility.ToJson(new CoopLeaveMessage()));
+            SendCoopLeave();
             if (reconnectRoutine != null) StopCoroutine(reconnectRoutine);
             stateBroadcaster.enabled = false;
             client.Close();

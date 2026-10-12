@@ -10,6 +10,14 @@ mergeInto(LibraryManager.library, {
     var goName = UTF8ToString(goNamePtr);
 
     if (!window.__unityWebSockets) window.__unityWebSockets = {};
+    // Closing the tab or browser: let the game say goodbye (e.g. leave a co-op party) while
+    // the socket can still send, so the server doesn't take it for a dropped connection.
+    if (!window.__unityPageCloseHooked) {
+      window.__unityPageCloseHooked = true;
+      window.addEventListener('pagehide', function () {
+        try { SendMessage(goName, 'OnWSPageClosing', ''); } catch (e) {}
+      });
+    }
 
     var existing = window.__unityWebSockets[goName];
     if (existing) {
