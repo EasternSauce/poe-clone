@@ -136,6 +136,8 @@ namespace PoeClone.Network
             while (build.MoveNext())
                 yield return null;
 
+            PoeClone.UI.LoadingStatus.Set("Game interface");
+            yield return null;
             IEnumerator systems = CreateGameplaySystems();
             while (systems.MoveNext())
                 yield return null;
@@ -143,10 +145,13 @@ namespace PoeClone.Network
             // The town's minimap, baked here rather than on the first frame of play.
             if (WorldBuilder.Instance != null)
             {
+                PoeClone.UI.LoadingStatus.Set("Town minimap");
+                yield return null;
                 IEnumerator map = PoeClone.UI.MinimapTerrain.Prepare(WorldBuilder.Haven);
                 while (map.MoveNext())
                     yield return null;
             }
+            PoeClone.UI.LoadingStatus.Clear();
         }
 
         private void Awake()
@@ -440,15 +445,18 @@ namespace PoeClone.Network
         {
             // Give the loading gate a rendered frame before activating scene roots and
             // building the world. Two yields also cover starts from coroutines.
+            PoeClone.UI.LoadingStatus.Set("Scene objects");
             yield return null;
             yield return null;
             yield return PrepareGameplayRoutine();
 
             // Allow the reactivated scene's Start methods to bind stats, gear and skills
             // before applying the character's saved values and bindings.
+            PoeClone.UI.LoadingStatus.Set("Character save");
             yield return null;
             GameplayReady = true;
             SaveSystem.LoadSelectedProfile();
+            PoeClone.UI.LoadingStatus.Clear();
         }
 
         /// <summary>

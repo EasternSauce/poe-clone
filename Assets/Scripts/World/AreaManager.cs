@@ -210,7 +210,9 @@ namespace PoeClone.World
 
             // The first visit bakes the area's minimap: do it in slices here, behind the cover,
             // rather than in one long frame when the map first shows.
+            PoeClone.UI.LoadingStatus.Set("Minimap");
             yield return PoeClone.UI.MinimapTerrain.Prepare(index);
+            PoeClone.UI.LoadingStatus.Clear();
 
             if (simulatedLoadSeconds > 0f)
                 yield return new WaitForSeconds(simulatedLoadSeconds);

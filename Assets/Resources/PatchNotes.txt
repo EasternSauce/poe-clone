@@ -10,6 +10,7 @@ version: 2026-10-12-coop-chat
 - Menu music plays again after returning to the main menu in the web version, including when a co-op host's game ends and you're sent back. Before, the menu stayed silent.
 - The web version no longer downloads all its music again after every update. Tracks you've already heard play from your browser's cache unless the track itself changed.
 - The web version loads faster. Item icons and the ground texture are now compressed, which cuts the initial download by several megabytes.
+- Loading screens now show what is being loaded, such as an area's terrain, scenery, townsfolk or the minimap.
 
 version: 2026-10-11-first-root
 - Continue Act II beyond the restored river: the Reservoir's northeastern maintenance stair leads into The Buried Ward (level 48), then The First Root (level 50). Both dungeons have looping routes, waystones, sheltered arrivals, authored scenery and cave lighting.

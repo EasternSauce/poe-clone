@@ -19,6 +19,7 @@ namespace PoeClone.UI
         private GameObject content;
         private Text caption;
         private GameObject captionDivider;
+        private Text step;
 
         private void Awake()
         {
@@ -65,6 +66,19 @@ namespace PoeClone.UI
             lr.anchoredPosition = new Vector2(0f, -190f);
             lr.sizeDelta = new Vector2(600f, 40f);
             loading.gameObject.AddComponent<UiPulse>().Init(loading, 0.35f, 0.95f, 0.9f);
+
+            // What is being loaded right now, so slow steps can be told apart.
+            step = UiKit.NewText("Step", backdrop, "", 20, UiKit.DimText, TextAnchor.MiddleCenter);
+            RectTransform sr = step.rectTransform;
+            sr.anchorMin = sr.anchorMax = new Vector2(0.5f, 0.5f);
+            sr.anchoredPosition = new Vector2(0f, -230f);
+            sr.sizeDelta = new Vector2(1200f, 36f);
+        }
+
+        private void Update()
+        {
+            if (content.activeSelf)
+                step.text = LoadingStatus.Step;
         }
 
         /// <summary>True from the start of a fade-in until its fade-out finishes.</summary>

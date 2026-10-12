@@ -13,6 +13,7 @@ namespace PoeClone.Network
     {
         private CanvasGroup canvasGroup;
         private Text messageText;
+        private Text stepText;
         private RectTransform spinner;
         private GameObject content;
 
@@ -55,6 +56,12 @@ namespace PoeClone.Network
             messageText.text = ctrl.PlayGranted ? "Loading character..." : "";
         }
 
+        private void Update()
+        {
+            if (content.activeSelf)
+                stepText.text = LoadingStatus.Step;
+        }
+
         private void Build()
         {
             var canvasGO = new GameObject("SessionGateCanvas");
@@ -83,6 +90,13 @@ namespace PoeClone.Network
             textRect.offsetMin = Vector2.zero;
             textRect.offsetMax = Vector2.zero;
             textRect.anchoredPosition = new Vector2(0f, -45f);
+
+            // What is being loaded right now, so slow steps can be told apart.
+            stepText = UiKit.NewText("Step", backdrop, "", 24, UiKit.DimText, TextAnchor.MiddleCenter);
+            RectTransform stepRect = stepText.rectTransform;
+            stepRect.anchorMin = stepRect.anchorMax = new Vector2(0.5f, 0.5f);
+            stepRect.anchoredPosition = new Vector2(0f, -110f);
+            stepRect.sizeDelta = new Vector2(1200f, 40f);
 
             spinner = UiKit.RuneSpinner(backdrop, new Vector2(0f, 120f), 110f);
         }

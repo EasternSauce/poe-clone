@@ -213,6 +213,8 @@ namespace PoeClone.World
                 yield break;
             }
 
+            Loading("Area gates and spawn points");
+            yield return null;
             gateTemplate = CreateGateTemplate();
 
             spawnPoints = new Transform[Centers.Length];
@@ -223,17 +225,21 @@ namespace PoeClone.World
             foreach (int a in WorldAreas)
             {
                 if (a == Greenwood) continue;
+                Loading("Terrain: " + AreaNames[a]);
+                yield return null;
                 IEnumerator area = BuildGround(ground, a);
                 while (area.MoveNext())
                     yield return null;
-                yield return null;
             }
             // The scene's own forest gets its own grass and the same outline; its square walls go.
+            Loading("Terrain: " + AreaNames[Greenwood]);
+            yield return null;
             UseGroundTexture(ground, Greenwood);
             yield return null;
             IEnumerator shaping = ShapeGround(ground, Greenwood);
             while (shaping.MoveNext())
                 yield return null;
+            Loading("Forest scenery");
             yield return null;
             IEnumerator relocating = RelocateOriginalScenery();
             while (relocating.MoveNext())
@@ -242,35 +248,50 @@ namespace PoeClone.World
             if (sceneBounds != null)
                 sceneBounds.SetActive(false);
 
+            Loading("Town: Haven");
             yield return null;
             BuildHaven();
+            Loading("Scenery: Graveyard");
             yield return null;
             BuildGraveyard();
+            Loading("Scenery: Ruins");
             yield return null;
             BuildRuins();
+            Loading("Scenery: Frozen Hollow");
             yield return null;
             BuildFrozen();
+            Loading("Scenery: Caves");
             yield return null;
             BuildCave();
+            Loading("Scenery: Act 2 desert");
             yield return null;
             BuildActTwo();
+            Loading("Scenery: Salt Basin");
             yield return null;
             BuildSaltBasin();
+            Loading("Scenery: Thirsting Channels");
             yield return null;
             BuildThirstingChannels();
+            Loading("Scenery: Drowned Works");
             yield return null;
             BuildDrownedWorks();
+            Loading("Scenery: Empty Orchard");
             yield return null;
             BuildEmptyOrchard();
+            Loading("Scenery: Crownless Reservoir");
             yield return null;
             BuildCrownlessReservoir();
+            Loading("Scenery: Buried Ward");
             yield return null;
             BuildRootDescent(BuriedWard);
+            Loading("Scenery: First Root");
             yield return null;
             BuildRootDescent(FirstRoot);
+            Loading("Glowshrooms and Greenwood outskirts");
             yield return null;
             BuildGlowshrooms();
             BuildGreenwoodOutskirts();
+            Loading("Waystones and outposts");
             yield return null;
             BuildWaystones();
             BuildOutposts();
@@ -280,20 +301,26 @@ namespace PoeClone.World
             // town portal or a waystone.
             foreach (var link in AreaLayouts.Links)
                 Connect(link.a, link.b);
+            Loading("Field boss lairs");
             yield return null;
             BuildFieldBossLairs();
+            Loading("Area borders");
             yield return null;
             IEnumerator borders = BuildBorders();
             while (borders.MoveNext())
                 yield return null;
+            Loading("Quest sites");
             yield return null;
             BuildQuestSites();
 
+            Loading("Monster spawners");
             yield return null;
             SetUpSpawners();
             SetUpDesertEncounters();
+            Loading("Townsfolk");
             yield return null;
             BuildTownsfolk();
+            Loading("Bosses");
             yield return null;
             PlaceBosses();
 
@@ -310,17 +337,22 @@ namespace PoeClone.World
                 };
             }
 
+            Loading("Act boss arena");
             yield return null;
             definitions[ActArena] = BuildActArena();
+            Loading("Warren");
             yield return null;
             definitions[Warren] = BuildWarren();
+            Loading("Belfry");
             yield return null;
             definitions[Belfry] = BuildBelfry();
+            Loading("Lighting, ambient details and ambience");
             yield return null;
             ConfigureCaveLighting(player.transform);
             BuildAmbientDetails();
             gameObject.AddComponent<WorldAmbience>().Build(manager, player.transform);
 
+            Loading("Wildlife, lights and starter loot");
             yield return null;
             // Colliders made this frame aren't in the physics world until it syncs; the starter
             // loot below finds the ground by raycast.
@@ -333,7 +365,10 @@ namespace PoeClone.World
             manager.AreaChanged += OnAreaChanged;
             manager.SetAreas(definitions, Haven);
             StarterLoot.PlaceAt(starterSpots, spawnPoints[Haven].position + Vector3.down * 1.1f);
+            UI.LoadingStatus.Clear();
         }
+
+        private static void Loading(string step) => UI.LoadingStatus.Set(step);
 
         private static void MovePlayer(PlayerController player, Transform to)
         {
