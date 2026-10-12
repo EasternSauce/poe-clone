@@ -4,6 +4,7 @@ version: 2026-10-12-coop-chat
 - Your co-op partner now shows on the minimap as a light blue dot when they're in the same area. When they're beyond the map's edge, a light blue arrow at the edge points toward them.
 - A co-op guest who exits to the main menu can rejoin the host's game right away from Co-op > Join Game. Before, the game could be missing from the list for up to 90 seconds. An open game stays listed while its host waits for a dropped partner, and joining it starts a fresh co-op session.
 - Your co-op partner's minions no longer show as red enemy dots on the minimap. This also applies to a watched player's minions in spectator view.
+- In co-op, the guest's quest encounters now summon their enemies while the host is in the same area. Before, the summoned enemies vanished at once and the objective could not be finished. Both players now see and fight them, and an encounter restarts if the host arrives or leaves partway through.
 
 version: 2026-10-11-first-root
 - Continue Act II beyond the restored river: the Reservoir's northeastern maintenance stair leads into The Buried Ward (level 48), then The First Root (level 50). Both dungeons have looping routes, waystones, sheltered arrivals, authored scenery and cave lighting.

@@ -110,7 +110,7 @@ namespace PoeClone.Network
         {
             var world = new List<EnemyHandoff>();
             foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (!enemy.IsQuestObject && !enemy.IsRemote && enemy.enabled && AreaAt(enemy.transform.position) == area)
+                if (!enemy.IsQuestObject && !enemy.IsEncounterEnemy && !enemy.IsRemote && enemy.enabled && AreaAt(enemy.transform.position) == area)
                     world.Add(new EnemyHandoff { k = enemy.KindIndex, lv = enemy.MonsterLevel,
                         x = enemy.transform.position.x, y = enemy.transform.position.y, z = enemy.transform.position.z,
                         r = enemy.transform.eulerAngles.y, hp = enemy.IsDead ? 0f : enemy.CurrentHealth / enemy.MaxHealth });
@@ -158,6 +158,109 @@ namespace PoeClone.Network
                 enemy.SetActive(AreaManager.Instance != null && AreaManager.Instance.CurrentAreaIndex == area);
             }
             broadcaster.RescanEnemies();
+        }
+
+        // ------------------------------------------------------------------ quest encounters
+
+        // Guest: requests waiting for the host's answer, then for the enemy's copy to arrive.
+        private sealed class AmbushRequest
+        {
+            public System.Action<EnemyHealth> Spawned;
+            public int EnemyId;
+            public float GiveUpAt;
+        }
+
+        private const float AmbushTimeout = 10f;
+        private readonly Dictionary<int, AmbushRequest> ambushes = new Dictionary<int, AmbushRequest>();
+        private int nextAmbushTicket;
+
+        private void RequestAmbush(Vector3 near, string kind, float minRadius, float maxRadius, bool alert, System.Action<EnemyHealth> spawned)
+        {
+            int kindIndex = EnemyKinds.IndexOf(kind);
+            if (kindIndex < 0) { spawned(null); return; }
+            CoopEvent e = NewEvent(CoopProtocol.Ambush);
+            e.sd = ++nextAmbushTicket;
+            e.ek = kindIndex;
+            e.a = minRadius;
+            e.r = maxRadius;
+            e.n = alert ? 1 : 0;
+            SetAt(e, near);
+            ambushes[e.sd] = new AmbushRequest { Spawned = spawned, GiveUpAt = Time.unscaledTime + AmbushTimeout };
+            Send(e);
+        }
+
+        private void ReleaseAmbush(EnemyHealth enemy)
+        {
+            if (enemy == null || !enemy.IsRemote) return;
+            CoopEvent e = NewEvent(CoopProtocol.Unambush);
+            e.id = enemy.RemoteId;
+            Send(e);
+        }
+
+        private void AmbushAnswered(CoopEvent e)
+        {
+            if (!ambushes.TryGetValue(e.sd, out AmbushRequest request)) return;
+            if (e.id != 0)
+            {
+                request.EnemyId = e.id;
+                return;
+            }
+            ambushes.Remove(e.sd);
+            request.Spawned(null);
+        }
+
+        // Guest: hands each requested enemy over once its copy is in the stream.
+        private void ResolveAmbushes()
+        {
+            if (ambushes.Count == 0) return;
+            var resolved = new List<int>();
+            foreach (var entry in ambushes)
+            {
+                AmbushRequest request = entry.Value;
+                EnemyHealth copy = request.EnemyId != 0 ? replica.PuppetHealth(request.EnemyId) : null;
+                if (copy == null && Time.unscaledTime < request.GiveUpAt) continue;
+                if (copy == null && request.EnemyId != 0)
+                {
+                    CoopEvent e = NewEvent(CoopProtocol.Unambush);
+                    e.id = request.EnemyId;
+                    Send(e);
+                }
+                resolved.Add(entry.Key);
+            }
+            foreach (int ticket in resolved)
+            {
+                AmbushRequest request = ambushes[ticket];
+                ambushes.Remove(ticket);
+                request.Spawned(request.EnemyId != 0 ? replica.PuppetHealth(request.EnemyId) : null);
+            }
+        }
+
+        // Host: the guest's quest encounter wants an enemy here. It is ours to run like any other.
+        private void SpawnForPartner(CoopEvent e)
+        {
+            var spawned = new List<EnemyHealth>();
+            EnemySpawner spawner = WorldBuilder.Instance != null ? WorldBuilder.Instance.SpawnerFor(e.ar) : null;
+            if (PartnerHere && AreaManager.Instance.CurrentAreaIndex == e.ar && spawner != null &&
+                e.ek >= 0 && e.ek < EnemyKinds.All.Length)
+                spawner.SpawnAmbush(new Vector3(e.x, e.y, e.z), EnemyKinds.Get(e.ek).Name, 1, e.a, e.r, spawned, alert: e.n != 0);
+            int ticket = e.sd;
+            CoopEvent answer = NewEvent(CoopProtocol.Ambushed);
+            answer.sd = ticket;
+            if (spawned.Count > 0)
+            {
+                spawned[0].IsEncounterEnemy = true;
+                answer.id = broadcaster.IdOf(spawned[0]);
+                broadcaster.RescanEnemies();
+            }
+            Send(answer);
+        }
+
+        private void RemoveForPartner(int id)
+        {
+            EnemyHealth enemy = broadcaster.EnemyById(id);
+            if (enemy == null || enemy.IsDead || !enemy.IsEncounterEnemy) return;
+            enemy.gameObject.SetActive(false);
+            Destroy(enemy.gameObject);
         }
     }
 }

@@ -30,6 +30,9 @@ namespace PoeClone.Network
         public const string Damage = "dmg";     // host -> guest: a boss blow judged on the host landed on you
         public const string Effect = "fx";      // host -> guest: a boss's warning or projectile to show
         public const string World = "wld";      // guest -> host: the monsters round the guest, as the host arrives
+        public const string Ambush = "amb";     // guest -> host: spawn an enemy for the guest's quest encounter
+        public const string Ambushed = "ambd";  // host -> guest: the enemy it spawned (id 0: no room for it)
+        public const string Unambush = "ambx";  // guest -> host: that encounter enemy is no longer wanted
 
         // CoopEvent.f bits.
         public const int FlagHead = 1;
@@ -50,20 +53,20 @@ namespace PoeClone.Network
         public int sn;        // guest hit sequence: acknowledged by host snapshot.hak
         public int ar;        // area where this event happened
         public int id;        // enemy id (hit, atk) or drop id (drop, gone, claim, got, deny)
-        public float a;       // damage, or gold amount
+        public float a;       // damage, or gold amount; ambush: min radius (r: max radius, n: 1 = alert)
         public int dt;        // DamageType
         public float ap;      // armour / elemental penetration
         public float ep;
         public int f;         // CoopProtocol.Flag* bits
         public int n;         // attack: Party.AttackKind; effect: Party.EffectKind
-        public int ek;        // enemy kind (attack, kill, skill, boss move)
+        public int ek;        // enemy kind (attack, kill, skill, boss move, ambush)
         public float r;       // attack: melee reach; kill: monster level
         public int xp;
         public float x, y, z;     // hit origin, attack start, kill/drop position, blow's source
         public float tx, ty, tz;  // attack/skill aim, drop's pop origin
         public GearItem it;       // drop, got, put: the item with all its stats
         public int mv;            // boss move: which (Party.BossMoveCloser / BossMoveRoar for those)
-        public int sd;            // event seed: boss patterns, attack visuals and defensive rolls
+        public int sd;            // event seed: boss patterns, attack visuals and defensive rolls; ambush: request ticket
         public float sp;          // boss move: attack speed multiplier (rage, haste)
         public float dm;          // boss move: damage multiplier (rage)
         public int lv;            // boss move: monster level; world: the area

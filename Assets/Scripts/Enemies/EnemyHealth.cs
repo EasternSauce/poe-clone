@@ -39,6 +39,8 @@ namespace PoeClone.Enemies
         public bool IsDead => dead;
         /// <summary>Attackable quest scenery uses normal targeting, but awards no monster kills or loot.</summary>
         public bool IsQuestObject { get; set; }
+        /// <summary>Spawned for a quest encounter, which owns it: never handed to a co-op partner as an ordinary monster.</summary>
+        public bool IsEncounterEnemy { get; set; }
 
         public void RestoreQuestObject()
         {

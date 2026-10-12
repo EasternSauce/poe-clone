@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using PoeClone.Audio;
+using PoeClone.Combat;
 using PoeClone.Enemies;
 using PoeClone.Player;
 using PoeClone.UI;
@@ -78,6 +79,10 @@ namespace PoeClone.Quests
         private int spawnedEnemies;
         private float nextSpawnAt;
         private bool combatStarted;
+        // A co-op guest sharing the area has the host spawn its enemies (Party.RequestAmbush).
+        private bool hostSpawns;
+        private int requestedEnemies;
+        private int encounterGeneration;
 
         private sealed class EncounterEnemy
         {
@@ -140,6 +145,9 @@ namespace PoeClone.Quests
         }
 
         private QuestDefinition Quest => QuestBook.Get(QuestId);
+
+        private bool HostSpawnsHere => Party.HostRunsEncounters && Quest != null &&
+            AreaManager.Instance != null && AreaManager.Instance.CurrentAreaIndex == Quest.Area;
 
         private void Start()
         {
@@ -265,6 +273,9 @@ namespace PoeClone.Quests
             nextSpawnAt = Time.time;
             outsideSince = -1f;
             combatStarted = false;
+            hostSpawns = HostSpawnsHere;
+            requestedEnemies = 0;
+            encounterGeneration++;
             bool waves = !guarded && !riteRunning && Quest.Area == WorldBuilder.Greenwood;
             pendingEnemies = riteRunning ? 0 : waves ? Mathf.Min(3, ambushCount) : ambushCount;
             queuedWaves = waves ? ambushCount - pendingEnemies : 0;
@@ -323,25 +334,49 @@ namespace PoeClone.Quests
             if (spawner == null || ambushKinds == null || ambushKinds.Length == 0) return;
 
             // Failed placement remains pending and is retried; an empty spawn never completes a quest.
-            int attempts = pendingEnemies;
+            Vector3 near = guarded ? guardSpawnPoint : transform.position;
+            float minRadius = guarded ? 2f : riteRunning ? 8f : 5f;
+            float maxRadius = guarded ? 7f : 13f;
+            int attempts = pendingEnemies - requestedEnemies;
             for (int k = 0; k < attempts; k++)
             {
-                spawned.Clear();
-                string kind = ambushKinds[spawnedEnemies % ambushKinds.Length];
-                spawner.SpawnAmbush(guarded ? guardSpawnPoint : transform.position, kind, 1,
-                    guarded ? 2f : riteRunning ? 8f : 5f, guarded ? 7f : 13f, spawned, alert: !guarded);
-                foreach (EnemyHealth health in spawned)
+                string kind = ambushKinds[(spawnedEnemies + requestedEnemies) % ambushKinds.Length];
+                if (hostSpawns)
                 {
-                    if (spawnedEnemies == 0 && !string.IsNullOrEmpty(carrierName)) health.BossName = carrierName;
-                    var enemy = new EncounterEnemy { Health = health };
-                    enemy.Died = () => enemy.Defeated = true;
-                    health.Died += enemy.Died;
-                    enemies.Add(enemy);
-                    spawnedEnemies++;
-                    pendingEnemies--;
-                    combatStarted = true;
+                    requestedEnemies++;
+                    int generation = encounterGeneration;
+                    Party.RequestAmbush(near, kind, minRadius, maxRadius, !guarded, health => HostSpawned(generation, health));
+                    continue;
                 }
+                spawned.Clear();
+                spawner.SpawnAmbush(near, kind, 1, minRadius, maxRadius, spawned, alert: !guarded);
+                foreach (EnemyHealth health in spawned)
+                    AddEnemy(health);
             }
+        }
+
+        private void HostSpawned(int generation, EnemyHealth health)
+        {
+            if (this == null || generation != encounterGeneration || !encounterRunning)
+            {
+                Party.ReleaseAmbush?.Invoke(health);
+                return;
+            }
+            requestedEnemies--;
+            if (health != null) AddEnemy(health);
+        }
+
+        private void AddEnemy(EnemyHealth health)
+        {
+            if (spawnedEnemies == 0 && !string.IsNullOrEmpty(carrierName)) health.BossName = carrierName;
+            health.IsEncounterEnemy = true;
+            var enemy = new EncounterEnemy { Health = health, Defeated = health.IsDead };
+            enemy.Died = () => enemy.Defeated = true;
+            health.Died += enemy.Died;
+            enemies.Add(enemy);
+            spawnedEnemies++;
+            pendingEnemies--;
+            combatStarted = true;
         }
 
         private void UpdateEncounter()
@@ -353,6 +388,12 @@ namespace PoeClone.Quests
             if ((player.IsDead && (!guarded || !leftArea)) || (leftArea && !guarded) || log.State(quest) != QuestState.Active)
             {
                 ResetEncounter(leftArea ? null : "Encounter reset - try again when you are ready");
+                return;
+            }
+            // The co-op partner came or went: whoever now runs the monsters here starts it over.
+            if (hostSpawns != HostSpawnsHere)
+            {
+                ResetEncounter(guarded ? null : "Encounter interrupted - begin again");
                 return;
             }
 
@@ -474,6 +515,8 @@ namespace PoeClone.Quests
             encounterRunning = false;
             riteRunning = false;
             pendingEnemies = 0;
+            requestedEnemies = 0;
+            encounterGeneration++;
             queuedWaves = 0;
             nextGroupAt = 0f;
             ReleaseEnemies(true);
@@ -488,6 +531,11 @@ namespace PoeClone.Quests
                 enemy.Health.Died -= enemy.Died;
                 if (removeLiving && !enemy.Defeated)
                 {
+                    if (enemy.Health.IsRemote)
+                    {
+                        Party.ReleaseAmbush?.Invoke(enemy.Health);
+                        continue;
+                    }
                     enemy.Health.gameObject.SetActive(false);
                     Destroy(enemy.Health.gameObject);
                 }

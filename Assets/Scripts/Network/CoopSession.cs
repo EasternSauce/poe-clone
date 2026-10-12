@@ -107,6 +107,8 @@ namespace PoeClone.Network
                 EnemyHealth.RemoteHit = SendHit;
                 LootDrop.SharedClaim = SendClaim;
                 LootDrop.SharedPlace = SendPlace;
+                Party.RequestAmbush = RequestAmbush;
+                Party.ReleaseAmbush = ReleaseAmbush;
             }
         }
 
@@ -137,7 +139,10 @@ namespace PoeClone.Network
             if (IsHost)
                 SendNewDrops();
             else
+            {
                 PlaceNearHost();
+                ResolveAmbushes();
+            }
 
             double now = Time.realtimeSinceStartupAsDouble;
             if (now < nextSendAt)
@@ -481,6 +486,8 @@ namespace PoeClone.Network
                     case CoopProtocol.Claim: AnswerClaim(e.id); break;
                     case CoopProtocol.Place: PlaceForPartner(e); break;
                     case CoopProtocol.World: AcceptWorld(e); break;
+                    case CoopProtocol.Ambush: SpawnForPartner(e); break;
+                    case CoopProtocol.Unambush: RemoveForPartner(e.id); break;
                 }
                 return;
             }
@@ -511,6 +518,7 @@ namespace PoeClone.Network
                 case CoopProtocol.Gone: RemoveDrop(e.id); break;
                 case CoopProtocol.Granted: ClaimAnswered(e.id, granted: true); break;
                 case CoopProtocol.Denied: ClaimAnswered(e.id, granted: false); break;
+                case CoopProtocol.Ambushed: AmbushAnswered(e); break;
             }
         }
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using PoeClone.Enemies;
 
 namespace PoeClone.Combat
 {
@@ -109,6 +110,19 @@ namespace PoeClone.Combat
         /// <summary>Host: the act boss drew one of its warnings or threw something (kind, its numbers).</summary>
         public static System.Action<EffectKind, float[]> EffectShown;
 
+        /// <summary>
+        /// Guest in a shared area: asks the host to spawn one of a quest encounter's enemies (near,
+        /// kind name, min and max radius, alert), since only the host runs monsters here. The
+        /// callback gets the guest's copy of it, or null if it couldn't be placed.
+        /// </summary>
+        public static System.Action<Vector3, string, float, float, bool, System.Action<EnemyHealth>> RequestAmbush;
+
+        /// <summary>Guest: the host removes an encounter enemy it spawned for us that is no longer wanted.</summary>
+        public static System.Action<EnemyHealth> ReleaseAmbush;
+
+        /// <summary>Guest: quest encounters in this area are spawned by the host (see <see cref="RequestAmbush"/>).</summary>
+        public static bool HostRunsEncounters => IsGuest && SharingArea && RequestAmbush != null;
+
         /// <summary>Host: whether the partner's character stands where a test says (false without one here).</summary>
         public static bool PartnerInside(System.Func<Vector3, bool> test)
         {
@@ -134,6 +148,8 @@ namespace PoeClone.Combat
             BossMoveStarted = null;
             PartnerDamaged = null;
             EffectShown = null;
+            RequestAmbush = null;
+            ReleaseAmbush = null;
         }
 
         // Domain reload is off in the Editor: statics survive between Play sessions.
