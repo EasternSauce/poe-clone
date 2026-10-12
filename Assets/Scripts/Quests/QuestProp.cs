@@ -22,7 +22,7 @@ namespace PoeClone.Quests
     /// <summary>
     /// Something out in the world a <see cref="QuestGoal.Use"/> quest has the player deal with:
     /// clicked (or tapped) like a townsperson - it's an <see cref="Npc"/> with the QuestProp role -
-    /// it shows what the player finds there and what they can do about it. Clearing its encounter
+    /// it performs the objective's action immediately. Clearing its encounter
     /// counts towards the quest and leaves the prop changed for good
     /// (smashed, lit, emptied). Only clickable, labelled and on the minimap while its quest is under
     /// way. A rite runs for a while instead: waves come at the circle, and leaving it breaks the rite.
@@ -43,7 +43,6 @@ namespace PoeClone.Quests
 
         private PropAction action;
         private string displayName;
-        private string description;
         private string actionLabel;
         private string aftermath;
         private string[] ambushKinds;
@@ -105,7 +104,6 @@ namespace PoeClone.Quests
             prop.PropId = questId + "#" + index;
             prop.action = action;
             prop.displayName = displayName;
-            prop.description = description;
             prop.actionLabel = actionLabel;
             prop.aftermath = aftermath;
             prop.ambushKinds = ambushKinds;
@@ -226,21 +224,10 @@ namespace PoeClone.Quests
 
         // ------------------------------------------------------------------ using it
 
-        /// <summary>The player reached it (see NpcDialogues.Open): what's there, and what to do.</summary>
-        public void Interact(Npc speaker)
+        /// <summary>The player reached it (see NpcDialogues.Open): act without a dialogue menu.</summary>
+        public void Interact()
         {
-            if (used || encounterRunning || !CurrentStage || (guarded && !StageCleared) ||
-                (attackTarget != null && !attackTarget.IsDead)) return;
-            var options = new List<DialogueOption>
-            {
-                new DialogueOption("<b>" + actionLabel + "</b>", Use),
-                new DialogueOption("Leave it for now", DialogueUI.Close)
-            };
-            string warning = action == PropAction.Rite
-                ? "\n\nHold the circle for 30 seconds, then defeat all remaining enemies. Leaving during the rite or dying resets this encounter."
-                : guarded ? "\n\nThe assigned guards are defeated. Finish this interaction to secure the objective."
-                : ambushCount > 0 ? "\n\nDefeat every enemy this draws to secure the objective. In Greenwood they arrive in groups of three; clear each group before the next. Dying or leaving the area resets an unfinished encounter." : "";
-            DialogueUI.Show(speaker, description + warning, options);
+            Use();
         }
 
         private void Use()

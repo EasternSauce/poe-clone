@@ -1,3 +1,7 @@
+version: 2026-10-12-mobile-and-objectives
+- Touch play now supports both portrait and landscape. Portrait keeps movement, aiming, skills and potions on screen, fits menus to the narrow display, places the minimap and objectives below the menu buttons, and pulls the camera back to show more of the fight. Rotating releases held controls.
+- Clicking or tapping a quest object now performs its action as soon as you reach it, without an action/leave dialogue. Guarded objectives still require their guards to be defeated, and rituals and ambushes still need to be cleared.
+
 version: 2026-10-12-quests-and-travel
 - Quest offers and hand-ins open automatically when you speak to the right NPC. Quests are accepted and rewards collected automatically; each dialogue appears once, with no quest menu or replay option. Objectives now include the quest's directions and encounter instructions.
 - Entering a gate immediately protects you from damage and stops movement, dashes and pending attacks. You remain still through the loading fade and only regain control after the new area is ready and visible.

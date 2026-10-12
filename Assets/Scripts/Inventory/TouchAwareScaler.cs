@@ -6,8 +6,8 @@ namespace PoeClone.Inventory
     /// <summary>
     /// Switches a canvas between its desktop scaling and the touch scaling. Desktop canvases are
     /// laid out for 1920x1080 and shrink with the window; on a phone that makes everything a
-    /// fraction of its size, so in touch mode the canvas scales to fit a fixed height instead
-    /// (<see cref="TouchMode.ReferenceHeight"/>), which keeps panels as large as the screen allows.
+    /// fraction of its size, so touch mode fits the preferred height while preserving enough
+    /// width for panels in portrait. Resizing and rotation update the scaling automatically.
     /// Add it after the CanvasScaler is configured for desktop: that configuration is what it restores.
     /// </summary>
     [RequireComponent(typeof(CanvasScaler))]
@@ -16,6 +16,7 @@ namespace PoeClone.Inventory
         private CanvasScaler scaler;
         private Vector2 desktopReference;
         private float desktopMatch;
+        private float touchHeight;
 
         private void Awake()
         {
@@ -32,6 +33,12 @@ namespace PoeClone.Inventory
             TouchMode.Changed -= Apply;
         }
 
+        private void Update()
+        {
+            if (TouchMode.Active && !Mathf.Approximately(touchHeight, TouchMode.CanvasHeight))
+                Apply();
+        }
+
         private void Apply()
         {
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -39,7 +46,8 @@ namespace PoeClone.Inventory
 
             if (TouchMode.Active)
             {
-                scaler.referenceResolution = new Vector2(1280f, TouchMode.ReferenceHeight);
+                touchHeight = TouchMode.CanvasHeight;
+                scaler.referenceResolution = new Vector2(1280f, touchHeight);
                 scaler.matchWidthOrHeight = 1f;
             }
             else

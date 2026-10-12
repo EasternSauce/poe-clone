@@ -41,7 +41,7 @@ namespace PoeClone.UI
             {
                 QuestProp prop = npc.GetComponent<QuestProp>();
                 if (prop != null)
-                    prop.Interact(npc);
+                    prop.Interact();
             }
             else
             {

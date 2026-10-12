@@ -103,7 +103,8 @@ namespace PoeClone.UI
             back.gameObject.SetActive(text.text.Length > 0 && !covered);
 
             // Clear of the touch menu buttons along the right edge.
-            back.rectTransform.anchoredPosition = new Vector2(TouchMode.Active ? -250f : -16f, -16f - MinimapUI.Bottom);
+            float mapBottom = Mathf.Max(MinimapUI.Bottom, TouchMode.Portrait ? 250f : 0f);
+            back.rectTransform.anchoredPosition = new Vector2(TouchMode.Active && !TouchMode.Portrait ? -250f : -16f, -16f - mapBottom);
         }
 
         private static readonly Color QuestTitle = new Color(0.96f, 0.88f, 0.66f, 1f);

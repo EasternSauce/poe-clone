@@ -51,7 +51,9 @@ namespace PoeClone.UI
         private CharacterPageUI characterUI;
 
         /// <summary>How far down from the top the map reaches (others stack below it), 0 when hidden.</summary>
-        public static float Bottom => instance != null && instance.frame != null && instance.frame.gameObject.activeSelf ? (Size + NamePlateHeight + 6f) * Scale + 16f : 0f;
+        public static float Bottom => instance != null && instance.frame != null && instance.frame.gameObject.activeSelf ? (Size + NamePlateHeight + 6f) * Scale + TopInset : 0f;
+
+        private static float TopInset => TouchMode.Portrait ? 250f : 16f;
 
         private const float NamePlateHeight = 26f;
 
@@ -151,7 +153,7 @@ namespace PoeClone.UI
                 return;
             }
 
-            frame.anchoredPosition = new Vector2(TouchMode.Active ? -250f : -16f, -16f);
+            frame.anchoredPosition = new Vector2(TouchMode.Active && !TouchMode.Portrait ? -250f : -16f, -TopInset);
             frame.localScale = Vector3.one * Scale;
             string name = areas.Current != null ? areas.Current.areaName : "";
             if (areaName.text != name)

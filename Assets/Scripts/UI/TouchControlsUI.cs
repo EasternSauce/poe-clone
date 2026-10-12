@@ -14,7 +14,7 @@ namespace PoeClone.UI
     /// centre to keep attacking/casting that way - see <see cref="VirtualInput.Aim"/>) at the
     /// bottom right, and buttons at the top right for menus and settings. Movement always runs.
     /// They feed <see cref="VirtualInput"/>, which the player scripts read
-    /// next to the keyboard and mouse. Also asks for landscape when the phone is held upright.
+    /// next to the keyboard and mouse. Both landscape and portrait are playable.
     ///
     /// Spectators only get chat, which <see cref="ChatUI"/> keeps open for them. Installed by
     /// <see cref="GameSessionController"/> like the rest of the session UI; built at runtime.
@@ -32,7 +32,6 @@ namespace PoeClone.UI
         private GameObject controlsRoot;
         private GameObject combatRoot;
         private GameObject menuRoot;
-        private GameObject rotateRoot;
         private GameObject inventoryNavigationRoot;
 
         private RectTransform joystickZone;
@@ -71,6 +70,9 @@ namespace PoeClone.UI
         private EscapeMenuUI settingsMenu;
         private int seenMessages;
         private bool combatShown;
+        private Vector2 screenSize;
+        private readonly List<CanvasScaler> scalers = new List<CanvasScaler>();
+        private readonly List<RectTransform> leftMenuButtons = new List<RectTransform>();
 
         private void Awake()
         {
@@ -95,13 +97,22 @@ namespace PoeClone.UI
         private void Refresh()
         {
             bool touch = TouchMode.Active;
-            bool portrait = touch && Screen.height > Screen.width;
-            rotateRoot.SetActive(portrait);
+            Vector2 currentSize = new Vector2(Screen.width, Screen.height);
+            if (screenSize != currentSize)
+            {
+                screenSize = currentSize;
+                ResetCombat();
+                foreach (CanvasScaler scaler in scalers)
+                    scaler.referenceResolution = new Vector2(1280f, TouchMode.CanvasHeight);
+            }
+            // In portrait the HUD needs the upper-left row; menus sit just below it.
+            foreach (RectTransform button in leftMenuButtons)
+                button.anchoredPosition = new Vector2(button.anchoredPosition.x, TouchMode.Portrait ? -180f : -58f);
 
             var session = GameSessionController.Instance;
             bool spectator = session != null && session.Role == SessionRole.Spectator;
             bool ready = PoeClone.World.MinimalCombatMode.Enabled || SaveSystem.CharacterLoaded;
-            bool show = touch && !spectator && !portrait && ready;
+            bool show = touch && !spectator && ready;
             controlsRoot.SetActive(show);
 
             if (!show)
@@ -487,7 +498,7 @@ namespace PoeClone.UI
             for (int k = 0; k < Skills.SkillBook.TouchSlotCount; k++)
             {
                 float angle = (105f + k * 25f) * Mathf.Deg2Rad;
-                Vector2 at = new Vector2(-150f + Mathf.Cos(angle) * 185f, 150f + Mathf.Sin(angle) * 185f);
+                Vector2 at = new Vector2(-150f + Mathf.Cos(angle) * 205f, 150f + Mathf.Sin(angle) * 205f);
                 Image back = NewRoundButton("Skill" + k, combat, new Vector2(1f, 0f), at, 88f, null);
 
                 Image icon = UiKit.NewImage("SkillIcon", back.rectTransform, Color.white);
@@ -573,10 +584,12 @@ namespace PoeClone.UI
             TouchMode.AddBlocker(chat.rectTransform);
 
             Image tree = NewRoundButton("Tree", menu, new Vector2(0f, 1f), new Vector2(350f, -58f), 96f, "TREE");
+            leftMenuButtons.Add(tree.rectTransform);
             tree.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TogglePassives();
             TouchMode.AddBlocker(tree.rectTransform);
 
             Image town = NewRoundButton("Town", menu, new Vector2(0f, 1f), new Vector2(460f, -58f), 96f, "TOWN");
+            leftMenuButtons.Add(town.rectTransform);
             town.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TownPortal.Pressed = true;
             TouchMode.AddBlocker(town.rectTransform);
 
@@ -591,6 +604,7 @@ namespace PoeClone.UI
             }
 
             settingsButton = NewRoundButton("Settings", canvas.transform, new Vector2(0f, 1f), new Vector2(570f, -58f), 96f, "SETTINGS");
+            leftMenuButtons.Add(settingsButton.rectTransform);
             settingsButton.GetComponentInChildren<Text>().fontSize = 16;
             settingsButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {
@@ -600,17 +614,6 @@ namespace PoeClone.UI
                 settingsMenu?.OpenSettings();
             };
             TouchMode.AddBlocker(settingsButton.rectTransform);
-
-            // Portrait warning, above everything (name prompt included), swallowing touches.
-            Canvas rotateCanvas = NewCanvas("RotateDeviceCanvas", 1000);
-            rotateRoot = rotateCanvas.gameObject;
-            Image blocker = UiKit.NewImage("Background", rotateCanvas.transform, new Color(0f, 0f, 0f, 0.96f));
-            blocker.raycastTarget = true;
-            UiKit.Stretch(blocker.rectTransform, 0f);
-            Text rotateText = UiKit.NewText("Text", blocker.rectTransform, "Turn your device sideways\n<size=26>The game is played in landscape</size>",
-                38, UiKit.TextColor, TextAnchor.MiddleCenter);
-            rotateText.horizontalOverflow = HorizontalWrapMode.Wrap;
-            UiKit.Stretch(rotateText.rectTransform, 30f);
         }
 
         // Its own scaler rather than TouchAwareScaler: these canvases only ever show in touch mode.
@@ -625,9 +628,10 @@ namespace PoeClone.UI
 
             CanvasScaler scaler = go.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1280f, TouchMode.ReferenceHeight);
+            scaler.referenceResolution = new Vector2(1280f, TouchMode.CanvasHeight);
             scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
             scaler.matchWidthOrHeight = 1f;
+            scalers.Add(scaler);
 
             go.AddComponent<GraphicRaycaster>();
             return canvas;

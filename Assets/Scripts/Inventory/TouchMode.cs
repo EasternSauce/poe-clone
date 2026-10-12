@@ -19,8 +19,15 @@ namespace PoeClone.Inventory
     /// </summary>
     public static class TouchMode
     {
-        /// <summary>Canvas height, in reference units, every touch-layout canvas is scaled to.</summary>
+        /// <summary>Preferred landscape canvas height, in reference units.</summary>
         public const float ReferenceHeight = 660f;
+
+        // Preserve the landscape layout, but keep enough horizontal room for both thumbs
+        // and the menu panels when the phone is upright.
+        public const float MinimumCanvasWidth = 960f;
+        public static bool Portrait => Active && Screen.height > Screen.width;
+        public static float CanvasHeight => Mathf.Max(ReferenceHeight,
+            MinimumCanvasWidth * Screen.height / Mathf.Max(1f, Screen.width));
 
         private static bool detected;
         private static bool forced;
@@ -36,7 +43,9 @@ namespace PoeClone.Inventory
         /// Scale for OnGUI drawing (HUD, enemy bars), which works in raw screen pixels. Desktop keeps
         /// its 1:1 look; on a phone, raw pixels are tiny, so it scales with the screen height.
         /// </summary>
-        public static float GuiScale => Active ? Mathf.Max(1f, Screen.height / 540f) : 1f;
+        public static float GuiScale => Active
+            ? Mathf.Min(Mathf.Max(1f, Screen.height / 540f), Screen.width / 540f)
+            : 1f;
 
 #if UNITY_WEBGL && !UNITY_EDITOR
         [DllImport("__Internal")]

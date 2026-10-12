@@ -61,7 +61,7 @@ namespace PoeClone.CameraSystem
             Zoom = 1f;
         }
 
-private void LateUpdate()
+        private void LateUpdate()
         {
             if (target == null)
                 return;
@@ -103,6 +103,9 @@ private void LateUpdate()
         {
             Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
             float d = (TouchMode.Active ? distance * touchDistanceScale : distance) * zoom;
+            // Upright screens otherwise crop the fight to a thin strip around the player.
+            if (TouchMode.Portrait)
+                d *= Mathf.Min(2f, (float)Screen.height / Mathf.Max(1, Screen.width));
             return target.position + rotation * new Vector3(0f, 0f, -d);
         }
 
@@ -125,7 +128,7 @@ private void LateUpdate()
             transform.position = DesiredPosition();
         }
 
-public void SetTarget(Transform newTarget)
+        public void SetTarget(Transform newTarget)
         {
             target = newTarget;
             SnapToTarget();
