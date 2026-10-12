@@ -80,21 +80,13 @@ namespace PoeClone.Enemies
         /// <summary>The minion this enemy is fighting instead of the player, or null.</summary>
         public Minion TargetMinion => targetMinion != null && !targetMinion.IsDead ? targetMinion : null;
 
-        // Co-op aggro (host only): a threat score per player. Damage a player deals adds threat
-        // (scaled to this enemy's life), standing close builds a little over time, and all of it
-        // fades over a few seconds. The enemy changes target only when the other player clearly
-        // out-scores the current one, not mid-swing and not right after the last change, so it
-        // doesn't flicker between two players standing side by side. Without a partner the local
-        // player is always the target, exactly as in single player.
-        private const float ThreatMemorySeconds = 6f;
-        private const float DamageThreat = 150f;       // a hit for all of its life
-        private const float ProximityThreat = 4f;      // per second, standing right next to it
-        private const float ClosenessScore = 20f;      // bonus for the nearer player when choosing
-        private const float SwitchMargin = 1.25f;
-        private const float SwitchFlat = 5f;
-        private const float SwitchCooldown = 1.5f;
-        private float threatLocal;
-        private float threatPartner;
+        // Co-op aggro (host only): it goes for whichever player is nearer, so one can stand in
+        // front and hold its attention while the other hangs back. It changes target only when
+        // the other player is clearly nearer, not mid-swing and not right after the last change,
+        // so it doesn't flicker between two players standing side by side. Without a partner
+        // the local player is always the target, exactly as in single player.
+        private const float SwitchCloser = 1.5f;       // metres nearer the other player must be
+        private const float SwitchCooldown = 1f;
         private bool targetsPartner;
         private float switchedAt = -10f;
 
@@ -287,7 +279,6 @@ namespace PoeClone.Enemies
             if (health != null)
             {
                 health.Damaged += OnDamaged;
-                health.DamageApplied += AddThreat;
             }
         }
 
@@ -296,20 +287,10 @@ namespace PoeClone.Enemies
             if (health != null)
             {
                 health.Damaged -= OnDamaged;
-                health.DamageApplied -= AddThreat;
             }
         }
 
-        private void AddThreat(float amount)
-        {
-            float threat = DamageThreat * amount / Mathf.Max(1f, health.MaxHealth);
-            if (Party.ApplyingPartnerDamage)
-                threatPartner += threat;
-            else
-                threatLocal += threat;
-        }
-
-        // Picks which player to go for (see the threat fields). Single player: the local player.
+        // Picks which player to go for (see the aggro fields). Single player: the local player.
         private Transform ChooseTarget(bool localDead, bool attacking)
         {
             Transform local = player != null ? player.transform : null;
@@ -320,20 +301,12 @@ namespace PoeClone.Enemies
             }
 
             Transform partner = Party.Partner;
-            float decay = Mathf.Exp(-Time.deltaTime / ThreatMemorySeconds);
-            threatLocal *= decay;
-            threatPartner *= decay;
-
             bool localOk = local != null && !localDead && !Sanctuary.Contains(local.position, 1f);
             bool partnerOk = !Sanctuary.Contains(partner.position, 1f);
             float localDistance = localOk ? FlatDistance(local.position) : float.MaxValue;
             float partnerDistance = partnerOk ? FlatDistance(partner.position) : float.MaxValue;
             if (localDistance > loseInterestRange) localOk = false;
             if (partnerDistance > loseInterestRange) partnerOk = false;
-            if (localOk && localDistance < aggroRange)
-                threatLocal += Time.deltaTime * ProximityThreat * (1f - localDistance / aggroRange);
-            if (partnerOk && partnerDistance < aggroRange)
-                threatPartner += Time.deltaTime * ProximityThreat * (1f - partnerDistance / aggroRange);
 
             bool wantPartner;
             if (!localOk && !partnerOk)
@@ -344,12 +317,10 @@ namespace PoeClone.Enemies
                 wantPartner = partnerDistance < localDistance; // first notice: whoever is nearer
             else
             {
-                float localScore = threatLocal + ClosenessScore * (1f - localDistance / loseInterestRange);
-                float partnerScore = threatPartner + ClosenessScore * (1f - partnerDistance / loseInterestRange);
-                float current = targetsPartner ? partnerScore : localScore;
-                float other = targetsPartner ? localScore : partnerScore;
+                float current = targetsPartner ? partnerDistance : localDistance;
+                float other = targetsPartner ? localDistance : partnerDistance;
                 bool mayChange = !attacking && Time.time - switchedAt >= SwitchCooldown;
-                wantPartner = mayChange && other > current * SwitchMargin + SwitchFlat ? !targetsPartner : targetsPartner;
+                wantPartner = mayChange && other < current - SwitchCloser ? !targetsPartner : targetsPartner;
             }
 
             if (wantPartner != targetsPartner)
