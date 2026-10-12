@@ -189,6 +189,16 @@
       document.addEventListener("fullscreenchange", syncCanvasSize);
       document.addEventListener("webkitfullscreenchange", syncCanvasSize);
 
+      // Esc is the game's menu key, but in fullscreen the browser takes the first press to leave
+      // fullscreen. Chrome and Edge let a fullscreen page keep Esc (Keyboard Lock); holding Esc
+      // still leaves fullscreen. Only works for the button's fullscreen, not F11, and other
+      // browsers don't offer it.
+      document.addEventListener("fullscreenchange", function () {
+        if (!navigator.keyboard || !navigator.keyboard.lock) return;
+        if (document.fullscreenElement) navigator.keyboard.lock(["Escape"]).catch(function () {});
+        else navigator.keyboard.unlock();
+      });
+
       // A window maximized or fullscreened while the game was still loading used to keep the
       // pixel ratio picked for the old size, which on a big screen could exceed the GPU limit (a
       // black screen until the window changed size again). Once the game is up, apply the
