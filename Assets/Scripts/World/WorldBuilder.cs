@@ -12,7 +12,7 @@ namespace PoeClone.World
     /// Builds fixed authored areas, themed scenery and existing story content identically on every client.
     /// Route: Haven - Greenwood - The Lost Hollows (the crossroads: a dead-end branch to the Haunted
     /// Graveyard, the deep road on to the Ashen Ruins) - Frozen Hollow.
-    /// Layout geometry and permanent anchors live in AreaLayouts; the game starts in Haven.
+    /// Layout geometry and permanent anchors live in AreaLayouts; the initial destination is supplied by the character-resume rules.
     /// </summary>
     public partial class WorldBuilder : MonoBehaviour
     {
@@ -165,7 +165,7 @@ namespace PoeClone.World
         /// <summary>Scene reloads during character selection do not rerun runtime-init hooks.</summary>
         public static void EnsureBuilt()
         {
-            IEnumerator build = BuildRoutine();
+            IEnumerator build = BuildRoutine(SaveSystem.StartingArea);
             Drain(build);
         }
 
@@ -173,7 +173,7 @@ namespace PoeClone.World
         /// Builds the world a step per frame, so a loading screen keeps animating while it runs.
         /// Does nothing if the world is already built or shouldn't be built yet.
         /// </summary>
-        public static IEnumerator BuildRoutine()
+        public static IEnumerator BuildRoutine(int startArea)
         {
 #if UNITY_EDITOR
             if (UnityEditor.SessionState.GetBool("PoeClone.LootSimulator.Active", false)) return Nothing();
@@ -183,7 +183,7 @@ namespace PoeClone.World
             if (session != null && session.Role == PoeClone.Network.SessionRole.Player && !session.PlayGranted) return Nothing();
             if (Instance != null) return Nothing();
             var go = new GameObject("World");
-            return Flatten(go.AddComponent<WorldBuilder>().Build());
+            return Flatten(go.AddComponent<WorldBuilder>().Build(startArea));
         }
 
         private static IEnumerator Flatten(IEnumerator routine)
@@ -210,7 +210,7 @@ namespace PoeClone.World
                 Instance = null;
         }
 
-        private IEnumerator Build()
+        private IEnumerator Build(int startArea)
         {
             Instance = this;
             root = transform;
@@ -253,11 +253,11 @@ namespace PoeClone.World
             BuildSanctuaryTravel();
             ConfigureCaveLighting(player.transform);
             ambience = gameObject.AddComponent<WorldAmbience>();
-            yield return EnsureArea(Haven);
-            MovePlayer(player, spawnPoints[Haven]);
+            yield return EnsureArea(startArea);
+            MovePlayer(player, spawnPoints[startArea]);
             manager.AreaChanged += OnAreaChanged;
-            manager.SetAreas(definitions, Haven);
-            StarterLoot.PlaceAt(starterSpots, spawnPoints[Haven].position + Vector3.down * 1.1f);
+            manager.SetAreas(definitions, startArea);
+            StarterLoot.PlaceAt(starterSpots, spawnPoints[startArea].position + Vector3.down * 1.1f);
             UI.LoadingStatus.Clear();
         }
 

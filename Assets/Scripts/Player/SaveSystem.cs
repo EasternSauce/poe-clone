@@ -102,6 +102,25 @@ namespace PoeClone.Player
             try { return JsonUtility.FromJson<SaveData>(PlayerPrefs.GetString(key, "")); }
             catch { return null; }
         }
+        /// <summary>The destination chosen by character-resume rules, before world construction.</summary>
+        public static int StartingArea
+        {
+            get
+            {
+                var session = GameSessionController.Instance;
+                var data = session != null && session.Role == SessionRole.Spectator ? null :
+                    ProfileSave(new Profile { id = ActiveProfileId });
+                return ResolveStartingArea(data);
+            }
+        }
+
+        /// <summary>Keep destination policy here; world loading only consumes its result.</summary>
+        public static int ResolveStartingArea(SaveData data)
+        {
+            return data != null && data.version == SaveData.CurrentVersion && WorldBuilder.IsActTwo(data.currentArea)
+                ? data.currentArea : WorldBuilder.Haven;
+        }
+
         private const float SaveEvery = 10f;
 
         private static SaveSystem instance;
@@ -125,7 +144,6 @@ namespace PoeClone.Player
         }
 
         private bool loaded;
-        private int resumeArea = -1;
         private bool erased;
         private float nextSave;
         private AreaManager areas;
@@ -205,10 +223,8 @@ namespace PoeClone.Player
             stats.GetComponent<PlayerSkills>()?.ClearUnavailableSlots();
             loaded = true;
             nextSave = Time.unscaledTime + SaveEvery;
+            QuestLog.Instance.RecordCurrentArea();
             GameSessionController.Instance?.NotifyCharacterLoaded();
-            if (WorldBuilder.IsActTwo(resumeArea))
-                areas.EnterArea(resumeArea);
-            resumeArea = -1;
             return true;
         }
 
@@ -323,7 +339,6 @@ namespace PoeClone.Player
 
         private void Load(PlayerStats stats)
         {
-            resumeArea = -1;
             if (!PlayerPrefs.HasKey(Key) && ActiveProfileId == "legacy" && PlayerPrefs.HasKey(LegacyKey))
                 PlayerPrefs.SetString(Key, PlayerPrefs.GetString(LegacyKey));
             if (!PlayerPrefs.HasKey(Key))
@@ -452,8 +467,6 @@ namespace PoeClone.Player
             QuestLog log = QuestLog.Instance;
             if (log != null && data.actTwoUnlocked)
                 log.RecordPropStage(ActTwoPassage.UnlockStage);
-            if (WorldBuilder.IsActTwo(data.currentArea))
-                resumeArea = data.currentArea;
             // Quests saved under an older quest book start over (the places visited are kept).
             // Saves from before the one-time waystone reset forget the places visited (once).
             bool questsCurrent = data.questBook == QuestBook.Version;

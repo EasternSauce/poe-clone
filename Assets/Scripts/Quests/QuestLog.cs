@@ -4,6 +4,7 @@ using UnityEngine;
 using PoeClone.Enemies;
 using PoeClone.Inventory;
 using PoeClone.Player;
+using PoeClone.Network;
 using PoeClone.Network.Replication;
 using PoeClone.UI;
 using PoeClone.World;
@@ -369,8 +370,17 @@ namespace PoeClone.Quests
                 (q.Goal == QuestGoal.KillBoss && q.Target == kind.Name));
         }
 
+        /// <summary>Record startup arrival after importing the character's saved quest state.</summary>
+        public void RecordCurrentArea()
+        {
+            if (AreaManager.Instance != null) OnAreaChanged(AreaManager.Instance.CurrentAreaIndex);
+        }
+
         private void OnAreaChanged(int index)
         {
+            var session = GameSessionController.Instance;
+            if (session != null && session.Role == SessionRole.Player && !SaveSystem.CharacterLoaded) return;
+            if (index < 0) return;
             visited.Add(index);
             if (WorldBuilder.IsActTwo(index)) AutoStartQuests();
             Advance(q => q.Goal == QuestGoal.ReachArea && q.Area == index);

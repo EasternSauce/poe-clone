@@ -135,7 +135,7 @@ namespace PoeClone.Network
             scenePlayer = player != null ? player.gameObject : null;
             yield return null;
 
-            IEnumerator build = WorldBuilder.BuildRoutine();
+            IEnumerator build = WorldBuilder.BuildRoutine(SaveSystem.StartingArea);
             while (build.MoveNext())
                 yield return null;
 
@@ -145,12 +145,12 @@ namespace PoeClone.Network
             while (systems.MoveNext())
                 yield return null;
 
-            // The town's minimap, baked here rather than on the first frame of play.
-            if (WorldBuilder.Instance != null)
+            // Prepare the actual starting destination, without loading an unrelated hub.
+            if (WorldBuilder.Instance != null && AreaManager.Instance != null)
             {
-                PoeClone.UI.LoadingStatus.Set("Town minimap");
+                PoeClone.UI.LoadingStatus.Set("Minimap");
                 yield return null;
-                IEnumerator map = PoeClone.UI.MinimapTerrain.Prepare(WorldBuilder.Haven);
+                IEnumerator map = PoeClone.UI.MinimapTerrain.Prepare(AreaManager.Instance.CurrentAreaIndex);
                 while (map.MoveNext())
                     yield return null;
             }

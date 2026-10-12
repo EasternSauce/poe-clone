@@ -4,7 +4,7 @@ Scope: runtime work after character selection. These are source findings, not me
 
 ## Implemented
 
-- `WorldBuilder`: startup builds Haven. Other areas build terrain, scenery, quest sites, NPCs, spawners and boss lairs on first demand. Cheap travel anchors exist in advance so saves and gates do not depend on constructed destination scenery. Visited areas remain cached; this preserves their state but memory still grows as exploration continues.
+- `WorldBuilder`: startup builds the destination selected by character-resume rules. The loader does not choose a hub; destination policy remains in `SaveSystem.ResolveStartingArea`. Other areas build terrain, scenery, quest sites, NPCs, spawners and boss lairs on first demand. Cheap travel anchors exist in advance so saves and gates do not depend on constructed destination scenery. Visited areas remain cached; this preserves their state but memory still grows as exploration continues.
 - `AreaManager`: destination construction runs under the existing loading cover. Removed the simulated load pause.
 - Optional wind decoration and wildlife may finish after the loading cover when construction has used five seconds. This is a **soft budget**, not a five-second guarantee. Terrain, collision, quest barriers and combat readiness must remain mandatory. Existing actors and scenery are already procedural low-poly objects; this change does not introduce a separate placeholder/high-detail model system.
 - `SoundBoardSettings`: runtime uses a path-only catalog rather than loading the authoring asset with every clip dependency. Individual effect groups request their recordings asynchronously when used; unavailable cues remain silent. Creature fallback sounds use the same asynchronous cache.
