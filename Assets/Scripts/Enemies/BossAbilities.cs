@@ -173,7 +173,7 @@ namespace PoeClone.Enemies
             else if (move >= 0 && move < moves.Count)
                 routine = moves[move].Run();
             if (routine != null)
-                StartCoroutine(RunBusy(routine, seed));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, RunBusy(routine, seed));
         }
 
         /// <summary>Co-op guest: playing a move, so the copy follows the move rather than the host's snapshots.</summary>
@@ -185,7 +185,7 @@ namespace PoeClone.Enemies
             int seed = EventRandom.NextSeed();
             Party.BossMoveStarted?.Invoke(this, index, !aimedAtLocal, seed, SpeedMultiplier,
                 controller != null ? controller.DamageMultiplierAgainst(partner: true) : 1f, level);
-            StartCoroutine(RunBusy(routine, seed));
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, RunBusy(routine, seed));
         }
 
         private void Add(string name, Func<IEnumerator> run, float minRange = 0f, float maxRange = 99f, bool secondPhaseOnly = false, Func<bool> allowed = null)
@@ -368,13 +368,13 @@ namespace PoeClone.Enemies
             }
             if (moveName == "closer" && closer != null)
             {
-                StartCoroutine(RunBusy(closer()));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, RunBusy(closer()));
                 return "closing in";
             }
             if (moveName == "roar")
             {
                 secondPhase = true;
-                StartCoroutine(RunBusy(Roar()));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, RunBusy(Roar()));
                 return "roaring";
             }
             foreach (BossMove m in moves)
@@ -383,7 +383,7 @@ namespace PoeClone.Enemies
                     continue;
                 last = m.Name;
                 nextMove = Time.time + moveEvery / T;
-                StartCoroutine(RunBusy(m.Run()));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, RunBusy(m.Run()));
                 return "playing " + m.Name;
             }
             var names = new List<string>();
@@ -543,7 +543,7 @@ namespace PoeClone.Enemies
             landing = World.GroundObstacleMotion.Clamp(body, start, KeepClear(landing, gap));
             Face(landing - start);
 
-            StartCoroutine(GroundTelegraph.Run(landing, radius, gather + air, type, at =>
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(landing, radius, gather + air, type, at =>
             {
                 if (this == null || health.IsDead)
                     return;
@@ -598,7 +598,7 @@ namespace PoeClone.Enemies
         {
             var once = new bool[1];
             for (int k = 0; k < count; k++)
-                StartCoroutine(Eruption(origin + dir * step * k, radius, windUp + k * delayStep / T, type, damage, once, burst));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(origin + dir * step * k, radius, windUp + k * delayStep / T, type, damage, once, burst));
         }
 
         // Eruptions in a ring round a point, all at once after the wind-up.
@@ -609,7 +609,7 @@ namespace PoeClone.Enemies
             {
                 float a = k * Mathf.PI * 2f / count;
                 Vector3 at = center + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * ringRadius;
-                StartCoroutine(Eruption(at, patchRadius, windUp, type, damage, once));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(at, patchRadius, windUp, type, damage, once));
             }
         }
 
@@ -690,7 +690,7 @@ namespace PoeClone.Enemies
         {
             to.y = Debris.GroundBelow(to + Vector3.up) + hover;
             leftovers.Add(thing);
-            StartCoroutine(GroundTelegraph.Run(to, radius, flight, type, null));
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(to, radius, flight, type, null));
             float arc = Mathf.Max(2f, Flat(to - from).magnitude * 0.35f);
             Quaternion rest = thing.transform.rotation;
             for (float t = 0f; t < flight; t += Time.deltaTime)

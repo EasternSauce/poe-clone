@@ -49,7 +49,7 @@ namespace PoeClone.Enemies
                 Audio.AudioManager.Instance?.PlayEffect("combat.ground." + DamageType.Lightning, from);
                 CameraSystem.CameraFollow.Shake(0.12f, 0.25f);
                 float gap = Random.Range(0f, 360f);
-                StartCoroutine(Wave(from, 15f, 7f, 1.2f, new[] { gap }, 70f, DamageType.Lightning, 1.0f, Knell));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Wave(from, 15f, 7f, 1.2f, new[] { gap }, 70f, DamageType.Lightning, 1.0f, Knell));
                 if (r + 1 < rings)
                 {
                     Act(CreatureAnimator.BossAct.Toll, 0.75f / T);
@@ -151,7 +151,7 @@ namespace PoeClone.Enemies
                 Vector2 scatter = Random.insideUnitCircle * 3.6f;
                 Vector3 at = k == 0 ? target : OpenNear(target + new Vector3(scatter.x, 0f, scatter.y));
                 const float radius = 1.7f;
-                StartCoroutine(Eruption(at, radius, (0.9f + k * 0.12f) / T, DamageType.Lightning, 1.0f,
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(at, radius, (0.9f + k * 0.12f) / T, DamageType.Lightning, 1.0f,
                     burst: spot =>
                     {
                         if (bell != null)

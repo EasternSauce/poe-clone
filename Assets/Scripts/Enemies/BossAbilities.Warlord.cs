@@ -79,7 +79,7 @@ namespace PoeClone.Enemies
                 ember.name = "Ember";
                 ember.transform.localScale = Vector3.one * 0.5f;
                 const float radius = 1.7f;
-                StartCoroutine(Lob(ember, hand, at, (0.8f + k * 0.08f) / T, radius, DamageType.Fire, spot =>
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Lob(ember, hand, at, (0.8f + k * 0.08f) / T, radius, DamageType.Fire, spot =>
                 {
                     HitIfInside(spot, radius, 0.9f, DamageType.Fire);
                     SkillEffects.Blast(spot + Vector3.up * 0.3f, 1.2f, Ember, 0.3f);
@@ -98,7 +98,7 @@ namespace PoeClone.Enemies
             Act(CreatureAnimator.BossAct.Slam, windUp * 1.15f);
             float radius = 4f + 1.3f * Size;
             const float halfAngle = 38f;
-            StartCoroutine(GroundTelegraph.RunCone(transform.position, dir, radius, halfAngle, windUp, () => !health.IsDead, DamageType.Fire));
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(transform.position, dir, radius, halfAngle, windUp, () => !health.IsDead, DamageType.Fire));
             yield return new WaitForSeconds(windUp);
             CameraSystem.CameraFollow.Shake(0.35f, 0.4f);
             for (int i = 1; i <= 4; i++)
@@ -164,7 +164,7 @@ namespace PoeClone.Enemies
             {
                 Transform p = plates[i];
                 if (p != null)
-                    StartCoroutine(FlingPlate(p, i * 0.3f / T));
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, FlingPlate(p, i * 0.3f / T));
             }
             yield return new WaitForSeconds((plates.Count * 0.3f + 1.6f) / T);
             platesFlying = false;

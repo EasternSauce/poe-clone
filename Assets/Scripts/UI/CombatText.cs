@@ -13,7 +13,6 @@ namespace PoeClone.UI
     {
         private const float Lifetime = 0.9f;
         private const float RiseMetres = 1.2f;
-        private const int MaxTexts = 40;
 
         public static readonly Color PhysicalColor = new Color(1f, 1f, 1f);
         public static readonly Color FireColor = new Color(1f, 0.55f, 0.2f);
@@ -31,6 +30,7 @@ namespace PoeClone.UI
             public Color Color;
             public float Born;
             public float Size;
+            public long Number;
         }
 
         private static CombatText instance;
@@ -40,18 +40,34 @@ namespace PoeClone.UI
 
         public static void Show(Vector3 world, string text, Color color, float size = 1f)
         {
+            if (!Visuals.WorldActivity.NearView(world, 1.3f)) return;
             if (instance == null)
             {
                 var go = new GameObject("CombatText");
                 instance = go.AddComponent<CombatText>();
             }
 
-            if (instance.entries.Count >= MaxTexts)
+            long.TryParse(text, out long number);
+            if (number > 0 && Visuals.AdaptiveQuality.DetailLevel > 0)
+            {
+                for (int i = instance.entries.Count - 1; i >= 0; i--)
+                {
+                    Entry entry = instance.entries[i];
+                    if (entry.Number <= 0 || entry.Color != color || Mathf.Abs(entry.Size - size) > 0.01f ||
+                        Time.unscaledTime - entry.Born > 0.15f || (entry.World - world).sqrMagnitude > 0.5f) continue;
+                    entry.Number += number;
+                    entry.Text = entry.Number.ToString();
+                    instance.entries[i] = entry;
+                    return;
+                }
+            }
+
+            while (instance.entries.Count >= Visuals.AdaptiveQuality.TextBudget)
                 instance.entries.RemoveAt(0);
 
             // A little sideways jitter so quick repeated hits don't print on top of each other.
             Vector3 jitter = new Vector3(Random.Range(-0.3f, 0.3f), 0f, Random.Range(-0.3f, 0.3f));
-            instance.entries.Add(new Entry { World = world + jitter, Text = text, Color = color, Born = Time.unscaledTime, Size = size });
+            instance.entries.Add(new Entry { World = world + jitter, Text = text, Color = color, Born = Time.unscaledTime, Size = size, Number = number });
         }
 
         private void OnDestroy()
@@ -91,7 +107,7 @@ namespace PoeClone.UI
 
                 float t = age / Lifetime;
                 Vector3 screen = cam.WorldToScreenPoint(e.World + Vector3.up * RiseMetres * t);
-                if (screen.z <= 0f)
+                if (screen.z <= 0f || screen.x < -100f || screen.x > Screen.width + 100f || screen.y < -40f || screen.y > Screen.height + 40f)
                     continue;
 
                 int fontSize = Mathf.RoundToInt(20f * e.Size * scale);

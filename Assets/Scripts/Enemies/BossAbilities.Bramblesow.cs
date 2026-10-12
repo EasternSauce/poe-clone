@@ -46,7 +46,7 @@ namespace PoeClone.Enemies
                 float width = 1.4f * Size;
                 float windUp = (n == 0 ? 1.1f : 0.75f) / T;
                 Act(CreatureAnimator.BossAct.Paw, windUp);
-                StartCoroutine(GroundTelegraph.RunLine(transform.position, dir, length, width, windUp, DamageType.Physical, null));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(transform.position, dir, length, width, windUp, DamageType.Physical, null));
                 for (float t = 0f; t < windUp; t += Time.deltaTime)
                 {
                     if (Mathf.Repeat(t, 0.3f) < Time.deltaTime)
@@ -78,7 +78,7 @@ namespace PoeClone.Enemies
                             Vector3 side = Vector3.Cross(Vector3.up, dir);
                             if (Vector3.Dot(Flat(player.transform.position - transform.position), side) < 0f)
                                 side = -side;
-                            StartCoroutine(KnockPlayer(side + dir * 0.5f, 3.5f));
+                            PoeClone.Visuals.DistanceActivity.StartTracked(this, KnockPlayer(side + dir * 0.5f, 3.5f));
                         }
                     }
                     // Stopped short by something solid (not the player it is bowling over).
@@ -102,7 +102,7 @@ namespace PoeClone.Enemies
                     CameraSystem.CameraFollow.Shake(0.35f, 0.4f);
                     SkillEffects.Shockwave(transform.position + dir * Size, 2.5f, Dust, 0.45f);
                     CombatText.Show(transform.position + Vector3.up * health.BarHeight * Size, "Dazed!", new Color(1f, 0.9f, 0.5f), 1.2f);
-                    StartCoroutine(DazedStars(2.2f / T));
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, DazedStars(2.2f / T));
                     yield return new WaitForSeconds(2.2f / T);
                     yield break;
                 }
@@ -137,7 +137,7 @@ namespace PoeClone.Enemies
                 Vector2 scatter = Random.insideUnitCircle * 5.25f;
                 Vector3 at = k == 0 ? target : OpenNear(target + new Vector3(scatter.x, 0f, scatter.y));
                 const float radius = 2.7f;
-                StartCoroutine(GroundTelegraph.Run(at, radius, (1.0f + k * 0.18f) / T, DamageType.Physical, spot =>
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(at, radius, (1.0f + k * 0.18f) / T, DamageType.Physical, spot =>
                 {
                     if (this == null || health.IsDead)
                         return;
@@ -167,7 +167,7 @@ namespace PoeClone.Enemies
                     new Vector3(Random.Range(-35f, 35f), Random.Range(0f, 90f), Random.Range(-35f, 35f)));
             }
             Piece(roots.transform, PrimitiveType.Sphere, Leaf, Vector3.up * 0.2f, new Vector3(1.8f, 0.4f, 1.8f));
-            StartCoroutine(RiseUp(roots.transform, 0.15f));
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, RiseUp(roots.transform, 0.15f));
             Destroy(roots, 1.3f);
         }
 
@@ -177,7 +177,7 @@ namespace PoeClone.Enemies
             float windUp = 0.9f / T;
             float radius = 2.8f * Size;
             Act(CreatureAnimator.BossAct.Shake, windUp + 0.3f / T);
-            StartCoroutine(Eruption(transform.position, radius, windUp, DamageType.Physical, 1.2f));
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(transform.position, radius, windUp, DamageType.Physical, 1.2f));
             yield return new WaitForSeconds(windUp);
             int count = secondPhase ? 16 : 10;
             float offset = Random.Range(0f, 360f);
@@ -187,7 +187,7 @@ namespace PoeClone.Enemies
                 GameObject thorn = Prop("Thorn");
                 Piece(thorn.transform, PrimitiveType.Cube, Thorn, Vector3.zero, new Vector3(0.12f, 0.12f, 0.8f));
                 Piece(thorn.transform, PrimitiveType.Sphere, Leaf, new Vector3(0f, 0f, -0.35f), Vector3.one * 0.18f);
-                StartCoroutine(Missile(thorn, transform.position + Vector3.up * 0.2f, dir, 13f, 19.5f, 0.65f, DamageType.Physical, 0.5f));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Missile(thorn, transform.position + Vector3.up * 0.2f, dir, 13f, 19.5f, 0.65f, DamageType.Physical, 0.5f));
             }
             yield return Pause(0.4f);
         }

@@ -51,7 +51,7 @@ namespace PoeClone.Enemies
             for (int b = 0; b < beams; b++)
             {
                 Vector3 dir = Quaternion.Euler(0f, start + b * 180f, 0f) * Vector3.forward;
-                StartCoroutine(GroundTelegraph.RunLine(center, dir, length, width, warn, DamageType.Fire, null));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(center, dir, length, width, warn, DamageType.Fire, null));
             }
             yield return new WaitForSeconds(warn);
 
@@ -102,8 +102,8 @@ namespace PoeClone.Enemies
             {
                 Vector3 at = OpenNear(PlayerAt);
                 float windUp = 1.0f / T;
-                StartCoroutine(FallingHand(at, windUp));
-                StartCoroutine(Eruption(at, radius, windUp, DamageType.Physical, 1.3f, burst: spot => CameraSystem.CameraFollow.Shake(0.2f, 0.25f)));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, FallingHand(at, windUp));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(at, radius, windUp, DamageType.Physical, 1.3f, burst: spot => CameraSystem.CameraFollow.Shake(0.2f, 0.25f)));
                 yield return new WaitForSeconds(0.45f / T);
             }
             yield return Pause(0.4f);
@@ -176,13 +176,13 @@ namespace PoeClone.Enemies
             Teleport(target);
             float radius = 2.4f + 1.2f * Size;
             bool risen = false;
-            StartCoroutine(GroundTelegraph.Run(transform.position, radius, 1.1f / T, DamageType.Fire, at =>
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(transform.position, radius, 1.1f / T, DamageType.Fire, at =>
             {
                 if (this == null || health.IsDead)
                     return;
                 risen = true;
                 if (HitIfInside(at, radius, 1.4f, DamageType.Fire))
-                    StartCoroutine(KnockPlayer(player.transform.position - at, 4f));
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, KnockPlayer(player.transform.position - at, 4f));
                 SkillEffects.Shockwave(at, radius, Dust, 0.45f);
                 CameraSystem.CameraFollow.Shake(0.35f, 0.45f);
             }, kind));

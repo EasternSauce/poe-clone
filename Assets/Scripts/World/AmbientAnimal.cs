@@ -24,6 +24,7 @@ namespace PoeClone.World
 
         public void Initialize(Species species, int area, Transform playerTransform, int seed)
         {
+            PoeClone.Visuals.DistanceActivity.Attach(gameObject, wildlife: true);
             Kind = species;
             areaId = area;
             shape = WorldBuilder.Shape(area);
@@ -64,8 +65,6 @@ namespace PoeClone.World
         private void Update()
         {
             if (shape == null || Time.deltaTime <= 0) return;
-            // Distant wildlife sleeps; it is purely local scenery.
-            if (player != null && (player.position - transform.position).sqrMagnitude > 85 * 85) return;
             if (Time.time >= nextThreatCheck)
             {
                 nextThreatCheck = Time.time + (Skittish ? 0.12f : 0.3f);

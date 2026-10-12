@@ -34,7 +34,7 @@ namespace PoeClone.Enemies
             Face(axis);
             float warning = 1.2f / T;
             anim?.Crouch(warning);
-            StartCoroutine(GroundTelegraph.RunCone(at, axis, 7, 55, warning,
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(at, axis, 7, 55, warning,
                 () => this != null && health != null && !health.IsDead));
             yield return new WaitForSeconds(warning);
             if (health.IsDead) yield break;
@@ -62,7 +62,7 @@ namespace PoeClone.Enemies
                 for (int step = 1; step <= 7; step++)
                 {
                     Vector3 at = origin + side * lane * 5 + axis * step * 2.6f;
-                    StartCoroutine(Eruption(at, 1.65f, (1.25f + step * 0.12f) / T,
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(at, 1.65f, (1.25f + step * 0.12f) / T,
                         DamageType.Cold, 1.2f, once,
                         burst: p => SkillEffects.Shockwave(p, 1.7f, Brine, 0.3f)));
                 }
@@ -85,7 +85,7 @@ namespace PoeClone.Enemies
             int count = secondPhase ? 5 : 3;
             var once = new bool[1];
             for (int i = 0; i < count; i++)
-                StartCoroutine(Eruption(target + side * (i - count / 2) * 4, 2.1f,
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(target + side * (i - count / 2) * 4, 2.1f,
                     (1.15f + i * 0.18f) / T, DamageType.Physical, 1.3f, once));
             anim?.Crouch(1.15f / T);
             yield return Pause(2.8f);
@@ -102,7 +102,7 @@ namespace PoeClone.Enemies
             {
                 Vector3 dir = Quaternion.Euler(0, lane * 55, 0) * axis;
                 for (int step = 1; step <= 5; step++)
-                    StartCoroutine(Eruption(origin + dir * step * 3, 1.8f, 1.3f / T,
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(origin + dir * step * 3, 1.8f, 1.3f / T,
                         DamageType.Fire, 1.15f, once,
                         burst: p => SkillEffects.Shockwave(p, 2, new Color(0.8f, 0.9f, 0.85f), 0.4f)));
             }

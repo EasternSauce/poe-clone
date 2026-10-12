@@ -552,12 +552,15 @@ namespace PoeClone.Visuals
 
         /// <summary>Fires once per swing, at the moment the weapon reaches its target.</summary>
         public event Action StrikeFrame;
+        private AnimationBudget animationBudget;
+        private bool importantAnimation;
 
         /// <summary>Fires when a swing is cut off before its strike (a stagger), so the owner can refund the swing's cooldown.</summary>
         public event Action AttackCancelled;
 
         private void Awake()
         {
+            importantAnimation = GetComponentInParent<PoeClone.Player.PlayerController>() != null;
             if (weaponArm == null)
                 weaponArm = FindDescendant(transform, "ArmR");
 
@@ -777,6 +780,13 @@ namespace PoeClone.Visuals
             float f = Mathf.Clamp01(timer / activeProfile.Duration);
 
             AttackProfile p = activeProfile;
+            // Hit timing advances every frame, even when visual pose evaluation is throttled.
+            if (f >= p.StrikeTime && !strikeFired)
+            {
+                strikeFired = true;
+                StrikeFrame?.Invoke();
+            }
+            if (!animationBudget.Sample(transform, importantAnimation, out _, force: f >= 1f)) return;
             // A great weapon's swing is the same whatever the arms' rest: the poses are real angles
             // (a big enemy whose arms rest raised still hauls the maul up and over the same way).
             bool absolute = p.Absolute || p.TwoHandGrip;
@@ -821,12 +831,6 @@ namespace PoeClone.Visuals
                 float t = recoverSpan > 0f ? (f - p.StrikeTime) / recoverSpan : 1f;
                 pose = Lerp(strike, start, t);
                 offPose = Lerp(p.OffStrike, rest, t);
-
-                if (!strikeFired)
-                {
-                    strikeFired = true;
-                    StrikeFrame?.Invoke();
-                }
             }
 
             Apply(weaponArm, weaponElbow, pose);

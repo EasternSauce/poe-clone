@@ -87,8 +87,13 @@ namespace PoeClone.Visuals
 
         public bool IsDead => dead;
 
+        private AnimationBudget animationBudget;
+        private bool importantAnimation;
+
         private void Start()
         {
+            var owner = GetComponentInParent<PoeClone.Enemies.EnemyHealth>();
+            importantAnimation = owner != null && (owner.IsAlly || PoeClone.Enemies.EnemyKinds.Get(owner.KindIndex).IsBoss);
             attack = GetComponent<CharacterAttackAnimator>();
             stagger = GetComponentInParent<Stagger>();
             lastPosition = transform.position;
@@ -128,7 +133,7 @@ namespace PoeClone.Visuals
 
         private void LateUpdate()
         {
-            float dt = Time.deltaTime;
+            if (!animationBudget.Sample(transform, importantAnimation, out float dt)) return;
             if (dt <= 0f)
                 return;
 
@@ -599,6 +604,7 @@ namespace PoeClone.Visuals
             if (deathTimer > DeathSeconds && dt > 0f)
                 return;
             deathTimer += dt;
+            if (AdaptiveQuality.DetailLevel >= 4) deathTimer = DeathSeconds;
             float f = Mathf.Clamp01(deathTimer / DeathSeconds);
 
             // Bats fall (accelerating); bugs hop as they flip; the rest just slump.
@@ -620,7 +626,10 @@ namespace PoeClone.Visuals
             }
 
             if (f >= 1f)
+            {
                 deathTimer = DeathSeconds + 1f;
+                enabled = false;
+            }
         }
 
         private static float Smooth(float x)

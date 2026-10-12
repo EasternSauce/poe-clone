@@ -60,6 +60,8 @@ namespace PoeClone.Visuals
         [SerializeField] private Transform rightElbow;
 
         private float runBlend;
+        private AnimationBudget animationBudget;
+        private bool importantAnimation;
 
         private Vector3 lastPosition;
         private Vector3 baseLocalPosition;
@@ -177,6 +179,9 @@ public void Configure(
 
         private void Start()
         {
+            var owner = GetComponentInParent<PoeClone.Enemies.EnemyHealth>();
+            importantAnimation = GetComponentInParent<PoeClone.Player.PlayerController>() != null ||
+                (owner != null && (owner.IsAlly || PoeClone.Enemies.EnemyKinds.Get(owner.KindIndex).IsBoss));
             soundBoard = PoeClone.Audio.SoundBoardSettings.Load();
             lastPosition = transform.position;
             CaptureBasePose();
@@ -196,14 +201,14 @@ public void Configure(
             audioSource.panStereo = 0f;
         }
 
-private void LateUpdate()
+        private void LateUpdate()
         {
+            if (!animationBudget.Sample(transform, importantAnimation, out float dt)) return;
             // Townsfolk share a close, quiet step sound. Distant neighborhoods must not
             // pile their footsteps into the mix at the player's own footstep volume.
             if (isTownNpc && audioSource != null)
                 audioSource.volume = PoeClone.Audio.AudioManager.Instance != null
                     ? 0.25f * PoeClone.Audio.AudioManager.Instance.WorldSfxVolume(transform.position) : 0f;
-            float dt = Time.deltaTime;
             if (dt <= 0f)
                 return;
 
@@ -250,8 +255,9 @@ private void LateUpdate()
 
             // Standing still: breathing lifts the chest and the arms drift with it.
             float still = 1f - blend;
-            float breath = Mathf.Sin((Time.time + idleSeed) * BreathRate) * still;
-            float sway = Mathf.Sin((Time.time + idleSeed) * BreathRate * 0.5f + 1f) * still;
+            bool simple = AdaptiveQuality.DetailLevel >= 3;
+            float breath = simple ? 0f : Mathf.Sin((Time.time + idleSeed) * BreathRate) * still;
+            float sway = simple ? 0f : Mathf.Sin((Time.time + idleSeed) * BreathRate * 0.5f + 1f) * still;
 
             bool rightArmSuppressed = RightArmSuppressed;
             bool leftArmSuppressed = LeftArmSuppressed;
@@ -280,14 +286,14 @@ private void LateUpdate()
             float torsoPitch = attackAnimator != null ? attackAnimator.TorsoPitch : 0f;
             float torsoYaw = attackAnimator != null ? attackAnimator.TorsoYaw : 0f;
             // Walking, the shoulders counter-rotate against the hips a little.
-            float walkTwist = s * 5f * blend;
+            float walkTwist = simple ? 0f : s * 5f * blend;
             if (upperBody != null)
                 upperBody.localRotation = Quaternion.Euler(
                     runLean * runBlend * blend + staggerTilt + torsoPitch - breath * 1.2f + 25f * crouch + Hunch + WorkLean * WorkBlend,
                     torsoYaw + walkTwist + sway * 2f, 0f);
 
             float bobAmount = Mathf.Lerp(bobHeight, runBobHeight, runBlend);
-            float bob = Mathf.Abs(c) * bobAmount * blend * stepping;
+            float bob = simple ? 0f : Mathf.Abs(c) * bobAmount * blend * stepping;
             float lunge = attackAnimator != null ? attackAnimator.Lunge : 0f;
             transform.localPosition = baseLocalPosition + Vector3.up * (bob - 0.28f * crouch) + Vector3.forward * lunge;
             if (sweepingBroom != null && WorkSweep > 0f)

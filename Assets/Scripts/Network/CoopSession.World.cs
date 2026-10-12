@@ -57,7 +57,7 @@ namespace PoeClone.Network
             if (IsHost)
             {
                 foreach (var entry in handedOver)
-                    if (entry.Key != null) entry.Key.SetActive(entry.Value == area);
+                    if (entry.Key != null) PoeClone.Visuals.DistanceActivity.SetAvailable(entry.Key, entry.Value == area);
                 Party.SharingArea = sharing;
                 localArea = area;
                 return;
@@ -83,22 +83,22 @@ namespace PoeClone.Network
             }
             Party.SharingArea = sharing;
             foreach (var entry in handedOver)
-                if (entry.Key != null) entry.Key.SetActive(entry.Value == area && !sharing);
+                if (entry.Key != null) PoeClone.Visuals.DistanceActivity.SetAvailable(entry.Key, entry.Value == area && !sharing);
             if (sharing)
             {
-                foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None))
+                foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsInactive.Include))
                 {
                     if (!enemy.IsQuestObject && !enemy.IsRemote && enemy.enabled && AreaAt(enemy.transform.position) == area)
                     {
                         suspended.Add(enemy.gameObject);
-                        enemy.gameObject.SetActive(false);
+                        PoeClone.Visuals.DistanceActivity.SetAvailable(enemy.gameObject, false);
                     }
                 }
             }
             else
             {
                 foreach (GameObject enemy in suspended)
-                    if (enemy != null && AreaAt(enemy.transform.position) == area) enemy.SetActive(true);
+                    if (enemy != null && AreaAt(enemy.transform.position) == area) PoeClone.Visuals.DistanceActivity.SetAvailable(enemy, true);
                 suspended.RemoveWhere(enemy => enemy == null || AreaAt(enemy.transform.position) == area);
             }
             foreach (EnemySpawner spawner in FindObjectsByType<EnemySpawner>(FindObjectsSortMode.None))
@@ -109,7 +109,7 @@ namespace PoeClone.Network
         private EnemyHandoff[] CaptureWorld(int area)
         {
             var world = new List<EnemyHandoff>();
-            foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsInactive.Include))
                 if (!enemy.IsQuestObject && !enemy.IsEncounterEnemy && !enemy.IsRemote && enemy.enabled && AreaAt(enemy.transform.position) == area)
                     world.Add(new EnemyHandoff { k = enemy.KindIndex, lv = enemy.MonsterLevel,
                         x = enemy.transform.position.x, y = enemy.transform.position.y, z = enemy.transform.position.z,
@@ -131,12 +131,12 @@ namespace PoeClone.Network
             foreach (EnemySpawner candidate in FindObjectsByType<EnemySpawner>(FindObjectsSortMode.None))
                 if (AreaAt(candidate.transform.position) == area) { spawner = candidate; break; }
             if (spawner == null || spawner.EnemyPrefab == null) return;
-            foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsInactive.Include))
                 if (!enemy.IsQuestObject && !enemy.IsRemote && enemy.enabled && AreaAt(enemy.transform.position) == area)
                 {
                     suspended.Remove(enemy.gameObject);
                     handedOver.Remove(enemy.gameObject);
-                    enemy.gameObject.SetActive(false);
+                    PoeClone.Visuals.DistanceActivity.SetAvailable(enemy.gameObject, false);
                     Destroy(enemy.gameObject);
                 }
             foreach (EnemyHandoff state in world)
@@ -155,7 +155,7 @@ namespace PoeClone.Network
                         if (lair.Adopt(health, area)) { adopted = true; break; }
                 if (!adopted && !kind.IsBoss && AreaAt(spawner.transform.position) == area) spawner.Adopt(health);
                 handedOver[enemy] = area;
-                enemy.SetActive(AreaManager.Instance != null && AreaManager.Instance.CurrentAreaIndex == area);
+                PoeClone.Visuals.DistanceActivity.SetAvailable(enemy, AreaManager.Instance != null && AreaManager.Instance.CurrentAreaIndex == area);
             }
             broadcaster.RescanEnemies();
         }
@@ -259,7 +259,7 @@ namespace PoeClone.Network
         {
             EnemyHealth enemy = broadcaster.EnemyById(id);
             if (enemy == null || enemy.IsDead || !enemy.IsEncounterEnemy) return;
-            enemy.gameObject.SetActive(false);
+            PoeClone.Visuals.DistanceActivity.SetAvailable(enemy.gameObject, false);
             Destroy(enemy.gameObject);
         }
     }

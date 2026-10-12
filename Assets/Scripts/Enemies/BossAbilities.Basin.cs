@@ -33,7 +33,7 @@ namespace PoeClone.Enemies
             Face(axis);
             float warning = 1.05f / T;
             anim?.Crouch(warning);
-            StartCoroutine(GroundTelegraph.RunCone(from, axis, 7, 55, warning,
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(from, axis, 7, 55, warning,
                 () => this != null && health != null && !health.IsDead));
             yield return new WaitForSeconds(warning);
             if (health.IsDead) yield break;
@@ -60,7 +60,7 @@ namespace PoeClone.Enemies
             {
                 Vector3 direction = Quaternion.Euler(0, (lane - lanes / 2) * 28, 0) * axis;
                 for (int step = 1; step <= 6; step++)
-                    StartCoroutine(Eruption(from + direction * step * 2.7f, 1.7f,
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(from + direction * step * 2.7f, 1.7f,
                         (0.95f + step * 0.12f) / T, DamageType.Physical, 1.15f, once));
             }
             yield return Pause(2.4f);
@@ -85,7 +85,7 @@ namespace PoeClone.Enemies
             for (int i = 0; i < count; i++)
             {
                 Vector3 at = target + new Vector3((i - count / 2) * 3.8f, 0, 0);
-                StartCoroutine(Eruption(at, 2.2f, 1.15f / T, DamageType.Physical, 1.2f, once));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(at, 2.2f, 1.15f / T, DamageType.Physical, 1.2f, once));
             }
             yield return Pause(1.9f);
         }
@@ -99,9 +99,9 @@ namespace PoeClone.Enemies
             var once = new bool[1];
             for (int i = -3; i <= 3; i++)
             {
-                StartCoroutine(Eruption(center + axis * i * 3, 1.65f, 1.3f / T, DamageType.Physical, 1.25f, once));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(center + axis * i * 3, 1.65f, 1.3f / T, DamageType.Physical, 1.25f, once));
                 if (i != 0)
-                    StartCoroutine(Eruption(center + side * i * 3, 1.65f, 1.3f / T, DamageType.Physical, 1.25f, once));
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(center + side * i * 3, 1.65f, 1.3f / T, DamageType.Physical, 1.25f, once));
             }
             yield return Pause(2.1f);
         }

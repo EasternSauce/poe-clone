@@ -37,6 +37,7 @@ namespace PoeClone.Visuals
 
         private void Start()
         {
+            WorldActivity.TrackCosmetic(this);
             controller = GetComponentInParent<CharacterController>();
             lastPosition = transform.position;
 

@@ -532,7 +532,7 @@ namespace PoeClone.Network
             if (!PartnerHere || AreaManager.Instance == null || e.ar != AreaManager.Instance.CurrentAreaIndex)
                 return;
             EnemyHealth enemy = broadcaster.EnemyById(e.id);
-            if (enemy == null || enemy.IsDead || !enemy.gameObject.activeInHierarchy ||
+            if (enemy == null || enemy.IsDead || (!enemy.gameObject.activeInHierarchy && !Visuals.DistanceActivity.IsSleeping(enemy.gameObject)) ||
                 AreaAt(enemy.transform.position) != e.ar || float.IsNaN(e.a) || float.IsInfinity(e.a))
                 return;
             Party.ApplyingPartnerDamage = true;

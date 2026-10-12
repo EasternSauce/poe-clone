@@ -37,7 +37,8 @@ namespace PoeClone.Visuals
         // player's own light (always nearest, always included) plus one or two nearby torches.
         public const int MaxLightsOnTouch = 2;
 
-        private static int Limit => Inventory.TouchMode.Active || Application.isMobilePlatform ? MaxLightsOnTouch : MaxLights;
+        private static int Limit => Mathf.Min(AdaptiveQuality.LightBudget,
+            Inventory.TouchMode.Active || Application.isMobilePlatform ? MaxLightsOnTouch : MaxLights);
 
         // Lights whose reach ends further than this from the point the camera looks at are off
         // screen (the view is roughly 40 m across).

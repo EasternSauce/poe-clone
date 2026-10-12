@@ -43,7 +43,7 @@ namespace PoeClone.Enemies
             {
                 Vector3 dir = Quaternion.Euler(0, (lane - lanes / 2) * 32, 0) * axis;
                 for (int step = 1; step <= 6; step++)
-                    StartCoroutine(Eruption(from + dir * step * 2.6f, 1.4f, (1.15f + step * 0.1f) / T,
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(from + dir * step * 2.6f, 1.4f, (1.15f + step * 0.1f) / T,
                         DamageType.Physical, 1.25f, once,
                         burst: at => SkillEffects.Shockwave(at, 1.5f, new Color(0.48f, 0.57f, 0.22f), 0.4f)));
             }
@@ -60,7 +60,7 @@ namespace PoeClone.Enemies
             {
                 float angle = i * 360f / count;
                 Vector3 at = target + Quaternion.Euler(0, angle, 0) * Vector3.forward * 4.3f;
-                StartCoroutine(Eruption(at, 2, 1.4f / T, DamageType.Poison, 1.2f, once));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(at, 2, 1.4f / T, DamageType.Poison, 1.2f, once));
             }
             yield return Pause(2.2f);
         }
@@ -84,11 +84,11 @@ namespace PoeClone.Enemies
             var once = new bool[1];
             for (int lane = -1; lane <= 1; lane++)
                 for (int step = 1; step <= 7; step++)
-                    StartCoroutine(Eruption(from + side * lane * 5 + axis * step * 2.7f, 1.6f,
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(from + side * lane * 5 + axis * step * 2.7f, 1.6f,
                         (1.25f + step * 0.1f) / T, DamageType.Cold, 1.2f, once,
                         burst: at => SkillEffects.Shockwave(at, 1.7f, Brine, 0.35f)));
             if (secondPhase)
-                StartCoroutine(Eruption(PlayerAt, 2.4f, 2.2f / T, DamageType.Cold, 1.1f, once));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(PlayerAt, 2.4f, 2.2f / T, DamageType.Cold, 1.1f, once));
             yield return Pause(2.9f);
         }
 

@@ -28,7 +28,7 @@ namespace PoeClone.Visuals
             Debris d = go.AddComponent<Debris>();
             d.velocity = velocity;
             d.spin = spin;
-            d.life = life;
+            d.life = life > 0f ? life * AdaptiveQuality.CorpseScale : life;
             d.restHeight = restHeight;
             d.startScale = go.transform.localScale;
             d.ground = GroundBelow(go.transform.position);
@@ -37,6 +37,8 @@ namespace PoeClone.Visuals
 
         private void Update()
         {
+            if (!WorldActivity.NearView(transform.position, 1.6f) && life > 0f)
+            { Destroy(gameObject); return; }
             age += Time.deltaTime;
             if (!landed)
             {
@@ -58,6 +60,7 @@ namespace PoeClone.Visuals
                 else if (age > life - ShrinkSeconds)
                     transform.localScale = startScale * ((life - age) / ShrinkSeconds);
             }
+            else if (landed) enabled = false;
         }
 
         /// <summary>The height of the first thing below <paramref name="p"/> that isn't a character.</summary>

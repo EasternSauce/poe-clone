@@ -74,8 +74,9 @@ namespace PoeClone.World
         private static List<Transform> threatsCache = new List<Transform>();
         private static float threatsCacheTime = -999f;
 
-private void Start()
+        private void Start()
         {
+            PoeClone.Visuals.DistanceActivity.Attach(gameObject, wildlife: true);
             cruiseAltitude = Random.Range(cruiseAltitudeMin, cruiseAltitudeMax);
 
             if (groundSpawnPoint != null)

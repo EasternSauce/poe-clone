@@ -1140,9 +1140,10 @@ namespace PoeClone.Network
                 // Back in the interest area. Reactivate before any event is applied to it: a
                 // death arriving in the same snapshot starts a coroutine, which an inactive
                 // object can't run.
-                if (!existing.Root.activeSelf)
+                if (!existing.Root.activeSelf && (!DistanceActivity.IsSleeping(existing.Root) || e.d != 0))
                 {
-                    existing.Root.SetActive(true);
+                    DistanceActivity.SetAvailable(existing.Root, true);
+                    existing.Root.GetComponent<DistanceActivity>()?.KeepAwake();
                     existing.HasPose = false;
                 }
                 return existing;

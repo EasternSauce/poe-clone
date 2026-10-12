@@ -47,7 +47,7 @@ namespace PoeClone.Enemies
             {
                 float first = Random.Range(0f, 360f);
                 float[] gaps = { first, first + Random.Range(120f, 240f) };
-                StartCoroutine(Wave(transform.position, 17f, 6.5f, 1.4f, gaps, 50f, DamageType.Cold, 1.2f, Rime,
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Wave(transform.position, 17f, 6.5f, 1.4f, gaps, 50f, DamageType.Cold, 1.2f, Rime,
                     p => p.GetComponent<Player.PlayerController>()?.Chill(2.5f)));
                 if (r + 1 < rings)
                     yield return new WaitForSeconds(1.0f / T);
@@ -74,7 +74,7 @@ namespace PoeClone.Enemies
                     GameObject shard = Prop("FrostShard");
                     Piece(shard.transform, PrimitiveType.Cube, volley % 2 == 0 ? Rime : DeepRime, Vector3.zero, new Vector3(0.18f, 0.18f, 0.7f), new Vector3(0f, 0f, 45f));
                     Vector3 from = Flat(HeartAt) + Vector3.up * (transform.position.y + 0.2f);
-                    StartCoroutine(Missile(shard, from, dir, 9f, 17f, 0.75f, DamageType.Cold, 0.55f,
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, Missile(shard, from, dir, 9f, 17f, 0.75f, DamageType.Cold, 0.55f,
                         p => p.GetComponent<Player.PlayerController>()?.Chill(1.2f)));
                 }
                 volley++;
@@ -96,7 +96,7 @@ namespace PoeClone.Enemies
             {
                 Vector3 at = OpenNear(center + Quaternion.Euler(0f, baseAngle + k * 360f / count, 0f) * Vector3.forward * 4.5f);
                 GameObject mirror = Mirror(at);
-                StartCoroutine(GroundTelegraph.Run(at, radius, windUp, DamageType.Cold, spot =>
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(at, radius, windUp, DamageType.Cold, spot =>
                 {
                     if (mirror != null)
                         Destroy(mirror);
@@ -123,7 +123,7 @@ namespace PoeClone.Enemies
             for (int i = 0; i < 4; i++)
                 Piece(mirror.transform, PrimitiveType.Cube, Rime, new Vector3(Mathf.Cos(i * 1.57f) * 0.5f, 0.5f, Mathf.Sin(i * 1.57f) * 0.5f),
                     new Vector3(0.25f, 1f, 0.25f), new Vector3(Mathf.Sin(i * 1.57f) * 25f, 0f, -Mathf.Cos(i * 1.57f) * 25f));
-            StartCoroutine(RiseUp(mirror.transform, 0.5f));
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, RiseUp(mirror.transform, 0.5f));
             return mirror;
         }
 
@@ -153,8 +153,8 @@ namespace PoeClone.Enemies
                 Vector2 scatter = Random.insideUnitCircle * 3.2f;
                 Vector3 at = k == 0 ? target : OpenNear(target + new Vector3(scatter.x, 0f, scatter.y));
                 const float radius = 1.9f;
-                StartCoroutine(FallingLance(at, windUp));
-                StartCoroutine(Eruption(at, radius, windUp, DamageType.Cold, 1.0f));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, FallingLance(at, windUp));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(at, radius, windUp, DamageType.Cold, 1.0f));
             }
             yield return Pause(0.5f);
         }

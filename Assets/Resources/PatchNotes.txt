@@ -1,3 +1,9 @@
+version: 2026-10-12-adaptive-performance
+- Distant monsters and wildlife now sleep on every device, including PC, and wake as either co-op player approaches. Area travel, co-op authority and sleeping monster state remain coordinated. Nearby combat, ongoing damage, boss transitions and corpse cleanup continue normally.
+- Distant cloth, wind, flames, NPC routines and world labels stop updating. Scenery particles pause without replaying missed frames, faraway loot labels are hidden, and the camera bounds its drawing distance to the current view.
+- Performance now adapts during play toward 30-60 FPS: sustained slowdowns progressively reduce cosmetic effects, animation updates, lighting, shadows, post-processing and rendering resolution. Quality recovers slowly when performance improves; loading, pauses and background tabs do not lower quality.
+- Enemy animation poses update less often with distance while movement, attack timing and damage stay independent. Under heavier reductions, idle movement and death animations become simpler, damage numbers combine, and corpses and debris clear sooner.
+
 version: 2026-10-12-starting-destination
 - Startup now loads the area chosen by the character's resume rules directly, including its minimap. Returning to Act II no longer builds Haven first or performs an extra area transition. Future starting hubs use the same loading path.
 

@@ -323,7 +323,7 @@ namespace PoeClone.Enemies
         {
             enabled = active;
             for (int i = 0; i < transform.childCount; i++)
-                transform.GetChild(i).gameObject.SetActive(active);
+                PoeClone.Visuals.DistanceActivity.SetAvailable(transform.GetChild(i).gameObject, active);
         }
 
         private bool TryFindSpawnPoint(out Vector3 point, out int kindIndex)

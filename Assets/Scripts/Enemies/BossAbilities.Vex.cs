@@ -64,7 +64,7 @@ namespace PoeClone.Enemies
                 Piece(smoke.transform, PrimitiveType.Sphere, i % 2 == 0 ? Smoke : Color.Lerp(Smoke, Color.white, 0.25f),
                     new Vector3(r.x, 0.6f + Random.value * 0.8f, r.y), Vector3.one * Random.Range(0.9f, 1.5f));
             }
-            StartCoroutine(Billow(smoke.transform, 1.6f));
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, Billow(smoke.transform, 1.6f));
             SkillEffects.Shockwave(at, 2f, Smoke, 0.4f);
         }
 
@@ -134,7 +134,7 @@ namespace PoeClone.Enemies
             {
                 Vector3 at = OpenNear(around + Quaternion.Euler(0f, baseAngle + k * 360f / count, 0f) * Vector3.forward * Random.Range(spread * 0.5f, spread));
                 GameObject trap = SnareProp();
-                StartCoroutine(Lob(trap, transform.position + Vector3.up, at, 0.5f / T, 1.1f, DamageType.Physical, spot =>
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Lob(trap, transform.position + Vector3.up, at, 0.5f / T, 1.1f, DamageType.Physical, spot =>
                 {
                     trap.transform.position = spot + Vector3.up * 0.05f;
                     trap.transform.rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
@@ -208,7 +208,7 @@ namespace PoeClone.Enemies
                 Piece(shroom.transform, PrimitiveType.Cylinder, new Color(0.85f, 0.82f, 0.7f), Vector3.zero, new Vector3(0.14f, 0.15f, 0.14f));
                 Piece(shroom.transform, PrimitiveType.Sphere, new Color(0.7f, 0.2f, 0.45f), new Vector3(0f, 0.17f, 0f), new Vector3(0.42f, 0.22f, 0.42f));
                 const float radius = 2.3f;
-                StartCoroutine(Lob(shroom, transform.position + Vector3.up, at, (0.7f + k * 0.1f) / T, radius, DamageType.Physical, spot =>
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Lob(shroom, transform.position + Vector3.up, at, (0.7f + k * 0.1f) / T, radius, DamageType.Physical, spot =>
                 {
                     HitIfInside(spot, radius, 0.5f, DamageType.Physical);
                     SkillEffects.Blast(spot + Vector3.up * 0.4f, 1.6f, Spore, 0.4f);
@@ -229,7 +229,7 @@ namespace PoeClone.Enemies
             Vector3 dir = ToPlayer();
             Face(dir);
             Act(CreatureAnimator.BossAct.Throw, windUp);
-            StartCoroutine(GroundTelegraph.RunCone(transform.position, dir, 6f, 28f, windUp, () => !health.IsDead));
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(transform.position, dir, 6f, 28f, windUp, () => !health.IsDead));
             yield return new WaitForSeconds(windUp);
             for (int k = 0; k < count; k++)
             {
@@ -237,7 +237,7 @@ namespace PoeClone.Enemies
                 GameObject knife = Prop("ThrownKnife");
                 Piece(knife.transform, PrimitiveType.Cube, Knife, Vector3.zero, new Vector3(0.06f, 0.03f, 0.45f));
                 Piece(knife.transform, PrimitiveType.Cube, new Color(0.3f, 0.2f, 0.12f), new Vector3(0f, 0f, -0.28f), new Vector3(0.06f, 0.06f, 0.14f));
-                StartCoroutine(Missile(knife, transform.position + Vector3.up * 0.3f, Quaternion.Euler(0f, angle, 0f) * dir, 17f, 15f, 0.6f,
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Missile(knife, transform.position + Vector3.up * 0.3f, Quaternion.Euler(0f, angle, 0f) * dir, 17f, 15f, 0.6f,
                     DamageType.Physical, 0.75f));
             }
             yield return Pause(0.3f);

@@ -384,13 +384,13 @@ namespace PoeClone.Network
 
         private void CaptureEnemies(StateSnapshot snapshot, Vector3 center, Vector3? alsoAround, bool withEnemies, bool spectators)
         {
-            // Enemies only appear at scene start today, but rescanning once a second keeps this
-            // correct if spawning ever becomes dynamic, without a FindObjects call every send.
+            // Include distance sleepers so co-op snapshots and authority handoffs retain their state.
+            // Rescan periodically rather than finding objects on every send.
             if (Time.unscaledTime >= nextEnemyScanAt)
             {
                 nextEnemyScanAt = Time.unscaledTime + 1f;
                 enemies.Clear();
-                enemies.AddRange(FindObjectsByType<EnemyHealth>());
+                enemies.AddRange(FindObjectsByType<EnemyHealth>(FindObjectsInactive.Include));
             }
 
             float radiusSq = interestRadius * interestRadius;
@@ -399,7 +399,7 @@ namespace PoeClone.Network
             for (int k = 0; k < enemies.Count; k++)
             {
                 EnemyHealth enemy = enemies[k];
-                if (enemy == null || enemy.IsQuestObject || (enemy.IsRemote && !spectators) || !enemy.enabled || !enemy.gameObject.activeInHierarchy || !withEnemies)
+                if (enemy == null || enemy.IsQuestObject || (enemy.IsRemote && !spectators) || !enemy.enabled || (!enemy.gameObject.activeInHierarchy && !DistanceActivity.IsSleeping(enemy.gameObject)) || !withEnemies)
                     continue;
 
                 if (spectators ? !Near(enemy.transform.position, center, alsoAround, radiusSq) : CoopSession.AreaAt(enemy.transform.position) != snapshot.area)
@@ -418,7 +418,7 @@ namespace PoeClone.Network
                 e.bh = enemy.HideBossBar ? 1 : 0;
                 e.d = enemy.IsDead ? 1 : 0;
 
-                var attack = enemy.GetComponentInChildren<CharacterAttackAnimator>();
+                var attack = enemy.GetComponentInChildren<CharacterAttackAnimator>(true);
                 e.atk = attack != null ? attack.AttackCount : 0;
                 e.ap = attack != null ? attack.ProfileId : 0;
 
@@ -442,8 +442,8 @@ namespace PoeClone.Network
                     ShepherdFight fight = enemy.GetComponent<ShepherdFight>();
                     CarrionSaintReveal reveal = enemy.GetComponent<CarrionSaintReveal>();
                     e.bp = reveal != null && reveal.IsRevealing ? 3 : (fight != null ? fight.Phase : 1);
-                    ShepherdAnimator shepherd = enemy.GetComponentInChildren<ShepherdAnimator>();
-                    CarrionSaintAnimator saint = enemy.GetComponentInChildren<CarrionSaintAnimator>();
+                    ShepherdAnimator shepherd = enemy.GetComponentInChildren<ShepherdAnimator>(true);
+                    CarrionSaintAnimator saint = enemy.GetComponentInChildren<CarrionSaintAnimator>(true);
                     if (saint != null)
                     {
                         e.bm = 10000 + saint.PlayCount;
@@ -458,7 +458,7 @@ namespace PoeClone.Network
                     }
                     if (e.bp < 3)
                     {
-                        SnakeLimb[] limbs = enemy.GetComponentsInChildren<SnakeLimb>();
+                        SnakeLimb[] limbs = enemy.GetComponentsInChildren<SnakeLimb>(true);
                         if (limbs.Length > 0)
                         {
                             e.bl = new BossLimbState[limbs.Length];
@@ -492,7 +492,7 @@ namespace PoeClone.Network
                 e.hp = minion.Life;
                 e.mhp = minion.MaxLife;
                 e.d = 0;
-                var attack = minion.GetComponentInChildren<CharacterAttackAnimator>();
+                var attack = minion.GetComponentInChildren<CharacterAttackAnimator>(true);
                 e.atk = attack != null ? attack.AttackCount : 0;
                 e.ap = attack != null ? attack.ProfileId : 0;
                 e.stg = 0;

@@ -48,7 +48,7 @@ namespace PoeClone.Enemies
             busyUntil = Time.time + windup + duration + 0.65f;
             desertBraceUntil = Time.time + windup;
             GetComponentInChildren<CreatureAnimator>()?.Crouch(windup);
-            StartCoroutine(GroundTelegraph.RunLine(from, axis, duration * speed, 2, windup, DamageType.Physical, null));
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(from, axis, duration * speed, 2, windup, DamageType.Physical, null));
             yield return new WaitForSeconds(windup);
             if (!CastAlive(interrupted)) yield break;
             bool hit = false;
@@ -75,7 +75,7 @@ namespace PoeClone.Enemies
             int interrupted = stagger != null ? stagger.TriggerCount : 0;
             busyUntil = Time.time + windup + 0.65f;
             GetComponentInChildren<CreatureAnimator>()?.Crouch(windup);
-            StartCoroutine(GroundTelegraph.RunLine(from, axis, 4, 1.3f, windup, DamageType.Physical, null));
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(from, axis, 4, 1.3f, windup, DamageType.Physical, null));
             yield return new WaitForSeconds(windup);
             if (!CastAlive(interrupted)) yield break;
             SkillEffects.Shockwave(from + axis * 2.4f, 0.8f, new Color(0.65f, 0.72f, 0.22f), 0.25f);
@@ -114,7 +114,7 @@ namespace PoeClone.Enemies
                 }
                 if (!CastAlive(interrupted)) yield break;
                 Vector3 eruption = transform.position;
-                StartCoroutine(GroundTelegraph.Run(eruption, 2.4f, warning, DamageType.Physical, null));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(eruption, 2.4f, warning, DamageType.Physical, null));
                 yield return new WaitForSeconds(warning);
                 if (!CastAlive(interrupted)) yield break;
                 RestoreBurrow();
@@ -128,7 +128,7 @@ namespace PoeClone.Enemies
         {
             int interrupted = stagger != null ? stagger.TriggerCount : 0;
             busyUntil = Time.time + 1.65f;
-            StartCoroutine(GroundTelegraph.RunCone(transform.position, FissureDirection(transform.position, target),
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(transform.position, FissureDirection(transform.position, target),
                 kind.AttackRange, 24, 0.8f, () => CastAlive(interrupted)));
             yield return new WaitForSeconds(0.8f);
             if (CastAlive(interrupted)) Volley(transform, kind, target, aimedAtLocal ? player : null, damage);
@@ -164,9 +164,9 @@ namespace PoeClone.Enemies
             Vector3 from = transform.position;
             Vector3 axis = FissureDirection(from, target);
             if (move == 0)
-                StartCoroutine(GroundTelegraph.RunCone(from, axis, 4.8f, 65, windup, () => CastAlive(interrupted)));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(from, axis, 4.8f, 65, windup, () => CastAlive(interrupted)));
             else
-                StartCoroutine(GroundTelegraph.RunLine(from, axis, 13, 2.3f, windup, DamageType.Physical, null));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(from, axis, 13, 2.3f, windup, DamageType.Physical, null));
             yield return new WaitForSeconds(windup);
             if (!CastAlive(interrupted)) yield break;
             if (move == 0)

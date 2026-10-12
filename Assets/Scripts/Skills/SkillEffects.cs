@@ -34,6 +34,7 @@ namespace PoeClone.Skills
         public static void Cone(Vector3 center, Vector3 facing, float radius, float halfAngle, Color color,
             float seconds = 0.35f, DamageType type = DamageType.Physical)
         {
+            if (!AdaptiveQuality.AllowEffect(center)) return;
             if (radius <= 0f || seconds <= 0f) return;
             AnimateArea(GroundTelegraph.ImpactDisc(center, facing, radius, halfAngle, color, type), seconds);
         }
@@ -60,8 +61,9 @@ namespace PoeClone.Skills
         /// <summary>A jagged bolt from one point to another, gone in a blink.</summary>
         public static void Arc(Vector3 from, Vector3 to, Color color, float seconds = 0.2f)
         {
+            if (!AdaptiveQuality.AllowEffect((from + to) * 0.5f)) return;
             var go = new GameObject("Arc");
-            const int segments = 5;
+            int segments = AdaptiveQuality.DetailLevel >= 3 ? 2 : 5;
             Vector3 previous = from;
             for (int k = 1; k <= segments; k++)
             {
@@ -90,7 +92,7 @@ namespace PoeClone.Skills
             var go = new GameObject("Falling Arrow");
             at.y = GroundY(at);
             go.transform.SetPositionAndRotation(at + new Vector3(-1.2f, 9f, 0f), Quaternion.LookRotation(new Vector3(0.13f, -1f, 0f)));
-            RuntimePrimitives.BuildArrow(go.transform);
+            if (AdaptiveQuality.AllowEffect(at)) RuntimePrimitives.BuildArrow(go.transform);
             go.transform.localScale = Vector3.one * 1.3f;
             go.SetActive(false);
             // The coroutine runs on a host that is never hidden.
@@ -120,6 +122,7 @@ namespace PoeClone.Skills
         /// <summary>A ball that bursts out to the radius and collapses again (an explosion).</summary>
         public static void Blast(Vector3 center, float radius, Color color, float seconds = 0.3f)
         {
+            if (!AdaptiveQuality.AllowEffect(center)) return;
             var go = new GameObject("Blast");
             go.transform.position = center;
             GameObject ball = RuntimePrimitives.Create(PrimitiveType.Sphere, go.transform, color);
@@ -134,6 +137,7 @@ namespace PoeClone.Skills
         /// </summary>
         public static void Explosion(Vector3 center, float radius, Color color)
         {
+            if (!AdaptiveQuality.AllowEffect(center)) return;
             var go = new GameObject("Explosion");
             go.transform.position = new Vector3(center.x, GroundY(center), center.z);
             go.AddComponent<SkillEffects>().StartCoroutine(Explode(go, radius, color));
@@ -194,11 +198,13 @@ namespace PoeClone.Skills
         /// <summary>A ring of small orbs rising around a character (healing, level-ups).</summary>
         public static void Rise(Transform around, Color color, float seconds = 0.9f)
         {
+            if (!AdaptiveQuality.AllowEffect(around.position)) return;
             var go = new GameObject("Rise");
             go.transform.SetParent(around, false);
-            for (int k = 0; k < 8; k++)
+            int orbCount = AdaptiveQuality.DetailLevel >= 2 ? 3 : 8;
+            for (int k = 0; k < orbCount; k++)
             {
-                float a = k / 8f * Mathf.PI * 2f;
+                float a = k / (float)orbCount * Mathf.PI * 2f;
                 GameObject orb = RuntimePrimitives.Create(PrimitiveType.Sphere, go.transform, color);
                 orb.transform.localScale = Vector3.one * 0.14f;
                 orb.transform.localPosition = new Vector3(Mathf.Cos(a) * 0.6f, -0.9f, Mathf.Sin(a) * 0.6f);
@@ -233,6 +239,7 @@ namespace PoeClone.Skills
         /// <summary>A textured damage strip along Cross Slash's full cut, fading without shrinking its footprint.</summary>
         public static void Slash(Vector3 from, Vector3 to, float width, Color color, float seconds = 0.25f)
         {
+            if (!AdaptiveQuality.AllowEffect((from + to) * 0.5f)) return;
             Vector3 line = to - from;
             line.y = 0f;
             if (line.sqrMagnitude < 0.001f || width <= 0f || seconds <= 0f) return;
@@ -265,20 +272,23 @@ namespace PoeClone.Skills
             for (float d = FissureStep; d <= length + 0.001f; d += FissureStep)
             {
                 Vector3 to = start + direction * d;
-                float ground = GroundY(to);
-                GameObject crack = RuntimePrimitives.Create(PrimitiveType.Cube, root.transform, dark);
-                crack.transform.SetPositionAndRotation(new Vector3((from.x + to.x) * 0.5f, ground + 0.03f, (from.z + to.z) * 0.5f),
-                    Quaternion.LookRotation(direction) * Quaternion.Euler(0f, Random.Range(-12f, 12f), 0f));
-                crack.transform.localScale = new Vector3(halfWidth * 0.35f, 0.04f, FissureStep * 1.1f);
+                if (AdaptiveQuality.AllowEffect(to))
+                {
+                    float ground = GroundY(to);
+                    GameObject crack = RuntimePrimitives.Create(PrimitiveType.Cube, root.transform, dark);
+                    crack.transform.SetPositionAndRotation(new Vector3((from.x + to.x) * 0.5f, ground + 0.03f, (from.z + to.z) * 0.5f),
+                        Quaternion.LookRotation(direction) * Quaternion.Euler(0f, Random.Range(-12f, 12f), 0f));
+                    crack.transform.localScale = new Vector3(halfWidth * 0.35f, 0.04f, FissureStep * 1.1f);
 
-                // A shard of rock thrust up beside the crack, tilted away from it.
-                float lean = Random.value < 0.5f ? -1f : 1f;
-                GameObject shard = RuntimePrimitives.Create(PrimitiveType.Cube, root.transform, color);
-                float height = Random.Range(0.5f, 0.9f) * Mathf.Max(0.8f, halfWidth);
-                shard.transform.SetPositionAndRotation(
-                    new Vector3(to.x, ground, to.z) + side * lean * Random.Range(0.15f, 0.45f) * halfWidth + Vector3.up * height * 0.3f,
-                    Quaternion.LookRotation(direction) * Quaternion.Euler(Random.Range(-15f, 15f), Random.Range(0f, 90f), lean * Random.Range(10f, 30f)));
-                shard.transform.localScale = new Vector3(Random.Range(0.25f, 0.4f), height, Random.Range(0.25f, 0.4f));
+                    // A shard of rock thrust up beside the crack, tilted away from it.
+                    float lean = Random.value < 0.5f ? -1f : 1f;
+                    GameObject shard = RuntimePrimitives.Create(PrimitiveType.Cube, root.transform, color);
+                    float height = Random.Range(0.5f, 0.9f) * Mathf.Max(0.8f, halfWidth);
+                    shard.transform.SetPositionAndRotation(
+                        new Vector3(to.x, ground, to.z) + side * lean * Random.Range(0.15f, 0.45f) * halfWidth + Vector3.up * height * 0.3f,
+                        Quaternion.LookRotation(direction) * Quaternion.Euler(Random.Range(-15f, 15f), Random.Range(0f, 90f), lean * Random.Range(10f, 30f)));
+                    shard.transform.localScale = new Vector3(Random.Range(0.25f, 0.4f), height, Random.Range(0.25f, 0.4f));
+                }
 
                 reached?.Invoke(from, to);
                 from = to;

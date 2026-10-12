@@ -71,7 +71,7 @@ namespace PoeClone.Enemies
             for (int k = 0; k < count; k++)
             {
                 Vector3 d = Quaternion.Euler(0f, (k - (count - 1) * 0.5f) * spread, 0f) * dir;
-                StartCoroutine(GroundTelegraph.RunLine(from, d, length, width, windUp, DamageType.Cold, null));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(from, d, length, width, windUp, DamageType.Cold, null));
             }
             yield return new WaitForSeconds(windUp);
 
@@ -82,7 +82,7 @@ namespace PoeClone.Enemies
             for (int k = 0; k < count; k++)
             {
                 Vector3 d = Quaternion.Euler(0f, (k - (count - 1) * 0.5f) * spread, 0f) * dir;
-                StartCoroutine(FlyingSpear(from + Vector3.up * 0.4f * Size, d, length, width));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, FlyingSpear(from + Vector3.up * 0.4f * Size, d, length, width));
             }
             yield return Pause(0.5f);
             if (held != null)

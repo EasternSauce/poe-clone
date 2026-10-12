@@ -213,7 +213,7 @@ namespace PoeClone.World
 
         private void Update()
         {
-            if (!turnsToPlayer)
+            if (!turnsToPlayer || Visuals.WorldActivity.DistanceSquared(transform.position) > 32f * 32f)
                 return;
             if (routine == null) routine = GetComponent<VillageRoutine>();
             if (routine != null && routine.OwnsFacing) return;

@@ -56,7 +56,7 @@ namespace PoeClone.Enemies
             foreach (Vector3 point in points)
             {
                 float patchRadius = radius;
-                host.StartCoroutine(GroundTelegraph.Run(point, radius, BasinWindup, DamageType.Physical, at =>
+                PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(point, radius, BasinWindup, DamageType.Physical, at =>
                 {
                     if (body == null || !body.gameObject.activeInHierarchy) return;
                     EnemyHealth alive = body.GetComponent<EnemyHealth>();

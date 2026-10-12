@@ -582,6 +582,9 @@ namespace PoeClone.World
 
         private void Update()
         {
+            if (interactive && !IsShared && Time.time - bornAt > LifetimeSeconds)
+            { Destroy(gameObject); return; }
+            if (!Visuals.WorldActivity.NearView(transform.position, 1.4f)) return;
             if (icon != null)
                 icon.anchoredPosition = new Vector2(0f, Mathf.Sin(Time.time * 2.5f + bobPhase) * 6f);
 
@@ -594,13 +597,16 @@ namespace PoeClone.World
                     popping = false;
             }
 
-            if (interactive && !IsShared && Time.time - bornAt > LifetimeSeconds)
-                Destroy(gameObject);
         }
 
         // Follow the world drop in screen space after the camera has moved this frame.
         private void LateUpdate()
         {
+            if (!Visuals.WorldActivity.NearView(transform.position, 1.4f))
+            {
+                if (canvasRect != null && canvasRect.gameObject.activeSelf) canvasRect.gameObject.SetActive(false);
+                return;
+            }
             Camera cam = Camera.main;
             if (cam != null && canvasRect != null)
             {

@@ -29,7 +29,7 @@ namespace PoeClone.Enemies
         [SerializeField] private float deathWindUp = 0.15f;
         [SerializeField] private float collapseDuration = 0.6f;
         [SerializeField] private float corpseSeconds = 25f;
-        private float CorpseLifetime => corpseSeconds * (EnemyKinds.Get(KindIndex).IsBoss ? 4f : 2f);
+        private float CorpseLifetime => corpseSeconds * (EnemyKinds.Get(KindIndex).IsBoss ? 4f : 2f * AdaptiveQuality.CorpseScale);
 
         private float currentHealth;
         private bool dead;
@@ -137,6 +137,7 @@ namespace PoeClone.Enemies
         private void Awake()
         {
             currentHealth = maxHealth;
+            DistanceActivity.Attach(gameObject);
         }
 
         /// <summary>Takes on a kind's toughness and reward (see <see cref="EnemyKinds.Apply"/>).</summary>
@@ -156,7 +157,7 @@ namespace PoeClone.Enemies
         /// </summary>
         public static void RescaleLife(float ratio)
         {
-            foreach (EnemyHealth enemy in Active)
+            foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsInactive.Include))
             {
                 if (enemy.dead || enemy.IsRemote)
                     continue;
@@ -198,6 +199,8 @@ namespace PoeClone.Enemies
         {
             if (dead || amount <= 0f)
                 return 0f;
+
+            GetComponent<DistanceActivity>()?.KeepAwake();
 
             int hitSequence = 0;
             if (IsRemote)
@@ -299,6 +302,7 @@ namespace PoeClone.Enemies
         /// <summary>Shocked: takes more damage from the player for a while (see HitEffects).</summary>
         public bool IsShocked => !dead && Time.time < shockedUntil;
         public bool IsBurning => !dead && Time.time < burnUntil;
+        internal bool HasPendingDamage => burning != null;
 
         public void Shock(float seconds)
         {

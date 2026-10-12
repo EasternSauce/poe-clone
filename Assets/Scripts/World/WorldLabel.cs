@@ -23,8 +23,10 @@ namespace PoeClone.World
 
             Canvas canvas = go.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
+            Visuals.WorldActivity.TrackCosmetic(canvas, false);
 
             var label = go.AddComponent<WorldLabel>();
+            Visuals.WorldActivity.TrackCosmetic(label, false);
             label.canvasRect = (RectTransform)go.transform;
             label.canvasRect.sizeDelta = new Vector2(400f, 60f);
             // Keep the world size constant even if the parent is scaled.

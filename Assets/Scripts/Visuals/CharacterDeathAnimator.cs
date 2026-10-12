@@ -108,6 +108,7 @@ namespace PoeClone.Visuals
 
         public void PlayDeath(bool foldUpperBody = true)
         {
+            enabled = true;
             float upperBodyPitch = foldUpperBody ? 85f : 0f;
 
             joints = new[]
@@ -144,6 +145,7 @@ namespace PoeClone.Visuals
                 return;
 
             timer += Time.deltaTime;
+            if (AdaptiveQuality.DetailLevel >= 4) timer = duration;
             float f = Mathf.Clamp01(timer / duration);
             float eased = 1f - (1f - f) * (1f - f);
 
@@ -154,7 +156,10 @@ namespace PoeClone.Visuals
             }
 
             if (f >= 1f)
+            {
                 playing = false;
+                enabled = false;
+            }
         }
 
         private static Transform FindDescendant(Transform root, string name)

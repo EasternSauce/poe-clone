@@ -343,6 +343,7 @@ namespace PoeClone.World
                     yield return AreaDetails(area);
                 // Audio is optional and never blocks entry.
                 ambience.Build(FindAnyObjectByType<AreaManager>(), FindAnyObjectByType<PlayerController>().transform, area);
+                WorldActivity.Refresh();
             }
             finally { loadingArea = -1; buildingArea = false; }
         }
@@ -382,6 +383,7 @@ namespace PoeClone.World
             yield return null;
             BuildWildlife(FindAnyObjectByType<PlayerController>().transform);
             ManualPointLightManager.Refresh();
+            WorldActivity.Refresh();
         }
 
         // Replicas need terrain before applying a snapshot; ordinary travel uses the coroutine.

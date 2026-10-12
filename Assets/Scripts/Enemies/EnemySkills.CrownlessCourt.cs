@@ -40,7 +40,7 @@ namespace PoeClone.Enemies
                     from + axis * (i + 1) * 2.7f;
                 float radius = jar ? 1.65f : 1.35f;
                 float delay = jar ? 1.05f : 1.05f + i * 0.1f;
-                host.StartCoroutine(GroundTelegraph.Run(at, radius, delay, kind.DamageType, point =>
+                PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(at, radius, delay, kind.DamageType, point =>
                 {
                     if (body == null || !body.gameObject.activeInHierarchy) return;
                     var alive = body.GetComponent<EnemyHealth>();

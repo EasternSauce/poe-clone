@@ -60,7 +60,7 @@ namespace PoeClone.Enemies
             float travel = Mathf.Clamp(Flat(target - transform.position).magnitude / 16f, 0.35f, 1.1f);
             float radius = 3f;
             bool risen = false;
-            StartCoroutine(GroundTelegraph.Run(target, radius, travel + 0.55f / T, DamageType.Physical, at =>
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(target, radius, travel + 0.55f / T, DamageType.Physical, at =>
             {
                 if (this == null || health.IsDead)
                     return;
@@ -112,7 +112,7 @@ namespace PoeClone.Enemies
             for (int k = 0; k < count; k++)
             {
                 Vector3 at = k == 0 ? center : OpenNear(center + Quaternion.Euler(0f, k * 120f + Random.Range(-20f, 20f), 0f) * Vector3.forward * 4.5f);
-                StartCoroutine(GroundTelegraph.Run(at, radius, windUp + k * 0.15f / T, DamageType.Physical, spot =>
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(at, radius, windUp + k * 0.15f / T, DamageType.Physical, spot =>
                 {
                     if (this == null || health.IsDead)
                         return;
@@ -167,15 +167,15 @@ namespace PoeClone.Enemies
             coffin.transform.SetPositionAndRotation(onBack.position, Quaternion.LookRotation(ToPlayer()) * Quaternion.Euler(90f, 0f, 0f));
             Vector3 target = PlayerAt;
             const float radius = 2.4f;
-            StartCoroutine(Lob(coffin, onBack.position, target, 0.85f / T, radius, DamageType.Physical, at =>
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, Lob(coffin, onBack.position, target, 0.85f / T, radius, DamageType.Physical, at =>
             {
                 HitIfInside(at, radius, 1.5f, DamageType.Physical);
                 SkillEffects.Shockwave(at, radius, Dust, 0.4f);
                 CameraSystem.CameraFollow.Shake(0.25f, 0.35f);
-                StartCoroutine(CoffinOpens(coffin, at));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, CoffinOpens(coffin, at));
             }, keep: true, spin: 0f));
             yield return Pause(0.4f);
-            StartCoroutine(CoffinBack(onBack));
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, CoffinBack(onBack));
         }
 
         private IEnumerator CoffinOpens(GameObject coffin, Vector3 at)
@@ -224,7 +224,7 @@ namespace PoeClone.Enemies
             float radius = 3.2f + 0.8f * Size;
             Act(CreatureAnimator.BossAct.Spin, windUp + 0.3f / T);
             bool swept = false;
-            StartCoroutine(GroundTelegraph.Run(transform.position, radius, windUp, DamageType.Physical, at =>
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(transform.position, radius, windUp, DamageType.Physical, at =>
             {
                 if (this == null || health.IsDead)
                     return;

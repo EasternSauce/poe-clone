@@ -32,10 +32,10 @@ namespace PoeClone.Enemies
             // Parallel cell bars leave broad lanes. They target a snapshot, never chase the player.
             for (int lane = -1; lane <= 1; lane++)
                 for (int step = -3; step <= 3; step++)
-                    StartCoroutine(Eruption(target + side * lane * 5.5f + axis * step * 2.6f, 1.5f,
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(target + side * lane * 5.5f + axis * step * 2.6f, 1.5f,
                         (1.35f + (step + 3) * 0.08f) / T, DamageType.Cold, 1.2f, once));
             if (secondPhase)
-                StartCoroutine(Eruption(target, 2.3f, 2.4f / T, DamageType.Physical, 1.15f, once));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(target, 2.3f, 2.4f / T, DamageType.Physical, 1.15f, once));
             yield return Pause(3);
         }
 
@@ -91,7 +91,7 @@ namespace PoeClone.Enemies
             {
                 Vector3 direction = Quaternion.Euler(0, lane * 360f / lanes, 0) * axis;
                 for (int step = 1; step <= 6; step++)
-                    StartCoroutine(Eruption(from + direction * step * 2.7f, 1.6f,
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(from + direction * step * 2.7f, 1.6f,
                         (1.5f + step * 0.12f) / T, DamageType.Physical, 1.25f, once,
                         burst: at => SkillEffects.Shockwave(at, 1.7f, RootSap, 0.4f)));
             }
