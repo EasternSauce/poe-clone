@@ -1,5 +1,7 @@
 'use strict';
 
+const crypto = require('crypto');
+
 // Pure session/room logic, kept free of actual WebSocket/network objects so it
 // can be unit tested with plain fake "client" objects ({ id, send(obj) }).
 //
@@ -31,6 +33,11 @@
 //   are relayed raw to the partner. A host plays from the start and stays hosting: when its
 //   guest leaves or drops, the game is listed again, so the guest (or anyone) can rejoin.
 //   The host leaving ends the party for the guest.
+// - A partner whose connection drops isn't removed from the party at once: the other is told
+//   to wait ("waiting"), and a reconnecting client sends "coopResume" with the party id it
+//   was given at the start to pair up again ("resumed"). This also works after a server
+//   restart: whichever side comes back first waits for the other. Nobody back within
+//   COOP_RESUME_GRACE_MS ends the party ("ended"); a leaving player ("coopLeave") ends it at once.
 
 const MAX_PLAYERS = 10;
 const MAX_CHAT_HISTORY = 50;
@@ -50,6 +57,8 @@ const MAX_COOP_BYTES = 48 * 1024;
 // Snapshots are skipped for it until it catches up (the next one supersedes them anyway), so
 // events and chat queued behind them aren't held up for seconds. Events are never skipped.
 const MAX_COOP_BACKLOG_BYTES = 64 * 1024;
+// How long a co-op party waits for a dropped partner to reconnect.
+const COOP_RESUME_GRACE_MS = 90 * 1000;
 
 class Room {
   constructor({ now = () => Date.now(), maxPlayers = MAX_PLAYERS } = {}) {
@@ -65,6 +74,10 @@ class Room {
     this.hosting = new Map();
     this.browsing = new Set();
     this.partners = new Map();
+    // Parties: client -> { party, role } while paired, and party id -> the side waiting for
+    // its partner to reconnect ({ client, role, name, since }).
+    this.parties = new Map();
+    this.resuming = new Map();
   }
 
   _allocId() {
@@ -114,7 +127,8 @@ class Room {
   }
 
   leave(client) {
-    this.coopLeave(client, 'Your partner left the game.');
+    if (this.partners.has(client)) this._dropPartner(client);
+    else this.coopLeave(client, 'Your partner left the game.');
     this.browsing.delete(client);
     const player = this.players.get(client);
     if (player) {
@@ -276,7 +290,7 @@ class Room {
     if (!guest || this.partners.has(client)) return false;
     let host = null;
     for (const [c] of this.hosting) {
-      if (c !== client && !this.partners.has(c) && this.players.get(c)?.id === hostId) host = c;
+      if (c !== client && !this.partners.has(c) && !this._isResuming(c) && this.players.get(c)?.id === hostId) host = c;
     }
     if (!host) {
       safeSend(client, { type: 'coop', state: 'failed', reason: 'That game is no longer open.' });
@@ -285,25 +299,104 @@ class Room {
     }
     const hostName = this.hosting.get(host);
     const guestName = sanitizeName(requestedName) || guest.name;
+    const party = crypto.randomUUID();
     this.browsing.delete(client);
-    this.browsing.delete(host);
-    this.partners.set(host, client);
-    this.partners.set(client, host);
-    safeSend(host, { type: 'coop', state: 'started', coopRole: 'host', partnerName: guestName });
-    safeSend(client, { type: 'coop', state: 'started', coopRole: 'guest', partnerName: hostName });
+    this._pair(host, client, party);
+    safeSend(host, { type: 'coop', state: 'started', coopRole: 'host', partnerName: guestName, party });
+    safeSend(client, { type: 'coop', state: 'started', coopRole: 'guest', partnerName: hostName, party });
     this._broadcastLobby();
     return true;
+  }
+
+  // A reconnected player picking its party back up. Pairs it with a partner already waiting,
+  // or makes it the one waiting. Returns true if the party is running again.
+  coopResume(client, party, role, requestedName) {
+    const player = this.players.get(client);
+    if (!player || this.partners.has(client) || typeof party !== 'string' || !party) return false;
+    role = role === 'host' ? 'host' : 'guest';
+    const name = sanitizeName(requestedName) || player.name;
+    this.browsing.delete(client);
+    this._stopHosting(client);
+    this._clearResuming(client);
+
+    const waiting = this.resuming.get(party);
+    if (waiting && waiting.role !== role) {
+      this.resuming.delete(party);
+      const host = role === 'host' ? client : waiting.client;
+      const guest = role === 'host' ? waiting.client : client;
+      if (!this.hosting.has(host)) this.hosting.set(host, role === 'host' ? name : waiting.name);
+      this._pair(host, guest, party);
+      safeSend(host, { type: 'coop', state: 'resumed' });
+      safeSend(guest, { type: 'coop', state: 'resumed' });
+      this._broadcastLobby();
+      return true;
+    }
+    this.resuming.set(party, { client, role, name, since: this.now() });
+    safeSend(client, { type: 'coop', state: 'waiting' });
+    return false;
+  }
+
+  // Ends parties whose partner didn't come back in time. A host carries on, listed again.
+  expireResumes() {
+    const now = this.now();
+    for (const [party, waiting] of this.resuming) {
+      if (now - waiting.since < COOP_RESUME_GRACE_MS) continue;
+      this.resuming.delete(party);
+      if (waiting.role === 'host' && !this.hosting.has(waiting.client)) this.hosting.set(waiting.client, waiting.name);
+      safeSend(waiting.client, { type: 'coop', state: 'ended', reason: "Your partner didn't reconnect." });
+      this._broadcastLobby();
+    }
+  }
+
+  _pair(host, guest, party) {
+    this.browsing.delete(host);
+    this.partners.set(host, guest);
+    this.partners.set(guest, host);
+    this.parties.set(host, { party, role: 'host' });
+    this.parties.set(guest, { party, role: 'guest' });
+  }
+
+  // A partner's connection dropped: the other waits for them to reconnect.
+  _dropPartner(client) {
+    const partner = this.partners.get(client);
+    const { party, role } = this.parties.get(client);
+    this.partners.delete(client);
+    this.partners.delete(partner);
+    this.parties.delete(client);
+    this.parties.delete(partner);
+    const wasHosting = this.hosting.delete(client);
+    const partnerRole = role === 'host' ? 'guest' : 'host';
+    const name = partnerRole === 'host' ? this.hosting.get(partner) : null;
+    this.resuming.set(party, { client: partner, role: partnerRole, name, since: this.now() });
+    safeSend(partner, { type: 'coop', state: 'waiting' });
+    if (wasHosting) this._broadcastLobby();
+  }
+
+  _clearResuming(client) {
+    for (const [party, waiting] of this.resuming) {
+      if (waiting.client === client) this.resuming.delete(party);
+    }
+  }
+
+  _isResuming(client) {
+    for (const waiting of this.resuming.values()) {
+      if (waiting.client === client) return true;
+    }
+    return false;
   }
 
   // Stops hosting/browsing and ends any party (telling the partner why). A host whose guest
   // left keeps hosting: its game is listed again.
   coopLeave(client, reason = 'Your partner left the game.') {
     this.browsing.delete(client);
+    this._clearResuming(client);
     const wasHosting = this.hosting.delete(client);
     const partner = this.partners.get(client);
     if (partner) {
       this.partners.delete(client);
       this.partners.delete(partner);
+      this.parties.delete(client);
+      this.parties.delete(partner);
       safeSend(partner, { type: 'coop', state: 'ended', reason });
     }
     if (wasHosting || partner) this._broadcastLobby();
@@ -327,7 +420,7 @@ class Room {
     const hosts = [];
     for (const [client, name] of this.hosting) {
       const player = this.players.get(client);
-      if (player && !this.partners.has(client)) hosts.push({ id: player.id, name });
+      if (player && !this.partners.has(client) && !this._isResuming(client)) hosts.push({ id: player.id, name });
     }
     return { type: 'lobby', hosts };
   }
@@ -454,4 +547,5 @@ module.exports = {
   MAX_SPECTATOR_BACKLOG_BYTES,
   MAX_COOP_BYTES,
   MAX_COOP_BACKLOG_BYTES,
+  COOP_RESUME_GRACE_MS,
 };

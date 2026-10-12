@@ -370,7 +370,23 @@ namespace PoeClone.Network
                         StartGame(coopGame: true);
                     }
                     coop = gameObject.AddComponent<CoopSession>();
-                    coop.Begin(asHost, msg.partnerName, stateBroadcaster, replica);
+                    coop.Begin(asHost, msg.partnerName, msg.party, stateBroadcaster, replica);
+                    break;
+
+                case "waiting":
+                    // Either the partner dropped, or this game reconnected before they did.
+                    if (coop == null)
+                        return;
+                    if (coop.Linked)
+                        SystemChat(coop.PartnerName + " lost connection. Waiting for them to reconnect...");
+                    coop.SetLinked(false);
+                    break;
+
+                case "resumed":
+                    if (coop == null)
+                        return;
+                    coop.SetLinked(true);
+                    SystemChat("Co-op with " + coop.PartnerName + " resumed.");
                     break;
 
                 case "ended":
@@ -378,17 +394,19 @@ namespace PoeClone.Network
                         return;
                     bool wasHost = coop.IsHost;
                     string partner = coop.PartnerName;
+                    // Still unlinked when the party ends: the partner never reconnected.
+                    bool lost = !coop.Linked;
                     Destroy(coop);
                     coop = null;
                     if (wasHost)
                     {
                         // The world was ours all along: carry on alone, still open for them to rejoin.
-                        SystemChat(partner + " left the game. They can rejoin from Co-op > Join Game.");
+                        SystemChat(partner + (lost ? " didn't reconnect." : " left the game.") + " They can rejoin from Co-op > Join Game.");
                     }
                     else
                     {
                         // Our enemies were the host's: back to the menu, character and progress saved.
-                        startNotice = partner + " ended the co-op game. Your character's progress is saved.";
+                        startNotice = partner + (lost ? " didn't reconnect." : " ended the co-op game.") + " Your character's progress is saved.";
                         ReturnToMainMenu();
                     }
                     break;
@@ -556,7 +574,18 @@ namespace PoeClone.Network
                         else
                             namePrompt.ShowCoopStatus("Can't start co-op", msg.reason, BackToCharacters);
                     }
-                    if (hosting)
+                    if (coop != null)
+                    {
+                        // Back after a dropped connection: pick the party up again.
+                        if (msg.granted)
+                            client.Send(JsonUtility.ToJson(new CoopResumeMessage
+                            {
+                                party = coop.PartyId,
+                                role = coop.IsHost ? "host" : "guest",
+                                name = PlayerName,
+                            }));
+                    }
+                    else if (hosting)
                     {
                         if (msg.granted)
                             SendHost();
@@ -609,18 +638,10 @@ namespace PoeClone.Network
                 namePrompt.ShowCoopStatus("Can't reach the co-op server", "Retrying... You can go back and play alone.", BackToCharacters);
             if (coop != null)
             {
-                // The server pairs the two games; without it the partner is gone for good. A guest's
-                // enemies were the host's, so it goes back to the menu (its progress is saved).
-                bool wasHost = coop.IsHost;
-                Destroy(coop);
-                coop = null;
-                if (!wasHost)
-                {
-                    startNotice = "Lost the connection to the co-op game. Your character's progress is saved.";
-                    ReturnToMainMenu();
-                    return;
-                }
-                SystemChat("Co-op connection lost. Your game will be listed again once reconnected.");
+                // Both games carry on; once reconnected, the server pairs them up again (or ends
+                // the party if the partner doesn't come back in time).
+                coop.SetLinked(false);
+                SystemChat("Co-op connection lost. Reconnecting...");
             }
             Reconnecting = true;
             Connected = false;
@@ -689,6 +710,9 @@ namespace PoeClone.Network
             if (Role != SessionRole.Player || returningToMainMenu) return;
             SaveSystem.SaveBeforeCharacterSwitch();
             returningToMainMenu = true;
+            // Leaving on purpose: end the party now rather than have the partner wait for a reconnect.
+            if (coop != null && Connected)
+                client.Send(JsonUtility.ToJson(new CoopLeaveMessage()));
             if (reconnectRoutine != null) StopCoroutine(reconnectRoutine);
             stateBroadcaster.enabled = false;
             client.Close();

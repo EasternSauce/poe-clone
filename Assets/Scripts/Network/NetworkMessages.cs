@@ -31,9 +31,10 @@ namespace PoeClone.Network
         public string from;
         public string text;
         public long ts;
-        public string state;         // coop: hosting / started / failed / ended
+        public string state;         // coop: hosting / started / failed / waiting / resumed / ended
         public string coopRole;      // coop started: host / guest
         public string partnerName;
+        public string party;         // coop started: the party's id, for resuming after a dropped connection
         public PlayerInfo[] hosts;   // lobby: players waiting for a partner
     }
 
@@ -50,12 +51,6 @@ namespace PoeClone.Network
         public string type = "hello";
         public string role;
         public string name;
-    }
-
-    [Serializable]
-    public class FrameMessage
-    {
-        public string type = "frame";
     }
 
     /// <summary>A spectator switching to another player's game.</summary>

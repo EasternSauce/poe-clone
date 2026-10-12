@@ -58,6 +58,12 @@ namespace PoeClone.Network
 
         public bool PartnerDead => applied != null && applied.d != 0;
 
+        /// <summary>Shown on the partner's frame while either side's connection is down.</summary>
+        public bool Reconnecting
+        {
+            set => status.Reconnecting = value;
+        }
+
         /// <summary>Builds the partner's body from this game's own player model.</summary>
         public void Begin(Transform localPlayer, string name)
         {

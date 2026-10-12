@@ -144,6 +144,11 @@ wss.on('connection', (ws) => {
         break;
       }
 
+      case 'coopResume': {
+        room.coopResume(ws, msg.party, msg.role, msg.name);
+        break;
+      }
+
       case 'coopLeave': {
         room.coopLeave(ws);
         break;
@@ -188,7 +193,13 @@ const heartbeat = setInterval(() => {
   }
 }, HEARTBEAT_MS);
 
-wss.on('close', () => clearInterval(heartbeat));
+// Ends co-op parties whose dropped partner didn't reconnect in time.
+const resumeSweep = setInterval(() => room.expireResumes(), 5000);
+
+wss.on('close', () => {
+  clearInterval(heartbeat);
+  clearInterval(resumeSweep);
+});
 
 function safeSend(client, message) {
   safeSendRaw(client, JSON.stringify(message));

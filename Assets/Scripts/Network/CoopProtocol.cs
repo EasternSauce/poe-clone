@@ -102,6 +102,16 @@ namespace PoeClone.Network
         public string name;
     }
 
+    /// <summary>A reconnected player picking its co-op party back up.</summary>
+    [Serializable]
+    public class CoopResumeMessage
+    {
+        public string type = "coopResume";
+        public string party;
+        public string role;
+        public string name;
+    }
+
     [Serializable]
     public class CoopLeaveMessage
     {

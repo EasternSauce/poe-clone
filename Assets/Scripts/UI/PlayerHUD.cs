@@ -166,6 +166,7 @@ namespace PoeClone.UI
             public int Level;
             public float Health, MaxHealth, Mana, MaxMana;
             public bool Dead;
+            public bool Reconnecting; // co-op link down, waiting for a reconnect
             public bool Here;   // in this player's area
             public string Area; // the name of the area they're in
         }
@@ -266,7 +267,8 @@ namespace PoeClone.UI
             PartnerStatus partner = Partner;
             if (partner == null)
                 return;
-            string where = partner.Dead ? "<color=#ff7a70>dead</color>"
+            string where = partner.Reconnecting ? "<color=#ffb347>reconnecting...</color>"
+                : partner.Dead ? "<color=#ff7a70>dead</color>"
                 : $"<color={(partner.Here ? "#d8d8d8" : "#a0a0a0")}>{partner.Area}</color>";
             DrawShadowedLabel(new Rect(x, y, width + 200f, 20f),
                 $"<color=#8cd9ff>{partner.Name}</color>   <color=#{UiKit.Hex(UiKit.Gold)}>Lv {partner.Level}</color>   {where}", captionStyle);

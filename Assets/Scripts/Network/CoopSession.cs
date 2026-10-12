@@ -32,6 +32,10 @@ namespace PoeClone.Network
 
         public bool IsHost { get; private set; }
         public string PartnerName { get; private set; }
+        /// <summary>The server's id for this party, sent back to resume it after a dropped connection.</summary>
+        public string PartyId { get; private set; }
+        /// <summary>False while either side's connection is down: both games carry on, unsynced.</summary>
+        public bool Linked { get; private set; } = true;
 
         private GameSessionController session;
         private PlayerStateBroadcaster broadcaster;
@@ -50,14 +54,22 @@ namespace PoeClone.Network
         private readonly Dictionary<int, LootDrop> claims = new Dictionary<int, LootDrop>();
         private readonly CoopEvent outgoing = new CoopEvent();
 
-        public void Begin(bool host, string partnerName, PlayerStateBroadcaster stateBroadcaster, SpectatorReplica enemyReplica)
+        public void Begin(bool host, string partnerName, string partyId, PlayerStateBroadcaster stateBroadcaster, SpectatorReplica enemyReplica)
         {
             session = GameSessionController.Instance;
             broadcaster = stateBroadcaster;
             replica = enemyReplica;
             IsHost = host;
             PartnerName = partnerName;
+            PartyId = partyId;
             StartCoroutine(PrepareGameplay());
+        }
+
+        public void SetLinked(bool linked)
+        {
+            Linked = linked;
+            if (partner != null)
+                partner.Reconnecting = !linked;
         }
 
         private IEnumerator PrepareGameplay()
@@ -73,6 +85,7 @@ namespace PoeClone.Network
             partner = gameObject.AddComponent<CoopPartner>();
             if (stats != null)
                 partner.Begin(stats.transform, PartnerName);
+            partner.Reconnecting = !Linked;
 
             if (IsHost)
             {
@@ -116,7 +129,7 @@ namespace PoeClone.Network
 
         private void LateUpdate()
         {
-            if (session == null || !session.Connected || partner == null)
+            if (session == null || !session.Connected || !Linked || partner == null)
                 return;
             UpdateAreaAuthority();
             RetryPendingHit();

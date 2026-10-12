@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { Room, MAX_PLAYERS, MAX_CHAT_HISTORY, MAX_CHAT_MESSAGE_LENGTH, MAX_STATE_BYTES, MAX_SPECTATOR_BACKLOG_BYTES, MAX_COOP_BACKLOG_BYTES } = require('../room');
+const { Room, MAX_PLAYERS, MAX_CHAT_HISTORY, MAX_CHAT_MESSAGE_LENGTH, MAX_STATE_BYTES, MAX_SPECTATOR_BACKLOG_BYTES, MAX_COOP_BACKLOG_BYTES, COOP_RESUME_GRACE_MS } = require('../room');
 
 function fakeClient() {
   const sent = [];
@@ -473,8 +473,10 @@ test('joining pairs host and guest and takes the host off the lobby', () => {
   room.coopList(other);
   const hostId = room.lobbyMessage().hosts[0].id;
   assert.equal(room.coopJoin(guest, hostId, 'Bob'), true);
-  assert.deepEqual(host.sent.at(-1), { type: 'coop', state: 'started', coopRole: 'host', partnerName: 'Bob' });
-  assert.deepEqual(guest.sent.at(-1), { type: 'coop', state: 'started', coopRole: 'guest', partnerName: 'Alice' });
+  const party = host.sent.at(-1).party;
+  assert.equal(typeof party, 'string');
+  assert.deepEqual(host.sent.at(-1), { type: 'coop', state: 'started', coopRole: 'host', partnerName: 'Bob', party });
+  assert.deepEqual(guest.sent.at(-1), { type: 'coop', state: 'started', coopRole: 'guest', partnerName: 'Alice', party });
   assert.deepEqual(other.sent.at(-1), { type: 'lobby', hosts: [] });
   assert.equal(room.partnerOf(host), guest);
 });
@@ -528,9 +530,76 @@ test('a partner leaving ends the party for the other', () => {
   room.join(guest, 'player');
   room.coopHost(host);
   room.coopJoin(guest, room.lobbyMessage().hosts[0].id);
-  room.leave(guest);
+  room.coopLeave(guest);
   assert.equal(host.sent.at(-1).state, 'ended');
   assert.equal(room.partnerOf(host), null);
+});
+
+function startParty(room) {
+  const host = fakeClient();
+  const guest = fakeClient();
+  room.join(host, 'player', 'Hosty');
+  room.join(guest, 'player', 'Guesty');
+  room.coopHost(host, 'Hosty');
+  room.coopJoin(guest, room.lobbyMessage().hosts[0].id);
+  const party = guest.sent.find((m) => m.state === 'started').party;
+  return { host, guest, party };
+}
+
+test('a dropped guest can reconnect and resume the party', () => {
+  const room = new Room();
+  const { host, guest, party } = startParty(room);
+  assert.equal(typeof party, 'string');
+  assert.equal(host.sent.find((m) => m.state === 'started').party, party);
+  room.leave(guest);
+  assert.equal(host.sent.at(-1).state, 'waiting');
+  assert.deepEqual(room.lobbyMessage().hosts, []); // not joinable while waiting
+  const back = fakeClient();
+  room.join(back, 'player', 'Guesty');
+  assert.equal(room.coopResume(back, party, 'guest'), true);
+  assert.equal(room.partnerOf(host), back);
+  assert.equal(host.sent.at(-1).state, 'resumed');
+  assert.equal(back.sent.at(-1).state, 'resumed');
+});
+
+test('a dropped host can reconnect and is listed again after its guest leaves', () => {
+  const room = new Room();
+  const { guest, party } = startParty(room);
+  const host = [...room.players.keys()][0];
+  room.leave(host);
+  assert.equal(guest.sent.at(-1).state, 'waiting');
+  const back = fakeClient();
+  room.join(back, 'player', 'Hosty');
+  assert.equal(room.coopResume(back, party, 'host', 'Hosty'), true);
+  assert.equal(room.partnerOf(guest), back);
+  room.coopLeave(guest);
+  assert.deepEqual(room.lobbyMessage().hosts.map((h) => h.name), ['Hosty']);
+});
+
+test('after a server restart, whichever side returns first waits for the other', () => {
+  const room = new Room();
+  const host = fakeClient();
+  const guest = fakeClient();
+  room.join(host, 'player');
+  room.join(guest, 'player');
+  assert.equal(room.coopResume(guest, 'old-party', 'guest'), false);
+  assert.equal(guest.sent.at(-1).state, 'waiting');
+  assert.equal(room.coopResume(host, 'old-party', 'host', 'Hosty'), true);
+  assert.equal(room.partnerOf(guest), host);
+});
+
+test('a partner who does not reconnect in time ends the party', () => {
+  let now = 0;
+  const room = new Room({ now: () => now });
+  const { host, guest } = startParty(room);
+  room.leave(guest);
+  now += COOP_RESUME_GRACE_MS - 1;
+  room.expireResumes();
+  assert.equal(host.sent.at(-1).state, 'waiting');
+  now += 2;
+  room.expireResumes();
+  assert.equal(host.sent.at(-1).state, 'ended');
+  assert.deepEqual(room.lobbyMessage().hosts.map((h) => h.name), ['Hosty']);
 });
 
 test('a host who disconnects disappears from the lobby', () => {
@@ -554,11 +623,13 @@ test('a host whose guest leaves is listed again, and the guest can rejoin', () =
   room.coopHost(host);
   const hostId = room.lobbyMessage().hosts[0].id;
   room.coopJoin(guest, hostId, 'Bob');
-  room.leave(guest);
+  room.coopLeave(guest);
   assert.deepEqual(room.lobbyMessage().hosts.map((h) => h.name), ['Alice']);
+  room.leave(guest);
   const back = fakeClient();
   room.join(back, 'player', 'Bob');
   room.coopList(back);
   assert.equal(room.coopJoin(back, hostId, 'Bob'), true);
-  assert.deepEqual(host.sent.at(-1), { type: 'coop', state: 'started', coopRole: 'host', partnerName: 'Bob' });
+  assert.equal(host.sent.at(-1).state, 'started');
+  assert.equal(host.sent.at(-1).partnerName, 'Bob');
 });
