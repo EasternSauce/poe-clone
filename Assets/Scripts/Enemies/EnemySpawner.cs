@@ -235,8 +235,13 @@ namespace PoeClone.Enemies
 
         private GameObject Spawn(Vector3 point, int kindIndex, bool refills = true)
         {
-            // Bigger kinds stand taller: lift the pivot so their feet start on the ground, not in it.
-            point.y = spawnHeight * EnemyKinds.Get(kindIndex).Scale;
+            // The generated areas have uneven ground. A fixed world Y can put an enemy below a
+            // raised slope, where its AI still works but its body and hit colliders are buried.
+            // Anchor to the area's ground mesh, then lift the pivot for taller kinds.
+            if (TryGetGroundHeight(point, out float groundY))
+                point.y = groundY + spawnHeight * EnemyKinds.Get(kindIndex).Scale;
+            else
+                point.y = spawnHeight * EnemyKinds.Get(kindIndex).Scale;
 
             Quaternion rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
             GameObject enemy = Instantiate(enemyPrefab, point, rotation, transform);
@@ -251,6 +256,27 @@ namespace PoeClone.Enemies
                 health.Died += () => OnEnemyDied(body != null ? body.position : home);
             }
             return enemy;
+        }
+
+        private static bool TryGetGroundHeight(Vector3 point, out float height)
+        {
+            Vector3 origin = point + Vector3.up * 100f;
+            foreach (RaycastHit hit in Physics.RaycastAll(origin, Vector3.down, 200f,
+                         Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.collider == null || hit.collider.GetComponentInParent<CharacterController>() != null)
+                    continue;
+
+                string objectName = hit.collider.gameObject.name;
+                if (objectName == "Ground" || objectName.StartsWith("Ground_"))
+                {
+                    height = hit.point.y;
+                    return true;
+                }
+            }
+
+            height = 0f;
+            return false;
         }
 
         private bool TryFindSpawnPointNear(Vector3 center, out Vector3 point)
