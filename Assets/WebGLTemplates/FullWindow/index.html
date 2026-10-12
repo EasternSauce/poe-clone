@@ -216,6 +216,12 @@
         symbolsUrl: "Build/{{{ SYMBOLS_FILENAME }}}",
 #endif
         streamingAssetsUrl: "StreamingAssets",
+        // Music bundles are named after their contents, so a cached copy is always current. Pages
+        // gives every deploy new ETags, which otherwise re-downloads all music after each update.
+        cacheControl: function (url) {
+          if (/(^|\/)StreamingAssets\/Music\/[^?]+-[0-9a-f]{12}\.bundle$/.test(url)) return "immutable";
+          return url == config.dataUrl || /\.bundle/.test(url) ? "must-revalidate" : "no-store";
+        },
         companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
         productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
         productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
