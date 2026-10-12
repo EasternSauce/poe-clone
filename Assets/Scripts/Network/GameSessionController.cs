@@ -45,6 +45,9 @@ namespace PoeClone.Network
         private const string StatePrefix = "{\"type\":\"state\"";
         private const string GearPrefix = "{\"type\":\"gear\"";
         private const string NamePrefKey = "PoeClone.PlayerName";
+        // Unsent bytes above which snapshots are skipped (the next one supersedes them), so chat
+        // and events don't queue behind seconds of them on a slow upload.
+        private const int MaxSnapshotBacklogBytes = 64 * 1024;
 
         private WebSocketClient client;
         private PlayerStateBroadcaster stateBroadcaster;
@@ -395,8 +398,10 @@ namespace PoeClone.Network
         /// <summary>Co-op: one already-serialized snapshot or event for the partner.</summary>
         public void SendCoop(string json)
         {
-            if (Connected && coop != null)
-                client.Send(json);
+            if (!Connected || coop == null) return;
+            if (client.BufferedAmount > MaxSnapshotBacklogBytes && json.StartsWith(CoopProtocol.SnapshotPrefix, StringComparison.Ordinal))
+                return;
+            client.Send(json);
         }
 
         public void SendChat(string text)
@@ -457,6 +462,7 @@ namespace PoeClone.Network
         public void SendState(string json)
         {
             if (!Connected || Role != SessionRole.Player || !serverPlayGranted) return;
+            if (client.BufferedAmount > MaxSnapshotBacklogBytes) return;
             client.Send(json);
         }
 

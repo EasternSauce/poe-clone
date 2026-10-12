@@ -55,6 +55,12 @@ mergeInto(LibraryManager.library, {
     }
   },
 
+  WSBufferedAmount: function (goNamePtr) {
+    var goName = UTF8ToString(goNamePtr);
+    var socket = window.__unityWebSockets && window.__unityWebSockets[goName];
+    return socket ? socket.bufferedAmount : 0;
+  },
+
   WSClose: function (goNamePtr) {
     var goName = UTF8ToString(goNamePtr);
     var socket = window.__unityWebSockets && window.__unityWebSockets[goName];

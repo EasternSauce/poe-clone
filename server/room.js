@@ -46,6 +46,10 @@ const MAX_GEAR_BYTES = 60 * 1024;
 const MAX_SPECTATOR_BACKLOG_BYTES = 48 * 1024;
 // A co-op world snapshot: the host, every monster near either player, recent skill casts.
 const MAX_COOP_BYTES = 48 * 1024;
+// A partner with more than this queued is on a connection too slow for 20 snapshots a second.
+// Snapshots are skipped for it until it catches up (the next one supersedes them anyway), so
+// events and chat queued behind them aren't held up for seconds. Events are never skipped.
+const MAX_COOP_BACKLOG_BYTES = 64 * 1024;
 
 class Room {
   constructor({ now = () => Date.now(), maxPlayers = MAX_PLAYERS } = {}) {
@@ -309,6 +313,8 @@ class Room {
   coopRelay(client, raw, rawLength = 0) {
     const partner = this.partners.get(client);
     if (!partner || rawLength > MAX_COOP_BYTES) return false;
+    if (raw.startsWith('{"type":"co",') && typeof partner.bufferedAmount === 'number' &&
+        partner.bufferedAmount > MAX_COOP_BACKLOG_BYTES) return false;
     safeSendRaw(partner, raw);
     return true;
   }
@@ -447,4 +453,5 @@ module.exports = {
   MAX_STATE_BYTES,
   MAX_SPECTATOR_BACKLOG_BYTES,
   MAX_COOP_BYTES,
+  MAX_COOP_BACKLOG_BYTES,
 };

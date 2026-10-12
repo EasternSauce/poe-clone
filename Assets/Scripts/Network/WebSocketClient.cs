@@ -35,12 +35,17 @@ namespace PoeClone.Network
 #if UNITY_WEBGL && !UNITY_EDITOR
         [DllImport("__Internal")] private static extern void WSConnect(string url, string goName);
         [DllImport("__Internal")] private static extern void WSSend(string goName, string data);
+        [DllImport("__Internal")] private static extern int WSBufferedAmount(string goName);
         [DllImport("__Internal")] private static extern void WSClose(string goName);
         [DllImport("__Internal")] private static extern void WSRequestLocationSearch(string goName);
 #else
         private ClientWebSocket socket;
         private CancellationTokenSource cts;
         private readonly ConcurrentQueue<Action> mainThreadActions = new ConcurrentQueue<Action>();
+        // ClientWebSocket allows one SendAsync at a time, so sends go out in order from a queue.
+        private readonly System.Collections.Generic.Queue<byte[]> sendQueue = new System.Collections.Generic.Queue<byte[]>();
+        private int queuedBytes;
+        private ClientWebSocket sendingOn; // the socket a send loop is running for
 #endif
 
         private void Awake()
@@ -64,6 +69,22 @@ namespace PoeClone.Network
 #else
             SendDesktop(data);
 #endif
+        }
+
+        /// <summary>
+        /// Bytes sent but not yet handed to the network. Grows when the upload can't keep up;
+        /// callers skip disposable snapshots then, so chat and events don't wait behind them.
+        /// </summary>
+        public int BufferedAmount
+        {
+            get
+            {
+#if UNITY_WEBGL && !UNITY_EDITOR
+                return WSBufferedAmount(GoName);
+#else
+                return queuedBytes;
+#endif
+            }
         }
 
         public void Close()
@@ -114,6 +135,8 @@ namespace PoeClone.Network
             {
                 socket = new ClientWebSocket();
                 cts = new CancellationTokenSource();
+                sendQueue.Clear();
+                queuedBytes = 0;
                 await socket.ConnectAsync(new Uri(url), cts.Token);
                 mainThreadActions.Enqueue(() => OnOpen?.Invoke());
                 _ = ReceiveLoop();
@@ -159,17 +182,42 @@ namespace PoeClone.Network
             }
         }
 
-        private async void SendDesktop(string data)
+        private void SendDesktop(string data)
         {
             if (socket == null || socket.State != WebSocketState.Open) return;
+            var bytes = Encoding.UTF8.GetBytes(data);
+            sendQueue.Enqueue(bytes);
+            queuedBytes += bytes.Length;
+            if (sendingOn != socket)
+                PumpSends(socket);
+        }
+
+        private async void PumpSends(ClientWebSocket target)
+        {
+            sendingOn = target;
             try
             {
-                var bytes = Encoding.UTF8.GetBytes(data);
-                await socket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, cts.Token);
+                while (sendQueue.Count > 0 && socket == target)
+                {
+                    byte[] bytes = sendQueue.Peek();
+                    await target.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, cts.Token);
+                    if (socket != target) break;
+                    sendQueue.Dequeue();
+                    queuedBytes -= bytes.Length;
+                }
             }
             catch (Exception e)
             {
-                mainThreadActions.Enqueue(() => OnError?.Invoke(e.Message));
+                if (socket == target)
+                {
+                    sendQueue.Clear();
+                    queuedBytes = 0;
+                    mainThreadActions.Enqueue(() => OnError?.Invoke(e.Message));
+                }
+            }
+            finally
+            {
+                if (sendingOn == target) sendingOn = null;
             }
         }
 

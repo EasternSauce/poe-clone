@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { Room, MAX_PLAYERS, MAX_CHAT_HISTORY, MAX_CHAT_MESSAGE_LENGTH, MAX_STATE_BYTES, MAX_SPECTATOR_BACKLOG_BYTES } = require('../room');
+const { Room, MAX_PLAYERS, MAX_CHAT_HISTORY, MAX_CHAT_MESSAGE_LENGTH, MAX_STATE_BYTES, MAX_SPECTATOR_BACKLOG_BYTES, MAX_COOP_BACKLOG_BYTES } = require('../room');
 
 function fakeClient() {
   const sent = [];
@@ -502,6 +502,22 @@ test('co-op messages are relayed raw to the partner only', () => {
   assert.equal(guest.sent.at(-1), '{"type":"co","seq":1}');
   assert.equal(other.sent.length, before);
   assert.equal(room.coopRelay(other, '{"type":"co"}'), false);
+});
+
+test('co-op snapshots, but not events, are skipped for a backed-up partner', () => {
+  const room = new Room();
+  const host = rawClient();
+  const guest = rawClient();
+  room.join(host, 'player');
+  room.join(guest, 'player');
+  room.coopHost(host);
+  room.coopJoin(guest, room.lobbyMessage().hosts[0].id);
+  guest.bufferedAmount = MAX_COOP_BACKLOG_BYTES + 1;
+  assert.equal(room.coopRelay(host, '{"type":"co","seq":2}'), false);
+  assert.equal(room.coopRelay(host, '{"type":"cev","k":"hit"}'), true);
+  assert.equal(guest.sent.at(-1), '{"type":"cev","k":"hit"}');
+  guest.bufferedAmount = 0;
+  assert.equal(room.coopRelay(host, '{"type":"co","seq":3}'), true);
 });
 
 test('a partner leaving ends the party for the other', () => {
