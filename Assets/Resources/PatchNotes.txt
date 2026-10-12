@@ -7,6 +7,7 @@ version: 2026-10-12-coop-chat
 - Your co-op partner's minions no longer show as red enemy dots on the minimap. This also applies to a watched player's minions in spectator view.
 - In co-op, the guest's quest encounters now summon their enemies while the host is in the same area. Before, the summoned enemies vanished at once and the objective could not be finished. Both players now see and fight them, and an encounter restarts if the host arrives or leaves partway through.
 - In co-op, monsters and field bosses now go after whichever player is nearest instead of whoever dealt the most damage. One player can stand in front and hold their attention while the other attacks from range.
+- Menu music plays again after returning to the main menu in the web version, including when a co-op host's game ends and you're sent back. Before, the menu stayed silent.
 - The web version loads faster. Item icons and the ground texture are now compressed, which cuts the initial download by several megabytes.
 
 version: 2026-10-11-first-root

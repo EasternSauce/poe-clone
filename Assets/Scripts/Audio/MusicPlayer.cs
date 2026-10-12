@@ -32,10 +32,19 @@ namespace PoeClone.Audio
         public static MusicPlayer Instance { get; private set; }
         private AudioSource source;
         private string requested;
-        private readonly Dictionary<string, AudioClip> clips = new Dictionary<string, AudioClip>();
+        // Static: a loaded bundle can't be loaded again, so returning to the main menu (a scene
+        // reload with a new player) must reuse the clips already taken from them.
+        private static readonly Dictionary<string, AudioClip> clips = new Dictionary<string, AudioClip>();
+        private static Dictionary<string, string> catalog;
         private readonly HashSet<string> loading = new HashSet<string>();
-        private Dictionary<string, string> catalog;
         private bool catalogLoading;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            clips.Clear();
+            catalog = null;
+        }
 
         private static string MusicUrl(string file) =>
             Path.Combine(Application.streamingAssetsPath, "Music", file).Replace('\\', '/');
