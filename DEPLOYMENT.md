@@ -26,8 +26,10 @@ steps. If there is nothing to commit, confirm the intended files are already
 committed before continuing. Do not report completion until both pushes and
 live verification succeed.
 
-1. Review changes, commit intended source changes, and push `master`.
-   Do not include generated Unity files. Run tests only when requested.
+1. Review intended source changes. Commit them together with the fresh build in
+   step 4; do not make a separate source-only push before building. If source
+   changes are already committed, leave them as they are and push once after
+   the build. Exclude incidental generated Unity files. Run tests only when requested.
    Record the initial working-tree status and existing build id so later
    cleanup affects only this deployment's generated changes and completion
    cannot be confused with a previous build. Preserve unrelated untracked files.
@@ -49,7 +51,11 @@ live verification succeed.
 3. A Unity MCP bridge timeout does not mean the build failed. Never invoke the
    build again while the original build may still be running. While waiting,
    identify the active editor log once, then check its tail and
-   `Builds/WebGL/version.json` at roughly 30-second intervals. On Windows the
+   `Builds/WebGL/version.json` at roughly 30-second intervals if the MCP call
+   times out. While the call is pending, prefer a completion-aware tool wait
+   with a timeout of up to 30 seconds: it returns immediately when the build
+   finishes. Do not add a fixed sleep before collecting an available result.
+   On Windows the
    normal editor log is `$env:LOCALAPPDATA\Unity\Editor\Editor.log`;
    `Logs/Editor.log` may belong to an old batch run. Compare modification times
    and use the log receiving current build progress. Avoid repeated full-log
@@ -63,7 +69,8 @@ live verification succeed.
 
 4. In `Builds/WebGL`, review the changed files and confirm the WebGL data and
    wasm outputs are present and non-empty. Stage the build changes in this
-   source repository, commit, and push `master`. `Builds/` is ignored but the
+   source repository along with intended source changes, then commit once.
+   `Builds/` is ignored but the
    release files are already tracked: use `git add -u -- Builds/WebGL` for
    updates, and explicitly force-add only intended new release files if needed.
    Do not force-add the whole ignored directory. For the Pages repository, reuse
@@ -77,9 +84,12 @@ live verification succeed.
    The deploy needs only the current Pages revision, so fetching the full
    repository history adds time without helping the build. Copy the contents of
    `Builds/WebGL` into the checkout (including the `Build` and `StreamingAssets`
-   directories), review the diff, and commit and push `master` there. Confirm
-   both pushes succeeded before checking Pages.
-   Pages checkout validation and synchronization can happen while Unity builds;
+   directories), review the diff, and commit there. Once both commits are ready,
+   push both repositories' `master` branches concurrently, checking each result.
+   Record the Pages push completion time independently of the source push;
+   Pages can deploy while the source push finishes. Confirm both pushes succeed
+   before reporting completion.
+   Start Pages checkout validation and synchronization while Unity builds;
    copying and publishing must wait for the verified fresh build. Do not reset,
    clean, or overwrite a dirty checkout or one with local-only commits.
 
@@ -91,15 +101,18 @@ live verification succeed.
    $pagesPushedAt = [DateTimeOffset]::UtcNow
    ```
 
-   Wait until at least 60 seconds have elapsed from that time before the first
-   live request. Use that interval for final local cleanup and status checks;
+   By default, make the first live request 30 seconds after that time. This is
+   a compromise between avoiding immediate requests and noticing a fast deploy;
+   it is not a known minimum deployment time. If an already available deployment
+   status reports success for the exact pushed commit, verify immediately.
+   Do not install or configure another tool just to save this short delay.
+   Use that interval for final local cleanup and status checks;
    wait only the remaining time, in chunks of at most 30 seconds so progress
    updates remain possible. Do not make an immediate speculative version check.
-   The 60 seconds is a starting delay, not a guarantee that Pages is ready.
-   Calculate the remaining delay instead of sleeping another full minute after
+   Calculate the remaining delay instead of sleeping another full interval after
    cleanup:
    ```powershell
-   $remainingSeconds = [Math]::Max(0, 60 - ([DateTimeOffset]::UtcNow - $pagesPushedAt).TotalSeconds)
+   $remainingSeconds = [Math]::Max(0, 30 - ([DateTimeOffset]::UtcNow - $pagesPushedAt).TotalSeconds)
    ```
 
    GitHub Pages and its CDN may still serve old files after this delay.
@@ -113,14 +126,21 @@ live verification succeed.
    any failure or ongoing delay; do not poll indefinitely without diagnosis.
    Once the version matches the local build id,
    fetch `index.html` once and check it with a substring match for that id.
+   The index fetch and the two asset HEAD requests are independent; run them
+   concurrently in one tool call and inspect every result.
    PowerShell `curl.exe` output is an array of lines, so use `-match` rather
    than `.Contains()` on the result. Use the same build-id query parameter on
    the page and asset URLs. Check the data and wasm URLs with
    `curl.exe -fsSI`; require HTTP success and `Content-Length` matching the local
    file sizes to verify those large files without downloading them again.
    Poll only `version.json` while Pages updates. Do not push again just because
-   Pages is still deploying. Gameplay
-   visual verification is not required.
+   Pages is still deploying. Gameplay visual verification is not required.
+
+   Do not add editor refresh/recompilation, screenshots, gameplay checks, or a
+   second build solely for deployment after a successful build and console
+   check. Feature/fix checks required by `AGENTS.md` still apply when changing
+   the game. Documentation-only changes need a source commit/push, not a WebGL
+   rebuild or Pages deploy unless explicitly requested.
 
 6. Review the root repository's final status. Revert only files known to have
    been generated by the Unity build (for example,
