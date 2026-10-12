@@ -360,6 +360,13 @@ namespace PoeClone.Network
 
                 case "started":
                     bool asHost = msg.coopRole == "host";
+                    if (asHost && coop != null && !coop.Linked)
+                    {
+                        // Someone joined while we waited for a dropped partner (usually that partner,
+                        // back through the lobby): the old party is over.
+                        DestroyImmediate(coop);
+                        coop = null;
+                    }
                     if (coop != null || (asHost ? !hosting : coopIntent != CoopIntent.Join))
                         return;
                     if (asHost)

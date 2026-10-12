@@ -38,6 +38,8 @@ const crypto = require('crypto');
 //   was given at the start to pair up again ("resumed"). This also works after a server
 //   restart: whichever side comes back first waits for the other. Nobody back within
 //   COOP_RESUME_GRACE_MS ends the party ("ended"); a leaving player ("coopLeave") ends it at once.
+//   A host waiting for its guest stays listed: whoever joins it (usually the same guest coming
+//   back through the lobby after its leave was lost) replaces the party being waited on.
 
 const MAX_PLAYERS = 10;
 const MAX_CHAT_HISTORY = 50;
@@ -290,7 +292,7 @@ class Room {
     if (!guest || this.partners.has(client)) return false;
     let host = null;
     for (const [c] of this.hosting) {
-      if (c !== client && !this.partners.has(c) && !this._isResuming(c) && this.players.get(c)?.id === hostId) host = c;
+      if (c !== client && !this.partners.has(c) && this.players.get(c)?.id === hostId) host = c;
     }
     if (!host) {
       safeSend(client, { type: 'coop', state: 'failed', reason: 'That game is no longer open.' });
@@ -301,6 +303,7 @@ class Room {
     const guestName = sanitizeName(requestedName) || guest.name;
     const party = crypto.randomUUID();
     this.browsing.delete(client);
+    this._clearResuming(host);
     this._pair(host, client, party);
     safeSend(host, { type: 'coop', state: 'started', coopRole: 'host', partnerName: guestName, party });
     safeSend(client, { type: 'coop', state: 'started', coopRole: 'guest', partnerName: hostName, party });
@@ -364,25 +367,19 @@ class Room {
     this.partners.delete(partner);
     this.parties.delete(client);
     this.parties.delete(partner);
-    const wasHosting = this.hosting.delete(client);
+    this.hosting.delete(client);
     const partnerRole = role === 'host' ? 'guest' : 'host';
     const name = partnerRole === 'host' ? this.hosting.get(partner) : null;
     this.resuming.set(party, { client: partner, role: partnerRole, name, since: this.now() });
     safeSend(partner, { type: 'coop', state: 'waiting' });
-    if (wasHosting) this._broadcastLobby();
+    // Either the host left the lobby or its game is listed again while it waits.
+    this._broadcastLobby();
   }
 
   _clearResuming(client) {
     for (const [party, waiting] of this.resuming) {
       if (waiting.client === client) this.resuming.delete(party);
     }
-  }
-
-  _isResuming(client) {
-    for (const waiting of this.resuming.values()) {
-      if (waiting.client === client) return true;
-    }
-    return false;
   }
 
   // Stops hosting/browsing and ends any party (telling the partner why). A host whose guest
@@ -420,7 +417,7 @@ class Room {
     const hosts = [];
     for (const [client, name] of this.hosting) {
       const player = this.players.get(client);
-      if (player && !this.partners.has(client) && !this._isResuming(client)) hosts.push({ id: player.id, name });
+      if (player && !this.partners.has(client)) hosts.push({ id: player.id, name });
     }
     return { type: 'lobby', hosts };
   }

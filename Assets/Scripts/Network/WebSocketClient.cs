@@ -46,6 +46,7 @@ namespace PoeClone.Network
         private readonly System.Collections.Generic.Queue<byte[]> sendQueue = new System.Collections.Generic.Queue<byte[]>();
         private int queuedBytes;
         private ClientWebSocket sendingOn; // the socket a send loop is running for
+        private ClientWebSocket closingSocket; // closed by us, still sending what was queued
 #endif
 
         private void Awake()
@@ -150,16 +151,18 @@ namespace PoeClone.Network
 
         private async Task ReceiveLoop()
         {
+            var target = socket;
+            var token = cts.Token;
             var buffer = new byte[64 * 1024];
             try
             {
-                while (socket.State == WebSocketState.Open)
+                while (target.State == WebSocketState.Open)
                 {
                     var sb = new StringBuilder();
                     WebSocketReceiveResult result;
                     do
                     {
-                        result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
+                        result = await target.ReceiveAsync(new ArraySegment<byte>(buffer), token);
                         if (result.MessageType == WebSocketMessageType.Close)
                         {
                             string reason = string.IsNullOrEmpty(result.CloseStatusDescription)
@@ -197,11 +200,11 @@ namespace PoeClone.Network
             sendingOn = target;
             try
             {
-                while (sendQueue.Count > 0 && socket == target)
+                while (sendQueue.Count > 0 && (socket == target || closingSocket == target))
                 {
                     byte[] bytes = sendQueue.Peek();
-                    await target.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, cts.Token);
-                    if (socket != target) break;
+                    await target.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+                    if (socket != target && closingSocket != target) break;
                     sendQueue.Dequeue();
                     queuedBytes -= bytes.Length;
                 }
@@ -221,16 +224,43 @@ namespace PoeClone.Network
             }
         }
 
+        // Like a browser's close(): messages already sent (e.g. a co-op leave right before going
+        // back to the menu) go out first, then the socket closes. Abort is the fallback after 1s.
         private void CloseDesktop()
+        {
+            var target = socket;
+            var source = cts;
+            if (target == null) return;
+            socket = null;
+            cts = null;
+            closingSocket = target;
+            CloseGracefully(target, source);
+        }
+
+        private async void CloseGracefully(ClientWebSocket target, CancellationTokenSource source)
         {
             try
             {
-                cts?.Cancel();
-                socket?.Abort();
+                if (sendQueue.Count > 0 && sendingOn != target)
+                    PumpSends(target);
+                var deadline = DateTime.UtcNow.AddSeconds(1);
+                while (sendingOn == target && DateTime.UtcNow < deadline)
+                    await Task.Delay(10);
+                if (target.State == WebSocketState.Open)
+                {
+                    using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                    await target.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", timeout.Token);
+                }
             }
             catch
             {
                 // already closed/disposed
+            }
+            finally
+            {
+                if (closingSocket == target) closingSocket = null;
+                source.Cancel();
+                target.Abort();
             }
         }
 

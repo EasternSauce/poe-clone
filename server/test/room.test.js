@@ -553,13 +553,27 @@ test('a dropped guest can reconnect and resume the party', () => {
   assert.equal(host.sent.find((m) => m.state === 'started').party, party);
   room.leave(guest);
   assert.equal(host.sent.at(-1).state, 'waiting');
-  assert.deepEqual(room.lobbyMessage().hosts, []); // not joinable while waiting
+  assert.deepEqual(room.lobbyMessage().hosts.map((h) => h.name), ['Hosty']); // still joinable while waiting
   const back = fakeClient();
   room.join(back, 'player', 'Guesty');
   assert.equal(room.coopResume(back, party, 'guest'), true);
   assert.equal(room.partnerOf(host), back);
   assert.equal(host.sent.at(-1).state, 'resumed');
   assert.equal(back.sent.at(-1).state, 'resumed');
+});
+
+test('a dropped guest can rejoin through the lobby, replacing the party being waited on', () => {
+  const room = new Room();
+  const { host, guest } = startParty(room);
+  room.leave(guest); // the guest's coopLeave never arrived
+  assert.equal(host.sent.at(-1).state, 'waiting');
+  const back = fakeClient();
+  room.join(back, 'player', 'Guesty');
+  room.coopList(back);
+  assert.equal(room.coopJoin(back, room.lobbyMessage().hosts[0].id, 'Guesty'), true);
+  assert.equal(room.partnerOf(host), back);
+  assert.equal(host.sent.at(-1).state, 'started');
+  assert.equal(room.resuming.size, 0);
 });
 
 test('a dropped host can reconnect and is listed again after its guest leaves', () => {
