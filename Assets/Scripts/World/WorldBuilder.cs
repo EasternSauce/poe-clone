@@ -964,6 +964,7 @@ namespace PoeClone.World
             {
                 original.Configure(prefab, Centers[Greenwood], AreaShape.MaxRadius, 48, MonsterLevels[Greenwood], KindWeights[Greenwood]);
                 original.SetSafeSpots(SafeSpots(Greenwood));
+                original.SetArrivalSpots(ArrivalSpots(Greenwood));
                 AreaShape greenwood = Shape(Greenwood);
                 original.SetBounds(p => greenwood.Contains(p, 3f));
                 spawnersByArea[Greenwood] = original;
@@ -984,6 +985,7 @@ namespace PoeClone.World
                 ConfigureCourtPopulation(spawner, area);
                 ConfigureRootPopulation(spawner, area);
                 spawner.SetSafeSpots(SafeSpots(area));
+                spawner.SetArrivalSpots(ArrivalSpots(area));
                 AreaShape shape = Shape(area);
                 spawner.SetBounds(p => shape.Contains(p, 3f));
                 spawner.ConfigureStreaming(area);
@@ -1118,7 +1120,18 @@ namespace PoeClone.World
             return Npc.Create(prefab, role, name, look, position, facing, parent);
         }
 
-        // Keep boss clearings and quest props clear; arrivals use player protection instead.
+        private List<Vector3> ArrivalSpots(int area)
+        {
+            var spots = new List<Vector3> { WaystoneSpot(area), spawnPoints[area].position };
+            foreach (var gate in gatePoints)
+                if (gate.area == area) spots.Add(gate.position);
+            string prefix = "Arrive_" + AreaNames[area] + "_";
+            foreach (Transform child in root)
+                if (child.name.StartsWith(prefix)) spots.Add(child.position);
+            return spots;
+        }
+
+        // Keep boss clearings and quest props clear of ordinary packs.
         private List<Vector3> SafeSpots(int area)
         {
             var spots = new List<Vector3>();

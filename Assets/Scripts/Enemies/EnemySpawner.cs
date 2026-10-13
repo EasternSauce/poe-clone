@@ -10,7 +10,7 @@ namespace PoeClone.Enemies
     /// scene starts. Every kill is remembered: once the player has walked far enough away from where
     /// it died (and a little time has passed), a new enemy of a random kind appears there, so a
     /// cleared spot is populated again when you come back, but never refills while you stand in it.
-    /// Avoids spawning inside scenery or other enemies; arrival safety is handled by the player.
+    /// Avoids scenery, other enemies and travel arrivals without relocating rejected enemies.
     /// </summary>
     public class EnemySpawner : MonoBehaviour
     {
@@ -59,6 +59,30 @@ namespace PoeClone.Enemies
         // Boss clearings and quest sites stay free of ordinary packs.
         private const float SafeRadius = 16f;
         private readonly List<Vector3> safeSpots = new List<Vector3>();
+
+        private const float ArrivalClearRadius = 22f;
+        private const float ArrivalFadeRadius = 34f;
+        private readonly List<Vector3> arrivalSpots = new List<Vector3>();
+
+        public void SetArrivalSpots(IEnumerable<Vector3> spots)
+        {
+            arrivalSpots.Clear();
+            arrivalSpots.AddRange(spots);
+        }
+
+        private float ArrivalSpawnChance(Vector3 point)
+        {
+            float nearestSquared = float.PositiveInfinity;
+            foreach (Vector3 spot in arrivalSpots)
+            {
+                float dx = point.x - spot.x;
+                float dz = point.z - spot.z;
+                nearestSquared = Mathf.Min(nearestSquared, dx * dx + dz * dz);
+            }
+            if (nearestSquared >= ArrivalFadeRadius * ArrivalFadeRadius) return 1f;
+            return Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(ArrivalClearRadius,
+                ArrivalFadeRadius, Mathf.Sqrt(nearestSquared)));
+        }
 
         public void SetSafeSpots(System.Collections.Generic.IEnumerable<Vector3> spots)
         {
@@ -140,6 +164,9 @@ namespace PoeClone.Enemies
                         if (!NearSafeSpot(near) && (inside == null || inside(near))) openingHomes.Add((near, kind));
                     }
                 }
+                // Thin the completed map-wide plan, without refilling its removed slots.
+                // A gradual density increase avoids a crowded rim at the clear boundary.
+                openingHomes.RemoveAll(home => Random.value >= ArrivalSpawnChance(home.point));
             }
             finally { Random.state = previous; }
         }
@@ -166,7 +193,8 @@ namespace PoeClone.Enemies
                     float radius = attempt == 0 ? 0 : Mathf.Sqrt((float)random.NextDouble()) * respawnScatter;
                     Vector3 candidate = home.point + new Vector3(Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
                     if (!localBounds.Contains(new Vector2(candidate.x - origin.x, candidate.z - origin.z)) ||
-                        NearSafeSpot(candidate) || inside != null && !inside(candidate)) continue;
+                        NearSafeSpot(candidate) || ArrivalSpawnChance(candidate) <= 0f ||
+                        inside != null && !inside(candidate)) continue;
                     long started = PoeClone.UI.PerformanceDiagnostics.Begin();
                     bool valid;
                     Vector3 at;
@@ -199,8 +227,9 @@ namespace PoeClone.Enemies
 
             // Pack animals bring the rest of their pack (counted towards the total).
             int spawned = 0;
+            int planned = 0;
             int misses = 0;
-            while (spawned < enemyCount && misses < enemyCount)
+            while (planned < enemyCount && misses < enemyCount)
             {
                 if (!TryFindSpawnPoint(out Vector3 point, out int kindIndex))
                 {
@@ -208,15 +237,21 @@ namespace PoeClone.Enemies
                     continue;
                 }
 
-                Spawn(point, kindIndex);
-                spawned++;
+                planned++;
+                if (Random.value < ArrivalSpawnChance(point))
+                {
+                    Spawn(point, kindIndex);
+                    spawned++;
+                }
 
                 int pack = EnemyKinds.Get(kindIndex).PackSize;
                 if (pack > 0)
                     pack = Random.Range(1, pack + 1);
-                for (int k = 0; k < pack && spawned < enemyCount; k++)
+                for (int k = 0; k < pack && planned < enemyCount; k++)
                 {
-                    if (TryFindSpawnPointNear(point, out Vector3 near, out _, kindIndex))
+                    planned++;
+                    if (TryFindSpawnPointNear(point, out Vector3 near, out _, kindIndex) &&
+                        Random.value < ArrivalSpawnChance(near))
                     {
                         Spawn(near, kindIndex);
                         spawned++;
@@ -249,7 +284,8 @@ namespace PoeClone.Enemies
                     continue;
 
                 // A blocked spot (something moved in) is retried on a later check.
-                if (TryFindSpawnPointNear(v.Position, out Vector3 point, out int kindIndex))
+                if (TryFindSpawnPointNear(v.Position, out Vector3 point, out int kindIndex) &&
+                    ArrivalSpawnChance(point) > 0f)
                 {
                     Spawn(point, kindIndex);
                     vacancies.RemoveAt(k);

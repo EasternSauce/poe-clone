@@ -1,3 +1,6 @@
+version: 2026-10-13-travel-breathing-room
+- Random enemy packs leave breathing room around gates, waystones and arrival points. Enemy density rises gradually farther away, without moving skipped enemies into a ring or replacing them to fill a quota.
+
 version: 2026-10-13-touch-thumb-reach
 - Landscape skills sit closer around the attack joystick for shorter thumb movements, clear of the minimap and potions.
 - Using either joystick prevents pinch zoom, including when dragging outside the joystick.
