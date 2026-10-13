@@ -255,6 +255,8 @@ namespace PoeClone.Inventory
 
         private Canvas canvas;
         private Canvas tooltipCanvas;
+        private RectTransform mobileSelection;
+        private readonly Vector3[] selectionCorners = new Vector3[4];
         private RectTransform inventoryClose;
         private CanvasGroup canvasGroup;
         private RectTransform panel;
@@ -416,6 +418,7 @@ namespace PoeClone.Inventory
         private void Update()
         {
             UpdateTooltipCanvasOrder();
+            if (mobileSelection != null && (!isOpen || !TouchMode.Active)) mobileSelection.gameObject.SetActive(false);
             if (isOpen && (layoutScreenWidth != Screen.width || layoutScreenHeight != Screen.height ||
                 !Mathf.Approximately(layoutCanvasScale, canvas.scaleFactor) || layoutTouchMode != TouchMode.Active))
                 ApplyPanelLayout();
@@ -770,7 +773,7 @@ namespace PoeClone.Inventory
             Hover dragHover = cursorItem != null && touch.press.isPressed ? Hit(pos) : new Hover();
             if (cursorItem != null && touch.press.isPressed)
                 report = dragHover;
-            UpdateHighlights(dragHover);
+            UpdateHighlights(touchInspecting && cursorItem == null ? Hit(touchStart) : dragHover);
             // Whatever the held item would swap with, shown alongside the held tooltip above.
             if (cursorItem != null && touch.press.isPressed)
                 UpdateTooltip(dragHover, pos);
@@ -819,6 +822,7 @@ namespace PoeClone.Inventory
                 stashOpen = false;
                 vendor = null;
                 tooltipRect.gameObject.SetActive(false);
+                if (mobileSelection != null) mobileSelection.gameObject.SetActive(false);
                 heldTooltipRect.gameObject.SetActive(false);
             }
 
@@ -1613,6 +1617,24 @@ private Vector2 CellSize(int w, int h)
             UiKit.Stretch(heldTooltipText.rectTransform, 10f);
 
             heldTooltipRect.gameObject.SetActive(false);
+
+            mobileSelection = UiKit.NewRect("MobileSelectedItem", tooltipCanvas.transform);
+            mobileSelection.anchorMin = mobileSelection.anchorMax = new Vector2(0.5f, 0.5f);
+            mobileSelection.pivot = new Vector2(0.5f, 0.5f);
+            // Solid edges stay visible over an opaque tooltip without obscuring its text.
+            for (int edge = 0; edge < 4; edge++)
+            {
+                Image line = UiKit.NewImage("Edge" + edge, mobileSelection, new Color(1f, 0.8f, 0.18f, 1f));
+                line.raycastTarget = false;
+                RectTransform rt = line.rectTransform;
+                bool horizontal = edge < 2;
+                float side = edge % 2;
+                rt.anchorMin = horizontal ? new Vector2(0f, side) : new Vector2(side, 0f);
+                rt.anchorMax = horizontal ? new Vector2(1f, side) : new Vector2(side, 1f);
+                rt.sizeDelta = new Vector2(6f, 6f);
+                rt.anchoredPosition = Vector2.zero;
+            }
+            mobileSelection.gameObject.SetActive(false);
         }
 
         // ------------------------------------------------------------------ item views
@@ -1859,6 +1881,28 @@ private Vector2 CellSize(int w, int h)
         // ------------------------------------------------------------------ feedback
 
         private void UpdateHighlights(Hover h)
+        {
+            UpdateSlotHighlights(h);
+            if (mobileSelection == null) return;
+            RectTransform source = null;
+            if (TouchMode.Active && isOpen)
+            {
+                if (h.Slot != null && inventory.Equipment.Get(h.Slot.Slot) != null) source = h.Slot.Rect;
+                else if (h.OverGrid && gridHighlight.enabled) source = gridHighlight.rectTransform;
+                else if (h.OverStash && stashHighlight.enabled) source = stashHighlight.rectTransform;
+            }
+            mobileSelection.gameObject.SetActive(source != null);
+            if (source == null) return;
+            source.GetWorldCorners(selectionCorners);
+            var parent = (RectTransform)mobileSelection.parent;
+            Vector2 bottom = parent.InverseTransformPoint(selectionCorners[0]);
+            Vector2 top = parent.InverseTransformPoint(selectionCorners[2]);
+            mobileSelection.anchoredPosition = (bottom + top) * 0.5f;
+            mobileSelection.sizeDelta = top - bottom;
+            mobileSelection.SetAsLastSibling();
+        }
+
+        private void UpdateSlotHighlights(Hover h)
         {
             foreach (SlotView s in slotViews)
             {

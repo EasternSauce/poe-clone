@@ -1,3 +1,12 @@
+version: 2026-10-13-mobile-controls-and-camera
+- Town and Chat have dedicated mobile buttons. The MENU drawer fits and centers its buttons with even margins, and the skill button screen keeps its close control clear.
+- Passive tree taps are more forgiving on mobile. Removed Centre, tidied Reset all and Refund, and swapped Confirm and Cancel. Closing or cancelling a pending allocation opens a Yes/No discard confirmation.
+- Zoom the gameplay camera with the mouse wheel or a two-finger pinch. Mobile starts closer, with a limited zoom range to keep the action readable.
+- Raised mobile potions. Inventory direction buttons are twice as large and sit higher; the selected item's bright outline stays visible over its tooltip.
+- Removed the town dialogue option that erased your character progress.
+- Chat reconnects silently after connection interruptions and retries promptly when returning to the tab.
+- Sheep have more distinct heads and longer, thicker legs. Unavailable Newer and Older patch history buttons are greyed out.
+
 version: 2026-10-13-mobile-ui-layout
 - Mobile patch notes use much larger text in both the main menu and settings. Patch history shows one full-width release with Newer and Older buttons.
 - Larger close controls stay visible, including on the character page. Character stats scroll with larger, sharper text.

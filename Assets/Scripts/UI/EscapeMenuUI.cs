@@ -456,10 +456,17 @@ namespace PoeClone.UI
             notesScroll.verticalNormalizedPosition=1;
             if (newerButton != null)
             {
-                newerButton.GetComponent<UnityEngine.UI.Button>().interactable = selected > 0;
-                olderButton.GetComponent<UnityEngine.UI.Button>().interactable = selected + 1 < entries.Length;
+                SetHistoryButtonEnabled(newerButton, selected > 0);
+                SetHistoryButtonEnabled(olderButton, selected + 1 < entries.Length);
             }
         }
+        private static void SetHistoryButtonEnabled(GameObject root, bool enabled)
+        {
+            root.GetComponent<UnityEngine.UI.Button>().interactable = enabled;
+            root.GetComponent<Image>().color = enabled ? Color.white : new Color(0.38f, 0.38f, 0.38f, 1f);
+            root.GetComponentInChildren<Text>().color = enabled ? UiKit.TextColor : new Color(0.42f, 0.42f, 0.42f, 1f);
+        }
+
         private void ClearEntries()
         {
             body.transform.SetParent(notesContent,false);

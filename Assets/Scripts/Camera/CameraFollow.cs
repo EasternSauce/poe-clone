@@ -1,5 +1,8 @@
 using PoeClone.Inventory;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 namespace PoeClone.CameraSystem
 {
@@ -41,6 +44,57 @@ namespace PoeClone.CameraSystem
         public static float Zoom = 1f;
 
         private float zoom = 1f;
+        private float playerZoom = 1f;
+        private float pinchDistance;
+        private int pinchIdA, pinchIdB;
+        private const float ClosestDistanceScale = 0.6f;
+        private const float FarthestDistanceScale = 1.3f;
+
+        private void UpdatePlayerZoom()
+        {
+            if (!TouchMode.Active)
+            {
+                pinchDistance = 0f;
+                Mouse mouse = Mouse.current;
+                if (mouse == null || UiKit.IsTextPromptOpen || UiKit.IsTypingInTextField() ||
+                    (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())) return;
+                float scroll = mouse.scroll.ReadValue().y;
+                if (Mathf.Abs(scroll) > 0.01f) ChangePlayerZoom(Mathf.Exp(-Mathf.Clamp(scroll / 120f, -3f, 3f) * 0.1f));
+                return;
+            }
+
+            TouchControl first = null, second = null;
+            if (Touchscreen.current != null)
+                foreach (TouchControl touch in Touchscreen.current.touches)
+                {
+                    if (!touch.press.isPressed) continue;
+                    Vector2 at = touch.position.ReadValue();
+                    if (TouchMode.IsOverBlocker(at) || TouchMode.IsOverMenuBlocker(at)) continue;
+                    if (first == null) first = touch;
+                    else if (second == null) second = touch;
+                    else { pinchDistance = 0f; return; }
+                }
+            if (first == null || second == null || UiKit.IsTextPromptOpen)
+            {
+                pinchDistance = 0f;
+                return;
+            }
+            float current = Vector2.Distance(first.position.ReadValue(), second.position.ReadValue());
+            int idA = first.touchId.ReadValue(), idB = second.touchId.ReadValue();
+            if (pinchDistance > 0f && current > 0f && idA == pinchIdA && idB == pinchIdB)
+                ChangePlayerZoom(Mathf.Pow(pinchDistance / current, 0.7f));
+            pinchDistance = current;
+            pinchIdA = idA;
+            pinchIdB = idB;
+            // A finger in the movement zone can become part of a camera gesture.
+            PoeClone.Player.VirtualInput.Move = Vector2.zero;
+        }
+
+        private void ChangePlayerZoom(float factor)
+        {
+            float baseline = TouchMode.Active ? touchDistanceScale : 1f;
+            playerZoom = Mathf.Clamp(playerZoom * factor, ClosestDistanceScale / baseline, FarthestDistanceScale / baseline);
+        }
 
         /// <summary>Shakes the view for a moment. A stronger shake overrides a weaker one already running.</summary>
         public static void Shake(float strength, float seconds)
@@ -65,6 +119,8 @@ namespace PoeClone.CameraSystem
         {
             if (target == null)
                 return;
+
+            UpdatePlayerZoom();
 
             // Rotation is fixed; only the position follows the player.
             transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
@@ -102,7 +158,9 @@ namespace PoeClone.CameraSystem
         private Vector3 DesiredPosition()
         {
             Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
-            float d = (TouchMode.Active ? distance * touchDistanceScale : distance) * zoom;
+            float framing = Mathf.Clamp((TouchMode.Active ? touchDistanceScale : 1f) * playerZoom,
+                ClosestDistanceScale, FarthestDistanceScale);
+            float d = distance * framing * zoom;
             // Upright screens otherwise crop the fight to a thin strip around the player.
             if (TouchMode.Portrait)
                 d *= Mathf.Min(2f, (float)Screen.height / Mathf.Max(1, Screen.width));

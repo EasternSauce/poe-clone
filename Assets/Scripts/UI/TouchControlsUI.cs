@@ -25,7 +25,7 @@ namespace PoeClone.UI
         private const float JoystickDeadZone = 0.15f;
         private static Vector2 JoystickIdle => TouchMode.Portrait ? new Vector2(180f, 185f) : new Vector2(170f, 170f);
         private bool menuExpanded;
-        private Image menuToggle, questToggle, drawerBackground;
+        private Image menuToggle, questToggle, drawerBackground, townButton, chatButton;
         private readonly List<RectTransform> drawerButtons = new List<RectTransform>();
 
         private static readonly Color ControlColor = new Color(0.08f, 0.07f, 0.06f, 0.55f);
@@ -36,6 +36,8 @@ namespace PoeClone.UI
         private GameObject combatRoot;
         private GameObject menuRoot;
         private GameObject inventoryNavigationRoot;
+        private static readonly Vector2[] InventoryDirections = { Vector2.up, Vector2.right, Vector2.down, Vector2.left };
+        private readonly List<RectTransform> inventoryDirections = new List<RectTransform>();
 
         private RectTransform joystickZone;
         private RectTransform joystickBase;
@@ -145,6 +147,8 @@ namespace PoeClone.UI
             menuRoot.SetActive(menus && menuExpanded);
             menuToggle.gameObject.SetActive(menus);
             questToggle.gameObject.SetActive(menus);
+            townButton.gameObject.SetActive(menus && !PoeClone.World.MinimalCombatMode.Enabled);
+            chatButton.gameObject.SetActive(menus && !PoeClone.World.MinimalCombatMode.Enabled);
             if (menuOpen) menuExpanded = false;
             LayoutControls();
             if (settingsButton != null)
@@ -553,13 +557,14 @@ namespace PoeClone.UI
 
             Canvas navigationCanvas = NewCanvas("InventoryNavigationCanvas", 805);
             inventoryNavigationRoot = navigationCanvas.gameObject;
-            Vector2[] directions = { Vector2.up, Vector2.right, Vector2.down, Vector2.left };
-            for (int k = 0; k < directions.Length; k++)
+            for (int k = 0; k < InventoryDirections.Length; k++)
             {
-                Vector2 direction = directions[k];
+                Vector2 direction = InventoryDirections[k];
                 Image button = NewRoundButton("InventoryDirection" + k, navigationCanvas.transform, Vector2.zero,
-                    JoystickIdle + direction * 85f, 78f, null);
+                    new Vector2(270f, 300f) + direction * 170f, 156f, null);
                 AddDirectionArrow(button, direction);
+                button.transform.Find("Arrow").localScale = Vector3.one * 2f;
+                inventoryDirections.Add(button.rectTransform);
                 button.gameObject.AddComponent<TouchPointerRelay>().Down += _ => inventoryUI?.Navigate(direction);
                 TouchMode.AddBlocker(button.rectTransform);
             }
@@ -580,7 +585,7 @@ namespace PoeClone.UI
             skillsButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ToggleSkills();
             TouchMode.AddBlocker(skillsButton.rectTransform);
 
-            Image chat = NewRoundButton("Chat", menu, Vector2.one, new Vector2(-180f, -180f), 96f, "CHAT");
+            Image chat = chatButton = NewRoundButton("Chat", canvas.transform, Vector2.one, new Vector2(-180f, -180f), 96f, "CHAT");
             chat.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ToggleChat();
 
             Image dot = UiKit.NewImage("Unread", chat.rectTransform, UnreadColor);
@@ -598,7 +603,7 @@ namespace PoeClone.UI
             tree.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TogglePassives();
             TouchMode.AddBlocker(tree.rectTransform);
 
-            Image town = NewRoundButton("Town", menu, new Vector2(0f, 1f), new Vector2(460f, -58f), 96f, "TOWN");
+            Image town = townButton = NewRoundButton("Town", canvas.transform, new Vector2(0f, 1f), new Vector2(460f, -58f), 96f, "TOWN");
             town.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TownPortal.Pressed = true;
             TouchMode.AddBlocker(town.rectTransform);
 
@@ -632,8 +637,8 @@ namespace PoeClone.UI
             UiKit.ThinFrame(drawerBackground.rectTransform);
             TouchMode.AddBlocker(drawerBackground.rectTransform);
             TouchMode.AddMenuBlocker(drawerBackground.rectTransform);
-            Image[] drawer = { bag, character, skillsButton, chat, tree, town, settingsButton };
-            string[] names = { "Inventory", "Character", "Skills", "Chat", "Passives", "Town", "Settings" };
+            Image[] drawer = { bag, character, skillsButton, tree, settingsButton };
+            string[] names = { "Inventory", "Character", "Skills", "Passives", "Settings" };
             for (int k=0;k<drawer.Length;k++)
             {
                 Image button=drawer[k];
@@ -664,6 +669,8 @@ namespace PoeClone.UI
             var combat = (RectTransform)combatRoot.transform;
             combat.offsetMin = new Vector2(safe.xMin,safe.yMin)/unit;
             combat.offsetMax = new Vector2(safe.xMax-Screen.width,safe.yMax-Screen.height)/unit;
+            for (int k = 0; k < inventoryDirections.Count; k++)
+                Place(inventoryDirections[k], Vector2.zero, new Vector2(270f, portrait ? 360f : 300f) + InventoryDirections[k] * 170f + new Vector2(safe.xMin, safe.yMin) / unit, Vector2.one * 156f);
             float rowY = portrait ? -215f : -165f;
             Place(menuToggle.rectTransform, new Vector2(0f, 1f), new Vector2(86f, rowY), new Vector2(124f, 108f));
             Place(questToggle.rectTransform, new Vector2(0f, 1f), new Vector2(230f, rowY), new Vector2(124f, 108f));
@@ -671,13 +678,32 @@ namespace PoeClone.UI
             questToggle.GetComponentInChildren<Text>().fontSize = portrait ? 30 : 26;
             questToggle.color = QuestTrackerUI.MobileOpen ? ControlPressed : ControlColor;
             menuToggle.color = menuExpanded ? ControlPressed : ControlColor;
-            UiKit.TopLeft(drawerBackground.rectTransform,new Vector2(24f,rowY-70f),new Vector2(portrait ? 552f : 1092f,portrait ? 480f : 240f));
-            for (int k = 0; k < drawerButtons.Count; k++)
+            Place(townButton.rectTransform, new Vector2(0f, 1f), new Vector2(374f, rowY), new Vector2(124f, 108f));
+            Place(chatButton.rectTransform, new Vector2(0f, 1f), new Vector2(518f, rowY), new Vector2(124f, 108f));
+            townButton.GetComponentInChildren<Text>().fontSize = portrait ? 30 : 26;
+            chatButton.GetComponentInChildren<Text>().fontSize = portrait ? 30 : 26;
+            int count = 0;
+            foreach (RectTransform button in drawerButtons)
+                if (button.gameObject.activeSelf) count++;
+            int columns = Mathf.Min(portrait ? 2 : 3, Mathf.Max(1, count));
+            int rows = Mathf.CeilToInt((float)count / columns);
+            const float padding = 16f, buttonWidth = 252f, buttonHeight = 108f, gap = 18f;
+            float drawerWidth = 2f * padding + columns * buttonWidth + (columns - 1) * gap;
+            float drawerHeight = 2f * padding + rows * buttonHeight + Mathf.Max(0, rows - 1) * gap;
+            UiKit.TopLeft(drawerBackground.rectTransform, new Vector2(24f, rowY - 70f), new Vector2(drawerWidth, drawerHeight));
+            int index = 0;
+            foreach (RectTransform button in drawerButtons)
             {
-                RectTransform button = drawerButtons[k];
-                Place(button, new Vector2(0f, 1f), new Vector2(150f + (k % (portrait ? 2 : 4)) * 270f, rowY - 124f - (k / (portrait ? 2 : 4)) * 120f), new Vector2(252f, 108f));
+                if (!button.gameObject.activeSelf) continue;
+                int row = index / columns;
+                int rowCount = Mathf.Min(columns, count - row * columns);
+                float rowWidth = rowCount * buttonWidth + (rowCount - 1) * gap;
+                float x = 24f + (drawerWidth - rowWidth) * 0.5f + buttonWidth * 0.5f + (index % columns) * (buttonWidth + gap);
+                float y = rowY - 70f - padding - buttonHeight * 0.5f - row * (buttonHeight + gap);
+                Place(button, new Vector2(0f, 1f), new Vector2(x, y), new Vector2(buttonWidth, buttonHeight));
                 Text label = button.GetComponentInChildren<Text>();
                 if (label != null) label.fontSize = portrait ? 34 : 28;
+                index++;
             }
             healthPotionText.fontSize = manaPotionText.fontSize = portrait ? 32 : 26;
             for (int k=0;k<skillButtons.Count;k++)
@@ -703,9 +729,9 @@ namespace PoeClone.UI
                         new Vector2(-335f-(k%2)*120f,300f-(k/2)*120f),Vector2.one*100f);
             }
             Place(healthPotionImage.rectTransform, portrait ? Vector2.zero : new Vector2(1f, 0f),
-                portrait ? new Vector2(85f, 440f) : new Vector2(-300f, 62f), Vector2.one * (portrait ? 132f : 112f));
+                portrait ? new Vector2(85f, 500f) : new Vector2(-300f, 100f), Vector2.one * (portrait ? 132f : 112f));
             Place(manaPotionImage.rectTransform, portrait ? Vector2.zero : new Vector2(1f, 0f),
-                portrait ? new Vector2(235f, 440f) : new Vector2(-425f, 62f), Vector2.one * (portrait ? 132f : 112f));
+                portrait ? new Vector2(235f, 500f) : new Vector2(-425f, 100f), Vector2.one * (portrait ? 132f : 112f));
         }
 
         // Its own scaler rather than TouchAwareScaler: these canvases only ever show in touch mode.

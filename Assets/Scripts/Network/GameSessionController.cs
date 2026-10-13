@@ -82,7 +82,6 @@ namespace PoeClone.Network
         private Coroutine reconnectRoutine;
         private bool returningToMainMenu;
         private bool serverPlayGranted;
-        private bool chatDisconnected;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
@@ -578,11 +577,6 @@ namespace PoeClone.Network
                         // Server permission controls spectator streaming only.
                         stateBroadcaster.enabled = msg.granted;
                     }
-                    if (msg.granted && chatDisconnected)
-                    {
-                        chatDisconnected = false;
-                        SystemChat("Reconnected to chat.");
-                    }
                     if (coopIntent == CoopIntent.Join)
                     {
                         if (msg.granted)
@@ -643,11 +637,6 @@ namespace PoeClone.Network
         private void HandleClose(string reason)
         {
             if (returningToMainMenu) return;
-            if (Connected)
-            {
-                chatDisconnected = true;
-                SystemChat("Disconnected from chat.");
-            }
             if (!string.IsNullOrWhiteSpace(reason)) DisconnectReason = reason;
             if (string.IsNullOrWhiteSpace(DisconnectReason)) DisconnectReason = "Connection closed unexpectedly.";
             if (coopIntent == CoopIntent.Join)
@@ -718,7 +707,10 @@ namespace PoeClone.Network
             // browser gives the game focus again; a healthy socket needs no new connection.
             if (focused && !Connected && reconnectRoutine != null && !returningToMainMenu && !string.IsNullOrEmpty(serverUrl) &&
                 !string.IsNullOrEmpty(PlayerName))
+            {
+                reconnectDelay = 2f;
                 ScheduleReconnect();
+            }
         }
 
         // Leaving on purpose (back to the menu, closing the tab or game): end the party now

@@ -985,10 +985,12 @@ namespace PoeClone.UI
             var parent = (RectTransform)panelRoot.transform.parent;
             if (mobileLayoutSize == parent.rect.size) return;
             mobileLayoutSize = parent.rect.size;
-            panelWidth = Mathf.Min(920f, parent.rect.width - 32f);
+            float scale = Mathf.Max(0.01f, Mathf.Abs(parent.lossyScale.x));
+            panelWidth = Mathf.Min(920f, Screen.safeArea.width / scale - 32f);
             var pr = (RectTransform)panelRoot.transform;
             pr.GetComponent<Image>().color = UiKit.ReadablePanelColor;
-            pr.sizeDelta = new Vector2(panelWidth, parent.rect.height - 48f);
+            pr.sizeDelta = new Vector2(panelWidth, Screen.safeArea.height / scale - 48f);
+            pr.anchoredPosition = (Screen.safeArea.center - new Vector2(Screen.width, Screen.height) * 0.5f) / scale;
             Text title = pr.Find("Title").GetComponent<Text>();
             title.fontSize = 40;
             title.rectTransform.sizeDelta = new Vector2(panelWidth - 150f, 60f);
@@ -996,14 +998,17 @@ namespace PoeClone.UI
             close.anchorMin = close.anchorMax = close.pivot = Vector2.one;
             close.anchoredPosition = new Vector2(-12f,-12f);
             bool portrait = TouchMode.Portrait;
+            float closeSize = Mathf.Max(38f, 44f * Mathf.Min(Screen.width, Screen.height) / 390f / Mathf.Max(0.01f, Mathf.Abs(pr.lossyScale.x)));
+            float headerHeight = Mathf.Max(120f, closeSize + 28f);
+            close.SetAsLastSibling();
             int columns = portrait ? 2 : 4;
             float width = (panelWidth - 32f - (columns-1)*12f)/columns;
             for (int k=0;k<mobileButtons.Length;k++)
             {
-                UiKit.TopLeft(mobileButtons[k].rectTransform,new Vector2(16f+(k%columns)*(width+12f),-90f-(k/columns)*116f),new Vector2(width,104f));
+                UiKit.TopLeft(mobileButtons[k].rectTransform,new Vector2(16f+(k%columns)*(width+12f),-headerHeight-(k/columns)*116f),new Vector2(width,104f));
                 mobileLabels[k].fontSize = portrait ? 34 : 28;
             }
-            float top = portrait ? 330f : 208f;
+            float top = headerHeight + Mathf.CeilToInt((float)mobileButtons.Length / columns) * 116f + 8f;
             selectionHint.fontSize = portrait ? 32 : 28;
             UiKit.TopLeft(selectionHint.rectTransform,new Vector2(16f,-top),new Vector2(panelWidth-230f,72f));
             var clear=(RectTransform)pr.Find("ClearButton");

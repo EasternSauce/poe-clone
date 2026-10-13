@@ -122,22 +122,22 @@ namespace PoeClone.World
         private static void Sheep(Transform visual, int variant)
         {
             Color wool = variant % 4 == 0 ? new Color(0.47f, 0.43f, 0.36f) : Cream;
-            Color face = new Color(0.29f, 0.25f, 0.20f);
-            Part(visual, "WoolBody", new Vector3(0, 0.70f, 0), new Vector3(0.87f, 0.82f, 1.34f), wool);
+            Color face = new Color(0.13f, 0.15f, 0.19f);
+            Part(visual, "WoolBody", new Vector3(0, 0.84f, 0), new Vector3(0.82f, 0.72f, 1.22f), wool);
             // Overlapping fleece lobes keep the outline woolly, rather than a smooth capsule.
             for (int i = 0; i < 10; i++)
             {
                 float angle = i * Mathf.PI * 2 / 10;
-                Part(visual, "Fleece", new Vector3(Mathf.Sin(angle) * 0.32f, 0.83f + Mathf.Cos(angle) * 0.18f,
-                    (i % 3 - 1) * 0.37f), new Vector3(0.47f, 0.48f, 0.52f), wool);
+                Part(visual, "Fleece", new Vector3(Mathf.Sin(angle) * 0.32f, 0.96f + Mathf.Cos(angle) * 0.18f,
+                    (i % 3 - 1) * 0.37f), new Vector3(0.43f, 0.42f, 0.48f), wool);
             }
-            Legs(visual, 0.26f, 0.41f, 0.47f, 0.14f, face);
-            Transform head = Pivot(visual, "Head", new Vector3(0, 0.75f, 0.58f));
-            Part(head, "Face", new Vector3(0, -0.08f, 0.16f), new Vector3(0.36f, 0.37f, 0.47f), face);
+            Legs(visual, 0.40f, 0.52f, 0.66f, 0.20f, face);
+            Transform head = Pivot(visual, "Head", new Vector3(0, 0.94f, 0.76f));
+            Part(head, "Face", new Vector3(0, -0.08f, 0.16f), new Vector3(0.42f, 0.43f, 0.55f), face);
             Part(head, "Forelock", new Vector3(0, 0.12f, 0.04f), new Vector3(0.40f, 0.25f, 0.32f), wool);
             foreach (float side in new[] { -1f, 1f })
-                Part(head, "Ear", new Vector3(side * 0.25f, 0.03f, 0.09f), new Vector3(0.25f, 0.10f, 0.15f), face);
-            Eyes(head, 0.177f, 0.015f, 0.20f, 0.055f);
+                Part(head, "Ear", new Vector3(side * 0.29f, 0.03f, 0.09f), new Vector3(0.25f, 0.10f, 0.15f), face);
+            Eyes(head, 0.208f, 0.015f, 0.23f, 0.065f);
             Part(visual, "Tail", new Vector3(0, 0.67f, -0.68f), new Vector3(0.18f, 0.31f, 0.18f), wool);
             visual.localScale = Vector3.one * (0.88f + variant % 3 * 0.07f);
         }

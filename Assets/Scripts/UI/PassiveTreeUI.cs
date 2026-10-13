@@ -69,6 +69,7 @@ namespace PoeClone.UI
         private Image respecButton;
         private Text respecLabel;
         private bool closeRequested;
+        private GameObject discardDialog;
         private Vector2 mobileLayoutSize;
         private bool layoutWasTouch;
         private PassiveAllocation Preview => !Spectating && draft != null ? draft : passives.Allocation;
@@ -82,37 +83,48 @@ namespace PoeClone.UI
             draft.ReplaceWith(passives.Allocation.Taken);
             resetPending = false;
             closeRequested = false;
+            if (discardDialog != null) discardDialog.SetActive(false);
         }
 
         public void ConfirmChanges()
         {
-            if (Spectating) return;
+            if (Spectating || closeRequested) return;
             if (!HasPendingChanges) return;
             if (!passives.ConfirmDraft(draft, resetPending, respecMode)) return;
             var audio = AudioManager.Instance;
             if (audio != null) audio.PlayUI(audio.Sfx("passive_confirm"));
-            // Confirming applies the changes and keeps the tree open, unless it was the answer to closing it.
-            bool close = closeRequested;
             respecMode = false;
             BeginDraft();
             hovered = null;
             ShowInfo(null);
             dirty = true;
-            if (close) SetOpen(false);
         }
 
         public void CancelChanges()
         {
             if (Spectating) return;
+            SetOpen(false);
+        }
+
+        private void DiscardAndClose()
+        {
             draft = null;
             resetPending = false;
             respecMode = false;
+            closeRequested = false;
+            discardDialog.SetActive(false);
             SetOpen(false);
+        }
+
+        private void KeepEditing()
+        {
+            closeRequested = false;
+            discardDialog.SetActive(false);
+            dirty = true;
         }
         private Image resetButton;
         private Image zoomInButton;
         private Image zoomOutButton;
-        private Image centreButton;
         private Text resetLabel;
         private PlayerPassives passives;
         private PassiveNode selected;
@@ -136,18 +148,14 @@ namespace PoeClone.UI
         {
             if (instance == null)
                 return;
-            if (!open && !Spectating && instance.respecMode)
-            {
-                instance.draft = null;
-                instance.resetPending = false;
-                instance.respecMode = false;
-                instance.closeRequested = false;
-            }
             if (!open && !Spectating && instance.HasPendingChanges)
             {
                 instance.closeRequested = true;
                 instance.hovered = null;
                 instance.ShowInfo(null);
+                instance.ResetPinch();
+                instance.discardDialog.SetActive(true);
+                instance.discardDialog.transform.SetAsLastSibling();
                 instance.dirty = true;
                 return;
             }
@@ -158,6 +166,11 @@ namespace PoeClone.UI
             instance.panelRoot.SetActive(open);
             if (!open)
             {
+                instance.draft = null;
+                instance.resetPending = false;
+                instance.respecMode = false;
+                instance.closeRequested = false;
+                instance.discardDialog.SetActive(false);
                 instance.ResetPinch();
                 instance.hovered = null;
                 instance.ShowInfo(null);
@@ -238,7 +251,7 @@ namespace PoeClone.UI
                 dirty = true;
             }
 
-            if (panelRoot.activeSelf)
+            if (panelRoot.activeSelf && !closeRequested)
                 UpdatePinch();
 
             Keyboard keyboard = Keyboard.current;
@@ -247,7 +260,10 @@ namespace PoeClone.UI
                 if (keyboard.pKey.wasPressedThisFrame)
                     SetOpen(!panelRoot.activeSelf);
                 else if (panelRoot.activeSelf && keyboard.escapeKey.wasPressedThisFrame)
-                    SetOpen(false);
+                {
+                    if (closeRequested) KeepEditing();
+                    else SetOpen(false);
+                }
             }
 
             if (panelRoot.activeSelf && dirty)
@@ -478,8 +494,6 @@ namespace PoeClone.UI
             infoText.text = TouchMode.Active
                 ? "Tap a passive to inspect it; tap again to take it. Drag to look around, pinch to zoom."
                 : "Click to take a passive; click a pending end node again to undo it. Drag to look around, scroll to zoom.";
-            if (closeRequested)
-                infoText.text = "You have unconfirmed changes. Confirm to spend your points, or Cancel to discard changes.";
             if (respecMode)
                 infoText.text = "Click allocated end nodes to refund. One orb per node on Accept. Cancel or close to discard.";
             if (node == null) return;
@@ -545,7 +559,7 @@ namespace PoeClone.UI
 
         private void OnClick(PassiveNode node, PointerEventData.InputButton button)
         {
-            if (passives == null || (TouchMode.Active &&
+            if (closeRequested || passives == null || (TouchMode.Active &&
                 (suppressPinchClicks || Time.frameCount <= pinchEndedFrame + 1)))
                 return;
 
@@ -676,17 +690,16 @@ namespace PoeClone.UI
             if (mobileLayoutSize==panelRect.rect.size && layoutWasTouch==touch) return;
             mobileLayoutSize=panelRect.rect.size;
             layoutWasTouch=touch;
+            LayoutDiscardDialog();
             panelRect.GetComponent<Image>().color=UiKit.ReadablePanelColor;
             Text title=panelRect.Find("Title").GetComponent<Text>();
             title.fontSize=touch ? 40 : 26;
             TopStrip(title.rectTransform,-14f,touch ? 56f : 34f);
             pointsText.fontSize=touch ? 30 : 18;
             TopStrip(pointsText.rectTransform,touch ? -72f : -46f,touch ? 48f : 24f);
-            UiKit.TopLeft(resetButton.rectTransform,new Vector2(16f,touch ? -132f : -12f),new Vector2(touch ? 200f : 150f,touch ? 88f : 38f));
-            UiKit.TopLeft(respecButton.rectTransform,new Vector2(touch ? 232f : 176f,touch ? -132f : -12f),new Vector2(touch ? 200f : 150f,touch ? 88f : 38f));
+            UiKit.TopLeft(resetButton.rectTransform,new Vector2(16f,touch ? -132f : -12f),new Vector2(touch ? 260f : 150f,touch ? 88f : 38f));
+            UiKit.TopLeft(respecButton.rectTransform,new Vector2(touch ? 294f : 176f,touch ? -132f : -12f),new Vector2(touch ? 260f : 150f,touch ? 88f : 38f));
             resetLabel.fontSize=respecLabel.fontSize=touch ? 30 : 16;
-            TopRight(centreButton.rectTransform,new Vector2(touch ? 128f : 150f,touch ? -132f : -12f),new Vector2(touch ? 200f : 88f,touch ? 88f : 38f));
-            centreButton.GetComponentInChildren<Text>().fontSize=touch ? 30 : 16;
             viewRect.offsetMax=new Vector2(-16f,touch ? -236f : -ViewTop);
             viewRect.offsetMin=new Vector2(16f,touch ? 228f : ViewBottom);
             var info=(RectTransform)infoText.transform.parent;
@@ -699,8 +712,8 @@ namespace PoeClone.UI
             clear.GetComponentInChildren<Text>().fontSize=touch ? 36 : 16;
             ((RectTransform)search.Find("Field")).offsetMax=new Vector2(touch ? -88f : -36f,0f);
             searchCount.gameObject.SetActive(!touch);
-            TopRight(confirmButton.rectTransform,new Vector2(touch ? 232f : 156f,-20f),new Vector2(touch ? 200f : 130f,touch ? 96f : 40f));
-            TopRight(cancelButton.rectTransform,new Vector2(12f,-20f),new Vector2(touch ? 200f : 130f,touch ? 96f : 40f));
+            TopRight(confirmButton.rectTransform,new Vector2(12f,-20f),new Vector2(touch ? 200f : 130f,touch ? 96f : 40f));
+            TopRight(cancelButton.rectTransform,new Vector2(touch ? 232f : 156f,-20f),new Vector2(touch ? 200f : 130f,touch ? 96f : 40f));
             confirmButton.GetComponentInChildren<Text>().fontSize=cancelButton.GetComponentInChildren<Text>().fontSize=touch ? 30 : 16;
             infoText.fontSize=touch ? 28 : 18;
             infoText.rectTransform.offsetMin=new Vector2(touch ? 12f : 12f+SearchWidth+16f,0f);
@@ -712,8 +725,6 @@ namespace PoeClone.UI
             bool touch = TouchMode.Active;
             zoomInButton.gameObject.SetActive(!touch);
             zoomOutButton.gameObject.SetActive(!touch);
-            TopRight(centreButton.rectTransform, new Vector2(touch ? 12f + 46f : 12f + 3f * 46f, -12f),
-                new Vector2(88f, 38f));
         }
 
         // Zooms keeping the point under the pointer (or the middle of the window) where it is.
@@ -873,9 +884,10 @@ namespace PoeClone.UI
             view.gameObject.AddComponent<RectMask2D>();
             viewRect = view.rectTransform;
             var nav = view.gameObject.AddComponent<ViewHandler>();
-            nav.Click = () =>
+            nav.Click = at =>
             {
                 if (suppressPinchClicks || Time.frameCount <= pinchEndedFrame + 1) return;
+                if (TouchMode.Active && TryTouchNode(at)) return;
                 selected = null;
                 hovered = null;
                 ShowInfo(null);
@@ -896,8 +908,6 @@ namespace PoeClone.UI
             zoomOutButton = NewButton(pr, "ZoomOut", "-", Vector2.zero, new Vector2(38f, 38f));
             TopRight(zoomOutButton.rectTransform, new Vector2(12f + 46f, -12f), new Vector2(38f, 38f));
             zoomOutButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => Zoom(1f / 1.25f, null);
-            centreButton = NewButton(pr, "Centre", "Centre", Vector2.zero, new Vector2(88f, 38f));
-            centreButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ResetView();
             UpdateZoomButtons();
 
             // Every graph edge is one uninterrupted straight connection.
@@ -953,7 +963,11 @@ namespace PoeClone.UI
                 PassiveNode captured = node;
                 handler.Enter = () => OnHover(captured);
                 handler.Exit = OnHoverEnd;
-                handler.Click = button => OnClick(captured, button);
+                handler.Click = e =>
+                {
+                    if (TouchMode.Active) TryTouchNode(e.position);
+                    else OnClick(captured, e.button);
+                };
 
                 var search = new StringBuilder(node.Name);
                 foreach (StatModifier mod in node.Mods)
@@ -1005,10 +1019,10 @@ namespace PoeClone.UI
             UiKit.TopLeft(searchCount.rectTransform, new Vector2(14f, -52f), new Vector2(SearchWidth, 20f));
 
             confirmButton = NewButton(info.rectTransform, "Confirm", "Confirm", Vector2.zero, new Vector2(130f, 40f));
-            TopRight(confirmButton.rectTransform, new Vector2(156f, -20f), new Vector2(130f, 40f));
+            TopRight(confirmButton.rectTransform, new Vector2(12f, -20f), new Vector2(130f, 40f));
             confirmButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ConfirmChanges();
             cancelButton = NewButton(info.rectTransform, "Cancel", "Cancel", Vector2.zero, new Vector2(130f, 40f));
-            TopRight(cancelButton.rectTransform, new Vector2(12f, -20f), new Vector2(130f, 40f));
+            TopRight(cancelButton.rectTransform, new Vector2(156f, -20f), new Vector2(130f, 40f));
             cancelButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ => CancelChanges();
 
             // Outside the masked tree so details remain readable at every zoom level.
@@ -1027,6 +1041,68 @@ namespace PoeClone.UI
             tooltipText.rectTransform.pivot = new Vector2(0f, 1f);
             tooltipText.rectTransform.anchoredPosition = new Vector2(12f, -12f);
             tooltip.gameObject.SetActive(false);
+            BuildDiscardDialog(pr);
+        }
+
+        private bool TryTouchNode(Vector2 screenPoint)
+        {
+            if (closeRequested || suppressPinchClicks || Time.frameCount <= pinchEndedFrame + 1) return false;
+            if (!RectTransformUtility.RectangleContainsScreenPoint(viewRect, screenPoint)) return false;
+            PassiveNode nearest = null;
+            float radius = 32f * Mathf.Min(Screen.width, Screen.height) / 390f;
+            float best = float.PositiveInfinity;
+            foreach (NodeView view in views)
+            {
+                Vector2 at = RectTransformUtility.WorldToScreenPoint(null, view.Ring.rectTransform.position);
+                if (!RectTransformUtility.RectangleContainsScreenPoint(viewRect, at)) continue;
+                float distance = (at - screenPoint).sqrMagnitude;
+                float reach = Mathf.Max(radius, view.Ring.rectTransform.rect.width * Mathf.Abs(view.Ring.rectTransform.lossyScale.x) * 0.72f);
+                if (distance > reach * reach || distance > best) continue;
+                best = distance;
+                nearest = view.Node;
+            }
+            if (nearest == null) return false;
+            OnClick(nearest, PointerEventData.InputButton.Left);
+            return true;
+        }
+
+        private void BuildDiscardDialog(RectTransform parent)
+        {
+            Image shade = UiKit.NewImage("DiscardPassivesDialog", parent, new Color(0f, 0f, 0f, 0.8f));
+            UiKit.Stretch(shade.rectTransform, 0f);
+            shade.raycastTarget = true;
+            discardDialog = shade.gameObject;
+            TouchMode.AddBlocker(shade.rectTransform);
+            Image window = UiKit.NewImage("Window", shade.rectTransform, UiKit.ReadablePanelColor);
+            window.raycastTarget = true;
+            RectTransform rect = window.rectTransform;
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = new Vector2(680f, 320f);
+            UiKit.ThinFrame(rect);
+            Text prompt = UiKit.NewText("Prompt", rect, "Discard your unconfirmed passive changes?", 32, UiKit.TextColor, TextAnchor.MiddleCenter);
+            prompt.horizontalOverflow = HorizontalWrapMode.Wrap;
+            UiKit.TopLeft(prompt.rectTransform, new Vector2(24f, -24f), new Vector2(rect.sizeDelta.x - 48f, 150f));
+            Image no = NewButton(rect, "No", "No", new Vector2(24f, -208f), new Vector2((rect.sizeDelta.x - 72f) / 2f, 88f));
+            no.GetComponentInChildren<Text>().fontSize = 30;
+            no.gameObject.AddComponent<TouchPointerRelay>().Up += _ => KeepEditing();
+            Image yes = NewButton(rect, "Yes", "Yes", new Vector2(rect.sizeDelta.x / 2f + 12f, -208f), new Vector2((rect.sizeDelta.x - 72f) / 2f, 88f));
+            yes.GetComponentInChildren<Text>().fontSize = 30;
+            yes.gameObject.AddComponent<TouchPointerRelay>().Up += _ => DiscardAndClose();
+            discardDialog.SetActive(false);
+        }
+
+        private void LayoutDiscardDialog()
+        {
+            if (discardDialog == null) return;
+            RectTransform window = (RectTransform)discardDialog.transform.Find("Window");
+            float width = Mathf.Min(680f, panelRect.rect.width - 40f);
+            window.sizeDelta = new Vector2(width, 320f);
+            Text prompt = window.Find("Prompt").GetComponent<Text>();
+            prompt.fontSize = TouchMode.Active ? 32 : 26;
+            UiKit.TopLeft(prompt.rectTransform, new Vector2(24f, -24f), new Vector2(width - 48f, 150f));
+            Vector2 size = new Vector2((width - 72f) * 0.5f, 88f);
+            UiKit.TopLeft((RectTransform)window.Find("No"), new Vector2(24f, -208f), size);
+            UiKit.TopLeft((RectTransform)window.Find("Yes"), new Vector2(width * 0.5f + 12f, -208f), size);
         }
 
         private static Image NewButton(RectTransform parent, string name, string label, Vector2 pos, Vector2 size)
@@ -1043,8 +1119,8 @@ namespace PoeClone.UI
 
         private class ViewHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IScrollHandler, IPointerClickHandler
         {
-            public System.Action Click;
-            public void OnPointerClick(PointerEventData eventData) { if (!eventData.dragging) Click?.Invoke(); }
+            public System.Action<Vector2> Click;
+            public void OnPointerClick(PointerEventData eventData) { if (!eventData.dragging) Click?.Invoke(eventData.position); }
             public System.Action<Vector2> Drag;
             public System.Action<float, Vector2> Scroll;
 
@@ -1057,11 +1133,11 @@ namespace PoeClone.UI
         {
             public System.Action Enter;
             public System.Action Exit;
-            public System.Action<PointerEventData.InputButton> Click;
+            public System.Action<PointerEventData> Click;
 
             public void OnPointerEnter(PointerEventData eventData) => Enter?.Invoke();
             public void OnPointerExit(PointerEventData eventData) => Exit?.Invoke();
-            public void OnPointerClick(PointerEventData eventData) => Click?.Invoke(eventData.button);
+            public void OnPointerClick(PointerEventData eventData) { if (!eventData.dragging) Click?.Invoke(eventData); }
         }
     }
 }
