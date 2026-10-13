@@ -1,0 +1,32 @@
+{
+    "tracks": [
+        {
+            "track": "2.Dark Hall",
+            "file": "2-dark-hall-2238fc61ce94.bundle"
+        },
+        {
+            "track": "9.Dont look back",
+            "file": "9-dont-look-back-108d1dec030c.bundle"
+        },
+        {
+            "track": "11.Metal Echos",
+            "file": "11-metal-echos-9cf75beed53a.bundle"
+        },
+        {
+            "track": "Adrift on the Currents of Time (Main Menu _ Ambience)",
+            "file": "adrift-on-the-currents-of-time--main-menu---ambience--7088bdf58e34.bundle"
+        },
+        {
+            "track": "Boss_01",
+            "file": "boss-01-e2ae5083bd9b.bundle"
+        },
+        {
+            "track": "Dark Quest",
+            "file": "dark-quest-1543bdb03b96.bundle"
+        },
+        {
+            "track": "Tower of Lava",
+            "file": "tower-of-lava-a61e9c61fdc4.bundle"
+        }
+    ]
+}
