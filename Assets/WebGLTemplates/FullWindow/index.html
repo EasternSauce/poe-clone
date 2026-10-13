@@ -299,6 +299,7 @@
       var v = BUILD_ID.indexOf("__") === 0 ? "" : "?v=" + encodeURIComponent(BUILD_ID);
       var downloadChunks = "__DOWNLOAD_CHUNKS__";
       var restoreDownloads = function () {};
+      // __INLINE_DOWNLOADER__
 
       var config = {
         dataUrl: "Build/{{{ DATA_FILENAME }}}" + v,
@@ -366,9 +367,8 @@
       }
 
       var script = document.createElement("script");
-      script.src = "Build/{{{ LOADER_FILENAME }}}" + v;
       script.onload = function () {
-        if (typeof downloadChunks === "object") restoreDownloads = installChunkDownloads(downloadChunks, v);
+        if (script.src.indexOf("blob:") === 0) URL.revokeObjectURL(script.src);
         createUnityInstance(canvas, config, function (progress) {
           fill.style.width = Math.round(progress * 100) + "%";
           document.getElementById("bar").setAttribute("aria-valuenow", Math.round(progress * 100));
@@ -424,12 +424,32 @@
       }
       window.poeReloadForUpdate = reloadForUpdate;
 
-      script.onerror = function () { showError("The game files failed to load. Try reloading the page."); };
-      var downloader = document.createElement("script");
-      downloader.src = "chunk-downloads.js" + v;
-      downloader.onload = function () { document.body.appendChild(script); };
-      downloader.onerror = function () { showError("The downloader failed to load. Please reload the page."); };
-      document.body.appendChild(downloader);
+      script.onerror = function () {
+        restoreDownloads(); clearInterval(loadDetailTimer);
+        if (script.src.indexOf("blob:") === 0) URL.revokeObjectURL(script.src);
+        showError("The game files failed to load. Try reloading the page.");
+      };
+      if (typeof downloadChunks === "object") {
+        restoreDownloads = installChunkDownloads(downloadChunks, v, function (url, loaded, total) {
+          var key = Object.keys(config.downloadProgress).find(function (key) {
+            return new URL(key, document.baseURI).href === url;
+          }) || url;
+          var p = config.downloadProgress[key] || (config.downloadProgress[key] = {});
+          p.started = true; p.lengthComputable = true; p.loaded = loaded; p.total = total;
+          var downloads = Object.values(config.downloadProgress);
+          var received = downloads.reduce(function (sum, item) { return sum + (item.loaded || 0); }, 0);
+          var expected = Object.values(downloadChunks).reduce(function (sum, item) { return sum + item.size; }, 0);
+          fill.style.width = Math.round(90 * received / expected) + "%";
+        });
+        fetch("Build/{{{ LOADER_FILENAME }}}" + v).then(function (response) { return response.blob(); })
+          .then(function (blob) {
+            script.src = URL.createObjectURL(new Blob([blob], { type: "application/javascript" }));
+            document.body.appendChild(script);
+          }).catch(function (error) { restoreDownloads(); clearInterval(loadDetailTimer); showError(String(error)); });
+      } else {
+        script.src = "Build/{{{ LOADER_FILENAME }}}";
+        document.body.appendChild(script);
+      }
     </script>
   </body>
 </html>

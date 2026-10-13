@@ -84,7 +84,8 @@ public static class WebBuilder
         string index = Path.Combine(OutputPath, "index.html");
         string chunks = BuildDownloadChunks();
         File.WriteAllText(index, File.ReadAllText(index).Replace("__BUILD_ID__", buildId)
-            .Replace("\"__DOWNLOAD_CHUNKS__\"", chunks));
+            .Replace("\"__DOWNLOAD_CHUNKS__\"", chunks)
+            .Replace("// __INLINE_DOWNLOADER__", File.ReadAllText("Assets/WebGLTemplates/FullWindow/chunk-downloads.js")));
         File.WriteAllText(Path.Combine(OutputPath, "version.json"), "{\"build\":\"" + buildId + "\"}");
         return buildId;
     }
@@ -100,7 +101,7 @@ public static class WebBuilder
         foreach (string path in Directory.GetFiles(Path.Combine(OutputPath, "Build")))
         {
             string name = Path.GetFileName(path);
-            if (!name.Contains(".data") && !name.Contains(".wasm")) continue;
+            if (!name.Contains(".data") && !name.Contains(".wasm") && !name.Contains(".framework.js") && !name.EndsWith(".loader.js")) continue;
             byte[] bytes = File.ReadAllBytes(path);
             var parts = new List<string>();
             const int chunkSize = 512 * 1024;

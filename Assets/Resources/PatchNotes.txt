@@ -1,3 +1,7 @@
+version: 2026-10-14-download-recovery
+- Downloads select an available delivery route, including alternatives to GitHub Pages, and prioritize the small engine scripts.
+- Slow downloads keep running while data is arriving. Failed pieces fall back to a verified full-file download instead of preventing startup.
+
 version: 2026-10-13-faster-downloads
 - Game downloads use smaller parallel pieces, retry interrupted pieces, and verify each piece before loading.
 - Unchanged download pieces stay cached across updates, reducing repeat downloads after deployments.

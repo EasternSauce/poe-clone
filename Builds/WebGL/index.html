@@ -295,10 +295,174 @@
       syncCanvasSize();
 
       // Small scripts remain build-versioned; large downloads reuse verified content pieces.
-      var BUILD_ID = "2026-10-13-faster-downloads-20261013214447";
+      var BUILD_ID = "2026-10-14-download-recovery-20261013221934";
       var v = BUILD_ID.indexOf("__") === 0 ? "" : "?v=" + encodeURIComponent(BUILD_ID);
-      var downloadChunks = {"Build/WebGL.data.unityweb":{"size":14324700,"hashes":["2c6500c810d8a8aa56e0e7bddfa4f0471415ef26d77059d6b517d88fab3becb0","e4db2a6198e963b3ff7120529970b95a120c0d6046317749551538cf7e40634e","af5089958c46fdf4d774513fb401c33100c0f19b89946a9a3afa9b270c2fb8fd","40d86f0f0ff233af7ef4f129ada5f77030b8033806f972443d0e599e822ece25","2481cfbbc0a1db11279da82452df4182fdb9b78bafb33711f062a11a71251a67","36ae94a155727f37c6f64102d7a85f714035886a4c076b1724307a6b2b52dcc6","cbf166be15a04795bb63f64b4ab507ae20ebd365a886fc0d7b264e08eaf09b24","00f0e9c88340db40bdc63df6634babfd8beec0b30633139400f9256dcb0d78da","ad6f9b29be516a6d4d1a38990e341a12287ade0d51da10717618e00c0b445db1","ead4658724551cee279f86f9e45ccbc308a7f224466f2e3141d017923ca586e6","581f92a34635e37e52b1bc8c0c2f4916d4a3806aa9b3a736448f4516769565c4","d47b311135e9432ddc744760a801aa5c6a7862985bdbf8d4b7ebb0f58ee849ee","65859dbb275a5cf5e3b18b8422dda16b84b9491805397792b3a72923241c37b7","505ca6c1ec4d686c70bc9999c7ec548b605564ab4dff2e5c3b0de83bc9904644","d85f3c0962275ac651b1fe10c523621a9ba2fe01464f8ce7c99c339ac49055ff","fe9c3b6480215c4a2959016516094ebdbe9789e3b02ffd26ab21f4c9b6cb3370","7f04f380a9ac0c1ee3aad8948300308026d15ba066858feddae55f5d596ea847","242e3bfdfae90a752d6db0ae6cd794ef0f642dc153d553a52eea25ad7bb900ee","2bc22745b3a3f511061fb98a24e6f38721c56b252df515baa4f392d4cd533039","b10fe3d4e57872894143b50bd6b94bec912f0ac53c0b8e0f176ca19f2da3d21f","50694538784a9e8c8396c9bedb0bef1ccd313f3d49ce1acee8c1e73940de0498","75af2d67b2c873302db0d663ad15f74ad9cf9576a462e732b970c4985b71854d","a8a966cf2abdd387809fe8fe09f795d39666a92aafebe3b7ff52041cb5d854b7","40435f99fce9be230741243ee5a367929ac9ad9b050cca7c2f1e7b9eb038e678","089605418957642b1d3a55d1c017747208e1bc1f0e82f47696224d9caefacb43","9c7cf0129655e81675752f257beb8d5a0f74cfdccd94a2117c58964441e35e47","670a9b234dbca75067dcc58ae9f342c1bbcef47d9518e899b452d9ea721346e3","97c9031802ad5cc2f24a10fbd326e5ef86a019d37996c965d9ff0947d2dcbca5"]},"Build/WebGL.wasm.unityweb":{"size":9886412,"hashes":["839772c83a2c99e07518f01d03ac4622963c6bb77d13643b1acb0943b98f253e","5e79733aa73d757c14bc38011c98458b6049d162e72d0042fa5948e1102d0550","31c3077a6882f6663b1df029ed0316c9f068bfd9fd0a2c91d133350894bfb299","0058a40e0e49d7cf14abdd96d825486042f9947565ec1854ffb361138f7d92cb","9d1658d29b840a4afc49dc355bbc14093510ed2d32bfb7ba759bdb1fca6d4314","29fda10f7e82b9d28b43c9d803a89bd1a1601e38d6f26410e6a2a06fdeeff792","c6c9d32a8bdd19c096808d3d88f15e55261d04d610e992825c8d3503a5373e41","2466e3fb495449c3ed6dda05d7399ac7a63fd0221b9a247e7a6cb1ea03c6512e","de5fa8efcfdf3fb28f60b3ad4792e31653259e0499bdd854640623c2df824b71","195e3cb8a68d3972866a086150a2406f0849723d5842094db8110a5cfefb5ba4","50b3e29cf4e8176067242f1c7a92e5922b0cff76e4fe413caca6704a27b75228","1baa4d3f7b497197f29a55f4b555cc692a76718dd2cc60f7fd14a24472d17865","1420d39551cb846982d893efbd187ca265dcb04ff17b6ac1c4488a5e22bc31b3","4fa8aa778c811a62be2b92ba9e614871c70bd0645874d7e8ca8d62ea3e71718f","468e6849d10d12e81be0c0db69e76fde8040a8cd9c96b58e44598a08824dc91e","436d224c7ca8cae84a3b59f888ddeafb234e7e4e26a605cea31ef484c7cd9ed1","2dd5b423647a29c208bc5ca5ccf4265a65953c3be8a56aa007f4e08a3c73797f","e33214880301ae44e80f172253eff22666de694596f5beed0cfcdbf9dbe6ad8f","e4789ae3d356f89993556d26de15af605fd97a638d1069474b7cb552e5cc1f75"]}};
+      var downloadChunks = {"Build/WebGL.data.unityweb":{"size":14324638,"hashes":["dcdc9edcc41d5101a1647ea33054af4b0bf7c39cb3c6d9fe27ce037118981320","115a6b77a8c635effde8e41618df5ad3e5628734ef9beea61c767a835879a2f2","5b136d5078d6e55cb5f99b796cd0342e4c064edb959c4e1a13b5d07ee5f70de1","5c86ec6d5cf0596c1c1080eddc7d496067b5d6819b594be9060c1b054ec22dd0","c74f6fcfb1525c5f010573566016bb34710b80004f700d9d43b46647a9bc93e4","6a6cdfe2a15d670ae782294023b275346adc525b08797279d6580a285aa55c55","d59d3a2d719dc38cf81b74d39b168ce99d5d72fbefeae710c7f60705d022957e","c0af036ce743010b25f65854e84b8438ff59a32a983ac2028a13169ea0597acb","cc6ded421fb0d5965acb95b34906701f55306164ed7ddca92d271d800130e444","7af5f5afa41f10c694f8d37957d4688c121970417bfe651b17b8673e3798cf75","ebc8be0e60614b111a6d41c1c6022b4afb6cd95a39e6e5004895440cc6176ddd","798495feb984aa40869161a30390a4d960d8dcb443cb60c5de6e6283db091eaf","58f442ca01a9c2dec919c74b84c889d05f55dc6328aeb2cec6795ca782d2df56","57eb1c95d98a65c1e3c9c9c34897c8d6ec7453f362c060ef3d357f65aea59233","3da9f4d3f9d71685f445f30d5a5bf20d674141c4061d3f7beb0bb11aed1f3268","751c37b8fec533ed2fa34c9773cfd982610a6ab826480974bd86942928fd9fc2","8ef937f7a3e189e9e4ee53526453e3acf39d3873e4a2229b6bdf8e2addbb332a","5e68b1a1dde9dc0c2bb9f2198b4a4dc99516288f05fdb75ecea028e1467f4828","97489c70b8f2b12c802c8f6a723f35f06b2a44ecb1af76b001fb80f5095c7557","cf785eaf8aadf1a9c882475fe13425854eb3d3f211d1a2e37a1f239b3c1b3dda","9ba0e80142b284cb024e7e5b54e81586a7bf80befcac00acddedee52dfb33782","d55128867a0512b39ce128bedb20718008ffa0a4a4b293cabcffd2a49cffbd65","67dc061c4795b9910db2fe357651f2e92e6e7c0beebd7464a18a53eb146de83d","f09171b7324414fb9453ddaaf56945d10cd46bd73e231866cd8094c76b297148","8f051587f0a4011fb0808c6016381505d84f6d62189d51240d1011157e02b50a","3fbdc1434f43d8cc776964ae33524f33e0c5b2669ec24d491b392d34e412aac4","5662b6ed1fcf2fe1c4387e8cfb2d10207f3699dd50e8fcbaa3f44ad9a84da538","820239fb77eeb806663741c2403fe1f09d5dfb7bebe89c048dcba433d0efe78f"]},"Build/WebGL.framework.js.unityweb":{"size":77805,"hashes":["a01b54961851cc59a88a35a8eebb92fab3b72da914dba2c0b3b68ca3e0e58b05"]},"Build/WebGL.loader.js":{"size":48779,"hashes":["ddef8da231732d9c738a14ba85aece4076460d66f274b2aac6d5c5791f446524"]},"Build/WebGL.wasm.unityweb":{"size":9886412,"hashes":["839772c83a2c99e07518f01d03ac4622963c6bb77d13643b1acb0943b98f253e","5e79733aa73d757c14bc38011c98458b6049d162e72d0042fa5948e1102d0550","31c3077a6882f6663b1df029ed0316c9f068bfd9fd0a2c91d133350894bfb299","0058a40e0e49d7cf14abdd96d825486042f9947565ec1854ffb361138f7d92cb","9d1658d29b840a4afc49dc355bbc14093510ed2d32bfb7ba759bdb1fca6d4314","29fda10f7e82b9d28b43c9d803a89bd1a1601e38d6f26410e6a2a06fdeeff792","c6c9d32a8bdd19c096808d3d88f15e55261d04d610e992825c8d3503a5373e41","2466e3fb495449c3ed6dda05d7399ac7a63fd0221b9a247e7a6cb1ea03c6512e","de5fa8efcfdf3fb28f60b3ad4792e31653259e0499bdd854640623c2df824b71","195e3cb8a68d3972866a086150a2406f0849723d5842094db8110a5cfefb5ba4","50b3e29cf4e8176067242f1c7a92e5922b0cff76e4fe413caca6704a27b75228","1baa4d3f7b497197f29a55f4b555cc692a76718dd2cc60f7fd14a24472d17865","1420d39551cb846982d893efbd187ca265dcb04ff17b6ac1c4488a5e22bc31b3","4fa8aa778c811a62be2b92ba9e614871c70bd0645874d7e8ca8d62ea3e71718f","468e6849d10d12e81be0c0db69e76fde8040a8cd9c96b58e44598a08824dc91e","436d224c7ca8cae84a3b59f888ddeafb234e7e4e26a605cea31ef484c7cd9ed1","2dd5b423647a29c208bc5ca5ccf4265a65953c3be8a56aa007f4e08a3c73797f","e33214880301ae44e80f172253eff22666de694596f5beed0cfcdbf9dbe6ad8f","e4789ae3d356f89993556d26de15af605fd97a638d1069474b7cb552e5cc1f75"]}};
       var restoreDownloads = function () {};
+      // Only intercept this build's verified files. Saves, music and update polling use native fetch.
+function installChunkDownloads(manifest, version, progress) {
+  var originalFetch = window.fetch.bind(window);
+  var previousFetch = window.fetch;
+  var base = new URL('.', document.baseURI).href;
+  var sources = [base];
+  if (base === 'https://easternsauce.github.io/poe-clone-web/') {
+    sources.push('https://raw.githubusercontent.com/EasternSauce/poe-clone-web/master/',
+      'https://cdn.jsdelivr.net/gh/EasternSauce/poe-clone-web@master/');
+  }
+  var entries = new Map(Object.keys(manifest).map(function (path) {
+    return [new URL(path + version, base).href, { path: path, info: manifest[path] }];
+  }));
+  var cachePromise = typeof caches !== 'undefined'
+    ? caches.open('poe-download-chunks-v1').catch(function () { return null; }) : Promise.resolve(null);
+  var active = 0, waiting = [], route = null;
+  function slot(priority, work) {
+    return new Promise(function (resolve, reject) {
+      waiting.push({ priority: priority, work: work, resolve: resolve, reject: reject });
+      waiting.sort(function (a, b) { return a.priority - b.priority; });
+      pump();
+    });
+  }
+  function pump() {
+    while (active < 4 && waiting.length) {
+      var job = waiting.shift();
+      active++;
+      (function (job) {
+        Promise.resolve().then(job.work).then(job.resolve, job.reject).finally(function () { active--; pump(); });
+      })(job);
+    }
+  }
+  async function check(bytes, hash, size) {
+    if (bytes.length !== size) throw new Error('Incomplete download piece');
+    var digest = await crypto.subtle.digest('SHA-256', bytes);
+    var actual = Array.from(new Uint8Array(digest), function (n) { return n.toString(16).padStart(2, '0'); }).join('');
+    if (actual !== hash) throw new Error('Download checksum mismatch');
+    return bytes;
+  }
+  // A transfer may take minutes on a slow connection. Abort only if it stops making
+  // progress, rather than throwing away healthy transfers after twenty seconds.
+  async function read(url, signal, update) {
+    var controller = new AbortController(), timer, reader;
+    var abort = function () { controller.abort(); };
+    function touch() { clearTimeout(timer); timer = setTimeout(abort, 45000); }
+    if (signal) { signal.addEventListener('abort', abort); if (signal.aborted) abort(); }
+    try {
+      touch();
+      var response = await originalFetch(url, { signal: controller.signal });
+      if (!response.ok) throw new Error('HTTP ' + response.status + ' for ' + url);
+      reader = response.body.getReader();
+      var parts = [], length = 0;
+      while (true) {
+        var part = await reader.read();
+        if (part.done) break;
+        touch(); parts.push(part.value); length += part.value.length;
+        if (update) update(length);
+      }
+      var bytes = new Uint8Array(length), offset = 0;
+      parts.forEach(function (part) { bytes.set(part, offset); offset += part.length; });
+      return bytes;
+    } finally {
+      clearTimeout(timer); controller.abort();
+      if (reader) reader.releaseLock();
+      if (signal) signal.removeEventListener('abort', abort);
+    }
+  }
+  async function chooseRoute(hash, size) {
+    var controllers = sources.map(function () { return new AbortController(); });
+    try {
+      var winner = await Promise.any(sources.map(async function (source, index) {
+        var bytes = await read(source + 'Build/chunks/' + hash + '.bin', controllers[index].signal);
+        await check(bytes, hash, size);
+        return { source: source, hash: hash, bytes: bytes };
+      }));
+      console.log('[Loading] Download route: ' + winner.source);
+      return winner;
+    } finally { controllers.forEach(function (controller) { controller.abort(); }); }
+  }
+  async function piece(hash, size, priority, signal, update) {
+    var path = 'Build/chunks/' + hash + '.bin', key = new URL(path, base).href;
+    var cache = await cachePromise;
+    if (cache) {
+      try {
+        var saved = await cache.match(key);
+        if (saved) { var bytes = await check(new Uint8Array(await saved.arrayBuffer()), hash, size); update(size); return bytes; }
+      } catch (error) { await cache.delete(key).catch(function () {}); }
+    }
+    return slot(priority, async function () {
+      if (signal.aborted) throw new Error('Download cancelled');
+      if (!route) route = chooseRoute(hash, size);
+      var winner = await route;
+      var order = [winner.source].concat(sources.filter(function (source) { return source !== winner.source; }));
+      var lastError;
+      for (var source of order) {
+        for (var attempt = 0; attempt < 2; attempt++) {
+          try {
+            var bytes = winner.hash === hash && winner.source === source ? winner.bytes : await read(source + path, signal, update);
+            await check(bytes, hash, size);
+            update(size);
+            if (cache) cache.put(key, new Response(bytes)).catch(function () {});
+            return bytes;
+          } catch (error) { lastError = error; if (signal.aborted) throw error; update(0); }
+        }
+      }
+      throw lastError;
+    });
+  }
+  async function whole(entry, signal, update) {
+    var lastError;
+    var winner = route ? await route.catch(function () { return null; }) : null;
+    var order = winner ? [winner.source].concat(sources.filter(function (source) { return source !== winner.source; })) : sources;
+    for (var source of order) {
+      try {
+        var bytes = await read(source + entry.path + version, signal, update);
+        if (bytes.length !== entry.info.size) throw new Error('Full download size mismatch');
+        for (var index = 0; index < entry.info.hashes.length; index++) {
+          var part = bytes.subarray(index * 524288, Math.min(bytes.length, (index + 1) * 524288));
+          await check(part, entry.info.hashes[index], part.length);
+        }
+        var cache = await cachePromise;
+        if (cache) entry.info.hashes.forEach(function (hash, index) {
+          var part = bytes.slice(index * 524288, Math.min(bytes.length, (index + 1) * 524288));
+          cache.put(new URL('Build/chunks/' + hash + '.bin', base).href, new Response(part)).catch(function () {});
+        });
+        return bytes;
+      } catch (error) { lastError = error; if (signal && signal.aborted) throw error; }
+    }
+    throw lastError;
+  }
+  async function download(url, entry, signal) {
+    var controller = new AbortController(), loaded = entry.info.hashes.map(function () { return 0; });
+    var abort = function () { controller.abort(); };
+    if (signal) { signal.addEventListener('abort', abort); if (signal.aborted) abort(); }
+    function report() { if (progress) progress(url, loaded.reduce(function (a, b) { return a + b; }, 0), entry.info.size); }
+    try {
+      var parts = await Promise.all(entry.info.hashes.map(function (hash, index) {
+        return piece(hash, Math.min(524288, entry.info.size - index * 524288), entry.info.size < 524288 ? -1 : index,
+          controller.signal, function (count) { loaded[index] = count; report(); });
+      }));
+      var bytes = new Uint8Array(entry.info.size), offset = 0;
+      parts.forEach(function (part) { bytes.set(part, offset); offset += part.length; });
+      return new Response(bytes, { headers: { 'Content-Length': String(bytes.length) } });
+    } catch (error) {
+      controller.abort();
+      if (signal && signal.aborted) throw error;
+      console.warn('[Loading] Piece download failed; trying verified full file:', entry.path, error);
+      // Do not expose a broken synthetic stream to Unity: return a complete, verified
+      // response, falling back to the regular release file if the piece route fails.
+      var bytes = await whole(entry, signal, function (count) { if (progress) progress(url, count, entry.info.size); });
+      return new Response(bytes, { headers: { 'Content-Length': String(bytes.length) } });
+    } finally { if (signal) signal.removeEventListener('abort', abort); }
+  }
+  var wrappedFetch = function (input, options) {
+    var url = new URL(typeof input === 'string' || input instanceof URL ? input : input.url, base).href;
+    var entry = entries.get(url);
+    var method = options && options.method || input && input.method || 'GET';
+    if (!entry || method !== 'GET') return originalFetch(input, options);
+    return download(url, entry, options && options.signal || input && input.signal);
+  };
+  window.fetch = wrappedFetch;
+  return function () { if (window.fetch === wrappedFetch) window.fetch = previousFetch; };
+}
+
 
       var config = {
         dataUrl: "Build/WebGL.data.unityweb" + v,
@@ -358,9 +522,8 @@
       }
 
       var script = document.createElement("script");
-      script.src = "Build/WebGL.loader.js" + v;
       script.onload = function () {
-        if (typeof downloadChunks === "object") restoreDownloads = installChunkDownloads(downloadChunks, v);
+        if (script.src.indexOf("blob:") === 0) URL.revokeObjectURL(script.src);
         createUnityInstance(canvas, config, function (progress) {
           fill.style.width = Math.round(progress * 100) + "%";
           document.getElementById("bar").setAttribute("aria-valuenow", Math.round(progress * 100));
@@ -416,12 +579,32 @@
       }
       window.poeReloadForUpdate = reloadForUpdate;
 
-      script.onerror = function () { showError("The game files failed to load. Try reloading the page."); };
-      var downloader = document.createElement("script");
-      downloader.src = "chunk-downloads.js" + v;
-      downloader.onload = function () { document.body.appendChild(script); };
-      downloader.onerror = function () { showError("The downloader failed to load. Please reload the page."); };
-      document.body.appendChild(downloader);
+      script.onerror = function () {
+        restoreDownloads(); clearInterval(loadDetailTimer);
+        if (script.src.indexOf("blob:") === 0) URL.revokeObjectURL(script.src);
+        showError("The game files failed to load. Try reloading the page.");
+      };
+      if (typeof downloadChunks === "object") {
+        restoreDownloads = installChunkDownloads(downloadChunks, v, function (url, loaded, total) {
+          var key = Object.keys(config.downloadProgress).find(function (key) {
+            return new URL(key, document.baseURI).href === url;
+          }) || url;
+          var p = config.downloadProgress[key] || (config.downloadProgress[key] = {});
+          p.started = true; p.lengthComputable = true; p.loaded = loaded; p.total = total;
+          var downloads = Object.values(config.downloadProgress);
+          var received = downloads.reduce(function (sum, item) { return sum + (item.loaded || 0); }, 0);
+          var expected = Object.values(downloadChunks).reduce(function (sum, item) { return sum + item.size; }, 0);
+          fill.style.width = Math.round(90 * received / expected) + "%";
+        });
+        fetch("Build/WebGL.loader.js" + v).then(function (response) { return response.blob(); })
+          .then(function (blob) {
+            script.src = URL.createObjectURL(new Blob([blob], { type: "application/javascript" }));
+            document.body.appendChild(script);
+          }).catch(function (error) { restoreDownloads(); clearInterval(loadDetailTimer); showError(String(error)); });
+      } else {
+        script.src = "Build/WebGL.loader.js";
+        document.body.appendChild(script);
+      }
     </script>
   </body>
 </html>
