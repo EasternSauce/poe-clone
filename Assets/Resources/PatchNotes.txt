@@ -1,3 +1,6 @@
+version: 2026-10-13-main-menu-patch-notes
+- New patch notes now appear on the main menu before character selection, instead of interrupting gameplay after loading. Dismissing them still remembers the release.
+
 version: 2026-10-13-mobile-character-picker
 - Character selection uses larger text and touch buttons on mobile, with extra scaling in portrait. Character names and levels appear on separate lines. Creating and removing characters also have larger controls and text that fits the screen.
 

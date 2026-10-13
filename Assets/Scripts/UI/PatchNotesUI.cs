@@ -5,13 +5,12 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using PoeClone.Inventory;
-using PoeClone.Network;
 
 namespace PoeClone.UI
 {
     /// <summary>
-    /// "What's new": shown once per release to each player and spectator, when a version they
-    /// haven't closed yet first loads. The notes are Resources/PatchNotes.txt, whose first line is
+    /// "What's new": shown on the main menu once per release. The notes are
+    /// Resources/PatchNotes.txt, whose first line is
     /// "version: ..."; closing the window remembers that version (PlayerPrefs), so it stays shut
     /// until the next release changes it. Installed by GameSessionController.
     /// </summary>
@@ -25,9 +24,6 @@ namespace PoeClone.UI
         private RectTransform content;
         private Text body;
         private string version;
-        private bool decided;
-        private NamePromptUI namePrompt;
-        private LoadingScreenUI loadingScreen;
         public static bool IsShowing { get; private set; }
 
         internal static List<KeyValuePair<string, string>> ParseReleases(string text)
@@ -52,21 +48,13 @@ namespace PoeClone.UI
             return releases;
         }
 
-        private void Start()
+        private void Awake()
         {
             TextAsset notes = Resources.Load<TextAsset>("PatchNotes");
-            if (notes == null)
-            {
-                decided = true;
-                return;
-            }
+            if (notes == null) return;
 
             var releases = ParseReleases(notes.text);
-            if (releases.Count == 0)
-            {
-                decided = true;
-                return;
-            }
+            if (releases.Count == 0) return;
 
             version = releases[0].Key;
             string releaseNotes = releases[0].Value;
@@ -76,38 +64,25 @@ namespace PoeClone.UI
             PlayerPrefs.Save();
             Build(releaseNotes);
             root.SetActive(false);
-            namePrompt = GetComponent<NamePromptUI>();
+        }
+
+        /// <summary>Called after the main menu is built, before choosing a character.</summary>
+        public void ShowIfUnseen()
+        {
+            if (root == null || PlayerPrefs.GetString(SeenKey, "") == version) return;
+            root.SetActive(true);
+            IsShowing = true;
+            Canvas.ForceUpdateCanvases();
+            content.sizeDelta = new Vector2(0f, body.preferredHeight + 12f);
+        }
+
+        private void OnDestroy()
+        {
+            IsShowing = false;
         }
 
         private void Update()
         {
-            if (!decided)
-            {
-                // After the name prompt (which always comes up first, once the page has loaded), so
-                // the two don't fight over the screen.
-                if (namePrompt != null && (!namePrompt.HasConfirmed || namePrompt.IsShowing))
-                    return;
-                // Then until the character has loaded and no loading screen covers the game, so the
-                // notes open over the world rather than over "Loading character..." or an area fade.
-                var session = GameSessionController.Instance;
-                if (session != null && session.Role == SessionRole.Player && !PoeClone.Player.SaveSystem.CharacterLoaded)
-                    return;
-                if (loadingScreen == null)
-                    loadingScreen = FindAnyObjectByType<LoadingScreenUI>();
-                if (loadingScreen != null && loadingScreen.IsShowing)
-                    return;
-                decided = true;
-                if (PlayerPrefs.GetString(SeenKey, "") != version)
-                {
-                    root.SetActive(true);
-                    IsShowing = true;
-                    // Tall enough for the wrapped notes, now that the panel has its real width.
-                    Canvas.ForceUpdateCanvases();
-                    content.sizeDelta = new Vector2(0f, body.preferredHeight + 12f);
-                }
-                return;
-            }
-
             if (root != null && root.activeSelf)
             {
                 Keyboard keyboard = Keyboard.current;
@@ -126,13 +101,13 @@ namespace PoeClone.UI
 
         private void Build(string notes)
         {
-            Canvas canvas = UiKit.NewCanvas("PatchNotesCanvas", transform, 940, out CanvasGroup group);
+            Canvas canvas = UiKit.NewCanvas("PatchNotesCanvas", transform, 960, out CanvasGroup group);
             canvas.gameObject.AddComponent<GraphicRaycaster>();
             group.interactable = true;
             group.blocksRaycasts = true;
             root = canvas.gameObject;
 
-            // Dims the game behind, and takes the clicks meant for it.
+            // Dims the menu behind, and takes the clicks meant for it.
             Image shade = UiKit.NewImage("Shade", canvas.transform, new Color(0f, 0f, 0f, 0.55f));
             shade.raycastTarget = true;
             UiKit.Stretch(shade.rectTransform, 0f);

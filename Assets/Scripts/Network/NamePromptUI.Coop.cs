@@ -48,6 +48,7 @@ namespace PoeClone.Network
             MakeButton("Single Player", new Vector2(0, 20), new Vector2(320, 64), singlePlayer);
             MakeButton("Co-op", new Vector2(0, -60), new Vector2(320, 64), coop);
             onSinglePlayer = singlePlayer;
+            GetComponent<PatchNotesUI>()?.ShowIfUnseen();
         }
 
         private void PickSinglePlayer()
