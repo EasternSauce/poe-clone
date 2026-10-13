@@ -101,15 +101,15 @@ namespace PoeClone.World
             ClearSite(Greenwood, at, 17f);
             Transform t = Group("BramblesowWallow");
             FloorDisc(t, "TrampledEarth", at + Vector3.up * 0.035f, 11f, DirtFloor);
-            Ball(t, at + new Vector3(4f, 0.02f, 5f), 3.4f, MudFloor, flatten: 0.05f, solid: false);
-            Cyl(t, at + new Vector3(4f, 0.05f, 5f), 2.6f, 0.03f, kit.Mat("Water"), solid: false);
+            PlanBall(t, at + new Vector3(4f, 0.02f, 5f), 3.4f, MudFloor, flatten: 0.05f, solid: false);
+            PlanCyl(t, at + new Vector3(4f, 0.05f, 5f), 2.6f, 0.03f, kit.Mat("Water"), solid: false);
             for (int k = 0; k < 7; k++)
             {
                 float a = k * Mathf.PI * 2f / 7f + 0.4f;
                 if (k == 4)
                     continue; // the way in, from the south-west
                 Vector3 p = at + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * R(13f, 15f);
-                Cyl(t, p + Vector3.up * 0.45f, 0.45f, R(3.5f, 5f), kit.Mat("Bark"), euler: new Vector3(90f, R(0f, 180f), 0f));
+                PlanCyl(t, p + Vector3.up * 0.45f, 0.45f, R(3.5f, 5f), kit.Mat("Bark"), euler: new Vector3(90f, R(0f, 180f), 0f));
                 Claim(p, 3f);
             }
             for (int k = 0; k < 5; k++)
@@ -117,11 +117,11 @@ namespace PoeClone.World
                 Vector3 p = at + Flat(R(-9f, 9f), R(-9f, 9f));
                 if (Vector3.Distance(p, at) < 4f)
                     continue;
-                Bones(t, p);
+                PlanBones(t, p);
             }
             // Torn-up roots and gouges where it has charged.
             for (int k = 0; k < 4; k++)
-                Box(t, at + Flat(R(-8f, 8f), R(-8f, 8f)) + Vector3.up * 0.03f, new Vector3(0.6f, 0.05f, R(3f, 6f)), kit.Mat("Bark"), solid: false,
+                PlanBox(t, at + Flat(R(-8f, 8f), R(-8f, 8f)) + Vector3.up * 0.03f, new Vector3(0.6f, 0.05f, R(3f, 6f)), kit.Mat("Bark"), solid: false,
                     euler: new Vector3(0f, R(0f, 180f), 0f));
             Claim(at, 12f);
         }
@@ -135,10 +135,10 @@ namespace PoeClone.World
             Vector3 at = LairSpot("The Sunforged Idol");
             ClearSite(Ruins, at, 18f);
             Transform t = Group("SunCourt");
-            WeatheredSlab(t, "CourtFloor", at, new Vector2(14f, 13f), 0.1f, kit.Mat("Sandstone"), 12f, solid: false);
-            Cyl(t, at + Vector3.up * 0.12f, 3.6f, 0.03f, kit.Mat("Gold"), solid: false);
+            PlanWeatheredSlab(t, "CourtFloor", at, new Vector2(14f, 13f), 0.1f, kit.Mat("Sandstone"), 12f, solid: false);
+            PlanCyl(t, at + Vector3.up * 0.12f, 3.6f, 0.03f, kit.Mat("Gold"), solid: false);
             for (int k = 0; k < 12; k++)
-                Box(t, at + Quaternion.Euler(0f, k * 30f, 0f) * Vector3.forward * 5.2f + Vector3.up * 0.12f, new Vector3(0.4f, 0.03f, 2.4f),
+                PlanBox(t, at + Quaternion.Euler(0f, k * 30f, 0f) * Vector3.forward * 5.2f + Vector3.up * 0.12f, new Vector3(0.4f, 0.03f, 2.4f),
                     kit.Mat("Gold"), solid: false, euler: new Vector3(0f, k * 30f, 0f));
             for (int k = 0; k < 10; k++)
             {
@@ -149,14 +149,14 @@ namespace PoeClone.World
                 if (k % 4 == 3)
                     FallenColumn(t, p, k * 36f + 80f);
                 else
-                    Prefab(kit.pillar, t, p, R(0f, 360f), new Vector3(1.1f, R(0.7f, 1.3f), 1.1f));
+                    PlanPrefab(kit.pillar, t, p, R(0f, 360f), new Vector3(1.1f, R(0.7f, 1.3f), 1.1f));
             }
             for (int k = 0; k < 4; k++)
             {
                 float rad = (k * 90f + 45f) * Mathf.Deg2Rad;
-                Brazier(t, at + new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad)) * 11.5f);
+                PlanBrazier(t, at + new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad)) * 11.5f);
             }
-            Glow(t, at + Vector3.up * 4f, FireLight, 18f, 3f);
+            PlanGlow(t, at + Vector3.up * 4f, FireLight, 18f, 3f);
             Claim(at, 16f);
         }
 
@@ -173,24 +173,24 @@ namespace PoeClone.World
             Tent(t, back, Quaternion.Euler(0f, 180f, 0f), kit.Mat("Leather"), 1.2f);
             Vector3 fire = at + new Vector3(-6f, 0f, 4f);
             for (int k = 0; k < 4; k++)
-                Cyl(t, fire + Vector3.up * 0.15f, 0.12f, 1.6f, kit.Mat("Charred"), solid: false, euler: new Vector3(90f, k * 45f, 0f));
-            Flame(t, fire + Vector3.up * 0.35f, 0.4f, kit.Mat("Ember"), flatten: 0.6f);
-            Glow(t, fire + Vector3.up * 1.4f, FireLight, 13f, 5f, flicker: true);
+                PlanCyl(t, fire + Vector3.up * 0.15f, 0.12f, 1.6f, kit.Mat("Charred"), solid: false, euler: new Vector3(90f, k * 45f, 0f));
+            PlanFlame(t, fire + Vector3.up * 0.35f, 0.4f, kit.Mat("Ember"), flatten: 0.6f);
+            PlanGlow(t, fire + Vector3.up * 1.4f, FireLight, 13f, 5f, flicker: true);
             // A drying rack hung with white pelts.
             Vector3 rack = at + new Vector3(7f, 0f, 5f);
             for (int s = -1; s <= 1; s += 2)
-                Box(t, rack + new Vector3(s * 1.4f, 1.2f, 0f), new Vector3(0.15f, 2.4f, 0.15f), kit.Mat("Wood"));
-            Box(t, rack + new Vector3(0f, 2.3f, 0f), new Vector3(3f, 0.12f, 0.12f), kit.Mat("Wood"), solid: false);
+                PlanBox(t, rack + new Vector3(s * 1.4f, 1.2f, 0f), new Vector3(0.15f, 2.4f, 0.15f), kit.Mat("Wood"));
+            PlanBox(t, rack + new Vector3(0f, 2.3f, 0f), new Vector3(3f, 0.12f, 0.12f), kit.Mat("Wood"), solid: false);
             for (int k = 0; k < 3; k++)
-                Box(t, rack + new Vector3(-0.9f + k * 0.9f, 1.6f, 0f), new Vector3(0.7f, 1.3f, 0.05f), kit.Mat(k == 1 ? "Leather" : "Snow"), solid: false);
+                PlanBox(t, rack + new Vector3(-0.9f + k * 0.9f, 1.6f, 0f), new Vector3(0.7f, 1.3f, 0.05f), kit.Mat(k == 1 ? "Leather" : "Snow"), solid: false);
             // Spears stood in the snow, and the bones of the hunt.
             for (int k = 0; k < 5; k++)
             {
                 Vector3 p = at + new Vector3(-9f + k * 1.1f, 0f, -2f + (k % 2) * 1.2f);
-                Cyl(t, p + Vector3.up * 1f, 0.05f, 2.2f, kit.Mat("Wood"), solid: false, euler: new Vector3(R(-12f, 12f), 0f, R(-12f, 12f)));
+                PlanCyl(t, p + Vector3.up * 1f, 0.05f, 2.2f, kit.Mat("Wood"), solid: false, euler: new Vector3(R(-12f, 12f), 0f, R(-12f, 12f)));
             }
             for (int k = 0; k < 4; k++)
-                Bones(t, at + Flat(R(-10f, 10f), R(-8f, 8f)));
+                PlanBones(t, at + Flat(R(-10f, 10f), R(-8f, 8f)));
             Claim(at, 13f);
         }
 
@@ -206,23 +206,24 @@ namespace PoeClone.World
             // Timber props round the hole, copper lamps, and the tunnel king's junk spilling out.
             for (int s = -1; s <= 1; s += 2)
             {
-                Box(t, gate + side * s * 3.2f + Vector3.up * 1.8f, new Vector3(0.4f, 3.6f, 0.4f), kit.Mat("Wood"));
-                Glow(t, gate + side * s * 3f + inward * 1f + Vector3.up * 2.4f, CopperLight, 8f, 3f, flicker: true);
-                Flame(t, gate + side * s * 3f + inward * 1f + Vector3.up * 2.3f, 0.15f, kit.Mat("Lantern"));
+                PlanBox(t, gate + side * s * 3.2f + Vector3.up * 1.8f, new Vector3(0.4f, 3.6f, 0.4f), kit.Mat("Wood"));
+                PlanGlow(t, gate + side * s * 3f + inward * 1f + Vector3.up * 2.4f, CopperLight, 8f, 3f, flicker: true);
+                PlanFlame(t, gate + side * s * 3f + inward * 1f + Vector3.up * 2.3f, 0.15f, kit.Mat("Lantern"));
             }
             // The beam's long axis is local X; align its local forward with the tunnel
             // so its ends sit on the two side posts.
-            Box(t, gate + Vector3.up * 3.7f, new Vector3(7f, 0.4f, 0.5f), kit.Mat("Wood"), solid: false, euler: new Vector3(0f, YawOf(inward), 0f));
+            PlanBox(t, gate + Vector3.up * 3.7f, new Vector3(7f, 0.4f, 0.5f), kit.Mat("Wood"), solid: false, euler: new Vector3(0f, YawOf(inward), 0f));
             for (int k = 0; k < 4; k++)
-                Box(t, gate + inward * R(3f, 6f) + side * R(-4.5f, 4.5f) + Vector3.up * 0.35f, Vector3.one * 0.7f, kit.Mat("Wood"),
+                PlanBox(t, gate + inward * R(3f, 6f) + side * R(-4.5f, 4.5f) + Vector3.up * 0.35f, Vector3.one * 0.7f, kit.Mat("Wood"),
                     euler: new Vector3(0f, R(0f, 90f), 0f));
-            Cyl(t, gate + inward * 4f - side * 4f + Vector3.up * 0.05f, 0.7f, 0.1f, kit.Mat("Gold"), solid: false);
+            PlanCyl(t, gate + inward * 4f - side * 4f + Vector3.up * 0.05f, 0.7f, 0.1f, kit.Mat("Gold"), solid: false);
         }
 
         private void DressBelfryGate()
         {
             Begin(Graveyard, 716);
             Vector3 gate = Center(Graveyard) + BelfryGateLocal;
+            if (DeferContent(gate, () => DressBelfryGate())) return;
             Vector3 inward = BelfryGateInward.normalized;
             Vector3 side = Vector3.Cross(Vector3.up, inward);
             Transform t = Group("BelfryGate");
@@ -236,7 +237,7 @@ namespace PoeClone.World
             bell.rotation = Quaternion.Euler(18f, R(0f, 360f), 12f);
             bell.localScale = Vector3.one * 1.4f;
             CreatureBuilder.BuildBell(bell, new Color(0.45f, 0.35f, 0.2f), new Color(0.3f, 0.58f, 0.48f), new Color(0.2f, 0.18f, 0.15f));
-            Candles(t, gate + inward * 3f - side * 3.5f);
+            PlanCandles(t, gate + inward * 3f - side * 3.5f);
         }
 
         // ------------------------------------------------------------------ the dens

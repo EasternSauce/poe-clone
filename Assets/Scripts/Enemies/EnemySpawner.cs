@@ -108,6 +108,71 @@ namespace PoeClone.Enemies
             enemy.Died += () => OnEnemyDied(enemy != null ? enemy.transform.position : home);
         }
 
+        private int streamingArea = -1;
+        private readonly List<(Vector3 point, int kind)> openingHomes = new List<(Vector3, int)>();
+
+        public void ConfigureStreaming(int area)
+        {
+            if (!WorldBuilder.UsesChunks(area)) return;
+            streamingArea = area;
+            player = FindAnyObjectByType<PlayerController>();
+            // Isolate layout randomness from combat, loot and the order chunks are visited.
+            var previous = Random.state;
+            Random.InitState(7919 * area + 307);
+            try
+            {
+                int attempts = 0;
+                while (openingHomes.Count < enemyCount && attempts++ < enemyCount * 100)
+                {
+                    Vector3 point = center + new Vector3(Random.Range(-areaHalfSize, areaHalfSize), 0,
+                        Random.Range(-areaHalfSize, areaHalfSize));
+                    if (NearSafeSpot(point) || inside != null && !inside(point)) continue;
+                    int kind = PickKind(point);
+                    openingHomes.Add((point, kind));
+                    int pack = EnemyKinds.Get(kind).PackSize;
+                    if (pack > 0) pack = Random.Range(1, pack + 1);
+                    for (int n = 0; n < pack && openingHomes.Count < enemyCount; n++)
+                    {
+                        Vector2 offset = Random.insideUnitCircle * respawnScatter;
+                        Vector3 near = point + new Vector3(offset.x, 0, offset.y);
+                        if (!NearSafeSpot(near) && (inside == null || inside(near))) openingHomes.Add((near, kind));
+                    }
+                }
+            }
+            finally { Random.state = previous; }
+        }
+
+        public System.Collections.IEnumerator PopulateChunk(Rect localBounds)
+        {
+            if (streamingArea < 0) yield break;
+            var session = PoeClone.Network.GameSessionController.Instance;
+            if (session != null && session.Role == PoeClone.Network.SessionRole.Spectator) yield break;
+            Vector3 origin = WorldBuilder.Center(streamingArea);
+            for (int i = openingHomes.Count - 1; i >= 0; i--)
+            {
+                var home = openingHomes[i];
+                if (!localBounds.Contains(new Vector2(home.point.x - origin.x, home.point.z - origin.z))) continue;
+                var previous = Random.state;
+                Random.InitState(unchecked(streamingArea * 7919 + Mathf.RoundToInt(home.point.x * 131f + home.point.z * 17f)));
+                try
+                {
+                    for (int attempt = 0; attempt < maxAttemptsPerEnemy; attempt++)
+                    {
+                        Vector2 offset = attempt == 0 ? Vector2.zero : Random.insideUnitCircle * respawnScatter;
+                        Vector3 candidate = home.point + new Vector3(offset.x, 0, offset.y);
+                        if (!localBounds.Contains(new Vector2(candidate.x - origin.x, candidate.z - origin.z)) ||
+                            NearSafeSpot(candidate) || inside != null && !inside(candidate)) continue;
+                        if (!TryPrepareSpawnPoint(candidate, home.kind, out Vector3 at, clearanceRadius, spawnHeight)) continue;
+                        Spawn(at, home.kind);
+                        break;
+                    }
+                    openingHomes.RemoveAt(i);
+                }
+                finally { Random.state = previous; }
+                yield return null;
+            }
+        }
+
         private void Start()
         {
             if (enemyPrefab == null)
@@ -118,6 +183,8 @@ namespace PoeClone.Enemies
             }
 
             player = FindAnyObjectByType<PlayerController>();
+
+            if (streamingArea >= 0) return;
 
             // Pack animals bring the rest of their pack (counted towards the total).
             int spawned = 0;

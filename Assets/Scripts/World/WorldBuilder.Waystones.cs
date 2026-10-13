@@ -21,15 +21,21 @@ namespace PoeClone.World
                 if (a == Greenwood)
                     ClearSpot(p, 2.5f);
 
-                var stone = new GameObject("Waystone_" + AreaNames[a]);
-                stone.transform.SetParent(t, false);
-                stone.transform.position = p;
-                BuildWaystone(stone.transform);
-
-                Transform arrival = waystoneArrivals[a];
-                Waystone.Attach(stone, a, arrival);
-                Npc.CreateFixed(stone, NpcRole.Waystone, "Waystone", 3.9f);
+                BuildAreaWaystone(t, a, p);
             }
+        }
+
+        private void BuildAreaWaystone(Transform t, int a, Vector3 p)
+        {
+            if (DeferContent(p, () => BuildAreaWaystone(t, a, p), canClear: false)) return;
+            var stone = new GameObject("Waystone_" + AreaNames[a]);
+            stone.transform.SetParent(t, false);
+            stone.transform.position = p;
+            BuildWaystone(stone.transform);
+
+            Transform arrival = waystoneArrivals[a];
+            Waystone.Attach(stone, a, arrival);
+            Npc.CreateFixed(stone, NpcRole.Waystone, "Waystone", 3.9f);
         }
 
         private void BuildWaystone(Transform stone)

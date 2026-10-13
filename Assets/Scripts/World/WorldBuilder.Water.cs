@@ -6,23 +6,50 @@ namespace PoeClone.World
 {
     public partial class WorldBuilder
     {
-        private void BuildWater(int area, float floorY)
+        private readonly Dictionary<int, (Material water, Material shore, Material timber)> waterMaterials =
+            new Dictionary<int, (Material, Material, Material)>();
+
+        private void BuildWater(int area, float floorY, Rect? region = null, Mesh chunkLand = null, List<(Vector3 a, Vector3 b)> chunkBoundary = null, Transform chunkParent = null)
         {
             AreaShape shape = Shape(area);
             if (!shape.HasWater) return;
-            Transform group = Group("Water_" + AreaNames[area]);
+            Transform group = chunkParent != null ? chunkParent : Group("Water_" + AreaNames[area]);
             group.position = shape.Center + Vector3.up * floorY;
             bool frozen = area == Frozen;
-            var water = new Material(kit.Mat("Water")) { name = "Water_" + AreaNames[area] };
-            Color color = frozen ? new Color(0.40f, 0.67f, 0.78f) :
-                area == Graveyard ? new Color(0.13f, 0.29f, 0.28f) :
-                shape.HasOcean ? new Color(0.10f, 0.38f, 0.49f) : new Color(0.16f, 0.42f, 0.48f);
-            water.SetColor("_BaseColor", color);
-            water.SetColor("_ShadowColor", color * 0.6f);
-            water.SetFloat("_TriplanarTileSize", frozen ? 5f : 8f);
-            water.SetFloat("_RimIntensity", 0.08f);
-            water.SetFloat("_TexInfluence", frozen ? 0.24f : 0.12f);
-            Mesh surface = shape.BuildWaterMesh();
+            if (!waterMaterials.TryGetValue(area, out var materials))
+            {
+                var water = new Material(kit.Mat("Water")) { name = "Water_" + AreaNames[area] };
+                Color color = frozen ? new Color(0.40f, 0.67f, 0.78f) :
+                    area == Graveyard ? new Color(0.13f, 0.29f, 0.28f) :
+                    shape.HasOcean ? new Color(0.10f, 0.38f, 0.49f) : new Color(0.16f, 0.42f, 0.48f);
+                water.SetColor("_BaseColor", color);
+                water.SetColor("_ShadowColor", color * 0.6f);
+                water.SetFloat("_TriplanarTileSize", frozen ? 5f : 8f);
+                water.SetFloat("_RimIntensity", 0.08f);
+                water.SetFloat("_TexInfluence", frozen ? 0.24f : 0.12f);
+                var shore = new Material(kit.Mat(frozen ? "Snow" : shape.HasOcean ? "Tan" : "TanDark"));
+                shore.SetFloat("_TriplanarTileSize", 3f);
+                shore.SetFloat("_TexInfluence", 0.35f);
+                if (!frozen && !shape.HasOcean)
+                {
+                    // Wet mud strewn with gravel, rather than a flat brown band.
+                    shore.SetTexture("_BaseMap", GroundTextures.Dirt(17 + area, new Color(0.17f, 0.14f, 0.10f), new Color(0.33f, 0.27f, 0.19f),
+                        new Color(0.46f, 0.45f, 0.41f), 260));
+                    shore.SetColor("_BaseColor", Color.white);
+                    shore.SetFloat("_TexInfluence", 1f);
+                }
+                var timber = new Material(kit.Mat("Wood")) { name = "BridgeTimber" };
+                timber.SetColor("_BaseColor", new Color(0.50f, 0.34f, 0.20f));
+                timber.SetFloat("_TexInfluence", 0.28f);
+                timber.SetFloat("_TriplanarTileSize", 2f);
+                materials = (water, shore, timber);
+                waterMaterials.Add(area, materials);
+            }
+            var waterMaterial = materials.water;
+            var shoreMaterial = materials.shore;
+            var timberMaterial = materials.timber;
+            Mesh surface = shape.BuildWaterMesh(region);
+            if (region.HasValue) TrackChunkMesh(area, surface);
             if (!frozen)
             {
                 var motion = new System.Collections.Generic.List<Vector4>();
@@ -30,31 +57,21 @@ namespace PoeClone.World
                 surface.SetUVs(1, motion);
                 // GPU waves need an expanded bound, but never change collision or shoreline logic.
                 Bounds bounds = surface.bounds; bounds.Expand(Vector3.up * 0.2f); surface.bounds = bounds;
-                water.SetFloat("_LivingWater", 1);
-                water.SetFloat("_WaterOcean", shape.HasOcean ? 1 : 0);
+                waterMaterial.SetFloat("_LivingWater", 1);
+                waterMaterial.SetFloat("_WaterOcean", shape.HasOcean ? 1 : 0);
             }
-            WaterPart(group, frozen ? "FrozenRiverAndPools" : "RiversAndLakes", surface, water, -0.45f);
-            var shore = new Material(kit.Mat(frozen ? "Snow" : shape.HasOcean ? "Tan" : "TanDark"));
-            shore.SetFloat("_TriplanarTileSize", 3f);
-            shore.SetFloat("_TexInfluence", 0.35f);
-            if (!frozen && !shape.HasOcean)
-            {
-                // Wet mud strewn with gravel, rather than a flat brown band.
-                shore.SetTexture("_BaseMap", GroundTextures.Dirt(17 + area, new Color(0.17f, 0.14f, 0.10f), new Color(0.33f, 0.27f, 0.19f),
-                    new Color(0.46f, 0.45f, 0.41f), 260));
-                shore.SetColor("_BaseColor", Color.white);
-                shore.SetFloat("_TexInfluence", 1f);
-            }
-            WaterPart(group, shape.HasOcean ? "SandyBeach" : "Shore", shape.BuildShoreMesh(), shore, 0.012f);
-            var timber = new Material(kit.Mat("Wood")) { name = "BridgeTimber" };
-            timber.SetColor("_BaseColor", new Color(0.50f, 0.34f, 0.20f));
-            timber.SetFloat("_TexInfluence", 0.28f);
-            timber.SetFloat("_TriplanarTileSize", 2f);
-            foreach (var bridge in shape.Bridges) BuildTimberBridge(group, shape, bridge.center, bridge.size, bridge.yaw, timber);
+            WaterPart(group, frozen ? "FrozenRiverAndPools" : "RiversAndLakes", surface, waterMaterial, -0.45f);
+            Mesh shoreMesh = shape.BuildShoreMesh(chunkLand, chunkBoundary, region);
+            if (region.HasValue) TrackChunkMesh(area, shoreMesh);
+            WaterPart(group, shape.HasOcean ? "SandyBeach" : "Shore", shoreMesh, shoreMaterial, 0.012f);
+            foreach (var bridge in shape.Bridges)
+                if (!region.HasValue || region.Value.Contains(bridge.center))
+                    BuildTimberBridge(group, shape, bridge.center, bridge.size, bridge.yaw, timberMaterial);
             Begin(area, 700 + area);
             foreach (var source in shape.RiverSources())
-                BuildWaterfall(group, shape, source.point, source.downstream, source.halfWidth, water, frozen, floorY);
-            if (!frozen && !shape.IsCave) DressLakeShores(group, shape, area, floorY);
+                if (!region.HasValue || region.Value.Contains(source.point))
+                    BuildWaterfall(group, shape, source.point, source.downstream, source.halfWidth, waterMaterial, frozen, floorY);
+            if (!frozen && !shape.IsCave) DressLakeShores(group, shape, area, floorY, region);
         }
 
         // Where a river enters the area it pours over a rock ledge into its channel.
@@ -192,7 +209,7 @@ namespace PoeClone.World
         }
 
         // Reeds in the shallows, pebbles on the bank and, in the green areas, lily pads.
-        private void DressLakeShores(Transform parent, AreaShape shape, int area, float floorY)
+        private void DressLakeShores(Transform parent, AreaShape shape, int area, float floorY, Rect? region = null)
         {
             bool green = area == Greenwood || area == Haven;
             Material reed = new Material(kit.Mat("Moss")) { name = "Reed" };
@@ -207,6 +224,8 @@ namespace PoeClone.World
             float water = floorY - 0.45f;
             foreach (var shore in shape.LakeShores(3.2f))
             {
+                if (region.HasValue && !region.Value.Contains(shore.point)) continue;
+                rng = new System.Random(unchecked(area * 7919 + Mathf.RoundToInt(shore.point.x * 131f + shore.point.y * 17f)));
                 Vector3 edge = shape.Center + new Vector3(shore.point.x, floorY, shore.point.y);
                 Vector3 outward = new Vector3(shore.outward.x, 0f, shore.outward.y);
                 if (!shape.Contains(edge + outward * 2f) || shape.IsBridge(edge, 3f)) continue;

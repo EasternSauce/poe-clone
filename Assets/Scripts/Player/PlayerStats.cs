@@ -543,6 +543,10 @@ namespace PoeClone.Player
             if (loadingScreen != null)
                 yield return loadingScreen.FadeIn();
 
+            var areas = PoeClone.World.AreaManager.Instance;
+            if (areas != null && PoeClone.World.WorldBuilder.Instance != null)
+                yield return PoeClone.World.WorldBuilder.Instance.EnsureArrival(areas.CurrentAreaIndex, spawnPosition);
+
             dead = false;
             currentHealth = MaxHealth;
             currentMana = MaxMana;

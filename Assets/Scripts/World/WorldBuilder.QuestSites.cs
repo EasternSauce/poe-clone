@@ -45,6 +45,12 @@ namespace PoeClone.World
         // (lava cracks, ash heaps, lights) standing within the radius.
         private void ClearSite(int area, Vector3 at, float radius)
         {
+            if (planningContent)
+            {
+                ReserveSite(at, radius);
+                DeferContent(at, () => ClearSite(area, at, radius));
+                return;
+            }
             Physics.SyncTransforms();
             ClearSpot(at, radius);
             // The edge's dressing reaches well in (spurs of rock and ice): any piece of it in the way goes.
@@ -113,6 +119,9 @@ namespace PoeClone.World
             Vector3 toCentre = (c - site);
             toCentre.y = 0f;
             toCentre.Normalize();
+            Spots["Gravekeeper"] = site + toCentre * 0.5f;
+            if (planningContent) Sanctuary.Add(site, KeeperWard);
+            if (DeferContent(site, () => BuildKeeperHut(), canClear: false)) return;
             Vector3 hutAt = site - toCentre * 6f;
             GameObject hut = Prefab(kit.house, t, hutAt, 0f, Vector3.one * 0.72f);
             hut.transform.rotation = Facing(hutAt, c);
@@ -161,6 +170,11 @@ namespace PoeClone.World
             toCentre.Normalize();
             float openingYaw = Mathf.Atan2(toCentre.x, toCentre.z) * Mathf.Rad2Deg;
             Vector3 side = Vector3.Cross(Vector3.up, toCentre);
+            Spots["Commander"] = site + toCentre * 2.4f + side * 1.2f;
+            Spots["Seer"] = site - toCentre * 1.2f - side * 2.6f;
+            Spots["CampFire"] = site;
+            if (planningContent) Sanctuary.Add(site, CampWard);
+            if (DeferContent(site, () => BuildEmberwatch(), canClear: false)) return;
 
             // Packed earth, then the palisade: sharpened stakes, open towards the temple.
             FloorDisc(t, "CampEarth", site + Vector3.up * 0.055f, CampWard - 1f, DirtFloor);
@@ -235,6 +249,7 @@ namespace PoeClone.World
         // A ridge tent: two cloth slopes over a dark floor, open at the front.
         private void Tent(Transform t, Vector3 p, Quaternion rotation, Material cloth, float size)
         {
+            if (DeferContent(p, () => Tent(t, p, rotation, cloth, size), canClear: false)) return;
             Transform tent = Holder(t, "Tent", p, rotation);
             tent.localScale = Vector3.one * size;
             for (int s = -1; s <= 1; s += 2)
@@ -360,6 +375,8 @@ namespace PoeClone.World
 
         private void Totem(Transform t, Vector3 p, int index)
         {
+            ReserveSite(p, 3f);
+            if (DeferContent(p, () => Totem(t, p, index), canClear: false)) return;
             ClearSite(Greenwood, p, 3f);
             Transform site = Holder(t, "BoneTotem", p, Quaternion.Euler(0f, R(0f, 360f), 0f));
             Transform whole = Holder(site, "Whole", p, site.rotation);
@@ -407,6 +424,8 @@ namespace PoeClone.World
 
         private void FallenScout(Transform t, Vector3 p, int index, string name)
         {
+            ReserveSite(p, 2.5f);
+            if (DeferContent(p, () => FallenScout(t, p, index, name), canClear: false)) return;
             ClearSite(Greenwood, p, 2.5f);
             Transform site = Holder(t, "FallenScout", p, Quaternion.Euler(0f, R(0f, 360f), 0f));
             Body(site, kit.Mat("ClothBlue"), arrows: true);
@@ -445,6 +464,8 @@ namespace PoeClone.World
 
         private void Reliquary(Transform t, Vector3 p, int index)
         {
+            ReserveSite(p, 3.5f);
+            if (DeferContent(p, () => Reliquary(t, p, index), canClear: false)) return;
             ClearSite(Graveyard, p, 3.5f);
             Transform site = Holder(t, "Reliquary", p, Facing(p, Centers[Graveyard]));
             LocalBox(site, new Vector3(0f, 0.2f, 0f), new Vector3(2.2f, 0.4f, 1.6f), kit.Mat("TombstoneDark"));
@@ -477,6 +498,8 @@ namespace PoeClone.World
 
         private void OdaCrate(Transform t, Vector3 p, int index)
         {
+            ReserveSite(p, 2.5f);
+            if (DeferContent(p, () => OdaCrate(t, p, index), canClear: false)) return;
             ClearSite(Graveyard, p, 2.5f);
             Transform site = Holder(t, "OdaCrate", p, Quaternion.Euler(0f, R(0f, 360f), 0f));
             LocalBox(site, new Vector3(0f, 0.4f, 0f), new Vector3(1.3f, 0.8f, 0.9f), kit.Mat("ClothGreen"));
@@ -504,6 +527,8 @@ namespace PoeClone.World
 
         private void SupplyCache(Transform t, Vector3 p, int index)
         {
+            ReserveSite(p, 2.5f);
+            if (DeferContent(p, () => SupplyCache(t, p, index), canClear: false)) return;
             ClearSite(Ruins, p, 2.5f);
             Transform site = Holder(t, "SupplyCache", p, Quaternion.Euler(0f, R(0f, 360f), 0f));
             LocalBox(site, new Vector3(0f, 0.06f, 0f), new Vector3(2f, 0.12f, 1.4f), kit.Mat("Wood"), solid: false);
@@ -543,6 +568,8 @@ namespace PoeClone.World
 
         private void AshenShrine(Transform t, Vector3 p)
         {
+            ReserveSite(p, 8f);
+            if (DeferContent(p, () => AshenShrine(t, p), canClear: false)) return;
             ClearSite(Ruins, p, 8f);
             Transform site = Holder(t, "AshenShrine", p, Quaternion.identity);
             Cyl(site, p + Vector3.up * 0.04f, 6.5f, 0.06f, kit.Mat("Ash"), solid: false);
@@ -570,6 +597,8 @@ namespace PoeClone.World
 
         private void Sunstone(Transform t, Vector3 p, int index)
         {
+            ReserveSite(p, 3f);
+            if (DeferContent(p, () => Sunstone(t, p, index), canClear: false)) return;
             ClearSite(Ruins, p, 3f);
             Transform site = Holder(t, "Sunstone", p, Facing(p, Centers[Ruins]));
             LocalBox(site, new Vector3(0f, 0.25f, 0f), new Vector3(1.8f, 0.5f, 1.8f), kit.Mat("Sandstone"));
@@ -598,6 +627,7 @@ namespace PoeClone.World
             AreaGate gate = gateTransform != null ? gateTransform.GetComponent<AreaGate>() : null;
             if (gate == null)
                 return;
+            if (DeferContent(gateTransform.position, () => IceSeal(t), canClear: false)) return;
             Vector3 g = gateTransform.position;
             g.y = 0f;
             Vector3 inward = Centers[Ruins] - g;
@@ -631,6 +661,7 @@ namespace PoeClone.World
             AreaGate gate = gateTransform != null ? gateTransform.GetComponent<AreaGate>() : null;
             if (gate == null)
                 return;
+            if (DeferContent(gateTransform.position, () => BoneWall(t), canClear: false)) return;
             Vector3 at = gateTransform.position;
             at.y = 0f;
             Vector3 inward = gateTransform.forward;
@@ -669,6 +700,10 @@ namespace PoeClone.World
             toRoom.y = 0f;
             toRoom = toRoom.sqrMagnitude > 1f ? toRoom.normalized : Vector3.forward;
             Vector3 side = Vector3.Cross(Vector3.up, toRoom);
+            Spots["Guide"] = p;
+            Spots["GuideFreed"] = p + toRoom * 3.4f - side * 1.2f;
+            ReserveSite(p + toRoom * 4f, 9f);
+            if (DeferContent(p, () => WrenCage(t, p), canClear: false)) return;
             ClearSite(Cave, p + toRoom * 4f, 9f);
             Transform site = Holder(t, "WrenCage", p, Quaternion.LookRotation(toRoom));
 
@@ -719,6 +754,8 @@ namespace PoeClone.World
 
         private void FrozenScout(Transform t, Vector3 p, int index)
         {
+            ReserveSite(p, 2.5f);
+            if (DeferContent(p, () => FrozenScout(t, p, index), canClear: false)) return;
             ClearSite(Frozen, p, 2.5f);
             Transform site = Holder(t, "FrozenScout", p, Quaternion.Euler(0f, R(0f, 360f), 0f));
             Body(site, kit.Mat("ClothRed"), arrows: false);
@@ -751,6 +788,8 @@ namespace PoeClone.World
         // The Shepherd's door, north-west of Rimeheart's throne: shut, warm, waiting.
         private void StagDoor(Transform t, Vector3 p)
         {
+            ReserveSite(p, 8f);
+            if (DeferContent(p, () => StagDoor(t, p), canClear: false)) return;
             ClearSite(Frozen, p, 8f);
             Transform site = Holder(t, "StagDoor", p, Quaternion.identity);
             // Steps up to it, two great posts and a lintel, the door itself.

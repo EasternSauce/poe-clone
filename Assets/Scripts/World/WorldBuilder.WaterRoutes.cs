@@ -48,17 +48,17 @@ namespace PoeClone.World
             {
                 for (int side = -1; side <= 1; side += 2)
                     DesertPillar(gorge, c + local + new Vector3(side * 12, 0, 0), 9);
-                Box(gorge, c + local + Vector3.up * 9, new Vector3(26, 1.2f, 2.5f), red, false);
+                PlanBox(gorge, c + local + Vector3.up * 9, new Vector3(26, 1.2f, 2.5f), red, false);
                 for (int side = -1; side <= 1; side += 2)
-                    Box(gorge, c + local + new Vector3(0, 10, side * 1.3f), new Vector3(26, 1, 0.4f), red, false);
+                    PlanBox(gorge, c + local + new Vector3(0, 10, side * 1.3f), new Vector3(26, 1, 0.4f), red, false);
             }
             // Irrigation terraces occupy the edges of the broad eastern court.
             for (int row = 0; row < 4; row++)
             {
                 Vector3 at = c + new Vector3(75, 0, -46 + row * 9);
-                Box(gorge, at + Vector3.up * 0.25f, new Vector3(14, 0.5f, 0.6f), red);
+                PlanBox(gorge, at + Vector3.up * 0.25f, new Vector3(14, 0.5f, 0.6f), red);
                 for (int i = 0; i < 3; i++)
-                    WeatheredSlab(gorge, "DryPlantingBed", at + new Vector3(-4 + i * 4, 0.03f, 3),
+                    PlanWeatheredSlab(gorge, "DryPlantingBed", at + new Vector3(-4 + i * 4, 0.03f, 3),
                         new Vector2(1.5f, 2), 0.05f, kit.Mat("Charred"), 0, false);
             }
             DesertWagon(gorge, c + new Vector3(-72, 0, 58), 55);
@@ -70,11 +70,11 @@ namespace PoeClone.World
             Vector3 sluice = c + ChannelWardenLocal + new Vector3(0, 0, 22);
             for (int side = -1; side <= 1; side += 2)
                 DesertPillar(gorge, sluice + new Vector3(side * 9, 0, 0), 11);
-            Box(gorge, sluice + new Vector3(0, 5, 0), new Vector3(15, 10, 1), kit.Mat("Iron"));
+            PlanBox(gorge, sluice + new Vector3(0, 5, 0), new Vector3(15, 10, 1), kit.Mat("Iron"));
             for (int i = -3; i <= 3; i++)
-                Box(gorge, sluice + new Vector3(i * 2, 5, -0.6f), new Vector3(0.3f, 10, 0.35f), red, false);
-            WorldLabel.Create(gorge, "The water is held upstream", AreaColor(Channels), 3f)
-                .transform.position = sluice + Vector3.up * 3;
+                PlanBox(gorge, sluice + new Vector3(i * 2, 5, -0.6f), new Vector3(0.3f, 10, 0.35f), red, false);
+            ScheduleContent(sluice, () => WorldLabel.Create(gorge, "The water is held upstream", AreaColor(Channels), 3f)
+                .transform.position = sluice + Vector3.up * 3);
         }
 
         private void DryChannel(Transform parent, Vector3 center, Material stone, Vector3[] knots)
@@ -88,7 +88,7 @@ namespace PoeClone.World
                 {
                     Vector3 at = center + knots[i - 1] + axis * d;
                     for (int bank = -1; bank <= 1; bank += 2)
-                        Box(parent, at + side * bank * 5.5f + Vector3.up * 0.22f,
+                        PlanBox(parent, at + side * bank * 5.5f + Vector3.up * 0.22f,
                             new Vector3(0.45f, 0.44f, 3.6f), stone, false, new Vector3(0, yaw, 0));
                 }
             }
@@ -106,7 +106,7 @@ namespace PoeClone.World
             {
                 for (int side = -1; side <= 1; side += 2)
                 {
-                    Box(works, c + pool + new Vector3(side * 19, 0.3f, 0), new Vector3(0.6f, 0.6f, 18), damp);
+                    PlanBox(works, c + pool + new Vector3(side * 19, 0.3f, 0), new Vector3(0.6f, 0.6f, 18), damp);
                     PumpWheel(works, c + pool + new Vector3(side * 21, 0, 0), damp);
                 }
             }
@@ -116,37 +116,38 @@ namespace PoeClone.World
                 for (int side = -1; side <= 1; side += 2)
                 {
                     Vector3 p = c + at + new Vector3(side * 10, 0, 0);
-                    Box(works, p + Vector3.up * 2.7f, new Vector3(1.4f, 5.4f, 1.4f), damp);
-                    Glow(works, p + new Vector3(-side, 3, 0), new Color(0.35f, 0.85f, 0.72f), 11, 5);
+                    PlanBox(works, p + Vector3.up * 2.7f, new Vector3(1.4f, 5.4f, 1.4f), damp);
+                    PlanGlow(works, p + new Vector3(-side, 3, 0), new Color(0.35f, 0.85f, 0.72f), 11, 5);
                 }
-                Box(works, c + at + Vector3.up * 5.8f, new Vector3(22, 0.8f, 1.4f), damp, false);
+                PlanBox(works, c + at + Vector3.up * 5.8f, new Vector3(22, 0.8f, 1.4f), damp, false);
             }
             for (int i = 0; i < 5; i++)
             {
                 Vector3 at = c + new Vector3(-82 + i * 8, 0, 52);
-                Cyl(works, at + Vector3.up * 0.7f, 1.7f, 1.4f, kit.Mat("Iron"));
-                Cyl(works, at + Vector3.up * 1.6f, 0.4f, 0.5f, damp, false);
-                Bones(works, at + new Vector3(0, 0, -4));
+                PlanCyl(works, at + Vector3.up * 0.7f, 1.7f, 1.4f, kit.Mat("Iron"));
+                PlanCyl(works, at + Vector3.up * 1.6f, 0.4f, 0.5f, damp, false);
+                PlanBones(works, at + new Vector3(0, 0, -4));
             }
             // The engine stands behind the boss's clear floor, with the return valve beside it.
             Vector3 engine = c + WorksEngineerLocal + new Vector3(0, 0, 21);
             PumpWheel(works, engine, damp);
             for (int side = -1; side <= 1; side += 2)
             {
-                Box(works, engine + new Vector3(side * 9, 3, 0), new Vector3(3, 6, 3), damp);
-                Cyl(works, engine + new Vector3(side * 9, 7, 0), 0.8f, 2, kit.Mat("Iron"), false);
-                Glow(works, engine + new Vector3(side * 9, 3, -2), new Color(0.4f, 0.9f, 0.7f), 12, 6);
+                PlanBox(works, engine + new Vector3(side * 9, 3, 0), new Vector3(3, 6, 3), damp);
+                PlanCyl(works, engine + new Vector3(side * 9, 7, 0), 0.8f, 2, kit.Mat("Iron"), false);
+                PlanGlow(works, engine + new Vector3(side * 9, 3, -2), new Color(0.4f, 0.9f, 0.7f), 12, 6);
             }
             Transform valve = Holder(works, "SahretReturnValve", c + new Vector3(-19, 0, 120), Quaternion.identity);
-            LocalCyl(valve, Vector3.up, 0.28f, 2, kit.Mat("Iron"));
+            PlanLocalCyl(valve, Vector3.up, 0.28f, 2, kit.Mat("Iron"));
             Transform handle = Holder(valve, "ValveHandle", valve.position + Vector3.up * 2, Quaternion.identity);
-            LocalBox(handle, Vector3.zero, new Vector3(2.2f, 0.2f, 0.2f), kit.Mat("Iron"), false);
-            LocalBox(handle, Vector3.zero, new Vector3(0.2f, 0.2f, 2.2f), kit.Mat("Iron"), false);
+            PlanLocalBox(handle, Vector3.zero, new Vector3(2.2f, 0.2f, 0.2f), kit.Mat("Iron"), false);
+            PlanLocalBox(handle, Vector3.zero, new Vector3(0.2f, 0.2f, 2.2f), kit.Mat("Iron"), false);
             valve.gameObject.AddComponent<SahretWaterSupply>().ConfigureValve(handle);
         }
 
         private void PumpWheel(Transform parent, Vector3 at, Material stone)
         {
+            if (DeferContent(at, () => PumpWheel(parent, at, stone))) return;
             Transform wheel = Holder(parent, "SeizedPumpWheel", at + Vector3.up * 3.7f, Quaternion.identity);
             for (int i = 0; i < 12; i++)
             {

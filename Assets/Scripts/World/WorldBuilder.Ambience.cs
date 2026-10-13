@@ -42,7 +42,7 @@ namespace PoeClone.World
                     branch.SetParent(tree, false);
                     // Pines have shorter trunks than oaks; keep the root embedded in wood.
                     branch.localPosition = new Vector3(0, Mathf.Min(1.8f, trunkTop - 0.15f), 0);
-                    LocalBox(branch, new Vector3(0.55f, 0, 0), new Vector3(1.2f, 0.08f, 0.08f), kit.Mat("Bark"), false);
+                    PlanLocalBox(branch, new Vector3(0.55f, 0, 0), new Vector3(1.2f, 0.08f, 0.08f), kit.Mat("Bark"), false);
                     WindCloth.Create(branch, new Vector3(0.85f, 0, 0), 0.32f, 0.8f,
                         kit.Mat(count % 2 == 0 ? "ClothRed" : "ClothYellow"), true);
                     if (++count >= 4) break;
@@ -69,6 +69,7 @@ namespace PoeClone.World
         private void WindBanner(Transform parent, int area, Vector3 local, float yaw, string cloth, bool torn)
         {
             if (!NeedsArea(area)) return;
+            if (DeferContent(Center(area) + local, () => WindBanner(parent, area, local, yaw, cloth, torn))) return;
             AreaShape shape = Shape(area);
             Vector3 desired = Center(area) + local;
             if (!shape.Contains(desired, 1)) return;

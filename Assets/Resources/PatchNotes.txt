@@ -1,3 +1,8 @@
+version: 2026-10-13-proximity-area-chunks
+- Large wilderness areas now load terrain, scenery and encounters in nearby sections. Gates prepare the arrival surroundings, and exploring brings in more sections ahead of the camera.
+- Visited sections remain loaded for the session, preserving cleared encounters, chests and quest objects when backtracking. Towns and small boss arenas keep their existing loading.
+- Dashes and teleports avoid unfinished sections, reviving prepares the respawn surroundings, and the minimap adds scenery as new sections load while preserving explored fog.
+
 version: 2026-10-13-mobile-menu-buttons
 - Unspent passive points have their own compact button again on phones and tablets, below the HUD and menu row so it stays clear of the other buttons. TREE remains a separate button.
 - Single Player, Co-op, Host Game, Join Game and Back are larger on mobile, with an extra size increase in portrait. Rotating updates their layout.

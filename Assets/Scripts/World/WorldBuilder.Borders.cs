@@ -135,9 +135,50 @@ namespace PoeClone.World
             }
         }
 
+        private void BuildChunkBorder(int area, Transform group, List<(Vector3 a, Vector3 b)> boundary, Rect rect)
+        {
+            if (IsActTwo(area)) return;
+            Begin(area, unchecked(900 + area + Mathf.RoundToInt(rect.x * 131f + rect.y * 17f)));
+            AreaShape shape = Shape(area);
+                float walked = 0f;
+                foreach (var edge in boundary)
+                {
+                    walked += Vector3.Distance(edge.a, edge.b);
+                    if (walked < 6f) continue;
+                    walked = 0f;
+                    Vector3 p = shape.Center + (edge.a + edge.b) * 0.5f;
+                    if (!rect.Contains(new Vector2(p.x - shape.Center.x, p.z - shape.Center.z))) continue;
+                    Vector3 outward = Vector3.Cross(edge.b - edge.a, Vector3.up).normalized;
+                    if (shape.Contains(p + outward * 0.4f)) outward = -outward;
+                    p += outward * 4.5f;
+                    if (NearGate(area, p, 12f) || shape.Contains(p, -3f) || shape.WaterDistance(p) > -9f) continue;
+                    GameObject prop;
+                    if (shape.InCut(p) && !shape.IsCave && !shape.IsCliff)
+                    {
+                        // Boulders strewn along a knoll's rock bank; the knoll brings its own trees.
+                        if (rng.NextDouble() < 0.25) continue;
+                        p += outward * R(-3f, -2f) + Vector3.up * 1.2f;
+                        prop = Prefab(kit.rock, group, p, R(0, 360), new Vector3(R(1.3f, 2.2f), R(0.8f, 1.5f), R(1.3f, 2.2f)));
+                    }
+                    else if (shape.IsCave || shape.IsCliff || rng.NextDouble() < 0.3)
+                    {
+                        prop = Prefab(kit.rock, group, p, R(0, 360), new Vector3(R(2, 3), R(1.7f, 2.6f), R(2, 3)));
+                        if (area == Frozen) Tint(prop, new Color(0.65f, 0.78f, 0.9f));
+                    }
+                    else if (area == Graveyard) prop = DeadTree(group, p, kit.Mat("DeadWood"));
+                    else prop = Prefab(Coin() ? kit.pine : kit.oak, group, p, R(0, 360), Vector3.one * R(1.1f, 1.5f));
+                    NoShadows(prop);
+                }
+                if (!shape.IsCave && !shape.IsCliff)
+                    foreach (var cut in shape.Cuts)
+                        if (rect.Contains(cut.center))
+                            Knoll(group, area, shape.Center + Flat(cut.center.x, cut.center.y), cut.radii);
+        }
+
         // An exclusion in the open: a wooded knoll rising off its rock bank, instead of a pit.
         private void Knoll(Transform parent, int area, Vector3 center, Vector2 radii)
         {
+            if (DeferContent(center, () => Knoll(parent, area, center, radii))) return;
             // Inside the hole's rock bank, whose top (1.3 m) hides the seam.
             float rx = radii.x - 2f, rz = radii.y - 2f;
             float rise = Mathf.Min(rx, rz) * 0.14f;
@@ -208,7 +249,7 @@ namespace PoeClone.World
             {
                 Vector3 p = Center(Cave) + local;
                 Glowshrooms(group, p + new Vector3(10, 0, 6));
-                Glow(group, p + Vector3.up * 2, ShroomLight, 16, 4);
+                PlanGlow(group, p + Vector3.up * 2, ShroomLight, 16, 4);
             }
         }
 
@@ -338,11 +379,11 @@ namespace PoeClone.World
 
                 double roll = rng.NextDouble();
                 if (roll < 0.6)
-                    Prefab(Coin() ? kit.pine : kit.oak, t, p, R(0f, 360f), Vector3.one * R(0.9f, 1.3f));
+                    PlanPrefab(Coin() ? kit.pine : kit.oak, t, p, R(0f, 360f), Vector3.one * R(0.9f, 1.3f));
                 else if (roll < 0.8)
-                    Prefab(kit.rock, t, p, R(0f, 360f), Vector3.one * R(0.8f, 1.5f));
+                    PlanPrefab(kit.rock, t, p, R(0f, 360f), Vector3.one * R(0.8f, 1.5f));
                 else
-                    Prefab(kit.bushSmall, t, p, R(0f, 360f), Vector3.one * R(0.3f, 0.5f));
+                    PlanPrefab(kit.bushSmall, t, p, R(0f, 360f), Vector3.one * R(0.3f, 0.5f));
                 Claim(p, 2.4f);
                 k++;
             }

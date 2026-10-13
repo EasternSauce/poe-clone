@@ -25,15 +25,15 @@ namespace PoeClone.World
                     if (roots)
                     {
                         for (int strand = 0; strand < 3; strand++)
-                            Box(ward, at + new Vector3(strand * 0.7f, 0.7f, 0), new Vector3(0.6f, R(2, 4), 0.7f),
+                            PlanBox(ward, at + new Vector3(strand * 0.7f, 0.7f, 0), new Vector3(0.6f, R(2, 4), 0.7f),
                                 wood, false, new Vector3(0, R(0, 360), R(-40, 40)));
-                        Cyl(ward, at + Vector3.up * 0.8f, 0.65f, 1.2f, stone, false);
+                        PlanCyl(ward, at + Vector3.up * 0.8f, 0.65f, 1.2f, stone, false);
                     }
                     else
                     {
-                        Box(ward, at + Vector3.up, new Vector3(4, 2, 1), stone, false, new Vector3(0, R(0, 180), 0));
+                        PlanBox(ward, at + Vector3.up, new Vector3(4, 2, 1), stone, false, new Vector3(0, R(0, 180), 0));
                         for (int bar = -2; bar <= 2; bar++)
-                            Box(ward, at + new Vector3(bar * 0.5f, 2.4f, 0), new Vector3(0.09f, 1.3f, 0.09f), kit.Mat("Iron"), false);
+                            PlanBox(ward, at + new Vector3(bar * 0.5f, 2.4f, 0), new Vector3(0.09f, 1.3f, 0.09f), kit.Mat("Iron"), false);
                     }
                 }
 
@@ -41,12 +41,12 @@ namespace PoeClone.World
                 foreach (Vector3 local in AreaLayouts.QuestAnchors[group])
                 {
                     Vector3 at = c + local;
-                    Glow(ward, at + new Vector3(5, 2, 4), roots ? new Color(0.85f, 0.30f, 0.39f) : new Color(0.36f, 0.78f, 0.72f), 18, 5);
+                    PlanGlow(ward, at + new Vector3(5, 2, 4), roots ? new Color(0.85f, 0.30f, 0.39f) : new Color(0.36f, 0.78f, 0.72f), 18, 5);
                     for (int side = -1; side <= 1; side += 2)
                     {
                         Vector3 edge = at + new Vector3(side * 10, 0, 6);
-                        Cyl(ward, edge + Vector3.up, roots ? 1.3f : 0.8f, 2, roots ? wood : stone, false);
-                        Bones(ward, edge + Vector3.forward * 2);
+                        PlanCyl(ward, edge + Vector3.up, roots ? 1.3f : 0.8f, 2, roots ? wood : stone, false);
+                        PlanBones(ward, edge + Vector3.forward * 2);
                         if (!roots) SahretJar(ward, edge + Vector3.right * side * 2, 0.7f);
                     }
                 }
@@ -57,15 +57,15 @@ namespace PoeClone.World
                 float angle = i * 36;
                 Vector3 edge = boss + Quaternion.Euler(0, angle, 0) * Vector3.forward * 25;
                 if (RootDescentLandmark(area, edge, 8)) continue;
-                Cyl(ward, edge + Vector3.up * 1.5f, roots ? 1.4f : 1, 3, roots ? wood : stone, false);
+                PlanCyl(ward, edge + Vector3.up * 1.5f, roots ? 1.4f : 1, 3, roots ? wood : stone, false);
             }
-            Glow(ward, boss + Vector3.up * 4, roots ? new Color(0.9f, 0.3f, 0.4f) : new Color(0.3f, 0.7f, 0.68f), 28, 7);
+            PlanGlow(ward, boss + Vector3.up * 4, roots ? new Color(0.9f, 0.3f, 0.4f) : new Color(0.3f, 0.7f, 0.68f), 28, 7);
             if (roots)
             {
                 // The dead river enters a root-grown altar beyond the arena, below the heart objective.
                 Vector3 altar = boss + new Vector3(0, 0, 28);
                 for (int i = -3; i <= 3; i++)
-                    Box(ward, altar + new Vector3(i * 1.4f, 3, 2), new Vector3(1, 6 + Mathf.Abs(i), 1), wood, false,
+                    PlanBox(ward, altar + new Vector3(i * 1.4f, 3, 2), new Vector3(1, 6 + Mathf.Abs(i), 1), wood, false,
                         new Vector3(0, 0, i * 9));
             }
             else

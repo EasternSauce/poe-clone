@@ -60,7 +60,7 @@ namespace PoeClone.World
                 {
                     Vector3 p = c + road[i - 1] + axis * d;
                     if (rng.NextDouble() > 0.25)
-                        WeatheredSlab(desert, "BuriedRoadStone", p + Vector3.up * 0.025f,
+                        PlanWeatheredSlab(desert, "BuriedRoadStone", p + Vector3.up * 0.025f,
                             new Vector2(R(1.2f, 2), R(1, 1.8f)), 0.055f, desertStone, R(0, 35), false);
                     if ((int)d % 18 < 4)
                         DesertPillar(desert, p + side * 9f, R(1.3f, 2.6f));
@@ -90,12 +90,12 @@ namespace PoeClone.World
             {
                 float a = i * Mathf.PI * 2 / 7;
                 DesertRock(desert, nest + new Vector3(Mathf.Sin(a) * 23, 0, Mathf.Cos(a) * 19), new Vector3(3, R(2, 5), 3));
-                Bones(desert, nest + new Vector3(R(-12, 12), 0, R(-10, 10)));
+                PlanBones(desert, nest + new Vector3(R(-12, 12), 0, R(-10, 10)));
             }
             Vector3 shrine = c + new Vector3(-43, 0, 111);
             for (int side = -1; side <= 1; side += 2)
                 DesertPillar(desert, shrine + new Vector3(side * 7, 0, 4), 5);
-            Box(desert, shrine + new Vector3(0, 0.35f, 6), new Vector3(8, 0.7f, 3), desertStone);
+            PlanBox(desert, shrine + new Vector3(0, 0.35f, 6), new Vector3(8, 0.7f, 3), desertStone);
             BuildDesertCache(desert, nest + new Vector3(0, 0, 8), "act2.nest_cache");
             BuildDesertCache(desert, shrine, "act2.shrine_cache");
 
@@ -117,7 +117,7 @@ namespace PoeClone.World
             Vector3 wall = c + new Vector3(130, 0, 145);
             for (int side = -1; side <= 1; side += 2)
             {
-                Box(desert, wall + new Vector3(side * 22, 5, 0), new Vector3(32, 10, 4), desertStone, false);
+                PlanBox(desert, wall + new Vector3(side * 22, 5, 0), new Vector3(32, 10, 4), desertStone, false);
                 DesertPillar(desert, wall + new Vector3(side * 8, 0, 0), 13);
             }
             Scatter(desert, 12, 20, 170, p => Bones(desert, p), 0.4f);
@@ -127,6 +127,7 @@ namespace PoeClone.World
 
         private void BuildDesertCache(Transform parent, Vector3 at, string id)
         {
+            if (DeferContent(at, () => BuildDesertCache(parent, at, id), canClear: false)) return;
             Transform chest = Holder(parent, "BuriedCaravanCache", at, Quaternion.identity);
             LocalBox(chest, new Vector3(0, 0.4f, 0), new Vector3(1.7f, 0.8f, 1.1f), kit.Mat("Wood"), false);
             Transform lid = LocalBox(chest, new Vector3(0, 0.88f, 0), new Vector3(1.8f, 0.18f, 1.2f), kit.Mat("Iron"), false).transform;
@@ -135,6 +136,7 @@ namespace PoeClone.World
 
         private void DesertPillar(Transform parent, Vector3 p, float height)
         {
+            if (DeferContent(p, () => DesertPillar(parent, p, height))) return;
             WeatheredSlab(parent, "SandstonePlinth", p, new Vector2(1.1f, 1.1f), 0.35f, desertStone, R(0, 20));
             Cyl(parent, p + Vector3.up * height * 0.5f, 0.65f, height, desertStone);
             WeatheredSlab(parent, "BrokenCapital", p + Vector3.up * height, new Vector2(0.9f, 0.85f), 0.35f, desertStone, R(-12, 12));
@@ -142,12 +144,14 @@ namespace PoeClone.World
 
         private void DesertRock(Transform parent, Vector3 at, Vector3 scale)
         {
+            if (DeferContent(at, () => DesertRock(parent, at, scale))) return;
             GameObject rock = Prefab(kit.rock, parent, at, R(0, 360), scale);
             Tint(rock, new Color(0.79f, 0.58f, 0.34f));
         }
 
         private void DesertWagon(Transform parent, Vector3 at, float yaw)
         {
+            if (DeferContent(at, () => DesertWagon(parent, at, yaw))) return;
             Transform wagon = Holder(parent, "AbandonedDesertWagon", at, Quaternion.Euler(0, yaw, -8));
             LocalBox(wagon, new Vector3(0, 0.6f, 0), new Vector3(2.8f, 0.24f, 4.2f), kit.Mat("Wood"));
             for (int side = -1; side <= 1; side += 2)
@@ -165,6 +169,7 @@ namespace PoeClone.World
 
         private void DesertDune(Transform parent, Vector3 at, Vector2 radii, float height)
         {
+            if (DeferContent(at, () => DesertDune(parent, at, radii, height))) return;
             const int rings = 7, sides = 32;
             var vertices = new List<Vector3> { Vector3.up * height };
             var triangles = new List<int>();
@@ -209,6 +214,7 @@ namespace PoeClone.World
                 Vector3 local = p - Center(Desert);
                 return EnemyKinds.PickIndex(local.z < -65 ? creatures : local.x < -65 ? dunes : local.z < 10 ? KindWeights[Desert] : raiders);
             });
+            spawner.ConfigureStreaming(Desert);
             spawnersByArea[Desert] = spawner;
             spawner.enabled = false;
             go.AddComponent<DesertEncounters>().Configure(spawner);

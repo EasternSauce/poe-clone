@@ -30,21 +30,27 @@ namespace PoeClone.World
                 if (NeedsArea(area)) for (int i = 0; i < 8; i++)
                 {
                     Vector3 home = Center(area) + new Vector3((i % 4 - 1.5f) * 64, 0, (i / 4 - 0.5f) * 100);
-                    Transform swan = WildlifeModels.Create(wildlife, AmbientAnimal.Species.Swan, i);
-                    swan.position = home + Vector3.up * (10 + i % 3);
-                    var flight = swan.gameObject.AddComponent<BirdFlight>();
-                    flight.worldCenter = home;
-                    flight.wanderExtent = 42;
-                    flight.flightSpeed = 4.2f;
-                    flight.cruiseAltitudeMin = 10;
-                    flight.cruiseAltitudeMax = 13;
-                    flight.landChance = 0;
-                    flight.circleChance = 0; // Wide, steady flight; swans never land.
-                    flight.wingFlapSpeed = 4.2f;
-                    flight.wingFlapAngle = 24;
-                    flight.leftWing = swan.Find("LeftWing");
-                    flight.rightWing = swan.Find("RightWing");
+                    int variant = i;
+                    ScheduleContent(home, () => CreateSwan(wildlife, home, variant));
                 }
+        }
+
+        private void CreateSwan(Transform wildlife, Vector3 home, int i)
+        {
+            Transform swan = WildlifeModels.Create(wildlife, AmbientAnimal.Species.Swan, i);
+            swan.position = home + Vector3.up * (10 + i % 3);
+            var flight = swan.gameObject.AddComponent<BirdFlight>();
+            flight.worldCenter = home;
+            flight.wanderExtent = 42;
+            flight.flightSpeed = 4.2f;
+            flight.cruiseAltitudeMin = 10;
+            flight.cruiseAltitudeMax = 13;
+            flight.landChance = 0;
+            flight.circleChance = 0; // Wide, steady flight; swans never land.
+            flight.wingFlapSpeed = 4.2f;
+            flight.wingFlapAngle = 24;
+            flight.leftWing = swan.Find("LeftWing");
+            flight.rightWing = swan.Find("RightWing");
         }
 
         private void PopulateWildlife(Transform parent, Transform player, System.Random random,
@@ -65,14 +71,20 @@ namespace PoeClone.World
                 // Leave the town square and its busy central streets to the villagers.
                 if (area == Haven && species != AmbientAnimal.Species.Cat && distanceSquared < 55 * 55)
                     continue;
-                if (!AmbientAnimal.CanOccupy(shape, position, radius)) continue;
+                if (planningContent ? !shape.Contains(position, radius + 2f) : !AmbientAnimal.CanOccupy(shape, position, radius)) continue;
                 bool crowded = false;
                 foreach (Vector3 other in occupied)
                     if ((position - other).sqrMagnitude < (species == AmbientAnimal.Species.Cat ? 8 * 8 : 12 * 12)) { crowded = true; break; }
                 if (crowded) continue;
-                Transform animal = WildlifeModels.Create(parent, species, made);
-                animal.SetPositionAndRotation(position, Quaternion.Euler(0, random.Next(360), 0));
-                animal.gameObject.AddComponent<AmbientAnimal>().Initialize(species, area, player, random.Next());
+                Vector3 home = position;
+                int variant = made, yaw = random.Next(360), seed = random.Next();
+                ScheduleContent(home, () =>
+                {
+                    if (!AmbientAnimal.CanOccupy(shape, home, radius)) return;
+                    Transform animal = WildlifeModels.Create(parent, species, variant);
+                    animal.SetPositionAndRotation(home, Quaternion.Euler(0, yaw, 0));
+                    animal.gameObject.AddComponent<AmbientAnimal>().Initialize(species, area, player, seed);
+                });
                 occupied.Add(position);
                 made++;
             }

@@ -26,6 +26,7 @@ namespace PoeClone.UI
         {
             public Texture2D Texture;
             public Color32[] Base;
+            public Color32[] Terrain;
             public bool[] Seen;
             public bool Dirty;
         }
@@ -184,6 +185,13 @@ namespace PoeClone.UI
                 yield return null;
             if (!maps.TryGetValue(area, out baked) || baked.Texture == null)
                 Store(area, map);
+            var builder = WorldBuilder.Instance;
+            if (WorldBuilder.UsesChunks(area) && builder != null)
+            {
+                foreach (Rect rect in builder.LoadedChunkRects(area))
+                    yield return RefreshChunk(area, rect, false);
+                Redraw(maps[area]);
+            }
         }
 
         private static AreaMap Store(int area, AreaMap map)
@@ -223,7 +231,7 @@ namespace PoeClone.UI
             // change the dimensions used to redraw an already cached map.
             bool mobile = Inventory.TouchMode.Active;
             int resolution = mobile ? MobileResolution : Resolution;
-            int n = mobile ? MobileSampleResolution : SampleResolution;
+            int n = mobile || WorldBuilder.UsesChunks(area) ? MobileSampleResolution : SampleResolution;
             int rimWidth = Mathf.Max(1, Mathf.RoundToInt(RimWidth * (float)resolution / Resolution));
             float grainScale = 240f / resolution; // same grain size in world metres on both tiers
             float step = AreaSize / n;
@@ -243,7 +251,7 @@ namespace PoeClone.UI
                     water[i] = Mathf.Clamp(shape.WaterDistance(p), -FieldClamp, FieldClamp);
                     bridge[i] = Mathf.Clamp(shape.BridgeDistance(p), -FieldClamp, FieldClamp);
                     // Anything standing up out of the ground (a trunk, a rock, a wall, a house) is solid.
-                    if (inside[i] > -step &&
+                    if (!WorldBuilder.UsesChunks(area) && inside[i] > -step &&
                         Physics.Raycast(new Vector3(p.x, groundY + 40f, p.z), Vector3.down, out RaycastHit hit, 60f,
                             Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) &&
                         hit.point.y > groundY + 0.6f)
@@ -329,8 +337,68 @@ namespace PoeClone.UI
                 wrapMode = TextureWrapMode.Clamp
             };
             map.Base = pixels;
+            if (WorldBuilder.UsesChunks(area)) map.Terrain = (Color32[])pixels.Clone();
             map.Seen = new bool[FogResolution * FogResolution];
             map.Dirty = true;
+        }
+
+        /// <summary>Update scenery only where a new chunk has collision; keep saved fog intact.</summary>
+        public static IEnumerator RefreshChunk(int area, Rect localBounds, bool redraw = true)
+        {
+            if (!maps.TryGetValue(area, out var map) || map.Terrain == null || map.Texture == null) yield break;
+            int resolution = map.Texture.width;
+            float pixelSize = AreaSize / resolution;
+            int x0 = Mathf.Clamp(Mathf.FloorToInt((localBounds.xMin + AreaSize * 0.5f) / pixelSize), 0, resolution);
+            int x1 = Mathf.Clamp(Mathf.CeilToInt((localBounds.xMax + AreaSize * 0.5f) / pixelSize), 0, resolution);
+            int y0 = Mathf.Clamp(Mathf.FloorToInt((localBounds.yMin + AreaSize * 0.5f) / pixelSize), 0, resolution);
+            int y1 = Mathf.Clamp(Mathf.CeilToInt((localBounds.yMax + AreaSize * 0.5f) / pixelSize), 0, resolution);
+            Vector3 center = WorldBuilder.Center(area);
+            // Sample obstacles once per metre, then shade the detailed texture from that grid.
+            int nx = Mathf.CeilToInt(localBounds.width) + 3, nz = Mathf.CeilToInt(localBounds.height) + 3;
+            var solid = new bool[nx * nz];
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            for (int z = 0; z < nz; z++)
+            {
+                for (int x = 0; x < nx; x++)
+                {
+                    Vector3 point = center + new Vector3(localBounds.xMin + x - 1f, 40, localBounds.yMin + z - 1f);
+                    solid[z * nx + x] = HasScenery(point, center.y);
+                }
+                if (clock.Elapsed.TotalMilliseconds >= 2d) { yield return null; clock.Restart(); }
+            }
+            for (int y = y0; y < y1; y++)
+                for (int x = x0; x < x1; x++)
+                {
+                    int i = y * resolution + x;
+                    Color32 terrain = map.Terrain[i];
+                    if (terrain.a == 0) continue;
+                    float px = (x + 0.5f) * pixelSize - AreaSize * 0.5f;
+                    float pz = (y + 0.5f) * pixelSize - AreaSize * 0.5f;
+                    int sx = Mathf.Clamp(Mathf.RoundToInt(px - localBounds.xMin + 1f), 0, nx - 1);
+                    int sz = Mathf.Clamp(Mathf.RoundToInt(pz - localBounds.yMin + 1f), 0, nz - 1);
+                    if (solid[sz * nx + sx])
+                        map.Base[i] = new Color32((byte)(terrain.r * 0.38f), (byte)(terrain.g * 0.38f), (byte)(terrain.b * 0.38f), 230);
+                    else map.Base[i] = terrain;
+                }
+            if (redraw) Redraw(map);
+        }
+
+        private static readonly RaycastHit[] sceneryHits = new RaycastHit[32];
+
+        private static bool HasScenery(Vector3 origin, float groundY)
+        {
+            int count = Physics.RaycastNonAlloc(origin, Vector3.down, sceneryHits, 60f,
+                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+            {
+                RaycastHit hit = sceneryHits[i];
+                if (hit.point.y <= groundY + 0.6f || hit.collider == null) continue;
+                if (hit.collider.GetComponentInParent<CharacterController>() != null ||
+                    hit.collider.GetComponentInParent<PoeClone.Enemies.EnemyHealth>() != null ||
+                    hit.collider.GetComponentInParent<PoeClone.World.AmbientAnimal>() != null) continue;
+                return true;
+            }
+            return false;
         }
 
         // Bilinear read of a square sample grid, clamped at its edges.

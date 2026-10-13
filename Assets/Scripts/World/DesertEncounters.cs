@@ -11,6 +11,7 @@ namespace PoeClone.World
         private EnemySpawner spawner;
         private AreaManager manager;
         private bool populated;
+        private float nextCheck;
         public void Configure(EnemySpawner value) => spawner = value;
         private void Start()
         {
@@ -22,19 +23,30 @@ namespace PoeClone.World
             }
         }
         private void OnDestroy() { if (manager != null) manager.AreaChanged -= Enter; }
+        private void Update()
+        {
+            if (manager == null || Time.time < nextCheck) return;
+            nextCheck = Time.time + 0.25f;
+            Enter(manager.CurrentAreaIndex);
+        }
         private void Enter(int area)
         {
-            if (area != WorldBuilder.Desert || populated || GameSessionController.Instance != null &&
+            if (area != WorldBuilder.Desert || GameSessionController.Instance != null &&
                 GameSessionController.Instance.Role == SessionRole.Spectator) return;
-            populated = true;
             Vector3 c = WorldBuilder.Center(area);
-            var captain = new List<EnemyHealth>();
-            spawner.SpawnAmbush(c + new Vector3(136, 0, 76), "Kharad, the Tollkeeper", 1, 0, 1, captain, false);
-            spawner.SpawnAmbush(c + new Vector3(139, 0, 83), "Dustroad Javelineer", 2, 2, 5, alert: false);
-            foreach (EnemyHealth kharad in captain)
-                kharad.Died += () => LootDrop.Drop(ItemGenerator.Generate(new System.Random(Random.Range(1, int.MaxValue)), 38, ItemRarity.Rare), kharad.transform.position, itemLevel: 38);
+            var builder = GetComponentInParent<WorldBuilder>();
+            if (!populated && builder.IsPositionReady(area, c + new Vector3(136, 0, 76)))
+            {
+                populated = true;
+                var captain = new List<EnemyHealth>();
+                spawner.SpawnAmbush(c + new Vector3(136, 0, 76), "Kharad, the Tollkeeper", 1, 0, 1, captain, false);
+                spawner.SpawnAmbush(c + new Vector3(139, 0, 83), "Dustroad Javelineer", 2, 2, 5, alert: false);
+                foreach (EnemyHealth kharad in captain)
+                    kharad.Died += () => LootDrop.Drop(ItemGenerator.Generate(new System.Random(Random.Range(1, int.MaxValue)), 38, ItemRarity.Rare), kharad.transform.position, itemLevel: 38);
+            }
             foreach (DesertCache cache in GetComponentInParent<WorldBuilder>().GetComponentsInChildren<DesertCache>())
             {
+                if (cache.Guards != null || !builder.IsPositionReady(area, cache.transform.position)) continue;
                 var guards = new List<EnemyHealth>();
                 bool nest = cache.transform.position.x < c.x - 80;
                 spawner.SpawnAmbush(cache.transform.position, nest ? "Glassback Scorpion" : "Sandlurker", 3, 5, 9, guards, false);

@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 namespace PoeClone.World
 {
     /// <summary>Fixed rooms and routes shared by ground, walls, content placement and minimaps.</summary>
-    public sealed class AreaShape
+    public sealed partial class AreaShape
     {
         public const float MaxRadius = 170f;
         private const float Cell = 2f;
@@ -23,6 +23,8 @@ namespace PoeClone.World
         private Mesh groundMesh, landMesh;
         private float[,] landSamples, waterSamples;
         private readonly List<(Vector3 a, Vector3 b)> landBoundary = new List<(Vector3, Vector3)>();
+        private readonly Dictionary<Vector2Int, (float land, float water)> surfaceSamples =
+            new Dictionary<Vector2Int, (float, float)>();
         private float[,] gapSamples;
         private bool[,] filledGaps;
 
@@ -480,7 +482,30 @@ namespace PoeClone.World
         private float ShorelineDistance(Vector2 p) => SampleSurface(p, true);
         private float SampleSurface(Vector2 p, bool water)
         {
-            if (landSamples == null) BuildGroundMesh(0, omitBridges: true);
+            if (landSamples == null)
+            {
+                // Streaming samples only the four vertices surrounding this point. Never build
+                // a whole area's mesh merely to find a shoreline or wall normal.
+                Vector2 cell = (p + Size * 0.5f) / Cell;
+                int ix = Mathf.FloorToInt(cell.x), iz = Mathf.FloorToInt(cell.y);
+                float Sample(int x, int z)
+                {
+                    var key = new Vector2Int(x, z);
+                    if (!surfaceSamples.TryGetValue(key, out var sample))
+                    {
+                        Vector2 at = new Vector2(x * Cell, z * Cell) - Size * 0.5f;
+                        float wet = WaterDistance(at);
+                        sample = (Mathf.Min(Distance(at), -wet), wet);
+                        surfaceSamples.Add(key, sample);
+                    }
+                    return water ? sample.water : sample.land;
+                }
+                float u0 = cell.x - ix, v0 = cell.y - iz;
+                float a0 = Sample(ix, iz), b0 = Sample(ix, iz + 1);
+                float c0 = Sample(ix + 1, iz + 1), d0 = Sample(ix + 1, iz);
+                return v0 >= u0 ? a0 * (1f - v0) + b0 * (v0 - u0) + c0 * u0 :
+                    a0 * (1f - u0) + c0 * v0 + d0 * (u0 - v0);
+            }
             Vector2 grid = (p + Size * 0.5f) / Cell;
             int x = Mathf.FloorToInt(grid.x), z = Mathf.FloorToInt(grid.y);
             if (x < 0 || z < 0 || x + 1 >= landSamples.GetLength(0) || z + 1 >= landSamples.GetLength(1))
@@ -501,9 +526,9 @@ namespace PoeClone.World
             return Mathf.Lerp(Mathf.Min(0.025f, top), top, t);
         }
 
-        public Mesh BuildWalls(float bottom, float top, float outward = 0f)
+        public Mesh BuildWalls(float bottom, float top, float outward = 0f, Rect? region = null, List<(Vector3 a, Vector3 b)> boundary = null)
         {
-            BuildGroundMesh(0f);
+            if (!region.HasValue) BuildGroundMesh(0f);
             var vertices = new List<Vector3>();
             var triangles = new List<int>();
             var normals = new List<Vector3>();
@@ -538,7 +563,7 @@ namespace PoeClone.World
                 // coplanar render triangles cause flicker and cancel recalculated normals.
                 if (collision) { triangles.Add(a); triangles.Add(c); triangles.Add(b); }
             }
-            foreach (var edge in collision ? Boundary : WallContour(outward))
+            foreach (var edge in collision ? (boundary ?? Boundary) : WallContour(outward, region))
             {
                 Vector3 start = edge.a, end = edge.b;
                 if (!collision)
@@ -558,20 +583,21 @@ namespace PoeClone.World
                 Face(a, a + 1, b, facing);
                 Face(b, a + 1, b + 1, facing);
             }
-            if (!collision) BuildWallTop(bottom, top, outward, vertices, triangles, normals);
+            if (!collision) BuildWallTop(bottom, top, outward, vertices, triangles, normals, region);
             Mesh mesh = MeshFrom("AuthoredAreaWalls", vertices, triangles);
             // Both triangle windings share collision vertices; explicit normals avoid cancellation.
             mesh.SetNormals(normals);
-            return mesh;
+            return TrimToRegion(mesh, region);
         }
 
-        private void BuildWallTop(float bottom, float top, float outward, List<Vector3> vertices, List<int> triangles, List<Vector3> normals)
+        private void BuildWallTop(float bottom, float top, float outward, List<Vector3> vertices, List<int> triangles, List<Vector3> normals, Rect? region)
         {
             const float width = 5f, step = 1f;
             float padding = outward + width + step;
             Vector2 start = -Size * 0.5f - Vector2.one * padding;
             int nx = Mathf.CeilToInt((Size.x + padding * 2f) / step);
             int nz = Mathf.CeilToInt((Size.y + padding * 2f) / step);
+            LimitGrid(ref start, ref nx, ref nz, step, region);
             var land = new float[nx + 1, nz + 1];
             var shore = new float[nx + 1, nz + 1];
             for (int z = 0; z <= nz; z++)
@@ -673,12 +699,13 @@ namespace PoeClone.World
             }
         }
 
-        private List<(Vector3 a, Vector3 b)> WallContour(float outward)
+        private List<(Vector3 a, Vector3 b)> WallContour(float outward, Rect? region = null)
         {
             const float step = 1f;
             float padding = outward + 1f;
             Vector2 start = -Size * 0.5f - Vector2.one * padding;
             int nx = Mathf.CeilToInt(Size.x + padding * 2f), nz = Mathf.CeilToInt(Size.y + padding * 2f);
+            LimitGrid(ref start, ref nx, ref nz, step, region);
             var samples = new float[nx + 1, nz + 1];
             for (int z = 0; z <= nz; z++)
                 for (int x = 0; x <= nx; x++)
@@ -710,9 +737,9 @@ namespace PoeClone.World
 
         // Shore strips are clipped from the rendered land triangles, so their outer edges
         // cannot disagree with the floor or break into undersampled narrow-band fragments.
-        public Mesh BuildShoreMesh()
+        public Mesh BuildShoreMesh(Mesh chunkLand = null, List<(Vector3 a, Vector3 b)> chunkBoundary = null, Rect? region = null)
         {
-            Mesh land = BuildGroundMesh(0, omitBridges: true);
+            Mesh land = chunkLand != null ? chunkLand : BuildGroundMesh(0, omitBridges: true);
             Vector3[] points = land.vertices;
             int[] indices = land.triangles;
             var vertices = new List<Vector3>();
@@ -726,7 +753,7 @@ namespace PoeClone.World
                 Clip(a, b, c, Bank(a), Bank(b), Bank(c), vertices, triangles, false);
             }
             // Close the exposed earth between the water level and the grassy bank.
-            foreach (var edge in landBoundary)
+            foreach (var edge in chunkBoundary ?? landBoundary)
             {
                 Vector3 localMidpoint = (edge.a + edge.b) * 0.5f;
                 if (Mathf.Abs(ShorelineDistance(new Vector2(localMidpoint.x, localMidpoint.z))) > 0.02f) continue;
@@ -744,15 +771,16 @@ namespace PoeClone.World
                     { int swap = triangles[k]; triangles[k] = triangles[k + 2]; triangles[k + 2] = swap; }
                 }
             }
-            return MeshFrom("ContinuousRiverBank", vertices, triangles);
+            return TrimToRegion(MeshFrom("ContinuousRiverBank", vertices, triangles), region);
         }
 
-        public Mesh BuildWaterMesh()
+        public Mesh BuildWaterMesh(Rect? region = null)
         {
             float padding = 12f;
             Vector2 start = -Size * 0.5f - Vector2.one * padding;
             int nx = Mathf.CeilToInt((Size.x + padding * 2f) / Cell);
             int nz = Mathf.CeilToInt((Size.y + padding * 2f) / Cell);
+            LimitGrid(ref start, ref nx, ref nz, Cell, region);
             var samples = new float[nx + 1, nz + 1];
             var falls = new List<(Vector2 point, Vector2 downstream, float halfWidth)>(RiverSources());
             for (int z = 0; z <= nz; z++)
@@ -781,7 +809,7 @@ namespace PoeClone.World
                     Clip(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1], vertices, triangles, false);
                     Clip(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z], vertices, triangles, false);
                 }
-            return MeshFrom("WaterSurface", vertices, triangles);
+            return TrimToRegion(MeshFrom("WaterSurface", vertices, triangles), region);
         }
 
         private static Mesh MeshFrom(string name, List<Vector3> vertices, List<int> triangles)

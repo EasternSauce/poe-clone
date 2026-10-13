@@ -95,6 +95,8 @@ namespace PoeClone.World
         // steps up to a dark doorway behind an iron gate, spirit fire in braziers either side.
         private void BarrowCrypt(Transform t, Vector3 crypt)
         {
+            if (planningContent) { Claim(crypt + new Vector3(0, 0, 8.5f), 15f); Claim(crypt + new Vector3(0, 0, -6), 7f); }
+            if (DeferContent(crypt, () => BarrowCrypt(t, crypt))) return;
             const float rx = 13f, rz = 9.5f, peak = 6.5f, back = 8.5f;
             Transform barrow = Holder(t, "Barrow", crypt, Quaternion.identity);
 
@@ -252,6 +254,8 @@ namespace PoeClone.World
         // rows inside and a mausoleum, an angel or an old tree in the middle.
         private void Churchyard(Transform t, Vector3 center, Vector2 radii, YardFeature feature, bool railing)
         {
+            if (planningContent) Claim(center, Mathf.Max(radii.x, radii.y) * 1.15f + 1.5f);
+            if (DeferContent(center, () => Churchyard(t, center, radii, feature, railing))) return;
             Vector3 middle = Centers[Graveyard];
             Quaternion frame = Quaternion.Euler(0f, R(-25f, 25f), 0f);
             Vector3 toGate = middle - center;
@@ -422,6 +426,7 @@ namespace PoeClone.World
         // A small stone family tomb with a slate gable roof, its barred door facing the yard's gate.
         private void Mausoleum(Transform t, Vector3 p, float yaw)
         {
+            if (DeferContent(p, () => Mausoleum(t, p, yaw))) return;
             Transform tomb = Holder(t, "Mausoleum", p, Quaternion.Euler(0f, yaw, 0f));
             var mesh = new PieceMesh();
             int stone = mesh.Slot(kit.Mat("Stone"));
@@ -467,6 +472,7 @@ namespace PoeClone.World
         // A robed, bowed angel with folded wings on a plinth, facing the yard's gate.
         private void Angel(Transform t, Vector3 p, float yaw)
         {
+            if (DeferContent(p, () => Angel(t, p, yaw))) return;
             Transform statue = Holder(t, "Angel", p, Quaternion.Euler(0f, yaw, 0f));
             statue.localScale = Vector3.one * 1.4f;
             var mesh = new PieceMesh();
@@ -502,6 +508,7 @@ namespace PoeClone.World
         /// <summary>A grave of the kind the older parts of the game place one at a time.</summary>
         private void Tombstone(Transform t, Vector3 p)
         {
+            if (DeferContent(p, () => Tombstone(t, p))) return;
             Grave(t, p, R(200f, 250f));
         }
 
@@ -625,6 +632,7 @@ namespace PoeClone.World
         // coffin lid thrown aside, the headstone knocked flat and bones about the edge.
         private void OpenGrave(Transform t, Vector3 p, float yaw)
         {
+            if (DeferContent(p, () => OpenGrave(t, p, yaw))) return;
             Transform grave = Holder(t, "OpenGrave", p, Quaternion.Euler(0f, yaw, 0f));
             var mesh = new PieceMesh();
             int soil = mesh.Slot(MudFloor);
@@ -655,6 +663,7 @@ namespace PoeClone.World
         // An iron crook on a post with a lantern hanging from it, burning with green spirit fire.
         private void SpiritLantern(Transform t, Vector3 p, float yaw)
         {
+            if (DeferContent(p, () => SpiritLantern(t, p, yaw))) return;
             Transform lantern = Holder(t, "SpiritLantern", p, Quaternion.Euler(0f, yaw, 0f));
             var mesh = new PieceMesh();
             int iron = mesh.Slot(kit.Mat("Iron"));

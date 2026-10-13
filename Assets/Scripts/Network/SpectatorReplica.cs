@@ -436,7 +436,7 @@ namespace PoeClone.Network
         private void ApplyDiscrete(StateSnapshot s)
         {
             if (AreaManager.Instance != null)
-                AreaManager.Instance.ApplyAreaImmediate(s.area);
+                AreaManager.Instance.ApplyAreaImmediate(s.area, s.p != null ? new Vector3(s.p.x, s.p.y, s.p.z) : (Vector3?)null);
 
             ApplyFade(s.fade);
             ApplyHud(s.hud);

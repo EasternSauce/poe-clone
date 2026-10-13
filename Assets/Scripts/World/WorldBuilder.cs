@@ -206,6 +206,7 @@ namespace PoeClone.World
 
         private void OnDestroy()
         {
+            ReleaseStreamedResources();
             if (Instance == this)
                 Instance = null;
         }
@@ -273,10 +274,14 @@ namespace PoeClone.World
         public bool IsAreaReady(int area) => builtAreas.Contains(area);
 
         // Serialize builds: the authored builders share their current area and random generator.
-        public IEnumerator EnsureArea(int area)
+        public IEnumerator EnsureArea(int area, Transform arrival = null, Vector3? focus = null)
         {
-            while (buildingArea) yield return null;
-            if (builtAreas.Contains(area)) yield break;
+            while (buildingArea || streamingBusy) yield return null;
+            if (builtAreas.Contains(area))
+            {
+                yield return EnsureArrival(area, focus ?? (arrival != null ? arrival : spawnPoints[area]).position);
+                yield break;
+            }
             if (area < 0 || area >= Centers.Length) yield break;
             buildingArea = true;
             loadingArea = area;
@@ -285,19 +290,14 @@ namespace PoeClone.World
             {
                 Loading("Terrain: " + AreaNames[area]);
                 yield return null;
-                if (area == Greenwood)
-                {
-                    UseGroundTexture(groundTemplate, Greenwood);
-                    yield return ShapeGround(groundTemplate, Greenwood);
-                    yield return RelocateOriginalScenery();
-                    GameObject bounds = GameObject.Find("WorldBounds");
-                    if (bounds != null) bounds.SetActive(false);
-                }
+                if (UsesChunks(area))
+                    yield return PrepareStreamedArea(area);
                 else if (area != ActArena && area != Warren && area != Belfry)
                     yield return BuildGround(groundTemplate, area);
                 Loading("Scenery: " + AreaNames[area]);
                 yield return null;
                 if (IsActTwo(area) || area == ActArena) EnsureDesertMaterials();
+                planningContent = UsesChunks(area);
                 switch (area)
                 {
                     case Haven: BuildHaven(); break;
@@ -323,7 +323,7 @@ namespace PoeClone.World
                 BuildFieldBossLairs();
                 Loading("Encounters: " + AreaNames[area]);
                 yield return null;
-                yield return BuildBorders();
+                if (!UsesChunks(area)) yield return BuildBorders();
                 ClearAreaTravel(area);
                 BuildQuestSites();
                 SetUpSpawners();
@@ -334,18 +334,20 @@ namespace PoeClone.World
                 PlaceBosses();
                 Physics.SyncTransforms();
                 ManualPointLightManager.Refresh();
-                builtAreas.Add(area);
                 // Five seconds is a soft cover budget. Never expose missing collision or enemies.
                 // Optional wildlife and wind decoration can finish after the cover lifts.
-                if (Time.realtimeSinceStartup - started >= 5f)
+                if (!UsesChunks(area) && Time.realtimeSinceStartup - started >= 5f)
                     StartCoroutine(FinishAreaDetails(area));
                 else
                     yield return AreaDetails(area);
+                planningContent = false;
+                yield return EnsureArrival(area, focus ?? (arrival != null ? arrival : spawnPoints[area]).position);
+                builtAreas.Add(area);
                 // Audio is optional and never blocks entry.
                 ambience.Build(FindAnyObjectByType<AreaManager>(), FindAnyObjectByType<PlayerController>().transform, area);
                 WorldActivity.Refresh();
             }
-            finally { loadingArea = -1; buildingArea = false; }
+            finally { planningContent = false; loadingArea = -1; buildingArea = false; }
         }
 
         private void ClearAreaTravel(int area)
@@ -367,7 +369,7 @@ namespace PoeClone.World
         private IEnumerator FinishAreaDetails(int area)
         {
             var manager = FindAnyObjectByType<AreaManager>();
-            while (buildingArea || Time.timeScale <= 0f ||
+            while (buildingArea || streamingBusy || Time.timeScale <= 0f ||
                 (manager != null && (manager.IsSwitching || (manager.loadingScreen != null && manager.loadingScreen.IsShowing))))
                 yield return null;
             buildingArea = true;
@@ -387,11 +389,11 @@ namespace PoeClone.World
         }
 
         // Replicas need terrain before applying a snapshot; ordinary travel uses the coroutine.
-        public bool EnsureAreaImmediate(int area)
+        public bool EnsureAreaImmediate(int area, Vector3? focus = null)
         {
-            if (builtAreas.Contains(area)) return true;
-            if (buildingArea) return false;
-            Drain(EnsureArea(area));
+            if (builtAreas.Contains(area) && !UsesChunks(area)) return true;
+            if (buildingArea || streamingBusy) return false;
+            Drain(EnsureArea(area, focus: focus));
             return builtAreas.Contains(area);
         }
 
@@ -430,6 +432,7 @@ namespace PoeClone.World
         {
             Vector3 c = Centers[area];
             GameObject ground = Instantiate(template, root);
+            ground.SetActive(true);
             ground.name = "Ground_" + AreaNames[area];
             ground.transform.position = new Vector3(c.x, template.transform.position.y, c.z);
             UseGroundTexture(ground, area);
@@ -530,9 +533,10 @@ namespace PoeClone.World
 
         // A flat, smooth-edged disc lying on the ground (Unity's cylinder shows its 20 sides).
         // Lobes above zero bend the rim into an irregular, puddle-like outline picked by seed.
-        private static void FloorDisc(Transform parent, string name, Vector3 center, float radius, Material material,
+        private void FloorDisc(Transform parent, string name, Vector3 center, float radius, Material material,
             float lobes = 0f, float seed = 0f)
         {
+            if (DeferContent(center, () => FloorDisc(parent, name, center, radius, material, lobes, seed))) return;
             const int segments = 72;
             var vertices = new Vector3[segments + 1];
             var triangles = new int[segments * 3];
@@ -664,7 +668,7 @@ namespace PoeClone.World
             // The temple dais, with a ring of columns (some broken) and an altar.
             // The north-east pocket keeps the dais away from the waystone and the north gate.
             Vector3 temple = c + AreaLayouts.BossLocal(Ruins);
-            WeatheredSlab(t, "TempleDais", temple, new Vector2(10.3f, 9.8f), 0.14f, kit.Mat("Sandstone"), 18f, solid: false);
+            PlanWeatheredSlab(t, "TempleDais", temple, new Vector2(10.3f, 9.8f), 0.14f, kit.Mat("Sandstone"), 18f, solid: false);
             for (int k = 0; k < 10; k++)
             {
                 float rad = k * 36f * Mathf.Deg2Rad;
@@ -672,13 +676,13 @@ namespace PoeClone.World
                 if (k == 3 || k == 7)
                     FallenColumn(t, p, k * 36f + 70f);
                 else
-                    Prefab(kit.pillar, t, p + Vector3.up * 0.14f, R(0f, 360f), new Vector3(1f, R(0.45f, 1.05f), 1f));
+                    PlanPrefab(kit.pillar, t, p + Vector3.up * 0.14f, R(0f, 360f), new Vector3(1f, R(0.45f, 1.05f), 1f));
             }
-            WeatheredSlab(t, "AltarBase", temple + new Vector3(0f, 0.14f, 3f), new Vector2(1.3f, 0.85f), 0.85f, kit.Mat("Sandstone"), 18f);
-            WeatheredSlab(t, "AltarCap", temple + new Vector3(0f, 0.99f, 3f), new Vector2(1.5f, 1f), 0.15f, kit.Mat("Sandstone"), 18f);
-            Flame(t, temple + new Vector3(-0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
-            Flame(t, temple + new Vector3(0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
-            Glow(t, temple + new Vector3(0f, 1.9f, 3f), FireLight, 10f, 5f, flicker: true);
+            PlanWeatheredSlab(t, "AltarBase", temple + new Vector3(0f, 0.14f, 3f), new Vector2(1.3f, 0.85f), 0.85f, kit.Mat("Sandstone"), 18f);
+            PlanWeatheredSlab(t, "AltarCap", temple + new Vector3(0f, 0.99f, 3f), new Vector2(1.5f, 1f), 0.15f, kit.Mat("Sandstone"), 18f);
+            PlanFlame(t, temple + new Vector3(-0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
+            PlanFlame(t, temple + new Vector3(0.7f, 1.34f, 3f), 0.35f, kit.Mat("Ember"));
+            PlanGlow(t, temple + new Vector3(0f, 1.9f, 3f), FireLight, 10f, 5f, flicker: true);
             Claim(temple, 11f);
             Spots["Altar"] = temple;
 
@@ -700,7 +704,7 @@ namespace PoeClone.World
                     continue;
                 LavaCrack(t, p, R(0.25f, 0.5f), R(3f, 8f), R(0f, 180f));
                 if (k % 2 == 0)
-                    Glow(t, p + Vector3.up * 0.5f, LavaLight, 5.5f, 2.5f, flicker: true);
+                    PlanGlow(t, p + Vector3.up * 0.5f, LavaLight, 5.5f, 2.5f, flicker: true);
             }
 
             Scatter(t, 8, 10f, 42f, p => Brazier(t, p), 1f);
@@ -714,6 +718,7 @@ namespace PoeClone.World
         // own seed, so the area's other scenery lands where it always has.
         private void LavaCrack(Transform t, Vector3 p, float width, float length, float yaw)
         {
+            if (DeferContent(p, () => LavaCrack(t, p, width, length, yaw))) return;
             var shape = new System.Random(Mathf.RoundToInt(p.x * 131f + p.z * 17f + yaw * 7f));
             float Rand(float min, float max) => min + (float)shape.NextDouble() * (max - min);
 
@@ -805,17 +810,17 @@ namespace PoeClone.World
             Transform t = Group("Frozen");
 
             Vector3 throne = c + AreaLayouts.BossLocal(Frozen);
-            Cyl(t, throne + Vector3.up * 0.04f, 9f, 0.08f, kit.Mat("Ice"), solid: false);
+            PlanCyl(t, throne + Vector3.up * 0.04f, 9f, 0.08f, kit.Mat("Ice"), solid: false);
             for (int k = 0; k < 12; k++)
             {
                 float rad = k * 30f * Mathf.Deg2Rad;
                 Vector3 p = throne + new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad)) * 9.5f;
                 if (k == 9)
                     continue; // the way in, facing south
-                IceSpike(t, p, R(2.2f, 3.6f), new Vector3(R(-8f, 8f), R(0f, 360f), R(-8f, 8f)));
+                PlanIceSpike(t, p, R(2.2f, 3.6f), new Vector3(R(-8f, 8f), R(0f, 360f), R(-8f, 8f)));
             }
-            Box(t, throne + new Vector3(0f, 0.9f, 3.2f), new Vector3(2.6f, 1.8f, 1f), kit.Mat("Ice"));
-            Box(t, throne + new Vector3(0f, 0.35f, 2.4f), new Vector3(2.2f, 0.7f, 1.2f), kit.Mat("Ice"));
+            PlanBox(t, throne + new Vector3(0f, 0.9f, 3.2f), new Vector3(2.6f, 1.8f, 1f), kit.Mat("Ice"));
+            PlanBox(t, throne + new Vector3(0f, 0.35f, 2.4f), new Vector3(2.2f, 0.7f, 1.2f), kit.Mat("Ice"));
             Claim(throne, 11f);
             Spots["Throne"] = throne;
 
@@ -826,7 +831,7 @@ namespace PoeClone.World
                 float radius = R(3f, 6f);
                 if (!Free(p, radius) || !Shape(Frozen).Contains(p, radius + 2f))
                     continue;
-                Cyl(t, p + Vector3.up * 0.03f, radius, 0.06f, kit.Mat("Ice"), solid: false);
+                PlanCyl(t, p + Vector3.up * 0.03f, radius, 0.06f, kit.Mat("Ice"), solid: false);
                 Claim(p, radius);
             }
 
@@ -924,6 +929,7 @@ namespace PoeClone.World
                 original.SetBounds(p => greenwood.Contains(p, 3f));
                 spawnersByArea[Greenwood] = original;
 
+                original.ConfigureStreaming(Greenwood);
                 original.enabled = false;
             }
 
@@ -941,6 +947,7 @@ namespace PoeClone.World
                 spawner.SetSafeSpots(SafeSpots(area));
                 AreaShape shape = Shape(area);
                 spawner.SetBounds(p => shape.Contains(p, 3f));
+                spawner.ConfigureStreaming(area);
                 spawnersByArea[area] = spawner;
             }
 
@@ -1060,6 +1067,12 @@ namespace PoeClone.World
         {
             if (!Spots.TryGetValue(role.ToString(), out Vector3 spot))
                 return null;
+            if (DeferContent(spot, () =>
+            {
+                Npc npc = AddNpc(prefab, parent, role, name, faceTowards, look);
+                if (role == NpcRole.Guide && npc != null)
+                    PoeClone.Quests.QuestCaptive.Attach(npc, "captive", spot);
+            }, canClear: false)) return null;
             Vector3 position = spot + Vector3.up * 1.1f * look.Scale;
             Vector3 facing = faceTowards - spot;
             facing.y = 0f;
@@ -1079,6 +1092,14 @@ namespace PoeClone.World
             if (area == Channels) spots.Add(Center(area) + ChannelWardenLocal);
             if (area == DrownedWorks) spots.Add(Center(area) + WorksEngineerLocal);
             if (area == Orchard || area == Reservoir || area == BuriedWard || area == FirstRoot) spots.Add(Center(area) + AreaLayouts.BossLocal(area));
+            if (UsesChunks(area))
+            {
+                foreach (string group in AreaLayouts.QuestGroups(area))
+                    spots.AddRange(QuestPoints(area, group));
+                spots.Add(Center(area) + AreaLayouts.BossLocal(area));
+                foreach (var lair in FieldLairs)
+                    if (lair.Area == area) spots.Add(Center(area) + lair.Local);
+            }
             // Quest props shouldn't have a monster standing on them when the player gets there.
             Transform sites = root.Find("QuestSites");
             if (sites != null)
@@ -1246,6 +1267,7 @@ namespace PoeClone.World
 
         private void Stall(Transform t, Vector3 p, Vector3 faceTowards, Material cloth)
         {
+            if (DeferContent(p, () => Stall(t, p, faceTowards, cloth))) return;
             var stall = new GameObject("Stall").transform;
             stall.SetParent(t, false);
             stall.position = p;
@@ -1270,6 +1292,7 @@ namespace PoeClone.World
         // A plank crate bound with iron at its edges.
         private void Crate(Transform t, Vector3 p, float yaw)
         {
+            if (DeferContent(p, () => Crate(t, p, yaw))) return;
             var mesh = new PieceMesh();
             mesh.Block(mesh.Slot(kit.Mat("Wood")), Vector3.up * 0.4f, Vector3.right * 0.4f, Vector3.up * 0.4f, Vector3.forward * 0.4f);
             int iron = mesh.Slot(kit.Mat("Iron"));
@@ -1290,6 +1313,7 @@ namespace PoeClone.World
         // A bellied barrel with three iron hoops.
         private void Barrel(Transform t, Vector3 p)
         {
+            if (DeferContent(p, () => Barrel(t, p))) return;
             var mesh = new PieceMesh();
             int wood = mesh.Slot(kit.Mat("Wood"));
             mesh.Frustum(wood, Vector3.zero, Vector3.up * 0.5f, 0.32f, 0.4f, 10, Vector3.forward);
@@ -1310,6 +1334,7 @@ namespace PoeClone.World
 
         private void Lamp(Transform t, Vector3 p)
         {
+            if (DeferContent(p, () => Lamp(t, p))) return;
             Box(t, p + Vector3.up * 1.1f, new Vector3(0.14f, 2.2f, 0.14f), kit.Mat("Iron"));
             Box(t, p + Vector3.up * 2.25f, new Vector3(0.5f, 0.08f, 0.5f), kit.Mat("Iron"), solid: false);
             Box(t, p + new Vector3(0f, 2.75f, 0f), new Vector3(0.5f, 0.08f, 0.5f), kit.Mat("Iron"), solid: false);
@@ -1323,6 +1348,7 @@ namespace PoeClone.World
 
         private void FallenColumn(Transform t, Vector3 p, float yaw)
         {
+            if (DeferContent(p, () => FallenColumn(t, p, yaw))) return;
             Cyl(t, p + Vector3.up * 0.55f, 0.55f, 3.5f, kit.Mat("Sandstone"), euler: new Vector3(90f, yaw, 0f));
         }
 
@@ -1342,6 +1368,8 @@ namespace PoeClone.World
         // fire-blackened tops, gaps where piers have fallen, and their rubble at the foot.
         private void RuinedWall(Transform t, Vector3 start, float yaw, int piers)
         {
+            if (planningContent) Claim(start + Quaternion.Euler(0, yaw, 0) * Vector3.forward * (piers * 2.1f * 0.5f), piers * 1.1f + 1f);
+            if (DeferContent(start, () => RuinedWall(t, start, yaw, piers))) return;
             const float pierLength = 2f, spacing = 2.1f, thickness = 0.9f, course = 0.42f;
             Quaternion facing = Quaternion.Euler(0f, yaw, 0f);
             Vector3 along = facing * Vector3.forward, across = facing * Vector3.right;
@@ -1473,7 +1501,7 @@ namespace PoeClone.World
         /// A point light for the ToonLit shader (see <see cref="ManualPointLightManager"/>, which
         /// sends it the lights nearest the view); flames flicker.
         /// </summary>
-        private static Light Glow(Transform parent, Vector3 p, Color color, float range, float intensity, bool flicker = false)
+        private Light Glow(Transform parent, Vector3 p, Color color, float range, float intensity, bool flicker = false)
         {
             var go = new GameObject("Glow");
             go.transform.SetParent(parent, false);
@@ -1534,6 +1562,7 @@ namespace PoeClone.World
 
         private void Glowshrooms(Transform t, Vector3 p)
         {
+            if (DeferContent(p, () => Glowshrooms(t, p))) return;
             var group = new GameObject("Glowshroom").transform;
             group.SetParent(t, false);
             group.position = p;
@@ -1591,7 +1620,8 @@ namespace PoeClone.World
                     continue;
                 if (!shape.Contains(p, shape.IsCave ? radius + 8f : radius + 2f))
                     continue;
-                place(p);
+                Vector3 point = p;
+                ScheduleContent(point, () => place(point));
                 Claim(p, radius);
                 k++;
             }

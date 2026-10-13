@@ -94,11 +94,11 @@ namespace PoeClone.World
         /// Spectator replica: shows an area's look (gates, music) without any of the
         /// transition - the replicated player position and loading-screen state cover the rest.
         /// </summary>
-        public void ApplyAreaImmediate(int index)
+        public void ApplyAreaImmediate(int index, Vector3? position = null)
         {
             if (areas == null || index < 0 || index >= areas.Length || index == CurrentAreaIndex)
                 return;
-            if (WorldBuilder.Instance != null && !WorldBuilder.Instance.EnsureAreaImmediate(index)) return;
+            if (WorldBuilder.Instance != null && !WorldBuilder.Instance.EnsureAreaImmediate(index, position)) return;
             CurrentAreaIndex = index;
             AreaChanged?.Invoke(index);
         }
@@ -168,7 +168,7 @@ namespace PoeClone.World
                     yield return new WaitForSecondsRealtime(preUnfreezeDelay);
 
                 if (WorldBuilder.Instance != null)
-                    yield return WorldBuilder.Instance.EnsureArea(index);
+                    yield return WorldBuilder.Instance.EnsureArea(index, arrival);
 
                 var def = areas[index];
                 Transform target = arrival != null ? arrival : def.spawnPoint;

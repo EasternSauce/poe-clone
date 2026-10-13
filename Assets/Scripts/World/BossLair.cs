@@ -65,6 +65,10 @@ namespace PoeClone.World
                     OnAreaChanged(area);
             }
 
+            if (!spawned && areas.CurrentAreaIndex == area &&
+                (WorldBuilder.Instance == null || WorldBuilder.Instance.IsPositionReady(area, transform.position)))
+                OnAreaChanged(area);
+
             // A dead boss's corpse removes itself after a while, so a missing boss counts as dead too.
             if (!spawned || (boss != null && !boss.IsDead) || areas.CurrentAreaIndex != area)
                 return;
@@ -99,7 +103,7 @@ namespace PoeClone.World
 
         private void OnAreaChanged(int index)
         {
-            if (index != area)
+            if (index != area || WorldBuilder.Instance != null && !WorldBuilder.Instance.IsPositionReady(area, transform.position))
                 return;
 
             // A spectator gets the boss from the player's game, like every other enemy.

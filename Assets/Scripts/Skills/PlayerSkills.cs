@@ -1366,6 +1366,7 @@ namespace PoeClone.Skills
         // Ground about level with the player at this spot, with room to stand and inside the area.
         private Vector3? OpenGround(Vector3 at)
         {
+            if (World.WorldBuilder.Instance != null && !World.WorldBuilder.Instance.CanMoveTo(at)) return null;
             var areas = World.AreaManager.Instance;
             if (areas != null && areas.CurrentAreaIndex >= 0 &&
                 !World.WorldBuilder.Shape(areas.CurrentAreaIndex).Contains(at, 2.5f))

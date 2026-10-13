@@ -403,6 +403,7 @@ namespace PoeClone.Player
         {
             Vector3 target = World.GroundObstacleMotion.Slide(controller, transform.position, transform.position + motion);
             Vector3 before = transform.position;
+            if (World.WorldBuilder.Instance != null && !World.WorldBuilder.Instance.CanMoveTo(target)) return;
             controller.Move(target - before);
             Vector3 moved = transform.position - before;
             moved.y = 0f;
