@@ -1,3 +1,6 @@
+version: 2026-10-13-mobile-fullscreen
+- Mobile fullscreen uses a dedicated game container and waits for the screen size to settle before resizing. A brief black transition hides incomplete frames when entering or leaving fullscreen.
+
 version: 2026-10-13-discovered-waystones
 - Waystones show only destinations you have discovered.
 
