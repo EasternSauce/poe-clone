@@ -5,6 +5,37 @@
 // in Awake so this always resolves).
 mergeInto(LibraryManager.library, {
 
+  UpdateBridge_ReadResume: function () {
+    var json = '';
+    try {
+      var stored = sessionStorage.getItem('PoeClone.UpdateResume');
+      sessionStorage.removeItem('PoeClone.UpdateResume');
+      var record = stored ? JSON.parse(stored) : null;
+      // Never resume a stale update after the player has left the tab for a long time.
+      if (record && Date.now() - record.savedAt >= 0 && Date.now() - record.savedAt < 1800000)
+        json = record.json || '';
+    } catch (e) { console.warn('Could not read update resume', e); }
+    SendMessage('GameSessionController', 'ResumeAfterUpdate', json);
+  },
+
+  UpdateBridge_RequestUpdate: function () {
+    if (window.poeReloadForUpdate) window.poeReloadForUpdate();
+  },
+
+  UpdateBridge_SaveResume: function (jsonPtr) {
+    var json = UTF8ToString(jsonPtr);
+    var complete = function (error) {
+      try {
+        if (error) throw error;
+        if (json) sessionStorage.setItem('PoeClone.UpdateResume', JSON.stringify({ savedAt: Date.now(), json: json }));
+        else sessionStorage.removeItem('PoeClone.UpdateResume');
+      } catch (e) { error = e; }
+      if (window.poeUpdateSaved) window.poeUpdateSaved(error ? String(error) : '');
+    };
+    // PlayerPrefs.Save writes the virtual filesystem. Wait for IndexedDB before reloading.
+    FS.syncfs(false, complete);
+  },
+
   WSConnect: function (urlPtr, goNamePtr) {
     var url = UTF8ToString(urlPtr);
     var goName = UTF8ToString(goNamePtr);

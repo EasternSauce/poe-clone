@@ -72,7 +72,11 @@ namespace PoeClone.UI
         private GameObject discardDialog;
         private Vector2 mobileLayoutSize;
         private bool layoutWasTouch;
-        private PassiveAllocation Preview => !Spectating && draft != null ? draft : passives.Allocation;
+        private PassiveAllocation inspectedAllocation;
+        private int inspectedLevel;
+        private string inspectedName;
+        private PassiveAllocation Preview => inspectedAllocation ?? (!Spectating && draft != null ? draft : passives.Allocation);
+        private int DisplayLevel => inspectedAllocation != null ? inspectedLevel : passives.Level;
         public bool HasPendingChanges => draft != null && (resetPending ||
             !new HashSet<string>(draft.Taken).SetEquals(passives.Allocation.Taken));
 
@@ -142,7 +146,19 @@ namespace PoeClone.UI
         public static string ShownId => IsOpen && instance.shown != null ? instance.shown.Id : null;
 
         // Spectators see the watched player's tree read-only (SpectatorMirror).
-        private static bool Spectating => SpectatorMirror.Active;
+        private static bool Spectating => SpectatorMirror.Active || instance?.inspectedAllocation != null;
+
+        public static bool InspectPartner(string name, PoeClone.Network.Replication.GearState gear)
+        {
+            if (instance == null || gear == null || instance.passives == null || instance.HasPendingChanges) return false;
+            SetOpen(false);
+            instance.inspectedAllocation = new PassiveAllocation();
+            instance.inspectedAllocation.ReplaceWith(gear.pas ?? new string[0]);
+            instance.inspectedLevel = Mathf.Max(1, gear.lv);
+            instance.inspectedName = (name ?? "Partner").Replace('<', '‹').Replace('>', '›');
+            SetOpen(true);
+            return true;
+        }
 
         public static void SetOpen(bool open)
         {
@@ -174,6 +190,8 @@ namespace PoeClone.UI
                 instance.ResetPinch();
                 instance.hovered = null;
                 instance.ShowInfo(null);
+                instance.inspectedAllocation = null;
+                instance.inspectedName = null;
             }
             instance.dirty = true;
             if (open && !instance.viewFitted)
@@ -244,6 +262,18 @@ namespace PoeClone.UI
                 return;
             }
 
+            if (inspectedAllocation != null)
+            {
+                var gear = session?.Coop?.PartnerGear;
+                if (session?.Coop == null) SetOpen(false);
+                else if (gear != null && (inspectedLevel != gear.lv ||
+                    !new HashSet<string>(inspectedAllocation.Taken).SetEquals(gear.pas ?? new string[0])))
+                {
+                    inspectedAllocation.ReplaceWith(gear.pas ?? new string[0]);
+                    inspectedLevel = Mathf.Max(1, gear.lv);
+                    dirty = true;
+                }
+            }
             UpdateBadge();
             if (lastRegretOrbs != passives.RegretOrbs)
             {
@@ -386,10 +416,12 @@ namespace PoeClone.UI
         private void Refresh()
         {
             PassiveAllocation allocation = Preview;
-            int unspent = allocation.Unspent(passives.Level);
+            int unspent = allocation.Unspent(DisplayLevel);
             pointsText.text = unspent > 0
                 ? "<color=#FFD040>" + unspent + " passive point" + (unspent > 1 ? "s" : "") + " to spend</color>"
                 : "<color=#" + UiKit.Hex(UiKit.DimText) + ">No points to spend - one more each level</color>";
+            if (inspectedAllocation != null)
+                pointsText.text = inspectedName + " | Level " + inspectedLevel + " | " + unspent + " unspent points | Read only";
             int refundCost = passives.RefundCost(draft);
             if (respecMode)
                 pointsText.text = passives.Unspent + " points available | +" + refundCost + " on accept | Orbs: " + refundCost + "/" + passives.RegretOrbs;
@@ -413,7 +445,7 @@ namespace PoeClone.UI
             foreach (NodeView v in views)
             {
                 bool taken = allocation.Has(v.Node.Id);
-                bool available = allocation.CanTake(v.Node.Id, passives.Level);
+                bool available = allocation.CanTake(v.Node.Id, DisplayLevel);
                 Color c = BranchColor(v.Node.Branch);
                 v.Body.color = taken ? (!Spectating && !passives.Allocation.Has(v.Node.Id) ? new Color(0.3f, 0.85f, 1f) : c) : available ? Color.Lerp(Locked, c, 0.35f) : Locked;
                 bool removed = respecMode && passives.Allocation.Has(v.Node.Id) && !taken;
@@ -515,6 +547,8 @@ namespace PoeClone.UI
             sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">");
             if (node.Id == PassiveTree.OriginId)
                 sb.Append("Always yours.");
+            else if (Spectating)
+                sb.Append(taken ? "Allocated." : "Not allocated.");
             else if (respecMode)
             {
                 if (!taken) sb.Append(passives.Allocation.Has(node.Id) ? "Pending refund - accept to regain the point." : "Refund mode only removes allocated nodes.");
@@ -841,7 +875,7 @@ namespace PoeClone.UI
             // A spectator shuts only their own copy (the player's stays open for the player).
             close.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {
-                if (Spectating)
+                if (SpectatorMirror.Active)
                     SpectatorMirror.Close(SpectatorMirror.Menu.Tree);
                 else
                     SetOpen(false);

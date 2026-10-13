@@ -77,11 +77,105 @@ namespace PoeClone.Network
         private bool gameplayCreated;
 
         public SpectatorReplica Replica => replica;
+        public CoopSession Coop => coop;
         private string serverUrl;
         private float reconnectDelay = 2f;
         private Coroutine reconnectRoutine;
         private bool returningToMainMenu;
         private bool serverPlayGranted;
+
+        // Only the update handoff carries a location. Normal visits retain their spawn rules.
+        [Serializable]
+        private class UpdateResume
+        {
+            public int version = 1;
+            public string profile;
+            public int area;
+            public Vector3 position;
+            public float facing;
+            public bool hosting;
+            public string party;
+            public bool host;
+            public string partner;
+        }
+        private UpdateResume updateResume;
+        private bool updatingForReload;
+        public bool ResumingUpdate => updateResume != null;
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+        [System.Runtime.InteropServices.DllImport("__Internal")]
+        private static extern void UpdateBridge_ReadResume();
+        [System.Runtime.InteropServices.DllImport("__Internal")]
+        private static extern void UpdateBridge_SaveResume(string json);
+        [System.Runtime.InteropServices.DllImport("__Internal")]
+        private static extern void UpdateBridge_RequestUpdate();
+#endif
+
+        /// <summary>Browser update entry point: freeze, save, then acknowledge durable storage.</summary>
+        public void BeginUpdate()
+        {
+            if (updatingForReload) return;
+            updatingForReload = true;
+            if (coop != null)
+                SendCoop(JsonUtility.ToJson(new CoopEvent { k = CoopProtocol.Update }));
+            SaveSystem.SaveCharacterNow();
+            var areas = AreaManager.Instance;
+            string json = "";
+            if (Role == SessionRole.Player && PlayGranted && GameplayReady &&
+                SaveSystem.CharacterLoaded && scenePlayer != null && areas != null)
+            {
+                json = JsonUtility.ToJson(new UpdateResume
+                {
+                    profile = SaveSystem.ActiveProfileId, area = areas.CurrentAreaIndex,
+                    position = scenePlayer.transform.position,
+                    facing = scenePlayer.transform.eulerAngles.y, hosting = hosting,
+                    party = coop?.PartyId, host = coop != null && coop.IsHost,
+                    partner = coop?.PartnerName
+                });
+            }
+            SetWorldActive(false);
+            coop?.SetLinked(false);
+#if UNITY_WEBGL && !UNITY_EDITOR
+            UpdateBridge_SaveResume(json);
+#endif
+        }
+
+        public void RequestPartnerUpdate()
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            UpdateBridge_RequestUpdate();
+#endif
+        }
+
+        /// <summary>Consumes a tab-local, one-use update handoff before showing any menus.</summary>
+        public void ResumeAfterUpdate(string json)
+        {
+            if (PlayGranted || Role != SessionRole.Player) return;
+            UpdateResume resume = null;
+            try { if (!string.IsNullOrEmpty(json)) resume = JsonUtility.FromJson<UpdateResume>(json); }
+            catch (Exception e) { Debug.LogWarning("Update resume was unreadable: " + e.Message); }
+            if (resume != null && resume.version == 1 &&
+                SaveSystem.Profiles().Exists(p => p.id == resume.profile))
+            {
+                SaveSystem.SelectProfile(resume.profile);
+                // A removed area or invalid position falls back to the normal saved destination.
+                if (resume.area >= 0 && resume.area < WorldBuilder.AreaNames.Length &&
+                    float.IsFinite(resume.position.x) && float.IsFinite(resume.position.y) &&
+                    float.IsFinite(resume.position.z) && float.IsFinite(resume.facing))
+                    updateResume = resume;
+                PlayerName = SaveSystem.ActiveCharacterName;
+                hosting = resume.hosting;
+                if (!string.IsNullOrEmpty(resume.party))
+                {
+                    coop = gameObject.AddComponent<CoopSession>();
+                    coop.Begin(resume.host, resume.partner, resume.party, stateBroadcaster, replica, preservePosition: true);
+                    coop.SetLinked(false);
+                }
+                StartGame(coopGame: hosting || coop != null);
+                return;
+            }
+            ShowStartMenu();
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
@@ -134,7 +228,7 @@ namespace PoeClone.Network
             scenePlayer = player != null ? player.gameObject : null;
             yield return null;
 
-            IEnumerator build = WorldBuilder.BuildRoutine(SaveSystem.StartingArea);
+            IEnumerator build = WorldBuilder.BuildRoutine(updateResume != null ? updateResume.area : SaveSystem.StartingArea);
             while (build.MoveNext())
                 yield return null;
 
@@ -206,6 +300,7 @@ namespace PoeClone.Network
             gameObject.AddComponent<PoeClone.UI.BossBarUI>();
             yield return null;
             gameObject.AddComponent<PoeClone.UI.PassiveTreeUI>();
+            gameObject.AddComponent<PoeClone.UI.CoopPartnerUI>();
         }
 
         private IEnumerator Start()
@@ -237,7 +332,11 @@ namespace PoeClone.Network
                 if (Role == SessionRole.Player)
                 {
                     PoeClone.Player.SaveSystem.Profiles();
-                    ShowStartMenu();
+#if UNITY_WEBGL && !UNITY_EDITOR
+                    UpdateBridge_ReadResume();
+#else
+                    ResumeAfterUpdate("");
+#endif
                     return;
                 }
                 namePrompt.Show(PlayerPrefs.GetString(NamePrefKey, string.Empty), confirmLabel, name =>
@@ -398,6 +497,7 @@ namespace PoeClone.Network
                     if (coop == null)
                         return;
                     coop.SetLinked(true);
+                    stateBroadcaster.RequestGearUpdate();
                     SystemChat("Co-op with " + coop.PartnerName + " resumed.");
                     break;
 
@@ -526,6 +626,7 @@ namespace PoeClone.Network
 
         private void HandleMessage(string json)
         {
+            if (updatingForReload) return;
             // Fast path for the 10Hz gameplay stream: skip the generic parse below, the replica
             // parses it into its own type. The server always writes "type" first.
             if (json != null && json.StartsWith(StatePrefix, StringComparison.Ordinal))
@@ -539,6 +640,8 @@ namespace PoeClone.Network
             {
                 if (Role == SessionRole.Spectator)
                     replica.HandleGear(json);
+                else
+                    coop?.HandleGear(json);
                 return;
             }
 
@@ -677,10 +780,50 @@ namespace PoeClone.Network
         {
             if (Role == SessionRole.Player && PlayGranted)
             {
+                RestoreUpdateLocation();
                 if (scenePlayer != null) scenePlayer.SetActive(true);
                 SetWorldActive(true);
             }
             StateChanged?.Invoke();
+        }
+
+        private void RestoreUpdateLocation()
+        {
+            if (updateResume == null || scenePlayer == null) return;
+            var resume = updateResume;
+            updateResume = null;
+            var areas = AreaManager.Instance;
+            if (areas == null || areas.CurrentAreaIndex != resume.area) return;
+            var player = scenePlayer.transform;
+            var body = scenePlayer.GetComponent<CharacterController>();
+            scenePlayer.GetComponent<PlayerController>()?.CancelWalk();
+            if (body != null) body.enabled = false;
+            player.SetPositionAndRotation(resume.position, Quaternion.Euler(0f, resume.facing, 0f));
+            Physics.SyncTransforms();
+            // New scenery can occupy the old location. Use the fresh area's spawn in that case.
+            if (body != null)
+            {
+                Vector3 center = player.TransformPoint(body.center);
+                float radius = body.radius * Mathf.Max(Mathf.Abs(player.lossyScale.x), Mathf.Abs(player.lossyScale.z));
+                float height = Mathf.Max(radius * 2f, body.height * Mathf.Abs(player.lossyScale.y));
+                float feet = center.y - height * 0.5f;
+                Vector3 axis = Vector3.up * (height * 0.5f - radius);
+                foreach (Collider obstacle in Physics.OverlapCapsule(center - axis, center + axis, radius,
+                    Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                {
+                    if (obstacle.transform.IsChildOf(player) || obstacle is CharacterController ||
+                        obstacle.GetComponentInParent<EnemyHealth>() != null || obstacle.bounds.max.y <= feet + 0.15f)
+                        continue;
+                    Transform spawn = areas.Current?.spawnPoint;
+                    if (spawn != null) player.SetPositionAndRotation(spawn.position, spawn.rotation);
+                    break;
+                }
+                body.enabled = true;
+            }
+            scenePlayer.GetComponentInChildren<PoeClone.Visuals.CharacterWalkAnimator>()?.ResetAnimatorState();
+            scenePlayer.GetComponent<PlayerStats>()?.ProtectArrival();
+            AreaGate.DisarmAtArrival(resume.area, player.position);
+            UnityEngine.Camera.main?.GetComponent<PoeClone.CameraSystem.CameraFollow>()?.SnapToTarget();
         }
 
         private IEnumerator ConnectToServer()
@@ -717,7 +860,7 @@ namespace PoeClone.Network
         // rather than have the partner wait for a reconnect that can't come.
         private void SendCoopLeave()
         {
-            if (coop != null && Connected)
+            if (coop != null && Connected && !updatingForReload)
                 client.Send(JsonUtility.ToJson(new CoopLeaveMessage()));
         }
 

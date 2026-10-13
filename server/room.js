@@ -60,7 +60,7 @@ const MAX_COOP_BYTES = 48 * 1024;
 // events and chat queued behind them aren't held up for seconds. Events are never skipped.
 const MAX_COOP_BACKLOG_BYTES = 64 * 1024;
 // How long a co-op party waits for a dropped partner to reconnect.
-const COOP_RESUME_GRACE_MS = 90 * 1000;
+const COOP_RESUME_GRACE_MS = 10 * 60 * 1000;
 
 class Room {
   constructor({ now = () => Date.now(), maxPlayers = MAX_PLAYERS } = {}) {
@@ -234,6 +234,8 @@ class Room {
     const serialized = JSON.stringify({ type: 'gear', ...rest, pid: player.id });
 
     player.lastGear = serialized;
+    const partner = this.partners.get(client);
+    if (partner) safeSendRaw(partner, serialized);
     for (const [spectator, info] of this.spectators) {
       if (info.watching === player.id) safeSendRaw(spectator, serialized);
     }

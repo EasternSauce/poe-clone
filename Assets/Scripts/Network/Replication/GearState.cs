@@ -33,6 +33,7 @@ namespace PoeClone.Network.Replication
     {
         public string id;
         public int progress;
+        public string objective;
     }
 
     [Serializable]

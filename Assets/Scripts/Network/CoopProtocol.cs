@@ -34,6 +34,8 @@ namespace PoeClone.Network
         public const string Ambushed = "ambd";  // host -> guest: the enemy it spawned (id 0: no room for it)
         public const string Unambush = "ambx";  // guest -> host: that encounter enemy is no longer wanted
 
+        public const string Update = "upd";     // either player -> partner: reload onto the new build together
+
         // CoopEvent.f bits.
         public const int FlagHead = 1;
         public const int FlagEnrage = 2;

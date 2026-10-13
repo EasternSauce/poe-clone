@@ -98,6 +98,7 @@ namespace PoeClone.UI
             Keyboard kb = Keyboard.current;
             if (kb == null || !kb.escapeKey.wasPressedThisFrame || UiKit.IsTypingInTextField()) return;
             if (PatchNotesUI.IsShowing) return;
+            if (CoopPartnerUI.IsOpen) return;
             if (root.activeSelf) { Close(); return; }
             if (GetComponent<NamePromptUI>()?.IsShowing == true) return;
             if (DialogueUI.IsOpen || PassiveTreeUI.IsOpen || SkillBarUI.IsOpen || SkillBarUI.PickerOpen ||
@@ -228,6 +229,12 @@ namespace PoeClone.UI
             var session = GameSessionController.Instance;
             if (session != null && session.Role == SessionRole.Player && session.PlayGranted)
             {
+                if (session.Coop != null)
+                {
+                    RectTransform partnerRow = SettingsRow("Co-op", "Partner", "Inspect their equipment, quests and passive tree.", ref y);
+                    Button("CoopPartner", partnerRow, "View Partner", new Vector2(W-334, -15),
+                        new Vector2(256, 48), () => { Close(); CoopPartnerUI.Open(); });
+                }
                 RectTransform menuRow = SettingsRow("Session", "Main menu", "Save your character and go back to the start menu.", ref y);
                 Button("MainMenu", menuRow, "Exit to Main Menu", new Vector2(W-334, -15),
                     new Vector2(256, 48), () => session.ReturnToMainMenu());

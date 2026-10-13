@@ -74,7 +74,7 @@
       <canvas id="game-canvas" tabindex="-1"></canvas>
       <div id="fullscreen-cover" aria-hidden="true"></div>
       <div id="loading" role="status" aria-live="polite">
-        <div>{{{ PRODUCT_NAME }}}</div>
+        <div id="loading-title">{{{ PRODUCT_NAME }}}</div>
         <div id="bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100"><div id="bar-fill"></div></div>
         <div id="detail"></div>
         <div id="error"></div>
@@ -103,6 +103,10 @@
       var fill = document.getElementById("bar-fill");
       var errorBox = document.getElementById("error");
       var fsButton = document.getElementById("fullscreen");
+      try {
+        if (sessionStorage.getItem("PoeClone.UpdateResume"))
+          document.getElementById("loading-title").textContent = "Updating...";
+      } catch (e) { }
 
       function showError(message) {
         errorBox.textContent = message;
@@ -394,44 +398,27 @@
         }, 60000);
       }
 
-      // Ten seconds' warning to get somewhere safe, counting down; the character is saved right
-      // before the reload (and once at the start, in case the tab is closed meanwhile).
+      // Cover and freeze immediately, then wait for Unity's durable save acknowledgement.
       var updating = false;
-      function saveGame() {
-        try { if (unityInstance) unityInstance.SendMessage("GameSessionController", "SaveForUpdate"); } catch (e) { }
-      }
       function reloadForUpdate() {
         if (updating) return;
         updating = true;
-        saveGame();
-
-        var note = document.createElement("div");
-        note.style.cssText = "position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:1000;" +
-          "background:rgba(20,14,8,0.92);color:#f0d9a0;border:1px solid #a07a3a;border-radius:6px;" +
-          "padding:10px 16px;font:15px sans-serif;max-width:90vw;text-align:center";
-        var text = document.createElement("span");
-        var now = document.createElement("button");
-        now.textContent = "Reload now";
-        now.style.cssText = "margin-left:12px;background:#a07a3a;color:#1a120a;border:0;border-radius:4px;" +
-          "padding:4px 10px;font:bold 14px sans-serif;cursor:pointer";
-        note.appendChild(text);
-        note.appendChild(now);
-        document.body.appendChild(note);
-
-        var left = 10;
-        function reloadNow() {
-          saveGame();
-          setTimeout(function () { location.reload(); }, 300); // a moment for the save to land
-        }
-        function tick() {
-          text.textContent = "A new version of the game is out. Reloading in " + left + "...";
-          if (left <= 0) { reloadNow(); return; }
-          left--;
-          setTimeout(tick, 1000);
-        }
-        now.onclick = function () { left = 0; now.disabled = true; reloadNow(); };
-        tick();
+        document.getElementById("loading-title").textContent = "Updating...";
+        document.getElementById("detail").textContent = "Saving your character...";
+        loading.classList.remove("done");
+        fill.style.width = "0%";
+        window.poeUpdateSaved = function (error) {
+          window.poeUpdateSaved = null;
+          if (error) {
+            showError("The update could not save your progress. Please reload when browser storage is available. " + error);
+            return;
+          }
+          location.reload();
+        };
+        try { unityInstance.SendMessage("GameSessionController", "BeginUpdate"); }
+        catch (e) { window.poeUpdateSaved(String(e)); }
       }
+      window.poeReloadForUpdate = reloadForUpdate;
 
       script.onerror = function () { showError("The game files failed to load. Try reloading the page."); };
       document.body.appendChild(script);

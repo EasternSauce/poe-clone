@@ -616,6 +616,42 @@ test('a partner who does not reconnect in time ends the party', () => {
   assert.deepEqual(room.lobbyMessage().hosts.map((h) => h.name), ['Hosty']);
 });
 
+test('both players can reload and resume the same party after a slow download', () => {
+  let now = 0;
+  const room = new Room({ now: () => now });
+  const { host, guest } = startParty(room);
+  const party = host.sent.find(m => m.state === 'started').party;
+  room.leave(host);
+  room.leave(guest);
+  const backGuest = fakeClient();
+  room.join(backGuest, 'player');
+  room.coopResume(backGuest, party, 'guest', 'Guesty');
+  now += 8 * 60 * 1000;
+  room.expireResumes();
+  assert.equal(backGuest.sent.at(-1).state, 'waiting');
+  const backHost = fakeClient();
+  room.join(backHost, 'player');
+  assert.equal(room.coopResume(backHost, party, 'host', 'Hosty'), true);
+  assert.equal(room.partnerOf(backGuest), backHost);
+  assert.equal(room.partnerOf(backHost), backGuest);
+});
+
+test('partner details go to the paired player and stop when the party ends', () => {
+  const room = new Room();
+  const { host, guest } = startParty(room);
+  const stranger = fakeClient();
+  room.join(stranger, 'player');
+  const before = stranger.sent.length;
+  room.submitGear(host, { type: 'gear', lv: 7, xp: 10, pas: ['origin'], eq: [], bag: [], qactive: [] });
+  assert.equal(guest.sent.at(-1).type, 'gear');
+  assert.equal(guest.sent.at(-1).lv, 7);
+  assert.equal(stranger.sent.length, before);
+  room.coopLeave(guest);
+  const leftCount = guest.sent.length;
+  room.submitGear(host, { type: 'gear', lv: 8 });
+  assert.equal(guest.sent.length, leftCount);
+});
+
 test('a host who disconnects disappears from the lobby', () => {
   const room = new Room();
   const host = fakeClient();

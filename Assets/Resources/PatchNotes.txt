@@ -1,3 +1,8 @@
+version: 2026-10-13-update-resume
+- Game updates show Updating and automatically return your character to the same area, position and facing with spawn protection. Areas rebuild using the latest game data.
+- Co-op partners update together and automatically reconnect as host and guest, keeping their own positions. Reconnects allow up to ten minutes for slower downloads.
+- Menu > View Partner shows your co-op partner's level, XP, equipment, backpack and quest objectives. Hover or hold an item for its tooltip, or inspect their passive tree without changing their build.
+
 version: 2026-10-13-inventory-shortcut
 - Mobile inventory has a dedicated BAG button beside MENU. The shortcut row uses smaller buttons to make room.
 - The selected item's outline is thinner and a softer gold, while remaining above tooltip backgrounds.

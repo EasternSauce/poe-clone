@@ -67,6 +67,7 @@ namespace PoeClone.Network
 
         private readonly GearState gear = new GearState();
         private string lastGearJson;
+        public void RequestGearUpdate() { lastGearJson = null; nextGearAt = 0; }
         private double nextGearAt;
 
         private double nextSendAt;
@@ -362,7 +363,13 @@ namespace PoeClone.Network
             gear.qdone = done.ToArray();
             var progress = new List<QuestProgressState>();
             foreach (var pair in active)
-                progress.Add(new QuestProgressState { id = pair.Key, progress = pair.Value });
+            {
+                var quest = QuestBook.Get(pair.Key);
+                string objective = quest != null && quests != null
+                    ? quests.State(quest) == QuestState.Complete ? NpcDialogues.ReturnLine(quest) : QuestBook.ObjectiveLine(quests, quest)
+                    : "";
+                progress.Add(new QuestProgressState { id = pair.Key, progress = pair.Value, objective = objective });
+            }
             gear.qactive = progress.ToArray();
             return gear;
         }

@@ -32,6 +32,13 @@ namespace PoeClone.Network
         public string PartnerName { get; private set; }
         /// <summary>The server's id for this party, sent back to resume it after a dropped connection.</summary>
         public string PartyId { get; private set; }
+        public GearState PartnerGear { get; private set; }
+
+        public void HandleGear(string json)
+        {
+            try { PartnerGear = JsonUtility.FromJson<GearState>(json); }
+            catch (Exception e) { Debug.LogWarning("Could not read partner details: " + e.Message); }
+        }
         /// <summary>False while either side's connection is down: both games carry on, unsynced.</summary>
         public bool Linked { get; private set; } = true;
 
@@ -52,7 +59,7 @@ namespace PoeClone.Network
         private readonly Dictionary<int, LootDrop> claims = new Dictionary<int, LootDrop>();
         private readonly CoopEvent outgoing = new CoopEvent();
 
-        public void Begin(bool host, string partnerName, string partyId, PlayerStateBroadcaster stateBroadcaster, SpectatorReplica enemyReplica)
+        public void Begin(bool host, string partnerName, string partyId, PlayerStateBroadcaster stateBroadcaster, SpectatorReplica enemyReplica, bool preservePosition = false)
         {
             session = GameSessionController.Instance;
             broadcaster = stateBroadcaster;
@@ -60,6 +67,8 @@ namespace PoeClone.Network
             IsHost = host;
             PartnerName = partnerName;
             PartyId = partyId;
+            placedNearHost = preservePosition;
+            broadcaster.RequestGearUpdate();
             StartCoroutine(PrepareGameplay());
         }
 
@@ -472,6 +481,11 @@ namespace PoeClone.Network
             }
             if (e == null || string.IsNullOrEmpty(e.k))
                 return;
+            if (e.k == CoopProtocol.Update)
+            {
+                session.RequestPartnerUpdate();
+                return;
+            }
             if ((e.k == CoopProtocol.Attack || e.k == CoopProtocol.Skill || e.k == CoopProtocol.BossMove ||
                  e.k == CoopProtocol.Damage || e.k == CoopProtocol.Effect || e.k == CoopProtocol.Kill) &&
                 (!Party.SharingArea || AreaManager.Instance == null || e.ar != AreaManager.Instance.CurrentAreaIndex))

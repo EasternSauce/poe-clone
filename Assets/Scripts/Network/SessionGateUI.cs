@@ -55,7 +55,7 @@ namespace PoeClone.Network
                 return;
 
             spinner.gameObject.SetActive(ctrl.PlayGranted);
-            messageText.text = ctrl.PlayGranted ? "Loading character..." : "";
+            messageText.text = ctrl.ResumingUpdate ? "Updating..." : ctrl.PlayGranted ? "Loading character..." : "";
         }
 
         private void Update()
