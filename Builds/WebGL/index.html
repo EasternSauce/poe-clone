@@ -17,23 +17,26 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <style>
       html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
-      /* The canvas always fills the window; Unity matches its render resolution to this size. Only
-         the top/bottom insets are subtracted (status bar / home indicator, which run the full width
-         and would otherwise sit under the HUD); left/right notch and rounded-corner insets are NOT
-         subtracted in landscape, since iOS reports those symmetrically on both edges even on devices
-         with no real notch there, which used to pillarbox the whole game to recover a strip neither
-         side's actual cutout needs (the cutout itself doesn't reach the top/bottom corners where the
-         game's own buttons sit). */
-      #game-canvas { position: fixed; display: block; background: #000; outline: none;
-                     left: 0; top: env(safe-area-inset-top, 0px);
-                     width: 100vw;
-                     height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
-                     height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+      /* Fullscreen a dedicated container and lay out the WebGL canvas inside it, so the browser
+         sizes the game and its controls together. Keep notch insets in the top/bottom only. */
+      #game-root { position: fixed; inset: 0; overflow: hidden; background: #000;
+                   padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+                   box-sizing: border-box; }
+      #game-root:fullscreen { width: 100%; height: 100%; margin: 0; max-width: none; max-height: none; }
+      #game-root:-webkit-full-screen { width: 100%; height: 100%; margin: 0; max-width: none; max-height: none; }
+      /* JavaScript commits pixel CSS dimensions after the viewport settles. Unity owns the
+         drawing buffer; changing canvas.width/height here would invalidate its render state. */
+      #game-canvas { position: absolute; display: block; background: #000; outline: none;
+                     left: 0; top: env(safe-area-inset-top, 0px); width: 100%;
+                     height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+      #fullscreen-cover { position: absolute; inset: 0; z-index: 1; background: #000;
+                          opacity: 0; pointer-events: none; transition: opacity .12s; }
+      #fullscreen-cover.active { opacity: 1; transition: none; }
       /* Touch: no browser gestures on the game (pinch zoom, double-tap zoom, pull-to-refresh), and
          no text selection / iOS callout when a finger is held down (the inventory uses long presses). */
       html, body, #game-canvas { touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none;
                                  -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
-      #loading { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      #loading { z-index: 2; position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
                  gap: 18px; color: #e8e2d4; font: 600 20px/1.3 system-ui, sans-serif; background: #000; transition: opacity .4s; }
       #loading.done { opacity: 0; pointer-events: none; }
       @media (pointer: coarse) {
@@ -45,7 +48,7 @@
       #bar-fill { width: 0; height: 100%; background: #b3412e; transition: width .2s; }
       #detail { min-height: 5.2em; color: #9a9284; font-weight: 400; font-size: 14px; text-align: center; white-space: pre-line; }
       #error { display: none; max-width: 80vw; color: #f2b8a8; font-weight: 400; font-size: 15px; text-align: center; }
-      #fullscreen { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); width: 40px; height: 40px; border: 0; border-radius: 6px; cursor: pointer;
+      #fullscreen { z-index: 3; position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); width: 40px; height: 40px; border: 0; border-radius: 6px; cursor: pointer;
                     background: rgba(0,0,0,.45); color: #fff; opacity: .7; display: none; align-items: center; justify-content: center; }
       #fullscreen:hover, #fullscreen:focus-visible { opacity: 1; background: rgba(0,0,0,.7); }
       #fullscreen svg { width: 22px; height: 22px; }
@@ -67,28 +70,31 @@
     </style>
   </head>
   <body>
-    <canvas id="game-canvas" tabindex="-1"></canvas>
-    <div id="loading" role="status" aria-live="polite">
-      <div>poe-clone</div>
-      <div id="bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100"><div id="bar-fill"></div></div>
-      <div id="detail"></div>
-      <div id="error"></div>
-    </div>
-    <button id="fullscreen" type="button" aria-label="Toggle fullscreen" title="Fullscreen (F11 also works)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
-    </button>
-    <div id="ios-hint" role="dialog" aria-modal="true" aria-labelledby="ios-hint-title" hidden>
-      <div class="card">
-        <h2 id="ios-hint-title">Play full screen</h2>
-        <p>Safari on iPhone can't make a web page full screen, but the game can run like an app:</p>
-        <ol>
-          <li>Tap <b>Share</b>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1"/></svg>
-            in Safari's toolbar (on newer iPhones it's in the <b>&middot;&middot;&middot;</b> menu).</li>
-          <li>Choose <b>Add to Home Screen</b>.</li>
-          <li>Open the game from its new icon.</li>
-        </ol>
-        <button id="ios-hint-close" type="button">Got it</button>
+    <div id="game-root">
+      <canvas id="game-canvas" tabindex="-1"></canvas>
+      <div id="fullscreen-cover" aria-hidden="true"></div>
+      <div id="loading" role="status" aria-live="polite">
+        <div>poe-clone</div>
+        <div id="bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100"><div id="bar-fill"></div></div>
+        <div id="detail"></div>
+        <div id="error"></div>
+      </div>
+      <button id="fullscreen" type="button" aria-label="Toggle fullscreen" title="Fullscreen (F11 also works)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+      <div id="ios-hint" role="dialog" aria-modal="true" aria-labelledby="ios-hint-title" hidden>
+        <div class="card">
+          <h2 id="ios-hint-title">Play full screen</h2>
+          <p>Safari on iPhone can't make a web page full screen, but the game can run like an app:</p>
+          <ol>
+            <li>Tap <b>Share</b>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1"/></svg>
+              in Safari's toolbar (on newer iPhones it's in the <b>&middot;&middot;&middot;</b> menu).</li>
+            <li>Choose <b>Add to Home Screen</b>.</li>
+            <li>Open the game from its new icon.</li>
+          </ol>
+          <button id="ios-hint-close" type="button">Got it</button>
+        </div>
       </div>
     </div>
     <script>
@@ -107,7 +113,8 @@
       // Fullscreen: desktop browsers, Android and iPad have the Fullscreen API (Safari's is
       // prefixed); iPhone Safari doesn't, so there the button explains Add to Home Screen instead.
       // Opened from the Home Screen the game is already full screen, so the button isn't shown.
-      var root = document.documentElement;
+      var root = document.getElementById("game-root");
+      var fullscreenCover = document.getElementById("fullscreen-cover");
       var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
       var standalone = navigator.standalone === true ||
         (window.matchMedia && (window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: fullscreen)").matches));
@@ -121,21 +128,37 @@
         canvas.focus();
       });
 
-      // Fullscreen the whole page rather than the canvas: the canvas is already sized to the
-      // page, so it simply grows with it and Unity follows the new size. (Unity's own
-      // canvas-fullscreen path is what produced a black screen.)
+      var fullscreenCoverTimer = 0;
+      function coverFullscreenTransition() {
+        fullscreenCover.classList.add("active");
+        clearTimeout(fullscreenCoverTimer);
+        // A stalled render or a stream of viewport events must never leave the game covered.
+        fullscreenCoverTimer = setTimeout(function () { fullscreenCover.classList.remove("active"); }, 2000);
+      }
+
+      // Keep HTML controls inside the fullscreen container. Request fullscreen directly in
+      // the click handler: deferring the request loses the browser's user-gesture permission.
       fsButton.addEventListener("click", function () {
         if (!canFullscreen) {
           showIosHint();
           return;
         }
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
-          (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-        } else {
-          var result = (root.requestFullscreen || root.webkitRequestFullscreen).call(root);
-          if (result && result.catch) result.catch(function () {});
+        coverFullscreenTransition();
+        var result;
+        try {
+          if (document.fullscreenElement || document.webkitFullscreenElement)
+            result = (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+          else
+            result = (root.requestFullscreen || root.webkitRequestFullscreen).call(root);
+        } catch (e) {
+          fullscreenCover.classList.remove("active");
+          return;
         }
-        canvas.focus();
+        if (result && result.then) result.then(settleCanvasSize, function () {
+          fullscreenCover.classList.remove("active");
+          settleCanvasSize();
+        });
+        settleCanvasSize(); // Also handles prefixed APIs without a Promise or a rejected request.
       });
 
       // On an iPhone in Safari, explain it once without being asked (the button repeats it).
@@ -186,15 +209,72 @@
       }
 
       var unityInstance = null;
-      function syncCanvasSize() {
-        // Unity re-reads this every time it sizes the canvas (window resize, fullscreen). While
-        // loading, the config is the module Unity is being built from.
+      var canvasResizeFrame = 0;
+      var canvasResizeVersion = 0;
+
+      function canvasLayout() {
+        var style = getComputedStyle(root);
+        var top = parseFloat(style.paddingTop) || 0;
+        var bottom = parseFloat(style.paddingBottom) || 0;
+        return { width: Math.max(1, root.clientWidth), height: Math.max(1, root.clientHeight - top - bottom), top: top };
+      }
+
+      function syncCanvasSize(size) {
+        size = size || canvasLayout();
+        canvas.style.width = size.width + "px";
+        canvas.style.height = size.height + "px";
+        canvas.style.top = size.top + "px";
         var module = unityInstance ? unityInstance.Module : config;
         if (module) module.devicePixelRatio = pixelRatio();
       }
-      window.addEventListener("resize", syncCanvasSize);
-      document.addEventListener("fullscreenchange", syncCanvasSize);
-      document.addEventListener("webkitfullscreenchange", syncCanvasSize);
+
+      function settleCanvasSize() {
+        cancelAnimationFrame(canvasResizeFrame);
+        var version = ++canvasResizeVersion;
+        var started = performance.now(), stableSince = started, previous = "";
+        function settle(now) {
+          var size = canvasLayout();
+          var key = size.width + ":" + size.height + ":" + size.top;
+          if (key !== previous) { previous = key; stableSince = now; }
+          // Mobile fullscreen and toolbar animations report several intermediate viewport sizes.
+          // Keep the old buffer until the layout is quiet, then let Unity resize it once.
+          if (now - stableSince < 150 && now - started < 1000) {
+            canvasResizeFrame = requestAnimationFrame(settle);
+            return;
+          }
+          syncCanvasSize(size);
+          var readySince = 0, committed = now;
+          function waitForRender(frameTime) {
+            if (version !== canvasResizeVersion) return;
+            var ratio = pixelRatio();
+            var ready = Math.abs(canvas.width - Math.round(size.width * ratio)) <= 1 &&
+                        Math.abs(canvas.height - Math.round(size.height * ratio)) <= 1;
+            if (!ready) readySince = 0;
+            else if (!readySince) readySince = frameTime;
+            // Give Unity time to draw into the new buffer. Release the cover even if the
+            // drawing-buffer dimensions are rounded differently by the browser.
+            if ((readySince && frameTime - readySince >= 50) || frameTime - committed >= 1000) {
+              fullscreenCover.classList.remove("active");
+              canvasResizeFrame = 0;
+              return;
+            }
+            canvasResizeFrame = requestAnimationFrame(waitForRender);
+          }
+          canvasResizeFrame = requestAnimationFrame(waitForRender);
+        }
+        canvasResizeFrame = requestAnimationFrame(settle);
+      }
+      function fullscreenChanged() {
+        coverFullscreenTransition();
+        settleCanvasSize();
+        canvas.focus();
+      }
+      window.addEventListener("resize", settleCanvasSize);
+      window.addEventListener("orientationchange", settleCanvasSize);
+      if (window.visualViewport) window.visualViewport.addEventListener("resize", settleCanvasSize);
+      if (window.ResizeObserver) new ResizeObserver(settleCanvasSize).observe(root);
+      document.addEventListener("fullscreenchange", fullscreenChanged);
+      document.addEventListener("webkitfullscreenchange", fullscreenChanged);
 
       // Esc is the game's menu key, but in fullscreen the browser takes the first press to leave
       // fullscreen. Chrome and Edge let a fullscreen page keep Esc (Keyboard Lock); holding Esc
@@ -206,18 +286,13 @@
         else navigator.keyboard.unlock();
       });
 
-      // A window maximized or fullscreened while the game was still loading used to keep the
-      // pixel ratio picked for the old size, which on a big screen could exceed the GPU limit (a
-      // black screen until the window changed size again). Once the game is up, apply the
-      // current size and resize once more so Unity sizes everything to it.
-      function resyncAfterLoad() {
-        syncCanvasSize();
-        requestAnimationFrame(function () { window.dispatchEvent(new Event("resize")); });
-      }
+      // Loading and fullscreen may finish in either order. Use the same settled-size path.
+      function resyncAfterLoad() { settleCanvasSize(); }
+      syncCanvasSize();
 
       // Stamped into the published page by WebBuilder; "?v=" makes every build's files new URLs,
       // so a reload after an update never mixes in cached files from the old build.
-      var BUILD_ID = "2026-10-13-mobile-ui-layout-20261013180907";
+      var BUILD_ID = "2026-10-13-mobile-fullscreen-20261013190619";
       var v = BUILD_ID.indexOf("__") === 0 ? "" : "?v=" + encodeURIComponent(BUILD_ID);
 
       var config = {
