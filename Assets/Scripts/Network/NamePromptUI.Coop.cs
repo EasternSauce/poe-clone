@@ -41,10 +41,10 @@ namespace PoeClone.Network
 
         public void ShowStartMenu(Action singlePlayer, Action coop, string notice = null)
         {
-            ShowScreen();
-            MakeText("Choose Mode", 34, new Vector2(0, 150), new Vector2(1000, 60));
+            ShowScreen("start");
+            MakeText("Choose Mode", 34, new Vector2(0, 150), new Vector2(440, 60));
             if (!string.IsNullOrEmpty(notice))
-                MakeText(notice, 22, new Vector2(0, 95), new Vector2(1000, 40)).color = new Color(1f, .75f, .45f);
+                MakeText(notice, 22, new Vector2(0, 95), new Vector2(560, 40)).color = new Color(1f, .75f, .45f);
             MakeButton("Single Player", new Vector2(0, 20), new Vector2(320, 64), singlePlayer);
             MakeButton("Co-op", new Vector2(0, -60), new Vector2(320, 64), coop);
             onSinglePlayer = singlePlayer;
@@ -57,9 +57,9 @@ namespace PoeClone.Network
 
         public void ShowCoopMenu(Action host, Action join, Action back)
         {
-            ShowScreen();
-            MakeText("Co-op", 34, new Vector2(0, 150), new Vector2(1000, 60));
-            MakeText("Play together with one other player over the internet.", 22, new Vector2(0, 100), new Vector2(1000, 40));
+            ShowScreen("coop");
+            MakeText("Co-op", 34, new Vector2(0, 180), new Vector2(440, 60));
+            MakeText("Play together with one other player over the internet.", 22, new Vector2(0, 110), new Vector2(560, 64));
             MakeButton("Host Game", new Vector2(0, 20), new Vector2(320, 64), host);
             MakeButton("Join Game", new Vector2(0, -60), new Vector2(320, 64), join);
             MakeBack(back, -150);

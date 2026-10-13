@@ -222,7 +222,14 @@ namespace PoeClone.Network
         {
             if (!canvasRoot.activeSelf || contentTop < contentBottom) return;
             float half = ((RectTransform)canvasRoot.transform).rect.height * 0.5f - ScreenMargin;
-            float scale = Mathf.Min(1f, 2f * half / (contentTop - contentBottom));
+            // The short mode menus have room for larger touch targets, especially in portrait.
+            float preferredScale = 1f;
+            if (TouchMode.Active && (screenKey == "start" || screenKey == "coop"))
+            {
+                float width = ((RectTransform)canvasRoot.transform).rect.width - 2f * ScreenMargin;
+                preferredScale = Mathf.Min(TouchMode.Portrait ? 1.8f : 1.35f, width / 560f);
+            }
+            float scale = Mathf.Min(preferredScale, 2f * half / (contentTop - contentBottom));
             float shift = Mathf.Clamp(0f, -half - contentBottom * scale, half - contentTop * scale);
             screen.localScale = new Vector3(scale, scale, 1f);
             screen.anchoredPosition = new Vector2(0f, shift);

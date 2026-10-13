@@ -54,6 +54,7 @@ namespace PoeClone.UI
         private GameObject panelRoot;
         private Image badge;
         private Text badgeText;
+        private TouchControlsUI touchControls;
         private Text pointsText;
         private Text infoText;
         private Image tooltip;
@@ -309,7 +310,12 @@ namespace PoeClone.UI
         private void UpdateBadge()
         {
             int unspent = passives.Unspent;
-            bool show = !TouchMode.Active && unspent > 0 && !panelRoot.activeSelf && !SkillBarUI.PickerOpen && !passives.GetComponent<PlayerStats>().IsDead;
+            bool touch = TouchMode.Active;
+            if (touch && touchControls == null)
+                touchControls = FindAnyObjectByType<TouchControlsUI>();
+            bool touchMenusVisible = !touch || (touchControls != null && touchControls.MenusVisible &&
+                (!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.PassiveMenuEnabled));
+            bool show = touchMenusVisible && unspent > 0 && !panelRoot.activeSelf && !SkillBarUI.PickerOpen && !passives.GetComponent<PlayerStats>().IsDead;
             if (badge.gameObject.activeSelf != show)
                 badge.gameObject.SetActive(show);
             if (!show)
@@ -317,14 +323,18 @@ namespace PoeClone.UI
 
             // PlayerHUD uses screen pixels (OnGUI), while this badge lives on a scaled canvas.
             float scale = badge.canvas.scaleFactor;
-            badge.rectTransform.anchoredPosition = new Vector2(16f / scale, -(PlayerHUD.BottomPixels + 8f) / scale);
+            float top = (PlayerHUD.BottomPixels + 8f) / scale;
+            if (touch)
+                top = Mathf.Max(top, TouchControlsUI.PassiveBadgeTop);
+            badge.rectTransform.anchoredPosition = new Vector2(touch ? 16f : 16f / scale, -top);
 
             badge.rectTransform.localScale = Vector3.one;
-            badgeText.fontSize = 17;
-            string text = "+" + unspent + " passive point" + (unspent > 1 ? "s" : "") + "  (P)";
+            badgeText.fontSize = touch ? 24 : 17;
+            string text = touch ? "+" + unspent + " points to spend"
+                : "+" + unspent + " passive point" + (unspent > 1 ? "s" : "") + "  (P)";
             if (badgeText.text != text)
                 badgeText.text = text;
-            badge.rectTransform.sizeDelta = new Vector2(badgeText.preferredWidth + 36f, 36f);
+            badge.rectTransform.sizeDelta = new Vector2(badgeText.preferredWidth + 36f, touch ? 64f : 36f);
             float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 3f);
             badgeText.color = Color.Lerp(UiKit.Gold, new Color(1f, 0.95f, 0.7f), pulse);
             badge.color = new Color(0.12f, 0.09f, 0.04f, 0.75f + 0.15f * pulse);

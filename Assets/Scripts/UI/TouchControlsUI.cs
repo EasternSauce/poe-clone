@@ -47,10 +47,6 @@ namespace PoeClone.UI
         private string aimIconFor;
         private int aimPointer = int.MinValue;
         private Image settingsButton;
-        private Image treeButton;
-        private Text treeLabel;
-        private int shownPassivePoints = -1;
-        private PlayerPassives passives;
         private GameObject unreadDot;
 
         private class SkillButton
@@ -77,6 +73,10 @@ namespace PoeClone.UI
         private Vector2 screenSize;
         private readonly List<CanvasScaler> scalers = new List<CanvasScaler>();
         private readonly List<RectTransform> leftMenuButtons = new List<RectTransform>();
+
+        private static float LeftMenuY => TouchMode.Portrait ? -180f : -58f;
+        public static float PassiveBadgeTop => -LeftMenuY + 48f + 12f;
+        public bool MenusVisible => menuRoot != null && menuRoot.activeInHierarchy;
 
         private void Awake()
         {
@@ -111,7 +111,7 @@ namespace PoeClone.UI
             }
             // In portrait the HUD needs the upper-left row; menus sit just below it.
             foreach (RectTransform button in leftMenuButtons)
-                button.anchoredPosition = new Vector2(button.anchoredPosition.x, TouchMode.Portrait ? -180f : -58f);
+                button.anchoredPosition = new Vector2(button.anchoredPosition.x, LeftMenuY);
 
             var session = GameSessionController.Instance;
             bool spectator = session != null && session.Role == SessionRole.Spectator;
@@ -147,15 +147,6 @@ namespace PoeClone.UI
             SetCombatShown(!dead && !menuOpen);
             UpdateSkillButtons();
             UpdatePotionButtons();
-            int unspent = passives != null ? Mathf.Max(0, passives.Unspent) : 0;
-            if (shownPassivePoints != unspent)
-            {
-                shownPassivePoints = unspent;
-                treeLabel.text = unspent > 0 ? "TREE\n+" + unspent : "TREE";
-            }
-            treeLabel.color = unspent > 0 ? UiKit.Gold : UiKit.TextColor;
-            treeButton.color = unspent > 0 ? ControlPressed : ControlColor;
-
             // The character page sits where the HUD is drawn (OnGUI draws over uGUI).
             PlayerHUD.SetHiddenBy(this, characterOpen);
 
@@ -205,8 +196,6 @@ namespace PoeClone.UI
                 inventoryUI = FindAnyObjectByType<InventoryUI>();
             if ((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.CharacterMenuEnabled) && characterUI == null)
                 characterUI = FindAnyObjectByType<CharacterPageUI>();
-            if (passives == null && stats != null)
-                passives = stats.GetComponent<PlayerPassives>();
             if (skills == null)
                 skills = FindAnyObjectByType<Skills.PlayerSkills>();
         }
@@ -598,8 +587,6 @@ namespace PoeClone.UI
             TouchMode.AddBlocker(chat.rectTransform);
 
             Image tree = NewRoundButton("Tree", menu, new Vector2(0f, 1f), new Vector2(350f, -58f), 96f, "TREE");
-            treeButton = tree;
-            treeLabel = tree.GetComponentInChildren<Text>();
             leftMenuButtons.Add(tree.rectTransform);
             tree.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TogglePassives();
             TouchMode.AddBlocker(tree.rectTransform);

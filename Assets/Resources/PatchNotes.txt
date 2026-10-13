@@ -1,3 +1,7 @@
+version: 2026-10-13-mobile-menu-buttons
+- Unspent passive points have their own compact button again on phones and tablets, below the HUD and menu row so it stays clear of the other buttons. TREE remains a separate button.
+- Single Player, Co-op, Host Game, Join Game and Back are larger on mobile, with an extra size increase in portrait. Rotating updates their layout.
+
 version: 2026-10-13-gate-preloading-passive-button
 - On phones and tablets, unspent passive points now highlight the existing TREE button and show their count there, freeing the space previously covered by the Spend passives banner.
 - Approaching an unlocked gate starts preparing the next area's terrain in small background slices. Preloading pauses during slow frames and while the game is paused; scenery and encounters still finish behind the travel screen.
