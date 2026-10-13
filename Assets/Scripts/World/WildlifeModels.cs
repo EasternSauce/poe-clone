@@ -31,7 +31,9 @@ namespace PoeClone.World
 
         private static Transform Part(Transform parent, string name, Vector3 at, Vector3 size, Color color)
         {
-            Transform part = RuntimePrimitives.Create(PrimitiveType.Sphere, parent, color).transform;
+            Transform part = (PoeClone.Inventory.TouchMode.Active
+                ? RuntimePrimitives.CreateMesh(MobileCreatureMeshes.Sphere, parent, color, name)
+                : RuntimePrimitives.Create(PrimitiveType.Sphere, parent, color)).transform;
             part.name = name;
             part.localPosition = at;
             part.localScale = size;

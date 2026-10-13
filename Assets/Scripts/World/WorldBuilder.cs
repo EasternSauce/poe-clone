@@ -329,7 +329,7 @@ namespace PoeClone.World
                 BuildWaystones();
                 BuildOutposts();
                 BuildFieldBossLairs();
-                Loading("Encounters: " + AreaNames[area]);
+                Loading("Quest setup: " + AreaNames[area]);
                 yield return null;
                 if (!UsesChunks(area)) yield return BuildBorders();
                 if (!UsesChunks(area)) ClearAreaTravel(area);
@@ -347,7 +347,9 @@ namespace PoeClone.World
                 }
                 // Five seconds is a soft cover budget. Never expose missing collision or enemies.
                 // Optional wildlife and wind decoration can finish after the cover lifts.
-                if (!UsesChunks(area) && Time.realtimeSinceStartup - started >= 5f)
+                if (UsesChunks(area))
+                    StartCoroutine(PrepareOptionalDetails(area));
+                else if (Time.realtimeSinceStartup - started >= 5f)
                     StartCoroutine(FinishAreaDetails(area));
                 else
                     yield return AreaDetails(area);
@@ -405,7 +407,7 @@ namespace PoeClone.World
             yield return null;
             BuildAmbientDetails();
             yield return null;
-            BuildWildlife(FindAnyObjectByType<PlayerController>().transform);
+            yield return BuildWildlife(FindAnyObjectByType<PlayerController>().transform);
             if (!planningContent)
             {
                 ManualPointLightManager.Refresh();

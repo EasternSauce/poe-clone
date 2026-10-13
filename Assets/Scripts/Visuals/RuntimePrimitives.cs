@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace PoeClone.Visuals
@@ -14,6 +15,8 @@ namespace PoeClone.Visuals
         private static readonly int ColorId = Shader.PropertyToID("_Color");
 
         private static Material material;
+        private static readonly Dictionary<PrimitiveType, Mesh> primitiveMeshes = new Dictionary<PrimitiveType, Mesh>();
+        private static MaterialPropertyBlock colorBlock;
 
         private static Material Material
         {
@@ -27,19 +30,37 @@ namespace PoeClone.Visuals
 
         public static GameObject Create(PrimitiveType type, Transform parent, Color color)
         {
-            GameObject go = GameObject.CreatePrimitive(type);
-            // Immediately: a collider left for even one frame could shove a character or eat a hit test.
-            Object.DestroyImmediate(go.GetComponent<Collider>());
+            return CreateMesh(MeshFor(type), parent, color, type.ToString());
+        }
+
+        public static Mesh MeshFor(PrimitiveType type)
+        {
+            if (!primitiveMeshes.TryGetValue(type, out var mesh) || mesh == null)
+            {
+                GameObject template = GameObject.CreatePrimitive(type);
+                mesh = template.GetComponent<MeshFilter>().sharedMesh;
+                Object.DestroyImmediate(template);
+                primitiveMeshes[type] = mesh;
+            }
+            return mesh;
+        }
+
+        /// <summary>Render-only geometry: never create a temporary collider for each body part.</summary>
+        public static GameObject CreateMesh(Mesh mesh, Transform parent, Color color, string name = "Part")
+        {
+            var go = new GameObject(name);
             go.transform.SetParent(parent, false);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            go.AddComponent<MeshRenderer>();
 
             Renderer r = go.GetComponent<Renderer>();
             if (Material != null)
                 r.sharedMaterial = Material;
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            var block = new MaterialPropertyBlock();
-            block.SetColor(BaseColorId, color);
-            block.SetColor(ColorId, color);
-            r.SetPropertyBlock(block);
+            if (colorBlock == null) colorBlock = new MaterialPropertyBlock();
+            colorBlock.SetColor(BaseColorId, color);
+            colorBlock.SetColor(ColorId, color);
+            r.SetPropertyBlock(colorBlock);
             return go;
         }
 

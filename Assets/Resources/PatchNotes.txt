@@ -1,3 +1,8 @@
+version: 2026-10-13-mobile-creatures-chunk-encounters
+- Phones and tablets use low-poly creature and wildlife models with shared meshes. Creature attack and movement animations are preserved, with fewer small decorative parts on mobile.
+- Enemies are created with their own terrain chunk as you explore. Placement checks use reusable physics buffers and yield during long searches.
+- Wilderness wildlife and ambient decoration fill in after travel instead of extending the loading screen. Loading labels now distinguish arrival terrain, scenery and nearby enemies.
+
 version: 2026-10-13-mobile-performance-debug
 - A DEBUG button opens a live performance readout while you keep moving and fighting. It shows frame times, slow frames, memory, quality reductions, terrain construction and minimap work, plus recent and slowest loading steps. The readout lets touches pass through to gameplay; tap RESET after loading to measure traversal, or CLOSE DEBUG to hide it.
 

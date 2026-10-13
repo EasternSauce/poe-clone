@@ -71,6 +71,11 @@ namespace PoeClone.Visuals
             public CreatureVariant Variant;
         }
 
+        // Builds are synchronous on Unity's main thread; preview tools can select a profile
+        // without changing touch controls or the next creature's appearance.
+        private static bool? mobileProfile;
+        private static bool MobileModel => mobileProfile ?? PoeClone.Inventory.TouchMode.Active;
+
         private sealed class Ctx
         {
             public CreatureAnimator Anim;
@@ -80,7 +85,18 @@ namespace PoeClone.Visuals
         }
 
         /// <param name="meshes">Meshes taken from the humanoid rig before it was removed (by name).</param>
-        public static CreatureAnimator Build(Transform model, CreatureBody body, Palette colors, Dictionary<string, Mesh> meshes)
+        public static CreatureAnimator Build(Transform model, CreatureBody body, Palette colors, Dictionary<string, Mesh> meshes, bool? mobile = null)
+        {
+            bool? previousProfile = mobileProfile;
+            mobileProfile = mobile ?? PoeClone.Inventory.TouchMode.Active;
+            try
+            {
+                return BuildModel(model, body, colors, meshes);
+            }
+            finally { mobileProfile = previousProfile; }
+        }
+
+        private static CreatureAnimator BuildModel(Transform model, CreatureBody body, Palette colors, Dictionary<string, Mesh> meshes)
         {
             var ctx = new Ctx
             {
@@ -90,6 +106,11 @@ namespace PoeClone.Visuals
             meshes.TryGetValue("IcoHead", out ctx.Ico);
             meshes.TryGetValue("Cone", out ctx.Cone);
 
+            if (MobileModel)
+            {
+                ctx.Ico = MobileCreatureMeshes.Sphere;
+                ctx.Cone = MobileCreatureMeshes.Cone;
+            }
             ctx.Anim.Body = body;
             switch (body)
             {
@@ -116,7 +137,7 @@ namespace PoeClone.Visuals
                 case CreatureBody.BarrowCastellan: BuildBarrowCastellan(model, ctx); break;
                 default: BuildBoss(model, body, ctx); break;
             }
-            Adorn(body, ctx);
+            if (!MobileModel) Adorn(body, ctx);
             ctx.Anim.CaptureRest();
             return ctx.Anim;
         }
@@ -732,7 +753,9 @@ namespace PoeClone.Visuals
 
         private static GameObject Part(Transform parent, PrimitiveType type, Color color, Vector3 position, Vector3 scale, Vector3 euler, bool shadow = true)
         {
-            GameObject go = RuntimePrimitives.Create(type, parent, color);
+            Mesh mobileMesh = MobileModel ? MobileCreatureMeshes.ForPrimitive(type) : null;
+            GameObject go = mobileMesh != null ? RuntimePrimitives.CreateMesh(mobileMesh, parent, color, type.ToString()) :
+                RuntimePrimitives.Create(type, parent, color);
             go.transform.localPosition = position;
             go.transform.localScale = scale;
             go.transform.localRotation = Quaternion.Euler(euler);

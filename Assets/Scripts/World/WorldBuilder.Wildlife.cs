@@ -1,29 +1,30 @@
+using System.Collections;
 using UnityEngine;
 
 namespace PoeClone.World
 {
     public partial class WorldBuilder
     {
-        private void BuildWildlife(Transform player)
+        private IEnumerator BuildWildlife(Transform player)
         {
             Transform wildlife = Group("PassiveWildlife");
             var random = new System.Random(7901);
-            PopulateWildlife(wildlife, player, random, Greenwood, AmbientAnimal.Species.Squirrel, 32);
-            PopulateWildlife(wildlife, player, random, Haven, AmbientAnimal.Species.Sheep, 24);
-            PopulateWildlife(wildlife, player, random, Cave, AmbientAnimal.Species.Snake, 28);
-            PopulateWildlife(wildlife, player, random, Frozen, AmbientAnimal.Species.FrostHare, 24);
-            PopulateWildlife(wildlife, player, random, Ruins, AmbientAnimal.Species.EmberLizard, 24);
+            yield return PopulateWildlife(wildlife, player, random, Greenwood, AmbientAnimal.Species.Squirrel, 32);
+            yield return PopulateWildlife(wildlife, player, random, Haven, AmbientAnimal.Species.Sheep, 24);
+            yield return PopulateWildlife(wildlife, player, random, Cave, AmbientAnimal.Species.Snake, 28);
+            yield return PopulateWildlife(wildlife, player, random, Frozen, AmbientAnimal.Species.FrostHare, 24);
+            yield return PopulateWildlife(wildlife, player, random, Ruins, AmbientAnimal.Species.EmberLizard, 24);
 
             // Keep small wild mammals outside Haven's busiest streets.
             var rabbits = new System.Random(7902);
-            PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Rabbit, 28, 65);
-            PopulateWildlife(wildlife, player, rabbits, Greenwood, AmbientAnimal.Species.Rabbit, 20);
-            PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Rabbit, 5, 55, 80);
-            PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Squirrel, 6, 55, 85);
+            yield return PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Rabbit, 28, 65);
+            yield return PopulateWildlife(wildlife, player, rabbits, Greenwood, AmbientAnimal.Species.Rabbit, 20);
+            yield return PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Rabbit, 5, 55, 80);
+            yield return PopulateWildlife(wildlife, player, rabbits, Haven, AmbientAnimal.Species.Squirrel, 6, 55, 85);
 
             var cats = new System.Random(7903);
-            PopulateWildlife(wildlife, player, cats, Haven, AmbientAnimal.Species.Cat, 5, 0, 34);
-            PopulateWildlife(wildlife, player, cats, Haven, AmbientAnimal.Species.Cat, 1, 34, 80);
+            yield return PopulateWildlife(wildlife, player, cats, Haven, AmbientAnimal.Species.Cat, 5, 0, 34);
+            yield return PopulateWildlife(wildlife, player, cats, Haven, AmbientAnimal.Species.Cat, 1, 34, 80);
 
             // Broad wings and an outstretched neck distinguish these from the small scene birds.
             foreach (int area in new[] { Greenwood, Haven })
@@ -53,15 +54,17 @@ namespace PoeClone.World
             flight.rightWing = swan.Find("RightWing");
         }
 
-        private void PopulateWildlife(Transform parent, Transform player, System.Random random,
+        private IEnumerator PopulateWildlife(Transform parent, Transform player, System.Random random,
             int area, AmbientAnimal.Species species, int count, float minDistance = 0, float maxDistance = float.PositiveInfinity)
         {
-            if (!NeedsArea(area)) return;
+            if (!NeedsArea(area)) yield break;
             AreaShape shape = Shape(area);
             float radius = species == AmbientAnimal.Species.Sheep ? 0.65f : 0.3f;
             var occupied = new System.Collections.Generic.List<Vector3>();
+            var clock = System.Diagnostics.Stopwatch.StartNew();
             for (int made = 0, attempt = 0; made < count && attempt < count * 100; attempt++)
             {
+                if (clock.Elapsed.TotalMilliseconds >= 2d) { yield return null; clock.Restart(); }
                 Vector3 position = Center(area) + new Vector3(
                     ((float)random.NextDouble() - 0.5f) * shape.Size.x, 0,
                     ((float)random.NextDouble() - 0.5f) * shape.Size.y);

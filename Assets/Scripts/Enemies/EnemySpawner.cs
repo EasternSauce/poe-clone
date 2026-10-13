@@ -111,6 +111,8 @@ namespace PoeClone.Enemies
         private int streamingArea = -1;
         private readonly List<(Vector3 point, int kind)> openingHomes = new List<(Vector3, int)>();
 
+        // Plan positions only. Enemy objects and their visual models are constructed
+        // exclusively by PopulateChunk after their own chunk's collision/scenery is ready.
         public void ConfigureStreaming(int area)
         {
             if (!WorldBuilder.UsesChunks(area)) return;
@@ -152,23 +154,32 @@ namespace PoeClone.Enemies
             {
                 var home = openingHomes[i];
                 if (!localBounds.Contains(new Vector2(home.point.x - origin.x, home.point.z - origin.z))) continue;
-                var previous = Random.state;
-                Random.InitState(unchecked(streamingArea * 7919 + Mathf.RoundToInt(home.point.x * 131f + home.point.z * 17f)));
-                try
+                int seed = unchecked(streamingArea * 7919 + Mathf.RoundToInt(home.point.x * 131f + home.point.z * 17f));
+                var random = new System.Random(seed);
+                var clock = System.Diagnostics.Stopwatch.StartNew();
+                for (int attempt = 0; attempt < maxAttemptsPerEnemy; attempt++)
                 {
-                    for (int attempt = 0; attempt < maxAttemptsPerEnemy; attempt++)
-                    {
-                        Vector2 offset = attempt == 0 ? Vector2.zero : Random.insideUnitCircle * respawnScatter;
-                        Vector3 candidate = home.point + new Vector3(offset.x, 0, offset.y);
-                        if (!localBounds.Contains(new Vector2(candidate.x - origin.x, candidate.z - origin.z)) ||
-                            NearSafeSpot(candidate) || inside != null && !inside(candidate)) continue;
-                        if (!TryPrepareSpawnPoint(candidate, home.kind, out Vector3 at, clearanceRadius, spawnHeight)) continue;
-                        Spawn(at, home.kind);
-                        break;
-                    }
-                    openingHomes.RemoveAt(i);
+                    // Placement retries can yield independently; never hold Unity's global
+                    // random state across a frame while combat or loot is also using it.
+                    if (clock.Elapsed.TotalMilliseconds >= 2d) { yield return null; clock.Restart(); }
+                    float angle = (float)random.NextDouble() * Mathf.PI * 2;
+                    float radius = attempt == 0 ? 0 : Mathf.Sqrt((float)random.NextDouble()) * respawnScatter;
+                    Vector3 candidate = home.point + new Vector3(Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
+                    if (!localBounds.Contains(new Vector2(candidate.x - origin.x, candidate.z - origin.z)) ||
+                        NearSafeSpot(candidate) || inside != null && !inside(candidate)) continue;
+                    long started = PoeClone.UI.PerformanceDiagnostics.Begin();
+                    bool valid;
+                    Vector3 at;
+                    try { valid = TryPrepareSpawnPoint(candidate, home.kind, out at, clearanceRadius, spawnHeight); }
+                    finally { PoeClone.UI.PerformanceDiagnostics.End("Enemy placement checks", started); }
+                    if (!valid) continue;
+                    var previous = Random.state;
+                    Random.InitState(seed);
+                    try { Spawn(at, home.kind); }
+                    finally { Random.state = previous; }
+                    break;
                 }
-                finally { Random.state = previous; }
+                openingHomes.RemoveAt(i);
                 yield return null;
             }
         }
@@ -294,32 +305,49 @@ namespace PoeClone.Enemies
 
         private GameObject Spawn(Vector3 point, int kindIndex, bool refills = true)
         {
-            Quaternion rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
-            GameObject enemy = Instantiate(enemyPrefab, point, rotation, transform);
-            EnemyKinds.Apply(enemy, kindIndex, monsterLevel);
-
-            EnemyHealth health = enemy.GetComponent<EnemyHealth>();
-            if (health != null && refills)
+            long started = PoeClone.UI.PerformanceDiagnostics.Begin();
+            try
             {
-                Transform body = enemy.transform;
-                Vector3 home = point;
-                // Where it stood when it died; its spawn point if the body is already gone.
-                health.Died += () => OnEnemyDied(body != null ? body.position : home);
+                Quaternion rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+                GameObject enemy = Instantiate(enemyPrefab, point, rotation, transform);
+                EnemyKinds.Apply(enemy, kindIndex, monsterLevel);
+
+                EnemyHealth health = enemy.GetComponent<EnemyHealth>();
+                if (health != null && refills)
+                {
+                    Transform body = enemy.transform;
+                    Vector3 home = point;
+                    // Where it stood when it died; its spawn point if the body is already gone.
+                    health.Died += () => OnEnemyDied(body != null ? body.position : home);
+                }
+                return enemy;
             }
-            return enemy;
+            finally { PoeClone.UI.PerformanceDiagnostics.End("Enemy instantiation / model", started); }
         }
 
         // Validate at the final surface height, never at the old fixed world Y. Every spawn
         // path (opening packs, replacements and quest ambushes) goes through this check.
+        private static readonly RaycastHit[] spawnFloorHits = new RaycastHit[32];
+        private static readonly Collider[] spawnObstacles = new Collider[64];
+
         internal static bool TryPrepareSpawnPoint(Vector3 candidate, int kindIndex, out Vector3 point,
             float clearanceRadius = 1.2f, float spawnHeight = 1.1f)
         {
             point = candidate;
             float groundY = float.NegativeInfinity;
             float groundNormalY = 0f;
-            foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(candidate.x, 100f, candidate.z),
-                         Vector3.down, 200f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            Vector3 rayOrigin = new Vector3(candidate.x, 100f, candidate.z);
+            int hitCount = Physics.RaycastNonAlloc(rayOrigin, Vector3.down, spawnFloorHits, 200f,
+                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            RaycastHit[] hits = spawnFloorHits;
+            if (hitCount == hits.Length)
             {
+                hits = Physics.RaycastAll(rayOrigin, Vector3.down, 200f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+                hitCount = hits.Length;
+            }
+            for (int i = 0; i < hitCount; i++)
+            {
+                RaycastHit hit = hits[i];
                 if (IsGround(hit.collider) && hit.point.y > groundY)
                 {
                     groundY = hit.point.y;
@@ -338,10 +366,17 @@ namespace PoeClone.Enemies
             float height = Mathf.Max(2.2f * scale, 1.8f);
             Vector3 half = new Vector3(radius, height * 0.5f, radius);
             Vector3 probe = new Vector3(point.x, groundY + 0.1f + half.y, point.z);
-            foreach (Collider obstacle in Physics.OverlapBox(probe, half, Quaternion.identity,
-                         Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            int obstacleCount = Physics.OverlapBoxNonAlloc(probe, half, spawnObstacles, Quaternion.identity,
+                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            Collider[] obstacles = spawnObstacles;
+            if (obstacleCount == obstacles.Length)
             {
-                if (!IsGround(obstacle))
+                obstacles = Physics.OverlapBox(probe, half, Quaternion.identity, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+                obstacleCount = obstacles.Length;
+            }
+            for (int i = 0; i < obstacleCount; i++)
+            {
+                if (!IsGround(obstacles[i]))
                     return false;
             }
             return true;
