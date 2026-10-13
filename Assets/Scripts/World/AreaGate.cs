@@ -31,6 +31,7 @@ namespace PoeClone.World
         private static readonly List<AreaGate> all = new List<AreaGate>();
         private float lockedToldAt = -10f;
 
+        private float nextPreloadCheck;
         private bool armed = true;
         private Collider box;
         private PlayerController player;
@@ -144,6 +145,28 @@ namespace PoeClone.World
             if (!player.enabled)
                 return;
 
+            var manager = AreaManager.Instance;
+            if (manager == null || manager.IsSwitching || manager.CurrentAreaIndex != fromAreaIndex)
+                return;
+
+            if (Time.unscaledTime >= nextPreloadCheck)
+            {
+                nextPreloadCheck = Time.unscaledTime + 0.5f;
+                var stats = player.GetComponent<PlayerStats>();
+                if (Time.timeScale > 0f && stats != null && !stats.IsDead &&
+                    (Locked == null || !Locked()))
+                {
+                    // About three screens of travel, adjusted to the current camera framing.
+                    Camera cam = Camera.main;
+                    float screenHeight = cam == null ? 18f : cam.orthographic ? cam.orthographicSize * 2f :
+                        2f * Vector3.Distance(cam.transform.position, player.transform.position) *
+                        Mathf.Tan(cam.fieldOfView * Mathf.Deg2Rad * 0.5f);
+                    float distance = Mathf.Clamp(screenHeight * 3f, 30f, 90f);
+                    if (box.bounds.SqrDistance(player.transform.position) <= distance * distance)
+                        WorldBuilder.Instance?.PreloadTerrain(targetAreaIndex);
+                }
+            }
+
             bool inside = box.bounds.Contains(player.transform.position);
             if (!inside)
             {
@@ -163,10 +186,6 @@ namespace PoeClone.World
                 }
                 return;
             }
-
-            var manager = AreaManager.Instance;
-            if (manager == null || manager.IsSwitching || manager.CurrentAreaIndex != fromAreaIndex)
-                return;
 
             armed = false;
 

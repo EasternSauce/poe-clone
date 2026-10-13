@@ -309,7 +309,7 @@ namespace PoeClone.UI
         private void UpdateBadge()
         {
             int unspent = passives.Unspent;
-            bool show = unspent > 0 && !panelRoot.activeSelf && !SkillBarUI.PickerOpen && !passives.GetComponent<PlayerStats>().IsDead;
+            bool show = !TouchMode.Active && unspent > 0 && !panelRoot.activeSelf && !SkillBarUI.PickerOpen && !passives.GetComponent<PlayerStats>().IsDead;
             if (badge.gameObject.activeSelf != show)
                 badge.gameObject.SetActive(show);
             if (!show)
@@ -319,19 +319,12 @@ namespace PoeClone.UI
             float scale = badge.canvas.scaleFactor;
             badge.rectTransform.anchoredPosition = new Vector2(16f / scale, -(PlayerHUD.BottomPixels + 8f) / scale);
 
-            bool touch = TouchMode.Active;
-            // Match the readable HUD scale instead of the panel canvas's narrow-screen scale.
-            float badgeScale = touch ? TouchMode.GuiScale / scale : 1f;
-            badge.rectTransform.localScale = new Vector3(badgeScale, badgeScale, 1f);
-            badgeText.fontSize = touch ? 24 : 17;
-            string text = touch
-                ? "Spend " + unspent + " passive point" + (unspent > 1 ? "s" : "")
-                : "+" + unspent + " passive point" + (unspent > 1 ? "s" : "") + "  (P)";
+            badge.rectTransform.localScale = Vector3.one;
+            badgeText.fontSize = 17;
+            string text = "+" + unspent + " passive point" + (unspent > 1 ? "s" : "") + "  (P)";
             if (badgeText.text != text)
                 badgeText.text = text;
-            float width = badgeText.preferredWidth + (touch ? 48f : 36f);
-            if (touch) width = Mathf.Min(width, Screen.width / TouchMode.GuiScale - 32f);
-            badge.rectTransform.sizeDelta = new Vector2(width, touch ? 64f : 36f);
+            badge.rectTransform.sizeDelta = new Vector2(badgeText.preferredWidth + 36f, 36f);
             float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 3f);
             badgeText.color = Color.Lerp(UiKit.Gold, new Color(1f, 0.95f, 0.7f), pulse);
             badge.color = new Color(0.12f, 0.09f, 0.04f, 0.75f + 0.15f * pulse);

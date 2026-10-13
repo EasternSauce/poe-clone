@@ -271,20 +271,35 @@ namespace PoeClone.World
 
         private void FillSmallGaps()
         {
+            var steps = PrepareSmallGaps();
+            while (steps.MoveNext()) { }
+        }
+
+        private System.Collections.IEnumerator PrepareSmallGaps()
+        {
+            if (gapSamples != null) yield break;
+            var clock = System.Diagnostics.Stopwatch.StartNew();
             // One-metre samples identify tiny closed pockets at overlapping room/route joins.
             // Keep large islands and exterior space; fill only enclosed gaps up to 64 m².
             int nx = Mathf.CeilToInt(Size.x) + 1, nz = Mathf.CeilToInt(Size.y) + 1;
-            gapSamples = new float[nx, nz];
-            filledGaps = new bool[nx, nz];
+            var samples = new float[nx, nz];
+            var filled = new bool[nx, nz];
             var visited = new bool[nx, nz];
             for (int z = 0; z < nz; z++)
+            {
                 for (int x = 0; x < nx; x++)
-                    gapSamples[x, z] = OpenDistance(new Vector2(x, z) - Size * 0.5f);
+                    samples[x, z] = OpenDistance(new Vector2(x, z) - Size * 0.5f);
+                if (clock.Elapsed.TotalMilliseconds >= 1d)
+                {
+                    yield return null;
+                    clock.Restart();
+                }
+            }
             var pocket = new List<Vector2Int>();
             for (int z = 0; z < nz; z++)
                 for (int x = 0; x < nx; x++)
                 {
-                    if (visited[x, z] || gapSamples[x, z] >= 0f) continue;
+                    if (visited[x, z] || samples[x, z] >= 0f) continue;
                     pocket.Clear();
                     pocket.Add(new Vector2Int(x, z));
                     visited[x, z] = true;
@@ -292,7 +307,7 @@ namespace PoeClone.World
                     void Visit(int px, int pz)
                     {
                         if (px < 0 || pz < 0 || px >= nx || pz >= nz) { exterior = true; return; }
-                        if (visited[px, pz] || gapSamples[px, pz] >= 0f) return;
+                        if (visited[px, pz] || samples[px, pz] >= 0f) return;
                         visited[px, pz] = true;
                         pocket.Add(new Vector2Int(px, pz));
                     }
@@ -301,14 +316,21 @@ namespace PoeClone.World
                         Vector2Int point = pocket[i];
                         Visit(point.x - 1, point.y); Visit(point.x + 1, point.y);
                         Visit(point.x, point.y - 1); Visit(point.x, point.y + 1);
+                        if ((i & 63) == 0 && clock.Elapsed.TotalMilliseconds >= 1d)
+                        {
+                            yield return null;
+                            clock.Restart();
+                        }
                     }
                     if (exterior || pocket.Count > 64) continue;
                     foreach (Vector2Int point in pocket)
                     {
-                        filledGaps[point.x, point.y] = true;
-                        gapSamples[point.x, point.y] = 1f;
+                        filled[point.x, point.y] = true;
+                        samples[point.x, point.y] = 1f;
                     }
                 }
+            gapSamples = samples;
+            filledGaps = filled;
         }
 
         public bool Contains(Vector3 p, float margin = 0f)
@@ -362,8 +384,20 @@ namespace PoeClone.World
         /// <summary>Clip a triangulation against the authored outline, including internal holes.</summary>
         public Mesh BuildGroundMesh(float extra, int segments = 96, bool omitBridges = false)
         {
-            if (omitBridges && landMesh != null) return landMesh;
-            if (!omitBridges && groundMesh != null) return groundMesh;
+            if (omitBridges ? landMesh != null : groundMesh != null)
+                return omitBridges ? landMesh : groundMesh;
+            var steps = PrepareGroundMesh(omitBridges);
+            while (steps.MoveNext()) { }
+            return omitBridges ? landMesh : groundMesh;
+        }
+
+        /// <summary>Warm the cached terrain a row at a time, without spawning world objects.</summary>
+        public System.Collections.IEnumerator PrepareGroundMesh(bool omitBridges = false)
+        {
+            if (omitBridges ? landMesh != null : groundMesh != null) yield break;
+            var gaps = PrepareSmallGaps();
+            while (gaps.MoveNext()) yield return gaps.Current;
+            var clock = System.Diagnostics.Stopwatch.StartNew();
             if (omitBridges) landBoundary.Clear(); else Boundary.Clear();
             var vertices = new List<Vector3>();
             var triangles = new List<int>();
@@ -371,6 +405,7 @@ namespace PoeClone.World
             var samples = new float[nx + 1, nz + 1];
             if (omitBridges) waterSamples = new float[nx + 1, nz + 1];
             for (int z = 0; z <= nz; z++)
+            {
                 for (int x = 0; x <= nx; x++)
                 {
                     Vector2 point = new Vector2(x * Cell - Size.x * 0.5f, z * Cell - Size.y * 0.5f);
@@ -378,7 +413,14 @@ namespace PoeClone.World
                     samples[x, z] = omitBridges ? Mathf.Min(Distance(point), -water) : Distance(point);
                     if (omitBridges) waterSamples[x, z] = water;
                 }
+                if (clock.Elapsed.TotalMilliseconds >= 1d)
+                {
+                    yield return null;
+                    clock.Restart();
+                }
+            }
             for (int z = 0; z < nz; z++)
+            {
                 for (int x = 0; x < nx; x++)
                 {
                     Vector3 a = new Vector3(x * Cell - Size.x * 0.5f, 0, z * Cell - Size.y * 0.5f);
@@ -386,10 +428,15 @@ namespace PoeClone.World
                     Clip(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1], vertices, triangles, !omitBridges, omitBridges ? landBoundary : null);
                     Clip(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z], vertices, triangles, !omitBridges, omitBridges ? landBoundary : null);
                 }
+                if (clock.Elapsed.TotalMilliseconds >= 1d)
+                {
+                    yield return null;
+                    clock.Restart();
+                }
+            }
             if (omitBridges) landSamples = samples;
             Mesh mesh = MeshFrom(omitBridges ? "AuthoredLand" : "AuthoredAreaGround", vertices, triangles);
             if (omitBridges) landMesh = mesh; else groundMesh = mesh;
-            return mesh;
         }
 
         private void Clip(Vector3 a, Vector3 b, Vector3 c, float da, float db, float dc, List<Vector3> vertices, List<int> triangles, bool recordBoundary = true, List<(Vector3 a, Vector3 b)> contour = null)
