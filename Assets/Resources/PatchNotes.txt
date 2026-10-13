@@ -1,3 +1,7 @@
+version: 2026-10-13-inventory-shortcut
+- Mobile inventory has a dedicated BAG button beside MENU. The shortcut row uses smaller buttons to make room.
+- The selected item's outline is thinner and a softer gold, while remaining above tooltip backgrounds.
+
 version: 2026-10-13-travel-breathing-room
 - Random enemy packs leave breathing room around gates, waystones and arrival points. Enemy density rises gradually farther away, without moving skipped enemies into a ring or replacing them to fill a quota.
 

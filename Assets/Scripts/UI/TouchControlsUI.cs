@@ -25,7 +25,8 @@ namespace PoeClone.UI
         private const float JoystickDeadZone = 0.15f;
         private static Vector2 JoystickIdle => TouchMode.Portrait ? new Vector2(180f, 185f) : new Vector2(170f, 170f);
         private bool menuExpanded;
-        private Image menuToggle, questToggle, drawerBackground, townButton, chatButton;
+        private Image menuToggle, questToggle, drawerBackground, townButton, chatButton, inventoryButton;
+        private Image[] shortcutButtons;
         private readonly List<RectTransform> drawerButtons = new List<RectTransform>();
 
         private static readonly Color ControlColor = new Color(0.08f, 0.07f, 0.06f, 0.55f);
@@ -148,6 +149,7 @@ namespace PoeClone.UI
             menuRoot.SetActive(menus && menuExpanded);
             menuToggle.gameObject.SetActive(menus);
             questToggle.gameObject.SetActive(menus);
+            inventoryButton.gameObject.SetActive(menus && (!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.InventoryMenuEnabled));
             townButton.gameObject.SetActive(menus && !PoeClone.World.MinimalCombatMode.Enabled);
             chatButton.gameObject.SetActive(menus && !PoeClone.World.MinimalCombatMode.Enabled);
             if (menuOpen) menuExpanded = false;
@@ -576,7 +578,7 @@ namespace PoeClone.UI
             UiKit.Stretch(menu, 0f);
             menuRoot = menu.gameObject;
 
-            Image bag = NewRoundButton("Bag", menu, Vector2.one, new Vector2(-70f, -70f), 96f, "BAG");
+            Image bag = inventoryButton = NewRoundButton("Bag", canvas.transform, new Vector2(0f, 1f), Vector2.zero, 96f, "BAG");
             bag.gameObject.AddComponent<TouchPointerRelay>().Up += _ => ToggleInventory();
 
             Image character = NewRoundButton("Character", menu, Vector2.one, new Vector2(-180f, -70f), 96f, "CHAR");
@@ -638,8 +640,8 @@ namespace PoeClone.UI
             UiKit.ThinFrame(drawerBackground.rectTransform);
             TouchMode.AddBlocker(drawerBackground.rectTransform);
             TouchMode.AddMenuBlocker(drawerBackground.rectTransform);
-            Image[] drawer = { bag, character, skillsButton, tree, settingsButton };
-            string[] names = { "Inventory", "Character", "Skills", "Passives", "Settings" };
+            Image[] drawer = { character, skillsButton, tree, settingsButton };
+            string[] names = { "Character", "Skills", "Passives", "Settings" };
             for (int k=0;k<drawer.Length;k++)
             {
                 Image button=drawer[k];
@@ -659,6 +661,7 @@ namespace PoeClone.UI
             questToggle = NewRoundButton("QuestToggle", canvas.transform, new Vector2(0f, 1f), Vector2.zero, 108f, "QUESTS");
             UiKit.OnClick(questToggle, () => { menuExpanded = false; QuestTrackerUI.ToggleMobile(); });
             TouchMode.AddBlocker(questToggle.rectTransform);
+            shortcutButtons = new[] { menuToggle, inventoryButton, questToggle, townButton, chatButton };
             LayoutControls();
         }
 
@@ -678,16 +681,14 @@ namespace PoeClone.UI
                 inventoryDirections[k].Find("Arrow").localScale = Vector3.one * inventoryScale;
             }
             float rowY = portrait ? -215f : -165f;
-            Place(menuToggle.rectTransform, new Vector2(0f, 1f), new Vector2(86f, rowY), new Vector2(124f, 108f));
-            Place(questToggle.rectTransform, new Vector2(0f, 1f), new Vector2(230f, rowY), new Vector2(124f, 108f));
-            menuToggle.GetComponentInChildren<Text>().fontSize = portrait ? 32 : 28;
-            questToggle.GetComponentInChildren<Text>().fontSize = portrait ? 30 : 26;
+            for (int k = 0; k < shortcutButtons.Length; k++)
+            {
+                Image button = shortcutButtons[k];
+                Place(button.rectTransform, new Vector2(0f, 1f), new Vector2(76f + k * 116f, rowY), new Vector2(104f, 96f));
+                button.GetComponentInChildren<Text>().fontSize = portrait ? 28 : 24;
+            }
             questToggle.color = QuestTrackerUI.MobileOpen ? ControlPressed : ControlColor;
             menuToggle.color = menuExpanded ? ControlPressed : ControlColor;
-            Place(townButton.rectTransform, new Vector2(0f, 1f), new Vector2(374f, rowY), new Vector2(124f, 108f));
-            Place(chatButton.rectTransform, new Vector2(0f, 1f), new Vector2(518f, rowY), new Vector2(124f, 108f));
-            townButton.GetComponentInChildren<Text>().fontSize = portrait ? 30 : 26;
-            chatButton.GetComponentInChildren<Text>().fontSize = portrait ? 30 : 26;
             int count = 0;
             foreach (RectTransform button in drawerButtons)
                 if (button.gameObject.activeSelf) count++;

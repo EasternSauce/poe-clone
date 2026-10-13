@@ -1627,14 +1627,14 @@ private Vector2 CellSize(int w, int h)
             // Explicit layers keep edges above both tooltip backgrounds and below their text.
             for (int edge = 0; edge < 4; edge++)
             {
-                Image line = UiKit.NewImage("Edge" + edge, mobileSelection, new Color(1f, 0.8f, 0.18f, 1f));
+                Image line = UiKit.NewImage("Edge" + edge, mobileSelection, new Color(0.65f, 0.54f, 0.3f, 1f));
                 line.raycastTarget = false;
                 RectTransform rt = line.rectTransform;
                 bool horizontal = edge < 2;
                 float side = edge % 2;
                 rt.anchorMin = horizontal ? new Vector2(0f, side) : new Vector2(side, 0f);
                 rt.anchorMax = horizontal ? new Vector2(1f, side) : new Vector2(side, 1f);
-                rt.sizeDelta = new Vector2(6f, 6f);
+                rt.sizeDelta = new Vector2(3f, 3f);
                 rt.anchoredPosition = Vector2.zero;
             }
             mobileSelection.gameObject.SetActive(false);
