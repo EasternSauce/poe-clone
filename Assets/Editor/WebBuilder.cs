@@ -1,11 +1,13 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEditor;
 using UnityEditor.Build.Profile;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
-// Builds the Web player into Builds/WebGL (the poe-clone-web git clone) using the Web build profile.
+// Builds the Web player into Builds/WebGL using the Web build profile.
 // Command line: Unity.exe -batchmode -quit -projectPath . -executeMethod WebBuilder.BuildFromCommandLine
 public static class WebBuilder
 {
@@ -80,8 +82,42 @@ public static class WebBuilder
         string buildId = version + "-" + DateTime.UtcNow.ToString("yyyyMMddHHmmss");
 
         string index = Path.Combine(OutputPath, "index.html");
-        File.WriteAllText(index, File.ReadAllText(index).Replace("__BUILD_ID__", buildId));
+        string chunks = BuildDownloadChunks();
+        File.WriteAllText(index, File.ReadAllText(index).Replace("__BUILD_ID__", buildId)
+            .Replace("\"__DOWNLOAD_CHUNKS__\"", chunks));
         File.WriteAllText(Path.Combine(OutputPath, "version.json"), "{\"build\":\"" + buildId + "\"}");
         return buildId;
+    }
+
+    // Small content-addressed files avoid slow single CDN transfers and survive unrelated
+    // deployments in the browser cache. Keep the normal files for diagnostics/fallback.
+    private static string BuildDownloadChunks()
+    {
+        string directory = Path.Combine(OutputPath, "Build", "chunks");
+        Directory.CreateDirectory(directory);
+        var keep = new HashSet<string>();
+        var entries = new List<string>();
+        foreach (string path in Directory.GetFiles(Path.Combine(OutputPath, "Build")))
+        {
+            string name = Path.GetFileName(path);
+            if (!name.Contains(".data") && !name.Contains(".wasm")) continue;
+            byte[] bytes = File.ReadAllBytes(path);
+            var parts = new List<string>();
+            const int chunkSize = 512 * 1024;
+            using (var sha = SHA256.Create())
+            for (int offset = 0; offset < bytes.Length; offset += chunkSize)
+            {
+                int count = Math.Min(chunkSize, bytes.Length - offset);
+                string hash = BitConverter.ToString(sha.ComputeHash(bytes, offset, count)).Replace("-", "").ToLowerInvariant();
+                string chunkPath = Path.Combine(directory, hash + ".bin");
+                keep.Add(chunkPath);
+                using (var output = File.Create(chunkPath)) output.Write(bytes, offset, count);
+                parts.Add("\"" + hash + "\"");
+            }
+            entries.Add("\"Build/" + name + "\":{\"size\":" + bytes.Length + ",\"hashes\":[" + string.Join(",", parts) + "]}");
+        }
+        foreach (string old in Directory.GetFiles(directory, "*.bin"))
+            if (!keep.Contains(old)) File.Delete(old);
+        return "{" + string.Join(",", entries) + "}";
     }
 }

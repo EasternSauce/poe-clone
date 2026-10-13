@@ -1,3 +1,7 @@
+version: 2026-10-13-faster-downloads
+- Game downloads use smaller parallel pieces, retry interrupted pieces, and verify each piece before loading.
+- Unchanged download pieces stay cached across updates, reducing repeat downloads after deployments.
+
 version: 2026-10-13-update-resume
 - Game updates show Updating and automatically return your character to the same area, position and facing with spawn protection. Areas rebuild using the latest game data.
 - Co-op partners update together and automatically reconnect as host and guest, keeping their own positions. Reconnects allow up to ten minutes for slower downloads.

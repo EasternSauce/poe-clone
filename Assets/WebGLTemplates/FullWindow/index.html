@@ -294,10 +294,11 @@
       function resyncAfterLoad() { settleCanvasSize(); }
       syncCanvasSize();
 
-      // Stamped into the published page by WebBuilder; "?v=" makes every build's files new URLs,
-      // so a reload after an update never mixes in cached files from the old build.
+      // Small scripts remain build-versioned; large downloads reuse verified content pieces.
       var BUILD_ID = "__BUILD_ID__";
       var v = BUILD_ID.indexOf("__") === 0 ? "" : "?v=" + encodeURIComponent(BUILD_ID);
+      var downloadChunks = "__DOWNLOAD_CHUNKS__";
+      var restoreDownloads = function () {};
 
       var config = {
         dataUrl: "Build/{{{ DATA_FILENAME }}}" + v,
@@ -316,7 +317,7 @@
         // gives every deploy new ETags, which otherwise re-downloads all music after each update.
         cacheControl: function (url) {
           if (/(^|\/)StreamingAssets\/Music\/[^?]+-[0-9a-f]{12}\.bundle$/.test(url)) return "immutable";
-          return url == config.dataUrl || /\.bundle/.test(url) ? "must-revalidate" : "no-store";
+          return /\.bundle/.test(url) ? "must-revalidate" : "no-store";
         },
         companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
         productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
@@ -367,10 +368,12 @@
       var script = document.createElement("script");
       script.src = "Build/{{{ LOADER_FILENAME }}}" + v;
       script.onload = function () {
+        if (typeof downloadChunks === "object") restoreDownloads = installChunkDownloads(downloadChunks, v);
         createUnityInstance(canvas, config, function (progress) {
           fill.style.width = Math.round(progress * 100) + "%";
           document.getElementById("bar").setAttribute("aria-valuenow", Math.round(progress * 100));
         }).then(function (instance) {
+          restoreDownloads();
           unityInstance = instance;
           stopLoadDetail();
           resyncAfterLoad();
@@ -380,6 +383,7 @@
           maybeShowIosHintOnce();
           watchForUpdates();
         }).catch(function (message) {
+          restoreDownloads();
           clearInterval(loadDetailTimer);
           showError(String(message));
         });
@@ -421,7 +425,11 @@
       window.poeReloadForUpdate = reloadForUpdate;
 
       script.onerror = function () { showError("The game files failed to load. Try reloading the page."); };
-      document.body.appendChild(script);
+      var downloader = document.createElement("script");
+      downloader.src = "chunk-downloads.js" + v;
+      downloader.onload = function () { document.body.appendChild(script); };
+      downloader.onerror = function () { showError("The downloader failed to load. Please reload the page."); };
+      document.body.appendChild(downloader);
     </script>
   </body>
 </html>
