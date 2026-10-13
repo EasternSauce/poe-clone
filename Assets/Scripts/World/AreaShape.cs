@@ -441,11 +441,12 @@ namespace PoeClone.World
             if (omitBridges) landMesh = mesh; else groundMesh = mesh;
         }
 
-        private void Clip(Vector3 a, Vector3 b, Vector3 c, float da, float db, float dc, List<Vector3> vertices, List<int> triangles, bool recordBoundary = true, List<(Vector3 a, Vector3 b)> contour = null)
+        private void Clip(Vector3 a, Vector3 b, Vector3 c, float da, float db, float dc, List<Vector3> vertices, List<int> triangles, bool recordBoundary = true, List<(Vector3 a, Vector3 b)> contour = null, bool emitGeometry = true)
         {
             if (da < 0 && db < 0 && dc < 0) return;
             if (da >= 0 && db >= 0 && dc >= 0)
             {
+                if (!emitGeometry) return;
                 int start = vertices.Count;
                 vertices.Add(a); vertices.Add(b); vertices.Add(c);
                 triangles.Add(start); triangles.Add(start + 1); triangles.Add(start + 2);
@@ -467,6 +468,7 @@ namespace PoeClone.World
             }
             if ((recordBoundary || contour != null) && crossings.Count == 2 && (crossings[0] - crossings[1]).sqrMagnitude > 0.00001f)
                 (contour ?? Boundary).Add((crossings[0], crossings[1]));
+            if (!emitGeometry) return;
             int first = vertices.Count;
             vertices.AddRange(polygon);
             for (int i = 1; i + 1 < polygon.Count; i++)

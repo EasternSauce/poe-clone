@@ -277,6 +277,11 @@ namespace PoeClone.World
         public IEnumerator EnsureArea(int area, Transform arrival = null, Vector3? focus = null)
         {
             while (buildingArea || streamingBusy) yield return null;
+            yield return WorldBuildScheduler.Run(EnsureAreaRoutine(area, arrival, focus), 8d);
+        }
+
+        private IEnumerator EnsureAreaRoutine(int area, Transform arrival, Vector3? focus)
+        {
             if (builtAreas.Contains(area))
             {
                 yield return EnsureArrival(area, focus ?? (arrival != null ? arrival : spawnPoints[area]).position);
@@ -286,6 +291,7 @@ namespace PoeClone.World
             buildingArea = true;
             loadingArea = area;
             float started = Time.realtimeSinceStartup;
+            float stageStarted = started;
             try
             {
                 Loading("Terrain: " + AreaNames[area]);
@@ -294,6 +300,8 @@ namespace PoeClone.World
                     yield return PrepareStreamedArea(area);
                 else if (area != ActArena && area != Warren && area != Belfry)
                     yield return BuildGround(groundTemplate, area);
+                Debug.Log($"Area load [{AreaNames[area]}] layout/materials: {(Time.realtimeSinceStartup - stageStarted) * 1000f:F0}ms.");
+                stageStarted = Time.realtimeSinceStartup;
                 Loading("Scenery: " + AreaNames[area]);
                 yield return null;
                 if (IsActTwo(area) || area == ActArena) EnsureDesertMaterials();
@@ -324,7 +332,7 @@ namespace PoeClone.World
                 Loading("Encounters: " + AreaNames[area]);
                 yield return null;
                 if (!UsesChunks(area)) yield return BuildBorders();
-                ClearAreaTravel(area);
+                if (!UsesChunks(area)) ClearAreaTravel(area);
                 BuildQuestSites();
                 SetUpSpawners();
                 if (area == Desert) SetUpDesertEncounters();
@@ -332,8 +340,11 @@ namespace PoeClone.World
                 else if ((area == Graveyard || area == Ruins || area == Cave) && originalSpawner != null)
                     BuildOutpostFolk(originalSpawner.EnemyPrefab);
                 PlaceBosses();
-                Physics.SyncTransforms();
-                ManualPointLightManager.Refresh();
+                if (!UsesChunks(area))
+                {
+                    Physics.SyncTransforms();
+                    ManualPointLightManager.Refresh();
+                }
                 // Five seconds is a soft cover budget. Never expose missing collision or enemies.
                 // Optional wildlife and wind decoration can finish after the cover lifts.
                 if (!UsesChunks(area) && Time.realtimeSinceStartup - started >= 5f)
@@ -341,24 +352,35 @@ namespace PoeClone.World
                 else
                     yield return AreaDetails(area);
                 planningContent = false;
+                Debug.Log($"Area load [{AreaNames[area]}] content plan: {(Time.realtimeSinceStartup - stageStarted) * 1000f:F0}ms.");
                 yield return EnsureArrival(area, focus ?? (arrival != null ? arrival : spawnPoints[area]).position);
                 builtAreas.Add(area);
                 // Audio is optional and never blocks entry.
                 ambience.Build(FindAnyObjectByType<AreaManager>(), FindAnyObjectByType<PlayerController>().transform, area);
-                WorldActivity.Refresh();
+                if (!UsesChunks(area)) WorldActivity.Refresh();
+                Debug.Log($"Area load [{AreaNames[area]}] world ready: {(Time.realtimeSinceStartup - started) * 1000f:F0}ms.");
             }
             finally { planningContent = false; loadingArea = -1; buildingArea = false; }
         }
 
-        private void ClearAreaTravel(int area)
+        private void ClearAreaTravel(int area, Rect? chunk = null)
         {
+            bool Relevant(Vector3 point)
+            {
+                if (!chunk.HasValue) return true;
+                Rect bounds = chunk.Value;
+                Vector3 local = point - Center(area);
+                // Include props which straddle the chunk edge and the travel approach.
+                return local.x >= bounds.xMin - 12 && local.x <= bounds.xMax + 12 &&
+                    local.z >= bounds.yMin - 12 && local.z <= bounds.yMax + 12;
+            }
             // Gates were registered before scenery; clear their approaches after construction.
             Physics.SyncTransforms();
             foreach (var gate in gatePoints)
-                if (gate.area == area) ClearSpot(gate.position, 4.5f);
+                if (gate.area == area && Relevant(gate.position)) ClearSpot(gate.position, 4.5f);
             string prefix = "Arrive_" + AreaNames[area] + "_";
             foreach (Transform marker in root)
-                if (marker.name.StartsWith(prefix)) ClearSpot(marker.position, 2f);
+                if (marker.name.StartsWith(prefix) && Relevant(marker.position)) ClearSpot(marker.position, 2f);
         }
 
         private void CopySpawn(AreaDefinition definition, int area)
@@ -384,8 +406,11 @@ namespace PoeClone.World
             BuildAmbientDetails();
             yield return null;
             BuildWildlife(FindAnyObjectByType<PlayerController>().transform);
-            ManualPointLightManager.Refresh();
-            WorldActivity.Refresh();
+            if (!planningContent)
+            {
+                ManualPointLightManager.Refresh();
+                WorldActivity.Refresh();
+            }
         }
 
         // Replicas need terrain before applying a snapshot; ordinary travel uses the coroutine.
@@ -445,7 +470,7 @@ namespace PoeClone.World
         }
 
         // Its own floor: a generated texture on a copy of the ground material.
-        private static void UseGroundTexture(GameObject ground, int area)
+        private void UseGroundTexture(GameObject ground, int area)
         {
             Renderer r = ground.GetComponent<Renderer>();
             var material = new Material(r.sharedMaterial);
@@ -454,7 +479,19 @@ namespace PoeClone.World
             r.sharedMaterial = material;
         }
 
-        private static Texture2D GroundTexture(int area)
+        private readonly Dictionary<int, Texture2D> groundTextures = new Dictionary<int, Texture2D>();
+
+        private Texture2D GroundTexture(int area)
+        {
+            if (!groundTextures.TryGetValue(area, out var texture) || texture == null)
+            {
+                texture = CreateGroundTexture(area);
+                groundTextures[area] = texture;
+            }
+            return texture;
+        }
+
+        private static Texture2D CreateGroundTexture(int area)
         {
             switch (area)
             {

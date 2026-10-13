@@ -9,7 +9,7 @@ namespace PoeClone.World
         /// <summary>Only contour metadata is global; no meshes are required to prepare a layout.</summary>
         public IEnumerator PrepareLayout() => PrepareSmallGaps();
 
-        public Mesh BuildChunkGround(Rect region, bool omitBridges, List<(Vector3 a, Vector3 b)> boundary)
+        public Mesh BuildChunkGround(Rect region, bool omitBridges, List<(Vector3 a, Vector3 b)> boundary, bool contourOnly = false)
         {
             Vector2 start = -Size * 0.5f;
             int nx = Mathf.CeilToInt(Size.x / Cell), nz = Mathf.CeilToInt(Size.y / Cell);
@@ -29,10 +29,10 @@ namespace PoeClone.World
                     Vector3 a = new Vector3(start.x + x * Cell, 0, start.y + z * Cell);
                     Vector3 b = a + Vector3.forward * Cell, c = b + Vector3.right * Cell, d = a + Vector3.right * Cell;
                     // Only the authored contour produces walls, never a chunk's rectangular edges.
-                    Clip(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1], vertices, triangles, false, boundary);
-                    Clip(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z], vertices, triangles, false, boundary);
+                    Clip(a, b, c, samples[x, z], samples[x, z + 1], samples[x + 1, z + 1], vertices, triangles, false, boundary, emitGeometry: !contourOnly);
+                    Clip(a, c, d, samples[x, z], samples[x + 1, z + 1], samples[x + 1, z], vertices, triangles, false, boundary, emitGeometry: !contourOnly);
                 }
-            return TrimToRegion(MeshFrom("ChunkGround", vertices, triangles), region);
+            return contourOnly ? null : TrimToRegion(MeshFrom("ChunkGround", vertices, triangles), region);
         }
 
         private static void LimitGrid(ref Vector2 start, ref int nx, ref int nz, float step, Rect? region)

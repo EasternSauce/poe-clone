@@ -1,3 +1,7 @@
+version: 2026-10-13-chunk-loading-delays
+- Gate travel now prepares the visible arrival surroundings before extending the loading radius during play. Chunk construction shares a frame budget instead of pausing for a frame after every small step.
+- Minimap scenery detail fills in after travel, avoiding the per-section scan under the loading cover. Ground textures are reused instead of generated again for the same area.
+
 version: 2026-10-13-main-menu-patch-notes
 - New patch notes now appear on the main menu before character selection, instead of interrupting gameplay after loading. Dismissing them still remembers the release.
 

@@ -143,6 +143,7 @@ namespace PoeClone.World
         private IEnumerator SwitchRoutine(int index, Transform arrival)
         {
             switching = true;
+            float travelStarted = Time.realtimeSinceStartup;
 
             float previousTimeScale = Time.timeScale;
             if (player != null)
@@ -215,7 +216,9 @@ namespace PoeClone.World
                 // The first visit bakes the area's minimap: do it in slices here, behind the cover,
                 // rather than in one long frame when the map first shows.
                 PoeClone.UI.LoadingStatus.Set("Minimap");
+                float minimapStarted = Time.realtimeSinceStartup;
                 yield return PoeClone.UI.MinimapTerrain.Prepare(index);
+                Debug.Log($"Area load [{areas[index].areaName}] minimap overview: {(Time.realtimeSinceStartup - minimapStarted) * 1000f:F0}ms.");
                 PoeClone.UI.LoadingStatus.Clear();
 
                 if (loadingScreen != null)
@@ -227,6 +230,7 @@ namespace PoeClone.World
                 LoadingStatus.Clear();
                 Time.timeScale = previousTimeScale;
                 switching = false;
+                Debug.Log($"Area load [{areas[index].areaName}] gate total (including fades): {(Time.realtimeSinceStartup - travelStarted) * 1000f:F0}ms.");
             }
         }
     }

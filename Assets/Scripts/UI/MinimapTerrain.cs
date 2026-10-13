@@ -169,10 +169,9 @@ namespace PoeClone.UI
             return Store(area, map);
         }
 
-        /// <summary>
-        /// Bakes the area's map a slice per frame, for a loading screen to run so it keeps
-        /// animating instead of stalling on the first frame the map is shown.
-        /// </summary>
+        public static bool IsPrepared(int area) => maps.TryGetValue(area, out var map) && map.Texture != null;
+
+        /// <summary>Prepare the overview behind the cover; streamed scenery detail follows during play.</summary>
         public static IEnumerator Prepare(int area)
         {
             if (maps.TryGetValue(area, out AreaMap baked) && baked.Texture != null)
@@ -185,13 +184,8 @@ namespace PoeClone.UI
                 yield return null;
             if (!maps.TryGetValue(area, out baked) || baked.Texture == null)
                 Store(area, map);
-            var builder = WorldBuilder.Instance;
-            if (WorldBuilder.UsesChunks(area) && builder != null)
-            {
-                foreach (Rect rect in builder.LoadedChunkRects(area))
-                    yield return RefreshChunk(area, rect, false);
-                Redraw(maps[area]);
-            }
+            // Chunk obstacle detail is filled by WorldBuilder after travel; the overview
+            // is enough to display the map without holding the loading cover for raycasts.
         }
 
         private static AreaMap Store(int area, AreaMap map)

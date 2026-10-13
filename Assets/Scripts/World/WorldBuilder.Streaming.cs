@@ -13,7 +13,7 @@ namespace PoeClone.World
         {
             public readonly List<Action> Content = new List<Action>();
             public int Completed;
-            public bool TerrainReady, Ready;
+            public bool TerrainReady, Ready, MinimapReady;
         }
         private sealed class StreamedArea
         {
@@ -24,7 +24,7 @@ namespace PoeClone.World
             public readonly List<(Vector3 point, float radius, int sequence)> Clearances = new List<(Vector3, float, int)>();
         }
         private readonly Dictionary<int, StreamedArea> streamedAreas = new Dictionary<int, StreamedArea>();
-        private bool planningContent, streamingBusy;
+        private bool planningContent, streamingBusy, minimapBusy;
         private float nextStreamCheck;
         private Transform streamPlayer;
         private Vector3 urgentPosition;
@@ -105,7 +105,7 @@ namespace PoeClone.World
             }
         }
 
-        private float StreamRadius
+        private float ViewRadius
         {
             get
             {
@@ -125,7 +125,7 @@ namespace PoeClone.World
                             radius = Mathf.Max(radius, new Vector2(delta.x, delta.z).magnitude + 4f);
                         }
                 }
-                return Mathf.Max(40f, Mathf.Min(radius, 120f) + 24f);
+                return Mathf.Clamp(radius, 16f, 120f);
             }
         }
 
@@ -150,30 +150,44 @@ namespace PoeClone.World
             return result;
         }
 
-        public IEnumerator EnsureArrival(int area, Vector3 position)
+        public IEnumerator EnsureArrival(int area, Vector3 position, bool background = false)
         {
             if (!streamedAreas.ContainsKey(area)) yield break;
+            // Do not coalesce synchronization waits: the owner must get its next frame.
             while (streamingBusy) yield return null;
             streamingBusy = true;
             int previousLoading = loadingArea;
             loadingArea = area;
             try
             {
-                bool changed = false;
-                foreach (var cell in NearbyChunks(area, position, StreamRadius))
-                {
-                    if (GetChunk(area, cell).Ready) continue;
-                    changed = true;
-                    yield return BuildChunk(area, cell);
-                }
-                if (changed)
-                {
-                    Physics.SyncTransforms();
-                    ManualPointLightManager.Refresh();
-                    WorldActivity.Refresh();
-                }
+                float radius = Mathf.Max(24f, ViewRadius + (background ? 24f : 8f));
+                yield return WorldBuildScheduler.Run(BuildNearby(area, position, radius, background), background ? 2d : 8d);
             }
             finally { loadingArea = previousLoading; streamingBusy = false; }
+        }
+
+        private IEnumerator BuildNearby(int area, Vector3 position, float radius, bool background)
+        {
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            int firstFrame = Time.frameCount, count = 0;
+            foreach (var cell in NearbyChunks(area, position, radius))
+            {
+                // Finish an in-progress chunk safely, then give travel/pause priority over
+                // the remaining halo. Never leave half-built terrain to be constructed twice.
+                var manager = AreaManager.Instance;
+                if (background && (manager == null || manager.IsSwitching || manager.CurrentAreaIndex != area || Time.timeScale <= 0f)) break;
+                if (GetChunk(area, cell).Ready) continue;
+                count++;
+                yield return BuildChunk(area, cell);
+            }
+            if (count > 0)
+            {
+                Physics.SyncTransforms();
+                ManualPointLightManager.Refresh();
+                WorldActivity.Refresh();
+            }
+            if (!background)
+                Debug.Log($"Area load [{AreaNames[area]}] arrival: {count} new chunks, radius {radius:F0}m, {clock.Elapsed.TotalMilliseconds:F0}ms, {Time.frameCount - firstFrame} frames.");
         }
 
         private IEnumerator BuildChunk(int area, Vector2Int cell)
@@ -198,12 +212,11 @@ namespace PoeClone.World
                     clock.Restart();
                 }
             }
-            ClearAreaTravel(area);
+            ClearAreaTravel(area, rect);
             Physics.SyncTransforms();
             var spawner = SpawnerFor(area);
             if (spawner != null) yield return spawner.PopulateChunk(rect);
             chunk.Ready = true;
-            yield return PoeClone.UI.MinimapTerrain.RefreshChunk(area, rect);
         }
 
         private IEnumerator BuildChunkTerrain(int area, Vector2Int cell, Rect rect)
@@ -212,7 +225,8 @@ namespace PoeClone.World
             Transform group = Group("Terrain_" + AreaNames[area] + "_" + cell.x + "_" + cell.y);
             group.position = shape.Center + Vector3.up * groundTemplate.transform.position.y;
             var boundary = new List<(Vector3 a, Vector3 b)>();
-            Mesh walkable = shape.BuildChunkGround(rect, false, boundary);
+            // Collision needs the contour, not a second floor mesh that is immediately discarded.
+            shape.BuildChunkGround(rect, false, boundary, contourOnly: true);
             yield return null;
             var shoreBoundary = new List<(Vector3 a, Vector3 b)>();
             Mesh land = shape.BuildChunkGround(rect, true, shoreBoundary);
@@ -229,7 +243,6 @@ namespace PoeClone.World
             TrackChunkMesh(area, wallMesh);
             wall.AddComponent<MeshFilter>().sharedMesh = wallMesh;
             if (wallMesh.vertexCount > 0) wall.AddComponent<MeshCollider>().sharedMesh = wallMesh;
-            Destroy(walkable);
             yield return null;
             var rim = new GameObject(shape.IsCliff ? "CliffFaces" : "RockBanks");
             rim.transform.SetParent(group, false);
@@ -264,6 +277,7 @@ namespace PoeClone.World
                 Destroy(pair.Value.Rock);
                 if (IsActTwo(pair.Key)) Destroy(pair.Value.Backdrop);
             }
+            foreach (Texture2D texture in groundTextures.Values) if (texture != null) Destroy(texture);
             foreach (var materials in waterMaterials.Values)
             {
                 Destroy(materials.water); Destroy(materials.shore); Destroy(materials.timber);
@@ -273,7 +287,9 @@ namespace PoeClone.World
         private void Update()
         {
             var manager = AreaManager.Instance;
-            if (manager == null || manager.IsSwitching || buildingArea || streamingBusy || Time.timeScale <= 0f) return;
+            if (manager == null || manager.IsSwitching || buildingArea || Time.timeScale <= 0f) return;
+            RefreshOneMinimapChunk(manager.CurrentAreaIndex);
+            if (streamingBusy) return;
             if (Time.unscaledTime < nextStreamCheck && !urgent) return;
             nextStreamCheck = Time.unscaledTime + 0.1f;
             int area = manager.CurrentAreaIndex;
@@ -284,14 +300,40 @@ namespace PoeClone.World
             if (focus == null) return;
             Vector3 position = urgent ? urgentPosition : focus.position;
             urgent = false;
-            StartCoroutine(EnsureArrival(area, position));
+            StartCoroutine(EnsureArrival(area, position, background: true));
         }
 
-        public IEnumerable<Rect> LoadedChunkRects(int area)
+        private void RefreshOneMinimapChunk(int area)
         {
-            if (!streamedAreas.TryGetValue(area, out var state)) yield break;
+            if (minimapBusy || !PoeClone.UI.MinimapTerrain.IsPrepared(area) || !streamedAreas.TryGetValue(area, out var state)) return;
             foreach (var pair in state.Chunks)
-                if (pair.Value.Ready) yield return ChunkRect(pair.Key);
+                if (pair.Value.Ready && !pair.Value.MinimapReady)
+                {
+                    StartCoroutine(RefreshMinimapChunk(area, pair.Key, pair.Value));
+                    break;
+                }
+        }
+
+        private IEnumerator RefreshMinimapChunk(int area, Vector2Int cell, Chunk chunk)
+        {
+            minimapBusy = true;
+            IEnumerator detail = PoeClone.UI.MinimapTerrain.RefreshChunk(area, ChunkRect(cell));
+            try
+            {
+                while (true)
+                {
+                    var manager = AreaManager.Instance;
+                    if (manager != null && manager.IsSwitching || Time.timeScale <= 0f)
+                    {
+                        yield return null;
+                        continue;
+                    }
+                    if (!detail.MoveNext()) break;
+                    yield return detail.Current;
+                }
+                chunk.MinimapReady = true;
+            }
+            finally { (detail as IDisposable)?.Dispose(); minimapBusy = false; }
         }
 
         public bool IsPositionReady(int areaIndex, Vector3 position)
