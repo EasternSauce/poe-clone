@@ -53,6 +53,9 @@ namespace PoeClone.UI
         /// <summary>How far down from the top the map reaches (others stack below it), 0 when hidden.</summary>
         public static float Bottom => instance != null && instance.frame != null && instance.frame.gameObject.activeSelf ? (Size + NamePlateHeight + 6f) * Scale + TopInset : 0f;
 
+        /// <summary>Space occupied from the right edge, for panels placed beside the map.</summary>
+        public static float OccupiedWidth => instance != null && instance.frame != null && instance.frame.gameObject.activeSelf ? Size * Scale + 16f : 0f;
+
         private static float TopInset => 16f;
 
         private static float NamePlateHeight => TouchMode.Active ? 48f : 26f;

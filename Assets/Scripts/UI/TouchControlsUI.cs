@@ -80,6 +80,7 @@ namespace PoeClone.UI
 
 
         public static float PassiveBadgeTop => TouchMode.Portrait ? 290f : 230f;
+        public bool JoystickInUse => joystickPointer != int.MinValue || aimPointer != int.MinValue;
         public bool MenusVisible => menuToggle != null && menuToggle.gameObject.activeInHierarchy && !menuExpanded && !QuestTrackerUI.MobileOpen;
 
         private void Awake()
@@ -669,8 +670,13 @@ namespace PoeClone.UI
             var combat = (RectTransform)combatRoot.transform;
             combat.offsetMin = new Vector2(safe.xMin,safe.yMin)/unit;
             combat.offsetMax = new Vector2(safe.xMax-Screen.width,safe.yMax-Screen.height)/unit;
+            // Portrait fits 960 units across the phone's short edge; landscape fits 660.
+            float inventoryScale = portrait ? 1f : TouchMode.ReferenceHeight / TouchMode.MinimumCanvasWidth;
             for (int k = 0; k < inventoryDirections.Count; k++)
-                Place(inventoryDirections[k], Vector2.zero, new Vector2(270f, portrait ? 360f : 300f) + InventoryDirections[k] * 170f + new Vector2(safe.xMin, safe.yMin) / unit, Vector2.one * 156f);
+            {
+                Place(inventoryDirections[k], Vector2.zero, new Vector2(270f, portrait ? 360f : 300f) + InventoryDirections[k] * (170f * inventoryScale) + new Vector2(safe.xMin, safe.yMin) / unit, Vector2.one * (156f * inventoryScale));
+                inventoryDirections[k].Find("Arrow").localScale = Vector3.one * inventoryScale;
+            }
             float rowY = portrait ? -215f : -165f;
             Place(menuToggle.rectTransform, new Vector2(0f, 1f), new Vector2(86f, rowY), new Vector2(124f, 108f));
             Place(questToggle.rectTransform, new Vector2(0f, 1f), new Vector2(230f, rowY), new Vector2(124f, 108f));
@@ -711,22 +717,21 @@ namespace PoeClone.UI
             joystickBase.sizeDelta = Vector2.one * (portrait ? 300f : 240f);
             joystickKnob.sizeDelta = Vector2.one * (portrait ? 130f : 104f);
             if (joystickPointer == int.MinValue) joystickBase.anchoredPosition = JoystickIdle;
-            float aimX = portrait ? 175f : 145f;
-            float aimY = portrait ? 185f : 145f;
+            float aimX = portrait ? 175f : 190f;
+            float aimY = portrait ? 185f : 235f;
             Place(aimBaseImage.rectTransform, new Vector2(1f, 0f), new Vector2(-aimX, aimY), Vector2.one * (portrait ? 270f : 220f));
             aimKnob.sizeDelta = Vector2.one * (portrait ? 142f : 118f);
             const float landscapePotionX = 366f;
-            // Keep the portrait arc, shifted left of the landscape minimap. On narrower
-            // tablets, shrink the arc to leave a gap beside the left-hand potion stack.
+            // Wrap landscape skills tightly around the attack stick's left side, below
+            // the minimap. Keep a gap beside the potions even with wide safe-area insets.
             float skillScale = portrait ? 1f : Mathf.Min(1f,
-                Mathf.Max(0.1f, (safe.width / unit - landscapePotionX - 56f - 20f - 315f) / 275f));
-            float skillX = portrait ? aimX : 315f;
+                Mathf.Max(0.1f, (safe.width / unit - landscapePotionX - 56f - 20f - aimX) / 240f));
             for (int k = 0; k < skillButtons.Count; k++)
             {
-                float angle = (90f + k * 30f) * Mathf.Deg2Rad;
-                float radius = portrait ? 270f : 225f * skillScale;
+                float angle = (portrait ? 90f + k * 30f : 135f + k * 35f) * Mathf.Deg2Rad;
+                float radius = portrait ? 270f : 190f * skillScale;
                 Place(skillButtons[k].Back.rectTransform, new Vector2(1f, 0f),
-                    new Vector2(-skillX + Mathf.Cos(angle) * radius, aimY + Mathf.Sin(angle) * radius), Vector2.one * (portrait ? 132f : 100f * skillScale));
+                    new Vector2(-aimX + Mathf.Cos(angle) * radius, aimY + Mathf.Sin(angle) * radius), Vector2.one * (portrait ? 132f : 100f * skillScale));
             }
             Place(healthPotionImage.rectTransform, Vector2.zero,
                 portrait ? new Vector2(85f, 500f) : new Vector2(landscapePotionX, 238f), Vector2.one * (portrait ? 132f : 112f));

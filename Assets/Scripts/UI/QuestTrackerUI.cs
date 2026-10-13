@@ -109,10 +109,11 @@ namespace PoeClone.UI
                            SkillBarUI.IsOpen || DialogueUI.IsOpen || PassiveTreeUI.IsOpen;
             back.gameObject.SetActive(text.text.Length > 0 && !covered && (!TouchMode.Active || mobileOpen));
 
-            // Clear of the touch menu buttons along the right edge.
-            float mapBottom = MinimapUI.Bottom;
-            back.rectTransform.anchorMin = back.rectTransform.anchorMax = back.rectTransform.pivot = TouchMode.Active ? new Vector2(0f, 1f) : Vector2.one;
-            back.rectTransform.anchoredPosition = TouchMode.Active ? new Vector2(24f, TouchMode.Portrait ? -300f : -230f) : new Vector2(-16f, -16f - mapBottom);
+            bool portrait = TouchMode.Portrait;
+            back.rectTransform.anchorMin = back.rectTransform.anchorMax = back.rectTransform.pivot = portrait ? new Vector2(0f, 1f) : Vector2.one;
+            back.rectTransform.anchoredPosition = portrait ? new Vector2(24f, -300f) :
+                TouchMode.Active ? new Vector2(-16f - MinimapUI.OccupiedWidth, -16f) :
+                new Vector2(-16f, -16f - MinimapUI.Bottom);
         }
 
         private static readonly Color QuestTitle = new Color(0.96f, 0.88f, 0.66f, 1f);

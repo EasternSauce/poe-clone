@@ -1597,6 +1597,7 @@ private Vector2 CellSize(int w, int h)
             tooltipText = UiKit.NewText("Text", tooltipRect, "", 17, UiKit.TextColor, TextAnchor.UpperLeft);
             tooltipText.raycastTarget = false;
             UiKit.Stretch(tooltipText.rectTransform, 10f);
+            SetTooltipLayer(tooltipText.transform, 822);
 
             tooltipRect.gameObject.SetActive(false);
 
@@ -1615,13 +1616,15 @@ private Vector2 CellSize(int w, int h)
 
             heldTooltipText = UiKit.NewText("Text", heldTooltipRect, "", 17, UiKit.TextColor, TextAnchor.UpperLeft);
             UiKit.Stretch(heldTooltipText.rectTransform, 10f);
+            SetTooltipLayer(heldTooltipText.transform, 822);
 
             heldTooltipRect.gameObject.SetActive(false);
 
             mobileSelection = UiKit.NewRect("MobileSelectedItem", tooltipCanvas.transform);
             mobileSelection.anchorMin = mobileSelection.anchorMax = new Vector2(0.5f, 0.5f);
             mobileSelection.pivot = new Vector2(0.5f, 0.5f);
-            // Solid edges stay visible over an opaque tooltip without obscuring its text.
+            SetTooltipLayer(mobileSelection, 821);
+            // Explicit layers keep edges above both tooltip backgrounds and below their text.
             for (int edge = 0; edge < 4; edge++)
             {
                 Image line = UiKit.NewImage("Edge" + edge, mobileSelection, new Color(1f, 0.8f, 0.18f, 1f));
@@ -1635,6 +1638,13 @@ private Vector2 CellSize(int w, int h)
                 rt.anchoredPosition = Vector2.zero;
             }
             mobileSelection.gameObject.SetActive(false);
+        }
+
+        private static void SetTooltipLayer(Transform target, int order)
+        {
+            Canvas layer = target.gameObject.AddComponent<Canvas>();
+            layer.overrideSorting = true;
+            layer.sortingOrder = order;
         }
 
         // ------------------------------------------------------------------ item views
@@ -1899,7 +1909,6 @@ private Vector2 CellSize(int w, int h)
             Vector2 top = parent.InverseTransformPoint(selectionCorners[2]);
             mobileSelection.anchoredPosition = (bottom + top) * 0.5f;
             mobileSelection.sizeDelta = top - bottom;
-            mobileSelection.SetAsLastSibling();
         }
 
         private void UpdateSlotHighlights(Hover h)

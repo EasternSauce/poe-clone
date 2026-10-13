@@ -27,18 +27,20 @@ namespace PoeClone.Inventory
         /// </summary>
         public static System.Action<string, string, int, bool, System.Action<string>> TextPrompt;
         public static bool IsTextPromptOpen;
+        public static bool IsBrowserTextFocused;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetTextPrompt()
         {
             TextPrompt = null;
             IsTextPromptOpen = false;
+            IsBrowserTextFocused = false;
         }
 
         /// <summary>True while a text field (e.g. the chat box) has keyboard focus, so hotkeys must not fire.</summary>
         public static bool IsTypingInTextField()
         {
-            if (IsTextPromptOpen) return true;
+            if (IsTextPromptOpen || IsBrowserTextFocused) return true;
             if (TextEditEndedFrame == Time.frameCount) return true;
             GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
             if (selected == null) return false;

@@ -47,6 +47,7 @@ namespace PoeClone.CameraSystem
         private float playerZoom = 1f;
         private float pinchDistance;
         private int pinchIdA, pinchIdB;
+        private PoeClone.UI.TouchControlsUI touchControls;
         private const float ClosestDistanceScale = 0.6f;
         private const float FarthestDistanceScale = 1.3f;
 
@@ -60,6 +61,15 @@ namespace PoeClone.CameraSystem
                     (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())) return;
                 float scroll = mouse.scroll.ReadValue().y;
                 if (Mathf.Abs(scroll) > 0.01f) ChangePlayerZoom(Mathf.Exp(-Mathf.Clamp(scroll / 120f, -3f, 3f) * 0.1f));
+                return;
+            }
+
+            if (touchControls == null)
+                touchControls = FindAnyObjectByType<PoeClone.UI.TouchControlsUI>();
+            // A joystick owns its finger until release, including drags beyond its bounds.
+            if (touchControls != null && touchControls.JoystickInUse)
+            {
+                pinchDistance = 0f;
                 return;
             }
 
@@ -86,8 +96,6 @@ namespace PoeClone.CameraSystem
             pinchDistance = current;
             pinchIdA = idA;
             pinchIdB = idB;
-            // A finger in the movement zone can become part of a camera gesture.
-            PoeClone.Player.VirtualInput.Move = Vector2.zero;
         }
 
         private void ChangePlayerZoom(float factor)

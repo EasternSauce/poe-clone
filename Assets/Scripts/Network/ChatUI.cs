@@ -5,6 +5,9 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using PoeClone.Inventory;
 using PoeClone.UI;
+#if UNITY_WEBGL && !UNITY_EDITOR
+using System.Runtime.InteropServices;
+#endif
 
 namespace PoeClone.Network
 {
@@ -71,7 +74,12 @@ namespace PoeClone.Network
         }
 
         /// <summary>True while the chat box has keyboard focus, so gameplay input can ignore WASD/click while typing.</summary>
-        public static bool IsTyping => Instance != null && Instance.inputField != null && Instance.inputField.isFocused;
+        public static bool IsTyping => Instance != null && Instance.Typing;
+        private bool Typing => inputField != null && inputField.isFocused
+#if UNITY_WEBGL && !UNITY_EDITOR
+            || browserTyping
+#endif
+            ;
 
         /// <summary>True while there's unsent text in the chat box (arrow keys then belong to it).</summary>
         public static bool HasDraft => Instance != null && Instance.inputField != null && !string.IsNullOrEmpty(Instance.inputField.text);
@@ -82,6 +90,59 @@ namespace PoeClone.Network
         internal static int EnterHandledFrame = -1;
 
         private bool keepFocusAfterSubmit;
+#if UNITY_WEBGL && !UNITY_EDITOR
+        [DllImport("__Internal")]
+        private static extern void ChatInputSync(string receiver, float x, float y, float width, float height, float fontSize, string draft);
+        [DllImport("__Internal")]
+        private static extern void ChatInputHide();
+        private bool browserTyping;
+        private NamePromptUI browserNamePrompt;
+        private LoadingScreenUI browserLoading;
+        private readonly Vector3[] inputCorners = new Vector3[4];
+
+        // Browser events deliver these immediately; focusing the native field stays inside
+        // the user's tap, which mobile browsers require when opening the software keyboard.
+        [UnityEngine.Scripting.Preserve]
+        public void ReceiveBrowserDraft(string draft) => inputField.text = draft;
+        [UnityEngine.Scripting.Preserve]
+        public void ReceiveBrowserFocus(string focused)
+        {
+            browserTyping = focused == "1";
+            UiKit.IsBrowserTextFocused = browserTyping;
+            if (!browserTyping) UiKit.TextEditEndedFrame = Time.frameCount;
+            WebGLInput.captureAllKeyboardInput = !browserTyping;
+        }
+        [UnityEngine.Scripting.Preserve]
+        public void SubmitBrowserChat(string draft)
+        {
+            inputField.text = draft;
+            Send();
+        }
+
+        private void LateUpdate()
+        {
+            if (browserNamePrompt == null) browserNamePrompt = FindAnyObjectByType<NamePromptUI>();
+            if (browserLoading == null) browserLoading = FindAnyObjectByType<LoadingScreenUI>();
+            bool covered = UiKit.IsTextPromptOpen || PatchNotesUI.IsShowing ||
+                (browserNamePrompt != null && browserNamePrompt.IsShowing) ||
+                (browserLoading != null && browserLoading.IsShowing);
+            bool nativeInput = TouchMode.Active && panelRect.gameObject.activeInHierarchy && !covered;
+            inputField.interactable = !nativeInput;
+            if (!nativeInput)
+            {
+                ChatInputHide();
+                browserTyping = false;
+                UiKit.IsBrowserTextFocused = false;
+                return;
+            }
+            fieldRect.GetWorldCorners(inputCorners);
+            ChatInputSync(gameObject.name, inputCorners[0].x / Screen.width,
+                1f - inputCorners[2].y / Screen.height,
+                (inputCorners[2].x - inputCorners[0].x) / Screen.width,
+                (inputCorners[2].y - inputCorners[0].y) / Screen.height,
+                fieldText.fontSize * chatCanvas.scaleFactor / Screen.height, inputField.text);
+        }
+#endif
 
         private void Awake()
         {
@@ -105,6 +166,11 @@ namespace PoeClone.Network
 
         private void OnDisable()
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            ChatInputHide();
+            browserTyping = false;
+            UiKit.IsBrowserTextFocused = false;
+#endif
             TouchMode.Changed -= Relayout;
             var ctrl = GameSessionController.Instance;
             if (ctrl != null)
@@ -471,6 +537,7 @@ namespace PoeClone.Network
             fieldText.fontSize = 16;
             fieldText.color = UiKit.TextColor;
             fieldText.supportRichText = false;
+            fieldText.raycastTarget = false;
             RuntimeUiUtil.StretchFull(fieldText.rectTransform);
             fieldText.rectTransform.offsetMin = new Vector2(8f, 4f);
             fieldText.rectTransform.offsetMax = new Vector2(-8f, -4f);
@@ -481,6 +548,7 @@ namespace PoeClone.Network
             placeholderText = placeholderGO.AddComponent<Text>();
             var placeholder = placeholderText;
             placeholder.font = fieldText.font;
+            placeholder.raycastTarget = false;
             placeholder.fontSize = 16;
             placeholder.fontStyle = FontStyle.Italic;
             placeholder.color = new Color(UiKit.DimText.r, UiKit.DimText.g, UiKit.DimText.b, 0.8f);

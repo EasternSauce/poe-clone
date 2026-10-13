@@ -1,3 +1,11 @@
+version: 2026-10-13-touch-thumb-reach
+- Landscape skills sit closer around the attack joystick for shorter thumb movements, clear of the minimap and potions.
+- Using either joystick prevents pinch zoom, including when dragging outside the joystick.
+- Opening QUESTS in landscape shows objectives to the left of the minimap.
+- Landscape inventory arrows are smaller, matching their apparent portrait size.
+- The selected inventory item's outline draws above tooltip backgrounds and below tooltip text on mobile.
+- Mobile browser chat uses a native text field so tapping it opens the keyboard; the keyboard's Send action sends the message.
+
 version: 2026-10-13-landscape-touch-controls
 - Landscape potions are stacked beside the movement joystick, with health above mana. Skills 1-4 follow the portrait arc, with spacing for the minimap and potion controls on narrower screens.
 
