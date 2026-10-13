@@ -16,6 +16,8 @@ namespace PoeClone.Network
         private Text stepText;
         private RectTransform spinner;
         private GameObject content;
+        private CanvasScaler scaler;
+        private bool touchLayout;
 
         private void Awake()
         {
@@ -58,6 +60,8 @@ namespace PoeClone.Network
 
         private void Update()
         {
+            if (touchLayout != TouchMode.Active)
+                ApplyLayout();
             if (content.activeSelf)
                 stepText.text = LoadingStatus.Step;
         }
@@ -70,7 +74,7 @@ namespace PoeClone.Network
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 900;
 
-            var scaler = canvasGO.AddComponent<CanvasScaler>();
+            scaler = canvasGO.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
             canvasGO.AddComponent<GraphicRaycaster>();
@@ -84,21 +88,37 @@ namespace PoeClone.Network
 
             messageText = UiKit.Heading(UiKit.NewText("Message", backdrop, "", 34, UiKit.Gold, TextAnchor.MiddleCenter));
             messageText.horizontalOverflow = HorizontalWrapMode.Wrap;
-            var textRect = messageText.rectTransform;
-            textRect.anchorMin = new Vector2(0.1f, 0.25f);
-            textRect.anchorMax = new Vector2(0.9f, 0.75f);
-            textRect.offsetMin = Vector2.zero;
-            textRect.offsetMax = Vector2.zero;
-            textRect.anchoredPosition = new Vector2(0f, -45f);
 
             // What is being loaded right now, so slow steps can be told apart.
             stepText = UiKit.NewText("Step", backdrop, "", 24, UiKit.DimText, TextAnchor.MiddleCenter);
-            RectTransform stepRect = stepText.rectTransform;
-            stepRect.anchorMin = stepRect.anchorMax = new Vector2(0.5f, 0.5f);
-            stepRect.anchoredPosition = new Vector2(0f, -110f);
-            stepRect.sizeDelta = new Vector2(1200f, 40f);
 
             spinner = UiKit.RuneSpinner(backdrop, new Vector2(0f, 120f), 110f);
+            ApplyLayout();
+        }
+
+        private void ApplyLayout()
+        {
+            touchLayout = TouchMode.Active;
+            // Startup has its own canvas; use the same mobile scale as area loading.
+            scaler.referenceResolution = touchLayout ? new Vector2(540f, 540f) : new Vector2(1920f, 1080f);
+            scaler.screenMatchMode = touchLayout ? CanvasScaler.ScreenMatchMode.Expand
+                : CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            messageText.fontSize = touchLayout ? 40 : 34;
+            stepText.fontSize = 24;
+            stepText.color = touchLayout ? UiKit.TextColor : UiKit.DimText;
+            stepText.horizontalOverflow = HorizontalWrapMode.Wrap;
+
+            RectTransform messageRect = messageText.rectTransform;
+            messageRect.anchorMin = new Vector2(0.05f, 0.5f);
+            messageRect.anchorMax = new Vector2(0.95f, 0.5f);
+            messageRect.sizeDelta = new Vector2(0f, touchLayout ? 110f : 70f);
+            messageRect.anchoredPosition = new Vector2(0f, -45f);
+
+            RectTransform stepRect = stepText.rectTransform;
+            stepRect.anchorMin = new Vector2(0.05f, 0.5f);
+            stepRect.anchorMax = new Vector2(0.95f, 0.5f);
+            stepRect.sizeDelta = new Vector2(0f, touchLayout ? 100f : 40f);
+            stepRect.anchoredPosition = new Vector2(0f, touchLayout ? -150f : -110f);
         }
     }
 }
