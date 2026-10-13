@@ -304,7 +304,7 @@ namespace PoeClone.UI
             }
         }
 
-        // A gently pulsing note below the level/health HUD while there are points to spend;
+        // A pulsing button below the level/health HUD while there are points to spend;
         // clicking it opens the tree.
         private void UpdateBadge()
         {
@@ -319,12 +319,19 @@ namespace PoeClone.UI
             float scale = badge.canvas.scaleFactor;
             badge.rectTransform.anchoredPosition = new Vector2(16f / scale, -(PlayerHUD.BottomPixels + 8f) / scale);
 
-            string text = "+" + unspent + " passive point" + (unspent > 1 ? "s" : "") + (TouchMode.Active ? "" : "  (P)");
+            bool touch = TouchMode.Active;
+            // Match the readable HUD scale instead of the panel canvas's narrow-screen scale.
+            float badgeScale = touch ? TouchMode.GuiScale / scale : 1f;
+            badge.rectTransform.localScale = new Vector3(badgeScale, badgeScale, 1f);
+            badgeText.fontSize = touch ? 24 : 17;
+            string text = touch
+                ? "Spend " + unspent + " passive point" + (unspent > 1 ? "s" : "")
+                : "+" + unspent + " passive point" + (unspent > 1 ? "s" : "") + "  (P)";
             if (badgeText.text != text)
-            {
                 badgeText.text = text;
-                badge.rectTransform.sizeDelta = new Vector2(badgeText.preferredWidth + 36f, 36f);
-            }
+            float width = badgeText.preferredWidth + (touch ? 48f : 36f);
+            if (touch) width = Mathf.Min(width, Screen.width / TouchMode.GuiScale - 32f);
+            badge.rectTransform.sizeDelta = new Vector2(width, touch ? 64f : 36f);
             float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 3f);
             badgeText.color = Color.Lerp(UiKit.Gold, new Color(1f, 0.95f, 0.7f), pulse);
             badge.color = new Color(0.12f, 0.09f, 0.04f, 0.75f + 0.15f * pulse);
@@ -737,11 +744,12 @@ namespace PoeClone.UI
             br.pivot = new Vector2(0f, 1f);
             br.sizeDelta = new Vector2(260f, 36f);
             UiKit.Grain(badge);
-            UiKit.ThinFrame(br);
+            UiKit.AddOutline(badge, UiKit.Gold, 2f);
             badgeText = UiKit.NewText("Text", br, "", 17, UiKit.Gold, TextAnchor.MiddleCenter);
             badgeText.font = UiKit.TitleFont;
             UiKit.Stretch(badgeText.rectTransform, 0f);
             badge.gameObject.AddComponent<TouchPointerRelay>().Up += _ => SetOpen(true);
+            TouchMode.AddBlocker(br);
             badge.gameObject.SetActive(false);
 
             Image panel = UiKit.NewImage("PassivePanel", canvas.transform, UiKit.PanelColor);

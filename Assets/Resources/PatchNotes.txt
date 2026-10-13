@@ -1,3 +1,7 @@
+version: 2026-10-13-mobile-readability
+- Loading text is larger and easier to read on phones, with a layout that fits portrait and landscape. The browser download screen also uses larger, brighter text on touch devices.
+- Unspent passive points now appear as a larger, gold-bordered Spend passive points button on phones, with a bigger tap target that stays readable when rotating.
+
 version: 2026-10-13-fluid-gameplay
 - Distance checks and scenery wake/sleep transitions are spread across frames to reduce traversal hitches. Scenery uses a buffer before sleeping again, and particle budgets change only when quality changes.
 - Player and nearby combat animations now update every rendered frame, including on slower devices. Camera follow stays consistent as frame rate changes.

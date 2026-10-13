@@ -20,6 +20,10 @@ namespace PoeClone.UI
         private Text caption;
         private GameObject captionDivider;
         private Text step;
+        private Text loading;
+        private RectTransform spinner;
+        private CanvasScaler scaler;
+        private bool touchLayout;
 
         private void Awake()
         {
@@ -35,7 +39,7 @@ namespace PoeClone.UI
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 1000;
 
-            var scaler = canvasGO.AddComponent<CanvasScaler>();
+            scaler = canvasGO.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
 
@@ -50,7 +54,7 @@ namespace PoeClone.UI
             content = backdrop.gameObject;
             content.SetActive(false);
 
-            UiKit.RuneSpinner(backdrop, new Vector2(0f, 40f), 150f);
+            spinner = UiKit.RuneSpinner(backdrop, new Vector2(0f, 40f), 150f);
 
             caption = UiKit.Heading(UiKit.NewText("Area", backdrop, "", 46, UiKit.Gold, TextAnchor.MiddleCenter));
             RectTransform cr = caption.rectTransform;
@@ -59,13 +63,13 @@ namespace PoeClone.UI
             cr.sizeDelta = new Vector2(1400f, 70f);
             captionDivider = UiKit.DividerLine(cr, new Vector2(0f, -44f), 520f).gameObject;
 
-            Text loading = UiKit.NewText("LoadingText", backdrop, "Loading", 24, UiKit.DimText, TextAnchor.MiddleCenter);
+            loading = UiKit.NewText("LoadingText", backdrop, "Loading", 24, UiKit.DimText, TextAnchor.MiddleCenter);
             loading.font = UiKit.TitleFont;
             RectTransform lr = loading.rectTransform;
             lr.anchorMin = lr.anchorMax = new Vector2(0.5f, 0.5f);
             lr.anchoredPosition = new Vector2(0f, -190f);
             lr.sizeDelta = new Vector2(600f, 40f);
-            loading.gameObject.AddComponent<UiPulse>().Init(loading, 0.35f, 0.95f, 0.9f);
+            loading.gameObject.AddComponent<UiPulse>().Init(loading, 0.7f, 1f, 0.9f);
 
             // What is being loaded right now, so slow steps can be told apart.
             step = UiKit.NewText("Step", backdrop, "", 20, UiKit.DimText, TextAnchor.MiddleCenter);
@@ -73,10 +77,42 @@ namespace PoeClone.UI
             sr.anchorMin = sr.anchorMax = new Vector2(0.5f, 0.5f);
             sr.anchoredPosition = new Vector2(0f, -230f);
             sr.sizeDelta = new Vector2(1200f, 36f);
+
+            ApplyLayout();
+        }
+
+        private void ApplyLayout()
+        {
+            touchLayout = TouchMode.Active;
+            // A narrow reference keeps text readable in portrait; Expand also fits short landscape screens.
+            scaler.referenceResolution = touchLayout ? new Vector2(540f, 540f) : new Vector2(1920f, 1080f);
+            scaler.screenMatchMode = touchLayout ? CanvasScaler.ScreenMatchMode.Expand
+                : CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            caption.fontSize = touchLayout ? 40 : 46;
+            loading.fontSize = touchLayout ? 28 : 24;
+            step.fontSize = touchLayout ? 24 : 20;
+            foreach (Text label in new[] { caption, loading, step })
+            {
+                RectTransform rect = label.rectTransform;
+                rect.anchorMin = new Vector2(0.05f, 0.5f);
+                rect.anchorMax = new Vector2(0.95f, 0.5f);
+                rect.sizeDelta = new Vector2(0f, label == caption ? (touchLayout ? 110f : 70f)
+                    : label == step ? (touchLayout ? 70f : 36f) : 40f);
+                label.horizontalOverflow = HorizontalWrapMode.Wrap;
+            }
+            captionDivider.GetComponent<RectTransform>().sizeDelta = new Vector2(touchLayout ? 320f : 520f, 18f);
+            captionDivider.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, touchLayout ? -65f : -44f);
+            spinner.anchoredPosition = new Vector2(0f, touchLayout ? 90f : 40f);
+            caption.rectTransform.anchoredPosition = new Vector2(0f, touchLayout ? -60f : -110f);
+            loading.rectTransform.anchoredPosition = new Vector2(0f, touchLayout ? -165f : -190f);
+            step.rectTransform.anchoredPosition = new Vector2(0f, touchLayout ? -220f : -230f);
+            step.color = touchLayout ? UiKit.TextColor : UiKit.DimText;
         }
 
         private void Update()
         {
+            if (touchLayout != TouchMode.Active)
+                ApplyLayout();
             if (content.activeSelf)
                 step.text = LoadingStatus.Step;
         }
