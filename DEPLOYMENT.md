@@ -26,6 +26,19 @@ steps. If there is nothing to commit, confirm the intended files are already
 committed before continuing. Do not report completion until both pushes and
 live verification succeed.
 
+When running in WSL, check Windows Git and its existing credential manager if
+Linux Git cannot authenticate to GitHub. Windows credentials persist across
+sessions even when WSL Git has no credential helper configured. Check
+`git.exe` on PATH, then the standard installation at
+`/mnt/c/Program Files/Git/cmd/git.exe`. From the checkout, use Windows Git
+directly, for example:
+```bash
+'/mnt/c/Program Files/Git/cmd/git.exe' push
+```
+Use the same executable for authenticated fetches and clones as needed. This
+uses the credentials already stored in Windows; do not copy or print tokens.
+Try this fallback before reporting missing credentials as a deployment blocker.
+
 1. Review intended source changes. Commit them together with the fresh build in
    step 4; do not make a separate source-only push before building. If source
    changes are already committed, leave them as they are and push once after
