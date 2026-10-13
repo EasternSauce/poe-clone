@@ -76,7 +76,7 @@ namespace PoeClone.CameraSystem
             transform.position = Vector3.Lerp(
                 transform.position,
                 DesiredPosition(),
-                followSpeed * Time.deltaTime
+                1f - Mathf.Exp(-followSpeed * Time.deltaTime)
             );
 
             appliedShake = Vector3.zero;

@@ -17,12 +17,19 @@ namespace PoeClone.Audio
             {
                 request = Resources.LoadAsync<AudioClip>(path);
                 requests.Add(path, request);
+                // Decode as soon as the resource arrives, even if nobody requests it again.
+                request.completed += operation => Prepare(request.asset as AudioClip);
             }
             if (!request.isDone) return null;
             var clip = request.asset as AudioClip;
             if (clip == null) return null;
-            if (clip.loadState == AudioDataLoadState.Unloaded) clip.LoadAudioData();
+            Prepare(clip);
             return clip.loadState == AudioDataLoadState.Loaded ? clip : null;
+        }
+
+        private static void Prepare(AudioClip clip)
+        {
+            if (clip != null && clip.loadState == AudioDataLoadState.Unloaded) clip.LoadAudioData();
         }
 
         public static bool Finished(string path)

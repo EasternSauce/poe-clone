@@ -11,12 +11,12 @@ namespace PoeClone.Visuals
         public bool Sample(Transform model, bool important, out float dt, bool force = false)
         {
             elapsed += Time.deltaTime;
-            int level = AdaptiveQuality.DetailLevel;
             float distance = WorldActivity.DistanceSquared(model.position);
             float near = WorldActivity.ScreenRadius * 0.8f;
-            int rate = important ? (level >= 5 ? 30 : 60) :
+            // Player and nearby combat poses follow every rendered frame on every device.
+            int rate = important || distance <= near * near ? 60 :
                 distance > WorldActivity.ScreenRadius * WorldActivity.ScreenRadius * 2.25f ? 8 :
-                distance > near * near ? 15 : level >= 4 ? 15 : level >= 2 ? 24 : 30;
+                15;
             float interval = 1f / rate;
             if (!initialized)
             {

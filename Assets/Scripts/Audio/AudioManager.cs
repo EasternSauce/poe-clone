@@ -101,6 +101,8 @@ namespace PoeClone.Audio
 
         private AudioSource uiSource;
         private SoundBoardSettings soundBoard;
+        private readonly System.Collections.Generic.Dictionary<string, AudioClip> coreSounds =
+            new System.Collections.Generic.Dictionary<string, AudioClip>();
 
         public void ReloadSoundBoard() => soundBoard = SoundBoardSettings.Load();
 
@@ -110,13 +112,22 @@ namespace PoeClone.Audio
             AudioClip clip = effect != null ? effect.Choose(fallback) : fallback;
             PlayWorld(clip, position, pitch);
         }
-        /// <summary>Starts loading a recording on first use; unavailable cues stay silent.</summary>
-        public AudioClip Sfx(string name) => DeferredAudio.Get("Sfx/" + name);
+        /// <summary>Core cues are ready at startup; optional recordings load in the background.</summary>
+        public AudioClip Sfx(string name) => coreSounds.TryGetValue(System.IO.Path.GetFileName(name), out var clip)
+            ? clip : DeferredAudio.Get("Sfx/" + name);
 
         private void Awake()
         {
             Instance = this;
             ReloadSoundBoard();
+            // The small core library includes potion, skill and interface feedback. Load it
+            // before control returns so first-use cues are never discarded by deferred loading.
+            foreach (var clip in Resources.LoadAll<AudioClip>("Sfx"))
+            {
+                clip.LoadAudioData();
+                coreSounds[clip.name] = clip;
+            }
+            StartCoroutine(WarmSounds());
             AudioListener.volume = MasterVolume;
 
             uiSource = gameObject.AddComponent<AudioSource>();
@@ -125,6 +136,18 @@ namespace PoeClone.Audio
             // Interface and potion sounds answer the player's own input; a busy fight's one-shots
             // must not take their voice.
             uiSource.priority = 0;
+        }
+
+        private System.Collections.IEnumerator WarmSounds()
+        {
+            if (soundBoard == null) yield break;
+            // Bound background work to one recording at a time instead of a loading burst.
+            foreach (var group in soundBoard.soundGroups)
+                foreach (string path in group.clipPaths)
+                {
+                    while (!DeferredAudio.Finished(path)) yield return null;
+                    yield return null;
+                }
         }
 
         /// <summary>Like PlayClipAtPoint, at a pitch of its own (a throwaway source that removes itself).</summary>

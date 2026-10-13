@@ -24,6 +24,7 @@ namespace PoeClone.Visuals
             public float Rate;
             public int Maximum;
             public bool Paused;
+            public float AppliedScale = -1f;
         }
         private static WorldActivity instance;
         private readonly List<DistanceActivity> sleepers = new List<DistanceActivity>();
@@ -36,6 +37,7 @@ namespace PoeClone.Visuals
         private CameraFollow follow;
         private float nextPass, nextPlayerSearch;
         private float originalFar;
+        private int sleeperCursor, cosmeticCursor, particleCursor, sleepingThisPass;
         private static Vector3 localPosition, partnerPosition;
         private static bool hasLocal, hasPartner;
         public static float ScreenRadius { get; private set; } = 20f;
@@ -128,8 +130,6 @@ namespace PoeClone.Visuals
 
         private void Update()
         {
-            if (Time.unscaledTime < nextPass) return;
-            nextPass = Time.unscaledTime + 0.2f;
             if (view == null)
             {
                 view = Camera.main;
@@ -149,21 +149,37 @@ namespace PoeClone.Visuals
             hasPartner = Party.Active && Party.Partner != null && Party.Partner.gameObject.activeInHierarchy;
             if (hasPartner) partnerPosition = Party.Partner.position;
             if (!hasLocal && !hasPartner) return;
-            UpdateViewRange();
-
-            SleepingCount = 0;
-            for (int i = sleepers.Count - 1; i >= 0; i--)
+            if (Time.unscaledTime >= nextPass)
             {
-                var target = sleepers[i];
-                if (target == null) { sleepers.RemoveAt(i); continue; }
-                target.Evaluate(SleepRadius);
-                if (target.Sleeping) SleepingCount++;
+                nextPass = Time.unscaledTime + 0.2f;
+                UpdateViewRange();
             }
-            for (int i = cosmetics.Count - 1; i >= 0; i--)
+
+            // Spread range transitions across frames. A full-world pass on one frame
+            // caused bursts of enable/disable callbacks while sprinting through scenery.
+            int checks = ChecksThisFrame(sleepers.Count);
+            for (int n = 0; n < checks && sleepers.Count > 0; n++)
             {
-                var entry = cosmetics[i];
-                if (entry.Component == null) { registered.Remove(entry.Component); cosmetics.RemoveAt(i); continue; }
-                float radius = Mathf.Max(32f, ScreenRadius * 1.5f);
+                if (sleeperCursor >= sleepers.Count)
+                {
+                    sleeperCursor = 0;
+                    SleepingCount = sleepingThisPass;
+                    sleepingThisPass = 0;
+                }
+                var target = sleepers[sleeperCursor];
+                if (target == null) { sleepers.RemoveAt(sleeperCursor); continue; }
+                sleeperCursor++;
+                target.Evaluate(SleepRadius);
+                if (target.Sleeping) sleepingThisPass++;
+            }
+            checks = ChecksThisFrame(cosmetics.Count);
+            for (int n = 0; n < checks && cosmetics.Count > 0; n++)
+            {
+                if (cosmeticCursor >= cosmetics.Count) cosmeticCursor = 0;
+                var entry = cosmetics[cosmeticCursor];
+                if (entry.Component == null) { registered.Remove(entry.Component); cosmetics.RemoveAt(cosmeticCursor); continue; }
+                cosmeticCursor++;
+                float radius = Mathf.Max(32f, ScreenRadius * 1.5f) + (entry.Suspended ? 0f : 4f);
                 bool suspend = DistanceSquared(entry.Component.transform.position) > radius * radius ||
                     (entry.Optional && AdaptiveQuality.DetailLevel >= 4);
                 if (suspend && !entry.Suspended && entry.Component.enabled)
@@ -192,17 +208,27 @@ namespace PoeClone.Visuals
             view.farClipPlane = Mathf.Min(originalFar, Vector3.Distance(view.transform.position, localPosition) + ScreenRadius * 2f + 25f);
         }
 
+        private static int ChecksThisFrame(int count) =>
+            Mathf.Min(count, Mathf.Clamp(Mathf.CeilToInt(count * Time.unscaledDeltaTime / 0.2f), 1, 64));
+
         private void UpdateParticles()
         {
             float scale = AdaptiveQuality.CosmeticScale;
-            for (int i = particles.Count - 1; i >= 0; i--)
+            int checks = ChecksThisFrame(particles.Count);
+            for (int n = 0; n < checks && particles.Count > 0; n++)
             {
-                var entry = particles[i];
-                if (entry.System == null) { registeredParticles.Remove(entry.System); particles.RemoveAt(i); continue; }
-                var main = entry.System.main;
-                main.maxParticles = Mathf.Max(1, Mathf.RoundToInt(entry.Maximum * scale));
-                var emission = entry.System.emission;
-                emission.rateOverTimeMultiplier = entry.Rate * scale;
+                if (particleCursor >= particles.Count) particleCursor = 0;
+                var entry = particles[particleCursor];
+                if (entry.System == null) { registeredParticles.Remove(entry.System); particles.RemoveAt(particleCursor); continue; }
+                particleCursor++;
+                if (entry.AppliedScale != scale)
+                {
+                    var main = entry.System.main;
+                    main.maxParticles = Mathf.Max(1, Mathf.RoundToInt(entry.Maximum * scale));
+                    var emission = entry.System.emission;
+                    emission.rateOverTimeMultiplier = entry.Rate * scale;
+                    entry.AppliedScale = scale;
+                }
                 bool pause = !NearView(entry.System.transform.position, 1.6f) || scale <= 0f;
                 if (pause && entry.System.isPlaying) { entry.System.Pause(false); entry.Paused = true; }
                 else if (!pause && entry.Paused && entry.System.gameObject.activeInHierarchy)

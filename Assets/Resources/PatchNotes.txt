@@ -1,3 +1,8 @@
+version: 2026-10-13-fluid-gameplay
+- Distance checks and scenery wake/sleep transitions are spread across frames to reduce traversal hitches. Scenery uses a buffer before sleeping again, and particle budgets change only when quality changes.
+- Player and nearby combat animations now update every rendered frame, including on slower devices. Camera follow stays consistent as frame rate changes.
+- Core potion, skill and interface audio loads at startup for first-use feedback. Other soundboard recordings warm in the background and begin decoding immediately when loaded; unavailable sounds no longer consume their playback cooldown.
+
 version: 2026-10-12-adaptive-performance
 - Distant monsters and wildlife now sleep on every device, including PC, and wake as either co-op player approaches. Area travel, co-op authority and sleeping monster state remain coordinated. Nearby combat, ongoing damage, boss transitions and corpse cleanup continue normally.
 - Distant cloth, wind, flames, NPC routines and world labels stop updating. Scenery particles pause without replaying missed frames, faraway loot labels are hidden, and the camera bounds its drawing distance to the current view.

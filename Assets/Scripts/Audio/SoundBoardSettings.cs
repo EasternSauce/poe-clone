@@ -36,13 +36,14 @@ namespace PoeClone.Audio
                 // Play mode restarts Time.time at zero, so a time ahead of now is from an earlier session.
                 if (cooldown > 0f && Time.time >= lastPlayedAt && Time.time < lastPlayedAt + cooldown)
                     return null;
-                lastPlayedAt = Time.time;
                 AudioClip next = null;
                 int count = 0;
                 foreach (var clip in LoadedClips)
                     if (clip != null && UnityEngine.Random.Range(0, ++count) == 0)
                         next = clip;
-                return next != null ? next : fallback;
+                next = next != null ? next : fallback;
+                if (next != null) lastPlayedAt = Time.time;
+                return next;
             }
         }
 
