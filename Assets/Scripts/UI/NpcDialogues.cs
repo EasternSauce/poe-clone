@@ -89,15 +89,12 @@ namespace PoeClone.UI
             var options = new List<DialogueOption>();
             foreach (int a in order)
             {
-                if (a == here)
+                if (a == here || log == null || !log.HasVisited(a))
                     continue;
 
                 int area = a;
-                bool known = log != null && log.HasVisited(a);
                 string level = WorldBuilder.MonsterLevels[a] > 0 ? "  <color=" + Dim + ">(level " + WorldBuilder.MonsterLevels[a] + ")</color>" : "  <color=" + Dim + ">(town)</color>";
-                options.Add(known
-                    ? new DialogueOption("Travel to " + WorldBuilder.AreaNames[a] + level, () => Travel(area))
-                    : new DialogueOption("<color=" + Dim + ">" + WorldBuilder.AreaNames[a] + " - not found yet (reach it on foot first)</color>", null, false));
+                options.Add(new DialogueOption("Travel to " + WorldBuilder.AreaNames[a] + level, () => Travel(area)));
             }
             options.Add(new DialogueOption("Leave", DialogueUI.Close));
 

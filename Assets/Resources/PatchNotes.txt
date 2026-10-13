@@ -1,3 +1,6 @@
+version: 2026-10-13-discovered-waystones
+- Waystones show only destinations you have discovered.
+
 version: 2026-10-13-mobile-controls-and-camera
 - Town and Chat have dedicated mobile buttons. The MENU drawer fits and centers its buttons with even margins, and the skill button screen keeps its close control clear.
 - Passive tree taps are more forgiving on mobile. Removed Centre, tidied Reset all and Refund, and swapped Confirm and Cancel. Closing or cancelling a pending allocation opens a Yes/No discard confirmation.
