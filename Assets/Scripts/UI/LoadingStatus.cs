@@ -15,7 +15,10 @@ namespace PoeClone.UI
         {
             float now = Time.realtimeSinceStartup;
             if (Step.Length > 0)
+            {
+                PerformanceDiagnostics.LoadingCompleted(Step, (now - stepStart) * 1000d);
                 Debug.Log($"[Loading] {Step}: {(now - stepStart) * 1000f:0} ms");
+            }
             Step = step ?? string.Empty;
             stepStart = now;
         }

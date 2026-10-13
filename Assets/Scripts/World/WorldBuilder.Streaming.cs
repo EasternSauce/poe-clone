@@ -224,13 +224,16 @@ namespace PoeClone.World
 
         private IEnumerator BuildChunkTerrain(int area, Vector2Int cell, Rect rect)
         {
+            long started = PoeClone.UI.PerformanceDiagnostics.Begin();
             var shape = Shape(area);
             Transform group = Group("Terrain_" + AreaNames[area] + "_" + cell.x + "_" + cell.y);
             group.position = shape.Center + Vector3.up * groundTemplate.transform.position.y;
             var boundary = new List<(Vector3 a, Vector3 b)>();
             // Collision needs the contour, not a second floor mesh that is immediately discarded.
             shape.BuildChunkGround(rect, false, boundary, contourOnly: true);
+            PoeClone.UI.PerformanceDiagnostics.End("Contour / terrain layout", started);
             yield return null;
+            started = PoeClone.UI.PerformanceDiagnostics.Begin();
             var shoreBoundary = new List<(Vector3 a, Vector3 b)>();
             Mesh land = shape.BuildChunkGround(rect, true, shoreBoundary);
             TrackChunkMesh(area, land);
@@ -239,14 +242,18 @@ namespace PoeClone.World
             ground.AddComponent<MeshFilter>().sharedMesh = land;
             ground.AddComponent<MeshRenderer>().sharedMaterial = streamedAreas[area].Ground;
             if (land.vertexCount > 0) ground.AddComponent<MeshCollider>().sharedMesh = land;
+            PoeClone.UI.PerformanceDiagnostics.End("Floor mesh + collider", started);
             yield return null;
+            started = PoeClone.UI.PerformanceDiagnostics.Begin();
             var wall = new GameObject("Wall");
             wall.transform.SetParent(group, false);
             Mesh wallMesh = shape.BuildWalls(-1f, 10f, region: rect, boundary: boundary);
             TrackChunkMesh(area, wallMesh);
             wall.AddComponent<MeshFilter>().sharedMesh = wallMesh;
             if (wallMesh.vertexCount > 0) wall.AddComponent<MeshCollider>().sharedMesh = wallMesh;
+            PoeClone.UI.PerformanceDiagnostics.End("Wall mesh + collider", started);
             yield return null;
+            started = PoeClone.UI.PerformanceDiagnostics.Begin();
             var rim = new GameObject(shape.IsCliff ? "CliffFaces" : "RockBanks");
             rim.transform.SetParent(group, false);
             Mesh rimMesh = shape.BuildWalls(shape.IsCliff ? -12f : -0.5f,
@@ -259,11 +266,16 @@ namespace PoeClone.World
                 new Vector3(ChunkSize, 0.1f, ChunkSize), streamedAreas[area].Backdrop, false);
             backdrop.name = "Backdrop";
             if (shape.IsCliff) LavaSurface.Attach(backdrop);
+            PoeClone.UI.PerformanceDiagnostics.End("Rim mesh + backdrop", started);
             yield return null;
+            started = PoeClone.UI.PerformanceDiagnostics.Begin();
             BuildWater(area, group.position.y, rect, land, shoreBoundary, group);
+            PoeClone.UI.PerformanceDiagnostics.End("Water / shore meshes", started);
             yield return null;
+            started = PoeClone.UI.PerformanceDiagnostics.Begin();
             BuildChunkBorder(area, group, boundary, rect);
             Physics.SyncTransforms();
+            PoeClone.UI.PerformanceDiagnostics.End("Borders + physics sync", started);
         }
 
         private void TrackChunkMesh(int area, Mesh mesh)
@@ -331,12 +343,30 @@ namespace PoeClone.World
                         yield return null;
                         continue;
                     }
-                    if (!detail.MoveNext()) break;
+                    long started = PoeClone.UI.PerformanceDiagnostics.Begin();
+                    bool advanced;
+                    try { advanced = detail.MoveNext(); }
+                    finally { PoeClone.UI.PerformanceDiagnostics.End("Minimap detail", started); }
+                    if (!advanced) break;
                     yield return detail.Current;
                 }
                 chunk.MinimapReady = true;
             }
             finally { (detail as IDisposable)?.Dispose(); minimapBusy = false; }
+        }
+
+        public string StreamingDebugStatus()
+        {
+            var manager = AreaManager.Instance;
+            if (manager == null || !streamedAreas.TryGetValue(manager.CurrentAreaIndex, out var state))
+                return "Chunks: inactive";
+            int ready = 0, pending = 0;
+            foreach (var chunk in state.Chunks.Values)
+            {
+                if (chunk.Ready) ready++;
+                pending += chunk.Content.Count - chunk.Completed;
+            }
+            return $"Chunks {ready}/{state.Chunks.Count} | props left {pending} | stream {(streamingBusy ? "busy" : "idle")} | map {(minimapBusy ? "busy" : "idle")}";
         }
 
         public bool IsPositionReady(int areaIndex, Vector3 position)

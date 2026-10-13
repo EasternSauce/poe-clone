@@ -23,7 +23,17 @@ namespace PoeClone.World
                 while (stack.Count > 0)
                 {
                     IEnumerator step = stack.Peek();
-                    if (!step.MoveNext())
+                    long started = PoeClone.UI.PerformanceDiagnostics.Begin();
+                    bool advanced;
+                    try { advanced = step.MoveNext(); }
+                    finally
+                    {
+                        string name = PoeClone.UI.PerformanceDiagnostics.RoutineName(step);
+                        // Terrain has finer timers; nested schedulers measure their own children.
+                        if (name != "BuildChunkTerrain" && step.GetType().DeclaringType != typeof(WorldBuildScheduler))
+                            PoeClone.UI.PerformanceDiagnostics.End(name, started);
+                    }
+                    if (!advanced)
                     {
                         stack.Pop();
                         (step as IDisposable)?.Dispose();

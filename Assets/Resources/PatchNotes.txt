@@ -1,3 +1,6 @@
+version: 2026-10-13-mobile-performance-debug
+- A DEBUG button opens a live performance readout while you keep moving and fighting. It shows frame times, slow frames, memory, quality reductions, terrain construction and minimap work, plus recent and slowest loading steps. The readout lets touches pass through to gameplay; tap RESET after loading to measure traversal, or CLOSE DEBUG to hide it.
+
 version: 2026-10-13-mobile-textures-greenwood-loading
 - Mobile uses lighter ground, grass, dirt and stone textures, with lower-resolution imported world textures. Desktop texture detail is preserved.
 - Greenwood scenery placement uses a capped search with regular loading updates, preventing repeated whole-area placement searches from holding up entry.
