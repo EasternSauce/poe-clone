@@ -36,7 +36,10 @@ namespace PoeClone.UI
         private static DialogueUI instance;
 
         private Canvas canvas;
-        private RectTransform panel;
+        private RectTransform panel, content;
+        private ScrollRect scroll;
+        private Vector2 layoutSize;
+        private bool layoutTouch, layoutPortrait;
         private Text title;
         private Text body;
         private readonly List<Image> buttons = new List<Image>();
@@ -48,7 +51,6 @@ namespace PoeClone.UI
         public static Npc Speaker => instance != null ? instance.speaker : null;
 
         private static readonly Color ButtonColor = new Color(0.16f, 0.13f, 0.10f, 1f);
-        private static readonly Color ButtonPressed = new Color(0.40f, 0.31f, 0.14f, 1f);
 
         public static void Show(Npc who, string text, List<DialogueOption> options)
         {
@@ -89,6 +91,9 @@ namespace PoeClone.UI
 
             // Above the desktop skill bar; on a phone the combat buttons are hidden while talking.
             panel.anchoredPosition = new Vector2(0f, TouchMode.Active ? 16f : 104f);
+            if (layoutSize != ((RectTransform)canvas.transform).rect.size ||
+                layoutTouch != TouchMode.Active || layoutPortrait != TouchMode.Portrait)
+                LayoutConversation(false);
         }
 
         private void Present(Npc who, string text, List<DialogueOption> options)
@@ -104,27 +109,50 @@ namespace PoeClone.UI
             title.text = who != null ? who.DisplayName : "";
             body.text = text;
 
-            float bodyHeight = Mathf.Ceil(body.preferredHeight) + 6f;
-            body.rectTransform.sizeDelta = new Vector2(Width - 48f, bodyHeight);
+            LayoutConversation(true);
+            panel.gameObject.SetActive(true);
+        }
 
-            float y = -58f - bodyHeight - 12f;
+        private void LayoutConversation(bool resetScroll)
+        {
+            layoutSize = ((RectTransform)canvas.transform).rect.size;
+            layoutTouch = TouchMode.Active;
+            layoutPortrait = TouchMode.Portrait;
+            float width = Mathf.Min(Width, layoutSize.x - 32f);
+            float textWidth = width - 48f;
+            int fontSize = TouchMode.Active ? TouchMode.ReadingFontSize : 21;
+            title.fontSize = TouchMode.Active ? fontSize + 4 : 26;
+            title.rectTransform.sizeDelta = new Vector2(width - 100f, 48f);
+            body.fontSize = fontSize;
+            body.rectTransform.sizeDelta = new Vector2(textWidth, 0f);
+            float bodyHeight = Mathf.Ceil(body.preferredHeight) + 6f;
+            body.rectTransform.sizeDelta = new Vector2(textWidth, bodyHeight);
+            float y = bodyHeight + 12f;
             for (int k = 0; k < buttons.Count; k++)
             {
                 bool used = k < current.Count;
                 buttons[k].gameObject.SetActive(used);
-                if (!used)
-                    continue;
-
+                if (!used) continue;
                 DialogueOption option = current[k];
-                buttons[k].rectTransform.anchoredPosition = new Vector2(24f, y);
-                buttons[k].color = ButtonColor;
+                labels[k].fontSize = TouchMode.Active ? fontSize : 20;
                 labels[k].text = option.Label;
                 labels[k].color = option.Enabled ? UiKit.TextColor : UiKit.DimText;
-                y -= OptionHeight + 6f;
+                buttons[k].rectTransform.sizeDelta = new Vector2(textWidth, OptionHeight);
+                float height = Mathf.Max(TouchMode.Active ? fontSize * 2f : OptionHeight,
+                    labels[k].preferredHeight + 24f);
+                UiKit.TopLeft(buttons[k].rectTransform, new Vector2(0f, -y), new Vector2(textWidth, height));
+                buttons[k].color = ButtonColor;
+                y += height + 6f;
             }
-
-            panel.sizeDelta = new Vector2(Width, -y + 12f);
-            panel.gameObject.SetActive(true);
+            content.sizeDelta = new Vector2(0f, y);
+            float bottom = TouchMode.Active ? 16f : 104f;
+            panel.sizeDelta = new Vector2(width, Mathf.Min(y + 88f, layoutSize.y - bottom - 16f));
+            if (resetScroll)
+            {
+                scroll.StopMovement();
+                scroll.verticalNormalizedPosition = 1f;
+                content.anchoredPosition = Vector2.zero;
+            }
         }
 
         private void Pick(int index)
@@ -161,22 +189,41 @@ namespace PoeClone.UI
 
             Image close = UiKit.NewImage("Close", panel, Color.white);
             close.raycastTarget = true;
-            UiKit.TopLeft(close.rectTransform, new Vector2(Width - 52f, -12f), new Vector2(40f, 40f));
+            close.rectTransform.anchorMin = close.rectTransform.anchorMax = close.rectTransform.pivot = Vector2.one;
+            close.rectTransform.anchoredPosition = new Vector2(-12f, -12f);
+            close.rectTransform.sizeDelta = new Vector2(48f, 48f);
             Text x = UiKit.NewText("X", close.rectTransform, "X", 20, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(x.rectTransform, 0f);
             UiKit.StyleButton(close, x, UiKit.DangerTint);
-            close.gameObject.AddComponent<TouchPointerRelay>().Up += _ => Close();
+            UiKit.OnClick(close, Close);
 
-            body = UiKit.NewText("Body", panel, "", 21, UiKit.TextColor, TextAnchor.UpperLeft);
+            Image viewportImage = UiKit.NewImage("ConversationViewport", panel, Color.clear);
+            viewportImage.raycastTarget = true;
+            RectTransform viewport = viewportImage.rectTransform;
+            UiKit.Stretch(viewport, 24f);
+            viewport.offsetMax = new Vector2(-24f, -70f);
+            viewport.gameObject.AddComponent<RectMask2D>();
+            content = UiKit.NewRect("ConversationContent", viewport);
+            content.anchorMin = new Vector2(0f, 1f);
+            content.anchorMax = Vector2.one;
+            content.pivot = new Vector2(0.5f, 1f);
+            scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            scroll.viewport = viewport;
+            scroll.content = content;
+            scroll.horizontal = false;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 36f;
+
+            body = UiKit.NewText("Body", content, "", 21, UiKit.TextColor, TextAnchor.UpperLeft);
             body.horizontalOverflow = HorizontalWrapMode.Wrap;
             body.verticalOverflow = VerticalWrapMode.Overflow;
             body.supportRichText = true;
-            UiKit.TopLeft(body.rectTransform, new Vector2(24f, -58f), new Vector2(Width - 48f, 100f));
+            UiKit.TopLeft(body.rectTransform, Vector2.zero, new Vector2(Width - 48f, 100f));
 
             for (int k = 0; k < MaxOptions; k++)
             {
                 int index = k;
-                Image button = UiKit.NewImage("Option" + k, panel, ButtonColor);
+                Image button = UiKit.NewImage("Option" + k, content, ButtonColor);
                 UiKit.Inset(button);
                 button.raycastTarget = true;
                 UiKit.TopLeft(button.rectTransform, new Vector2(24f, 0f), new Vector2(Width - 48f, OptionHeight));
@@ -184,21 +231,12 @@ namespace PoeClone.UI
 
                 Text label = UiKit.NewText("Label", button.rectTransform, "", 20, UiKit.TextColor, TextAnchor.MiddleLeft);
                 label.supportRichText = true;
-                UiKit.Stretch(label.rectTransform, 16f);
+                UiKit.Stretch(label.rectTransform, 12f);
+                label.horizontalOverflow = HorizontalWrapMode.Wrap;
 
-                var relay = button.gameObject.AddComponent<TouchPointerRelay>();
-                relay.Down += _ =>
-                {
-                    if (index < current.Count && current[index].Enabled)
-                        button.color = ButtonPressed;
-                };
-                relay.Up += e =>
-                {
-                    button.color = ButtonColor;
-                    // Only a release still on the button counts (dragging off cancels).
-                    if (RectTransformUtility.RectangleContainsScreenPoint(button.rectTransform, e.position, null))
-                        Pick(index);
-                };
+                // Click handlers let the parent ScrollRect own drags, so swiping a choice
+                // scrolls the list without activating it on release.
+                UiKit.OnClick(button, () => Pick(index));
 
                 buttons.Add(button);
                 labels.Add(label);

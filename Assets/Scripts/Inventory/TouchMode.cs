@@ -26,6 +26,8 @@ namespace PoeClone.Inventory
         // and the menu panels when the phone is upright.
         public const float MinimumCanvasWidth = 960f;
         public static bool Portrait => Active && Screen.height > Screen.width;
+        // Portrait retains a 960-unit canvas: 40 units gives readable phone text.
+        public static int ReadingFontSize => Portrait ? 40 : 28;
         public static float CanvasHeight => Mathf.Max(ReferenceHeight,
             MinimumCanvasWidth * Screen.height / Mathf.Max(1f, Screen.width));
 

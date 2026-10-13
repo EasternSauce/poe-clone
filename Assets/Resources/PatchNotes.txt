@@ -1,3 +1,9 @@
+version: 2026-10-13-mobile-dialogue-tooltips
+- Larger item and passive tooltips, quest objectives, NPC names, stash and waystone labels on phones and tablets, with extra text sizing in portrait.
+- NPC dialogue and travel choices use larger text and buttons. Long conversations and option lists scroll, and the layout updates when rotating the device.
+- The death message uses a smooth background without overlapping dark strips.
+- Removed the DEBUG button and performance panel from mobile.
+
 version: 2026-10-13-mobile-creatures-chunk-encounters
 - Phones and tablets use low-poly creature and wildlife models with shared meshes. Creature attack and movement animations are preserved, with fewer small decorative parts on mobile.
 - Enemies are created with their own terrain chunk as you explore. Placement checks use reusable physics buffers and yield during long searches.

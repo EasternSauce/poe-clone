@@ -114,6 +114,16 @@ namespace PoeClone.UI
 
         private void Update()
         {
+            // Keep timing collection available to desktop diagnostics, but remove all mobile UI.
+            safeRoot.gameObject.SetActive(!TouchMode.Active);
+            if (TouchMode.Active && visible)
+            {
+                visible = false;
+                panel.gameObject.SetActive(false);
+                resetButton.gameObject.SetActive(false);
+                toggleText.text = "DEBUG";
+                StopCounters();
+            }
             PerformanceDiagnostics.NextFrame();
             double now = Time.realtimeSinceStartupAsDouble;
             double ms = (now - lastTime) * 1000d;

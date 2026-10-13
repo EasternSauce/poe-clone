@@ -1927,7 +1927,7 @@ private Vector2 CellSize(int w, int h)
                 handNote = "Its blows put Death Mark on what they strike";
             if (handNote != null)
             {
-                sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append("><size=14>").Append(handNote).Append("</size></color>");
+                sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">").Append(handNote).Append("</color>");
                 lineCount++;
             }
 
@@ -2153,10 +2153,10 @@ private Vector2 CellSize(int w, int h)
 
             bool touch = TouchMode.Active;
             int lines;
-            heldTooltipText.fontSize = touch ? 22 : 17;
-            float lineHeight = touch ? 26f : 23f;
+            heldTooltipText.fontSize = touch ? TouchMode.ReadingFontSize : 17;
+            float lineHeight = touch ? TouchMode.ReadingFontSize * 1.2f : 23f;
             heldTooltipText.text = BuildTooltipText(cursorItem, out lines, inventory.Stats);
-            heldTooltipRect.sizeDelta = FitTooltip(heldTooltipText, touch ? 340f : 270f, 24f + lines * lineHeight);
+            heldTooltipRect.sizeDelta = FitTooltip(heldTooltipText, touch ? (TouchMode.Portrait ? 800f : 600f) : 270f, 24f + lines * lineHeight);
             heldTooltipRect.gameObject.SetActive(true);
             heldTooltipRect.SetAsLastSibling();
 
@@ -2204,7 +2204,7 @@ private Vector2 CellSize(int w, int h)
             float maxWidth = Mathf.Max(40f, Screen.width / Mathf.Max(.01f, scale) - 24f);
             var unwrapped = text.GetGenerationSettings(Vector2.zero);
             float preferred = text.cachedTextGeneratorForLayout.GetPreferredWidth(text.text, unwrapped) / Mathf.Max(.01f, text.pixelsPerUnit) + 24f;
-            width = Mathf.Min(maxWidth, Mathf.Max(width, Mathf.Min(620f, preferred)));
+            width = Mathf.Min(maxWidth, Mathf.Max(width, Mathf.Min(TouchMode.Active ? maxWidth : 620f, preferred)));
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             TextGenerationSettings settings = text.GetGenerationSettings(new Vector2(width - 20f, 0f));
             float laidOut = text.cachedTextGeneratorForLayout.GetPreferredHeight(text.text, settings) / Mathf.Max(0.01f, text.pixelsPerUnit);
@@ -2244,10 +2244,10 @@ private Vector2 CellSize(int w, int h)
         private void ShowTooltipText(string text, int lines, Vector2 mousePos)
         {
             bool touch = TouchMode.Active;
-            tooltipText.fontSize = touch ? 22 : 17;
-            float lineHeight = touch ? 26f : 23f;
+            tooltipText.fontSize = touch ? TouchMode.ReadingFontSize : 17;
+            float lineHeight = touch ? TouchMode.ReadingFontSize * 1.2f : 23f;
             tooltipText.text = text;
-            tooltipRect.sizeDelta = FitTooltip(tooltipText, touch ? 340f : 270f, 24f + lines * lineHeight);
+            tooltipRect.sizeDelta = FitTooltip(tooltipText, touch ? (TouchMode.Portrait ? 800f : 600f) : 270f, 24f + lines * lineHeight);
 
             tooltipRect.gameObject.SetActive(true);
             tooltipRect.SetAsLastSibling();

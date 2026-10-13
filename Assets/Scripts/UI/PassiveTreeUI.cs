@@ -506,7 +506,8 @@ namespace PoeClone.UI
             sb.Append("</color>");
 
             tooltipText.text = sb.ToString();
-            float width = Mathf.Min(360f, panelRect.rect.width - 16f);
+            tooltipText.fontSize = TouchMode.Active ? TouchMode.ReadingFontSize : 18;
+            float width = Mathf.Min(TouchMode.Active ? (TouchMode.Portrait ? 780f : 560f) : 360f, panelRect.rect.width - 16f);
             tooltip.rectTransform.sizeDelta = new Vector2(width, 100f);
             tooltipText.rectTransform.sizeDelta = new Vector2(width - 24f, 0f);
             tooltip.rectTransform.sizeDelta = new Vector2(width, tooltipText.preferredHeight + 24f);

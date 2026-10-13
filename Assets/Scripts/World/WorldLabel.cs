@@ -14,6 +14,7 @@ namespace PoeClone.World
         private RectTransform canvasRect;
         private Text text;
         private Image plate;
+        private float baseScale;
 
         public static WorldLabel Create(Transform parent, string content, Color color, float height, int fontSize = 30)
         {
@@ -32,7 +33,8 @@ namespace PoeClone.World
             // Keep the world size constant even if the parent is scaled.
             Vector3 parentScale = parent.lossyScale;
             float inverse = parentScale.y > 0.0001f ? 1f / parentScale.y : 1f;
-            label.canvasRect.localScale = Vector3.one * 0.01f * inverse;
+            label.baseScale = 0.01f * inverse;
+            label.canvasRect.localScale = Vector3.one * label.baseScale;
 
             label.plate = UiKit.NewImage("Plate", label.canvasRect, new Color(0f, 0f, 0f, 0.75f));
             label.text = UiKit.NewText("Text", label.canvasRect, content, fontSize, color, TextAnchor.MiddleCenter);
@@ -56,8 +58,20 @@ namespace PoeClone.World
         private void LateUpdate()
         {
             Camera cam = Camera.main;
-            if (cam != null)
-                canvasRect.rotation = cam.transform.rotation;
+            if (cam == null) return;
+            canvasRect.rotation = cam.transform.rotation;
+            float scale = baseScale;
+            if (TouchMode.Active)
+            {
+                float depth = Vector3.Dot(transform.position - cam.transform.position, cam.transform.forward);
+                float worldHeight = cam.orthographic ? cam.orthographicSize * 2f :
+                    2f * Mathf.Max(cam.nearClipPlane, depth) * Mathf.Tan(cam.fieldOfView * Mathf.Deg2Rad * 0.5f);
+                float targetPixels = 18f * Mathf.Min(Screen.width / 390f, Screen.height / 390f);
+                float parentScale = transform.parent != null ? Mathf.Abs(transform.parent.lossyScale.y) : 1f;
+                scale = Mathf.Max(scale, targetPixels * worldHeight /
+                    (Mathf.Max(1, Screen.height) * text.fontSize * Mathf.Max(0.0001f, parentScale)));
+            }
+            canvasRect.localScale = Vector3.one * scale;
         }
     }
 }

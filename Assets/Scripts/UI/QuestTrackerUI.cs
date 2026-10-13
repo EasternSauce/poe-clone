@@ -15,14 +15,14 @@ namespace PoeClone.UI
     /// </summary>
     public class QuestTrackerUI : MonoBehaviour
     {
-        private Text text;
+        private Text text, heading;
         private Image back;
         private QuestLog log;
         private InventoryUI inventoryUI;
         private CharacterPageUI characterUI;
         private bool dirty = true;
         private int npcCount = -1;
-        private bool laidOutForTouch;
+        private bool laidOutForTouch, laidOutForPortrait;
         private const float HeadingHeight = 30f;
 
         private void Awake()
@@ -35,7 +35,7 @@ namespace PoeClone.UI
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 1f);
             UiKit.ThinFrame(rt);
 
-            Text heading = UiKit.Heading(UiKit.NewText("Heading", rt, "QUESTS", 15, UiKit.Gold, TextAnchor.MiddleLeft));
+            heading = UiKit.Heading(UiKit.NewText("Heading", rt, "QUESTS", 15, UiKit.Gold, TextAnchor.MiddleLeft));
             UiKit.TopLeft(heading.rectTransform, new Vector2(12f, -6f), new Vector2(200f, 20f));
 
             text = UiKit.NewText("Text", rt, "", 18, UiKit.TextColor, TextAnchor.UpperLeft);
@@ -74,9 +74,10 @@ namespace PoeClone.UI
             }
 
             // Phone and desktop lay the text out differently.
-            if (TouchMode.Active != laidOutForTouch)
+            if (TouchMode.Active != laidOutForTouch || TouchMode.Portrait != laidOutForPortrait)
             {
                 laidOutForTouch = TouchMode.Active;
+                laidOutForPortrait = TouchMode.Portrait;
                 dirty = true;
             }
 
@@ -140,11 +141,15 @@ namespace PoeClone.UI
             }
 
             text.text = sb.ToString();
-            float width = TouchMode.Active ? 360f : 440f;
-            text.fontSize = TouchMode.Active ? 16 : 18;
+            float width = TouchMode.Active ? (TouchMode.Portrait ? 620f : 460f) : 440f;
+            text.fontSize = TouchMode.Active ? TouchMode.ReadingFontSize : 18;
+            heading.fontSize = TouchMode.Active ? (TouchMode.Portrait ? 32 : 24) : 15;
+            float headingHeight = TouchMode.Active ? heading.fontSize + 14f : HeadingHeight;
+            heading.rectTransform.sizeDelta = new Vector2(width - 24f, headingHeight - 6f);
+            text.rectTransform.offsetMax = new Vector2(-12f, -headingHeight);
             back.rectTransform.sizeDelta = new Vector2(width, 0f);
             float height = text.preferredHeight;
-            back.rectTransform.sizeDelta = new Vector2(width, height + HeadingHeight + 12f);
+            back.rectTransform.sizeDelta = new Vector2(width, height + headingHeight + 12f);
         }
     }
 }

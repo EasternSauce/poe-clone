@@ -49,6 +49,7 @@ namespace PoeClone.UI
         private GUIStyle barFrameStyle;
 
         private static Texture2D pixel;
+        private static Texture2D deathBand;
 
         private void Start()
         {
@@ -353,15 +354,26 @@ namespace PoeClone.UI
             float age = now - deathShownAt;
             float alpha = Mathf.Clamp01(age / 1.2f);
 
-            // A dark band behind the words, fading out towards the sides.
-            float bandY = screenHeight * 0.32f - 20f;
-            Color previous = GUI.color;
-            for (int k = 0; k < 16; k++)
+            // One filtered gradient avoids overlapping translucent strips and their dark seams.
+            if (deathBand == null)
             {
-                float edge = Mathf.Abs(k - 7.5f) / 8f;
-                GUI.color = new Color(0f, 0f, 0f, 0.55f * alpha * (1f - edge * edge));
-                GUI.DrawTexture(new Rect(screenWidth * k / 16f, bandY, screenWidth / 16f + 1f, 180f), pixel);
+                deathBand = new Texture2D(128, 1, TextureFormat.RGBA32, false)
+                {
+                    wrapMode = TextureWrapMode.Clamp,
+                    filterMode = FilterMode.Bilinear
+                };
+                var colors = new Color[128];
+                for (int k = 0; k < colors.Length; k++)
+                {
+                    float edge = Mathf.Abs(2f * k / (colors.Length - 1f) - 1f);
+                    colors[k] = new Color(0f, 0f, 0f, 0.55f * (1f - edge * edge));
+                }
+                deathBand.SetPixels(colors);
+                deathBand.Apply(false, true);
             }
+            Color previous = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, alpha);
+            GUI.DrawTexture(new Rect(0f, screenHeight * 0.32f - 20f, screenWidth, 180f), deathBand);
             GUI.color = previous;
 
             GUIStyle titleOverlayStyle = new GUIStyle
