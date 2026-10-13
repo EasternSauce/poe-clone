@@ -345,13 +345,15 @@
         loadFiles.forEach(function (f) {
           var url = Object.keys(config.downloadProgress).filter(function (u) { return u.indexOf(f.match) >= 0; })[0];
           var p = url ? config.downloadProgress[url] : null;
+          var loaded = p ? (p.wireLoaded === undefined ? p.loaded : p.wireLoaded) : 0;
+          var total = p ? (p.wireTotal === undefined ? p.total : p.wireTotal) : 0;
           if (p && p.finished && !f.end) {
             f.end = now;
-            console.log("[Loading] " + f.label + ": " + mb(p.loaded) + " in " + secs(now - loadStart));
+            console.log("[Loading] " + f.label + ": " + mb(loaded) + " in " + secs(now - loadStart));
           }
           if (!f.end) allDone = false;
-          lines.push(f.label + ": " + (f.end ? "done, " + mb(p.loaded) + " in " + secs(f.end - loadStart)
-            : p && p.started ? mb(p.loaded) + (p.lengthComputable ? " of " + mb(p.total) : "") : "waiting"));
+          lines.push(f.label + ": " + (f.end ? "done, " + mb(loaded) + " in " + secs(f.end - loadStart)
+            : p && p.started ? mb(loaded) + (p.lengthComputable ? " of " + mb(total) : "") : "waiting"));
         });
         if (allDone) {
           if (!startupStart) startupStart = now;
@@ -436,9 +438,10 @@
           }) || url;
           var p = config.downloadProgress[key] || (config.downloadProgress[key] = {});
           p.started = true; p.lengthComputable = true; p.loaded = loaded; p.total = total;
+          p.wireLoaded = loaded; p.wireTotal = total;
           var downloads = Object.values(config.downloadProgress);
-          var received = downloads.reduce(function (sum, item) { return sum + (item.loaded || 0); }, 0);
-          var expected = Object.values(downloadChunks).reduce(function (sum, item) { return sum + item.size; }, 0);
+          var received = downloads.reduce(function (sum, item) { return sum + (item.wireLoaded || 0); }, 0);
+          var expected = Object.values(downloadChunks).reduce(function (sum, item) { return sum + (item.transferSize || item.size); }, 0);
           fill.style.width = Math.round(90 * received / expected) + "%";
         });
         fetch("Build/{{{ LOADER_FILENAME }}}" + v).then(function (response) { return response.blob(); })

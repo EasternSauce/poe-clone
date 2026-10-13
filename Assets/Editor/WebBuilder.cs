@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.IO.Compression;
+using System.Text;
 using UnityEditor;
 using UnityEditor.Build.Profile;
 using UnityEditor.Build.Reporting;
@@ -103,6 +105,11 @@ public static class WebBuilder
             string name = Path.GetFileName(path);
             if (!name.Contains(".data") && !name.Contains(".wasm") && !name.Contains(".framework.js") && !name.EndsWith(".loader.js")) continue;
             byte[] bytes = File.ReadAllBytes(path);
+            if (name.Contains(".data"))
+            {
+                entries.Add("\"Build/" + name + "\":" + BuildAssetChunks(bytes, directory, keep));
+                continue;
+            }
             var parts = new List<string>();
             const int chunkSize = 512 * 1024;
             using (var sha = SHA256.Create())
@@ -120,5 +127,74 @@ public static class WebBuilder
         foreach (string old in Directory.GetFiles(directory, "*.bin"))
             if (!keep.Contains(old)) File.Delete(old);
         return "{" + string.Join(",", entries) + "}";
+    }
+
+    // Cut the uncompressed UnityWebData archive at its contained file boundaries.
+    // Cutting one gzip stream instead made every later piece change when a tiny
+    // resource (including patch notes or boot.config) changed size.
+    private static string BuildAssetChunks(byte[] source, string directory, HashSet<string> keep)
+    {
+        byte[] bytes = source;
+        if (source.Length > 2 && source[0] == 0x1f && source[1] == 0x8b)
+        {
+            using (var input = new GZipStream(new MemoryStream(source), CompressionMode.Decompress))
+            using (var output = new MemoryStream())
+            {
+                input.CopyTo(output);
+                bytes = output.ToArray();
+            }
+        }
+        var boundaries = new SortedSet<int> { 0, bytes.Length };
+        using (var reader = new BinaryReader(new MemoryStream(bytes)))
+        {
+            if (Encoding.ASCII.GetString(reader.ReadBytes(16)) != "UnityWebData1.0\0")
+                throw new InvalidDataException("Unknown Unity web asset archive");
+            int headerEnd = checked((int)reader.ReadUInt32());
+            if (headerEnd < 20 || headerEnd > bytes.Length) throw new InvalidDataException("Invalid asset header");
+            boundaries.Add(headerEnd);
+            while (reader.BaseStream.Position < headerEnd)
+            {
+                int offset = checked((int)reader.ReadUInt32()), length = checked((int)reader.ReadUInt32());
+                int nameLength = checked((int)reader.ReadUInt32());
+                if (offset < headerEnd || length > bytes.Length - offset || nameLength > headerEnd - reader.BaseStream.Position)
+                    throw new InvalidDataException("Invalid asset archive entry");
+                reader.BaseStream.Position += nameLength;
+                boundaries.Add(offset);
+                boundaries.Add(checked(offset + length));
+            }
+        }
+        var hashes = new List<string>();
+        var parts = new List<string>();
+        long transferSize = 0;
+        int start = 0;
+        using (var sha = SHA256.Create())
+        {
+            foreach (int end in boundaries)
+            {
+                while (start < end)
+                {
+                    int length = Math.Min(512 * 1024, end - start);
+                    byte[] compressed;
+                    using (var output = new MemoryStream())
+                    {
+                        using (var gzip = new GZipStream(output, System.IO.Compression.CompressionLevel.Optimal, leaveOpen: true))
+                            gzip.Write(bytes, start, length);
+                        compressed = output.ToArray();
+                    }
+                    string hash = BitConverter.ToString(sha.ComputeHash(compressed)).Replace("-", "").ToLowerInvariant();
+                    string path = Path.Combine(directory, hash + ".bin");
+                    File.WriteAllBytes(path, compressed);
+                    keep.Add(path);
+                    hashes.Add("\"" + hash + "\"");
+                    parts.Add("{\"offset\":" + start + ",\"length\":" + length + ",\"size\":" + compressed.Length + "}");
+                    transferSize += compressed.Length;
+                    start += length;
+                }
+            }
+            string fallbackHash = BitConverter.ToString(sha.ComputeHash(source)).Replace("-", "").ToLowerInvariant();
+            return "{\"encoding\":\"gzip-pieces\",\"size\":" + bytes.Length + ",\"transferSize\":" + transferSize +
+                ",\"fallbackSize\":" + source.Length + ",\"fallbackHash\":\"" + fallbackHash +
+                "\",\"hashes\":[" + string.Join(",", hashes) + "],\"parts\":[" + string.Join(",", parts) + "]}";
+        }
     }
 }

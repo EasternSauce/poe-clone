@@ -1,3 +1,7 @@
+version: 2026-10-14-cached-assets-safe-resume
+- Unchanged asset files remain cached across updates, even when patch notes or other files inside the game archive change.
+- Update recovery prepares terrain and collision around your saved position before resuming play, and falls back to the area spawn if the old spot has no safe ground.
+
 version: 2026-10-14-download-recovery
 - Downloads select an available delivery route, including alternatives to GitHub Pages, and prioritize the small engine scripts.
 - Slow downloads keep running while data is arriving. Failed pieces fall back to a verified full-file download instead of preventing startup.

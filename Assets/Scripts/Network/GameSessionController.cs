@@ -232,6 +232,16 @@ namespace PoeClone.Network
             while (build.MoveNext())
                 yield return null;
 
+            // A fresh streamed area initially prepares its spawn. An update can resume
+            // several chunks away: finish that destination's collision before loading
+            // the character can unpause movement and gravity.
+            if (updateResume != null && WorldBuilder.Instance != null)
+            {
+                PoeClone.UI.LoadingStatus.Set("Restoring update location");
+                yield return WorldBuilder.Instance.EnsureArea(updateResume.area, focus: updateResume.position);
+                Physics.SyncTransforms();
+            }
+
             PoeClone.UI.LoadingStatus.Set("Game interface");
             yield return null;
             IEnumerator systems = CreateGameplaySystems();
@@ -796,13 +806,33 @@ namespace PoeClone.Network
             if (areas == null || areas.CurrentAreaIndex != resume.area) return;
             var player = scenePlayer.transform;
             var body = scenePlayer.GetComponent<CharacterController>();
-            scenePlayer.GetComponent<PlayerController>()?.CancelWalk();
+            scenePlayer.GetComponent<PlayerController>()?.StopMovement();
             if (body != null) body.enabled = false;
             player.SetPositionAndRotation(resume.position, Quaternion.Euler(0f, resume.facing, 0f));
             Physics.SyncTransforms();
             // New scenery can occupy the old location. Use the fresh area's spawn in that case.
             if (body != null)
             {
+                if (WorldBuilder.UsesChunks(resume.area))
+                {
+                    float groundY = float.NegativeInfinity;
+                    foreach (var hit in Physics.RaycastAll(player.position + Vector3.up * 4f, Vector3.down, 12f,
+                        Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                        if (hit.collider.name.StartsWith("Ground_", StringComparison.Ordinal) &&
+                            hit.normal.y >= Mathf.Cos(body.slopeLimit * Mathf.Deg2Rad))
+                            groundY = Mathf.Max(groundY, hit.point.y);
+                    if (float.IsFinite(groundY))
+                    {
+                        float footOffset = player.position.y - player.TransformPoint(body.center).y +
+                            body.height * Mathf.Abs(player.lossyScale.y) * 0.5f;
+                        Vector3 grounded = player.position;
+                        grounded.y = groundY + footOffset + body.skinWidth;
+                        player.position = grounded;
+                    }
+                    else if (areas.Current?.spawnPoint != null)
+                        player.SetPositionAndRotation(areas.Current.spawnPoint.position, areas.Current.spawnPoint.rotation);
+                    Physics.SyncTransforms();
+                }
                 Vector3 center = player.TransformPoint(body.center);
                 float radius = body.radius * Mathf.Max(Mathf.Abs(player.lossyScale.x), Mathf.Abs(player.lossyScale.z));
                 float height = Mathf.Max(radius * 2f, body.height * Mathf.Abs(player.lossyScale.y));

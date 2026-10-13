@@ -295,9 +295,9 @@
       syncCanvasSize();
 
       // Small scripts remain build-versioned; large downloads reuse verified content pieces.
-      var BUILD_ID = "2026-10-14-download-recovery-20261013221934";
+      var BUILD_ID = "2026-10-14-cached-assets-safe-resume-20261013223614";
       var v = BUILD_ID.indexOf("__") === 0 ? "" : "?v=" + encodeURIComponent(BUILD_ID);
-      var downloadChunks = {"Build/WebGL.data.unityweb":{"size":14324638,"hashes":["dcdc9edcc41d5101a1647ea33054af4b0bf7c39cb3c6d9fe27ce037118981320","115a6b77a8c635effde8e41618df5ad3e5628734ef9beea61c767a835879a2f2","5b136d5078d6e55cb5f99b796cd0342e4c064edb959c4e1a13b5d07ee5f70de1","5c86ec6d5cf0596c1c1080eddc7d496067b5d6819b594be9060c1b054ec22dd0","c74f6fcfb1525c5f010573566016bb34710b80004f700d9d43b46647a9bc93e4","6a6cdfe2a15d670ae782294023b275346adc525b08797279d6580a285aa55c55","d59d3a2d719dc38cf81b74d39b168ce99d5d72fbefeae710c7f60705d022957e","c0af036ce743010b25f65854e84b8438ff59a32a983ac2028a13169ea0597acb","cc6ded421fb0d5965acb95b34906701f55306164ed7ddca92d271d800130e444","7af5f5afa41f10c694f8d37957d4688c121970417bfe651b17b8673e3798cf75","ebc8be0e60614b111a6d41c1c6022b4afb6cd95a39e6e5004895440cc6176ddd","798495feb984aa40869161a30390a4d960d8dcb443cb60c5de6e6283db091eaf","58f442ca01a9c2dec919c74b84c889d05f55dc6328aeb2cec6795ca782d2df56","57eb1c95d98a65c1e3c9c9c34897c8d6ec7453f362c060ef3d357f65aea59233","3da9f4d3f9d71685f445f30d5a5bf20d674141c4061d3f7beb0bb11aed1f3268","751c37b8fec533ed2fa34c9773cfd982610a6ab826480974bd86942928fd9fc2","8ef937f7a3e189e9e4ee53526453e3acf39d3873e4a2229b6bdf8e2addbb332a","5e68b1a1dde9dc0c2bb9f2198b4a4dc99516288f05fdb75ecea028e1467f4828","97489c70b8f2b12c802c8f6a723f35f06b2a44ecb1af76b001fb80f5095c7557","cf785eaf8aadf1a9c882475fe13425854eb3d3f211d1a2e37a1f239b3c1b3dda","9ba0e80142b284cb024e7e5b54e81586a7bf80befcac00acddedee52dfb33782","d55128867a0512b39ce128bedb20718008ffa0a4a4b293cabcffd2a49cffbd65","67dc061c4795b9910db2fe357651f2e92e6e7c0beebd7464a18a53eb146de83d","f09171b7324414fb9453ddaaf56945d10cd46bd73e231866cd8094c76b297148","8f051587f0a4011fb0808c6016381505d84f6d62189d51240d1011157e02b50a","3fbdc1434f43d8cc776964ae33524f33e0c5b2669ec24d491b392d34e412aac4","5662b6ed1fcf2fe1c4387e8cfb2d10207f3699dd50e8fcbaa3f44ad9a84da538","820239fb77eeb806663741c2403fe1f09d5dfb7bebe89c048dcba433d0efe78f"]},"Build/WebGL.framework.js.unityweb":{"size":77805,"hashes":["a01b54961851cc59a88a35a8eebb92fab3b72da914dba2c0b3b68ca3e0e58b05"]},"Build/WebGL.loader.js":{"size":48779,"hashes":["ddef8da231732d9c738a14ba85aece4076460d66f274b2aac6d5c5791f446524"]},"Build/WebGL.wasm.unityweb":{"size":9886412,"hashes":["839772c83a2c99e07518f01d03ac4622963c6bb77d13643b1acb0943b98f253e","5e79733aa73d757c14bc38011c98458b6049d162e72d0042fa5948e1102d0550","31c3077a6882f6663b1df029ed0316c9f068bfd9fd0a2c91d133350894bfb299","0058a40e0e49d7cf14abdd96d825486042f9947565ec1854ffb361138f7d92cb","9d1658d29b840a4afc49dc355bbc14093510ed2d32bfb7ba759bdb1fca6d4314","29fda10f7e82b9d28b43c9d803a89bd1a1601e38d6f26410e6a2a06fdeeff792","c6c9d32a8bdd19c096808d3d88f15e55261d04d610e992825c8d3503a5373e41","2466e3fb495449c3ed6dda05d7399ac7a63fd0221b9a247e7a6cb1ea03c6512e","de5fa8efcfdf3fb28f60b3ad4792e31653259e0499bdd854640623c2df824b71","195e3cb8a68d3972866a086150a2406f0849723d5842094db8110a5cfefb5ba4","50b3e29cf4e8176067242f1c7a92e5922b0cff76e4fe413caca6704a27b75228","1baa4d3f7b497197f29a55f4b555cc692a76718dd2cc60f7fd14a24472d17865","1420d39551cb846982d893efbd187ca265dcb04ff17b6ac1c4488a5e22bc31b3","4fa8aa778c811a62be2b92ba9e614871c70bd0645874d7e8ca8d62ea3e71718f","468e6849d10d12e81be0c0db69e76fde8040a8cd9c96b58e44598a08824dc91e","436d224c7ca8cae84a3b59f888ddeafb234e7e4e26a605cea31ef484c7cd9ed1","2dd5b423647a29c208bc5ca5ccf4265a65953c3be8a56aa007f4e08a3c73797f","e33214880301ae44e80f172253eff22666de694596f5beed0cfcdbf9dbe6ad8f","e4789ae3d356f89993556d26de15af605fd97a638d1069474b7cb552e5cc1f75"]}};
+      var downloadChunks = {"Build/WebGL.data.unityweb":{"encoding":"gzip-pieces","size":21651544,"transferSize":14477110,"fallbackSize":14325811,"fallbackHash":"a7005e606d49d09333e12de780a6c31c35b029843d54d63b38f35599cff38b1e","hashes":["39e36ab2c0db88600fc1843a4680c95de41d3f13dd6d0aa5803a2b079d2561db","44f55089526185b60c8763a4321f2a1bc6072cdcad4e1dc979272b1070268db2","d3282aa8338c9a5877e6c17528ed497ce63bc18ad9f7036812889ba1800f037c","14fec94191dfed04564e6f5998adac1e99cd76f59ab07f6b418fbb1c8aa12d78","e647d1d6a94faa16269fc61951183bce605ed7bdb63825ffae7689b53392f6f2","23b1aa71a3029b57459003d3ca9779a32c0bf80224a57eb33e74b96cc71e81da","8c945a43df56117f0fa2f0d64c247b603257f20e8c9a85385ff30a4e5b43449e","3daa0404d23f49f286d63419c9a52b4b0068ce3ab5c3ab3937ec8b2998ec5f43","23099a052b1273139aae62ee1ea2dfad85dbb78cc788607eab0b63e091bffc62","4999fdb1696a427e96452e5c43bd367fe726506b2c0e8fea281f8838ec34915a","442ad072cf5f0edcbc4d6bbc249f865b52ed6da6f947e5889f56c9ba1e941c13","40a3bb1873658284caa0161e5af0ebd4bee26b05840d61a0e3fab955a7b7932f","fc65c46421fa3ca60de4b9c5edd4977070c1e2e55ac2931d76bad44fbde2bcdb","1220e6d49c8203074799ef8f38b5c5863e8ccf5347141472f7ae538a59e9577f","aef459c2dc94c92c1bdc9b8c2966e1f05c7d8b91306d5486394e25620001ae67","039f9f4658e356c1c2fe89825e02d1045e83ff88aa1de2e08cbf7c23c4988f0b","de78827baa02a7639a11339c83e569ca534489c2b1da6c219269d7b2e471be4d","bc31fa92a66c418724aa4aae51b11b06e98954fdf879d7637973c5ad7a8cb0fd","b5aa36c16f220028a97a7d91b7b5fa4813e9f9a76e00d2a312ff060884bf170e","e6cd8e4ea2a9162a1af0e2a8019c33c6306fa7bdde188be74c4cb58d668f8a62","1270bfc5c736327adf735bab5ef5f9b1a6532bc10a1c82a6c82badaa229a7953","f26ad1dd856cbd8611cddf656047fca3a70473c19a878a330a59804df882c3f1","112a56258f7c8f9c71e5b995c5d6ca6456a981a340c404ca3bf076144fa4ed91","cecf2e381724ddf4d022367015c56aa05e9bfc027bf79be6e021029eb6b1a70a","6b5748ab7733b04686a8dc425b1f552c2be2825ae697bd754f0d4837740abf30","dacdea8e887664d4babefafe3be1c13632be336c395a9ab3459785afbc4e9b52","9a6f57b8cc81e7108a08d38a0b5ce8cd3b8d4cea37ee11a1fd6c10a43137aea1","6f78e96dda114edd4f0ffa51d2c0c611c2a623f317923e7f9ea14daeb27c0f8b","da14514b4bc519263fb92dc0f42871df0e6c097288e87c984dac5c51cd84221e","80eb48ef64ece6cae54bb28269d23f9fd132d7097da24ee9a2f5979bfb46aa95","4373030101c92be0ab03f3c8159fe84245293521ae01bbcfa01d2d80f28fc84f","1e982177e7ef09f70b271bde668c34b97bec5245b06a365f96e5c2540365aba5","77bd9ba0eb6696451828cf1a795c8f8ecafdbf84cb6496db0558ef0872d31a71","c60a41a39d896d0b278503ce2903e00195be4c90a4e7fb396b7d1daed5985ca9","7f326ac34569dcf52d5474629fd7e14e3d1f16322ccd4ddc0f90fd129e2ae146","9ed2cfa663073189f4257ceeff5fb1107da7182e98190f78ec8b58f4eaa1de54","a8f67b841d96577a18cd041501ceda714c92392bc4681127f7378167bc17413d","35eabb94c8d48a74e7249b4c49b7d6d1608ae3d346dbb2fcbedecfb3cb8d6777","23b967a0b12ea805ceaf7a14737ee14d4205ecac79901a87a87fab0180b4b670","eb7b4eb8e60cc577687d86a90ce42f63c31f4a40ed483c47bb6eda6ffedb886a","62dca39d0977d192a530ce75ab90c306a08297da231d764f348fff3f3eb18972","43e4c0b916e096cd6690645aeab32a5cb97732c7b28a921e2e10fab03fba9bb8","5446aa1f97054de42934e697dd8b9f4bc18a6b51705e3b1a6fbe3ab00cf5e05e","7c9f60ced1f70163a79ed3782c7996c5e913670315254b4971a913fc3be84a55","e94476917c99db14329ebf33ee39a1873b1bba8a96c42328571a60065a2c9a74","10ab7b22c5db915f94578c43659162bb8341279fd7ceace02da66dec78513bdb","60a3fb98ef8b06d5a1db7cb5db0fdcf99c2d52da9bda7fa1800621839eefb669","11c9793bccaf27c627a12b0e0ef8cceb3b0c2523cede91975ad4ffb8e95f9a24"],"parts":[{"offset":0,"length":304,"size":263},{"offset":304,"length":524288,"size":482867},{"offset":524592,"length":524288,"size":484922},{"offset":1048880,"length":524288,"size":456649},{"offset":1573168,"length":524288,"size":431572},{"offset":2097456,"length":524288,"size":522338},{"offset":2621744,"length":524288,"size":511822},{"offset":3146032,"length":524288,"size":434401},{"offset":3670320,"length":257752,"size":214616},{"offset":3928072,"length":524288,"size":503702},{"offset":4452360,"length":524288,"size":510209},{"offset":4976648,"length":524288,"size":514187},{"offset":5500936,"length":524288,"size":498091},{"offset":6025224,"length":524288,"size":510998},{"offset":6549512,"length":524288,"size":524466},{"offset":7073800,"length":524288,"size":507866},{"offset":7598088,"length":524288,"size":500798},{"offset":8122376,"length":524288,"size":493047},{"offset":8646664,"length":524288,"size":513675},{"offset":9170952,"length":524288,"size":496694},{"offset":9695240,"length":524288,"size":524240},{"offset":10219528,"length":524288,"size":512867},{"offset":10743816,"length":524288,"size":521576},{"offset":11268104,"length":524288,"size":508288},{"offset":11792392,"length":95062,"size":89330},{"offset":11887454,"length":10466,"size":1319},{"offset":11897920,"length":4766,"size":1050},{"offset":11902686,"length":503882,"size":440133},{"offset":12406568,"length":114,"size":118},{"offset":12406682,"length":524288,"size":184725},{"offset":12930970,"length":524288,"size":153708},{"offset":13455258,"length":524288,"size":140322},{"offset":13979546,"length":524288,"size":170615},{"offset":14503834,"length":524288,"size":148357},{"offset":15028122,"length":524288,"size":145798},{"offset":15552410,"length":524288,"size":150127},{"offset":16076698,"length":524288,"size":307223},{"offset":16600986,"length":524288,"size":211966},{"offset":17125274,"length":524288,"size":261090},{"offset":17649562,"length":524288,"size":104365},{"offset":18173850,"length":524288,"size":188111},{"offset":18698138,"length":524288,"size":81669},{"offset":19222426,"length":524288,"size":161238},{"offset":19746714,"length":273150,"size":138596},{"offset":20019864,"length":524288,"size":38805},{"offset":20544152,"length":524288,"size":38714},{"offset":21068440,"length":524288,"size":128879},{"offset":21592728,"length":58816,"size":10698}]},"Build/WebGL.framework.js.unityweb":{"size":77805,"hashes":["fbee699745fb2ab6865a57a9ee32beeb2149936c54ca49da70c7544e842567a9"]},"Build/WebGL.loader.js":{"size":48779,"hashes":["ddef8da231732d9c738a14ba85aece4076460d66f274b2aac6d5c5791f446524"]},"Build/WebGL.wasm.unityweb":{"size":9887774,"hashes":["b6512453eebe45d35c2494b282e6b9719d6bc33aebb98c71737514bc16a26823","85792474c03caf638b23eb5ffeef6f12a1373b09b45912f13b30d164150890c0","c57566ce49227892a7d8155af7b7e5610f610f1139787336125556ba8cae7aaf","c38672e63be4e2e521c23ae09ebc8e020f77b55b50ad0f9906a00bd209a4c04b","63034d4b52b94905d27cbbab1f9d81cc9f08db0a556c1d991937ac134e813da6","19ef5e8dd5c25cbd3d96d66f91c11c2cbdd88e20da7801c532a64670e4742cad","180e7a8d07b0ffbc00636059d0c1e2e29e444a6940039082f17f408195a9c211","c9232c3c0c4067412e9d7aa24ede0bf8229b16eead737c9adec6f88fc60c3469","ab3bd87b4b8d973d95a9625a725fa6d42066b880cdfe01b20c2079793a5efe14","c50af72891943a33f23f616b83c659977ad403689a60a65fe8cd6c9f86799065","95d1d3f6f3267d30bec337398de58bb09cc7f957f2bb3eb898d2c442ce1e36fe","6a5ab4c52e19e2e94bb9d191dfd2f05e831acfc8c41ffb95e70075beb0c3f23c","2292fb2c8ef9fc49443707d0f52884b6a96683ee7942e89f41d8de099b328149","8690a954ae90348fb7be436f62c987059d5782e947b25fb0a1f55712d7adfdca","56a9d87af71e1a390c0143726d1ca24b68144c036b74629ebd38aaf3c2ab1bfb","a1bda11467b814ea8ac016c6c75ba20b393bf5e3464de1dceda0ba6764224fb4","19aa5001cc5954beba7f7bed21af1c852af8cd9b6b27a41c32f785bd75639b95","f154c417bdfb636fbb109c720ba60753e3119fa2da270d63411c0b062aa6d5b1","0e9910331259aa056f7816bb2a39ef45f8ef749e43497b346f60787dcbb453d2"]}};
       var restoreDownloads = function () {};
       // Only intercept this build's verified files. Saves, music and update polling use native fetch.
 function installChunkDownloads(manifest, version, progress) {
@@ -414,6 +414,8 @@ function installChunkDownloads(manifest, version, progress) {
     for (var source of order) {
       try {
         var bytes = await read(source + entry.path + version, signal, update);
+        if (entry.info.encoding === 'gzip-pieces')
+          return await check(bytes, entry.info.fallbackHash, entry.info.fallbackSize);
         if (bytes.length !== entry.info.size) throw new Error('Full download size mismatch');
         for (var index = 0; index < entry.info.hashes.length; index++) {
           var part = bytes.subarray(index * 524288, Math.min(bytes.length, (index + 1) * 524288));
@@ -433,14 +435,28 @@ function installChunkDownloads(manifest, version, progress) {
     var controller = new AbortController(), loaded = entry.info.hashes.map(function () { return 0; });
     var abort = function () { controller.abort(); };
     if (signal) { signal.addEventListener('abort', abort); if (signal.aborted) abort(); }
-    function report() { if (progress) progress(url, loaded.reduce(function (a, b) { return a + b; }, 0), entry.info.size); }
+    var transferSize = entry.info.transferSize || entry.info.size;
+    function report() { if (progress) progress(url, loaded.reduce(function (a, b) { return a + b; }, 0), transferSize); }
     try {
+      if (entry.info.encoding === 'gzip-pieces' && typeof DecompressionStream === 'undefined')
+        throw new Error('Independent gzip decoding unavailable; using the regular archive');
       var parts = await Promise.all(entry.info.hashes.map(function (hash, index) {
-        return piece(hash, Math.min(524288, entry.info.size - index * 524288), entry.info.size < 524288 ? -1 : index,
+        var size = entry.info.parts ? entry.info.parts[index].size : Math.min(524288, entry.info.size - index * 524288);
+        return piece(hash, size, transferSize < 524288 ? -1 : index,
           controller.signal, function (count) { loaded[index] = count; report(); });
       }));
       var bytes = new Uint8Array(entry.info.size), offset = 0;
-      parts.forEach(function (part) { bytes.set(part, offset); offset += part.length; });
+      for (var index = 0; index < parts.length; index++) {
+        var part = parts[index];
+        if (entry.info.encoding === 'gzip-pieces') {
+          var descriptor = entry.info.parts[index];
+          part = new Uint8Array(await new Response(new Response(part).body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+          if (part.length !== descriptor.length || descriptor.offset !== offset)
+            throw new Error('Invalid decoded asset piece');
+        }
+        bytes.set(part, offset); offset += part.length;
+      }
+      if (offset !== bytes.length) throw new Error('Incomplete reconstructed file');
       return new Response(bytes, { headers: { 'Content-Length': String(bytes.length) } });
     } catch (error) {
       controller.abort();
@@ -448,7 +464,7 @@ function installChunkDownloads(manifest, version, progress) {
       console.warn('[Loading] Piece download failed; trying verified full file:', entry.path, error);
       // Do not expose a broken synthetic stream to Unity: return a complete, verified
       // response, falling back to the regular release file if the piece route fails.
-      var bytes = await whole(entry, signal, function (count) { if (progress) progress(url, count, entry.info.size); });
+      var bytes = await whole(entry, signal, function (count) { if (progress) progress(url, count, entry.info.fallbackSize || entry.info.size); });
       return new Response(bytes, { headers: { 'Content-Length': String(bytes.length) } });
     } finally { if (signal) signal.removeEventListener('abort', abort); }
   }
@@ -500,13 +516,15 @@ function installChunkDownloads(manifest, version, progress) {
         loadFiles.forEach(function (f) {
           var url = Object.keys(config.downloadProgress).filter(function (u) { return u.indexOf(f.match) >= 0; })[0];
           var p = url ? config.downloadProgress[url] : null;
+          var loaded = p ? (p.wireLoaded === undefined ? p.loaded : p.wireLoaded) : 0;
+          var total = p ? (p.wireTotal === undefined ? p.total : p.wireTotal) : 0;
           if (p && p.finished && !f.end) {
             f.end = now;
-            console.log("[Loading] " + f.label + ": " + mb(p.loaded) + " in " + secs(now - loadStart));
+            console.log("[Loading] " + f.label + ": " + mb(loaded) + " in " + secs(now - loadStart));
           }
           if (!f.end) allDone = false;
-          lines.push(f.label + ": " + (f.end ? "done, " + mb(p.loaded) + " in " + secs(f.end - loadStart)
-            : p && p.started ? mb(p.loaded) + (p.lengthComputable ? " of " + mb(p.total) : "") : "waiting"));
+          lines.push(f.label + ": " + (f.end ? "done, " + mb(loaded) + " in " + secs(f.end - loadStart)
+            : p && p.started ? mb(loaded) + (p.lengthComputable ? " of " + mb(total) : "") : "waiting"));
         });
         if (allDone) {
           if (!startupStart) startupStart = now;
@@ -591,9 +609,10 @@ function installChunkDownloads(manifest, version, progress) {
           }) || url;
           var p = config.downloadProgress[key] || (config.downloadProgress[key] = {});
           p.started = true; p.lengthComputable = true; p.loaded = loaded; p.total = total;
+          p.wireLoaded = loaded; p.wireTotal = total;
           var downloads = Object.values(config.downloadProgress);
-          var received = downloads.reduce(function (sum, item) { return sum + (item.loaded || 0); }, 0);
-          var expected = Object.values(downloadChunks).reduce(function (sum, item) { return sum + item.size; }, 0);
+          var received = downloads.reduce(function (sum, item) { return sum + (item.wireLoaded || 0); }, 0);
+          var expected = Object.values(downloadChunks).reduce(function (sum, item) { return sum + (item.transferSize || item.size); }, 0);
           fill.style.width = Math.round(90 * received / expected) + "%";
         });
         fetch("Build/WebGL.loader.js" + v).then(function (response) { return response.blob(); })

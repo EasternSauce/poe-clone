@@ -113,6 +113,8 @@ function installChunkDownloads(manifest, version, progress) {
     for (var source of order) {
       try {
         var bytes = await read(source + entry.path + version, signal, update);
+        if (entry.info.encoding === 'gzip-pieces')
+          return await check(bytes, entry.info.fallbackHash, entry.info.fallbackSize);
         if (bytes.length !== entry.info.size) throw new Error('Full download size mismatch');
         for (var index = 0; index < entry.info.hashes.length; index++) {
           var part = bytes.subarray(index * 524288, Math.min(bytes.length, (index + 1) * 524288));
@@ -132,14 +134,28 @@ function installChunkDownloads(manifest, version, progress) {
     var controller = new AbortController(), loaded = entry.info.hashes.map(function () { return 0; });
     var abort = function () { controller.abort(); };
     if (signal) { signal.addEventListener('abort', abort); if (signal.aborted) abort(); }
-    function report() { if (progress) progress(url, loaded.reduce(function (a, b) { return a + b; }, 0), entry.info.size); }
+    var transferSize = entry.info.transferSize || entry.info.size;
+    function report() { if (progress) progress(url, loaded.reduce(function (a, b) { return a + b; }, 0), transferSize); }
     try {
+      if (entry.info.encoding === 'gzip-pieces' && typeof DecompressionStream === 'undefined')
+        throw new Error('Independent gzip decoding unavailable; using the regular archive');
       var parts = await Promise.all(entry.info.hashes.map(function (hash, index) {
-        return piece(hash, Math.min(524288, entry.info.size - index * 524288), entry.info.size < 524288 ? -1 : index,
+        var size = entry.info.parts ? entry.info.parts[index].size : Math.min(524288, entry.info.size - index * 524288);
+        return piece(hash, size, transferSize < 524288 ? -1 : index,
           controller.signal, function (count) { loaded[index] = count; report(); });
       }));
       var bytes = new Uint8Array(entry.info.size), offset = 0;
-      parts.forEach(function (part) { bytes.set(part, offset); offset += part.length; });
+      for (var index = 0; index < parts.length; index++) {
+        var part = parts[index];
+        if (entry.info.encoding === 'gzip-pieces') {
+          var descriptor = entry.info.parts[index];
+          part = new Uint8Array(await new Response(new Response(part).body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+          if (part.length !== descriptor.length || descriptor.offset !== offset)
+            throw new Error('Invalid decoded asset piece');
+        }
+        bytes.set(part, offset); offset += part.length;
+      }
+      if (offset !== bytes.length) throw new Error('Incomplete reconstructed file');
       return new Response(bytes, { headers: { 'Content-Length': String(bytes.length) } });
     } catch (error) {
       controller.abort();
@@ -147,7 +163,7 @@ function installChunkDownloads(manifest, version, progress) {
       console.warn('[Loading] Piece download failed; trying verified full file:', entry.path, error);
       // Do not expose a broken synthetic stream to Unity: return a complete, verified
       // response, falling back to the regular release file if the piece route fails.
-      var bytes = await whole(entry, signal, function (count) { if (progress) progress(url, count, entry.info.size); });
+      var bytes = await whole(entry, signal, function (count) { if (progress) progress(url, count, entry.info.fallbackSize || entry.info.size); });
       return new Response(bytes, { headers: { 'Content-Length': String(bytes.length) } });
     } finally { if (signal) signal.removeEventListener('abort', abort); }
   }
