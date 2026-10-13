@@ -9,13 +9,14 @@ namespace PoeClone.World
     /// </summary>
     public static class GroundTextures
     {
-        private const int Size = 512;
+        private static bool Mobile(bool? mobile) => mobile ?? PoeClone.Inventory.TouchMode.Active;
 
         /// <param name="grain">How much each pixel's brightness varies on its own (0 = smooth, which looks plastic).</param>
         public static Texture2D Make(int seed, Color low, Color high, Color speck, float speckAmount, float scale,
-            float grain = 0.08f)
+            float grain = 0.08f, bool? mobile = null)
         {
-            var texture = new Texture2D(Size, Size, TextureFormat.RGBA32, true)
+            int size = Mobile(mobile) ? 128 : 512;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, true)
             {
                 wrapMode = TextureWrapMode.Repeat,
                 filterMode = FilterMode.Bilinear,
@@ -25,25 +26,25 @@ namespace PoeClone.World
             var random = new System.Random(seed);
             float ox = (float)random.NextDouble() * 100f;
             float oy = (float)random.NextDouble() * 100f;
-            var pixels = new Color32[Size * Size];
+            var pixels = new Color32[size * size];
 
-            for (int y = 0; y < Size; y++)
+            for (int y = 0; y < size; y++)
             {
-                for (int x = 0; x < Size; x++)
+                for (int x = 0; x < size; x++)
                 {
-                    float n = Layered(x, y, Size, scale, ox, oy);
+                    float n = Layered(x, y, size, scale, ox, oy);
                     Color c = Color.Lerp(low, high, Mathf.SmoothStep(0.2f, 0.8f, n));
                     c *= 1f + ((float)random.NextDouble() * 2f - 1f) * grain;
 
                     if (speckAmount > 0f && random.NextDouble() < speckAmount)
                         c = Color.Lerp(c, speck, 0.7f);
 
-                    pixels[y * Size + x] = c;
+                    pixels[y * size + x] = c;
                 }
             }
 
             texture.SetPixels32(pixels);
-            texture.Apply(true);
+            texture.Apply(updateMipmaps: true, makeNoLongerReadable: true);
             return texture;
         }
 
@@ -53,13 +54,14 @@ namespace PoeClone.World
         /// the odd bald patch of soil.
         /// </summary>
         /// <param name="bareness">How much bare soil shows through (0 for none).</param>
-        public static Texture2D Grass(int seed, Color under, Color lush, Color dry, Color soil, float bareness)
+        public static Texture2D Grass(int seed, Color under, Color lush, Color dry, Color soil, float bareness, bool? mobile = null)
         {
-            const int size = 1024;
+            bool lowDetail = Mobile(mobile);
+            int size = lowDetail ? 256 : 1024;
             // The broad maps are made coarse and sampled smoothly: their shapes span 40+ texels,
             // so nothing is lost and most of the noise cost is saved.
-            const int coarse = 128;
-            const float toCoarse = coarse / (float)size;
+            int coarse = lowDetail ? 64 : 128;
+            float toCoarse = coarse / (float)size;
             var random = new System.Random(seed);
             float ox = (float)random.NextDouble() * 100f;
             float oy = (float)random.NextDouble() * 100f;
@@ -92,7 +94,7 @@ namespace PoeClone.World
 
             // Scattered at random (a grid shows as rows) and drawn from the top of the texture
             // down, so each tuft overlaps the ones behind it as the camera sees them.
-            int tufts = size * size / 70;
+            int tufts = size * size / (lowDetail ? 24 : 70);
             var xs = new float[tufts];
             var ys = new float[tufts];
             for (int i = 0; i < tufts; i++)
@@ -109,24 +111,24 @@ namespace PoeClone.World
                 float dryness = Sample(dryMap, coarse, xs[i] * toCoarse, ys[i] * toCoarse);
                 Color tone = Color.Lerp(lush, dry, Mathf.Clamp01(dryness * 0.75f + (shade - 0.5f) * 0.35f))
                     * (0.88f + 0.24f * shade);
-                Tuft(pixels, size, random, xs[i], ys[i], tone);
+                Tuft(pixels, size, random, xs[i], ys[i], tone, size / 1024f);
             }
 
-            return Finish(pixels, size, "Grass_" + seed);
+            return Finish(pixels, size, "Grass_" + seed, lowDetail);
         }
 
         // 5-10 blades fanning up from a shared root, the outer ones leaning outwards.
-        private static void Tuft(Color[] pixels, int size, System.Random random, float x, float y, Color tone)
+        private static void Tuft(Color[] pixels, int size, System.Random random, float x, float y, Color tone, float texelScale)
         {
             int blades = 5 + random.Next(6);
             for (int b = 0; b < blades; b++)
             {
                 float offset = (float)random.NextDouble() - 0.5f;
-                float bx = x + offset * 7f;
-                float by = y + ((float)random.NextDouble() - 0.5f) * 2f;
+                float bx = x + offset * 7f * texelScale;
+                float by = y + ((float)random.NextDouble() - 0.5f) * 2f * texelScale;
                 float lean = ((float)random.NextDouble() - 0.5f) * 1.3f + offset * 0.9f;
                 float dx = Mathf.Sin(lean), dy = Mathf.Cos(lean);
-                float length = 5f + (float)random.NextDouble() * 7f;
+                float length = (5f + (float)random.NextDouble() * 7f) * texelScale;
                 Color blade = tone * (0.88f + 0.24f * (float)random.NextDouble());
                 Color root = blade * 0.6f;
                 Color tip = new Color(blade.r * 1.3f + 0.02f, blade.g * 1.22f + 0.015f, blade.b);
@@ -143,9 +145,11 @@ namespace PoeClone.World
         /// Packed earth for roads, yards and clearings: broad mottling, fine grain and small
         /// pebbles lit from one side, so it reads as ground rather than painted cloth.
         /// </summary>
-        public static Texture2D Dirt(int seed, Color low, Color high, Color pebble, int pebbles)
+        public static Texture2D Dirt(int seed, Color low, Color high, Color pebble, int pebbles, bool? mobile = null)
         {
-            const int size = 256;
+            bool lowDetail = Mobile(mobile);
+            int size = lowDetail ? 128 : 256;
+            if (lowDetail) pebbles = Mathf.Max(0, pebbles / 4);
             var random = new System.Random(seed);
             float ox = (float)random.NextDouble() * 100f;
             float oy = (float)random.NextDouble() * 100f;
@@ -163,7 +167,7 @@ namespace PoeClone.World
             for (int i = 0; i < pebbles; i++)
             {
                 int cx = random.Next(size), cy = random.Next(size);
-                float r = 0.8f + (float)random.NextDouble() * 1.8f;
+                float r = (0.8f + (float)random.NextDouble() * 1.8f) * (size / 256f);
                 Color tone = pebble * (0.8f + (float)random.NextDouble() * 0.4f);
                 int reach = Mathf.CeilToInt(r) + 1;
                 for (int dy = -reach; dy <= reach; dy++)
@@ -181,16 +185,17 @@ namespace PoeClone.World
                 }
             }
 
-            return Finish(pixels, size, "Dirt_" + seed);
+            return Finish(pixels, size, "Dirt_" + seed, lowDetail);
         }
 
         /// <summary>
         /// Irregular laid stones with dark mortar joints: each stone has its own tone, a worn
         /// darker rim and faint mottling.
         /// </summary>
-        public static Texture2D Flagstones(int seed, Color stone, Color mortar, int cells)
+        public static Texture2D Flagstones(int seed, Color stone, Color mortar, int cells, bool? mobile = null)
         {
-            const int size = 256;
+            int size = Mobile(mobile) ? 128 : 256;
+            float texelScale = size / 256f;
             var random = new System.Random(seed);
             float cell = size / (float)cells;
             var points = new Vector2[cells, cells];
@@ -232,28 +237,28 @@ namespace PoeClone.World
                     }
 
                     float edge = d2 - d1;
-                    float rim = Mathf.SmoothStep(3.5f, 11f, edge);
+                    float rim = Mathf.SmoothStep(3.5f * texelScale, 11f * texelScale, edge);
                     float mottle = 0.93f + 0.14f * Layered(x, y, size, 6f, ox, oy);
                     Color c = tone * (0.8f + 0.2f * rim) * mottle;
                     c *= 1f + ((float)random.NextDouble() * 2f - 1f) * 0.04f;
-                    pixels[y * size + x] = Color.Lerp(c, mortar, 1f - Mathf.SmoothStep(1.6f, 3.6f, edge));
+                    pixels[y * size + x] = Color.Lerp(c, mortar, 1f - Mathf.SmoothStep(1.6f * texelScale, 3.6f * texelScale, edge));
                 }
             }
 
-            return Finish(pixels, size, "Flagstones_" + seed);
+            return Finish(pixels, size, "Flagstones_" + seed, Mobile(mobile));
         }
 
-        private static Texture2D Finish(Color[] pixels, int size, string name)
+        private static Texture2D Finish(Color[] pixels, int size, string name, bool mobile)
         {
             var texture = new Texture2D(size, size, TextureFormat.RGBA32, true)
             {
                 wrapMode = TextureWrapMode.Repeat,
                 filterMode = FilterMode.Bilinear,
-                anisoLevel = 4,
+                anisoLevel = mobile ? 1 : 4,
                 name = name
             };
             texture.SetPixels(pixels);
-            texture.Apply(true);
+            texture.Apply(updateMipmaps: true, makeNoLongerReadable: true);
             return texture;
         }
 

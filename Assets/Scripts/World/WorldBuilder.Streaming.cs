@@ -88,7 +88,9 @@ namespace PoeClone.World
         {
             var state = new StreamedArea();
             streamedAreas.Add(area, state);
+            Loading("Terrain layout: " + AreaNames[area]);
             yield return Shape(area).PrepareLayout();
+            Loading("Ground texture: " + AreaNames[area]);
             state.Ground = new Material(groundTemplate.GetComponent<Renderer>().sharedMaterial);
             state.Ground.SetTexture("_BaseMap", GroundTexture(area));
             state.Ground.SetColor("_BaseColor", Color.white);
@@ -99,6 +101,7 @@ namespace PoeClone.World
             if (area == Greenwood)
             {
                 groundTemplate.SetActive(false);
+                Loading("Greenwood scenery");
                 yield return RelocateOriginalScenery();
                 GameObject bounds = GameObject.Find("WorldBounds");
                 if (bounds != null) bounds.SetActive(false);

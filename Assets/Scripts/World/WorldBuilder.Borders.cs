@@ -285,6 +285,7 @@ namespace PoeClone.World
                         DressHouse(prop, RoofStyle.Thatch, props.Count % 2 == 0 ? WallFinish.Logs : WallFinish.Timbered, 640 + props.Count);
                     props.Add((prop, radius));
                     if (shape.Contains(prop.position, radius + 1f) && !shape.IsBridge(prop.position, radius + 3f)) Claim(prop.position, radius);
+                    if (clock.Elapsed.TotalMilliseconds >= 2d) { yield return null; clock.Restart(); }
                 }
             }
             // Scene torches were authored beside houses/pillars. Move them with their nearest prop.
@@ -303,18 +304,49 @@ namespace PoeClone.World
                     }
                     if (closest != null) attachedTorches[torch] = closest;
                 }
+            int completed = 0;
             foreach (var entry in props)
             {
                 Transform prop = entry.prop;
                 Vector3 old = prop.position;
-                if (shape.Contains(old, entry.radius + 1f) && !shape.IsBridge(old, entry.radius + 3f)) continue;
-                Vector3 target = shape.NearestOpen(old, entry.radius + 2f);
-                for (int attempt = 0; attempt < 500; attempt++)
+                Loading($"Greenwood scenery: {++completed}/{props.Count}");
+                if (shape.Contains(old, entry.radius + 1f) && !shape.IsBridge(old, entry.radius + 3f))
                 {
-                    if (Free(target, entry.radius) && (target - shape.Center).sqrMagnitude > 196f &&
-                        !HitsScenery(target + Vector3.up, entry.radius)) break;
-                    target = shape.Center + Flat(R(-150, 150), R(-120, 120));
-                    if (!shape.Contains(target, entry.radius + 2f)) { target = shape.NearestOpen(target, entry.radius + 2f); }
+                    if (clock.Elapsed.TotalMilliseconds >= 2d) { yield return null; clock.Restart(); }
+                    continue;
+                }
+                // Re-projecting every random rejection with NearestOpen scanned the entire
+                // area up to 500 times per prop. Reject bounded samples directly instead.
+                bool placed = false;
+                Vector3 target = old;
+                const int maxAttempts = 96;
+                for (int attempt = 0; attempt < maxAttempts; attempt++)
+                {
+                    if (attempt < maxAttempts / 2)
+                    {
+                        float angle = attempt * 2.399963f;
+                        float radius = 3f * Mathf.Sqrt(attempt + 1);
+                        target = old + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
+                    }
+                    else
+                        target = shape.Center + Flat(R(-shape.Size.x * 0.5f, shape.Size.x * 0.5f),
+                            R(-shape.Size.y * 0.5f, shape.Size.y * 0.5f));
+                    if (shape.Contains(target, entry.radius + 2f) && !shape.IsBridge(target, entry.radius + 3f) &&
+                        Free(target, entry.radius) && (target - shape.Center).sqrMagnitude > 196f &&
+                        !HitsScenery(target + Vector3.up, entry.radius))
+                    {
+                        placed = true;
+                        break;
+                    }
+                    if (clock.Elapsed.TotalMilliseconds >= 2d) { yield return null; clock.Restart(); }
+                }
+                if (!placed)
+                {
+                    // An optional prop must not hold entry indefinitely or be left in a route.
+                    prop.gameObject.SetActive(false);
+                    foreach (var torch in attachedTorches)
+                        if (torch.Value == prop) torch.Key.gameObject.SetActive(false);
+                    continue;
                 }
                 prop.position = new Vector3(target.x, old.y, target.z);
                 Vector3 delta = prop.position - old;
@@ -322,11 +354,7 @@ namespace PoeClone.World
                     if (torch.Value == prop) torch.Key.position += delta;
                 Claim(target, entry.radius);
                 Physics.SyncTransforms();
-                if (clock.ElapsedMilliseconds > 50)
-                {
-                    yield return null;
-                    clock.Restart();
-                }
+                if (clock.Elapsed.TotalMilliseconds >= 2d) { yield return null; clock.Restart(); }
             }
         }
         // A dirt road from the town plaza out to each of Haven's gates, each opening out where it

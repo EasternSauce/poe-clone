@@ -1,3 +1,7 @@
+version: 2026-10-13-mobile-textures-greenwood-loading
+- Mobile uses lighter ground, grass, dirt and stone textures, with lower-resolution imported world textures. Desktop texture detail is preserved.
+- Greenwood scenery placement uses a capped search with regular loading updates, preventing repeated whole-area placement searches from holding up entry.
+
 version: 2026-10-13-chunk-loading-delays
 - Gate travel now prepares the visible arrival surroundings before extending the loading radius during play. Chunk construction shares a frame budget instead of pausing for a frame after every small step.
 - Minimap scenery detail fills in after travel, avoiding the per-section scan under the loading cover. Ground textures are reused instead of generated again for the same area.

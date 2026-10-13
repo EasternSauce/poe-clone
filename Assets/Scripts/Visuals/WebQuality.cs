@@ -16,12 +16,29 @@ namespace PoeClone.Visuals
         private static void Apply()
         {
 #if UNITY_WEBGL && !UNITY_EDITOR
-            if (Inventory.TouchMode.Active)
-                return;
-            int level = System.Array.IndexOf(QualitySettings.names, DesktopLevel);
-            if (level >= 0)
-                QualitySettings.SetQualityLevel(level, true);
+            if (!Inventory.TouchMode.Active)
+            {
+                int level = System.Array.IndexOf(QualitySettings.names, DesktopLevel);
+                if (level >= 0) QualitySettings.SetQualityLevel(level, true);
+            }
 #endif
+#if !UNITY_EDITOR
+            desktopMipmapLimit = QualitySettings.globalTextureMipmapLimit;
+            ApplyTextureQuality();
+            Inventory.TouchMode.Changed -= ApplyTextureQuality;
+            Inventory.TouchMode.Changed += ApplyTextureQuality;
+#endif
+        }
+
+        private static int desktopMipmapLimit;
+
+        private static void ApplyTextureQuality()
+        {
+            // Imported mipmapped world textures use half-resolution images on phones.
+            // Procedural ground textures choose smaller buffers directly in GroundTextures;
+            // mipmap limits alone cannot reduce their generation work.
+            QualitySettings.globalTextureMipmapLimit = Inventory.TouchMode.Active
+                ? Mathf.Max(1, desktopMipmapLimit) : desktopMipmapLimit;
         }
     }
 }
