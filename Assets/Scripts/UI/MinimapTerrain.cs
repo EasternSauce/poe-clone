@@ -16,7 +16,9 @@ namespace PoeClone.UI
     /// </summary>
     public static class MinimapTerrain
     {
-        public const int Resolution = 640;        // about a texel per screen pixel on the minimap
+        public const int Resolution = 640;        // desktop detail; mobile uses a smaller bake below
+        private const int MobileResolution = 256;
+        private const int MobileSampleResolution = 128;
         public const int FogResolution = 80;      // seen/unseen cells across an area
         private const float RevealRadius = 22f;   // metres around the player that count as seen
 
@@ -74,7 +76,7 @@ namespace PoeClone.UI
             }
 
             if (map.Dirty)
-                Redraw(map, area);
+                Redraw(map);
         }
 
         /// <summary>Whether the player has seen this spot of the area.</summary>
@@ -145,7 +147,7 @@ namespace PoeClone.UI
                 {
                     for (int i = 0; i < seen.Length; i++)
                         map.Seen[i] |= seen[i];
-                    Redraw(map, area);
+                    Redraw(map);
                 }
                 else
                 {
@@ -197,7 +199,7 @@ namespace PoeClone.UI
                     map.Seen[i] = true;
             }
             maps[area] = map;
-            Redraw(map, area);
+            Redraw(map);
             return map;
         }
 
@@ -208,7 +210,6 @@ namespace PoeClone.UI
         private const int SampleResolution = 320;
         private const float FieldClamp = 4f;      // metres: distances past this don't move an edge
         private const int RimWidth = 2;           // texels of lighter outline along the open ground
-        private const float GrainScale = 240f / Resolution; // keeps the grain's size in metres
         private const float SliceMs = 12f;        // work per frame when baking behind a loading screen
 
         // Fills in the map, yielding between rows once a slice has used up its time.
@@ -217,7 +218,14 @@ namespace PoeClone.UI
             var clock = System.Diagnostics.Stopwatch.StartNew();
             Vector3 centre = WorldBuilder.Center(area);
             AreaShape shape = WorldBuilder.Shape(area);
-            const int n = SampleResolution;
+            // Match the existing phone/tablet detection, including iPads with desktop user agents.
+            // Keep these choices local to the bake: toggling touch simulation afterwards must not
+            // change the dimensions used to redraw an already cached map.
+            bool mobile = Inventory.TouchMode.Active;
+            int resolution = mobile ? MobileResolution : Resolution;
+            int n = mobile ? MobileSampleResolution : SampleResolution;
+            int rimWidth = Mathf.Max(1, Mathf.RoundToInt(RimWidth * (float)resolution / Resolution));
+            float grainScale = 240f / resolution; // same grain size in world metres on both tiers
             float step = AreaSize / n;
             float groundY = centre.y;
             var inside = new float[n * n];
@@ -248,19 +256,19 @@ namespace PoeClone.UI
                 }
             }
 
-            var cells = new Cell[Resolution * Resolution];
-            float toSample = (float)n / Resolution;
-            for (int y = 0; y < Resolution; y++)
+            var cells = new Cell[resolution * resolution];
+            float toSample = (float)n / resolution;
+            for (int y = 0; y < resolution; y++)
             {
                 float v = (y + 0.5f) * toSample - 0.5f;
-                for (int x = 0; x < Resolution; x++)
+                for (int x = 0; x < resolution; x++)
                 {
                     float u = (x + 0.5f) * toSample - 0.5f;
                     bool within = Sample(inside, n, u, v) >= 0f;
                     Cell c = within ? (Sample(solid, n, u, v) >= 0.5f ? Cell.Solid : Cell.Open) : Cell.Outside;
                     if (Sample(water, n, u, v) >= 0f)
                         c = within && Sample(bridge, n, u, v) >= 0f ? Cell.Bridge : Cell.Water;
-                    cells[y * Resolution + x] = c;
+                    cells[y * resolution + x] = c;
                 }
                 if (clock.Elapsed.TotalMilliseconds > sliceMs)
                 {
@@ -268,7 +276,7 @@ namespace PoeClone.UI
                     clock.Restart();
                 }
             }
-            bool[] rims = Rims(cells);
+            bool[] rims = Rims(cells, resolution, rimWidth);
 
             Color tint = WorldBuilder.AreaColor(area);
             Color open = Color.Lerp(new Color(0.42f, 0.40f, 0.36f), tint, 0.45f) * 0.85f;
@@ -278,11 +286,11 @@ namespace PoeClone.UI
             float seedX = (float)rng.NextDouble() * 100f, seedY = (float)rng.NextDouble() * 100f;
 
             var pixels = new Color32[cells.Length];
-            for (int y = 0; y < Resolution; y++)
+            for (int y = 0; y < resolution; y++)
             {
-                for (int x = 0; x < Resolution; x++)
+                for (int x = 0; x < resolution; x++)
                 {
-                    int i = y * Resolution + x;
+                    int i = y * resolution + x;
                     Cell c = cells[i];
                     if (c == Cell.Outside)
                     {
@@ -291,7 +299,7 @@ namespace PoeClone.UI
                     }
 
                     // Grain: two octaves of noise so the ground isn't a flat fill.
-                    float gx = x * GrainScale, gy = y * GrainScale;
+                    float gx = x * grainScale, gy = y * grainScale;
                     float noise = Mathf.PerlinNoise(seedX + gx * 0.09f, seedY + gy * 0.09f) * 0.7f +
                                   Mathf.PerlinNoise(seedX + gx * 0.35f, seedY + gy * 0.35f) * 0.3f;
                     float shade = 0.82f + 0.3f * noise;
@@ -314,7 +322,7 @@ namespace PoeClone.UI
                 }
             }
 
-            map.Texture = new Texture2D(Resolution, Resolution, TextureFormat.RGBA32, false)
+            map.Texture = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false)
             {
                 name = "Minimap_" + area,
                 filterMode = FilterMode.Bilinear,
@@ -338,34 +346,34 @@ namespace PoeClone.UI
 
         // Open ground within RimWidth texels of something solid or the outside: the line that shows
         // where you can't go. A square neighbourhood, checked along rows and then along columns.
-        private static bool[] Rims(Cell[] cells)
+        private static bool[] Rims(Cell[] cells, int resolution, int rimWidth)
         {
             var across = new bool[cells.Length];
-            for (int y = 0; y < Resolution; y++)
+            for (int y = 0; y < resolution; y++)
             {
-                for (int x = 0; x < Resolution; x++)
+                for (int x = 0; x < resolution; x++)
                 {
-                    int i = y * Resolution + x;
-                    for (int d = -RimWidth; d <= RimWidth && !across[i]; d++)
+                    int i = y * resolution + x;
+                    for (int d = -rimWidth; d <= rimWidth && !across[i]; d++)
                     {
                         int nx = x + d;
-                        across[i] = nx < 0 || nx >= Resolution || cells[i + d] != Cell.Open;
+                        across[i] = nx < 0 || nx >= resolution || cells[i + d] != Cell.Open;
                     }
                 }
             }
 
             var rims = new bool[cells.Length];
-            for (int y = 0; y < Resolution; y++)
+            for (int y = 0; y < resolution; y++)
             {
-                for (int x = 0; x < Resolution; x++)
+                for (int x = 0; x < resolution; x++)
                 {
-                    int i = y * Resolution + x;
+                    int i = y * resolution + x;
                     if (cells[i] != Cell.Open)
                         continue;
-                    for (int d = -RimWidth; d <= RimWidth && !rims[i]; d++)
+                    for (int d = -rimWidth; d <= rimWidth && !rims[i]; d++)
                     {
                         int ny = y + d;
-                        rims[i] = ny < 0 || ny >= Resolution || across[ny * Resolution + x];
+                        rims[i] = ny < 0 || ny >= resolution || across[ny * resolution + x];
                     }
                 }
             }
@@ -373,7 +381,7 @@ namespace PoeClone.UI
         }
 
         // Unseen parts are hidden; the border of what's seen fades out smoothly rather than stopping hard.
-        private static void Redraw(AreaMap map, int area)
+        private static void Redraw(AreaMap map)
         {
             map.Dirty = false;
             const int n = FogResolution;
@@ -400,14 +408,15 @@ namespace PoeClone.UI
                 }
             }
 
+            int resolution = map.Texture.width;
             NativeArray<Color32> shown = map.Texture.GetPixelData<Color32>(0);
-            float toFog = (float)n / Resolution;
-            for (int y = 0; y < Resolution; y++)
+            float toFog = (float)n / resolution;
+            for (int y = 0; y < resolution; y++)
             {
                 float v = (y + 0.5f) * toFog - 0.5f;
-                for (int x = 0; x < Resolution; x++)
+                for (int x = 0; x < resolution; x++)
                 {
-                    int i = y * Resolution + x;
+                    int i = y * resolution + x;
                     Color32 c = map.Base[i];
                     c.a = (byte)(c.a * Sample(visible, n, (x + 0.5f) * toFog - 0.5f, v));
                     shown[i] = c;

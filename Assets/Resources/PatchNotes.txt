@@ -1,3 +1,6 @@
+version: 2026-10-13-mobile-minimap-loading
+- Phones and tablets generate a lighter minimap to shorten first-visit loading and reduce map update work. Desktop map detail and saved exploration are unchanged.
+
 version: 2026-10-13-character-loading-readability
 - The initial character loading screen now uses larger, brighter text on phones too, with status text that wraps to fit portrait screens.
 
