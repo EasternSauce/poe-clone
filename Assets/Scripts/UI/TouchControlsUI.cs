@@ -715,23 +715,23 @@ namespace PoeClone.UI
             float aimY = portrait ? 185f : 145f;
             Place(aimBaseImage.rectTransform, new Vector2(1f, 0f), new Vector2(-aimX, aimY), Vector2.one * (portrait ? 270f : 220f));
             aimKnob.sizeDelta = Vector2.one * (portrait ? 142f : 118f);
+            const float landscapePotionX = 366f;
+            // Keep the portrait arc, shifted left of the landscape minimap. On narrower
+            // tablets, shrink the arc to leave a gap beside the left-hand potion stack.
+            float skillScale = portrait ? 1f : Mathf.Min(1f,
+                Mathf.Max(0.1f, (safe.width / unit - landscapePotionX - 56f - 20f - 315f) / 275f));
+            float skillX = portrait ? aimX : 315f;
             for (int k = 0; k < skillButtons.Count; k++)
             {
                 float angle = (90f + k * 30f) * Mathf.Deg2Rad;
-                float radius = portrait ? 270f : 225f;
+                float radius = portrait ? 270f : 225f * skillScale;
                 Place(skillButtons[k].Back.rectTransform, new Vector2(1f, 0f),
-                    new Vector2(-aimX + Mathf.Cos(angle) * radius, aimY + Mathf.Sin(angle) * radius), Vector2.one * (portrait ? 132f : 100f));
+                    new Vector2(-skillX + Mathf.Cos(angle) * radius, aimY + Mathf.Sin(angle) * radius), Vector2.one * (portrait ? 132f : 100f * skillScale));
             }
-            if (!portrait)
-            {
-                for (int k=0;k<skillButtons.Count;k++)
-                    Place(skillButtons[k].Back.rectTransform,new Vector2(1f,0f),
-                        new Vector2(-335f-(k%2)*120f,300f-(k/2)*120f),Vector2.one*100f);
-            }
-            Place(healthPotionImage.rectTransform, portrait ? Vector2.zero : new Vector2(1f, 0f),
-                portrait ? new Vector2(85f, 500f) : new Vector2(-300f, 100f), Vector2.one * (portrait ? 132f : 112f));
-            Place(manaPotionImage.rectTransform, portrait ? Vector2.zero : new Vector2(1f, 0f),
-                portrait ? new Vector2(235f, 500f) : new Vector2(-425f, 100f), Vector2.one * (portrait ? 132f : 112f));
+            Place(healthPotionImage.rectTransform, Vector2.zero,
+                portrait ? new Vector2(85f, 500f) : new Vector2(landscapePotionX, 238f), Vector2.one * (portrait ? 132f : 112f));
+            Place(manaPotionImage.rectTransform, Vector2.zero,
+                portrait ? new Vector2(235f, 500f) : new Vector2(landscapePotionX, 110f), Vector2.one * (portrait ? 132f : 112f));
         }
 
         // Its own scaler rather than TouchAwareScaler: these canvases only ever show in touch mode.

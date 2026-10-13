@@ -1,3 +1,6 @@
+version: 2026-10-13-landscape-touch-controls
+- Landscape potions are stacked beside the movement joystick, with health above mana. Skills 1-4 follow the portrait arc, with spacing for the minimap and potion controls on narrower screens.
+
 version: 2026-10-13-mobile-fullscreen
 - Mobile fullscreen uses a dedicated game container and waits for the screen size to settle before resizing. A brief black transition hides incomplete frames when entering or leaving fullscreen.
 
