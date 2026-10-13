@@ -111,8 +111,8 @@ namespace PoeClone.Network
             canvasRoot.SetActive(true);
             PlayerHUD.SetHiddenBy(this, true);
             // Replace the name form with saved characters and their equipped models.
-            ClearScreen();
-            MakeText("Choose Character", 34, new Vector2(0, 330), new Vector2(1000, 60));
+            ClearScreen("characters");
+            MakeText("Choose Character", 34, new Vector2(0, 330), new Vector2(740, 60));
             var profiles = PoeClone.Player.SaveSystem.Profiles();
             var inventories = FindObjectsByType<PlayerInventory>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             var inventory = inventories.Length > 0 ? inventories[0] : null;
@@ -121,7 +121,7 @@ namespace PoeClone.Network
             foreach (var profile in profiles)
             {
                 string id = profile.id;
-                var row = MakeButton(profile.name + "   ·   Level " + PoeClone.Player.SaveSystem.ProfileLevel(profile), new Vector2(-70, y), new Vector2(560, 112), () =>
+                var row = MakeButton(profile.name + "\nLevel " + PoeClone.Player.SaveSystem.ProfileLevel(profile), new Vector2(-70, y), new Vector2(560, 112), () =>
                 {
                     PoeClone.Player.SaveSystem.SelectProfile(id);
                     PlayerName = PoeClone.Player.SaveSystem.ActiveCharacterName;
@@ -129,25 +129,26 @@ namespace PoeClone.Network
                 });
                 var label = row.transform.Find("Label").GetComponent<Text>();
                 label.alignment = TextAnchor.MiddleLeft;
-                label.rectTransform.offsetMin = new Vector2(116, 0);
+                label.rectTransform.offsetMin = new Vector2(116, 4);
+                label.rectTransform.offsetMax = new Vector2(-12, -4);
                 if (source != null)
                     AddPortrait(row.transform, source, PoeClone.Player.SaveSystem.ProfileSave(profile));
                 MakeButton("Remove", new Vector2(300, y), new Vector2(140, 64), () => ShowRemoveConfirmation(id, profile.name), UiKit.DangerTint);
                 y -= 126;
             }
-            MakeButton("Create New Character", new Vector2(0, y - 8), new Vector2(340, 58), ShowCreateCharacter);
+            MakeButton("Create New Character", new Vector2(0, y - 8), new Vector2(400, 58), ShowCreateCharacter);
             if (charactersBack != null)
             {
                 Action previous = charactersBack;
-                MakeBack(() => { afterCharacter = null; previous(); }, y - 78);
+                MakeBack(() => { afterCharacter = null; previous(); }, y - (TouchMode.Active ? 110 : 78));
             }
         }
 
         private void ShowRemoveConfirmation(string id, string name)
         {
-            ClearScreen();
-            MakeText("Remove " + name + "?", 32, new Vector2(0, 100), new Vector2(900, 70));
-            MakeText("This permanently deletes this character and its saved progress.", 22, new Vector2(0, 20), new Vector2(1000, 60));
+            ClearScreen("remove-character");
+            MakeText("Remove " + name + "?", 32, new Vector2(0, 160), new Vector2(560, 110));
+            MakeText("This permanently deletes this character and its saved progress.", TouchMode.Active ? 28 : 22, new Vector2(0, 30), new Vector2(560, 96));
             MakeButton("Remove Character", new Vector2(-140, -90), new Vector2(260, 54), () =>
             {
                 PoeClone.Player.SaveSystem.DeleteProfile(id);
@@ -159,8 +160,8 @@ namespace PoeClone.Network
         private string PlayerName;
         private void ShowCreateCharacter()
         {
-            ClearScreen();
-            MakeText("Name your character", 30, new Vector2(0, 100), new Vector2(800, 60));
+            ClearScreen("create-character");
+            MakeText("Name your character", 30, new Vector2(0, 120), new Vector2(560, 60));
             inputField = MakeInput(new Vector2(0, 10));
             MakeButton("Create and Play", new Vector2(0, -70), new Vector2(260, 54), () =>
             {
@@ -170,7 +171,7 @@ namespace PoeClone.Network
                 PlayerName = name;
                 FinishCharacters();
             });
-            MakeButton("Back", new Vector2(0, -140), new Vector2(160, 46), () => ShowCharacters(afterCharacter), UiKit.MutedTint);
+            MakeButton("Back", new Vector2(0, TouchMode.Active ? -180 : -140), new Vector2(160, 46), () => ShowCharacters(afterCharacter), UiKit.MutedTint);
         }
 
         private InputField MakeInput(Vector2 at)
@@ -218,16 +219,18 @@ namespace PoeClone.Network
             contentBottom = Mathf.Min(contentBottom, at.y - size.y * 0.5f);
         }
 
+        private bool IsCharacterScreen => screenKey == "characters" || screenKey == "create-character" || screenKey == "remove-character";
+
         private void LateUpdate()
         {
             if (!canvasRoot.activeSelf || contentTop < contentBottom) return;
             float half = ((RectTransform)canvasRoot.transform).rect.height * 0.5f - ScreenMargin;
-            // The short mode menus have room for larger touch targets, especially in portrait.
+            // Use the available width for readable touch menus, especially in portrait.
             float preferredScale = 1f;
-            if (TouchMode.Active && (screenKey == "start" || screenKey == "coop"))
+            if (TouchMode.Active && (screenKey == "start" || screenKey == "coop" || IsCharacterScreen))
             {
                 float width = ((RectTransform)canvasRoot.transform).rect.width - 2f * ScreenMargin;
-                preferredScale = Mathf.Min(TouchMode.Portrait ? 1.8f : 1.35f, width / 560f);
+                preferredScale = Mathf.Min(TouchMode.Portrait ? 1.8f : 1.35f, width / (screenKey == "characters" ? 740f : 560f));
             }
             float scale = Mathf.Min(preferredScale, 2f * half / (contentTop - contentBottom));
             float shift = Mathf.Clamp(0f, -half - contentBottom * scale, half - contentTop * scale);
@@ -289,11 +292,13 @@ namespace PoeClone.Network
 
         private GameObject MakeButton(string label, Vector2 at, Vector2 dimensions, Action click, Color? tint = null)
         {
+            bool touchCharacter = TouchMode.Active && IsCharacterScreen;
+            if (touchCharacter) dimensions.y = Mathf.Max(dimensions.y, 88f);
             var image = UiKit.NewImage("ProfileButton", screen, Color.white); image.raycastTarget = true;
             var r = image.rectTransform; r.anchorMin = r.anchorMax = new Vector2(.5f, .5f); r.anchoredPosition = at; r.sizeDelta = dimensions;
             Extend(at, dimensions);
             var b = image.gameObject.AddComponent<Button>(); b.onClick.AddListener(() => click());
-            var t = UiKit.NewText("Label", r, label, 22, UiKit.TextColor, TextAnchor.MiddleCenter); RuntimeUiUtil.StretchFull(t.rectTransform);
+            var t = UiKit.NewText("Label", r, label, touchCharacter ? 30 : 22, UiKit.TextColor, TextAnchor.MiddleCenter); RuntimeUiUtil.StretchFull(t.rectTransform);
             UiKit.StyleButton(image, t, tint);
             Appear(r);
             return image.gameObject;

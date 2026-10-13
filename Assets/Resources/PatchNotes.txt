@@ -1,3 +1,6 @@
+version: 2026-10-13-mobile-character-picker
+- Character selection uses larger text and touch buttons on mobile, with extra scaling in portrait. Character names and levels appear on separate lines. Creating and removing characters also have larger controls and text that fits the screen.
+
 version: 2026-10-13-proximity-area-chunks
 - Large wilderness areas now load terrain, scenery and encounters in nearby sections. Gates prepare the arrival surroundings, and exploring brings in more sections ahead of the camera.
 - Visited sections remain loaded for the session, preserving cleared encounters, chests and quest objects when backtracking. Towns and small boss arenas keep their existing loading.
