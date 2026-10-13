@@ -300,6 +300,12 @@ namespace PoeClone.Network
             var b = image.gameObject.AddComponent<Button>(); b.onClick.AddListener(() => click());
             var t = UiKit.NewText("Label", r, label, touchCharacter ? 30 : 22, UiKit.TextColor, TextAnchor.MiddleCenter); RuntimeUiUtil.StretchFull(t.rectTransform);
             UiKit.StyleButton(image, t, tint);
+            if (touchCharacter && screenKey != "characters" && dimensions.x >= 200f)
+            {
+                dimensions.x = Mathf.Max(dimensions.x,t.preferredWidth+32f);
+                r.sizeDelta = dimensions;
+                Extend(at,dimensions);
+            }
             Appear(r);
             return image.gameObject;
         }

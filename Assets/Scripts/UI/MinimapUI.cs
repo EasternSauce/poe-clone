@@ -53,12 +53,12 @@ namespace PoeClone.UI
         /// <summary>How far down from the top the map reaches (others stack below it), 0 when hidden.</summary>
         public static float Bottom => instance != null && instance.frame != null && instance.frame.gameObject.activeSelf ? (Size + NamePlateHeight + 6f) * Scale + TopInset : 0f;
 
-        private static float TopInset => TouchMode.Portrait ? 250f : 16f;
+        private static float TopInset => 16f;
 
-        private const float NamePlateHeight = 26f;
+        private static float NamePlateHeight => TouchMode.Active ? 48f : 26f;
 
-        // Smaller on a phone, where the screen is already full of buttons.
-        private static float Scale => TouchMode.Active ? 0.7f : 1f;
+        // Menus are collapsed, leaving room for a useful map in the upper-right corner.
+        private static float Scale => TouchMode.Active ? (TouchMode.Portrait ? 1.55f : 1.1f) : 1f;
 
         private void Awake()
         {
@@ -146,14 +146,17 @@ namespace PoeClone.UI
             if (characterUI == null)
                 characterUI = FindAnyObjectByType<CharacterPageUI>();
             bool covered = (inventoryUI != null && inventoryUI.IsOpen) || (characterUI != null && characterUI.IsOpen) ||
-                           PassiveTreeUI.IsOpen || SkillBarUI.IsOpen;
+                           PassiveTreeUI.IsOpen || SkillBarUI.IsOpen || DialogueUI.IsOpen;
             if (hidden || covered)
             {
                 frame.gameObject.SetActive(false);
                 return;
             }
 
-            frame.anchoredPosition = new Vector2(TouchMode.Active && !TouchMode.Portrait ? -250f : -16f, -TopInset);
+            frame.anchoredPosition = new Vector2(-16f, -TopInset);
+            namePlate.sizeDelta = new Vector2(Size, NamePlateHeight);
+            areaName.fontSize = TouchMode.Active ? 24 : 15;
+            areaName.horizontalOverflow = HorizontalWrapMode.Wrap;
             frame.localScale = Vector3.one * Scale;
             string name = areas.Current != null ? areas.Current.areaName : "";
             if (areaName.text != name)

@@ -1,3 +1,12 @@
+version: 2026-10-13-mobile-ui-layout
+- Mobile patch notes use much larger text in both the main menu and settings. Patch history shows one full-width release with Newer and Older buttons.
+- Larger close controls stay visible, including on the character page. Character stats scroll with larger, sharper text.
+- The mobile inventory grows to fit the available screen. Stash and bag stack vertically in portrait; stash tabs and search controls are larger.
+- A MENU button groups the gameplay shortcuts. QUESTS opens and closes objectives on the left; objectives start hidden to keep the action clear.
+- Larger minimap and location text, movement and attack sticks, potion targets and skill buttons. Landscape skill buttons stay clear of the minimap.
+- More readable skill assignment and passive controls. Mobile menus have solid backgrounds, and loot icons no longer cover the skill screen.
+- Waypoint lists now include every destination and the Leave option, with scrolling for long lists. Chat has larger text and a visible close control.
+
 version: 2026-10-13-mobile-dialogue-tooltips
 - Larger item and passive tooltips, quest objectives, NPC names, stash and waystone labels on phones and tablets, with extra text sizing in portrait.
 - NPC dialogue and travel choices use larger text and buttons. Long conversations and option lists scroll, and the layout updates when rotating the device.

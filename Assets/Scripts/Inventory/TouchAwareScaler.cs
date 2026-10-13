@@ -17,6 +17,10 @@ namespace PoeClone.Inventory
         private Vector2 desktopReference;
         private float desktopMatch;
         private float touchHeight;
+        public float MinimumTouchWidth = TouchMode.MinimumCanvasWidth;
+        public float PreferredTouchHeight = TouchMode.ReferenceHeight;
+        private float TouchHeight => Mathf.Max(PreferredTouchHeight,
+            MinimumTouchWidth * Screen.height / Mathf.Max(1f, Screen.width));
 
         private void Awake()
         {
@@ -35,7 +39,7 @@ namespace PoeClone.Inventory
 
         private void Update()
         {
-            if (TouchMode.Active && !Mathf.Approximately(touchHeight, TouchMode.CanvasHeight))
+            if (TouchMode.Active && !Mathf.Approximately(touchHeight, TouchHeight))
                 Apply();
         }
 
@@ -46,7 +50,7 @@ namespace PoeClone.Inventory
 
             if (TouchMode.Active)
             {
-                touchHeight = TouchMode.CanvasHeight;
+                touchHeight = TouchHeight;
                 scaler.referenceResolution = new Vector2(1280f, touchHeight);
                 scaler.matchWidthOrHeight = 1f;
             }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,7 +18,7 @@ namespace PoeClone.UI
     {
         [Serializable] private class Entry { public string version; public string notes; }
         [Serializable] private class Archive { public Entry[] entries; }
-        private const float W = 760f;
+        private static float W => TouchMode.Active ? 900f : 760f;
         // The panel fills the screen's height, less this margin top and bottom; the lists stretch with it.
         private const float Margin = 24f;
         private GameObject root;
@@ -26,6 +26,10 @@ namespace PoeClone.UI
         private ScrollRect listScroll, notesScroll;
         private GameObject settingsButton, historyButton;
         private Text title, body;
+        private RectTransform panelRect, resumeRect;
+        private GameObject newerButton, olderButton;
+        private bool showingHistory;
+        private Vector2 layoutSize;
         private Entry[] entries = Array.Empty<Entry>();
         private int selected;
         private bool pausedByMenu;
@@ -86,6 +90,11 @@ namespace PoeClone.UI
 
         private void Update()
         {
+            if (IsOpen && layoutSize != new Vector2(Screen.width, Screen.height))
+            {
+                Layout();
+                if (showingHistory) ShowHistory(); else ShowSettings();
+            }
             Keyboard kb = Keyboard.current;
             if (kb == null || !kb.escapeKey.wasPressedThisFrame || UiKit.IsTypingInTextField()) return;
             if (PatchNotesUI.IsShowing) return;
@@ -111,6 +120,7 @@ namespace PoeClone.UI
             if (PatchNotesUI.IsShowing || (!IsOpen && Time.timeScale <= 0f)) return;
             // Active first: the list's height comes from the canvas, which only scales while active.
             root.SetActive(true);
+            Layout();
             ShowSettings();
             // The HUD is drawn with OnGUI, over every canvas: it would show through the shade.
             PlayerHUD.SetHiddenBy(this, true);
@@ -141,11 +151,11 @@ namespace PoeClone.UI
             canvas.gameObject.AddComponent<GraphicRaycaster>(); group.interactable = true; group.blocksRaycasts = true; root = canvas.gameObject;
             Image shade = UiKit.NewImage("Shade", canvas.transform, new Color(0f,0f,0f,0.6f)); shade.raycastTarget = true; UiKit.Stretch(shade.rectTransform, 0f);
             Image panel = UiKit.NewImage("Panel", canvas.transform, UiKit.PanelColor); UiKit.Grain(panel); panel.raycastTarget = true;
-            RectTransform pr=panel.rectTransform; pr.anchorMin=new Vector2(.5f,0); pr.anchorMax=new Vector2(.5f,1); pr.sizeDelta=new Vector2(W,-Margin*2); UiKit.Frame(pr); pr.gameObject.AddComponent<UiAppear>(); TouchMode.AddBlocker(pr);
+            RectTransform pr=panel.rectTransform; panelRect=pr; pr.anchorMin=new Vector2(.5f,0); pr.anchorMax=new Vector2(.5f,1); pr.sizeDelta=new Vector2(W,-Margin*2); UiKit.Frame(pr); pr.gameObject.AddComponent<UiAppear>().offset = Vector2.zero; TouchMode.AddBlocker(pr);
             title=UiKit.Heading(UiKit.NewText("Title",pr,"MENU",30,UiKit.Gold,TextAnchor.MiddleLeft)); UiKit.TopLeft(title.rectTransform,new Vector2(30,-16),new Vector2(W-100,40));
             settingsButton=Button("Settings",pr,"Settings",new Vector2(30,-68),new Vector2(180,42),ShowSettings);
             historyButton=Button("History",pr,"Patch History",new Vector2(222,-68),new Vector2(180,42),ShowHistory);
-            GameObject resume=Button("Resume",pr,"Resume",Vector2.zero,new Vector2(180,42),Close); RectTransform rr=(RectTransform)resume.transform; rr.anchorMin=rr.anchorMax=rr.pivot=Vector2.zero; rr.anchoredPosition=new Vector2(W-210,24);
+            GameObject resume=Button("Resume",pr,"Resume",Vector2.zero,new Vector2(180,42),Close); RectTransform rr=(RectTransform)resume.transform; rr.anchorMin=rr.anchorMax=rr.pivot=Vector2.zero; rr.anchoredPosition=new Vector2(W-210,24); resumeRect=rr;
             RectTransform divider=UiKit.DividerLine(pr,Vector2.zero,W-60).rectTransform; divider.anchorMin=divider.anchorMax=new Vector2(.5f,1); divider.anchoredPosition=new Vector2(0,-116);
             viewport=UiKit.NewRect("Viewport",pr); viewport.gameObject.AddComponent<RectMask2D>(); Image catcher=viewport.gameObject.AddComponent<Image>(); catcher.color=Color.clear;
             PlaceList(viewport,30,W-60);
@@ -158,6 +168,10 @@ namespace PoeClone.UI
             body=UiKit.NewText("Body",notesContent,"",18,UiKit.TextColor,TextAnchor.UpperLeft); body.horizontalOverflow=HorizontalWrapMode.Wrap; body.verticalOverflow=VerticalWrapMode.Overflow; body.raycastTarget=false;
             UiKit.TopLeft(body.rectTransform,new Vector2(8,-4),new Vector2(W-350,0));
             UiKit.CloseButton(pr, Close);
+            newerButton = Button("NewerRelease", pr, "Newer", new Vector2(30,-132), new Vector2(390,72), () => SelectEntry(Mathf.Max(0,selected-1)));
+            olderButton = Button("OlderRelease", pr, "Older", new Vector2(450,-132), new Vector2(420,72), () => SelectEntry(Mathf.Min(entries.Length-1,selected+1)));
+            newerButton.SetActive(false);
+            olderButton.SetActive(false);
         }
 
         // A list area under the tabs, above the Resume button, as tall as the panel allows.
@@ -172,11 +186,16 @@ namespace PoeClone.UI
 
         private void ShowSettings()
         {
+            showingHistory = false;
             title.text = "SETTINGS";
+            newerButton.SetActive(false);
+            olderButton.SetActive(false);
+            viewport.gameObject.SetActive(true);
             ClearEntries();
             SelectTab(true);
             notesViewport.gameObject.SetActive(false);
             PlaceList(viewport, 30, W-60);
+            if (TouchMode.Active) { viewport.offsetMin = new Vector2(30,TouchMode.Portrait ? 132 : 100); viewport.offsetMax = new Vector2(W-30,TouchMode.Portrait ? -200 : -158); }
             float y = 0f;
             RectTransform volumeRow = SettingsRow("Audio", "Volume", "Overall volume of all game sounds.", ref y);
             VolumeSlider(volumeRow, Audio.AudioManager.MasterVolume, v => Audio.AudioManager.MasterVolume = v);
@@ -225,8 +244,9 @@ namespace PoeClone.UI
             {
                 Text heading = UiKit.NewText(section + "Heading", content, section.ToUpperInvariant(), 16, UiKit.Gold, TextAnchor.MiddleLeft);
                 heading.font = UiKit.TitleFont;
-                UiKit.TopLeft(heading.rectTransform, new Vector2(0, -y), new Vector2(W-60, 22));
-                y += 30f;
+                heading.fontSize = TouchMode.Active ? 32 : 16;
+                UiKit.TopLeft(heading.rectTransform, new Vector2(0, -y), new Vector2(W-60, TouchMode.Active ? 48 : 22));
+                y += TouchMode.Active ? 60f : 30f;
             }
 
             Image row = UiKit.NewImage(label + "Row", content, new Color(.2f, .17f, .13f, 1f));
@@ -237,7 +257,15 @@ namespace PoeClone.UI
             Text detail = UiKit.NewText("Description", row.transform, description, 16, UiKit.DimText, TextAnchor.UpperLeft);
             detail.horizontalOverflow = HorizontalWrapMode.Wrap;
             UiKit.TopLeft(detail.rectTransform, new Vector2(18, -40), new Vector2(420, 32));
-            y += 94f;
+            if (TouchMode.Active)
+            {
+                row.rectTransform.sizeDelta = new Vector2(W-60, 230f);
+                name.fontSize = 40;
+                detail.fontSize = TouchMode.Portrait ? 36 : 28;
+                name.rectTransform.sizeDelta = new Vector2(W-100, 54f);
+                UiKit.TopLeft(detail.rectTransform, new Vector2(18,-72), new Vector2(W-100,78f));
+            }
+            y += TouchMode.Active ? 246f : 94f;
             return row.rectTransform;
         }
 
@@ -306,6 +334,13 @@ namespace PoeClone.UI
             Text value = UiKit.NewText("VolumeValue", row, "", 18, UiKit.TextColor, TextAnchor.MiddleRight);
             UiKit.TopLeft(value.rectTransform, new Vector2(W-144, -24), new Vector2(66, 30));
 
+            if (TouchMode.Active)
+            {
+                UiKit.TopLeft(track.rectTransform, new Vector2(42,-186), new Vector2(W-240,20));
+                handle.rectTransform.sizeDelta = new Vector2(46,38);
+                value.fontSize = 32;
+                UiKit.TopLeft(value.rectTransform, new Vector2(W-184,-164), new Vector2(100,58));
+            }
             Slider slider = track.gameObject.AddComponent<ScrollFriendlySlider>();
             slider.fillRect = fill.rectTransform;
             slider.handleRect = handle.rectTransform;
@@ -348,6 +383,7 @@ namespace PoeClone.UI
             for (int i = 0; i < combined.Count; i++) mergedOrder[combined[i].version] = i;
             combined.Sort((a, b) => CompareReleases(a, b, bundledOrder, mergedOrder));
             entries = combined.ToArray();
+            showingHistory = true;
             title.text="PATCH HISTORY"; ClearEntries(); SelectTab(false); notesViewport.gameObject.SetActive(true);
             body.transform.SetParent(notesContent,false); UiKit.TopLeft(body.rectTransform,new Vector2(8,-4),new Vector2(W-350,0));
             PlaceList(viewport,30,250);
@@ -375,6 +411,19 @@ namespace PoeClone.UI
                 SelectEntry(selected);
             }
             listScroll.verticalNormalizedPosition=1;
+            if (TouchMode.Active)
+            {
+                viewport.gameObject.SetActive(false);
+                newerButton.SetActive(true);
+                olderButton.SetActive(true);
+                notesViewport.anchorMin = Vector2.zero;
+                notesViewport.anchorMax = Vector2.one;
+                notesViewport.offsetMin = new Vector2(30,TouchMode.Portrait ? 132 : 100);
+                notesViewport.offsetMax = new Vector2(-30,TouchMode.Portrait ? -294 : -238);
+                body.fontSize = TouchMode.ReadingFontSize;
+                UiKit.TopLeft(body.rectTransform, new Vector2(8,-4), new Vector2(W-76,0));
+                SelectEntry(selected);
+            }
         }
         private static int CompareReleases(Entry a, Entry b, Dictionary<string, int> bundledOrder, Dictionary<string, int> mergedOrder)
         {
@@ -405,6 +454,11 @@ namespace PoeClone.UI
             body.rectTransform.sizeDelta=new Vector2(body.rectTransform.sizeDelta.x,textHeight);
             notesContent.sizeDelta=new Vector2(0,Mathf.Max(notesViewport.rect.height,textHeight+12));
             notesScroll.verticalNormalizedPosition=1;
+            if (newerButton != null)
+            {
+                newerButton.GetComponent<UnityEngine.UI.Button>().interactable = selected > 0;
+                olderButton.GetComponent<UnityEngine.UI.Button>().interactable = selected + 1 < entries.Length;
+            }
         }
         private void ClearEntries()
         {
@@ -420,8 +474,42 @@ namespace PoeClone.UI
             Text t=UiKit.NewText("Label",r,label,18,UiKit.TextColor,TextAnchor.MiddleCenter);UiKit.Stretch(t.rectTransform,0);
             UnityEngine.UI.Button b=image.gameObject.AddComponent<UnityEngine.UI.Button>();b.targetGraphic=image;b.onClick.AddListener(()=>action());
             UiKit.StyleButton(image,t);
+            if (TouchMode.Active)
+            {
+                t.fontSize = 32;
+                if (parent.name.EndsWith("Row"))
+                    UiKit.TopLeft(r, new Vector2(18,-152), new Vector2(W-96,64));
+            }
             return image.gameObject;
         }
+        private void Layout()
+        {
+            layoutSize = new Vector2(Screen.width, Screen.height);
+            panelRect.GetComponent<Image>().color = UiKit.ReadablePanelColor;
+            panelRect.sizeDelta = new Vector2(W,-Margin*2);
+            var divider = (RectTransform)panelRect.Find("Divider");
+            divider.anchoredPosition = new Vector2(0f,TouchMode.Active ? (TouchMode.Portrait ? -188f : -150f) : -116f);
+            title.fontSize = TouchMode.Active ? (TouchMode.Portrait ? 44 : 36) : 30;
+            title.rectTransform.sizeDelta = new Vector2(W-160,TouchMode.Active ? 66 : 40);
+            if (!TouchMode.Active) return;
+            UiKit.TopLeft((RectTransform)settingsButton.transform,new Vector2(30,-94),new Vector2(360,86));
+            UiKit.TopLeft((RectTransform)historyButton.transform,new Vector2(410,-94),new Vector2(360,86));
+            resumeRect.anchoredPosition = new Vector2(W-310,24);
+            resumeRect.sizeDelta = new Vector2(280,86);
+            foreach (GameObject button in new[] {settingsButton,historyButton,resumeRect.gameObject,newerButton,olderButton})
+                button.GetComponentInChildren<Text>().fontSize = 32;
+            UiKit.TopLeft((RectTransform)newerButton.transform,new Vector2(30,-202),new Vector2(400,72));
+            UiKit.TopLeft((RectTransform)olderButton.transform,new Vector2(450,-202),new Vector2(420,72));
+            if (!TouchMode.Portrait)
+            {
+                UiKit.TopLeft((RectTransform)settingsButton.transform,new Vector2(30,-76),new Vector2(360,66));
+                UiKit.TopLeft((RectTransform)historyButton.transform,new Vector2(410,-76),new Vector2(360,66));
+                UiKit.TopLeft((RectTransform)newerButton.transform,new Vector2(30,-158),new Vector2(400,64));
+                UiKit.TopLeft((RectTransform)olderButton.transform,new Vector2(450,-158),new Vector2(420,64));
+                resumeRect.sizeDelta = new Vector2(280,64);
+            }
+        }
+
         private static string Escape(string s) => (s??"").Replace("&","&amp;").Replace("<","&lt;").Replace(">","&gt;");
 
         /// <summary>

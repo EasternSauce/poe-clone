@@ -7,6 +7,7 @@ namespace PoeClone.Inventory
     /// <summary>Small helpers for building uGUI at runtime, plus the shared colour scheme.</summary>
     public static partial class UiKit
     {
+        public static Color ReadablePanelColor => TouchMode.Active ? new Color(0.07f, 0.06f, 0.05f, 1f) : PanelColor;
         public static readonly Color PanelColor = new Color(0.07f, 0.06f, 0.05f, 0.96f);
         public static readonly Color BorderColor = new Color(0.55f, 0.43f, 0.22f, 1f);
         public static readonly Color Gold = new Color(0.86f, 0.72f, 0.42f, 1f);
@@ -328,6 +329,7 @@ namespace PoeClone.Inventory
             Stretch(x.rectTransform, 0f);
             StyleButton(close, x, DangerTint);
             close.gameObject.AddComponent<ClickRelay>().Clicked += onClose;
+            rt.gameObject.AddComponent<MobileCloseTarget>();
             TouchMode.AddBlocker(rt);
             return rt;
         }
@@ -449,4 +451,42 @@ namespace PoeClone.Inventory
             return canvas;
         }
     }
+    /// <summary>Keeps close controls at a finger-sized screen size even inside scaled panels.</summary>
+    public sealed class MobileCloseTarget : MonoBehaviour
+    {
+        private RectTransform rect;
+        private Text label;
+        private Vector2 desktopSize;
+        private int desktopFont;
+        private readonly Vector3[] corners = new Vector3[4];
+
+        private void Start()
+        {
+            rect = (RectTransform)transform;
+            label = GetComponentInChildren<Text>();
+            desktopSize = rect.sizeDelta;
+            desktopFont = label != null ? label.fontSize : 20;
+        }
+
+        private void LateUpdate()
+        {
+            if (rect == null) return;
+            float pixels = 44f * Mathf.Min(Screen.width, Screen.height) / 390f;
+            float size = pixels / Mathf.Max(0.01f, Mathf.Abs(rect.lossyScale.x));
+            rect.sizeDelta = TouchMode.Active ? Vector2.one * Mathf.Max(38f, size) : desktopSize;
+            if (label != null) label.fontSize = TouchMode.Active ? Mathf.RoundToInt(rect.sizeDelta.y * 0.5f) : desktopFont;
+            if (TouchMode.Active)
+            {
+                rect.GetWorldCorners(corners);
+                Rect safe = Screen.safeArea;
+                Vector3 shift = Vector3.zero;
+                if (corners[0].x < safe.xMin) shift.x = safe.xMin - corners[0].x;
+                if (corners[2].x > safe.xMax) shift.x = safe.xMax - corners[2].x;
+                if (corners[0].y < safe.yMin) shift.y = safe.yMin - corners[0].y;
+                if (corners[2].y > safe.yMax) shift.y = safe.yMax - corners[2].y;
+                rect.position += shift;
+            }
+        }
+    }
+
 }

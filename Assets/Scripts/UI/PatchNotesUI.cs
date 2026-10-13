@@ -22,7 +22,10 @@ namespace PoeClone.UI
 
         private GameObject root;
         private RectTransform content;
-        private Text body;
+        private Text body, title, sub, closeText;
+        private RectTransform panelRect, viewport, closeRect, divider;
+        private Canvas canvas;
+        private Vector2 layoutSize;
         private string version;
         public static bool IsShowing { get; private set; }
 
@@ -73,6 +76,7 @@ namespace PoeClone.UI
             root.SetActive(true);
             IsShowing = true;
             Canvas.ForceUpdateCanvases();
+            Layout();
             content.sizeDelta = new Vector2(0f, body.preferredHeight + 12f);
         }
 
@@ -85,6 +89,8 @@ namespace PoeClone.UI
         {
             if (root != null && root.activeSelf)
             {
+                Vector2 size = ((RectTransform)canvas.transform).rect.size;
+                if (layoutSize != size) Layout();
                 Keyboard keyboard = Keyboard.current;
                 if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame && !UiKit.IsTypingInTextField())
                     Close();
@@ -101,7 +107,7 @@ namespace PoeClone.UI
 
         private void Build(string notes)
         {
-            Canvas canvas = UiKit.NewCanvas("PatchNotesCanvas", transform, 960, out CanvasGroup group);
+            canvas = UiKit.NewCanvas("PatchNotesCanvas", transform, 960, out CanvasGroup group);
             canvas.gameObject.AddComponent<GraphicRaycaster>();
             group.interactable = true;
             group.blocksRaycasts = true;
@@ -116,20 +122,21 @@ namespace PoeClone.UI
             UiKit.Grain(panel);
             panel.raycastTarget = true;
             RectTransform pr = panel.rectTransform;
+            panelRect = pr;
             pr.anchorMin = pr.anchorMax = new Vector2(0.5f, 0.5f);
             pr.sizeDelta = new Vector2(Width, Height);
             UiKit.Frame(pr);
-            pr.gameObject.AddComponent<UiAppear>();
+            pr.gameObject.AddComponent<UiAppear>().offset = Vector2.zero;
             TouchMode.AddBlocker(pr);
 
-            Text title = UiKit.Heading(UiKit.NewText("Title", pr, "WHAT'S NEW", 30, UiKit.Gold, TextAnchor.UpperCenter));
+            title = UiKit.Heading(UiKit.NewText("Title", pr, "WHAT'S NEW", 30, UiKit.Gold, TextAnchor.UpperCenter));
             UiKit.TopLeft(title.rectTransform, new Vector2(0f, -16f), new Vector2(Width, 36f));
-            Text sub = UiKit.NewText("Version", pr, version, 16, UiKit.DimText, TextAnchor.UpperCenter);
+            sub = UiKit.NewText("Version", pr, version, 16, UiKit.DimText, TextAnchor.UpperCenter);
             UiKit.TopLeft(sub.rectTransform, new Vector2(0f, -52f), new Vector2(Width, 22f));
-            UiKit.DividerLine(pr, new Vector2(0f, Height * 0.5f - 80f), Width - 120f);
+            divider = UiKit.DividerLine(pr, new Vector2(0f, Height * 0.5f - 80f), Width - 120f).rectTransform;
 
             // Scrollable notes.
-            RectTransform viewport = UiKit.NewRect("Viewport", pr);
+            viewport = UiKit.NewRect("Viewport", pr);
             viewport.gameObject.AddComponent<RectMask2D>();
             Image catcher = viewport.gameObject.AddComponent<Image>();
             catcher.color = Color.clear; // lets the wheel and drags reach the scroll view
@@ -157,14 +164,41 @@ namespace PoeClone.UI
             Image close = UiKit.NewImage("Close", pr, Color.white);
             close.raycastTarget = true;
             RectTransform cr = close.rectTransform;
+            closeRect = cr;
             cr.anchorMin = cr.anchorMax = new Vector2(0.5f, 0f);
             cr.pivot = new Vector2(0.5f, 0f);
             cr.anchoredPosition = new Vector2(0f, 18f);
             cr.sizeDelta = new Vector2(180f, 44f);
-            Text closeText = UiKit.NewText("Text", cr, "Got it", 20, UiKit.TextColor, TextAnchor.MiddleCenter);
+            closeText = UiKit.NewText("Text", cr, "Got it", 20, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(closeText.rectTransform, 0f);
             UiKit.StyleButton(close, closeText);
-            close.gameObject.AddComponent<TouchPointerRelay>().Up += _ => Close();
+            UiKit.OnClick(close, Close);
+        }
+
+        private void Layout()
+        {
+            layoutSize = ((RectTransform)canvas.transform).rect.size;
+            bool touch = TouchMode.Active;
+            float width = touch ? Mathf.Min(960f, layoutSize.x - 48f) : Width;
+            float height = touch ? layoutSize.y - 48f : Height;
+            panelRect.GetComponent<Image>().color = UiKit.ReadablePanelColor;
+            panelRect.sizeDelta = new Vector2(width, height);
+            title.fontSize = touch ? TouchMode.ReadingFontSize + 4 : 30;
+            sub.fontSize = touch ? (TouchMode.Portrait ? 28 : 22) : 16;
+            body.fontSize = touch ? TouchMode.ReadingFontSize : 18;
+            UiKit.TopLeft(title.rectTransform, new Vector2(0f, -16f), new Vector2(width, touch ? 60f : 36f));
+            UiKit.TopLeft(sub.rectTransform, new Vector2(16f, touch ? -80f : -52f), new Vector2(width - 32f, touch ? 60f : 22f));
+            sub.horizontalOverflow = HorizontalWrapMode.Wrap;
+            float top = touch ? 150f : 86f;
+            float bottom = touch ? 148f : 76f;
+            divider.anchorMin = divider.anchorMax = divider.pivot = new Vector2(0.5f,1f);
+            divider.anchoredPosition = new Vector2(0f,-top+8f);
+            divider.sizeDelta = new Vector2(width-120f,divider.sizeDelta.y);
+            UiKit.TopLeft(viewport, new Vector2(30f, -top), new Vector2(width - 60f, Mathf.Max(100f, height - top - bottom)));
+            closeRect.sizeDelta = touch ? new Vector2(280f, 108f) : new Vector2(180f, 44f);
+            closeText.fontSize = touch ? TouchMode.ReadingFontSize : 20;
+            Canvas.ForceUpdateCanvases();
+            content.sizeDelta = new Vector2(0f, body.preferredHeight + 12f);
         }
     }
 }

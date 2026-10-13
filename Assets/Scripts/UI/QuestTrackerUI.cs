@@ -21,6 +21,12 @@ namespace PoeClone.UI
         private InventoryUI inventoryUI;
         private CharacterPageUI characterUI;
         private bool dirty = true;
+        private static bool mobileOpen;
+        public static void ToggleMobile() => mobileOpen = !mobileOpen;
+        public static bool MobileOpen => mobileOpen;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetMobile() => mobileOpen = false;
         private int npcCount = -1;
         private bool laidOutForTouch, laidOutForPortrait;
         private const float HeadingHeight = 30f;
@@ -101,11 +107,12 @@ namespace PoeClone.UI
                 characterUI = FindAnyObjectByType<CharacterPageUI>();
             bool covered = (inventoryUI != null && inventoryUI.IsOpen) || (characterUI != null && characterUI.IsOpen) ||
                            SkillBarUI.IsOpen || DialogueUI.IsOpen || PassiveTreeUI.IsOpen;
-            back.gameObject.SetActive(text.text.Length > 0 && !covered);
+            back.gameObject.SetActive(text.text.Length > 0 && !covered && (!TouchMode.Active || mobileOpen));
 
             // Clear of the touch menu buttons along the right edge.
-            float mapBottom = Mathf.Max(MinimapUI.Bottom, TouchMode.Portrait ? 250f : 0f);
-            back.rectTransform.anchoredPosition = new Vector2(TouchMode.Active && !TouchMode.Portrait ? -250f : -16f, -16f - mapBottom);
+            float mapBottom = MinimapUI.Bottom;
+            back.rectTransform.anchorMin = back.rectTransform.anchorMax = back.rectTransform.pivot = TouchMode.Active ? new Vector2(0f, 1f) : Vector2.one;
+            back.rectTransform.anchoredPosition = TouchMode.Active ? new Vector2(24f, TouchMode.Portrait ? -300f : -230f) : new Vector2(-16f, -16f - mapBottom);
         }
 
         private static readonly Color QuestTitle = new Color(0.96f, 0.88f, 0.66f, 1f);
@@ -141,7 +148,7 @@ namespace PoeClone.UI
             }
 
             text.text = sb.ToString();
-            float width = TouchMode.Active ? (TouchMode.Portrait ? 620f : 460f) : 440f;
+            float width = TouchMode.Active ? (TouchMode.Portrait ? 560f : 460f) : 440f;
             text.fontSize = TouchMode.Active ? TouchMode.ReadingFontSize : 18;
             heading.fontSize = TouchMode.Active ? (TouchMode.Portrait ? 32 : 24) : 15;
             float headingHeight = TouchMode.Active ? heading.fontSize + 14f : HeadingHeight;

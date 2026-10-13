@@ -147,18 +147,20 @@ namespace PoeClone.Network
             panelRect.anchorMax = corner;
             panelRect.pivot = corner;
             panelRect.anchoredPosition = touchPlayer ? new Vector2(0f, 20f) : new Vector2(-20f, 20f);
-            panelRect.sizeDelta = touch ? new Vector2(520f, 250f) : new Vector2(460f, 220f);
+            panelRect.sizeDelta = touch ? new Vector2(Mathf.Min(900f,Screen.width/chatCanvas.scaleFactor-48f),Mathf.Min(900f,Screen.height/chatCanvas.scaleFactor-48f)) : new Vector2(460f,220f);
 
-            int fontSize = touch ? 20 : 16;
+            int fontSize = touch ? TouchMode.ReadingFontSize : 16;
             logText.fontSize = fontSize;
             fieldText.fontSize = fontSize;
             placeholderText.fontSize = fontSize;
             sendText.fontSize = fontSize;
 
-            float fieldTop = touch ? 50f : 42f;
+            float fieldTop = touch ? 108f : 42f;
             fieldRect.offsetMax = new Vector2(0f, fieldTop);
             sendRect.offsetMax = new Vector2(-10f, fieldTop);
             logViewport.offsetMin = new Vector2(10f, fieldTop + 4f);
+            logViewport.offsetMax = new Vector2(-10f,touch ? -120f : -10f);
+            panelRect.Find("Close").gameObject.SetActive(touchPlayer);
         }
 
         // Typing, a spectator (always in the chat), the touch chat opened, or a scroll just now.
@@ -184,6 +186,7 @@ namespace PoeClone.Network
 
         private void Update()
         {
+            if (TouchMode.Active && panelRect.gameObject.activeSelf) Relayout();
             UpdateScroll();
 
             if (!Enabled) return;
@@ -408,6 +411,7 @@ namespace PoeClone.Network
             panelRect.anchorMax = new Vector2(1f, 0f);
             panelRect.pivot = new Vector2(1f, 0f);
             panelRect.sizeDelta = new Vector2(460f, 220f);
+            UiKit.CloseButton(panelRect, () => SetPanelOpen(false));
             panelRect.anchoredPosition = new Vector2(-20f, 20f);
             panelFrame = UiKit.ThinFrame(panelRect);
 

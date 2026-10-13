@@ -31,7 +31,6 @@ namespace PoeClone.UI
     {
         private const float Width = 900f;
         private const float OptionHeight = 50f;
-        private const int MaxOptions = 8;
 
         private static DialogueUI instance;
 
@@ -109,12 +108,14 @@ namespace PoeClone.UI
             title.text = who != null ? who.DisplayName : "";
             body.text = text;
 
+            EnsureOptions(current.Count);
             LayoutConversation(true);
             panel.gameObject.SetActive(true);
         }
 
         private void LayoutConversation(bool resetScroll)
         {
+            panel.GetComponent<Image>().color = UiKit.ReadablePanelColor;
             layoutSize = ((RectTransform)canvas.transform).rect.size;
             layoutTouch = TouchMode.Active;
             layoutPortrait = TouchMode.Portrait;
@@ -146,7 +147,9 @@ namespace PoeClone.UI
             }
             content.sizeDelta = new Vector2(0f, y);
             float bottom = TouchMode.Active ? 16f : 104f;
-            panel.sizeDelta = new Vector2(width, Mathf.Min(y + 88f, layoutSize.y - bottom - 16f));
+            float header = TouchMode.Active ? 132f : 70f;
+            scroll.viewport.offsetMax = new Vector2(-24f, -header);
+            panel.sizeDelta = new Vector2(width, Mathf.Min(y + header + 24f, layoutSize.y - bottom - 16f));
             if (resetScroll)
             {
                 scroll.StopMovement();
@@ -189,6 +192,7 @@ namespace PoeClone.UI
 
             Image close = UiKit.NewImage("Close", panel, Color.white);
             close.raycastTarget = true;
+            close.gameObject.AddComponent<MobileCloseTarget>();
             close.rectTransform.anchorMin = close.rectTransform.anchorMax = close.rectTransform.pivot = Vector2.one;
             close.rectTransform.anchoredPosition = new Vector2(-12f, -12f);
             close.rectTransform.sizeDelta = new Vector2(48f, 48f);
@@ -220,7 +224,11 @@ namespace PoeClone.UI
             body.supportRichText = true;
             UiKit.TopLeft(body.rectTransform, Vector2.zero, new Vector2(Width - 48f, 100f));
 
-            for (int k = 0; k < MaxOptions; k++)
+        }
+
+        private void EnsureOptions(int count)
+        {
+            for (int k = buttons.Count; k < count; k++)
             {
                 int index = k;
                 Image button = UiKit.NewImage("Option" + k, content, ButtonColor);

@@ -67,6 +67,7 @@ namespace PoeClone.UI
         private RectTransform pickerContent;
         private RectTransform panelContent;
         private float panelWidth = SkillsPanelWidth;
+        private Vector2 mobileLayoutSize;
         private ScrollRect pickerScroll;
         private readonly List<GameObject> pickerRows = new List<GameObject>();
         private readonly List<PlayerSkills.SkillGrant> pickerGrants = new List<PlayerSkills.SkillGrant>();
@@ -121,6 +122,7 @@ namespace PoeClone.UI
 
         private void Update()
         {
+            canvas.sortingOrder = TouchMode.Active ? 800 : 60;
             var session = GameSessionController.Instance;
             bool spectator = session != null && session.Role == SessionRole.Spectator;
 
@@ -163,6 +165,7 @@ namespace PoeClone.UI
                     SetOpen(false);
             }
 
+            if (panelRoot.activeSelf && panelContent != null) LayoutMobilePanel();
             if (panelRoot.activeSelf && rowsDirty)
                 RefreshRows();
 
@@ -558,14 +561,19 @@ namespace PoeClone.UI
                     ") · " + cost + " · " + timing + "</size>\n<size=14>" +
                     (damage == null ? "" : (skill.Summon ? "Minions: " : "Damage: ") + damage + "\n") + skill.Description +
                     (bindings.Length == 0 ? "" : "\n<color=#" + UiKit.Hex(UiKit.Gold) + ">" + bindings + "</color>") + "</size>";
+                row.Title.fontSize = TouchMode.Active ? TouchMode.ReadingFontSize : 18;
+                if (TouchMode.Active)
+                    row.Title.text = row.Title.text.Replace("<size=14>", "<size=" + (TouchMode.Portrait ? 32 : 26) + ">");
+                row.Title.rectTransform.sizeDelta = new Vector2(panelWidth - 260f, 0f);
+                row.Assignment.fontSize = TouchMode.Active ? 28 : 17;
                 bool assigned = skills.MatchesGrant(selectedMobileButton, grant);
                 row.Back.color = assigned ? new Color(0.44f, 0.36f, 0.2f, 1f) : new Color(0.24f, 0.21f, 0.17f, 1f);
                 row.Assignment.text = SpectatorMirror.Active ? "" : assigned ? "Assigned" : "Assign";
                 float height = Mathf.Max(100f, row.Title.preferredHeight + 20f);
                 UiKit.TopLeft(row.Back.rectTransform, new Vector2(8f, y), new Vector2(panelWidth - 32f, height));
-                row.Title.rectTransform.sizeDelta = new Vector2(panelWidth - 208f, height - 16f);
+                row.Title.rectTransform.sizeDelta = new Vector2(panelWidth - 260f, height - 16f);
                 var action = (RectTransform)row.Assignment.transform.parent;
-                UiKit.TopLeft(action, new Vector2(panelWidth - 142f, -(height - 48f) * 0.5f), new Vector2(102f, 48f));
+                UiKit.TopLeft(action, new Vector2(panelWidth - 190f, -(height - 80f) * 0.5f), new Vector2(150f, 80f));
                 y -= height + 8f;
             }
             panelContent.sizeDelta = new Vector2(0f, Mathf.Max(rows.Count == 0 ? 80f : 0f, -y));
@@ -902,6 +910,7 @@ namespace PoeClone.UI
             Text closeText = UiKit.NewText("Label", close.rectTransform, "X", 22, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(closeText.rectTransform, 0f);
             UiKit.StyleButton(close, closeText, UiKit.DangerTint);
+            close.gameObject.AddComponent<MobileCloseTarget>();
             close.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {
                 if (SpectatorMirror.Active) SpectatorMirror.Close(SpectatorMirror.Menu.Skills);
@@ -969,6 +978,42 @@ namespace PoeClone.UI
                 "Your equipped gear grants no assignable skills.\nEquip gear with a skill to add it here.",
                 18, UiKit.DimText, TextAnchor.MiddleCenter);
             UiKit.TopLeft(emptySkillsText.rectTransform, new Vector2(8f, 0f), new Vector2(panelWidth - 32f, 80f));
+        }
+
+        private void LayoutMobilePanel()
+        {
+            var parent = (RectTransform)panelRoot.transform.parent;
+            if (mobileLayoutSize == parent.rect.size) return;
+            mobileLayoutSize = parent.rect.size;
+            panelWidth = Mathf.Min(920f, parent.rect.width - 32f);
+            var pr = (RectTransform)panelRoot.transform;
+            pr.GetComponent<Image>().color = UiKit.ReadablePanelColor;
+            pr.sizeDelta = new Vector2(panelWidth, parent.rect.height - 48f);
+            Text title = pr.Find("Title").GetComponent<Text>();
+            title.fontSize = 40;
+            title.rectTransform.sizeDelta = new Vector2(panelWidth - 150f, 60f);
+            var close = (RectTransform)pr.Find("Close");
+            close.anchorMin = close.anchorMax = close.pivot = Vector2.one;
+            close.anchoredPosition = new Vector2(-12f,-12f);
+            bool portrait = TouchMode.Portrait;
+            int columns = portrait ? 2 : 4;
+            float width = (panelWidth - 32f - (columns-1)*12f)/columns;
+            for (int k=0;k<mobileButtons.Length;k++)
+            {
+                UiKit.TopLeft(mobileButtons[k].rectTransform,new Vector2(16f+(k%columns)*(width+12f),-90f-(k/columns)*116f),new Vector2(width,104f));
+                mobileLabels[k].fontSize = portrait ? 34 : 28;
+            }
+            float top = portrait ? 330f : 208f;
+            selectionHint.fontSize = portrait ? 32 : 28;
+            UiKit.TopLeft(selectionHint.rectTransform,new Vector2(16f,-top),new Vector2(panelWidth-230f,72f));
+            var clear=(RectTransform)pr.Find("ClearButton");
+            UiKit.TopLeft(clear,new Vector2(panelWidth-196f,-top),new Vector2(174f,72f));
+            clear.GetComponentInChildren<Text>().fontSize=30;
+            var viewport=(RectTransform)panelContent.parent;
+            viewport.offsetMax = new Vector2(-8f,-top-88f);
+            emptySkillsText.fontSize=TouchMode.ReadingFontSize;
+            emptySkillsText.rectTransform.sizeDelta=new Vector2(panelWidth-32f,160f);
+            rowsDirty=true;
         }
 
         private void BuildRows()

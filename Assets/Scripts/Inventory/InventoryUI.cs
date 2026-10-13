@@ -56,7 +56,7 @@ namespace PoeClone.Inventory
 
         // Touch layout: the panel moves left to clear the on-screen button column (TouchControlsUI).
         private const float DesktopRightInset = 30f;
-        private const float TouchRightInset = 150f;
+        private const float TouchRightInset = 16f;
         private const float LongPressSeconds = 0.4f;
         private const float DragThreshold = 14f; // canvas units
 
@@ -255,6 +255,7 @@ namespace PoeClone.Inventory
 
         private Canvas canvas;
         private Canvas tooltipCanvas;
+        private RectTransform inventoryClose;
         private CanvasGroup canvasGroup;
         private RectTransform panel;
         private float regularPanelHeight;
@@ -822,6 +823,7 @@ namespace PoeClone.Inventory
             }
 
             panel.gameObject.SetActive(open);
+            inventoryClose.gameObject.SetActive(open);
             ApplyPanelLayout();
 
             // No room for the character preview beside the panel on a phone.
@@ -854,21 +856,49 @@ namespace PoeClone.Inventory
         private void ApplyPanelLayout()
         {
             bool touch = TouchMode.Active;
+            panel.GetComponent<Image>().color = UiKit.ReadablePanelColor;
+            Transform closeParent = touch ? canvas.transform : panel;
+            if (inventoryClose.parent != closeParent)
+            {
+                inventoryClose.SetParent(closeParent,false);
+                inventoryClose.anchorMin = inventoryClose.anchorMax = inventoryClose.pivot = Vector2.one;
+                inventoryClose.anchoredPosition = new Vector2(-12f,-12f);
+            }
+            previewPanel.gameObject.SetActive(isOpen && !touch && !stashOpen);
+            LayoutStash(touch);
             float rightInset = touch ? TouchRightInset : DesktopRightInset;
             // The stash and trader share a wide window with the bag. Keep its right edge clear of
             // touch buttons, then fit the whole window inside the remaining screen area.
             Vector2 size = stashOpen
                 ? new Vector2(panelWidth + stashPanel.sizeDelta.x, Mathf.Max(regularPanelHeight, stashPanel.sizeDelta.y))
                 : new Vector2(panelWidth, regularPanelHeight);
+            bool stacked = touch && TouchMode.Portrait && stashOpen;
+            var bag = (RectTransform)panel.Find("Bag");
+            if (stacked)
+            {
+                size = new Vector2(Mathf.Max(panelWidth, stashPanel.sizeDelta.x), regularPanelHeight + stashPanel.sizeDelta.y + 32f);
+                stashPanel.anchorMin = stashPanel.anchorMax = stashPanel.pivot = new Vector2(0.5f, 1f);
+                stashPanel.anchoredPosition = new Vector2(0f, -16f);
+                bag.anchorMin = bag.anchorMax = bag.pivot = new Vector2(0.5f, 0f);
+                bag.anchoredPosition = new Vector2(0f, 16f);
+            }
+            else
+            {
+                stashPanel.anchorMin = stashPanel.anchorMax = stashPanel.pivot = new Vector2(0f, 0.5f);
+                stashPanel.anchoredPosition = Vector2.zero;
+                bag.anchorMin = bag.anchorMax = bag.pivot = new Vector2(1f, 0.5f);
+                bag.anchoredPosition = Vector2.zero;
+            }
             panel.sizeDelta = size;
-            panel.anchoredPosition = new Vector2(-rightInset, 0f);
+            panel.anchorMin = panel.anchorMax = panel.pivot = touch ? new Vector2(0.5f, 0.5f) : new Vector2(1f, 0.5f);
+            panel.anchoredPosition = touch ? (Screen.safeArea.center - new Vector2(Screen.width,Screen.height)*0.5f)/Mathf.Max(0.01f,canvas.scaleFactor) : new Vector2(-rightInset, 0f);
             float scale = 1f;
             if (touch)
             {
                 float canvasScale = Mathf.Max(0.01f, canvas.scaleFactor);
-                float availableWidth = Screen.width / canvasScale - rightInset - 12f;
-                float availableHeight = Screen.height / canvasScale - 24f;
-                scale = Mathf.Min(1f, availableWidth / size.x, availableHeight / size.y);
+                float availableWidth = Screen.safeArea.width / canvasScale - 32f;
+                float availableHeight = Screen.safeArea.height / canvasScale - 160f;
+                scale = Mathf.Min(availableWidth / size.x, availableHeight / size.y);
             }
             panel.localScale = Vector3.one * Mathf.Max(0.01f, scale);
             if (cursorView != null)
@@ -879,6 +909,35 @@ namespace PoeClone.Inventory
             layoutScreenHeight = Screen.height;
             layoutCanvasScale = canvas.scaleFactor;
             layoutTouchMode = touch;
+        }
+
+        private void LayoutStash(bool touch)
+        {
+            float grid = PlayerInventory.StashSize * StashCell;
+            float header = touch ? 80f : 34f;
+            float tabs = touch ? 80f : TabRowHeight;
+            float search = touch ? 80f : SearchHeight;
+            float note = touch ? 44f : NoteHeight;
+            stashPanel.sizeDelta = new Vector2(grid + Pad * 2f, grid + Pad * 2f + header + tabs + search + note);
+            sideTitle.fontSize = touch ? 40 : 24;
+            sideTitle.rectTransform.sizeDelta = new Vector2(stashPanel.sizeDelta.x, header - 4f);
+            sideNote.fontSize = touch ? 26 : 16;
+            sideNote.rectTransform.sizeDelta = new Vector2(-20f,note);
+            stashArea.anchoredPosition = new Vector2(0f,-(Pad + header + tabs));
+            UiKit.TopLeft(stashTabRow,new Vector2(Pad,-(Pad+header-4f)),new Vector2(grid,tabs-4f));
+            for (int k=0;k<stashTabButtons.Length;k++)
+            {
+                var rt=stashTabButtons[k].rectTransform;
+                rt.sizeDelta=new Vector2(rt.sizeDelta.x,tabs-4f);
+                stashTabLabels[k].fontSize=touch ? 28 : 16;
+            }
+            stashSearchRow.offsetMin=new Vector2(Pad,10f+note);
+            stashSearchRow.offsetMax=new Vector2(-Pad,10f+note+search-6f);
+            stashSearchRow.Find("Field/Text").GetComponent<Text>().fontSize=touch ? 28 : 17;
+            var clear=(RectTransform)stashSearchRow.Find("Clear");
+            clear.sizeDelta=Vector2.one*(touch ? 72f : 30f);
+            clear.GetComponentInChildren<Text>().fontSize=touch ? 32 : 16;
+            ((RectTransform)stashSearchRow.Find("Field")).offsetMax=new Vector2(touch ? -78f : -36f,0f);
         }
 
         // ------------------------------------------------------------------ stash
@@ -1125,8 +1184,8 @@ namespace PoeClone.Inventory
             if (sideNote == null || Time.unscaledTime < noteUntil)
                 return;
             sideNote.text = vendor == null
-                ? "Ctrl+click moves items between the stash and your bag"
-                : "<color=#FFD34D>Gold: " + inventory.Gold + "</color>   Click to buy  -  Ctrl+click or drop here to sell";
+                ? (TouchMode.Active ? "Drag items between the stash and your bag" : "Ctrl+click moves items between the stash and your bag")
+                : "<color=#FFD34D>Gold: " + inventory.Gold + (TouchMode.Active ? "</color>   Tap to buy - drop here to sell" : "</color>   Click to buy  -  Ctrl+click or drop here to sell");
         }
 
         private static string Coloured(ItemData item)
@@ -1303,7 +1362,9 @@ private Vector2 CellSize(int w, int h)
             panelFade.duration = OpenFade;
             panelFade.startScale = 1f; // touch mode scales this panel itself
             TouchMode.AddMenuBlocker(panel);
-            RectTransform closeButton = UiKit.CloseButton(panel, Close);
+            inventoryClose = UiKit.CloseButton(panel, Close);
+            // Mobile keeps the exit above equipment and independent of the inventory's fit scale.
+            inventoryClose.SetParent(canvas.transform, false);
 
             // Character preview panel, just to the left of the inventory.
             Image previewBg = UiKit.NewImage("PreviewPanel", canvas.transform, UiKit.PanelColor);
@@ -1401,7 +1462,7 @@ private Vector2 CellSize(int w, int h)
             RefreshGold();
 
             BuildStash(panelW, panelH);
-            closeButton.SetAsLastSibling(); // above the stash section added after it
+            inventoryClose.SetAsLastSibling(); // above the stash section added after it
 
             BuildTooltip();
         }

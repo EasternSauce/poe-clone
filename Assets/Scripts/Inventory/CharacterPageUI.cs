@@ -14,7 +14,7 @@ namespace PoeClone.Inventory
     {
         [SerializeField] private PlayerInventory inventory;
 
-        private const float RowHeight = 26f;
+        private static float RowHeight => TouchMode.Active ? 44f : 26f;
         private const float PanelWidth = 420f;
 
         private struct Group
@@ -44,7 +44,9 @@ namespace PoeClone.Inventory
 
         private Canvas canvas;
         private CanvasGroup canvasGroup;
-        private RectTransform panel;
+        private RectTransform panel, shell;
+        private float fullHeight;
+        private bool layoutForTouch;
         private RectTransform closeButton;
         private Text levelText;
         private Text specialText;
@@ -159,15 +161,22 @@ namespace PoeClone.Inventory
         {
             isOpen = open;
             panel.gameObject.SetActive(open);
+            shell.gameObject.SetActive(open);
             if (closeButton != null)
                 closeButton.gameObject.SetActive(open);
             if (open)
+            {
+                LayoutPanel();
                 Refresh();
+            }
         }
 
         private void BuildUI()
         {
             canvas = UiKit.NewCanvas("CharacterCanvas", transform, 800, out canvasGroup);
+            var mobileScaler = canvas.GetComponent<TouchAwareScaler>();
+            mobileScaler.MinimumTouchWidth = 480f;
+            mobileScaler.PreferredTouchHeight = 400f;
             // The panel catches the pointer, so a click on it never also attacks or walks.
             canvas.gameObject.AddComponent<GraphicRaycaster>();
             canvasGroup.blocksRaycasts = true;
@@ -214,17 +223,17 @@ namespace PoeClone.Inventory
             float y = -headerHeight;
             foreach (Group g in Groups)
             {
-                Text header = UiKit.NewText("Header_" + g.Title, panel, g.Title.ToUpperInvariant(), 15, UiKit.Gold, TextAnchor.MiddleLeft);
+                Text header = UiKit.NewText("Header_" + g.Title, panel, g.Title.ToUpperInvariant(), TouchMode.Active ? 22 : 15, UiKit.Gold, TextAnchor.MiddleLeft);
                 UiKit.TopLeft(header.rectTransform, new Vector2(26f, y), new Vector2(PanelWidth - 52f, RowHeight));
                 y -= RowHeight;
 
                 foreach (StatType stat in g.Stats)
                 {
-                    Text label = UiKit.NewText("Label_" + stat, panel, LabelFor(stat), 17, UiKit.TextColor, TextAnchor.MiddleLeft);
+                    Text label = UiKit.NewText("Label_" + stat, panel, LabelFor(stat), TouchMode.Active ? 22 : 17, UiKit.TextColor, TextAnchor.MiddleLeft);
                     UiKit.TopLeft(label.rectTransform, new Vector2(40f, y), new Vector2(PanelWidth * 0.5f, RowHeight));
                     labelTexts[stat] = label;
 
-                    Text value = UiKit.NewText("Value_" + stat, panel, "", 17, UiKit.TextColor, TextAnchor.MiddleRight);
+                    Text value = UiKit.NewText("Value_" + stat, panel, "", TouchMode.Active ? 22 : 17, UiKit.TextColor, TextAnchor.MiddleRight);
                     UiKit.TopLeft(value.rectTransform, new Vector2(PanelWidth * 0.45f, y), new Vector2(PanelWidth * 0.55f - 40f, RowHeight));
                     valueTexts[stat] = value;
 
@@ -232,14 +241,89 @@ namespace PoeClone.Inventory
                 }
             }
 
-            Text specialHeader = UiKit.NewText("Header_Special", panel, "SPECIAL", 15, UiKit.Gold, TextAnchor.MiddleLeft);
+            Text specialHeader = UiKit.NewText("Header_Special", panel, "SPECIAL", TouchMode.Active ? 22 : 15, UiKit.Gold, TextAnchor.MiddleLeft);
             UiKit.TopLeft(specialHeader.rectTransform, new Vector2(26f, y), new Vector2(PanelWidth - 52f, RowHeight));
             y -= RowHeight;
-            specialText = UiKit.NewText("Special", panel, "", 15, UiKit.MagicBlue, TextAnchor.UpperLeft);
+            specialText = UiKit.NewText("Special", panel, "", TouchMode.Active ? 20 : 15, UiKit.MagicBlue, TextAnchor.UpperLeft);
             specialText.horizontalOverflow = HorizontalWrapMode.Wrap;
             UiKit.TopLeft(specialText.rectTransform, new Vector2(40f, y - 4f), new Vector2(PanelWidth - 70f, SpecialRows * RowHeight));
 
+            fullHeight = panelHeight;
+            Image shellImage = UiKit.NewImage("CharacterWindow", canvas.transform, UiKit.PanelColor);
+            UiKit.Grain(shellImage);
+            shellImage.raycastTarget = true;
+            shell = shellImage.rectTransform;
+            UiKit.Frame(shell);
+            RectTransform viewport = UiKit.NewRect("StatsViewport", shell);
+            UiKit.Stretch(viewport, 8f);
+            viewport.gameObject.AddComponent<RectMask2D>();
+            Image catcher = viewport.gameObject.AddComponent<Image>();
+            catcher.color = Color.clear;
+            panel.SetParent(viewport, false);
+            panel.anchorMin = new Vector2(0f, 1f);
+            panel.anchorMax = new Vector2(1f, 1f);
+            panel.pivot = new Vector2(0.5f, 1f);
+            panel.sizeDelta = new Vector2(0f, panelHeight);
+            panel.anchoredPosition = Vector2.zero;
+            ScrollRect scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            scroll.viewport = viewport;
+            scroll.content = panel;
+            scroll.horizontal = false;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 40f;
+            closeButton.SetAsLastSibling();
+            LayoutPanel();
             panel.gameObject.SetActive(false);
+            shell.gameObject.SetActive(false);
+        }
+
+        private void LateUpdate()
+        {
+            if (isOpen) LayoutPanel();
+        }
+
+        private void LayoutPanel()
+        {
+            if (shell == null) return;
+            shell.GetComponent<Image>().color = UiKit.ReadablePanelColor;
+            float unit = Mathf.Max(0.01f, canvas.scaleFactor);
+            float height = Screen.safeArea.height / unit;
+            if (layoutForTouch != TouchMode.Active)
+            {
+                layoutForTouch = TouchMode.Active;
+                float y = -84f;
+                foreach (Group group in Groups)
+                {
+                    Text heading = panel.Find("Header_" + group.Title).GetComponent<Text>();
+                    heading.fontSize = layoutForTouch ? 22 : 15;
+                    UiKit.TopLeft(heading.rectTransform,new Vector2(26f,y),new Vector2(PanelWidth-52f,RowHeight));
+                    y -= RowHeight;
+                    foreach (StatType stat in group.Stats)
+                    {
+                        labelTexts[stat].fontSize = valueTexts[stat].fontSize = layoutForTouch ? 22 : 17;
+                        UiKit.TopLeft(labelTexts[stat].rectTransform,new Vector2(40f,y),new Vector2(PanelWidth*.5f,RowHeight));
+                        UiKit.TopLeft(valueTexts[stat].rectTransform,new Vector2(PanelWidth*.45f,y),new Vector2(PanelWidth*.55f-40f,RowHeight));
+                        y -= RowHeight;
+                    }
+                }
+                Text specialHeading=panel.Find("Header_Special").GetComponent<Text>();
+                specialHeading.fontSize=layoutForTouch ? 22 : 15;
+                UiKit.TopLeft(specialHeading.rectTransform,new Vector2(26f,y),new Vector2(PanelWidth-52f,RowHeight));
+                y-=RowHeight;
+                specialText.fontSize=layoutForTouch ? 20 : 15;
+                UiKit.TopLeft(specialText.rectTransform,new Vector2(40f,y-4f),new Vector2(PanelWidth-70f,SpecialRows*RowHeight));
+                fullHeight=-y+SpecialRows*RowHeight+30f;
+                panel.sizeDelta=new Vector2(0f,fullHeight);
+                Refresh();
+            }
+            float scale = 1f;
+            shell.anchorMin = shell.anchorMax = shell.pivot = TouchMode.Active ? new Vector2(0.5f, 0.5f) : new Vector2(0f, 0.5f);
+            shell.anchoredPosition = TouchMode.Active ? Vector2.zero : new Vector2(30f, 0f);
+            shell.localScale = Vector3.one * scale;
+            shell.sizeDelta = new Vector2(PanelWidth, Mathf.Min(fullHeight + 16f, (height - 48f) / scale));
+            closeButton.anchorMin = closeButton.anchorMax = closeButton.pivot = TouchMode.Active ? Vector2.one : new Vector2(0f, 1f);
+            closeButton.pivot = Vector2.one;
+            closeButton.anchoredPosition = TouchMode.Active ? new Vector2(-16f, -16f) : new Vector2(30f + PanelWidth - 12f, -12f);
         }
 
         private static string LabelFor(StatType stat)
@@ -329,7 +413,7 @@ namespace PoeClone.Inventory
                     return "";
             }
 
-            return "  <size=13><color=#" + UiKit.Hex(UiKit.DimText) + ">" + hint + "</color></size>";
+            return (TouchMode.Active ? "\n<size=16><color=#" : "  <size=13><color=#") + UiKit.Hex(UiKit.DimText) + ">" + hint + "</color></size>";
         }
 
         private static string Percent(float fraction)

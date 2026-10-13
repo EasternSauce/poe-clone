@@ -23,7 +23,10 @@ namespace PoeClone.UI
     {
         private const float JoystickRadius = 90f;   // how far the knob travels, in canvas units
         private const float JoystickDeadZone = 0.15f;
-        private static readonly Vector2 JoystickIdle = new Vector2(170f, 170f);
+        private static Vector2 JoystickIdle => TouchMode.Portrait ? new Vector2(180f, 185f) : new Vector2(170f, 170f);
+        private bool menuExpanded;
+        private Image menuToggle, questToggle, drawerBackground;
+        private readonly List<RectTransform> drawerButtons = new List<RectTransform>();
 
         private static readonly Color ControlColor = new Color(0.08f, 0.07f, 0.06f, 0.55f);
         private static readonly Color ControlPressed = new Color(0.30f, 0.24f, 0.14f, 0.75f);
@@ -72,11 +75,10 @@ namespace PoeClone.UI
         private bool combatShown;
         private Vector2 screenSize;
         private readonly List<CanvasScaler> scalers = new List<CanvasScaler>();
-        private readonly List<RectTransform> leftMenuButtons = new List<RectTransform>();
 
-        private static float LeftMenuY => TouchMode.Portrait ? -180f : -58f;
-        public static float PassiveBadgeTop => -LeftMenuY + 48f + 12f;
-        public bool MenusVisible => menuRoot != null && menuRoot.activeInHierarchy;
+
+        public static float PassiveBadgeTop => TouchMode.Portrait ? 290f : 230f;
+        public bool MenusVisible => menuToggle != null && menuToggle.gameObject.activeInHierarchy && !menuExpanded && !QuestTrackerUI.MobileOpen;
 
         private void Awake()
         {
@@ -110,8 +112,7 @@ namespace PoeClone.UI
                     scaler.referenceResolution = new Vector2(1280f, TouchMode.CanvasHeight);
             }
             // In portrait the HUD needs the upper-left row; menus sit just below it.
-            foreach (RectTransform button in leftMenuButtons)
-                button.anchoredPosition = new Vector2(button.anchoredPosition.x, LeftMenuY);
+
 
             var session = GameSessionController.Instance;
             bool spectator = session != null && session.Role == SessionRole.Spectator;
@@ -131,24 +132,29 @@ namespace PoeClone.UI
 
             bool dead = stats == null || stats.IsDead;
             bool inventoryOpen = inventoryUI != null && inventoryUI.IsOpen;
-            inventoryNavigationRoot.SetActive(inventoryOpen && !dead);
+            inventoryNavigationRoot.SetActive(inventoryOpen && !inventoryUI.IsStashOpen && !dead);
             bool characterOpen = characterUI != null && characterUI.IsOpen;
             if (!PoeClone.World.MinimalCombatMode.Enabled && settingsMenu == null)
                 settingsMenu = FindAnyObjectByType<EscapeMenuUI>();
             bool menuOpen = inventoryOpen || characterOpen || SkillBarUI.IsOpen || DialogueUI.IsOpen ||
-                            PassiveTreeUI.IsOpen || (settingsMenu != null && settingsMenu.IsOpen);
+                            PassiveTreeUI.IsOpen || (ChatUI.Enabled && ChatUI.PanelVisible) || (settingsMenu != null && settingsMenu.IsOpen);
 
             // Keep the menu buttons behind the active panel in both draw order and hit testing.
             // The panel's own close control remains available to dismiss it.
-            menuRoot.SetActive((!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.MenusEnabled) && !dead && !menuOpen);
+            bool menus = (!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.MenusEnabled) && !dead && !menuOpen;
+            menuRoot.SetActive(menus && menuExpanded);
+            menuToggle.gameObject.SetActive(menus);
+            questToggle.gameObject.SetActive(menus);
+            if (menuOpen) menuExpanded = false;
+            LayoutControls();
             if (settingsButton != null)
-                settingsButton.gameObject.SetActive(!PoeClone.World.MinimalCombatMode.Enabled && !dead && !menuOpen);
+                settingsButton.gameObject.SetActive(!PoeClone.World.MinimalCombatMode.Enabled);
 
-            SetCombatShown(!dead && !menuOpen);
+            SetCombatShown(!dead && !menuOpen && !menuExpanded);
             UpdateSkillButtons();
             UpdatePotionButtons();
             // The character page sits where the HUD is drawn (OnGUI draws over uGUI).
-            PlayerHUD.SetHiddenBy(this, characterOpen);
+            PlayerHUD.SetHiddenBy(this, characterOpen || inventoryOpen || SkillBarUI.IsOpen || (ChatUI.Enabled && ChatUI.PanelVisible));
 
             UpdateAimIcon();
 
@@ -419,6 +425,7 @@ namespace PoeClone.UI
 
         private void ToggleChat()
         {
+            if (!ChatUI.Enabled) ChatUI.SetEnabled(true);
             bool open = !ChatUI.PanelVisible;
             if (open)
                 CloseOthers();
@@ -428,6 +435,7 @@ namespace PoeClone.UI
         // One panel at a time: on a phone they overlap each other.
         private void CloseOthers()
         {
+            menuExpanded = false;
             if (inventoryUI != null && inventoryUI.IsOpen)
                 inventoryUI.SetOpen(false);
             if (characterUI != null && characterUI.IsOpen)
@@ -587,12 +595,10 @@ namespace PoeClone.UI
             TouchMode.AddBlocker(chat.rectTransform);
 
             Image tree = NewRoundButton("Tree", menu, new Vector2(0f, 1f), new Vector2(350f, -58f), 96f, "TREE");
-            leftMenuButtons.Add(tree.rectTransform);
             tree.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TogglePassives();
             TouchMode.AddBlocker(tree.rectTransform);
 
             Image town = NewRoundButton("Town", menu, new Vector2(0f, 1f), new Vector2(460f, -58f), 96f, "TOWN");
-            leftMenuButtons.Add(town.rectTransform);
             town.gameObject.AddComponent<TouchPointerRelay>().Up += _ => TownPortal.Pressed = true;
             TouchMode.AddBlocker(town.rectTransform);
 
@@ -606,8 +612,7 @@ namespace PoeClone.UI
                 tree.gameObject.SetActive(PoeClone.World.MinimalCombatMode.PassiveMenuEnabled);
             }
 
-            settingsButton = NewRoundButton("Settings", canvas.transform, new Vector2(0f, 1f), new Vector2(570f, -58f), 96f, "SETTINGS");
-            leftMenuButtons.Add(settingsButton.rectTransform);
+            settingsButton = NewRoundButton("Settings", menu, new Vector2(0f, 1f), new Vector2(570f, -58f), 96f, "SETTINGS");
             settingsButton.GetComponentInChildren<Text>().fontSize = 16;
             settingsButton.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {
@@ -617,6 +622,90 @@ namespace PoeClone.UI
                 settingsMenu?.OpenSettings();
             };
             TouchMode.AddBlocker(settingsButton.rectTransform);
+            var drawerCanvas = menu.gameObject.AddComponent<Canvas>();
+            drawerCanvas.overrideSorting = true;
+            drawerCanvas.sortingOrder = 800;
+            menu.gameObject.AddComponent<GraphicRaycaster>();
+            drawerBackground = UiKit.NewImage("DrawerBackground",menu,UiKit.ReadablePanelColor);
+            drawerBackground.raycastTarget = true;
+            drawerBackground.transform.SetAsFirstSibling();
+            UiKit.ThinFrame(drawerBackground.rectTransform);
+            TouchMode.AddBlocker(drawerBackground.rectTransform);
+            TouchMode.AddMenuBlocker(drawerBackground.rectTransform);
+            Image[] drawer = { bag, character, skillsButton, chat, tree, town, settingsButton };
+            string[] names = { "Inventory", "Character", "Skills", "Chat", "Passives", "Town", "Settings" };
+            for (int k=0;k<drawer.Length;k++)
+            {
+                Image button=drawer[k];
+                drawerButtons.Add(button.rectTransform);
+                button.transform.Find("Rim").gameObject.SetActive(false);
+                Text label=button.GetComponentInChildren<Text>();
+                label.text=names[k];
+                UiKit.StyleButton(button,label);
+            }
+            menuToggle = NewRoundButton("MenuToggle", canvas.transform, new Vector2(0f, 1f), Vector2.zero, 108f, "MENU");
+            UiKit.OnClick(menuToggle, () =>
+            {
+                menuExpanded = !menuExpanded;
+                if (menuExpanded && QuestTrackerUI.MobileOpen) QuestTrackerUI.ToggleMobile();
+            });
+            TouchMode.AddBlocker(menuToggle.rectTransform);
+            questToggle = NewRoundButton("QuestToggle", canvas.transform, new Vector2(0f, 1f), Vector2.zero, 108f, "QUESTS");
+            UiKit.OnClick(questToggle, () => { menuExpanded = false; QuestTrackerUI.ToggleMobile(); });
+            TouchMode.AddBlocker(questToggle.rectTransform);
+            LayoutControls();
+        }
+
+        private void LayoutControls()
+        {
+            bool portrait = TouchMode.Portrait;
+            float unit = Mathf.Max(0.01f, combatRoot.GetComponentInParent<Canvas>().scaleFactor);
+            Rect safe = Screen.safeArea;
+            var combat = (RectTransform)combatRoot.transform;
+            combat.offsetMin = new Vector2(safe.xMin,safe.yMin)/unit;
+            combat.offsetMax = new Vector2(safe.xMax-Screen.width,safe.yMax-Screen.height)/unit;
+            float rowY = portrait ? -215f : -165f;
+            Place(menuToggle.rectTransform, new Vector2(0f, 1f), new Vector2(86f, rowY), new Vector2(124f, 108f));
+            Place(questToggle.rectTransform, new Vector2(0f, 1f), new Vector2(230f, rowY), new Vector2(124f, 108f));
+            menuToggle.GetComponentInChildren<Text>().fontSize = portrait ? 32 : 28;
+            questToggle.GetComponentInChildren<Text>().fontSize = portrait ? 30 : 26;
+            questToggle.color = QuestTrackerUI.MobileOpen ? ControlPressed : ControlColor;
+            menuToggle.color = menuExpanded ? ControlPressed : ControlColor;
+            UiKit.TopLeft(drawerBackground.rectTransform,new Vector2(24f,rowY-70f),new Vector2(portrait ? 552f : 1092f,portrait ? 480f : 240f));
+            for (int k = 0; k < drawerButtons.Count; k++)
+            {
+                RectTransform button = drawerButtons[k];
+                Place(button, new Vector2(0f, 1f), new Vector2(150f + (k % (portrait ? 2 : 4)) * 270f, rowY - 124f - (k / (portrait ? 2 : 4)) * 120f), new Vector2(252f, 108f));
+                Text label = button.GetComponentInChildren<Text>();
+                if (label != null) label.fontSize = portrait ? 34 : 28;
+            }
+            healthPotionText.fontSize = manaPotionText.fontSize = portrait ? 32 : 26;
+            for (int k=0;k<skillButtons.Count;k++)
+                skillButtons[k].Back.GetComponentInChildren<Text>().fontSize=portrait ? 30 : 24;
+            joystickBase.sizeDelta = Vector2.one * (portrait ? 300f : 240f);
+            joystickKnob.sizeDelta = Vector2.one * (portrait ? 130f : 104f);
+            if (joystickPointer == int.MinValue) joystickBase.anchoredPosition = JoystickIdle;
+            float aimX = portrait ? 175f : 145f;
+            float aimY = portrait ? 185f : 145f;
+            Place(aimBaseImage.rectTransform, new Vector2(1f, 0f), new Vector2(-aimX, aimY), Vector2.one * (portrait ? 270f : 220f));
+            aimKnob.sizeDelta = Vector2.one * (portrait ? 142f : 118f);
+            for (int k = 0; k < skillButtons.Count; k++)
+            {
+                float angle = (90f + k * 30f) * Mathf.Deg2Rad;
+                float radius = portrait ? 270f : 225f;
+                Place(skillButtons[k].Back.rectTransform, new Vector2(1f, 0f),
+                    new Vector2(-aimX + Mathf.Cos(angle) * radius, aimY + Mathf.Sin(angle) * radius), Vector2.one * (portrait ? 132f : 100f));
+            }
+            if (!portrait)
+            {
+                for (int k=0;k<skillButtons.Count;k++)
+                    Place(skillButtons[k].Back.rectTransform,new Vector2(1f,0f),
+                        new Vector2(-335f-(k%2)*120f,300f-(k/2)*120f),Vector2.one*100f);
+            }
+            Place(healthPotionImage.rectTransform, portrait ? Vector2.zero : new Vector2(1f, 0f),
+                portrait ? new Vector2(85f, 440f) : new Vector2(-300f, 62f), Vector2.one * (portrait ? 132f : 112f));
+            Place(manaPotionImage.rectTransform, portrait ? Vector2.zero : new Vector2(1f, 0f),
+                portrait ? new Vector2(235f, 440f) : new Vector2(-425f, 62f), Vector2.one * (portrait ? 132f : 112f));
         }
 
         // Its own scaler rather than TouchAwareScaler: these canvases only ever show in touch mode.

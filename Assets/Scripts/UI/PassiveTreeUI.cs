@@ -69,6 +69,8 @@ namespace PoeClone.UI
         private Image respecButton;
         private Text respecLabel;
         private bool closeRequested;
+        private Vector2 mobileLayoutSize;
+        private bool layoutWasTouch;
         private PassiveAllocation Preview => !Spectating && draft != null ? draft : passives.Allocation;
         public bool HasPendingChanges => draft != null && (resetPending ||
             !new HashSet<string>(draft.Taken).SetEquals(passives.Allocation.Taken));
@@ -436,6 +438,7 @@ namespace PoeClone.UI
 
         private void LateUpdate()
         {
+            if (panelRoot.activeSelf) LayoutMobileControls();
             if (!panelRoot.activeSelf || shown == null || !tooltip.gameObject.activeSelf)
                 return;
 
@@ -456,7 +459,15 @@ namespace PoeClone.UI
                 tooltipOffset = placed - at;
                 placeTooltip = false;
             }
-            tooltip.rectTransform.anchoredPosition = at + tooltipOffset;
+            Vector2 position = at + tooltipOffset;
+            if (TouchMode.Active)
+            {
+                Rect bounds = panelRect.rect;
+                Vector2 size = tooltip.rectTransform.sizeDelta;
+                position.x = Mathf.Clamp(position.x, bounds.xMin + 8f, Mathf.Max(bounds.xMin + 8f, bounds.xMax - size.x - 8f));
+                position.y = Mathf.Clamp(position.y, bounds.yMin + size.y + 8f, bounds.yMax - 140f);
+            }
+            tooltip.rectTransform.anchoredPosition = position;
         }
 
         private void ShowInfo(PassiveNode node)
@@ -659,6 +670,43 @@ namespace PoeClone.UI
             suppressPinchClicks = false;
         }
 
+        private void LayoutMobileControls()
+        {
+            bool touch=TouchMode.Active;
+            if (mobileLayoutSize==panelRect.rect.size && layoutWasTouch==touch) return;
+            mobileLayoutSize=panelRect.rect.size;
+            layoutWasTouch=touch;
+            panelRect.GetComponent<Image>().color=UiKit.ReadablePanelColor;
+            Text title=panelRect.Find("Title").GetComponent<Text>();
+            title.fontSize=touch ? 40 : 26;
+            TopStrip(title.rectTransform,-14f,touch ? 56f : 34f);
+            pointsText.fontSize=touch ? 30 : 18;
+            TopStrip(pointsText.rectTransform,touch ? -72f : -46f,touch ? 48f : 24f);
+            UiKit.TopLeft(resetButton.rectTransform,new Vector2(16f,touch ? -132f : -12f),new Vector2(touch ? 200f : 150f,touch ? 88f : 38f));
+            UiKit.TopLeft(respecButton.rectTransform,new Vector2(touch ? 232f : 176f,touch ? -132f : -12f),new Vector2(touch ? 200f : 150f,touch ? 88f : 38f));
+            resetLabel.fontSize=respecLabel.fontSize=touch ? 30 : 16;
+            TopRight(centreButton.rectTransform,new Vector2(touch ? 128f : 150f,touch ? -132f : -12f),new Vector2(touch ? 200f : 88f,touch ? 88f : 38f));
+            centreButton.GetComponentInChildren<Text>().fontSize=touch ? 30 : 16;
+            viewRect.offsetMax=new Vector2(-16f,touch ? -236f : -ViewTop);
+            viewRect.offsetMin=new Vector2(16f,touch ? 228f : ViewBottom);
+            var info=(RectTransform)infoText.transform.parent;
+            info.offsetMax=new Vector2(-16f,touch ? 220f : 96f);
+            var search=(RectTransform)info.Find("Search");
+            UiKit.TopLeft(search,new Vector2(12f,-12f),new Vector2(touch ? 420f : SearchWidth,touch ? 96f : 38f));
+            search.Find("Field/Text").GetComponent<Text>().fontSize=touch ? 32 : 17;
+            var clear=(RectTransform)search.Find("Clear");
+            clear.sizeDelta=Vector2.one*(touch ? 80f : 30f);
+            clear.GetComponentInChildren<Text>().fontSize=touch ? 36 : 16;
+            ((RectTransform)search.Find("Field")).offsetMax=new Vector2(touch ? -88f : -36f,0f);
+            searchCount.gameObject.SetActive(!touch);
+            TopRight(confirmButton.rectTransform,new Vector2(touch ? 232f : 156f,-20f),new Vector2(touch ? 200f : 130f,touch ? 96f : 40f));
+            TopRight(cancelButton.rectTransform,new Vector2(12f,-20f),new Vector2(touch ? 200f : 130f,touch ? 96f : 40f));
+            confirmButton.GetComponentInChildren<Text>().fontSize=cancelButton.GetComponentInChildren<Text>().fontSize=touch ? 30 : 16;
+            infoText.fontSize=touch ? 28 : 18;
+            infoText.rectTransform.offsetMin=new Vector2(touch ? 12f : 12f+SearchWidth+16f,0f);
+            infoText.rectTransform.offsetMax=new Vector2(touch ? -12f : -310f,touch ? -120f : 0f);
+        }
+
         private void UpdateZoomButtons()
         {
             bool touch = TouchMode.Active;
@@ -775,6 +823,7 @@ namespace PoeClone.UI
 
             Image close = UiKit.NewImage("Close", pr, new Color(0.25f, 0.1f, 0.08f, 1f));
             close.raycastTarget = true;
+            close.gameObject.AddComponent<MobileCloseTarget>();
             TopRight(close.rectTransform, new Vector2(12f, -12f), new Vector2(38f, 38f));
             Text x = UiKit.NewText("X", close.rectTransform, "X", 20, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(x.rectTransform, 0f);
