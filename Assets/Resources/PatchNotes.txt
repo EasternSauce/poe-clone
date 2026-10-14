@@ -1,7 +1,11 @@
+version: 2026-10-14-modifier-count-distributions
+- Raised the full modifier-count distribution by one: Magic items roll 2 or 3 random modifiers (50% each), and Rare items roll 4, 5 or 6 (50% / 35% / 15%).
+- Unique modifier lists remain individually designed around each item's theme, without a shared minimum or maximum.
+
 version: 2026-10-14-loot-movement-and-feedback
 - Enrage keeps its combat effects without text, red pulses or an announcement, including on one-shot kills.
 - Reassembling skeletons return to full life when collapsing into a bone pile.
-- Magic items can roll up to 3 random modifiers and Rare items up to 6. Eligible modifier tiers have equal chances; tiers 10 or more item levels below the item cannot roll.
+- Magic items roll 2 or 3 random modifiers (50% each); Rare items roll 4, 5 or 6 (50% / 35% / 15%). Eligible modifier tiers have equal chances; tiers 10 or more item levels below the item cannot roll.
 - Minion duration modifiers use general wording and apply to every temporary minion; permanent minions remain permanent.
 - Replaced the Spiked Buckler and Earthbreaker icons. Passive tree confirmation has a punchier impact; Dash uses one swoosh recording.
 - Map-up is always north, with compass labels and updated directions in quests and dialogue.

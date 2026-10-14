@@ -4,6 +4,7 @@ namespace PoeClone.Inventory
 {
     /// <summary>
     /// Hand-made items with fixed names and modifier sets (orange), and ranged numeric bonuses.
+    /// Modifier counts are designed per unique, with no shared minimum or maximum.
     /// Each has a few stats its archetype wants and one or two effects of its own (see the end
     /// of StatType). Each boss always drops one; any other drop has a small chance to be one.
     /// Only uniques the area level reaches can drop there, weighted so the strongest are rarest.

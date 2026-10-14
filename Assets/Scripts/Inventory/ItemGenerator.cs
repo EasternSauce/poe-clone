@@ -9,7 +9,7 @@ namespace PoeClone.Inventory
     /// <summary>
     /// Random loot. Every drop is one of the item bases that has art (an icon and a 3D look, keyed by
     /// id like the starter items), with the base's own fixed stats plus random extra stats by rarity:
-    /// Normal none, Magic one to three, Rare three to six, rolled stronger as the item level rises.
+    /// Normal none, Magic two or three, Rare four to six, rolled stronger as the item level rises.
     /// The base's own stats vary a little too (a 15 evasion base rolls 12 to 16), so two drops of
     /// the same base aren't identical. A weapon's base damage does not vary: extra flat Physical
     /// Damage only comes from a rolled affix. Takes a System.Random so tests can make it repeatable.
@@ -875,12 +875,12 @@ namespace PoeClone.Inventory
 
             int affixCount = 0;
             if (rarity == ItemRarity.Magic)
-                affixCount = rng.Next(1, 4);
+                affixCount = rng.Next(2, 4);
             else if (rarity == ItemRarity.Rare)
             {
-                // Preserve the existing chances for 3 and 4; split the top roll between 5 and 6.
+                // Shift the original 3/4/5 distribution up by one, retaining 50% / 35% / 15%.
                 double roll = rng.NextDouble();
-                affixCount = roll < 0.5 ? 3 : roll < 0.85 ? 4 : roll < 0.925 ? 5 : 6;
+                affixCount = roll < 0.5 ? 4 : roll < 0.85 ? 5 : 6;
             }
 
             // Each stat at most once per item, and only stats that make sense on this kind of gear.
@@ -974,7 +974,7 @@ namespace PoeClone.Inventory
             // The rarity shown matches what actually rolled (a base can run out of stats to give).
             if (rarity != ItemRarity.Normal && fromRarity == 0)
                 rarity = ItemRarity.Normal;
-            else if (rarity == ItemRarity.Rare && fromRarity < 3)
+            else if (rarity == ItemRarity.Rare && fromRarity < 4)
                 rarity = ItemRarity.Magic;
 
             string name = NameFor(rng, b, rarity, rolled);
