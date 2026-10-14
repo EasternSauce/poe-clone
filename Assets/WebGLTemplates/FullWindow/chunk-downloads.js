@@ -13,7 +13,9 @@ function installChunkDownloads(manifest, version, progress) {
   }));
   var cachePromise = typeof caches !== 'undefined'
     ? caches.open('poe-download-chunks-v1').catch(function () { return null; }) : Promise.resolve(null);
-  var active = 0, waiting = [], route = null;
+  var active = 0, waiting = [], route = null, bulkRoute = null;
+  var hedges = 0, nextAlternative = 0;
+  var unavailable = new Set();
   function slot(priority, work) {
     return new Promise(function (resolve, reject) {
       waiting.push({ priority: priority, work: work, resolve: resolve, reject: reject });
@@ -47,7 +49,11 @@ function installChunkDownloads(manifest, version, progress) {
     try {
       touch();
       var response = await originalFetch(url, { signal: controller.signal });
-      if (!response.ok) throw new Error('HTTP ' + response.status + ' for ' + url);
+      if (!response.ok) {
+        var error = new Error('HTTP ' + response.status + ' for ' + url);
+        error.status = response.status;
+        throw error;
+      }
       reader = response.body.getReader();
       var parts = [], length = 0;
       while (true) {
@@ -77,6 +83,55 @@ function installChunkDownloads(manifest, version, progress) {
       return winner;
     } finally { controllers.forEach(function (controller) { controller.abort(); }); }
   }
+  // A nearby small-script cache hit does not measure large-file throughput. Also
+  // allow at most two extra requests to rescue slow pieces without flooding mobile
+  // connections. Only a fully verified winner can replace the current route.
+  function fetchPiece(winner, path, hash, size, signal, update) {
+    if (sources.length < 2 || size < 65536)
+      return read(winner.source + path, signal, update).then(function (bytes) { return check(bytes, hash, size); });
+    return new Promise(function (resolve, reject) {
+      var controllers = [], pending = 0, finished = false, alternativeStarted = false, highWater = 0, lastError;
+      var timer;
+      function finish(error, bytes, source) {
+        if (finished) return;
+        finished = true; clearTimeout(timer);
+        signal.removeEventListener('abort', abort);
+        controllers.forEach(function (controller) { controller.abort(); });
+        if (error) reject(error);
+        else {
+          if (source !== winner.source) console.log('[Loading] Faster piece route: ' + source);
+          winner.source = source;
+          resolve(bytes);
+        }
+      }
+      function abort() { finish(new Error('Download cancelled')); }
+      function start(source, hedge) {
+        var controller = new AbortController(); controllers.push(controller); pending++;
+        if (hedge) hedges++;
+        read(source + path, controller.signal, function (count) {
+          highWater = Math.max(highWater, count); update(highWater);
+        }).then(function (bytes) { return check(bytes, hash, size); })
+          .then(function (bytes) { finish(null, bytes, source); })
+          .catch(function (error) {
+            lastError = error; pending--;
+            if (error.status === 404) unavailable.add(source);
+            if (!finished && pending === 0 && !alternate()) finish(lastError);
+          }).finally(function () { if (hedge) hedges--; });
+      }
+      function alternate() {
+        if (finished || alternativeStarted || hedges >= 2 || signal.aborted) return false;
+        var alternatives = sources.filter(function (source) { return source !== winner.source && !unavailable.has(source); });
+        if (!alternatives.length) return false;
+        alternativeStarted = true;
+        start(alternatives[nextAlternative++ % alternatives.length], true);
+        return true;
+      }
+      signal.addEventListener('abort', abort);
+      if (signal.aborted) { abort(); return; }
+      timer = setTimeout(alternate, 3000);
+      start(winner.source, false);
+    });
+  }
   async function piece(hash, size, priority, signal, update) {
     var path = 'Build/chunks/' + hash + '.bin', key = new URL(path, base).href;
     var cache = await cachePromise;
@@ -88,19 +143,29 @@ function installChunkDownloads(manifest, version, progress) {
     }
     return slot(priority, async function () {
       if (signal.aborted) throw new Error('Download cancelled');
-      if (!route) route = chooseRoute(hash, size);
-      var winner = await route;
+      var winner;
+      if (priority >= 0 && size >= 262144) {
+        if (!bulkRoute) bulkRoute = chooseRoute(hash, size);
+        winner = await bulkRoute;
+      } else {
+        if (!route) route = chooseRoute(hash, size);
+        winner = await route;
+      }
       var order = [winner.source].concat(sources.filter(function (source) { return source !== winner.source; }));
       var lastError;
       for (var source of order) {
         for (var attempt = 0; attempt < 2; attempt++) {
           try {
-            var bytes = winner.hash === hash && winner.source === source ? winner.bytes : await read(source + path, signal, update);
+            var bytes = winner.hash === hash && winner.source === source ? winner.bytes :
+              source === order[0] ? await fetchPiece(winner, path, hash, size, signal, update) : await read(source + path, signal, update);
             await check(bytes, hash, size);
             update(size);
             if (cache) cache.put(key, new Response(bytes)).catch(function () {});
             return bytes;
-          } catch (error) { lastError = error; if (signal.aborted) throw error; update(0); }
+          } catch (error) {
+            lastError = error; if (signal.aborted) throw error; update(0);
+            if (error.status === 404) { unavailable.add(source); break; }
+          }
         }
       }
       throw lastError;
@@ -108,7 +173,8 @@ function installChunkDownloads(manifest, version, progress) {
   }
   async function whole(entry, signal, update) {
     var lastError;
-    var winner = route ? await route.catch(function () { return null; }) : null;
+    var selection = bulkRoute || route;
+    var winner = selection ? await selection.catch(function () { return null; }) : null;
     var order = winner ? [winner.source].concat(sources.filter(function (source) { return source !== winner.source; })) : sources;
     for (var source of order) {
       try {
