@@ -356,7 +356,6 @@ namespace PoeClone.Enemies
 
         // ------------------------------------------------------------------ reassembling (EnemyKind.Reassembles)
 
-        private const float PileLife = 0.25f;
         private const float PileSeconds = 3.5f;
         private const float RisenLife = 0.5f;
 
@@ -364,7 +363,7 @@ namespace PoeClone.Enemies
         public bool Reassembling { get; private set; }
         private bool reassembled;
 
-        // The first killing blow: it falls into a pile of bones with a little life left.
+        // The first killing blow: it falls into a pile of bones at full life.
         private bool CollapseIntoBones()
         {
             if (reassembled || !EnemyKinds.Get(KindIndex).Reassembles)
@@ -377,7 +376,7 @@ namespace PoeClone.Enemies
         private IEnumerator Reassemble()
         {
             Reassembling = true;
-            currentHealth = maxHealth * PileLife;
+            currentHealth = maxHealth;
             Damaged?.Invoke();
             EnemyController controller = GetComponent<EnemyController>();
             EnemyCombat combat = GetComponent<EnemyCombat>();

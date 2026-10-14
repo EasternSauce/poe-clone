@@ -104,7 +104,7 @@ namespace PoeClone.Quests
                 Id = "woods", Story = HollowCall, Title = "Restless Woods", Giver = NpcRole.Elder,
                 Goal = QuestGoal.KillInArea, Area = WorldBuilder.Greenwood, Count = 6,
                 Objective = "Slay monsters in the Greenwood",
-                Offer = "The dead are pressing out of the Greenwood, east of Haven. Put down six on the road so our hunters can reach the bone totems calling them. Bring word of what you find.",
+                Offer = "The dead are pressing out of the Greenwood, north-east of Haven. Put down six on the road so our hunters can reach the bone totems calling them. Bring word of what you find.",
                 Reminder = "Clear six monsters from the Greenwood road, then return to Maren in Haven.",
                 Thanks = "The road is safer. Now we can deal with what is drawing them here.",
                 RewardGold = 60, RewardExperience = 150, RewardHealthPotions = 2
@@ -123,9 +123,9 @@ namespace PoeClone.Quests
             {
                 Id = "captive", Story = HollowCall, Title = "The Captive Guide", Giver = NpcRole.Elder, After = "totems", TurnIn = NpcRole.Guide,
                 Goal = QuestGoal.Use, Area = WorldBuilder.Cave, Count = 1,
-                Objective = "Defeat Wren's captors, then free Wren from the cage in The Lost Hollows' southern cavern",
-                Offer = "Grave-bone comes from one place: the graveyard beyond the Lost Hollows, the caves under the woods. Nobody in Haven knows the way through them any more - except Wren, who guided our carts down there for twenty years. Wren went down a week ago and never came back. Last night the hunters heard shouting from the Hollows' southern cavern, and saw lamps that weren't ours.\n\nThe way down is in the Greenwood's south-east thickets. If Wren is a prisoner, kill every captor before you touch the cage. They will cut a prisoner's throat sooner than lose them.",
-                Reminder = "Enter the Lost Hollows from the Greenwood's south-east thickets and go to the southern cavern, south-east of the central chamber. Defeat Wren's captors, open the cage, then speak to Wren.",
+                Objective = "Defeat Wren's captors, then free Wren from the cage in The Lost Hollows' southeastern cavern",
+                Offer = "Grave-bone comes from one place: the graveyard beyond the Lost Hollows, the caves under the woods. Nobody in Haven knows the way through them any more - except Wren, who guided our carts down there for twenty years. Wren went down a week ago and never came back. Last night the hunters heard shouting from the Hollows' southeastern cavern, and saw lamps that weren't ours.\n\nThe way down is in the Greenwood's east thickets. If Wren is a prisoner, kill every captor before you touch the cage. They will cut a prisoner's throat sooner than lose them.",
+                Reminder = "Enter the Lost Hollows from the Greenwood's east thickets and go to the southeastern cavern, east of the central chamber. Defeat Wren's captors, open the cage, then speak to Wren.",
                 Thanks = "You came for me? Maren sent you. Of course she did.\n\nThose were Vex's lot - the Tunnel King's diggers. Not the dead. Worse, in a way: the dead don't take a cut.",
                 RewardGold = 110, RewardExperience = 350, RewardHealthPotions = 2
             },
@@ -133,9 +133,9 @@ namespace PoeClone.Quests
             {
                 Id = "tunnel_king", Story = HollowCall, Title = "The Tunnel King", Giver = NpcRole.Guide, After = "captive",
                 Goal = QuestGoal.KillBoss, Target = "Vex, the Tunnel King", Area = WorldBuilder.Warren,
-                Objective = "Defeat Vex, the Tunnel King, in The Warren, through the gate at the Lost Hollows' south-east dead end",
-                Offer = "Here's what I saw from that cage. Every night the dead came up the graveyard tunnels carrying bones, and Vex's diggers took the bones and carved them. Totems, antlers on every one. The dead carried them off to the Greenwood to call more of their own, and Vex was paid for every one.\n\nHe keeps his tally and his carving tools in the Warren, through the timber-propped hole at the end of this cavern's south-east tunnel. Kill him and no more totems leave these tunnels. Then I'll show you the way to the graveyard - I won't send you to Tobias with Vex at your back.",
-                Reminder = "Follow the tunnel south-east from the southern cavern to the Warren's gate in the Lost Hollows. Defeat Vex inside, then return to Wren.",
+                Objective = "Defeat Vex, the Tunnel King, in The Warren, through the gate at the Lost Hollows' east dead end",
+                Offer = "Here's what I saw from that cage. Every night the dead came up the graveyard tunnels carrying bones, and Vex's diggers took the bones and carved them. Totems, antlers on every one. The dead carried them off to the Greenwood to call more of their own, and Vex was paid for every one.\n\nHe keeps his tally and his carving tools in the Warren, through the timber-propped hole at the end of this cavern's east tunnel. Kill him and no more totems leave these tunnels. Then I'll show you the way to the graveyard - I won't send you to Tobias with Vex at your back.",
+                Reminder = "Follow the tunnel east from the southeastern cavern to the Warren's gate in the Lost Hollows. Defeat Vex inside, then return to Wren.",
                 Thanks = "Vex is dead? Then the carving stops.\n\nLet me see that tally-book from his hoard... 'Grave-bone, paid in full by the bell.' The bell. There is a belfry in Tobias's graveyard, drowned these forty years. Someone down there has been buying.",
                 RewardGold = 260, RewardExperience = 900, RewardHealthPotions = 2, RewardItem = ItemRarity.Rare, RewardItemLevel = 9
             },
@@ -144,8 +144,8 @@ namespace PoeClone.Quests
                 Id = "keeper", Story = HollowCall, Title = "The Gravekeeper", Giver = NpcRole.Guide, After = "tunnel_king",
                 Goal = QuestGoal.Talk, TalkTo = NpcRole.Gravekeeper,
                 Objective = "Find Tobias the Gravekeeper in the Haunted Graveyard",
-                Offer = "The graveyard gate is in the Hollows' north-east chamber. From the central chamber, take the eastern passage north, then east. Tobias keeps the graveyard - an old man behind a ring of candles. Show him Vex's tally-book and Maren's shards. If anyone knows who rings that bell, he does.\n\nI'll stay here and keep the lamps lit. These tunnels are mine again.",
-                Reminder = "Take the north-east passage through the Lost Hollows to the Haunted Graveyard gate. Tobias's hut is in the graveyard's south-west corner, inside a ring of candles.",
+                Offer = "The graveyard gate is in the Hollows' north chamber. From the central chamber, take the northeastern passage north-west, then north-east. Tobias keeps the graveyard - an old man behind a ring of candles. Show him Vex's tally-book and Maren's shards. If anyone knows who rings that bell, he does.\n\nI'll stay here and keep the lamps lit. These tunnels are mine again.",
+                Reminder = "Take the north passage through the Lost Hollows to the Haunted Graveyard gate. Tobias's hut is in the graveyard's south corner, inside a ring of candles.",
                 Thanks = "Maren's shards and a goblin's tally-book? Ha! Let me see... Grave-bone, yes. My graves. And 'paid by the bell'...\n\nSit, sit - inside the candles you're safe. The dead don't cross the wards. Not yet.",
                 RewardGold = 80, RewardExperience = 300
             },
@@ -166,8 +166,8 @@ namespace PoeClone.Quests
                 Id = "bellringer", Story = Gravelord, Title = "The Funeral Bell", Giver = NpcRole.Gravekeeper, After = "graves",
                 Goal = QuestGoal.KillBoss, Target = "The Bell-Ringer", Area = WorldBuilder.Belfry,
                 Objective = "Silence the Bell-Ringer in The Drowned Belfry, entered from the Haunted Graveyard",
-                Offer = "That bell is calling the dead out of their graves and gathering them for Mortis. Follow the north-east graveyard lane to the Drowned Belfry and destroy its keeper. Without him, Mortis will have to rely on the bones he hid here.",
-                Reminder = "Enter The Drowned Belfry from the Haunted Graveyard's north-east lane and defeat the Bell-Ringer.",
+                Offer = "That bell is calling the dead out of their graves and gathering them for Mortis. Follow the north graveyard lane to the Drowned Belfry and destroy its keeper. Without him, Mortis will have to rely on the bones he hid here.",
+                Reminder = "Enter The Drowned Belfry from the Haunted Graveyard's north lane and defeat the Bell-Ringer.",
                 Thanks = "Silence. For the first time in weeks. But Mortis is still here, holding on to his scattered bones. Now we can reach them.",
                 RewardGold = 250, RewardExperience = 2000, RewardHealthPotions = 2, RewardItem = ItemRarity.Rare, RewardItemLevel = 17
             },
@@ -187,8 +187,8 @@ namespace PoeClone.Quests
                 Goal = QuestGoal.KillBoss, Target = "Gravelord Mortis", Area = WorldBuilder.Graveyard,
                 Objective = "Slay Gravelord Mortis at the crypt",
                 Offer = "Now finish him. He's at the crypt doors, calling his dead to him. Don't let them surround you.",
-                Reminder = "Mortis waits by the crypt, north of the path. He calls the dead - keep moving.",
-                Thanks = "Mortis is gone. But before he fell he spoke of the Shepherd, sleeping under the northern ice. The priest was only a servant. The dead he stationed at the Hollows' deep road will still be there. We must clear that road ourselves before anyone can reach the ruins.",
+                Reminder = "Mortis waits by the crypt, north-west of the path. He calls the dead - keep moving.",
+                Thanks = "Mortis is gone. But before he fell he spoke of the Shepherd, sleeping under the northwestern ice. The priest was only a servant. The dead he stationed at the Hollows' deep road will still be there. We must clear that road ourselves before anyone can reach the ruins.",
                 RewardGold = 300, RewardExperience = 2500, RewardHealthPotions = 3, RewardItem = ItemRarity.Rare, RewardItemLevel = 18,
                 RewardRespec = 1
             },
@@ -197,9 +197,9 @@ namespace PoeClone.Quests
                 Id = "deep_road", Story = Gravelord, Title = "Break the Deep-Road Blockade", Giver = NpcRole.Gravekeeper, After = "gravelord",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Cave, Count = 1,
                 Objective = "Defeat the blockade guards, then dismantle the bone wall at the Ashen Ruins gateway in The Lost Hollows",
-                Offer = "Mortis stationed a heavy guard at the bone wall on the Lost Hollows' deep road. Go back into the Hollows and take the eastern tunnel toward the Ashen Ruins. Kill that assigned guard, then dismantle the wall yourself. The gateway is sealed until the wall is broken; jumping past the rubble will not open it.",
-                Reminder = "At the eastern deep-road gateway in The Lost Hollows: defeat the stationed guards, then click the bone blockade and dismantle it to unlock the Ashen Ruins gateway.",
-                Thanks = "The road is open. Now Haven must hear what Mortis told you, before anyone else follows that call north.",
+                Offer = "Mortis stationed a heavy guard at the bone wall on the Lost Hollows' deep road. Go back into the Hollows and take the northeastern tunnel toward the Ashen Ruins. Kill that assigned guard, then dismantle the wall yourself. The gateway is sealed until the wall is broken; jumping past the rubble will not open it.",
+                Reminder = "At the northeastern deep-road gateway in The Lost Hollows: defeat the stationed guards, then click the bone blockade and dismantle it to unlock the Ashen Ruins gateway.",
+                Thanks = "The road is open. Now Haven must hear what Mortis told you, before anyone else follows that call north-west.",
                 RewardGold = 200, RewardExperience = 1500, RewardHealthPotions = 2
             },
             new QuestDefinition
@@ -219,7 +219,7 @@ namespace PoeClone.Quests
                 Id = "emberwatch", Story = HollowCall, Title = "Smoke over the Ruins", Giver = NpcRole.Elder, After = "news",
                 Goal = QuestGoal.Talk, TalkTo = NpcRole.Commander,
                 Objective = "Find Commander Varek's camp in the Ashen Ruins",
-                Offer = "The Emberwatch marched into the Ashen Ruins through the Lost Hollows. You have cleared the blockade on that deep road. Follow it east from the Hollows and find Commander Varek at their camp. Whatever is gathering in the old city, he will be facing it.",
+                Offer = "The Emberwatch marched into the Ashen Ruins through the Lost Hollows. You have cleared the blockade on that deep road. Follow it north-east from the Hollows and find Commander Varek at their camp. Whatever is gathering in the old city, he will be facing it.",
                 Reminder = "Travel through the Lost Hollows' cleared deep-road gateway into the Ashen Ruins. Find Commander Varek at the Emberwatch camp.",
                 Thanks = "Haven sent you? Then Haven has more sense than my generals. Welcome to Emberwatch. It isn't much - a fence and a fire - but nothing gets past that fence.",
                 RewardGold = 120, RewardExperience = 1000
@@ -241,8 +241,8 @@ namespace PoeClone.Quests
                 Id = "supplies", Story = EmbersOfWar, Title = "Lost Supplies", Giver = NpcRole.Commander, After = "hold",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Ruins, Count = 3,
                 Objective = "Recover the arrows, bandages and lamp oil",
-                Offer = "When we marched in, we cached supplies along the road - and then the hounds ran us off it. Arrows, bandages, lamp oil. We need all three, and each went a different way.\n\nThe arrow cache in the north-west ruins is still under our red cloth, but the host has put Ember Knights on it - kill them, then gather the arrows. The bandages were on a wagon the hounds burnt in the south-west; nothing guards a burnt wagon, so salvage what you can. The oil is worse. A big hound we call Ashfang dragged the casks east and lairs on them with its pack. Kill it and bring the oil home.",
-                Reminder = "Arrows: kill the Ember Knights at the north-west cache, then gather them. Bandages: salvage the burnt wagon in the south-west. Oil: hunt down Ashfang's pack in the east, then recover the casks. All in the Ashen Ruins.",
+                Offer = "When we marched in, we cached supplies along the road - and then the hounds ran us off it. Arrows, bandages, lamp oil. We need all three, and each went a different way.\n\nThe arrow cache in the west ruins is still under our red cloth, but the host has put Ember Knights on it - kill them, then gather the arrows. The bandages were on a wagon the hounds burnt in the south; nothing guards a burnt wagon, so salvage what you can. The oil is worse. A big hound we call Ashfang dragged the casks north-east and lairs on them with its pack. Kill it and bring the oil home.",
+                Reminder = "Arrows: kill the Ember Knights at the west cache, then gather them. Bandages: salvage the burnt wagon in the south. Oil: hunt down Ashfang's pack in the north-east, then recover the casks. All in the Ashen Ruins.",
                 Thanks = "Oil and arrows - we can hold another month. And you put Ashfang down? My sentries will want its collar. Take what you need from the bandages.",
                 RewardGold = 300, RewardExperience = 2000, RewardHealthPotions = 3
             },
@@ -261,8 +261,8 @@ namespace PoeClone.Quests
                 Id = "rite", Story = EmbersOfWar, Title = "Breaking the Ward", Giver = NpcRole.Seer, After = "seer",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Ruins, Count = 1,
                 Objective = "Hold the rite at the Ashen Shrine, then clear its summons",
-                Offer = "The Warlord drinks his strength from the old shrine west of the temple, where the city burned its dead. A ward of ash. While it stands, he cannot fall.\n\nI can break it, but the rite takes time, and every dead thing in the ruins will feel it. Begin the rite in the shrine's circle and stay inside it until the fire turns white. The waves will come quickly. If you leave the circle, it fails. Once the fire turns white, kill every survivor to finish breaking the ward.",
-                Reminder = "Go to the Ashen Shrine, west of the temple in the Ashen Ruins, and begin the rite. Hold the circle for thirty seconds, then clear every remaining enemy.",
+                Offer = "The Warlord drinks his strength from the old shrine south-west of the temple, where the city burned its dead. A ward of ash. While it stands, he cannot fall.\n\nI can break it, but the rite takes time, and every dead thing in the ruins will feel it. Begin the rite in the shrine's circle and stay inside it until the fire turns white. The waves will come quickly. If you leave the circle, it fails. Once the fire turns white, kill every survivor to finish breaking the ward.",
+                Reminder = "Go to the Ashen Shrine, south-west of the temple in the Ashen Ruins, and begin the rite. Hold the circle for thirty seconds, then clear every remaining enemy.",
                 Thanks = "I felt it break from here - like a bone snapping. He is only a man in armour now. Well. A very large man in armour.",
                 RewardGold = 250, RewardExperience = 2500, RewardItem = ItemRarity.Magic, RewardItemLevel = 25
             },
@@ -273,7 +273,7 @@ namespace PoeClone.Quests
                 Objective = "Slay the Ashen Warlord at the temple altar",
                 Offer = "The ward is down. Now we end him. He stands at the temple altar - my men will keep his host busy on the flanks, the rest is yours.\n\nWhen the ground glows, move.",
                 Reminder = "The Warlord stands at the temple altar. When the ground glows, move.",
-                Thanks = "It's over. The smoke over the ruins is thinning already.\n\nThough Ysolde has been staring north since it fell. She says the cold is coming. Talk to her before you rest.",
+                Thanks = "It's over. The smoke over the ruins is thinning already.\n\nThough Ysolde has been staring north-west since it fell. She says the cold is coming. Talk to her before you rest.",
                 RewardGold = 600, RewardExperience = 5000, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 27,
                 RewardRespec = 1
             },
@@ -284,8 +284,8 @@ namespace PoeClone.Quests
                 Id = "sunstones", Story = FrozenSeal, Title = "The Frozen Gate", Giver = NpcRole.Seer, After = "warlord",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Ruins, Count = 3,
                 Objective = "Wake the three sunstones in order",
-                Offer = "The Warlord was a door-ward. Now he's gone, I can see what he was guarding: the north gate. It's sealed under ice that no fire of ours will melt - the Frost Queen's work.\n\nBut the old city had its own fire. Three sunstones still stand in the north of the ruins, cold for three hundred years. They were built to be lit as a chain, the fire passed from one to the next. Start with the stone in the western ruins. When it burns, the next one, west of the gate, will glow to answer you; then the last, east of the gate. Wake them in that order and they will burn the gate open.",
-                Reminder = "Wake the sunstones in order: first the stone in the western ruins, then the stone west of the iced-over north gate, then the one east of it. The next stone in the chain glows faintly.",
+                Offer = "The Warlord was a door-ward. Now he's gone, I can see what he was guarding: the north-west gate. It's sealed under ice that no fire of ours will melt - the Frost Queen's work.\n\nBut the old city had its own fire. Three sunstones still stand in the north-west of the ruins, cold for three hundred years. They were built to be lit as a chain, the fire passed from one to the next. Start with the stone in the southwestern ruins. When it burns, the next one, south-west of the gate, will glow to answer you; then the last, north-east of the gate. Wake them in that order and they will burn the gate open.",
+                Reminder = "Wake the sunstones in order: first the stone in the southwestern ruins, then the stone south-west of the iced-over north-west gate, then the one north-east of it. The next stone in the chain glows faintly.",
                 Thanks = "The ice is gone. I heard it crack from here.\n\nAnd I heard something else, under it. Breathing.",
                 RewardGold = 300, RewardExperience = 2500, RewardHealthPotions = 2
             },
@@ -294,9 +294,9 @@ namespace PoeClone.Quests
                 Id = "scouts", Story = FrozenSeal, Title = "Lost in the Snow", Giver = NpcRole.Seer, After = "sunstones",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Frozen, Count = 3,
                 Objective = "Follow the lost scouts' journals through the Frozen Hollow",
-                Offer = "Before the ice closed, Varek sent three scouts north: Mott, Teodor and Ilse. None came back. I don't need the fire to tell me they're dead.\n\nFind them. They kept journals - every Emberwatch scout does - and each will say where the others went. Mott was to make camp in the south-west pines. Start there, and follow the pages. Whatever they saw in the Hollow, I need to know it before you face what lives there.",
-                Reminder = "Start at Mott's body in the Frozen Hollow's south-west pines, then follow each journal to the next scout. Something hunted the last of them; it may still be there.",
-                Thanks = "\"Spiders the size of carts.\" \"A queen on a throne of ice.\" \"A door, north of the throne, taller than a house, with antlers cut into the stone.\"\n\nThe Shepherd's door. She is not its queen. She is its doorkeeper.",
+                Offer = "Before the ice closed, Varek sent three scouts north-west: Mott, Teodor and Ilse. None came back. I don't need the fire to tell me they're dead.\n\nFind them. They kept journals - every Emberwatch scout does - and each will say where the others went. Mott was to make camp in the south pines. Start there, and follow the pages. Whatever they saw in the Hollow, I need to know it before you face what lives there.",
+                Reminder = "Start at Mott's body in the Frozen Hollow's south pines, then follow each journal to the next scout. Something hunted the last of them; it may still be there.",
+                Thanks = "\"Spiders the size of carts.\" \"A queen on a throne of ice.\" \"A door, north-west of the throne, taller than a house, with antlers cut into the stone.\"\n\nThe Shepherd's door. She is not its queen. She is its doorkeeper.",
                 RewardGold = 400, RewardExperience = 4000, RewardItem = ItemRarity.Rare, RewardItemLevel = 34
             },
             new QuestDefinition
@@ -304,7 +304,7 @@ namespace PoeClone.Quests
                 Id = "rimeheart", Story = FrozenSeal, Title = "The Frost Queen", Giver = NpcRole.Seer, After = "scouts",
                 Goal = QuestGoal.KillBoss, Target = "Rimeheart", Area = WorldBuilder.Frozen,
                 Objective = "Slay Rimeheart in the Frozen Hollow",
-                Offer = "Rimeheart. Many-legged, a brood of crawlers at her feet, and the cold of the deep north in her. She keeps the door shut from the outside, and she keeps the Shepherd fed with the dead.\n\nKill her, and we can see what she's been keeping.",
+                Offer = "Rimeheart. Many-legged, a brood of crawlers at her feet, and the cold of the deep north-west in her. She keeps the door shut from the outside, and she keeps the Shepherd fed with the dead.\n\nKill her, and we can see what she's been keeping.",
                 Reminder = "Her throne is at the heart of the Frozen Hollow. When the frost gathers at your feet, move.",
                 Thanks = "She's dead. The cold is already lifting off the camp; Varek's men are singing.\n\nBut I keep seeing that door. And it is warmer than it was.",
                 RewardGold = 1000, RewardExperience = 7000, RewardHealthPotions = 5, RewardItem = ItemRarity.Rare, RewardItemLevel = 35,
@@ -314,9 +314,9 @@ namespace PoeClone.Quests
             {
                 Id = "door", Story = FrozenSeal, Title = "Beneath the Ice", Giver = NpcRole.Seer, After = "rimeheart",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Frozen, Count = 1,
-                Objective = "Find the door north of Rimeheart's throne",
-                Offer = "One more thing, and then you can rest. Go to the door the scouts wrote of, north of the throne. Read what's written there. Don't try to open it.\n\nI mean that. Don't.",
-                Reminder = "The door is north of Rimeheart's throne in the Frozen Hollow. Read it. Don't open it.",
+                Objective = "Find the door north-west of Rimeheart's throne",
+                Offer = "One more thing, and then you can rest. Go to the door the scouts wrote of, north-west of the throne. Read what's written there. Don't try to open it.\n\nI mean that. Don't.",
+                Reminder = "The door is north-west of Rimeheart's throne in the Frozen Hollow. Read it. Don't open it.",
                 Thanks = "\"Three wardens hold his door: the priest, the king, the queen. When the last warden falls, he wakes.\"\n\nThe priest, the king, the queen. Mortis, the Warlord, Rimeheart - we killed his gaolers, one by one. Vex's totems, the funeral bell, the Warlord's host: all of it answered the Shepherd's call, and every warden we put down let it ring a little louder. We did his work for him.",
                 RewardGold = 400, RewardExperience = 3000
             },
@@ -336,7 +336,7 @@ namespace PoeClone.Quests
                 Id = "shepherd", Story = FrozenSeal, Title = "Silence the Shepherd", Giver = NpcRole.Elder, After = "stag",
                 Goal = QuestGoal.KillBoss, Target = "The Shepherd", Area = WorldBuilder.ActArena, Count = 1,
                 Objective = "Defeat the Shepherd beyond the door beneath the ice",
-                Offer = "The door north of Rimeheart's throne leads to the Shed Sanctuary. The Shepherd waits inside. Whatever hides beneath his robes, destroy it. End the call.",
+                Offer = "The door north-west of Rimeheart's throne leads to the Shed Sanctuary. The Shepherd waits inside. Whatever hides beneath his robes, destroy it. End the call.",
                 Reminder = "Enter the Shed Sanctuary through the door in the Frozen Hollow and defeat the Shepherd.",
                 Thanks = "The call is gone. Our dead can rest, and Haven can live. You faced the Carrion Saint and returned. We will remember.",
                 RewardGold = 1200, RewardExperience = 8000, RewardHealthPotions = 5
@@ -348,7 +348,7 @@ namespace PoeClone.Quests
                 Id = "patrol", Story = LostPatrol, Title = "The Lost Patrol", Giver = NpcRole.Guard,
                 Goal = QuestGoal.Use, Area = WorldBuilder.Greenwood, Count = 3,
                 Objective = "Follow the lost patrol's trail and recover its badges in the Greenwood",
-                Offer = "My three scouts never returned from the Greenwood. Aldo was last seen on the western trail. Start there, follow whatever signs they left, and bring their badges back. Find out who did this.",
+                Offer = "My three scouts never returned from the Greenwood. Aldo was last seen on the southwestern trail. Start there, follow whatever signs they left, and bring their badges back. Find out who did this.",
                 Reminder = "Follow Aldo's trail through the Greenwood, then Bren's, then Corin's. Recover the badges and defeat the raiders at the final site.",
                 Thanks = "All three badges. Raider arrows, a stolen watch dispatch, and men waiting to finish the job. Living men did this. Now we know where to look.",
                 RewardGold = 80, RewardExperience = 220
@@ -460,7 +460,7 @@ namespace PoeClone.Quests
                 case NpcRole.Gravekeeper:
                     return "in the Haunted Graveyard";
                 case NpcRole.Guide:
-                    return "in The Lost Hollows' southern cavern";
+                    return "in The Lost Hollows' southeastern cavern";
                 case NpcRole.Commander:
                 case NpcRole.Seer:
                     return "at the Emberwatch camp in the Ashen Ruins";

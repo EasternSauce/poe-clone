@@ -42,7 +42,6 @@ namespace PoeClone.Network
             public bool HasPose;
             public Vector3 LastPosition;
             public float LastSeen;
-            public float NextEnragePulse;
             public int BossLookPhase = 1;
         }
 
@@ -920,17 +919,6 @@ namespace PoeClone.Network
 
             if (e.ch != 0 && prev.ch == 0)
                 EnemySounds.Play(EnemyKinds.Get(e.k), EnemySounds.Event.Aggro, at);
-
-            if (e.en != 0 && prev.en == 0)
-            {
-                EnemyController.PlayEnrageStart(puppet.Root.transform, EnemyKinds.Get(e.k), puppet.Health.BarHeight);
-                puppet.NextEnragePulse = Time.time;
-            }
-            if (e.en != 0 && Time.time >= puppet.NextEnragePulse)
-            {
-                puppet.NextEnragePulse = Time.time + EnemyController.EnragePulseEvery;
-                EnemyController.PlayEnragePulse(puppet.Root.transform);
-            }
 
             if (e.atk > prev.atk && puppet.Attack != null)
             {

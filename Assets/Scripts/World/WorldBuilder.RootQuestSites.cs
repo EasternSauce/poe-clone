@@ -18,7 +18,7 @@ namespace PoeClone.World
                     "Families scratched their names into this tablet when the refuge gates were sealed. Someone hid it beneath an empty water jar." },
                 new[] { "Cistern Leech", "Drowned Fugitive", "Ward Gaoler" });
             BuildWaterObjectives(sites, FirstRoot, "act2_grafts", PropAction.Smash,
-                new[] { "Western Feeding Graft", "Eastern Feeding Graft", "Northern Feeding Graft" },
+                new[] { "Southwestern Feeding Graft", "Northeastern Feeding Graft", "Northwestern Feeding Graft" },
                 new[] { "Roots surround a column of bone. A stolen river runs through it, carrying whispered names into the heart chamber.",
                     "Grafted tenders protect a knot of water-filled roots. Sever it to end this nursery's tithe.",
                     "The bone garden feeds its last remains into a living graft. Its keepers turn as you approach." },

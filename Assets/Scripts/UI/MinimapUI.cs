@@ -15,8 +15,8 @@ namespace PoeClone.UI
     /// <see cref="MinimapTerrain"/>: open ground, obstacles and dead ends, hidden until seen), and on
     /// it, once discovered, gates (gold), the waystone (blue), townsfolk (yellow), monsters (red, bosses bigger),
     /// a co-op partner in the same area (light blue, an arrow on the edge pointing their way when
-    /// they're off the map) and the player (white), turned to match the camera so "up" on the map
-    /// is "up" on screen. No second camera, cheap on the web.
+    /// they're off the map) and the player (white). North is always up on the map, matching screen-up
+    /// in the normal isometric view. No second camera, cheap on the web.
     /// M hides/shows it. Installed by GameSessionController.
     /// </summary>
     [DefaultExecutionOrder(100)]
@@ -101,6 +101,17 @@ namespace PoeClone.UI
             edge.sprite = UiKit.Vignette;
             UiKit.Stretch(edge.rectTransform, 0f);
             UiKit.Frame(frame, 0f);
+            string[] cardinal = { "N", "E", "S", "W" };
+            Vector2[] compassAt = { new Vector2(0, 94), new Vector2(94, 0), new Vector2(0, -94), new Vector2(-94, 0) };
+            for (int i = 0; i < cardinal.Length; i++)
+            {
+                Text label = UiKit.NewText("Compass" + cardinal[i], frame, cardinal[i], 14, UiKit.Gold, TextAnchor.MiddleCenter);
+                label.rectTransform.anchorMin = label.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+                label.rectTransform.anchoredPosition = compassAt[i];
+                label.rectTransform.sizeDelta = new Vector2(20f, 20f);
+                label.raycastTarget = false;
+                UiKit.AddOutline(label, Color.black, 1f);
+            }
 
             // The area's name on a small plate under the map. A child of the map, so it moves,
             // scales and hides with it; the map's mask doesn't clip it, as it has its own canvas.
@@ -165,9 +176,8 @@ namespace PoeClone.UI
             if (areaName.text != name)
                 areaName.text = name;
 
-            // Turn the map with the camera, so it matches what's on screen.
-            Camera cam = Camera.main;
-            float yaw = cam != null ? cam.transform.eulerAngles.y : 0f;
+            // Fixed compass: screen-up in the normal isometric view is north.
+            const float yaw = 45f;
             content.localRotation = Quaternion.Euler(0f, 0f, yaw);
 
             Vector3 centre = WorldBuilder.Center(areas.CurrentAreaIndex);

@@ -157,8 +157,8 @@ namespace PoeClone.UI
                         "Haven was a waystation once, for caravans bound for the old city. When the city burned, the caravans stopped, and we stayed.\n\n" +
                         "Now the woods are full of the dead, and something is calling them.")));
                     options.Add(new DialogueOption("Ask about the old story", () => Main(npc,
-                        "My grandmother's story? Children's stuff. Far in the north, under the ice, sleeps a stag as big as a hill, with antlers like a dead forest. " +
-                        "When it dreams, the dead get up and walk north, to carry it the living.\n\n" +
+                        "My grandmother's story? Children's stuff. Far in the north-west, under the ice, sleeps a stag as big as a hill, with antlers like a dead forest. " +
+                        "When it dreams, the dead get up and walk north-west, to carry it the living.\n\n" +
                         "She used to say three wardens keep its door shut. I asked her who. She said: pray you never need to know.")));
                     break;
                 case NpcRole.Gravekeeper:
@@ -169,15 +169,15 @@ namespace PoeClone.UI
                 case NpcRole.Commander:
                     options.Add(new DialogueOption("Potions from the quartermaster", () => MerchantPage(npc, "My quartermaster sells at Haven prices - and buys whatever you've dragged back, if it'll keep the camp fed.")));
                     options.Add(new DialogueOption("Ask about the Emberwatch", () => Main(npc,
-                        "We watch the south's borders against what comes out of the old places. Mostly that's bandits and wolves. " +
-                        "This spring the fires on our watchtowers burned green, and every seer in the south said the same word: north. So here we are.")));
+                        "We watch the south-east's borders against what comes out of the old places. Mostly that's bandits and wolves. " +
+                        "This spring the fires on our watchtowers burned green, and every seer in the south-east said the same word: north-west. So here we are.")));
                     break;
                 case NpcRole.Seer:
                     options.Add(new DialogueOption("Ask what she sees in the fire", () => Main(npc, SeerVision())));
                     break;
                 case NpcRole.Guide:
                     options.Add(new DialogueOption("Ask about the Hollows", () => Main(npc,
-                        "North-east to the graveyard, the east tunnel to the deep road and the old city, south-east to Vex's Warren. " +
+                        "North to the graveyard, the north-east tunnel to the deep road and the old city, east to Vex's Warren. " +
                         "Twenty years I've walked them, and I never saw the dead down here until this spring. They walk the tunnels the same way every night: up from the graveyard.")));
                     break;
             }
@@ -238,7 +238,7 @@ namespace PoeClone.UI
             if (Done("shepherd"))
                 return "Nothing. For the first time since spring, the fire is only fire. No antlers, no doors - just the camp, and the men around it, asleep.";
             if (Done("stag"))
-                return "The door in the ice stands open now. Beyond it, in the Shed Sanctuary, something enormous waits with its head lowered, and every fire in the camp leans north.\n\nGo, before it comes to us.";
+                return "The door in the ice stands open now. Beyond it, in the Shed Sanctuary, something enormous waits with its head lowered, and every fire in the camp leans north-west.\n\nGo, before it comes to us.";
             if (Done("door"))
                 return "A door in the ice, still shut. Behind it, something turns over in its sleep. Take what you read there to Maren.";
             if (Done("rimeheart"))

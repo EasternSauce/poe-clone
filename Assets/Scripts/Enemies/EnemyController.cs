@@ -128,10 +128,8 @@ namespace PoeClone.Enemies
         private const float EnrageSeconds = 5f;
         private const float EnrageSpeed = 2.4f;
         private const float EnrageDamage = 1.35f;
-        private static readonly Color EnrageColor = new Color(1f, 0.15f, 0.08f);
 
         private float enragedUntil = -1f;
-        private float nextEnragePulse;
 
         public bool IsEnraged => Time.time < enragedUntil;
 
@@ -162,9 +160,6 @@ namespace PoeClone.Enemies
         private void Enrage(bool spread = true)
         {
             enragedUntil = Time.time + EnrageSeconds;
-            nextEnragePulse = 0f;
-
-            PlayEnrageStart(transform, kind ?? EnemyKinds.Get(0), health != null ? health.BarHeight : 2.3f);
 
             if (!spread)
                 return;
@@ -192,32 +187,6 @@ namespace PoeClone.Enemies
                 enragedUntil = Time.time + EnrageSeconds;
             else
                 Enrage();
-        }
-
-        // A red pulse at its feet for as long as the rage lasts.
-        private void UpdateEnrage()
-        {
-            if (!IsEnraged || Time.time < nextEnragePulse)
-                return;
-            nextEnragePulse = Time.time + EnragePulseEvery;
-            PlayEnragePulse(transform);
-        }
-
-        public const float EnragePulseEvery = 0.45f;
-
-        /// <summary>The burst, "ENRAGED" and roar as the rage starts (also replayed for spectators).</summary>
-        public static void PlayEnrageStart(Transform body, EnemyKind kind, float barHeight)
-        {
-            float size = body.localScale.y;
-            SkillEffects.Shockwave(body.position, 2.2f * size, EnrageColor, 0.45f);
-            CombatText.Show(body.position + Vector3.up * barHeight * size, "ENRAGED", EnrageColor, 1.2f);
-            EnemySounds.Play(kind, EnemySounds.Event.Aggro, body.position);
-        }
-
-        /// <summary>One of the red pulses at its feet while it rages.</summary>
-        public static void PlayEnragePulse(Transform body)
-        {
-            SkillEffects.Shockwave(body.position, 1.1f * body.localScale.y, EnrageColor, 0.35f);
         }
 
         private void Awake()
@@ -404,7 +373,6 @@ namespace PoeClone.Enemies
                 playerStats = FindAnyObjectByType<PlayerStats>();
             }
 
-            UpdateEnrage();
 
             // A skill winding up or charging moves (or holds) the enemy itself; so does a boss's move.
             if (skills != null && skills.enabled && skills.Busy)

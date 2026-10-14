@@ -266,6 +266,7 @@ namespace PoeClone.EditorTools
             {
                 ItemData item = ItemGenerator.Display(id, null, ItemRarity.Normal);
                 if (artFilter != null && item.ArtId != artFilter) continue;
+                if (BuildReplacementIcon(id)) continue;
                 // Preserve the original painted starter assets.
                 if (id == item.ArtId) continue;
                 if (id == "crude_bow")
@@ -303,6 +304,22 @@ namespace PoeClone.EditorTools
             }
             AssetDatabase.Refresh();
             Debug.Log("ItemIconBuilder: separate icons built for every equipment base.");
+        }
+
+        [MenuItem("PoeClone/Build Replacement Equipment Icons")]
+        public static void BuildReplacementEquipmentIcons()
+        {
+            BuildReplacementIcon("spiked_buckler");
+            BuildReplacementIcon("earthbreaker");
+        }
+
+        private static bool BuildReplacementIcon(string id)
+        {
+            if (id != "spiked_buckler" && id != "earthbreaker") return false;
+            ItemData item = ItemGenerator.Display(id, null, ItemRarity.Normal);
+            Bitmap source = Load("Assets/Editor/ItemIconSources/" + id + ".png");
+            Save(id, FitTo(Trim(source), item.Width * PxPerCell, item.Height * PxPerCell, 8));
+            return true;
         }
 
         [MenuItem("PoeClone/Build Crude Bow Icon")]

@@ -89,6 +89,7 @@ namespace PoeClone.World
             LocalBox(gate, new Vector3(0f, 7.5f, 0f), new Vector3(10f, 1f, 1.6f), kit.Mat("TombstoneDark"), false);
             LocalBox(gate, new Vector3(0f, 0.025f, 0f), new Vector3(7.2f, 0.05f, 3f), DirtFloor, false);
             SanctuarySkull(gate, new Vector3(0f, 7.65f, 0.92f), 0.72f);
+            gate.localScale = new Vector3(2f, 1f, 1f);
             ScatterSanctuaryRemains(dressing, c);
             // Unevenly scattered moults follow the perimeter, leaving the fighting floor open.
             SanctuaryShedSkin(dressing, c + new Vector3(-46f, 0f, -14f), 25f, 0);
@@ -343,7 +344,7 @@ namespace PoeClone.World
         {
             var go = new GameObject(name); go.transform.SetParent(parent, false); go.transform.position = at;
             if (sealedDoor) go.transform.rotation = SanctuaryDoorRotation;
-            var box = go.AddComponent<BoxCollider>(); box.isTrigger = true; box.size = new Vector3(6f, 4f, 2f);
+            var box = go.AddComponent<BoxCollider>(); box.isTrigger = true; box.size = new Vector3(12f, 4f, 2f);
             var gate = go.AddComponent<AreaGate>(); gate.fromAreaIndex = from; gate.targetAreaIndex = to; gate.arrival = arrival;
             if (sealedDoor)
             {

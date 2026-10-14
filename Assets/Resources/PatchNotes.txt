@@ -1,3 +1,13 @@
+version: 2026-10-14-loot-movement-and-feedback
+- Enrage keeps its combat effects without text, red pulses or an announcement, including on one-shot kills.
+- Reassembling skeletons return to full life when collapsing into a bone pile.
+- Magic items can roll up to 3 random modifiers and Rare items up to 6. Eligible modifier tiers have equal chances; tiers 10 or more item levels below the item cannot roll.
+- Minion duration modifiers use general wording and apply to every temporary minion; permanent minions remain permanent.
+- Replaced the Spiked Buckler and Earthbreaker icons. Passive tree confirmation has a punchier impact; Dash uses one swoosh recording.
+- Map-up is always north, with compass labels and updated directions in quests and dialogue.
+- Area gates are twice as wide and sit closer to the surrounding walls; quest seals cover the wider openings.
+- Teleport sounds on short casts, lands closer to walls, and crosses ordinary walls while respecting quest barriers.
+
 version: 2026-10-14-dark-water-and-driftwood
 - Water is clearer and less blue, with sloping gravel beds, visible shallows and deeper, darker channels.
 - Forked branches drift and bob downstream, following river bends. Tall waterside snags and ruined pillars make reflections easier to see.

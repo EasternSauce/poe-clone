@@ -933,9 +933,7 @@ namespace PoeClone.Skills
         {
             if (!echo && Echoes(skill) && UnityEngine.Random.value * 100f < Stat(StatType.SpellEcho))
                 StartCoroutine(Echo(skill, level));
-            // Teleport plays only after finding a landing.
-            if (skill.Id != SkillId.Teleport)
-                PlaySkillSound(skill.Id, transform.position);
+            PlaySkillSound(skill.Id, transform.position);
             float spell = 1f; // Intelligence and spell/elemental increases share HitEffects' sum.
             float area = DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
             float damage = skill.DamageAt(level) * spell;
@@ -1303,15 +1301,38 @@ namespace PoeClone.Skills
             float distance = TeleportRange(level);
             float? aimed = AimDistance();
             if (aimed.HasValue)
-                distance = Mathf.Clamp(aimed.Value, 1.5f, distance);
+                distance = Mathf.Clamp(aimed.Value, 0.05f, distance);
+
+            // Ordinary walls can be crossed, but progression seals stop the jump on this side.
+            CharacterController body = GetComponent<CharacterController>();
+            float radius = body != null ? body.radius : 0.4f;
+            foreach (RaycastHit hit in Physics.SphereCastAll(start, radius, direction, distance, ~0, QueryTriggerInteraction.Ignore))
+            {
+                var barrier = hit.collider.GetComponentInParent<Quests.QuestBarrier>();
+                var passage = hit.collider.GetComponentInParent<World.ActTwoPassage>();
+                var sanctuaryDoor = hit.collider.GetComponentInParent<World.ActBossDoor>();
+                if ((barrier != null && barrier.BlocksTeleport) || (passage != null && passage.BlocksTeleport) ||
+                    (sanctuaryDoor != null && !World.ActBossArena.DoorOpen))
+                    distance = Mathf.Min(distance, Mathf.Max(0f, hit.distance - 0.03f));
+            }
 
             Vector3? landing = null;
-            for (float d = distance; d >= 1f; d -= 0.5f)
+            const float landingStep = 0.1f;
+            for (float d = distance; d > 0f; d = Mathf.Max(0f, d - landingStep))
             {
                 Vector3? spot = OpenGround(start + direction * d);
                 if (spot.HasValue)
                 {
                     landing = spot;
+                    // Refine the last blocked interval to stop within a centimetre of the wall.
+                    float low = d, high = Mathf.Min(distance, d + landingStep);
+                    for (int i = 0; i < 4; i++)
+                    {
+                        float middle = (low + high) * 0.5f;
+                        Vector3? closer = OpenGround(start + direction * middle);
+                        if (closer.HasValue) { low = middle; landing = closer; }
+                        else high = middle;
+                    }
                     break;
                 }
             }
@@ -1324,7 +1345,6 @@ namespace PoeClone.Skills
 
             SkillEffects.Shockwave(start, 1.4f, skill.Color, 0.3f, type: SkillEffects.DamagePattern(skill));
             Face(direction);
-            CharacterController body = GetComponent<CharacterController>();
             bool wasEnabled = body != null && body.enabled;
             if (body != null)
                 body.enabled = false;
@@ -1334,8 +1354,6 @@ namespace PoeClone.Skills
             Physics.SyncTransforms();
             SkillEffects.Shockwave(landing.Value, 1.6f, skill.Color, 0.35f, type: SkillEffects.DamagePattern(skill));
             Record(skill, level, 0f, 0, new[] { landing.Value });
-            if (Audio.AudioManager.Instance != null)
-                Audio.AudioManager.Instance.PlayEffect("skill.Teleport", transform.position);
         }
 
         // How far the mouse points from the player on the ground (null on touch: full range).
@@ -1361,9 +1379,11 @@ namespace PoeClone.Skills
         private Vector3? OpenGround(Vector3 at)
         {
             if (World.WorldBuilder.Instance != null && !World.WorldBuilder.Instance.CanMoveTo(at)) return null;
+            CharacterController body = GetComponent<CharacterController>();
+            float radius = body != null ? body.radius : 0.4f;
             var areas = World.AreaManager.Instance;
             if (areas != null && areas.CurrentAreaIndex >= 0 &&
-                !World.WorldBuilder.Shape(areas.CurrentAreaIndex).Contains(at, 2.5f))
+                !World.WorldBuilder.Shape(areas.CurrentAreaIndex).Contains(at, radius))
                 return null;
 
             float y = transform.position.y;
@@ -1373,13 +1393,12 @@ namespace PoeClone.Skills
             if (Mathf.Abs(ground.point.y - floor) > 1.2f || ground.normal.y < 0.7f)
                 return null;
 
-            CharacterController body = GetComponent<CharacterController>();
-            float radius = body != null ? body.radius : 0.4f;
             float height = body != null ? body.height : 2f;
             Vector3 feet = new Vector3(at.x, ground.point.y, at.z);
             Vector3 bottom = feet + Vector3.up * (radius + 0.15f);
             Vector3 top = feet + Vector3.up * Mathf.Max(radius + 0.2f, height - radius);
             int count = Physics.OverlapCapsuleNonAlloc(bottom, top, radius, landingBuffer, ~0, QueryTriggerInteraction.Ignore);
+            if (count == landingBuffer.Length) return null;
             for (int k = 0; k < count; k++)
             {
                 Collider c = landingBuffer[k];

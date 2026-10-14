@@ -1178,7 +1178,7 @@ namespace PoeClone.World
             {
                 var pillar = new GameObject("Pillar").transform;
                 pillar.SetParent(gate.transform, false);
-                pillar.localPosition = new Vector3(side * 1.3f, 0f, 0f);
+                pillar.localPosition = new Vector3(side * 2.6f, 0f, 0f);
                 LocalBox(pillar, new Vector3(0f, 0.175f, 0f), new Vector3(1.1f, 0.35f, 1.1f), stone, solid: false).name = "Base";
                 LocalCyl(pillar, new Vector3(0f, 2f, 0f), 0.7f, 3.3f, stone, solid: false).name = "Column";
                 LocalBox(pillar, new Vector3(0f, 3.7f, 0f), new Vector3(1f, 0.3f, 1f), stone, solid: false).name = "Cap";
@@ -1190,7 +1190,7 @@ namespace PoeClone.World
                 pillarCollider.center = new Vector3(0f, 1.925f, 0f);
                 pillarCollider.size = new Vector3(1f, 3.85f, 1f);
             }
-            LocalBox(gate.transform, new Vector3(0f, 3.85f, 0f), new Vector3(3.6f, 0.4f, 1f), stone).name = "Lintel";
+            LocalBox(gate.transform, new Vector3(0f, 3.85f, 0f), new Vector3(6.2f, 0.4f, 1f), stone).name = "Lintel";
 
             Shader portalShader = Shader.Find("Universal Render Pipeline/Lit") ?? kit.Mat("Water").shader;
             Material portal = new Material(portalShader);
@@ -1198,12 +1198,12 @@ namespace PoeClone.World
             portal.SetFloat("_Smoothness", .1f);
             portal.EnableKeyword("_EMISSION");
             portal.SetColor("_EmissionColor", new Color(.15f, .2f, .25f));
-            LocalBox(gate.transform, new Vector3(0f, 1.9f, 0f), new Vector3(2.1f, 3.4f, .15f), portal, solid: false).name = "PortalPanel";
+            LocalBox(gate.transform, new Vector3(0f, 1.9f, 0f), new Vector3(4.2f, 3.4f, .15f), portal, solid: false).name = "PortalPanel";
 
             var trigger = gate.AddComponent<BoxCollider>();
             trigger.isTrigger = true;
             trigger.center = new Vector3(0f, 1.2f, 0f);
-            trigger.size = new Vector3(2f, 2.4f, 1.6f);
+            trigger.size = new Vector3(4f, 2.4f, 1.6f);
             gate.AddComponent<AreaGate>();
             return gate;
         }
@@ -1212,8 +1212,8 @@ namespace PoeClone.World
         // you arrive a few steps in front of the gate back.
         private void Connect(int a, int b)
         {
-            Vector3 gateA = Center(a) + AreaLayouts.GateLocal(a, b);
-            Vector3 gateB = Center(b) + AreaLayouts.GateLocal(b, a);
+            Vector3 gateA = GateByWall(a, Center(a) + AreaLayouts.GateLocal(a, b), AreaLayouts.GateYaw(a, b));
+            Vector3 gateB = GateByWall(b, Center(b) + AreaLayouts.GateLocal(b, a), AreaLayouts.GateYaw(b, a));
             Transform arriveInA = Marker("Arrive_" + AreaNames[a] + "_from_" + AreaNames[b], InFront(a, b, gateA), AreaLayouts.GateYaw(a, b));
             Transform arriveInB = Marker("Arrive_" + AreaNames[b] + "_from_" + AreaNames[a], InFront(b, a, gateB), AreaLayouts.GateYaw(b, a));
             ClearSpot(arriveInA.position, 2f);
@@ -1221,6 +1221,23 @@ namespace PoeClone.World
 
             Gate(a, gateA, b, arriveInB);
             Gate(b, gateB, a, arriveInA);
+        }
+
+        // Keep the doorway in its authored passage, backed by the nearest outer wall.
+        private static Vector3 GateByWall(int area, Vector3 authored, float yaw)
+        {
+            AreaShape shape = Shape(area);
+            Vector3 inward = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
+            Vector3 side = Quaternion.Euler(0f, yaw, 0f) * Vector3.right * 3.6f;
+            Vector3 result = authored;
+            for (float d = 0.25f; d <= 32f; d += 0.25f)
+            {
+                Vector3 next = authored - inward * d;
+                if (!shape.Contains(next, 0.8f) || !shape.Contains(next + side, 0.5f) || !shape.Contains(next - side, 0.5f))
+                    break;
+                result = next;
+            }
+            return result;
         }
 
         private void Gate(int from, Vector3 position, int to, Transform arrival, float? yaw = null)

@@ -101,7 +101,7 @@ namespace PoeClone.Inventory
         BoneGolemLevels,
         AdditionalSkeletons,        // rare unique: +N to per-type cap for warriors and mages
         MarkEffect,                 // % increased effect of Death Mark (the extra damage minions deal to it)
-        MinionDuration,             // % increased duration of Spirit Wolves and the Bone Golem
+        MinionDuration,             // % increased duration of temporary minions
         SoulBond,                   // % of minion damage dealt returned to the player as life
         DeathsHerald,               // 1: a marked enemy that dies bursts and passes the mark on
         BoneArmour,                 // % less damage taken by minions
@@ -294,7 +294,7 @@ namespace PoeClone.Inventory
 
         /// <summary>
         /// The skill level a drop of this item level rolls: up to 1 at item level 1, up to 10 at
-        /// item level 37 (the Shed Sanctuary), with weaker eligible tiers more common than the strongest ones.
+        /// item level 37 (the Shed Sanctuary), with equal chances for tiers less than ten item levels below the drop.
         /// </summary>
         public static int RollLevel(Random rng, int itemLevel)
         {
@@ -932,7 +932,7 @@ namespace PoeClone.Inventory
                 case StatType.AdditionalMinions: return sign + n + " to maximum number of Minions";
                 case StatType.MinionDamagePenalty: return "Minions deal " + n + "% less Damage";
                 case StatType.MarkEffect: return Increased(m, "effect of Death Mark");
-                case StatType.MinionDuration: return Increased(m, "duration of Spirit Wolves and the Bone Golem");
+                case StatType.MinionDuration: return Increased(m, "minion duration");
                 case StatType.SoulBond: return n + "% of Minion Damage is returned to you as Life";
                 case StatType.DeathsHerald: return "When a Marked enemy dies, the Mark leaps to the nearest enemy";
                 case StatType.BloodMagic: return "Removes all Mana. Skills cost Life instead of Mana";

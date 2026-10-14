@@ -3172,8 +3172,7 @@
             "purpose": "Dash",
             "clips": [],
             "clipPaths": [
-                "DeferredAudio/e47cac14cd6eb9d41827b58ce8068688/Heavy_weapon_whoosh,_#3-1766763893457",
-                "DeferredAudio/82457c5c2e8fe8b49af6460c9440c7a9/Heavy_weapon_whoosh,_#4-1766763889384"
+                "DeferredAudio/e47cac14cd6eb9d41827b58ce8068688/Heavy_weapon_whoosh,_#3-1766763893457"
             ],
             "cooldown": 0.0,
             "topPriority": false

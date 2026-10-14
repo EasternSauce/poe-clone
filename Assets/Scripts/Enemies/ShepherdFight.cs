@@ -588,7 +588,6 @@ namespace PoeClone.Enemies
                     StartCoroutine(Unfold(model));
                     break;
                 case 5:
-                    EnemyController.PlayEnrageStart(transform, kind, kind.BarHeight);
                     CameraSystem.CameraFollow.Shake(0.5f, 0.6f);
                     break;
             }

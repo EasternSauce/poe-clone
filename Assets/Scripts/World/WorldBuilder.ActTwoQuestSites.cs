@@ -9,17 +9,17 @@ namespace PoeClone.World
         {
             BuildWaterObjectives(sites, Desert, "act2_dispatch", PropAction.Take,
                 new[] { "Surveyor's Satchel", "Shrine Dispatch" },
-                new[] { "The survey names two flowing wells and a crew ordered north. Sand and scorpion tracks cover the satchel.",
+                new[] { "The survey names two flowing wells and a crew ordered north-west. Sand and scorpion tracks cover the satchel.",
                     "A sealed dispatch orders all water carts to the Basin. A scratched-out crown marks the wax." },
                 new[] { "Dustroad Reaver", "Dustroad Javelineer", "Glassback Scorpion" });
             BuildWaterObjectives(sites, SaltBasin, "act2_basin", PropAction.Read,
-                new[] { "Western Intake Record", "Eastern Salt Tally", "Ruined Pump Register" },
+                new[] { "Southwestern Intake Record", "Northeastern Salt Tally", "Ruined Pump Register" },
                 new[] { "The intake was sealed while the lake was still full. The order came from the upstream sluice.",
                     "The tally counts water jars as a royal tithe. Salt workers were ordered to keep outsiders away.",
                     "The pump register names the Last Engineer below and the Sluice Warden above. Both obey the Crownless Court." },
                 new[] { "Saltbound Dredger", "Saltback Crab", "Brine Spitter" });
             BuildWaterObjectives(sites, Channels, "act2_controls", PropAction.Light,
-                new[] { "Western Terrace Regulator", "Eastern Aqueduct Regulator" },
+                new[] { "Southwestern Terrace Regulator", "Northeastern Aqueduct Regulator" },
                 new[] { "The regulator diverts every drop away from the village terraces. Break the court's seal and release it.",
                     "The aqueduct regulator bears a bronze court seal. Releasing it will restore the downstream channel." },
                 new[] { "Channel Reaver", "Clay Bearer", "Dustroad Javelineer" });

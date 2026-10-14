@@ -13,6 +13,7 @@ namespace PoeClone.World
         private GameObject seal;
         private AreaGate gate;
         private bool opening;
+        public bool BlocksTeleport => seal != null && seal.activeInHierarchy;
 
         public void Configure(GameObject wall, AreaGate passage)
         {

@@ -226,9 +226,9 @@ namespace PoeClone.World
             Vector3 at = ActArenaCenter + new Vector3(0, 0, 38);
             Transform breach = Holder(arena, "ShepherdWallBreach", at, Quaternion.identity);
             for (int side = -1; side <= 1; side += 2)
-                DesertRock(breach, at + new Vector3(side * 5.5f, 0, 0), new Vector3(2.5f, 5, 2));
-            Box(breach, at + new Vector3(0, 7.2f, 0), new Vector3(11, 2, 3), desertStone, false);
-            GameObject seal = Box(breach, at + new Vector3(0, 3, 0), new Vector3(8, 6, 2), desertStone);
+                DesertRock(breach, at + new Vector3(side * 9.5f, 0, 0), new Vector3(2.5f, 5, 2));
+            Box(breach, at + new Vector3(0, 7.2f, 0), new Vector3(19, 2, 3), desertStone, false);
+            GameObject seal = Box(breach, at + new Vector3(0, 3, 0), new Vector3(16, 6, 2), desertStone);
             seal.name = "CrackedSanctuaryWall";
             for (int i = 0; i < 4; i++)
             {
@@ -238,7 +238,7 @@ namespace PoeClone.World
             }
             var door = new GameObject("Passage to Act II");
             door.transform.SetParent(breach, false); door.transform.position = at + Vector3.up * 1.1f;
-            var trigger = door.AddComponent<BoxCollider>(); trigger.isTrigger = true; trigger.size = new Vector3(7, 4, 3);
+            var trigger = door.AddComponent<BoxCollider>(); trigger.isTrigger = true; trigger.size = new Vector3(14, 4, 3);
             var gate = door.AddComponent<AreaGate>(); gate.fromAreaIndex = ActArena; gate.targetAreaIndex = Desert;
             gate.arrival = spawnPoints[Desert];
             WorldLabel.Create(door.transform, "Act II — The Sundered Expanse", AreaColor(Desert), 3.7f);

@@ -435,11 +435,11 @@ namespace PoeClone.World
 
             string[] clues =
             {
-                "Aldo lies beside the western trail, struck by raider arrows. His dispatch names Bren's southern watch post. Take his badge and follow that lead.",
-                "Bren's ruined watch post overlooks the southern trail. His badge is caught on a broken branch. Boot prints and a torn dispatch point east toward Corin.",
-                "Corin lies in the eastern glade beside a stolen dispatch. Raiders are watching the body. Recover his badge and defeat the attackers."
+                "Aldo lies beside the southwestern trail, struck by raider arrows. His dispatch names Bren's southeastern watch post. Take his badge and follow that lead.",
+                "Bren's ruined watch post overlooks the southeastern trail. His badge is caught on a broken branch. Boot prints and a torn dispatch point north-east toward Corin.",
+                "Corin lies in the northeastern glade beside a stolen dispatch. Raiders are watching the body. Recover his badge and defeat the attackers."
             };
-            string[] labels = { "Recover Aldo's badge on the western trail", "Recover Bren's badge on the southern trail", "Recover Corin's badge in the eastern glade" };
+            string[] labels = { "Recover Aldo's badge on the southwestern trail", "Recover Bren's badge on the southeastern trail", "Recover Corin's badge in the northeastern glade" };
             QuestProp prop = QuestProp.Attach(site.gameObject, "patrol", index, PropAction.Take, name + "'s Patrol Trail",
                 clues[index], labels[index], index == 2 ? "Raiders emerge from the trees!" : "Badge recovered - follow the next trail marker", 1.6f,
                 index == 2 ? new[] { "Raider", "Raider", "Archer", "Raider", "Raider", "Archer" } : null, index == 2 ? 6 : 0);
@@ -512,11 +512,11 @@ namespace PoeClone.World
             string[] titles = { "Green-Marked Caravan Wreck", "Dragged Cargo Trail", "Stolen Caravan Goods" };
             string[] descriptions =
             {
-                "Oda's green mark is scraped across a broken wagon panel. The cargo was dragged away. Tracks lead to the western grave plots.",
-                "Torn green cloth and spilled spices mark the western plots. Heavy tracks lead back toward the eastern road, where someone has piled up the stolen shipment.",
+                "Oda's green mark is scraped across a broken wagon panel. The cargo was dragged away. Tracks lead to the southwestern grave plots.",
+                "Torn green cloth and spilled spices mark the southwestern plots. Heavy tracks lead back toward the northeastern road, where someone has piled up the stolen shipment.",
                 "The Caravan Plunderer and its escort gathered Oda's entire shipment here. Defeat the assigned group, then recover the goods."
             };
-            string[] labels = { "Inspect the green-marked wreck on the old road", "Inspect the cargo trail in the western plots", "Recover Oda's goods by the eastern road" };
+            string[] labels = { "Inspect the green-marked wreck on the old road", "Inspect the cargo trail in the southwestern plots", "Recover Oda's goods by the northeastern road" };
             QuestProp prop = QuestProp.Attach(site.gameObject, "caravan", index, index == 2 ? PropAction.Take : PropAction.Read, titles[index],
                 descriptions[index], labels[index], index == 2 ? "Oda's shipment recovered" : "The cargo trail continues", 1.6f,
                 index == 2 ? new[] { "Bone Reaver", "Crypt Spider", "Grave Bat", "Skeleton Archer", "Crypt Spider", "Skeleton" } : null, index == 2 ? 6 : 0);
@@ -610,8 +610,8 @@ namespace PoeClone.World
             LocalBall(lit, new Vector3(0f, 3.6f, 0f), 0.35f, kit.Mat("Lantern"));
             Light glow = QuestGlow(site, p + Vector3.up * 4f, new Color(1f, 0.7f, 0.3f), 14f, 6f);
 
-            string[] labels = { "Wake the first sunstone in the western ruins", "Wake the second sunstone, west of the north gate", "Wake the last sunstone, east of the north gate" };
-            string[] aftermath = { "The sunstone blazes - by the north gate, the next stone answers", "The fire leaps to the last stone, east of the gate", "All three blaze - the ice on the north gate cracks!" };
+            string[] labels = { "Wake the first sunstone in the southwestern ruins", "Wake the second sunstone, south-west of the north-west gate", "Wake the last sunstone, north-east of the north-west gate" };
+            string[] aftermath = { "The sunstone blazes - by the north-west gate, the next stone answers", "The fire leaps to the last stone, north-east of the gate", "All three blaze - the ice on the north-west gate cracks!" };
             QuestProp prop = QuestProp.Attach(site.gameObject, "sunstones", index, PropAction.Light, "Sunstone " + (index + 1),
                 "A sandstone pillar topped with a black stone sphere. Old sun-signs are carved round the base. Lay your palm on the sphere: it is cold as the grave - but deep inside, something answers, like an ember under ash." +
                 (index > 0 ? "\n\nThe stone before it is burning, and this one is already warm." : ""),
@@ -650,6 +650,7 @@ namespace PoeClone.World
                 IceSpike(wall, wall.TransformPoint(new Vector3(k * 0.8f + 0.2f, 0f, 2.6f)), R(1.5f, 3.2f), new Vector3(R(-20f, 20f), R(0f, 360f), R(-20f, 20f)));
             }
             Glow(wall, at + Vector3.up * 2.5f - inward * 0.5f, IceLight, 9f, 4f);
+            wall.localScale = new Vector3(2f, 1f, 1f);
             QuestBarrier.Create(wall.gameObject, "sunstones", gate, "Sealed under ice that no fire of yours will melt", 8f);
         }
 
@@ -689,6 +690,7 @@ namespace PoeClone.World
                 "Dismantle the bone blockade at the Ashen Ruins gateway", "The deep-road gateway is unlocked!", 2.8f,
                 new[] { "Bone Warden", "Brute", "Storm Caster", "Bone Warden", "Brute", "Storm Caster" }, 6);
             blockade.SetGuarded(guardAt, "Defeat the deep-road blockade guards", "Deep-Road Warden");
+            wall.localScale = new Vector3(2f, 1f, 1f);
             QuestBarrier.Create(wall.gameObject, "deep_road", gate,
                 "Gateway sealed: defeat its quest guards, then dismantle the bone blockade", 7f);
         }
@@ -768,11 +770,11 @@ namespace PoeClone.World
             string[] names = { "Mott", "Teodor", "Ilse" };
             string[] journals =
             {
-                "\"Day 3. Spiders the size of carts in the pines. One got my leg. Teodor and Ilse went east along the cliffs to find a way round the webs. I'll catch them up once I can stand.\"",
-                "\"Day 5. Saw her. A queen on a throne of ice, many-legged, crawlers swarming at her feet. She was singing. The dead walked past her, north, and she let them. Ilse went north alone to see where they go.\"",
+                "\"Day 3. Spiders the size of carts in the pines. One got my leg. Teodor and Ilse went north-east along the cliffs to find a way round the webs. I'll catch them up once I can stand.\"",
+                "\"Day 5. Saw her. A queen on a throne of ice, many-legged, crawlers swarming at her feet. She was singing. The dead walked past her, north-west, and she let them. Ilse went north-west alone to see where they go.\"",
                 "\"Day 6. Behind the throne, a door taller than a house. Antlers cut in the stone. It's warm. Something breathes behind it. And something pale has followed me since the throne. It's\""
             };
-            string[] labels = { "Search Mott's body in the south-west pines", "Search Teodor's body by the south-east cliffs", "Take Ilse's journal in the north-west, near the door" };
+            string[] labels = { "Search Mott's body in the south pines", "Search Teodor's body by the east cliffs", "Take Ilse's journal in the west, near the door" };
             QuestProp prop = QuestProp.Attach(site.gameObject, "scouts", index, PropAction.Take, "Scout " + names[index],
                 "An Emberwatch scout, frozen into the snow, red cloak gone white with frost. A journal lies by one hand." +
                 (index == 2 ? " The snow around the body is trampled by something big, and it is still here." : "") +
@@ -834,6 +836,7 @@ namespace PoeClone.World
             prop.SetLooks(null, null, null);
             // Rotate the whole finished site, including its inscription, light and ice dressing.
             site.rotation = SanctuaryDoorRotation;
+            site.localScale = new Vector3(2f, 1f, 1f);
         }
 
         private void AntlerBranch(Transform parent, Vector3 start, Vector3 end, float thickness)

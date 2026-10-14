@@ -18,6 +18,7 @@ namespace PoeClone.Quests
         private AreaGate gate;
         private QuestLog log;
         private bool open;
+        public bool BlocksTeleport => !open;
         private float sinkStarted = -1f;
         private float height = 5f;
         private GameObject gateLabel;

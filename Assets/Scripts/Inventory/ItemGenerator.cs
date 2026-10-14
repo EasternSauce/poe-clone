@@ -9,7 +9,7 @@ namespace PoeClone.Inventory
     /// <summary>
     /// Random loot. Every drop is one of the item bases that has art (an icon and a 3D look, keyed by
     /// id like the starter items), with the base's own fixed stats plus random extra stats by rarity:
-    /// Normal none, Magic one or two, Rare three or four, rolled stronger as the item level rises.
+    /// Normal none, Magic one to three, Rare three to six, rolled stronger as the item level rises.
     /// The base's own stats vary a little too (a 15 evasion base rolls 12 to 16), so two drops of
     /// the same base aren't identical. A weapon's base damage does not vary: extra flat Physical
     /// Damage only comes from a rolled affix. Takes a System.Random so tests can make it repeatable.
@@ -47,15 +47,15 @@ namespace PoeClone.Inventory
         {
             float total = 0f;
             foreach (ModifierTier tier in tiers)
-                if (tier != null && tier.Eligible(itemLevel)) total += tier.Weight;
+                if (tier != null && tier.Rollable(itemLevel)) total += 1f;
             if (total <= 0f) throw new InvalidOperationException("No eligible modifier tier at item level " + itemLevel);
             ModifierTier last = null;
             float roll = (float)rng.NextDouble() * total;
             foreach (ModifierTier tier in tiers)
             {
-                if (tier == null || !tier.Eligible(itemLevel)) continue;
+                if (tier == null || !tier.Rollable(itemLevel)) continue;
                 last = tier;
-                roll -= tier.Weight;
+                roll -= 1f;
                 if (roll < 0f) return tier;
             }
             return last;
@@ -875,12 +875,12 @@ namespace PoeClone.Inventory
 
             int affixCount = 0;
             if (rarity == ItemRarity.Magic)
-                affixCount = rng.Next(1, 3);
+                affixCount = rng.Next(1, 4);
             else if (rarity == ItemRarity.Rare)
             {
-                // 3 is most common, 4 less so, 5 rarest (50% / 35% / 15%).
+                // Preserve the existing chances for 3 and 4; split the top roll between 5 and 6.
                 double roll = rng.NextDouble();
-                affixCount = roll < 0.5 ? 3 : roll < 0.85 ? 4 : 5;
+                affixCount = roll < 0.5 ? 3 : roll < 0.85 ? 4 : roll < 0.925 ? 5 : 6;
             }
 
             // Each stat at most once per item, and only stats that make sense on this kind of gear.
@@ -889,7 +889,7 @@ namespace PoeClone.Inventory
             foreach (Affix a in Affixes)
             {
                 if (a == null || !a.Enabled || a.Weight <= 0 || float.IsNaN(a.Weight) || float.IsInfinity(a.Weight) ||
-                    !a.Allows(b.Type, b.WeaponType) || !a.HasTier(level))
+                    !a.Allows(b.Type, b.WeaponType) || !a.HasRollableTier(level))
                     continue;
                 candidates.Add(a);
                 candidateWeights.Add(a.Weight * LeaningFactor(b.Leaning, a.Stat));

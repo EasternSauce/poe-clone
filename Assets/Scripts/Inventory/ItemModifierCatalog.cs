@@ -15,6 +15,8 @@ namespace PoeClone.Inventory
         public ItemModifierTier() { }
         public ItemModifierTier(int level, float min, float max, float weight)
         { RequiredItemLevel = level; Min = (int)min; Max = (int)max; Weight = weight; }
+        public bool Rollable(int level) => Eligible(level) && level - RequiredItemLevel < 10;
+
         public bool Eligible(int level) => RequiredItemLevel <= level && Weight > 0f &&
             !float.IsInfinity(Weight) && Min <= Max && Max < int.MaxValue;
     }
@@ -34,7 +36,7 @@ namespace PoeClone.Inventory
         public bool Allows(ItemType type, WeaponType weapon) => On != null &&
             Array.IndexOf(On, type) >= 0 && (type != ItemType.Weapon || AnyWeapon ||
             (Weapons != null && Array.IndexOf(Weapons, weapon) >= 0));
-        public bool HasTier(int level) => Tiers != null && Array.Exists(Tiers, t => t != null && t.Eligible(level));
+        public bool HasRollableTier(int level) => Tiers != null && Array.Exists(Tiers, t => t != null && t.Rollable(level));
     }
 
     /// <summary>Persistent loot balance, loaded from Resources in both the editor and builds.</summary>

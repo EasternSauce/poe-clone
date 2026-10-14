@@ -28,39 +28,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 17
       Max: 50
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 20
       Max: 59
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 22
       Max: 67
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 25
       Max: 76
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 28
       Max: 84
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 30
+      Max: 90
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 31
       Max: 92
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 33
+      Max: 97
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 34
       Max: 101
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 35
+      Max: 106
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 36
       Max: 109
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 37
+      Max: 113
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 39
+      Max: 117
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 39
       Max: 118
-      Weight: 0.0403536
+      Weight: 1
   - Label: CriticalChance / 2
     Enabled: 1
     Stat: 46
@@ -76,39 +96,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 13
       Max: 34
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 15
       Max: 39
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 17
       Max: 45
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 19
       Max: 50
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 21
       Max: 56
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 22
+      Max: 60
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 23
       Max: 62
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 24
+      Max: 65
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 25
       Max: 67
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 26
+      Max: 71
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 27
       Max: 73
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 28
+      Max: 75
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 29
+      Max: 78
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 29
       Max: 78
-      Weight: 0.0403536
+      Weight: 1
   - Label: CriticalMultiplier / 1
     Enabled: 1
     Stat: 47
@@ -124,39 +164,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 12
       Max: 30
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 14
       Max: 35
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 16
       Max: 40
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 18
       Max: 45
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 20
       Max: 50
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 21
+      Max: 53
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 22
       Max: 55
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 23
+      Max: 58
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 24
       Max: 60
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 25
+      Max: 63
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 26
       Max: 65
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 27
+      Max: 67
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 28
+      Max: 70
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 28
       Max: 70
-      Weight: 0.0403536
+      Weight: 1
   - Label: MaxLife / 1
     Enabled: 1
     Stat: 3
@@ -172,39 +232,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 20
       Max: 60
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 22
       Max: 70
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 26
       Max: 80
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 28
       Max: 90
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 32
       Max: 100
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 35
+      Max: 107
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 36
       Max: 110
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 37
+      Max: 116
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 38
       Max: 120
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 40
+      Max: 126
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 42
       Max: 130
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 43
+      Max: 134
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 44
+      Max: 139
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 44
       Max: 140
-      Weight: 0.0403536
+      Weight: 1
   - Label: MaxMana / 1
     Enabled: 1
     Stat: 4
@@ -220,39 +300,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 15
       Max: 36
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 17
       Max: 42
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 20
       Max: 48
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 21
       Max: 54
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 24
       Max: 60
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 26
+      Max: 64
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 27
       Max: 66
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 28
+      Max: 70
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 29
       Max: 72
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 31
+      Max: 76
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 32
       Max: 78
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 32
+      Max: 81
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 33
+      Max: 83
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 33
       Max: 84
-      Weight: 0.0403536
+      Weight: 1
   - Label: Strength / 1
     Enabled: 1
     Stat: 0
@@ -268,39 +368,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 14
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 17
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 19
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 22
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 24
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 26
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 29
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 30
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 31
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 32
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 34
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 34
-      Weight: 0.0403536
+      Weight: 1
   - Label: Dexterity / 1
     Enabled: 1
     Stat: 1
@@ -316,39 +436,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 14
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 17
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 19
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 22
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 24
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 26
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 29
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 30
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 31
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 32
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 34
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 34
-      Weight: 0.0403536
+      Weight: 1
   - Label: Intelligence / 1
     Enabled: 1
     Stat: 2
@@ -364,39 +504,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 14
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 17
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 19
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 22
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 24
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 26
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 29
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 30
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 31
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 32
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 34
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 34
-      Weight: 0.0403536
+      Weight: 1
   - Label: Armour / 1
     Enabled: 1
     Stat: 5
@@ -412,39 +572,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 24
       Max: 96
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 28
       Max: 112
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 32
       Max: 128
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 36
       Max: 144
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 40
       Max: 160
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 43
+      Max: 171
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 44
       Max: 176
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 46
+      Max: 186
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 48
       Max: 192
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 50
+      Max: 202
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 52
       Max: 208
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 54
+      Max: 215
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 56
+      Max: 222
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 56
       Max: 224
-      Weight: 0.0403536
+      Weight: 1
   - Label: Evasion / 1
     Enabled: 1
     Stat: 6
@@ -460,39 +640,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 24
       Max: 96
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 28
       Max: 112
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 32
       Max: 128
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 36
       Max: 144
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 40
       Max: 160
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 43
+      Max: 171
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 44
       Max: 176
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 46
+      Max: 186
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 48
       Max: 192
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 50
+      Max: 202
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 52
       Max: 208
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 54
+      Max: 215
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 56
+      Max: 222
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 56
       Max: 224
-      Weight: 0.0403536
+      Weight: 1
   - Label: BlockChance / 1
     Enabled: 1
     Stat: 7
@@ -508,39 +708,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 4
       Max: 10
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 4
       Max: 11
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 5
       Max: 13
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 5
       Max: 14
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 6
       Max: 16
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 7
+      Max: 17
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 7
       Max: 18
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 7
+      Max: 19
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 7
       Max: 19
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 8
+      Max: 20
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 8
       Max: 21
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 8
+      Max: 21
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 8
+      Max: 22
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 8
       Max: 22
-      Weight: 0.0403536
+      Weight: 1
   - Label: AvoidStun / 1
     Enabled: 1
     Stat: 110
@@ -556,39 +776,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 4
       Max: 8
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 4
       Max: 10
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 5
       Max: 11
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 5
       Max: 13
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 6
       Max: 14
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 7
+      Max: 15
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 7
       Max: 15
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 7
+      Max: 16
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 7
       Max: 17
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 8
+      Max: 18
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 8
       Max: 18
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 8
+      Max: 19
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 8
+      Max: 20
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 8
       Max: 20
-      Weight: 0.0403536
+      Weight: 1
   - Label: PhysicalDamage / 1
     Enabled: 1
     Stat: 8
@@ -604,39 +844,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 2
       Max: 8
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 3
       Max: 10
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 3
       Max: 11
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 4
       Max: 13
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 4
       Max: 14
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 4
+      Max: 15
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 4
       Max: 15
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 5
+      Max: 16
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 5
       Max: 17
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 5
+      Max: 18
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 5
       Max: 18
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 5
+      Max: 19
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 6
+      Max: 20
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 6
       Max: 20
-      Weight: 0.0403536
+      Weight: 1
   - Label: PhysicalDamage / 2
     Enabled: 1
     Stat: 8
@@ -652,39 +912,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 4
       Max: 10
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 4
       Max: 11
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 5
       Max: 13
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 5
       Max: 14
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 6
       Max: 16
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 7
+      Max: 17
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 7
       Max: 18
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 7
+      Max: 19
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 7
       Max: 19
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 8
+      Max: 20
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 8
       Max: 21
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 8
+      Max: 21
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 8
+      Max: 22
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 8
       Max: 22
-      Weight: 0.0403536
+      Weight: 1
   - Label: PhysicalDamage / 3
     Enabled: 1
     Stat: 8
@@ -700,39 +980,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 7
       Max: 18
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 8
       Max: 21
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 10
       Max: 24
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 11
       Max: 27
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 12
       Max: 30
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 13
+      Max: 32
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 13
       Max: 33
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 14
+      Max: 35
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 14
       Max: 36
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 15
+      Max: 38
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 16
       Max: 39
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 16
+      Max: 40
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 17
+      Max: 42
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 17
       Max: 42
-      Weight: 0.0403536
+      Weight: 1
   - Label: AttackSpeed / 1
     Enabled: 1
     Stat: 9
@@ -748,39 +1048,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 4
       Max: 12
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 4
       Max: 14
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 5
       Max: 16
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 5
       Max: 18
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 6
       Max: 20
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 7
+      Max: 21
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 7
       Max: 22
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 7
+      Max: 23
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 7
       Max: 24
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 8
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 8
       Max: 26
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 8
+      Max: 27
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 8
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 8
       Max: 28
-      Weight: 0.0403536
+      Weight: 1
   - Label: AttackSpeed / 2
     Enabled: 1
     Stat: 9
@@ -796,39 +1116,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 45
       Max: 58
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 60
       Max: 75
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 72
       Max: 90
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 85
       Max: 105
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 88
       Max: 110
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 93
+      Max: 117
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 95
       Max: 120
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 98
+      Max: 126
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 100
       Max: 130
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 103
+      Max: 135
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 105
       Max: 138
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 107
+      Max: 141
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 110
+      Max: 144
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 110
       Max: 145
-      Weight: 0.0403536
+      Weight: 1
   - Label: FireResistance / 1
     Enabled: 1
     Stat: 10
@@ -844,39 +1184,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 7
       Max: 29
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 8
       Max: 34
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 10
       Max: 38
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 11
       Max: 43
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 12
       Max: 48
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 13
+      Max: 51
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 13
       Max: 53
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 14
+      Max: 56
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 14
       Max: 58
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 15
+      Max: 60
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 16
       Max: 62
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 16
+      Max: 64
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 17
+      Max: 66
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 17
       Max: 67
-      Weight: 0.0403536
+      Weight: 1
   - Label: ColdResistance / 1
     Enabled: 1
     Stat: 11
@@ -892,39 +1252,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 7
       Max: 29
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 8
       Max: 34
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 10
       Max: 38
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 11
       Max: 43
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 12
       Max: 48
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 13
+      Max: 51
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 13
       Max: 53
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 14
+      Max: 56
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 14
       Max: 58
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 15
+      Max: 60
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 16
       Max: 62
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 16
+      Max: 64
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 17
+      Max: 66
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 17
       Max: 67
-      Weight: 0.0403536
+      Weight: 1
   - Label: LightningResistance / 1
     Enabled: 1
     Stat: 12
@@ -940,39 +1320,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 7
       Max: 29
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 8
       Max: 34
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 10
       Max: 38
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 11
       Max: 43
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 12
       Max: 48
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 13
+      Max: 51
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 13
       Max: 53
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 14
+      Max: 56
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 14
       Max: 58
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 15
+      Max: 60
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 16
       Max: 62
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 16
+      Max: 64
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 17
+      Max: 66
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 17
       Max: 67
-      Weight: 0.0403536
+      Weight: 1
   - Label: PoisonResistance / 1
     Enabled: 1
     Stat: 94
@@ -988,39 +1388,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 7
       Max: 29
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 8
       Max: 34
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 10
       Max: 38
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 11
       Max: 43
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 12
       Max: 48
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 13
+      Max: 51
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 13
       Max: 53
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 14
+      Max: 56
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 14
       Max: 58
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 15
+      Max: 60
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 16
       Max: 62
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 16
+      Max: 64
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 17
+      Max: 66
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 17
       Max: 67
-      Weight: 0.0403536
+      Weight: 1
   - Label: PoisonDamage / 1
     Enabled: 1
     Stat: 96
@@ -1036,39 +1456,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 6
       Max: 18
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 7
       Max: 21
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 8
       Max: 24
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 9
       Max: 27
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 10
       Max: 30
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 11
+      Max: 32
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 11
       Max: 33
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 12
+      Max: 35
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 12
       Max: 36
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 13
+      Max: 38
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 13
       Max: 39
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 13
+      Max: 40
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 14
+      Max: 42
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 14
       Max: 42
-      Weight: 0.0403536
+      Weight: 1
   - Label: DamageOverTime / 1
     Enabled: 1
     Stat: 97
@@ -1084,39 +1524,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 14
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 17
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 19
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 22
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 24
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 26
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 29
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 30
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 31
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 32
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 34
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 34
-      Weight: 0.0403536
+      Weight: 1
   - Label: PoisonPenetration / 1
     Enabled: 1
     Stat: 95
@@ -1132,39 +1592,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 4
       Max: 12
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 4
       Max: 14
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 5
       Max: 16
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 5
       Max: 18
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 6
       Max: 20
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 7
+      Max: 21
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 7
       Max: 22
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 7
+      Max: 23
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 7
       Max: 24
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 8
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 8
       Max: 26
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 8
+      Max: 27
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 8
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 8
       Max: 28
-      Weight: 0.0403536
+      Weight: 1
   - Label: PoisonDamage / 2
     Enabled: 1
     Stat: 96
@@ -1180,39 +1660,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 6
       Max: 17
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 7
       Max: 20
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 8
       Max: 22
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 9
       Max: 25
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 10
       Max: 28
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 11
+      Max: 30
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 11
       Max: 31
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 12
+      Max: 33
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 12
       Max: 34
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 13
+      Max: 35
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 13
       Max: 36
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 13
+      Max: 37
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 14
+      Max: 39
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 14
       Max: 39
-      Weight: 0.0403536
+      Weight: 1
   - Label: ArmourPenetration / 1
     Enabled: 1
     Stat: 93
@@ -1228,39 +1728,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 14
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 17
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 19
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 22
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 24
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 26
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 29
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 30
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 31
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 32
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 34
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 34
-      Weight: 0.0403536
+      Weight: 1
   - Label: FirePenetration / 1
     Enabled: 1
     Stat: 89
@@ -1276,39 +1796,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 14
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 17
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 19
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 22
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 24
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 26
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 29
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 30
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 31
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 32
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 34
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 34
-      Weight: 0.0403536
+      Weight: 1
   - Label: ColdPenetration / 1
     Enabled: 1
     Stat: 90
@@ -1324,39 +1864,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 14
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 17
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 19
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 22
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 24
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 26
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 29
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 30
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 31
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 32
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 34
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 34
-      Weight: 0.0403536
+      Weight: 1
   - Label: LightningPenetration / 1
     Enabled: 1
     Stat: 91
@@ -1372,39 +1932,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 14
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 17
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 19
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 22
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 24
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 26
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 29
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 30
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 31
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 32
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 34
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 34
-      Weight: 0.0403536
+      Weight: 1
   - Label: ElementalPenetration / 1
     Enabled: 1
     Stat: 92
@@ -1420,39 +2000,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 4
       Max: 10
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 4
       Max: 11
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 5
       Max: 13
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 5
       Max: 14
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 6
       Max: 16
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 7
+      Max: 17
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 7
       Max: 18
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 7
+      Max: 19
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 7
       Max: 19
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 8
+      Max: 20
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 8
       Max: 21
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 8
+      Max: 21
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 8
+      Max: 22
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 8
       Max: 22
-      Weight: 0.0403536
+      Weight: 1
   - Label: MovementSpeed / 1
     Enabled: 1
     Stat: 13
@@ -1468,19 +2068,47 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 20
       Max: 20
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 25
       Max: 25
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 30
       Max: 30
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 35
       Max: 35
-      Weight: 0.24009998
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 35
+      Max: 35
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 35
+      Max: 35
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 35
+      Max: 35
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 35
+      Max: 35
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 35
+      Max: 35
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 35
+      Max: 35
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 35
+      Max: 35
+      Weight: 1
   - Label: MovementSpeed / 2
     Enabled: 1
     Stat: 13
@@ -1496,19 +2124,47 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 7
       Max: 7
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 8
       Max: 8
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 10
       Max: 10
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 12
       Max: 12
-      Weight: 0.24009998
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 12
+      Max: 12
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 12
+      Max: 12
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 12
+      Max: 12
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 12
+      Max: 12
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 12
+      Max: 12
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 12
+      Max: 12
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 12
+      Max: 12
+      Weight: 1
   - Label: AreaOfEffect / 1
     Enabled: 1
     Stat: 17
@@ -1524,39 +2180,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 6
       Max: 14
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 7
       Max: 17
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 8
       Max: 19
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 9
       Max: 22
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 10
       Max: 24
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 11
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 11
       Max: 26
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 12
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 12
       Max: 29
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 13
+      Max: 30
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 13
       Max: 31
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 13
+      Max: 32
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 14
+      Max: 34
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 14
       Max: 34
-      Weight: 0.0403536
+      Weight: 1
   - Label: MeleeRange / 1
     Enabled: 1
     Stat: 26
@@ -1572,39 +2248,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 6
       Max: 14
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 7
       Max: 17
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 8
       Max: 19
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 9
       Max: 22
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 10
       Max: 24
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 11
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 11
       Max: 26
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 12
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 12
       Max: 29
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 13
+      Max: 30
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 13
       Max: 31
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 13
+      Max: 32
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 14
+      Max: 34
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 14
       Max: 34
-      Weight: 0.0403536
+      Weight: 1
   - Label: LifeRegen / 1
     Enabled: 1
     Stat: 18
@@ -1620,39 +2316,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 1
       Max: 4
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 1
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 2
       Max: 5
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 2
       Max: 5
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 2
       Max: 6
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 2
+      Max: 7
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 2
       Max: 7
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 2
+      Max: 7
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 2
       Max: 7
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 3
+      Max: 8
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 3
       Max: 8
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 3
+      Max: 8
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 3
+      Max: 8
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 3
       Max: 8
-      Weight: 0.0403536
+      Weight: 1
   - Label: LifeLeech / 1
     Enabled: 1
     Stat: 20
@@ -1665,14 +2381,54 @@ MonoBehaviour:
       Min: 1
       Max: 2
       Weight: 1
+    - RequiredItemLevel: 10
+      Min: 1
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 19
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 28
+      Min: 2
+      Max: 3
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 2
       Max: 3
-      Weight: 0.7
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 3
+      Max: 4
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 3
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 3
+      Max: 4
+      Weight: 1
   - Label: LifeOnKill / 1
     Enabled: 1
     Stat: 25
@@ -1688,39 +2444,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 2
       Max: 6
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 3
       Max: 7
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 3
       Max: 8
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 4
       Max: 9
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 4
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 4
+      Max: 11
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 4
       Max: 11
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 5
+      Max: 12
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 5
       Max: 12
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 5
+      Max: 13
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 5
       Max: 13
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 5
+      Max: 13
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 6
+      Max: 14
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 6
       Max: 14
-      Weight: 0.0403536
+      Weight: 1
   - Label: LifeOnAttackHit / 1
     Enabled: 1
     Stat: 127
@@ -1736,39 +2512,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 2
       Max: 5
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 3
       Max: 6
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 4
       Max: 7
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 4
       Max: 8
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 4
+      Max: 9
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 4
       Max: 9
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 5
+      Max: 10
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 5
       Max: 10
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 5
+      Max: 10
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 5
       Max: 10
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 5
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 6
+      Max: 11
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 6
       Max: 11
-      Weight: 0.0403536
+      Weight: 1
   - Label: SpellDamage / 1
     Enabled: 1
     Stat: 16
@@ -1784,39 +2580,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 12
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 14
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 16
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 18
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 20
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 21
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 22
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 23
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 24
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 26
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 27
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 28
-      Weight: 0.0403536
+      Weight: 1
   - Label: SpellDamage / 2
     Enabled: 1
     Stat: 16
@@ -1832,39 +2648,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 2
       Max: 6
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 3
       Max: 7
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 3
       Max: 8
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 4
       Max: 9
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 4
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 4
+      Max: 11
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 4
       Max: 11
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 5
+      Max: 12
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 5
       Max: 12
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 5
+      Max: 13
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 5
       Max: 13
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 5
+      Max: 13
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 6
+      Max: 14
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 6
       Max: 14
-      Weight: 0.0403536
+      Weight: 1
   - Label: MaxMana / 2
     Enabled: 1
     Stat: 4
@@ -1880,39 +2716,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 14
       Max: 36
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 17
       Max: 42
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 19
       Max: 48
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 22
       Max: 54
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 24
       Max: 60
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 25
+      Max: 64
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 26
       Max: 66
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 28
+      Max: 70
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 29
       Max: 72
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 30
+      Max: 76
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 31
       Max: 78
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 32
+      Max: 81
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 34
+      Max: 83
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 34
       Max: 84
-      Weight: 0.0403536
+      Weight: 1
   - Label: ManaRegen / 1
     Enabled: 1
     Stat: 19
@@ -1928,39 +2784,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 12
       Max: 42
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 14
       Max: 49
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 16
       Max: 56
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 18
       Max: 63
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 20
       Max: 70
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 21
+      Max: 75
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 22
       Max: 77
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 23
+      Max: 81
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 24
       Max: 84
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 25
+      Max: 88
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 26
       Max: 91
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 27
+      Max: 94
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 28
+      Max: 97
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 28
       Max: 98
-      Weight: 0.0403536
+      Weight: 1
   - Label: CastSpeed / 1
     Enabled: 1
     Stat: 38
@@ -1976,39 +2852,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 7
       Max: 22
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 8
       Max: 25
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 10
       Max: 29
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 11
       Max: 32
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 12
       Max: 36
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 13
+      Max: 39
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 13
       Max: 40
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 14
+      Max: 42
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 14
       Max: 43
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 15
+      Max: 45
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 16
       Max: 47
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 16
+      Max: 48
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 17
+      Max: 50
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 17
       Max: 50
-      Weight: 0.0403536
+      Weight: 1
   - Label: CastSpeed / 2
     Enabled: 1
     Stat: 38
@@ -2024,39 +2920,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 14
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 17
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 19
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 22
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 24
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 26
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 29
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 30
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 31
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 32
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 34
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 34
-      Weight: 0.0403536
+      Weight: 1
   - Label: CastSpeed / 3
     Enabled: 1
     Stat: 38
@@ -2072,39 +2988,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 12
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 14
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 16
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 18
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 20
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 21
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 22
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 23
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 24
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 26
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 27
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 28
-      Weight: 0.0403536
+      Weight: 1
   - Label: CastSpeed / 4
     Enabled: 1
     Stat: 38
@@ -2120,39 +3056,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 4
       Max: 10
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 4
       Max: 11
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 5
       Max: 13
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 5
       Max: 14
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 6
       Max: 16
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 7
+      Max: 17
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 7
       Max: 18
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 7
+      Max: 19
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 7
       Max: 19
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 8
+      Max: 20
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 8
       Max: 21
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 8
+      Max: 21
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 8
+      Max: 22
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 8
       Max: 22
-      Weight: 0.0403536
+      Weight: 1
   - Label: MaxMana / 3
     Enabled: 1
     Stat: 4
@@ -2168,39 +3124,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 12
       Max: 30
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 14
       Max: 35
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 16
       Max: 40
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 18
       Max: 45
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 20
       Max: 50
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 21
+      Max: 53
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 22
       Max: 55
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 23
+      Max: 58
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 24
       Max: 60
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 25
+      Max: 63
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 26
       Max: 65
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 27
+      Max: 67
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 28
+      Max: 70
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 28
       Max: 70
-      Weight: 0.0403536
+      Weight: 1
   - Label: AllSpellLevels / 1
     Enabled: 1
     Stat: 34
@@ -2213,14 +3189,54 @@ MonoBehaviour:
       Min: 1
       Max: 1
       Weight: 1
+    - RequiredItemLevel: 10
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 19
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 28
+      Min: 2
+      Max: 2
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 2
       Max: 2
-      Weight: 0.7
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 3
+      Max: 3
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 3
       Max: 3
-      Weight: 0.48999998
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 3
+      Max: 3
+      Weight: 1
   - Label: FireSpellLevels / 1
     Enabled: 1
     Stat: 35
@@ -2233,14 +3249,54 @@ MonoBehaviour:
       Min: 1
       Max: 1
       Weight: 1
+    - RequiredItemLevel: 10
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 19
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 28
+      Min: 2
+      Max: 2
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 2
       Max: 2
-      Weight: 0.7
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 3
+      Max: 3
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 3
       Max: 3
-      Weight: 0.48999998
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 3
+      Max: 3
+      Weight: 1
   - Label: ColdSpellLevels / 1
     Enabled: 1
     Stat: 36
@@ -2253,14 +3309,54 @@ MonoBehaviour:
       Min: 1
       Max: 1
       Weight: 1
+    - RequiredItemLevel: 10
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 19
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 28
+      Min: 2
+      Max: 2
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 2
       Max: 2
-      Weight: 0.7
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 3
+      Max: 3
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 3
       Max: 3
-      Weight: 0.48999998
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 3
+      Max: 3
+      Weight: 1
   - Label: LightningSpellLevels / 1
     Enabled: 1
     Stat: 37
@@ -2273,14 +3369,54 @@ MonoBehaviour:
       Min: 1
       Max: 1
       Weight: 1
+    - RequiredItemLevel: 10
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 19
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 28
+      Min: 2
+      Max: 2
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 2
       Max: 2
-      Weight: 0.7
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 3
+      Max: 3
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 3
       Max: 3
-      Weight: 0.48999998
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 3
+      Max: 3
+      Weight: 1
   - Label: GrantFireBolt / 1
     Enabled: 1
     Stat: 28
@@ -2296,23 +3432,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantChainLightning / 1
     Enabled: 1
     Stat: 32
@@ -2328,23 +3492,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantIceShard / 1
     Enabled: 1
     Stat: 33
@@ -2360,23 +3552,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantFrostNova / 1
     Enabled: 1
     Stat: 30
@@ -2392,23 +3612,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantWarCry / 1
     Enabled: 1
     Stat: 31
@@ -2424,23 +3672,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantCleave / 1
     Enabled: 1
     Stat: 27
@@ -2456,23 +3732,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantFangStrike / 1
     Enabled: 1
     Stat: 98
@@ -2488,23 +3792,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantPulverize / 1
     Enabled: 1
     Stat: 104
@@ -2520,23 +3852,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantReapingArc / 1
     Enabled: 1
     Stat: 105
@@ -2552,23 +3912,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantLungingThrust / 1
     Enabled: 1
     Stat: 106
@@ -2584,23 +3972,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantWhirlwind / 1
     Enabled: 1
     Stat: 145
@@ -2616,23 +4032,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantFissure / 1
     Enabled: 1
     Stat: 146
@@ -2648,23 +4092,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantAftershock / 1
     Enabled: 1
     Stat: 147
@@ -2680,23 +4152,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantCrossSlash / 1
     Enabled: 1
     Stat: 148
@@ -2712,23 +4212,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantVenomSlash / 1
     Enabled: 1
     Stat: 149
@@ -2744,23 +4272,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantDash / 1
     Enabled: 1
     Stat: 29
@@ -2776,23 +4332,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantTeleport / 1
     Enabled: 1
     Stat: 61
@@ -2808,23 +4392,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: MinionDamage / 1
     Enabled: 1
     Stat: 67
@@ -2840,39 +4452,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 12
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 14
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 16
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 18
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 20
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 21
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 22
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 23
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 24
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 26
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 27
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 28
-      Weight: 0.0403536
+      Weight: 1
   - Label: MinionLife / 1
     Enabled: 1
     Stat: 68
@@ -2888,39 +4520,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 7
       Max: 19
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 8
       Max: 22
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 10
       Max: 26
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 11
       Max: 29
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 12
       Max: 32
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 13
+      Max: 34
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 13
       Max: 35
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 14
+      Max: 37
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 14
       Max: 38
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 15
+      Max: 40
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 16
       Max: 42
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 16
+      Max: 43
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 17
+      Max: 45
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 17
       Max: 45
-      Weight: 0.0403536
+      Weight: 1
   - Label: AdditionalMinions / 1
     Enabled: 1
     Stat: 102
@@ -2933,14 +4585,54 @@ MonoBehaviour:
       Min: 1
       Max: 1
       Weight: 1
+    - RequiredItemLevel: 10
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 19
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 28
+      Min: 2
+      Max: 2
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 2
       Max: 2
-      Weight: 0.7
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 3
+      Max: 3
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 3
       Max: 3
-      Weight: 0.48999998
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 3
+      Max: 3
+      Weight: 1
   - Label: MinionSpeed / 1
     Enabled: 1
     Stat: 69
@@ -2956,39 +4648,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 14
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 17
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 19
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 22
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 24
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 26
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 29
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 30
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 31
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 32
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 34
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 34
-      Weight: 0.0403536
+      Weight: 1
   - Label: MinionLevels / 1
     Enabled: 1
     Stat: 70
@@ -3001,14 +4713,54 @@ MonoBehaviour:
       Min: 1
       Max: 1
       Weight: 1
+    - RequiredItemLevel: 10
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 19
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 28
+      Min: 2
+      Max: 2
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 2
       Max: 2
-      Weight: 0.7
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 2
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 3
+      Max: 3
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 3
       Max: 3
-      Weight: 0.48999998
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 3
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 3
+      Max: 3
+      Weight: 1
   - Label: RaiseSkeletonsLevels / 1
     Enabled: 1
     Stat: 71
@@ -3021,14 +4773,54 @@ MonoBehaviour:
       Min: 1
       Max: 2
       Weight: 1
+    - RequiredItemLevel: 10
+      Min: 1
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 19
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 28
+      Min: 2
+      Max: 3
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 2
       Max: 3
-      Weight: 0.7
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 3
+      Max: 4
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 3
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 3
+      Max: 4
+      Weight: 1
   - Label: SkeletonMagesLevels / 1
     Enabled: 1
     Stat: 72
@@ -3041,14 +4833,54 @@ MonoBehaviour:
       Min: 1
       Max: 2
       Weight: 1
+    - RequiredItemLevel: 10
+      Min: 1
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 19
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 28
+      Min: 2
+      Max: 3
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 2
       Max: 3
-      Weight: 0.7
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 3
+      Max: 4
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 3
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 3
+      Max: 4
+      Weight: 1
   - Label: SpiritWolvesLevels / 1
     Enabled: 1
     Stat: 73
@@ -3061,14 +4893,54 @@ MonoBehaviour:
       Min: 1
       Max: 2
       Weight: 1
+    - RequiredItemLevel: 10
+      Min: 1
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 19
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 28
+      Min: 2
+      Max: 3
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 2
       Max: 3
-      Weight: 0.7
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 3
+      Max: 4
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 3
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 3
+      Max: 4
+      Weight: 1
   - Label: BoneGolemLevels / 1
     Enabled: 1
     Stat: 74
@@ -3081,14 +4953,54 @@ MonoBehaviour:
       Min: 1
       Max: 2
       Weight: 1
+    - RequiredItemLevel: 10
+      Min: 1
+      Max: 2
+      Weight: 1
+    - RequiredItemLevel: 19
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 28
+      Min: 2
+      Max: 3
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 2
       Max: 3
-      Weight: 0.7
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 2
+      Max: 3
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 3
+      Max: 4
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 3
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 3
+      Max: 4
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 3
+      Max: 4
+      Weight: 1
   - Label: MarkEffect / 1
     Enabled: 1
     Stat: 76
@@ -3104,39 +5016,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 12
       Max: 30
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 14
       Max: 35
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 16
       Max: 40
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 18
       Max: 45
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 20
       Max: 50
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 21
+      Max: 53
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 22
       Max: 55
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 23
+      Max: 58
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 24
       Max: 60
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 25
+      Max: 63
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 26
       Max: 65
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 27
+      Max: 67
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 28
+      Max: 70
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 28
       Max: 70
-      Weight: 0.0403536
+      Weight: 1
   - Label: MinionDuration / 1
     Enabled: 1
     Stat: 77
@@ -3152,39 +5084,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 12
       Max: 30
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 14
       Max: 35
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 16
       Max: 40
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 18
       Max: 45
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 20
       Max: 50
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 21
+      Max: 53
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 22
       Max: 55
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 23
+      Max: 58
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 24
       Max: 60
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 25
+      Max: 63
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 26
       Max: 65
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 27
+      Max: 67
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 28
+      Max: 70
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 28
       Max: 70
-      Weight: 0.0403536
+      Weight: 1
   - Label: BoneArmour / 1
     Enabled: 1
     Stat: 80
@@ -3200,39 +5152,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 5
       Max: 12
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 6
       Max: 14
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 6
       Max: 16
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 18
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 8
       Max: 20
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 9
+      Max: 21
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 9
       Max: 22
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 10
+      Max: 23
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 10
       Max: 24
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 10
+      Max: 25
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 10
       Max: 26
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 10
+      Max: 27
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 11
+      Max: 28
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 11
       Max: 28
-      Weight: 0.0403536
+      Weight: 1
   - Label: GrantRaiseSkeletons / 1
     Enabled: 1
     Stat: 62
@@ -3248,23 +5220,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantSkeletonMages / 1
     Enabled: 1
     Stat: 64
@@ -3280,23 +5280,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantSpiritWolves / 1
     Enabled: 1
     Stat: 65
@@ -3312,23 +5340,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantBoneGolem / 1
     Enabled: 1
     Stat: 66
@@ -3344,23 +5400,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantGraveRot / 1
     Enabled: 1
     Stat: 81
@@ -3376,23 +5460,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantGraveRot / 2
     Enabled: 1
     Stat: 81
@@ -3408,23 +5520,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantSplitShot / 1
     Enabled: 1
     Stat: 82
@@ -3440,23 +5580,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantPiercingShot / 1
     Enabled: 1
     Stat: 83
@@ -3472,23 +5640,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantRainOfArrows / 1
     Enabled: 1
     Stat: 84
@@ -3504,23 +5700,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantBurningArrow / 1
     Enabled: 1
     Stat: 85
@@ -3536,23 +5760,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantVenomArrow / 1
     Enabled: 1
     Stat: 99
@@ -3568,23 +5820,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantVenomSpout / 1
     Enabled: 1
     Stat: 100
@@ -3600,23 +5880,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: GrantSummonViper / 1
     Enabled: 1
     Stat: 101
@@ -3632,23 +5940,51 @@ MonoBehaviour:
     - RequiredItemLevel: 8
       Min: 1
       Max: 2
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 16
       Min: 2
       Max: 4
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 23
       Min: 3
       Max: 6
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 31
       Min: 5
       Max: 8
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 7
       Max: 10
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 43
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 52
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 61
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 70
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 79
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 88
+      Min: 7
+      Max: 10
+      Weight: 1
+    - RequiredItemLevel: 97
+      Min: 7
+      Max: 10
+      Weight: 1
   - Label: FireDamageOverTime / 1
     Enabled: 1
     Stat: 150
@@ -3664,39 +6000,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 14
       Max: 28
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 16
       Max: 32
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 18
       Max: 36
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 20
       Max: 40
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 22
       Max: 44
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 23
+      Max: 47
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 24
       Max: 48
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 25
+      Max: 50
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 26
       Max: 52
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 27
+      Max: 54
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 28
       Max: 56
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 29
+      Max: 58
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 30
+      Max: 60
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 30
       Max: 60
-      Weight: 0.0403536
+      Weight: 1
   - Label: IgniteChance / 1
     Enabled: 1
     Stat: 43
@@ -3712,39 +6068,59 @@ MonoBehaviour:
     - RequiredItemLevel: 9
       Min: 22
       Max: 33
-      Weight: 0.7
+      Weight: 1
     - RequiredItemLevel: 17
       Min: 24
       Max: 36
-      Weight: 0.48999998
+      Weight: 1
     - RequiredItemLevel: 25
       Min: 26
       Max: 39
-      Weight: 0.343
+      Weight: 1
     - RequiredItemLevel: 34
       Min: 28
       Max: 42
-      Weight: 0.24009998
+      Weight: 1
     - RequiredItemLevel: 37
       Min: 30
       Max: 45
-      Weight: 0.16806999
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 31
+      Max: 47
+      Weight: 1
     - RequiredItemLevel: 50
       Min: 32
       Max: 48
-      Weight: 0.11764899
+      Weight: 1
+    - RequiredItemLevel: 59
+      Min: 33
+      Max: 50
+      Weight: 1
     - RequiredItemLevel: 65
       Min: 34
       Max: 51
-      Weight: 0.08235429
+      Weight: 1
+    - RequiredItemLevel: 74
+      Min: 35
+      Max: 53
+      Weight: 1
     - RequiredItemLevel: 80
       Min: 36
       Max: 54
-      Weight: 0.057648003
+      Weight: 1
+    - RequiredItemLevel: 89
+      Min: 37
+      Max: 55
+      Weight: 1
+    - RequiredItemLevel: 98
+      Min: 38
+      Max: 57
+      Weight: 1
     - RequiredItemLevel: 100
       Min: 38
       Max: 57
-      Weight: 0.0403536
+      Weight: 1
   MainSkillTiers:
   - RequiredItemLevel: 1
     Min: 1
@@ -3753,20 +6129,48 @@ MonoBehaviour:
   - RequiredItemLevel: 8
     Min: 1
     Max: 2
-    Weight: 0.7
+    Weight: 1
   - RequiredItemLevel: 16
     Min: 2
     Max: 4
-    Weight: 0.48999998
+    Weight: 1
   - RequiredItemLevel: 23
     Min: 3
     Max: 6
-    Weight: 0.343
+    Weight: 1
   - RequiredItemLevel: 31
     Min: 5
     Max: 8
-    Weight: 0.24009998
+    Weight: 1
   - RequiredItemLevel: 34
     Min: 7
     Max: 10
-    Weight: 0.16806999
+    Weight: 1
+  - RequiredItemLevel: 43
+    Min: 7
+    Max: 10
+    Weight: 1
+  - RequiredItemLevel: 52
+    Min: 7
+    Max: 10
+    Weight: 1
+  - RequiredItemLevel: 61
+    Min: 7
+    Max: 10
+    Weight: 1
+  - RequiredItemLevel: 70
+    Min: 7
+    Max: 10
+    Weight: 1
+  - RequiredItemLevel: 79
+    Min: 7
+    Max: 10
+    Weight: 1
+  - RequiredItemLevel: 88
+    Min: 7
+    Max: 10
+    Weight: 1
+  - RequiredItemLevel: 97
+    Min: 7
+    Max: 10
+    Weight: 1

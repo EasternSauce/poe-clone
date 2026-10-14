@@ -63,7 +63,7 @@ namespace PoeClone.World
                 "Clay comes from the old channels. Nothing is wasted here, even the mud we dig out of the waterworks.",
                 Vector3.back, Flat(-22, -13), Flat(-16, -16), Flat(-11, -7));
             SahretWorker(prefab, folk, "Messenger Rafi", "ClothGreen", VillageActivity.Chat,
-                "A letter for the north house, a message for the forge. Everyone says theirs is urgent.",
+                "A letter for the north-west house, a message for the forge. Everyone says theirs is urgent.",
                 "People outside call Sahret sunken. Funny how much news still finds its way here.",
                 Vector3.forward, Flat(0, 21), Flat(12, 5), Flat(17, -2), Flat(8, -3));
             SahretWorker(prefab, folk, "Retired Mason Kemet", "ClothBlue", VillageActivity.Chat,

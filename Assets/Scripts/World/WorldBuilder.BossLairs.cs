@@ -68,8 +68,8 @@ namespace PoeClone.World
         private void ConnectDen(int area, Vector3 gateLocal, Vector3 inward, int den)
         {
             inward = inward.normalized;
-            Vector3 outsideGate = Center(area) + gateLocal;
-            Vector3 insideGate = Center(den) + DenGateLocal;
+            Vector3 outsideGate = GateByWall(area, Center(area) + gateLocal, YawOf(inward));
+            Vector3 insideGate = GateByWall(den, Center(den) + DenGateLocal, 0f);
             Transform arriveOutside = Marker("Arrive_" + AreaNames[area] + "_from_" + AreaNames[den], outsideGate + inward * 5f + Vector3.up * 1.1f, YawOf(inward));
             Transform arriveInside = Marker("Arrive_" + AreaNames[den] + "_from_" + AreaNames[area], insideGate + Vector3.forward * 6f + Vector3.up * 1.1f, 0f);
             ClearSpot(arriveOutside.position, 2f);
@@ -199,7 +199,7 @@ namespace PoeClone.World
         private void DressWarrenGate()
         {
             Begin(Cave, 715);
-            Vector3 gate = Center(Cave) + WarrenGateLocal;
+            Vector3 gate = GateByWall(Cave, Center(Cave) + WarrenGateLocal, YawOf(WarrenGateInward));
             Vector3 inward = WarrenGateInward.normalized;
             Vector3 side = Vector3.Cross(Vector3.up, inward);
             Transform t = Group("WarrenGate");
@@ -222,7 +222,7 @@ namespace PoeClone.World
         private void DressBelfryGate()
         {
             Begin(Graveyard, 716);
-            Vector3 gate = Center(Graveyard) + BelfryGateLocal;
+            Vector3 gate = GateByWall(Graveyard, Center(Graveyard) + BelfryGateLocal, YawOf(BelfryGateInward));
             if (DeferContent(gate, () => DressBelfryGate())) return;
             Vector3 inward = BelfryGateInward.normalized;
             Vector3 side = Vector3.Cross(Vector3.up, inward);

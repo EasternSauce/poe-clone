@@ -253,7 +253,7 @@ namespace PoeClone.EditorTools
                 GUILayout.Label("Min item lvl", GUILayout.MinWidth(75));
                 GUILayout.Label("Minimum roll", GUILayout.MinWidth(75));
                 GUILayout.Label("Maximum roll", GUILayout.MinWidth(75));
-                GUILayout.Label("Tier weight", GUILayout.MinWidth(75));
+                GUILayout.Label("Enabled", GUILayout.MinWidth(75));
                 GUILayout.Space(78);
             }
             for (int i = 0; i < tiers.arraySize; i++)
@@ -265,14 +265,15 @@ namespace PoeClone.EditorTools
                     EditorGUILayout.PropertyField(tier.FindPropertyRelative("RequiredItemLevel"), GUIContent.none, GUILayout.MinWidth(75), GUILayout.Height(22));
                     EditorGUILayout.PropertyField(tier.FindPropertyRelative("Min"), GUIContent.none, GUILayout.MinWidth(75), GUILayout.Height(22));
                     EditorGUILayout.PropertyField(tier.FindPropertyRelative("Max"), GUIContent.none, GUILayout.MinWidth(75), GUILayout.Height(22));
-                    EditorGUILayout.PropertyField(tier.FindPropertyRelative("Weight"), GUIContent.none, GUILayout.MinWidth(75), GUILayout.Height(22));
+                    var weight = tier.FindPropertyRelative("Weight");
+                    weight.floatValue = EditorGUILayout.Toggle(weight.floatValue > 0f, GUILayout.MinWidth(75), GUILayout.Height(22)) ? 1f : 0f;
                     if (GUILayout.Button("↑", GUILayout.Width(23)) && i > 0) tiers.MoveArrayElement(i, i - 1);
                     if (GUILayout.Button("↓", GUILayout.Width(23)) && i + 1 < tiers.arraySize) tiers.MoveArrayElement(i, i + 1);
                     if (GUILayout.Button("×", GUILayout.Width(23))) { tiers.DeleteArrayElementAtIndex(i); break; }
                 }
             }
             if (GUILayout.Button("Add Tier")) AddTier(tiers);
-            EditorGUILayout.HelpBox("Only tiers whose minimum item level is met can roll. Weights are relative among eligible tiers; zero disables a tier. If none qualify, the modifier is excluded from the roll.", MessageType.None);
+            EditorGUILayout.HelpBox("Enabled tiers roll equally when their minimum item level is met and is less than 10 levels below the item. If none qualify, the modifier is excluded from the roll.", MessageType.None);
         }
 
         private static void AddTier(SerializedProperty tiers)
