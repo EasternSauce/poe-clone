@@ -277,7 +277,8 @@ namespace PoeClone.World
                         .Room(138, 98, 21, 19)
                         // A wooded hollow down a track off the southern glade: the way into the Lost Hollows.
                         .Route(18, 92, -84, 122, -106, 142, -116).Room(143, -118, 17, 15)
-                        .Lake(58, -38, 22, 16).Lake(72, 58, 23, 23)
+                        // The western woodland lake sits apart from the river and its crossings.
+                        .Lake(-85, 25, 22, 16).Lake(72, 58, 23, 23)
                         .River(12, -18, 152, -6, 100, 8, 50, 24, 0, 24, -65, 24, -152)
                         .Bridge(24, -65, 26, 5.5f, 12).Bridge(24, 0, 26, 6, -9).Bridge(8, 50, 28, 5.5f, -17);
                 case WorldBuilder.Graveyard:

@@ -1,3 +1,8 @@
+version: 2026-10-14-dark-water-and-driftwood
+- Water is clearer and less blue, with sloping gravel beds, visible shallows and deeper, darker channels.
+- Forked branches drift and bob downstream, following river bends. Tall waterside snags and ruined pillars make reflections easier to see.
+- Moved Greenwood's southern lake into the western woods, away from the river.
+
 version: 2026-10-14-mobile-chat-and-tooltips
 - Mobile chat supports the keyboard's Enter/Send action. New messages appear at the bottom center for five seconds; open chat to read the history.
 - Nearby potions no longer trigger automatic tooltips on mobile. Settings now lets you turn automatic ground-item tooltips on or off.

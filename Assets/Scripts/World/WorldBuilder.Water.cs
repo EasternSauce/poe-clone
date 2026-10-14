@@ -24,8 +24,8 @@ namespace PoeClone.World
                     new Material(Resources.Load<Shader>("Shaders/ReflectiveWater"));
                 water.name = "Water_" + AreaNames[area];
                 Color color = frozen ? new Color(0.40f, 0.67f, 0.78f) :
-                    area == Graveyard ? new Color(0.13f, 0.29f, 0.28f) :
-                    shape.HasOcean ? new Color(0.10f, 0.38f, 0.49f) : new Color(0.16f, 0.42f, 0.48f);
+                    area == Graveyard ? new Color(0.12f, 0.15f, 0.11f) :
+                    shape.HasOcean ? new Color(0.12f, 0.16f, 0.17f) : new Color(0.15f, 0.19f, 0.16f);
                 water.SetColor("_BaseColor", color);
                 if (frozen)
                 {
@@ -60,6 +60,22 @@ namespace PoeClone.World
             if (region.HasValue) TrackChunkMesh(area, surface);
             if (!frozen)
             {
+                // Use the same clipped footprint so the bed meets banks and chunk seams exactly.
+                Mesh bed = Instantiate(surface);
+                bed.name = "SlopingWaterBed";
+                Vector3[] bedVertices = bed.vertices;
+                for (int i = 0; i < bedVertices.Length; i++)
+                {
+                    Vector3 p = bedVertices[i];
+                    float inset = Mathf.Max(0, shape.WaterDistance(shape.Center + p));
+                    float variation = 0.85f + Mathf.PerlinNoise(p.x * 0.09f + 31, p.z * 0.09f + 17) * 0.3f;
+                    p.y = -0.52f - (1 - Mathf.Exp(-inset * 0.22f)) * 5.2f * variation;
+                    bedVertices[i] = p;
+                }
+                bed.vertices = bedVertices;
+                bed.RecalculateNormals(); bed.RecalculateBounds();
+                if (region.HasValue) TrackChunkMesh(area, bed);
+                WaterPart(group, "SubmergedGravelAndSilt", bed, shoreMaterial, 0);
                 var motion = new List<Vector4>();
                 foreach (Vector3 vertex in surface.vertices) motion.Add(shape.WaterMotion(vertex));
                 surface.SetUVs(1, motion);
@@ -79,6 +95,7 @@ namespace PoeClone.World
                 if (!region.HasValue || region.Value.Contains(source.point))
                     BuildWaterfall(area, group, shape, source.point, source.downstream, source.halfWidth, waterMaterial, frozen, floorY);
             if (!frozen && !shape.IsCave) DressLakeShores(group, shape, area, floorY, region);
+            if (!frozen) DressWaterChannels(group, shape, area, floorY, materials.timber, region);
         }
 
         // Where a river enters the area it pours over a rock ledge into its channel.

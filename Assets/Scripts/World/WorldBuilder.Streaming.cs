@@ -273,7 +273,7 @@ namespace PoeClone.World
             rim.AddComponent<MeshFilter>().sharedMesh = rimMesh;
             rim.AddComponent<MeshRenderer>().sharedMaterial = streamedAreas[area].Rock;
             var backdrop = Box(group, shape.Center + new Vector3(rect.center.x,
-                group.position.y - (shape.IsCliff ? 12.5f : 1.5f), rect.center.y),
+                group.position.y - (shape.IsCliff ? 12.5f : shape.HasWater ? 9f : 1.5f), rect.center.y),
                 new Vector3(ChunkSize, 0.1f, ChunkSize), streamedAreas[area].Backdrop, false);
             backdrop.name = "Backdrop";
             if (shape.IsCliff) LavaSurface.Attach(backdrop);

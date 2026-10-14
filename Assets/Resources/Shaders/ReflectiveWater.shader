@@ -2,7 +2,7 @@ Shader "PoeClone/ReflectiveWater"
 {
     Properties
     {
-        _BaseColor ("Deep Water", Color) = (0.10, 0.32, 0.37, 1)
+        _BaseColor ("Deep Water", Color) = (0.13, 0.17, 0.15, 1)
         _WaterOcean ("Ocean Swell", Range(0,1)) = 0
         _Waterfall ("Falling Sheet", Range(0,1)) = 0
     }
@@ -123,7 +123,7 @@ Shader "PoeClone/ReflectiveWater"
                 float2 screenUV = GetNormalizedScreenSpaceUV(IN.positionCS);
                 float3 behind = SceneWorld(screenUV);
                 float depth = max(0, IN.positionWS.y - behind.y);
-                float2 distortion = slope * 0.015;
+                float2 distortion = slope * 0.009;
                 float2 refractedUV = saturate(screenUV + distortion);
                 float3 refractedWorld = SceneWorld(refractedUV);
                 if (refractedWorld.y > IN.positionWS.y + 0.02) refractedUV = screenUV;
@@ -145,7 +145,9 @@ Shader "PoeClone/ReflectiveWater"
                         saturate(dot(normal, normalize(delta))) * attenuation * attenuation / distSq;
                 }
                 half3 tint = _BaseColor.rgb * max(illumination, half3(0.12, 0.12, 0.12));
-                half3 color = lerp(bed, tint, _Waterfall > 0.5 ? 0.38 : 1 - exp(-depth * 0.48));
+                // Clear shallows expose the sloping bed; long water paths absorb more light.
+                float absorption = 1 - exp(-depth * 0.12);
+                half3 color = lerp(bed, tint, _Waterfall > 0.5 ? 0.25 : absorption);
                 float3 reflectedDirection = reflect(-view, normal);
                 half3 reflected = GlossyEnvironmentReflection(reflectedDirection, 0.12, 1);
                 if (_Waterfall < 0.5 && _WaterReflectionValid > 0.5 && abs(IN.baseHeight - _WaterReflectionHeight) < 0.08)
@@ -155,12 +157,12 @@ Shader "PoeClone/ReflectiveWater"
                     float edge = saturate(min(min(uv.x, uv.y), min(1 - uv.x, 1 - uv.y)) * 25);
                     reflected = lerp(reflected, SAMPLE_TEXTURE2D(_WaterReflection, sampler_WaterReflection, saturate(uv)).rgb, edge);
                 }
-                color = lerp(color, reflected, fresnel * 0.85 + 0.12);
+                color = lerp(color, reflected, saturate(fresnel * 0.85 + 0.18));
                 float specular = pow(saturate(dot(normal, normalize(view + sun.direction))), 160) * sun.shadowAttenuation;
                 color += sun.color * specular * 0.7 * lerp(1, 0.23, cave);
                 float foam = _Waterfall > 0.5 ? streak * 0.65 + smoothstep(0.78, 1, IN.uv.y) * 0.3 :
-                    (1 - smoothstep(0.04, 0.65, depth)) * (0.35 + 0.2 * sin(current + p.x * 3));
-                color = lerp(color, half3(0.8, 0.9, 0.91) * max(illumination, half3(0.3, 0.3, 0.3)), saturate(foam));
+                    (1 - smoothstep(0.03, 0.32, depth)) * (0.12 + 0.08 * sin(current + p.x * 3));
+                color = lerp(color, half3(0.73, 0.75, 0.68) * max(illumination, half3(0.3, 0.3, 0.3)), saturate(foam));
                 return half4(MixFog(color, IN.fog), 1);
             }
             ENDHLSL
