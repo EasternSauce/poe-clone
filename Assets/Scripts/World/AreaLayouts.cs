@@ -12,7 +12,7 @@ namespace PoeClone.World
                 { "totems", Points(28, 87, -70, -55, 110, -14) },
                 { "patrol", Points(-104, 66, 16, -102, 122, 45) },
                 { "relics", Points(-105, 10, 66, 100, -15, -110) },
-                { "caravan", Points(107, -55, -56, 68, 110, 0) },
+                { "caravan", Points(107, -55, -78, 24, 110, 0) },
                 { "supplies", Points(-52, 78, -86, -65, 124, 33) },
                 { "shrine", Points(-26, -4) },
                 { "sunstones", Points(-10, 112, 15, 105, -44, 82) },

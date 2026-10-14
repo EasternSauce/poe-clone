@@ -512,11 +512,11 @@ namespace PoeClone.World
             string[] titles = { "Green-Marked Caravan Wreck", "Dragged Cargo Trail", "Stolen Caravan Goods" };
             string[] descriptions =
             {
-                "Oda's green mark is scraped across a broken wagon panel. The cargo was dragged away. Tracks lead to the southwestern grave plots.",
-                "Torn green cloth and spilled spices mark the southwestern plots. Heavy tracks lead back toward the northeastern road, where someone has piled up the stolen shipment.",
+                "Oda's green mark is scraped across a broken wagon panel. The cargo was dragged away. Tracks lead to the western grave plots.",
+                "Torn green cloth and spilled spices mark the western plots. Heavy tracks lead back toward the northeastern road, where someone has piled up the stolen shipment.",
                 "The Caravan Plunderer and its escort gathered Oda's entire shipment here. Defeat the assigned group, then recover the goods."
             };
-            string[] labels = { "Inspect the green-marked wreck on the old road", "Inspect the cargo trail in the southwestern plots", "Recover Oda's goods by the northeastern road" };
+            string[] labels = { "Inspect the green-marked wreck on the old road", "Inspect the cargo trail in the western plots", "Recover Oda's goods by the northeastern road" };
             QuestProp prop = QuestProp.Attach(site.gameObject, "caravan", index, index == 2 ? PropAction.Take : PropAction.Read, titles[index],
                 descriptions[index], labels[index], index == 2 ? "Oda's shipment recovered" : "The cargo trail continues", 1.6f,
                 index == 2 ? new[] { "Bone Reaver", "Crypt Spider", "Grave Bat", "Skeleton Archer", "Crypt Spider", "Skeleton" } : null, index == 2 ? 6 : 0);

@@ -227,7 +227,7 @@ namespace PoeClone.UI
         // ------------------------------------------------------------------ quests
 
         // Accept/hand in before displaying the page: closing it cannot replay the dialogue.
-        private static void NextQuest(Npc npc)
+        private static void NextQuest(Npc npc, bool questOnly = false)
         {
             QuestLog log = QuestLog.Instance;
             QuestDefinition quest = log?.At(npc.Role).Find(q =>
@@ -235,7 +235,10 @@ namespace PoeClone.UI
                 log.State(q) == QuestState.Complete && q.ReturnTo == npc.Role);
             if (quest == null)
             {
-                Main(npc, Greeting(npc.Role));
+                if (questOnly)
+                    DialogueUI.Close();
+                else
+                    Main(npc, Greeting(npc.Role));
                 return;
             }
 
@@ -256,7 +259,7 @@ namespace PoeClone.UI
             RefreshMarkers();
             DialogueUI.Show(npc, text, new List<DialogueOption>
             {
-                new DialogueOption("Continue", () => NextQuest(npc))
+                new DialogueOption("Continue", () => NextQuest(npc, questOnly: true))
             });
         }
 
