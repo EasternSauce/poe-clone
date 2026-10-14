@@ -28,8 +28,18 @@ const assert = require('node:assert/strict');
  const before=calls;const restore2=context.installChunkDownloads(manifest,'?v=two');
  assert.deepEqual(Buffer.from(await (await context.window.fetch('Build/WebGL.data.unityweb?v=two')).arrayBuffer()),Buffer.concat(files));
  assert.equal(calls,before);restore2();
+ // Background staging leaves gameplay fetch intact and awaits durable cache writes.
+ saved.clear();
+ const staged=context.installChunkDownloads(manifest,'?v=staged',null,true);
+ assert.equal(context.window.fetch,nativeFetch);
+ await staged.prefetch();assert.equal(saved.size,hashes.length);
+ const afterStage=calls;
+ const restoreStaged=context.installChunkDownloads(manifest,'?v=staged');
+ assert.deepEqual(Buffer.from(await (await context.window.fetch('Build/WebGL.data.unityweb?v=staged')).arrayBuffer()),Buffer.concat(files));
+ assert.equal(calls,afterStage,'Restart reuses the staged cache');restoreStaged();
  // Storage unavailable must still download successfully.
  context.caches.open=async()=>{throw Error('storage blocked')};
+ await assert.rejects(context.installChunkDownloads(manifest,'?v=no-storage',null,true).prefetch(),/storage unavailable/);
  const restore3=context.installChunkDownloads(manifest,'?v=three');
  assert.deepEqual(Buffer.from(await (await context.window.fetch('Build/WebGL.data.unityweb?v=three')).arrayBuffer()),Buffer.concat(files));
  restore3();

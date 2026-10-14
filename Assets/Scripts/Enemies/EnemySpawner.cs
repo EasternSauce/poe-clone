@@ -135,6 +135,76 @@ namespace PoeClone.Enemies
         private int streamingArea = -1;
         private readonly List<(Vector3 point, int kind)> openingHomes = new List<(Vector3, int)>();
 
+        [System.Serializable]
+        public class UpdateEnemy
+        {
+            public string kind;
+            public Vector3 position;
+            public float facing, healthFraction, corpseRemaining;
+            public bool dead;
+        }
+
+        [System.Serializable]
+        public class UpdateHome
+        {
+            public Vector3 position;
+            public string kind;
+        }
+
+        [System.Serializable]
+        public class UpdateVacancy
+        {
+            public Vector3 position;
+            public float elapsed;
+        }
+
+        [System.Serializable]
+        public class UpdateState
+        {
+            public int area;
+            public List<UpdateEnemy> enemies = new List<UpdateEnemy>();
+            public List<UpdateHome> homes = new List<UpdateHome>();
+            public List<UpdateVacancy> vacancies = new List<UpdateVacancy>();
+        }
+
+        private readonly List<UpdateEnemy> pendingUpdateEnemies = new List<UpdateEnemy>();
+
+        public UpdateState CaptureForUpdate()
+        {
+            var state = new UpdateState { area = streamingArea };
+            state.enemies.AddRange(pendingUpdateEnemies);
+            foreach (var enemy in GetComponentsInChildren<EnemyHealth>(true))
+            {
+                var kind = EnemyKinds.Get(enemy.KindIndex);
+                // Scripted encounters own phases and quest state; rebuild those from the save.
+                if (enemy.IsRemote || enemy.IsAlly || enemy.IsQuestObject || enemy.IsEncounterEnemy || kind.IsBoss) continue;
+                if (enemy.IsDead && enemy.CorpseTimeRemaining <= 0f) continue;
+                state.enemies.Add(new UpdateEnemy { kind = kind.Name, position = enemy.transform.position,
+                    facing = enemy.transform.eulerAngles.y, healthFraction = enemy.CurrentHealth / enemy.MaxHealth,
+                    dead = enemy.IsDead, corpseRemaining = enemy.CorpseTimeRemaining });
+            }
+            foreach (var home in openingHomes)
+                state.homes.Add(new UpdateHome { position = home.point, kind = EnemyKinds.Get(home.kind).Name });
+            foreach (var vacancy in vacancies)
+                state.vacancies.Add(new UpdateVacancy { position = vacancy.Position, elapsed = Time.time - vacancy.DiedAt });
+            return state;
+        }
+
+        private bool RestoreUpdatePlan(int area)
+        {
+            var state = PoeClone.Network.GameSessionController.Instance?.TakeUpdatePopulation(area);
+            if (state == null) return false;
+            foreach (var home in state.homes)
+            {
+                int kind = EnemyKinds.IndexOf(home.kind);
+                if (kind >= 0) openingHomes.Add((home.position, kind));
+            }
+            pendingUpdateEnemies.AddRange(state.enemies);
+            foreach (var vacancy in state.vacancies)
+                vacancies.Add(new Vacancy { Position = vacancy.position, DiedAt = Time.time - vacancy.elapsed });
+            return true;
+        }
+
         // Plan positions only. Enemy objects and their visual models are constructed
         // exclusively by PopulateChunk after their own chunk's collision/scenery is ready.
         public void ConfigureStreaming(int area)
@@ -142,6 +212,7 @@ namespace PoeClone.Enemies
             if (!WorldBuilder.UsesChunks(area)) return;
             streamingArea = area;
             player = FindAnyObjectByType<PlayerController>();
+            if (RestoreUpdatePlan(area)) return;
             // Isolate layout randomness from combat, loot and the order chunks are visited.
             var previous = Random.state;
             Random.InitState(7919 * area + 307);
@@ -177,6 +248,24 @@ namespace PoeClone.Enemies
             var session = PoeClone.Network.GameSessionController.Instance;
             if (session != null && session.Role == PoeClone.Network.SessionRole.Spectator) yield break;
             Vector3 origin = WorldBuilder.Center(streamingArea);
+            // Restore only as collision streams in, rather than repopulating cleared chunks.
+            for (int i = pendingUpdateEnemies.Count - 1; i >= 0; i--)
+            {
+                var record = pendingUpdateEnemies[i];
+                if (!localBounds.Contains(new Vector2(record.position.x - origin.x, record.position.z - origin.z))) continue;
+                pendingUpdateEnemies.RemoveAt(i);
+                int kind = EnemyKinds.IndexOf(record.kind);
+                if (kind < 0) continue;
+                Vector3 point = record.position;
+                bool safe = TryPrepareSpawnPoint(point, kind, out point, clearanceRadius, spawnHeight);
+                // Updated scenery may block the old spot. Keep the enemy nearby on safe ground.
+                if (!safe && !TryFindSpawnPointNear(record.position, out point, out _, kind)) continue;
+                var enemy = Spawn(point, kind, refills: !record.dead).GetComponent<EnemyHealth>();
+                enemy.transform.rotation = Quaternion.Euler(0f, record.facing, 0f);
+                if (record.dead) enemy.RestoreUpdateCorpse(record.corpseRemaining);
+                else enemy.ApplyReplicatedHealth(enemy.MaxHealth * Mathf.Clamp01(record.healthFraction), enemy.MaxHealth);
+                yield return null;
+            }
             for (int i = openingHomes.Count - 1; i >= 0; i--)
             {
                 var home = openingHomes[i];
@@ -266,7 +355,7 @@ namespace PoeClone.Enemies
         // player's own enemies.
         private void Update()
         {
-            if (Time.time < nextCheckAt || vacancies.Count == 0)
+            if (Time.timeScale <= 0f || Time.time < nextCheckAt || vacancies.Count == 0)
                 return;
             nextCheckAt = Time.time + CheckInterval;
 

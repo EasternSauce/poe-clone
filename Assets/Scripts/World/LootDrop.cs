@@ -22,7 +22,43 @@ namespace PoeClone.World
 
         public static bool EnemyDropsActive => MinimalCombatMode.Enabled ? MinimalCombatMode.DropsEnabled : EnemyDropsEnabled;
 
-        private const float LifetimeSeconds = 180f;
+        private const float LifetimeSeconds = 360f;
+
+        [System.Serializable]
+        public class UpdateRecord
+        {
+            public ItemRecord item;
+            public Vector3 position;
+            public int amount;
+            public float remaining;
+        }
+
+        public static List<UpdateRecord> CaptureForUpdate()
+        {
+            var records = new List<UpdateRecord>();
+            foreach (var drop in FindObjectsByType<LootDrop>(FindObjectsInactive.Include))
+            {
+                // Shared guest copies belong to the host's handoff, never save them twice.
+                if (!drop.IsInteractive || drop.IsShared || drop.Item == null) continue;
+                float remaining = LifetimeSeconds - (Time.time - drop.bornAt);
+                if (remaining <= 0f) continue;
+                records.Add(new UpdateRecord { item = ItemRecord.From(drop.Item), position = drop.transform.position,
+                    amount = drop.Amount, remaining = remaining });
+            }
+            return records;
+        }
+
+        public static void RestoreAfterUpdate(List<UpdateRecord> records)
+        {
+            if (records == null) return;
+            foreach (var record in records)
+            {
+                if (record?.item == null || record.remaining <= 0f) continue;
+                var drop = Spawn(record.item.ToItem(), record.position, interactive: true, id: 0);
+                drop.Amount = record.amount;
+                drop.bornAt = Time.time - LifetimeSeconds + Mathf.Min(LifetimeSeconds, record.remaining);
+            }
+        }
 
         // A fresh drop pops out of the body in a short arc and can't be clicked until it lands
         // (plus a beat), so an attack click aimed at the enemy that just died doesn't grab its loot.
@@ -58,7 +94,15 @@ namespace PoeClone.World
         private bool highlighted;
         private float nextFullNotice;
 
-        public bool IsInteractive => interactive;
+        private bool removedFromGround;
+        public bool IsInteractive => interactive && !removedFromGround;
+
+        public void RemoveFromGround()
+        {
+            // Destroy is deferred: exclude claimed items from update saves immediately.
+            removedFromGround = true;
+            Destroy(gameObject);
+        }
 
         // ------------------------------------------------------------------ co-op
         // The host's ground is the only real one: its drops are copied to the guest (IsShared),
@@ -122,7 +166,7 @@ namespace PoeClone.World
             if (TakeInto(inventory, noticeAt))
                 return true;
             SharedPlace?.Invoke(Item, transform.position);
-            Destroy(gameObject);
+            RemoveFromGround();
             return false;
         }
 
@@ -443,7 +487,7 @@ namespace PoeClone.World
         /// <summary>Puts the item in the bag. False (with a notice) if there's no room.</summary>
         public bool TryPickUp(PlayerInventory inventory, Vector3 noticeAt)
         {
-            if (inventory == null || !interactive)
+            if (inventory == null || !IsInteractive)
                 return false;
 
             if (IsShared)
@@ -488,7 +532,7 @@ namespace PoeClone.World
                 inventory.AddGold(Amount);
                 CombatText.Show(noticeAt, "+" + Amount + " gold", KillRewards.GoldColor, 0.7f);
                 ItemSounds.PlayPickup(Item);
-                Destroy(gameObject);
+                RemoveFromGround();
                 return true;
             }
 
@@ -498,7 +542,7 @@ namespace PoeClone.World
                 if (inventory.AddPotions(health, 1) > 0)
                 {
                     ItemSounds.PlayPickup(Item);
-                    Destroy(gameObject);
+                    RemoveFromGround();
                     return true;
                 }
                 NoticeFull(noticeAt, (health ? "Health" : "Mana") + " potions full");
@@ -509,7 +553,7 @@ namespace PoeClone.World
             {
                 if (AudioManager.Instance != null)
                     AudioManager.Instance.PlayUI(ItemSounds.Pickup(Item));
-                Destroy(gameObject);
+                RemoveFromGround();
                 return true;
             }
 
@@ -583,7 +627,7 @@ namespace PoeClone.World
         private void Update()
         {
             if (interactive && !IsShared && Time.time - bornAt > LifetimeSeconds)
-            { Destroy(gameObject); return; }
+            { RemoveFromGround(); return; }
             if (!Visuals.WorldActivity.NearView(transform.position, 1.4f)) return;
             if (icon != null)
                 icon.anchoredPosition = new Vector2(0f, Mathf.Sin(Time.time * 2.5f + bobPhase) * 6f);

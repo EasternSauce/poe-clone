@@ -88,7 +88,7 @@ public static class WebBuilder
         File.WriteAllText(index, File.ReadAllText(index).Replace("__BUILD_ID__", buildId)
             .Replace("\"__DOWNLOAD_CHUNKS__\"", chunks)
             .Replace("// __INLINE_DOWNLOADER__", File.ReadAllText("Assets/WebGLTemplates/FullWindow/chunk-downloads.js")));
-        File.WriteAllText(Path.Combine(OutputPath, "version.json"), "{\"build\":\"" + buildId + "\"}");
+        File.WriteAllText(Path.Combine(OutputPath, "version.json"), "{\"build\":\"" + buildId + "\",\"downloads\":" + chunks + "}");
         return buildId;
     }
 

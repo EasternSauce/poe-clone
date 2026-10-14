@@ -394,10 +394,23 @@
       // alike). Check on wake as well as once a minute: mobile timers stop while asleep.
       function watchForUpdates() {
         if (v === "") return; // a local build that was never stamped
-        var request = null, checkingOnResume = false;
-        function holdForCheck() {
-          checkingOnResume = true;
-          unityInstance.SendMessage("GameSessionController", "SetUpdateCheckPending", "1");
+        var request = null, staging = false, readyBuild = null;
+        async function readVersion(signal) {
+          var response = await fetch("version.json?t=" + Date.now(), { cache: "no-store", signal: signal });
+          return response.ok ? response.json() : null;
+        }
+        async function stageUpdate(info) {
+          if (staging || updating) return;
+          // Compatibility with releases made before the background-download manifest.
+          if (!info.downloads) { reloadForUpdate(); return; }
+          staging = true;
+          try {
+            await installChunkDownloads(info.downloads, "?v=" + encodeURIComponent(info.build), null, true).prefetch();
+            readyBuild = info.build;
+          } catch (error) {
+            console.warn('[Update] Background download will retry:', error);
+          } finally { staging = false; }
+          if (readyBuild === info.build) setTimeout(function () { checkForUpdate(false); }, 0);
         }
         function checkForUpdate(replacePending) {
           if (updating || document.hidden) return;
@@ -405,46 +418,36 @@
           if (request) request.abort();
           var controller = new AbortController();
           request = controller;
-          // Bound requests so an offline wake cannot leave the game paused indefinitely.
+          // A suspended/offline request must not block later wake checks.
           var timeout = setTimeout(function () { controller.abort(); }, 10000);
-          if (checkingOnResume) {
-            document.getElementById("loading-title").textContent = "Checking for updates...";
-            detail.textContent = "";
-            loading.classList.remove("done");
-          }
-          fetch("version.json?t=" + Date.now(), { cache: "no-store", signal: controller.signal })
-            .then(function (r) { return r.ok ? r.json() : null; })
+          readVersion(controller.signal)
             .then(function (info) {
               if (request !== controller) return;
-              if (info && info.build && info.build !== BUILD_ID) reloadForUpdate();
+              if (!info || !info.build || info.build === BUILD_ID) return;
+              if (readyBuild === info.build) reloadForUpdate();
+              else stageUpdate(info);
             })
             .catch(function () { /* offline for a moment: try again next time */ })
             .finally(function () {
               clearTimeout(timeout);
               if (request !== controller) return;
               request = null;
-              if (updating || document.hidden || !checkingOnResume) return;
-              checkingOnResume = false;
-              unityInstance.SendMessage("GameSessionController", "SetUpdateCheckPending", "0");
-              loading.classList.add("done");
             });
         }
         document.addEventListener("visibilitychange", function () {
-          if (document.hidden) { holdForCheck(); return; }
-          holdForCheck();
           checkForUpdate(true);
         });
         function resumeCheck() {
           if (document.hidden || updating) return;
-          holdForCheck();
           checkForUpdate(false);
         }
         window.addEventListener("pageshow", resumeCheck);
         window.addEventListener("focus", resumeCheck);
         window.addEventListener("online", resumeCheck);
         setInterval(function () { checkForUpdate(false); }, 60000);
-        if (document.hidden) holdForCheck();
-        else checkForUpdate(false);
+        // Co-op partners stage their own download before acknowledging the update handoff.
+        window.poeReloadForUpdate = resumeCheck;
+        checkForUpdate(false);
       }
 
       // Cover and freeze immediately, then wait for Unity's durable save acknowledgement.

@@ -1,5 +1,5 @@
 ﻿// Only intercept this build's verified files. Saves, music and update polling use native fetch.
-function installChunkDownloads(manifest, version, progress) {
+function installChunkDownloads(manifest, version, progress, background) {
   var originalFetch = window.fetch.bind(window);
   var previousFetch = window.fetch;
   var base = new URL('.', document.baseURI).href;
@@ -160,7 +160,7 @@ function installChunkDownloads(manifest, version, progress) {
               source === order[0] ? await fetchPiece(winner, path, hash, size, signal, update) : await read(source + path, signal, update);
             await check(bytes, hash, size);
             update(size);
-            if (cache) cache.put(key, new Response(bytes)).catch(function () {});
+            if (cache) await cache.put(key, new Response(bytes)).catch(function (error) { if (background) throw error; });
             return bytes;
           } catch (error) {
             lastError = error; if (signal.aborted) throw error; update(0);
@@ -172,6 +172,20 @@ function installChunkDownloads(manifest, version, progress) {
     });
   }
   async function whole(entry, signal, update) {
+    var cache = await cachePromise;
+    var key = new URL(entry.path + version, base).href;
+    if (cache) {
+      var saved = await cache.match(key);
+      if (saved) {
+        var cached = new Uint8Array(await saved.arrayBuffer());
+        try {
+          if (entry.info.encoding === 'gzip-pieces') {
+            await check(cached, entry.info.fallbackHash, entry.info.fallbackSize);
+            return cached;
+          }
+        } catch (error) { await cache.delete(key); }
+      }
+    }
     var lastError;
     var selection = bulkRoute || route;
     var winner = selection ? await selection.catch(function () { return null; }) : null;
@@ -179,18 +193,22 @@ function installChunkDownloads(manifest, version, progress) {
     for (var source of order) {
       try {
         var bytes = await read(source + entry.path + version, signal, update);
-        if (entry.info.encoding === 'gzip-pieces')
-          return await check(bytes, entry.info.fallbackHash, entry.info.fallbackSize);
+        if (entry.info.encoding === 'gzip-pieces') {
+          await check(bytes, entry.info.fallbackHash, entry.info.fallbackSize);
+          if (cache) await cache.put(key, new Response(bytes));
+          return bytes;
+        }
         if (bytes.length !== entry.info.size) throw new Error('Full download size mismatch');
         for (var index = 0; index < entry.info.hashes.length; index++) {
           var part = bytes.subarray(index * 524288, Math.min(bytes.length, (index + 1) * 524288));
           await check(part, entry.info.hashes[index], part.length);
         }
         var cache = await cachePromise;
-        if (cache) entry.info.hashes.forEach(function (hash, index) {
+        if (cache) await Promise.all(entry.info.hashes.map(function (hash, index) {
           var part = bytes.slice(index * 524288, Math.min(bytes.length, (index + 1) * 524288));
-          cache.put(new URL('Build/chunks/' + hash + '.bin', base).href, new Response(part)).catch(function () {});
-        });
+          return cache.put(new URL('Build/chunks/' + hash + '.bin', base).href, new Response(part))
+            .catch(function (error) { if (background) throw error; });
+        }));
         return bytes;
       } catch (error) { lastError = error; if (signal && signal.aborted) throw error; }
     }
@@ -240,6 +258,28 @@ function installChunkDownloads(manifest, version, progress) {
     if (!entry || method !== 'GET') return originalFetch(input, options);
     return download(url, entry, options && options.signal || input && input.signal);
   };
-  window.fetch = wrappedFetch;
-  return function () { if (window.fetch === wrappedFetch) window.fetch = previousFetch; };
+  if (!background) window.fetch = wrappedFetch;
+  var restore = function () { if (window.fetch === wrappedFetch) window.fetch = previousFetch; };
+  // Warm verified pieces without replacing fetch or retaining a second game's files in RAM.
+  restore.prefetch = async function () {
+    if (!await cachePromise) throw new Error('Background update storage unavailable');
+    var controller = new AbortController();
+    try {
+      for (var entry of entries.values()) {
+        if (entry.info.encoding === 'gzip-pieces' && typeof DecompressionStream === 'undefined') {
+          await whole(entry, controller.signal, function () {});
+          continue;
+        }
+        try {
+          await Promise.all(entry.info.hashes.map(function (hash, index) {
+            var size = entry.info.parts ? entry.info.parts[index].size : Math.min(524288, entry.info.size - index * 524288);
+            return piece(hash, size, index, controller.signal, function () {}).then(function () {});
+          }));
+        } catch (error) {
+          await whole(entry, controller.signal, function () {});
+        }
+      }
+    } finally { controller.abort(); }
+  };
+  return restore;
 }

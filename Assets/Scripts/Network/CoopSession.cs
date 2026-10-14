@@ -578,7 +578,7 @@ namespace PoeClone.Network
             e.id = id;
             Send(e);
             if (drop != null)
-                Destroy(drop.gameObject); // its "gone" follows the grant
+                drop.RemoveFromGround(); // its "gone" follows the grant
         }
 
         private void PlaceForPartner(CoopEvent e)

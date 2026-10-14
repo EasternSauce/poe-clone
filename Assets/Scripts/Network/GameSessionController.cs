@@ -97,19 +97,35 @@ namespace PoeClone.Network
             public string party;
             public bool host;
             public string partner;
+            public System.Collections.Generic.List<LootDrop.UpdateRecord> drops;
+            public System.Collections.Generic.List<EnemySpawner.UpdateState> populations;
         }
         private UpdateResume updateResume;
         private bool updatingForReload;
-        private bool updateCheckPending;
         private bool worldActive;
-        private bool showNotesAfterUpdate;
+        private bool notifyAfterUpdate;
+        private System.Collections.Generic.List<LootDrop.UpdateRecord> updateDrops;
+        private System.Collections.Generic.List<EnemySpawner.UpdateState> updatePopulations;
         public bool ResumingUpdate => updateResume != null;
 
-        /// <summary>Keep mobile wake-up frozen until the browser checks the deployed build.</summary>
-        public void SetUpdateCheckPending(string pending)
+        public EnemySpawner.UpdateState TakeUpdatePopulation(int area)
         {
-            updateCheckPending = pending == "1";
-            RefreshWorldPause();
+            var state = updatePopulations?.Find(p => p.area == area);
+            if (state != null) updatePopulations.Remove(state);
+            return state;
+        }
+
+        private System.Collections.Generic.List<EnemySpawner.UpdateState> CaptureUpdatePopulations()
+        {
+            var states = new System.Collections.Generic.List<EnemySpawner.UpdateState>();
+            // Unvisited areas can still carry a handoff from an earlier deployment.
+            if (updatePopulations != null) states.AddRange(updatePopulations);
+            for (int area = 0; area < WorldBuilder.AreaNames.Length; area++)
+            {
+                var spawner = WorldBuilder.Instance?.SpawnerFor(area);
+                if (spawner != null) states.Add(spawner.CaptureForUpdate());
+            }
+            return states;
         }
 
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -119,6 +135,8 @@ namespace PoeClone.Network
         private static extern void UpdateBridge_SaveResume(string json);
         [System.Runtime.InteropServices.DllImport("__Internal")]
         private static extern void UpdateBridge_RequestUpdate();
+        [System.Runtime.InteropServices.DllImport("__Internal")]
+        private static extern void UpdateBridge_Completed();
 #endif
 
         /// <summary>Browser update entry point: freeze, save, then acknowledge durable storage.</summary>
@@ -126,6 +144,7 @@ namespace PoeClone.Network
         {
             if (updatingForReload) return;
             updatingForReload = true;
+            SetWorldActive(false);
             if (coop != null)
                 SendCoop(JsonUtility.ToJson(new CoopEvent { k = CoopProtocol.Update }));
             SaveSystem.SaveCharacterNow();
@@ -140,10 +159,10 @@ namespace PoeClone.Network
                     position = scenePlayer.transform.position,
                     facing = scenePlayer.transform.eulerAngles.y, hosting = hosting,
                     party = coop?.PartyId, host = coop != null && coop.IsHost,
-                    partner = coop?.PartnerName
+                    partner = coop?.PartnerName,
+                    drops = LootDrop.CaptureForUpdate(), populations = CaptureUpdatePopulations()
                 });
             }
-            SetWorldActive(false);
             coop?.SetLinked(false);
 #if UNITY_WEBGL && !UNITY_EDITOR
             UpdateBridge_SaveResume(json);
@@ -168,7 +187,9 @@ namespace PoeClone.Network
                 SaveSystem.Profiles().Exists(p => p.id == resume.profile))
             {
                 SaveSystem.SelectProfile(resume.profile);
-                showNotesAfterUpdate = true;
+                notifyAfterUpdate = true;
+                updatePopulations = resume.populations;
+                updateDrops = resume.drops;
                 // A removed area or invalid position falls back to the normal saved destination.
                 if (resume.area >= 0 && resume.area < WorldBuilder.AreaNames.Length &&
                     float.IsFinite(resume.position.x) && float.IsFinite(resume.position.y) &&
@@ -802,11 +823,16 @@ namespace PoeClone.Network
             if (Role == SessionRole.Player && PlayGranted)
             {
                 RestoreUpdateLocation();
+                LootDrop.RestoreAfterUpdate(updateDrops);
+                updateDrops = null;
                 if (scenePlayer != null) scenePlayer.SetActive(true);
-                if (showNotesAfterUpdate)
+                if (notifyAfterUpdate)
                 {
-                    showNotesAfterUpdate = false;
-                    GetComponent<PoeClone.UI.PatchNotesUI>()?.ShowIfUnseen();
+                    notifyAfterUpdate = false;
+                    GetComponent<PoeClone.UI.PatchNotesUI>()?.AcknowledgeCurrentRelease();
+#if UNITY_WEBGL && !UNITY_EDITOR
+                    UpdateBridge_Completed();
+#endif
                 }
                 SetWorldActive(true);
             }
@@ -954,7 +980,7 @@ namespace PoeClone.Network
         public void RefreshWorldPause()
         {
             bool pausedByMenu = GetComponent<PoeClone.UI.EscapeMenuUI>()?.IsOpen == true;
-            bool paused = !worldActive || pausedByMenu || updateCheckPending || updatingForReload ||
+            bool paused = !worldActive || pausedByMenu || updatingForReload ||
                 PoeClone.UI.PatchNotesUI.IsShowing;
             Time.timeScale = paused ? 0f : 1f;
             AudioListener.pause = paused;

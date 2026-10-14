@@ -29,7 +29,22 @@ namespace PoeClone.Enemies
         [SerializeField] private float deathWindUp = 0.15f;
         [SerializeField] private float collapseDuration = 0.6f;
         [SerializeField] private float corpseSeconds = 25f;
-        private float CorpseLifetime => corpseSeconds * (EnemyKinds.Get(KindIndex).IsBoss ? 4f : 2f * AdaptiveQuality.CorpseScale);
+        private float CorpseLifetime => corpseSeconds * (EnemyKinds.Get(KindIndex).IsBoss ? 8f : 4f * AdaptiveQuality.CorpseScale);
+        private float diedAt;
+        public float CorpseTimeRemaining => Mathf.Max(0f, CorpseLifetime - (Time.time - diedAt));
+
+        public void RestoreUpdateCorpse(float remaining)
+        {
+            ApplyReplicatedDeath(instant: true);
+            diedAt = Time.time - CorpseLifetime + remaining;
+            StartCoroutine(RemoveUpdateCorpse(remaining));
+        }
+
+        private IEnumerator RemoveUpdateCorpse(float remaining)
+        {
+            yield return new WaitForSeconds(remaining);
+            yield return SinkAndDestroy();
+        }
 
         private float currentHealth;
         private bool dead;
@@ -443,6 +458,7 @@ namespace PoeClone.Enemies
                 return;
 
             dead = true;
+            diedAt = Time.time;
             currentHealth = 0f;
             Died?.Invoke();
             DisableLiveBehaviour();
@@ -478,6 +494,7 @@ namespace PoeClone.Enemies
         private void Die()
         {
             dead = true;
+            diedAt = Time.time;
             Died?.Invoke();
             if (IsQuestObject)
             {

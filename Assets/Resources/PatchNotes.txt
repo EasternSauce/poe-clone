@@ -1,3 +1,8 @@
+version: 2026-10-14-background-updates
+- Updates download changed game files in the background while you play, then save and restart once ready. A brief Game updated message replaces automatic What's New after the restart.
+- Updates preserve ground loot, ordinary enemies' positions and health, and cleared packs. Scripted encounters rebuild from saved quest progress.
+- Ground items last six minutes instead of three. Enemy bodies remain twice as long.
+
 version: 2026-10-14-mobile-update-wake
 - Returning to the game after locking your phone checks for updates immediately, pausing play while the check runs and saving before restarting onto the latest build.
 - What's New appears after an update restores your character, with gameplay paused until you dismiss it.

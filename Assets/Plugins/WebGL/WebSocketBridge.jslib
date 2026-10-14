@@ -22,6 +22,16 @@ mergeInto(LibraryManager.library, {
     if (window.poeReloadForUpdate) window.poeReloadForUpdate();
   },
 
+  UpdateBridge_Completed: function () {
+    var toast = document.createElement('div');
+    toast.textContent = 'Game updated';
+    toast.setAttribute('role', 'status');
+    toast.style.cssText = 'position:absolute;left:50%;top:calc(env(safe-area-inset-top, 0px) + 20px);transform:translateX(-50%);z-index:20;padding:12px 24px;border-radius:8px;background:#211d16;color:#e8d5a5;font:600 20px system-ui;pointer-events:none;transition:opacity .5s';
+    (document.getElementById('game-root') || document.body).appendChild(toast);
+    setTimeout(function () { toast.style.opacity = '0'; }, 3500);
+    setTimeout(function () { toast.remove(); }, 4000);
+  },
+
   UpdateBridge_SaveResume: function (jsonPtr) {
     var json = UTF8ToString(jsonPtr);
     var complete = function (error) {
