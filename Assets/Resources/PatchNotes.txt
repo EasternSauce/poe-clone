@@ -1,3 +1,9 @@
+version: 2026-10-14-bone-prison-aim-and-quests
+- Bone prisons now block projectiles and movement for enemies as well as players; the caster must go around its own prison.
+- Desktop aiming follows the browser canvas correctly after resizing or returning to fullscreen.
+- Added a saved Show details / Hide details button beside the quest tracker heading. Hidden details keep only objectives, areas and progress.
+- Removed generic kill-count quests from the woods, graveyard, ruins and patrol chains. These chains now lead straight into their investigations and encounters without resetting saved progress.
+
 version: 2026-10-14-modifier-count-distributions
 - Raised the full modifier-count distribution by one: Magic items roll 2 or 3 random modifiers (50% each), and Rare items roll 4, 5 or 6 (50% / 35% / 15%).
 - Unique modifier lists remain individually designed around each item's theme, without a shared minimum or maximum.

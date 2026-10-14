@@ -181,7 +181,7 @@ namespace PoeClone.Skills
             Camera cam = Camera.main;
             if (mouse == null || cam == null)
                 return Vector3.zero;
-            Ray ray = cam.ScreenPointToRay(mouse.position.ReadValue());
+            Ray ray = cam.ScreenPointToRay(ScreenPointer.Position);
             if (!new Plane(Vector3.up, transform.position).Raycast(ray, out float enter))
                 return Vector3.zero;
             Vector3 offset = ray.GetPoint(enter) - transform.position;

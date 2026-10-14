@@ -15,7 +15,10 @@ namespace PoeClone.UI
     /// </summary>
     public class QuestTrackerUI : MonoBehaviour
     {
-        private Text text, heading;
+        private Text text, heading, detailsLabel;
+        private RectTransform detailsButton;
+        private bool showDetails;
+        private const string DetailsPreference = "QuestTracker.ShowDetails";
         private Image back;
         private QuestLog log;
         private InventoryUI inventoryUI;
@@ -33,7 +36,10 @@ namespace PoeClone.UI
 
         private void Awake()
         {
-            Canvas canvas = UiKit.NewCanvas("QuestTrackerCanvas", transform, 40, out _);
+            showDetails = PlayerPrefs.GetInt(DetailsPreference, 1) != 0;
+            Canvas canvas = UiKit.NewCanvas("QuestTrackerCanvas", transform, 40, out CanvasGroup group);
+            group.interactable = true;
+            group.blocksRaycasts = true;
 
             back = UiKit.NewImage("Tracker", canvas.transform, new Color(0.08f, 0.07f, 0.06f, 0.72f));
             UiKit.Grain(back);
@@ -43,6 +49,23 @@ namespace PoeClone.UI
 
             heading = UiKit.Heading(UiKit.NewText("Heading", rt, "QUESTS", 15, UiKit.Gold, TextAnchor.MiddleLeft));
             UiKit.TopLeft(heading.rectTransform, new Vector2(12f, -6f), new Vector2(200f, 20f));
+
+            Image toggle = UiKit.NewImage("DetailsToggle", rt, UiKit.PanelColor);
+            toggle.raycastTarget = true;
+            detailsButton = toggle.rectTransform;
+            detailsButton.anchorMin = detailsButton.anchorMax = detailsButton.pivot = Vector2.one;
+            detailsButton.anchoredPosition = new Vector2(-12f, -6f);
+            detailsLabel = UiKit.NewText("Label", detailsButton, "", 14, UiKit.TextColor, TextAnchor.MiddleCenter);
+            UiKit.Stretch(detailsLabel.rectTransform, 0f);
+            UiKit.StyleButton(toggle, detailsLabel, UiKit.Gold);
+            UiKit.OnClick(toggle, () =>
+            {
+                showDetails = !showDetails;
+                PlayerPrefs.SetInt(DetailsPreference, showDetails ? 1 : 0);
+                PlayerPrefs.Save();
+                MarkDirty();
+            });
+            TouchMode.AddBlocker(detailsButton);
 
             text = UiKit.NewText("Text", rt, "", 18, UiKit.TextColor, TextAnchor.UpperLeft);
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -128,7 +151,9 @@ namespace PoeClone.UI
             {
                 Npc elder = Npc.Find(NpcRole.Elder);
                 sb.Append("<color=#FFD040>Talk to ").Append(elder != null ? elder.DisplayName : "the Elder")
-                    .Append(" in Haven</color>\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">  look for the ! over her head</color>");
+                    .Append(" in Haven</color>");
+                if (showDetails)
+                    sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">  look for the ! over her head</color>");
             }
 
             foreach (QuestDefinition q in log.Taken())
@@ -138,13 +163,13 @@ namespace PoeClone.UI
                 sb.Append("<b><color=#").Append(UiKit.Hex(QuestTitle)).Append('>').Append(q.Title).Append("</color></b>\n");
                 if (log.State(q) == QuestState.Complete)
                 {
-                    string line = NpcDialogues.ReturnLine(q);
+                    string line = showDetails ? NpcDialogues.ReturnLine(q) : QuestBook.MinimalReturnLine(q);
                     sb.Append("<color=#FFD040>  ").Append(char.ToUpperInvariant(line[0])).Append(line.Substring(1)).Append("</color>");
                 }
                 else
                 {
                     sb.Append("<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">  ")
-                        .Append(QuestBook.ObjectiveLine(log, q)).Append("</color>");
+                        .Append(QuestBook.ObjectiveLine(log, q, showDetails)).Append("</color>");
                 }
             }
 
@@ -152,8 +177,12 @@ namespace PoeClone.UI
             float width = TouchMode.Active ? (TouchMode.Portrait ? 560f : 460f) : 440f;
             text.fontSize = TouchMode.Active ? TouchMode.ReadingFontSize : 18;
             heading.fontSize = TouchMode.Active ? (TouchMode.Portrait ? 32 : 24) : 15;
-            float headingHeight = TouchMode.Active ? heading.fontSize + 14f : HeadingHeight;
-            heading.rectTransform.sizeDelta = new Vector2(width - 24f, headingHeight - 6f);
+            float headingHeight = TouchMode.Active ? heading.fontSize + 26f : 38f;
+            float buttonWidth = TouchMode.Active ? 220f : 124f;
+            detailsLabel.text = showDetails ? "Hide details" : "Show details";
+            detailsLabel.fontSize = TouchMode.Active ? 24 : 14;
+            detailsButton.sizeDelta = new Vector2(buttonWidth, headingHeight - 10f);
+            heading.rectTransform.sizeDelta = new Vector2(width - buttonWidth - 40f, headingHeight - 6f);
             text.rectTransform.offsetMax = new Vector2(-12f, -headingHeight);
             back.rectTransform.sizeDelta = new Vector2(width, 0f);
             float height = text.preferredHeight;

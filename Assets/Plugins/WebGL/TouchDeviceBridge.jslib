@@ -3,6 +3,22 @@
 // catches those, and stays false on touch laptops whose primary pointer is still the mouse.
 mergeInto(LibraryManager.library, {
 
+  ScreenPointer_Read: function (outX, outY) {
+    if (!Module.poeMouseTracking) {
+      Module.poeMouseTracking = true;
+      window.addEventListener("mousemove", function (event) {
+        Module.poeMouseClient = { x: event.clientX, y: event.clientY };
+      }, true);
+      window.addEventListener("blur", function () { Module.poeMouseClient = null; });
+    }
+    var mouse = Module.poeMouseClient;
+    var bounds = Module.canvas.getBoundingClientRect();
+    if (!mouse || bounds.width <= 0 || bounds.height <= 0) return 0;
+    HEAPF32[outX >> 2] = (mouse.x - bounds.left) / bounds.width;
+    HEAPF32[outY >> 2] = 1 - (mouse.y - bounds.top) / bounds.height;
+    return 1;
+  },
+
   ChatInputHide: function () {
     var field = Module.poeChatInput;
     if (field) {

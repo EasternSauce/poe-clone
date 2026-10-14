@@ -363,11 +363,7 @@ namespace PoeClone.Quests
                 AutoStartQuests();
             }
             if (kind.IsBoss) RecordPropStage("boss:" + kind.Name);
-            int area = areas != null ? areas.CurrentAreaIndex : -1;
-            Advance(q =>
-                (q.Goal == QuestGoal.KillInArea && (q.Area < 0 || q.Area == area)) ||
-                (q.Goal == QuestGoal.KillKind && q.Target == kind.Name) ||
-                (q.Goal == QuestGoal.KillBoss && q.Target == kind.Name));
+            Advance(q => q.Goal == QuestGoal.KillBoss && q.Target == kind.Name);
         }
 
         /// <summary>Record startup arrival after importing the character's saved quest state.</summary>

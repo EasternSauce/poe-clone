@@ -1365,7 +1365,7 @@ namespace PoeClone.Skills
             Camera cam = Camera.main;
             if (mouse == null || cam == null)
                 return null;
-            Ray ray = cam.ScreenPointToRay(mouse.position.ReadValue());
+            Ray ray = cam.ScreenPointToRay(ScreenPointer.Position);
             if (!new Plane(Vector3.up, transform.position).Raycast(ray, out float enter))
                 return null;
             Vector3 offset = ray.GetPoint(enter) - transform.position;
@@ -1537,7 +1537,7 @@ namespace PoeClone.Skills
             if (mouse == null || cam == null)
                 return null;
 
-            Ray ray = cam.ScreenPointToRay(mouse.position.ReadValue());
+            Ray ray = cam.ScreenPointToRay(ScreenPointer.Position);
             if (Physics.Raycast(ray, out RaycastHit hit, 300f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {
                 EnemyHealth under = hit.collider.GetComponentInParent<EnemyHealth>();

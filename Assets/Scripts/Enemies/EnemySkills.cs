@@ -401,7 +401,7 @@ namespace PoeClone.Enemies
         private const float PrisonSeconds = 3f;
 
         // A ring marked round the player fills, then bone spikes burst up along it: standing on
-        // the ring hurts, and anyone caught inside can't leave until the bones crumble (or the
+        // the ring hurts; solid bones block movement and projectiles until they crumble (or the
         // warden falls). It fights on while the ring closes.
         private IEnumerator BonePrison(Vector3 centre, float damage)
         {
@@ -421,20 +421,8 @@ namespace PoeClone.Enemies
                 yield break;
 
             UI.CombatText.Show(player.transform.position + Vector3.up * 2.4f, "Trapped!", kind.Eyes, 1.1f);
-            CharacterController playerBody = player.GetComponent<CharacterController>();
-            float limit = PrisonRadius - 0.6f;
             for (float t = 0f; t < PrisonSeconds && cage != null && !health.IsDead && !player.IsDead; t += Time.deltaTime)
-            {
-                // After the player's own move this frame: back inside the bones.
-                Vector3 offset = Flat(player.transform.position - centre);
-                if (playerBody != null && playerBody.enabled && offset.magnitude > limit)
-                {
-                    Vector3 inside = centre + offset.normalized * limit;
-                    inside.y = player.transform.position.y;
-                    playerBody.Move(inside - player.transform.position);
-                }
                 yield return null;
-            }
             if (cage != null)
                 Destroy(cage);
         }
@@ -456,6 +444,13 @@ namespace PoeClone.Enemies
                 Vector3 outward = new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a));
                 Vector3 at = centre + outward * PrisonRadius;
                 at.y = Debris.GroundBelow(at + Vector3.up);
+                // Continuous tangent panels close the gaps between the decorative ribs.
+                // Independent of the caster hierarchy, so projectiles treat them as scenery.
+                var panel = new GameObject("BonePrisonBlocker");
+                panel.transform.SetParent(root.transform, false);
+                panel.transform.SetPositionAndRotation(at + Vector3.up, Quaternion.LookRotation(outward));
+                panel.AddComponent<BoxCollider>().size = new Vector3(
+                    2f * PrisonRadius * Mathf.Tan(Mathf.PI / count) + 0.08f, 2.6f, 0.5f);
                 float height = Random.Range(1.5f, 2.1f);
                 GameObject spike = RuntimePrimitives.Create(PrimitiveType.Cube, root.transform, i % 2 == 0 ? kind.Skin : kind.Cloth);
                 spike.transform.position = at + Vector3.up * height * 0.4f;

@@ -403,7 +403,7 @@ namespace PoeClone.Player
             if (mouse == null || cam == null)
                 return false;
 
-            Ray ray = cam.ScreenPointToRay(mouse.position.ReadValue());
+            Ray ray = cam.ScreenPointToRay(ScreenPointer.Position);
             if (Physics.Raycast(ray, out RaycastHit hit, 300f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {
                 EnemyHealth under = hit.collider.GetComponentInParent<EnemyHealth>();

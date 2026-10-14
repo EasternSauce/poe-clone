@@ -239,19 +239,6 @@ namespace PoeClone.World
             if (kindIndex < 0 || EnemyKinds.Get(kindIndex).IsBoss || EnemyKinds.Get(kindIndex).SplitInto >= 0 ||
                 EnemyKinds.Get(kindIndex).Skill == EnemySkill.Summon)
                 kindIndex = EnemyKinds.IndexOf("Zombie");
-            if (QuestsEnabled)
-            {
-                // Exercise real quest kill callbacks using temporary, already-accepted quests.
-                var active = new Dictionary<string, int>();
-                foreach (var quest in PoeClone.Quests.QuestBook.All)
-                {
-                    if ((quest.Goal == PoeClone.Quests.QuestGoal.KillInArea && quest.Area <= 0) ||
-                        (quest.Goal == PoeClone.Quests.QuestGoal.KillKind && quest.Target == EnemyKinds.Get(kindIndex).Name))
-                        active[quest.Id] = 0;
-                }
-                player.GetComponent<PoeClone.Quests.QuestLog>()?.Import(Array.Empty<string>(), active,
-                    Array.Empty<int>(), Array.Empty<string>());
-            }
             SpawnEnemy();
         }
 

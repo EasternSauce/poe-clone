@@ -5,12 +5,9 @@ namespace PoeClone.Quests
 {
     public enum QuestGoal
     {
-        /// <summary>Kill <see cref="QuestDefinition.Count"/> monsters in <see cref="QuestDefinition.Area"/> (-1: anywhere).</summary>
-        KillInArea,
-        /// <summary>Kill <see cref="QuestDefinition.Count"/> monsters of the kind named <see cref="QuestDefinition.Target"/>.</summary>
-        KillKind,
+        // Values 0 and 1 belonged to retired generic kill-count goals.
         /// <summary>Set foot in <see cref="QuestDefinition.Area"/>.</summary>
-        ReachArea,
+        ReachArea = 2,
         /// <summary>Kill the boss named <see cref="QuestDefinition.Target"/>.</summary>
         KillBoss,
         /// <summary>Use <see cref="QuestDefinition.Count"/> of the quest's props in the world (smash, light, take, read, hold a rite: see <see cref="QuestProp"/>).</summary>
@@ -101,17 +98,7 @@ namespace PoeClone.Quests
             // ---------------------------------------------------------------- The Hollow Call (Maren)
             new QuestDefinition
             {
-                Id = "woods", Story = HollowCall, Title = "Restless Woods", Giver = NpcRole.Elder,
-                Goal = QuestGoal.KillInArea, Area = WorldBuilder.Greenwood, Count = 6,
-                Objective = "Slay monsters in the Greenwood",
-                Offer = "The dead are pressing out of the Greenwood, north-east of Haven. Put down six on the road so our hunters can reach the bone totems calling them. Bring word of what you find.",
-                Reminder = "Clear six monsters from the Greenwood road, then return to Maren in Haven.",
-                Thanks = "The road is safer. Now we can deal with what is drawing them here.",
-                RewardGold = 60, RewardExperience = 150, RewardHealthPotions = 2
-            },
-            new QuestDefinition
-            {
-                Id = "totems", Story = HollowCall, Title = "Bone Totems", Giver = NpcRole.Elder, After = "woods",
+                Id = "totems", Story = HollowCall, Title = "Bone Totems", Giver = NpcRole.Elder,
                 Goal = QuestGoal.Use, Area = WorldBuilder.Greenwood, Count = 3,
                 Objective = "Attack the bone totems and clear their defenders in the Greenwood",
                 Offer = "Three bone totems are calling the dead through the Greenwood. Break them with your weapons or spells. Their defenders will come in small groups; clear each group before moving on. I need all three silenced.",
@@ -153,17 +140,7 @@ namespace PoeClone.Quests
             // ---------------------------------------------------------------- The Gravelord (Tobias)
             new QuestDefinition
             {
-                Id = "graves", Story = Gravelord, Title = "The Unquiet Dead", Giver = NpcRole.Gravekeeper, After = "keeper",
-                Goal = QuestGoal.KillInArea, Area = WorldBuilder.Graveyard, Count = 8,
-                Objective = "Slay monsters in the Haunted Graveyard",
-                Offer = "The dead are gathering whenever the funeral bell sounds from the Drowned Belfry. Thin the crowd here first - eight should give us breathing room. Then we can silence that bell.",
-                Reminder = "Put down eight monsters in the Haunted Graveyard, then return to Tobias.",
-                Thanks = "That gives us room. Now listen. That bell is ringing for people who are still alive.",
-                RewardGold = 150, RewardExperience = 900, RewardItem = ItemRarity.Magic, RewardItemLevel = 17
-            },
-            new QuestDefinition
-            {
-                Id = "bellringer", Story = Gravelord, Title = "The Funeral Bell", Giver = NpcRole.Gravekeeper, After = "graves",
+                Id = "bellringer", Story = Gravelord, Title = "The Funeral Bell", Giver = NpcRole.Gravekeeper, After = "keeper",
                 Goal = QuestGoal.KillBoss, Target = "The Bell-Ringer", Area = WorldBuilder.Belfry,
                 Objective = "Silence the Bell-Ringer in The Drowned Belfry, entered from the Haunted Graveyard",
                 Offer = "That bell is calling the dead out of their graves and gathering them for Mortis. Follow the north graveyard lane to the Drowned Belfry and destroy its keeper. Without him, Mortis will have to rely on the bones he hid here.",
@@ -228,17 +205,7 @@ namespace PoeClone.Quests
             // ---------------------------------------------------------------- Embers of War (Varek)
             new QuestDefinition
             {
-                Id = "hold", Story = EmbersOfWar, Title = "Hold the Line", Giver = NpcRole.Commander, After = "emberwatch",
-                Goal = QuestGoal.KillInArea, Area = WorldBuilder.Ruins, Count = 25,
-                Objective = "Drive back the host in the Ashen Ruins",
-                Offer = "Whatever gathers here is raising an army, and it's raising it faster than I can count. My lines are thin. Go out there and break it up before it marches - twenty-five of them should give us room to breathe.",
-                Reminder = "Twenty-five of the ruins' host. Bring potions - the casters burn.",
-                Thanks = "That's the first night my sentries will sleep in a week. Here - the pay of a soldier, and you've earned it twice.",
-                RewardGold = 300, RewardExperience = 2000, RewardItem = ItemRarity.Rare, RewardItemLevel = 25
-            },
-            new QuestDefinition
-            {
-                Id = "supplies", Story = EmbersOfWar, Title = "Lost Supplies", Giver = NpcRole.Commander, After = "hold",
+                Id = "supplies", Story = EmbersOfWar, Title = "Lost Supplies", Giver = NpcRole.Commander, After = "emberwatch",
                 Goal = QuestGoal.Use, Area = WorldBuilder.Ruins, Count = 3,
                 Objective = "Recover the arrows, bandages and lamp oil",
                 Offer = "When we marched in, we cached supplies along the road - and then the hounds ran us off it. Arrows, bandages, lamp oil. We need all three, and each went a different way.\n\nThe arrow cache in the west ruins is still under our red cloth, but the host has put Ember Knights on it - kill them, then gather the arrows. The bandages were on a wagon the hounds burnt in the south; nothing guards a burnt wagon, so salvage what you can. The oil is worse. A big hound we call Ashfang dragged the casks north-east and lairs on them with its pack. Kill it and bring the oil home.",
@@ -355,17 +322,7 @@ namespace PoeClone.Quests
             },
             new QuestDefinition
             {
-                Id = "avenge", Story = LostPatrol, Title = "Blood for Blood", Giver = NpcRole.Guard, After = "patrol",
-                Goal = QuestGoal.KillKind, Target = "Raider", Area = WorldBuilder.Greenwood, Count = 10,
-                Objective = "Slay Raiders",
-                Offer = "The raiders who shot my scouts are still out there, picking over the woods while the dead do their work for them. Ten of them. That's the price.",
-                Reminder = "Ten raiders. They roam the Greenwood.",
-                Thanks = "Ten. It doesn't bring them back, but it'll keep the next patrol alive.",
-                RewardGold = 140, RewardExperience = 380
-            },
-            new QuestDefinition
-            {
-                Id = "badges", Story = LostPatrol, Title = "Badges for the Forge", Giver = NpcRole.Guard, After = "avenge",
+                Id = "badges", Story = LostPatrol, Title = "Badges for the Forge", Giver = NpcRole.Guard, After = "patrol",
                 Goal = QuestGoal.Talk, TalkTo = NpcRole.Smith,
                 Objective = "Take the scouts' badges to Smith Bram",
                 Offer = "Their families asked for one thing: that the badges not lie in a drawer. Take them to Bram. He'll know what to make of them - he trained all three with a hammer before I trained them with a sword.",
@@ -419,8 +376,10 @@ namespace PoeClone.Quests
                 ? "in " + WorldBuilder.AreaNames[quest.Area] : "in any combat area";
         }
 
-        public static string ObjectiveLine(QuestLog log, QuestDefinition quest)
+        public static string ObjectiveLine(QuestLog log, QuestDefinition quest, bool details = true)
         {
+            if (!details)
+                return MinimalObjective(quest) + (quest.Count > 1 ? " (" + log.Progress(quest) + "/" + quest.Count + ")" : "");
             string encounter = log.EncounterObjective(quest);
             string objective = quest.Objective;
             string location = Location(quest);
@@ -435,6 +394,52 @@ namespace PoeClone.Quests
             if (!string.IsNullOrEmpty(encounter))
                 objective += "\n  " + encounter;
             return objective;
+        }
+
+        public static string MinimalObjective(QuestDefinition quest)
+        {
+            if (quest.Goal == QuestGoal.Talk)
+            {
+                Npc npc = Npc.Find(quest.TalkTo);
+                return "Talk to " + (npc != null ? npc.DisplayName : quest.TalkTo.ToString()) + " in " + WorldBuilder.AreaNames[NpcArea(quest.TalkTo)];
+            }
+            string action;
+            if (quest.Goal == QuestGoal.KillBoss) action = "Defeat " + quest.Target;
+            else if (quest.Goal == QuestGoal.ReachArea) action = "Travel";
+            else switch (quest.Id)
+            {
+                case "totems": action = "Destroy bone totems"; break;
+                case "captive": action = "Free Wren"; break;
+                case "deep_road": action = "Dismantle the bone blockade"; break;
+                case "relics": action = "Break Mortis's reliquaries"; break;
+                case "supplies": action = "Collect arrows, bandages and lamp oil"; break;
+                case "rite": action = "Complete the rite at the Ashen Shrine"; break;
+                case "sunstones": action = "Wake the sunstones in order"; break;
+                case "scouts": action = "Inspect the scouts' journals"; break;
+                case "door": action = "Inspect the sealed door"; break;
+                case "patrol": action = "Recover patrol badges"; break;
+                case "caravan": action = "Investigate the caravan and recover its cargo"; break;
+                case "act2_dispatch": action = "Collect the survey satchel and dispatch"; break;
+                case "act2_basin": action = "Inspect the intake, salt tally and pump register"; break;
+                case "act2_controls": action = "Release the terrace and aqueduct regulators"; break;
+                case "act2_ledgers": action = "Collect the tithe ledger and ritual orders"; break;
+                case "act2_release": action = "Open the river return sluice"; break;
+                case "act2_works": action = "Defeat the Last Engineer and open the return valve"; break;
+                case "act2_jars": action = "Break hanging tithe jars"; break;
+                case "act2_names": action = "Collect the intake roll and erased names"; break;
+                case "act2_grafts": action = "Sever feeding grafts"; break;
+                case "act2_heart": action = "Burn the tithe knot"; break;
+                case "act2_memorial": action = "Collect family tablets"; break;
+                case "act2_seed": action = "Collect the sealed seed casket"; break;
+                default: action = quest.Objective; break;
+            }
+            return action + " " + Location(quest);
+        }
+
+        public static string MinimalReturnLine(QuestDefinition quest)
+        {
+            Npc npc = Npc.Find(quest.ReturnTo);
+            return "Return to " + (npc != null ? npc.DisplayName : quest.ReturnTo.ToString()) + " in " + WorldBuilder.AreaNames[NpcArea(quest.ReturnTo)];
         }
 
         private static int NpcArea(NpcRole role)
