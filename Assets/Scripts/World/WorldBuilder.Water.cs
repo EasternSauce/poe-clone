@@ -9,6 +9,8 @@ namespace PoeClone.World
         private readonly Dictionary<int, (Material water, Material shore, Material timber)> waterMaterials =
             new Dictionary<int, (Material, Material, Material)>();
 
+        private readonly List<Material> waterfallMaterials = new();
+
         private void BuildWater(int area, float floorY, Rect? region = null, Mesh chunkLand = null, List<(Vector3 a, Vector3 b)> chunkBoundary = null, Transform chunkParent = null)
         {
             AreaShape shape = Shape(area);
@@ -18,15 +20,21 @@ namespace PoeClone.World
             bool frozen = area == Frozen;
             if (!waterMaterials.TryGetValue(area, out var materials))
             {
-                var water = new Material(kit.Mat("Water")) { name = "Water_" + AreaNames[area] };
+                var water = frozen ? new Material(kit.Mat("Water")) :
+                    new Material(Resources.Load<Shader>("Shaders/ReflectiveWater"));
+                water.name = "Water_" + AreaNames[area];
                 Color color = frozen ? new Color(0.40f, 0.67f, 0.78f) :
                     area == Graveyard ? new Color(0.13f, 0.29f, 0.28f) :
                     shape.HasOcean ? new Color(0.10f, 0.38f, 0.49f) : new Color(0.16f, 0.42f, 0.48f);
                 water.SetColor("_BaseColor", color);
-                water.SetColor("_ShadowColor", color * 0.6f);
-                water.SetFloat("_TriplanarTileSize", frozen ? 5f : 8f);
-                water.SetFloat("_RimIntensity", 0.08f);
-                water.SetFloat("_TexInfluence", frozen ? 0.24f : 0.12f);
+                if (frozen)
+                {
+                    water.SetColor("_ShadowColor", color * 0.6f);
+                    water.SetFloat("_TriplanarTileSize", 5f);
+                    water.SetFloat("_RimIntensity", 0.08f);
+                    water.SetFloat("_TexInfluence", 0.24f);
+                }
+                else water.SetFloat("_WaterOcean", shape.HasOcean ? 1 : 0);
                 var shore = new Material(kit.Mat(frozen ? "Snow" : shape.HasOcean ? "Tan" : "TanDark"));
                 shore.SetFloat("_TriplanarTileSize", 3f);
                 shore.SetFloat("_TexInfluence", 0.35f);
@@ -52,15 +60,14 @@ namespace PoeClone.World
             if (region.HasValue) TrackChunkMesh(area, surface);
             if (!frozen)
             {
-                var motion = new System.Collections.Generic.List<Vector4>();
+                var motion = new List<Vector4>();
                 foreach (Vector3 vertex in surface.vertices) motion.Add(shape.WaterMotion(vertex));
                 surface.SetUVs(1, motion);
                 // GPU waves need an expanded bound, but never change collision or shoreline logic.
-                Bounds bounds = surface.bounds; bounds.Expand(Vector3.up * 0.2f); surface.bounds = bounds;
-                waterMaterial.SetFloat("_LivingWater", 1);
-                waterMaterial.SetFloat("_WaterOcean", shape.HasOcean ? 1 : 0);
+                Bounds bounds = surface.bounds; bounds.Expand(Vector3.up * 0.34f); surface.bounds = bounds;
             }
-            WaterPart(group, frozen ? "FrozenRiverAndPools" : "RiversAndLakes", surface, waterMaterial, -0.45f);
+            var waterRenderer = WaterPart(group, frozen ? "FrozenRiverAndPools" : "RiversAndLakes", surface, waterMaterial, -0.45f);
+            if (!frozen && surface.vertexCount > 0) waterRenderer.gameObject.AddComponent<PoeClone.Visuals.ReflectiveWaterSurface>();
             Mesh shoreMesh = shape.BuildShoreMesh(chunkLand, chunkBoundary, region);
             if (region.HasValue) TrackChunkMesh(area, shoreMesh);
             WaterPart(group, shape.HasOcean ? "SandyBeach" : "Shore", shoreMesh, shoreMaterial, 0.012f);
@@ -70,12 +77,12 @@ namespace PoeClone.World
             Begin(area, 700 + area);
             foreach (var source in shape.RiverSources())
                 if (!region.HasValue || region.Value.Contains(source.point))
-                    BuildWaterfall(group, shape, source.point, source.downstream, source.halfWidth, waterMaterial, frozen, floorY);
+                    BuildWaterfall(area, group, shape, source.point, source.downstream, source.halfWidth, waterMaterial, frozen, floorY);
             if (!frozen && !shape.IsCave) DressLakeShores(group, shape, area, floorY, region);
         }
 
         // Where a river enters the area it pours over a rock ledge into its channel.
-        private void BuildWaterfall(Transform parent, AreaShape shape, Vector2 source, Vector2 downstream, float halfWidth,
+        private void BuildWaterfall(int area, Transform parent, AreaShape shape, Vector2 source, Vector2 downstream, float halfWidth,
             Material riverWater, bool frozen, float floorY)
         {
             Transform fall = new GameObject("Waterfall").transform;
@@ -91,6 +98,7 @@ namespace PoeClone.World
             // UV1 carries flow (direction, distance travelled, strength) for the water shader.
             var vertices = new List<Vector3>();
             var motion = new List<Vector4>();
+            var uvs = new List<Vector2>();
             var triangles = new List<int>();
             const int columns = 10, channelRows = 4, fallRows = 14;
             for (int i = 0; i <= channelRows + fallRows; i++)
@@ -105,30 +113,47 @@ namespace PoeClone.World
                     vertices.Add(lip + down * (reach * u * u + bulge - back) + side * (v * 2f * Width(u)) +
                         Vector3.up * (falling ? Mathf.Lerp(0f, -height - 0.5f, u) : -0.02f));
                     motion.Add(new Vector4(down.x, down.z, falling ? u * height * 1.4f : -back, frozen ? 0f : 1f));
+                    uvs.Add(new Vector2(j / (float)columns, falling ? u : -back / height));
                 }
             }
             for (int i = 0; i < channelRows + fallRows; i++)
                 for (int j = 0; j < columns; j++)
                 {
                     int a = i * (columns + 1) + j, b = a + 1, c = a + columns + 1, d = c + 1;
-                    // Both windings: the sheet is seen from the front and, on the ledge, from above.
-                    triangles.AddRange(new[] { a, b, c, b, d, c, a, c, b, b, c, d });
+                    triangles.AddRange(new[] { a, c, b, b, c, d });
                 }
             var mesh = new Mesh { name = "WaterfallSheet" };
             mesh.SetVertices(vertices);
+            mesh.SetUVs(0, uvs);
             mesh.SetUVs(1, motion);
             mesh.SetTriangles(triangles, 0);
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
+            Bounds sheetBounds = mesh.bounds;
+            sheetBounds.Expand(0.2f);
+            mesh.bounds = sheetBounds;
+            if (frozen)
+            {
+                // Toon ice culls back faces. Add reverse windings after calculating
+                // normals so the two sides do not cancel each other's lighting.
+                int count = triangles.Count;
+                for (int i = 0; i < count; i += 3)
+                    triangles.AddRange(new[] { triangles[i], triangles[i + 2], triangles[i + 1] });
+                mesh.SetTriangles(triangles, 0);
+            }
+            TrackChunkMesh(area, mesh);
             var sheetMaterial = new Material(riverWater) { name = "Waterfall" };
+            waterfallMaterials.Add(sheetMaterial);
+            if (!frozen) sheetMaterial.SetFloat("_Waterfall", 1);
             Color tone = sheetMaterial.GetColor("_BaseColor");
             sheetMaterial.SetColor("_BaseColor", Color.Lerp(tone, Color.white, frozen ? 0.15f : 0.22f));
-            var sheet = new GameObject("Sheet");
+            var sheet = new GameObject("Sheet") { layer = 4 };
             sheet.transform.SetParent(fall, false);
             sheet.AddComponent<MeshFilter>().sharedMesh = mesh;
             var renderer = sheet.AddComponent<MeshRenderer>();
             renderer.sharedMaterial = sheetMaterial;
             renderer.shadowCastingMode = ShadowCastingMode.Off;
+            if (!frozen) sheet.AddComponent<PoeClone.Visuals.ReflectiveWaterSurface>();
 
             // The ledge: rock under the channel, taller crags either side, boulders stepping down to the banks.
             float Scale(float top) => top / 0.89f; // the rock mesh rises 0.89 above its pivot
@@ -151,21 +176,62 @@ namespace PoeClone.World
             Claim(foot - down * reach, halfWidth + 6f);
             if (frozen) return;
 
-            // Churned foam and drifting spray where the water lands.
-            var foam = new Material(riverWater) { name = "WaterfallFoam" };
-            foam.SetFloat("_LivingWater", 0);
-            foam.SetColor("_BaseColor", new Color(0.82f, 0.9f, 0.92f));
-            foam.SetColor("_ShadowColor", new Color(0.55f, 0.66f, 0.72f));
-            for (float across = -Width(1f); across <= Width(1f); across += R(0.7f, 1.2f))
-                Ball(fall, foot - down * R(0f, 0.8f) + side * across + Vector3.up * -0.38f, R(0.5f, 0.9f), foam, flatten: 0.3f, solid: false);
+            // Animated foam spreads downstream from the impact; mist rises above it.
+            WaterfallFoam(fall, foot - Vector3.up * 0.35f, down, Width(1f));
             WaterfallSpray(fall, foot + Vector3.up * 0.2f, down, Width(1f));
         }
 
         private static Material sprayMaterial;
 
+        private static void WaterfallFoam(Transform parent, Vector3 at, Vector3 down, float halfWidth)
+        {
+            var go = new GameObject("ImpactFoam") { layer = 4 };
+            go.transform.SetParent(parent, false);
+            go.transform.SetPositionAndRotation(at, Quaternion.LookRotation(down));
+            var particles = go.AddComponent<ParticleSystem>();
+            particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = particles.main;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(1.4f, 2.5f);
+            main.startSpeed = 0;
+            main.startSize = new ParticleSystem.MinMaxCurve(0.5f, 1.3f);
+            main.startColor = new Color(0.82f, 0.93f, 0.95f, 0.65f);
+            main.startRotation = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
+            main.simulationSpace = ParticleSystemSimulationSpace.Local;
+            main.maxParticles = 100;
+            main.prewarm = true;
+            main.cullingMode = ParticleSystemCullingMode.PauseAndCatchup;
+            var emission = particles.emission;
+            emission.rateOverTime = 8 + halfWidth * 3;
+            var shape = particles.shape;
+            shape.shapeType = ParticleSystemShapeType.Box;
+            shape.scale = new Vector3(halfWidth * 2, 0.02f, 0.6f);
+            var velocity = particles.velocityOverLifetime;
+            velocity.enabled = true;
+            velocity.space = ParticleSystemSimulationSpace.Local;
+            velocity.x = new ParticleSystem.MinMaxCurve(-0.25f, 0.25f);
+            velocity.z = new ParticleSystem.MinMaxCurve(0.8f, 1.8f);
+            var fade = particles.colorOverLifetime;
+            fade.enabled = true;
+            var gradient = new Gradient();
+            gradient.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) },
+                new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(1, 0.15f), new GradientAlphaKey(0, 1) });
+            fade.color = gradient;
+            var growth = particles.sizeOverLifetime;
+            growth.enabled = true;
+            growth.size = new ParticleSystem.MinMaxCurve(1, AnimationCurve.Linear(0, 0.6f, 1, 1.7f));
+            if (sprayMaterial == null) sprayMaterial = new Material(Shader.Find("PoeClone/AmbientParticle"));
+            var renderer = go.GetComponent<ParticleSystemRenderer>();
+            renderer.sharedMaterial = sprayMaterial;
+            renderer.renderMode = ParticleSystemRenderMode.HorizontalBillboard;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            renderer.sortingOrder = 1;
+            particles.Play();
+        }
+
         private static void WaterfallSpray(Transform parent, Vector3 at, Vector3 down, float halfWidth)
         {
-            var go = new GameObject("Spray");
+            var go = new GameObject("Spray") { layer = 4 };
             go.transform.SetParent(parent, false);
             go.transform.SetPositionAndRotation(at, Quaternion.LookRotation(down));
             var spray = go.AddComponent<ParticleSystem>();
@@ -337,7 +403,7 @@ namespace PoeClone.World
             }
         }
 
-        private static void WaterPart(Transform parent, string name, Mesh mesh, Material material, float y)
+        private static MeshRenderer WaterPart(Transform parent, string name, Mesh mesh, Material material, float y)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -346,6 +412,7 @@ namespace PoeClone.World
             var renderer = go.AddComponent<MeshRenderer>();
             renderer.sharedMaterial = material;
             renderer.shadowCastingMode = ShadowCastingMode.Off;
+            return renderer;
         }
     }
 }

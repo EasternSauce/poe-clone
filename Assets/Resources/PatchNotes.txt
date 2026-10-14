@@ -1,3 +1,8 @@
+version: 2026-10-14-reflective-water
+- Rivers, lakes and oceans reflect the surrounding scenery, with rippled reflections, refraction and shoreline foam.
+- River currents follow their channels. Lakes have gentle wind-driven waves; oceans have broader swells.
+- Waterfalls have downward-flowing ribbons, animated impact foam and drifting spray. Frozen waterways remain ice.
+
 version: 2026-10-14-mobile-aim-tuning
 - Mobile bow shots and projectile spells now assist aim within a 45-degree cone at 6 units or farther. Any closer enemy in the cone disables assistance for that shot.
 

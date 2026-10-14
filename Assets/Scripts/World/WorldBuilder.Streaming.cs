@@ -304,6 +304,8 @@ namespace PoeClone.World
                 if (IsActTwo(pair.Key)) Destroy(pair.Value.Backdrop);
             }
             foreach (Texture2D texture in groundTextures.Values) if (texture != null) Destroy(texture);
+            foreach (Material material in waterfallMaterials) if (material != null) Destroy(material);
+            waterfallMaterials.Clear();
             foreach (var materials in waterMaterials.Values)
             {
                 Destroy(materials.water); Destroy(materials.shore); Destroy(materials.timber);
