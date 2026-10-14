@@ -4845,6 +4845,62 @@ MonoBehaviour:
       Min: 7
       Max: 10
       Weight: 1
+  - Label: Death Mark support
+    Enabled: 1
+    Stat: 63
+    Weight: 3
+    On: 0c000000i
+    AnyWeapon: 1
+    Weapons:
+    Tiers:
+    - RequiredItemLevel: 1
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 10
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 19
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 28
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 37
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 46
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 55
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 64
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 73
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 82
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 91
+      Min: 1
+      Max: 1
+      Weight: 1
+    - RequiredItemLevel: 100
+      Min: 1
+      Max: 1
+      Weight: 1
   - Label: GrantGraveRot / 1
     Enabled: 1
     Stat: 81

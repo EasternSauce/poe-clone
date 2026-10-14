@@ -1,3 +1,8 @@
+version: 2026-10-15-summoner-support-and-balance-survey
+- Summon main skills now belong exclusively to sceptres. Grimoires provide minion stats and support abilities, with Death Mark rolling regularly on magic and rare grimoires. Existing summon grimoires become Death Mark support tomes while keeping their other stats.
+- Death Mark remains a bindable support ability: mark an enemy for 6 seconds so your minions deal 30% more damage to it. It no longer replaces the main attack or has a weapon skill tree.
+- Added an Editor-only offline balance survey for skill specializations, sustained single-target damage, mana consumption and melee/minion survival, without entering gameplay or changing a character.
+
 version: 2026-10-14-dialogue-and-graveyard
 - Finishing all available quest dialogue closes the conversation. Click the NPC again to trade or use their other options.
 - Skeletons, Skeleton Archers, Bone Reavers and Bone Wardens move faster.

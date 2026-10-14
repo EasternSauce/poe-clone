@@ -67,8 +67,8 @@ namespace PoeClone.Tests
                             "Cleave on " + item.Type + " " + item.WeaponType);
                     if (Array.IndexOf(SkillGrants.StaffMain, m.Stat) >= 0)
                         Assert.AreEqual(WeaponType.Staff, item.WeaponType, m.Stat + " on " + item.Type);
-                    if (Array.IndexOf(SkillGrants.GrimoireMain, m.Stat) >= 0)
-                        Assert.AreEqual(ItemType.Grimoire, item.Type, m.Stat + " on " + item.Type);
+                    if (SkillGrants.IsSummon(m.Stat))
+                        Assert.IsTrue(item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Sceptre, m.Stat + " on " + item.Type);
                     if (SkillGrants.IsSummon(m.Stat) && item.Type == ItemType.Weapon)
                         Assert.AreEqual(WeaponType.Sceptre, item.WeaponType, m.Stat + " on " + item.WeaponType);
                     if (SkillGrants.IsBowSkill(m.Stat))
@@ -78,19 +78,66 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void EveryGrimoire_CarriesDeathMark()
+        public void Grimoires_RollDeathMarkOften_AsSupport_WithoutAMainSkill()
         {
             var rng = new System.Random(5);
-            int grimoires = 0;
-            for (int k = 0; k < 3000; k++)
+            foreach (int level in new[] { 1, 8, 17, 34, 70, 100 })
             {
-                ItemData item = ItemGenerator.Generate(rng, 8, ItemRarity.Magic);
-                if (item.Type != ItemType.Grimoire)
-                    continue;
-                grimoires++;
-                Assert.AreEqual(StatType.GrantDeathMark, Grants(item)[0].Stat, item.Name);
+                int marks = 0;
+                for (int k = 0; k < 400; k++)
+                {
+                    ItemData item = ItemGenerator.Generate(rng, "grimoire", level, ItemRarity.Rare);
+                    Assert.IsNull(item.MainSkillGrant);
+                    Assert.IsNull(item.SkillProgress);
+                    Assert.IsFalse(Grants(item).Any(m => SkillGrants.IsSummon(m.Stat)));
+                    if (Grants(item).Any(m => m.Stat == StatType.GrantDeathMark))
+                    {
+                        marks++;
+                        ItemData restored = ItemRecord.From(item).ToItem();
+                        Assert.IsTrue(Grants(restored).Any(m => m.Stat == StatType.GrantDeathMark));
+                    }
+                }
+                Assert.That(marks, Is.InRange(80, 360), "Death Mark frequency at item level " + level);
             }
-            Assert.Greater(grimoires, 10);
+            var normal = ItemGenerator.Generate(rng, "grimoire", 1, ItemRarity.Normal);
+            Assert.IsFalse(Grants(normal).Any(m => m.Stat == StatType.GrantDeathMark));
+        }
+
+        [Test]
+        public void PreparedRareRolls_MatchOrdinaryRollsExactly()
+        {
+            foreach (string id in new[] { "grimoire", "bone_sceptre", "short_bow", "leather_boots" })
+                foreach (int level in new[] { 1, 10, 34 })
+                {
+                    var prepared = ItemGenerator.PrepareRareRoller(id, level);
+                    var ordinaryRng = new System.Random(421);
+                    var preparedRng = new System.Random(421);
+                    for (int i = 0; i < 20; i++)
+                    {
+                        var ordinary = ItemRecord.From(ItemGenerator.Generate(ordinaryRng, id, level, ItemRarity.Rare));
+                        var fast = ItemRecord.From(prepared(preparedRng));
+                        Assert.AreEqual(UnityEngine.JsonUtility.ToJson(ordinary), UnityEngine.JsonUtility.ToJson(fast));
+                    }
+                }
+        }
+
+        [Test]
+        public void LegacySummonGrimoire_BecomesSupport_AndSceptreKeepsItsTree()
+        {
+            var oldTome = new ItemData("grimoire", "Old Tome", ItemType.Grimoire, 2, 2, UnityEngine.Color.white,
+                new[] { new StatModifier(StatType.GrantSkeletonMages, 7), new StatModifier(StatType.MinionDamage, 15) });
+            var restored = ItemRecord.From(oldTome).ToItem();
+            Assert.IsNull(restored.MainSkillGrant);
+            Assert.IsNull(restored.SkillProgress);
+            Assert.IsTrue(restored.Modifiers.Any(m => m.Stat == StatType.GrantDeathMark));
+            Assert.IsTrue(restored.Modifiers.Any(m => m.Stat == StatType.MinionDamage));
+            foreach (StatType summon in SkillGrants.SceptreMain)
+            {
+                var sceptre = ItemGenerator.Generate(new System.Random(8), "bone_sceptre", 34, ItemRarity.Rare, summon);
+                Assert.AreEqual(summon, sceptre.MainSkillGrant);
+                Assert.IsNotNull(sceptre.SkillProgress);
+                Assert.AreEqual(1, sceptre.Modifiers.Count(m => WeaponSkillRules.IsWeaponSkill(m.Stat)));
+            }
         }
 
         [Test]

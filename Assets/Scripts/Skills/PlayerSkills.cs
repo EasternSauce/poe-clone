@@ -420,9 +420,7 @@ namespace PoeClone.Skills
         }
 
         /// <summary>
-        /// The attack spell: the first spell on the staff that can be one, or a grimoire's Death
-        /// Mark (in the off hand, with a one-handed weapon or none). Null without either (the
-        /// plain weapon attack is used).
+        /// The equipped weapon's spell or summon main skill. Grimoires supply support abilities.
         /// </summary>
         public SkillId? MainSkill
         {
@@ -430,12 +428,7 @@ namespace PoeClone.Skills
             {
                 if (inventory == null)
                     return null;
-                SkillId? main = MainOn(inventory.Equipment.GetActive(EquipSlot.MainHand));
-                if (main != null)
-                    return main;
-                if (ActiveMeleeSkill != null || ActiveBowSkill != null) return null;
-                ItemData offHand = inventory.Equipment.GetActive(EquipSlot.OffHand);
-                return offHand != null && offHand.Type == ItemType.Grimoire ? MainOn(offHand) : null;
+                return MainOn(inventory.Equipment.GetActive(EquipSlot.MainHand));
             }
         }
 

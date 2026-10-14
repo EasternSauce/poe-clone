@@ -1,0 +1,632 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using UnityEditor;
+using UnityEngine;
+using PoeClone.Combat;
+using PoeClone.Enemies;
+using PoeClone.Inventory;
+using PoeClone.Player;
+using PoeClone.Skills;
+using E = PoeClone.Inventory.WeaponSkillEffect;
+using A = PoeClone.EditorTools.BalanceArchetypes.Archetype;
+
+namespace PoeClone.EditorTools
+{
+    /// <summary>Single-target approximations in Edit mode. No scene, player, save or gameplay is touched.</summary>
+    public static class OfflineBalance
+    {
+        [Serializable] public sealed class Settings
+        {
+            public int seed = 20261014, samples = 20, rareRollsPerSlot = 20;
+            public bool assumeDeathMarkAvailable = false;
+            public float encounterSeconds = 30f, minimumMeleeHits = 4f, minimumMeleeSeconds = 6f;
+            public float meleePremium = 1.5f, minionPremium = 1.3f, outlierThreshold = .25f;
+        }
+        [Serializable] public sealed class Sample
+        {
+            public string archetype, passives, weaponNodes, gear, supports, excluded;
+            public int level, sample, weaponRank;
+            public float rawDps, sustainedDps, hitDps, dotDps, cost, usesPerSecond, manaPerSecond,
+                supportManaPerSecond, manaPool, manaRegen, netManaDrain, secondsToEmpty,
+                sustainableUseFraction, encounterUseFraction, life, incomingHit, incomingDps,
+                hitsToDie, secondsToDie, lifeRecovery, minionLife, minionSecondsToDie,
+                minionUptime, armyCost, replacementManaPerSecond, markUptime, unmarkedRawDps, fullSpeedManaPerSecond;
+        }
+        [Serializable] public sealed class Row
+        {
+            public string archetype, skill, name, family, status;
+            public int level, attempted, viable, topCount;
+            public float topDps, normalizedDps, baseline, ratio, viableFraction;
+            public Sample representative;
+        }
+        [Serializable] public sealed class Report
+        {
+            public string generatedUtc, model = "single-target-v2", sourceRevision;
+            public Settings settings;
+            public List<A> archetypes;
+            public List<Row> rows = new List<Row>();
+            public List<Sample> samples = new List<Sample>();
+            public string[] assumptions;
+        }
+        private sealed class Kit
+        {
+            public EquipmentSet equipment = new EquipmentSet { EnforceRequirements = true };
+            public List<StatModifier> passives;
+            public BaseStats basis;
+            public ItemData weapon;
+            public A archetype;
+            public string[] passiveIds;
+        }
+        private static Report report;
+        private static List<A> scheduled;
+        private static int archetypeIndex, levelIndex;
+        private static string state = "idle";
+        private static readonly Dictionary<string, ItemData> baseItems = new Dictionary<string, ItemData>();
+        private static readonly ConcurrentDictionary<string, List<string>> passivePaths = new ConcurrentDictionary<string, List<string>>();
+        private static readonly ConcurrentDictionary<string, Func<System.Random, ItemData>> rareRollers = new ConcurrentDictionary<string, Func<System.Random, ItemData>>();
+
+        [MenuItem("PoeClone/Balance/Run offline single-target survey")]
+        public static void RunMenu() => Start();
+
+        public static string Start(int samples = 20, int seed = 20261014)
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Offline survey requires Edit mode.");
+            if (report != null) throw new InvalidOperationException("Survey already running.");
+            if (samples < 5) throw new ArgumentOutOfRangeException(nameof(samples));
+            WarmCaches();
+            report = new Report { generatedUtc = DateTime.UtcNow.ToString("o"), settings = new Settings { samples = samples, seed = seed },
+                archetypes = BalanceArchetypes.Catalogue(), sourceRevision = ReadRevision(), assumptions = Assumptions };
+            scheduled = report.archetypes;
+            archetypeIndex = 0; levelIndex = 1;
+            EditorApplication.update += Advance;
+            return state = "started " + report.archetypes.Count + " archetypes";
+        }
+        /// <summary>Retest changed skills against an existing survey without rerolling every
+        /// unrelated skill. The same seeds/settings apply, and every level baseline is rebuilt.</summary>
+        public static string RefreshSkills(string skills)
+        {
+            if (report != null || EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Requires an idle Editor in Edit mode.");
+            var selected = new HashSet<string>(skills.Split(',').Select(s => s.Trim()));
+            var data = JsonUtility.FromJson<Report>(File.ReadAllText("BalanceResults/survey.json"));
+            var catalogue = BalanceArchetypes.Catalogue();
+            if (selected.Any(skill => !catalogue.Any(a => a.skill == skill))) throw new ArgumentException("Unknown skill");
+            WarmCaches();
+            data.archetypes = catalogue; data.assumptions = Assumptions; data.model = "single-target-v2";
+            data.generatedUtc = DateTime.UtcNow.ToString("o"); data.sourceRevision = ReadRevision();
+            var ids = new HashSet<string>(catalogue.Where(a => selected.Contains(a.skill)).Select(a => a.id));
+            data.rows.RemoveAll(r => ids.Contains(r.archetype)); data.samples.RemoveAll(s => ids.Contains(s.archetype));
+            foreach (var row in data.rows)
+            {
+                row.name = catalogue.First(a => a.id == row.archetype).name;
+                if (row.representative != null) FixEmptyTime(row.representative);
+            }
+            foreach (var sample in data.samples) FixEmptyTime(sample);
+            report = data; scheduled = catalogue.Where(a => ids.Contains(a.id)).ToList();
+            archetypeIndex = 0; levelIndex = 1; EditorApplication.update += Advance;
+            return state = "refreshing " + scheduled.Count + " archetypes";
+        }
+        private static void FixEmptyTime(Sample sample) => sample.secondsToEmpty = TimeToEmpty(Mathf.Max(0, sample.manaPool - sample.armyCost),
+            sample.manaPerSecond + sample.supportManaPerSecond, sample.manaRegen);
+        public static string Status() => state;
+        public static string ValidateReportFile()
+        {
+            var data = JsonUtility.FromJson<Report>(File.ReadAllText("BalanceResults/survey.json"));
+            if (data.rows.Count != data.archetypes.Count * 34) return "Missing archetype/level rows";
+            if (data.rows.Select(r => r.archetype + "/" + r.level).Distinct().Count() != data.rows.Count) return "Duplicate rows";
+            var byRow = data.samples.GroupBy(s => s.archetype + "/" + s.level).ToDictionary(g => g.Key, g => g.ToList());
+            foreach (var row in data.rows)
+            {
+                if (row.level < 1 || row.level > 34 || float.IsNaN(row.topDps) || float.IsInfinity(row.topDps)) return "Invalid row " + row.archetype;
+                if (row.attempted > 0 && row.attempted != data.settings.samples) return "Missing samples";
+                if (row.topCount != (int)Math.Ceiling(row.viable * .2)) return "Wrong top-fifth count";
+                if (!byRow.TryGetValue(row.archetype + "/" + row.level, out var builds)) builds = new List<Sample>();
+                if (builds.Count != row.attempted) return "Sample count mismatch";
+                var valid = builds.Where(s => string.IsNullOrEmpty(s.excluded)).ToList();
+                if (valid.Count != row.viable) return "Viability count mismatch";
+                if (row.topCount > 0 && Mathf.Abs(TopFifth(valid).Average(s => s.sustainedDps) - row.topDps) > .001) return "Wrong cohort mean";
+            }
+            foreach (var s in data.samples)
+            {
+                if (s.encounterUseFraction < 0 || s.encounterUseFraction > 1 || s.minionUptime < 0 || s.minionUptime > 1 ||
+                    float.IsNaN(s.sustainedDps) || float.IsInfinity(s.sustainedDps) || s.sustainedDps < 0 || s.sustainedDps > s.rawDps + .001) return "Invalid damage/sustain";
+                if (Mathf.Abs(s.netManaDrain - (s.manaPerSecond + s.supportManaPerSecond - s.manaRegen)) > .001) return "Resource reconciliation";
+                float emptyTime = TimeToEmpty(Mathf.Max(0, s.manaPool - s.armyCost), s.manaPerSecond + s.supportManaPerSecond, s.manaRegen);
+                if (Mathf.Abs(s.secondsToEmpty - emptyTime) > .001) return "Initial army mana not reserved";
+            }
+            return "valid";
+        }
+        public static void Cancel()
+        {
+            EditorApplication.update -= Advance;
+            report = null; state = "cancelled";
+        }
+        private static string ReadRevision()
+        {
+            string head = File.ReadAllText(".git/HEAD").Trim();
+            return head.StartsWith("ref: ") && File.Exists(".git/" + head.Substring(5)) ? File.ReadAllText(".git/" + head.Substring(5)).Trim() : head;
+        }
+        private static void Advance()
+        {
+            try
+            {
+                if (EditorApplication.isPlayingOrWillChangePlaymode) { Cancel(); return; }
+                var a = scheduled[archetypeIndex];
+                var row = Measure(a, levelIndex, report.settings);
+                report.rows.Add(row);
+                state = (archetypeIndex + 1) + "/" + scheduled.Count + " " + a.id + " L" + levelIndex;
+                if (++levelIndex > 34) { levelIndex = 1; archetypeIndex++; }
+                if (archetypeIndex < scheduled.Count) return;
+                Normalize(report);
+                Directory.CreateDirectory("BalanceResults");
+                File.WriteAllText("BalanceResults/survey.json", JsonUtility.ToJson(report, true));
+                state = "complete: " + report.samples.Count + " builds, " + report.rows.Count + " rows; BalanceResults/survey.json";
+                report = null;
+                EditorApplication.update -= Advance;
+                Debug.Log("OfflineBalance: " + state);
+            }
+            catch (Exception error)
+            {
+                Cancel(); state = "failed: " + error; Debug.LogException(error);
+            }
+        }
+        // A trained weapon scenario, independent of random drop rank. Weapon XP can raise rank;
+        // this is an explicit progression assumption, not a character-level equip restriction.
+        public static int WeaponRank(int level) => 1 + (Mathf.Clamp(level, 1, 34) - 1) * 9 / 33;
+
+        private static Row Measure(A a, int level, Settings cfg)
+        {
+            var row = new Row { archetype = a.id, skill = a.skill, name = a.name, family = a.family, level = level };
+            if (a.family == "Support") { row.status = "Support only"; row.representative = SupportReference(a, level, cfg); return row; }
+            if (a.minimumWeaponPoints > WeaponRank(level)) { row.status = "Weapon rank unavailable"; return row; }
+            var results = new Sample[cfg.samples];
+            // All assets and native-backed type initializers are loaded on the Editor thread.
+            // Workers only construct ordinary C# equipment/stat data and calculate numbers.
+            Parallel.For(0, cfg.samples, new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Math.Min(4, Environment.ProcessorCount - 2)) }, i =>
+            {
+                // Stable across .NET versions and catalogue ordering; never string.GetHashCode.
+                int seed = StableSeed(cfg.seed, a.id, level, i);
+                var rng = new System.Random(seed);
+                Kit kit = CreateKit(a, level, rng, cfg);
+                var sample = Evaluate(kit, cfg);
+                sample.archetype = a.id; sample.level = level; sample.sample = i; sample.weaponRank = WeaponRank(level);
+                sample.passives = string.Join(",", kit.passiveIds);
+                sample.weaponNodes = string.Join(",", kit.weapon.SkillProgress.nodes);
+                sample.gear = string.Join("; ", SlotRules.AllSlots.Select(slot => slot + "=" + Describe(kit.equipment.GetActive(slot))));
+                if (a.family == "Melee" && (sample.hitsToDie < cfg.minimumMeleeHits || sample.secondsToDie < cfg.minimumMeleeSeconds))
+                    sample.excluded = "Melee survival";
+                results[i] = sample;
+            });
+            var all = results.ToList();
+            var viable = all.Where(s => string.IsNullOrEmpty(s.excluded)).ToList();
+            report?.samples.AddRange(all);
+            row.attempted = cfg.samples; row.viable = viable.Count; row.viableFraction = (float)viable.Count / cfg.samples;
+            var top = TopFifth(viable);
+            row.topCount = top.Count;
+            if (top.Count == 0) { row.status = "No viable builds"; row.representative = all.OrderByDescending(s => s.sustainedDps).First(); return row; }
+            row.topDps = top.Average(s => s.sustainedDps);
+            row.normalizedDps = row.topDps / (a.family == "Melee" ? cfg.meleePremium : a.family == "Minion" ? cfg.minionPremium : 1f);
+            // The representative is an actual sampled build nearest the cohort's mean, not
+            // a collection of unrelated medians masquerading as one build.
+            row.representative = top.OrderBy(s => Mathf.Abs(s.sustainedDps - row.topDps)).First();
+            row.status = a.mechanics.Contains("Area") || a.mechanics.Contains("Projectiles") || a.mechanics.Contains("Range") ||
+                a.mechanics.Contains("Explode") || a.mechanics.Contains("Shatter") ? "Coverage or utility route" : "Measured";
+            return row;
+        }
+        private static string Describe(ItemData item) => item == null ? "empty" : item.Id + " [" +
+            string.Join(",", item.Modifiers.Select(m => m.Stat + ":" + m.Value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture))) + "]";
+        public static List<Sample> TopFifth(List<Sample> samples) => samples.OrderByDescending(s => s.sustainedDps)
+            .ThenBy(s => s.sample).Take((int)Math.Ceiling(samples.Count * .2)).ToList();
+        public static int StableSeed(int seed, string id, int level, int sample)
+        {
+            unchecked { foreach (char c in id) seed = seed * 31 + c; return (seed * 31 + level) * 31 + sample; }
+        }
+        private static void Normalize(Report data)
+        {
+            foreach (var group in data.rows.GroupBy(r => r.level))
+            {
+                // One vote per skill, not per branch. Use the strongest available archetype
+                // per skill so six coverage destinations do not drag down the baseline.
+                var skills = group.Where(r => r.topCount > 0).GroupBy(r => r.skill).Select(g => g.Max(r => r.normalizedDps)).OrderBy(x => x).ToArray();
+                float baseline = skills.Length == 0 ? 0 : (skills[(skills.Length - 1) / 2] + skills[skills.Length / 2]) / 2f;
+                foreach (var row in group)
+                {
+                    row.baseline = baseline;
+                    if (row.topCount == 0 || baseline <= 0) continue;
+                    row.ratio = row.normalizedDps / baseline;
+                    bool utility = data.archetypes.First(a => a.id == row.archetype).role != "Baseline" &&
+                        IsUtilityDestination(data.archetypes.First(a => a.id == row.archetype));
+                    row.status = row.ratio > 1f + data.settings.outlierThreshold ? "High DPS: review" :
+                        row.ratio < 1f - data.settings.outlierThreshold ? utility ? "Low DPS: utility route" : "Low DPS: review" : "Within band";
+                    if (row.viable < Math.Max(5, data.settings.samples / 5)) row.status = "Few viable builds: review survival first";
+                }
+            }
+        }
+        private static bool IsUtilityDestination(A a)
+        {
+            var ends = a.requiredNodes.Select(id => WeaponSkillTrees.Find(SkillBook.Get(a.SkillId).Grant, id)).Where(n => n.Keystone);
+            return ends.Any() && ends.All(n => n.Bonuses.All(b => b.Effect == E.Area || b.Effect == E.Range || b.Effect == E.Projectiles ||
+                b.Effect == E.Pierce || b.Effect == E.Fork || b.Effect == E.Chains || b.Effect == E.Explode || b.Effect == E.Shatter ||
+                b.Effect == E.ProjectileSpeed || b.Effect == E.NoFork || b.Effect == E.MoreDamage || b.Effect == E.MinionMoveSpeed || b.Effect == E.RainSpread));
+        }
+
+        private static bool UnsupportedNode(PassiveNode node) => node.Mods.Any(m => m.Stat == StatType.BloodMagic || m.Stat == StatType.ManaAbsorb);
+        private static List<StatModifier> Plan(A a, int level, System.Random rng, out string[] passiveIds)
+        {
+            var owned = new HashSet<string> { PassiveTree.OriginId };
+            var plan = new List<string>();
+            var targets = a.passivePool.Select(id => new { id, priority = rng.NextDouble() }).OrderBy(x => x.priority);
+            int budget = PassiveAllocation.PointsForLevel(level);
+            foreach (var target in targets)
+            {
+                // Shortest path from origin cached once, then pay only untaken nodes. The
+                // origin paths guarantee connectivity even if different targets share travel.
+                var path = PathTo(target.id);
+                if (path.Any(id => UnsupportedNode(PassiveTree.Get(id)))) continue;
+                var extra = path.Where(id => !owned.Contains(id)).ToArray();
+                if (extra.Length > budget - plan.Count) continue;
+                foreach (var id in extra) if (owned.Add(id)) plan.Add(id);
+            }
+            while (plan.Count < budget)
+            {
+                var frontier = owned.SelectMany(id => PassiveTree.Get(id).Links).Distinct().Where(id => !owned.Contains(id) && !UnsupportedNode(PassiveTree.Get(id))).ToArray();
+                if (frontier.Length == 0) break;
+                string next = frontier[rng.Next(frontier.Length)]; owned.Add(next); plan.Add(next);
+            }
+            passiveIds = plan.ToArray();
+            var allocation = new PassiveAllocation();
+            foreach (string id in plan) if (!allocation.Take(id, level)) throw new InvalidOperationException("Illegal passive path " + id);
+            return plan.SelectMany(id => PassiveTree.Get(id).Mods).ToList();
+        }
+        private static List<string> PathTo(string target)
+        {
+            if (passivePaths.TryGetValue(target, out var path)) return path;
+            var from = new Dictionary<string, string> { [PassiveTree.OriginId] = null };
+            var queue = new Queue<string>(); queue.Enqueue(PassiveTree.OriginId);
+            while (queue.Count > 0 && !from.ContainsKey(target))
+            {
+                string id = queue.Dequeue();
+                foreach (var next in PassiveTree.Get(id).Links) if (!from.ContainsKey(next)) { from[next] = id; queue.Enqueue(next); }
+            }
+            path = new List<string>();
+            for (string at = target; at != PassiveTree.OriginId; at = from[at]) path.Add(at);
+            path.Reverse(); passivePaths[target] = path; return path;
+        }
+
+        private static Kit CreateKit(A a, int level, System.Random rng, Settings cfg)
+        {
+            var kit = new Kit { archetype = a, basis = Base(level) };
+            kit.passives = Plan(a, level, rng, out kit.passiveIds);
+            var sheet = StatSheet.Build(kit.basis, kit.equipment, kit.passives);
+            // Weapon identity is part of the random build. Only compatible families are eligible.
+            var bases = BasesFor(a, EquipSlot.MainHand, level, sheet, null);
+            string baseId = bases[rng.Next(bases.Count)];
+            kit.weapon = ItemGenerator.Generate(rng, baseId, level, ItemRarity.Normal, SkillBook.Get(a.SkillId).Grant);
+            AllocateTree(kit.weapon, a, level, rng);
+            kit.equipment.Restore(EquipSlot.MainHand, kit.weapon, out _);
+            foreach (var slot in SlotRules.AllSlots)
+            {
+                sheet = StatSheet.Build(kit.basis, kit.equipment, kit.passives);
+                bases = BasesFor(a, slot, level, sheet, kit.weapon);
+                if (bases.Count == 0) continue;
+                ItemData original = kit.equipment.Get(slot), best = null;
+                float bestDps = -1f;
+                for (int roll = 0; roll < cfg.rareRollsPerSlot; roll++)
+                {
+                    string id = bases[rng.Next(bases.Count)];
+                    StatType? grant = slot == EquipSlot.MainHand ? (StatType?)SkillBook.Get(a.SkillId).Grant : null;
+                    string rollerKey = id + "/" + level + "/" + grant;
+                    if (!rareRollers.TryGetValue(rollerKey, out var roller)) rareRollers[rollerKey] = roller = ItemGenerator.PrepareRareRoller(id, level, grant);
+                    var item = roller(rng);
+                    if (slot == EquipSlot.MainHand) item.SkillProgress = kit.weapon.SkillProgress.Copy();
+                    if (!kit.equipment.Restore(slot, item, out _)) continue;
+                    var candidateSheet = StatSheet.Build(kit.basis, kit.equipment, kit.passives);
+                    if (!kit.equipment.IsActive(slot) || !AllWornActive(kit.equipment)) continue;
+                    var previousWeapon = kit.weapon;
+                    if (slot == EquipSlot.MainHand) kit.weapon = item;
+                    float dps = GearScore(kit, cfg, candidateSheet);
+                    kit.weapon = previousWeapon;
+                    if (dps > bestDps) { bestDps = dps; best = item; }
+                }
+                kit.equipment.Unequip(slot);
+                if (best != null) kit.equipment.Restore(slot, best, out _);
+                else if (original != null) kit.equipment.Restore(slot, original, out _);
+                if (slot == EquipSlot.MainHand && best != null) kit.weapon = best;
+            }
+            StatSheet.Build(kit.basis, kit.equipment, kit.passives);
+            return kit;
+        }
+        private static void WarmCaches()
+        {
+            baseItems.Clear(); rareRollers.Clear();
+            foreach (var id in ItemGenerator.BaseIds) baseItems[id] = ItemGenerator.Display(id, null, ItemRarity.Normal);
+            ItemGenerator.Generate(new System.Random(0), "gnarled_staff", 1, ItemRarity.Normal);
+            StatSheet.Build(Base(1), null);
+            new WeaponSkillBonuses(null);
+            SkillEffects.DamagePattern(SkillBook.All[0]);
+            PlayerSkills.MeleeSpeed(SkillBook.All[0].Id);
+            Minion.DamageAt(MinionKind.Warrior, 1);
+            _ = EnemyKinds.All.Length;
+        }
+        private static bool AllWornActive(EquipmentSet equipment) => SlotRules.AllSlots.All(s => equipment.Get(s) == null || equipment.IsActive(s));
+        private static List<string> BasesFor(A a, EquipSlot slot, int level, StatSheet sheet, ItemData main)
+        {
+            if (baseItems.Count == 0) foreach (var id in ItemGenerator.BaseIds) baseItems[id] = ItemGenerator.Display(id, null, ItemRarity.Normal);
+            var candidates = baseItems.Values.Where(item => item != null && item.Requirements.Level <= level &&
+                item.Requirements.MetBy(sheet) && SlotRules.Accepts(slot, item));
+            if (slot == EquipSlot.MainHand) candidates = candidates.Where(item => WeaponSkillRules.Pool(item.Type, item.WeaponType).Contains(SkillBook.Get(a.SkillId).Grant));
+            if (slot == EquipSlot.OffHand) candidates = candidates.Where(item => SlotRules.HandsCompatible(main, item) && item.Type != ItemType.Weapon && (item.Type != ItemType.Grimoire || a.family == "Minion"));
+            // Latest available base in each line; choosing an old base would add loot noise
+            // without representing a different build. The 20 rare rolls still vary affixes.
+            return candidates.GroupBy(item => ItemGenerator.LineOf(item.Id)).Select(g => g.OrderByDescending(item => item.Requirements.Level).First().Id).OrderBy(id => id).ToList();
+        }
+        private static void AllocateTree(ItemData weapon, A a, int level, System.Random rng)
+        {
+            weapon.SkillProgress = new WeaponSkillProgress { level = WeaponRank(level) };
+            foreach (string id in a.requiredNodes) if (!weapon.SkillProgress.Allocate(SkillBook.Get(a.SkillId).Grant, id)) throw new InvalidOperationException("Illegal archetype " + a.id);
+            // Baseline deliberately has no destinations; other routes cannot silently acquire
+            // an additional destination and be reported under the wrong archetype.
+            while (weapon.SkillProgress.Available > 0)
+            {
+                var choices = WeaponSkillTrees.For(SkillBook.Get(a.SkillId).Grant).Where(n => !n.Keystone && weapon.SkillProgress.CanAllocate(n.Grant, n.Id)).ToArray();
+                if (choices.Length == 0) break;
+                var next = choices[rng.Next(choices.Length)]; weapon.SkillProgress.Allocate(next.Grant, next.Id);
+            }
+            weapon.SynchronizeSkillLevel();
+        }
+        private static BaseStats Base(int level)
+        {
+            return new BaseStats { Level = level }.Set(StatType.Strength, 9 + level).Set(StatType.Dexterity, 9 + level)
+                .Set(StatType.Intelligence, 9 + level).Set(StatType.MaxLife, 90 + level * 10).Set(StatType.MaxMana, 45 + level * 5)
+                .Set(StatType.PhysicalDamage, PlayerStatsLink.BasePhysicalDamage);
+        }
+
+        public static float ResourceCost(SkillDefinition skill, int level, WeaponType weapon, WeaponSkillBonuses tree, StatSheet sheet)
+        {
+            float cost = skill.ManaCostAt(1) * PlayerSkills.CharacterCostMultiplier(skill, level) + PlayerSkills.DamageSpellManaSurcharge(skill, level);
+            if (skill.Spell) cost *= Mathf.Lerp(1, .62f, Mathf.SmoothStep(0, 1, (level - 7f) / 27f));
+            if (skill.StaffSkill) cost *= Mathf.Lerp(.5f, 1, Mathf.SmoothStep(0, 1, (level - 1f) / 33f));
+            if (skill.MeleeAttack && !skill.Channelled) cost *= SlotRules.BaseAttacksPerSecond(WeaponType.Sword) / Mathf.Max(.1f, SlotRules.BaseAttacksPerSecond(weapon));
+            return cost * Mathf.Max(.1f, 1 + (tree?.Get(E.Cost) ?? 0) / 100) * Mathf.Clamp01(1 - sheet.Total(StatType.ManaCostReduction) / 100);
+        }
+        public static float TimeToEmpty(float pool, float spend, float regen) => spend > regen ? pool / (spend - regen) : -1;
+        public static float PiercingInterval(float attackRate, float chargeTimePercent) =>
+            Mathf.Max(.65f, 1.6f * (1 + chargeTimePercent / 100) / attackRate) + .35f / attackRate;
+        public static DamageType BaseElement(SkillDefinition skill) => skill.MeleeAttack || skill.Bow ?
+            skill.Id == SkillId.BurningArrow ? DamageType.Fire : DamageType.Physical : SkillEffects.DamagePattern(skill);
+        public static float UseFraction(float pool, float regen, float spend, float seconds) => spend <= 0 ? 1 : Mathf.Clamp01((pool / seconds + regen) / spend);
+        private static Sample SupportReference(A a, int level, Settings cfg)
+        {
+            var sheet = StatSheet.Build(Base(level), null);
+            var skill = SkillBook.Get(a.SkillId);
+            float capacity = sheet.CastRateMultiplier / Mathf.Max(.01f, skill.Cooldown);
+            float rotation = skill.Id == SkillId.DeathMark ? Mathf.Min(capacity, 1 / Minion.MarkSeconds) : capacity;
+            var s = new Sample { archetype = a.id, level = level, sample = -1, supports = "Support reference: no equipment or passives",
+                cost = ResourceCost(skill, level, WeaponType.Sword, null, sheet), usesPerSecond = capacity,
+                manaPool = sheet.Total(StatType.MaxMana), life = sheet.Total(StatType.MaxLife) };
+            s.fullSpeedManaPerSecond = s.cost * capacity; s.manaPerSecond = s.cost * rotation;
+            s.manaRegen = DefenceMath.ManaRegenPerSecond(s.manaPool, sheet.Total(StatType.Intelligence));
+            s.netManaDrain = s.manaPerSecond - s.manaRegen; FixEmptyTime(s);
+            s.sustainableUseFraction = s.manaPerSecond <= 0 ? 1 : Mathf.Clamp01(s.manaRegen / s.manaPerSecond);
+            s.encounterUseFraction = UseFraction(s.manaPool, s.manaRegen, s.manaPerSecond, cfg.encounterSeconds);
+            return s;
+        }
+        private static float GearScore(Kit kit, Settings cfg, StatSheet prepared = null)
+        {
+            var s = Evaluate(kit, cfg, prepared);
+            if (!string.IsNullOrEmpty(s.excluded)) return -1;
+            float survival = kit.archetype.family == "Melee" ? Mathf.Min(1, s.hitsToDie / cfg.minimumMeleeHits) * Mathf.Min(1, s.secondsToDie / cfg.minimumMeleeSeconds) : 1;
+            return s.sustainedDps * survival;
+        }
+        private static Sample Evaluate(Kit kit, Settings cfg, StatSheet prepared = null)
+        {
+            var sheet = prepared ?? StatSheet.Build(kit.basis, kit.equipment, kit.passives);
+            var tree = new WeaponSkillBonuses(kit.weapon);
+            var skill = SkillBook.Get(kit.archetype.SkillId);
+            var s = new Sample { life = sheet.Total(StatType.MaxLife), manaPool = sheet.Total(StatType.MaxMana), minionUptime = 1 };
+            s.rawDps = Damage(kit, sheet, tree, out s.hitDps, out s.dotDps, out s.usesPerSecond);
+            s.cost = ResourceCost(skill, kit.basis.Level, kit.weapon.WeaponType, tree, sheet);
+            float payments = skill.Channelled ? 1 / PlayerSkills.ChannelTick : s.usesPerSecond;
+            s.manaPerSecond = s.cost * payments;
+            s.fullSpeedManaPerSecond = s.manaPerSecond;
+            s.manaRegen = DefenceMath.ManaRegenPerSecond(s.manaPool, sheet.Total(StatType.Intelligence), sheet.Total(StatType.ManaRegen), sheet.Total(StatType.PercentManaRegen));
+            bool bloodMagic = sheet.Total(StatType.BloodMagic) > 0;
+            if (bloodMagic) s.excluded = "Blood Magic not modelled";
+            if (skill.Summon)
+            {
+                var kind = PlayerSkills.MinionKindOf(skill.Id);
+                int cap = MinionCap(kind, tree), batch = kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1;
+                s.armyCost = Mathf.Ceil((float)cap / batch) * s.cost;
+                s.minionLife = Minion.LifeAt(kind, 1) * Mathf.Max(.1f, 1 + (sheet.Total(StatType.MinionLife) + tree.Get(E.MinionLife)) / 100);
+                Incoming(kit.basis.Level, sheet, tree, true, out var hit, out var dps);
+                float recovery = s.minionLife * tree.Get(E.MinionRegen) / 100;
+                s.minionSecondsToDie = kind == MinionKind.Wolf || dps <= recovery ? -1 : s.minionLife / (dps - recovery);
+                float duration = Minion.Duration(kind, 1, sheet) * tree.MinionDurationMultiplier;
+                float lifetime = Math.Min(s.minionSecondsToDie < 0 ? 1e9f : s.minionSecondsToDie, duration <= 0 ? 1e9f : duration);
+                float replacementUses = cap / Mathf.Max(.01f, lifetime) / batch;
+                s.replacementManaPerSecond = replacementUses * s.cost;
+                s.minionUptime = Mathf.Min(1, s.usesPerSecond / Mathf.Max(.000001f, replacementUses));
+                s.manaPerSecond = Mathf.Min(replacementUses, s.usesPerSecond) * s.cost;
+                // Refresh the mark as it expires, rather than waste mana spamming it.
+                bool marked = cfg.assumeDeathMarkAvailable || sheet.Total(StatType.GrantDeathMark) > 0;
+                s.unmarkedRawDps = s.rawDps;
+                s.supports = marked ? cfg.assumeDeathMarkAvailable ? "Death Mark (assumed)" : "Death Mark (rolled on grimoire)" : "No Death Mark";
+                if (marked)
+                {
+                    float interval = Mathf.Max(Minion.MarkSeconds, SkillBook.Get(SkillId.DeathMark).Cooldown / sheet.CastRateMultiplier);
+                    s.supportManaPerSecond = ResourceCost(SkillBook.Get(SkillId.DeathMark), kit.basis.Level, kit.weapon.WeaponType, null, sheet) / interval;
+                    s.markUptime = Mathf.Min(1, Minion.MarkSeconds / interval);
+                    float mark = 1 + .3f * (1 + Mathf.Max(-100, sheet.Total(StatType.MarkEffect)) / 100) * s.markUptime;
+                    s.hitDps *= mark; s.dotDps *= mark;
+                    s.rawDps = s.hitDps + s.dotDps;
+                }
+            }
+            float spend = s.manaPerSecond + s.supportManaPerSecond;
+            s.netManaDrain = spend - s.manaRegen;
+            s.secondsToEmpty = TimeToEmpty(Mathf.Max(0, s.manaPool - s.armyCost), spend, s.manaRegen);
+            s.sustainableUseFraction = spend <= 0 ? 1 : Mathf.Clamp01(s.manaRegen / spend);
+            s.encounterUseFraction = UseFraction(Mathf.Max(0, s.manaPool - s.armyCost), s.manaRegen, spend, cfg.encounterSeconds);
+            if (s.cost > s.manaPool || s.armyCost > s.manaPool + s.manaRegen * cfg.encounterSeconds) s.excluded = "Cannot afford setup or one use";
+            s.sustainedDps = s.rawDps * s.encounterUseFraction * s.minionUptime;
+            Incoming(kit.basis.Level, sheet, tree, false, out s.incomingHit, out s.incomingDps);
+            s.lifeRecovery = sheet.Total(StatType.NoLifeRegen) > 0 ? 0 : DefenceMath.LifeRegenPerSecond(s.life, sheet.Total(StatType.LifeRegen), sheet.Total(StatType.PercentLifeRegen));
+            float leech = skill.Summon ? sheet.Total(StatType.SoulBond) : skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.LifeLeech) : sheet.Total(StatType.SpellLeech);
+            s.lifeRecovery += s.hitDps * s.encounterUseFraction * (leech + tree.Get(E.Leech)) / 100;
+            if (!skill.Summon) s.lifeRecovery += (tree.Get(E.LifeOnHit) + (skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.LifeOnAttackHit) : 0)) * s.usesPerSecond * s.encounterUseFraction;
+            s.hitsToDie = s.life / Mathf.Max(.01f, s.incomingHit);
+            s.secondsToDie = s.incomingDps <= s.lifeRecovery ? -1 : s.life / (s.incomingDps - s.lifeRecovery);
+            if (s.secondsToDie < 0) s.secondsToDie = 1e6f;
+            return s;
+        }
+
+        private static int MinionCap(MinionKind kind, WeaponSkillBonuses tree)
+        {
+            if (kind == MinionKind.Golem) return 1;
+            int cap = Minion.KindCap(kind, 1, null) + tree.ExtraMinions;
+            return tree.Get(E.HalfMinions) > 0 ? cap / 2 : cap;
+        }
+        private static float Damage(Kit kit, StatSheet sheet, WeaponSkillBonuses tree, out float hitDps, out float dotDps, out float uses)
+        {
+            var skill = SkillBook.Get(kit.archetype.SkillId);
+            float speed = Mathf.Max(.5f, 1 + ((skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.AttackSpeed) : sheet.Total(StatType.CastSpeed)) + tree.Get(E.Speed)) / 100);
+            uses = skill.Summon ? speed / .65f : skill.Cooldown > 0 ? speed / skill.Cooldown :
+                SlotRules.BaseAttacksPerSecond(kit.weapon.WeaponType) * speed * (skill.Bow ? PlayerSkills.BowSpeed(skill.Id) : PlayerSkills.MeleeSpeed(skill.Id));
+            if (skill.Channelled) uses = 4 * SlotRules.BaseAttacksPerSecond(kit.weapon.WeaponType) / SlotRules.BaseAttacksPerSecond(WeaponType.Sword) * speed;
+            if (skill.Id == SkillId.PiercingShot) uses = 1 / PiercingInterval(speed, tree.Get(E.ChargeTime));
+            float baseHit = skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.PhysicalDamage) * skill.WeaponMultiplierAt(1) : skill.DamageAt(1);
+            var element = WeaponSkillHit.Element(tree, BaseElement(skill));
+            bool attack = skill.MeleeAttack || skill.Bow;
+            if (element == DamageType.Physical && attack)
+            {
+                if (sheet.Total(StatType.PhysicalToFire) > 0) element = DamageType.Fire;
+                else if (sheet.Total(StatType.PhysicalToCold) > 0) element = DamageType.Cold;
+                else if (sheet.Total(StatType.PhysicalToLightning) > 0) element = DamageType.Lightning;
+            }
+            float rate = uses, hits = 1, multiplier;
+            if (skill.Summon)
+            {
+                var kind = PlayerSkills.MinionKindOf(skill.Id);
+                int cap = MinionCap(kind, tree);
+                float interval = kind == MinionKind.Warrior ? 1.1f : kind == MinionKind.Mage ? 1.6f : kind == MinionKind.Wolf ? .8f : kind == MinionKind.Golem ? 1.5f : 1.15f;
+                rate = Mathf.Max(.2f, 1 + (sheet.Total(StatType.MinionSpeed) + tree.Get(E.Speed)) / 100) / interval;
+                baseHit = Minion.DamageFor(kind, 1, sheet, tree);
+                if (kind == MinionKind.Wolf) baseHit *= (100 + sheet.Total(StatType.MinionDamage) + sheet.Total(StatType.Intelligence) * .5f + tree.Get(E.Damage) + Math.Min(4, cap - 1) * tree.Get(E.PackHunt)) /
+                    Mathf.Max(1, 100 + sheet.Total(StatType.MinionDamage) + sheet.Total(StatType.Intelligence) * .5f + tree.Get(E.Damage));
+                hits = cap * (kind == MinionKind.Golem && tree.Get(E.GolemAftershock) > 0 ? 1.4f : 1);
+                multiplier = 1;
+            }
+            else
+            {
+                if (skill.Id == SkillId.PiercingShot) baseHit *= 3;
+                if (skill.Id == SkillId.CrossSlash) hits = 2;
+                // Aftershock centres barely overlap: a stationary target receives one wave.
+                if (skill.Id == SkillId.RainOfArrows)
+                {
+                    float spread = 2.4f * Mathf.Max(.25f, 1 + tree.Get(E.RainSpread) / 100);
+                    float radius = 1.1f * DefenceMath.RadiusMultiplier(sheet.Total(StatType.AreaOfEffect) + tree.Get(E.Area));
+                    hits = (6 + tree.ExtraProjectiles) * (1 + tree.Get(E.RainSalvos)) * Mathf.Clamp01(radius * radius / (spread * spread));
+                }
+                baseHit += sheet.Total(StatType.MaxMana) * sheet.Total(StatType.ManaAsDamage) / 100;
+                float chilled = skill.Id == SkillId.IceShard ? 1 : ChanceUptime(tree.Get(E.Chill) + (attack ? sheet.Total(StatType.ChillOnHit) : 0), rate, 2 * tree.DurationMultiplier);
+                multiplier = sheet.DamageMultiplier(attack, skill.Bow, false, false, DamageStat(element), spell: true,
+                    skillIncreased: tree.Get(E.Damage) + (skill.Id == SkillId.PiercingShot ? tree.Get(E.ChargeDamage) : 0) + chilled * (tree.Get(E.DamageVsChilled) + sheet.Total(StatType.DamageVsChilled)) + .5f * tree.Get(E.DamageVsLowLife)) * tree.MoreDamageMultiplier;
+                if (attack) multiplier *= 1 + sheet.AttackCriticalChance / 100 * (.5f + sheet.Total(StatType.CriticalMultiplier) / 100);
+                if (skill.Bow && sheet.Total(StatType.PointBlank) > 0) multiplier *= StatSheet.PointBlankMultiplier(6);
+            }
+            float shock = ChanceUptime(tree.Get(E.Shock) + (element == DamageType.Lightning && !skill.Summon ? sheet.Total(StatType.ShockChance) : 0), rate * hits, 4 * tree.DurationMultiplier);
+            float dealt = AgainstEnemy(baseHit * multiplier, element, kit.basis.Level, sheet, tree, skill.Summon) * (1 + .25f * shock);
+            hitDps = dealt * rate * hits;
+            dotDps = 0;
+            float poison = tree.Get(E.Poison) / 100;
+            float cloud = tree.Get(E.Cloud) / 100;
+            float duration = Mathf.Max(1, Mathf.Round(6 * tree.DurationMultiplier)) / 6;
+            if (skill.Id == SkillId.SummonViper) poison += .45f;
+            dotDps += AgainstEnemy(dealt * poison * duration, DamageType.Poison, kit.basis.Level, sheet, tree, true) * rate * hits;
+            dotDps += AgainstEnemy(dealt * cloud, DamageType.Poison, kit.basis.Level, sheet, tree, true) * Mathf.Min(1, rate * hits) * 3 * duration;
+            if (!skill.Summon)
+            {
+                float builtPoison = skill.Id == SkillId.FangStrike ? .95f : skill.Id == SkillId.VenomSlash ? .7f : skill.Id == SkillId.VenomSpout ? 1 : 0;
+                float dotBase = builtPoison > 0 ? (skill.MeleeAttack ? sheet.Total(StatType.PhysicalDamage) : skill.DamageAt(1)) : baseHit;
+                float extraPoison = attack ? sheet.Total(StatType.PoisonOnHit) / 100 + (skill.Id == SkillId.VenomArrow ? .9f : 0) : 0;
+                float extraCloud = attack ? sheet.Total(StatType.VenomCloudOnHit) / 100 + (skill.Id == SkillId.VenomArrow ? .25f : 0) : 0;
+                float dotMultiplier = sheet.DamageMultiplier(false, false, false, false, StatType.PoisonDamage, damageOverTime: true, skillIncreased: tree.Get(E.Damage));
+                dotDps += AgainstEnemy(dotBase * (builtPoison + extraPoison) * dotMultiplier * duration, DamageType.Poison, kit.basis.Level, sheet, tree, false) * rate * hits;
+                dotDps += AgainstEnemy(baseHit * extraCloud * dotMultiplier, DamageType.Poison, kit.basis.Level, sheet, tree, false) * Mathf.Min(1, rate * hits) * 3 * duration;
+            }
+            if (element == DamageType.Fire)
+            {
+                float treeIgnite = ChanceUptime(tree.Get(E.Ignite), rate * hits, 3 * tree.DurationMultiplier);
+                float ownerIgnite = skill.Summon ? 0 : ChanceUptime(sheet.Total(StatType.IgniteChance) + (skill.Id == SkillId.BurningArrow ? 20 : 0), rate * hits, 3 * tree.DurationMultiplier);
+                float ownerBurn = baseHit * tree.MoreDamageMultiplier * sheet.DamageMultiplier(false, false, false, false, StatType.FireDamage, damageOverTime: true, skillIncreased: tree.Get(E.Damage)) * 5 / (3 * tree.DurationMultiplier);
+                // Ignites refresh/replace, never stack per projectile or per minion.
+                dotDps += AgainstEnemy(Mathf.Max(dealt * 5 / (3 * tree.DurationMultiplier) * treeIgnite, ownerBurn * ownerIgnite), DamageType.Fire, kit.basis.Level, sheet, tree, true);
+            }
+            return Mathf.Max(0, hitDps + dotDps);
+        }
+        public static float ChanceUptime(float chancePercent, float rate, float duration) =>
+            1 - Mathf.Pow(1 - Mathf.Clamp01(chancePercent / 100), Mathf.Max(0, rate * duration));
+        private static StatType DamageStat(DamageType type) => type == DamageType.Fire ? StatType.FireDamage : type == DamageType.Cold ? StatType.ColdDamage :
+            type == DamageType.Lightning ? StatType.LightningDamage : type == DamageType.Poison ? StatType.PoisonDamage : StatType.PhysicalDamage;
+        private static float AgainstEnemy(float damage, DamageType type, int level, StatSheet sheet, WeaponSkillBonuses tree, bool minion)
+        {
+            float total = 0, weights = 0;
+            foreach (var enemy in EnemyKinds.All)
+            {
+                if (enemy.IsBoss || enemy.SpawnWeight <= 0) continue;
+                float amount;
+                if (type == DamageType.Physical)
+                {
+                    float penetration = minion ? 0 : sheet.Total(StatType.ArmourPenetration) + tree.Get(E.ArmourPenetration);
+                    amount = damage * (1 - DefenceMath.ArmourReduction(enemy.Armour * EnemyKinds.ArmourScale(level) * Mathf.Max(0, 1 - penetration / 100), damage));
+                }
+                else
+                {
+                    float resistance = type == DamageType.Fire ? enemy.FireResistance : type == DamageType.Cold ? enemy.ColdResistance : type == DamageType.Lightning ? enemy.LightningResistance : enemy.PoisonResistance;
+                    float penetration = minion ? 0 : type == DamageType.Poison ? sheet.Total(StatType.PoisonPenetration) : sheet.Total(StatType.ElementalPenetration) +
+                        sheet.Total(type == DamageType.Fire ? StatType.FirePenetration : type == DamageType.Cold ? StatType.ColdPenetration : StatType.LightningPenetration);
+                    amount = DefenceMath.AfterResistance(damage, resistance - penetration);
+                }
+                total += amount * enemy.SpawnWeight; weights += enemy.SpawnWeight;
+            }
+            return total / Mathf.Max(.01f, weights);
+        }
+        private static void Incoming(int level, StatSheet sheet, WeaponSkillBonuses tree, bool minion, out float hit, out float dps)
+        {
+            hit = dps = 0; float weights = 0;
+            foreach (var enemy in EnemyKinds.All)
+            {
+                if (enemy.IsBoss || enemy.SpawnWeight <= 0 || enemy.AttackCooldown <= 0) continue;
+                var type = enemy.AttackDamageType;
+                float amount = enemy.Damage * EnemyKinds.HitScale(level, enemy, type);
+                if (type == DamageType.Physical) amount *= 1 - DefenceMath.ArmourReduction(minion ? Minion.ArmourFor(sheet) + tree.Get(E.MinionArmour) : sheet.Total(StatType.Armour), amount);
+                else amount = DefenceMath.AfterResistance(amount, minion ? Minion.ResistanceFor(sheet) * (1 + tree.Get(E.MinionResists) / 100) :
+                    sheet.Total(type == DamageType.Fire ? StatType.FireResistance : type == DamageType.Cold ? StatType.ColdResistance : type == DamageType.Lightning ? StatType.LightningResistance : StatType.PoisonResistance));
+                amount *= minion ? sheet.Multiplier(StatType.BoneArmour) : Mathf.Max(0, 1 + sheet.Total(StatType.DamageTaken) / 100);
+                float avoided = minion ? 1 : (1 - DefenceMath.BlockChance(sheet.Total(StatType.BlockChance))) * (1 - DefenceMath.EvadeChance(sheet.Total(StatType.Evasion)));
+                hit += amount * enemy.SpawnWeight;
+                dps += amount * avoided / enemy.AttackCooldown * enemy.SpawnWeight;
+                weights += enemy.SpawnWeight;
+            }
+            hit /= Mathf.Max(.01f, weights); dps /= Mathf.Max(.01f, weights);
+        }
+        private static readonly string[] Assumptions = {
+            "Single stationary target at 6 units for ranged attacks. No clearing, boss phases, movement, kills, potions or unique items.",
+            "Every slot rolls 20 rares. Greedy selection maximizes 30-second single-target DPS, including mana sustain. Melee scores multiply DPS by the fraction of each survival threshold met, capped at one. Equal scores keep the first roll. Requirements and hand compatibility are enforced.",
+            "20 seeded builds per available archetype and level by default; the sample count is configurable. Random connected character passives, random compatible weapon family and nonterminal weapon nodes. Travel costs count. Top fifth means arithmetic mean of the best ceil(viable count / 5) builds by 30-second DPS.",
+            "Weapon rank progresses from 1 at character level 1 to 10 at 34. This is a trained-weapon scenario, not an actual equip gate. Destinations are unavailable until this scenario has enough weapon points.",
+            "One normal enemy attacks freely. Enemy types use global spawn weights, excluding bosses, with real level scaling. This is a fixed reference population, not the actual encounter mix of each zone.",
+            "Melee requires at least 4 average unavoided hits and 6 seconds survival with expected block/evasion and attack recovery. Leech is instantaneous in the game. No life/mana gain on kill is assumed.",
+            "Minion pressure is one average enemy per targetable minion. Wolves cannot be targeted. Replacement demand includes death and expiration, batches and the main-skill 0.65s cooldown. Army setup cost is reserved from starting mana; no pre-summoning assumed.",
+            "Mana use is gross demand at full speed, before shortages. 30-second and regeneration-only sustain are reported separately. Resource limits scale damage by affordable use fraction; no free basic-attack fallback is credited.",
+            "Death Mark is used if rolled on the equipped grimoire. Refresh every 6 seconds; include its mana cost and Mark Effect scaling. No free support grant is assumed. Sceptres alone supply summon main skills.",
+            "Support skills are not ranked for DPS. Their separate mana rows use an unequipped character with no passives as a reference. Main-build optional Grave Rot/War Cry/Frost Nova rotations are not estimated. Death Mark is included in minion builds when granted.",
+            "Extra projectiles never shotgun. Rain uses impact-area/spread-area overlap expectation; Cross Slash assumes both cuts connect; Aftershock assumes one wave hits a stationary target. First-strike/cull/on-kill/Fire Orbit clear benefits are not credited.",
+            "Poison stacks, clouds are limited to one creation per second, and ignite does not stack. Ailments use expected uptime and steady-state damage; secondary scaling, short-fight ramp and proc/crit variance are approximate. Enrage, enemy skills and movement are excluded.",
+            "DPS baseline is the median of each skill's best available normalized archetype at that level. Melee divides by 1.5; minions by 1.3. A 25% band flags review, not automatic tuning. Utility destinations get a separate low-DPS label.",
+            "Blood Magic and Mind over Matter coupling require a resource time simulation, so paths containing those passives are excluded from the sampled pool. Shared stat investment is sampled; this is not an exhaustive search of every rare or passive combination."
+        };
+    }
+}

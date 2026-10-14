@@ -87,7 +87,7 @@ namespace PoeClone.Inventory
         // minions stronger. Minions only care about these minion stats, never the player's own
         // damage stats, so a summoner build has to commit to them: without them minions are
         // flimsy helpers, not a wall to hide behind.
-        GrantDeathMark,             // a grimoire's attack: marks an enemy for the minions
+        GrantDeathMark,             // optional grimoire support: marks an enemy for the minions
         GrantSkeletonMages,
         GrantSpiritWolves,
         GrantBoneGolem,
@@ -223,8 +223,8 @@ namespace PoeClone.Inventory
             StatType.GrantWhirlwind, StatType.GrantFissure, StatType.GrantAftershock, StatType.GrantCrossSlash, StatType.GrantVenomSlash
         };
 
-        /// <summary>The attack spells a grimoire carries (one always rolls on every grimoire).</summary>
-        public static readonly StatType[] GrimoireMain = { StatType.GrantRaiseSkeletons, StatType.GrantSkeletonMages, StatType.GrantSpiritWolves, StatType.GrantBoneGolem, StatType.GrantSummonViper };
+        /// <summary>Summon main skills, exclusive to sceptres. Grimoires supply support.</summary>
+        public static readonly StatType[] SceptreMain = { StatType.GrantRaiseSkeletons, StatType.GrantSkeletonMages, StatType.GrantSpiritWolves, StatType.GrantBoneGolem, StatType.GrantSummonViper };
 
         /// <summary>The summon skills (bar skills that raise minions).</summary>
         public static bool IsSummon(StatType stat)
@@ -332,7 +332,8 @@ namespace PoeClone.Inventory
     /// <summary>The character's own stats before gear, plus the level/XP shown on the sheet.</summary>
     public sealed class BaseStats
     {
-        private readonly float[] values = new float[Enum.GetValues(typeof(StatType)).Length];
+        internal static readonly int StatCount = Enum.GetValues(typeof(StatType)).Length;
+        private readonly float[] values = new float[StatCount];
 
         public int Level = 1;
         public int Experience;
@@ -464,7 +465,7 @@ namespace PoeClone.Inventory
 
         private StatSheet(BaseStats baseStats, EquipmentSet equipment, IEnumerable<StatModifier> extra)
         {
-            int count = Enum.GetValues(typeof(StatType)).Length;
+            int count = BaseStats.StatCount;
             baseValues = new float[count];
             gear = new float[count];
             derived = new float[count];

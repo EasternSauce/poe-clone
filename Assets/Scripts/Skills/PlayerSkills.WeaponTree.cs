@@ -13,9 +13,7 @@ namespace PoeClone.Skills
             {
                 if (inventory == null) return null;
                 ItemData hand = inventory.Equipment.GetActive(EquipSlot.MainHand);
-                if (hand?.MainSkillGrant != null) return hand;
-                ItemData off = inventory.Equipment.GetActive(EquipSlot.OffHand);
-                return off?.Type == ItemType.Grimoire && off.MainSkillGrant.HasValue ? off : null;
+                return hand?.MainSkillGrant != null ? hand : null;
             }
         }
         public SkillId? WeaponSkill => MainWeapon?.MainSkillGrant is StatType grant ? SkillBook.ForGrant(grant)?.Id : null;

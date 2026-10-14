@@ -115,7 +115,8 @@ namespace PoeClone.Inventory
     /// <summary>A snapshot belongs to the skill that produced a hit, projectile or minion.</summary>
     public sealed class WeaponSkillBonuses
     {
-        private readonly float[] values = new float[Enum.GetValues(typeof(WeaponSkillEffect)).Length];
+        private static readonly int EffectCount = Enum.GetValues(typeof(WeaponSkillEffect)).Length;
+        private readonly float[] values = new float[EffectCount];
         private float moreDamage = 1f;
         public float Get(WeaponSkillEffect effect) => values[(int)effect];
         public float MoreDamageMultiplier => moreDamage;
@@ -160,8 +161,8 @@ namespace PoeClone.Inventory
 
         public static StatType[] Pool(ItemType type, WeaponType weapon)
         {
-            if (type == ItemType.Grimoire || (type == ItemType.Weapon && weapon == WeaponType.Sceptre))
-                return new[] { StatType.GrantRaiseSkeletons, StatType.GrantSkeletonMages, StatType.GrantSpiritWolves, StatType.GrantBoneGolem, StatType.GrantSummonViper };
+            if (type == ItemType.Weapon && weapon == WeaponType.Sceptre)
+                return SkillGrants.SceptreMain;
             if (type != ItemType.Weapon || weapon == WeaponType.Unarmed) return Array.Empty<StatType>();
             switch (weapon)
             {
@@ -194,7 +195,15 @@ namespace PoeClone.Inventory
                     result.Add(new StatModifier(StatType.Damage, Mathf.Min(30f, Mathf.Abs(m.Value) * 5f), m.Tier));
                     continue;
                 }
-                if (IsWeaponSkill(m.Stat) || (m.Stat == StatType.GrantDeathMark && pool.Length > 0))
+                if (type == ItemType.Grimoire && SkillGrants.IsSummon(m.Stat))
+                {
+                    // Old summon tomes become support tomes without losing their other stats.
+                    if (!result.Exists(mod => mod.Stat == StatType.GrantDeathMark))
+                        result.Add(new StatModifier(StatType.GrantDeathMark, 1));
+                    continue;
+                }
+                if (m.Stat == StatType.GrantDeathMark && result.Exists(mod => mod.Stat == StatType.GrantDeathMark)) continue;
+                if (IsWeaponSkill(m.Stat))
                 {
                     legacyLevel = Mathf.Max(legacyLevel, Mathf.RoundToInt(m.Value));
                     if (Array.IndexOf(pool, m.Stat) >= 0 && (!main.HasValue || m.Value > main.Value.Value)) main = m;

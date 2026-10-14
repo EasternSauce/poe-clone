@@ -95,3 +95,6 @@ tools/sound-library/choices.json
 
 # Class gauntlet results (local balance data)
 /GauntletResults/
+
+# Offline balance survey data and spreadsheet exports
+/BalanceResults/

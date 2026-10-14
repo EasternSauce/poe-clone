@@ -225,7 +225,7 @@ namespace PoeClone.Skills
             },
             new SkillDefinition
             {
-                Id = SkillId.RaiseSkeletons, Name = "Raise Skeletons", Short = "SKL", Grant = StatType.GrantRaiseSkeletons, RollsOn = "sceptres, grimoires, helmets",
+                Id = SkillId.RaiseSkeletons, Name = "Raise Skeletons", Short = "SKL", Grant = StatType.GrantRaiseSkeletons, RollsOn = "sceptres",
                 Spell = true, ManaCosts = new[] { 21f }, Cooldown = 4f, Color = new Color(0.55f, 1f, 0.6f),
                 Description = "Raise two skeleton warriors that stay until destroyed, up to 2 at once. Weapon tree nodes raise the limit. Only one kind of lasting minion can serve you: raising skeleton warriors dismisses your skeleton mages."
             },
@@ -233,23 +233,23 @@ namespace PoeClone.Skills
             {
                 Id = SkillId.DeathMark, Name = "Death Mark", Short = "DM", Grant = StatType.GrantDeathMark, RollsOn = "grimoires",
                 Spell = true, BaseDamage = 3f, ManaCosts = new[] { 3.1f }, Cooldown = 0.8f, Color = new Color(0.55f, 1f, 0.45f),
-                Description = "A grimoire's attack: a bolt of grave-light that marks the enemy it strikes. Your minions rush the marked enemy and deal 30% more damage to it (more with Death Mark Effect). The bolt itself barely hurts."
+                Description = "Support ability from grimoires: mark an enemy for 6 seconds. Your minions rush it and deal 30% more damage to it (more with Death Mark Effect). The bolt itself barely hurts."
             },
             new SkillDefinition
             {
-                Id = SkillId.SkeletonMages, Name = "Skeleton Mages", Short = "SKM", Grant = StatType.GrantSkeletonMages, RollsOn = "sceptres, grimoires, gloves",
+                Id = SkillId.SkeletonMages, Name = "Skeleton Mages", Short = "SKM", Grant = StatType.GrantSkeletonMages, RollsOn = "sceptres",
                 Spell = true, ManaCosts = new[] { 27f }, Cooldown = 5f, Color = new Color(0.5f, 0.85f, 1f),
                 Description = "Raise a skeleton mage that hangs back and hurls bolts and stays until destroyed, up to 1 at once. Weapon tree nodes raise the limit. Only one kind of lasting minion can serve you: raising skeleton mages dismisses your skeleton warriors."
             },
             new SkillDefinition
             {
-                Id = SkillId.SpiritWolves, Name = "Spirit Wolves", Short = "WLF", Grant = StatType.GrantSpiritWolves, RollsOn = "sceptres, grimoires, boots, amulets",
+                Id = SkillId.SpiritWolves, Name = "Spirit Wolves", Short = "WLF", Grant = StatType.GrantSpiritWolves, RollsOn = "sceptres",
                 Spell = true, ManaCosts = new[] { 36f }, Cooldown = 18f, Color = new Color(0.6f, 0.9f, 1f),
                 Description = "Call a pack of 2 ghostly wolves that hunt briefly. Wolves cannot be targeted."
             },
             new SkillDefinition
             {
-                Id = SkillId.BoneGolem, Name = "Bone Golem", Short = "GLM", Grant = StatType.GrantBoneGolem, RollsOn = "sceptres, grimoires, body armour, belts",
+                Id = SkillId.BoneGolem, Name = "Bone Golem", Short = "GLM", Grant = StatType.GrantBoneGolem, RollsOn = "sceptres",
                 Spell = true, ManaCosts = new[] { 45f }, Cooldown = 30f, Color = new Color(0.92f, 0.88f, 0.7f),
                 Description = "Raise a hulking golem of bone that taunts nearby enemies. One golem before weapon tree improvements."
             },
@@ -286,7 +286,7 @@ namespace PoeClone.Skills
             new SkillDefinition { Id = SkillId.FangStrike, Name = "Fang Strike", Short = "FNG", Grant = StatType.GrantFangStrike, RollsOn = "daggers", ManaCosts = LightMeleeCosts, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Melee skill (the weapon's attack): strike the aimed enemy for 90% weapon damage and inflict a potent poison that deals 95% weapon damage over 3 seconds. Poisons stack. Daggers only." },
             new SkillDefinition { Id = SkillId.VenomArrow, Name = "Venom Arrow", Short = "VNM", Grant = StatType.GrantVenomArrow, RollsOn = "bows", ManaCosts = new[] { 4.5f }, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Bow skill (the weapon's attack): attacks inflict a stronger poison and leave a brief venom cloud." },
             new SkillDefinition { Id = SkillId.VenomSpout, Name = "Venom Spout", Short = "SPT", Grant = StatType.GrantVenomSpout, RollsOn = "staves", Spell = true, BaseDamage = 7f, ManaCosts = new[] { 7f }, Cooldown = 1.3f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Erupt poison beneath your target, damaging and poisoning enemies in the area." },
-            new SkillDefinition { Id = SkillId.SummonViper, Name = "Summon Viper", Short = "VIP", Grant = StatType.GrantSummonViper, RollsOn = "grimoires, sceptres", Spell = true, ManaCosts = new[] { 30f }, Cooldown = 12f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Call a viper spirit to fight at your side, up to 1 at once. Weapon tree nodes raise the limit." },
+            new SkillDefinition { Id = SkillId.SummonViper, Name = "Summon Viper", Short = "VIP", Grant = StatType.GrantSummonViper, RollsOn = "sceptres", Spell = true, ManaCosts = new[] { 30f }, Cooldown = 12f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Call a viper spirit to fight at your side, up to 1 at once. Weapon tree nodes raise the limit." },
             new SkillDefinition { Id = SkillId.Pulverize, Name = "Pulverize", Short = "PVL", Grant = StatType.GrantPulverize, RollsOn = "maces and mauls", ManaCosts = HeavyMeleeCosts, Color = new Color(0.95f, 0.65f, 0.28f), Description = "Melee skill (the weapon's attack): plant your feet and bring a mace down in a crushing slam after a heavy windup, dealing 175% weapon damage in a broad area. 30% slower. Maces and mauls only." },
             new SkillDefinition { Id = SkillId.ReapingArc, Name = "Reaping Arc", Short = "RPA", Grant = StatType.GrantReapingArc, RollsOn = "axes", ManaCosts = MeleeCosts, Color = new Color(0.9f, 0.48f, 0.3f), Description = "Melee skill (the weapon's attack): commit to a broad, forward axe sweep. After a deliberate windup, hit enemies in a wide arc for 140% weapon damage. 20% slower. Axes only." },
             new SkillDefinition { Id = SkillId.Whirlwind, Name = "Whirlwind", Short = "WHL", Grant = StatType.GrantWhirlwind, RollsOn = "swords and axes", ManaCosts = new[] { 2.5f }, Color = new Color(0.8f, 0.85f, 0.95f), Description = "Melee skill (the weapon's attack): hold the attack to spin with your weapon out, hitting every enemy in reach for 32% weapon damage 4 times a second with a sword (slower weapons hit less often, faster ones more), faster with attack speed. While spinning you pass through enemies and are carried towards the cursor, faster the further away it is, up to sprinting speed. Costs mana every half second until you let go or run dry. Swords and axes only." },

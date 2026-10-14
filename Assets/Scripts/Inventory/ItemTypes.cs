@@ -19,7 +19,7 @@ namespace PoeClone.Inventory
         Quiver,  // off hand, worn with a bow
         Potion,  // lies on the ground; picked up into the potion slots, never the bag
         Gold,    // lies on the ground; picked up into the purse
-        Grimoire, // off hand: a necromancer's tome, whose Death Mark is the attack (see SkillGrants.GrimoireMain)
+        Grimoire, // off hand: minion stats and optional support abilities such as Death Mark
         Consumable
     }
 
@@ -99,7 +99,7 @@ namespace PoeClone.Inventory
         {
             get
             {
-                if (Type != ItemType.Grimoire && (Type != ItemType.Weapon || WeaponType == WeaponType.Unarmed)) return null;
+                if (Type != ItemType.Weapon || WeaponType == WeaponType.Unarmed) return null;
                 foreach (StatModifier m in Modifiers) if (WeaponSkillRules.IsWeaponSkill(m.Stat)) return m.Stat;
                 return null;
             }

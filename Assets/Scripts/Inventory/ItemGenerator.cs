@@ -293,7 +293,7 @@ namespace PoeClone.Inventory
             Gear("shield_int", Leaning.Int, "arcane_focus", "Arcane Focus", ItemType.Shield, 2, 2, 8, "buckler", Gilded, Mod(StatType.MaxMana, 34), Mod(StatType.BlockChance, 14)),
             Gear("shield_int", Leaning.Int, "archon_focus", "Archon Focus", ItemType.Shield, 2, 2, 12, "buckler", Royal, Mod(StatType.MaxMana, 48), Mod(StatType.BlockChance, 18)),
 
-            // ---- Grimoires: the summoner's off hand. Death Mark (its attack) always rolls on one.
+            // ---- Grimoires: the summoner's support off hand; Death Mark is an optional roll.
             Gear("grimoire", Leaning.Int, "grimoire", "Bone Grimoire", ItemType.Grimoire, 2, 2, 1, null, Plain, Mod(StatType.MinionLife, 10)),
             Gear("grimoire", Leaning.Int, "crypt_grimoire", "Crypt Grimoire", ItemType.Grimoire, 2, 2, 4, "grimoire", Verdant, Mod(StatType.MinionLife, 15), Mod(StatType.Intelligence, 8)),
             Gear("grimoire", Leaning.Int, "lich_codex", "Lich Codex", ItemType.Grimoire, 2, 2, 8, "grimoire", Shadow, Mod(StatType.MinionLife, 20), Mod(StatType.Intelligence, 12), Mod(StatType.MinionDamage, 6)),
@@ -742,7 +742,7 @@ namespace PoeClone.Inventory
                 }
             }
 
-            // A staff's or grimoire's attack spell.
+            // A weapon's main skill.
             StatType[] mainSpells = MainSpells(b);
             if (mainSpells != null && Array.IndexOf(mainSpells, stat) >= 0)
                 return Mathf.Clamp(Mathf.Round(value), 1f, SkillGrants.MaxDropLevel);
@@ -829,8 +829,8 @@ namespace PoeClone.Inventory
         }
 
         /// <summary>
-        /// A random item of the given base id (null if there is no such base). For a staff, grimoire
-        /// or melee weapon, <paramref name="mainSkill"/> picks the skill it always carries (else it is random).
+        /// A random item of the given base id (null if there is no such base). For a weapon,
+        /// <paramref name="mainSkill"/> picks the skill it always carries (else it is random).
         /// </summary>
         public static ItemData Generate(System.Random rng, string baseId, int itemLevel, ItemRarity rarity, StatType? mainSkill = null)
         {
@@ -838,7 +838,7 @@ namespace PoeClone.Inventory
             return b != null ? Generate(rng, b, itemLevel, rarity, mainSkill) : null;
         }
 
-        /// <summary>Whether an item of this kind always carries a skill (every staff, grimoire and melee weapon does).</summary>
+        /// <summary>Every weapon carries a main skill; support equipment does not.</summary>
         public static bool AlwaysHasMainSkill(ItemData item)
         {
             return item != null && WeaponSkillRules.Pool(item.Type, item.WeaponType).Length > 0;
@@ -867,7 +867,29 @@ namespace PoeClone.Inventory
             return item;
         }
 
-        private static ItemData Generate(System.Random rng, ItemBase b, int itemLevel, ItemRarity rarity, StatType? mainSkill = null)
+        /// <summary>Snapshot the eligible rare affixes for repeated offline rolls. Recreate the
+        /// roller after editing the catalogue. Each call still rolls a fresh, ordinary rare.</summary>
+        public static Func<System.Random, ItemData> PrepareRareRoller(string baseId, int itemLevel, StatType? mainSkill = null)
+        {
+            ItemBase b = Find(baseId);
+            if (b == null) throw new ArgumentException("Unknown item base " + baseId, nameof(baseId));
+            EligibleAffixes(b, Math.Max(1, Math.Min(MaxItemLevel, itemLevel)), out var candidates, out var weights);
+            return rng => Generate(rng, b, itemLevel, ItemRarity.Rare, mainSkill, candidates, weights);
+        }
+
+        private static void EligibleAffixes(ItemBase b, int level, out List<Affix> candidates, out List<float> weights)
+        {
+            candidates = new List<Affix>(); weights = new List<float>();
+            foreach (Affix a in Affixes)
+            {
+                if (a == null || WeaponSkillRules.IsLevelBonus(a.Stat) || WeaponSkillRules.IsSkillMechanic(a.Stat) || WeaponSkillRules.IsWeaponSkill(a.Stat) || !a.Enabled || a.Weight <= 0 || float.IsNaN(a.Weight) || float.IsInfinity(a.Weight) ||
+                    !a.Allows(b.Type, b.WeaponType) || !a.HasRollableTier(level)) continue;
+                candidates.Add(a); weights.Add(a.Weight * LeaningFactor(b.Leaning, a.Stat));
+            }
+        }
+
+        private static ItemData Generate(System.Random rng, ItemBase b, int itemLevel, ItemRarity rarity, StatType? mainSkill = null,
+            List<Affix> preparedCandidates = null, List<float> preparedWeights = null)
         {
             int level = Math.Max(1, Math.Min(MaxItemLevel, itemLevel));
 
@@ -882,23 +904,17 @@ namespace PoeClone.Inventory
             }
 
             // Each stat at most once per item, and only stats that make sense on this kind of gear.
-            var candidates = new List<Affix>();
-            var candidateWeights = new List<float>();
-            foreach (Affix a in Affixes)
-            {
-                if (a == null || WeaponSkillRules.IsLevelBonus(a.Stat) || WeaponSkillRules.IsSkillMechanic(a.Stat) || WeaponSkillRules.IsWeaponSkill(a.Stat) || !a.Enabled || a.Weight <= 0 || float.IsNaN(a.Weight) || float.IsInfinity(a.Weight) ||
-                    !a.Allows(b.Type, b.WeaponType) || !a.HasRollableTier(level))
-                    continue;
-                candidates.Add(a);
-                candidateWeights.Add(a.Weight * LeaningFactor(b.Leaning, a.Stat));
-            }
+            List<Affix> candidates;
+            List<float> candidateWeights;
+            if (preparedCandidates == null) EligibleAffixes(b, level, out candidates, out candidateWeights);
+            else { candidates = new List<Affix>(preparedCandidates); candidateWeights = new List<float>(preparedWeights); }
 
             var mods = new List<StatModifier>();
             var rolled = new List<StatType>();
             var baseStats = new HashSet<StatType>();
             var selected = new List<Affix>();
 
-            // Every staff and grimoire carries a spell: its attack. It comes on top of the rarity's stats.
+            // A weapon's main skill comes on top of the rarity's random stats.
             StatType[] mains = MainSpells(b);
             if (mains != null)
             {
@@ -1089,19 +1105,17 @@ namespace PoeClone.Inventory
             return b.Name;
         }
 
+        private static Dictionary<string, ItemBase> basesById;
         private static ItemBase Find(string id)
         {
-            foreach (ItemBase b in All)
+            if (id == null) return null;
+            if (basesById == null)
             {
-                if (b.Id == id)
-                    return b;
+                basesById = new Dictionary<string, ItemBase>();
+                foreach (ItemBase b in All) basesById[b.Id] = b;
+                foreach (ItemBase b in Pickups) if (!basesById.ContainsKey(b.Id)) basesById[b.Id] = b;
             }
-            foreach (ItemBase b in Pickups)
-            {
-                if (b.Id == id)
-                    return b;
-            }
-            return null;
+            return basesById.TryGetValue(id, out ItemBase found) ? found : null;
         }
 
         public const string HealthPotionId = "health_potion";
