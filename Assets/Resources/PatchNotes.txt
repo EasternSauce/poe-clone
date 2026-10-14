@@ -1,3 +1,6 @@
+version: 2026-10-14-readable-patch-notes
+- What's New has a larger, brighter version heading and more space between the separator and release notes.
+
 version: 2026-10-14-partner-frame-inspect
 - Click or tap your co-op partner's name, life or mana frame to inspect their details. Removed the separate View Partner settings button.
 

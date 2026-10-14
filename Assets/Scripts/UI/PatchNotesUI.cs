@@ -77,7 +77,6 @@ namespace PoeClone.UI
             IsShowing = true;
             Canvas.ForceUpdateCanvases();
             Layout();
-            content.sizeDelta = new Vector2(0f, body.preferredHeight + 12f);
         }
 
         private void OnDestroy()
@@ -131,7 +130,8 @@ namespace PoeClone.UI
 
             title = UiKit.Heading(UiKit.NewText("Title", pr, "WHAT'S NEW", 30, UiKit.Gold, TextAnchor.UpperCenter));
             UiKit.TopLeft(title.rectTransform, new Vector2(0f, -16f), new Vector2(Width, 36f));
-            sub = UiKit.NewText("Version", pr, version, 16, UiKit.DimText, TextAnchor.UpperCenter);
+            sub = UiKit.NewText("Version", pr, version, 24, UiKit.TextColor, TextAnchor.UpperCenter);
+            sub.font = UiKit.BoldFont;
             UiKit.TopLeft(sub.rectTransform, new Vector2(0f, -52f), new Vector2(Width, 22f));
             divider = UiKit.DividerLine(pr, new Vector2(0f, Height * 0.5f - 80f), Width - 120f).rectTransform;
 
@@ -184,15 +184,20 @@ namespace PoeClone.UI
             panelRect.GetComponent<Image>().color = UiKit.ReadablePanelColor;
             panelRect.sizeDelta = new Vector2(width, height);
             title.fontSize = touch ? TouchMode.ReadingFontSize + 4 : 30;
-            sub.fontSize = touch ? (TouchMode.Portrait ? 28 : 22) : 16;
+            sub.fontSize = touch ? (TouchMode.Portrait ? 36 : 30) : 24;
             body.fontSize = touch ? TouchMode.ReadingFontSize : 18;
             UiKit.TopLeft(title.rectTransform, new Vector2(0f, -16f), new Vector2(width, touch ? 60f : 36f));
-            UiKit.TopLeft(sub.rectTransform, new Vector2(16f, touch ? -80f : -52f), new Vector2(width - 32f, touch ? 60f : 22f));
+            float versionTop = touch ? 80f : 60f;
+            UiKit.TopLeft(sub.rectTransform, new Vector2(24f, -versionTop), new Vector2(width - 48f, 60f));
             sub.horizontalOverflow = HorizontalWrapMode.Wrap;
-            float top = touch ? 150f : 86f;
+            Canvas.ForceUpdateCanvases();
+            float versionHeight = sub.preferredHeight;
+            sub.rectTransform.sizeDelta = new Vector2(width - 48f, versionHeight);
+            float dividerTop = versionTop + versionHeight + (touch ? 20f : 16f);
+            float top = dividerTop + (touch ? 32f : 24f);
             float bottom = touch ? 148f : 76f;
             divider.anchorMin = divider.anchorMax = divider.pivot = new Vector2(0.5f,1f);
-            divider.anchoredPosition = new Vector2(0f,-top+8f);
+            divider.anchoredPosition = new Vector2(0f, -dividerTop);
             divider.sizeDelta = new Vector2(width-120f,divider.sizeDelta.y);
             UiKit.TopLeft(viewport, new Vector2(30f, -top), new Vector2(width - 60f, Mathf.Max(100f, height - top - bottom)));
             closeRect.sizeDelta = touch ? new Vector2(280f, 108f) : new Vector2(180f, 44f);
