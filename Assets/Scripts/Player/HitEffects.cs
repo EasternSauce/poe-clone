@@ -53,7 +53,7 @@ namespace PoeClone.Player
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
             DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null,
             bool throughExposedHead = false, bool melee = false, float projectileDistance = -1f, int venomArrowLevel = 0,
-            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f, WeaponSkillBonuses tree = null)
+            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f, WeaponSkillBonuses tree = null, float skillIncreased = 0f)
         {
             // Utility effects must never become hits through added mana damage or on-hit stats.
             if (enemy == null || enemy.IsDead || damage <= 0f)
@@ -65,10 +65,10 @@ namespace PoeClone.Player
             StatSheet sheet = stats != null && inventory != null && !stats.IsDead ? inventory.Stats : null;
             EnemyController ai = enemy.GetComponent<EnemyController>();
             bool wasChilled = ai != null && ai.IsChilled;
+            float skillMore = !secondary && tree != null ? tree.MoreDamageMultiplier *
+                (enemy.CurrentHealth >= enemy.MaxHealth * 0.999f ? 1f + tree.Get(WeaponSkillEffect.FirstStrike) / 100f : 1f) : 1f;
             if (!secondary && tree != null)
             {
-                damage *= tree.DamageMultiplier;
-                if (wasChilled) damage *= Mathf.Max(0f, 1f + tree.Get(WeaponSkillEffect.DamageVsChilled) / 100f);
                 type = WeaponSkillHit.Element(tree, type);
                 color = CombatText.ColorFor(type);
             }
@@ -86,11 +86,14 @@ namespace PoeClone.Player
             if (sheet != null && !secondary)
                 damage += stats.MaxMana * Mathf.Max(0f, sheet.Total(StatType.ManaAsDamage)) / 100f * manaDamageMultiplier;
 
+            damage *= skillMore;
             bool crit = false;
             float baseDamage = damage;
             if (sheet != null)
             {
-                damage *= Increase(sheet, stats, attack, type, wasChilled, spell: !secondary);
+                damage *= Increase(sheet, stats, attack, type, wasChilled, spell: !secondary, skillIncreased: !secondary && tree != null ?
+                    skillIncreased + tree.Get(WeaponSkillEffect.Damage) + (wasChilled ? tree.Get(WeaponSkillEffect.DamageVsChilled) : 0f) +
+                    (enemy.CurrentHealth < enemy.MaxHealth * 0.5f ? tree.Get(WeaponSkillEffect.DamageVsLowLife) : 0f) : 0f);
                 damage *= 1f + stats.RampageStacks * Mathf.Max(0f, sheet.Total(StatType.Rampage)) / 100f;
                 if (projectileDistance >= 0f && sheet.Total(StatType.PointBlank) > 0f)
                     damage *= StatSheet.PointBlankMultiplier(projectileDistance);
@@ -108,7 +111,7 @@ namespace PoeClone.Player
             if (sheet != null && type == DamageType.Fire)
             {
                 ailmentBaseDamage *= sheet.DamageMultiplier(false, false,
-                    stats.CurrentHealth < stats.MaxHealth * 0.5f, wasChilled, StatType.FireDamage, damageOverTime: true);
+                    stats.CurrentHealth < stats.MaxHealth * 0.5f, wasChilled, StatType.FireDamage, damageOverTime: true, skillIncreased: tree?.Get(WeaponSkillEffect.Damage) ?? 0f);
                 if (enemy.IsShocked) ailmentBaseDamage *= ShockedMore;
                 ailmentBaseDamage *= Skills.Curse.TakenMultiplier(enemy);
             }
@@ -116,7 +119,7 @@ namespace PoeClone.Player
             Vector3 at = enemy.transform.position;
             float scale = enemy.transform.localScale.y;
             float enemyMaxLife = enemy.MaxHealth;
-            float armourPenetration = sheet != null ? sheet.Total(StatType.ArmourPenetration) : 0f;
+            float armourPenetration = (sheet != null ? sheet.Total(StatType.ArmourPenetration) : 0f) + (!secondary && tree != null ? tree.Get(WeaponSkillEffect.ArmourPenetration) : 0f);
             float elementalPenetration = sheet != null ? sheet.Total(StatType.ElementalPenetration) : 0f;
             if (sheet != null)
             {
@@ -208,7 +211,7 @@ namespace PoeClone.Player
         }
 
         // Everything that adds up as "increased damage" for this hit, as one multiplier.
-        private static float Increase(StatSheet sheet, PlayerStats stats, bool attack, DamageType type, bool chilled, bool spell)
+        private static float Increase(StatSheet sheet, PlayerStats stats, bool attack, DamageType type, bool chilled, bool spell, float skillIncreased = 0f)
         {
             StatType element = StatType.PhysicalDamage;
             switch (type)
@@ -219,7 +222,7 @@ namespace PoeClone.Player
                 case DamageType.Poison: element = StatType.PoisonDamage; break;
             }
             return sheet.DamageMultiplier(attack, attack && sheet.Weapon == WeaponType.Bow,
-                stats.MaxHealth > 0f && stats.CurrentHealth < stats.MaxHealth * 0.5f, chilled, element, spell: spell);
+                stats.MaxHealth > 0f && stats.CurrentHealth < stats.MaxHealth * 0.5f, chilled, element, spell: spell, skillIncreased: skillIncreased);
         }
 
         // An item that turns attacks into an element: the first one worn wins.

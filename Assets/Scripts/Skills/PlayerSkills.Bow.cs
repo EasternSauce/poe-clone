@@ -17,7 +17,7 @@ namespace PoeClone.Skills
         // Degrees between arrows: Split Shot's wide fan, Piercing Shot's tight one.
         private const float SplitSpread = 13f;
         private const float PierceSpread = 5f;
-        private const float PierceRangeMore = 1.3f;
+        private const float PierceRangeMore = 1.8f;
         private const float RainRadius = 2.4f;     // where the arrows land round the aimed spot
         private const float RainHitRadius = 1.1f;  // what each one hits where it lands
         private const float BurnRadius = 1.5f;
@@ -50,15 +50,8 @@ namespace PoeClone.Skills
             }
         }
 
-        private static int SplitExtra(int level)
-        {
-            return 2;
-        }
-
-        private static int RainCount(int level, int arrows)
-        {
-            return 6 + 2 * Mathf.Max(0, arrows - 1);
-        }
+        private const int SplitExtra = 2;
+        private static int RainCount(int arrows) => 6 + Mathf.Max(0, arrows - 1);
 
         // When the k-th of n rain arrows lands, after the shot.
         private static float RainDelay(int k, int n)
@@ -71,14 +64,14 @@ namespace PoeClone.Skills
         /// shot's (weapon and Strength); arrows: how many the plain shot would loose (1 plus
         /// Additional Arrows and any extra-arrow roll); target: the aimed spot (Rain of Arrows).
         /// </summary>
-        public void ReleaseBow(SkillId id, int level, float damage, float range, int arrows, Vector3 target)
+        public void ReleaseBow(SkillId id, int level, float damage, float range, int arrows, Vector3 target, float chargeFraction = 0f)
         {
             PlaySkillSound(id, transform.position);
             SkillDefinition skill = SkillBook.Get(id);
             level = Mathf.Max(1, level);
             var tree = BonusesFor(id);
-            float area = DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect)) * tree.AreaMultiplier;
-            range *= tree.RangeMultiplier;
+            float area = SkillArea(id);
+            range *= id == SkillId.RainOfArrows ? tree.RangeMultiplier : SkillProjectileRange(id);
             Vector3 forward = transform.forward;
             if (id != SkillId.RainOfArrows)
             {
@@ -93,7 +86,7 @@ namespace PoeClone.Skills
             {
                 case SkillId.SplitShot:
                 {
-                    int count = tree.SingleProjectile ? 1 : arrows + SplitExtra(level);
+                    int count = tree.SingleProjectile ? 1 : arrows + SplitExtra;
                     float each = damage * skill.WeaponMultiplierAt(level);
                     var volley = PlayerArrow.NewVolley();
                     foreach (Vector3 direction in HitEffects.Spread(forward, count, SplitSpread))
@@ -108,7 +101,7 @@ namespace PoeClone.Skills
                     float each = damage * skill.WeaponMultiplierAt(level);
                     var volley = PlayerArrow.NewVolley();
                     foreach (Vector3 direction in HitEffects.Spread(forward, arrows, PierceSpread))
-                        PlayerArrow.LaunchArrow(transform, far, each, direction, volley).Piercing(skill.Color).WithSkill(tree);
+                        PlayerArrow.LaunchArrow(transform, far, each, direction, volley).Piercing(skill.Color).WithSkill(tree, tree.Get(WeaponSkillEffect.ChargeDamage) * chargeFraction);
                     Record(skill, level, far, arrows);
                     break;
                 }
@@ -136,16 +129,17 @@ namespace PoeClone.Skills
 
                 case SkillId.RainOfArrows:
                 {
-                    int count = RainCount(level, arrows) + Mathf.RoundToInt(tree.Get(WeaponSkillEffect.ExtraWaves));
-                    float spread = RainRadius * area;
+                    int count = RainCount(arrows);
+                    int salvos = 1 + Mathf.RoundToInt(tree.Get(WeaponSkillEffect.RainSalvos));
+                    float spread = RainRadius * Mathf.Max(0.25f, 1f + tree.Get(WeaponSkillEffect.RainSpread) / 100f);
                     float hitRadius = RainHitRadius * area;
                     float each = damage * skill.WeaponMultiplierAt(level);
-                    var points = new Vector3[count];
-                    for (int k = 0; k < count; k++)
+                    var points = new Vector3[count * salvos];
+                    for (int k = 0; k < points.Length; k++)
                     {
-                        Vector2 offset = k == 0 ? Vector2.zero : Random.insideUnitCircle * spread;
+                        Vector2 offset = k % count == 0 ? Vector2.zero : Random.insideUnitCircle * spread;
                         points[k] = target + new Vector3(offset.x, 0f, offset.y);
-                        SkillEffects.FallingArrow(points[k], RainDelay(k, count), hitRadius, skill.Color,
+                        SkillEffects.FallingArrow(points[k], RainDelay(k % count, count) + k / count * 0.65f, hitRadius, skill.Color,
                             at => RainHit(at, hitRadius, each, shotOrigin, tree));
                     }
                     // A puff at the feet as the volley goes up, so the shot reads before the rain lands.
@@ -200,7 +194,7 @@ namespace PoeClone.Skills
                     if (cast.Points != null)
                     {
                         for (int k = 0; k < cast.Points.Length; k++)
-                            SkillEffects.FallingArrow(cast.Points[k], RainDelay(k, cast.Points.Length), cast.Size, skill.Color);
+                            SkillEffects.FallingArrow(cast.Points[k], RainDelay(k % count, count) + k / count * 0.65f, cast.Size, skill.Color);
                     }
                     break;
             }

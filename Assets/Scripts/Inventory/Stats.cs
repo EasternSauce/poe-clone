@@ -412,9 +412,9 @@ namespace PoeClone.Inventory
         public float CastRateMultiplier => Math.Max(0.5f, 1f + Total(StatType.CastSpeed) / 100f);
 
         public float DamageMultiplier(bool attack, bool bow, bool lowLife, bool chilled,
-            StatType element, bool damageOverTime = false, bool spell = true)
+            StatType element, bool damageOverTime = false, bool spell = true, float skillIncreased = 0f)
         {
-            float increased = Total(StatType.Damage);
+            float increased = Total(StatType.Damage) + skillIncreased;
             float more = Multiplier(StatType.MoreDamage);
             if (attack)
             {

@@ -124,7 +124,7 @@ namespace PoeClone.Skills
             }
         }
 
-        private float WhirlHitsPerSecond() => WhirlSwordHitsPerSecond * AttackRateMultiplier * BonusesFor(SkillId.Whirlwind).SpeedMultiplier *
+        private float WhirlHitsPerSecond() => WhirlSwordHitsPerSecond * SkillAttackRate(SkillId.Whirlwind) *
             CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()) / CharacterAttackAnimator.BaseAttackSpeed(WeaponType.Sword);
 
         // Newly met enemies included: one that spawns mid-spin can't block it either.
@@ -153,9 +153,9 @@ namespace PoeClone.Skills
 
         private float WhirlReach()
         {
-            float melee = 1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f;
+            float melee = 1f + Mathf.Max(0f, Stat(StatType.MeleeRange) + WeaponBonuses.Get(WeaponSkillEffect.Range)) / 100f;
             return Mathf.Max(2.4f, (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 0.4f) * melee) *
-                   DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect)) * WhirlAreaScale * WeaponBonuses.AreaMultiplier * WeaponBonuses.RangeMultiplier;
+                   SkillArea(SkillId.Whirlwind) * WhirlAreaScale;
         }
 
         private void WhirlHit(SkillDefinition skill, int level, float reach)

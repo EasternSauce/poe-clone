@@ -151,7 +151,10 @@ namespace PoeClone.Skills
             switch (cast.Skill)
             {
                 case SkillId.FireBolt:
-                    foreach (Vector3 direction in HitEffects.Spread(facing, Mathf.Max(1, cast.Count), 12f))
+                    if (cast.Points != null && cast.Points.Length > 0)
+                        foreach (Vector3 flight in cast.Points)
+                            PlayerArrow.LaunchBolt(caster, flight.magnitude, 0f, skill.Color, cast.Size, flight.normalized, harmless: true);
+                    else foreach (Vector3 direction in HitEffects.Spread(facing, Mathf.Max(1, cast.Count), 12f))
                         PlayerArrow.LaunchBolt(caster, BoltRange, 0f, skill.Color, cast.Size, direction, harmless: true);
                     break;
 
@@ -595,15 +598,24 @@ namespace PoeClone.Skills
         public float AttackRateMultiplier => Mathf.Max(0.5f, 1f + Stat(StatType.AttackSpeed) / 100f) *
             (controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f);
 
+        public float SkillArea(SkillId id) => DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect) + BonusesFor(id).Get(WeaponSkillEffect.Area));
+        public float SkillProjectileRange(SkillId id) => BonusesFor(id).RangeMultiplier * SkillArea(id);
+        public float SkillAttackRate(SkillId id) => Mathf.Max(0.5f, 1f +
+            (Stat(StatType.AttackSpeed) + BonusesFor(id).Get(WeaponSkillEffect.Speed)) / 100f) *
+            (controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f);
+        public float SkillCastRate(SkillId id) => Mathf.Max(0.5f, 1f +
+            (Stat(StatType.CastSpeed) + BonusesFor(id).Get(WeaponSkillEffect.Speed)) / 100f) *
+            (controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f);
+
         /// <summary>Cooldown at the skill's current level, after cast speed. Bow and melee skills have none.</summary>
         public float Cooldown(SkillId id)
         {
             SkillDefinition skill = SkillBook.Get(id);
             if (skill.Summon && WeaponSkill == id)
-                return 0.65f / (CastRateMultiplier * BonusesFor(id).SpeedMultiplier);
+                return 0.65f / (SkillCastRate(id));
             if (skill.Bow || skill.MeleeAttack)
                 return 0f;
-            return skill.CooldownAt(1) / (CastRateMultiplier * BonusesFor(id).SpeedMultiplier);
+            return skill.CooldownAt(1) / (SkillCastRate(id));
         }
 
         public float CooldownAt(int slot)
@@ -877,7 +889,7 @@ namespace PoeClone.Skills
                 return;
             if (SkillBook.Get(main.Value).Summon && Minion.CanCommand(transform, MinionKindOf(main.Value)))
             {
-                Minion.Command(transform, AimedEnemy(MarkReach) ?? EnemyInDirection(transform.forward, MarkReach));
+                Minion.Command(transform, AimedEnemy(MarkReach) ?? EnemyInDirection(transform.forward, MarkReach), MinionKindOf(main.Value));
                 return;
             }
             Cast(SkillBook.Get(main.Value), Mathf.Max(1, Level(main.Value)), asAttack: true);
@@ -891,24 +903,25 @@ namespace PoeClone.Skills
                 return ChainReach * BonusesFor(SkillId.ChainLightning).RangeMultiplier;
             if (main == SkillId.DeathMark)
                 return MarkReach;
-            return (main == SkillId.IceShard ? ShardRange : main == SkillId.VenomSpout ? 12f : BoltRange) * (main.HasValue ? BonusesFor(main.Value).RangeMultiplier : 1f);
+            if (main == SkillId.VenomSpout)
+                return 12f * BonusesFor(SkillId.VenomSpout).RangeMultiplier;
+            return (main == SkillId.IceShard ? ShardRange : BoltRange) * (main.HasValue ? SkillProjectileRange(main.Value) : 1f);
         }
 
         // ------------------------------------------------------------------ the skills
 
+        private ItemData orbitWeapon;
+        private int orbitUses;
         private const float BoltRange = 16f;
         private const float ShardRange = 12f;
 
         // asAttack: cast as the staff's attack, already facing where it should go (PlayerCombat
         // turned the player at the moment of release); from the bar it aims itself.
-        private void Cast(SkillDefinition skill, int level, bool asAttack = false, bool echo = false)
+        private void Cast(SkillDefinition skill, int level, bool asAttack = false)
         {
-            if (!echo && Echoes(skill))
-                for (int repeat = 0; repeat < Mathf.RoundToInt(BonusesFor(skill.Id).Get(WeaponSkillEffect.Repeat)); repeat++)
-                    StartCoroutine(Echo(skill, level, repeat + 1, MainWeapon));
             PlaySkillSound(skill.Id, transform.position);
             float spell = 1f; // Intelligence and spell/elemental increases share HitEffects' sum.
-            float area = DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect)) * BonusesFor(skill.Id).AreaMultiplier;
+            float area = SkillArea(skill.Id);
             float damage = skill.DamageAt(level) * spell;
             var tree = BonusesFor(skill.Id);
             int extraProjectiles = tree.ExtraProjectiles;
@@ -922,8 +935,19 @@ namespace PoeClone.Skills
                     var bolts = PlayerArrow.NewVolley();
                     int boltCount = tree.SingleProjectile ? 1 : 1 + extraProjectiles;
                     foreach (Vector3 direction in HitEffects.Spread(transform.forward, boltCount, 12f))
-                        PlayerArrow.LaunchBolt(transform, BoltRange * tree.RangeMultiplier, damage, skill.Color, 1.6f * area, direction, volley: bolts).WithSkill(tree);
-                    Record(skill, level, 1.6f * area, boltCount);
+                        PlayerArrow.LaunchBolt(transform, BoltRange * SkillProjectileRange(skill.Id), damage, skill.Color, 1.6f * area, direction, volley: bolts).WithSkill(tree);
+                    var flights = new List<Vector3>();
+                    foreach (Vector3 direction in HitEffects.Spread(transform.forward, boltCount, 12f)) flights.Add(direction * BoltRange * SkillProjectileRange(skill.Id));
+                    Record(skill, level, 1.6f * area, boltCount, flights.ToArray());
+                    if (tree.Get(WeaponSkillEffect.FireOrbit) > 0)
+                    {
+                        if (orbitWeapon != MainWeapon) { orbitWeapon = MainWeapon; orbitUses = 0; }
+                        if (++orbitUses >= tree.Get(WeaponSkillEffect.FireOrbit))
+                        {
+                            orbitUses = 0;
+                            StartCoroutine(FireWheel(skill, damage, area, tree, MainWeapon));
+                        }
+                    }
                     break;
 
                 case SkillId.IceShard:
@@ -934,7 +958,7 @@ namespace PoeClone.Skills
                     // it doesn't stack on one.
                     var shards = PlayerArrow.NewVolley();
                     foreach (Vector3 direction in HitEffects.Spread(transform.forward, 1 + extraProjectiles, 7f))
-                        PlayerArrow.LaunchShard(transform, ShardRange * tree.RangeMultiplier, damage, skill.Color, 1.5f, direction, volley: shards).WithSkill(tree);
+                        PlayerArrow.LaunchShard(transform, ShardRange * SkillProjectileRange(skill.Id), damage, skill.Color, 1.5f, direction, volley: shards).WithSkill(tree);
                     Record(skill, level, 0f, 1 + extraProjectiles);
                     break;
 
@@ -1001,8 +1025,9 @@ namespace PoeClone.Skills
                 case SkillId.VenomSpout:
                 {
                     Vector3 direction = AimDirection();
-                    EnemyHealth aimed = AimedEnemy(12f) ?? (TouchMode.Active ? EnemyInDirection(direction, 12f) : null);
-                    Vector3 at = aimed != null ? aimed.transform.position : transform.position + direction * Mathf.Clamp(AimDistance() ?? 7f, 0f, 12f);
+                    float spoutRange = 12f * tree.RangeMultiplier;
+                    EnemyHealth aimed = AimedEnemy(spoutRange) ?? (TouchMode.Active ? EnemyInDirection(direction, spoutRange) : null);
+                    Vector3 at = aimed != null ? aimed.transform.position : transform.position + direction * Mathf.Clamp(AimDistance() ?? 7f, 0f, spoutRange);
                     float radius = 2.6f * area;
                     SkillEffects.Shockwave(at, radius, skill.Color, 0.45f, type: SkillEffects.DamagePattern(skill));
                     Record(skill, level, radius, 0, new[] { at });
@@ -1016,19 +1041,18 @@ namespace PoeClone.Skills
             }
         }
 
-        // Spell Echo repeats spells that deal damage themselves; not the grimoire's mark or War Cry's buff.
-        private static bool Echoes(SkillDefinition skill) =>
-            skill.DamageSpell && skill.Id != SkillId.DeathMark && skill.Id != SkillId.WarCry;
-
-        private const float EchoDelay = 0.22f;
-
-        // The echo leaves the way the player faces by then, free of cost and cooldown.
-        private IEnumerator Echo(SkillDefinition skill, int level, int repeat, ItemData weapon)
+        private System.Collections.IEnumerator FireWheel(SkillDefinition skill, float damage, float area, WeaponSkillBonuses tree, ItemData weapon)
         {
-            yield return new WaitForSeconds(EchoDelay * repeat);
-            if (stats == null || stats.IsDead || MainWeapon != weapon)
-                yield break;
-            Cast(skill, level, asAttack: true, echo: true);
+            var volley = PlayerArrow.NewVolley();
+            for (int i = 0; i < 8; i++)
+            {
+                if (stats == null || stats.IsDead || MainWeapon != weapon) yield break;
+                Vector3 direction = Quaternion.Euler(0f, i * 45f, 0f) * Vector3.forward;
+                PlayerArrow.LaunchBolt(transform, BoltRange * SkillProjectileRange(skill.Id), damage * 0.4f, skill.Color, 1.6f * area, direction, volley: volley).WithSkill(tree);
+                Record(skill, 1, 1.6f * area, 1, new[] { direction * BoltRange * SkillProjectileRange(skill.Id) });
+                PlaySkillSound(skill.Id, transform.position);
+                yield return new WaitForSeconds(0.07f);
+            }
         }
 
         private static void PlaySkillSound(SkillId skill, Vector3 at)
@@ -1070,13 +1094,12 @@ namespace PoeClone.Skills
             StatSheet sheet = inventory != null ? inventory.Stats : null;
             var tree = BonusesFor(id);
             string summary = "max " + Minion.CapFor(transform, kind) + " · " +
-                Mathf.RoundToInt(Minion.LifeFor(kind, 1, sheet) * Mathf.Max(0.1f, 1f + tree.Get(WeaponSkillEffect.MinionLife) / 100f)) + " life · " +
+                Mathf.RoundToInt(Minion.LifeAt(kind, 1) * Mathf.Max(0.1f, 1f + ((sheet?.Total(StatType.MinionLife) ?? 0f) + tree.Get(WeaponSkillEffect.MinionLife)) / 100f)) + " life · " +
                 Mathf.RoundToInt(Minion.ArmourFor(sheet) + tree.Get(WeaponSkillEffect.MinionArmour)) + " armour · " +
-                Mathf.Min(75, Mathf.RoundToInt(Minion.ResistanceFor(sheet) + tree.Get(WeaponSkillEffect.MinionResists))) + "% res · " +
-                Mathf.RoundToInt(Minion.DamageFor(kind, 1, sheet) * tree.DamageMultiplier) + " per hit";
+                Mathf.Min(75, Mathf.RoundToInt(Minion.ResistanceFor(sheet) * (1f + tree.Get(WeaponSkillEffect.MinionResists) / 100f))) + "% res · " +
+                Mathf.RoundToInt(Minion.DamageFor(kind, 1, sheet, tree)) + " per hit";
             float duration = Minion.Duration(kind, 1, sheet);
-            if (duration <= 0 && tree.Get(WeaponSkillEffect.MinionDeathBurst) > 0) duration = 20f;
-            duration *= tree.DurationMultiplier;
+            duration *= tree.MinionDurationMultiplier;
             if (duration > 0f) summary += " · " + duration.ToString("0.#") + "s";
             return summary;
         }
@@ -1101,13 +1124,13 @@ namespace PoeClone.Skills
             float damage;
             if (weapon > 0f)
                 damage = WeaponDamage() * weapon * (sheet != null
-                    ? sheet.DamageMultiplier(true, skill.Bow, false, false, element) : 1f);
+                    ? sheet.DamageMultiplier(true, skill.Bow, false, false, element, skillIncreased: tree.Get(WeaponSkillEffect.Damage)) : 1f);
             else if (skill.DamageSpell)
                 damage = skill.DamageAt(level) * skill.ExtraHitMultiplierAt(level) * (sheet != null
-                    ? sheet.DamageMultiplier(false, false, false, false, element, spell: true) : 1f);
+                    ? sheet.DamageMultiplier(false, false, false, false, element, spell: true, skillIncreased: tree.Get(WeaponSkillEffect.Damage)) : 1f);
             else
                 return null;
-            return Mathf.Max(1, Mathf.RoundToInt(damage * tree.DamageMultiplier)) + " " + ElementName(element) +
+            return Mathf.Max(1, Mathf.RoundToInt(damage * tree.MoreDamageMultiplier)) + " " + ElementName(element) +
                    (skill.Bow ? " per arrow" : " per hit");
         }
 
@@ -1235,7 +1258,7 @@ namespace PoeClone.Skills
                 attackAnimator.PlayAttack(WeaponType.Unarmed);
 
             var tree = BonusesFor(skill.Id);
-            int jumps = Mathf.Max(1, 3 + Mathf.RoundToInt(tree.Get(WeaponSkillEffect.Chains)));
+            int jumps = Mathf.Max(1, 1 + Mathf.RoundToInt(tree.Get(WeaponSkillEffect.Chains)));
             var arc = new List<Vector3> { from };
             float chainMultiplier = 1f;
             for (int jump = 0; jump < jumps && target != null; jump++)

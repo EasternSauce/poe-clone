@@ -61,7 +61,7 @@ namespace PoeClone.Skills
 
         /// <summary>Seconds between uses of a melee skill with the weapon in hand and the current attack speed.</summary>
         public float MeleeInterval(SkillId id) => 1f / Mathf.Max(0.01f,
-            CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()) * AttackRateMultiplier * MeleeSpeed(id) * BonusesFor(id).SpeedMultiplier);
+            CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()) * SkillAttackRate(id) * MeleeSpeed(id));
 
         /// <summary>Target selection uses the same specialized reach as the actual attack.</summary>
         public float MeleeSkillReach()
@@ -69,8 +69,8 @@ namespace PoeClone.Skills
             switch (ActiveMeleeSkill)
             {
                 case SkillId.Cleave: return Mathf.Max(2.6f, (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 0.6f) * MeleeRangeMultiplier) * AreaMultiplier;
-                case SkillId.Pulverize: return CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 3.6f * AreaMultiplier;
-                case SkillId.ReapingArc: return 4.6f * MeleeRangeMultiplier;
+                case SkillId.Pulverize: return CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 3.6f * AreaMultiplier * MeleeRangeMultiplier;
+                case SkillId.ReapingArc: return 4.6f * MeleeRangeMultiplier * AreaMultiplier;
                 case SkillId.LungingThrust: return 3f * MeleeRangeMultiplier + LungeStep * WeaponBonuses.RangeMultiplier;
                 case SkillId.Whirlwind: return WhirlReach();
                 case SkillId.Fissure: return FissureLength * MeleeRangeMultiplier;
@@ -190,8 +190,8 @@ namespace PoeClone.Skills
                 attackAnimator.PlaySkillAttack(skill, weapon, rate, mirrored);
         }
 
-        private float MeleeRangeMultiplier => (1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f) * WeaponBonuses.RangeMultiplier;
-        private float AreaMultiplier => DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect)) * WeaponBonuses.AreaMultiplier;
+        private float MeleeRangeMultiplier => (1f + Mathf.Max(0f, Stat(StatType.MeleeRange) + WeaponBonuses.Get(WeaponSkillEffect.Range)) / 100f);
+        private float AreaMultiplier => DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect) + WeaponBonuses.Get(WeaponSkillEffect.Area));
 
         // ------------------------------------------------------------------ the moves
 
@@ -302,7 +302,7 @@ namespace PoeClone.Skills
 
         private void Pulverize(SkillDefinition skill, int level)
         {
-            float radius = 3.6f * AreaMultiplier;
+            float radius = 3.6f * AreaMultiplier * MeleeRangeMultiplier;
             Vector3 impact = SlamPoint();
             SkillEffects.Shockwave(impact, radius, skill.Color, 0.42f, type: SkillEffects.DamagePattern(skill));
             // Match the impact treatment of a basic maul slam: ground burst plus a brief camera jolt.
@@ -377,7 +377,7 @@ namespace PoeClone.Skills
 
         private void ReapingArc(SkillDefinition skill, int level)
         {
-            float reach = 4.6f * MeleeRangeMultiplier;
+            float reach = 4.6f * MeleeRangeMultiplier * AreaMultiplier;
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
             {

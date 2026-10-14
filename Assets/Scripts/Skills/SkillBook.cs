@@ -105,7 +105,7 @@ namespace PoeClone.Skills
         /// <summary>Fixed base spell damage before stats and allocated tree bonuses.</summary>
         public float DamageAt(int level)
         {
-            return BaseDamage * 1.3f;
+            return BaseDamage * (WeaponSkillRules.IsWeaponSkill(Grant) ? 1f : 1.3f);
         }
 
         /// <summary>Fixed share of weapon damage per hit, independent of skill rank.</summary>
@@ -123,11 +123,11 @@ namespace PoeClone.Skills
                 case SkillId.Fissure: return 1.5f;
                 case SkillId.Aftershock: return 0.92f;
                 case SkillId.CrossSlash: return 1.15f;
-                case SkillId.SplitShot: return 1.2f;
-                case SkillId.PiercingShot: return 1.76f;
-                case SkillId.BurningArrow: return 1.6f;
-                case SkillId.VenomArrow: return 1.44f;
-                case SkillId.RainOfArrows: return 0.72f;
+                case SkillId.SplitShot: return 1f;
+                case SkillId.PiercingShot: return 1.2f;
+                case SkillId.BurningArrow: return 1.3f;
+                case SkillId.VenomArrow: return 1.1f;
+                case SkillId.RainOfArrows: return 0.3f;
                 default: return 0f;
             }
         }
@@ -208,7 +208,7 @@ namespace PoeClone.Skills
                 Id = SkillId.ChainLightning, Name = "Chain Lightning", Short = "CL", Grant = StatType.GrantChainLightning, RollsOn = "staves",
                 Spell = true, Element = SkillElement.Lightning, BaseDamage = 8f,
                 ManaCosts = new[] { 4.2f }, Cooldown = 1.1f, Color = new Color(1f, 0.95f, 0.4f),
-                Description = "Strikes the enemy under your cursor (or the nearest) and arcs on to others, with up to three targets before tree improvements. Hits harder when aimed, and up close."
+                Description = "Strikes the enemy under your cursor (or the nearest). Starts with no chains; allocate chaining passives to arc to other enemies. Hits harder when aimed, and up close."
             },
             new SkillDefinition
             {
@@ -269,19 +269,19 @@ namespace PoeClone.Skills
             {
                 Id = SkillId.PiercingShot, Name = "Piercing Shot", Short = "PRC", Grant = StatType.GrantPiercingShot, RollsOn = "bows", ManaCosts = new[] { 3f },
                 Color = new Color(0.85f, 0.9f, 1f),
-                Description = "Bow skill (the weapon's attack): a heavy draw that looses an arrow through every enemy in its path, flying 30% further for 176% damage. 10% slower."
+                Description = "Bow skill (the weapon's attack): hold attack to charge in place, then release a piercing sniper arrow. Damage grows from 120% to 360% weapon damage over a full draw. 80% increased projectile range. A distinct cue signals full charge."
             },
             new SkillDefinition
             {
                 Id = SkillId.RainOfArrows, Name = "Rain of Arrows", Short = "RAIN", Grant = StatType.GrantRainOfArrows, RollsOn = "bows", ManaCosts = new[] { 6f },
                 Color = new Color(0.95f, 0.8f, 0.45f),
-                Description = "Bow skill (the weapon's attack): shoot into the sky and 6 arrows. 15% slower."
+                Description = "Bow skill (the weapon's attack): fire one salvo of 6 arrows into the aimed area. Each arrow deals 30% weapon damage and can overlap other impacts. Additional arrows add to the salvo; area of effect enlarges impacts, not spread. 15% reduced attack speed. Delayed salvos require passives."
             },
             new SkillDefinition
             {
                 Id = SkillId.BurningArrow, Name = "Burning Arrow", Short = "BRN", Grant = StatType.GrantBurningArrow, RollsOn = "bows", ManaCosts = new[] { 4.5f },
                 Color = new Color(1f, 0.5f, 0.2f),
-                Description = "Bow skill (the weapon's attack): arrows of fire for 160% damage as Fire, bursting to scorch those around the target, with a 20% chance to set it burning."
+                Description = "Bow skill (the weapon's attack): arrows of fire for 130% weapon damage as fire, bursting to scorch those around the target, with a 20% chance to set it burning."
             },
             new SkillDefinition { Id = SkillId.FangStrike, Name = "Fang Strike", Short = "FNG", Grant = StatType.GrantFangStrike, RollsOn = "daggers", ManaCosts = LightMeleeCosts, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Melee skill (the weapon's attack): strike the aimed enemy for 90% weapon damage and inflict a potent poison that deals 95% weapon damage over 3 seconds. Poisons stack. Daggers only." },
             new SkillDefinition { Id = SkillId.VenomArrow, Name = "Venom Arrow", Short = "VNM", Grant = StatType.GrantVenomArrow, RollsOn = "bows", ManaCosts = new[] { 4.5f }, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Bow skill (the weapon's attack): attacks inflict a stronger poison and leave a brief venom cloud." },

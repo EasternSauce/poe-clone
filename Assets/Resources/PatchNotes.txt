@@ -1,3 +1,16 @@
+version: 2026-10-14-weapon-tree-redesign
+- Rebuilt all 24 weapon trees with winding, branching paths, stronger destinations behind related small passives, and modest damage alongside utility. Removed floating branch labels and fixed overflowing node descriptions.
+- Increased/reduced damage and speed add to the corresponding gear bonuses; more/less damage modifiers multiply independently. Old weapon allocations are refunded while weapon level and experience are preserved.
+- Piercing Shot is now a long-range sniper attack: hold attack to charge in place, release to fire, and listen for the full-charge cue. Its tree focuses on draw time, armour penetration, range and opening shots.
+- Fire Bolt can unlock Solar Wheel: every fifth use launches a sequence of fireballs around you. Chain Lightning starts with no chains. Forking is limited to Ice Shard and Split Shot, and explode-on-kill to one Fire Bolt destination.
+- Rain of Arrows gains one arrow per additional-arrow bonus. Area scales each impact without widening the spread; separate passives concentrate or widen the rain. Life on hit and optional delayed salvos add new choices. Three salvos together deal 50% less damage per arrow. No fire conversion or explosions.
+- Whirlwind can scale area, melee range, attack frequency and life gained per enemy hit. Attack speed increases its hit frequency.
+- Every minion tree offers life, armour, resistances and movement speed for its own summon. Movement and attack speed, and ailment and summon duration, are separate. Permanent skeletons remain permanent.
+- Skeleton Mages can choose full fire, cold or lightning conversion, gain projectile speed/range and two extra projectiles without splash or single-minion tradeoffs. Extra bolts cover different enemies and cannot shotgun one target.
+- Bone Champion halves the skeleton limit and makes warriors bigger; Bone Army trades damage for numbers without reducing life. Only warrior skeletons can unlock a death explosion.
+- Spirit Wolves gain pack proximity scaling and Blood Scent as a final passive. Bone Golem remains capped at one, with a delayed slam option and defensive choices that do not slow it down. Vipers specialize in poison, longevity and additional summons.
+- Retuned weapon spell, bow and minion baselines and audited full 10-point combinations, including extra summons, salvo penalties and charge time.
+
 version: 2026-10-14-weapon-skill-trees
 - Added a unique 24-node specialization tree for each of the 24 main weapon skills. Press T, click the main attack icon, or use the Weapon tree button while the weapon is equipped.
 - Each weapon keeps its own skill level, experience and allocations. A level 6 drop starts with six points; combat experience earned while equipped levels the weapon up to 10, granting one point per level. Skill levels no longer grant automatic combat bonuses.

@@ -38,12 +38,14 @@ namespace PoeClone.Player
         private Vector3 launchPosition;
         private int venomArrowLevel;
         private WeaponSkillBonuses tree;
+        private float skillIncreased;
         private int piercesLeft, chainsLeft;
         private bool forked;
 
-        public PlayerArrow WithSkill(WeaponSkillBonuses bonuses)
+        public PlayerArrow WithSkill(WeaponSkillBonuses bonuses, float increasedDamage = 0f)
         {
             tree = bonuses;
+            skillIncreased = increasedDamage;
             if (tree == null) return this;
             piercesLeft = Mathf.RoundToInt(tree.Get(WeaponSkillEffect.Pierce));
             chainsLeft = Mathf.RoundToInt(tree.Get(WeaponSkillEffect.Chains));
@@ -55,7 +57,7 @@ namespace PoeClone.Player
         private void OnSkillImpact(Enemies.EnemyHealth hit)
         {
             if (tree == null || hit == null) return;
-            if (!forked && !tree.SingleProjectile && tree.Get(WeaponSkillEffect.Fork) > 0 && travelLeft > 1f)
+            if (!forked && !tree.SingleProjectile && tree.Get(WeaponSkillEffect.NoFork) <= 0 && tree.Get(WeaponSkillEffect.Fork) > 0 && travelLeft > 1f)
             {
                 forked = true;
                 foreach (float angle in new[] { -28f, 28f })
@@ -66,7 +68,7 @@ namespace PoeClone.Player
                     child.isAttack = isAttack; child.damageType = damageType; child.textColor = textColor;
                     child.burstRadius = burstRadius; child.chillSeconds = chillSeconds; child.igniteBonus = igniteBonus;
                     child.venomArrowLevel = venomArrowLevel; child.launchPosition = launchPosition; child.volley = volley;
-                    child.WithSkill(tree); child.forked = true;
+                    child.WithSkill(tree, skillIncreased); child.forked = true;
                     child.pierced.Add(hit);
                 }
             }
@@ -242,7 +244,7 @@ namespace PoeClone.Player
 
         private void Update()
         {
-            float step = Mathf.Min(Speed * Time.deltaTime, travelLeft);
+            float step = Mathf.Min(Speed * (tree?.ProjectileSpeedMultiplier ?? 1f) * Time.deltaTime, travelLeft);
             if (step <= 0f)
             {
                 Destroy(gameObject);
@@ -380,7 +382,7 @@ namespace PoeClone.Player
                     continue;
                 if (target is Enemies.EnemyHealth enemy && !enemy.IsDead && FirstVolleyHit(target))
                     HitEffects.Deal(owner, enemy, damage * 0.4f, isAttack, textColor, damageType, igniteBonus: igniteBonus,
-                        projectileDistance: DistanceTo(at), hitOrigin: launchPosition, tree: tree);
+                        projectileDistance: DistanceTo(at), hitOrigin: launchPosition, tree: tree, skillIncreased: skillIncreased);
             }
         }
 
@@ -403,14 +405,14 @@ namespace PoeClone.Player
                         ai.Chill(chillSeconds * (tree?.DurationMultiplier ?? 1f));
                 }
                 HitEffects.Deal(owner, enemy, damage, isAttack, textColor, damageType, igniteBonus: igniteBonus,
-                    projectileDistance: DistanceTo(enemy.transform.position), venomArrowLevel: venomArrowLevel, hitOrigin: launchPosition, tree: tree);
+                    projectileDistance: DistanceTo(enemy.transform.position), venomArrowLevel: venomArrowLevel, hitOrigin: launchPosition, tree: tree, skillIncreased: skillIncreased);
                 return;
             }
 
             if (target is Enemies.SerpentPursuit serpent)
             {
                 serpent.TakeArrowHit(owner, damage, isAttack, damageType, textColor, igniteBonus,
-                    projectileDistance: DistanceTo(serpent.MouthPosition), venomArrowLevel: venomArrowLevel, tree: tree);
+                    projectileDistance: DistanceTo(serpent.MouthPosition), venomArrowLevel: venomArrowLevel, tree: tree, skillIncreased: skillIncreased);
                 return;
             }
 

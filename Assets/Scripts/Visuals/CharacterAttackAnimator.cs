@@ -649,6 +649,12 @@ namespace PoeClone.Visuals
             holding = false;
         }
 
+        public void HoldBowDraw()
+        {
+            PlayBow(BowStyle.Heavy);
+            holding = true;
+        }
+
         /// <summary>A bow shot drawn the way a bow skill draws it (Plain: the ordinary shot).</summary>
         public void PlayBow(BowStyle style)
         {

@@ -60,12 +60,16 @@ namespace PoeClone.UI
             info = UiKit.NewImage("Selected node", panel, new Color(0.12f, 0.10f, 0.08f, 1)).rectTransform;
             UiKit.TopLeft(info, new Vector2(795, -132), new Vector2(340, 690));
             detail = Label(info, "Select a node to inspect it.", 20, new Vector2(18, -18), new Vector2(304, 275));
+            detail.horizontalOverflow = HorizontalWrapMode.Wrap;
+            detail.verticalOverflow = VerticalWrapMode.Truncate;
             allocate = UiKit.NewImage("Allocate", info, UiKit.BorderColor);
             UiKit.TopLeft(allocate.rectTransform, new Vector2(18, -302), new Vector2(304, 52));
             buttonText = Label(allocate.rectTransform, "Allocate · 1 point", 21, Vector2.zero, new Vector2(304, 52));
             buttonText.alignment = TextAnchor.MiddleCenter;
             UiKit.OnClick(allocate, Allocate);
             summary = Label(info, "", 17, new Vector2(18, -374), new Vector2(304, 290));
+            summary.horizontalOverflow = HorizontalWrapMode.Wrap;
+            summary.verticalOverflow = VerticalWrapMode.Truncate;
             footer = Label(panel, "Small nodes · N notable · K keystone     |     T opens/closes     |     Reset allocations at Mentor Ilyra in Haven", 16,
                 new Vector2(26, -820), new Vector2(1090, 25));
             badge = UiKit.NewImage("Weapon tree shortcut", canvas.transform, UiKit.PanelColor);
@@ -157,14 +161,7 @@ namespace PoeClone.UI
                 string id = node.Id;
                 UiKit.OnClick(image, () => { selected = id; UpdateSelection(); });
                 buttons.Add(id, image);
-                if (node.Depth == 0)
-                {
-                    // Names sit in the cardinal gaps between the diagonal routes.
-                    Vector2 labelAt = new Vector2(node.Position.x > 0 ? 620 : 140, node.Position.y > 0 ? -260 : -430);
-                    var branch = Label(graph, node.Branch, 18, labelAt - new Vector2(110, -14), new Vector2(220, 28));
-                    branch.alignment = TextAnchor.MiddleCenter;
-                    branch.color = UiKit.Gold;
-                }
+
             }
             lastSpent = weapon.SkillProgress.nodes.Count; lastLevel = weapon.SkillProgress.level;
             UpdateHeader(); UpdateSelection();
@@ -189,12 +186,12 @@ namespace PoeClone.UI
                     reachable ? new Color(0.34f, 0.28f, 0.18f) : new Color(0.14f, 0.14f, 0.16f);
             }
             var node = WeaponSkillTrees.Find(weapon.MainSkillGrant.Value, selected);
-            bool can = node != null && !p.nodes.Contains(node.Id) && p.Available > 0 && (node.Parent == null || p.nodes.Contains(node.Parent));
-            detail.text = node == null ? "Select a node to inspect its bonuses.\n\nFollow a connected branch to its notable and keystone. Every node costs one point.\n\nGreen nodes are allocated; gold nodes can be reached." :
-                "<b>" + node.Name + "</b>\n" + (node.Keystone ? "Keystone" : node.Notable ? "Notable" : "Passive") + " · " + node.Branch + "\n\n" + node.Description;
+            bool can = node != null && p.CanAllocate(weapon.MainSkillGrant.Value, node.Id);
+            detail.text = node == null ? "Select a node to inspect its bonuses.\n\nFollow connected paths to their stronger passives. Every node costs one point.\n\nGreen nodes are allocated; gold nodes can be reached." :
+                "<b>" + node.Name + "</b>\n" + (node.Keystone ? "Keystone" : node.Notable ? "Notable" : "Passive") + "\n\n" + node.Description;
             allocate.color = can ? UiKit.BorderColor : new Color(0.19f, 0.18f, 0.16f);
             buttonText.text = node == null ? "Select a node" : p.nodes.Contains(node.Id) ? "Allocated" : p.Available <= 0 ? "No points available" :
-                !can ? "Allocate the preceding node" : "Allocate · 1 point";
+                !can ? (node.Parent != null && !p.nodes.Contains(node.Parent) ? "Allocate the preceding node" : "Choose one elemental school") : "Allocate · 1 point";
             var id = SkillBook.ForGrant(weapon.MainSkillGrant.Value).Id;
             summary.text = "<b>Current skill</b>\n" + skills.DamageSummary(id, p.level) + "\nCost: " + skills.ManaCost(id).ToString("0.#") + " " + skills.CostResource +
                 "\n\n" + p.nodes.Count + "/" + p.level + " points allocated\n\nReset at Mentor Ilyra in Haven.\nCurrent reset price: " + skills.WeaponResetPrice + " gold.";

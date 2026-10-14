@@ -10,13 +10,17 @@ namespace PoeClone.Inventory
         Chill, Shock, Ignite, Shatter, Explode, Poison, Cloud, Duration,
         Minions, MinionLife, MinionSpeed, MinionArmour, MinionResists,
         Leech, Cull, Splash, Fire, Cold, Lightning, DamageVsChilled,
-        Cost, SingleProjectile, ChainRetention, ExtraWaves, MinionDeathBurst
+        Cost, SingleProjectile, ChainRetention, ExtraWaves, MinionDeathBurst,
+        MoreDamage, LifeOnHit, ProjectileSpeed, MinionMoveSpeed, MinionDuration,
+        HalfMinions, MinionSize, RainSpread, RainSalvos, FireOrbit, ChargeDamage,
+        ChargeTime, ArmourPenetration, DamageVsLowLife, PackHunt, MinionRegen,
+        NoFork, FirstStrike, GolemAftershock
     }
 
     [Serializable]
     public sealed class WeaponSkillProgress
     {
-        public int version = 1;
+        public int version = 2;
         public int level = 1;
         public int experience;
         public List<string> nodes = new List<string>();
@@ -31,6 +35,8 @@ namespace PoeClone.Inventory
 
         public void Sanitize(StatType grant)
         {
+            // The new topology and effects cannot safely reinterpret old allocations.
+            if (version < 2) { nodes = new List<string>(); version = 2; }
             level = Mathf.Clamp(level, 1, 10);
             experience = level == 10 ? 0 : Mathf.Clamp(experience, 0, RequiredExperience - 1);
             var valid = new List<string>();
@@ -44,11 +50,22 @@ namespace PoeClone.Inventory
             nodes = valid;
         }
 
+        public bool CanAllocate(StatType grant, string id)
+        {
+            var node = WeaponSkillTrees.Find(grant, id);
+            if (node == null || Available <= 0 || nodes.Contains(id) || (node.Parent != null && !nodes.Contains(node.Parent))) return false;
+            // Full elemental conversions are alternatives, never silently overridden by another school.
+            bool converts = Array.Exists(node.Bonuses, b => b.Effect == WeaponSkillEffect.Fire || b.Effect == WeaponSkillEffect.Cold || b.Effect == WeaponSkillEffect.Lightning);
+            if (converts) foreach (string owned in nodes)
+            {
+                var previous = WeaponSkillTrees.Find(grant, owned);
+                if (previous != null && Array.Exists(previous.Bonuses, b => b.Effect == WeaponSkillEffect.Fire || b.Effect == WeaponSkillEffect.Cold || b.Effect == WeaponSkillEffect.Lightning)) return false;
+            }
+            return true;
+        }
         public bool Allocate(StatType grant, string id)
         {
-            WeaponSkillNode node = WeaponSkillTrees.Find(grant, id);
-            if (node == null || Available <= 0 || nodes.Contains(id) ||
-                (node.Parent != null && !nodes.Contains(node.Parent))) return false;
+            if (!CanAllocate(grant, id)) return false;
             nodes.Add(id);
             return true;
         }
@@ -78,7 +95,8 @@ namespace PoeClone.Inventory
 
     public sealed class WeaponSkillNode
     {
-        public string Id, Parent, Name, Branch;
+        public string Id, Parent, Name;
+        public StatType Grant;
         public int Depth;
         public bool Notable, Keystone;
         public Vector2 Position;
@@ -88,7 +106,7 @@ namespace PoeClone.Inventory
             get
             {
                 var lines = new List<string>();
-                foreach (WeaponSkillBonus b in Bonuses) lines.Add(WeaponSkillTrees.Describe(b));
+                foreach (WeaponSkillBonus b in Bonuses) lines.Add(WeaponSkillTrees.Describe(b, Grant));
                 return string.Join("\n", lines);
             }
         }
@@ -98,12 +116,14 @@ namespace PoeClone.Inventory
     public sealed class WeaponSkillBonuses
     {
         private readonly float[] values = new float[Enum.GetValues(typeof(WeaponSkillEffect)).Length];
+        private float moreDamage = 1f;
         public float Get(WeaponSkillEffect effect) => values[(int)effect];
-        public float DamageMultiplier => Mathf.Max(0.1f, 1f + Get(WeaponSkillEffect.Damage) / 100f);
-        public float SpeedMultiplier => Mathf.Max(0.25f, 1f + Get(WeaponSkillEffect.Speed) / 100f);
+        public float MoreDamageMultiplier => moreDamage;
         public float AreaMultiplier => DefenceMath.RadiusMultiplier(Get(WeaponSkillEffect.Area));
         public float RangeMultiplier => Mathf.Max(0.3f, 1f + Get(WeaponSkillEffect.Range) / 100f);
+        public float ProjectileSpeedMultiplier => Mathf.Max(0.25f, 1f + Get(WeaponSkillEffect.ProjectileSpeed) / 100f);
         public float DurationMultiplier => Mathf.Max(0.1f, 1f + Get(WeaponSkillEffect.Duration) / 100f);
+        public float MinionDurationMultiplier => Mathf.Max(0.1f, 1f + Get(WeaponSkillEffect.MinionDuration) / 100f);
         public bool SingleProjectile => Get(WeaponSkillEffect.SingleProjectile) > 0;
         public int ExtraProjectiles => SingleProjectile ? 0 : Mathf.RoundToInt(Get(WeaponSkillEffect.Projectiles));
         public int ExtraMinions => Mathf.RoundToInt(Get(WeaponSkillEffect.Minions));
@@ -113,7 +133,11 @@ namespace PoeClone.Inventory
             foreach (string id in item.SkillProgress.nodes)
             {
                 WeaponSkillNode node = WeaponSkillTrees.Find(item.MainSkillGrant.Value, id);
-                if (node != null) foreach (WeaponSkillBonus b in node.Bonuses) values[(int)b.Effect] += b.Value;
+                if (node != null) foreach (WeaponSkillBonus b in node.Bonuses)
+                {
+                    values[(int)b.Effect] += b.Value;
+                    if (b.Effect == WeaponSkillEffect.MoreDamage) moreDamage *= Mathf.Max(0f, 1f + b.Value / 100f);
+                }
             }
         }
     }

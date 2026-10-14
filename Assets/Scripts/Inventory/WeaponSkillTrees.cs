@@ -4,7 +4,7 @@ using E = PoeClone.Inventory.WeaponSkillEffect;
 
 namespace PoeClone.Inventory
 {
-    /// <summary>Each skill has four authored routes, six nodes per route. IDs are save data.</summary>
+    /// <summary>Skill-local specializations. Three winding trunks each divide into two destinations.</summary>
     public static class WeaponSkillTrees
     {
         private static readonly Dictionary<StatType, List<WeaponSkillNode>> trees = Build();
@@ -16,215 +16,213 @@ namespace PoeClone.Inventory
             return null;
         }
         private static WeaponSkillBonus B(E effect, float value) => new WeaponSkillBonus(effect, value);
-
-        private sealed class Route
-        {
-            public string Name, Notable, Keystone;
-            public WeaponSkillBonus[] Entry, Small, Major, Final;
-            public Route(string name, E small, float amount, string notable, WeaponSkillBonus[] major, string keystone, params WeaponSkillBonus[] final)
-            {
-                Name = name; Small = new[] { B(small, amount) }; Notable = notable; Major = major; Keystone = keystone; Final = final;
-                Entry = new[] { B(E.Damage, 24) };
-            }
-            public Route Start(params WeaponSkillBonus[] entry) { Entry = entry; return this; }
-        }
-        private static Route R(string name, E small, float amount, string notable, WeaponSkillBonus[] major, string keystone, params WeaponSkillBonus[] final)
-            => new Route(name, small, amount, notable, major, keystone, final);
         private static WeaponSkillBonus[] M(params WeaponSkillBonus[] bonuses) => bonuses;
+        // Utility travel points keep a little offensive progression. Strong offensive stats stand alone.
+        private static WeaponSkillBonus[] U(E effect, float value) => M(B(effect, value), B(E.Damage, 5));
+        private sealed class Path
+        {
+            public string Name, Notable, End, Side;
+            public WeaponSkillBonus[] Small, Major, Final, Alternative;
+        }
+        private static Path P(string name, WeaponSkillBonus[] small, string notable, WeaponSkillBonus[] major,
+            string end, WeaponSkillBonus[] final, string side, params WeaponSkillBonus[] alternative) =>
+            new Path { Name = name, Small = small, Notable = notable, Major = major, End = end, Final = final, Side = side, Alternative = alternative };
 
-        private static void Add(Dictionary<StatType, List<WeaponSkillNode>> all, StatType grant, params Route[] routes)
+        private static void Add(Dictionary<StatType, List<WeaponSkillNode>> all, StatType grant, params Path[] paths)
         {
             var nodes = new List<WeaponSkillNode>();
-            for (int branch = 0; branch < routes.Length; branch++)
+            // Bends, staggered forks and skill-specific rotations keep routes readable without four spokes.
+            float rotation = ((int)grant % 7 - 3) * 5f;
+            for (int lane = 0; lane < paths.Length; lane++)
             {
-                Route r = routes[branch];
-                // Different angular offsets and bends give each skill its own readable silhouette.
-                float skew = ((int)grant % 5 - 2) * 0.035f;
-                for (int depth = 0; depth < 6; depth++)
+                Path p = paths[lane];
+                Vector2[] shape = {
+                    new Vector2(65, -12), new Vector2(115, 14), new Vector2(166, 24),
+                    new Vector2(207, 68), new Vector2(247, 103), new Vector2(292, 117),
+                    new Vector2(212, -30), new Vector2(263, -65)
+                };
+                float angle = (rotation + lane * 120f) * Mathf.Deg2Rad;
+                for (int i = 0; i < shape.Length; i++)
                 {
-                    string id = "b" + branch + "_" + depth;
-                    float angle = (45f + branch * 90f + skew * depth * 30f) * Mathf.Deg2Rad;
-                    float distance = 76f + depth * 53f;
-                    nodes.Add(new WeaponSkillNode
-                    {
-                        Id = id, Parent = depth == 0 ? null : "b" + branch + "_" + (depth - 1),
-                        Branch = r.Name, Depth = depth, Notable = depth == 3, Keystone = depth == 5,
-                        Name = depth == 0 ? r.Name : depth == 3 ? r.Notable : depth == 5 ? r.Keystone :
-                            depth == 2 ? r.Name + " · Power" : r.Name + (depth == 1 ? " · Practice" : " · Mastery"),
-                        Position = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * distance,
-                        Bonuses = depth == 0 ? r.Entry : depth == 2 ? M(B(E.Damage, 28)) :
-                            depth == 3 ? r.Major : depth == 5 ? r.Final : r.Small
+                    Vector2 at = shape[i];
+                    Vector2 pos = new Vector2(at.x * Mathf.Cos(angle) - at.y * Mathf.Sin(angle), at.x * Mathf.Sin(angle) + at.y * Mathf.Cos(angle));
+                    int parent = i == 6 ? 2 : i == 7 ? 6 : i - 1;
+                    nodes.Add(new WeaponSkillNode {
+                        Id = "v2_" + lane + "_" + i, Parent = i == 0 ? null : "v2_" + lane + "_" + parent,
+                        Grant = grant, Depth = i == 6 ? 3 : i == 7 ? 4 : i,
+                        Notable = i == 2, Keystone = i == 5 || i == 7,
+                        Name = i == 2 ? p.Notable : i == 5 ? p.End : i == 7 ? p.Side : p.Name,
+                        Position = pos, Bonuses = i == 2 ? p.Major : i == 5 ? p.Final : i == 7 ? p.Alternative : p.Small
                     });
                 }
             }
             all.Add(grant, nodes);
         }
-
         private static Dictionary<StatType, List<WeaponSkillNode>> Build()
         {
             var t = new Dictionary<StatType, List<WeaponSkillNode>>();
             Add(t, StatType.GrantIceShard,
-                R("Frozen Fan", E.Range, 12, "Splintering Ice", M(B(E.Projectiles, 2)), "Fracture", B(E.Fork, 1), B(E.Damage, -25)).Start(B(E.Projectiles, 2)),
-                R("Ice Lance", E.Range, 12, "Through the Heart", M(B(E.Pierce, 3)), "Glacial Spear", B(E.SingleProjectile, 1), B(E.Damage, 100), B(E.Speed, -15)),
-                R("Deep Winter", E.Duration, 15, "Biting Cold", M(B(E.Duration, 50), B(E.DamageVsChilled, 30)), "Winter's Grip", B(E.DamageVsChilled, 60), B(E.Duration, 100), B(E.Speed, -20)),
-                R("Shattered Glass", E.DamageVsChilled, 12, "Brittle", M(B(E.Shatter, 35)), "Crystal Funeral", B(E.Shatter, 65), B(E.Area, 60), B(E.Damage, -25)));
+                P("Ice Splinters", U(E.ProjectileSpeed, 12), "Frozen Fan", M(B(E.Projectiles, 2)), "Fracture", M(B(E.Fork, 1)), "Glacial Reach", B(E.Area, 40), B(E.Projectiles, 1)),
+                P("Biting Cold", U(E.Duration, 15), "Deep Winter", M(B(E.Chill, 20)), "Winter's Grip", M(B(E.DamageVsChilled, 35)), "Brittle Ice", B(E.Shatter, 20)),
+                P("Ice Lance", M(B(E.Damage, 10)), "Through the Heart", M(B(E.Pierce, 2)), "Glacial Spear", M(B(E.NoFork, 1), B(E.ProjectileSpeed, 35), B(E.Pierce, 4)), "Quick Frost", B(E.Speed, 18)));
             Add(t, StatType.GrantFireBolt,
-                R("Wildfire", E.Area, 15, "Firestorm", M(B(E.Projectiles, 2)), "Scatterfire", B(E.Fork, 1), B(E.Damage, -25)),
-                R("Searing Lance", E.Range, 15, "Burn Through", M(B(E.Pierce, 3)), "Focused Flame", B(E.SingleProjectile, 1), B(E.Damage, 110), B(E.Area, -50)),
-                R("Embers", E.Duration, 15, "Kindling", M(B(E.Ignite, 50)), "Cremation", B(E.Ignite, 50), B(E.Explode, 65), B(E.Speed, -20)),
-                R("Incantation", E.Speed, 8, "Double Spark", M(B(E.Repeat, 1), B(E.Damage, -15)), "Echoing Flame", B(E.Repeat, 1), B(E.Damage, -25), B(E.Cost, 35)));
+                P("Fireflight", U(E.ProjectileSpeed, 12), "Burn Through", M(B(E.Pierce, 1)), "Solar Wheel", M(B(E.FireOrbit, 5)), "Twin Flames", B(E.Projectiles, 1)),
+                P("Embers", U(E.Duration, 15), "Kindling", M(B(E.Ignite, 15)), "Cremation", M(B(E.Explode, 15)), "Hot Embers", B(E.Ignite, 20), B(E.Damage, 15)),
+                P("Flamecraft", U(E.Area, 10), "Firestorm", M(B(E.Area, 30)), "Rolling Flame", M(B(E.Projectiles, 2), B(E.MoreDamage, -15)), "Incantation", B(E.Speed, 20)));
             Add(t, StatType.GrantChainLightning,
-                R("Conductivity", E.Range, 12, "Long Circuit", M(B(E.Chains, 2)), "Living Network", B(E.Chains, 3), B(E.ChainRetention, 20), B(E.Damage, -30)),
-                R("Thunderhead", E.Damage, 15, "Heavy Voltage", M(B(E.Damage, 45), B(E.Speed, -10)), "Lightning Rod", B(E.Chains, -2), B(E.Damage, 110), B(E.Speed, -20)),
-                R("Static", E.Duration, 20, "Overcharge", M(B(E.Shock, 60)), "Stormwake", B(E.Shock, 40), B(E.Explode, 60), B(E.Damage, -20)),
-                R("Resonance", E.Speed, 8, "Repeated Discharge", M(B(E.Repeat, 1), B(E.Damage, -15)), "Feedback Loop", B(E.Repeat, 1), B(E.Cost, 50), B(E.Damage, -25)));
+                P("Conductivity", U(E.Range, 10), "Long Circuit", M(B(E.Chains, 1)), "Living Network", M(B(E.Chains, 1), B(E.ChainRetention, 15)), "Branching Current", B(E.Chains, 1)),
+                P("Static Charge", U(E.Duration, 12), "Overcharge", M(B(E.Shock, 20)), "Stormwake", M(B(E.Shock, 25), B(E.Duration, 30)), "Heavy Voltage", B(E.Damage, 25)),
+                P("Resonance", M(B(E.Speed, 5)), "Efficient Circuit", M(B(E.Cost, -15), B(E.Damage, 10)), "Unbroken Current", M(B(E.ChainRetention, 25)), "Quick Discharge", B(E.Speed, 18)));
             Add(t, StatType.GrantVenomSpout,
-                R("Miasma", E.Area, 15, "Poisoned Ground", M(B(E.Cloud, 45)), "Toxic Basin", B(E.Cloud, 100), B(E.Area, 60), B(E.Damage, -30)),
-                R("Pressure", E.Damage, 15, "Deep Eruption", M(B(E.Damage, 50), B(E.Area, -20)), "Pinpoint Geyser", B(E.Damage, 110), B(E.Area, -50), B(E.Speed, -20)),
-                R("Virulence", E.Poison, 20, "Septic Wound", M(B(E.Poison, 100)), "Virulent Core", B(E.Poison, 180), B(E.Damage, -35), B(E.Cost, 25)),
-                R("Contagion", E.Speed, 8, "Second Eruption", M(B(E.Repeat, 1), B(E.Damage, -15)), "Pestilent Wake", B(E.Explode, 100), B(E.Area, 40), B(E.Speed, -25)));
+                P("Miasma", U(E.Area, 10), "Poisoned Ground", M(B(E.Cloud, 20)), "Toxic Basin", M(B(E.Cloud, 30), B(E.Duration, 25)), "Broad Eruption", B(E.Area, 35)),
+                P("Virulence", M(B(E.Damage, 10)), "Septic Wound", M(B(E.Poison, 25)), "Virulent Core", M(B(E.Poison, 40)), "Lingering Toxins", B(E.Duration, 35)),
+                P("Pressure", U(E.Range, 10), "Deep Wells", M(B(E.Cost, -15), B(E.Damage, 10)), "Venom Tap", M(B(E.LifeOnHit, 3)), "Rapid Eruption", B(E.Speed, 18)));
             Add(t, StatType.GrantSplitShot,
-                R("Broadside", E.Range, 12, "Fivefold Shot", M(B(E.Projectiles, 2)), "Splinter Volley", B(E.Fork, 1), B(E.Projectiles, 2), B(E.Damage, -30)).Start(B(E.Projectiles, 2)),
-                R("Skewer", E.Damage, 15, "Through the Ranks", M(B(E.Pierce, 3)), "Needle Fan", B(E.Pierce, 8), B(E.Range, 50), B(E.Speed, -25)),
-                R("Ricochet", E.Speed, 8, "Rebound", M(B(E.Chains, 1)), "Bouncing Volley", B(E.Chains, 2), B(E.Damage, -30)),
-                R("Hail", E.Speed, 8, "Rapid Release", M(B(E.Speed, 25), B(E.Cost, 15)), "Endless Quiver", B(E.Speed, 60), B(E.Damage, -40), B(E.Cost, 30)));
+                P("Broadside", U(E.ProjectileSpeed, 12), "Fivefold Shot", M(B(E.Projectiles, 2)), "Splinter Volley", M(B(E.Fork, 1)), "Longshot", B(E.Range, 40)),
+                P("Ricochet", U(E.Area, 10), "Rebound", M(B(E.Chains, 1)), "Bouncing Volley", M(B(E.Chains, 1), B(E.MoreDamage, -15)), "Wide Volley", B(E.Projectiles, 1)),
+                P("Steady Hands", M(B(E.Damage, 10)), "Through the Ranks", M(B(E.Pierce, 1)), "Rapid Release", M(B(E.Speed, 22)), "Hunter's Sustenance", B(E.LifeOnHit, 3)));
             Add(t, StatType.GrantPiercingShot,
-                R("Ballista", E.Range, 15, "Deep Draw", M(B(E.Damage, 40), B(E.Speed, -10)), "Siege Arrow", B(E.SingleProjectile, 1), B(E.Damage, 110), B(E.Speed, -25)),
-                R("Forked Shaft", E.Range, 15, "Split Tip", M(B(E.Projectiles, 2)), "Shrapnel", B(E.Fork, 1), B(E.Damage, -30)),
-                R("Frost-Tipped", E.Duration, 15, "Cold Iron", M(B(E.Cold, 1), B(E.Chill, 50)), "Brittle Line", B(E.Shatter, 100), B(E.Damage, -25)),
-                R("Drill", E.Speed, 8, "Quick Draw", M(B(E.Speed, 25)), "Repeating Ballista", B(E.Speed, 55), B(E.Damage, -35), B(E.Cost, 40)));
+                P("Long Draw", U(E.Range, 12), "Deep Draw", M(B(E.ChargeDamage, 20)), "Patient Hunter", M(B(E.ChargeDamage, 40), B(E.ChargeTime, 25)), "Far Sight", B(E.Range, 50)),
+                P("Heavy Shaft", U(E.ProjectileSpeed, 15), "Armour Breaker", M(B(E.ArmourPenetration, 60)), "Heartseeker", M(B(E.FirstStrike, 40)), "Execution", B(E.DamageVsLowLife, 40)),
+                P("Breath Control", M(B(E.Damage, 10)), "Quick Draw", M(B(E.ChargeTime, -15)), "Practised Sniper", M(B(E.ChargeTime, -20)), "Sure Aim", B(E.ArmourPenetration, 90), B(E.Damage, 15)));
             Add(t, StatType.GrantRainOfArrows,
-                R("Blanket", E.Area, 15, "Arrowstorm", M(B(E.Projectiles, 3)), "Cloudburst", B(E.Projectiles, 5), B(E.Area, 70), B(E.Damage, -35)),
-                R("Bullseye", E.Damage, 15, "Concentrated Rain", M(B(E.Area, -30), B(E.Damage, 45)), "Death Zone", B(E.Area, -45), B(E.Damage, 100), B(E.Speed, -25)),
-                R("Burning Rain", E.Duration, 15, "Flaming Shafts", M(B(E.Fire, 1), B(E.Ignite, 50)), "Ashfall", B(E.Explode, 100), B(E.Damage, -25)),
-                R("Relentless", E.Speed, 8, "Second Wave", M(B(E.ExtraWaves, 3)), "Rolling Barrage", B(E.ExtraWaves, 6), B(E.Damage, -35), B(E.Cost, 40)));
+                P("Arrowfall", U(E.Area, 12), "Arrowstorm", M(B(E.Projectiles, 3)), "Cloudburst", M(B(E.Projectiles, 4), B(E.MoreDamage, -15)), "Broad Coverage", B(E.RainSpread, 35), B(E.Projectiles, 2)),
+                P("Focused Rain", M(B(E.Damage, 10)), "Concentrated Rain", M(B(E.RainSpread, -20)), "Death Zone", M(B(E.RainSpread, -25)), "Overlapping Impacts", B(E.Area, 40)),
+                P("Sustained Rain", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Second Salvo", M(B(E.RainSalvos, 1), B(E.MoreDamage, -25)), "Rolling Barrage", M(B(E.RainSalvos, 1), B(E.MoreDamage, -33.333333f)), "Blood Rain", B(E.LifeOnHit, 3)));
             Add(t, StatType.GrantBurningArrow,
-                R("Blast", E.Area, 15, "Flame Burst", M(B(E.Area, 50)), "Powder Keg", B(E.Explode, 100), B(E.Damage, -25)),
-                R("Ignition", E.Duration, 20, "Firestarter", M(B(E.Ignite, 60)), "Slow Burn", B(E.Ignite, 40), B(E.Damage, 65), B(E.Speed, -30)),
-                R("Fire Fan", E.Range, 12, "Burning Volley", M(B(E.Projectiles, 2)), "Spreading Flames", B(E.Fork, 1), B(E.Damage, -25)),
-                R("Rapid Fire", E.Speed, 8, "Hot Draw", M(B(E.Speed, 25)), "Flashfire", B(E.Speed, 60), B(E.Damage, -35), B(E.Cost, 40)));
+                P("Ignition", U(E.Duration, 15), "Firestarter", M(B(E.Ignite, 20)), "Slow Burn", M(B(E.Duration, 45), B(E.Ignite, 20)), "Hot Coals", B(E.Damage, 25)),
+                P("Blast Radius", U(E.Area, 10), "Flame Burst", M(B(E.Area, 25)), "Scorched Earth", M(B(E.Area, 35), B(E.Pierce, 1)), "Burning Volley", B(E.Projectiles, 1)),
+                P("Hot Draw", U(E.ProjectileSpeed, 12), "Rapid Fire", M(B(E.Speed, 12)), "Flashfire", M(B(E.Speed, 20)), "Searing Reach", B(E.Range, 40), B(E.Projectiles, 1)));
             Add(t, StatType.GrantVenomArrow,
-                R("Fangs", E.Poison, 20, "Deep Venom", M(B(E.Poison, 100)), "Black Blood", B(E.Poison, 180), B(E.Damage, -35)),
-                R("Toxic Air", E.Area, 15, "Venom Plume", M(B(E.Cloud, 60)), "Choking Fog", B(E.Cloud, 120), B(E.Area, 60), B(E.Speed, -25)),
-                R("Infection", E.Range, 12, "Infected Shaft", M(B(E.Pierce, 3)), "Contagious Volley", B(E.Projectiles, 3), B(E.Fork, 1), B(E.Damage, -35)),
-                R("Pestilence", E.Speed, 8, "Septic Burst", M(B(E.Explode, 40)), "Plague Carrier", B(E.Explode, 60), B(E.Area, 50), B(E.Damage, -25)));
+                P("Venom Glands", U(E.Duration, 15), "Deep Venom", M(B(E.Poison, 25)), "Black Blood", M(B(E.Poison, 40)), "Lingering Venom", B(E.Duration, 40)),
+                P("Toxic Air", U(E.Area, 10), "Venom Plume", M(B(E.Cloud, 20)), "Choking Fog", M(B(E.Cloud, 30)), "Wide Infection", B(E.Projectiles, 1)),
+                P("Infected Shaft", U(E.ProjectileSpeed, 12), "Piercing Fangs", M(B(E.Pierce, 1)), "Contagious Volley", M(B(E.Projectiles, 2)), "Quick Fangs", B(E.Speed, 20)));
             Add(t, StatType.GrantCleave,
-                R("Wide Sweep", E.Area, 15, "Broad Blade", M(B(E.Range, 35)), "Horizon Cleaver", B(E.Area, 100), B(E.Damage, -30)),
-                R("Execution", E.Damage, 15, "Finishing Edge", M(B(E.Cull, 1)), "Headsman's Blow", B(E.Damage, 100), B(E.Speed, -30), B(E.Area, -30)),
-                R("Frenzy", E.Speed, 8, "Fast Follow-through", M(B(E.Speed, 25)), "Blade Tempest", B(E.Speed, 60), B(E.Damage, -35), B(E.Cost, 30)),
-                R("Bloodletting", E.Leech, 1, "Ravenous Edge", M(B(E.Leech, 5), B(E.Splash, 25)), "Bloodbath", B(E.Explode, 100), B(E.Damage, -25)));
+                P("Broad Blade", U(E.Range, 10), "Wide Sweep", M(B(E.Area, 25)), "Horizon Cleaver", M(B(E.Range, 35)), "Reaching Edge", B(E.Area, 35)),
+                P("Bloodletting", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Ravenous Edge", M(B(E.Leech, 2)), "Bloodbath", M(B(E.LifeOnHit, 4)), "Red Steel", B(E.Speed, 18)),
+                P("Executioner", M(B(E.Damage, 10)), "Finishing Edge", M(B(E.DamageVsLowLife, 20)), "Headsman's Blow", M(B(E.Cull, 1)), "Clean Cut", B(E.ArmourPenetration, 80)));
             Add(t, StatType.GrantPulverize,
-                R("Earthbreaker", E.Area, 15, "Seismic Reach", M(B(E.Area, 50)), "Worldshaker", B(E.Area, 100), B(E.Speed, -30)),
-                R("Crushing Force", E.Damage, 15, "Weight of Stone", M(B(E.Damage, 45), B(E.Area, -20)), "Anvil", B(E.Damage, 120), B(E.Speed, -35), B(E.Area, -30)),
-                R("Shrapnel", E.Splash, 10, "Broken Bones", M(B(E.Splash, 40)), "Detonating Impact", B(E.Explode, 100), B(E.Damage, -25)),
-                R("Frosthammer", E.Duration, 20, "Frozen Impact", M(B(E.Cold, 1), B(E.Chill, 60)), "Icebreaker", B(E.Shatter, 100), B(E.Speed, -20)));
+                P("Earthbreaker", U(E.Area, 10), "Seismic Reach", M(B(E.Area, 25)), "Worldshaker", M(B(E.Area, 50), B(E.MoreDamage, -15)), "Heavy Impact", B(E.Damage, 30)),
+                P("Crushing Force", U(E.ArmourPenetration, 20), "Weight of Stone", M(B(E.ArmourPenetration, 80)), "Anvil", M(B(E.FirstStrike, 40)), "Cracked Armour", B(E.ArmourPenetration, 120)),
+                P("Broken Bones", U(E.Range, 10), "Splintering Impact", M(B(E.Splash, 15)), "Bonecrusher", M(B(E.Splash, 25)), "Steady Blows", B(E.Speed, 18)));
             Add(t, StatType.GrantReapingArc,
-                R("Harvest", E.Range, 15, "Long Scythe", M(B(E.Area, 45)), "Reaper's Horizon", B(E.Range, 80), B(E.Damage, -25)),
-                R("Executioner", E.Damage, 15, "Final Cut", M(B(E.Cull, 1)), "Death Sentence", B(E.Damage, 100), B(E.Area, -45), B(E.Speed, -20)),
-                R("Blood Harvest", E.Leech, 1, "Red Harvest", M(B(E.Splash, 45)), "Feast", B(E.Leech, 10), B(E.Explode, 80), B(E.Speed, -25)),
-                R("Quickening", E.Speed, 8, "Light Haft", M(B(E.Speed, 25)), "Whistling Steel", B(E.Speed, 65), B(E.Damage, -40)));
+                P("Long Scythe", U(E.Range, 10), "Harvest", M(B(E.Range, 25)), "Reaper's Horizon", M(B(E.Range, 35)), "Wide Harvest", B(E.Area, 30)),
+                P("Blood Harvest", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Red Harvest", M(B(E.Leech, 2)), "Feast", M(B(E.LifeOnHit, 4)), "Quickening", B(E.Speed, 18)),
+                P("Final Cut", M(B(E.Damage, 10)), "Reaper's Mark", M(B(E.DamageVsLowLife, 20)), "Death Sentence", M(B(E.DamageVsLowLife, 40)), "Sharp Harvest", B(E.ArmourPenetration, 90)));
             Add(t, StatType.GrantLungingThrust,
-                R("Pursuit", E.Range, 15, "Long Point", M(B(E.Range, 40)), "Farstrider", B(E.Range, 100), B(E.Damage, -25)),
-                R("Duelist", E.Damage, 15, "Heartseeker", M(B(E.Cull, 1)), "Perfect Thrust", B(E.Damage, 120), B(E.Speed, -30)),
-                R("Impaler", E.Splash, 10, "Skewering Point", M(B(E.Splash, 50)), "Explosive Entry", B(E.Explode, 100), B(E.Damage, -25)),
-                R("Flurry", E.Speed, 8, "Rapid Thrust", M(B(E.Speed, 25)), "Thousand Needles", B(E.Speed, 70), B(E.Damage, -40), B(E.Cost, 40)));
+                P("Pursuit", U(E.Range, 10), "Long Point", M(B(E.Range, 25)), "Farstrider", M(B(E.Range, 40)), "Swift Entry", B(E.Speed, 18)),
+                P("Duelist", M(B(E.Damage, 10)), "Heartseeker", M(B(E.FirstStrike, 25)), "Perfect Thrust", M(B(E.FirstStrike, 35)), "Vital Point", B(E.ArmourPenetration, 100)),
+                P("Impaler", U(E.ArmourPenetration, 20), "Skewering Point", M(B(E.Splash, 15)), "Through and Through", M(B(E.Splash, 25)), "Life Tap", B(E.LifeOnHit, 4)));
             Add(t, StatType.GrantWhirlwind,
-                R("Cyclone", E.Area, 15, "Wide Orbit", M(B(E.Range, 35)), "Eye of the Storm", B(E.Area, 100), B(E.Damage, -35)),
-                R("Razor Vortex", E.Speed, 8, "Rising Tempo", M(B(E.Speed, 25)), "Dervish", B(E.Speed, 65), B(E.Area, -35), B(E.Cost, 40)),
-                R("Sustenance", E.Leech, 1, "Blood Funnel", M(B(E.Leech, 5), B(E.Cost, -20)), "Sanguine Storm", B(E.Leech, 10), B(E.Damage, -25), B(E.Splash, 40)),
-                R("Winterwind", E.Duration, 15, "Cold Steel", M(B(E.Cold, 1), B(E.Chill, 60)), "Frozen Maelstrom", B(E.Shatter, 100), B(E.Speed, -20)));
+                P("Wide Orbit", U(E.Area, 10), "Cyclone", M(B(E.Area, 25)), "Eye of the Storm", M(B(E.Area, 35)), "Long Blades", B(E.Range, 35)),
+                P("Rising Tempo", M(B(E.Speed, 5)), "Razor Vortex", M(B(E.Speed, 12)), "Dervish", M(B(E.Speed, 20)), "Unbroken Spin", B(E.Cost, -25), B(E.Damage, 15)),
+                P("Sustenance", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Blood Funnel", M(B(E.LifeOnHit, 2)), "Sanguine Storm", M(B(E.LifeOnHit, 3)), "Reaching Steel", B(E.Range, 30)));
             Add(t, StatType.GrantFissure,
-                R("Fault Line", E.Range, 15, "Deep Fault", M(B(E.Range, 45)), "Continental Rift", B(E.Range, 100), B(E.Area, -35)),
-                R("Fracture", E.Area, 15, "Broad Crack", M(B(E.Area, 55)), "Broken Earth", B(E.Area, 100), B(E.Damage, -30)),
-                R("Molten Core", E.Duration, 15, "Lava Vein", M(B(E.Fire, 1), B(E.Ignite, 60)), "Volcanic Rupture", B(E.Explode, 100), B(E.Speed, -25)),
-                R("Tectonic Force", E.Damage, 15, "Deep Pressure", M(B(E.Damage, 45)), "Cataclysm", B(E.Damage, 110), B(E.Speed, -35)));
+                P("Fault Line", U(E.Range, 10), "Deep Fault", M(B(E.Range, 25)), "Continental Rift", M(B(E.Range, 40)), "Wide Fault", B(E.Area, 30)),
+                P("Molten Core", U(E.Duration, 15), "Lava Vein", M(B(E.Fire, 1), B(E.Ignite, 15)), "Volcanic Rupture", M(B(E.Ignite, 25), B(E.Area, 25)), "Lingering Heat", B(E.Duration, 40)),
+                P("Tectonic Force", U(E.ArmourPenetration, 20), "Deep Pressure", M(B(E.Damage, 25)), "Bedrock Breaker", M(B(E.ArmourPenetration, 120)), "Fault Recovery", B(E.LifeOnHit, 4)));
             Add(t, StatType.GrantAftershock,
-                R("Rolling Thunder", E.Range, 12, "Fourth Tremor", M(B(E.ExtraWaves, 1)), "Unending Quake", B(E.ExtraWaves, 3), B(E.Damage, -35)),
-                R("Epicenter", E.Damage, 15, "Focused Shock", M(B(E.Damage, 45), B(E.Area, -20)), "Ground Zero", B(E.Damage, 110), B(E.Area, -40), B(E.Speed, -20)),
-                R("Shockwave", E.Area, 15, "Wider Ripples", M(B(E.Area, 50)), "Tidal Earth", B(E.Area, 100), B(E.Damage, -30)),
-                R("Stormquake", E.Duration, 15, "Charged Ground", M(B(E.Lightning, 1), B(E.Shock, 60)), "Thunder Below", B(E.Shock, 40), B(E.Explode, 80), B(E.Speed, -25)));
+                P("Rolling Thunder", U(E.Range, 10), "Fourth Tremor", M(B(E.ExtraWaves, 1)), "Unending Quake", M(B(E.ExtraWaves, 1), B(E.MoreDamage, -15)), "Long Ripples", B(E.Range, 35)),
+                P("Epicentre", M(B(E.Damage, 10)), "Focused Shock", M(B(E.ArmourPenetration, 60)), "Ground Zero", M(B(E.FirstStrike, 35)), "Tremor Force", B(E.Damage, 25)),
+                P("Shockwave", U(E.Area, 10), "Wider Ripples", M(B(E.Area, 25)), "Tidal Earth", M(B(E.Area, 35)), "Resonant Recovery", B(E.LifeOnHit, 3)));
             Add(t, StatType.GrantCrossSlash,
-                R("Long Blades", E.Range, 15, "Extended Cross", M(B(E.Range, 40)), "Crossroads", B(E.Range, 90), B(E.Area, 40), B(E.Speed, -25)),
-                R("Flashing Steel", E.Speed, 8, "Swift Cuts", M(B(E.Speed, 25)), "Bladedance", B(E.Speed, 65), B(E.Damage, -35)),
-                R("Death Cross", E.Damage, 15, "Finishing Cut", M(B(E.Cull, 1)), "Fatal Intersection", B(E.Damage, 110), B(E.Area, -40), B(E.Speed, -20)),
-                R("Shattering Cuts", E.Duration, 15, "Icy Edges", M(B(E.Cold, 1), B(E.Chill, 60)), "Glass Cross", B(E.Shatter, 100), B(E.Damage, -25)));
+                P("Long Blades", U(E.Range, 10), "Extended Cross", M(B(E.Range, 25)), "Crossroads", M(B(E.Area, 35)), "Far Cuts", B(E.Range, 35)),
+                P("Flashing Steel", M(B(E.Speed, 5)), "Swift Cuts", M(B(E.Speed, 12)), "Bladedance", M(B(E.Speed, 20)), "Blood Dance", B(E.LifeOnHit, 3)),
+                P("Death Cross", U(E.ArmourPenetration, 20), "Finishing Cut", M(B(E.DamageVsLowLife, 20)), "Fatal Intersection", M(B(E.DamageVsLowLife, 40)), "Deep Cuts", B(E.ArmourPenetration, 100)));
             Add(t, StatType.GrantFangStrike,
-                R("Venom", E.Poison, 20, "Deep Fangs", M(B(E.Poison, 100)), "Deathbite", B(E.Poison, 180), B(E.Speed, -25)),
-                R("Adder", E.Speed, 8, "Quick Bite", M(B(E.Speed, 25)), "Viper's Dance", B(E.Speed, 70), B(E.Damage, -40)),
-                R("Puncture", E.Damage, 15, "Vital Strike", M(B(E.Cull, 1)), "Assassination", B(E.Damage, 120), B(E.Speed, -30)),
-                R("Sepsis", E.Area, 15, "Infected Wound", M(B(E.Cloud, 50)), "Plague Fang", B(E.Explode, 100), B(E.Cloud, 70), B(E.Damage, -30)));
+                P("Venom", U(E.Duration, 15), "Deep Fangs", M(B(E.Poison, 25)), "Deathbite", M(B(E.Poison, 45)), "Lasting Bite", B(E.Duration, 40)),
+                P("Adder", M(B(E.Speed, 5)), "Quick Bite", M(B(E.Speed, 12)), "Viper's Dance", M(B(E.Speed, 20)), "Siphoning Fangs", B(E.LifeOnHit, 4)),
+                P("Puncture", U(E.ArmourPenetration, 20), "Vital Strike", M(B(E.FirstStrike, 25)), "Assassination", M(B(E.Cull, 1)), "Long Fangs", B(E.Range, 35)));
             Add(t, StatType.GrantVenomSlash,
-                R("Poison Fan", E.Area, 15, "Wide Infection", M(B(E.Range, 40)), "Pestilent Sweep", B(E.Area, 100), B(E.Damage, -30)),
-                R("Virulent Edge", E.Poison, 20, "Septic Blade", M(B(E.Poison, 100)), "Black Venom", B(E.Poison, 180), B(E.Speed, -25)),
-                R("Miasmic Blade", E.Area, 15, "Toxic Wake", M(B(E.Cloud, 60)), "Choking Slash", B(E.Cloud, 120), B(E.Damage, -30)),
-                R("Contagious Cuts", E.Speed, 8, "Spreading Rot", M(B(E.Explode, 40)), "Plague Reaper", B(E.Explode, 60), B(E.Speed, 35), B(E.Damage, -35)));
+                P("Poison Fan", U(E.Range, 10), "Wide Infection", M(B(E.Area, 25)), "Pestilent Sweep", M(B(E.Range, 35)), "Spreading Cut", B(E.Area, 35)),
+                P("Virulent Edge", U(E.Duration, 15), "Septic Blade", M(B(E.Poison, 25)), "Black Venom", M(B(E.Poison, 45)), "Persistent Rot", B(E.Duration, 40)),
+                P("Miasmic Blade", M(B(E.Damage, 10)), "Toxic Wake", M(B(E.Cloud, 20)), "Choking Slash", M(B(E.Cloud, 30)), "Contagious Cuts", B(E.Speed, 20)));
             Add(t, StatType.GrantRaiseSkeletons,
-                R("Legion", E.MinionLife, 12, "Reinforcements", M(B(E.Minions, 2)), "Bone Army", B(E.Minions, 4), B(E.Damage, -35), B(E.MinionLife, -25)),
-                R("Champions", E.Damage, 15, "Veterans", M(B(E.MinionArmour, 180)), "Bone Champion", B(E.Minions, -2), B(E.Damage, 120), B(E.MinionLife, 100)),
-                R("Guardians", E.MinionResists, 8, "Bone Shields", M(B(E.MinionLife, 60)), "Unbroken Phalanx", B(E.MinionArmour, 600), B(E.MinionLife, 80), B(E.MinionSpeed, -25)),
-                R("Sacrifice", E.MinionSpeed, 10, "Unstable Bones", M(B(E.MinionDeathBurst, 60)), "Final Service", B(E.MinionDeathBurst, 140), B(E.Duration, -50), B(E.MinionLife, -25)));
+                P("March of Bones", U(E.MinionMoveSpeed, 12), "Reinforcements", M(B(E.Minions, 1)), "Bone Army", M(B(E.Minions, 2), B(E.MoreDamage, -25)), "More Warriors", B(E.Minions, 1), B(E.MoreDamage, -15)),
+                P("Veteran Bones", U(E.MinionLife, 12), "Bone Shields", M(B(E.MinionArmour, 100), B(E.MinionResists, 60)), "Bone Champion", M(B(E.HalfMinions, 1), B(E.MoreDamage, 70), B(E.MinionLife, 50), B(E.MinionSize, 50)), "Unbroken Phalanx", B(E.MinionArmour, 160), B(E.MinionResists, 75)),
+                P("Sharpened Blades", M(B(E.Damage, 10)), "Relentless Warriors", M(B(E.Speed, 15)), "Final Service", M(B(E.MinionDeathBurst, 35)), "Drilled Warriors", B(E.Speed, 20)));
             Add(t, StatType.GrantSkeletonMages,
-                R("Conclave", E.MinionLife, 12, "More Apprentices", M(B(E.Minions, 1)), "Grand Conclave", B(E.Minions, 3), B(E.Damage, -35)),
-                R("Archmages", E.Damage, 15, "Focused Studies", M(B(E.Damage, 45)), "Sole Archmage", B(E.Minions, -2), B(E.MinionSpeed, -25), B(E.Damage, 130), B(E.MinionLife, 70)),
-                R("Winter School", E.Duration, 15, "Frost Lessons", M(B(E.Cold, 1), B(E.Chill, 60)), "Frozen Curriculum", B(E.Shatter, 100), B(E.MinionSpeed, -20)),
-                R("Storm School", E.MinionSpeed, 10, "Lightning Lessons", M(B(E.Lightning, 1), B(E.Shock, 60)), "Storm College", B(E.Splash, 60), B(E.Damage, -25), B(E.MinionSpeed, 30)));
+                P("Winter School", U(E.ProjectileSpeed, 12), "More Missiles", M(B(E.Projectiles, 2), B(E.MoreDamage, -20)), "Frozen Curriculum", M(B(E.Cold, 1), B(E.Chill, 20), B(E.Duration, 35)), "More Apprentices", B(E.Minions, 1), B(E.MoreDamage, -15)),
+                P("Storm School", U(E.MinionMoveSpeed, 12), "Quick Lessons", M(B(E.Speed, 12)), "Storm College", M(B(E.Lightning, 1), B(E.Shock, 20), B(E.Speed, 10)), "Arcane Reach", B(E.Area, 40), B(E.Minions, 1), B(E.MoreDamage, -15)),
+                P("Fire School", U(E.MinionLife, 12), "Warded Robes", M(B(E.MinionArmour, 150), B(E.MinionResists, 100)), "Fire College", M(B(E.Fire, 1), B(E.Ignite, 20)), "Grand Conclave", B(E.Minions, 1), B(E.MoreDamage, -15)));
             Add(t, StatType.GrantSpiritWolves,
-                R("Pack", E.MinionSpeed, 10, "Packmates", M(B(E.Minions, 2)), "Endless Hunt", B(E.Minions, 3), B(E.Damage, -35), B(E.MinionLife, -20)),
-                R("Alpha", E.Damage, 15, "Dominant Hunter", M(B(E.MinionLife, 50)), "Lone Wolf", B(E.Minions, -2), B(E.Damage, 130), B(E.MinionLife, 100)),
-                R("Spirit Bond", E.Duration, 20, "Loyal Companions", M(B(E.Duration, 70)), "Eternal Pack", B(E.Duration, 200), B(E.Leech, 8), B(E.Damage, -25)),
-                R("Wild Hunt", E.MinionSpeed, 10, "Blood Scent", M(B(E.Cull, 1)), "Feral Spirits", B(E.MinionSpeed, 70), B(E.Damage, 70), B(E.Duration, -55)));
+                P("Hunting Pace", U(E.MinionMoveSpeed, 15), "Packmates", M(B(E.Minions, 1)), "Blood Scent", M(B(E.Cull, 1)), "Running Pack", B(E.Minions, 1), B(E.MoreDamage, -15)),
+                P("Spirit Bond", U(E.MinionLife, 12), "Spirit Hide", M(B(E.MinionArmour, 100), B(E.MinionResists, 75)), "Eternal Pack", M(B(E.MinionDuration, 80)), "Wild Recovery", B(E.MinionRegen, 3)),
+                P("Pack Instinct", M(B(E.Damage, 10)), "Coordinated Hunt", M(B(E.PackHunt, 5)), "Strength in Numbers", M(B(E.PackHunt, 5), B(E.Minions, 1)), "Relentless Chase", B(E.Speed, 18), B(E.MinionMoveSpeed, 20)));
             Add(t, StatType.GrantBoneGolem,
-                R("Bastion", E.MinionResists, 8, "Bone Plating", M(B(E.MinionArmour, 400)), "Living Fortress", B(E.MinionLife, 150), B(E.MinionArmour, 600), B(E.MinionSpeed, -30)),
-                R("Bonecrusher", E.Damage, 15, "Wide Slam", M(B(E.Area, 60)), "Siege Golem", B(E.Damage, 110), B(E.Area, 60), B(E.MinionSpeed, -30)),
-                R("Twins", E.MinionSpeed, 10, "Second Guardian", M(B(E.Minions, 1), B(E.Damage, -15)), "Bone Swarm", B(E.Minions, 2), B(E.Damage, -30), B(E.MinionLife, -25)),
-                R("Ossuary", E.Duration, 20, "Unstable Core", M(B(E.MinionDeathBurst, 100)), "Bone Bomb", B(E.MinionDeathBurst, 200), B(E.Duration, -55), B(E.MinionSpeed, 40)));
+                P("Bone Plating", U(E.MinionLife, 12), "Bastion", M(B(E.MinionArmour, 180), B(E.MinionResists, 75)), "Living Fortress", M(B(E.MinionLife, 40), B(E.MinionRegen, 2)), "Ancient Bones", B(E.MinionArmour, 200), B(E.MinionResists, 75)),
+                P("Bonecrusher", U(E.Area, 12), "Wide Slam", M(B(E.Area, 25)), "Seismic Golem", M(B(E.GolemAftershock, 1)), "Heavy Fists", B(E.Damage, 30)),
+                P("Restless Guardian", U(E.MinionMoveSpeed, 15), "Swift Guardian", M(B(E.Speed, 15)), "Undying Guardian", M(B(E.MinionDuration, 80)), "Colossus", B(E.MinionSize, 30), B(E.Range, 25), B(E.Damage, 15)));
             Add(t, StatType.GrantSummonViper,
-                R("Nest", E.MinionLife, 12, "Brood", M(B(E.Minions, 1)), "Serpent Swarm", B(E.Minions, 3), B(E.Damage, -35)),
-                R("Venom Glands", E.Poison, 20, "Potent Venom", M(B(E.Poison, 100)), "Royal Cobra", B(E.Minions, -1), B(E.Cost, 40), B(E.Poison, 180), B(E.Damage, 60), B(E.MinionSpeed, -25)),
-                R("Miasma Spirits", E.Area, 15, "Toxic Breath", M(B(E.Cloud, 60)), "Plague Nest", B(E.Cloud, 120), B(E.Explode, 80), B(E.Damage, -30)),
-                R("Striking Spirits", E.MinionSpeed, 10, "Quick Fangs", M(B(E.MinionSpeed, 30)), "Fleeting Venom", B(E.MinionSpeed, 70), B(E.Damage, 60), B(E.Duration, -55)));
+                P("Venom Glands", U(E.Duration, 15), "Potent Venom", M(B(E.Poison, 25)), "Royal Venom", M(B(E.Poison, 40)), "Brood", B(E.Minions, 1), B(E.MoreDamage, -15)),
+                P("Serpent Scales", U(E.MinionLife, 12), "Hardened Scales", M(B(E.MinionArmour, 100), B(E.MinionResists, 75)), "Persistent Brood", M(B(E.MinionDuration, 60), B(E.Minions, 1), B(E.MoreDamage, -15)), "Regrowth", B(E.MinionRegen, 3)),
+                P("Striking Serpents", U(E.MinionMoveSpeed, 15), "Quick Fangs", M(B(E.Speed, 15)), "Toxic Trail", M(B(E.Cloud, 25)), "Serpent Swarm", B(E.Minions, 1), B(E.MoreDamage, -15)));
             return t;
         }
 
-        public static string Describe(WeaponSkillBonus b)
+        private static string Percent(float value, string stat) => Mathf.Abs(value).ToString("0.#") + "% " + (value < 0 ? "reduced " : "increased ") + stat;
+        private static string More(float value, string stat) => Mathf.Abs(value).ToString("0.#") + "% " + (value < 0 ? "less " : "more ") + stat;
+        public static string Describe(WeaponSkillBonus b, StatType grant = StatType.GrantIceShard)
         {
             string n = (b.Value > 0 ? "+" : "") + b.Value.ToString("0.#");
+            bool minion = SkillGrants.IsSummon(grant);
+            bool attack = minion || SkillGrants.IsBowSkill(grant) || System.Array.IndexOf(SkillGrants.MeleeSkills, grant) >= 0;
+            string damage = minion ? "minion damage" : "damage";
             switch (b.Effect)
             {
-                case E.Damage: return n + "% skill damage (additive within this tree)";
-                case E.Speed: return n + "% skill speed";
-                case E.Area: return n + "% area of effect";
-                case E.Range: return n + "% skill range";
-                case E.Projectiles: return n + " projectiles";
+                case E.Damage: return Percent(b.Value, damage);
+                case E.MoreDamage: return More(b.Value, damage);
+                case E.Speed: return Percent(b.Value, minion ? "minion attack speed" : attack ? "attack speed" : "cast speed");
+                case E.Area: return Percent(b.Value, "area of effect" + (grant == StatType.GrantRainOfArrows ? " per arrow impact" : ""));
+                case E.Range: return Percent(b.Value, attack && !minion && !SkillGrants.IsBowSkill(grant) ? "melee range" : "range");
+                case E.Projectiles: return n + (grant == StatType.GrantRainOfArrows ? " arrows per salvo" : minion ? " minion projectiles" : " projectiles");
                 case E.Chains: return n + " chains";
                 case E.Pierce: return "Pierces " + b.Value + " additional enemies";
-                case E.Fork: return "Projectiles split into two on their first enemy impact";
-                case E.Repeat: return "Repeat this spell " + b.Value + " additional time(s); repeats cannot repeat";
-                case E.Chill: return n + "% chance to chill";
-                case E.Shock: return n + "% chance to shock";
-                case E.Ignite: return n + "% chance to ignite";
-                case E.Shatter: return n + "% chance to shatter chilled enemies on kill";
-                case E.Explode: return n + "% chance to explode enemies on kill";
-                case E.Poison: return "Apply an additional " + b.Value + "% of hit damage as poison";
-                case E.Cloud: return "Leave venom clouds for " + b.Value + "% of hit damage per second";
-                case E.Duration: return n + "% ailment and temporary minion duration";
-                case E.Minions: return n + " maximum minions (minimum one)";
-                case E.MinionLife: return n + "% minion life";
-                case E.MinionSpeed: return n + "% minion attack and movement speed";
+                case E.Fork: return "Projectiles fork on their first enemy impact";
+                case E.Repeat: return "Repeats this spell " + b.Value + " additional time";
+                case E.Chill: return "Hits grant a " + b.Value.ToString("0.#") + "% chance to chill";
+                case E.Shock: return "Hits grant a " + b.Value.ToString("0.#") + "% chance to shock";
+                case E.Ignite: return "Hits grant a " + b.Value.ToString("0.#") + "% chance to ignite";
+                case E.Shatter: return "This skill has a " + b.Value.ToString("0.#") + "% chance to shatter chilled enemies on kill";
+                case E.Explode: return "This skill has a " + b.Value.ToString("0.#") + "% chance to explode enemies on kill";
+                case E.Poison: return "Inflicts poison dealing " + b.Value.ToString("0.#") + "% of hit damage";
+                case E.Cloud: return "Hits leave venom clouds dealing " + b.Value.ToString("0.#") + "% of hit damage per second";
+                case E.Duration: return Percent(b.Value, "ailment and venom cloud duration");
+                case E.MinionDuration: return Percent(b.Value, "summoned minion duration");
+                case E.Minions: return n + " maximum summoned minions";
+                case E.MinionLife: return Percent(b.Value, "minion maximum life");
+                case E.MinionSpeed: return Percent(b.Value, "minion attack and movement speed");
+                case E.MinionMoveSpeed: return Percent(b.Value, "minion movement speed");
                 case E.MinionArmour: return n + " minion armour";
-                case E.MinionResists: return n + "% minion elemental and poison resistances";
-                case E.Leech: return "Recover " + b.Value + "% of damage dealt as life";
+                case E.MinionResists: return Percent(b.Value, "minion elemental and poison resistances");
+                case E.Leech: return "Recover " + b.Value.ToString("0.#") + "% of damage dealt as life";
+                case E.LifeOnHit: return n + " life gained per enemy hit";
                 case E.Cull: return "Hits execute non-boss enemies below 10% life";
-                case E.Splash: return "Hits splash for " + b.Value + "% damage around their target";
-                case E.Fire: return "Skill hits deal fire damage";
-                case E.Cold: return "Skill hits deal cold damage";
-                case E.Lightning: return "Skill hits deal lightning damage";
-                case E.DamageVsChilled: return n + "% damage against chilled enemies";
-                case E.Cost: return n + "% mana or life cost";
-                case E.SingleProjectile: return "Fire exactly one projectile; overrides all extra projectiles and forks";
+                case E.Splash: return "Hits splash for " + b.Value.ToString("0.#") + "% damage around their target";
+                case E.Fire: return "Converts all damage to fire damage";
+                case E.Cold: return "Converts all damage to cold damage";
+                case E.Lightning: return "Converts all damage to lightning damage";
+                case E.DamageVsChilled: return Percent(b.Value, damage + " against chilled enemies");
+                case E.DamageVsLowLife: return Percent(b.Value, damage + " against enemies below 50% life");
+                case E.FirstStrike: return More(b.Value, damage + " against enemies at full life");
+                case E.Cost: return Percent(b.Value, "resource cost");
+                case E.SingleProjectile: return "can't fire more than 1 projectile\nprojectiles cannot fork";
+                case E.NoFork: return "projectiles cannot fork";
                 case E.ChainRetention: return n + " percentage points of damage retained per lightning jump";
-                case E.ExtraWaves: return n + " additional tremors or rain arrows";
-                case E.MinionDeathBurst: return "Combat death or expiry explodes for " + b.Value + "% minion maximum life";
+                case E.ExtraWaves: return n + " additional tremors";
+                case E.MinionDeathBurst: return "Skeletons explode on combat death for " + b.Value.ToString("0.#") + "% of maximum life";
+                case E.ProjectileSpeed: return Percent(b.Value, "projectile speed");
+                case E.HalfMinions: return "Maximum number of summoned skeletons is halved";
+                case E.MinionSize: return Percent(b.Value, "minion size");
+                case E.RainSpread: return Percent(b.Value, "arrow landing spread");
+                case E.RainSalvos: return n + " delayed salvo per attack";
+                case E.FireOrbit: return "Every " + b.Value + " uses, fire 8 fireballs in sequence around you at 40% of normal damage";
+                case E.ChargeDamage: return Percent(b.Value, "damage at full charge (scales with charge)");
+                case E.ChargeTime: return Percent(b.Value, "time required to fully charge");
+                case E.ArmourPenetration: return n + " armour penetration";
+                case E.PackHunt: return Percent(b.Value, "damage per other Spirit Wolf within 6 metres (up to 4)");
+                case E.MinionRegen: return "Minions regenerate " + b.Value.ToString("0.#") + "% of maximum life per second";
+                case E.GolemAftershock: return "Slam repeats after 0.6 seconds for 40% damage";
                 default: return n + " " + b.Effect;
             }
         }

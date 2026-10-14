@@ -10,6 +10,7 @@ namespace PoeClone.Player
     public class WeaponVenom : MonoBehaviour
     {
         private float nextCloud;
+        private readonly System.Collections.Generic.Dictionary<WeaponSkillBonuses, float> skillCloudTimes = new System.Collections.Generic.Dictionary<WeaponSkillBonuses, float>();
         private readonly System.Collections.Generic.List<GameObject> clouds = new System.Collections.Generic.List<GameObject>();
         private static readonly Color Green = new Color(0.38f, 0.72f, 0.15f);
         public static void Apply(Transform attacker, EnemyHealth enemy, float hit, float poison, float cloud, StatSheet sheet = null,
@@ -21,11 +22,12 @@ namespace PoeClone.Player
             Enemies.EnemyController ai = enemy.GetComponent<Enemies.EnemyController>();
             float multiplier = minionDamage ? 1f : sheet?.DamageMultiplier(false, false,
                 stats != null && stats.CurrentHealth < stats.MaxHealth * 0.5f,
-                ai != null && ai.IsChilled, StatType.PoisonDamage, damageOverTime: true) ?? 1f;
+                ai != null && ai.IsChilled, StatType.PoisonDamage, damageOverTime: true, skillIncreased: tree?.Get(WeaponSkillEffect.Damage) ?? 0f) ?? 1f;
             if (poison > 0f && !enemy.IsDead) venom.StartCoroutine(venom.Poison(enemy, hit * poison / 100f * multiplier, sheet?.Total(StatType.PoisonPenetration) ?? 0f, canEnrage, durationMultiplier, tree, attacker, minionDamage));
-            if (cloud > 0f && Time.time >= venom.nextCloud)
+            if (cloud > 0f && Time.time >= (tree != null && venom.skillCloudTimes.TryGetValue(tree, out float next) ? next : tree == null ? venom.nextCloud : 0f))
             {
-                venom.nextCloud = Time.time + 1f;
+                if (tree != null) venom.skillCloudTimes[tree] = Time.time + 1f;
+                else venom.nextCloud = Time.time + 1f;
                 venom.StartCoroutine(venom.Cloud(enemy.transform.position, hit * cloud / 100f * multiplier, sheet?.Total(StatType.PoisonPenetration) ?? 0f, canEnrage, durationMultiplier, radiusMultiplier, tree, attacker, minionDamage));
             }
         }
@@ -54,7 +56,7 @@ namespace PoeClone.Player
             for (int i = 0; i < Mathf.Max(1, Mathf.RoundToInt(6f * durationMultiplier)); i++)
             {
                 yield return new WaitForSeconds(0.5f);
-                foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None))
+                foreach (EnemyHealth enemy in EnemyHealth.Active.ToArray())
                 {
                     Vector3 d = enemy.transform.position - at; d.y = 0f;
                     if (enemy.IsDead || d.sqrMagnitude > 9f * radiusMultiplier * radiusMultiplier) continue;

@@ -60,6 +60,12 @@ namespace PoeClone.Player
         private bool pressSpentElsewhere;
         // The held press has attacked, so hovering an item, an NPC or a gate no longer stops it.
         private bool pressAttacking;
+        private bool sniperCharging;
+        private float sniperCharge;
+        private ItemData sniperWeapon;
+        private float sniperFullTime;
+        private float sniperFullFraction;
+        private bool sniperSoundPlayed;
         private float pendingDamage;
         // True between this script starting a swing and its strike frame. Skills replay the same
         // arm animations (Fire Bolt, Chain Lightning, Cleave), and their strike frames must not
@@ -136,6 +142,7 @@ namespace PoeClone.Player
         // stopped movement and played the death collapse, so combat just gets out of the way too.
         private void OnDied()
         {
+            CancelSniperCharge();
             SetHighlight(null);
             enabled = false;
         }
@@ -145,6 +152,7 @@ namespace PoeClone.Player
         // first, and whoever opens a 1v1 keeps the other locked in stagger.
         private void OnAttackCancelled()
         {
+            CancelSniperCharge();
             swingPending = false;
             castPending = false;
             bowSkillPending = null;
@@ -198,6 +206,27 @@ namespace PoeClone.Player
                 attackPressed = held && !blocked && !pressSpentElsewhere;
                 if (attackPressed)
                     pressAttacking = true;
+            }
+
+            if (sniperCharging)
+            {
+                if (SkillSet == null || SkillSet.MainWeapon != sniperWeapon || stats.IsDead ||
+                    PlayerController.IsUiFocused() || WeaponSkillTreeUI.IsOpen || DialogueUI.IsOpen)
+                {
+                    CancelSniperCharge();
+                    return;
+                }
+                FaceAimPoint();
+                sniperCharge = Mathf.Min(sniperFullTime, sniperCharge + Time.deltaTime);
+                sniperFullFraction = Mathf.Clamp01(sniperCharge / sniperFullTime);
+                if (sniperFullFraction >= 1f && !sniperSoundPlayed)
+                {
+                    sniperSoundPlayed = true;
+                    AudioManager.Instance?.PlayAtPoint(Resources.Load<AudioClip>("Sfx/piercing_charge_ready"), transform.position);
+                    PoeClone.Skills.SkillEffects.Shockwave(transform.position, 0.9f, new Color(1f, 0.85f, 0.4f), 0.18f);
+                }
+                if (!attackPressed) ReleaseSniper();
+                return;
             }
 
             // Whirlwind spins for as long as the attack is held.
@@ -297,6 +326,18 @@ namespace PoeClone.Player
                 touchAttackDirection = PlayerController.CameraRelativeDirection(VirtualInput.Aim);
 
             pendingDamage = ComputeDamage();
+            if (SkillSet != null && SkillSet.ActiveBowSkill == PoeClone.Skills.SkillId.PiercingShot && SkillSet.CanAffordAttackSkill)
+            {
+                sniperCharging = true;
+                sniperWeapon = SkillSet.MainWeapon;
+                sniperCharge = sniperFullFraction = 0f;
+                sniperSoundPlayed = false;
+                var tree = SkillSet.BonusesFor(PoeClone.Skills.SkillId.PiercingShot);
+                sniperFullTime = Mathf.Max(0.65f, 1.6f * (1f + tree.Get(WeaponSkillEffect.ChargeTime) / 100f) / SkillSet.SkillAttackRate(PoeClone.Skills.SkillId.PiercingShot));
+                controller?.SetChannelling(true);
+                attackAnimator.HoldBowDraw();
+                return;
+            }
 
             // A staff casts its spell; without the mana for it, it's swung instead.
             castPending = HasMainSkill && SkillSet.TrySpendMain();
@@ -304,7 +345,7 @@ namespace PoeClone.Player
             {
                 cooldownTimer = SkillSet.MainInterval();
                 swingPending = true;
-                attackAnimator.PlayCast(SkillSet.CastRateMultiplier * SkillSet.WeaponBonuses.SpeedMultiplier);
+                attackAnimator.PlayCast(SkillSet.SkillCastRate(SkillSet.WeaponSkill.Value));
                 return;
             }
             if (HasMainSkill)
@@ -329,7 +370,7 @@ namespace PoeClone.Player
 
             float attacksPerSecond = ComputeAttacksPerSecond(weaponType);
             if (bowSkillPending != null)
-                attacksPerSecond *= PoeClone.Skills.PlayerSkills.BowSpeed(bowSkillPending.Value) * SkillSet.BonusesFor(bowSkillPending.Value).SpeedMultiplier;
+                attacksPerSecond = CharacterAttackAnimator.BaseAttackSpeed(weaponType) * PoeClone.Skills.PlayerSkills.BowSpeed(bowSkillPending.Value) * SkillSet.SkillAttackRate(bowSkillPending.Value);
             cooldownTimer = attacksPerSecond > 0f ? 1f / attacksPerSecond : 1f;
 
             swingPending = true;
@@ -349,6 +390,30 @@ namespace PoeClone.Player
                     AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.playerSwing, transform.position);
             }
         }
+
+        private void CancelSniperCharge()
+        {
+            if (!sniperCharging) return;
+            sniperCharging = false;
+            controller?.SetChannelling(false);
+            attackAnimator?.ReleaseHold();
+        }
+
+        private void ReleaseSniper()
+        {
+            var id = PoeClone.Skills.SkillId.PiercingShot;
+            float charge = sniperFullFraction;
+            CancelSniperCharge();
+            if (!SkillSet.TrySpendAttackSkill(id, SkillSet.ActiveAttackLevel)) return;
+            float range = Reach(WeaponType.Bow);
+            // A tap is a weak shot; a full draw earns the damage through time and standing still.
+            float damage = pendingDamage * (1f + 2f * charge);
+            SkillSet.ReleaseBow(id, SkillSet.ActiveAttackLevel, damage, range, ArrowCount(), BowTarget(range * PlayerArrow.BowRangeMultiplier), charge);
+            attackAnimator.ReleaseHold();
+            cooldownTimer = 0.35f / SkillSet.SkillAttackRate(id);
+        }
+
+        private void OnDisable() => CancelSniperCharge();
 
         // Instantly snaps the player to face wherever the mouse is pointing, on the ground plane
         // through the player's feet, before the swing plays. Without this the swing would play
