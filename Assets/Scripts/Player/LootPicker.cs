@@ -21,6 +21,16 @@ namespace PoeClone.Player
         // Gold is collected just by walking over it.
         private const float GoldWalkReach = 2.2f;
 
+        public static bool AutomaticTooltips
+        {
+            get => PlayerPrefs.GetInt("PoeClone.AutomaticGroundTooltips", 1) != 0;
+            set
+            {
+                PlayerPrefs.SetInt("PoeClone.AutomaticGroundTooltips", value ? 1 : 0);
+                PlayerPrefs.Save();
+            }
+        }
+
         private PlayerController controller;
         private PlayerStats stats;
         private PlayerInventory inventory;
@@ -107,7 +117,7 @@ namespace PoeClone.Player
             {
                 pointed = TouchMode.Active ? ReadTouch() : ReadMouse();
                 // No mouse to hover with on a phone: the item nearest the player shows its tooltip.
-                if (pointed == null && TouchMode.Active)
+                if (pointed == null && TouchMode.Active && AutomaticTooltips)
                     pointed = NearestItem();
             }
             SetHovered(pointed);
@@ -153,7 +163,7 @@ namespace PoeClone.Player
             float bestSq = NearbyTooltipRange * NearbyTooltipRange;
             foreach (LootDrop drop in LootDrop.All)
             {
-                if (drop == null || drop.IsGold || !drop.IsInteractive)
+                if (drop == null || drop.IsPickup || !drop.IsInteractive)
                     continue;
                 Vector3 offset = drop.transform.position - transform.position;
                 offset.y = 0f;

@@ -217,6 +217,18 @@ namespace PoeClone.UI
                     chatLabel.text = ChatUI.Enabled ? "On" : "Off";
                 });
             chatLabel = chatButton.GetComponentInChildren<Text>();
+            if (TouchMode.Active)
+            {
+                RectTransform tooltipRow = SettingsRow("Interface", "Automatic ground tooltips", "Preview nearby ground items automatically.", ref y);
+                Text tooltipLabel = null;
+                GameObject tooltipButton = Button("AutomaticGroundTooltips", tooltipRow, LootPicker.AutomaticTooltips ? "On" : "Off",
+                    new Vector2(W-294, -15), new Vector2(216, 48), () =>
+                    {
+                        LootPicker.AutomaticTooltips = !LootPicker.AutomaticTooltips;
+                        tooltipLabel.text = LootPicker.AutomaticTooltips ? "On" : "Off";
+                    });
+                tooltipLabel = tooltipButton.GetComponentInChildren<Text>();
+            }
             if (!TouchMode.Active)
             {
                 RectTransform dashRow = SettingsRow("Controls", "Dash direction", "Choose how to aim Dash on desktop.", ref y);

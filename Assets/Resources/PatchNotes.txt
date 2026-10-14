@@ -1,3 +1,8 @@
+version: 2026-10-14-mobile-chat-and-tooltips
+- Mobile chat supports the keyboard's Enter/Send action. New messages appear at the bottom center for five seconds; open chat to read the history.
+- Nearby potions no longer trigger automatic tooltips on mobile. Settings now lets you turn automatic ground-item tooltips on or off.
+- Removed the desktop DEBUG button and performance overlay.
+
 version: 2026-10-14-reflective-water
 - Rivers, lakes and oceans reflect the surrounding scenery, with rippled reflections, refraction and shoreline foam.
 - River currents follow their channels. Lakes have gentle wind-driven waves; oceans have broader swells.

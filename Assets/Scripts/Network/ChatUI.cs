@@ -33,6 +33,7 @@ namespace PoeClone.Network
     {
         private const int HistoryLimit = 100;
         private const float MessageSeconds = 12f;   // how long a message shows while the chat is idle
+        private const float TouchMessageSeconds = 5f;
         private const float PeekSeconds = 4f;       // how long a scroll over the idle chat opens it
         private static readonly Color PanelColor = new Color(0.08f, 0.07f, 0.06f, 0.65f);
 
@@ -64,7 +65,7 @@ namespace PoeClone.Network
         public static int MessageCount { get; private set; }
 
         /// <summary>Whether the panel is showing (always true outside the touch player layout).</summary>
-        public static bool PanelVisible => Instance != null && Instance.panelRect != null && Instance.panelRect.gameObject.activeSelf;
+        public static bool PanelVisible => Enabled && Instance != null && (!TouchMode.Active || StayInChat || Instance.touchPanelOpen);
         public static bool Enabled => PlayerPrefs.GetInt("PoeClone.ChatEnabled", 0) != 0;
         public static void SetEnabled(bool enabled)
         {
@@ -126,7 +127,7 @@ namespace PoeClone.Network
             bool covered = UiKit.IsTextPromptOpen || PatchNotesUI.IsShowing ||
                 (browserNamePrompt != null && browserNamePrompt.IsShowing) ||
                 (browserLoading != null && browserLoading.IsShowing);
-            bool nativeInput = TouchMode.Active && panelRect.gameObject.activeInHierarchy && !covered;
+            bool nativeInput = TouchMode.Active && fieldRect.gameObject.activeInHierarchy && !covered;
             inputField.interactable = !nativeInput;
             if (!nativeInput)
             {
@@ -199,7 +200,10 @@ namespace PoeClone.Network
             bool touch = TouchMode.Active;
             bool touchPlayer = touch && !StayInChat;
 
-            panelRect.gameObject.SetActive(Enabled && (!touchPlayer || touchPanelOpen));
+            panelRect.gameObject.SetActive(Enabled);
+            bool idleTouch = touchPlayer && !touchPanelOpen;
+            fieldRect.gameObject.SetActive(!idleTouch);
+            sendRect.gameObject.SetActive(!idleTouch);
 
             // On a phone the opened chat sits at the bottom center, clear of the minimap and quest
             // tracker. On a computer it sits under the inventory (which shares its corner).
@@ -214,6 +218,7 @@ namespace PoeClone.Network
             panelRect.pivot = corner;
             panelRect.anchoredPosition = touchPlayer ? new Vector2(0f, 20f) : new Vector2(-20f, 20f);
             panelRect.sizeDelta = touch ? new Vector2(Mathf.Min(900f,Screen.width/chatCanvas.scaleFactor-48f),Mathf.Min(900f,Screen.height/chatCanvas.scaleFactor-48f)) : new Vector2(460f,220f);
+            if (idleTouch) panelRect.sizeDelta = new Vector2(panelRect.sizeDelta.x, 220f);
 
             int fontSize = touch ? TouchMode.ReadingFontSize : 16;
             logText.fontSize = fontSize;
@@ -224,9 +229,10 @@ namespace PoeClone.Network
             float fieldTop = touch ? 108f : 42f;
             fieldRect.offsetMax = new Vector2(0f, fieldTop);
             sendRect.offsetMax = new Vector2(-10f, fieldTop);
-            logViewport.offsetMin = new Vector2(10f, fieldTop + 4f);
-            logViewport.offsetMax = new Vector2(-10f,touch ? -120f : -10f);
-            panelRect.Find("Close").gameObject.SetActive(touchPlayer);
+            logViewport.offsetMin = new Vector2(10f, idleTouch ? 0f : fieldTop + 4f);
+            logViewport.offsetMax = new Vector2(-10f, idleTouch ? 0f : touch ? -120f : -10f);
+            logText.alignment = idleTouch ? TextAnchor.LowerCenter : TextAnchor.LowerLeft;
+            panelRect.Find("Close").gameObject.SetActive(touchPlayer && touchPanelOpen);
         }
 
         // Typing, a spectator (always in the chat), the touch chat opened, or a scroll just now.
@@ -379,7 +385,7 @@ namespace PoeClone.Network
             {
                 if (!active)
                 {
-                    float expires = historyTimes[k] + MessageSeconds;
+                    float expires = historyTimes[k] + (TouchMode.Active ? TouchMessageSeconds : MessageSeconds);
                     if (expires <= Time.unscaledTime)
                         break;
                     nextExpiry = Mathf.Min(nextExpiry, expires);

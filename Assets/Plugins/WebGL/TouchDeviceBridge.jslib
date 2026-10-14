@@ -20,6 +20,21 @@ mergeInto(LibraryManager.library, {
       field.placeholder = "Say something...";
       field.setAttribute("aria-label", "Chat message");
       field.setAttribute("enterkeyhint", "send");
+      // A form handles software keyboards which submit without an Enter keydown.
+      var form = document.createElement("form");
+      form.style.display = "contents";
+      form.appendChild(field);
+      field.poeForm = form;
+      var submit = function () {
+        var message = field.value;
+        field.value = "";
+        if (message.trim()) SendMessage(field.poeReceiver, "SubmitBrowserChat", message);
+      };
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        submit();
+      });
       field.style.cssText = "position:absolute;z-index:10000;box-sizing:border-box;border:1px solid #b3a899;border-radius:0;background:#332b24;color:#e0d9cc;padding:4px 8px;outline:none;";
       field.addEventListener("input", function () {
         SendMessage(field.poeReceiver, "ReceiveBrowserDraft", field.value);
@@ -32,11 +47,17 @@ mergeInto(LibraryManager.library, {
       });
       field.addEventListener("keydown", function (event) {
         event.stopPropagation();
-        if (event.key === "Enter" && !event.isComposing) {
+        if ((event.key === "Enter" || event.keyCode === 13) && !event.isComposing) {
           event.preventDefault();
-          SendMessage(field.poeReceiver, "SubmitBrowserChat", field.value);
-          field.value = "";
+          submit();
         } else if (event.key === "Escape") field.blur();
+      });
+      field.addEventListener("beforeinput", function (event) {
+        if (!event.isComposing && (event.inputType === "insertLineBreak" || event.inputType === "insertParagraph")) {
+          event.preventDefault();
+          event.stopPropagation();
+          submit();
+        }
       });
       ["pointerdown", "pointerup", "touchstart", "touchend", "keyup"].forEach(function (name) {
         field.addEventListener(name, function (event) { event.stopPropagation(); });
@@ -45,7 +66,7 @@ mergeInto(LibraryManager.library, {
     }
     field.poeReceiver = UTF8ToString(receiver);
     var host = Module.canvas.parentElement;
-    if (field.parentElement !== host) host.appendChild(field);
+    if (field.poeForm.parentElement !== host) host.appendChild(field.poeForm);
     var canvas = Module.canvas.getBoundingClientRect();
     var parent = host.getBoundingClientRect();
     field.style.display = "block";
