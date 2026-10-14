@@ -216,6 +216,8 @@ namespace PoeClone.Network
         private void SendEnemySkill(Component source, bool atPartner, float damage, Vector3 target)
         {
             CoopEvent e = EnemyEvent(CoopProtocol.Skill, source, atPartner);
+            if (source.GetComponent<EnemyController>()?.IsEnraged == true)
+                e.f |= CoopProtocol.FlagEnrage;
             e.a = damage;
             SetAim(e, target);
             Send(e);
@@ -334,6 +336,8 @@ namespace PoeClone.Network
             e.n = (int)kind;
             e.sd = seed;
             e.f = atPartner ? CoopProtocol.FlagAtYou : 0;
+            if (enemy.GetComponent<EnemyController>()?.IsEnraged == true)
+                e.f |= CoopProtocol.FlagEnrage;
             e.a = damage;
             e.r = reach;
             SetAt(e, from);
@@ -611,9 +615,9 @@ namespace PoeClone.Network
                     break;
                 case Party.AttackKind.Bolt:
                     if (atUs)
-                        EnemyProjectile.LaunchAt(from, aim, stats, kind, e.a, rollSeed: e.sd);
+                        EnemyProjectile.LaunchAt(from, aim, stats, kind, e.a, rollSeed: e.sd, enraged: (e.f & CoopProtocol.FlagEnrage) != 0);
                     else
-                        EnemyProjectile.LaunchVisual(from, aim, kind);
+                        EnemyProjectile.LaunchVisual(from, aim, kind, (e.f & CoopProtocol.FlagEnrage) != 0, Party.Partner);
                     break;
                 case Party.AttackKind.Rain:
                     EnemySkills.RainOfArrows(this, kind, aim, atUs ? stats : null, atUs ? e.a : 0f, rollSeed: e.sd);

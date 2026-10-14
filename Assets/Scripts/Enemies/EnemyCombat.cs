@@ -196,7 +196,7 @@ namespace PoeClone.Enemies
                 if (minion.IsDead)
                     return;
                 if (kind.IsRanged)
-                    EnemyProjectile.LaunchAt(BoltOrigin(transform), minion, kind, RollDamage());
+                    EnemyProjectile.LaunchAt(BoltOrigin(transform), minion, kind, RollDamage(), controller != null && controller.IsEnraged);
                 else if (DistanceTo(minion.transform.position) <= (attackRange + 0.3f * minion.transform.localScale.x) * ReachSlack)
                     minion.TakeHit(RollDamage(), kind.AttackDamageType);
                 return;
@@ -217,14 +217,15 @@ namespace PoeClone.Enemies
 
             if (kind.IsRanged)
             {
-                // Enraged, it leads its shot: aims where the player will be when the bolt gets there.
+                // Enraged archers lead using their faster arrow speed; spells track after launch.
                 Vector3 from = BoltOrigin(transform);
-                Vector3 aim = controller != null && controller.IsEnraged
-                    ? PlayerMotion.Intercept(playerStats, from, kind.ProjectileSpeed)
+                bool enraged = controller != null && controller.IsEnraged;
+                Vector3 aim = enraged && (kind.Bow || kind.Javelin)
+                    ? PlayerMotion.Intercept(playerStats, from, EnemyProjectile.Speed(kind, enraged))
                     : playerStats.transform.position;
                 float bolt = RollDamage();
                 int seed = EventRandom.NextSeed();
-                EnemyProjectile.LaunchAt(from, aim, playerStats, kind, bolt, rollSeed: seed);
+                EnemyProjectile.LaunchAt(from, aim, playerStats, kind, bolt, rollSeed: seed, enraged: enraged);
                 Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Bolt, false, bolt, 0f, from, aim, seed);
                 return;
             }
@@ -259,7 +260,7 @@ namespace PoeClone.Enemies
             else if (kind.IsRanged)
             {
                 Vector3 from = BoltOrigin(transform);
-                EnemyProjectile.LaunchVisual(from, at, kind);
+                EnemyProjectile.LaunchVisual(from, at, kind, controller != null && controller.IsEnraged, Party.Partner);
                 Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Bolt, true, damage, 0f, from, at, seed);
             }
             else

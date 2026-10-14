@@ -1,3 +1,8 @@
+version: 2026-10-14-enrage-pursuit
+- Enraged mage bolts seek their target until they come within 3 units, then fly straight for a final dodge window.
+- Enraged archers fire projectiles 50% faster, including volleys.
+- Enraged melee enemies gain an additional 300% increased movement speed that fades over 1.5 seconds, then repeats after a 1-second cooldown. Refreshing enrage does not restart the burst.
+
 version: 2026-10-14-weapon-tree-redesign
 - Rebuilt all 24 weapon trees with winding, branching paths, stronger destinations behind related small passives, and modest damage alongside utility. Removed floating branch labels and fixed overflowing node descriptions.
 - Increased/reduced damage and speed add to the corresponding gear bonuses; more/less damage modifiers multiply independently. Old weapon allocations are refunded while weapon level and experience are preserved.

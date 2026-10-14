@@ -121,15 +121,31 @@ namespace PoeClone.Enemies
         private float MoveSpeed =>
             (player != null
                 ? player.MoveSpeed * speedRatioToPlayer
-                : fallbackSpeed) * (Time.time < chilledUntil ? 0.5f : 1f) * (IsHasted ? HasteSpeed : 1f) * (IsEnraged ? (kind != null && kind.IsBoss ? 1.25f : EnrageSpeed) : 1f);
+                : fallbackSpeed) * (Time.time < chilledUntil ? 0.5f : 1f) * (IsHasted ? HasteSpeed : 1f) * EnrageMoveMultiplier;
+
+        private float EnrageMoveMultiplier
+        {
+            get
+            {
+                if (!IsEnraged) return 1f;
+                float speed = kind != null && kind.IsBoss ? 1.25f : EnrageSpeed;
+                if (kind == null || kind.IsRanged) return speed;
+                float phase = (Time.time - enragedAt) % (MeleeBurstSeconds + MeleeBurstCooldown);
+                return speed + MeleeBurstIncrease * Mathf.Clamp01(1f - phase / MeleeBurstSeconds);
+            }
+        }
 
         // Ranged and minion hits enrage regardless of distance. Every such hit refreshes the timer.
         private const float EnrageSpreadRadius = 8f;
         private const float EnrageSeconds = 5f;
         private const float EnrageSpeed = 2.4f;
         private const float EnrageDamage = 1.35f;
+        private const float MeleeBurstIncrease = 3f;
+        private const float MeleeBurstSeconds = 1.5f;
+        private const float MeleeBurstCooldown = 1f;
 
         private float enragedUntil = -1f;
+        private float enragedAt;
 
         public bool IsEnraged => Time.time < enragedUntil;
 
@@ -159,6 +175,8 @@ namespace PoeClone.Enemies
         // don't spread it further, so it can't run across the whole map).
         private void Enrage(bool spread = true)
         {
+            if (!IsEnraged)
+                enragedAt = Time.time;
             enragedUntil = Time.time + EnrageSeconds;
 
             if (!spread)
