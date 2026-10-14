@@ -7,8 +7,8 @@ namespace PoeClone.Player
     /// <summary>Mobile projectile correction around raw aim, with nearby enemies vetoing the snap.</summary>
     public static class ProjectileAimAssist
     {
-        public const float MinimumDistance = 9f;
-        public const float ConeHalfAngle = 15f;
+        public const float MinimumDistance = 6f;
+        public const float ConeHalfAngle = 22.5f;
 
         public static EnemyHealth Target(Vector3 origin, Vector3 direction, float range)
         {

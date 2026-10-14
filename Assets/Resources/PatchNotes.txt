@@ -1,3 +1,6 @@
+version: 2026-10-14-mobile-aim-tuning
+- Mobile bow shots and projectile spells now assist aim within a 45-degree cone at 6 units or farther. Any closer enemy in the cone disables assistance for that shot.
+
 version: 2026-10-14-background-updates
 - Updates download changed game files in the background while you play, then save and restart once ready. A brief Game updated message replaces automatic What's New after the restart.
 - Updates preserve ground loot, ordinary enemies' positions and health, and cleared packs. Scripted encounters rebuild from saved quest progress.
