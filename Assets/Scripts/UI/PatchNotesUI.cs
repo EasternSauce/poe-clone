@@ -9,7 +9,7 @@ using PoeClone.Inventory;
 namespace PoeClone.UI
 {
     /// <summary>
-    /// "What's new": shown on the main menu once per release. The notes are
+    /// "What's new": shown on the main menu or after an update resume once per release. The notes are
     /// Resources/PatchNotes.txt, whose first line is
     /// "version: ..."; closing the window remembers that version (PlayerPrefs), so it stays shut
     /// until the next release changes it. Installed by GameSessionController.
@@ -69,12 +69,14 @@ namespace PoeClone.UI
             root.SetActive(false);
         }
 
-        /// <summary>Called after the main menu is built, before choosing a character.</summary>
+        /// <summary>Called on the main menu and once the character is restored after an update.</summary>
         public void ShowIfUnseen()
         {
             if (root == null || PlayerPrefs.GetString(SeenKey, "") == version) return;
             root.SetActive(true);
             IsShowing = true;
+            PlayerHUD.SetHiddenBy(this, true);
+            PoeClone.Network.GameSessionController.Instance?.RefreshWorldPause();
             Canvas.ForceUpdateCanvases();
             Layout();
         }
@@ -82,6 +84,7 @@ namespace PoeClone.UI
         private void OnDestroy()
         {
             IsShowing = false;
+            PlayerHUD.SetHiddenBy(this, false);
         }
 
         private void Update()
@@ -100,6 +103,8 @@ namespace PoeClone.UI
         {
             root.SetActive(false);
             IsShowing = false;
+            PlayerHUD.SetHiddenBy(this, false);
+            PoeClone.Network.GameSessionController.Instance?.RefreshWorldPause();
             PlayerPrefs.SetString(SeenKey, version);
             PlayerPrefs.Save();
         }

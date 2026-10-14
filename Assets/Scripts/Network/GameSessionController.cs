@@ -100,7 +100,17 @@ namespace PoeClone.Network
         }
         private UpdateResume updateResume;
         private bool updatingForReload;
+        private bool updateCheckPending;
+        private bool worldActive;
+        private bool showNotesAfterUpdate;
         public bool ResumingUpdate => updateResume != null;
+
+        /// <summary>Keep mobile wake-up frozen until the browser checks the deployed build.</summary>
+        public void SetUpdateCheckPending(string pending)
+        {
+            updateCheckPending = pending == "1";
+            RefreshWorldPause();
+        }
 
 #if UNITY_WEBGL && !UNITY_EDITOR
         [System.Runtime.InteropServices.DllImport("__Internal")]
@@ -158,6 +168,7 @@ namespace PoeClone.Network
                 SaveSystem.Profiles().Exists(p => p.id == resume.profile))
             {
                 SaveSystem.SelectProfile(resume.profile);
+                showNotesAfterUpdate = true;
                 // A removed area or invalid position falls back to the normal saved destination.
                 if (resume.area >= 0 && resume.area < WorldBuilder.AreaNames.Length &&
                     float.IsFinite(resume.position.x) && float.IsFinite(resume.position.y) &&
@@ -792,6 +803,11 @@ namespace PoeClone.Network
             {
                 RestoreUpdateLocation();
                 if (scenePlayer != null) scenePlayer.SetActive(true);
+                if (showNotesAfterUpdate)
+                {
+                    showNotesAfterUpdate = false;
+                    GetComponent<PoeClone.UI.PatchNotesUI>()?.ShowIfUnseen();
+                }
                 SetWorldActive(true);
             }
             StateChanged?.Invoke();
@@ -931,9 +947,17 @@ namespace PoeClone.Network
         // audio the same way. Both are undone once the local character has loaded.
         private void SetWorldActive(bool active)
         {
+            worldActive = active;
+            RefreshWorldPause();
+        }
+
+        public void RefreshWorldPause()
+        {
             bool pausedByMenu = GetComponent<PoeClone.UI.EscapeMenuUI>()?.IsOpen == true;
-            Time.timeScale = active && !pausedByMenu ? 1f : 0f;
-            AudioListener.pause = !active || pausedByMenu;
+            bool paused = !worldActive || pausedByMenu || updateCheckPending || updatingForReload ||
+                PoeClone.UI.PatchNotesUI.IsShowing;
+            Time.timeScale = paused ? 0f : 1f;
+            AudioListener.pause = paused;
         }
 
         private static SessionRole ParseRole(string queryString)

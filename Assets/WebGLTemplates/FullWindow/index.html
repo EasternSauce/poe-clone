@@ -391,17 +391,60 @@
         });
       };
       // A new version went live: save, tell everyone, and reload onto it (players and spectators
-      // alike). Checks version.json (written next to this page by every build) once a minute.
+      // alike). Check on wake as well as once a minute: mobile timers stop while asleep.
       function watchForUpdates() {
         if (v === "") return; // a local build that was never stamped
-        setInterval(function () {
-          fetch("version.json?t=" + Date.now(), { cache: "no-store" })
+        var request = null, checkingOnResume = false;
+        function holdForCheck() {
+          checkingOnResume = true;
+          unityInstance.SendMessage("GameSessionController", "SetUpdateCheckPending", "1");
+        }
+        function checkForUpdate(replacePending) {
+          if (updating || document.hidden) return;
+          if (request && !replacePending) return;
+          if (request) request.abort();
+          var controller = new AbortController();
+          request = controller;
+          // Bound requests so an offline wake cannot leave the game paused indefinitely.
+          var timeout = setTimeout(function () { controller.abort(); }, 10000);
+          if (checkingOnResume) {
+            document.getElementById("loading-title").textContent = "Checking for updates...";
+            detail.textContent = "";
+            loading.classList.remove("done");
+          }
+          fetch("version.json?t=" + Date.now(), { cache: "no-store", signal: controller.signal })
             .then(function (r) { return r.ok ? r.json() : null; })
             .then(function (info) {
+              if (request !== controller) return;
               if (info && info.build && info.build !== BUILD_ID) reloadForUpdate();
             })
-            .catch(function () { /* offline for a moment: try again next time */ });
-        }, 60000);
+            .catch(function () { /* offline for a moment: try again next time */ })
+            .finally(function () {
+              clearTimeout(timeout);
+              if (request !== controller) return;
+              request = null;
+              if (updating || document.hidden || !checkingOnResume) return;
+              checkingOnResume = false;
+              unityInstance.SendMessage("GameSessionController", "SetUpdateCheckPending", "0");
+              loading.classList.add("done");
+            });
+        }
+        document.addEventListener("visibilitychange", function () {
+          if (document.hidden) { holdForCheck(); return; }
+          holdForCheck();
+          checkForUpdate(true);
+        });
+        function resumeCheck() {
+          if (document.hidden || updating) return;
+          holdForCheck();
+          checkForUpdate(false);
+        }
+        window.addEventListener("pageshow", resumeCheck);
+        window.addEventListener("focus", resumeCheck);
+        window.addEventListener("online", resumeCheck);
+        setInterval(function () { checkForUpdate(false); }, 60000);
+        if (document.hidden) holdForCheck();
+        else checkForUpdate(false);
       }
 
       // Cover and freeze immediately, then wait for Unity's durable save acknowledgement.

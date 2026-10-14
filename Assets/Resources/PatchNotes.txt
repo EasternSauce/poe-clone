@@ -1,3 +1,7 @@
+version: 2026-10-14-mobile-update-wake
+- Returning to the game after locking your phone checks for updates immediately, pausing play while the check runs and saving before restarting onto the latest build.
+- What's New appears after an update restores your character, with gameplay paused until you dismiss it.
+
 version: 2026-10-14-mobile-projectile-aim
 - Mobile bow shots and projectile spells assist aim within a 30-degree cone at 9 units or farther, choosing the enemy closest to the aim direction. Any closer enemy in the cone disables assistance for that shot.
 
