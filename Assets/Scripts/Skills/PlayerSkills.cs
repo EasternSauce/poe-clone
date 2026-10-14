@@ -944,12 +944,9 @@ namespace PoeClone.Skills
             switch (skill.Id)
             {
                 case SkillId.FireBolt:
-                    if (!asAttack)
-                    {
-                        Face(AimDirection());
-                        if (attackAnimator != null)
-                            attackAnimator.PlayAttack(WeaponType.Unarmed);
-                    }
+                    Face(ProjectileAimAssist.Direction(transform.position, asAttack ? transform.forward : AimDirection(), BoltRange));
+                    if (!asAttack && attackAnimator != null)
+                        attackAnimator.PlayAttack(WeaponType.Unarmed);
                     var bolts = PlayerArrow.NewVolley();
                     int boltCount = 1 + (level >= 6 ? 1 : 0) + (level >= 12 ? 1 : 0) + extraProjectiles;
                     foreach (Vector3 direction in HitEffects.Spread(transform.forward, boltCount, 12f))
@@ -958,12 +955,9 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.IceShard:
-                    if (!asAttack)
-                    {
-                        Face(AimDirection());
-                        if (attackAnimator != null)
-                            attackAnimator.PlayAttack(WeaponType.Unarmed);
-                    }
+                    Face(ProjectileAimAssist.Direction(transform.position, asAttack ? transform.forward : AimDirection(), ShardRange));
+                    if (!asAttack && attackAnimator != null)
+                        attackAnimator.PlayAttack(WeaponType.Unarmed);
                     // Each enemy is hurt by one shard of the fan: the spread covers more of them,
                     // it doesn't stack on one.
                     var shards = PlayerArrow.NewVolley();

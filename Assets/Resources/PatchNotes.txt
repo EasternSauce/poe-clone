@@ -1,3 +1,6 @@
+version: 2026-10-14-mobile-projectile-aim
+- Mobile bow shots and projectile spells assist aim within a 30-degree cone at 9 units or farther, choosing the enemy closest to the aim direction. Any closer enemy in the cone disables assistance for that shot.
+
 version: 2026-10-14-mobile-arrival-title
 - Location arrival text stays below the mobile HUD, shortcut buttons and minimap in portrait and landscape.
 

@@ -476,8 +476,11 @@ namespace PoeClone.Player
                 }
                 bowSkillPending = null;
                 bowLevelPending = 0;
+                Vector3 shotDirection = ProjectileAimAssist.Direction(transform.position, transform.forward,
+                    range * PlayerArrow.BowRangeMultiplier);
+                transform.rotation = Quaternion.LookRotation(shotDirection);
                 var volley = PlayerArrow.NewVolley();
-                foreach (Vector3 direction in HitEffects.Spread(transform.forward, arrows, ArrowSpreadDegrees))
+                foreach (Vector3 direction in HitEffects.Spread(shotDirection, arrows, ArrowSpreadDegrees))
                     PlayerArrow.Launch(transform, range, pendingDamage, direction, volley);
                 return;
             }
@@ -575,6 +578,20 @@ namespace PoeClone.Player
         // go, it falls back to what was aimed at when the swing started (the enemy, else the point).
         private void ReaimAtRelease()
         {
+            bool projectileSpell = castPending && (SkillSet?.MainSkill == PoeClone.Skills.SkillId.FireBolt ||
+                SkillSet?.MainSkill == PoeClone.Skills.SkillId.IceShard);
+            bool projectileBow = CharacterAttackAnimator.IsRanged(CurrentWeaponType()) &&
+                bowSkillPending != PoeClone.Skills.SkillId.RainOfArrows;
+            if (TouchMode.Active && (projectileSpell || projectileBow))
+            {
+                // Projectile release starts from raw input, including after the stick is released.
+                // Never reuse a highlighted target or the last assisted facing as the cone center.
+                Vector3 rawDirection = PlayerController.CameraRelativeDirection(VirtualInput.Aim);
+                if (rawDirection.sqrMagnitude < 0.0001f) rawDirection = touchAttackDirection;
+                if (rawDirection.sqrMagnitude > 0.0001f)
+                    transform.rotation = Quaternion.LookRotation(rawDirection);
+                return;
+            }
             if (TouchMode.Active && !castPending && !CharacterAttackAnimator.IsRanged(CurrentWeaponType()))
             {
                 // Always search around the player's raw input, never around a previously locked
@@ -680,6 +697,17 @@ namespace PoeClone.Player
             if (touch && !HasMainSkill && !CharacterAttackAnimator.IsRanged(CurrentWeaponType()))
             {
                 SetHighlight(FindTouchMeleeTarget(aimDirection));
+                return;
+            }
+
+            bool projectileBow = CharacterAttackAnimator.IsRanged(CurrentWeaponType()) &&
+                SkillSet?.ActiveBowSkill != PoeClone.Skills.SkillId.RainOfArrows;
+            if (touch && (projectileBow ||
+                SkillSet?.MainSkill == PoeClone.Skills.SkillId.FireBolt || SkillSet?.MainSkill == PoeClone.Skills.SkillId.IceShard))
+            {
+                float projectileRange = Reach(CurrentWeaponType());
+                if (!HasMainSkill) projectileRange = PoeClone.Skills.PlayerSkills.BowProjectileRange(projectileRange, SkillSet?.ActiveBowSkill);
+                SetHighlight(ProjectileAimAssist.Target(transform.position, aimDirection, projectileRange));
                 return;
             }
 

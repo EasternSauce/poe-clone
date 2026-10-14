@@ -26,6 +26,9 @@ namespace PoeClone.Skills
         private const float RainHitRadius = 1.1f;  // what each one hits where it lands
         private const float BurnRadius = 1.5f;
 
+        public static float BowProjectileRange(float range, SkillId? skill) =>
+            range * PlayerArrow.BowRangeMultiplier * (skill == SkillId.PiercingShot ? PierceRangeMore : 1f);
+
         /// <summary>How the bow is drawn while this skill is on.</summary>
         public static CharacterAttackAnimator.BowStyle BowStyleOf(SkillId id)
         {
@@ -79,6 +82,12 @@ namespace PoeClone.Skills
             level = Mathf.Max(1, level);
             float area = DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
             Vector3 forward = transform.forward;
+            if (id != SkillId.RainOfArrows)
+            {
+                float projectileRange = BowProjectileRange(range, id);
+                forward = ProjectileAimAssist.Direction(transform.position, forward, projectileRange);
+                Face(forward);
+            }
             arrows = Mathf.Max(1, arrows + Mathf.Max(0, Mathf.RoundToInt(Stat(StatType.AdditionalProjectiles))));
             Vector3 shotOrigin = transform.position;
 
