@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using PoeClone.Inventory;
 using PoeClone.Player;
 
@@ -13,6 +14,7 @@ namespace PoeClone.UI
     {
         private PlayerStats stats;
         private InventoryUI inventoryUI;
+        private RectTransform partnerClickTarget;
 
         /// <summary>Spectator replica: same HUD, but the death text addressed to a watcher.</summary>
         public bool SpectatorMode { get; set; }
@@ -125,6 +127,23 @@ namespace PoeClone.UI
 
         private void Awake()
         {
+            // An invisible uGUI target lets mouse and touch clicks block world input while
+            // keeping the existing IMGUI frame's appearance and pixel-based layout.
+            var clickCanvas = new GameObject("PartnerFrameInput", typeof(RectTransform), typeof(Canvas), typeof(GraphicRaycaster));
+            clickCanvas.transform.SetParent(transform, false);
+            var canvas = clickCanvas.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 690; // Below touch controls and modal windows.
+            var target = UiKit.NewImage("PartnerFrame", clickCanvas.transform, Color.clear);
+            partnerClickTarget = target.rectTransform;
+            target.raycastTarget = true;
+            var button = target.gameObject.AddComponent<Button>();
+            button.transition = Selectable.Transition.None;
+            button.navigation = new Navigation { mode = Navigation.Mode.None };
+            button.onClick.AddListener(CoopPartnerUI.Open);
+            TouchMode.AddBlocker(partnerClickTarget);
+            target.gameObject.SetActive(false);
+
             levelStyle = new GUIStyle
             {
                 font = UiKit.TitleFont,
@@ -200,6 +219,26 @@ namespace PoeClone.UI
         /// <summary>Where the HUD ends, in screen pixels from the top (things placed under it start here).</summary>
         public static float BottomPixels => (FrameBottom + (Partner != null ? PartnerHeight : 0f)) * Scale;
 
+        private static Rect PartnerFrameRect => new Rect(FrameX + 4f, FrameBottom + 6f, BarWidth - 40f, 59f);
+
+        private void LateUpdate()
+        {
+            var loading = PoeClone.World.AreaManager.Instance?.loadingScreen;
+            bool visible = stats != null && Partner != null && !SpectatorMode && !AnyHider() &&
+                !(loading != null && loading.Covering && !stats.IsDead) &&
+                !(PassiveTreeUI.IsOpen && !stats.IsDead) &&
+                !(TouchMode.Active && StashWindowOpen()) && !CharacterPageOpen();
+            partnerClickTarget.gameObject.SetActive(visible);
+            if (!visible) return;
+            Rect frame = PartnerFrameRect;
+            UiKit.TopLeft(partnerClickTarget, new Vector2(frame.x, -frame.y) * Scale, frame.size * Scale);
+        }
+
+        private void OnDisable()
+        {
+            if (partnerClickTarget != null) partnerClickTarget.gameObject.SetActive(false);
+        }
+
         private static readonly Color HealthColor = new Color(0.86f, 0.16f, 0.13f);
         private static readonly Color ManaColor = new Color(0.24f, 0.44f, 1f);
         private static readonly Color ExperienceColor = new Color(0.95f, 0.76f, 0.32f);
@@ -247,7 +286,8 @@ namespace PoeClone.UI
                 DrawShadowedLabel(new Rect(x, xpBar.yMax + 3f, BarWidth + 200f, 22f),
                     $"Experience {stats.Experience:N0} / {needed:N0}  ({xp * 100f:0}%)", captionStyle);
 
-            DrawPartnerFrame(FrameX + 4f, FrameBottom + 6f, BarWidth - 40f);
+            Rect partnerFrame = PartnerFrameRect;
+            DrawPartnerFrame(partnerFrame.x, partnerFrame.y, partnerFrame.width);
         }
 
         private void UpdateTrail(float health)
