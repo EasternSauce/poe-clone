@@ -1,3 +1,6 @@
+version: 2026-10-14-quest-details-click
+- Fixed the quest details button ignoring clicks and letting them fire an attack instead.
+
 version: 2026-10-14-bone-prison-aim-and-quests
 - Bone prisons now block projectiles and movement for enemies as well as players; the caster must go around its own prison.
 - Desktop aiming follows the browser canvas correctly after resizing or returning to fullscreen.
