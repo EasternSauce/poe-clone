@@ -108,16 +108,28 @@ namespace PoeClone.UI
                 return;
 
             float alpha = age < 0.4f ? age / 0.4f : age > TitleSeconds - 1f ? (TitleSeconds - age) : 1f;
-            var big = new GUIStyle { font = UiKit.TitleFont, fontSize = 36, alignment = TextAnchor.MiddleCenter };
+            var big = new GUIStyle { font = UiKit.TitleFont, fontSize = 36, alignment = TextAnchor.MiddleCenter, wordWrap = true };
             big.normal.textColor = new Color(0.95f, 0.85f, 0.6f, alpha);
             var small = new GUIStyle { font = UiKit.Font, fontSize = 19, alignment = TextAnchor.MiddleCenter };
             small.normal.textColor = new Color(0.85f, 0.82f, 0.75f, alpha);
             var shadow = new GUIStyle(big);
             shadow.normal.textColor = new Color(0f, 0f, 0f, 0.7f * alpha);
 
-            GUI.Label(new Rect(2f, 92f, width, 50f), titleText, shadow);
-            GUI.Label(new Rect(0f, 90f, width, 50f), titleText, big);
-            GUI.Label(new Rect(0f, 132f, width, 26f), titleSub, small);
+            float top = 90f;
+            float textWidth = width;
+            if (TouchMode.Active)
+            {
+                // Keep arrival text below the HUD, shortcut row and minimap in either orientation.
+                float mapBottom = MinimapUI.Bottom * Screen.height / TouchMode.CanvasHeight;
+                float occupied = Mathf.Max(BottomPixels, TouchControlsUI.ShortcutBottomPixels, mapBottom);
+                top = occupied / TouchMode.GuiScale + 20f;
+                textWidth = Mathf.Min(width - 48f, TouchMode.Portrait ? 600f : 240f);
+            }
+            float left = (width - textWidth) * 0.5f;
+            float titleHeight = Mathf.Max(50f, big.CalcHeight(new GUIContent(titleText), textWidth));
+            GUI.Label(new Rect(left + 2f, top + 2f, textWidth, titleHeight), titleText, shadow);
+            GUI.Label(new Rect(left, top, textWidth, titleHeight), titleText, big);
+            GUI.Label(new Rect(left, top + titleHeight - 8f, textWidth, 26f), titleSub, small);
         }
 
         public void SetStats(PlayerStats playerStats)

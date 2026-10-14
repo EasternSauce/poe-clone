@@ -1,3 +1,6 @@
+version: 2026-10-14-mobile-arrival-title
+- Location arrival text stays below the mobile HUD, shortcut buttons and minimap in portrait and landscape.
+
 version: 2026-10-14-readable-patch-notes
 - What's New has a larger, brighter version heading and more space between the separator and release notes.
 

@@ -81,6 +81,10 @@ namespace PoeClone.UI
 
 
         public static float PassiveBadgeTop => TouchMode.Portrait ? 290f : 230f;
+        private static float ShortcutRowTop => TouchMode.Portrait ? 215f : 165f;
+        private const float ShortcutHeight = 96f;
+        public static float ShortcutBottomPixels => Screen.height - Screen.safeArea.yMax +
+            (ShortcutRowTop + ShortcutHeight * 0.5f) * Screen.height / TouchMode.CanvasHeight;
         public bool JoystickInUse => joystickPointer != int.MinValue || aimPointer != int.MinValue;
         public bool MenusVisible => menuToggle != null && menuToggle.gameObject.activeInHierarchy && !menuExpanded && !QuestTrackerUI.MobileOpen;
 
@@ -680,11 +684,11 @@ namespace PoeClone.UI
                 Place(inventoryDirections[k], Vector2.zero, new Vector2(270f, portrait ? 360f : 300f) + InventoryDirections[k] * (170f * inventoryScale) + new Vector2(safe.xMin, safe.yMin) / unit, Vector2.one * (156f * inventoryScale));
                 inventoryDirections[k].Find("Arrow").localScale = Vector3.one * inventoryScale;
             }
-            float rowY = portrait ? -215f : -165f;
+            float rowY = -ShortcutRowTop;
             for (int k = 0; k < shortcutButtons.Length; k++)
             {
                 Image button = shortcutButtons[k];
-                Place(button.rectTransform, new Vector2(0f, 1f), new Vector2(76f + k * 116f, rowY), new Vector2(104f, 96f));
+                Place(button.rectTransform, new Vector2(0f, 1f), new Vector2(76f + k * 116f, rowY), new Vector2(104f, ShortcutHeight));
                 button.GetComponentInChildren<Text>().fontSize = portrait ? 28 : 24;
             }
             questToggle.color = QuestTrackerUI.MobileOpen ? ControlPressed : ControlColor;
