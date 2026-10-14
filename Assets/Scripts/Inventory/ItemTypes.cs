@@ -94,6 +94,25 @@ namespace PoeClone.Inventory
         public string Description { get; set; }
         /// <summary>Level of the area that produced this item; governs modifier tier access, not equip requirements. Zero for legacy items whose origin is unknown.</summary>
         public int ItemLevel { get; set; }
+        public WeaponSkillProgress SkillProgress { get; set; }
+        public StatType? MainSkillGrant
+        {
+            get
+            {
+                if (Type != ItemType.Grimoire && (Type != ItemType.Weapon || WeaponType == WeaponType.Unarmed)) return null;
+                foreach (StatModifier m in Modifiers) if (WeaponSkillRules.IsWeaponSkill(m.Stat)) return m.Stat;
+                return null;
+            }
+        }
+        public void SynchronizeSkillLevel()
+        {
+            if (SkillProgress == null || !MainSkillGrant.HasValue) return;
+            var list = Modifiers as List<StatModifier>;
+            if (list == null) return;
+            for (int i = 0; i < list.Count; i++)
+                if (list[i].Stat == MainSkillGrant.Value)
+                    list[i] = new StatModifier(list[i].Stat, SkillProgress.level, list[i].Tier);
+        }
         public ItemRequirements Requirements => ItemGenerator.RequirementsOf(this);
         public string BaseName => ItemGenerator.BaseNameOf(Id);
         public string IconId => Id;
@@ -156,7 +175,7 @@ namespace PoeClone.Inventory
             Tint = tint;
             // Saved cooldown bonuses migrate to cast speed in StatModifier. Present their
             // combined value as one line, including older gear that carried both stats.
-            var normalized = modifiers == null ? new List<StatModifier>() : new List<StatModifier>(modifiers);
+            var normalized = WeaponSkillRules.Normalize(type, weaponType, modifiers);
             float castSpeed = 0f;
             int castIndex = -1;
             int castTier = 0, castCount = 0;
@@ -174,6 +193,12 @@ namespace PoeClone.Inventory
             HasCape = hasCape;
             WeaponType = weaponType;
             Rarity = rarity ?? (Modifiers.Count > 0 ? ItemRarity.Magic : ItemRarity.Normal);
+            if (MainSkillGrant.HasValue)
+            {
+                int rank = 1;
+                foreach (StatModifier m in Modifiers) if (m.Stat == MainSkillGrant.Value) rank = Mathf.RoundToInt(m.Value);
+                SkillProgress = new WeaponSkillProgress { level = Mathf.Clamp(rank, 1, 10) };
+            }
         }
 
         public override string ToString()

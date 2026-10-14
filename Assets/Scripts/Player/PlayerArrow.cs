@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using PoeClone.Inventory;
 using PoeClone.Combat;
 using PoeClone.UI;
 using PoeClone.Visuals;
@@ -36,6 +37,63 @@ namespace PoeClone.Player
         private float igniteBonus;      // a burning arrow's own chance to ignite
         private Vector3 launchPosition;
         private int venomArrowLevel;
+        private WeaponSkillBonuses tree;
+        private int piercesLeft, chainsLeft;
+        private bool forked;
+
+        public PlayerArrow WithSkill(WeaponSkillBonuses bonuses)
+        {
+            tree = bonuses;
+            if (tree == null) return this;
+            piercesLeft = Mathf.RoundToInt(tree.Get(WeaponSkillEffect.Pierce));
+            chainsLeft = Mathf.RoundToInt(tree.Get(WeaponSkillEffect.Chains));
+            if ((piercesLeft > 0 || chainsLeft > 0 || tree.Get(WeaponSkillEffect.Fork) > 0) && pierced == null)
+                pierced = new HashSet<Enemies.EnemyHealth>();
+            return this;
+        }
+
+        private void OnSkillImpact(Enemies.EnemyHealth hit)
+        {
+            if (tree == null || hit == null) return;
+            if (!forked && !tree.SingleProjectile && tree.Get(WeaponSkillEffect.Fork) > 0 && travelLeft > 1f)
+            {
+                forked = true;
+                foreach (float angle in new[] { -28f, 28f })
+                {
+                    PlayerArrow child = Create(owner, travelLeft, damage, harmless, direction: Quaternion.Euler(0f, angle, 0f) * direction,
+                        orb: isAttack ? (Color?)null : textColor);
+                    child.transform.position = transform.position + direction * 0.4f;
+                    child.isAttack = isAttack; child.damageType = damageType; child.textColor = textColor;
+                    child.burstRadius = burstRadius; child.chillSeconds = chillSeconds; child.igniteBonus = igniteBonus;
+                    child.venomArrowLevel = venomArrowLevel; child.launchPosition = launchPosition; child.volley = volley;
+                    child.WithSkill(tree); child.forked = true;
+                    child.pierced.Add(hit);
+                }
+            }
+            if (piercesLeft > 0) { piercesLeft--; return; }
+            if (chainsLeft > 0)
+            {
+                Enemies.EnemyHealth next = null;
+                float best = 7f * tree.RangeMultiplier;
+                foreach (var enemy in Enemies.EnemyHealth.Active)
+                {
+                    if (enemy == null || enemy.IsDead || enemy == hit || pierced.Contains(enemy)) continue;
+                    float d = Vector3.Distance(enemy.transform.position, transform.position);
+                    if (d < best) { best = d; next = enemy; }
+                }
+                if (next != null)
+                {
+                    chainsLeft--;
+                    direction = (next.transform.position + Vector3.up * 0.3f - transform.position).normalized;
+                    transform.rotation = Quaternion.LookRotation(direction);
+                    travelLeft = Mathf.Max(travelLeft, best + 1f);
+                    return;
+                }
+            }
+            // The native Piercing Shot remains unlimited; other projectiles stop after their allowance.
+            if (!nativePiercing) Destroy(gameObject);
+        }
+        private bool nativePiercing;
 
         public PlayerArrow Venomous(int level)
         {
@@ -101,6 +159,7 @@ namespace PoeClone.Player
         /// <summary>Flies on through every enemy in its path (walls and trees still stop it).</summary>
         public PlayerArrow Piercing(Color glow)
         {
+            nativePiercing = true;
             pierced = new HashSet<Enemies.EnemyHealth>();
             transform.localScale = new Vector3(1.2f, 1.2f, 1.5f);
             GameObject streak = RuntimePrimitives.Create(PrimitiveType.Sphere, transform, glow);
@@ -126,7 +185,7 @@ namespace PoeClone.Player
         }
 
         /// <summary>A Fire Bolt: an orb that bursts on impact, hurting everything within the radius.</summary>
-        public static void LaunchBolt(Transform shooter, float range, float damage, Color color, float burstRadius, Vector3? direction = null, bool harmless = false, HashSet<IDamageable> volley = null)
+        public static PlayerArrow LaunchBolt(Transform shooter, float range, float damage, Color color, float burstRadius, Vector3? direction = null, bool harmless = false, HashSet<IDamageable> volley = null)
         {
             PlayerArrow bolt = Create(shooter, range, damage, harmless, orb: color, direction: direction);
             bolt.volley = volley;
@@ -134,10 +193,11 @@ namespace PoeClone.Player
             bolt.textColor = CombatText.FireColor;
             bolt.isAttack = false;
             bolt.damageType = Combat.DamageType.Fire;
+            return bolt;
         }
 
         /// <summary>An Ice Shard: a small, quick shard that chills the enemy it hits.</summary>
-        public static void LaunchShard(Transform shooter, float range, float damage, Color color, float chillSeconds, Vector3 direction, bool harmless = false, HashSet<IDamageable> volley = null)
+        public static PlayerArrow LaunchShard(Transform shooter, float range, float damage, Color color, float chillSeconds, Vector3 direction, bool harmless = false, HashSet<IDamageable> volley = null)
         {
             PlayerArrow shard = Create(shooter, range, damage, harmless, orb: color, direction: direction);
             shard.volley = volley;
@@ -146,6 +206,7 @@ namespace PoeClone.Player
             shard.isAttack = false;
             shard.damageType = Combat.DamageType.Cold;
             shard.chillSeconds = chillSeconds;
+            return shard;
         }
 
         private static PlayerArrow Create(Transform shooter, float range, float damage, bool harmless, Color? orb = null, Vector3? direction = null, Color? arrowColor = null)
@@ -228,6 +289,7 @@ namespace PoeClone.Player
                 {
                     pierced.Add(through);
                     Strike(nearest.Value.collider);
+                    OnSkillImpact(through);
                     return;
                 }
             }
@@ -318,7 +380,7 @@ namespace PoeClone.Player
                     continue;
                 if (target is Enemies.EnemyHealth enemy && !enemy.IsDead && FirstVolleyHit(target))
                     HitEffects.Deal(owner, enemy, damage * 0.4f, isAttack, textColor, damageType, igniteBonus: igniteBonus,
-                        projectileDistance: DistanceTo(at), hitOrigin: launchPosition);
+                        projectileDistance: DistanceTo(at), hitOrigin: launchPosition, tree: tree);
             }
         }
 
@@ -338,17 +400,17 @@ namespace PoeClone.Player
                 {
                     Enemies.EnemyController ai = enemy.GetComponent<Enemies.EnemyController>();
                     if (ai != null)
-                        ai.Chill(chillSeconds);
+                        ai.Chill(chillSeconds * (tree?.DurationMultiplier ?? 1f));
                 }
                 HitEffects.Deal(owner, enemy, damage, isAttack, textColor, damageType, igniteBonus: igniteBonus,
-                    projectileDistance: DistanceTo(enemy.transform.position), venomArrowLevel: venomArrowLevel, hitOrigin: launchPosition);
+                    projectileDistance: DistanceTo(enemy.transform.position), venomArrowLevel: venomArrowLevel, hitOrigin: launchPosition, tree: tree);
                 return;
             }
 
             if (target is Enemies.SerpentPursuit serpent)
             {
                 serpent.TakeArrowHit(owner, damage, isAttack, damageType, textColor, igniteBonus,
-                    projectileDistance: DistanceTo(serpent.MouthPosition), venomArrowLevel: venomArrowLevel);
+                    projectileDistance: DistanceTo(serpent.MouthPosition), venomArrowLevel: venomArrowLevel, tree: tree);
                 return;
             }
 

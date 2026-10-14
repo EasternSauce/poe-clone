@@ -144,7 +144,7 @@ namespace PoeClone.UI
             bool characterOpen = characterUI != null && characterUI.IsOpen;
             if (!PoeClone.World.MinimalCombatMode.Enabled && settingsMenu == null)
                 settingsMenu = FindAnyObjectByType<EscapeMenuUI>();
-            bool menuOpen = inventoryOpen || characterOpen || SkillBarUI.IsOpen || DialogueUI.IsOpen ||
+            bool menuOpen = WeaponSkillTreeUI.IsOpen || inventoryOpen || characterOpen || SkillBarUI.IsOpen || DialogueUI.IsOpen ||
                             PassiveTreeUI.IsOpen || (ChatUI.Enabled && ChatUI.PanelVisible) || (settingsMenu != null && settingsMenu.IsOpen);
 
             // Keep the menu buttons behind the active panel in both draw order and hit testing.

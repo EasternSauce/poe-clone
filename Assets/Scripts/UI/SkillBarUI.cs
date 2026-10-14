@@ -863,6 +863,7 @@ namespace PoeClone.UI
 
             attackView = NewSlotView(bar, "Attack", 4f, RowY, "LMB", null);
             attackIcon = UiKit.NewImage("Icon", attackView.Back.rectTransform, Color.white);
+            UiKit.OnClick(attackView.Back, () => WeaponSkillTreeUI.SetOpen(true));
             attackIcon.preserveAspect = true;
             attackIcon.raycastTarget = false;
             UiKit.Stretch(attackIcon.rectTransform, 8f);

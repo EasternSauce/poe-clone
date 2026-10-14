@@ -175,6 +175,7 @@ namespace PoeClone.World
                 gameObject.AddComponent<SkillBarUI>();
             if (PassiveMenuEnabled)
                 gameObject.AddComponent<PassiveTreeUI>();
+            if (FindAnyObjectByType<WeaponSkillTreeUI>() == null) gameObject.AddComponent<WeaponSkillTreeUI>();
             if (QuestsEnabled)
             {
                 var area = FindAnyObjectByType<AreaManager>();

@@ -21,6 +21,7 @@ namespace PoeClone.Inventory
         public string name;
         public int count;
         public int ilvl;
+        public WeaponSkillProgress weaponSkill;
         public int type;
         public int w;
         public int h;
@@ -34,7 +35,7 @@ namespace PoeClone.Inventory
         {
             var record = new ItemRecord
             {
-                id = item.Id, name = item.Name, count = item.StackCount, ilvl = item.ItemLevel, type = (int)item.Type, w = item.Width, h = item.Height,
+                id = item.Id, name = item.Name, count = item.StackCount, weaponSkill = item.SkillProgress?.Copy(), ilvl = item.ItemLevel, type = (int)item.Type, w = item.Width, h = item.Height,
                 weapon = (int)item.WeaponType, rarity = (int)item.Rarity, cape = item.HasCape,
                 r = item.Tint.r, g = item.Tint.g, b = item.Tint.b, a = item.Tint.a
             };
@@ -63,7 +64,14 @@ namespace PoeClone.Inventory
             item.ItemLevel = Math.Max(0, ilvl);
             ItemGenerator.ApplyArt(item);
             // Made under older rules? Stats no longer allowed are fixed or removed.
-            return ItemGenerator.Legalize(item);
+            item = ItemGenerator.Legalize(item);
+            if (weaponSkill != null && item.MainSkillGrant.HasValue)
+            {
+                item.SkillProgress = weaponSkill.Copy();
+                item.SkillProgress.Sanitize(item.MainSkillGrant.Value);
+                item.SynchronizeSkillLevel();
+            }
+            return item;
         }
     }
 
@@ -103,7 +111,7 @@ namespace PoeClone.Inventory
     public class SaveData
     {
         public const int CurrentVersion = 1;
-        public const int CurrentPassiveAllocationVersion = 2;
+        public const int CurrentPassiveAllocationVersion = 3;
 
         public int version = CurrentVersion;
         public int level = 1;

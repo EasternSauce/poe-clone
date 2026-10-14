@@ -394,7 +394,7 @@ namespace PoeClone.Player
 
         internal static bool IsUiFocused()
         {
-            if (PoeClone.Inventory.UiKit.IsTextPromptOpen) return true;
+            if (PoeClone.Inventory.UiKit.IsTextPromptOpen || PoeClone.UI.WeaponSkillTreeUI.IsOpen) return true;
             EventSystem es = EventSystem.current;
             return es != null && es.currentSelectedGameObject != null;
         }

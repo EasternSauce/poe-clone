@@ -53,7 +53,7 @@ namespace PoeClone.Player
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
             DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null,
             bool throughExposedHead = false, bool melee = false, float projectileDistance = -1f, int venomArrowLevel = 0,
-            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f)
+            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f, WeaponSkillBonuses tree = null)
         {
             // Utility effects must never become hits through added mana damage or on-hit stats.
             if (enemy == null || enemy.IsDead || damage <= 0f)
@@ -65,6 +65,13 @@ namespace PoeClone.Player
             StatSheet sheet = stats != null && inventory != null && !stats.IsDead ? inventory.Stats : null;
             EnemyController ai = enemy.GetComponent<EnemyController>();
             bool wasChilled = ai != null && ai.IsChilled;
+            if (!secondary && tree != null)
+            {
+                damage *= tree.DamageMultiplier;
+                if (wasChilled) damage *= Mathf.Max(0f, 1f + tree.Get(WeaponSkillEffect.DamageVsChilled) / 100f);
+                type = WeaponSkillHit.Element(tree, type);
+                color = CombatText.ColorFor(type);
+            }
 
             if (sheet != null && attack && type == DamageType.Physical)
             {
@@ -122,6 +129,7 @@ namespace PoeClone.Player
                 canEnrage: !melee, hitOrigin: hitOrigin ?? (attacker != null ? (Vector3?)attacker.position : null), rollSeed: rollSeed);
             // A warded hit cannot apply ailments, cull, or grant on-hit recovery.
             if (damage <= 0f) return;
+            if (!secondary) WeaponSkillHit.Apply(attacker, enemy, damage, tree, type, wasChilled, melee: melee);
             string number = Mathf.Max(1, Mathf.RoundToInt(damage)).ToString();
             CombatText.Show(displayAt ?? (at + Vector3.up * 1.6f * scale), crit ? number + "!" : number, crit ? CritColor : color, crit ? 1.35f : 1f);
 
@@ -134,10 +142,10 @@ namespace PoeClone.Player
                 float cloud = sheet.Total(StatType.VenomCloudOnHit);
                 if (venomArrowLevel > 0)
                 {
-                    poison += 90f + 5f * (venomArrowLevel - 1);
+                    poison += 90f;
                     cloud += 25f;
                 }
-                WeaponVenom.Apply(attacker, enemy, baseDamage, poison, cloud, sheet, canEnrage: !melee);
+                WeaponVenom.Apply(attacker, enemy, baseDamage, poison, cloud, sheet, canEnrage: !melee, durationMultiplier: tree?.DurationMultiplier ?? 1f, radiusMultiplier: tree?.AreaMultiplier ?? 1f, tree: tree);
             }
 
             if (!attack && !secondary)
@@ -178,13 +186,13 @@ namespace PoeClone.Player
                 {
                     if (!enemy.IsBurning)
                         CombatText.Show(at + Vector3.up * 2.1f * scale, "Ignited", CombatText.FireColor, 0.7f);
-                    enemy.Ignite(ailmentBaseDamage * IgniteShare, IgniteSeconds);
+                    enemy.Ignite(ailmentBaseDamage * IgniteShare, IgniteSeconds * (tree?.DurationMultiplier ?? 1f));
                 }
                 if (type == DamageType.Lightning && Roll(sheet, StatType.ShockChance, rollSeed))
                 {
                     if (!enemy.IsShocked)
                         CombatText.Show(at + Vector3.up * 2.1f * scale, "Shocked", CombatText.LightningColor, 0.7f);
-                    enemy.Shock(ShockSeconds);
+                    enemy.Shock(ShockSeconds * (tree?.DurationMultiplier ?? 1f));
                 }
             }
 

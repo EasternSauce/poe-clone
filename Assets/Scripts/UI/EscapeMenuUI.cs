@@ -101,7 +101,7 @@ namespace PoeClone.UI
             if (CoopPartnerUI.IsOpen) return;
             if (root.activeSelf) { Close(); return; }
             if (GetComponent<NamePromptUI>()?.IsShowing == true) return;
-            if (DialogueUI.IsOpen || PassiveTreeUI.IsOpen || SkillBarUI.IsOpen || SkillBarUI.PickerOpen ||
+            if (WeaponSkillTreeUI.IsOpen || DialogueUI.IsOpen || PassiveTreeUI.IsOpen || SkillBarUI.IsOpen || SkillBarUI.PickerOpen ||
                 AnyOpen<InventoryUI>() || AnyOpen<CharacterPageUI>()) return;
             OpenSettings();
         }

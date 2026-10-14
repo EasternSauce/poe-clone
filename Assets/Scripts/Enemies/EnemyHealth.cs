@@ -532,7 +532,10 @@ namespace PoeClone.Enemies
         {
             PlayerStats player = FindAnyObjectByType<PlayerStats>();
             if (KillRewards.CanReceiveExperience(player, at))
+            {
                 player.GainExperience(experience);
+                player.GetComponent<PoeClone.Skills.PlayerSkills>()?.GainWeaponExperience(experience);
+            }
 
             EnemyKind kind = EnemyKinds.Get(kindIndex);
             dropLoot &= LootDrop.EnemyDropsActive;

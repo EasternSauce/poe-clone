@@ -178,7 +178,10 @@ namespace PoeClone.UI
             if (open && !IsOpen && !Spectating) instance.BeginDraft();
             // Both panels sit in the middle of the screen: one at a time.
             if (open)
+            {
                 SkillBarUI.SetOpen(false);
+                WeaponSkillTreeUI.SetOpen(false);
+            }
             instance.panelRoot.SetActive(open);
             if (!open)
             {

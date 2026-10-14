@@ -161,7 +161,13 @@ namespace PoeClone.World
         {
             string id = BestBase(line, level, stepsDown);
             if (id == null) return null;
-            StatType? spell = line == "staff" ? build.StaffSpell : null;
+            StatType? spell = line == "staff" ? build.StaffSpell : build.BowSkill.HasValue ? PoeClone.Skills.SkillBook.Get(build.BowSkill.Value).Grant : (StatType?)null;
+            if (!spell.HasValue)
+            {
+                ItemData shape = ItemGenerator.Display(id, id, ItemRarity.Normal);
+                StatType[] pool = WeaponSkillRules.Pool(shape.Type, shape.WeaponType);
+                foreach (StatType core in build.CoreSkills) if (Array.IndexOf(pool, core) >= 0) { spell = core; break; }
+            }
             return ItemGenerator.Generate(rng, id, Mathf.Max(1, level), ItemRarity.Rare, spell);
         }
 
@@ -196,7 +202,7 @@ namespace PoeClone.World
             StatType? spell = null;
             if (current != null && ItemGenerator.AlwaysHasMainSkill(current))
                 foreach (StatModifier m in current.Modifiers)
-                    if (SkillGrants.IsMain(m.Stat) || Array.IndexOf(SkillGrants.MeleeSkills, m.Stat) >= 0) { spell = m.Stat; break; }
+                    if (WeaponSkillRules.IsWeaponSkill(m.Stat)) { spell = m.Stat; break; }
             string id = BestBase(line, level, 0) ?? current?.Id;
             return id == null ? null : ItemGenerator.Generate(rng, id, Mathf.Max(1, level), ItemRarity.Rare, spell);
         }
@@ -370,7 +376,17 @@ namespace PoeClone.World
                     if (lowered.Contains(slot) && !p.Unique) p.Note += (p.Note.Length > 0 ? "; " : "") + "lower tier base for attributes";
                     result.Picks.Add(p);
                 }
+            AllocateWeaponTree(inventory, build);
             return result;
+        }
+
+        private static void AllocateWeaponTree(PlayerInventory inventory, GauntletBuild build)
+        {
+            ItemData weapon = inventory.Equipment.GetActive(EquipSlot.MainHand);
+            if (weapon?.MainSkillGrant == null) weapon = inventory.Equipment.GetActive(EquipSlot.OffHand);
+            if (weapon?.MainSkillGrant == null || weapon.SkillProgress == null) return;
+            foreach (string id in build.WeaponNodes)
+                weapon.SkillProgress.Allocate(weapon.MainSkillGrant.Value, id);
         }
 
         private static void Wear(PlayerInventory inventory, Dictionary<EquipSlot, SlotPick> picks)
@@ -395,6 +411,7 @@ namespace PoeClone.World
                 inventory.Equipment.Restore(slot, item, out _);
                 result.Picks.Add(new SlotPick { Slot = slot, Item = item, Score = Score(build, item), Note = "starter item" });
             }
+            AllocateWeaponTree(inventory, build);
             return result;
         }
 

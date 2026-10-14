@@ -61,7 +61,26 @@ namespace PoeClone.Skills
 
         /// <summary>Seconds between uses of a melee skill with the weapon in hand and the current attack speed.</summary>
         public float MeleeInterval(SkillId id) => 1f / Mathf.Max(0.01f,
-            CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()) * AttackRateMultiplier * MeleeSpeed(id));
+            CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()) * AttackRateMultiplier * MeleeSpeed(id) * BonusesFor(id).SpeedMultiplier);
+
+        /// <summary>Target selection uses the same specialized reach as the actual attack.</summary>
+        public float MeleeSkillReach()
+        {
+            switch (ActiveMeleeSkill)
+            {
+                case SkillId.Cleave: return Mathf.Max(2.6f, (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 0.6f) * MeleeRangeMultiplier) * AreaMultiplier;
+                case SkillId.Pulverize: return CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 3.6f * AreaMultiplier;
+                case SkillId.ReapingArc: return 4.6f * MeleeRangeMultiplier;
+                case SkillId.LungingThrust: return 3f * MeleeRangeMultiplier + LungeStep * WeaponBonuses.RangeMultiplier;
+                case SkillId.Whirlwind: return WhirlReach();
+                case SkillId.Fissure: return FissureLength * MeleeRangeMultiplier;
+                case SkillId.Aftershock: return 8f * AreaMultiplier * Mathf.Sqrt(WeaponBonuses.RangeMultiplier);
+                case SkillId.CrossSlash: return (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 1.4f) * MeleeRangeMultiplier * AreaMultiplier;
+                case SkillId.FangStrike: return 2.4f * MeleeRangeMultiplier;
+                case SkillId.VenomSlash: return VenomSlashReach * MeleeRangeMultiplier * AreaMultiplier;
+                default: return CharacterAttackAnimator.AttackRange(CurrentWeapon());
+            }
+        }
 
         /// <summary>
         /// The melee skill on the weapon in hand (the first, in case an older item carries more),
@@ -171,8 +190,8 @@ namespace PoeClone.Skills
                 attackAnimator.PlaySkillAttack(skill, weapon, rate, mirrored);
         }
 
-        private float MeleeRangeMultiplier => 1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f;
-        private float AreaMultiplier => DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect));
+        private float MeleeRangeMultiplier => (1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f) * WeaponBonuses.RangeMultiplier;
+        private float AreaMultiplier => DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect)) * WeaponBonuses.AreaMultiplier;
 
         // ------------------------------------------------------------------ the moves
 
@@ -199,7 +218,7 @@ namespace PoeClone.Skills
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
             PlaySkillSound(skill.Id, transform.position);
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
-                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
+                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id);
             controller.SetSkillCommit(false);
         }
 
@@ -230,13 +249,13 @@ namespace PoeClone.Skills
             // Closes the gap to what it's aimed at (up to LungeStep), never past it.
             float reach = 3f * MeleeRangeMultiplier;
             EnemyHealth target = AimedEnemy(reach + LungeStep) ?? EnemyInDirection(transform.forward, reach + LungeStep);
-            float step = LungeStep;
+            float step = LungeStep * BonusesFor(skill.Id).RangeMultiplier;
             if (target != null)
             {
                 Vector3 to = target.transform.position - transform.position;
                 to.y = 0f;
                 Face(to);
-                step = Mathf.Clamp(to.magnitude - LungeStopShort, 0f, LungeStep);
+                step = Mathf.Clamp(to.magnitude - LungeStopShort, 0f, LungeStep * BonusesFor(skill.Id).RangeMultiplier);
             }
             if (step > 0.05f)
                 controller.Dash(transform.forward, step, 0.16f / rate);
@@ -291,7 +310,7 @@ namespace PoeClone.Skills
             Record(skill, level, radius, at: impact);
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
             foreach (EnemyHealth enemy in EnemiesWithin(impact, radius))
-                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
+                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id);
         }
 
         // How far a fissure runs (Melee Range lengthens it) and how wide it is (Area of Effect).
@@ -315,7 +334,7 @@ namespace PoeClone.Skills
                     return;
                 foreach (EnemyHealth enemy in EnemiesWithin(to, halfWidth))
                     if (struck.Add(enemy))
-                        Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
+                        Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id);
             });
             Record(skill, level, halfWidth, points: new[] { start, start + direction * length });
         }
@@ -338,8 +357,8 @@ namespace PoeClone.Skills
         // overlapping it; each hits everything it lands on.
         private void Aftershock(SkillDefinition skill, int level)
         {
-            int count = 3 + (level >= 6 ? 1 : 0);
-            float[] radii = AftershockRadii(AftershockFirstRadius * AreaMultiplier, count);
+            int count = 3 + Mathf.RoundToInt(BonusesFor(skill.Id).Get(WeaponSkillEffect.ExtraWaves));
+            float[] radii = AftershockRadii(AftershockFirstRadius * AreaMultiplier * Mathf.Sqrt(BonusesFor(skill.Id).RangeMultiplier), count);
             var centers = new Vector3[count];
             centers[0] = SlamPoint();
             for (int k = 1; k < count; k++)
@@ -351,7 +370,7 @@ namespace PoeClone.Skills
                 if (this == null || stats == null || stats.IsDead)
                     return;
                 foreach (EnemyHealth enemy in EnemiesWithin(centers[k], radii[k]))
-                    Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
+                    Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id);
             });
             Record(skill, level, radii[0], points: centers);
         }
@@ -365,7 +384,7 @@ namespace PoeClone.Skills
                 Vector3 to = enemy.transform.position - transform.position;
                 to.y = 0f;
                 if (to.sqrMagnitude > 0.01f && Vector3.Angle(transform.forward, to) <= 72f)
-                    Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
+                    Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id);
             }
             SkillEffects.Cone(transform.position, transform.forward, reach, 72f, skill.Color, 0.34f);
             Record(skill, level, reach);
@@ -377,7 +396,7 @@ namespace PoeClone.Skills
                 target = AimedEnemy(reach) ?? EnemyInDirection(transform.forward, reach);
             SkillEffects.Arc(transform.position + Vector3.up, transform.position + Vector3.up + transform.forward * reach, skill.Color, 0.25f);
             if (target != null)
-                Hit(target, WeaponDamage() * skill.WeaponMultiplierAt(level), CombatText.PhysicalColor, attack: true, melee: true);
+                Hit(target, WeaponDamage() * skill.WeaponMultiplierAt(level), CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id);
             Record(skill, level, reach);
         }
 
@@ -404,7 +423,7 @@ namespace PoeClone.Skills
                 // Slack for the enemy's own body (more for a big one).
                 float body = PlayerCombat.DamageableReach(enemy, 0f);
                 if (Mathf.Abs(along2) <= reach + body && (offset - along * along2).magnitude <= halfWidth + 0.4f + body)
-                    Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
+                    Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id);
             }
         }
 
@@ -415,9 +434,9 @@ namespace PoeClone.Skills
             Record(skill, level, reach);
             if (target != null)
             {
-                Hit(target, WeaponDamage() * skill.WeaponMultiplierAt(level), skill.Color, true, melee: true);
-                WeaponVenom.Apply(transform, target, WeaponDamage(), 95f + 7f * (level - 1), 0f, inventory.Stats,
-                    canEnrage: false);
+                Hit(target, WeaponDamage() * skill.WeaponMultiplierAt(level), skill.Color, true, melee: true, skillId: skill.Id);
+                WeaponVenom.Apply(transform, target, WeaponDamage(), 95f, 0f, inventory.Stats,
+                    canEnrage: false, durationMultiplier: BonusesFor(skill.Id).DurationMultiplier, radiusMultiplier: BonusesFor(skill.Id).AreaMultiplier, tree: BonusesFor(skill.Id));
             }
         }
 
@@ -432,16 +451,16 @@ namespace PoeClone.Skills
             SkillEffects.Cone(center, transform.forward, reach, VenomSlashHalfAngle, skill.Color, 0.25f, SkillEffects.DamagePattern(skill));
             Record(skill, level, reach);
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
-            float poison = 70f + 5f * (level - 1);
+            float poison = 70f;
             foreach (EnemyHealth enemy in EnemiesWithin(center, reach))
             {
                 Vector3 to = enemy.transform.position - center;
                 to.y = 0f;
                 if (to.sqrMagnitude > 0.01f && Vector3.Angle(transform.forward, to) > VenomSlashHalfAngle)
                     continue;
-                Hit(enemy, damage, skill.Color, attack: true, melee: true);
+                Hit(enemy, damage, skill.Color, attack: true, melee: true, skillId: skill.Id);
                 if (!enemy.IsDead)
-                    WeaponVenom.Apply(transform, enemy, WeaponDamage(), poison, 0f, inventory.Stats, canEnrage: false);
+                    WeaponVenom.Apply(transform, enemy, WeaponDamage(), poison, 0f, inventory.Stats, canEnrage: false, durationMultiplier: BonusesFor(skill.Id).DurationMultiplier, radiusMultiplier: BonusesFor(skill.Id).AreaMultiplier, tree: BonusesFor(skill.Id));
             }
         }
     }

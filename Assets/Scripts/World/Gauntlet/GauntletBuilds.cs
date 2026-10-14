@@ -31,8 +31,10 @@ namespace PoeClone.World
         public StatType[] CoreSkills;
         /// <summary>Skills worth having alongside.</summary>
         public StatType[] SupportSkills = new StatType[0];
-        /// <summary>The bow skill the automated run toggles on (bow builds).</summary>
+        /// <summary>The bow main skill to roll for this build.</summary>
         public SkillId? BowSkill;
+        /// <summary>Weapon tree allocation order; each selected weapon spends its own rank budget.</summary>
+        public string[] WeaponNodes = { "b0_0", "b0_1", "b0_2", "b0_3", "b0_4", "b0_5", "b1_0", "b1_1", "b1_2", "b1_3" };
 
         /// <summary>Stat weights for picking rares, relative to <see cref="GauntletLoadout.UnitValue"/>.</summary>
         public Dictionary<StatType, float> Weights = new Dictionary<StatType, float>();
@@ -56,7 +58,7 @@ namespace PoeClone.World
                 sb.Append(string.Join(",", MainHand)).Append('|').Append(string.Join(",", OffHand)).Append('|')
                   .Append(StaffSpell).Append('|').Append(Armour).Append('|').Append(string.Join(",", CoreSkills)).Append('|')
                   .Append(string.Join(",", SupportSkills)).Append('|').Append(string.Join(",", Passives)).Append('|')
-                  .Append(string.Join(",", Uniques)).Append('|');
+                  .Append(string.Join(",", Uniques)).Append('|').Append("weapon-trees-v1|").Append(string.Join(",", WeaponNodes)).Append('|');
                 var keys = new List<StatType>(Weights.Keys);
                 keys.Sort();
                 foreach (StatType k in keys)

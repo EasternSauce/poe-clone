@@ -342,6 +342,7 @@ namespace PoeClone.Network
             gameObject.AddComponent<PoeClone.UI.BossBarUI>();
             yield return null;
             gameObject.AddComponent<PoeClone.UI.PassiveTreeUI>();
+            gameObject.AddComponent<PoeClone.UI.WeaponSkillTreeUI>();
             gameObject.AddComponent<PoeClone.UI.CoopPartnerUI>();
         }
 

@@ -44,7 +44,6 @@ namespace PoeClone.World
             if (float.TryParse(MinimalCombatMode.Option("speed"), System.Globalization.NumberStyles.Float,
                     System.Globalization.CultureInfo.InvariantCulture, out float speed) && speed > 0f)
                 Time.timeScale = speed;
-            ToggleAttackSkill();
         }
 
         public void Stop()
@@ -174,24 +173,6 @@ namespace PoeClone.World
             }
         }
 
-        // The build's bow skill if it has one, else its first core skill that toggles, else any
-        // toggled skill the gear brought (a melee weapon's skill is always its attack).
-        private void ToggleAttackSkill()
-        {
-            int best = -1, bestRank = int.MaxValue;
-            for (int k = 0; k < SkillBook.SlotCount; k++)
-            {
-                SkillId? id = skills.Slot(k);
-                if (id == null || skills.LevelAt(k) <= 0) continue;
-                SkillDefinition skill = SkillBook.Get(id.Value);
-                if (!skill.Toggled) continue;
-                int core = System.Array.IndexOf(build.CoreSkills, skill.Grant);
-                int rank = id == build.BowSkill ? -1 : core >= 0 ? core : 100;
-                if (rank < bestRank) { best = k; bestRank = rank; }
-            }
-            if (best >= 0) skills.TryUse(best);
-        }
-
         private void UseSkills(float distance)
         {
             if (Time.time < nextSkillAt) return;
@@ -201,7 +182,7 @@ namespace PoeClone.World
                 if (id == null) continue;
                 SkillDefinition skill = SkillBook.Get(id.Value);
                 if (coreSkillsOnly && System.Array.IndexOf(build.CoreSkills, skill.Grant) < 0) continue;
-                if (skill.Toggled || id == SkillId.Dash || id == SkillId.Teleport) continue;
+                if (id == SkillId.Dash || id == SkillId.Teleport) continue;
                 if (skills.CooldownLeftAt(k) > 0f || !skills.CanAffordAt(k)) continue;
                 if (id == SkillId.FrostNova && distance > 4f) continue;
                 // Like a player keeping an army up: recast a summon only when its kind has room

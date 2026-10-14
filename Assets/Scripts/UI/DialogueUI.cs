@@ -99,6 +99,7 @@ namespace PoeClone.UI
         {
             // The middle-of-the-screen panels would sit under the conversation.
             SkillBarUI.SetOpen(false);
+            WeaponSkillTreeUI.SetOpen(false);
             PassiveTreeUI.SetOpen(false);
 
             speaker = who;

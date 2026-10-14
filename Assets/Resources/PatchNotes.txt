@@ -1,3 +1,12 @@
+version: 2026-10-14-weapon-skill-trees
+- Added a unique 24-node specialization tree for each of the 24 main weapon skills. Press T, click the main attack icon, or use the Weapon tree button while the weapon is equipped.
+- Each weapon keeps its own skill level, experience and allocations. A level 6 drop starts with six points; combat experience earned while equipped levels the weapon up to 10, granting one point per level. Skill levels no longer grant automatic combat bonuses.
+- Every bow, melee weapon, staff, sceptre and grimoire carries exactly one main skill. Bow skills always replace left click, with no toggle. Minion weapons summon on left click and command their army once it is full.
+- Skill trees offer projectile, piercing, forking, chaining, repeating, ailment, explosion, minion and other specializations, with tradeoffs on powerful branch endpoints. Ice Shard starts with one projectile; its first-point Frozen Fan node grants +2 projectiles.
+- Mentor Ilyra, beside Smith Bram in Haven, resets the equipped weapon's allocated points for gold while preserving its level and experience.
+- Removed all bonus-to-skill-level modifiers. Moved extra projectile, chain, minion and other skill mechanics from gear and character passives into weapon trees; affected uniques now offer broad bonuses instead. Existing character passive points are refunded once for the migration.
+- Weapon progress and allocations persist through saves, stash storage and multiplayer item transfers.
+
 version: 2026-10-14-quest-details-click
 - Fixed the quest details button ignoring clicks and letting them fire an attack instead.
 

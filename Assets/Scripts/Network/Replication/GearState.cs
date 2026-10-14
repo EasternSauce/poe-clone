@@ -14,6 +14,8 @@ namespace PoeClone.Network.Replication
         public string i;    // base id (icon / look)
         public string n;    // name
         public int ct;      // stack count
+        public int sl, sx; // weapon skill level and experience; zero for legacy items
+        public string[] sn; // allocated weapon skill nodes
         public int ilvl;    // source area level, separate from future equip requirements
         public int t;       // ItemType
         public int w;

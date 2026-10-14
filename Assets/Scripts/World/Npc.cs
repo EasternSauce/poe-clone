@@ -19,7 +19,8 @@ namespace PoeClone.World
         QuestProp, // not a person: something a quest has the player use (see Quests.QuestProp)
         Villager, // conversation only; appended to preserve existing saved role IDs
         Guide,    // Wren, freed from Vex's captors in the Lost Hollows (see Quests.QuestCaptive)
-        Waterkeeper // Nima in Sahret; appended to preserve saved role IDs
+        Waterkeeper, // Nima in Sahret; appended to preserve saved role IDs
+        WeaponMentor // Weapon skill resets in town; append to preserve saved roles.
     }
 
     /// <summary>

@@ -663,6 +663,7 @@ namespace PoeClone.World
 
             Spots["Elder"] = c + new Vector3(-3.5f, 0f, 3.5f);
             Spots["Smith"] = c + new Vector3(5.5f, 0f, -7f);
+            Spots["WeaponMentor"] = c + new Vector3(3f, 0f, -8.5f);
             Spots["Guard"] = c + new Vector3(112f, 0f, 4f);
 
             // Four benches by the spawn point, side-on to the camera so the names of the things lying
@@ -1100,6 +1101,12 @@ namespace PoeClone.World
                 Gear = new[] { "iron_helmet", "rusty_sword", "wooden_shield" }
             });
 
+            AddNpc(spawner.EnemyPrefab, t, NpcRole.WeaponMentor, "Mentor Ilyra", c, new EnemyKind
+            {
+                Name = "Weapon Mentor", Scale = 1f, HideHorns = true,
+                Cloth = new Color(0.28f, 0.42f, 0.48f), Pants = new Color(0.20f, 0.21f, 0.27f),
+                Skin = new Color(0.72f, 0.56f, 0.43f), Eyes = new Color(0.16f, 0.25f, 0.3f)
+            });
             BuildVillageFolk(spawner.EnemyPrefab, t);
 
         }

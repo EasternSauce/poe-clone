@@ -250,7 +250,7 @@ namespace PoeClone.Player
                 characterUI = FindAnyObjectByType<CharacterPageUI>();
 
             return (inventoryUI != null && inventoryUI.IsOpen) || (characterUI != null && characterUI.IsOpen) ||
-                   (TouchMode.Active && (UI.SkillBarUI.IsOpen || UI.PassiveTreeUI.IsOpen || UI.DialogueUI.IsOpen));
+                   UI.WeaponSkillTreeUI.IsOpen || (TouchMode.Active && (UI.SkillBarUI.IsOpen || UI.PassiveTreeUI.IsOpen || UI.DialogueUI.IsOpen));
         }
 
         // An item is outlined while it's pointed at or being walked to; these keep that in sync.

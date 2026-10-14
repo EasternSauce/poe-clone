@@ -26,6 +26,9 @@ namespace PoeClone.Network
                 n = item.Name,
                 ct = item.StackCount,
                 ilvl = item.ItemLevel,
+                sl = item.SkillProgress?.level ?? 0,
+                sx = item.SkillProgress?.experience ?? 0,
+                sn = item.SkillProgress?.nodes.ToArray(),
                 t = (int)item.Type,
                 w = item.Width,
                 h = item.Height,
@@ -51,6 +54,8 @@ namespace PoeClone.Network
             {
                 id = g.i, name = g.n, count = g.ct, ilvl = g.ilvl, type = g.t, w = g.w, h = g.h, weapon = g.wp, rarity = g.q, cape = g.c != 0,
                 r = tint.r, g = tint.g, b = tint.b, a = tint.a,
+                weaponSkill = g.sl > 0 ? new WeaponSkillProgress { level = g.sl, experience = g.sx,
+                    nodes = g.sn != null ? new List<string>(g.sn) : new List<string>() } : null,
                 mods = new List<ModRecord>()
             };
             if (g.m != null)
@@ -69,6 +74,11 @@ namespace PoeClone.Network
             var sb = new System.Text.StringBuilder(item.Id).Append('|').Append(item.Name).Append('|').Append(item.StackCount).Append('|').Append(item.ItemLevel);
             foreach (StatModifier m in item.Modifiers)
                 sb.Append('|').Append((int)m.Stat).Append(':').Append(m.Value.ToString(CultureInfo.InvariantCulture)).Append(':').Append(m.Tier);
+            if (item.SkillProgress != null)
+            {
+                sb.Append("|skill:").Append(item.SkillProgress.level).Append(':').Append(item.SkillProgress.experience);
+                foreach (string node in item.SkillProgress.nodes) sb.Append(':').Append(node);
+            }
             return sb.ToString();
         }
     }

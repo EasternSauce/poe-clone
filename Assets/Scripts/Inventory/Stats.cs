@@ -191,11 +191,11 @@ namespace PoeClone.Inventory
     /// </summary>
     public static class SkillGrants
     {
-        /// <summary>Highest level a skill drops at (gear "+N levels" can still push it past this).</summary>
+        /// <summary>Maximum weapon skill rank. Levels grant specialization points only.</summary>
         public const int MaxDropLevel = 10;
 
         /// <summary>Spells a staff's attack can be: one always rolls on every staff.</summary>
-        public static readonly StatType[] StaffMain = { StatType.GrantFireBolt, StatType.GrantChainLightning, StatType.GrantIceShard };
+        public static readonly StatType[] StaffMain = { StatType.GrantFireBolt, StatType.GrantChainLightning, StatType.GrantIceShard, StatType.GrantVenomSpout };
 
         public static bool IsGrant(StatType stat)
         {
@@ -207,7 +207,7 @@ namespace PoeClone.Inventory
                    (stat >= StatType.GrantWhirlwind && stat <= StatType.GrantVenomSlash);
         }
 
-        /// <summary>The bow skills: they roll on bows and quivers (never as the attack) and are toggled from the bar.</summary>
+        /// <summary>Bow main attacks. Every bow carries exactly one.</summary>
         public static readonly StatType[] BowSkills =
             { StatType.GrantSplitShot, StatType.GrantPiercingShot, StatType.GrantRainOfArrows, StatType.GrantBurningArrow };
 
@@ -224,7 +224,7 @@ namespace PoeClone.Inventory
         };
 
         /// <summary>The attack spells a grimoire carries (one always rolls on every grimoire).</summary>
-        public static readonly StatType[] GrimoireMain = { StatType.GrantDeathMark };
+        public static readonly StatType[] GrimoireMain = { StatType.GrantRaiseSkeletons, StatType.GrantSkeletonMages, StatType.GrantSpiritWolves, StatType.GrantBoneGolem, StatType.GrantSummonViper };
 
         /// <summary>The summon skills (bar skills that raise minions).</summary>
         public static bool IsSummon(StatType stat)
@@ -251,7 +251,7 @@ namespace PoeClone.Inventory
         /// </summary>
         public static bool IsMain(StatType stat)
         {
-            return Array.IndexOf(StaffMain, stat) >= 0 || Array.IndexOf(GrimoireMain, stat) >= 0;
+            return WeaponSkillRules.IsWeaponSkill(stat);
         }
 
         public static string SkillName(StatType grant)

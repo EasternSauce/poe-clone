@@ -2038,7 +2038,7 @@ private Vector2 CellSize(int w, int h)
             else if (item.Type == ItemType.Grimoire)
                 handNote = "Off hand";
             else if (item.Type == ItemType.Weapon && item.WeaponType == WeaponType.Sceptre)
-                handNote = "Its blows put Death Mark on what they strike";
+                handNote = "Its main skill summons and commands minions";
             if (handNote != null)
             {
                 sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.DimText)).Append(">").Append(handNote).Append("</color>");
@@ -2137,6 +2137,14 @@ private Vector2 CellSize(int w, int h)
                 {
                     if (m.IsBase || (m.Tier == StatModifier.ImplicitTier) != implicits || SkillGrants.IsGrant(m.Stat) != skills)
                         continue;
+                    if (skills && item.SkillProgress != null && item.MainSkillGrant == m.Stat)
+                    {
+                        sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.Gold)).Append(">")
+                            .Append(SkillGrants.SkillName(m.Stat)).Append(" · Level ").Append(item.SkillProgress.level)
+                            .Append("/10 · ").Append(item.SkillProgress.Available).Append(" tree points available</color>");
+                        lineCount++;
+                        continue;
+                    }
                     string tier = item.Rarity == ItemRarity.Unique || m.Tier == StatModifier.ImplicitTier ? null :
                         m.Tier > 0 ? "T" + m.Tier : "Tier unknown";
                     sb.Append("\n<color=#").Append(UiKit.Hex(UiKit.MagicBlue)).Append(">")

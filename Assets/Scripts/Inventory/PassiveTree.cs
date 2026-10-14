@@ -128,7 +128,7 @@ namespace PoeClone.Inventory
             N("n1", "Grave Whispers", 2.6f, 0f, Road());
             N("n2", "Bone Servants", 2.9f, -0.35f, Road());
             N("n3", "Ossuary", 2.9f, 0.35f, Road());
-            Nt("n_lord", "Lord of Bones", 3.2f, 0f, Mod(StatType.MinionLevels, 1), Mod(StatType.MinionLife, 20));
+            Nt("n_lord", "Lord of Bones", 3.2f, 0f, Mod(StatType.MinionDamage, 15), Mod(StatType.MinionLife, 20));
             N("junction_n_lord", "", 3.2f, 0f, Road());
             N("n4", "Grave Command", 3.2f, -0.62f, Road());
             N("n5", "Pack Leader", 3.2f, 0.62f, Road());
@@ -137,7 +137,7 @@ namespace PoeClone.Inventory
             Chain("n1", "n2", "junction_n_lord", "n3", "n1");
             Chain("n2", "n4", "junction_n_lord", "n5", "n3");
 
-            Ks("k_legion", "Bone Legion", 3.6f, -0.28f, Mod(StatType.AdditionalMinions, 1));
+            Ks("k_legion", "Bone Resolve", 3.6f, -0.28f, Mod(StatType.AdditionalMinions, 1));
             Chain("n2", "k_legion");
             Nt("k_soulbond", "Undying Host", 3.6f, 0.28f, Mod(StatType.MinionLife, 20), Mod(StatType.MinionArmour, 250), Mod(StatType.MinionResistances, 10));
             Chain("n3", "k_soulbond");
@@ -281,7 +281,7 @@ namespace PoeClone.Inventory
             Nt("g_deadeye", "Deadeye", 2.6f, 0.3f, Mod(StatType.BowDamage, 18), Mod(StatType.CriticalChance, 35));
             N("junction_g_deadeye", "", 2.6f, 0.3f, Road());
             Chain("g10", "junction_g_deadeye");
-            Ks("k_volley", "Volley", 2.83f, 0.69f, Mod(StatType.AdditionalArrows, 1));
+            Ks("k_volley", "Steady Aim", 2.83f, 0.69f, Mod(StatType.AdditionalArrows, 1));
             Chain("g10", "k_volley");
             N("g_shaft", "True Shaft", 3.3f, 0.62f, Mod(StatType.BowDamage, 6));
             Nt("g_longshot", "Longshot", 3.6f, 0.78f, Mod(StatType.BowDamage, 18), Mod(StatType.CriticalMultiplier, 15));
@@ -350,7 +350,7 @@ namespace PoeClone.Inventory
             N("w_m2", "Sorcery", 1.9f, 0f, Road());
             Nt("w_archmage", "Archmage", 2.25f, 0f, Mod(StatType.SpellDamage, 15), Mod(StatType.CastSpeed, 10), Mod(StatType.AreaOfEffect, 12), Mod(StatType.ElementalPenetration, 5));
             Chain("w3", "w_m1", "w_m2", "w_archmage");
-            Ks("k_twincast", "Convergence", 2.7f, 0f, Mod(StatType.AdditionalProjectiles, 1));
+            Ks("k_twincast", "Arcane Power", 2.7f, 0f, Mod(StatType.AdditionalProjectiles, 1));
             Chain("w_m2", "k_twincast");
 
             // Wards: resistances.
@@ -775,7 +775,13 @@ namespace PoeClone.Inventory
                 Link(ids[k - 1], ids[k]);
         }
 
-        private static StatModifier Mod(StatType stat, float value) => new StatModifier(stat, value);
+        private static StatModifier Mod(StatType stat, float value)
+        {
+            if (WeaponSkillRules.IsLevelBonus(stat)) return new StatModifier(StatType.MinionDamage, 15);
+            if (WeaponSkillRules.IsSkillMechanic(stat))
+                return new StatModifier(stat == StatType.AdditionalMinions || stat == StatType.AdditionalSkeletons ? StatType.MinionLife : StatType.Damage, 15);
+            return new StatModifier(stat, value);
+        }
 
         private static PassiveNode Add(string id, string name, PassiveBranch branch, bool notable, float x, float y, params StatModifier[] mods)
         {

@@ -33,6 +33,8 @@ namespace PoeClone.UI
             if (supply != null) { supply.Interact(npc); return; }
             if (npc.Role == NpcRole.Villager)
                 VillagerPage(npc, npc.ConversationGreeting);
+            else if (npc.Role == NpcRole.WeaponMentor)
+                WeaponMentorPage(npc);
             else if (npc.Role == NpcRole.Waystone)
                 WaystonePage(npc);
             else if (npc.Role == NpcRole.Stash)
@@ -50,6 +52,41 @@ namespace PoeClone.UI
                     QuestLog.Instance.TalkedTo(npc.Role);
                 NextQuest(npc);
             }
+        }
+
+        private static void WeaponMentorPage(Npc npc, string message = null)
+        {
+            var skills = Object.FindAnyObjectByType<PoeClone.Skills.PlayerSkills>();
+            ItemData weapon = skills != null && skills.enabled ? skills.MainWeapon : null;
+            var options = new List<DialogueOption>();
+            string text = message ?? "A weapon remembers how you fight. I can help you choose a different path. Your weapon keeps its level and experience; all its allocated points return to you.";
+            if (weapon?.SkillProgress != null)
+            {
+                int price = skills.WeaponResetPrice;
+                var inventory = skills.GetComponent<PlayerInventory>();
+                text += "\n\nEquipped: " + weapon.Name + "\n" + SkillGrants.SkillName(weapon.MainSkillGrant.Value) +
+                    " · level " + weapon.SkillProgress.level + " · " + weapon.SkillProgress.nodes.Count + " points allocated" +
+                    "\nReset price: " + price + " gold. You have " + inventory.Gold + " gold.";
+                options.Add(new DialogueOption("Reset this weapon's tree · " + price + " gold", () =>
+                {
+                    DialogueUI.Show(npc, "Reset " + weapon.Name + " for " + price + " gold? All spent points will be refunded. Its level and experience are preserved.",
+                        new List<DialogueOption>
+                        {
+                            new DialogueOption("Pay " + price + " gold and reset", () =>
+                            {
+                                bool inTown = AreaManager.Instance?.Current?.isTown == true;
+                                bool nearby = Vector3.Distance(skills.transform.position, npc.transform.position) <= Npc.TalkReach + 2.5f;
+                                bool success = inTown && nearby && skills.MainWeapon == weapon && skills.WeaponResetPrice == price && skills.ResetWeaponTree(weapon);
+                                WeaponMentorPage(npc, success ? "A fresh path. Your weapon's points are ready to allocate." : "The reset could not be completed. Check your equipped weapon and gold.");
+                            }),
+                            new DialogueOption("Keep my current tree", () => WeaponMentorPage(npc))
+                        });
+                }, weapon.SkillProgress.nodes.Count > 0 && inventory.Gold >= price));
+                options.Add(new DialogueOption("Open my weapon's tree", () => { DialogueUI.Close(); WeaponSkillTreeUI.SetOpen(true); }));
+            }
+            else text += "\n\nEquip a weapon with a main skill first.";
+            options.Add(new DialogueOption("Goodbye", DialogueUI.Close));
+            DialogueUI.Show(npc, text, options);
         }
 
         // ------------------------------------------------------------------ stash

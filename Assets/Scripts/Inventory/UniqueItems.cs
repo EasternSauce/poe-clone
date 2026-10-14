@@ -62,13 +62,13 @@ namespace PoeClone.Inventory
             {
                 BaseId = "short_bow", Name = "Whisperwind", RequiredLevel = 1, Weight = Common,
                 Flavour = "The arrow arrives before the sound.",
-                Mods = new[] { Roll(StatType.PhysicalDamage, 3, 5), Roll(StatType.AttackSpeed, 10, 15), Roll(StatType.Dexterity, 8, 12), Mod(StatType.AdditionalArrows, 1) }
+                Mods = new[] { Roll(StatType.PhysicalDamage, 3, 5), Roll(StatType.AttackSpeed, 10, 15), Roll(StatType.Dexterity, 8, 12), Mod(StatType.BowDamage, 15) }
             },
             new Unique
             {
                 BaseId = "ruby_ring", Name = "Emberheart", RequiredLevel = 1, Weight = Common,
                 Flavour = "It beats, faintly.",
-                Mods = new[] { Roll(StatType.FireResistance, 15, 25), Roll(StatType.FireDamage, 15, 25), Roll(StatType.CastSpeed, 4, 6), Roll(StatType.ExplodeOnKill, 8, 12) }
+                Mods = new[] { Roll(StatType.FireResistance, 15, 25), Roll(StatType.FireDamage, 15, 25), Roll(StatType.CastSpeed, 4, 6), Roll(StatType.Damage, 4, 6) }
             },
             new Unique
             {
@@ -100,7 +100,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "sapphire_ring", Name = "Twinflame Loop", RequiredLevel = 9, Weight = Uncommon,
                 Flavour = "Every spark it touches is born a twin.",
-                Mods = new[] { Roll(StatType.Intelligence, 8, 12), Roll(StatType.SpellDamage, 10, 15), Roll(StatType.ColdResistance, 15, 20), Mod(StatType.AdditionalProjectiles, 1) }
+                Mods = new[] { Roll(StatType.Intelligence, 8, 12), Roll(StatType.SpellDamage, 10, 15), Roll(StatType.ColdResistance, 15, 20), Mod(StatType.Damage, 15) }
             },
             new Unique
             {
@@ -124,7 +124,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "grave_sceptre", Name = "Gravewarden's Rod", RequiredLevel = 9, Weight = Common,
                 Flavour = "The dead keep the watch now. They never sleep on it.",
-                Mods = new[] { Roll(StatType.MinionDamage, 15, 25), Roll(StatType.MinionLife, 15, 25), Roll(StatType.Intelligence, 8, 12), Roll(StatType.GrantRaiseSkeletons, 4, 5), Mod(StatType.AdditionalSkeletons, 1) }
+                Mods = new[] { Roll(StatType.MinionDamage, 15, 25), Roll(StatType.MinionLife, 15, 25), Roll(StatType.Intelligence, 8, 12), Roll(StatType.GrantRaiseSkeletons, 4, 5), Mod(StatType.MinionLife, 15) }
             },
             new Unique
             {
@@ -138,49 +138,49 @@ namespace PoeClone.Inventory
             {
                 BaseId = "great_helm", Name = "Crown of Ash", RequiredLevel = 17, Weight = Uncommon,
                 Flavour = "Taken from the Warlord's brow, still warm.",
-                Mods = new[] { Roll(StatType.Armour, 50, 75), Roll(StatType.MaxLife, 50, 70), Roll(StatType.FireResistance, 20, 30), Roll(StatType.AreaOfEffect, 12, 18), Roll(StatType.ExplodeOnKill, 20, 25) }
+                Mods = new[] { Roll(StatType.Armour, 50, 75), Roll(StatType.MaxLife, 50, 70), Roll(StatType.FireResistance, 20, 30), Roll(StatType.AreaOfEffect, 12, 18), Roll(StatType.Damage, 10, 12) }
             },
             new Unique
             {
                 BaseId = "arcane_circlet", Name = "Stormcaller's Circlet", RequiredLevel = 17, Weight = Uncommon,
                 Flavour = "The sky listens to whoever wears it, and answers twice.",
-                Mods = new[] { Roll(StatType.Intelligence, 12, 16), Roll(StatType.MaxMana, 45, 60), Roll(StatType.LightningDamage, 20, 30), Roll(StatType.ShockChance, 20, 30), Mod(StatType.AdditionalChains, 2) }
+                Mods = new[] { Roll(StatType.Intelligence, 12, 16), Roll(StatType.MaxMana, 45, 60), Roll(StatType.LightningDamage, 20, 30), Roll(StatType.ShockChance, 20, 30), Mod(StatType.LightningDamage, 30) }
             },
             new Unique
             {
                 BaseId = "assassin_gloves", Name = "Thundergrip", RequiredLevel = 17, Weight = Uncommon,
                 Flavour = "The first spark always finds another hand to shake.",
-                Mods = new[] { Roll(StatType.Evasion, 30, 45), Roll(StatType.AttackSpeed, 8, 12), Roll(StatType.CriticalChance, 30, 40), Roll(StatType.Stormblade, 35, 45), Roll(StatType.ShockChance, 15, 20) }
+                Mods = new[] { Roll(StatType.Evasion, 30, 45), Roll(StatType.AttackSpeed, 8, 12), Roll(StatType.CriticalChance, 30, 40), Roll(StatType.LightningDamage, 18, 22), Roll(StatType.ShockChance, 15, 20) }
             },
             new Unique
             {
                 BaseId = "archmage_staff", Name = "Frostglass Bough", RequiredLevel = 17, Weight = Uncommon,
                 Flavour = "Its branches ring like glass when winter takes a life.",
-                Mods = new[] { Roll(StatType.GrantIceShard, 5, 6), Roll(StatType.SpellDamage, 20, 30), Roll(StatType.ColdDamage, 15, 25), Roll(StatType.CastSpeed, 8, 12), Roll(StatType.Shatter, 25, 35), Roll(StatType.ColdPenetration, 8, 12) }
+                Mods = new[] { Roll(StatType.GrantIceShard, 5, 6), Roll(StatType.SpellDamage, 20, 30), Roll(StatType.ColdDamage, 15, 25), Roll(StatType.CastSpeed, 8, 12), Roll(StatType.ColdDamage, 12, 18), Roll(StatType.ColdPenetration, 8, 12) }
             },
             new Unique
             {
                 BaseId = "arcane_slippers", Name = "Winter's Passage", RequiredLevel = 17, Weight = Common,
                 Flavour = "Every hurried step leaves a little winter behind.",
-                Mods = new[] { Roll(StatType.MovementSpeed, 15, 20), Roll(StatType.ColdResistance, 20, 30), Roll(StatType.Intelligence, 10, 14), Roll(StatType.GrantDash, 5, 6), Mod(StatType.GlacialStep, 1) }
+                Mods = new[] { Roll(StatType.MovementSpeed, 15, 20), Roll(StatType.ColdResistance, 20, 30), Roll(StatType.Intelligence, 10, 14), Roll(StatType.GrantDash, 5, 6), Mod(StatType.CastSpeed, 10) }
             },
             new Unique
             {
                 BaseId = "mystic_circlet", Name = "Mercy's Echo", RequiredLevel = 17, Weight = Common,
                 Flavour = "The last prayer is never spoken only once.",
-                Mods = new[] { Roll(StatType.MaxLife, 40, 60), Roll(StatType.MaxMana, 38, 53), Roll(StatType.CastSpeed, 6, 10), Roll(StatType.GrantWarCry, 5, 6), Mod(StatType.SecondWind, 1) }
+                Mods = new[] { Roll(StatType.MaxLife, 40, 60), Roll(StatType.MaxMana, 38, 53), Roll(StatType.CastSpeed, 6, 10), Roll(StatType.GrantWarCry, 5, 6), Mod(StatType.ManaRegen, 15) }
             },
             new Unique
             {
                 BaseId = "lich_codex", Name = "Ledger of the Fallen", RequiredLevel = 17, Weight = Common,
                 Flavour = "The final entry always points to the next name.",
-                Mods = new[] { Roll(StatType.GrantDeathMark, 5, 6), Roll(StatType.MinionDamage, 20, 30), Roll(StatType.MinionSpeed, 10, 15), Roll(StatType.MarkEffect, 25, 35), Mod(StatType.DeathsHerald, 1) }
+                Mods = new[] { Roll(StatType.GrantSkeletonMages, 5, 6), Roll(StatType.MinionDamage, 20, 30), Roll(StatType.MinionSpeed, 10, 15), Roll(StatType.MarkEffect, 25, 35), Mod(StatType.MinionDamage, 15) }
             },
             new Unique
             {
                 BaseId = "earthbreaker", Name = "Cinderwake", RequiredLevel = 17, Weight = Uncommon,
                 Flavour = "One blow buries the foe. The next scatters the ashes.",
-                Mods = new[] { Roll(StatType.PhysicalDamage, 14, 20), Roll(StatType.Strength, 12, 16), Roll(StatType.AreaOfEffect, 15, 20), Roll(StatType.MeleeSplash, 40, 50) }
+                Mods = new[] { Roll(StatType.PhysicalDamage, 14, 20), Roll(StatType.Strength, 12, 16), Roll(StatType.AreaOfEffect, 15, 20), Roll(StatType.AttackDamage, 20, 25) }
             },
             new Unique
             {
@@ -218,13 +218,13 @@ namespace PoeClone.Inventory
             {
                 BaseId = "eldritch_staff", Name = "The Unfinished Sentence", RequiredLevel = 25, Weight = Rare,
                 Flavour = "The next spell begins before the last word fades.",
-                Mods = new[] { Roll(StatType.GrantFireBolt, 7, 8), Roll(StatType.SpellDamage, 25, 35), Roll(StatType.FireDamage, 15, 25), Roll(StatType.CastSpeed, 12, 18), Roll(StatType.SpellEcho, 20, 30) }
+                Mods = new[] { Roll(StatType.GrantFireBolt, 7, 8), Roll(StatType.SpellDamage, 25, 35), Roll(StatType.FireDamage, 15, 25), Roll(StatType.CastSpeed, 12, 18), Roll(StatType.CastSpeed, 6, 9) }
             },
             new Unique
             {
                 BaseId = "eldritch_staff", Name = "Conductor's Reach", RequiredLevel = 25, Weight = Uncommon,
                 Flavour = "The storm follows wherever its bearer points.",
-                Mods = new[] { Roll(StatType.GrantChainLightning, 7, 8), Roll(StatType.SpellDamage, 20, 30), Roll(StatType.LightningDamage, 25, 35), Roll(StatType.CastSpeed, 10, 14), Mod(StatType.AdditionalChains, 2), Roll(StatType.LightningPenetration, 12, 18) }
+                Mods = new[] { Roll(StatType.GrantChainLightning, 7, 8), Roll(StatType.SpellDamage, 20, 30), Roll(StatType.LightningDamage, 25, 35), Roll(StatType.CastSpeed, 10, 14), Mod(StatType.LightningDamage, 30), Roll(StatType.LightningPenetration, 12, 18) }
             },
             new Unique
             {
@@ -248,13 +248,13 @@ namespace PoeClone.Inventory
             {
                 BaseId = "necronomicon", Name = "The Ossuary Codex", RequiredLevel = 25, Weight = Rare,
                 Flavour = "Every page a name. Every name still answers. Every answer costs.",
-                Mods = new[] { Roll(StatType.GrantDeathMark, 7, 8), Roll(StatType.MinionLife, 25, 35), Roll(StatType.Intelligence, 15, 20), Mod(StatType.AdditionalMinions, 3), Mod(StatType.MinionLevels, 1), Roll(StatType.DamageTaken, 15, 20) }
+                Mods = new[] { Roll(StatType.GrantRaiseSkeletons, 7, 8), Roll(StatType.MinionLife, 25, 35), Roll(StatType.Intelligence, 15, 20), Mod(StatType.MinionLife, 45), Mod(StatType.MinionDamage, 15), Roll(StatType.DamageTaken, 15, 20) }
             },
             new Unique
             {
                 BaseId = "royal_lapis_amulet", Name = "Pendant of the Fleeting Thought", RequiredLevel = 25, Weight = Rare,
                 Flavour = "Catch the thought before the world can answer.",
-                Mods = new[] { Roll(StatType.CastSpeed, 12, 18), Roll(StatType.SpellDamage, 15, 20), Roll(StatType.ManaRegen, 30, 40), Mod(StatType.AllSpellLevels, 1) }
+                Mods = new[] { Roll(StatType.CastSpeed, 12, 18), Roll(StatType.SpellDamage, 15, 20), Roll(StatType.ManaRegen, 30, 40), Mod(StatType.SpellDamage, 15) }
             },
             new Unique
             {
@@ -268,7 +268,7 @@ namespace PoeClone.Inventory
             {
                 BaseId = "imperial_bow", Name = "Starfall", RequiredLevel = 32, Weight = Mythic,
                 Flavour = "Loosed at the sky. The sky sends it back in pieces.",
-                Mods = new[] { Roll(StatType.PhysicalDamage, 16, 22), Roll(StatType.AttackSpeed, 12, 18), Roll(StatType.Dexterity, 18, 24), Mod(StatType.AdditionalArrows, 2), Roll(StatType.ArmourPenetration, 15, 20) }
+                Mods = new[] { Roll(StatType.PhysicalDamage, 16, 22), Roll(StatType.AttackSpeed, 12, 18), Roll(StatType.Dexterity, 18, 24), Mod(StatType.BowDamage, 30), Roll(StatType.ArmourPenetration, 15, 20) }
             },
             new Unique
             {
@@ -280,13 +280,13 @@ namespace PoeClone.Inventory
             {
                 BaseId = "archon_diadem", Name = "The Glass Diadem", RequiredLevel = 34, Weight = Mythic,
                 Flavour = "It shows the wearer everything. It cannot bear to be dropped.",
-                Mods = new[] { Roll(StatType.Intelligence, 20, 25), Roll(StatType.CastSpeed, 10, 15), Roll(StatType.SpellDamage, 25, 35), Mod(StatType.AllSpellLevels, 2), Roll(StatType.MoreLife, -40, -35) }
+                Mods = new[] { Roll(StatType.Intelligence, 20, 25), Roll(StatType.CastSpeed, 10, 15), Roll(StatType.SpellDamage, 25, 35), Mod(StatType.SpellDamage, 30), Roll(StatType.MoreLife, -40, -35) }
             },
             new Unique
             {
                 BaseId = "nightstalker_gloves", Name = "Hands of the Butcher-King", RequiredLevel = 34, Weight = Mythic,
                 Flavour = "No blow ends where it lands.",
-                Mods = new[] { Roll(StatType.AttackSpeed, 10, 14), Roll(StatType.PhysicalDamage, 5, 8), Roll(StatType.MaxLife, 60, 80), Roll(StatType.MeleeSplash, 30, 40), Roll(StatType.Rampage, 3, 4) }
+                Mods = new[] { Roll(StatType.AttackSpeed, 10, 14), Roll(StatType.PhysicalDamage, 5, 8), Roll(StatType.MaxLife, 60, 80), Roll(StatType.AttackDamage, 15, 20), Roll(StatType.Rampage, 3, 4) }
             },
 
             // ---- The Shepherd's own: only he drops these.
@@ -303,9 +303,9 @@ namespace PoeClone.Inventory
                 Mods = new[] { Roll(StatType.PhysicalDamage, 14, 22), Mod(StatType.GrantVenomArrow, 7), Roll(StatType.Dexterity, 16, 24), Mod(StatType.PoisonPenetration, 15) }
             },
             new Unique { BaseId = "bone_sceptre", Name = "Crook of the Last Shepherd", ShepherdOnly = true,
-                Flavour = "It taught the roots to hunger.", Mods = new[] { Mod(StatType.GrantVenomSpout, 7), Roll(StatType.SpellDamage, 24, 36), Roll(StatType.PoisonDamage, 20, 30), Mod(StatType.PoisonPenetration, 12) } },
+                Flavour = "It taught the roots to hunger.", Mods = new[] { Mod(StatType.GrantSummonViper, 7), Roll(StatType.MinionDamage, 24, 36), Roll(StatType.PoisonDamage, 20, 30), Mod(StatType.PoisonPenetration, 12) } },
             new Unique { BaseId = "grimoire", Name = "Book of Shed Skin", ShepherdOnly = true,
-                Flavour = "Something small coils between every page.", Mods = new[] { Mod(StatType.GrantSummonViper, 7), Mod(StatType.MinionLevels, 1), Mod(StatType.AdditionalMinions, 3), Mod(StatType.MinionDamagePenalty, 30), Roll(StatType.MinionLife, 16, 24), Roll(StatType.PoisonDamage, 12, 18) } },
+                Flavour = "Something small coils between every page.", Mods = new[] { Mod(StatType.GrantSummonViper, 7), Mod(StatType.MinionDamage, 15), Mod(StatType.MinionLife, 45), Mod(StatType.MinionDamagePenalty, 30), Roll(StatType.MinionLife, 16, 24), Roll(StatType.PoisonDamage, 12, 18) } },
             new Unique { BaseId = "jade_amulet", Name = "Widow's Brood", ShepherdOnly = true,
                 Flavour = "The venom passes from mother to daughter.", Mods = new[] { Roll(StatType.PoisonDamage, 28, 42), Roll(StatType.DamageOverTime, 20, 30), Roll(StatType.PoisonResistance, 20, 30), Mod(StatType.PoisonPenetration, 15), Mod(StatType.VenomCloudOnHit, 30) } },
         };
@@ -431,23 +431,49 @@ namespace PoeClone.Inventory
             // A unique weapon's Physical Damage roll is its base damage.
             bool needsBase = shape.Type == ItemType.Weapon;
             var mods = new List<StatModifier>();
+            // Several retired mechanics can become the same broad stat. Roll and save that
+            // combined range once so loading cannot clamp each part against the other's value.
+            var definitions = new List<UniqueModifier>();
             foreach (UniqueModifier mod in u.Mods)
+            {
+                int existing = definitions.FindIndex(m => m.Stat == mod.Stat);
+                if (existing < 0) definitions.Add(mod);
+                else
+                {
+                    UniqueModifier previous = definitions[existing];
+                    definitions[existing] = new UniqueModifier(mod.Stat, previous.Min + mod.Min, previous.Max + mod.Max);
+                }
+            }
+            foreach (UniqueModifier mod in definitions)
             {
                 // Loading must never reroll. Clamp older values to the current range and
                 // restore newly added modifiers at their midpoint; signature effects stay fixed.
                 float value = saved == null ? mod.Roll(rng) : (mod.Min + mod.Max) * 0.5f;
                 if (saved != null)
                 {
+                    float total = 0f;
+                    bool found = false;
                     foreach (StatModifier previous in saved.Modifiers)
                     {
                         if (previous.Stat != mod.Stat) continue;
-                        value = UnityEngine.Mathf.Clamp(previous.Value, mod.Min, mod.Max);
-                        break;
+                        total += previous.Value;
+                        found = true;
                     }
+                    if (found) value = UnityEngine.Mathf.Clamp(total, mod.Min, mod.Max);
                 }
                 bool isBase = needsBase && mod.Stat == StatType.PhysicalDamage;
                 needsBase &= !isBase;
                 mods.Add(new StatModifier(mod.Stat, value, isBase ? StatModifier.BaseTier : 0));
+            }
+            StatType[] pool = WeaponSkillRules.Pool(shape.Type, shape.WeaponType);
+            bool hasMain = false;
+            foreach (StatModifier m in mods) if (System.Array.IndexOf(pool, m.Stat) >= 0) hasMain = true;
+            if (pool.Length > 0 && !hasMain)
+            {
+                StatType grant = saved?.MainSkillGrant is StatType previous && System.Array.IndexOf(pool, previous) >= 0 ? previous :
+                    pool[saved == null ? rng.Next(pool.Length) : 0];
+                int rank = saved?.SkillProgress?.level ?? (saved == null ? ItemGenerator.RollSkillLevel(rng, System.Math.Max(1, u.RequiredLevel)) : 1);
+                mods.Add(new StatModifier(grant, rank));
             }
             var item = new ItemData(shape.Id, u.Name, shape.Type, shape.Width, shape.Height, shape.Tint, mods,
                 hasCape: false, weaponType: shape.WeaponType, rarity: ItemRarity.Unique);
@@ -464,6 +490,8 @@ namespace PoeClone.Inventory
                 if (u.Name != item.Name) continue;
                 ItemData current = Build(u, null, item);
                 current.ItemLevel = item.ItemLevel;
+                current.SkillProgress = item.SkillProgress;
+                current.SynchronizeSkillLevel();
                 return current;
             }
             return item;

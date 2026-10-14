@@ -720,6 +720,8 @@ namespace PoeClone.Inventory
             var fixedItem = new ItemData(item.Id, item.Name, item.Type, item.Width, item.Height, item.Tint, mods,
                 item.HasCape, item.WeaponType, item.Rarity);
             fixedItem.ItemLevel = item.ItemLevel;
+            fixedItem.SkillProgress = item.SkillProgress;
+            fixedItem.SynchronizeSkillLevel();
             fixedItem.ArtId = item.ArtId;
             fixedItem.ArtTint = item.ArtTint;
             return fixedItem;
@@ -749,7 +751,7 @@ namespace PoeClone.Inventory
             float? min = null, max = null;
             foreach (Affix a in Affixes)
             {
-                if (a == null || !a.Enabled || a.Weight <= 0 || a.Stat != stat || !a.Allows(b.Type, b.WeaponType))
+                if (a == null || WeaponSkillRules.IsLevelBonus(a.Stat) || WeaponSkillRules.IsSkillMechanic(a.Stat) || WeaponSkillRules.IsWeaponSkill(a.Stat) || !a.Enabled || a.Weight <= 0 || a.Stat != stat || !a.Allows(b.Type, b.WeaponType))
                     continue;
                 foreach (var tier in a.Tiers)
                 {
@@ -839,18 +841,14 @@ namespace PoeClone.Inventory
         /// <summary>Whether an item of this kind always carries a skill (every staff, grimoire and melee weapon does).</summary>
         public static bool AlwaysHasMainSkill(ItemData item)
         {
-            return item != null && (item.Type == ItemType.Grimoire || (item.Type == ItemType.Weapon && item.WeaponType != WeaponType.Bow &&
-                item.WeaponType != WeaponType.Sceptre && item.WeaponType != WeaponType.Unarmed));
+            return item != null && WeaponSkillRules.Pool(item.Type, item.WeaponType).Length > 0;
         }
 
         // The attack spells a base always carries one of (null for bases without one).
         private static StatType[] MainSpells(ItemBase b)
         {
-            if (b.Type == ItemType.Weapon && b.WeaponType == WeaponType.Staff)
-                return SkillGrants.StaffMain;
-            if (b.Type == ItemType.Grimoire)
-                return SkillGrants.GrimoireMain;
-            return null;
+            StatType[] pool = WeaponSkillRules.Pool(b.Type, b.WeaponType);
+            return pool.Length > 0 ? pool : null;
         }
 
         /// <summary>
@@ -888,7 +886,7 @@ namespace PoeClone.Inventory
             var candidateWeights = new List<float>();
             foreach (Affix a in Affixes)
             {
-                if (a == null || !a.Enabled || a.Weight <= 0 || float.IsNaN(a.Weight) || float.IsInfinity(a.Weight) ||
+                if (a == null || WeaponSkillRules.IsLevelBonus(a.Stat) || WeaponSkillRules.IsSkillMechanic(a.Stat) || WeaponSkillRules.IsWeaponSkill(a.Stat) || !a.Enabled || a.Weight <= 0 || float.IsNaN(a.Weight) || float.IsInfinity(a.Weight) ||
                     !a.Allows(b.Type, b.WeaponType) || !a.HasRollableTier(level))
                     continue;
                 candidates.Add(a);
@@ -909,31 +907,6 @@ namespace PoeClone.Inventory
                 selected.Add(main);
                 rolled.Add(spell);
             }
-            else if (b.Type == ItemType.Weapon)
-            {
-                // Every melee weapon carries exactly one of the melee skills that roll on it, its
-                // attack, also on top of the rarity's stats.
-                var meleeWeights = new List<float>();
-                float meleeTotal = 0f;
-                int wanted = -1;
-                for (int i = 0; i < candidates.Count; i++)
-                {
-                    bool melee = Array.IndexOf(SkillGrants.MeleeSkills, candidates[i].Stat) >= 0;
-                    meleeWeights.Add(melee ? candidateWeights[i] : 0f);
-                    meleeTotal += meleeWeights[i];
-                    if (melee && candidates[i].Stat == mainSkill)
-                        wanted = i;
-                }
-                if (meleeTotal > 0f)
-                {
-                    int pick = wanted >= 0 ? wanted : WeightedPick(rng, meleeWeights);
-                    selected.Add(candidates[pick]);
-                    rolled.Add(candidates[pick].Stat);
-                    candidates.RemoveAt(pick);
-                    candidateWeights.RemoveAt(pick);
-                }
-            }
-
             // A stat the base already has never rolls again as an extra (no second Armour line on plate).
             foreach (StatModifier implicitMod in b.Implicits)
             {

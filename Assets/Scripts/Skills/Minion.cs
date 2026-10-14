@@ -90,6 +90,7 @@ namespace PoeClone.Skills
         private float damagedAt = float.NegativeInfinity;
         private bool dead;
         private float soulBond;
+        private WeaponSkillBonuses tree;
 
         // ------------------------------------------------------------------ numbers
 
@@ -120,47 +121,26 @@ namespace PoeClone.Skills
             }
         }
 
-        /// <summary>Life at a summon level, before Minion Life: 5% more each level.</summary>
-        public static float LifeAt(MinionKind kind, int level) => ProfileOf(kind).Life * Mathf.Pow(1.05f, Mathf.Max(1, level) - 1);
+        /// <summary>Fixed base life before equipment and weapon tree bonuses.</summary>
+        public static float LifeAt(MinionKind kind, int level) => ProfileOf(kind).Life;
 
-        /// <summary>
-        /// Damage per hit at a summon level, before Minion Damage: 16% more each level, with a
-        /// low-level bonus (2.5x at level 1) that fades out geometrically by level 10, so levels
-        /// 1-10 climb a smooth ~4.8% per level and level 10 onwards is unchanged.
-        /// </summary>
+        /// <summary>Fixed base damage before minion stats and weapon tree bonuses.</summary>
         public static float DamageAt(MinionKind kind, int level)
         {
-            int l = Mathf.Max(1, level);
-            return ProfileOf(kind).Damage * Mathf.Pow(1.16f, l - 1) * Mathf.Pow(2.5f, 1f - Mathf.Clamp01((l - 1) / 9f));
+            return ProfileOf(kind).Damage * 2.5f;
         }
 
-        /// <summary>
-        /// How many of a kind can be alive at once (for wolves, the pack each cast calls). Each
-        /// summon skill has its own limit, as in Path of Exile; there is no shared army limit. It
-        /// grows by one at skill levels 7 and 13 (see <see cref="LevelBonus"/>), and Maximum Minions
-        /// adds to every kind but the golem, which stays alone. Extra Skeletons adds to warriors
-        /// and mages.
-        /// </summary>
+        /// <summary>Base minion cap. CapFor adds this weapon's allocated nodes.</summary>
         public static int KindCap(MinionKind kind, int level, StatSheet sheet)
         {
-            if (kind == MinionKind.Golem)
-                return 1;
-            int extra = LevelBonus(level) + (sheet != null ? Mathf.RoundToInt(Mathf.Max(0f, sheet.Total(StatType.AdditionalMinions))) : 0);
-            if (kind == MinionKind.Warrior || kind == MinionKind.Mage)
-                extra += sheet != null ? Mathf.RoundToInt(Mathf.Max(0f, sheet.Total(StatType.AdditionalSkeletons))) : 0;
-            switch (kind)
-            {
-                case MinionKind.Warrior: return 2 + extra;
-                case MinionKind.Wolf: return 2 + extra;
-                default: return 1 + extra;
-            }
+            return kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1;
         }
 
         /// <summary>Stays until destroyed (warriors and mages); only one such kind can be up at a time.</summary>
         public static bool IsPermanent(MinionKind kind) => Duration(kind, 1, null) <= 0f;
 
-        /// <summary>One more minion at skill level 7 and another at 13.</summary>
-        public static int LevelBonus(int level) => (level >= 7 ? 1 : 0) + (level >= 13 ? 1 : 0);
+        /// <summary>Legacy API: levels grant points only.</summary>
+        public static int LevelBonus(int level) => 0;
 
         /// <summary>How long a temporary minion lasts (0: until destroyed).</summary>
         public static float Duration(MinionKind kind, int level, StatSheet sheet)
@@ -168,9 +148,9 @@ namespace PoeClone.Skills
             float more = 1f + (sheet != null ? Mathf.Max(0f, sheet.Total(StatType.MinionDuration)) : 0f) / 100f;
             switch (kind)
             {
-                case MinionKind.Wolf: return (12f + 0.5f * (level - 1)) * more;
-                case MinionKind.Golem: return (18f + 1f * (level - 1)) * more;
-                case MinionKind.Viper: return (16f + 0.5f * (level - 1)) * more;
+                case MinionKind.Wolf: return 12f * more;
+                case MinionKind.Golem: return 18f * more;
+                case MinionKind.Viper: return 16f * more;
                 default: return 0f;
             }
         }
@@ -211,6 +191,29 @@ namespace PoeClone.Skills
         /// is replaced. Wolves and the golem replace their previous summon when recast. Raising a
         /// permanent kind (warriors or mages) dismisses the other permanent kind.
         /// </summary>
+        public static SkillId SkillFor(MinionKind kind)
+        {
+            switch (kind)
+            {
+                case MinionKind.Mage: return SkillId.SkeletonMages;
+                case MinionKind.Wolf: return SkillId.SpiritWolves;
+                case MinionKind.Golem: return SkillId.BoneGolem;
+                case MinionKind.Viper: return SkillId.SummonViper;
+                default: return SkillId.RaiseSkeletons;
+            }
+        }
+        private static WeaponSkillBonuses TreeFor(Transform owner, MinionKind kind) =>
+            owner != null ? owner.GetComponent<PlayerSkills>()?.BonusesFor(SkillFor(kind)) ?? new WeaponSkillBonuses(null) : new WeaponSkillBonuses(null);
+        public static int CapFor(Transform owner, MinionKind kind) => Mathf.Max(1, KindCap(kind, 1, null) + TreeFor(owner, kind).ExtraMinions);
+        public static bool CanCommand(Transform owner, MinionKind kind) =>
+            All.FindAll(m => m != null && m.owner == owner && m.Kind == kind && !m.dead).Count >= CapFor(owner, kind);
+        public static void Command(Transform owner, EnemyHealth target)
+        {
+            if (target == null || target.IsDead) return;
+            foreach (Minion m in All)
+                if (m != null && m.owner == owner && !m.dead) { m.target = target; m.retargetAt = Time.time + 3f; }
+        }
+
         public static void Summon(Transform owner, MinionKind kind, int level, Vector3 target)
         {
             EnemySpawner spawner = FindAnyObjectByType<EnemySpawner>();
@@ -219,7 +222,7 @@ namespace PoeClone.Skills
 
             PlayerInventory inventory = owner.GetComponent<PlayerInventory>();
             StatSheet sheet = inventory != null ? inventory.Stats : null;
-            int cap = KindCap(kind, level, sheet);
+            int cap = CapFor(owner, kind);
 
             All.RemoveAll(m => m == null);
             // Only one kind of permanent minion at a time: raising one dismisses the others.
@@ -228,14 +231,9 @@ namespace PoeClone.Skills
                 foreach (Minion other in All.FindAll(m => m.owner == owner && m.Kind != kind && IsPermanent(m.Kind)))
                     other.Crumble();
             }
-            if (kind == MinionKind.Wolf || kind == MinionKind.Golem)
-            {
-                foreach (Minion old in All.FindAll(m => m.owner == owner && m.Kind == kind))
-                    old.Crumble();
-            }
-
-            int count = kind == MinionKind.Warrior ? 2 : kind == MinionKind.Wolf ? cap : 1;
-            count = Mathf.Min(count, cap);
+            // Fill empty slots; the main attack never replaces a healthy minion at the cap.
+            int existing = All.FindAll(m => m.owner == owner && m.Kind == kind && !m.dead).Count;
+            int count = Mathf.Min(cap - existing, kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1);
             for (int k = 0; k < count; k++)
             {
                 List<Minion> same = All.FindAll(m => m.owner == owner && m.Kind == kind && !m.dead);
@@ -317,24 +315,26 @@ namespace PoeClone.Skills
             Transform model = go.transform.Find("Model") ?? go.transform;
             var minion = go.AddComponent<Minion>();
             minion.owner = owner;
+            minion.tree = TreeFor(owner, kind);
             minion.Kind = kind;
             minion.LookIndex = look;
             minion.Id = ++nextId;
             minion.body = go.GetComponent<CharacterController>();
             minion.attack = model.GetComponent<CharacterAttackAnimator>() ?? model.gameObject.AddComponent<CharacterAttackAnimator>();
 
-            float haste = 1f + Mathf.Clamp(Stat(sheet, StatType.MinionSpeed), -50f, 100f) / 100f;
-            float attackHaste = haste * (kind == MinionKind.Mage
-                ? 1f + Mathf.Min(0.3f, 0.02f * (Mathf.Max(1, level) - 1)) : 1f);
-            minion.MaxLife = Mathf.Max(1f, LifeFor(kind, level, sheet));
+            float haste = Mathf.Max(0.2f, 1f + (Stat(sheet, StatType.MinionSpeed) + minion.tree.Get(WeaponSkillEffect.MinionSpeed) + minion.tree.Get(WeaponSkillEffect.Speed)) / 100f);
+            float attackHaste = haste;
+            minion.MaxLife = Mathf.Max(1f, LifeFor(kind, 1, sheet) * Mathf.Max(0.1f, 1f + minion.tree.Get(WeaponSkillEffect.MinionLife) / 100f));
             minion.Life = minion.MaxLife;
-            minion.damage = DamageFor(kind, level, sheet);
+            minion.damage = DamageFor(kind, 1, sheet) * minion.tree.DamageMultiplier;
             minion.attackCooldown = profile.Cooldown / attackHaste;
-            minion.attackRange = profile.Range;
+            minion.attackRange = profile.Range * minion.tree.RangeMultiplier;
             minion.speed = profile.Speed * haste;
             minion.attack.PlaybackSpeed = attackHaste;
             minion.soulBond = Mathf.Max(0f, Stat(sheet, StatType.SoulBond));
-            float duration = Duration(kind, level, sheet);
+            float duration = Duration(kind, 1, sheet);
+            if (duration <= 0f && minion.tree.Get(WeaponSkillEffect.MinionDeathBurst) > 0) duration = 20f;
+            duration *= minion.tree.DurationMultiplier;
             minion.expiresAt = duration > 0f ? Time.time + duration : float.PositiveInfinity;
 
             CharacterController ownerBody = owner.GetComponent<CharacterController>();
@@ -396,14 +396,19 @@ namespace PoeClone.Skills
             if (dead || amount <= 0f)
                 return;
             PlayerInventory inventory = owner != null ? owner.GetComponent<PlayerInventory>() : null;
-            amount = DamageTaken(amount, type, inventory != null ? inventory.Stats : null);
+            StatSheet sheet = inventory != null ? inventory.Stats : null;
+            if (type == DamageType.Physical)
+                amount *= 1f - DefenceMath.ArmourReduction(ArmourFor(sheet) + (tree?.Get(WeaponSkillEffect.MinionArmour) ?? 0f), amount);
+            else
+                amount = DefenceMath.AfterResistance(amount, Mathf.Min(75f, ResistanceFor(sheet) + (tree?.Get(WeaponSkillEffect.MinionResists) ?? 0f)));
+            amount *= sheet != null ? sheet.Multiplier(StatType.BoneArmour) : 1f;
             Life -= amount;
             damagedAt = Time.time;
             Color color = type == DamageType.Physical ? new Color(1f, 0.55f, 0.45f) : CombatText.ColorFor(type);
             CombatText.Show(transform.position + Vector3.up * 1.4f * transform.localScale.y,
                 Mathf.Max(1, Mathf.RoundToInt(amount)).ToString(), color, 0.7f);
             if (Life <= 0f)
-                Crumble();
+                Crumble(true);
         }
 
         // ------------------------------------------------------------------ Death Mark
@@ -536,11 +541,20 @@ namespace PoeClone.Skills
         }
 
         /// <summary>Falls apart (destroyed, time's up, the owner died, or a fresh one took its place).</summary>
-        public void Crumble()
+        public void Crumble(bool combatOrExpiry = false)
         {
             if (dead)
                 return;
             dead = true;
+            if (combatOrExpiry && owner != null && tree != null && tree.Get(WeaponSkillEffect.MinionDeathBurst) > 0)
+            {
+                float radius = 3f * tree.AreaMultiplier;
+                float amount = MaxLife * tree.Get(WeaponSkillEffect.MinionDeathBurst) / 100f;
+                foreach (EnemyHealth e in EnemyHealth.Active.ToArray())
+                    if (e != null && !e.IsDead && Flat(e.transform.position - transform.position).magnitude <= radius)
+                        e.TakeDamage(amount, DamageType.Physical, 0f, 0f, hitOrigin: transform.position);
+                SkillEffects.Shockwave(transform.position, radius, new Color(0.6f, 1f, 0.65f), 0.4f);
+            }
             All.Remove(this);
             Color dust = Kind == MinionKind.Wolf ? new Color(0.6f, 0.9f, 1f) : new Color(0.85f, 0.83f, 0.75f);
             SkillEffects.Shockwave(transform.position, Kind == MinionKind.Golem ? 2f : 1.2f, dust, 0.35f);
@@ -552,7 +566,7 @@ namespace PoeClone.Skills
             Player.PlayerStats ownerStats = owner != null ? owner.GetComponent<Player.PlayerStats>() : null;
             if (owner == null || Time.time >= expiresAt || (ownerStats != null && ownerStats.IsDead))
             {
-                Crumble();
+                Crumble(owner != null && ownerStats != null && !ownerStats.IsDead && Time.time >= expiresAt);
                 return;
             }
 
@@ -687,10 +701,10 @@ namespace PoeClone.Skills
             {
                 // A two-fisted slam: the target and whatever stands right by it.
                 Vector3 at = hit.transform.position;
-                SkillEffects.Shockwave(at, 2f, new Color(0.85f, 0.8f, 0.65f), 0.3f);
+                SkillEffects.Shockwave(at, 2f * tree.AreaMultiplier, new Color(0.85f, 0.8f, 0.65f), 0.3f);
                 foreach (EnemyHealth e in EnemyHealth.Active.ToArray())
                 {
-                    if (e != null && !e.IsDead && (e == hit || Flat(e.transform.position - at).magnitude <= 2f))
+                    if (e != null && !e.IsDead && (e == hit || Flat(e.transform.position - at).magnitude <= 2f * tree.AreaMultiplier))
                         Deal(e, e == hit ? 1f : 0.6f);
                 }
                 return;
@@ -711,12 +725,17 @@ namespace PoeClone.Skills
             amount *= Curse.TakenMultiplier(enemy);
             PlayerInventory ownerInventory = owner != null ? owner.GetComponent<PlayerInventory>() : null;
             StatSheet ownerSheet = ownerInventory != null ? ownerInventory.Stats : null;
-            float dealt = enemy.TakeDamage(amount, PoeClone.Combat.DamageType.Physical, 0f, 0f, canEnrage: true, hitOrigin: hitOrigin ?? transform.position);
+            var ai = enemy.GetComponent<EnemyController>();
+            bool chilled = ai != null && ai.IsChilled;
+            if (chilled) amount *= 1f + (tree?.Get(WeaponSkillEffect.DamageVsChilled) ?? 0f) / 100f;
+            DamageType element = WeaponSkillHit.Element(tree, DamageType.Physical);
+            float dealt = enemy.TakeDamage(amount, element, 0f, 0f, canEnrage: true, hitOrigin: hitOrigin ?? transform.position);
+            WeaponSkillHit.Apply(owner, enemy, dealt, tree, element, chilled, minion: true);
             if (dealt <= 0f)
                 return;
             if (Kind == MinionKind.Viper && owner != null)
             {
-                WeaponVenom.Apply(owner, enemy, dealt, 45f, 0f, ownerSheet, minionDamage: true);
+                WeaponVenom.Apply(owner, enemy, dealt, 45f, 0f, ownerSheet, minionDamage: true, durationMultiplier: tree?.DurationMultiplier ?? 1f, radiusMultiplier: tree?.AreaMultiplier ?? 1f, tree: tree);
             }
             CombatText.Show(enemy.transform.position + Vector3.up * 1.6f * enemy.transform.localScale.y,
                 Mathf.Max(1, Mathf.RoundToInt(dealt)).ToString(), new Color(0.6f, 1f, 0.65f), 0.85f);

@@ -239,6 +239,8 @@ namespace PoeClone.Player
         {
             if (HasMainSkill)
                 return SkillSet.MainReach();
+            if (SkillSet != null && SkillSet.ActiveMeleeSkill != null)
+                return SkillSet.MeleeSkillReach();
             float range = CharacterAttackAnimator.AttackRange(weaponType);
             if (CharacterAttackAnimator.IsRanged(weaponType))
                 return range;
@@ -302,7 +304,7 @@ namespace PoeClone.Player
             {
                 cooldownTimer = SkillSet.MainInterval();
                 swingPending = true;
-                attackAnimator.PlayCast(SkillSet.CastRateMultiplier);
+                attackAnimator.PlayCast(SkillSet.CastRateMultiplier * SkillSet.WeaponBonuses.SpeedMultiplier);
                 return;
             }
             if (HasMainSkill)
@@ -327,7 +329,7 @@ namespace PoeClone.Player
 
             float attacksPerSecond = ComputeAttacksPerSecond(weaponType);
             if (bowSkillPending != null)
-                attacksPerSecond *= PoeClone.Skills.PlayerSkills.BowSpeed(bowSkillPending.Value);
+                attacksPerSecond *= PoeClone.Skills.PlayerSkills.BowSpeed(bowSkillPending.Value) * SkillSet.BonusesFor(bowSkillPending.Value).SpeedMultiplier;
             cooldownTimer = attacksPerSecond > 0f ? 1f / attacksPerSecond : 1f;
 
             swingPending = true;

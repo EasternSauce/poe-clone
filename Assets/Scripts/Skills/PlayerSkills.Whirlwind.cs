@@ -124,7 +124,7 @@ namespace PoeClone.Skills
             }
         }
 
-        private float WhirlHitsPerSecond() => WhirlSwordHitsPerSecond * AttackRateMultiplier *
+        private float WhirlHitsPerSecond() => WhirlSwordHitsPerSecond * AttackRateMultiplier * BonusesFor(SkillId.Whirlwind).SpeedMultiplier *
             CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()) / CharacterAttackAnimator.BaseAttackSpeed(WeaponType.Sword);
 
         // Newly met enemies included: one that spawns mid-spin can't block it either.
@@ -155,7 +155,7 @@ namespace PoeClone.Skills
         {
             float melee = 1f + Mathf.Max(0f, Stat(StatType.MeleeRange)) / 100f;
             return Mathf.Max(2.4f, (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 0.4f) * melee) *
-                   DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect)) * WhirlAreaScale;
+                   DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect)) * WhirlAreaScale * WeaponBonuses.AreaMultiplier * WeaponBonuses.RangeMultiplier;
         }
 
         private void WhirlHit(SkillDefinition skill, int level, float reach)
@@ -164,7 +164,7 @@ namespace PoeClone.Skills
             Record(skill, level, reach, at: center);
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
             foreach (EnemyHealth enemy in EnemiesWithin(center, reach))
-                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true);
+                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id);
         }
 
         // Towards the cursor, as a share of full speed that grows with its distance. On touch: the
