@@ -128,7 +128,7 @@ namespace PoeClone.Skills
                 case SkillId.Aftershock: return 1.5f;
                 case SkillId.CrossSlash: return 0.4f;
                 case SkillId.SplitShot: return 0.75f;
-                case SkillId.PiercingShot: return 0.5f;
+                case SkillId.PiercingShot: return 0.75f;
                 case SkillId.BurningArrow: return 0.5f;
                 case SkillId.VenomArrow: return 0.6f;
                 case SkillId.RainOfArrows: return 0.65f;
@@ -279,7 +279,7 @@ namespace PoeClone.Skills
             {
                 Id = SkillId.PiercingShot, Name = "Piercing Shot", Short = "PRC", Grant = StatType.GrantPiercingShot, RollsOn = "bows", ManaCosts = new[] { 3f },
                 Color = new Color(0.85f, 0.9f, 1f),
-                Description = "Bow skill (the weapon's attack): hold attack to charge in place, then release a piercing sniper arrow. Damage grows from 50% to 150% weapon damage over a full draw. 80% increased projectile range. A distinct cue signals full charge."
+                Description = "Bow skill (the weapon's attack): hold attack to charge in place, then release a piercing sniper arrow. Damage grows from 75% to 225% weapon damage over a full draw. 80% increased projectile range. A distinct cue signals full charge."
             },
             new SkillDefinition
             {

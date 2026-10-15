@@ -82,7 +82,7 @@ namespace PoeClone.Inventory
                 P("Ricochet", U(E.Area, 10), "Rebound", M(B(E.Chains, 1)), "Bouncing Volley", M(B(E.Chains, 1), B(E.MoreDamage, -15)), "Wide Volley", B(E.Projectiles, 1)),
                 P("Steady Hands", M(B(E.Damage, 10)), "Through the Ranks", M(B(E.Pierce, 1)), "Rapid Release", M(B(E.Speed, 22), B(E.MoreDamage, 30)), "Hunter's Sustenance", B(E.LifeOnHit, 3)));
             Add(t, StatType.GrantPiercingShot,
-                P("Long Draw", U(E.Range, 12), "Deep Draw", M(B(E.ChargeDamage, 20)), "Patient Hunter", M(B(E.ChargeDamage, 40), B(E.ChargeTime, 25)), "Far Sight", B(E.Range, 50)),
+                P("Long Draw", U(E.Range, 12), "Deep Draw", M(B(E.ChargeDamage, 20), B(E.Projectiles, 2)), "Patient Hunter", M(B(E.ChargeDamage, 40), B(E.ChargeTime, 25)), "Far Sight", B(E.Range, 50)),
                 P("Heavy Shaft", U(E.ProjectileSpeed, 15), "Armour Breaker", M(B(E.ArmourPenetration, 60)), "Heartseeker", M(B(E.FirstStrike, 40)), "Execution", B(E.DamageVsLowLife, 40)),
                 P("Breath Control", M(B(E.Damage, 10)), "Quick Draw", M(B(E.ChargeTime, -15)), "Practised Sniper", M(B(E.ChargeTime, -20)), "Sure Aim", B(E.ArmourPenetration, 90), B(E.Damage, 15)));
             Add(t, StatType.GrantRainOfArrows,

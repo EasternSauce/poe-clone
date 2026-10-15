@@ -79,7 +79,10 @@ namespace PoeClone.Skills
                 forward = ProjectileAimAssist.Direction(transform.position, forward, projectileRange);
                 Face(forward);
             }
-            arrows = tree.SingleProjectile ? 1 : Mathf.Max(1, arrows + tree.ExtraProjectiles);
+            // Piercing Shot always retains additional arrows, including gear bonuses.
+            arrows = id == SkillId.PiercingShot
+                ? Mathf.Max(1, arrows + Mathf.RoundToInt(tree.Get(WeaponSkillEffect.Projectiles)))
+                : tree.SingleProjectile ? 1 : Mathf.Max(1, arrows + tree.ExtraProjectiles);
             Vector3 shotOrigin = transform.position;
 
             switch (id)

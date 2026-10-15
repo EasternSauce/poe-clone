@@ -86,7 +86,7 @@ const overviewValues = skillNames.map((skill, i) => {
     levels(high), levels(low), levels(hunger), best[33]?.name ?? 'No viable build'];
 });
 overviewValues.sort((a, b) => (b[7] ?? -1) - (a[7] ?? -1));
-let layout = table(overview, 'Boss single-target balance review', 'Best available archetype per skill. 100% = peer baseline after melee ×1.5 and minion ×1.3 targets. Red >125%; blue <75%.',
+let layout = table(overview, 'Boss single-target balance review', 'Best available archetype per skill. 100% = peer baseline after melee/Piercing Shot ×1.5 and minion ×1.3 targets. Red >125%; blue <75%.',
   ['Skill', 'Family', 'Level 1', 'Level 7', 'Level 14', 'Level 21', 'Level 28', 'Level 34', 'High DPS levels', 'Low DPS levels', 'Mana-limited levels', 'Best level 34 archetype'],
   overviewValues, 'SkillOverview', [22, 12, 12, 12, 12, 12, 12, 12, 23, 23, 25, 48]);
 overview.getRange(`C5:H${layout.end}`).setNumberFormat('0%');
@@ -107,7 +107,7 @@ heatmap.getRange(`D5:AK${layout.end}`).conditionalFormats.addCustom('AND(ISNUMBE
 heatmap.freezePanes.freezeColumns(2);
 
 const dpsValues = rows.map(r => [skillLabel(r.skill), r.name, r.family, r.level, r.topCount ? r.topDps : null,
-  r.family === 'Melee' ? report.settings.meleePremium : r.family === 'Minion' ? report.settings.minionPremium : 1,
+  r.skill === 'PiercingShot' ? (report.settings.piercingPremium ?? 1) : r.family === 'Melee' ? report.settings.meleePremium : r.family === 'Minion' ? report.settings.minionPremium : 1,
   null, r.baseline, null, r.status, r.viable, r.attempted, r.topCount, r.representative?.sample ?? null,
   r.representative?.rawDps ?? null, r.representative?.sustainedDps ?? null, r.archetype]);
 layout = table(dpsSheet, 'DPS by archetype and level', 'Top DPS is the mean of the best 20% of viable builds over 30 seconds. Raw DPS assumes unlimited resources; cohort sample identifies a real representative build.',
@@ -169,7 +169,7 @@ percentage(targets, 'C', layout.end); percentage(targets, 'O', layout.end);
 const methodValues = [
   ['Generated UTC', new Date(report.generatedUtc)], ['Model', report.model], ['Source revision before changes', report.sourceRevision],
   ['Random seed', report.settings.seed], ['Builds per available archetype/level', report.settings.samples], ['Rare rolls per equipment slot', report.settings.rareRollsPerSlot],
-  ['Encounter seconds', report.settings.encounterSeconds], ['Melee DPS target factor', report.settings.meleePremium], ['Minion DPS target factor', report.settings.minionPremium],
+  ['Encounter seconds', report.settings.encounterSeconds], ['Melee DPS target factor', report.settings.meleePremium], ['Minion DPS target factor', report.settings.minionPremium], ['Piercing Shot DPS target factor', report.settings.piercingPremium ?? 1],
   ['Relative review band', '75%–125%'], ['Mana measurements', 'One actual build nearest the top cohort mean. With no viable cohort, the strongest rejected build is shown. These are modelled values, not live combat measurements.'],
   ['Raw build records', 'sample-builds.csv contains every sampled build, equipment roll result, passive allocation, weapon allocation and exclusion reason.'],
   ...report.assumptions.map((text, i) => [`Assumption ${i + 1}`, text])

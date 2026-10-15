@@ -378,6 +378,7 @@ namespace PoeClone.UI
                 return;
 
             aimPointer = e.pointerId;
+            VirtualInput.AimHeld = true;
             aimBaseImage.color = ControlPressed;
             OnAimDrag(e);
         }
@@ -405,6 +406,7 @@ namespace PoeClone.UI
             aimPointer = int.MinValue;
             VirtualInput.Aim = Vector2.zero;
             VirtualInput.AttackHeld = false;
+            VirtualInput.AimHeld = false;
             aimKnob.anchoredPosition = Vector2.zero;
             aimBaseImage.color = ControlColor;
         }

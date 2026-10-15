@@ -1,3 +1,8 @@
+version: 2026-10-15-piercing-shot
+- Piercing Shot keeps charging while the aim joystick is held, including inside its dead zone, and fires only on release. Low mana no longer triggers an automatic basic shot.
+- Piercing Shot deals 50% more damage: 75% weapon damage on a tap, up to 225% at full charge. Deep Draw now also grants two additional arrows; additional-arrow bonuses remain available.
+- Balance passes now give Piercing Shot a 1.5x single-target DPS target.
+
 version: 2026-10-15-weapon-tree-zoom-and-spell-costs
 - Weapon trees now support dragging to pan, mouse-wheel and touch-pinch zoom, plus zoom and reset-view buttons.
 - Magic spell mana costs rise smoothly above their previous values after character level 7, reaching a 20% increase at level 34 and higher. Early-level costs are unchanged.

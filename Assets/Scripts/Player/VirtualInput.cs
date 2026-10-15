@@ -23,6 +23,9 @@ namespace PoeClone.Player
         /// <summary>True while <see cref="Aim"/> is held past its dead zone: swings/shoots/casts repeatedly.</summary>
         public static bool AttackHeld;
 
+        /// <summary>True until the aim finger lifts, including inside the dead zone.</summary>
+        public static bool AimHeld;
+
         /// <summary>A touch skill button was pressed this frame (its slot), or -1. PlayerSkills consumes it.</summary>
         public static int SkillPressed = -1;
 
@@ -34,6 +37,7 @@ namespace PoeClone.Player
             Move = Vector2.zero;
             Aim = Vector2.zero;
             AttackHeld = false;
+            AimHeld = false;
             SkillPressed = -1;
             PotionPresses = 0;
         }

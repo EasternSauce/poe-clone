@@ -179,7 +179,8 @@ namespace PoeClone.Player
             {
                 // Mouse input is ignored on touch: browsers turn taps into mouse clicks too, so
                 // every tap on a button would also swing.
-                attackPressed = VirtualInput.AttackHeld;
+                // A charged shot releases when the finger lifts, not when the stick crosses centre.
+                attackPressed = VirtualInput.AttackHeld || (sniperCharging && VirtualInput.AimHeld);
                 // Keep turning to face the stick while it's held, even mid-cooldown, so the swing
                 // that finally lands is aimed at wherever it's currently pointing, not wherever it
                 // happened to point when the cooldown last ended.
@@ -327,7 +328,7 @@ namespace PoeClone.Player
                 touchAttackDirection = PlayerController.CameraRelativeDirection(VirtualInput.Aim);
 
             pendingDamage = ComputeDamage();
-            if (SkillSet != null && SkillSet.ActiveBowSkill == PoeClone.Skills.SkillId.PiercingShot && SkillSet.CanAffordAttackSkill)
+            if (SkillSet != null && SkillSet.ActiveBowSkill == PoeClone.Skills.SkillId.PiercingShot)
             {
                 sniperCharging = true;
                 sniperWeapon = SkillSet.MainWeapon;
@@ -405,12 +406,15 @@ namespace PoeClone.Player
             var id = PoeClone.Skills.SkillId.PiercingShot;
             float charge = sniperFullFraction;
             CancelSniperCharge();
-            if (!SkillSet.TrySpendAttackSkill(id, SkillSet.ActiveAttackLevel)) return;
+            if (!SkillSet.TrySpendAttackSkill(id, SkillSet.ActiveAttackLevel))
+            {
+                CombatText.Show(transform.position + Vector3.up * 2f, "Not enough " + SkillSet.CostResource, CombatText.ColdColor, 0.6f);
+                return;
+            }
             float range = Reach(WeaponType.Bow);
             // A tap is a weak shot; a full draw earns the damage through time and standing still.
             float damage = pendingDamage * (1f + 2f * charge);
             SkillSet.ReleaseBow(id, SkillSet.ActiveAttackLevel, damage, range, ArrowCount(), BowTarget(range * PlayerArrow.BowRangeMultiplier), charge);
-            attackAnimator.ReleaseHold();
             cooldownTimer = 0.35f / SkillSet.SkillAttackRate(id);
         }
 

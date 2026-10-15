@@ -14,7 +14,7 @@ Current status: the sampler now benchmarks **boss single-target DPS**. Fresh ful
 
 ## Reading the workbook
 
-The headline DPS is the arithmetic mean of the best `ceil(viable builds * 0.2)` builds by 30-second sustained DPS. Melee DPS is divided by 1.5 and minion DPS by 1.3 to allow their requested damage premiums. Each level's baseline is the median of each main skill's best available adjusted archetype.
+The headline DPS is the arithmetic mean of the best `ceil(viable builds * 0.2)` builds by 30-second sustained DPS. Melee and Piercing Shot DPS are divided by 1.5 and minion DPS by 1.3 to allow their requested damage premiums. Each level's baseline is the median of each main skill's best available adjusted archetype.
 
 **100% means equal to that baseline; 200% means twice it; 50% means half.** These percentages are relative balance comparisons, not percentage increases or probabilities. Review flags use a 75%-125% band. A low utility-route result does not automatically justify a buff. The baseline is recalculated at every level, so also compare absolute DPS.
 

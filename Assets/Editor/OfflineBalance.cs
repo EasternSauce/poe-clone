@@ -51,7 +51,7 @@ namespace PoeClone.EditorTools
             public int seed = 20261014, samples = 20, rareRollsPerSlot = 20;
             public bool assumeDeathMarkAvailable = false;
             public float encounterSeconds = 30f, minimumMeleeHits = 4f, minimumMeleeSeconds = 6f;
-            public float meleePremium = 1.5f, minionPremium = 1.3f, outlierThreshold = .25f;
+            public float meleePremium = 1.5f, minionPremium = 1.3f, piercingPremium = 1.5f, outlierThreshold = .25f;
         }
         [Serializable] public sealed class Sample
         {
@@ -285,7 +285,7 @@ namespace PoeClone.EditorTools
             row.topCount = top.Count;
             if (top.Count == 0) { row.status = "No viable builds"; row.representative = all.OrderByDescending(s => s.sustainedDps).First(); return row; }
             row.topDps = top.Average(s => s.sustainedDps);
-            row.normalizedDps = row.topDps / (a.family == "Melee" ? cfg.meleePremium : a.family == "Minion" ? cfg.minionPremium : 1f);
+            row.normalizedDps = row.topDps / DpsTargetFactor(a.SkillId, a.family, cfg);
             // The representative is an actual sampled build nearest the cohort's mean, not
             // a collection of unrelated medians masquerading as one build.
             row.representative = top.OrderBy(s => Mathf.Abs(s.sustainedDps - row.topDps)).First();
@@ -472,6 +472,8 @@ namespace PoeClone.EditorTools
             return cost * Mathf.Max(.1f, 1 + (tree?.Get(E.Cost) ?? 0) / 100) * Mathf.Clamp01(1 - sheet.Total(StatType.ManaCostReduction) / 100);
         }
         public static float TimeToEmpty(float pool, float spend, float regen) => spend > regen ? pool / (spend - regen) : -1;
+        public static float DpsTargetFactor(SkillId skill, string family, Settings cfg) =>
+            skill == SkillId.PiercingShot ? cfg.piercingPremium : family == "Melee" ? cfg.meleePremium : family == "Minion" ? cfg.minionPremium : 1f;
         public static float PiercingInterval(float attackRate, float chargeTimePercent) =>
             Mathf.Max(.65f, 1.6f * (1 + chargeTimePercent / 100) / attackRate) + .35f / attackRate;
         public static DamageType BaseElement(SkillDefinition skill) => skill.MeleeAttack || skill.Bow ?
@@ -711,7 +713,7 @@ namespace PoeClone.EditorTools
             "Support skills are not ranked for DPS. Their separate mana rows use an unequipped character with no passives as a reference. Main-build optional Grave Rot/War Cry/Frost Nova rotations are not estimated. Death Mark is included in minion builds when granted.",
             "Extra projectiles never shotgun. Rain uses impact-area/spread-area overlap expectation; Cross Slash assumes both cuts connect; Aftershock assumes one wave hits a stationary target. First-strike/cull/on-kill/Fire Orbit clear benefits are not credited.",
             "Poison stacks, clouds are limited to one creation per second, and ignite does not stack. Ailments use expected uptime and steady-state damage; secondary scaling, short-fight ramp and proc/crit variance are approximate. Enemy special skills, phase-specific wards and movement are excluded; continuous skill-triggered enrage is included.",
-            "DPS baseline is the median of each skill's best available normalized archetype at that level. Melee divides by 1.5; minions by 1.3. A 25% band flags review, not automatic tuning. Utility destinations get a separate low-DPS label.",
+            "DPS baseline is the median of each skill's best available normalized archetype at that level. Melee and Piercing Shot divide by 1.5; minions by 1.3. A 25% band flags review, not automatic tuning. Utility destinations get a separate low-DPS label.",
             "Blood Magic and Mind over Matter coupling require a resource time simulation, so paths containing those passives are excluded from the sampled pool. Shared stat investment is sampled; this is not an exhaustive search of every rare or passive combination."
         };
     }
