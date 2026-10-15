@@ -1,3 +1,8 @@
+version: 2026-10-15-browser-balance-arena
+- Add arena=1 to the game URL to play the test arena without loading or saving a character. Pick any level from 1–34 and an available skill route, randomize either, or randomize both.
+- Fixed the Piercing Shot charge-ready sound asset location for browser builds.
+- Arena characters use actual sampled builds from the latest boss balance report: best-of-20 rare gear, allocated character passives and weapon specializations. Fight 20 random monster encounters and three random bosses at your level; use New build to try another character.
+
 version: 2026-10-15-iterative-boss-balance
 - Rebalanced main skills over two full boss-benchmark passes at every level from 1 through 34. Extreme bow and dagger damage is lower, Aftershock hits harder, and weak summons receive substantial base-damage buffs.
 - Main attack spells now gain 6% of their level-one base damage per character level after the first. Minion base damage also grows with character level: 3.5% per level, 4.5% for bone golems and 2.2% for vipers. Weapon rank still grants specialization points rather than automatic damage.

@@ -57,7 +57,7 @@ namespace PoeClone.World
         public string ResultPath { get; private set; }
         public bool Finished => phase == Phase.Done;
         public bool Started => phase != Phase.Setup;
-        public bool RerollsAllowed => Started && !Automated && Level > 1 && phase != Phase.Done;
+        public bool RerollsAllowed => !MinimalCombatMode.ArenaEnabled && Started && !Automated && Level > 1 && phase != Phase.Done;
 
         private Phase phase = Phase.Setup;
         private PlayerStats player;
@@ -72,6 +72,7 @@ namespace PoeClone.World
         private int bossIndex;
         private GameObject doorBlock;
         private GauntletUI ui;
+        private BalanceArenaBuilds.Entry arenaBuild;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics() => Instance = null;
@@ -83,7 +84,7 @@ namespace PoeClone.World
             inventory = player.GetComponent<PlayerInventory>();
             enemyPrefab = FindAnyObjectByType<EnemySpawner>(FindObjectsInactive.Include)?.EnemyPrefab;
             player.ExperienceLocked = true;
-            Automated = MinimalCombatMode.Option("auto") == "1";
+            Automated = !MinimalCombatMode.ArenaEnabled && MinimalCombatMode.Option("auto") == "1";
 
             // The inventory's reroll buttons: set before the inventory panel builds itself.
             InventoryUI.ExtraSlotButton = new InventoryUI.SlotButton
@@ -118,8 +119,12 @@ namespace PoeClone.World
             else
             {
                 MinimalCombatMode.PlacePlayer(player, StartRoomCenter + new Vector3(0f, 1.1f, -2f), Quaternion.identity);
-                ui = gameObject.AddComponent<GauntletUI>();
-                ui.Bind(this);
+                if (MinimalCombatMode.ArenaEnabled) gameObject.AddComponent<BalanceArenaUI>().Bind(this);
+                else
+                {
+                    ui = gameObject.AddComponent<GauntletUI>();
+                    ui.Bind(this);
+                }
             }
         }
 
@@ -156,6 +161,14 @@ namespace PoeClone.World
             MinimalCombatMode.Block(transform, "Gauntlet Wall", c + new Vector3(DoorHalf + startSide * 0.5f, 1f, s), new Vector3(startSide + 0.5f, 2f, 1f), wall);
         }
 
+        public void BeginArena(BalanceArenaBuilds.Entry entry)
+        {
+            if (Started || entry == null) return;
+            arenaBuild = entry;
+            Rolls = BalanceArenaBuilds.Data.rareRollsPerSlot;
+            Begin(entry.AsBuild(), entry.level);
+        }
+
         // ------------------------------------------------------------------ starting
 
         /// <summary>Levels the character, kits it out for the build and opens the way to the arena.</summary>
@@ -171,19 +184,24 @@ namespace PoeClone.World
             // The stat sheet learns the new level now, not next frame: gear requirements read it.
             player.GetComponent<PlayerStatsLink>()?.PushBase();
             var notes = new List<string>();
-            GauntletLoadout.AllocatePassives(player.GetComponent<PlayerPassives>(), build, Level, notes);
-            if (Level <= 1)
-            {
-                // Level 1 is a fresh character: the usual starter gear on the floor, no rares.
-                if (Automated) kit = GauntletLoadout.EquipStarter(inventory, build);
-                else
-                {
-                    kit = new GauntletLoadout.Result();
-                    StarterLoot.PlaceAround(player.transform.position - new Vector3(0f, 1.1f, 0f));
-                }
-            }
+            if (arenaBuild != null)
+                kit = BalanceArenaBuilds.Equip(arenaBuild, player, inventory);
             else
-                kit = GauntletLoadout.Equip(inventory, build, Level, Rolls, new System.Random(seed ^ 0x5bd1e995));
+            {
+                GauntletLoadout.AllocatePassives(player.GetComponent<PlayerPassives>(), build, Level, notes);
+                if (Level <= 1)
+                {
+                    // Level 1 is a fresh character: the usual starter gear on the floor, no rares.
+                    if (Automated) kit = GauntletLoadout.EquipStarter(inventory, build);
+                    else
+                    {
+                        kit = new GauntletLoadout.Result();
+                        StarterLoot.PlaceAround(player.transform.position - new Vector3(0f, 1.1f, 0f));
+                    }
+                }
+                else
+                    kit = GauntletLoadout.Equip(inventory, build, Level, Rolls, new System.Random(seed ^ 0x5bd1e995));
+            }
             notes.AddRange(kit.Notes);
             inventory.SetPotions(PlayerInventory.MaxPotions, PlayerInventory.MaxPotions);
             ItemData regret = ItemData.RegretItem();
@@ -193,7 +211,7 @@ namespace PoeClone.World
             player.RestoreMana(player.MaxMana);
 
             PlanFights(new System.Random(seed));
-            Recorder = new GauntletRecorder(player, Automated ? "automated" : "manual", build, Level, Level > 1 ? Rolls : 0, seed);
+            Recorder = new GauntletRecorder(player, arenaBuild != null ? "browser arena" : Automated ? "automated" : "manual", build, Level, arenaBuild != null || Level > 1 ? Rolls : 0, seed);
             Recorder.Data.enemiesFrozen = Automated;
             Recorder.Data.notes.AddRange(notes);
             foreach (string n in notes) Debug.LogWarning("Gauntlet: " + n);

@@ -12,7 +12,7 @@ using PoeClone.UI;
 namespace PoeClone.World
 {
     /// <summary>
-    /// Editor-only opt-in combat arena, started through DevTest. Uses real player and death
+    /// Opt-in browser balance arena or Editor combat arena started through DevTest. Uses real player and death
     /// pipeline, with optional loot, menus and quest tracking. Never loads character saves.
     /// </summary>
     public sealed class MinimalCombatMode : MonoBehaviour
@@ -24,19 +24,23 @@ namespace PoeClone.World
         {
             get
             {
+                if (!enabledForUrl.HasValue)
+                {
 #if UNITY_EDITOR
-                if (!enabledForUrl.HasValue) enabledForUrl = QueryValue("minimal") == "1";
-                return enabledForUrl.Value;
+                    enabledForUrl = QueryValue("minimal") == "1" || QueryValue("arena") == "1";
 #else
-                return false;
+                    enabledForUrl = QueryValue("arena") == "1";
 #endif
+                }
+                return enabledForUrl.Value;
             }
         }
 
         private static bool FeatureEnabled(string name) => Enabled && (QueryValue(name) == "1" ||
             (QueryValue("features") != "0" && QueryValue(name) != "0"));
-        public static bool DropsEnabled => FeatureEnabled("drops");
-        public static bool QuestsEnabled => FeatureEnabled("quests");
+        public static bool ArenaEnabled => Enabled && QueryValue("arena") == "1";
+        public static bool DropsEnabled => !ArenaEnabled && FeatureEnabled("drops");
+        public static bool QuestsEnabled => !ArenaEnabled && FeatureEnabled("quests");
         private static bool MenuEnabled(string name) => Enabled && (QueryValue(name) == "1" ||
             (QueryValue(name) != "0" && FeatureEnabled("menus")));
         public static bool InventoryMenuEnabled => MenuEnabled("inventory");
@@ -48,7 +52,7 @@ namespace PoeClone.World
         public static bool AudioEnabled => !Enabled || QueryValue("audio") != "0";
         public static bool GuaranteedGear => DropsEnabled && QueryValue("guaranteedGear") != "0";
         /// <summary>The debug class gauntlet (see <see cref="GauntletMode"/>) instead of the one-enemy arena.</summary>
-        public static bool GauntletEnabled => Enabled && QueryValue("gauntlet") == "1";
+        public static bool GauntletEnabled => Enabled && (ArenaEnabled || QueryValue("gauntlet") == "1");
         /// <summary>Ground items can be picked up: with drops on, and in the gauntlet (its level 1 starter gear).</summary>
         public static bool PickupEnabled => DropsEnabled || GauntletEnabled;
         /// <summary>A launch option from the Editor's dev query ("" when absent).</summary>
@@ -76,7 +80,7 @@ namespace PoeClone.World
 #if UNITY_EDITOR
                 query = PlayerPrefs.GetString("PoeClone.DevQuery", string.Empty);
 #else
-                query = string.Empty;
+                query = Uri.TryCreate(Application.absoluteURL, UriKind.Absolute, out Uri url) ? url.Query : string.Empty;
 #endif
             }
             if (options == null)
@@ -99,6 +103,20 @@ namespace PoeClone.World
             if (UnityEditor.SessionState.GetBool("PoeClone.LootSimulator.Active", false)) return;
 #endif
             if (!Enabled) return;
+            new GameObject("Minimal Combat").AddComponent<MinimalCombatMode>().Prepare();
+        }
+
+        /// <summary>Scene reloads do not repeat RuntimeInitializeOnLoadMethod; prepare the next arena explicitly.</summary>
+        public static void RestartArena()
+        {
+            if (!ArenaEnabled) return;
+            SceneManager.sceneLoaded += OnArenaReloaded;
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        private static void OnArenaReloaded(Scene scene, LoadSceneMode mode)
+        {
+            SceneManager.sceneLoaded -= OnArenaReloaded;
             new GameObject("Minimal Combat").AddComponent<MinimalCombatMode>().Prepare();
         }
 
