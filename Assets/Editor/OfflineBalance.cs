@@ -52,6 +52,14 @@ namespace PoeClone.EditorTools
             public List<Sample> samples = new List<Sample>();
             public string[] assumptions;
         }
+        [Serializable] public sealed class RecalculationPool
+        {
+            public string sourceModel, sourceRevision, sourceGeneratedUtc;
+            public Settings sourceSettings;
+            public float minimumDpsFraction;
+            public int originalSamples, originalViable, retainedSamples;
+            public List<Sample> samples;
+        }
         private sealed class Kit
         {
             public EquipmentSet equipment = new EquipmentSet { EnforceRequirements = true };
@@ -112,6 +120,40 @@ namespace PoeClone.EditorTools
         private static void FixEmptyTime(Sample sample) => sample.secondsToEmpty = TimeToEmpty(Mathf.Max(0, sample.manaPool - sample.armyCost),
             sample.manaPerSecond + sample.supportManaPerSecond, sample.manaRegen);
         public static string Status() => state;
+        // Compare only within an archetype AND level. A weak skill or early level must
+        // never disappear merely because a different skill or later level is stronger.
+        public static List<Sample> RecalculationCandidates(List<Sample> samples, float minimumDpsFraction = .75f)
+        {
+            if (samples == null) throw new ArgumentNullException(nameof(samples));
+            if (float.IsNaN(minimumDpsFraction) || minimumDpsFraction <= 0 || minimumDpsFraction > 1)
+                throw new ArgumentOutOfRangeException(nameof(minimumDpsFraction));
+            return samples.Where(s => string.IsNullOrEmpty(s.excluded) && s.sustainedDps > 0 &&
+                    !float.IsNaN(s.sustainedDps) && !float.IsInfinity(s.sustainedDps))
+                .GroupBy(s => new { s.archetype, s.level })
+                .SelectMany(g =>
+                {
+                    float cutoff = g.Max(build => build.sustainedDps) * minimumDpsFraction;
+                    return g.Where(s => s.sustainedDps >= cutoff);
+                })
+                .OrderBy(s => s.archetype, StringComparer.Ordinal).ThenBy(s => s.level).ThenBy(s => s.sample).ToList();
+        }
+        public static string ExportRecalculationPool(float minimumDpsFraction = .75f)
+        {
+            if (report != null) throw new InvalidOperationException("Wait for the current survey to finish.");
+            var data = JsonUtility.FromJson<Report>(File.ReadAllText("BalanceResults/survey.json"));
+            return WriteRecalculationPool(data, minimumDpsFraction);
+        }
+        private static string WriteRecalculationPool(Report data, float minimumDpsFraction = .75f)
+        {
+            var samples = RecalculationCandidates(data.samples, minimumDpsFraction);
+            var pool = new RecalculationPool { sourceModel = data.model, sourceRevision = data.sourceRevision,
+                sourceGeneratedUtc = data.generatedUtc, sourceSettings = data.settings, minimumDpsFraction = minimumDpsFraction,
+                originalSamples = data.samples.Count, originalViable = data.samples.Count(s => string.IsNullOrEmpty(s.excluded)),
+                retainedSamples = samples.Count, samples = samples };
+            const string path = "BalanceResults/recalculation-pool.json";
+            File.WriteAllText(path, JsonUtility.ToJson(pool, true));
+            return samples.Count + "/" + data.samples.Count + " builds retained; " + path;
+        }
         public static string ValidateReportFile()
         {
             var data = JsonUtility.FromJson<Report>(File.ReadAllText("BalanceResults/survey.json"));
@@ -163,6 +205,7 @@ namespace PoeClone.EditorTools
                 Normalize(report);
                 Directory.CreateDirectory("BalanceResults");
                 File.WriteAllText("BalanceResults/survey.json", JsonUtility.ToJson(report, true));
+                WriteRecalculationPool(report);
                 state = "complete: " + report.samples.Count + " builds, " + report.rows.Count + " rows; BalanceResults/survey.json";
                 report = null;
                 EditorApplication.update -= Advance;

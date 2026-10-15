@@ -1,4 +1,5 @@
 version: 2026-10-15-summoner-support-and-balance-survey
+- Offline balance surveys now export a competitive-build shortlist for future recalculations, excluding survival failures and builds below 75% of their archetype's best sustained damage at each level.
 - Consolidated project documentation into development and balance guides, with boss DPS recorded as the next balance-testing step.
 - Summon main skills now belong exclusively to sceptres. Grimoires provide minion stats and support abilities, with Death Mark rolling regularly on magic and rare grimoires. Existing summon grimoires become Death Mark support tomes while keeping their other stats.
 - Death Mark remains a bindable support ability: mark an enemy for 6 seconds so your minions deal 30% more damage to it. It no longer replaces the main attack or has a weapon skill tree.

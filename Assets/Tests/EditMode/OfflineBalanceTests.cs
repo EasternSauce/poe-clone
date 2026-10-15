@@ -101,6 +101,49 @@ namespace PoeClone.Tests
             Assert.AreNotEqual(Call("StableSeed", 7, "Cleave/base", 10, 2), Call("StableSeed", 7, "Cleave/base", 10, 3));
         }
 
+        [Test]
+        public void RecalculationCandidates_CompareWithinArchetypeAndLevel_AndPreserveSource()
+        {
+            Type sampleType = EditorType("OfflineBalance").GetNestedType("Sample");
+            var list = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(sampleType));
+            void Add(int id, string archetype, int level, float dps, string excluded = null)
+            {
+                object sample = Activator.CreateInstance(sampleType);
+                sampleType.GetField("sample").SetValue(sample, id);
+                sampleType.GetField("archetype").SetValue(sample, archetype);
+                sampleType.GetField("level").SetValue(sample, level);
+                sampleType.GetField("sustainedDps").SetValue(sample, dps);
+                sampleType.GetField("excluded").SetValue(sample, excluded);
+                list.Add(sample);
+            }
+            Add(1, "strong", 34, 100);
+            Add(2, "strong", 34, 75);
+            Add(3, "strong", 34, 74.9f);
+            Add(4, "strong", 34, 9999, "Melee survival");
+            Add(5, "weak", 34, 2);
+            Add(6, "strong", 1, 1);
+            Add(7, "strong", 34, float.NaN);
+            Add(8, "strong", 34, float.PositiveInfinity);
+            Add(9, "zero", 1, 0);
+            var retained = ((IEnumerable)Call("RecalculationCandidates", list, .75f)).Cast<object>().ToList();
+            CollectionAssert.AreEquivalent(new[] { 1, 2, 5, 6 },
+                retained.Select(s => (int)sampleType.GetField("sample").GetValue(s)));
+            Assert.AreEqual(9, list.Count, "Pruning must not remove original observations");
+            Assert.IsNull(sampleType.GetField("excluded").GetValue(list[2]), "Low DPS is not a survival failure");
+            var bestOnly = ((IEnumerable)Call("RecalculationCandidates", list, 1f)).Cast<object>().ToList();
+            CollectionAssert.AreEquivalent(new[] { 1, 5, 6 },
+                bestOnly.Select(s => (int)sampleType.GetField("sample").GetValue(s)));
+        }
+
+        [TestCase(0f), TestCase(-.1f), TestCase(1.01f), TestCase(float.NaN)]
+        public void RecalculationCandidates_RejectInvalidCutoff(float cutoff)
+        {
+            Type sampleType = EditorType("OfflineBalance").GetNestedType("Sample");
+            var list = Activator.CreateInstance(typeof(List<>).MakeGenericType(sampleType));
+            var error = Assert.Throws<TargetInvocationException>(() => Call("RecalculationCandidates", list, cutoff));
+            Assert.IsInstanceOf<ArgumentOutOfRangeException>(error.InnerException);
+        }
+
         [UnityTest, Timeout(1800000)]
         public IEnumerator FullSurvey_ExportsEveryArchetypeAtLevelsOneThrough34()
         {

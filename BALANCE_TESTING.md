@@ -26,16 +26,26 @@ Melee viability currently requires at least four average unavoided hits and six 
 
 ## Next step: boss DPS
 
+Future recalculations use a pruned candidate pool: retain builds with at least **75% of their own archetype/level's best 30-second sustained DPS**, excluding existing survival failures, zero damage and invalid numbers. The cutoff is configurable through `OfflineBalance.ExportRecalculationPool(minimumDpsFraction: .75f)`. Each completed survey also writes this pool automatically. The original survey and spreadsheet cohort are unchanged.
+
+`BalanceResults/recalculation-pool.json` records retained samples, original counts, cutoff, source model/revision, settings and sample identities. This is a shortlist for the upcoming recalculation implementation, not a new boss report or a lossless equipment cache: current item descriptions round modifiers. Source seeds can reproduce builds while generation code is unchanged; a future cache that reuses exact gear must store full equipment precision. Pruning by old damage can miss builds that become competitive against a different target or after balance changes; keep the original survey for rebuilding the pool. A recalculated shortlist must be labelled as such, with its retained population and top-20% denominator explicit.
+
 Replace the normal-enemy damage reference with an explicit, reproducible boss benchmark while keeping the model simple. This is the implementation plan, not a description of the current report:
 
 1. Define the boss selection and weights explicitly. Bosses have zero normal spawn weight, so the existing spawn-weighted average cannot be reused. Use actual boss definitions and level scaling from `EnemyKind.cs`; record boss identity and state in the report. A scaled reference boss across levels 1-34 can provide a continuous curve, with campaign-boss checkpoints as separate comparisons.
 2. Apply boss armour, resistances, penetration and damage-taken rules before ranking builds. Respect boss-specific restrictions such as culling immunity. Handle enrage explicitly: eligible ranged/minion hits trigger it, and boss damage-taken modifiers can change outgoing DPS. Do not apply a blanket multiplier to every archetype.
 3. Define a consistent boss-pressure scenario for melee survival and minion replacement. Use actual scaled attacks, attack tempo, mitigation and recovery, with explicit enrage state. Show these assumptions separately from damage so freely attacking boss pressure is not mistaken for a prediction of a complete fight.
 4. Keep the existing mana sheet, 30-second window, rare-item budget, top-20% calculation and melee/minion premiums. Continue to exclude clearing, pathfinding and detailed phase simulation.
-5. Version the model and export target assumptions into the workbook. Re-sample all builds: boss defences change which items and allocations win. Do not mix old normal-enemy rows with new boss rows or merely rescale the old spreadsheet.
+5. Version the model and export target assumptions into the workbook. Recalculate retained candidates first, recording that their equipment was selected against the old target. A later full survey can optimize equipment for bosses. Do not mix old normal-enemy rows with new boss rows or merely rescale the old spreadsheet.
 6. Validate boss defence/enrage handling, mana reconciliation, survival exclusions and archetype coverage with focused Edit-mode tests. Run a fresh full survey and regenerate the workbook before recommending buffs or nerfs.
 
 Still to decide during implementation: reference boss versus a small weighted boss set, campaign checkpoint selection, and which explicit boss attacks represent survival pressure. Keep those choices visible in Method rather than hiding them behind an unexplained average. Any HP/DPS kill-time estimate must be labelled stationary and omit phase downtime.
+
+### Flexible-tree review
+
+The current normal-enemy survey has 456 skill/level comparisons where both flexible and specialized routes have viable cohorts. Flexible trees beat the best specialized route in 24 cases. The largest lead is Pulverize at level 23 (+12.8%); at level 34 only Split Shot leads (+6.0%, versus Rapid Release + Hunter's Sustenance). Check these again against bosses and show the flexible-versus-best-specialized margin in the next report. Flexible routes avoid terminal destinations but can still allocate notables.
+
+These comparisons use independent gear/passive samples, not matched equipment, so modest leads may be sampling variation. Single-target DPS also omits coverage benefits. Before tuning a keystone, compare allocations on matched equipment/passives and check mana and survival; do not assume every utility keystone must beat flexible damage.
 
 ## Running and exporting
 
@@ -50,5 +60,6 @@ Outputs are local and Git-ignored:
 - `BalanceResults/survey.json`: settings, catalogue, aggregates and raw samples.
 - `BalanceResults/skill-balance.xlsx`: readable comparison and mana sheets.
 - `BalanceResults/sample-builds.csv`: full equipment, allocations and observations.
+- `BalanceResults/recalculation-pool.json`: retained competitive samples for future recalculations, with cutoff and source metadata.
 
 Implementation: `Assets/Editor/OfflineBalance.cs`, `Assets/Editor/BalanceArchetypes.cs`, `Assets/Tests/EditMode/OfflineBalanceTests.cs`, and `tools/balance/report.mjs`. No balance buffs or nerfs have been applied from this survey.
