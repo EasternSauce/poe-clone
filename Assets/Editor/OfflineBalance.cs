@@ -698,7 +698,7 @@ namespace PoeClone.EditorTools
             hit /= Mathf.Max(.01f, weights); dps /= Mathf.Max(.01f, weights);
         }
         private static readonly string[] Assumptions = {
-            "Main spell base damage grows 6% of its level-one base per character level; minions grow 3.5% (golems 4.5%, vipers 2.2%). Weapon rank still grants allocation points only.",
+            "Main spell base damage grows 6% of its level-one base per character level; minions grow 3.5% (golems 4.5%, vipers 1.22%). Weapon rank still grants allocation points only.",
             "Single stationary target at 6 units for ranged attacks. No clearing, boss phases, movement, kills, potions or unique items.",
             "Every slot rolls 20 rares. Greedy selection maximizes 30-second single-target DPS, including mana sustain. Melee scores multiply DPS by the fraction of each survival threshold met, capped at one. Equal scores keep the first roll. Requirements and hand compatibility are enforced.",
             "20 seeded builds per available archetype and level by default; the sample count is configurable. Random connected character passives, random compatible weapon family and nonterminal weapon nodes. Travel costs count. Top fifth means arithmetic mean of the best ceil(viable count / 5) builds by 30-second DPS.",

@@ -1,3 +1,6 @@
+version: 2026-10-15-viper-early-damage
+- Summoned vipers deal more damage at early character levels, with slower damage growth afterward so their level-34 base damage stays effectively unchanged.
+
 version: 2026-10-15-venom-arrow-progression
 - Venom Arrow's Deep Venom now adds poison equal to 55% of hit damage instead of 25%, improving developing poison builds.
 - Black Blood adds another 35% instead of 40%, bringing the connected route's combined bonus to 90% instead of 65%. Base attack damage, mana cost and poison duration are unchanged.

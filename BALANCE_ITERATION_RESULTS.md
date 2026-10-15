@@ -251,3 +251,62 @@ the absence of a new general damage multiplier. The non-survey EditMode run
 passed 312/313 cases; the sole failure is the previously documented passive-tree
 spacing violation. The full 318-archetype test was not rerun for this targeted
 change. No gameplay session or character save was used.
+
+## Summon Viper early-level follow-up — 2026-10-15
+
+Early representative builds have full modeled army and resource uptime, despite
+short minion lifetimes and replacement demand. Their shortfall is principally
+single-viper damage before Brood becomes available, rather than initial army cost
+or a lack of mana. The benchmark assumes prompt replacement; gameplay survival
+and replacement input still need player evaluation.
+
+The viper profile's base hit rises from 13 to 16 before the shared summon damage
+factor. Character-level growth falls from 2.2% to 1.22% of base per level. At level
+34 the unmodified profile damage is 22.4416 versus the old 22.438, a difference
+under 0.02%. The shared summon factor applies equally to both. This improves
+early damage without adding weapon-rank scaling or raising the level-34 damage
+budget. Life, defences, army caps, durations, attack intervals, summon costs and
+weapon-tree bonuses are unchanged. Per-kind growth now lives beside base damage
+in the existing minion profiles; the other four kinds retain their rates.
+
+All 13 Summon Viper archetypes were refreshed across levels 1–34 with seed
+20261014, 20 builds per available route/level and 20 rare candidates per gear
+slot: 3,260 builds. Other skills retain their preceding samples; peer baselines
+are rebuilt. The combined report validates.
+
+| Level | Best available route before | After | Second-seed check |
+| --- | ---: | ---: | ---: |
+| 3 | 73.0% | 92.0% | 111.2% |
+| 4 | 70.0% | 88.2% | 112.3% |
+| 9 | 71.5% | 84.7% | 98.0% |
+| 11 | 71.6% | 83.3% | 98.7% |
+| 12 | 69.3% | 79.9% | 92.8% |
+| 13 | 69.6% | 79.5% | 100.0% |
+| 14 | 74.4% | 84.3% | 95.3% |
+| 15 | 68.4% | 76.9% | 95.7% |
+
+The main seed's best route is now in band at every level, ranging from 76.9% to
+122.3%, with no high-route flags. Level 1 improves from 81.1% to 103.4%; level 34
+remains 104.7%. The second-seed check uses seed 20261015 and 20 fresh builds per
+available route at the listed levels, against the existing main-seed peer
+baselines. All previously weak early levels pass that check.
+
+**Remaining issue: Brood's level-16 unlock.** The main seed rises from 109.3% to
+122.3%, but the second seed produces 156.8%. Repeating that second-seed measurement
+with the original viper damage curve produces 140.3%, confirming a pre-existing
+unlock spike that the early-damage increase amplifies. Brood's extra viper and
+damage tradeoff need a separate check across more seeds; this pass does not
+establish that the unlock is balanced. The original curve was restored only for
+that measurement; the final code and report use the new curve.
+
+Local comparison snapshots: `BalanceResults/summon-viper-before.json` and
+`BalanceResults/summon-viper-after.json`, including their sample builds.
+`survey.json` and `recalculation-pool.json` contain the refreshed main-seed results.
+Historical workbook/CSV exports were not regenerated.
+
+Five added regression cases verify the stronger early viper curve, monotonic
+character progression, preserved level-34 damage, and unchanged growth for the
+other minion kinds. The non-survey EditMode run passed 317/318 cases; the only
+failure remains the documented passive-tree spacing violation. The full
+318-archetype test was not rerun for this targeted change. No gameplay session or
+character save was used.

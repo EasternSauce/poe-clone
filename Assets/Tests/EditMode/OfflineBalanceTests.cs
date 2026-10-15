@@ -324,6 +324,33 @@ namespace PoeClone.Tests
         }
 
         [Test]
+        public void ViperDamageCurveImprovesEarlyLevelsAndPreservesLevel34Damage()
+        {
+            Type minions = Type.GetType("PoeClone.Skills.Minion, Assembly-CSharp", true);
+            object viper = Enum.Parse(minions.Assembly.GetType("PoeClone.Skills.MinionKind"), "Viper");
+            float Damage(int level) => (float)minions.GetMethod("DamageFor").Invoke(null,
+                new object[] { viper, 1, StatSheet.Build(new BaseStats { Level = level }, null), null });
+            float Previous(int level) => 13f * (2f * 1.2f / 1.3f) * (1f + .022f * (level - 1));
+            Assert.Greater(Damage(1), Previous(1) * 1.2f);
+            Assert.Greater(Damage(15), Previous(15) * 1.05f);
+            Assert.AreEqual(Previous(34), Damage(34), .01f);
+            for (int level = 2; level <= 34; level++) Assert.Greater(Damage(level), Damage(level - 1));
+        }
+
+        [TestCase("Warrior", .035f)]
+        [TestCase("Mage", .035f)]
+        [TestCase("Wolf", .035f)]
+        [TestCase("Golem", .045f)]
+        public void OtherMinionDamageCurvesKeepTheirGrowthRates(string name, float growth)
+        {
+            Type minions = Type.GetType("PoeClone.Skills.Minion, Assembly-CSharp", true);
+            object kind = Enum.Parse(minions.Assembly.GetType("PoeClone.Skills.MinionKind"), name);
+            float Damage(int level) => (float)minions.GetMethod("DamageFor").Invoke(null,
+                new object[] { kind, 1, StatSheet.Build(new BaseStats { Level = level }, null), null });
+            Assert.AreEqual(Damage(1) * (1f + growth * 33f), Damage(34), .001f);
+        }
+
+        [Test]
         public void MinionRules_RespectArmyAndChampionRoutesAndDefenceSnapshots()
         {
             // Runtime types are reflected because this test assembly cannot reference Assembly-CSharp.
