@@ -12,11 +12,15 @@ The game source checkout is `EasternSauce/poe-clone`. The live GitHub Pages site
 not update the site. Deploy both repositories: commit and push the source/build
 changes here, then copy the complete fresh `Builds/WebGL` output into a clean
 checkout of `poe-clone-web`, commit it, and push that repository's `master`
-branch. Keep the second checkout outside the source checkout so its Git metadata
-does not interfere with this repository. Use a stable directory outside the
-source checkout so it can be reused between deploys. The preferred checkout is
-`C:\Users\admin\poe-clone-web`; validate that directory first instead of scanning
-all similarly named directories. Leave other deployment checkouts alone.
+branch. The only Pages checkout directory on this machine is
+`C:\Users\admin\poe-clone-web`. Reuse it for every deployment; keeping it outside
+the source checkout prevents its Git metadata from interfering with this repo.
+Validate this exact directory first. Do not create alternate, numbered, dated,
+temporary, `-deploy`, `-pages`, `-publish`, `-shallow`, `-metadata`, or `-recovery`
+checkouts. If it is missing, clone into this exact path. If it exists but is
+invalid, dirty, or has local-only commits, resolve the issue in this directory
+while preserving local work; report a blocker if needed instead of cloning
+elsewhere. A failed clone or fetch is not a reason to create another directory.
 
 Check every native command's exit code before proceeding. PowerShell does not
 stop on a failed `git`, `curl.exe`, or `robocopy` command by default: check
@@ -86,14 +90,14 @@ Try this fallback before reporting missing credentials as a deployment blocker.
    `Builds/` is ignored but the
    release files are already tracked: use `git add -u -- Builds/WebGL` for
    updates, and explicitly force-add only intended new release files if needed.
-   Do not force-add the whole ignored directory. For the Pages repository, reuse
-   its stable checkout when available: verify that `origin` is
+   Do not force-add the whole ignored directory. For the Pages repository, use
+   `C:\Users\admin\poe-clone-web`: verify that `origin` is
    `https://github.com/EasternSauce/poe-clone-web.git`, the branch is `master`,
    and the working tree is clean. Fetch `origin master` with depth 1, confirm
    the checkout has no local-only commits, then fast-forward it to
-   `origin/master`. If no valid checkout exists, create one with
+   `origin/master`. Only if that directory does not exist, create it with
    `git clone --depth 1 --branch master
-   https://github.com/EasternSauce/poe-clone-web.git <deploy-directory>`.
+   https://github.com/EasternSauce/poe-clone-web.git C:\Users\admin\poe-clone-web`.
    The deploy needs only the current Pages revision, so fetching the full
    repository history adds time without helping the build. Copy the contents of
    `Builds/WebGL` into the checkout (including the `Build` and `StreamingAssets`
