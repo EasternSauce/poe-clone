@@ -85,8 +85,7 @@ namespace PoeClone.Visuals
         {
             _lights.Clear();
             var found = FindObjectsByType<Light>(
-                includeInactiveAtStart ? FindObjectsInactive.Include : FindObjectsInactive.Exclude,
-                FindObjectsSortMode.None);
+                includeInactiveAtStart ? FindObjectsInactive.Include : FindObjectsInactive.Exclude);
 
             foreach (var l in found)
             {

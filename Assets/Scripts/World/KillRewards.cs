@@ -37,6 +37,9 @@ namespace PoeClone.World
         /// <summary>A monster the player killed (quests count these).</summary>
         public static event System.Action<EnemyKind, int> EnemyKilled;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => EnemyKilled = null;
+
         public static void Grant(EnemyKind kind, int monsterLevel, Vector3 at, bool dropLoot = true)
         {
             EnemyKilled?.Invoke(kind, monsterLevel);

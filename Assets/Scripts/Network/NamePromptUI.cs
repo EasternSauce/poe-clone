@@ -114,7 +114,7 @@ namespace PoeClone.Network
             ClearScreen("characters");
             MakeText("Choose Character", 34, new Vector2(0, 330), new Vector2(740, 60));
             var profiles = PoeClone.Player.SaveSystem.Profiles();
-            var inventories = FindObjectsByType<PlayerInventory>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var inventories = FindObjectsByType<PlayerInventory>(FindObjectsInactive.Include);
             var inventory = inventories.Length > 0 ? inventories[0] : null;
             var source = inventory != null ? inventory.GetComponentInChildren<EquipmentVisuals>(true) : null;
             float y = 220;

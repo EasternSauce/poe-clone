@@ -1028,7 +1028,7 @@ namespace PoeClone.Skills
                     Record(skill, level, radius, 0, new[] { at });
                     foreach (EnemyHealth target in EnemiesWithin(at, radius))
                     {
-                        Hit(target, damage * skill.ExtraHitMultiplierAt(level), skill.Color, false, DamageType.Poison, skillId: skill.Id);
+                        Hit(target, damage, skill.Color, false, DamageType.Poison, skillId: skill.Id);
                         WeaponVenom.Apply(transform, target, damage, 100f, 0f, inventory.Stats, durationMultiplier: tree.DurationMultiplier, radiusMultiplier: tree.AreaMultiplier, tree: tree);
                     }
                     break;

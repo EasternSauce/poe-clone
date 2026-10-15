@@ -272,9 +272,9 @@ namespace PoeClone.UI
             // them is the point, a little ahead of when they come on screen. Further off,
             // nothing: the map is not a radar.
             Vector3 me = player.transform.position;
-            foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>())
+            foreach (EnemyHealth enemy in EnemyHealth.Active)
             {
-                if (enemy.IsDead || enemy.IsAlly || !InArea(enemy.transform.position, centre))
+                if (enemy == null || enemy.IsDead || enemy.IsAlly || !InArea(enemy.transform.position, centre))
                     continue;
                 Vector3 offset = enemy.transform.position - me;
                 offset.y = 0f;

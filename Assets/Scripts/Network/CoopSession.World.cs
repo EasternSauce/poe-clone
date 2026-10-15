@@ -101,7 +101,7 @@ namespace PoeClone.Network
                     if (enemy != null && AreaAt(enemy.transform.position) == area) PoeClone.Visuals.DistanceActivity.SetAvailable(enemy, true);
                 suspended.RemoveWhere(enemy => enemy == null || AreaAt(enemy.transform.position) == area);
             }
-            foreach (EnemySpawner spawner in FindObjectsByType<EnemySpawner>(FindObjectsSortMode.None))
+            foreach (EnemySpawner spawner in FindObjectsByType<EnemySpawner>())
                 if (AreaAt(spawner.transform.position) == area) spawner.enabled = !sharing;
             localArea = area;
         }
@@ -128,7 +128,7 @@ namespace PoeClone.Network
         private void RestoreWorld(int area, EnemyHandoff[] world)
         {
             var spawner = FindAnyObjectByType<EnemySpawner>();
-            foreach (EnemySpawner candidate in FindObjectsByType<EnemySpawner>(FindObjectsSortMode.None))
+            foreach (EnemySpawner candidate in FindObjectsByType<EnemySpawner>())
                 if (AreaAt(candidate.transform.position) == area) { spawner = candidate; break; }
             if (spawner == null || spawner.EnemyPrefab == null) return;
             foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsInactive.Include))
@@ -151,7 +151,7 @@ namespace PoeClone.Network
                 if (kind.IsBoss) enemy.AddComponent<BossAbilities>().Configure(kind, Mathf.Max(1, state.lv), spawner.EnemyPrefab);
                 bool adopted = false;
                 if (kind.IsBoss)
-                    foreach (BossLair lair in FindObjectsByType<BossLair>(FindObjectsSortMode.None))
+                    foreach (BossLair lair in FindObjectsByType<BossLair>())
                         if (lair.Adopt(health, area)) { adopted = true; break; }
                 if (!adopted && !kind.IsBoss && AreaAt(spawner.transform.position) == area) spawner.Adopt(health);
                 handedOver[enemy] = area;

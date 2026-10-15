@@ -8,6 +8,59 @@ namespace PoeClone.Tests
 {
     public class SkillGearTests
     {
+        [TestCase(0, 1)]
+        [TestCase(1, 0)]
+        [TestCase(0, 2)]
+        [TestCase(2, 0)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        public void SavedMageSchools_RespectPointBudget_AndKeepFirstSchool(int first, int second)
+        {
+            var saved = new WeaponSkillProgress { level = 10 };
+            for (int i = 0; i <= 5; i++) saved.nodes.Add($"v2_{first}_{i}");
+            for (int i = 0; i <= 5; i++) saved.nodes.Add($"v2_{second}_{i}");
+
+            // Only one complete school fits the ten-point budget. Preserve the first
+            // school and as much legal travel toward the second as the budget permits.
+            saved.Sanitize(StatType.GrantSkeletonMages);
+
+            Assert.Contains($"v2_{first}_5", saved.nodes);
+            Assert.IsFalse(saved.nodes.Contains($"v2_{second}_4"));
+            Assert.IsFalse(saved.nodes.Contains($"v2_{second}_5"));
+            Assert.AreEqual(10, saved.nodes.Count);
+            Assert.AreEqual(0, saved.Available);
+        }
+
+        [Test]
+        public void SavedWeaponTree_RejectsUnknownDuplicateAndDisconnectedNodes()
+        {
+            var progress = new WeaponSkillProgress
+            {
+                level = 10,
+                nodes = new List<string> { "unknown", "v2_0_0", "v2_0_0", "v2_0_2", "v2_0_3", "v2_1_0" }
+            };
+
+            progress.Sanitize(StatType.GrantSkeletonMages);
+
+            CollectionAssert.AreEqual(new[] { "v2_0_0", "v2_1_0" }, progress.nodes);
+            Assert.AreEqual(8, progress.Available);
+        }
+
+        [Test]
+        public void SavedWeaponTree_ValidAllocationRoundTripsUnchanged()
+        {
+            var progress = new WeaponSkillProgress { level = 10, experience = 0 };
+            for (int i = 0; i <= 5; i++) Assert.IsTrue(progress.Allocate(StatType.GrantSkeletonMages, $"v2_0_{i}"));
+            for (int i = 0; i <= 3; i++) Assert.IsTrue(progress.Allocate(StatType.GrantSkeletonMages, $"v2_1_{i}"));
+            string json = UnityEngine.JsonUtility.ToJson(progress);
+            var restored = UnityEngine.JsonUtility.FromJson<WeaponSkillProgress>(json);
+
+            restored.Sanitize(StatType.GrantSkeletonMages);
+            restored.Sanitize(StatType.GrantSkeletonMages);
+
+            Assert.AreEqual(json, UnityEngine.JsonUtility.ToJson(restored));
+        }
+
         private static List<StatModifier> Grants(ItemData item)
         {
             var grants = new List<StatModifier>();

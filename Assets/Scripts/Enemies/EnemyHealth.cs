@@ -124,6 +124,7 @@ namespace PoeClone.Enemies
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
+            Active.Clear();
             RemoteHit = null;
             Killed = null;
         }

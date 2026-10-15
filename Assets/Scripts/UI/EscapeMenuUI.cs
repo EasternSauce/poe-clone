@@ -108,7 +108,7 @@ namespace PoeClone.UI
 
         private static bool AnyOpen<T>() where T : MonoBehaviour
         {
-            foreach (T component in FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (T component in FindObjectsByType<T>(FindObjectsInactive.Include))
             {
                 if (component is InventoryUI inventory && inventory.IsOpen) return true;
                 if (component is CharacterPageUI character && character.IsOpen) return true;

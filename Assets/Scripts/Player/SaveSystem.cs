@@ -205,7 +205,7 @@ namespace PoeClone.Player
 
             if (stats == null)
             {
-                var players = FindObjectsByType<PlayerStats>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                var players = FindObjectsByType<PlayerStats>(FindObjectsInactive.Include);
                 if (players.Length > 0) stats = players[0];
             }
             if (stats == null || QuestLog.Instance == null || AreaManager.Instance == null || AreaManager.Instance.CurrentAreaIndex < 0)
@@ -307,8 +307,6 @@ namespace PoeClone.Player
             PlayerSkills skills = stats.GetComponent<PlayerSkills>();
             if (skills != null)
             {
-                data.activeBowSlot = skills.SavedToggleSlot;
-                data.activeBowSkill = skills.SavedToggleSkill;
                 for (int k = 0; k < SkillBook.SlotCount; k++)
                 {
                     SkillId? id = skills.Slot(k);
@@ -462,7 +460,6 @@ namespace PoeClone.Player
                 }
             }
 
-            skills?.RestoreToggle(data.activeBowSlot, data.activeBowSkill);
 
             QuestLog log = QuestLog.Instance;
             if (log != null && data.actTwoUnlocked)

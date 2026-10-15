@@ -1,3 +1,8 @@
+version: 2026-10-15-code-housekeeping
+- Weapon specializations use the same validation when loading saved nodes and spending points.
+- Changing effects volume also updates sounds already playing.
+- Reduced repeated enemy searches in the minimap and boss HUD, and cleaned up retired skill-toggle UI and state left between Editor sessions.
+
 version: 2026-10-15-asset-housekeeping
 - Consolidated identical sound recordings while preserving gameplay audio assignments.
 - Preserved equipment icon source art permanently and retired temporary inspiration assets.

@@ -41,7 +41,6 @@ namespace PoeClone.UI
             public Image Cooldown;
             public Image NoMana;
             public Text Name;
-            public Image Ring;   // spins round a bow skill that's toggled on
         }
 
         private class Row
@@ -197,13 +196,11 @@ namespace PoeClone.UI
             {
                 attackIcon.enabled = false;
                 UpdateSlot(attackView, main);
-                attackView.Ring.enabled = false;
                 return;
             }
 
             attackView.Cooldown.fillAmount = 0f;
             attackView.NoMana.enabled = false;
-            attackView.Ring.enabled = false;
             attackView.Back.color = new Color(0.10f, 0.09f, 0.08f, 0.9f);
             attackView.Icon.enabled = false;
             ItemData weapon = skills.GetComponent<PlayerInventory>()?.Equipment.GetActive(EquipSlot.MainHand);
@@ -442,7 +439,6 @@ namespace PoeClone.UI
 
         private void UpdateSlot(SlotView view, SkillId? id, int slot = -1)
         {
-            view.Ring.enabled = false;
             if (id == null)
             {
                 view.Back.color = new Color(0.08f, 0.07f, 0.06f, 0.8f);
@@ -457,11 +453,6 @@ namespace PoeClone.UI
             view.Icon.enabled = true;
             view.Icon.sprite = SkillIconFactory.Get(skill.Id);
             view.Name.alignment = TextAnchor.LowerRight;
-            if (slot >= 0 ? skills.IsToggledOnAt(slot) : skills.IsToggledOn(skill.Id))
-            {
-                view.Ring.enabled = true;
-                SpinRing(view.Ring, skill.Color);
-            }
             int level = slot >= 0 ? skills.LevelAt(slot) : skills.Level(skill.Id);
             if (level <= 0)
             {
@@ -495,31 +486,6 @@ namespace PoeClone.UI
             view.Name.text = "<size=12>" + count + "</size>";
             view.Cooldown.fillAmount = 0f;
             view.NoMana.enabled = false;
-            view.Ring.enabled = false;
-        }
-
-        /// <summary>A bow skill's "on" ring: a broken circle turning round the button, gently pulsing.</summary>
-        public static void SpinRing(Image ring, Color color)
-        {
-            float t = Time.unscaledTime;
-            ring.rectTransform.localEulerAngles = new Vector3(0f, 0f, -t * 220f);
-            Color c = Color.Lerp(color, Color.white, 0.35f);
-            c.a = 0.75f + 0.25f * Mathf.Sin(t * 6f);
-            ring.color = c;
-        }
-
-        /// <summary>The ring itself (see <see cref="SpinRing"/>), this far outside the button's edge.</summary>
-        public static Image NewRing(RectTransform button, float margin)
-        {
-            Image ring = UiKit.NewImage("BowSkillOn", button, Color.white);
-            ring.sprite = UiKit.Ring;
-            ring.type = Image.Type.Filled;
-            ring.fillMethod = Image.FillMethod.Radial360;
-            ring.fillAmount = 0.72f;
-            ring.raycastTarget = false;
-            UiKit.Stretch(ring.rectTransform, -margin);
-            ring.enabled = false;
-            return ring;
         }
 
         private void RefreshRows()
@@ -755,8 +721,6 @@ namespace PoeClone.UI
             text.Append('\n').Append(skill.Description);
             if (skill.Channelled)
                 text.Append("\n<color=#").Append(dim).Append(">Hold the attack to spin towards the cursor.</color>");
-            else if (skill.Toggled && !attack)
-                text.Append("\n<color=#").Append(dim).Append(">Press to toggle; while on, it replaces your bow attack.</color>");
             return text.ToString();
         }
 
@@ -825,9 +789,7 @@ namespace PoeClone.UI
             // The attack square (not rebindable) gets a brighter rim than the rest.
             UiKit.Rim(back.rectTransform, 2f, onClick != null ? new Color(0.85f, 0.8f, 0.72f, 1f) : Color.white);
 
-            Image ring = NewRing(back.rectTransform, -3f);
-
-            return new SlotView { Back = back, Icon = icon, Cooldown = cooldown, NoMana = noMana, Name = label, Ring = ring };
+            return new SlotView { Back = back, Icon = icon, Cooldown = cooldown, NoMana = noMana, Name = label };
         }
 
         private void Build()

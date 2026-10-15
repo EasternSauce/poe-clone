@@ -112,9 +112,9 @@ namespace PoeClone.UI
             EnemyHealth arenaBoss = actArena && ActBossArena.Instance != null ? ActBossArena.Instance.Boss : null;
             if (arenaBoss != null && !arenaBoss.IsDead) return arenaBoss;
             float bestDistance = actArena ? float.MaxValue : ShowRange * ShowRange;
-            foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>())
+            foreach (EnemyHealth enemy in EnemyHealth.Active)
             {
-                if (enemy.IsDead || !EnemyKinds.Get(enemy.KindIndex).IsBoss)
+                if (enemy == null || enemy.IsDead || !EnemyKinds.Get(enemy.KindIndex).IsBoss)
                     continue;
                 if (actArena && EnemyKinds.Get(enemy.KindIndex).Boss != BossStyle.Shepherd)
                     continue;

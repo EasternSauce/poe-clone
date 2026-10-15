@@ -39,15 +39,11 @@ namespace PoeClone.Inventory
             if (version < 2) { nodes = new List<string>(); version = 2; }
             level = Mathf.Clamp(level, 1, 10);
             experience = level == 10 ? 0 : Mathf.Clamp(experience, 0, RequiredExperience - 1);
-            var valid = new List<string>();
-            if (nodes != null)
-                foreach (string id in nodes)
-                {
-                    WeaponSkillNode node = WeaponSkillTrees.Find(grant, id);
-                    if (node != null && valid.Count < level && !valid.Contains(id) &&
-                        (node.Parent == null || valid.Contains(node.Parent))) valid.Add(id);
-                }
-            nodes = valid;
+            var saved = nodes;
+            nodes = new List<string>();
+            if (saved != null)
+                foreach (string id in saved)
+                    Allocate(grant, id);
         }
 
         public bool CanAllocate(StatType grant, string id)

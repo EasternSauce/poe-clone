@@ -93,7 +93,7 @@ namespace PoeClone.EditorTools
             QuestLog log = QuestLog.Instance;
             QuestProp next = null;
             int nextIndex = int.MaxValue;
-            foreach (QuestProp prop in Object.FindObjectsByType<QuestProp>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (QuestProp prop in Object.FindObjectsByType<QuestProp>(FindObjectsInactive.Include))
             {
                 if (prop.QuestId != Order[step] || log.PropUsed(prop.PropId)) continue;
                 int index = int.Parse(prop.PropId.Substring(prop.PropId.IndexOf('#') + 1));

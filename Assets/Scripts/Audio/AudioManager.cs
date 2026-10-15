@@ -72,6 +72,13 @@ namespace PoeClone.Audio
         // Read every frame by looping sounds, so kept here rather than asked of PlayerPrefs each time.
         private static float? effectsVolume, musicVolume;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            Instance = null;
+            effectsVolume = musicVolume = null;
+        }
+
         /// <summary>The player's sound effects volume: combat, world, ambience and interface sounds.</summary>
         public static float EffectsVolume
         {
@@ -150,6 +157,11 @@ namespace PoeClone.Audio
                 }
         }
 
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+        }
+
         /// <summary>Like PlayClipAtPoint, at a pitch of its own (a throwaway source that removes itself).</summary>
         public void PlayAtPoint(AudioClip clip, Vector3 position, float pitch = 1f)
         {
@@ -202,7 +214,7 @@ namespace PoeClone.Audio
             source.panStereo = 0f;
             source.pitch = pitch;
             source.volume = gain * duck;
-            oneShots.Add(new OneShot { Source = source, Volume = SfxGain });
+            oneShots.Add(source);
             // When more sounds play than there are voices, Unity silences the lowest priority first (0 is highest).
             source.priority = topPriority ? 0 : 128;
             source.PlayDelayed(delay);
@@ -257,13 +269,7 @@ namespace PoeClone.Audio
         private const float DuckedGain = 0.35f;
         private const float DuckSpeed = 8f;
 
-        private struct OneShot
-        {
-            public AudioSource Source;
-            public float Volume;
-        }
-
-        private readonly List<OneShot> oneShots = new List<OneShot>();
+        private readonly List<AudioSource> oneShots = new List<AudioSource>();
         private float duckUntil = float.NegativeInfinity;
         private float duck = 1f;
 
@@ -273,9 +279,9 @@ namespace PoeClone.Audio
             if (duck == target && oneShots.Count == 0)
                 return;
             duck = Mathf.MoveTowards(duck, target, DuckSpeed * Time.unscaledDeltaTime);
-            oneShots.RemoveAll(s => s.Source == null);
-            foreach (OneShot shot in oneShots)
-                shot.Source.volume = shot.Volume * DistanceVolume(shot.Source.transform.position) * duck;
+            oneShots.RemoveAll(source => source == null);
+            foreach (AudioSource source in oneShots)
+                source.volume = WorldSfxVolume(source.transform.position) * duck;
         }
     }
 }

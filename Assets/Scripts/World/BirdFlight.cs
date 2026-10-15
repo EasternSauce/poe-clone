@@ -71,8 +71,15 @@ namespace PoeClone.World
         private float nextGroundWalkTime;
         private float cruiseAltitude;
 
-        private static List<Transform> threatsCache = new List<Transform>();
-        private static float threatsCacheTime = -999f;
+        private static readonly List<Transform> threatsCache = new List<Transform>();
+        private static float threatsCacheTime = float.NegativeInfinity;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            threatsCache.Clear();
+            threatsCacheTime = float.NegativeInfinity;
+        }
 
         private void Start()
         {
@@ -331,7 +338,7 @@ private void FlyForward()
             state = State.TakeOff;
         }
 
-private void IdleBob()
+        private void IdleBob()
         {
             if (landingTarget == null) return;
 

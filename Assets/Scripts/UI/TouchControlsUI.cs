@@ -60,7 +60,6 @@ namespace PoeClone.UI
             public Image Back;
             public Image Icon;
             public Image Cooldown;
-            public Image Ring;   // spins round a bow skill that's toggled on
         }
 
         private readonly List<SkillButton> skillButtons = new List<SkillButton>();
@@ -232,10 +231,6 @@ namespace PoeClone.UI
             {
                 SkillButton button = skillButtons[k];
                 Skills.SkillId? id = skills != null ? skills.Slot(k) : null;
-                bool on = id != null && skills.IsToggledOnAt(k);
-                button.Ring.enabled = on;
-                if (on)
-                    SkillBarUI.SpinRing(button.Ring, Skills.SkillBook.Get(id.Value).Color);
                 if (id == null)
                 {
                     button.Back.color = new Color(0.08f, 0.07f, 0.06f, 0.3f);
@@ -551,12 +546,11 @@ namespace PoeClone.UI
                 var relay = back.gameObject.AddComponent<TouchPointerRelay>();
                 relay.Down += _ => VirtualInput.SkillPressed = slot;
                 TouchMode.AddBlocker(back.rectTransform);
-                Image ring = SkillBarUI.NewRing(back.rectTransform, 6f);
                 Text number = UiKit.NewText("ButtonNumber", back.rectTransform, (k + 1).ToString(),
                     16, UiKit.Gold, TextAnchor.LowerRight);
                 number.raycastTarget = false;
                 UiKit.Stretch(number.rectTransform, 10f);
-                skillButtons.Add(new SkillButton { Back = back, Icon = icon, Cooldown = cooldown, Ring = ring });
+                skillButtons.Add(new SkillButton { Back = back, Icon = icon, Cooldown = cooldown });
             }
 
             // Larger potion targets, with life nearest the attack stick.

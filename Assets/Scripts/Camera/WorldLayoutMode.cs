@@ -54,13 +54,13 @@ namespace PoeClone.CameraSystem
             var player = FindAnyObjectByType<PoeClone.Player.PlayerController>();
             if (player != null)
                 foreach (var behaviour in player.GetComponents<MonoBehaviour>()) Suspend(behaviour);
-            foreach (var behaviour in FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))
+            foreach (var behaviour in FindObjectsByType<MonoBehaviour>())
             {
                 string ns = behaviour.GetType().Namespace ?? "";
                 if (ns == "PoeClone.UI" || (ns == "PoeClone.Inventory" && behaviour.GetType().Name.EndsWith("UI")))
                     Suspend(behaviour);
             }
-            foreach (var canvas in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+            foreach (var canvas in FindObjectsByType<Canvas>())
                 if (canvas.enabled && canvas.renderMode != RenderMode.WorldSpace)
                 { hiddenCanvases.Add(canvas); canvas.enabled = false; }
             Time.timeScale = 0;

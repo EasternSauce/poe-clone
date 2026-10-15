@@ -132,8 +132,7 @@ namespace PoeClone.Inventory
         public List<int> skillSlots = new List<int>();     // SkillId per slot, -1 for empty
         public List<int> skillSourceSlots = new List<int>(); // equipped source slot per binding
         public List<int> skillGrantLevels = new List<int>(); // base level on that source item
-        // The toggled bow skill (older saves may name a melee skill; those no longer toggle and
-        // load as off). One-based values: zero in saves predating persistent toggles means off.
+        // Reserved legacy toggle fields. Old values are ignored; main attacks come from gear.
         public int activeBowSlot;
         public int activeBowSkill;
         public int barLayoutVersion;                         // 0: old mouse-first order; 1: current bar order

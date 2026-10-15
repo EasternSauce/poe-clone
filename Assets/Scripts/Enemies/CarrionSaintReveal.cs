@@ -48,7 +48,7 @@ namespace PoeClone.Enemies
             foreach (SnakeLimb snake in model.GetComponentsInChildren<SnakeLimb>()) snake.enabled = false;
             Vector3 restPosition = model.localPosition;
             Quaternion restRotation = model.localRotation;
-            foreach (AudioSource source in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+            foreach (AudioSource source in FindObjectsByType<AudioSource>())
                 if (source.isPlaying && source.loop && source.spatialBlend == 0f)
                 {
                     source.Pause();

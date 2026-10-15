@@ -84,9 +84,6 @@ namespace PoeClone.Skills
         /// <summary>A melee weapon skill (Cleave, Pulverize, ...): the one on the weapon in hand is its attack, replacing the swing (see PlayerSkills.Melee.cs).</summary>
         public bool MeleeAttack => !Spell && !Bow && WeaponMultiplierAt(1) > 0f;
 
-        /// <summary>Legacy API retained for save and UI compatibility. No weapon skills toggle.</summary>
-        public bool Toggled => false;
-
         /// <summary>Base mana cost. Skill rank grants tree points and never changes this value.</summary>
         public float ManaCostAt(int level)
         {
@@ -135,10 +132,6 @@ namespace PoeClone.Skills
                 default: return 0f;
             }
         }
-
-        /// <summary>Legacy API; rank no longer adds an extra hit multiplier.</summary>
-        public float ExtraHitMultiplierAt(int level) =>
-            1f;
 
         /// <summary>The damage type its hits deal, for tooltips.</summary>
         public StatType DamageElement

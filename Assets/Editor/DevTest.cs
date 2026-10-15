@@ -745,7 +745,7 @@ namespace PoeClone.EditorTools
                 return "no spawner/player";
             Clear();
             // A Shepherd left over from an earlier test (dead ones lie around under the same name).
-            foreach (EnemyHealth old in UnityEngine.Object.FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None))
+            foreach (EnemyHealth old in UnityEngine.Object.FindObjectsByType<EnemyHealth>())
             {
                 if (old.name == "The Shepherd")
                     UnityEngine.Object.DestroyImmediate(old.gameObject);
@@ -1163,7 +1163,7 @@ namespace PoeClone.EditorTools
             Transform rig = boss != null ? boss.transform.Find("Model/" + CarrionSaintLook.RigName) : null;
             if (rig == null) return "use BossPhase(3) first";
             CarrionSaintLook.ShowSerpents(boss.transform, serpents);
-            foreach (var loot in UnityEngine.Object.FindObjectsByType<World.LootDrop>(FindObjectsSortMode.None))
+            foreach (var loot in UnityEngine.Object.FindObjectsByType<World.LootDrop>())
                 loot.gameObject.SetActive(false);
             UnityEngine.Camera cam = UnityEngine.Camera.main;
             if (cam == null) return "no camera";
@@ -1553,7 +1553,7 @@ namespace PoeClone.EditorTools
             {
                 string questId = target.Substring(5);
                 Quests.QuestProp found = null;
-                foreach (var prop in UnityEngine.Object.FindObjectsByType<Quests.QuestProp>(FindObjectsSortMode.None))
+                foreach (var prop in UnityEngine.Object.FindObjectsByType<Quests.QuestProp>())
                 {
                     if (prop.QuestId == questId && (Quests.QuestLog.Instance == null || !Quests.QuestLog.Instance.PropUsed(prop.PropId)))
                     {

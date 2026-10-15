@@ -22,6 +22,13 @@ namespace PoeClone.World
         private static readonly List<Transform> enemies = new List<Transform>();
         private static float nextEnemyRefresh;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            enemies.Clear();
+            nextEnemyRefresh = 0f;
+        }
+
         public void Initialize(Species species, int area, Transform playerTransform, int seed)
         {
             PoeClone.Visuals.DistanceActivity.Attach(gameObject, wildlife: true);
