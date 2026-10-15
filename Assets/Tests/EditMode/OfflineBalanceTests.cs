@@ -129,6 +129,37 @@ namespace PoeClone.Tests
             Assert.AreEqual(before.Get(WeaponSkillEffect.Area), after.Get(WeaponSkillEffect.Area));
         }
 
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(2)]
+        public void BurningArrowDevelopingRoutesEarnDamageBeforeTheirDestinations(int lane)
+        {
+            const StatType grant = StatType.GrantBurningArrow;
+            ItemData bow = ItemGenerator.Generate(new Random(1), "short_bow", 1, ItemRarity.Normal, grant);
+            bow.SkillProgress = new WeaponSkillProgress { level = 4 };
+            for (int i = 0; i < 4; i++) Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v2_" + lane + "_" + i));
+            var tree = new WeaponSkillBonuses(bow);
+            float notable = lane == 0 ? 1.2f : 1f;
+            Assert.AreEqual((float)Math.Pow(1.07, 3) * notable, tree.MoreDamageMultiplier, .0001f);
+            Assert.AreEqual(0f, tree.Get(WeaponSkillEffect.Cost), "Damage redistribution must not change mana costs");
+            Assert.IsFalse(bow.SkillProgress.nodes.Any(id => WeaponSkillTrees.Find(grant, id).Keystone));
+        }
+
+        [Test]
+        public void BurningArrowCompletedIgnitionRouteKeepsItsPreviousDamageBudget()
+        {
+            const StatType grant = StatType.GrantBurningArrow;
+            ItemData bow = ItemGenerator.Generate(new Random(1), "short_bow", 1, ItemRarity.Normal, grant);
+            bow.SkillProgress = new WeaponSkillProgress { level = 8 };
+            foreach (string id in new[] { "v2_0_0", "v2_0_1", "v2_0_2", "v2_0_3", "v2_0_4", "v2_0_5", "v2_0_6", "v2_0_7" })
+                Assert.IsTrue(bow.SkillProgress.Allocate(grant, id));
+            var tree = new WeaponSkillBonuses(bow);
+            float previousMultiplier = 1.2f * 1.45f * 1.25f;
+            Assert.That(tree.MoreDamageMultiplier / previousMultiplier, Is.InRange(.98f, 1.05f));
+            Assert.AreEqual(40f, tree.Get(WeaponSkillEffect.Ignite));
+            Assert.AreEqual(120f, tree.Get(WeaponSkillEffect.Duration));
+        }
+
         [Test]
         public void TopFifth_UsesCeilingAndMeanCohort_AndStableSeed()
         {

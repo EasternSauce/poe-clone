@@ -19,6 +19,9 @@ namespace PoeClone.Inventory
         private static WeaponSkillBonus[] M(params WeaponSkillBonus[] bonuses) => bonuses;
         // Utility travel points keep a little offensive progression. Strong offensive stats stand alone.
         private static WeaponSkillBonus[] U(E effect, float value) => M(B(effect, value), B(E.Damage, 5));
+        // Burning Arrow earns damage while developing its routes; terminals add the remainder.
+        private static WeaponSkillBonus[] BurningTravel(E effect, float value) =>
+            M(B(effect, value), B(E.Damage, 5), B(E.MoreDamage, 7));
         private sealed class Path
         {
             public string Name, Notable, End, Side;
@@ -90,9 +93,9 @@ namespace PoeClone.Inventory
                 P("Focused Rain", M(B(E.Damage, 10)), "Concentrated Rain", M(B(E.RainSpread, -10)), "Death Zone", M(B(E.RainSpread, -15)), "Overlapping Impacts", B(E.Area, 40)),
                 P("Sustained Rain", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Second Salvo", M(B(E.RainSalvos, 1), B(E.MoreDamage, -25)), "Rolling Barrage", M(B(E.RainSalvos, 1), B(E.MoreDamage, -33.333333f)), "Blood Rain", B(E.LifeOnHit, 3)));
             Add(t, StatType.GrantBurningArrow,
-                P("Ignition", U(E.Duration, 15), "Firestarter", M(B(E.Ignite, 20), B(E.MoreDamage, 20)), "Slow Burn", M(B(E.Duration, 45), B(E.Ignite, 20), B(E.MoreDamage, 45)), "Hot Coals", B(E.Damage, 25), B(E.MoreDamage, 25)),
-                P("Blast Radius", U(E.Area, 10), "Flame Burst", M(B(E.Area, 25)), "Scorched Earth", M(B(E.Area, 35), B(E.Pierce, 1)), "Burning Volley", B(E.Projectiles, 1)),
-                P("Hot Draw", U(E.ProjectileSpeed, 12), "Rapid Fire", M(B(E.Speed, 12)), "Flashfire", M(B(E.Speed, 20)), "Searing Reach", B(E.Range, 40), B(E.Projectiles, 1)));
+                P("Ignition", BurningTravel(E.Duration, 15), "Firestarter", M(B(E.Ignite, 20), B(E.MoreDamage, 20)), "Slow Burn", M(B(E.Duration, 45), B(E.Ignite, 20), B(E.MoreDamage, 20)), "Hot Coals", B(E.Damage, 25), B(E.MoreDamage, 10)),
+                P("Blast Radius", BurningTravel(E.Area, 10), "Flame Burst", M(B(E.Area, 25)), "Scorched Earth", M(B(E.Area, 35), B(E.Pierce, 1)), "Burning Volley", B(E.Projectiles, 1)),
+                P("Hot Draw", BurningTravel(E.ProjectileSpeed, 12), "Rapid Fire", M(B(E.Speed, 12)), "Flashfire", M(B(E.Speed, 20)), "Searing Reach", B(E.Range, 40), B(E.Projectiles, 1)));
             Add(t, StatType.GrantVenomArrow,
                 P("Venom Glands", U(E.Duration, 15), "Deep Venom", M(B(E.Poison, 25)), "Black Blood", M(B(E.Poison, 40)), "Lingering Venom", B(E.Duration, 40)),
                 P("Toxic Air", U(E.Area, 10), "Venom Plume", M(B(E.Cloud, 20)), "Choking Fog", M(B(E.Cloud, 30)), "Wide Infection", B(E.Projectiles, 1)),

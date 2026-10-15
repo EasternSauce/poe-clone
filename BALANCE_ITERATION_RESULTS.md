@@ -154,3 +154,56 @@ cases. The sole failure remains the previously documented passive-tree edge
 spacing violation. The full 318-archetype test was not rerun for this targeted
 change; all 13 Rain routes were freshly sampled and the combined report validated.
 Forced Unity refresh and compilation completed with no console errors.
+
+## Burning Arrow progression follow-up — 2026-10-15
+
+The level 12–15 dip was primarily damage rather than mana: the representative
+builds sustain their attacks throughout the modeled 30-second encounter. Damage
+was concentrated in terminal bonuses unavailable before weapon ranks five/six.
+Level 21 also has some resource pressure, but changing mana costs alone would
+not address the preceding damage gap.
+
+Each Burning Arrow small node now adds 7% more damage alongside its existing
+utility and 5% increased damage. Slow Burn's more-damage bonus falls from 45% to
+20%, and Hot Coals' from 25% to 10%. This moves damage into developing allocations
+while keeping the completed eight-point ignition route's combined more-damage
+multiplier within about 2.2% of its former value. Mana costs, base skill damage,
+ignite chances, durations, node IDs and connected allocation costs are unchanged.
+Weapon rank still grants points rather than automatic damage.
+
+All 13 Burning Arrow archetypes were refreshed at levels 1–34 using the existing
+seed 20261014, 20 builds per available route/level and 20 rare candidates per gear
+slot: 3,260 builds. Gear is freshly optimized after the redistribution. The other
+skills retain their preceding samples, and per-level peer baselines are rebuilt.
+
+| Level | Best available route before | After | Second-seed check |
+| --- | ---: | ---: | ---: |
+| 12 | 69.7% | 90.0% | 93.5% |
+| 13 | 67.5% | 85.6% | 96.3% |
+| 14 | 68.7% | 87.2% | 85.1% |
+| 15 | 62.2% | 77.5% | 87.2% |
+| 21 | 72.5% | 79.6% | 83.3% |
+
+The strongest available Burning Arrow route is now within 75–125% at every level,
+ranging from 77.5% to 122.9%. No individual Burning Arrow route is flagged high.
+Level 1 rises from 114.9% to 122.9%; level 34 rises from 90.5% to 105.7%, where the
+best sampled route changes from Slow Burn + Hot Coals to Slow Burn. These results
+describe sampled routes, not a guarantee for every allocation or gameplay fight.
+
+The second-seed check uses seed 20261015 and 20 fresh builds for every available
+Burning Arrow route at each of the five requested levels. It compares against
+the existing per-level peer baselines; it is not a second full all-skill survey.
+All five strongest-route results remain in band.
+
+Local before/after snapshots, including Burning Arrow sample builds:
+`BalanceResults/burning-arrow-before.json` and
+`BalanceResults/burning-arrow-after.json`. `survey.json` and
+`recalculation-pool.json` contain the refreshed main-seed results. Historical
+workbook/CSV exports were not regenerated.
+
+Four added regression cases check developing-route damage before destinations,
+unchanged mana-cost modifiers, and the completed ignition route's damage budget
+and ailment bonuses. The non-survey EditMode run passed 310/311 cases; the sole
+failure is the previously documented passive-tree spacing violation. The full
+318-archetype test was not rerun for this targeted change. The combined report
+validates; no gameplay session or character save was used.
