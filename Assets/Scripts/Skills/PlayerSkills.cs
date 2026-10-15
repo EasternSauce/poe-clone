@@ -638,11 +638,7 @@ namespace PoeClone.Skills
             float cost = skill.ManaCostAt(Mathf.Max(1, level)) * CharacterCostMultiplier(skill, characterLevel)
                 + DamageSpellManaSurcharge(skill, characterLevel);
             if (skill.Spell)
-            {
-                // Preserve early character costs, then ease spell mana pressure through level 34.
-                float progress = Mathf.Clamp01((characterLevel - 7f) / 27f);
-                cost *= Mathf.Lerp(1f, 0.62f, Mathf.SmoothStep(0f, 1f, progress));
-            }
+                cost *= SpellManaCostMultiplier(characterLevel);
             // Staff skills cost half at character level 1, easing back to full cost at level 34.
             if (skill.StaffSkill)
                 cost *= Mathf.Lerp(0.5f, 1f, Mathf.SmoothStep(0f, 1f, (characterLevel - 1f) / 33f));
@@ -650,6 +646,13 @@ namespace PoeClone.Skills
                 cost *= CharacterAttackAnimator.BaseAttackSpeed(WeaponType.Sword) /
                         Mathf.Max(0.1f, CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()));
             return cost * Mathf.Max(0.1f, 1f + BonusesFor(id).Get(WeaponSkillEffect.Cost) / 100f);
+        }
+
+        /// <summary>Keep costs through level 7; ramp to 20% above the previous spell costs at level 34.</summary>
+        public static float SpellManaCostMultiplier(int characterLevel)
+        {
+            float progress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((characterLevel - 7f) / 27f));
+            return Mathf.Lerp(1f, 0.62f, progress) * Mathf.Lerp(1f, 1.2f, progress);
         }
 
         /// <summary>

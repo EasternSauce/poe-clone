@@ -466,7 +466,7 @@ namespace PoeClone.EditorTools
         public static float ResourceCost(SkillDefinition skill, int level, WeaponType weapon, WeaponSkillBonuses tree, StatSheet sheet)
         {
             float cost = skill.ManaCostAt(1) * PlayerSkills.CharacterCostMultiplier(skill, level) + PlayerSkills.DamageSpellManaSurcharge(skill, level);
-            if (skill.Spell) cost *= Mathf.Lerp(1, .62f, Mathf.SmoothStep(0, 1, (level - 7f) / 27f));
+            if (skill.Spell) cost *= PlayerSkills.SpellManaCostMultiplier(level);
             if (skill.StaffSkill) cost *= Mathf.Lerp(.5f, 1, Mathf.SmoothStep(0, 1, (level - 1f) / 33f));
             if (skill.MeleeAttack && !skill.Channelled) cost *= SlotRules.BaseAttacksPerSecond(WeaponType.Sword) / Mathf.Max(.1f, SlotRules.BaseAttacksPerSecond(weapon));
             return cost * Mathf.Max(.1f, 1 + (tree?.Get(E.Cost) ?? 0) / 100) * Mathf.Clamp01(1 - sheet.Total(StatType.ManaCostReduction) / 100);

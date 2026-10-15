@@ -1,3 +1,7 @@
+version: 2026-10-15-weapon-tree-zoom-and-spell-costs
+- Weapon trees now support dragging to pan, mouse-wheel and touch-pinch zoom, plus zoom and reset-view buttons.
+- Magic spell mana costs rise smoothly above their previous values after character level 7, reaching a 20% increase at level 34 and higher. Early-level costs are unchanged.
+
 version: 2026-10-15-monster-level-scaling
 - Doubled monster life growth per level: life now gains 18% of base per level after the first.
 
