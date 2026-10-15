@@ -33,6 +33,11 @@ namespace PoeClone.Inventory
             if (MeetsRequirements != null && !MeetsRequirements(slot, item))
                 return false;
 
+            return HandsCompatible(slot, item);
+        }
+
+        private bool HandsCompatible(EquipSlot slot, ItemData item)
+        {
             // The two hands have to suit each other (a bow takes no shield, a quiver needs a bow).
             if (slot == EquipSlot.MainHand)
                 return SlotRules.HandsCompatible(item, Get(EquipSlot.OffHand));
@@ -53,9 +58,7 @@ namespace PoeClone.Inventory
         {
             replaced = null;
 
-            if (restoring ? !SlotRules.Accepts(slot, item) ||
-                (slot == EquipSlot.MainHand && !SlotRules.HandsCompatible(item, Get(EquipSlot.OffHand))) ||
-                (slot == EquipSlot.OffHand && !SlotRules.HandsCompatible(Get(EquipSlot.MainHand), item)) : !CanEquip(slot, item))
+            if (restoring ? !SlotRules.Accepts(slot, item) || !HandsCompatible(slot, item) : !CanEquip(slot, item))
                 return false;
 
             replaced = Get(slot);

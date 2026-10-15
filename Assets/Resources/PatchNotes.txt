@@ -1,3 +1,8 @@
+version: 2026-10-15-shared-gameplay-rules
+- Arena summon builds now respect their weapon-tree army limits, including reduced caps.
+- Minion life, defences and army limits use shared rules in combat, skill details and offline balance estimates.
+- Loading inventory skips empty saved entries consistently across bags, equipment and stash tabs.
+
 version: 2026-10-15-code-housekeeping
 - Weapon specializations use the same validation when loading saved nodes and spending points.
 - Changing effects volume also updates sounds already playing.

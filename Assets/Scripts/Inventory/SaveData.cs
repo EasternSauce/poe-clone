@@ -57,7 +57,8 @@ namespace PoeClone.Inventory
             if (mods != null)
             {
                 foreach (ModRecord m in mods)
-                    modifiers.Add(new StatModifier((StatType)m.stat, m.value, m.tier));
+                    if (m != null)
+                        modifiers.Add(new StatModifier((StatType)m.stat, m.value, m.tier));
             }
             var item = new ItemData(id, name, (ItemType)type, Math.Max(1, w), Math.Max(1, h), new Color(r, g, b, a), modifiers,
                 hasCape: cape, weaponType: (WeaponType)weapon, rarity: (ItemRarity)rarity);
@@ -127,7 +128,7 @@ namespace PoeClone.Inventory
         public List<string> stashTabNames = new List<string>();             // every tab's own name, "" = none
         public List<EquippedRecord> equipped = new List<EquippedRecord>();
         public List<string> passives = new List<string>();
-        public int passiveAllocationVersion;                 // 2: devotion/keystone/crit tree rework
+        public int passiveAllocationVersion;                 // 3: skill mechanics moved to weapon trees
         public int respecCharges = 1;
         public List<int> skillSlots = new List<int>();     // SkillId per slot, -1 for empty
         public List<int> skillSourceSlots = new List<int>(); // equipped source slot per binding
@@ -205,23 +206,14 @@ namespace PoeClone.Inventory
             {
                 foreach (EquippedRecord e in equipped)
                 {
-                    ItemData item = e.item != null ? e.item.ToItem() : null;
+                    ItemData item = e != null && e.item != null ? e.item.ToItem() : null;
                     if (item != null && !inventory.Equipment.Restore((EquipSlot)e.slot, item, out _))
                         leftOver.Add(item);
                 }
             }
 
             if (bag != null)
-            {
-                foreach (PlacedRecord p in bag)
-                {
-                    ItemData item = p.item != null ? p.item.ToItem() : null;
-                    if (item == null)
-                        continue;
-                    if (!inventory.Grid.TryPlace(item, p.x, p.y) && !inventory.Grid.TryAutoPlace(item))
-                        leftOver.Add(item);
-                }
-            }
+                RestoreTab(inventory.Grid, bag, leftOver);
 
             if (restoreStash)
                 leftOver.AddRange(RestoreStash(inventory));

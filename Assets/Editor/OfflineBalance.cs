@@ -519,9 +519,9 @@ namespace PoeClone.EditorTools
             if (skill.Summon)
             {
                 var kind = PlayerSkills.MinionKindOf(skill.Id);
-                int cap = MinionCap(kind, tree), batch = kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1;
+                int cap = Minion.CapFor(kind, tree), batch = kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1;
                 s.armyCost = Mathf.Ceil((float)cap / batch) * s.cost;
-                s.minionLife = Minion.LifeAt(kind, 1) * Mathf.Max(.1f, 1 + (sheet.Total(StatType.MinionLife) + tree.Get(E.MinionLife)) / 100);
+                s.minionLife = Minion.LifeFor(kind, 1, sheet, tree);
                 Incoming(kit.basis.Level, sheet, tree, true, s.bossEnraged, out var hit, out var dps);
                 float recovery = s.minionLife * tree.Get(E.MinionRegen) / 100;
                 s.minionSecondsToDie = MinionLifetime(s.minionLife, dps, cap, recovery, kind == MinionKind.Wolf);
@@ -563,12 +563,6 @@ namespace PoeClone.EditorTools
             return s;
         }
 
-        private static int MinionCap(MinionKind kind, WeaponSkillBonuses tree)
-        {
-            if (kind == MinionKind.Golem) return 1;
-            int cap = Minion.KindCap(kind, 1, null) + tree.ExtraMinions;
-            return tree.Get(E.HalfMinions) > 0 ? cap / 2 : cap;
-        }
         private static float Damage(Kit kit, StatSheet sheet, WeaponSkillBonuses tree, out float hitDps, out float dotDps, out float uses)
         {
             var skill = SkillBook.Get(kit.archetype.SkillId);
@@ -591,7 +585,7 @@ namespace PoeClone.EditorTools
             if (skill.Summon)
             {
                 var kind = PlayerSkills.MinionKindOf(skill.Id);
-                int cap = MinionCap(kind, tree);
+                int cap = Minion.CapFor(kind, tree);
                 float interval = kind == MinionKind.Warrior ? 1.1f : kind == MinionKind.Mage ? 1.6f : kind == MinionKind.Wolf ? .8f : kind == MinionKind.Golem ? 1.5f : 1.15f;
                 rate = Mathf.Max(.2f, 1 + (sheet.Total(StatType.MinionSpeed) + tree.Get(E.Speed)) / 100) / interval;
                 baseHit = Minion.DamageFor(kind, 1, sheet, tree);
@@ -686,10 +680,15 @@ namespace PoeClone.EditorTools
             {
                 var type = enemy.AttackDamageType;
                 float amount = enemy.Damage * EnemyKinds.HitScale(level, enemy, type) * (enraged ? enemy.BossEnrageDamage : 1);
-                if (type == DamageType.Physical) amount *= 1 - DefenceMath.ArmourReduction(minion ? Minion.ArmourFor(sheet) + tree.Get(E.MinionArmour) : sheet.Total(StatType.Armour), amount);
-                else amount = DefenceMath.AfterResistance(amount, minion ? Minion.ResistanceFor(sheet) * (1 + tree.Get(E.MinionResists) / 100) :
-                    sheet.Total(type == DamageType.Fire ? StatType.FireResistance : type == DamageType.Cold ? StatType.ColdResistance : type == DamageType.Lightning ? StatType.LightningResistance : StatType.PoisonResistance));
-                amount *= minion ? sheet.Multiplier(StatType.BoneArmour) : Mathf.Max(0, 1 + sheet.Total(StatType.DamageTaken) / 100);
+                if (minion)
+                    amount = Minion.DamageTaken(amount, type, sheet, tree);
+                else
+                {
+                    if (type == DamageType.Physical) amount *= 1 - DefenceMath.ArmourReduction(sheet.Total(StatType.Armour), amount);
+                    else amount = DefenceMath.AfterResistance(amount,
+                        sheet.Total(type == DamageType.Fire ? StatType.FireResistance : type == DamageType.Cold ? StatType.ColdResistance : type == DamageType.Lightning ? StatType.LightningResistance : StatType.PoisonResistance));
+                    amount *= Mathf.Max(0, 1 + sheet.Total(StatType.DamageTaken) / 100);
+                }
                 float avoided = minion ? 1 : (1 - DefenceMath.BlockChance(sheet.Total(StatType.BlockChance))) * (1 - DefenceMath.EvadeChance(sheet.Total(StatType.Evasion)));
                 hit += amount;
                 dps += amount * avoided * enemy.Tempo * (enraged ? 1.25f : 1f) / enemy.AttackCooldown;

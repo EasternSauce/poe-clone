@@ -1089,9 +1089,9 @@ namespace PoeClone.Skills
             StatSheet sheet = inventory != null ? inventory.Stats : null;
             var tree = BonusesFor(id);
             string summary = "max " + Minion.CapFor(transform, kind) + " · " +
-                Mathf.RoundToInt(Minion.LifeAt(kind, 1) * Mathf.Max(0.1f, 1f + ((sheet?.Total(StatType.MinionLife) ?? 0f) + tree.Get(WeaponSkillEffect.MinionLife)) / 100f)) + " life · " +
-                Mathf.RoundToInt(Minion.ArmourFor(sheet) + tree.Get(WeaponSkillEffect.MinionArmour)) + " armour · " +
-                Mathf.Min(75, Mathf.RoundToInt(Minion.ResistanceFor(sheet) * (1f + tree.Get(WeaponSkillEffect.MinionResists) / 100f))) + "% res · " +
+                Mathf.RoundToInt(Minion.LifeFor(kind, 1, sheet, tree)) + " life · " +
+                Mathf.RoundToInt(Minion.ArmourFor(sheet, tree)) + " armour · " +
+                Mathf.RoundToInt(Minion.ResistanceFor(sheet, tree)) + "% res · " +
                 Mathf.RoundToInt(Minion.DamageFor(kind, 1, sheet, tree)) + " per hit";
             float duration = Minion.Duration(kind, 1, sheet);
             duration *= tree.MinionDurationMultiplier;

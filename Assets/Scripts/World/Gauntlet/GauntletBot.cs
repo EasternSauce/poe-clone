@@ -189,7 +189,7 @@ namespace PoeClone.World
                 // (wolves, the golem and vipers once theirs are gone or short).
                 // One permanent kind only: don't swap a living army for another.
                 if (skill.Summon && Minion.IsPermanent(PlayerSkills.MinionKindOf(id.Value)) && LivingPermanentOtherThan(PlayerSkills.MinionKindOf(id.Value))) continue;
-                if (skill.Summon && Living(PlayerSkills.MinionKindOf(id.Value)) >= Minion.KindCap(PlayerSkills.MinionKindOf(id.Value), skills.Level(id.Value), inventory.Stats)) continue;
+                if (skill.Summon && Minion.CanCommand(transform, PlayerSkills.MinionKindOf(id.Value))) continue;
                 if (skills.TryUse(k))
                 {
                     // One skill at a time, like a player: the next waits for this one's cast.
@@ -206,12 +206,5 @@ namespace PoeClone.World
             return false;
         }
 
-        private static int Living(MinionKind kind)
-        {
-            int n = 0;
-            foreach (Minion m in Minion.All)
-                if (m != null && !m.IsDead && m.Kind == kind) n++;
-            return n;
-        }
     }
 }

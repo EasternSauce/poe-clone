@@ -6,6 +6,26 @@ namespace PoeClone.Tests
 {
     public class ItemRequirementsTests
     {
+        [Test]
+        public void RestoreBypassesRequirementsButStillRejectsIncompatibleHands()
+        {
+            var equipment = new EquipmentSet { MeetsRequirements = (slot, item) => false };
+            ItemData bow = ItemGenerator.Generate(new System.Random(7), "short_bow", 1, ItemRarity.Normal);
+            var shield = new ItemData("test_shield", "Shield", ItemType.Shield, 2, 2, Color.white, null);
+            var quiver = new ItemData("test_quiver", "Quiver", ItemType.Quiver, 2, 2, Color.white, null);
+
+            Assert.IsFalse(equipment.TryEquip(EquipSlot.MainHand, bow, out _));
+            Assert.IsTrue(equipment.Restore(EquipSlot.MainHand, bow, out _));
+            Assert.IsFalse(equipment.Restore(EquipSlot.OffHand, shield, out _));
+            Assert.IsTrue(equipment.Restore(EquipSlot.OffHand, quiver, out _));
+            Assert.IsFalse(equipment.Restore(EquipSlot.Helmet, bow, out _));
+
+            equipment.Unequip(EquipSlot.OffHand);
+            equipment.Unequip(EquipSlot.MainHand);
+            Assert.IsTrue(equipment.Restore(EquipSlot.OffHand, shield, out _));
+            Assert.IsFalse(equipment.Restore(EquipSlot.MainHand, bow, out _));
+        }
+
         private static ItemData Armour() => new ItemData("hunter_coat", "Hunter Coat", ItemType.BodyArmour,
             2, 3, Color.white, new[] { new StatModifier(StatType.Dexterity, 8), new StatModifier(StatType.Evasion, 70) });
 

@@ -243,6 +243,37 @@ namespace PoeClone.Tests
             }
         }
 
+        [Test]
+        public void MinionRules_RespectArmyAndChampionRoutesAndDefenceSnapshots()
+        {
+            // Runtime types are reflected because this test assembly cannot reference Assembly-CSharp.
+            Type minions = Type.GetType("PoeClone.Skills.Minion, Assembly-CSharp", true);
+            Type kinds = minions.Assembly.GetType("PoeClone.Skills.MinionKind");
+            Type damageTypes = minions.Assembly.GetType("PoeClone.Combat.DamageType");
+            object warrior = Enum.Parse(kinds, "Warrior");
+            var cap = minions.GetMethod("CapFor", new[] { kinds, typeof(WeaponSkillBonuses) });
+            var item = new ItemData("test_sceptre", "Sceptre", ItemType.Weapon, 2, 3, UnityEngine.Color.white,
+                new[] { new StatModifier(StatType.GrantRaiseSkeletons, 10) }, weaponType: WeaponType.Sceptre);
+            item.SkillProgress = new WeaponSkillProgress { level = 10 };
+            for (int i = 0; i <= 5; i++) Assert.IsTrue(item.SkillProgress.Allocate(StatType.GrantRaiseSkeletons, "v2_0_" + i));
+            var army = new WeaponSkillBonuses(item);
+            Assert.AreEqual(5, cap.Invoke(null, new object[] { warrior, army }));
+
+            item.SkillProgress.nodes.Clear();
+            for (int i = 0; i <= 5; i++) Assert.IsTrue(item.SkillProgress.Allocate(StatType.GrantRaiseSkeletons, "v2_1_" + i));
+            var champion = new WeaponSkillBonuses(item);
+            Assert.AreEqual(1, cap.Invoke(null, new object[] { warrior, champion }));
+            Assert.AreEqual(5, cap.Invoke(null, new object[] { warrior, army }), "an existing army keeps its snapshot");
+
+            var sheet = StatSheet.Build(new BaseStats().Set(StatType.MinionResistances, 70), null);
+            Assert.AreEqual(75f, minions.GetMethod("ResistanceFor").Invoke(null, new object[] { sheet, champion }));
+            Assert.AreEqual(25f, (float)minions.GetMethod("DamageTaken").Invoke(null,
+                new[] { (object)100f, Enum.Parse(damageTypes, "Fire"), sheet, champion }), .001f);
+            float Hit(WeaponSkillBonuses tree) => (float)minions.GetMethod("DamageTaken").Invoke(null,
+                new[] { (object)100f, Enum.Parse(damageTypes, "Physical"), sheet, tree });
+            Assert.Less(Hit(champion), Hit(army), "Bone Shields mitigates physical hits");
+        }
+
         [UnityTest, Timeout(1800000)]
         public IEnumerator FullSurvey_ExportsEveryArchetypeAtLevelsOneThrough34()
         {

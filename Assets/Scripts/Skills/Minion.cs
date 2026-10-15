@@ -131,17 +131,8 @@ namespace PoeClone.Skills
             return ProfileOf(kind).Damage * (2f * 1.2f / 1.3f);
         }
 
-        /// <summary>Base minion cap. CapFor adds this weapon's allocated nodes.</summary>
-        public static int KindCap(MinionKind kind, int level, StatSheet sheet)
-        {
-            return kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1;
-        }
-
         /// <summary>Stays until destroyed (warriors and mages); only one such kind can be up at a time.</summary>
         public static bool IsPermanent(MinionKind kind) => Duration(kind, 1, null) <= 0f;
-
-        /// <summary>Legacy API: levels grant points only.</summary>
-        public static int LevelBonus(int level) => 0;
 
         /// <summary>How long a temporary minion lasts (0: until destroyed).</summary>
         public static float Duration(MinionKind kind, int level, StatSheet sheet)
@@ -158,9 +149,10 @@ namespace PoeClone.Skills
 
         private static float Stat(StatSheet sheet, StatType stat) => sheet != null ? sheet.Total(stat) : 0f;
 
-        /// <summary>Life with the owner's Minion Life, for the skills panel.</summary>
-        public static float LifeFor(MinionKind kind, int level, StatSheet sheet) =>
-            LifeAt(kind, level) * (1f + Mathf.Max(-50f, Stat(sheet, StatType.MinionLife)) / 100f);
+        /// <summary>Life with the owner's stats and the summoned minion's weapon-tree snapshot.</summary>
+        public static float LifeFor(MinionKind kind, int level, StatSheet sheet, WeaponSkillBonuses tree = null) =>
+            Mathf.Max(1f, LifeAt(kind, level) * Mathf.Max(0.1f, 1f +
+                (Stat(sheet, StatType.MinionLife) + (tree?.Get(WeaponSkillEffect.MinionLife) ?? 0f)) / 100f));
 
         /// <summary>Damage per hit with the owner's Minion Damage, for the skills panel.</summary>
         public static float DamageFor(MinionKind kind, int level, StatSheet sheet, WeaponSkillBonuses tree = null) =>
@@ -168,19 +160,21 @@ namespace PoeClone.Skills
                 (Stat(sheet, StatType.Intelligence) * 0.5f + Stat(sheet, StatType.MinionDamage) + (tree?.Get(WeaponSkillEffect.Damage) ?? 0f)) / 100f) * (tree?.MoreDamageMultiplier ?? 1f) *
             (sheet != null ? sheet.Multiplier(StatType.MoreMinionDamage) * sheet.Multiplier(StatType.MinionDamagePenalty) : 1f);
 
-        public static float ArmourFor(StatSheet sheet) =>
-            Mathf.Max(0f, BaseArmour + Stat(sheet, StatType.MinionArmour));
+        public static float ArmourFor(StatSheet sheet, WeaponSkillBonuses tree = null) =>
+            Mathf.Max(0f, BaseArmour + Stat(sheet, StatType.MinionArmour)) + (tree?.Get(WeaponSkillEffect.MinionArmour) ?? 0f);
 
-        public static float ResistanceFor(StatSheet sheet) =>
-            Mathf.Min(StatSheet.ResistanceCap, BaseResistance + Stat(sheet, StatType.MinionResistances));
+        public static float ResistanceFor(StatSheet sheet, WeaponSkillBonuses tree = null) =>
+            Mathf.Min(StatSheet.ResistanceCap,
+                Mathf.Min(StatSheet.ResistanceCap, BaseResistance + Stat(sheet, StatType.MinionResistances)) *
+                (1f + (tree?.Get(WeaponSkillEffect.MinionResists) ?? 0f) / 100f));
 
         /// <summary>Damage after the minion's own armour or resistance and Bone Armour.</summary>
-        public static float DamageTaken(float amount, DamageType type, StatSheet sheet)
+        public static float DamageTaken(float amount, DamageType type, StatSheet sheet, WeaponSkillBonuses tree = null)
         {
             if (type == DamageType.Physical)
-                amount *= 1f - DefenceMath.ArmourReduction(ArmourFor(sheet), amount);
+                amount *= 1f - DefenceMath.ArmourReduction(ArmourFor(sheet, tree), amount);
             else
-                amount = DefenceMath.AfterResistance(amount, ResistanceFor(sheet));
+                amount = DefenceMath.AfterResistance(amount, ResistanceFor(sheet, tree));
             return amount * (sheet != null ? sheet.Multiplier(StatType.BoneArmour) : 1f);
         }
 
@@ -205,14 +199,26 @@ namespace PoeClone.Skills
         private static WeaponSkillBonuses TreeFor(Transform owner, MinionKind kind) =>
             owner != null ? owner.GetComponent<PlayerSkills>()?.BonusesFor(SkillFor(kind)) ?? new WeaponSkillBonuses(null) : new WeaponSkillBonuses(null);
         public static int CapFor(Transform owner, MinionKind kind)
+            => CapFor(kind, TreeFor(owner, kind));
+
+        /// <summary>The same cap for gameplay, tooltips and simulations without a player object.</summary>
+        public static int CapFor(MinionKind kind, WeaponSkillBonuses tree)
         {
             if (kind == MinionKind.Golem) return 1;
-            var tree = TreeFor(owner, kind);
-            int cap = KindCap(kind, 1, null) + tree.ExtraMinions;
-            return tree.Get(WeaponSkillEffect.HalfMinions) > 0 ? cap / 2 : cap;
+            int cap = (kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1) + (tree?.ExtraMinions ?? 0);
+            return tree != null && tree.Get(WeaponSkillEffect.HalfMinions) > 0 ? cap / 2 : cap;
         }
         public static bool CanCommand(Transform owner, MinionKind kind) =>
-            All.FindAll(m => m != null && m.owner == owner && m.Kind == kind && !m.dead).Count >= CapFor(owner, kind);
+            LivingCount(owner, kind) >= CapFor(owner, kind);
+
+        public static int LivingCount(Transform owner, MinionKind kind)
+        {
+            int count = 0;
+            foreach (Minion minion in All)
+                if (minion != null && minion.owner == owner && minion.Kind == kind && !minion.dead)
+                    count++;
+            return count;
+        }
         public static void Command(Transform owner, EnemyHealth target, MinionKind? kind = null)
         {
             if (target == null || target.IsDead) return;
@@ -319,7 +325,7 @@ namespace PoeClone.Skills
             float haste = Mathf.Max(0.2f, 1f + (Stat(sheet, StatType.MinionSpeed) + minion.tree.Get(WeaponSkillEffect.MinionMoveSpeed)) / 100f);
             float attackHaste = Mathf.Max(0.2f, 1f + (Stat(sheet, StatType.MinionSpeed) + minion.tree.Get(WeaponSkillEffect.Speed)) / 100f);
             go.transform.localScale *= 1f + minion.tree.Get(WeaponSkillEffect.MinionSize) / 100f;
-            minion.MaxLife = Mathf.Max(1f, LifeAt(kind, 1) * Mathf.Max(0.1f, 1f + (Stat(sheet, StatType.MinionLife) + minion.tree.Get(WeaponSkillEffect.MinionLife)) / 100f));
+            minion.MaxLife = LifeFor(kind, 1, sheet, minion.tree);
             minion.Life = minion.MaxLife;
             minion.damage = DamageFor(kind, 1, sheet, minion.tree);
             minion.attackCooldown = profile.Cooldown / attackHaste;
@@ -391,11 +397,7 @@ namespace PoeClone.Skills
                 return;
             PlayerInventory inventory = owner != null ? owner.GetComponent<PlayerInventory>() : null;
             StatSheet sheet = inventory != null ? inventory.Stats : null;
-            if (type == DamageType.Physical)
-                amount *= 1f - DefenceMath.ArmourReduction(ArmourFor(sheet) + (tree?.Get(WeaponSkillEffect.MinionArmour) ?? 0f), amount);
-            else
-                amount = DefenceMath.AfterResistance(amount, Mathf.Min(75f, ResistanceFor(sheet) * (1f + (tree?.Get(WeaponSkillEffect.MinionResists) ?? 0f) / 100f)));
-            amount *= sheet != null ? sheet.Multiplier(StatType.BoneArmour) : 1f;
+            amount = DamageTaken(amount, type, sheet, tree);
             Life -= amount;
             damagedAt = Time.time;
             Color color = type == DamageType.Physical ? new Color(1f, 0.55f, 0.45f) : CombatText.ColorFor(type);

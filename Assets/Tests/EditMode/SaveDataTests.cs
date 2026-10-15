@@ -7,6 +7,34 @@ namespace PoeClone.Tests
     public class SaveDataTests
     {
         [Test]
+        public void EmptySavedEntriesDoNotPreventRestoringValidItems()
+        {
+            var go = new GameObject("SparseSaveTest");
+            try
+            {
+                PlayerInventory inventory = NewInventory(go);
+                var data = new SaveData();
+                ItemData bow = ItemGenerator.Generate(new System.Random(7), "short_bow", 5, ItemRarity.Rare);
+                ItemRecord record = ItemRecord.From(bow);
+                record.mods.Add(null);
+                data.bag.Add(null);
+                data.bag.Add(new PlacedRecord());
+                data.bag.Add(new PlacedRecord { item = record, x = -1, y = -1 });
+                data.equipped.Add(null);
+                data.equipped.Add(new EquippedRecord());
+                data.stash.Add(null);
+                data.stash.Add(new PlacedRecord());
+                data.stash.Add(new PlacedRecord { item = ItemRecord.From(bow), x = 7, y = 4 });
+
+                Assert.IsEmpty(data.RestoreInventory(inventory));
+                Assert.AreEqual(1, inventory.Grid.Items.Count);
+                Assert.AreEqual(bow.Name, inventory.Grid.Items[0].Item.Name);
+                Assert.AreEqual(bow.Name, inventory.Stash.GetAt(7, 4).Item.Name);
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
         public void ItemsSurviveAJsonRoundTrip()
         {
             ItemData original = ItemGenerator.Generate(new System.Random(7), "short_bow", 5, ItemRarity.Rare);
