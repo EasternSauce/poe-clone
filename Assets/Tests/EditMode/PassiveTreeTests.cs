@@ -141,11 +141,11 @@ namespace PoeClone.Tests
         {
             var allocation = new PassiveAllocation();
             allocation.Take("m1", 10);   // +12 life
-            allocation.Take("m2", 10);   // +12 strength -> +6 life
+            allocation.Take("m2", 10);   // +10 strength -> +5 life
 
             StatSheet sheet = StatSheet.Build(new BaseStats().Set(StatType.MaxLife, 100f), new EquipmentSet(), allocation.Modifiers());
-            Assert.AreEqual(100f + 12f + 6f, sheet.Total(StatType.MaxLife), 0.001f);
-            Assert.AreEqual(12f, sheet.Total(StatType.Strength), 0.001f);
+            Assert.AreEqual(117f, sheet.Total(StatType.MaxLife), 0.001f);
+            Assert.AreEqual(10f, sheet.Total(StatType.Strength), 0.001f);
         }
 
         [Test]
@@ -164,11 +164,11 @@ namespace PoeClone.Tests
                 special |= node.PerBranchMods.Length > 0;
                 Assert.IsTrue(special, node.Name);
             }
-            Assert.GreaterOrEqual(keystones, 12);
+            Assert.AreEqual(9, keystones, "Skill-specific keystones moved into weapon trees");
         }
 
         [Test]
-        public void EveryKeystoneRequiresThreeTravelPassivesOnItsOnlyApproach()
+        public void EveryKeystoneRequiresOneOrTwoTravelPassivesOnItsOnlyApproach()
         {
             foreach (PassiveNode keystone in PassiveTree.Nodes)
             {
@@ -177,7 +177,9 @@ namespace PoeClone.Tests
 
                 PassiveNode current = keystone;
                 string towardKeystone = null;
-                for (int step = 0; step < 3; step++)
+                int count = keystone.Id == "k_bloodthirst" || keystone.Id == "k_mom" ||
+                    keystone.Id == "k_twincast" || keystone.Id == "k_inferno" ? 2 : 1;
+                for (int step = 0; step < count; step++)
                 {
                     Assert.AreEqual(step == 0 ? 1 : 2, current.Links.Count, current.Name + " has another way in");
                     string next = current.Links[0] == towardKeystone ? current.Links[1] : current.Links[0];
@@ -186,6 +188,9 @@ namespace PoeClone.Tests
                     towardKeystone = current.Id;
                     current = travel;
                 }
+                Assert.AreEqual(2, current.Links.Count, keystone.Name + " travel branches unexpectedly");
+                string junction = current.Links[0] == towardKeystone ? current.Links[1] : current.Links[0];
+                Assert.IsFalse(junction.StartsWith("travel_"), keystone.Name + " has an extra travel point");
             }
         }
 
@@ -234,9 +239,9 @@ namespace PoeClone.Tests
                 Assert.AreEqual(node.Mods[0].Value, third.Mods[0].Value, path);
             }
             Assert.AreEqual(StatType.MinionLife, PassiveTree.Get("travel_n2_k_legion_1").Mods[0].Stat);
-            Assert.AreEqual(StatType.BowDamage, PassiveTree.Get("travel_g10_g_deadeye_1").Mods[0].Stat);
-            Assert.AreEqual(StatType.FireResistance, PassiveTree.Get("travel_b_fireward_w_r3_1").Mods[0].Stat);
-            Assert.AreEqual(StatType.MinionResistances, PassiveTree.Get("travel_b_fireward_n1_1").Mods[0].Stat);
+            Assert.AreEqual(StatType.Dexterity, PassiveTree.Get("travel_g10_junction_g_deadeye_1").Mods[0].Stat);
+            Assert.AreEqual(StatType.Intelligence, PassiveTree.Get("travel_b_fireward_junction_w_r3_1").Mods[0].Stat);
+            Assert.AreEqual(StatType.Intelligence, PassiveTree.Get("travel_b_fireward_n1_1").Mods[0].Stat);
         }
 
         [Test]
@@ -269,18 +274,30 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void DevotionGrowsWithEachPassiveOfItsSector()
+        public void ArchmageGrantsFixedBonusesWithoutSectorDevotion()
         {
             var allocation = new PassiveAllocation();
-            foreach (string id in new[] { "w1", "w2", "w3", "w_m1", "w_m2", "w_archmage" })
-                Assert.IsTrue(allocation.Take(id, 20), id);
-            // Archmage: 15% spell damage, plus 1% per Wisdom passive (six taken), plus Spellcraft
-            // 6, Potency 8, Sorcery 6.
+            // Discover the connected approach so an inserted travel node does not invalidate
+            // a test of the reward's semantics.
+            var parents = new Dictionary<string, string> { { PassiveTree.OriginId, null } };
+            var open = new Queue<string>();
+            open.Enqueue(PassiveTree.OriginId);
+            while (open.Count > 0 && !parents.ContainsKey("w_archmage"))
+            {
+                string current = open.Dequeue();
+                foreach (string link in PassiveTree.Get(current).Links)
+                    if (!parents.ContainsKey(link)) { parents.Add(link, current); open.Enqueue(link); }
+            }
+            var path = new Stack<string>();
+            for (string id = "w_archmage"; id != PassiveTree.OriginId; id = parents[id]) path.Push(id);
+            foreach (string id in path) Assert.IsTrue(allocation.Take(id, 34), id);
             StatSheet sheet = StatSheet.Build(new BaseStats(), new EquipmentSet(), allocation.Modifiers());
-            Assert.AreEqual(15f + 6f + 6f + 8f + 6f, sheet.Total(StatType.SpellDamage), 0.001f);
-            allocation.Take("z1", 20); // another sector's passive doesn't count
+            Assert.AreEqual(15f, sheet.Total(StatType.SpellDamage), 0.001f);
+            Assert.IsTrue(allocation.Take("g1", 34));
+            Assert.IsTrue(allocation.Take("s1", 34));
             sheet = StatSheet.Build(new BaseStats(), new EquipmentSet(), allocation.Modifiers());
-            Assert.AreEqual(41f, sheet.Total(StatType.SpellDamage), 0.001f);
+            Assert.AreEqual(15f, sheet.Total(StatType.SpellDamage), 0.001f);
+            foreach (PassiveNode node in PassiveTree.Nodes) Assert.IsEmpty(node.PerBranchMods, node.Id);
         }
 
         [Test]

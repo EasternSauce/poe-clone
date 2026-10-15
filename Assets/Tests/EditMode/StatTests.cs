@@ -180,7 +180,7 @@ namespace PoeClone.Tests
             Assert.AreEqual("+15 to Maximum Mana", StatFormatter.ItemLine(new StatModifier(StatType.MaxMana, 15)));
             Assert.AreEqual("+8 to Strength", StatFormatter.ItemLine(new StatModifier(StatType.Strength, 8)));
             Assert.AreEqual("+20% to Fire Resistance", StatFormatter.ItemLine(new StatModifier(StatType.FireResistance, 20)));
-            Assert.AreEqual("+12% Chance to Block", StatFormatter.ItemLine(new StatModifier(StatType.BlockChance, 12)));
+            Assert.AreEqual("+12% Chance to Block Attacks", StatFormatter.ItemLine(new StatModifier(StatType.BlockChance, 12)));
             Assert.AreEqual("Adds 6 Physical Damage", StatFormatter.ItemLine(new StatModifier(StatType.PhysicalDamage, 6)));
             Assert.AreEqual("10% increased Movement Speed", StatFormatter.ItemLine(new StatModifier(StatType.MovementSpeed, 10)));
             Assert.AreEqual("4% increased Attack Speed", StatFormatter.ItemLine(new StatModifier(StatType.AttackSpeed, 4)));

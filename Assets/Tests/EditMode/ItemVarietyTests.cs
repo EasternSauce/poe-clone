@@ -65,8 +65,20 @@ namespace PoeClone.Tests
                 Assert.AreEqual(1, Count(ItemGenerator.Generate(rng, "iron_helmet", 12, ItemRarity.Rare), StatType.Armour));
                 ItemData any = ItemGenerator.Generate(rng, 12, ItemRarity.Rare);
                 var seen = new HashSet<StatType>();
+                int baseLines = 0;
                 foreach (StatModifier m in any.Modifiers)
+                {
+                    // Fixed weapon damage and a rolled added-damage modifier are separate sections.
+                    if (m.IsBase)
+                    {
+                        baseLines++;
+                        Assert.AreEqual(StatType.PhysicalDamage, m.Stat);
+                        Assert.AreEqual(ItemType.Weapon, any.Type);
+                        continue;
+                    }
                     Assert.IsTrue(seen.Add(m.Stat), any.Name + " has two " + m.Stat + " lines");
+                }
+                Assert.LessOrEqual(baseLines, 1, any.Name);
             }
         }
 

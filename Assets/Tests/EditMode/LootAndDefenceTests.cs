@@ -54,11 +54,14 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void Mana_SoaksAShareOfHits_OnlyWhileThereIsMana()
+        public void Mana_ProtectsLifeOnlyWithMindOverMatter_AndCannotSpendMoreThanAvailable()
         {
-            Assert.AreEqual(10f * DefenceMath.ManaAbsorbShare, DefenceMath.ManaAbsorbed(10f, 50f), 1e-4f);
-            Assert.AreEqual(1f, DefenceMath.ManaAbsorbed(10f, 1f), 1e-4f);
-            Assert.AreEqual(0f, DefenceMath.ManaAbsorbed(10f, 0f));
+            Assert.AreEqual(0f, DefenceMath.ManaAbsorbed(10f, 50f));
+            Assert.AreEqual(3f, DefenceMath.ManaAbsorbed(10f, 50f, 30f), 1e-4f);
+            Assert.AreEqual(1f, DefenceMath.ManaAbsorbed(10f, 1f, 30f), 1e-4f);
+            Assert.AreEqual(0f, DefenceMath.ManaAbsorbed(10f, 0f, 30f));
+            Assert.AreEqual(0f, DefenceMath.ManaAbsorbed(10f, 50f, -30f));
+            Assert.AreEqual(9f, DefenceMath.ManaAbsorbed(10f, 50f, 200f), 1e-4f);
         }
 
         [Test]
@@ -100,10 +103,10 @@ namespace PoeClone.Tests
                 Assert.AreEqual(ItemRarity.Normal, normal.Rarity);
 
                 ItemData magic = ItemGenerator.Generate(rng, 5, ItemRarity.Magic);
-                Assert.That(ExtraStats(magic), Is.InRange(1, 2), magic.Name);
+                Assert.That(ExtraStats(magic), Is.InRange(2, 3), magic.Name);
 
                 ItemData rare = ItemGenerator.Generate(rng, 5, ItemRarity.Rare);
-                Assert.That(ExtraStats(rare), Is.InRange(3, 4), rare.Name);
+                Assert.That(ExtraStats(rare), Is.InRange(4, 6), rare.Name);
                 Assert.AreEqual(2, rare.Name.Split(' ').Length, "rares get a two-word name: " + rare.Name);
             }
         }
@@ -112,6 +115,8 @@ namespace PoeClone.Tests
         public void ExtraStats_NeverRepeat_AndOnlyFitTheGear()
         {
             var rng = new System.Random(11);
+            ItemModifierCatalog catalog = Resources.Load<ItemModifierCatalog>("ItemModifierCatalog");
+            Assert.IsNotNull(catalog);
             for (int k = 0; k < 300; k++)
             {
                 ItemData item = ItemGenerator.Generate(rng, 10, ItemRarity.Rare);
@@ -124,10 +129,10 @@ namespace PoeClone.Tests
                     Assert.IsTrue(extra.Add(mod.Stat), item.Name + " rolled " + mod.Stat + " twice");
                     Assert.Greater(mod.Value, 0f);
 
-                    if (mod.Stat == StatType.MovementSpeed)
-                        Assert.AreEqual(ItemType.Boots, item.Type, "movement speed on " + item.Type);
-                    if (mod.Stat == StatType.BlockChance)
-                        Assert.AreEqual(ItemType.Shield, item.Type, "block on " + item.Type);
+                    Assert.IsTrue(System.Array.Exists(catalog.Modifiers, definition =>
+                        definition != null && definition.Enabled && definition.Stat == mod.Stat &&
+                        definition.Allows(item.Type, item.WeaponType)),
+                        mod.Stat + " is not allowed by the catalogue on " + item.Id);
                 }
             }
         }

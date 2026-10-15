@@ -7,6 +7,80 @@ namespace PoeClone.Tests
     public class SaveDataTests
     {
         [Test]
+        public void DuplicateEquipmentSlotsRecoverTheExtraItemInTheBag()
+        {
+            var go = new GameObject("DuplicateGearSaveTest");
+            try
+            {
+                PlayerInventory inventory = NewInventory(go);
+                var data = new SaveData();
+                ItemData first = ItemGenerator.Generate(new System.Random(1), "iron_ring", 5, ItemRarity.Rare);
+                ItemData second = ItemGenerator.Generate(new System.Random(2), "iron_ring", 5, ItemRarity.Rare);
+                data.equipped.Add(new EquippedRecord { slot = (int)EquipSlot.Ring1, item = ItemRecord.From(first) });
+                data.equipped.Add(new EquippedRecord { slot = (int)EquipSlot.Ring1, item = ItemRecord.From(second) });
+
+                Assert.IsEmpty(data.RestoreInventory(inventory));
+                Assert.AreEqual(first.Name, inventory.Equipment.Get(EquipSlot.Ring1).Name);
+                Assert.AreEqual(1, inventory.Grid.Items.Count);
+                Assert.AreEqual(second.Name, inventory.Grid.Items[0].Item.Name);
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void ExtraSavedStashTabsReturnTheirItemsForRecovery()
+        {
+            var go = new GameObject("ExtraStashSaveTest");
+            try
+            {
+                PlayerInventory inventory = NewInventory(go);
+                var data = new SaveData();
+                for (int i = 0; i < PlayerInventory.StashTabCount; i++)
+                    data.stashTabs.Add(new StashTabRecord());
+                data.stashTabs[PlayerInventory.StashTabCount - 1].items.Add(null);
+                data.stashTabs[PlayerInventory.StashTabCount - 1].items.Add(new PlacedRecord
+                    { item = ItemRecord.From(ItemData.RegretItem()) });
+
+                var overflow = data.RestoreStash(inventory);
+                Assert.AreEqual(1, overflow.Count);
+                Assert.AreEqual(ItemData.RegretId, overflow[0].Id);
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void FullBagReturnsUnplaceableSavedItemsInsteadOfLosingThem()
+        {
+            var go = new GameObject("OverflowSaveTest");
+            try
+            {
+                PlayerInventory inventory = NewInventory(go);
+                for (int y = 0; y < inventory.Grid.Height; y++)
+                    for (int x = 0; x < inventory.Grid.Width; x++)
+                        Assert.IsTrue(inventory.Grid.TryPlace(new ItemData("Filler", ItemType.Ring, 1, 1, Color.white), x, y));
+                var data = new SaveData();
+                data.bag.Add(new PlacedRecord { item = ItemRecord.From(ItemData.RegretItem()) });
+
+                var overflow = data.RestoreInventory(inventory);
+                Assert.AreEqual(1, overflow.Count);
+                Assert.AreEqual(ItemData.RegretId, overflow[0].Id);
+                Assert.AreEqual(inventory.Grid.Width * inventory.Grid.Height, inventory.Grid.Items.Count);
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [TestCase(-10, 1)]
+        [TestCase(37, 37)]
+        [TestCase(200, 100)]
+        public void SavedConsumableStacksKeepTheirCountsWithinTheStackLimit(int saved, int expected)
+        {
+            ItemRecord record = ItemRecord.From(ItemData.RegretItem());
+            record.count = saved;
+            ItemData copy = JsonUtility.FromJson<ItemRecord>(JsonUtility.ToJson(record)).ToItem();
+            Assert.AreEqual(expected, copy.StackCount);
+        }
+
+        [Test]
         public void EmptySavedEntriesDoNotPreventRestoringValidItems()
         {
             var go = new GameObject("SparseSaveTest");
@@ -108,6 +182,41 @@ namespace PoeClone.Tests
             finally
             {
                 Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void EveryStashTabAndItsCustomNameSurviveTheRoundTrip()
+        {
+            var source = new GameObject("AllStashTabsSaveTest");
+            var target = new GameObject("AllStashTabsRestoreTest");
+            try
+            {
+                PlayerInventory inventory = NewInventory(source);
+                for (int tab = 0; tab < PlayerInventory.StashTabCount; tab++)
+                {
+                    ItemData stack = ItemData.RegretItem();
+                    stack.StackCount = tab + 1;
+                    Assert.IsTrue(inventory.StashTabs[tab].TryPlace(stack, tab, tab));
+                    inventory.RenameStashTab(tab, "Saved " + tab);
+                }
+                inventory.SetStashTab(3);
+                var data = new SaveData();
+                data.CaptureInventory(inventory);
+                SaveData loaded = JsonUtility.FromJson<SaveData>(JsonUtility.ToJson(data));
+                PlayerInventory restored = NewInventory(target);
+                Assert.IsEmpty(loaded.RestoreInventory(restored));
+                for (int tab = 0; tab < PlayerInventory.StashTabCount; tab++)
+                {
+                    Assert.AreEqual(tab + 1, restored.StashTabs[tab].GetAt(tab, tab).Item.StackCount);
+                    Assert.AreEqual("Saved " + tab, restored.StashTabCustomName(tab));
+                }
+                Assert.IsEmpty(restored.Grid.Items);
+            }
+            finally
+            {
+                Object.DestroyImmediate(source);
+                Object.DestroyImmediate(target);
             }
         }
 

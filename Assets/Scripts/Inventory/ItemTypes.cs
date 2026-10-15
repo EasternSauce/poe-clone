@@ -24,8 +24,8 @@ namespace PoeClone.Inventory
     }
 
     /// <summary>
-    /// How special an item is, PoE style: Normal (its base stats only), Magic (one or two extra
-    /// stats, blue) or Rare (three or more, yellow, with a made-up name).
+    /// How special an item is, PoE style: Normal (its base stats only), Magic (two or three extra
+    /// stats, blue) or Rare (four to six, yellow, with a made-up name).
     /// </summary>
     public enum ItemRarity
     {

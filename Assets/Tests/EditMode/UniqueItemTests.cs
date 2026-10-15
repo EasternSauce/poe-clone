@@ -77,7 +77,8 @@ namespace PoeClone.Tests
                     {
                         Assert.AreEqual(first.Modifiers[m].Stat, loaded.Modifiers[m].Stat, first.Name);
                         Assert.AreEqual(first.Modifiers[m].Value, loaded.Modifiers[m].Value, first.Name);
-                        Assert.AreEqual(0, loaded.Modifiers[m].Tier, first.Name);
+                        Assert.AreEqual(first.Modifiers[m].IsBase ? StatModifier.BaseTier : 0,
+                            loaded.Modifiers[m].Tier, first.Name);
                     }
                 }
             }
@@ -139,22 +140,30 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void NewOrdinaryUniquesUseExistingTreeEffects()
+        public void MigratedUniquesUseBroadBonusesInsteadOfRetiredSkillMechanics()
         {
-            Assert.AreEqual(StatType.Shatter, Signature("Frostglass Bough"));
-            Assert.AreEqual(StatType.Stormblade, Signature("Thundergrip"));
-            Assert.AreEqual(StatType.GlacialStep, Signature("Winter's Passage"));
-            Assert.AreEqual(StatType.SecondWind, Signature("Mercy's Echo"));
-            Assert.AreEqual(StatType.DeathsHerald, Signature("Ledger of the Fallen"));
+            Assert.That(Value(UniqueItems.Current("Frostglass Bough"), StatType.ColdPenetration), Is.InRange(8f, 12f));
+            Assert.That(Value(UniqueItems.Current("Thundergrip"), StatType.ShockChance), Is.InRange(15f, 20f));
+            Assert.AreEqual(10f, Value(UniqueItems.Current("Winter's Passage"), StatType.CastSpeed));
+            Assert.AreEqual(15f, Value(UniqueItems.Current("Mercy's Echo"), StatType.ManaRegen));
+            Assert.That(Value(UniqueItems.Current("Ledger of the Fallen"), StatType.MinionDamage), Is.InRange(35f, 45f));
+            for (int i = 0; i < UniqueItems.Count; i++)
+                foreach (StatModifier mod in UniqueItems.Create(i).Modifiers)
+                    Assert.IsFalse(WeaponSkillRules.IsSkillMechanic(mod.Stat), mod.Stat.ToString());
             ItemData draught = UniqueItems.Current("The Last Draught");
             Assert.AreEqual(1f, Value(draught, StatType.OnslaughtOnHealthPotion));
         }
 
         [Test]
-        public void EveryUniqueHasArchetypeStatsAndOneOrTwoSignatures()
+        public void EveryUniqueHasThreeToSevenDistinctModifierLinesAfterMigration()
         {
             for (int k = 0; k < UniqueItems.Count; k++)
-                Assert.That(UniqueItems.Create(k).Modifiers.Count, Is.InRange(4, 7), UniqueItems.Create(k).Name);
+            {
+                ItemData item = UniqueItems.Create(k);
+                Assert.That(item.Modifiers.Count, Is.InRange(3, 7), item.Name);
+                var seen = new System.Collections.Generic.HashSet<StatType>();
+                foreach (StatModifier mod in item.Modifiers) Assert.IsTrue(seen.Add(mod.Stat), item.Name);
+            }
         }
 
         [Test]
@@ -230,35 +239,23 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void SingleAbilityBonusesAreAvailableOnUniquesWithTheirSkill()
+        public void UniqueMainSkillsKeepTheirGrantsAndBroadBonusesAfterMigration()
         {
             ItemData staff = UniqueItems.Current("Conductor's Reach");
             Assert.IsNotNull(staff);
             Assert.That(Value(staff, StatType.GrantChainLightning), Is.InRange(7f, 8f));
-            Assert.AreEqual(2f, Value(staff, StatType.AdditionalChains));
+            Assert.AreEqual(0f, ValueOrZero(staff, StatType.AdditionalChains));
+            Assert.That(Value(staff, StatType.LightningDamage), Is.InRange(55f, 65f));
 
             ItemData ledger = UniqueItems.Current("Ledger of the Fallen");
             Assert.IsNotNull(ledger);
-            Assert.That(Value(ledger, StatType.GrantDeathMark), Is.InRange(5f, 6f));
+            Assert.AreEqual(1f, Value(ledger, StatType.GrantDeathMark), "Support skills use a fixed baseline");
             Assert.That(Value(ledger, StatType.MarkEffect), Is.InRange(25f, 35f));
 
             var gear = new EquipmentSet();
             Assert.IsTrue(gear.TryEquip(EquipSlot.MainHand, staff, out _));
             StatSheet sheet = StatSheet.Build(new BaseStats(), gear);
-            Assert.AreEqual(2f, sheet.Total(StatType.AdditionalChains));
-        }
-
-        private static StatType Signature(string name)
-        {
-            ItemData item = UniqueItems.Current(name);
-            Assert.IsNotNull(item, name);
-            foreach (StatModifier modifier in item.Modifiers)
-                if (modifier.Stat == StatType.Shatter || modifier.Stat == StatType.Stormblade ||
-                    modifier.Stat == StatType.GlacialStep || modifier.Stat == StatType.SecondWind ||
-                    modifier.Stat == StatType.DeathsHerald)
-                    return modifier.Stat;
-            Assert.Fail(name + " has no tree effect");
-            return default(StatType);
+            Assert.AreEqual(0f, sheet.Total(StatType.AdditionalChains));
         }
 
         private static float Value(ItemData item, StatType stat)

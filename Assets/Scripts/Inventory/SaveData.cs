@@ -156,12 +156,18 @@ namespace PoeClone.Inventory
             }
         }
 
+        private static List<PlacedRecord> CaptureTab(InventoryGrid tab)
+        {
+            var records = new List<PlacedRecord>();
+            foreach (PlacedItem placed in tab.Items)
+                records.Add(new PlacedRecord { item = ItemRecord.From(placed.Item), x = placed.X, y = placed.Y });
+            return records;
+        }
+
         /// <summary>Copies the bag and worn gear into this save.</summary>
         public void CaptureInventory(PlayerInventory inventory)
         {
-            bag.Clear();
-            foreach (PlacedItem placed in inventory.Grid.Items)
-                bag.Add(new PlacedRecord { item = ItemRecord.From(placed.Item), x = placed.X, y = placed.Y });
+            bag = CaptureTab(inventory.Grid);
 
             CaptureStash(inventory);
 
@@ -177,18 +183,11 @@ namespace PoeClone.Inventory
 
         public void CaptureStash(PlayerInventory inventory)
         {
-            if (stash == null)
-                stash = new List<PlacedRecord>();
-            stash.Clear();
-            foreach (PlacedItem placed in inventory.StashTabs[0].Items)
-                stash.Add(new PlacedRecord { item = ItemRecord.From(placed.Item), x = placed.X, y = placed.Y });
+            stash = CaptureTab(inventory.StashTabs[0]);
             stashTabs = new List<StashTabRecord>();
             for (int k = 1; k < inventory.StashTabs.Length; k++)
             {
-                var tab = new StashTabRecord();
-                foreach (PlacedItem placed in inventory.StashTabs[k].Items)
-                    tab.items.Add(new PlacedRecord { item = ItemRecord.From(placed.Item), x = placed.X, y = placed.Y });
-                stashTabs.Add(tab);
+                stashTabs.Add(new StashTabRecord { items = CaptureTab(inventory.StashTabs[k]) });
             }
             stashTabNames = new List<string>();
             for (int k = 0; k < inventory.StashTabs.Length; k++)
@@ -207,7 +206,10 @@ namespace PoeClone.Inventory
                 foreach (EquippedRecord e in equipped)
                 {
                     ItemData item = e != null && e.item != null ? e.item.ToItem() : null;
-                    if (item != null && !inventory.Equipment.Restore((EquipSlot)e.slot, item, out _))
+                    // Keep the first entry for a slot; recover duplicates through the bag
+                    // rather than silently losing the item replaced by Restore.
+                    if (item != null && (inventory.Equipment.Get((EquipSlot)e.slot) != null ||
+                        !inventory.Equipment.Restore((EquipSlot)e.slot, item, out _)))
                         leftOver.Add(item);
                 }
             }
@@ -235,9 +237,15 @@ namespace PoeClone.Inventory
             if (stash != null)
                 RestoreTab(inventory.StashTabs[0], stash, leftOver);
             if (stashTabs != null)
-                for (int k = 0; k < stashTabs.Count && k + 1 < inventory.StashTabs.Length; k++)
+                for (int k = 0; k < stashTabs.Count; k++)
                     if (stashTabs[k] != null && stashTabs[k].items != null)
-                        RestoreTab(inventory.StashTabs[k + 1], stashTabs[k].items, leftOver);
+                    {
+                        if (k + 1 < inventory.StashTabs.Length)
+                            RestoreTab(inventory.StashTabs[k + 1], stashTabs[k].items, leftOver);
+                        else
+                            foreach (PlacedRecord p in stashTabs[k].items)
+                                if (p?.item != null) leftOver.Add(p.item.ToItem());
+                    }
             if (stashTabNames != null)
             {
                 for (int k = 0; k < stashTabNames.Count && k < inventory.StashTabs.Length; k++)

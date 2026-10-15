@@ -474,6 +474,18 @@ namespace PoeClone.Tests
         }
 
         [Test]
+        public void RepeatedPrediction_AppliesTheHitOnlyOnce()
+        {
+            var health = AtFullLife();
+            Assert.AreEqual(90f, health.Predict(1, 10f));
+            Assert.AreEqual(90f, health.Predict(1, 10f));
+            Assert.AreEqual(70f, health.Predict(2, 20f));
+            Assert.AreEqual(70f, health.ApplySnapshot(90f, 100f, 1, 2));
+            Assert.AreEqual(70f, health.Predict(1, 10f));
+            Assert.AreEqual(70f, health.ApplySnapshot(70f, 100f, 2, 3));
+        }
+
+        [Test]
         public void Overkill_IsClampedButAHostPhaseFloorStillWins()
         {
             var health = AtFullLife();

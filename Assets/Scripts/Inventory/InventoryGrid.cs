@@ -44,7 +44,7 @@ namespace PoeClone.Inventory
 
         public bool InBounds(ItemData item, int x, int y)
         {
-            return x >= 0 && y >= 0 && x + item.Width <= Width && y + item.Height <= Height;
+            return item != null && x >= 0 && y >= 0 && x <= Width - item.Width && y <= Height - item.Height;
         }
 
         public bool Contains(ItemData item)
@@ -62,14 +62,33 @@ namespace PoeClone.Inventory
             List<PlacedItem> result = new List<PlacedItem>();
             foreach (PlacedItem p in placed)
             {
-                bool overlaps =
-                    x < p.X + p.Item.Width && p.X < x + item.Width &&
-                    y < p.Y + p.Item.Height && p.Y < y + item.Height;
-
-                if (overlaps)
+                if (Overlaps(p, item, x, y))
                     result.Add(p);
             }
             return result;
+        }
+
+        private static bool Overlaps(PlacedItem placedItem, ItemData item, int x, int y)
+        {
+            return x < placedItem.X + placedItem.Item.Width && placedItem.X < x + item.Width &&
+                y < placedItem.Y + placedItem.Item.Height && placedItem.Y < y + item.Height;
+        }
+
+        private bool IsFree(ItemData item, int x, int y)
+        {
+            if (!InBounds(item, x, y)) return false;
+            foreach (PlacedItem p in placed)
+                if (Overlaps(p, item, x, y)) return false;
+            return true;
+        }
+
+        private bool TryFindSpace(ItemData item, out int x, out int y)
+        {
+            for (y = 0; y <= Height - item.Height; y++)
+                for (x = 0; x <= Width - item.Width; x++)
+                    if (IsFree(item, x, y)) return true;
+            x = y = -1;
+            return false;
         }
 
         public bool CanPlace(ItemData item, int x, int y)
@@ -77,7 +96,7 @@ namespace PoeClone.Inventory
             if (item == null || Contains(item))
                 return false;
 
-            return InBounds(item, x, y) && GetOverlapping(item, x, y).Count == 0;
+            return IsFree(item, x, y);
         }
 
         public bool TryPlace(ItemData item, int x, int y)
@@ -96,17 +115,14 @@ namespace PoeClone.Inventory
             if (item == null || Contains(item))
                 return false;
 
+            bool freeSpace = TryFindSpace(item, out int x, out int y);
             if (item.MaxStack > 1)
             {
                 int room = 0;
                 foreach (PlacedItem p in placed)
                     if (p.Item.Id == item.Id)
                         room += p.Item.MaxStack - p.Item.StackCount;
-                bool freeCell = false;
-                for (int y = 0; y <= Height - item.Height && !freeCell; y++)
-                    for (int x = 0; x <= Width - item.Width && !freeCell; x++)
-                        freeCell = InBounds(item, x, y) && GetOverlapping(item, x, y).Count == 0;
-                if (room + (freeCell ? item.MaxStack : 0) < item.StackCount)
+                if (room + (freeSpace ? item.MaxStack : 0) < item.StackCount)
                     return false;
 
                 foreach (PlacedItem p in placed)
@@ -121,18 +137,12 @@ namespace PoeClone.Inventory
                         return true;
                     }
                 }
-                if (room > 0) Changed?.Invoke();
             }
 
-            for (int y = 0; y <= Height - item.Height; y++)
-            {
-                for (int x = 0; x <= Width - item.Width; x++)
-                {
-                    if (TryPlace(item, x, y))
-                        return true;
-                }
-            }
-            return false;
+            if (!freeSpace) return false;
+            placed.Add(new PlacedItem(item, x, y));
+            Changed?.Invoke();
+            return true;
         }
 
         /// <summary>

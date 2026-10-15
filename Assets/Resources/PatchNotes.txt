@@ -1,3 +1,9 @@
+version: 2026-10-15-inventory-recovery-and-regression-checks
+- Loading saves recovers duplicate equipment entries and items from extra stash tabs instead of silently discarding them.
+- Stacking inventory items updates observers once after the complete transfer, avoiding intermediate bag states.
+- Repeated co-op hit predictions no longer subtract the same hit twice.
+- Expanded regression checks for inventory transfers, save recovery and world loading; updated loot, passive and unique-item tests to the current rules.
+
 version: 2026-10-15-responsibility-refactor
 - Internal maintenance of inventory tooltips, skill bindings and spectator menus; intended gameplay and controls are unchanged.
 

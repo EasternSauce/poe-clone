@@ -5,6 +5,7 @@ This guide consolidates the weapon, passive-tree, fixed-area, equipment and Edit
 - [Project instructions and required checks](AGENTS.md)
 - [Deployment workflow](DEPLOYMENT.md)
 - [Balance testing and planned boss-DPS benchmark](BALANCE_TESTING.md)
+- [C# maintenance review and prioritized test gaps](CSHARP_REVIEW.md)
 - [Sound Library](tools/sound-library/README.md) and [Sound Board](tools/sound-board/README.md)
 - [Equipment icon source prompts](Assets/Editor/ItemIconSources/EquipmentIconPrompts.md)
 

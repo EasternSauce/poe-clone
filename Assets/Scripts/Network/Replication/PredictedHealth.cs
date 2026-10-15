@@ -23,6 +23,8 @@ namespace PoeClone.Network.Replication
         public float Predict(int sequence, float damage)
         {
             if (sequence <= acknowledged || damage <= 0f) return Health;
+            foreach (Hit hit in pending)
+                if (hit.Sequence == sequence) return Health;
             pending.Add(new Hit { Sequence = sequence, Damage = damage });
             return Recalculate();
         }

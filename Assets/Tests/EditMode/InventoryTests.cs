@@ -232,6 +232,94 @@ namespace PoeClone.Tests
         }
 
         [Test]
+        public void InBounds_RejectsNullAndOverflowingCoordinates()
+        {
+            Assert.IsFalse(grid.InBounds(null, 0, 0));
+            Assert.IsFalse(grid.TryPlace(Item(2, 2), int.MaxValue, 0));
+            Assert.IsFalse(grid.TryPlace(Item(2, 2), 0, int.MaxValue));
+        }
+
+        [Test]
+        public void AutoStack_NotifiesOnceAfterTheWholeTransfer()
+        {
+            var small = new InventoryGrid(2, 1);
+            ItemData existing = ItemData.RegretItem();
+            existing.StackCount = 95;
+            small.TryPlace(existing, 0, 0);
+            ItemData incoming = ItemData.RegretItem();
+            incoming.StackCount = 10;
+            int changes = 0;
+            small.Changed += () =>
+            {
+                changes++;
+                Assert.AreEqual(105, small.CountItem(ItemData.RegretId), "Observers must see the complete transfer");
+            };
+
+            Assert.IsTrue(small.TryAutoPlace(incoming));
+            Assert.AreEqual(1, changes);
+            Assert.AreEqual(100, existing.StackCount);
+            Assert.AreEqual(5, incoming.StackCount);
+            Assert.AreSame(incoming, small.GetAt(1, 0).Item);
+        }
+
+        [Test]
+        public void AutoStack_InsufficientRoomDoesNotPartiallyConsumeTheIncomingItem()
+        {
+            var small = new InventoryGrid(1, 1);
+            ItemData existing = ItemData.RegretItem();
+            existing.StackCount = 95;
+            small.TryPlace(existing, 0, 0);
+            ItemData incoming = ItemData.RegretItem();
+            incoming.StackCount = 10;
+            int changes = 0;
+            small.Changed += () => changes++;
+
+            Assert.IsFalse(small.TryAutoPlace(incoming));
+            Assert.AreEqual(95, existing.StackCount);
+            Assert.AreEqual(10, incoming.StackCount);
+            Assert.AreEqual(0, changes);
+        }
+
+        [Test]
+        public void AutoStack_CanFillMultipleStacksWithoutAFreeCell()
+        {
+            var small = new InventoryGrid(2, 1);
+            ItemData first = ItemData.RegretItem(), second = ItemData.RegretItem();
+            first.StackCount = second.StackCount = 95;
+            small.TryPlace(first, 0, 0);
+            small.TryPlace(second, 1, 0);
+            ItemData incoming = ItemData.RegretItem();
+            incoming.StackCount = 10;
+            Assert.IsTrue(small.TryAutoPlace(incoming));
+            Assert.AreEqual(200, small.CountItem(ItemData.RegretId));
+            Assert.AreEqual(0, incoming.StackCount);
+            Assert.AreEqual(2, small.Items.Count);
+        }
+
+        [Test]
+        public void Consume_IsAtomicAcrossStacks_AndDoesNotSpendAnotherCurrency()
+        {
+            ItemData first = ItemData.RegretItem(), second = ItemData.RegretItem();
+            first.StackCount = 3;
+            second.StackCount = 4;
+            grid.TryPlace(first, 0, 0);
+            grid.TryPlace(second, 1, 0);
+            grid.TryPlace(ItemData.ReawakeningItem(), 2, 0);
+            int changes = 0;
+            grid.Changed += () => changes++;
+
+            Assert.IsFalse(grid.TryConsume(ItemData.RegretId, 8));
+            Assert.IsFalse(grid.TryConsume(ItemData.RegretId, -1));
+            Assert.IsTrue(grid.TryConsume(ItemData.RegretId, 0));
+            Assert.AreEqual(7, grid.CountItem(ItemData.RegretId));
+            Assert.AreEqual(0, changes);
+            Assert.IsTrue(grid.TryConsume(ItemData.RegretId, 5));
+            Assert.AreEqual(2, grid.CountItem(ItemData.RegretId));
+            Assert.AreEqual(1, grid.CountItem(ItemData.ReawakeningId));
+            Assert.AreEqual(1, changes);
+        }
+
+        [Test]
         public void ItemData_RejectsBadValues()
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => new ItemData("X", ItemType.Ring, 0, 1, Color.white));

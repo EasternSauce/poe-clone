@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
@@ -17,6 +19,64 @@ namespace PoeClone.Tests
         private static object Field(object target, string name) => target.GetType().GetField(name).GetValue(target);
         private static object Binding(object bindings, int slot) =>
             bindings.GetType().GetProperty("Item").GetValue(bindings, new object[] { slot });
+
+        private static IEnumerator Schedule(IEnumerator routine) => (IEnumerator)
+            RuntimeType("PoeClone.World.WorldBuildScheduler").GetMethod("Run")
+                .Invoke(null, new object[] { routine, double.MaxValue });
+
+        private static IEnumerator ChildRoutine(List<string> log, object wait, bool fail)
+        {
+            try
+            {
+                log.Add("child started");
+                yield return wait;
+                if (fail) throw new InvalidOperationException("construction failed");
+                log.Add("child finished");
+            }
+            finally { log.Add("child disposed"); }
+        }
+
+        private static IEnumerator ParentRoutine(List<string> log, object wait, bool fail)
+        {
+            try
+            {
+                yield return ChildRoutine(log, wait, fail);
+                log.Add("parent finished");
+            }
+            finally { log.Add("parent disposed"); }
+        }
+
+        [Test]
+        public void WorldConstructionPreservesWaitsAndDisposesNestedRoutines()
+        {
+            var log = new List<string>();
+            var wait = new WaitForSecondsRealtime(1f);
+            IEnumerator scheduled = Schedule(ParentRoutine(log, wait, false));
+            Assert.IsTrue(scheduled.MoveNext());
+            Assert.AreSame(wait, scheduled.Current);
+            CollectionAssert.AreEqual(new[] { "child started" }, log);
+            Assert.IsFalse(scheduled.MoveNext());
+            CollectionAssert.AreEqual(new[] { "child started", "child finished", "child disposed", "parent finished", "parent disposed" }, log);
+        }
+
+        [Test]
+        public void CancellingWorldConstructionDisposesBothActiveRoutines()
+        {
+            var log = new List<string>();
+            IEnumerator scheduled = Schedule(ParentRoutine(log, new WaitForSecondsRealtime(1f), false));
+            Assert.IsTrue(scheduled.MoveNext());
+            ((IDisposable)scheduled).Dispose();
+            CollectionAssert.AreEqual(new[] { "child started", "child disposed", "parent disposed" }, log);
+        }
+
+        [Test]
+        public void FailedWorldConstructionPropagatesTheErrorAndDisposesBothRoutines()
+        {
+            var log = new List<string>();
+            IEnumerator scheduled = Schedule(ParentRoutine(log, null, true));
+            Assert.Throws<InvalidOperationException>(() => scheduled.MoveNext());
+            CollectionAssert.AreEqual(new[] { "child started", "child disposed", "parent disposed" }, log);
+        }
 
         [TestCase(true)]
         [TestCase(false)]
