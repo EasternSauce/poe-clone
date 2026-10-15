@@ -404,8 +404,8 @@ namespace PoeClone.Visuals
             WindupOffset = new Pose(-84f, -40f, 0f, 150f),
             StrikeOffset = new Pose(-70f, -2f, 0f, 70f),
             UsesOffArm = true,
-            OffWindup = new Pose(-92f, -6f, 0f, 0f),
-            OffStrike = new Pose(-88f, -2f, 0f, 0f),
+            OffWindup = new Pose(-90f, 0f, 0f, 0f),
+            OffStrike = new Pose(-90f, 0f, 0f, 0f),
             Lean = 8f,
             Range = BowProfile.Range
         };
@@ -853,7 +853,9 @@ namespace PoeClone.Visuals
             {
                 // Leans in over the draw and straightens up through the recovery.
                 TorsoPitch = p.Lean * (f < p.StrikeTime ? EaseOut(f / Mathf.Max(0.01f, p.StrikeTime)) : 1f - (f - p.StrikeTime) / Mathf.Max(0.01f, 1f - p.StrikeTime));
-                TorsoYaw = fromRest.ArmYaw * 0.25f;
+                // The heavy draw's pulling hand sweeps sideways; rotating the torso
+                // with it also turns the bow away from the actual shot direction.
+                TorsoYaw = p == BowHeavyProfile ? 0f : fromRest.ArmYaw * 0.25f;
                 Lunge = 0f;
             }
             else

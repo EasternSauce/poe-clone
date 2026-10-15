@@ -1,3 +1,8 @@
+version: 2026-10-15-arena-portrait-and-aim
+- Piercing Shot keeps its bow arm and shoulders aligned with the shot during its heavy draw.
+- The arena setup and run status adapt to portrait screens. The picker opens at level 21 and explains when weapon ranks unlock finished routes.
+- Mobile projectile aim assistance now uses a 60-degree cone (30 degrees either side of the aim direction).
+
 version: 2026-10-15-piercing-shot
 - Piercing Shot keeps charging while the aim joystick is held, including inside its dead zone, and fires only on release. Low mana no longer triggers an automatic basic shot.
 - Piercing Shot deals 50% more damage: 75% weapon damage on a tap, up to 225% at full charge. Deep Draw now also grants two additional arrows; additional-arrow bonuses remain available.

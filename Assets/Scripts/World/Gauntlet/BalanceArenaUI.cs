@@ -10,13 +10,18 @@ namespace PoeClone.World
     public sealed class BalanceArenaUI : MonoBehaviour
     {
         private GauntletMode mode;
-        private RectTransform panel;
+        private RectTransform panel, canvasRect;
+        private RectTransform newBuildButton, settingsButton;
+        private readonly List<RectTransform> layoutItems = new List<RectTransform>();
+        private readonly List<Vector2> layoutPositions = new List<Vector2>();
+        private readonly List<Vector2> layoutSizes = new List<Vector2>();
+        private Vector2 lastCanvasSize;
         private Text status, levelLabel, skillLabel, detail, pageLabel;
         private Image randomLevelButton, randomBuildButton;
         private readonly List<Image> routeButtons = new List<Image>();
         private readonly List<Text> routeLabels = new List<Text>();
         private string skill, route;
-        private int level = 14, page;
+        private int level = 21, page;
         private bool randomLevel, randomBuild;
         private List<BalanceArenaBuilds.Entry> choices;
         private string[] skills;
@@ -28,17 +33,18 @@ namespace PoeClone.World
             mode = gauntlet;
             Canvas canvas = UiKit.NewCanvas("BalanceArena", transform, 760, out CanvasGroup group);
             canvas.gameObject.AddComponent<GraphicRaycaster>();
+            canvasRect = (RectTransform)canvas.transform;
             group.interactable = group.blocksRaycasts = true;
             status = UiKit.NewText("Status", canvas.transform, "", 19, UiKit.TextColor, TextAnchor.UpperCenter);
             status.rectTransform.anchorMin = status.rectTransform.anchorMax = status.rectTransform.pivot = new Vector2(.5f, 1f);
             status.rectTransform.anchoredPosition = new Vector2(0, -12);
             status.rectTransform.sizeDelta = new Vector2(1000, 65);
             UiKit.AddOutline(status, Color.black, 1.5f);
-            Button(canvas.transform, "New build", new Vector2(18, -16), new Vector2(150, 42),
-                MinimalCombatMode.RestartArena);
+            newBuildButton = Button(canvas.transform, "New build", new Vector2(18, -16), new Vector2(150, 42),
+                MinimalCombatMode.RestartArena).rectTransform;
 
-            Button(canvas.transform, "Settings", new Vector2(180, -16), new Vector2(150, 42),
-                () => FindAnyObjectByType<PoeClone.UI.EscapeMenuUI>()?.OpenSettings());
+            settingsButton = Button(canvas.transform, "Settings", new Vector2(180, -16), new Vector2(150, 42),
+                () => FindAnyObjectByType<PoeClone.UI.EscapeMenuUI>()?.OpenSettings()).rectTransform;
 
             Image background = UiKit.NewImage("ArenaSetup", canvas.transform, UiKit.PanelColor);
             panel = background.rectTransform;
@@ -80,7 +86,82 @@ namespace PoeClone.World
             Button(panel, "Random level + build", new Vector2(590, -780), new Vector2(330, 54), () => {
                 randomLevel = randomBuild = true; StartRun();
             }, 24);
+            foreach (RectTransform child in panel)
+            {
+                // Frame and grain decorations use stretched anchors and need no manual layout.
+                if (child.anchorMin != child.anchorMax) continue;
+                layoutItems.Add(child);
+                layoutPositions.Add(child.anchoredPosition);
+                layoutSizes.Add(child.sizeDelta);
+            }
             Refresh();
+            Layout();
+        }
+
+        private void Layout()
+        {
+            Vector2 size = canvasRect.rect.size;
+            if (size.x <= 0f || size.y <= 0f) return;
+            lastCanvasSize = size;
+            bool narrow = size.x < 1160f;
+            float width = Mathf.Min(1120f, size.x - 32f);
+            float height = narrow ? 1160f : 860f;
+            // Fit short windows too, while retaining the portrait arrangement on phones.
+            float scale = Mathf.Min(1f, (size.y - 32f) / height);
+            panel.sizeDelta = new Vector2(width / scale, height);
+            panel.localScale = Vector3.one * scale;
+            float w = panel.sizeDelta.x;
+            for (int i = 0; i < layoutItems.Count; i++)
+            {
+                Vector2 at = layoutPositions[i], dimensions = layoutSizes[i];
+                if (narrow)
+                {
+                    float y = -at.y;
+                    if (y == 20f || y == 78f) { at.x = 24f; dimensions.x = w - 48f; }
+                    else if (y == 130f)
+                    {
+                        if (at.x == 40f) { at.x = 24f; dimensions.x = 60f; }
+                        else if (at.x == 115f) { at.x = 94f; dimensions.x = w - 188f; }
+                        else if (at.x == 325f) { at.x = w - 84f; dimensions.x = 60f; }
+                        else { at = new Vector2(at.x == 430f ? 24f : w / 2f + 6f, -194f); dimensions.x = w / 2f - 30f; }
+                    }
+                    else if (y == 200f)
+                    {
+                        at.y = -264f;
+                        if (at.x == 40f || at.x == 860f)
+                        {
+                            at.x = at.x == 40f ? 24f : w - 84f; dimensions.x = 60f;
+                            layoutItems[i].GetComponentInChildren<Text>().text = layoutPositions[i].x == 40f ? "‹" : "›";
+                        }
+                        else { at.x = 94f; dimensions.x = w - 188f; }
+                    }
+                    else if (y >= 270f && y <= 540f) { at = new Vector2(24f, at.y - 80f); dimensions.x = w - 48f; }
+                    else if (y == 604f)
+                    {
+                        at.y = -684f;
+                        if (at.x == 290f) { at.x = 94f; dimensions.x = w - 188f; }
+                        else
+                        {
+                            at.x = at.x == 40f ? 24f : w - 84f; dimensions.x = 60f;
+                            layoutItems[i].GetComponentInChildren<Text>().text = layoutPositions[i].x == 40f ? "‹" : "›";
+                        }
+                    }
+                    else if (y == 662f) { at = new Vector2(24f, -746f); dimensions = new Vector2(w - 48f, 240f); }
+                    else if (y == 780f) { at = new Vector2(24f, at.x == 200f ? -1010f : -1080f); dimensions.x = w - 48f; }
+                }
+                else if (-at.y == 200f || -at.y == 604f)
+                {
+                    string value = at.x == 40f ? (-at.y == 200f ? "Previous skill" : "Previous routes") :
+                        at.x == 860f ? "Next skill" : at.x == 840f ? "Next routes" : null;
+                    if (value != null) layoutItems[i].GetComponentInChildren<Text>().text = value;
+                }
+                UiKit.TopLeft(layoutItems[i], at, dimensions);
+            }
+            bool portrait = size.x < size.y;
+            UiKit.TopLeft(newBuildButton, new Vector2(16f, -12f), new Vector2(150f, 42f));
+            UiKit.TopLeft(settingsButton, new Vector2(portrait ? size.x - 166f : 180f, -12f), new Vector2(150f, 42f));
+            status.rectTransform.anchoredPosition = new Vector2(0f, portrait ? -64f : -12f);
+            status.rectTransform.sizeDelta = new Vector2(portrait ? size.x - 32f : Mathf.Max(200f, size.x - 700f), portrait ? 110f : 65f);
         }
 
         private void ChangeLevel(int delta)
@@ -117,8 +198,9 @@ namespace PoeClone.World
             }
             pageLabel.text = "Routes " + (page + 1) + " / " + pages;
             detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected: " + skill + " · " + choices.First(b => b.id == route).name) +
-                "\nRecorded best-of-20 rare gear, character passives and weapon tree; no uniques. Random level uses a tested level for the chosen route." +
-                "\nFight 20 waves of 1–5 enemies with occasional bosses, all at your level. Enemies stay aggressive. No XP, loot or character saves.";
+                "\nWeapon rank " + choices.First(b => b.id == route).weaponRank + "/10. Raise the level to unlock more finished routes." +
+                "\nSampled best-of-20 rare gear and passives; no uniques." +
+                "\n20 waves of 1–5 enemies and occasional bosses at your level. No XP, loot or saves.";
         }
         private void StartRun()
         {
@@ -133,6 +215,7 @@ namespace PoeClone.World
         }
         private void Update()
         {
+            if (canvasRect != null && canvasRect.rect.size != lastCanvasSize) Layout();
             if (mode == null || status == null || !mode.Started) return;
             status.text = mode.Build.Name + " · Level " + mode.Level + "\n" + mode.Status + " · Deaths " + mode.Deaths;
             if (mode.Finished) status.text += " · Use New build to play again";

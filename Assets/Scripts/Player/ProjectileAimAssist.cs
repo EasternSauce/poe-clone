@@ -8,7 +8,8 @@ namespace PoeClone.Player
     public static class ProjectileAimAssist
     {
         public const float MinimumDistance = 6f;
-        public const float ConeHalfAngle = 22.5f;
+        // A 60-degree cone centred on the raw stick direction.
+        public const float ConeHalfAngle = 30f;
 
         public static EnemyHealth Target(Vector3 origin, Vector3 direction, float range)
         {
