@@ -8,6 +8,14 @@ This guide consolidates the weapon, passive-tree, fixed-area, equipment and Edit
 - [Sound Library](tools/sound-library/README.md) and [Sound Board](tools/sound-board/README.md)
 - [Equipment icon source prompts](Assets/Editor/ItemIconSources/EquipmentIconPrompts.md)
 
+## C# ownership boundaries
+
+- `InventoryUI` owns input, held items and panel visibility. `InventoryUI.Layout.cs` builds and lays out its uGUI views. `ItemTooltip` owns shared item text and tooltip sizing; the public `InventoryUI` tooltip methods forward to it for existing callers.
+- `PlayerSkills` owns casting and gameplay coordination. `PlayerSkills.Loadout.cs` resolves equipped grants and binding eligibility; `SkillBindings` owns action-bar entries, moves and cooldown state. Binding reads return values, so callers cannot mutate stored entries. `PlayerSkills.Presentation.cs` contains descriptions and harmless replay effects. Keep potion binding changes and `Changed` notifications in the component, outside the binding store.
+- `SpectatorReplica` owns the playback clock, scene puppets and discrete world events. `SpectatorMenuReplica` owns gear-message buffering, inventory, equipment, passives and action-bar mirroring. Only apply pending gear to its matching session ID. Preserve pending gear across reset because it may arrive before that session's first motion snapshot. Ground-item details return to the scene replica through a callback.
+
+The extracted helpers are ordinary C# objects rather than new scene components. Existing component scripts and public entry points retain their Unity references. `ResponsibilityBoundaryTests` covers binding cooldown moves and replica session ordering without entering Play mode.
+
 ## Weapon skill specializations
 
 The equipped main weapon supplies one main ability. Melee weapons use their family-specific pools; bows use bow attacks; staves use Fire Bolt, Ice Shard, Chain Lightning or Venom Spout; sceptres use one of the five summons. Grimoires provide support abilities and minion stats, without a main skill or weapon tree. Death Mark is an optional grimoire support modifier, not a main skill.

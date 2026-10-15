@@ -81,7 +81,8 @@ namespace PoeClone.Tests
                 for (int k = 0; k < 100; k++)
                 {
                     ItemData staff = ItemGenerator.Generate(rng, "gnarled_staff", 1 + k % 15, rarity);
-                    Assert.IsTrue(SkillGrants.IsMain(Grants(staff)[0].Stat), staff.Name + " has no attack spell");
+                    Assert.IsTrue(staff.MainSkillGrant.HasValue, staff.Name + " has no attack spell");
+                    Assert.Contains(staff.MainSkillGrant.Value, SkillGrants.StaffMain, staff.Name + " has an incompatible main skill");
                     Assert.AreEqual(1, Grants(staff).Count(m => SkillGrants.IsMain(m.Stat)), staff.Name + " has multiple attack spells");
                 }
             }
@@ -257,13 +258,13 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void StarterBow_CarriesSplitShot_AndBowSkillsAreNotTheAttack()
+        public void StarterBow_CarriesSplitShot_AsItsMainAttack()
         {
             ItemData bow = ItemCatalog.CreateStarterItems().Find(i => i.Type == ItemType.Weapon && i.WeaponType == WeaponType.Bow);
             Assert.IsNotNull(bow);
-            Assert.AreEqual(StatType.GrantSplitShot, Grants(bow)[0].Stat);
+            Assert.AreEqual(StatType.GrantSplitShot, bow.MainSkillGrant);
             foreach (StatType grant in SkillGrants.BowSkills)
-                Assert.IsFalse(SkillGrants.IsMain(grant), grant + " must not be an attack spell");
+                Assert.IsTrue(SkillGrants.IsMain(grant), grant + " must replace the bow's main attack");
         }
 
         [Test]
@@ -287,7 +288,7 @@ namespace PoeClone.Tests
         [TestCase("leather_quiver", false)]
         [TestCase("wooden_shield", false)]
         [TestCase("silk_slippers", false)]
-        [TestCase("rope_belt", false)]
+        [TestCase("rope_belt", true)]
         public void CastSpeed_RollsOnSuitableGear(string baseId, bool speedAllowed)
         {
             var rng = new System.Random(492);

@@ -1,3 +1,6 @@
+version: 2026-10-15-responsibility-refactor
+- Internal maintenance of inventory tooltips, skill bindings and spectator menus; intended gameplay and controls are unchanged.
+
 version: 2026-10-15-shared-gameplay-rules
 - Arena summon builds now respect their weapon-tree army limits, including reduced caps.
 - Minion life, defences and army limits use shared rules in combat, skill details and offline balance estimates.
