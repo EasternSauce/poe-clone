@@ -6,7 +6,7 @@ using PoeClone.Inventory;
 
 namespace PoeClone.World
 {
-    /// <summary>Browser entry to the actual sampled balance builds, filtered by tested level.</summary>
+    /// <summary>Browser entry to the actual sampled balance builds, with route-specific minimum levels.</summary>
     public sealed class BalanceArenaUI : MonoBehaviour
     {
         private GauntletMode mode;
@@ -17,7 +17,7 @@ namespace PoeClone.World
         private readonly List<Vector2> layoutSizes = new List<Vector2>();
         private Vector2 lastCanvasSize;
         private Text status, levelLabel, skillLabel, detail, pageLabel;
-        private Image randomLevelButton, randomBuildButton;
+        private Image randomLevelButton, randomBuildButton, lowerLevelButton;
         private readonly List<Image> routeButtons = new List<Image>();
         private readonly List<Text> routeLabels = new List<Text>();
         private string skill, route;
@@ -57,7 +57,7 @@ namespace PoeClone.World
             UiKit.Heading(title);
             Label(panel, "Play the sampled builds from the boss balance survey", new Vector2(30, -78), new Vector2(1060, 32), 20);
 
-            Button(panel, "−", new Vector2(40, -130), new Vector2(65, 48), () => ChangeLevel(-1));
+            lowerLevelButton = Button(panel, "−", new Vector2(40, -130), new Vector2(65, 48), () => ChangeLevel(-1));
             levelLabel = Label(panel, "", new Vector2(115, -130), new Vector2(200, 48), 24);
             Button(panel, "+", new Vector2(325, -130), new Vector2(65, 48), () => ChangeLevel(1));
             randomLevelButton = Button(panel, "Random level", new Vector2(430, -130), new Vector2(280, 48), () => {
@@ -166,9 +166,10 @@ namespace PoeClone.World
 
         private void ChangeLevel(int delta)
         {
-            level = Mathf.Clamp(level + delta, 1, 34);
+            level = Mathf.Clamp(level + delta, MinimumLevel, 34);
             randomLevel = false; page = 0; Refresh();
         }
+        private int MinimumLevel => randomBuild ? 1 : choices.First(b => b.id == route).level;
         private IEnumerable<BalanceArenaBuilds.Entry> Available => BalanceArenaBuilds.Data.builds.Where(b => randomLevel || b.level == level);
         private void ChangeSkill(int delta)
         {
@@ -178,13 +179,16 @@ namespace PoeClone.World
         }
         private void Refresh()
         {
-            skills = Available.Select(b => b.skill).Distinct().ToArray();
+            skills = BalanceArenaBuilds.Data.builds.Select(b => b.skill).Distinct().ToArray();
             if (!skills.Contains(skill)) skill = skills[0];
-            choices = Available.Where(b => b.skill == skill).GroupBy(b => b.id).Select(g => g.First()).ToList();
+            choices = BalanceArenaBuilds.Data.builds.Where(b => b.skill == skill)
+                .GroupBy(b => b.id).Select(g => g.OrderBy(b => b.level).First()).ToList();
             if (!choices.Any(b => b.id == route)) route = choices[0].id;
+            level = Mathf.Max(level, MinimumLevel);
+            lowerLevelButton.color = !randomLevel && level <= MinimumLevel ? new Color(.45f, .45f, .45f) : Color.white;
             int pages = Mathf.Max(1, (choices.Count + PageSize - 1) / PageSize);
             page = Mathf.Clamp(page, 0, pages - 1);
-            levelLabel.text = randomLevel ? "Level 1–34" : "Level " + level;
+            levelLabel.text = randomLevel ? "Level " + MinimumLevel + "–34" : "Level " + level;
             skillLabel.text = skill + "  (" + (System.Array.IndexOf(skills, skill) + 1) + "/" + skills.Length + ")";
             randomLevelButton.color = randomLevel ? Selected : Color.white;
             randomBuildButton.color = randomBuild ? Selected : Color.white;
@@ -193,12 +197,12 @@ namespace PoeClone.World
                 int at = page * PageSize + i;
                 routeButtons[i].gameObject.SetActive(at < choices.Count);
                 if (at >= choices.Count) continue;
-                routeLabels[i].text = choices[at].name;
+                routeLabels[i].text = choices[at].name + "  · Lv " + choices[at].level + "+";
                 routeButtons[i].color = !randomBuild && choices[at].id == route ? Selected : Color.white;
             }
             pageLabel.text = "Routes " + (page + 1) + " / " + pages;
             detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected: " + skill + " · " + choices.First(b => b.id == route).name) +
-                "\nWeapon rank " + choices.First(b => b.id == route).weaponRank + "/10. Raise the level to unlock more finished routes." +
+                (randomBuild ? "\nRandom builds use routes available at the chosen level." : "\nMinimum level " + MinimumLevel + ". Change build to lower the level further.") +
                 "\nSampled best-of-20 rare gear and passives; no uniques." +
                 "\n20 waves of 1–5 enemies and occasional bosses at your level. No XP, loot or saves.";
         }

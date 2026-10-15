@@ -1,3 +1,6 @@
+version: 2026-10-15-arena-build-minimum-levels
+- Arena build selection always shows every route with its minimum level. Picking a route raises the level when needed and prevents lowering it below that minimum until you change builds. Random levels respect the selected route's minimum.
+
 version: 2026-10-15-arena-portrait-and-aim
 - Piercing Shot keeps its bow arm and shoulders aligned with the shot during its heavy draw.
 - The arena setup and run status adapt to portrait screens. The picker opens at level 21 and explains when weapon ranks unlock finished routes.
