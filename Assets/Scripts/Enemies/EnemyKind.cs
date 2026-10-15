@@ -1184,7 +1184,7 @@ namespace PoeClone.Enemies
 
         /// <summary>Shared level growth for every creature, regardless of its original area.</summary>
         public static float LifeScale(int level, EnemyKind kind = null) =>
-            (1f + 0.09f * (Mathf.Max(1, level) - 1)) * (kind != null ? kind.HealthMultiplier : 1f);
+            (1f + 0.18f * (Mathf.Max(1, level) - 1)) * (kind != null ? kind.HealthMultiplier : 1f);
 
         public static float DamageScale(int level, EnemyKind kind) =>
             (1f + 0.055f * (Mathf.Max(1, level) - 1)) * (kind != null ? kind.DamageMultiplier : 1f);

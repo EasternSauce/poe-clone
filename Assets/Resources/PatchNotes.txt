@@ -1,3 +1,6 @@
+version: 2026-10-15-monster-level-scaling
+- Doubled monster life growth per level: life now gains 18% of base per level after the first.
+
 version: 2026-10-15-mobile-weapon-tree
 - Added a dedicated Weapon button beside the mobile menu shortcuts, with available specialization points, so the joystick no longer blocks access to the weapon tree.
 
