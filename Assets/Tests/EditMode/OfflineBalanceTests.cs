@@ -66,6 +66,24 @@ namespace PoeClone.Tests
             Assert.AreEqual(1f, (float)Call("ChanceUptime", 100f, 1f, 3f));
         }
 
+        [TestCase(false), TestCase(true)]
+        public void Pulverize_PenetrationRequiresAConnectedKeystone_WithoutExceedingTheCap(bool sideRoute)
+        {
+            const StatType grant = StatType.GrantPulverize;
+            var progress = new WeaponSkillProgress { level = 10 };
+            float Penetration() => progress.nodes.Select(id => WeaponSkillTrees.Find(grant, id))
+                .SelectMany(n => n.Bonuses).Where(b => b.Effect == WeaponSkillEffect.ArmourPenetration).Sum(b => b.Value);
+            foreach (string id in new[] { "v2_1_0", "v2_1_1", "v2_1_2" }) Assert.IsTrue(progress.Allocate(grant, id));
+            Assert.Less(Penetration(), 100f, "The notable must leave room for the keystones to matter");
+            foreach (string id in sideRoute ? new[] { "v2_1_6" } : new[] { "v2_1_3", "v2_1_4" })
+                Assert.IsTrue(progress.Allocate(grant, id));
+            Assert.Less(Penetration(), 100f, "Travel alone must not cap penetration");
+            string terminal = sideRoute ? "v2_1_7" : "v2_1_5";
+            Assert.IsTrue(WeaponSkillTrees.Find(grant, terminal).Keystone);
+            Assert.IsTrue(progress.Allocate(grant, terminal));
+            Assert.AreEqual(100f, Penetration(), .001f, "Either complete route should reach, not waste, the penetration cap");
+        }
+
         [Test]
         public void SkillModel_UsesReleaseRecovery_AndCombatDamageTypes()
         {
@@ -74,7 +92,7 @@ namespace PoeClone.Tests
             Assert.AreEqual(.72f, (float)Call("PiercingInterval", 5f, 0f), .0001);
             var book = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("PoeClone.Skills.SkillBook")).First(t => t != null);
             var idType = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("PoeClone.Skills.SkillId")).First(t => t != null);
-            foreach (var expected in new[] { new[] { "VenomSlash", "Physical" }, new[] { "BurningArrow", "Fire" }, new[] { "VenomSpout", "Poison" } })
+            foreach (var expected in new[] { new[] { "VenomSlash", "Physical" }, new[] { "BurningArrow", "Fire" }, new[] { "VenomSpout", "Poison" }, new[] { "RainOfArrows", "Physical" } })
             {
                 object skill = book.GetMethod("Get").Invoke(null, new[] { Enum.Parse(idType, expected[0]) });
                 Assert.AreEqual(expected[1], Call("BaseElement", skill).ToString());

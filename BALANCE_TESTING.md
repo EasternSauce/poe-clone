@@ -62,4 +62,8 @@ Outputs are local and Git-ignored:
 - `BalanceResults/sample-builds.csv`: full equipment, allocations and observations.
 - `BalanceResults/recalculation-pool.json`: retained competitive samples for future recalculations, with cutoff and source metadata.
 
-Implementation: `Assets/Editor/OfflineBalance.cs`, `Assets/Editor/BalanceArchetypes.cs`, `Assets/Tests/EditMode/OfflineBalanceTests.cs`, and `tools/balance/report.mjs`. No balance buffs or nerfs have been applied from this survey.
+Implementation: `Assets/Editor/OfflineBalance.cs`, `Assets/Editor/BalanceArchetypes.cs`, `Assets/Tests/EditMode/OfflineBalanceTests.cs`, and `tools/balance/report.mjs`.
+
+Pulverize's tree has since been rebalanced to move early utility/penetration into terminal routes. Early penetration is 50% after the notable, and either full penetration route reaches 100%. Worldshaker's area rises to 65%, Heavy Impact to 35% increased damage, Bonecrusher to 35% splash and Steady Blows to 20% increased speed. Node identities and allocations are preserved. The flexible-tree margins above describe the pre-change survey; refresh Pulverize and regenerate the candidate pool before using these samples for future recalculations. Other suggested buffs/nerfs remain unapplied.
+
+Rain of Arrows' Broad Coverage destination is now Pinning Rain, preserving its node ID, spread and arrows while adding guaranteed chill (50% movement slow, base duration 2 seconds, refreshed by hits). It still deals physical damage unless another source converts it. Refresh Rain of Arrows alongside Pulverize so catalogue names and slow-dependent interactions are current. The stationary DPS model does not value movement control as extra damage.

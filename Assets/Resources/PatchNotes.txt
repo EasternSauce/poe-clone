@@ -1,4 +1,6 @@
 version: 2026-10-15-summoner-support-and-balance-survey
+- Rain of Arrows' Broad Coverage keystone is now Pinning Rain: it retains wider spread and two additional arrows, and hits always chill enemies, slowing their movement by 50% for 2 seconds. Further hits refresh the chill.
+- Pulverize now earns more of its power from keystones: early armour penetration is lower, Anvil and Cracked Armour complete penetration, and Worldshaker, Heavy Impact, Bonecrusher and Steady Blows reward finishing their routes more strongly.
 - Offline balance surveys now export a competitive-build shortlist for future recalculations, excluding survival failures and builds below 75% of their archetype's best sustained damage at each level.
 - Consolidated project documentation into development and balance guides, with boss DPS recorded as the next balance-testing step.
 - Summon main skills now belong exclusively to sceptres. Grimoires provide minion stats and support abilities, with Death Mark rolling regularly on magic and rare grimoires. Existing summon grimoires become Death Mark support tomes while keeping their other stats.

@@ -86,7 +86,7 @@ namespace PoeClone.Inventory
                 P("Heavy Shaft", U(E.ProjectileSpeed, 15), "Armour Breaker", M(B(E.ArmourPenetration, 60)), "Heartseeker", M(B(E.FirstStrike, 40)), "Execution", B(E.DamageVsLowLife, 40)),
                 P("Breath Control", M(B(E.Damage, 10)), "Quick Draw", M(B(E.ChargeTime, -15)), "Practised Sniper", M(B(E.ChargeTime, -20)), "Sure Aim", B(E.ArmourPenetration, 90), B(E.Damage, 15)));
             Add(t, StatType.GrantRainOfArrows,
-                P("Arrowfall", U(E.Area, 12), "Arrowstorm", M(B(E.Projectiles, 3)), "Cloudburst", M(B(E.Projectiles, 4), B(E.MoreDamage, -15)), "Broad Coverage", B(E.RainSpread, 35), B(E.Projectiles, 2)),
+                P("Arrowfall", U(E.Area, 12), "Arrowstorm", M(B(E.Projectiles, 3)), "Cloudburst", M(B(E.Projectiles, 4), B(E.MoreDamage, -15)), "Pinning Rain", B(E.RainSpread, 35), B(E.Projectiles, 2), B(E.Chill, 100)),
                 P("Focused Rain", M(B(E.Damage, 10)), "Concentrated Rain", M(B(E.RainSpread, -20)), "Death Zone", M(B(E.RainSpread, -25)), "Overlapping Impacts", B(E.Area, 40)),
                 P("Sustained Rain", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Second Salvo", M(B(E.RainSalvos, 1), B(E.MoreDamage, -25)), "Rolling Barrage", M(B(E.RainSalvos, 1), B(E.MoreDamage, -33.333333f)), "Blood Rain", B(E.LifeOnHit, 3)));
             Add(t, StatType.GrantBurningArrow,
@@ -102,9 +102,9 @@ namespace PoeClone.Inventory
                 P("Bloodletting", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Ravenous Edge", M(B(E.Leech, 2)), "Bloodbath", M(B(E.LifeOnHit, 4)), "Red Steel", B(E.Speed, 18)),
                 P("Executioner", M(B(E.Damage, 10)), "Finishing Edge", M(B(E.DamageVsLowLife, 20)), "Headsman's Blow", M(B(E.Cull, 1)), "Clean Cut", B(E.ArmourPenetration, 80)));
             Add(t, StatType.GrantPulverize,
-                P("Earthbreaker", U(E.Area, 10), "Seismic Reach", M(B(E.Area, 25)), "Worldshaker", M(B(E.Area, 50), B(E.MoreDamage, -15)), "Heavy Impact", B(E.Damage, 30)),
-                P("Crushing Force", U(E.ArmourPenetration, 20), "Weight of Stone", M(B(E.ArmourPenetration, 80)), "Anvil", M(B(E.FirstStrike, 40)), "Cracked Armour", B(E.ArmourPenetration, 120)),
-                P("Broken Bones", U(E.Range, 10), "Splintering Impact", M(B(E.Splash, 15)), "Bonecrusher", M(B(E.Splash, 25)), "Steady Blows", B(E.Speed, 18)));
+                P("Earthbreaker", U(E.Area, 8), "Seismic Reach", M(B(E.Area, 20)), "Worldshaker", M(B(E.Area, 65), B(E.MoreDamage, -15)), "Heavy Impact", B(E.Damage, 35)),
+                P("Crushing Force", U(E.ArmourPenetration, 10), "Weight of Stone", M(B(E.ArmourPenetration, 30)), "Anvil", M(B(E.FirstStrike, 40), B(E.ArmourPenetration, 30)), "Cracked Armour", B(E.ArmourPenetration, 40)),
+                P("Broken Bones", U(E.Range, 8), "Splintering Impact", M(B(E.Splash, 10)), "Bonecrusher", M(B(E.Splash, 35)), "Steady Blows", B(E.Speed, 20)));
             Add(t, StatType.GrantReapingArc,
                 P("Long Scythe", U(E.Range, 10), "Harvest", M(B(E.Range, 25)), "Reaper's Horizon", M(B(E.Range, 35)), "Wide Harvest", B(E.Area, 30)),
                 P("Blood Harvest", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Red Harvest", M(B(E.Leech, 2)), "Feast", M(B(E.LifeOnHit, 4)), "Quickening", B(E.Speed, 18)),
@@ -180,7 +180,7 @@ namespace PoeClone.Inventory
                 case E.Pierce: return "Pierces " + b.Value + " additional enemies";
                 case E.Fork: return "Projectiles fork on their first enemy impact";
                 case E.Repeat: return "Repeats this spell " + b.Value + " additional time";
-                case E.Chill: return "Hits grant a " + b.Value.ToString("0.#") + "% chance to chill";
+                case E.Chill: return "Hits grant a " + b.Value.ToString("0.#") + "% chance to chill\nChill slows movement by 50% for a base duration of 2 seconds";
                 case E.Shock: return "Hits grant a " + b.Value.ToString("0.#") + "% chance to shock";
                 case E.Ignite: return "Hits grant a " + b.Value.ToString("0.#") + "% chance to ignite";
                 case E.Shatter: return "This skill has a " + b.Value.ToString("0.#") + "% chance to shatter chilled enemies on kill";
