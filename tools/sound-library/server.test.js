@@ -103,6 +103,27 @@ test('HTTP protects instant actions, previews ranges and rescans external change
   assert.equal((await post('/api/export', {})).status, 404);
 });
 
+test('consolidated recordings retain provenance through rename and delete', t => {
+  const { library } = fixture(t);
+  const manifest = path.join(library.source, 'SoundLibrary/manifest.json');
+  const data = JSON.parse(fs.readFileSync(manifest, 'utf8'));
+  const row = data.sounds[0];
+  row.category = row.file.split('/')[0];
+  const destination = path.join(library.source, 'Resources/DeferredAudio/shared.wav');
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
+  fs.renameSync(path.join(library.source, 'SoundLibrary', row.file), destination);
+  row.file = '../Resources/DeferredAudio/shared.wav';
+  fs.writeFileSync(manifest, JSON.stringify(data));
+  const id = 'Resources/DeferredAudio/shared.wav';
+  assert.deepEqual(library.find(id).sources, row.sources);
+  assert.equal(library.find(id).category, row.category);
+  library.rename({ id, name: 'renamed' });
+  assert.deepEqual(library.find('Resources/DeferredAudio/renamed.wav').sources, row.sources);
+  assert.ok(JSON.parse(fs.readFileSync(manifest, 'utf8')).sounds.some(item => item.file === '../Resources/DeferredAudio/renamed.wav'));
+  library.delete({ id: 'Resources/DeferredAudio/renamed.wav' });
+  assert.ok(!JSON.parse(fs.readFileSync(manifest, 'utf8')).sounds.some(item => item.file.includes('DeferredAudio')));
+});
+
 test('gameplay recordings outside the imported library can be found, previewed and managed', async t => {
   const { root, library } = fixture(t);
   const id = 'Resources/Sfx/Creatures/bite_1.wav';

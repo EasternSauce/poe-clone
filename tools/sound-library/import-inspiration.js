@@ -40,7 +40,7 @@ function importInspiration(root = path.resolve(__dirname, '../..')) {
       fs.copyFileSync(file, output, fs.constants.COPYFILE_EXCL);
     }
     fs.writeFileSync(path.join(staging, 'manifest.json'), JSON.stringify({ version: 1, importedAt: new Date().toISOString(), sourceFiles: audio.length, sounds }, null, 2) + '\n');
-    fs.writeFileSync(path.join(staging, 'README.txt'), 'Permanent categorized sound library. Each unique file is stored in exactly one category.\nByte-identical duplicates share one copy; distinct encodings are preserved.\nmanifest.json records provenance only; no source file is needed for playback.\nSourceNotes preserves included pack documentation. Browser Rename/Delete changes these files immediately.\nThe existing soundboard still needs migration before the inspiration directory is removed.\n');
+    fs.writeFileSync(path.join(staging, 'README.txt'), 'Permanent categorized sound library. Each unique file is stored in exactly one category.\nByte-identical duplicates share one copy; distinct encodings are preserved.\nmanifest.json records provenance only; no source file is needed for playback.\nSourceNotes preserves included pack documentation. Browser Rename/Delete changes these files immediately.\nGameplay and the library can share permanent recordings; manifest paths are relative to this directory.\n');
     fs.renameSync(staging, destination);
     return { sourceFiles: audio.length, uniqueFiles: sounds.length, duplicates: audio.length - sounds.length, directory: slash(path.relative(root, destination)) };
   } catch (error) {

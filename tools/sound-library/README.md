@@ -10,4 +10,6 @@ The one-time importer (`node tools/sound-library/import-inspiration.js`) origina
 
 The soundboard shows assigned gameplay recordings; the library includes those same files alongside unassigned recordings.
 
+Byte-identical gameplay recordings share their permanent audio file. Manifest file paths are relative to `Assets/Audio/SoundLibrary`, including `../Resources/` and `../SFX/` paths for consolidated recordings. Their original pack provenance remains visible and follows browser renames and deletes. The temporary inspiration folder has been retired; the one-time importer remains for isolated fixtures and optional external source packs.
+
 Run backend checks with `node --test tools/sound-library/server.test.js`. Stop the tool's Node process to shut down the page.

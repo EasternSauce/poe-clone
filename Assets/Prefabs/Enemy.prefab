@@ -165,7 +165,7 @@ MonoBehaviour:
   runLean: 14
   staggerTiltAngle: -22
   footstepClips:
-  - {fileID: 8300000, guid: bf4f83921a7f06c44b147fc62cfcdf82, type: 3}
+  - {fileID: 8300000, guid: 7f7a0231b21167146bd2e6082030430e, type: 3}
   footstepPitchRange: {x: 0.95, y: 1.05}
   footstepVolumeRange: {x: 0.7, y: 1}
   upperBody: {fileID: 384135309416976221}

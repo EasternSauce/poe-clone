@@ -1,3 +1,7 @@
+version: 2026-10-15-asset-housekeeping
+- Consolidated identical sound recordings while preserving gameplay audio assignments.
+- Preserved equipment icon source art permanently and retired temporary inspiration assets.
+
 version: 2026-10-15-minion-damage
 - Reduced all minion base damage by 7.7%, lowering their balance DPS target from 1.3x to 1.2x the peer baseline.
 

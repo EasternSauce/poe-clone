@@ -65,7 +65,6 @@ sysinfo.txt
 *.dylib
 
 # Addressables
-/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
 
 # User-specific settings
 /[Aa]ssets/[Ss]treamingAssets/[Aa]ddressable[Aa]ssets/*
@@ -74,7 +73,6 @@ sysinfo.txt
 *.sln.iml
 
 # Gradle
-.gradle/
 gradle/
 local.properties
 
@@ -98,3 +96,6 @@ tools/sound-library/choices.json
 
 # Offline balance survey data and spreadsheet exports
 /BalanceResults/
+
+# Local visual checks
+/Captures/

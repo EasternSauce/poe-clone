@@ -13,6 +13,15 @@ namespace PoeClone.EditorTools
     /// <summary>Keeps authoring references out of runtime audio catalogs.</summary>
     public sealed class DeferredAudioCatalogs : IPreprocessBuildWithReport
     {
+        [Serializable] private sealed class Source { public string file, pack; }
+        [Serializable] private sealed class Recording { public string file, sha256, category; public Source[] sources; }
+        [Serializable] private sealed class Manifest
+        {
+            public int version, sourceFiles;
+            public string importedAt;
+            public Recording[] sounds;
+        }
+
         public int callbackOrder => 0;
         public void OnPreprocessBuild(BuildReport report) => Generate();
 
@@ -53,8 +62,7 @@ namespace PoeClone.EditorTools
                     paths = clips.Where(c => c != null).Select(ResourcePath).ToArray() });
             }
             Write("Assets/Resources/DeferredAmbience.json", JsonUtility.ToJson(new AmbientSoundLibrary.Catalog { entries = entries.ToArray() }, true));
-            // Point authoring libraries at the permanent recordings too, avoiding duplicate
-            // original/copy dependencies in player data and retiring inspiration references.
+            // Keep authoring and runtime catalogs on the same permanent recordings.
             foreach (var group in original.soundGroups)
                 group.clips = Array.ConvertAll(group.clips, PermanentClip);
             foreach (var effect in original.effects)
@@ -85,14 +93,17 @@ namespace PoeClone.EditorTools
         {
             string path = AssetDatabase.GetAssetPath(clip);
             int marker = path.LastIndexOf("/Resources/", StringComparison.Ordinal);
-            // Inspiration recordings must become permanent assets before runtime references exist.
-            if (marker < 0 || path.StartsWith("Assets/assets_for_inspiration/", StringComparison.OrdinalIgnoreCase))
+            if (!path.StartsWith("Assets/Audio/", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Gameplay audio must be under Assets/Audio: " + path);
+            if (marker < 0)
             {
                 string directory = "Assets/Audio/Resources/DeferredAudio/" + AssetDatabase.AssetPathToGUID(path);
                 Directory.CreateDirectory(directory);
                 string destination = directory + "/" + Path.GetFileName(path);
-                if (!File.Exists(destination) && !AssetDatabase.CopyAsset(path, destination))
-                    throw new InvalidOperationException("Cannot copy audio to permanent Resources: " + path);
+                string error = AssetDatabase.MoveAsset(path, destination);
+                if (!string.IsNullOrEmpty(error))
+                    throw new InvalidOperationException("Cannot move audio to permanent Resources: " + error);
+                UpdateProvenance(path, destination);
                 path = destination;
                 marker = path.LastIndexOf("/Resources/", StringComparison.Ordinal);
             }
@@ -106,6 +117,25 @@ namespace PoeClone.EditorTools
                 importer.SaveAndReimport();
             }
             return Path.ChangeExtension(path.Substring(marker + "/Resources/".Length), null);
+        }
+
+        private static void UpdateProvenance(string oldPath, string newPath)
+        {
+            const string directory = "Assets/Audio/SoundLibrary/";
+            const string manifestPath = directory + "manifest.json";
+            if (!File.Exists(manifestPath)) return;
+            string Relative(string path) => path.StartsWith(directory, StringComparison.Ordinal)
+                ? path.Substring(directory.Length) : "../" + path.Substring("Assets/Audio/".Length);
+            var manifest = JsonUtility.FromJson<Manifest>(File.ReadAllText(manifestPath));
+            string previous = Relative(oldPath);
+            bool changed = false;
+            foreach (var recording in manifest.sounds)
+                if (recording.file == previous)
+                {
+                    recording.file = Relative(newPath);
+                    changed = true;
+                }
+            if (changed) Write(manifestPath, JsonUtility.ToJson(manifest, true) + "\n");
         }
     }
 }

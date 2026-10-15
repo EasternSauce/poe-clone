@@ -24510,31 +24510,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: PoeClone.Audio::PoeClone.Audio.AudioManager
   playerSwing:
-  - {fileID: 8300000, guid: 3c6f39ae65d8a5d4b82c74978ed0b6b0, type: 3}
-  - {fileID: 8300000, guid: 96c0d6e4e43e1c14ab0f5fe923514579, type: 3}
-  - {fileID: 8300000, guid: 3c608d1f2d639f94ca6ed4c6ff2a98e4, type: 3}
+  - {fileID: 8300000, guid: e405209ce74e4ab4e8450cfba3817bce, type: 3}
+  - {fileID: 8300000, guid: 8f90a0f1e54660940af1dcc247f142f6, type: 3}
+  - {fileID: 8300000, guid: 6ab384a9bf5714942ab1fa2f699c05c2, type: 3}
   meleeHit:
   - {fileID: 8300000, guid: 346438f69794bff48b9bfa302044461e, type: 3}
   - {fileID: 8300000, guid: 18ec5dfc6b0ace244af58afb702af326, type: 3}
   enemyDeath:
-  - {fileID: 8300000, guid: c56702ab3b2b9fb488d8e1293487f5f2, type: 3}
-  - {fileID: 8300000, guid: 1250d2b585d435b4bab7dba7f2c89dea, type: 3}
+  - {fileID: 8300000, guid: 080a50faf2eb5e24cadf53f55cf5d26f, type: 3}
+  - {fileID: 8300000, guid: c1c7c7f6dfbdb364da6974cd170b1fef, type: 3}
   enemyAggro:
-  - {fileID: 8300000, guid: 1d93491d6e5aeb44a8999ee27f033d11, type: 3}
-  - {fileID: 8300000, guid: 1eb92fc01d0692c4c9a5fc0cc17d75ae, type: 3}
-  - {fileID: 8300000, guid: 9c9efb6d6946dac4d923757fa11f9911, type: 3}
-  combatBlock: {fileID: 8300000, guid: eeeea64e5bcfce840b5add4a8b6c2c18, type: 3}
+  - {fileID: 8300000, guid: 8c68ee06a4952fe4eba5c1c12041f919, type: 3}
+  - {fileID: 8300000, guid: ead936d85e9833d4181d940f25099ce2, type: 3}
+  - {fileID: 8300000, guid: 67b3a1429cf6de14eae4d5d76d254c92, type: 3}
+  combatBlock: {fileID: 8300000, guid: 5a090c1f5c3e8c54f8155803179f086a, type: 3}
   playerHurt:
-  - {fileID: 8300000, guid: 6e8997d11b2c26e47b2dfe8bd7bec284, type: 3}
-  - {fileID: 8300000, guid: c1de4b0d0b171a445bbc345937e4e677, type: 3}
-  - {fileID: 8300000, guid: 801ad7a99eda38945a97267f3c982613, type: 3}
-  playerLevelUp: {fileID: 8300000, guid: 02c09b0084c54cc43850d935b952c200, type: 3}
-  uiInventoryOpen: {fileID: 8300000, guid: 9df4dba7b36659f48a08668689523534, type: 3}
-  uiInventoryClose: {fileID: 8300000, guid: e62ed051481e07d47bad072848f78967, type: 3}
-  uiDenied: {fileID: 8300000, guid: a1be5d23278eec44386ec4494ebbbadd, type: 3}
-  uiItemPickup: {fileID: 8300000, guid: 7baf97f3279ffef40b747402df81ee46, type: 3}
-  uiItemPlace: {fileID: 8300000, guid: 46190f48c471d1e47b59959d5fb422de, type: 3}
-  gateOpen: {fileID: 8300000, guid: 255f0c0a1b85a6d4490764b5ca6fcfb6, type: 3}
+  - {fileID: 8300000, guid: 05fe5e647abd08b4188b940bdc6c3742, type: 3}
+  - {fileID: 8300000, guid: 5854aacf85e8ac7409716f4fb2f74dc5, type: 3}
+  - {fileID: 8300000, guid: b067e7c52b9b5644fb7367c3f949bacc, type: 3}
+  playerLevelUp: {fileID: 8300000, guid: ef1b7bb95332b7b4ca09916e68cefd5a, type: 3}
+  uiInventoryOpen: {fileID: 8300000, guid: 0752a88b155b2e54092999d6df1595d6, type: 3}
+  uiInventoryClose: {fileID: 8300000, guid: 35f123141c5240e44a3a13a243331722, type: 3}
+  uiDenied: {fileID: 8300000, guid: 4a1fb0b5c024b8545adc757c260d88d6, type: 3}
+  uiItemPickup: {fileID: 8300000, guid: 44fb3609527a0b448a0ede7a77eea8a5, type: 3}
+  uiItemPlace: {fileID: 8300000, guid: 16927d602d774214b94f5ec46e2f4553, type: 3}
+  gateOpen: {fileID: 8300000, guid: a92f6c284eef0ed4da0fe2220043bdd9, type: 3}
   lootDrop: {fileID: 8300000, guid: f20cfaf860dd0e64da88289a0d7f854a, type: 3}
   sfxVolume: 0.8
   ambienceVolume: 0.65
@@ -28099,7 +28099,7 @@ MonoBehaviour:
   runLean: 14
   staggerTiltAngle: -22
   footstepClips:
-  - {fileID: 8300000, guid: bf4f83921a7f06c44b147fc62cfcdf82, type: 3}
+  - {fileID: 8300000, guid: 7f7a0231b21167146bd2e6082030430e, type: 3}
   footstepPitchRange: {x: 0.95, y: 1.05}
   footstepVolumeRange: {x: 0.7, y: 1}
   upperBody: {fileID: 426971162}

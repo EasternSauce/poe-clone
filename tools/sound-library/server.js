@@ -41,12 +41,13 @@ function createLibrary(root = path.resolve(__dirname, '../..')) {
   function manifest() { return fs.existsSync(manifestFile) ? JSON.parse(fs.readFileSync(manifestFile, 'utf8')) : { sounds: [] }; }
   function load() {
     if (fs.existsSync(source) && fs.lstatSync(source).isSymbolicLink()) throw Error('The library directory must not be a symbolic link.');
-    const origins = new Map(manifest().sounds.map(row => ['SoundLibrary/' + row.file, row.sources]));
+    const origins = new Map(manifest().sounds.map(row => [slash(path.relative(source, path.resolve(imported, row.file))), row]));
     return walk(source).filter(file => MIME[path.extname(file).toLowerCase()]).map(file => {
       const id = slash(path.relative(source, file));
-      const sources = origins.get(id) || [];
+      const provenance = origins.get(id);
+      const sources = provenance?.sources || [];
       const packs = [...new Set(sources.map(row => row.pack))];
-      const category = id.startsWith('SoundLibrary/') ? id.split('/')[1] : categoryFor(id);
+      const category = provenance?.category || (id.startsWith('SoundLibrary/') ? id.split('/')[1] : categoryFor(id));
       return { id, packs: packs.length ? packs : ['Local files'], sources, category, name: path.basename(file, path.extname(file)), ext: path.extname(file), bytes: fs.statSync(file).size };
     }).sort((a, b) => a.category.localeCompare(b.category) || a.id.localeCompare(b.id));
   }
@@ -68,9 +69,9 @@ function createLibrary(root = path.resolve(__dirname, '../..')) {
     const hasMeta = fs.existsSync(oldFile + '.meta');
     if (hasMeta && fs.lstatSync(oldFile + '.meta').isSymbolicLink()) throw Error('Unity metadata must not be a symbolic link.');
     const data = manifest();
-    const importedId = row.id.startsWith('SoundLibrary/') ? row.id.slice('SoundLibrary/'.length) : null;
-    const updateManifest = importedId !== null && fs.existsSync(manifestFile);
-    if (updateManifest) data.sounds = deleting ? data.sounds.filter(item => item.file !== importedId) : data.sounds.map(item => item.file === importedId ? { ...item, file: newId.slice('SoundLibrary/'.length) } : item);
+    const importedId = slash(path.relative(imported, oldFile));
+    const updateManifest = data.sounds.some(item => item.file === importedId);
+    if (updateManifest) data.sounds = deleting ? data.sounds.filter(item => item.file !== importedId) : data.sounds.map(item => item.file === importedId ? { ...item, file: slash(path.relative(imported, newFile)) } : item);
     const staged = path.join(source, '.operation-' + crypto.randomUUID());
     const moves = [];
     const move = (from, to) => { fs.renameSync(from, to); moves.push([from, to]); };

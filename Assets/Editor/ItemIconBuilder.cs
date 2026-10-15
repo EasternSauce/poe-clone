@@ -7,7 +7,7 @@ using UnityEngine;
 namespace PoeClone.EditorTools
 {
     /// <summary>
-    /// Builds the item icons from the painted source art in assets_for_inspiration.
+    /// Builds the item icons from the permanent source art in Assets/Editor/ItemIconSources.
     /// The source files are only ever read. Each icon is recoloured to match the gear's 3D model,
     /// given the same outline / contrast / saturation as every other icon, fitted to the item's
     /// cell size, and written to Assets/Resources/ItemIcons as a new PNG.
@@ -15,7 +15,7 @@ namespace PoeClone.EditorTools
     /// </summary>
     public static class ItemIconBuilder
     {
-        private const string SourceRoot = "Assets/assets_for_inspiration/38_free_fantasy_icons";
+        private const string SourceRoot = "Assets/Editor/ItemIconSources/38_free_fantasy_icons";
         private const string OutDir = "Assets/Resources/ItemIcons";
         private const int PxPerCell = 96;
         private const string HoodSource = "Assets/Editor/ItemIconSources/hunter_hood.png";
@@ -284,7 +284,7 @@ namespace PoeClone.EditorTools
                     continue;
                 }
                 string inkSource = InkSource(line, tier);
-                if (inkSource != null) b = ColourInk(Load("Assets/assets_for_inspiration/Icons Png/" + inkSource), item.ArtTint, line != "helm_dex");
+                if (inkSource != null) b = ColourInk(Load("Assets/Editor/ItemIconSources/Icons Png/" + inkSource), item.ArtTint, line != "helm_dex");
                 else
                 {
                     // Change proportions and add actual trim/rivets, rather than relying on runtime tint.

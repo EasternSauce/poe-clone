@@ -36,8 +36,8 @@ Run checks: `node --test tools/sound-board/server.test.js`.
 
 Gameplay sound groups own their alternate recordings and one specific purpose. Effects
 reference a group rather than keeping independent copies of a recording pool. All callers
-of a group share repeat history, including player/enemy shared spells. Mute and gain
-remain per effect. The board displays these real assignments and offers Play next
+of a group share repeat history, including player/enemy shared spells. Mute remains
+per effect; recording loudness lives in the audio files. The board displays these real assignments and offers Play next
 alternate in addition to individual recording previews. Unrelated purposes stay
 separate even if they currently reuse a recording.
 
