@@ -43,6 +43,17 @@ Use the same executable for authenticated fetches and clones as needed. This
 uses the credentials already stored in Windows; do not copy or print tokens.
 Try this fallback before reporting missing credentials as a deployment blocker.
 
+WSL Git can also reuse Windows Credential Manager through the GitHub-scoped
+helper `/home/ubuntu/.local/bin/git-credential-manager-windows` configured in
+`~/.gitconfig`. The Windows helper is
+`/mnt/c/Program Files/Git/mingw64/bin/git-credential-manager.exe`. Credentials
+remain in Windows Credential Manager; no token copy is required. If Windows
+commands fail with `UtilAcceptVsock` / `accept4`, probe existing
+`/run/WSL/*_interop` sockets with a short timeout and `git.exe --version`, then
+use the responsive socket as `WSL_INTEROP`. The helper handles this selection.
+Preserve running WSL sessions; never restart WSL to repair a stale socket.
+The credential-location memory is `~/.codex/memories/github-credentials.md`.
+
 1. Review intended source changes. Commit them together with the fresh build in
    step 4; do not make a separate source-only push before building. If source
    changes are already committed, leave them as they are and push once after
