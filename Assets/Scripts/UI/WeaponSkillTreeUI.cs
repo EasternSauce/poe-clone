@@ -87,7 +87,7 @@ namespace PoeClone.UI
         {
             if (skills == null || !skills.enabled) skills = FindAnyObjectByType<PlayerSkills>();
             bool usable = skills != null && skills.enabled && skills.MainWeapon != null && !skills.GetComponent<PlayerStats>().IsDead;
-            badge.gameObject.SetActive(usable && !IsOpen && !DialogueUI.IsOpen && !PassiveTreeUI.IsOpen);
+            badge.gameObject.SetActive(!TouchMode.Active && usable && !IsOpen && !DialogueUI.IsOpen && !PassiveTreeUI.IsOpen);
             if (!usable) { panel.gameObject.SetActive(false); return; }
             var k = Keyboard.current;
             if (!UiKit.IsTypingInTextField() && k != null)

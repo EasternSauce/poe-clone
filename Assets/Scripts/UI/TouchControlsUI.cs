@@ -25,7 +25,7 @@ namespace PoeClone.UI
         private const float JoystickDeadZone = 0.15f;
         private static Vector2 JoystickIdle => TouchMode.Portrait ? new Vector2(180f, 185f) : new Vector2(170f, 170f);
         private bool menuExpanded;
-        private Image menuToggle, questToggle, drawerBackground, townButton, chatButton, inventoryButton;
+        private Image menuToggle, questToggle, drawerBackground, townButton, chatButton, inventoryButton, weaponTreeButton;
         private Image[] shortcutButtons;
         private readonly List<RectTransform> drawerButtons = new List<RectTransform>();
 
@@ -156,6 +156,13 @@ namespace PoeClone.UI
             inventoryButton.gameObject.SetActive(menus && (!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.InventoryMenuEnabled));
             townButton.gameObject.SetActive(menus && !PoeClone.World.MinimalCombatMode.Enabled);
             chatButton.gameObject.SetActive(menus && !PoeClone.World.MinimalCombatMode.Enabled);
+            bool weaponTreeUsable = skills != null && skills.enabled && skills.MainWeapon != null;
+            weaponTreeButton.gameObject.SetActive(menus && weaponTreeUsable);
+            if (weaponTreeUsable)
+            {
+                int points = skills.MainWeapon.SkillProgress.Available;
+                weaponTreeButton.GetComponentInChildren<Text>().text = "WEAPON" + (points > 0 ? "\n" + points + " pts" : "");
+            }
             if (menuOpen) menuExpanded = false;
             LayoutControls();
             if (settingsButton != null)
@@ -454,6 +461,7 @@ namespace PoeClone.UI
             ChatUI.SetPanelOpen(false);
             SkillBarUI.SetOpen(false);
             PassiveTreeUI.SetOpen(false);
+            WeaponSkillTreeUI.SetOpen(false);
             DialogueUI.Close();
         }
 
@@ -665,7 +673,14 @@ namespace PoeClone.UI
             questToggle = NewRoundButton("QuestToggle", canvas.transform, new Vector2(0f, 1f), Vector2.zero, 108f, "QUESTS");
             UiKit.OnClick(questToggle, () => { menuExpanded = false; QuestTrackerUI.ToggleMobile(); });
             TouchMode.AddBlocker(questToggle.rectTransform);
-            shortcutButtons = new[] { menuToggle, inventoryButton, questToggle, townButton, chatButton };
+            weaponTreeButton = NewRoundButton("WeaponTree", canvas.transform, new Vector2(0f, 1f), Vector2.zero, 96f, "WEAPON");
+            UiKit.OnClick(weaponTreeButton, () =>
+            {
+                CloseOthers();
+                WeaponSkillTreeUI.SetOpen(true);
+            });
+            TouchMode.AddBlocker(weaponTreeButton.rectTransform);
+            shortcutButtons = new[] { menuToggle, inventoryButton, questToggle, townButton, chatButton, weaponTreeButton };
             LayoutControls();
         }
 

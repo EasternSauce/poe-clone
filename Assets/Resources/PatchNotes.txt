@@ -1,3 +1,6 @@
+version: 2026-10-15-mobile-weapon-tree
+- Added a dedicated Weapon button beside the mobile menu shortcuts, with available specialization points, so the joystick no longer blocks access to the weapon tree.
+
 version: 2026-10-15-whirlwind-and-arena-settings
 - Fixed mobile aim input overriding Whirlwind's spinning animation.
 - Added Settings access in the arena, including the mobile menu and a button beside New build.
