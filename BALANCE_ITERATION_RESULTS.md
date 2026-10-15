@@ -207,3 +207,47 @@ and ailment bonuses. The non-survey EditMode run passed 310/311 cases; the sole
 failure is the previously documented passive-tree spacing violation. The full
 318-archetype test was not rerun for this targeted change. The combined report
 validates; no gameplay session or character save was used.
+
+## Venom Arrow progression follow-up — 2026-10-15
+
+Deep Venom now adds poison equal to 55% of the hit, previously 25%. Black Blood
+adds another 35%, previously 40%, so their combined tree bonus is 90% rather than
+65%. More of that investment is available at the three-point notable before the
+six-point terminal. These bonuses are additional to the skill's innate poison;
+the change does not double the skill's entire poison output. Base attack damage,
+mana costs, duration, cloud bonuses, node IDs and allocation costs are unchanged.
+
+The strongest level-21 build sustained about 99% of its modeled attack demand;
+its shortfall was primarily damage. Level 18 also had some mana pressure (about
+86% encounter use on its representative build). Strengthening the poison branch
+improves both points without a global cost reduction or early base-damage buff.
+
+All 13 Venom Arrow archetypes were freshly sampled at levels 1–34 with seed
+20261014, 20 builds per available route/level and 20 rare candidates per gear
+slot: 3,260 builds. Other skills retain the preceding survey samples; per-level
+peer baselines are recalculated. The combined report validates.
+
+| Level | Best available route before | After | Second-seed check |
+| --- | ---: | ---: | ---: |
+| 18 | 64.9% | 78.8% | 76.1% |
+| 21 | 72.3% | 82.5% | 88.8% |
+
+The best sampled route is now in the 75–125% band at every level, ranging from
+77.1% to 121.6%. No Venom Arrow route is flagged high. The level-1 result remains
+113.8%, and level 34 improves from 78.2% to 91.6%. The second seed, 20261015,
+resamples every available Venom Arrow route at the two requested levels with
+20 builds each, comparing against the existing peer baselines. Level 18 remains
+close to the lower boundary; two seeds are evidence of improvement, not a
+guarantee that every random build or encounter meets the band.
+
+Local comparison snapshots: `BalanceResults/venom-arrow-before.json` and
+`BalanceResults/venom-arrow-after.json`, including their sample builds.
+`survey.json` and `recalculation-pool.json` contain the refreshed main-seed results.
+Historical workbook/CSV exports were not regenerated.
+
+Two added regression cases check connected access to Deep Venom, its three-point
+bonus and the completed six-point branch, unchanged duration/cost modifiers, and
+the absence of a new general damage multiplier. The non-survey EditMode run
+passed 312/313 cases; the sole failure is the previously documented passive-tree
+spacing violation. The full 318-archetype test was not rerun for this targeted
+change. No gameplay session or character save was used.

@@ -160,6 +160,25 @@ namespace PoeClone.Tests
             Assert.AreEqual(120f, tree.Get(WeaponSkillEffect.Duration));
         }
 
+        [TestCase(3, 55f, 30f)]
+        [TestCase(6, 90f, 60f)]
+        public void VenomArrowPoisonInvestmentRequiresItsConnectedNotable(int rank, float expectedPoison, float expectedDuration)
+        {
+            const StatType grant = StatType.GrantVenomArrow;
+            ItemData bow = ItemGenerator.Generate(new Random(1), "short_bow", 1, ItemRarity.Normal, grant);
+            bow.SkillProgress = new WeaponSkillProgress { level = rank };
+            Assert.IsFalse(bow.SkillProgress.Allocate(grant, "v2_0_2"));
+            Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v2_0_0"));
+            Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v2_0_1"));
+            Assert.AreEqual(0f, new WeaponSkillBonuses(bow).Get(WeaponSkillEffect.Poison));
+            for (int i = 2; i < rank; i++) Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v2_0_" + i));
+            var tree = new WeaponSkillBonuses(bow);
+            Assert.AreEqual(expectedPoison, tree.Get(WeaponSkillEffect.Poison));
+            Assert.AreEqual(expectedDuration, tree.Get(WeaponSkillEffect.Duration));
+            Assert.AreEqual(0f, tree.Get(WeaponSkillEffect.Cost));
+            Assert.AreEqual(1f, tree.MoreDamageMultiplier, "Only poison should gain damage from this change");
+        }
+
         [Test]
         public void TopFifth_UsesCeilingAndMeanCohort_AndStableSeed()
         {

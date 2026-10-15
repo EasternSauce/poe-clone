@@ -1,3 +1,7 @@
+version: 2026-10-15-venom-arrow-progression
+- Venom Arrow's Deep Venom now adds poison equal to 55% of hit damage instead of 25%, improving developing poison builds.
+- Black Blood adds another 35% instead of 40%, bringing the connected route's combined bonus to 90% instead of 65%. Base attack damage, mana cost and poison duration are unchanged.
+
 version: 2026-10-15-burning-arrow-progression
 - Burning Arrow's small weapon-tree nodes now also grant 7% more damage, improving damage while developing a route.
 - Redistributed terminal damage into those earlier nodes: Slow Burn now grants 20% more damage instead of 45%, and Hot Coals grants 10% instead of 25%. Their other effects and allocation requirements are unchanged.
