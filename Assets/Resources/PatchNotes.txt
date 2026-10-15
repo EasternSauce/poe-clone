@@ -1,3 +1,7 @@
+version: 2026-10-15-cloudburst-balance
+- Rain of Arrows' Cloudburst keeps four additional arrows, with 35% less damage instead of 15% less damage to reduce concentrated boss damage.
+- Offline Rain of Arrows estimates now include the guaranteed arrow at the aim point in every salvo.
+
 version: 2026-10-15-inventory-recovery-and-regression-checks
 - Loading saves recovers duplicate equipment entries and items from extra stash tabs instead of silently discarding them.
 - Stacking inventory items updates observers once after the complete transfer, avoiding intermediate bag states.

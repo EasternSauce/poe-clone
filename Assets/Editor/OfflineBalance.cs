@@ -601,9 +601,10 @@ namespace PoeClone.EditorTools
                 // Aftershock centres barely overlap: a stationary target receives one wave.
                 if (skill.Id == SkillId.RainOfArrows)
                 {
-                    float spread = 2.4f * Mathf.Max(.25f, 1 + tree.Get(E.RainSpread) / 100);
-                    float radius = 1.1f * DefenceMath.RadiusMultiplier(sheet.Total(StatType.AreaOfEffect) + tree.Get(E.Area));
-                    hits = (6 + tree.ExtraProjectiles) * (1 + tree.Get(E.RainSalvos)) * Mathf.Clamp01(radius * radius / (spread * spread));
+                    float spread = PlayerSkills.RainRadius * Mathf.Max(.25f, 1 + tree.Get(E.RainSpread) / 100);
+                    float radius = PlayerSkills.RainHitRadius * DefenceMath.RadiusMultiplier(sheet.Total(StatType.AreaOfEffect) + tree.Get(E.Area));
+                    hits = PlayerSkills.ExpectedRainHits(1 + tree.ExtraProjectiles,
+                        1 + Mathf.RoundToInt(tree.Get(E.RainSalvos)), spread, radius);
                 }
                 baseHit += sheet.Total(StatType.MaxMana) * sheet.Total(StatType.ManaAsDamage) / 100;
                 float chilled = skill.Id == SkillId.IceShard ? 1 : ChanceUptime(tree.Get(E.Chill) + (attack ? sheet.Total(StatType.ChillOnHit) : 0), rate, 2 * tree.DurationMultiplier);

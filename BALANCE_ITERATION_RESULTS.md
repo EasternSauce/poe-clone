@@ -98,3 +98,59 @@ Broader regression checks: **65/75 passed; 10 failed**. The failures concern exi
 - `SkillGearTests.StarterBow_CarriesSplitShot_AndBowSkillsAreNotTheAttack`
 
 Local artifacts: `BalanceResults/survey.json`, `BalanceResults/skill-balance.xlsx`, `BalanceResults/sample-builds.csv`, `BalanceResults/recalculation-pool.json`, `BalanceResults/matched-route-checks.csv`, and the three `*-rows.json` snapshots used by this comparison.
+
+## Cloudburst follow-up — 2026-10-15
+
+Cloudburst now keeps its four additional arrows but applies 35% less damage,
+previously 15%. The connected six-point requirement, impact area, arrow count and
+other weapon nodes are unchanged. Existing allocations remain valid.
+
+Before tuning, inspection found a survey mismatch: gameplay guarantees one arrow
+at the aim point in every salvo, while the old estimate treated all arrows as
+scattered. The evaluator now shares the runtime arrow-count calculation and rain
+geometry, and adds one guaranteed central hit per salvo before estimating overlap
+from the remaining arrows. This estimates a stationary point target, not collider
+extent or a moving boss. It changes the estimate, not runtime arrow placement.
+
+Using that corrected model, Rain of Arrows was refreshed before and after the
+Cloudburst change with the same seed, 20 sampled builds per available route/level,
+and 20 rare candidates per gear slot. Each refresh covers all 13 Rain archetypes
+and levels 1–34: 3,260 builds. Other skills retain the preceding full-survey samples;
+peer baselines are rebuilt for every level. The complete report validates.
+
+| Cloudburst level | Corrected baseline | After tuning |
+| --- | ---: | ---: |
+| 20 | 128.0% | 92.7% |
+| 25 | 139.5% | 100.8% |
+| 29 | 112.3% | 81.1% |
+| 34 | 169.5% | 121.7% |
+
+Cloudburst alone is now inside 75–125% at every available level (20–34). Level-34
+cohort DPS falls from 1,216.6 to 873.3 with identical modeling assumptions. The
+earlier 150.4% figure used the old overlap estimate and is not a valid direct
+before/after comparison for the gameplay adjustment.
+
+Remaining work: the Cloudburst + Pinning Rain hybrid falls from 90.1% to 65.8% at
+level 34; its spread and guaranteed chill are not valued as utility by this DPS
+metric. The corrected model also exposes a strong flexible route (135.8% at level
+34) and Death Zone + Overlapping Impacts outliers (129.7% at level 31 and 138.8% at
+33). None of their raw DPS values changed between the corrected baseline and the
+Cloudburst tuning unless the allocation includes Cloudburst. The follow-up should
+consider those routes together before declaring Rain of Arrows balanced.
+
+Local comparison snapshots: `BalanceResults/rain-cloudburst-before.json` (old
+model), `BalanceResults/rain-cloudburst-corrected-baseline.json`, and
+`BalanceResults/rain-cloudburst-after.json`. `survey.json` and
+`recalculation-pool.json` contain the refreshed results. The historical workbook
+and CSV above were not regenerated and should not be used for this follow-up.
+
+Regression coverage adds five overlap cases (centered hits, extra arrows,
+multiple salvos, full overlap and zero spread), plus two cases checking
+Cloudburst's allocation budget, projectile bonus and separate damage penalty.
+No gameplay session or character save was used.
+
+Validation: 306/307 non-survey EditMode cases passed, including all seven added
+cases. The sole failure remains the previously documented passive-tree edge
+spacing violation. The full 318-archetype test was not rerun for this targeted
+change; all 13 Rain routes were freshly sampled and the combined report validated.
+Forced Unity refresh and compilation completed with no console errors.

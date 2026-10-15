@@ -18,8 +18,8 @@ namespace PoeClone.Skills
         private const float SplitSpread = 13f;
         private const float PierceSpread = 5f;
         private const float PierceRangeMore = 1.8f;
-        private const float RainRadius = 2.4f;     // where the arrows land round the aimed spot
-        private const float RainHitRadius = 1.1f;  // what each one hits where it lands
+        public const float RainRadius = 2.4f;     // where the arrows land round the aimed spot
+        public const float RainHitRadius = 1.1f;  // what each one hits where it lands
         private const float BurnRadius = 1.5f;
 
         public static float BowProjectileRange(float range, SkillId? skill) =>
@@ -52,6 +52,14 @@ namespace PoeClone.Skills
 
         private const int SplitExtra = 2;
         private static int RainCount(int arrows) => 6 + Mathf.Max(0, arrows - 1);
+
+        /// <summary>Expected impacts on a stationary point at the aim position. Each salvo
+        /// places its first arrow at that position; only the remaining arrows scatter.</summary>
+        public static float ExpectedRainHits(int arrows, int salvos, float spread, float hitRadius)
+        {
+            float chance = spread > 0f ? Mathf.Clamp01(hitRadius * hitRadius / (spread * spread)) : 1f;
+            return Mathf.Max(1, salvos) * (1f + (RainCount(arrows) - 1) * chance);
+        }
 
         // When the k-th of n rain arrows lands, after the shot.
         private static float RainDelay(int k, int n)

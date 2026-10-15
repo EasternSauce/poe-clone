@@ -99,6 +99,36 @@ namespace PoeClone.Tests
             }
         }
 
+        [TestCase(1, 1, 2f, 1f, 2.25f)]
+        [TestCase(8, 1, 2f, 1f, 4f)]
+        [TestCase(8, 3, 2f, 1f, 12f)]
+        [TestCase(8, 1, 2f, 3f, 13f)]
+        [TestCase(1, 2, 0f, 1f, 12f)]
+        public void RainOverlapIncludesOneGuaranteedCentralArrowPerSalvo(int arrows, int salvos, float spread, float radius, float expected)
+        {
+            var skills = Type.GetType("PoeClone.Skills.PlayerSkills, Assembly-CSharp", true);
+            float hits = (float)skills.GetMethod("ExpectedRainHits").Invoke(null, new object[] { arrows, salvos, spread, radius });
+            Assert.AreEqual(expected, hits, .0001f);
+        }
+
+        [TestCase(5, false)]
+        [TestCase(6, true)]
+        public void CloudburstKeepsItsSixPointApproachAndExtraArrowsWithADamageTradeoff(int rank, bool canFinish)
+        {
+            const StatType grant = StatType.GrantRainOfArrows;
+            ItemData bow = ItemGenerator.Generate(new Random(1), "short_bow", 1, ItemRarity.Normal, grant);
+            bow.SkillProgress = new WeaponSkillProgress { level = rank };
+            for (int i = 0; i < 5; i++) Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v2_0_" + i));
+            var before = new WeaponSkillBonuses(bow);
+            Assert.AreEqual(3, before.ExtraProjectiles);
+            Assert.AreEqual(1f, before.MoreDamageMultiplier);
+            Assert.AreEqual(canFinish, bow.SkillProgress.Allocate(grant, "v2_0_5"));
+            var after = new WeaponSkillBonuses(bow);
+            Assert.AreEqual(canFinish ? 7 : 3, after.ExtraProjectiles);
+            Assert.AreEqual(canFinish ? .65f : 1f, after.MoreDamageMultiplier, .0001f);
+            Assert.AreEqual(before.Get(WeaponSkillEffect.Area), after.Get(WeaponSkillEffect.Area));
+        }
+
         [Test]
         public void TopFifth_UsesCeilingAndMeanCohort_AndStableSeed()
         {
