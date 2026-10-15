@@ -310,3 +310,61 @@ other minion kinds. The non-survey EditMode run passed 317/318 cases; the only
 failure remains the documented passive-tree spacing violation. The full
 318-archetype test was not rerun for this targeted change. No gameplay session or
 character save was used.
+
+## Smaller high-outlier recheck ? 2026-10-15
+
+**Decision: leave Lunging Thrust, Fissure, Whirlwind and Piercing Shot unchanged.**
+The previously flagged comparisons do not repeat above 125% with larger samples.
+This is a targeted boss-model check, not a new full level-1?34 survey or gameplay
+validation.
+
+At source revision `4abcee1`, measured 100 builds per available target route and
+level with seeds `20261014` and `20261015`, versus the original 20. Each fully
+viable route therefore averages its best 20 builds instead of four. The first
+seed extends the original deterministic population; the two seeds are separate
+populations. Rare candidates per slot remain 20, the encounter remains 30 seconds,
+and the existing melee/Piercing Shot/minion premiums and survival gates apply.
+No character, scene or gameplay balance data was changed.
+
+Checked levels 11, 14, 15, 24, 26 and 30, including every available route for the
+four target skills. At each level all 24 main skills were resampled with the same
+100-build budget. At levels 11?15 only flexible routes are available, so the peer
+catalogue is complete. At levels 24 and 30, other skills use their winning route
+from the existing survey: those baselines remain conditional on route selection,
+and unmeasured alternatives could raise the baseline and reduce the reported
+ratios. Level 26 was subsequently expanded to **all 168 available routes across
+all 24 skills**, because the initial shortlist produced a marginal Fissure flag.
+
+The completed check contains 696 route/level/seed measurements and **69,600
+builds**, all viable. Each seed has its own recalculated median peer baseline.
+Percentages below are the strongest available target route divided by that
+baseline after the existing premium adjustment.
+
+| Skill | Level | Original 20-build result | 100 builds, seed 20261014 | 100 builds, seed 20261015 |
+| --- | ---: | ---: | ---: | ---: |
+| Lunging Thrust | 11 | 126.3% | 113.1% | 115.7% |
+| Lunging Thrust | 14 | 127.2% | 121.5% | 122.6% |
+| Lunging Thrust | 15 | 137.1% | 123.1% | 116.2% |
+| Fissure ? Volcanic Rupture | 24 | 125.8% | 120.3% | 124.2% |
+| Fissure ? Volcanic Rupture | 30 | 125.1% | 114.7% | 118.7% |
+| Whirlwind ? Dervish | 26 | 125.6% | 113.1% | 109.3% |
+| Piercing Shot | 11 | 127.1% | 117.9% | 113.8% |
+
+Fissure at level 26 initially measured 124.2% and 125.3% against the resampled
+peer shortlist. Expanding to every peer route reduced those results to 123.2%
+and 123.1%. No target route exceeds 125% in either completed run at the checked
+levels. These observations support treating the original isolated flags as
+sampling-sensitive rather than grounds for a nerf. Two seeds do not establish
+formal confidence bounds or prove balance at unchecked levels. Fissure remains
+close to the upper band and is worth watching in future broad surveys.
+
+Local aggregates and settings are in
+`BalanceResults/outlier-recheck-20261014.json` and
+`BalanceResults/outlier-recheck-20261015.json`; each contains the catalogue and
+one representative build per measured route/level, not every raw build.
+The local plan files record the initial shortlist and the level-26 expansion.
+The existing `survey.json`, recalculation pool and workbook/CSV exports were left
+intact; they still contain the earlier 20-build survey. No new runtime or test
+code was introduced, so the unit suite was not rerun for this analysis. The last
+suite result remains 317/318 non-survey EditMode cases passing, with the known
+passive-tree spacing failure.
