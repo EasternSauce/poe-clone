@@ -127,7 +127,8 @@ namespace PoeClone.Skills
         /// <summary>Fixed base damage before minion stats and weapon tree bonuses.</summary>
         public static float DamageAt(MinionKind kind, int level)
         {
-            return ProfileOf(kind).Damage * 2f;
+            // Scale the previous 1.3x baseline target down to 1.2x for every summon.
+            return ProfileOf(kind).Damage * (2f * 1.2f / 1.3f);
         }
 
         /// <summary>Base minion cap. CapFor adds this weapon's allocated nodes.</summary>

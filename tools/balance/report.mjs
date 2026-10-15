@@ -86,7 +86,7 @@ const overviewValues = skillNames.map((skill, i) => {
     levels(high), levels(low), levels(hunger), best[33]?.name ?? 'No viable build'];
 });
 overviewValues.sort((a, b) => (b[7] ?? -1) - (a[7] ?? -1));
-let layout = table(overview, 'Boss single-target balance review', 'Best available archetype per skill. 100% = peer baseline after melee/Piercing Shot ×1.5 and minion ×1.3 targets. Red >125%; blue <75%.',
+let layout = table(overview, 'Boss single-target balance review', `Best available archetype per skill. 100% = peer baseline after melee ×${report.settings.meleePremium}, Piercing Shot ×${report.settings.piercingPremium ?? 1} and minion ×${report.settings.minionPremium} targets. Red >125%; blue <75%.`,
   ['Skill', 'Family', 'Level 1', 'Level 7', 'Level 14', 'Level 21', 'Level 28', 'Level 34', 'High DPS levels', 'Low DPS levels', 'Mana-limited levels', 'Best level 34 archetype'],
   overviewValues, 'SkillOverview', [22, 12, 12, 12, 12, 12, 12, 12, 23, 23, 25, 48]);
 overview.getRange(`C5:H${layout.end}`).setNumberFormat('0%');

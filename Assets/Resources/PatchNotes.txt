@@ -1,3 +1,6 @@
+version: 2026-10-15-minion-damage
+- Reduced all minion base damage by 7.7%, lowering their balance DPS target from 1.3x to 1.2x the peer baseline.
+
 version: 2026-10-15-arena-build-minimum-levels
 - Arena build selection always shows every route with its minimum level. Picking a route raises the level when needed and prevents lowering it below that minimum until you change builds. Random levels respect the selected route's minimum.
 
