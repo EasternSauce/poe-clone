@@ -115,7 +115,7 @@ namespace PoeClone.World
             pageLabel.text = "Routes " + (page + 1) + " / " + pages;
             detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected: " + skill + " · " + choices.First(b => b.id == route).name) +
                 "\nRecorded best-of-20 rare gear, character passives and weapon tree; no uniques. Random level uses a tested level for the chosen route." +
-                "\nWalk through the door for 20 random encounters, then 3 bosses, all at your level. No XP, loot or character saves.";
+                "\nFight 20 waves of 1–5 enemies with occasional bosses, all at your level. Enemies stay aggressive. No XP, loot or character saves.";
         }
         private void StartRun()
         {

@@ -601,6 +601,12 @@ private bool IsBlocked(Vector3 direction)
 
         private void UpdateState(float distance)
         {
+            // Arena waves (including summoned adds) keep engaging across the whole floor.
+            if (PoeClone.World.MinimalCombatMode.ArenaEnabled)
+            {
+                if (state == State.Idle) Aggro();
+                return;
+            }
             if (state == State.Idle && distance <= aggroRange)
             {
                 Aggro();

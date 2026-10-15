@@ -70,6 +70,7 @@ namespace PoeClone.World
         private readonly List<int> bosses = new List<int>();
         private int encounterIndex;   // 1-based once fighting
         private int bossIndex;
+        private readonly List<int> arenaBossWaves = new List<int>();
         private GameObject doorBlock;
         private GauntletUI ui;
         private BalanceArenaBuilds.Entry arenaBuild;
@@ -242,6 +243,17 @@ namespace PoeClone.World
             {
                 double roll = plan.NextDouble();
                 var e = new Encounter { Kinds = new List<int>() };
+                if (MinimalCombatMode.ArenaEnabled)
+                {
+                    int size = plan.Next(1, 6);
+                    e.Elite = roll < 0.15;
+                    e.Label = (e.Elite ? "elite group" : "mixed group") + " (" + size + ")";
+                    for (int i = 0; i < size; i++)
+                        e.Kinds.Add(e.Elite && i == 0
+                            ? EnemyKinds.IndexOf(EliteKinds[plan.Next(EliteKinds.Length)]) : RandomNormal(plan));
+                    encounters.Add(e);
+                    continue;
+                }
                 // At least three elite fights, spread through the run.
                 bool elite = (k % 7 == 6 && elites < 3) || (roll < 0.08 && elites < 4);
                 if (elite)
@@ -283,6 +295,13 @@ namespace PoeClone.World
                 bosses.Add(pool[pick]);
                 pool.RemoveAt(pick);
             }
+            arenaBossWaves.Clear();
+            if (MinimalCombatMode.ArenaEnabled)
+                for (int k = 1; k <= bosses.Count; k++)
+                {
+                    int midpoint = k * EncounterCount / (bosses.Count + 1);
+                    arenaBossWaves.Add(plan.Next(midpoint - 1, midpoint + 2));
+                }
         }
 
         private static int RandomNormal(System.Random plan) => EnemyKinds.IndexOf(NormalKinds[plan.Next(NormalKinds.Length)]);
@@ -336,42 +355,53 @@ namespace PoeClone.World
                     ClearEnemies();
                 }
                 record.clearedAt = Recorder.Now;
+                if (MinimalCombatMode.ArenaEnabled && bossIndex < bosses.Count &&
+                    encounterIndex == arenaBossWaves[bossIndex])
+                {
+                    bossIndex++;
+                    yield return RunBoss();
+                    phase = Phase.Encounters;
+                }
             }
 
+            if (!MinimalCombatMode.ArenaEnabled)
+                for (bossIndex = 1; bossIndex <= bosses.Count; bossIndex++)
+                    yield return RunBoss();
+            Finish(true);
+        }
+
+        private IEnumerator RunBoss()
+        {
             phase = Phase.Bosses;
             Recorder.CurrentEncounter = 0;
-            for (bossIndex = 1; bossIndex <= bosses.Count; bossIndex++)
+            yield return new WaitForSeconds(Automated ? 1f : 4f);
+            EnemyKind kind = EnemyKinds.Get(bosses[bossIndex - 1]);
+            Status = "boss " + bossIndex + " / " + bosses.Count + ": " + kind.Name;
+            Recorder.Phase = "boss " + kind.Name;
+            ReturnBot();
+            EnemyHealth boss = SpawnBoss(bosses[bossIndex - 1]);
+            var record = new GauntletRecorder.BossRecord { name = kind.Name, level = Level, maxHealth = boss.MaxHealth, spawnedAt = Recorder.Now };
+            Recorder.Data.bossFights.Add(record);
+            Recorder.CurrentBoss = record;
+            Recorder.InCombat = true;
+            float timeout = Automated ? 240f : float.MaxValue;
+            float started = Time.time;
+            yield return new WaitUntil(() => boss == null || boss.IsDead || Time.time - started > timeout);
+            Recorder.InCombat = false;
+            if (boss != null && boss.IsDead)
             {
-                yield return new WaitForSeconds(Automated ? 1f : 4f);
-                EnemyKind kind = EnemyKinds.Get(bosses[bossIndex - 1]);
-                Status = "boss " + bossIndex + " / " + bosses.Count + ": " + kind.Name;
-                Recorder.Phase = "boss " + kind.Name;
-                ReturnBot();
-                EnemyHealth boss = SpawnBoss(bosses[bossIndex - 1]);
-                var record = new GauntletRecorder.BossRecord { name = kind.Name, level = Level, maxHealth = boss.MaxHealth, spawnedAt = Recorder.Now };
-                Recorder.Data.bossFights.Add(record);
-                Recorder.CurrentBoss = record;
-                Recorder.InCombat = true;
-                float timeout = Automated ? 240f : float.MaxValue;
-                float started = Time.time;
-                yield return new WaitUntil(() => boss == null || boss.IsDead || Time.time - started > timeout);
-                Recorder.InCombat = false;
-                if (boss != null && boss.IsDead)
+                record.diedAt = Recorder.Now;
+                if (record.firstHitAt >= 0f)
                 {
-                    record.diedAt = Recorder.Now;
-                    if (record.firstHitAt >= 0f)
-                    {
-                        record.timeToKill = Mathf.Max(0.01f, record.diedAt - record.firstHitAt);
-                        record.dps = record.maxHealth / record.timeToKill;
-                    }
-                    record.dpsFromSpawn = record.maxHealth / Mathf.Max(0.01f, record.diedAt - record.spawnedAt);
+                    record.timeToKill = Mathf.Max(0.01f, record.diedAt - record.firstHitAt);
+                    record.dps = record.maxHealth / record.timeToKill;
                 }
-                else
-                    record.timedOut = true;
-                Recorder.CurrentBoss = null;
-                ClearEnemies();
+                record.dpsFromSpawn = record.maxHealth / Mathf.Max(0.01f, record.diedAt - record.spawnedAt);
             }
-            Finish(true);
+            else
+                record.timedOut = true;
+            Recorder.CurrentBoss = null;
+            ClearEnemies();
         }
 
         // The bot walks a little towards every fight; it starts each one from the same spot.
