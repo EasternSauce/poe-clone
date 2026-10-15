@@ -1,3 +1,9 @@
+version: 2026-10-15-iterative-boss-balance
+- Rebalanced main skills over two full boss-benchmark passes at every level from 1 through 34. Extreme bow and dagger damage is lower, Aftershock hits harder, and weak summons receive substantial base-damage buffs.
+- Main attack spells now gain 6% of their level-one base damage per character level after the first. Minion base damage also grows with character level: 3.5% per level, 4.5% for bone golems and 2.2% for vipers. Weapon rank still grants specialization points rather than automatic damage.
+- Burning Arrow and Split Shot earn more damage from their weapon passives. Rain of Arrows is stronger before specialization, with less concentrated overlap from its focused route. Fang Strike and Fissure's strongest routes are toned down; Cross Slash's Bladedance gains damage.
+- Offline balance reports now benchmark equally weighted Mortis, Ashen Warlord and Rimeheart with actual boss defences, scaled basic attacks and skill-triggered enrage. Boss target stats and states are included in the workbook.
+
 version: 2026-10-15-summoner-support-and-balance-survey
 - Rain of Arrows' Broad Coverage keystone is now Pinning Rain: it retains wider spread and two additional arrows, and hits always chill enemies, slowing their movement by 50% for 2 seconds. Further hits refresh the chill.
 - Pulverize now earns more of its power from keystones: early armour penetration is lower, Anvil and Cracked Armour complete penetration, and Worldshaker, Heavy Impact, Bonecrusher and Steady Blows reward finishing their routes more strongly.

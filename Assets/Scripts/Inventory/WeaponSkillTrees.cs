@@ -80,17 +80,17 @@ namespace PoeClone.Inventory
             Add(t, StatType.GrantSplitShot,
                 P("Broadside", U(E.ProjectileSpeed, 12), "Fivefold Shot", M(B(E.Projectiles, 2)), "Splinter Volley", M(B(E.Fork, 1)), "Longshot", B(E.Range, 40)),
                 P("Ricochet", U(E.Area, 10), "Rebound", M(B(E.Chains, 1)), "Bouncing Volley", M(B(E.Chains, 1), B(E.MoreDamage, -15)), "Wide Volley", B(E.Projectiles, 1)),
-                P("Steady Hands", M(B(E.Damage, 10)), "Through the Ranks", M(B(E.Pierce, 1)), "Rapid Release", M(B(E.Speed, 22)), "Hunter's Sustenance", B(E.LifeOnHit, 3)));
+                P("Steady Hands", M(B(E.Damage, 10)), "Through the Ranks", M(B(E.Pierce, 1)), "Rapid Release", M(B(E.Speed, 22), B(E.MoreDamage, 30)), "Hunter's Sustenance", B(E.LifeOnHit, 3)));
             Add(t, StatType.GrantPiercingShot,
                 P("Long Draw", U(E.Range, 12), "Deep Draw", M(B(E.ChargeDamage, 20)), "Patient Hunter", M(B(E.ChargeDamage, 40), B(E.ChargeTime, 25)), "Far Sight", B(E.Range, 50)),
                 P("Heavy Shaft", U(E.ProjectileSpeed, 15), "Armour Breaker", M(B(E.ArmourPenetration, 60)), "Heartseeker", M(B(E.FirstStrike, 40)), "Execution", B(E.DamageVsLowLife, 40)),
                 P("Breath Control", M(B(E.Damage, 10)), "Quick Draw", M(B(E.ChargeTime, -15)), "Practised Sniper", M(B(E.ChargeTime, -20)), "Sure Aim", B(E.ArmourPenetration, 90), B(E.Damage, 15)));
             Add(t, StatType.GrantRainOfArrows,
                 P("Arrowfall", U(E.Area, 12), "Arrowstorm", M(B(E.Projectiles, 3)), "Cloudburst", M(B(E.Projectiles, 4), B(E.MoreDamage, -15)), "Pinning Rain", B(E.RainSpread, 35), B(E.Projectiles, 2), B(E.Chill, 100)),
-                P("Focused Rain", M(B(E.Damage, 10)), "Concentrated Rain", M(B(E.RainSpread, -20)), "Death Zone", M(B(E.RainSpread, -25)), "Overlapping Impacts", B(E.Area, 40)),
+                P("Focused Rain", M(B(E.Damage, 10)), "Concentrated Rain", M(B(E.RainSpread, -10)), "Death Zone", M(B(E.RainSpread, -15)), "Overlapping Impacts", B(E.Area, 40)),
                 P("Sustained Rain", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Second Salvo", M(B(E.RainSalvos, 1), B(E.MoreDamage, -25)), "Rolling Barrage", M(B(E.RainSalvos, 1), B(E.MoreDamage, -33.333333f)), "Blood Rain", B(E.LifeOnHit, 3)));
             Add(t, StatType.GrantBurningArrow,
-                P("Ignition", U(E.Duration, 15), "Firestarter", M(B(E.Ignite, 20)), "Slow Burn", M(B(E.Duration, 45), B(E.Ignite, 20)), "Hot Coals", B(E.Damage, 25)),
+                P("Ignition", U(E.Duration, 15), "Firestarter", M(B(E.Ignite, 20), B(E.MoreDamage, 20)), "Slow Burn", M(B(E.Duration, 45), B(E.Ignite, 20), B(E.MoreDamage, 45)), "Hot Coals", B(E.Damage, 25), B(E.MoreDamage, 25)),
                 P("Blast Radius", U(E.Area, 10), "Flame Burst", M(B(E.Area, 25)), "Scorched Earth", M(B(E.Area, 35), B(E.Pierce, 1)), "Burning Volley", B(E.Projectiles, 1)),
                 P("Hot Draw", U(E.ProjectileSpeed, 12), "Rapid Fire", M(B(E.Speed, 12)), "Flashfire", M(B(E.Speed, 20)), "Searing Reach", B(E.Range, 40), B(E.Projectiles, 1)));
             Add(t, StatType.GrantVenomArrow,
@@ -119,20 +119,20 @@ namespace PoeClone.Inventory
                 P("Sustenance", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Blood Funnel", M(B(E.LifeOnHit, 2)), "Sanguine Storm", M(B(E.LifeOnHit, 3)), "Reaching Steel", B(E.Range, 30)));
             Add(t, StatType.GrantFissure,
                 P("Fault Line", U(E.Range, 10), "Deep Fault", M(B(E.Range, 25)), "Continental Rift", M(B(E.Range, 40)), "Wide Fault", B(E.Area, 30)),
-                P("Molten Core", U(E.Duration, 15), "Lava Vein", M(B(E.Fire, 1), B(E.Ignite, 15)), "Volcanic Rupture", M(B(E.Ignite, 25), B(E.Area, 25)), "Lingering Heat", B(E.Duration, 40)),
-                P("Tectonic Force", U(E.ArmourPenetration, 20), "Deep Pressure", M(B(E.Damage, 25)), "Bedrock Breaker", M(B(E.ArmourPenetration, 120)), "Fault Recovery", B(E.LifeOnHit, 4)));
+                P("Molten Core", U(E.Duration, 15), "Lava Vein", M(B(E.Fire, 1), B(E.Ignite, 10)), "Volcanic Rupture", M(B(E.Ignite, 20), B(E.Area, 25), B(E.MoreDamage, -15)), "Lingering Heat", B(E.Duration, 40)),
+                P("Tectonic Force", U(E.ArmourPenetration, 12), "Deep Pressure", M(B(E.Damage, 35)), "Bedrock Breaker", M(B(E.ArmourPenetration, 52)), "Fault Recovery", B(E.LifeOnHit, 4)));
             Add(t, StatType.GrantAftershock,
                 P("Rolling Thunder", U(E.Range, 10), "Fourth Tremor", M(B(E.ExtraWaves, 1)), "Unending Quake", M(B(E.ExtraWaves, 1), B(E.MoreDamage, -15)), "Long Ripples", B(E.Range, 35)),
                 P("Epicentre", M(B(E.Damage, 10)), "Focused Shock", M(B(E.ArmourPenetration, 60)), "Ground Zero", M(B(E.FirstStrike, 35)), "Tremor Force", B(E.Damage, 25)),
                 P("Shockwave", U(E.Area, 10), "Wider Ripples", M(B(E.Area, 25)), "Tidal Earth", M(B(E.Area, 35)), "Resonant Recovery", B(E.LifeOnHit, 3)));
             Add(t, StatType.GrantCrossSlash,
                 P("Long Blades", U(E.Range, 10), "Extended Cross", M(B(E.Range, 25)), "Crossroads", M(B(E.Area, 35)), "Far Cuts", B(E.Range, 35)),
-                P("Flashing Steel", M(B(E.Speed, 5)), "Swift Cuts", M(B(E.Speed, 12)), "Bladedance", M(B(E.Speed, 20)), "Blood Dance", B(E.LifeOnHit, 3)),
+                P("Flashing Steel", M(B(E.Speed, 5)), "Swift Cuts", M(B(E.Speed, 12)), "Bladedance", M(B(E.Speed, 20), B(E.MoreDamage, 10)), "Blood Dance", B(E.LifeOnHit, 3)),
                 P("Death Cross", U(E.ArmourPenetration, 20), "Finishing Cut", M(B(E.DamageVsLowLife, 20)), "Fatal Intersection", M(B(E.DamageVsLowLife, 40)), "Deep Cuts", B(E.ArmourPenetration, 100)));
             Add(t, StatType.GrantFangStrike,
-                P("Venom", U(E.Duration, 15), "Deep Fangs", M(B(E.Poison, 25)), "Deathbite", M(B(E.Poison, 45)), "Lasting Bite", B(E.Duration, 40)),
-                P("Adder", M(B(E.Speed, 5)), "Quick Bite", M(B(E.Speed, 12)), "Viper's Dance", M(B(E.Speed, 20)), "Siphoning Fangs", B(E.LifeOnHit, 4)),
-                P("Puncture", U(E.ArmourPenetration, 20), "Vital Strike", M(B(E.FirstStrike, 25)), "Assassination", M(B(E.Cull, 1)), "Long Fangs", B(E.Range, 35)));
+                P("Venom", U(E.Duration, 15), "Deep Fangs", M(B(E.Poison, 20), B(E.MoreDamage, 10)), "Deathbite", M(B(E.Poison, 35)), "Lasting Bite", B(E.Duration, 40)),
+                P("Adder", M(B(E.Speed, 5)), "Quick Bite", M(B(E.Speed, 12), B(E.MoreDamage, 10)), "Viper's Dance", M(B(E.Speed, 20)), "Siphoning Fangs", B(E.LifeOnHit, 4)),
+                P("Puncture", U(E.ArmourPenetration, 20), "Vital Strike", M(B(E.FirstStrike, 25), B(E.MoreDamage, 10)), "Assassination", M(B(E.Cull, 1)), "Long Fangs", B(E.Range, 35)));
             Add(t, StatType.GrantVenomSlash,
                 P("Poison Fan", U(E.Range, 10), "Wide Infection", M(B(E.Area, 25)), "Pestilent Sweep", M(B(E.Range, 35)), "Spreading Cut", B(E.Area, 35)),
                 P("Virulent Edge", U(E.Duration, 15), "Septic Blade", M(B(E.Poison, 25)), "Black Venom", M(B(E.Poison, 45)), "Persistent Rot", B(E.Duration, 40)),

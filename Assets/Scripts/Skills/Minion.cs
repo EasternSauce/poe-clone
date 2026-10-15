@@ -109,15 +109,15 @@ namespace PoeClone.Skills
             switch (kind)
             {
                 case MinionKind.Mage:
-                    return new Profile { Life = 41f, Damage = 2.5f, Cooldown = 1.6f, Range = 8.5f, Speed = 6f, Look = "Skeleton Mage" };
+                    return new Profile { Life = 41f, Damage = 24f, Cooldown = 1.6f, Range = 8.5f, Speed = 6f, Look = "Skeleton Mage" };
                 case MinionKind.Wolf:
-                    return new Profile { Life = 88f, Damage = 2.75f, Cooldown = 0.8f, Range = 2f, Speed = 9f, Look = "Spirit Wolf" };
+                    return new Profile { Life = 88f, Damage = 7.25f, Cooldown = 0.8f, Range = 2f, Speed = 9f, Look = "Spirit Wolf" };
                 case MinionKind.Golem:
-                    return new Profile { Life = 248f, Damage = 4.5f, Cooldown = 1.5f, Range = 2.6f, Speed = 5.5f, Look = "Bone Golem" };
+                    return new Profile { Life = 248f, Damage = 24f, Cooldown = 1.5f, Range = 2.6f, Speed = 5.5f, Look = "Bone Golem" };
                 case MinionKind.Viper:
-                    return new Profile { Life = 93f, Damage = 3.5f, Cooldown = 1.15f, Range = 2.2f, Speed = 8f, Look = "Giant Spider" };
+                    return new Profile { Life = 93f, Damage = 13f, Cooldown = 1.15f, Range = 2.2f, Speed = 8f, Look = "Giant Spider" };
                 default:
-                    return new Profile { Life = 70f, Damage = 2.5f, Cooldown = 1.1f, Range = 2.1f, Speed = 6.5f, Look = "Skeleton Warrior" };
+                    return new Profile { Life = 70f, Damage = 10f, Cooldown = 1.1f, Range = 2.1f, Speed = 6.5f, Look = "Skeleton Warrior" };
             }
         }
 
@@ -163,7 +163,7 @@ namespace PoeClone.Skills
 
         /// <summary>Damage per hit with the owner's Minion Damage, for the skills panel.</summary>
         public static float DamageFor(MinionKind kind, int level, StatSheet sheet, WeaponSkillBonuses tree = null) =>
-            DamageAt(kind, level) * Mathf.Max(0f, 1f +
+            DamageAt(kind, level) * (1f + (kind == MinionKind.Golem ? .045f : kind == MinionKind.Viper ? .022f : .035f) * Mathf.Max(0, (sheet?.Level ?? 1) - 1)) * Mathf.Max(0f, 1f +
                 (Stat(sheet, StatType.Intelligence) * 0.5f + Stat(sheet, StatType.MinionDamage) + (tree?.Get(WeaponSkillEffect.Damage) ?? 0f)) / 100f) * (tree?.MoreDamageMultiplier ?? 1f) *
             (sheet != null ? sheet.Multiplier(StatType.MoreMinionDamage) * sheet.Multiplier(StatType.MinionDamagePenalty) : 1f);
 

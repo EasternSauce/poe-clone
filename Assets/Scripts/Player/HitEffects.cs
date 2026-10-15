@@ -145,8 +145,8 @@ namespace PoeClone.Player
                 float cloud = sheet.Total(StatType.VenomCloudOnHit);
                 if (venomArrowLevel > 0)
                 {
-                    poison += 90f;
-                    cloud += 25f;
+                    poison += SkillBook.VenomArrowPoison;
+                    cloud += SkillBook.VenomArrowCloud;
                 }
                 WeaponVenom.Apply(attacker, enemy, baseDamage, poison, cloud, sheet, canEnrage: !melee, durationMultiplier: tree?.DurationMultiplier ?? 1f, radiusMultiplier: tree?.AreaMultiplier ?? 1f, tree: tree);
             }

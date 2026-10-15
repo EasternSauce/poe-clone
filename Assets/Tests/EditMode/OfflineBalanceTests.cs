@@ -162,6 +162,87 @@ namespace PoeClone.Tests
             Assert.IsInstanceOf<ArgumentOutOfRangeException>(error.InnerException);
         }
 
+        [Test]
+        public void BossMitigation_AppliesEnrageBeforeArmour_AndCapsPhysicalPenetration()
+        {
+            float Hit(float penetration, float damageTaken, bool physical) =>
+                (float)Call("BossMitigatedHit", 100f, 250f, 20f, penetration, damageTaken, physical);
+            Assert.AreEqual(80f * (1 - DefenceMath.ArmourReduction(250f, 80f)), Hit(0, .8f, true), .0001);
+            Assert.AreNotEqual(Hit(0, 1, true) * .8f, Hit(0, .8f, true), "Enrage must change armour's hit-size denominator");
+            Assert.AreEqual(80f, Hit(100, .8f, true), .0001);
+            Assert.AreEqual(Hit(100, .8f, true), Hit(150, .8f, true), .0001);
+            Assert.AreEqual(64f, Hit(0, .8f, false), .0001);
+            Assert.AreEqual(80f, Hit(20, .8f, false), .0001);
+        }
+
+        [Test]
+        public void BossPressure_IsSharedAcrossOneArmy_AndUntargetableWolvesNeedNoDeathReplacement()
+        {
+            Assert.AreEqual(5f, (float)Call("MinionLifetime", 100f, 20f, 1, 0f, false), .0001);
+            Assert.AreEqual(10f, (float)Call("MinionLifetime", 100f, 20f, 2, 0f, false), .0001);
+            Assert.AreEqual(-1f, (float)Call("MinionLifetime", 100f, 20f, 2, 10f, false));
+            Assert.AreEqual(-1f, (float)Call("MinionLifetime", 100f, 20f, 1, 0f, true));
+        }
+
+        [Test]
+        public void BossTargets_ExportThreeEquallyWeightedLiveBosses_AtEveryLevel_WithBothStates()
+        {
+            var targets = ((IEnumerable)Call("BossTargets")).Cast<object>().ToList();
+            Assert.AreEqual(3 * 34, targets.Count);
+            object Field(object target, string field) => target.GetType().GetField(field).GetValue(target);
+            CollectionAssert.AreEquivalent(new[] { "Gravelord Mortis", "Ashen Warlord", "Rimeheart" }, targets.Select(t => (string)Field(t, "name")).Distinct());
+            foreach (var level in targets.GroupBy(t => (int)Field(t, "level")))
+            {
+                Assert.AreEqual(3, level.Count());
+                Assert.AreEqual(1f, level.Sum(t => (float)Field(t, "weight")), .0001);
+            }
+            foreach (var target in targets)
+            {
+                Assert.Greater((float)Field(target, "armour"), 0);
+                Assert.Greater((float)Field(target, "enragedHit"), (float)Field(target, "calmHit"));
+                Assert.AreEqual((float)Field(target, "calmAttacksPerSecond") * 1.25f, (float)Field(target, "enragedAttacksPerSecond"), .0001);
+                Assert.AreEqual(.8f, (float)Field(target, "enragedDamageTaken"), .0001);
+            }
+        }
+
+        [Test]
+        public void CharacterDamageProgression_DoesNotReintroduceWeaponRankScaling_OrBuffSupportSpells()
+        {
+            var book = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("PoeClone.Skills.SkillBook")).First(t => t != null);
+            var ids = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("PoeClone.Skills.SkillId")).First(t => t != null);
+            foreach (string id in new[] { "FireBolt", "IceShard", "ChainLightning", "VenomSpout", "FrostNova", "WarCry", "DeathMark" })
+            {
+                object skill = book.GetMethod("Get").Invoke(null, new[] { Enum.Parse(ids, id) });
+                Type type = skill.GetType();
+                float RankDamage(int rank) => (float)type.GetMethod("DamageAt").Invoke(skill, new object[] { rank });
+                float CharacterDamage(int level) => (float)type.GetMethod("DamageForCharacter").Invoke(skill, new object[] { level });
+                Assert.AreEqual(RankDamage(1), RankDamage(10), id + " must not gain base damage from weapon rank");
+                Assert.AreEqual(RankDamage(1), CharacterDamage(1), .0001, id);
+                bool main = (bool)type.GetProperty("Main").GetValue(skill);
+                if (main) Assert.Greater(CharacterDamage(34), CharacterDamage(1), id);
+                else Assert.AreEqual(CharacterDamage(1), CharacterDamage(34), id + " support balance is separate");
+                Assert.AreEqual(CharacterDamage(1), CharacterDamage(0), .0001, id);
+            }
+        }
+
+        [Test]
+        public void MinionDamageProgression_UsesOwnerCharacterLevel_AndPreservesStatInvestment()
+        {
+            var minions = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("PoeClone.Skills.Minion")).First(t => t != null);
+            var kinds = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("PoeClone.Skills.MinionKind")).First(t => t != null);
+            var early = StatSheet.Build(new BaseStats { Level = 1 }, null);
+            var late = StatSheet.Build(new BaseStats { Level = 34 }, null);
+            var invested = StatSheet.Build(new BaseStats { Level = 34 }.Set(StatType.MinionDamage, 100), null);
+            foreach (string name in Enum.GetNames(kinds))
+            {
+                object kind = Enum.Parse(kinds, name);
+                float Damage(int rank, StatSheet sheet) => (float)minions.GetMethod("DamageFor").Invoke(null, new object[] { kind, rank, sheet, null });
+                Assert.AreEqual(Damage(1, early), Damage(10, early), .0001, name + " rank only grants points");
+                Assert.Greater(Damage(1, late), Damage(1, early), name);
+                Assert.AreEqual(Damage(1, late) * 2, Damage(1, invested), .001, name);
+            }
+        }
+
         [UnityTest, Timeout(1800000)]
         public IEnumerator FullSurvey_ExportsEveryArchetypeAtLevelsOneThrough34()
         {

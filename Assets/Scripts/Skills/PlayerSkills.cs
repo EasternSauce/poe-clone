@@ -913,9 +913,8 @@ namespace PoeClone.Skills
         private void Cast(SkillDefinition skill, int level, bool asAttack = false)
         {
             PlaySkillSound(skill.Id, transform.position);
-            float spell = 1f; // Intelligence and spell/elemental increases share HitEffects' sum.
             float area = SkillArea(skill.Id);
-            float damage = skill.DamageAt(level) * spell;
+            float damage = skill.DamageForCharacter(inventory != null ? inventory.Stats.Level : 1);
             var tree = BonusesFor(skill.Id);
             int extraProjectiles = tree.ExtraProjectiles;
 
@@ -1119,7 +1118,7 @@ namespace PoeClone.Skills
                 damage = WeaponDamage() * weapon * (sheet != null
                     ? sheet.DamageMultiplier(true, skill.Bow, false, false, element, skillIncreased: tree.Get(WeaponSkillEffect.Damage)) : 1f);
             else if (skill.DamageSpell)
-                damage = skill.DamageAt(level) * skill.ExtraHitMultiplierAt(level) * (sheet != null
+                damage = skill.DamageForCharacter(sheet?.Level ?? 1) * (sheet != null
                     ? sheet.DamageMultiplier(false, false, false, false, element, spell: true, skillIncreased: tree.Get(WeaponSkillEffect.Damage)) : 1f);
             else
                 return null;

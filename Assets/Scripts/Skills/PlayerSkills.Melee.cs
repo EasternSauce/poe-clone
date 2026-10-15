@@ -435,7 +435,7 @@ namespace PoeClone.Skills
             if (target != null)
             {
                 Hit(target, WeaponDamage() * skill.WeaponMultiplierAt(level), skill.Color, true, melee: true, skillId: skill.Id);
-                WeaponVenom.Apply(transform, target, WeaponDamage(), 95f, 0f, inventory.Stats,
+                WeaponVenom.Apply(transform, target, WeaponDamage(), SkillBook.FangStrikePoison, 0f, inventory.Stats,
                     canEnrage: false, durationMultiplier: BonusesFor(skill.Id).DurationMultiplier, radiusMultiplier: BonusesFor(skill.Id).AreaMultiplier, tree: BonusesFor(skill.Id));
             }
         }
@@ -451,7 +451,7 @@ namespace PoeClone.Skills
             SkillEffects.Cone(center, transform.forward, reach, VenomSlashHalfAngle, skill.Color, 0.25f, SkillEffects.DamagePattern(skill));
             Record(skill, level, reach);
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
-            float poison = 70f;
+            float poison = SkillBook.VenomSlashPoison;
             foreach (EnemyHealth enemy in EnemiesWithin(center, reach))
             {
                 Vector3 to = enemy.transform.position - center;

@@ -6,6 +6,9 @@ import { Workbook, SpreadsheetFile } from '@oai/artifact-tool';
 // calculated observations; it does not substitute spreadsheet formulas for combat.
 const directory = path.resolve(process.argv[2] ?? 'BalanceResults');
 const report = JSON.parse(await fs.readFile(path.join(directory, process.argv[3] ?? 'survey.json'), 'utf8'));
+if (!report.model.startsWith('boss-single-target-') || report.targets?.length !== 102) {
+  throw new Error('A fresh full boss survey with explicit target metadata is required.');
+}
 const archetypeOrder = new Map(report.archetypes.map((a, i) => [a.id, i]));
 report.rows.sort((a, b) => archetypeOrder.get(a.archetype) - archetypeOrder.get(b.archetype) || a.level - b.level);
 const wb = Workbook.create();
@@ -16,7 +19,8 @@ const manaSheet = wb.worksheets.add('Mana consumption');
 const survival = wb.worksheets.add('Survival');
 const catalogue = wb.worksheets.add('Archetype catalogue');
 const method = wb.worksheets.add('Method');
-const sheets = [overview, heatmap, dpsSheet, manaSheet, survival, catalogue, method];
+const targets = wb.worksheets.add('Boss targets');
+const sheets = [overview, heatmap, dpsSheet, manaSheet, survival, catalogue, method, targets];
 const mainArchetypes = report.archetypes.filter(a => a.family !== 'Support');
 const byId = new Map(report.archetypes.map(a => [a.id, a]));
 const rowKey = r => `${r.archetype}:${r.level}`;
@@ -82,7 +86,7 @@ const overviewValues = skillNames.map((skill, i) => {
     levels(high), levels(low), levels(hunger), best[33]?.name ?? 'No viable build'];
 });
 overviewValues.sort((a, b) => (b[7] ?? -1) - (a[7] ?? -1));
-let layout = table(overview, 'Single-target balance review', 'Best available archetype per skill. 100% = peer baseline after melee ×1.5 and minion ×1.3 targets. Red >125%; blue <75%.',
+let layout = table(overview, 'Boss single-target balance review', 'Best available archetype per skill. 100% = peer baseline after melee ×1.5 and minion ×1.3 targets. Red >125%; blue <75%.',
   ['Skill', 'Family', 'Level 1', 'Level 7', 'Level 14', 'Level 21', 'Level 28', 'Level 34', 'High DPS levels', 'Low DPS levels', 'Mana-limited levels', 'Best level 34 archetype'],
   overviewValues, 'SkillOverview', [22, 12, 12, 12, 12, 12, 12, 12, 23, 23, 25, 48]);
 overview.getRange(`C5:H${layout.end}`).setNumberFormat('0%');
@@ -137,11 +141,11 @@ const survivalValues = survivalRows.map(r => {
   const s = r.representative;
   return [skillLabel(r.skill), r.name, r.family, r.level, r.viableFraction, s?.life ?? null, s?.incomingHit ?? null, s?.incomingDps ?? null,
     s?.hitsToDie ?? null, optional(s?.secondsToDie ?? null, s?.secondsToDie >= 1e6), s?.lifeRecovery ?? null,
-    s?.minionLife || null, optional(s?.minionSecondsToDie || null, s?.minionSecondsToDie < 0), r.family === 'Minion' ? s?.minionUptime ?? null : null, r.status];
+    s?.minionLife || null, optional(s?.minionSecondsToDie || null, s?.minionSecondsToDie < 0), r.family === 'Minion' ? s?.minionUptime ?? null : null, r.status, s?.bossEnraged ? 'Enraged' : 'Calm'];
 });
-layout = table(survival, 'Melee and minion survival', 'One average normal enemy attacks freely. Melee requires ≥4 unavoided hits and ≥6 seconds. Blank survival time means recovery covers incoming damage, or wolves are untargetable.',
-  ['Skill', 'Archetype', 'Family', 'Level', 'Viable fraction', 'Player life', 'Enemy hit after defence', 'Incoming DPS', 'Hits to death', 'Seconds to death', 'Life recovery / second', 'Minion life', 'Minion seconds to death', 'Army uptime', 'Review'],
-  survivalValues, 'SurvivalResults', [20, 55, 12, 9, 19, 16, 26, 18, 19, 21, 25, 17, 26, 18, 45]);
+layout = table(survival, 'Melee and minion survival', 'Equal-weight Mortis/Warlord/Rimeheart basic-attack pressure. Ranged/minions enrage; solo melee stays calm. Melee requires ≥4 unavoided hits and ≥6 seconds. Blank survival time means recovery covers incoming damage, or wolves are untargetable.',
+  ['Skill', 'Archetype', 'Family', 'Level', 'Viable fraction', 'Player life', 'Enemy hit after defence', 'Incoming DPS', 'Hits to death', 'Seconds to death', 'Life recovery / second', 'Minion life', 'Minion seconds to death', 'Army uptime', 'Review', 'Boss state'],
+  survivalValues, 'SurvivalResults', [20, 55, 12, 9, 19, 16, 26, 18, 19, 21, 25, 17, 26, 18, 45, 15]);
 for (const c of ['F', 'G', 'H', 'I', 'J', 'K', 'L', 'M']) number(survival, c, layout.end);
 percentage(survival, 'E', layout.end); percentage(survival, 'N', layout.end);
 survival.getRange(`E5:E${layout.end}`).conditionalFormats.add('cellIs', { operator: 'lessThan', formula: .25, format: { fill: colors.red } });
@@ -152,6 +156,15 @@ layout = table(catalogue, 'Playable skill routes', 'Every main-skill destination
   catalogueValues, 'ArchetypeCatalogue', [20, 55, 12, 18, 26, 70, 72, 29, 26]);
 catalogue.getRange(`F5:G${layout.end}`).format.wrapText = true;
 catalogue.getRange(`F5:G${layout.end}`).format.rowHeight = 47;
+
+const targetValues = report.targets.map(t => [t.name, t.level, t.weight, t.life, t.armour,
+  t.fireResistance, t.coldResistance, t.lightningResistance, t.poisonResistance, t.attackType,
+  t.calmHit, t.enragedHit, t.calmAttacksPerSecond, t.enragedAttacksPerSecond, t.enragedDamageTaken]);
+layout = table(targets, 'Boss reference targets', 'Each boss has one-third weight at every character level. These are scaled references, not campaign appearance levels. Basic attacks only; phases and special moves are excluded.',
+  ['Boss', 'Level', 'Weight', 'Life', 'Armour', 'Fire resist %', 'Cold resist %', 'Lightning resist %', 'Poison resist %', 'Attack type', 'Calm raw hit', 'Enraged raw hit', 'Calm attacks / s', 'Enraged attacks / s', 'Enraged damage taken'],
+  targetValues, 'BossReferenceTargets', [26, 9, 12, 16, 16, 18, 18, 22, 18, 16, 20, 20, 23, 24, 26]);
+for (const c of ['D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N']) number(targets, c, layout.end);
+percentage(targets, 'C', layout.end); percentage(targets, 'O', layout.end);
 
 const methodValues = [
   ['Generated UTC', new Date(report.generatedUtc)], ['Model', report.model], ['Source revision before changes', report.sourceRevision],
@@ -206,15 +219,17 @@ for (const index of [0, Math.floor(manaRows.length / 2), manaRows.length - 1]) {
   const s = manaRows[index].representative;
   if (s && Math.abs(manaSheet.getRange(`J${index + 5}`).values[0][0] - s.manaPerSecond - s.supportManaPerSecond) > .001) throw new Error('Mana total does not reconcile');
 }
-await fs.mkdir(path.join(directory, 'previews'), { recursive: true });
-for (const sheet of sheets) {
-  const range = sheet === method ? 'A1:B10' : sheet === catalogue ? 'A1:F10' : sheet === heatmap ? 'A1:K12' : sheet === manaSheet ? 'A1:J10' : sheet === overview ? 'A1:H15' : 'A1:I10';
-  const blob = await wb.render({ sheetName: sheet.name, range, scale: 1.5, format: 'png' });
-  await fs.writeFile(path.join(directory, 'previews', `${sheet.name}.png`), new Uint8Array(await blob.arrayBuffer()));
-}
-for (const [sheetName, range, name] of [['Skill overview', 'A37:L56', 'Family trend'], ['Mana consumption', 'K4:R11', 'Mana sustain detail']]) {
-  const blob = await wb.render({ sheetName, range, scale: 1.5, format: 'png' });
-  await fs.writeFile(path.join(directory, 'previews', `${name}.png`), new Uint8Array(await blob.arrayBuffer()));
+if (!process.argv.includes('--no-previews')) {
+  await fs.mkdir(path.join(directory, 'previews'), { recursive: true });
+  for (const sheet of sheets) {
+    const range = sheet === method ? 'A1:B10' : sheet === catalogue ? 'A1:F10' : sheet === heatmap ? 'A1:K12' : sheet === manaSheet ? 'A1:J10' : sheet === overview ? 'A1:H15' : 'A1:I10';
+    const blob = await wb.render({ sheetName: sheet.name, range, scale: 1.5, format: 'png' });
+    await fs.writeFile(path.join(directory, 'previews', `${sheet.name}.png`), new Uint8Array(await blob.arrayBuffer()));
+  }
+  for (const [sheetName, range, name] of [['Skill overview', 'A37:L56', 'Family trend'], ['Mana consumption', 'K4:R11', 'Mana sustain detail']]) {
+    const blob = await wb.render({ sheetName, range, scale: 1.5, format: 'png' });
+    await fs.writeFile(path.join(directory, 'previews', `${name}.png`), new Uint8Array(await blob.arrayBuffer()));
+  }
 }
 const output = await SpreadsheetFile.exportXlsx(wb);
 await output.save(path.join(directory, 'skill-balance.xlsx'));

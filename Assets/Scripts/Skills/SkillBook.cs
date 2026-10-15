@@ -108,6 +108,10 @@ namespace PoeClone.Skills
             return BaseDamage * (WeaponSkillRules.IsWeaponSkill(Grant) ? 1f : 1.3f);
         }
 
+        /// <summary>Main spells gain base damage with character progression, independently of weapon rank.</summary>
+        public float DamageForCharacter(int characterLevel) => DamageAt(1) *
+            (Main && DamageSpell ? 1f + .06f * Mathf.Max(0, characterLevel - 1) : 1f);
+
         /// <summary>Fixed share of weapon damage per hit, independent of skill rank.</summary>
         public float WeaponMultiplierAt(int level)
         {
@@ -116,18 +120,18 @@ namespace PoeClone.Skills
                 case SkillId.Cleave: return 1.1f;
                 case SkillId.Pulverize: return 1.75f;
                 case SkillId.ReapingArc: return 1.4f;
-                case SkillId.LungingThrust: return 1.65f;
+                case SkillId.LungingThrust: return 1.15f;
                 case SkillId.Whirlwind: return 0.32f;
-                case SkillId.FangStrike: return 0.9f;
-                case SkillId.VenomSlash: return 0.6f;
+                case SkillId.FangStrike: return 0.45f;
+                case SkillId.VenomSlash: return 0.38f;
                 case SkillId.Fissure: return 1.5f;
-                case SkillId.Aftershock: return 0.92f;
-                case SkillId.CrossSlash: return 1.15f;
-                case SkillId.SplitShot: return 1f;
-                case SkillId.PiercingShot: return 1.2f;
-                case SkillId.BurningArrow: return 1.3f;
-                case SkillId.VenomArrow: return 1.1f;
-                case SkillId.RainOfArrows: return 0.3f;
+                case SkillId.Aftershock: return 1.5f;
+                case SkillId.CrossSlash: return 0.4f;
+                case SkillId.SplitShot: return 0.75f;
+                case SkillId.PiercingShot: return 0.5f;
+                case SkillId.BurningArrow: return 0.5f;
+                case SkillId.VenomArrow: return 0.6f;
+                case SkillId.RainOfArrows: return 0.65f;
                 default: return 0f;
             }
         }
@@ -160,6 +164,12 @@ namespace PoeClone.Skills
         /// <summary>Bar slots: Q E R F, mouse buttons, then 1 2 3 4 (appended to preserve saves).</summary>
         public const int SlotCount = 11;
 
+        // Shared by live combat and the offline evaluator; values are percentages.
+        public const float FangStrikePoison = 30f;
+        public const float VenomSlashPoison = 38f;
+        public const float VenomArrowPoison = 35f;
+        public const float VenomArrowCloud = 10f;
+
         /// <summary>The slots the touch layout has round buttons for (the first four).</summary>
         public const int TouchSlotCount = 4;
 
@@ -180,7 +190,7 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.FireBolt, Name = "Fire Bolt", Short = "FB", Grant = StatType.GrantFireBolt, RollsOn = "staves",
-                Spell = true, Element = SkillElement.Fire, BaseDamage = 7f,
+                Spell = true, Element = SkillElement.Fire, BaseDamage = 16f,
                 ManaCosts = new[] { 3.5f }, Cooldown = 1.0f, Color = new Color(1f, 0.5f, 0.15f),
                 Description = "Hurl a bolt of fire that bursts on the first enemy it hits. Each enemy is hit by one bolt at most."
             },
@@ -206,14 +216,14 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.ChainLightning, Name = "Chain Lightning", Short = "CL", Grant = StatType.GrantChainLightning, RollsOn = "staves",
-                Spell = true, Element = SkillElement.Lightning, BaseDamage = 8f,
+                Spell = true, Element = SkillElement.Lightning, BaseDamage = 22f,
                 ManaCosts = new[] { 4.2f }, Cooldown = 1.1f, Color = new Color(1f, 0.95f, 0.4f),
                 Description = "Strikes the enemy under your cursor (or the nearest). Starts with no chains; allocate chaining passives to arc to other enemies. Hits harder when aimed, and up close."
             },
             new SkillDefinition
             {
                 Id = SkillId.IceShard, Name = "Ice Shard", Short = "IS", Grant = StatType.GrantIceShard, RollsOn = "staves",
-                Spell = true, Element = SkillElement.Cold, BaseDamage = 6f,
+                Spell = true, Element = SkillElement.Cold, BaseDamage = 18f,
                 ManaCosts = new[] { 2.8f }, Cooldown = 0.85f, Color = new Color(0.6f, 0.9f, 1f),
                 Description = "Fling a chilling shard of ice. Frozen Fan, beside the tree origin, grants +2 projectiles for one point. Each enemy is hit by one shard per volley at most."
             },
@@ -263,38 +273,38 @@ namespace PoeClone.Skills
             {
                 Id = SkillId.SplitShot, Name = "Split Shot", Short = "SPL", Grant = StatType.GrantSplitShot, RollsOn = "bows", ManaCosts = new[] { 3f },
                 Color = new Color(0.75f, 0.95f, 0.5f),
-                Description = "Bow skill (the weapon's attack): each shot splits into a wide fan, A base fan of 3 arrows. Each enemy is hit by one arrow at most."
+                Description = "Bow skill (the weapon's attack): each shot splits into a wide fan, A base fan of 3 arrows, each dealing 75% weapon damage. Each enemy is hit by one arrow at most."
             },
             new SkillDefinition
             {
                 Id = SkillId.PiercingShot, Name = "Piercing Shot", Short = "PRC", Grant = StatType.GrantPiercingShot, RollsOn = "bows", ManaCosts = new[] { 3f },
                 Color = new Color(0.85f, 0.9f, 1f),
-                Description = "Bow skill (the weapon's attack): hold attack to charge in place, then release a piercing sniper arrow. Damage grows from 120% to 360% weapon damage over a full draw. 80% increased projectile range. A distinct cue signals full charge."
+                Description = "Bow skill (the weapon's attack): hold attack to charge in place, then release a piercing sniper arrow. Damage grows from 50% to 150% weapon damage over a full draw. 80% increased projectile range. A distinct cue signals full charge."
             },
             new SkillDefinition
             {
                 Id = SkillId.RainOfArrows, Name = "Rain of Arrows", Short = "RAIN", Grant = StatType.GrantRainOfArrows, RollsOn = "bows", ManaCosts = new[] { 6f },
                 Color = new Color(0.95f, 0.8f, 0.45f),
-                Description = "Bow skill (the weapon's attack): fire one salvo of 6 arrows into the aimed area. Each arrow deals 30% weapon damage and can overlap other impacts. Additional arrows add to the salvo; area of effect enlarges impacts, not spread. 15% reduced attack speed. Delayed salvos require passives."
+                Description = "Bow skill (the weapon's attack): fire one salvo of 6 arrows into the aimed area. Each arrow deals 65% weapon damage and can overlap other impacts. Additional arrows add to the salvo; area of effect enlarges impacts, not spread. 15% reduced attack speed. Delayed salvos require passives."
             },
             new SkillDefinition
             {
                 Id = SkillId.BurningArrow, Name = "Burning Arrow", Short = "BRN", Grant = StatType.GrantBurningArrow, RollsOn = "bows", ManaCosts = new[] { 4.5f },
                 Color = new Color(1f, 0.5f, 0.2f),
-                Description = "Bow skill (the weapon's attack): arrows of fire for 130% weapon damage as fire, bursting to scorch those around the target, with a 20% chance to set it burning."
+                Description = "Bow skill (the weapon's attack): arrows of fire for 50% weapon damage as fire, bursting to scorch those around the target, with a 20% chance to set it burning."
             },
-            new SkillDefinition { Id = SkillId.FangStrike, Name = "Fang Strike", Short = "FNG", Grant = StatType.GrantFangStrike, RollsOn = "daggers", ManaCosts = LightMeleeCosts, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Melee skill (the weapon's attack): strike the aimed enemy for 90% weapon damage and inflict a potent poison that deals 95% weapon damage over 3 seconds. Poisons stack. Daggers only." },
+            new SkillDefinition { Id = SkillId.FangStrike, Name = "Fang Strike", Short = "FNG", Grant = StatType.GrantFangStrike, RollsOn = "daggers", ManaCosts = LightMeleeCosts, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Melee skill (the weapon's attack): strike the aimed enemy for 45% weapon damage and inflict a poison that deals 30% weapon damage over 3 seconds. Poisons stack. Daggers only." },
             new SkillDefinition { Id = SkillId.VenomArrow, Name = "Venom Arrow", Short = "VNM", Grant = StatType.GrantVenomArrow, RollsOn = "bows", ManaCosts = new[] { 4.5f }, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Bow skill (the weapon's attack): attacks inflict a stronger poison and leave a brief venom cloud." },
-            new SkillDefinition { Id = SkillId.VenomSpout, Name = "Venom Spout", Short = "SPT", Grant = StatType.GrantVenomSpout, RollsOn = "staves", Spell = true, BaseDamage = 7f, ManaCosts = new[] { 7f }, Cooldown = 1.3f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Erupt poison beneath your target, damaging and poisoning enemies in the area." },
+            new SkillDefinition { Id = SkillId.VenomSpout, Name = "Venom Spout", Short = "SPT", Grant = StatType.GrantVenomSpout, RollsOn = "staves", Spell = true, BaseDamage = 14f, ManaCosts = new[] { 7f }, Cooldown = 1.3f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Erupt poison beneath your target, damaging and poisoning enemies in the area." },
             new SkillDefinition { Id = SkillId.SummonViper, Name = "Summon Viper", Short = "VIP", Grant = StatType.GrantSummonViper, RollsOn = "sceptres", Spell = true, ManaCosts = new[] { 30f }, Cooldown = 12f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Call a viper spirit to fight at your side, up to 1 at once. Weapon tree nodes raise the limit." },
             new SkillDefinition { Id = SkillId.Pulverize, Name = "Pulverize", Short = "PVL", Grant = StatType.GrantPulverize, RollsOn = "maces and mauls", ManaCosts = HeavyMeleeCosts, Color = new Color(0.95f, 0.65f, 0.28f), Description = "Melee skill (the weapon's attack): plant your feet and bring a mace down in a crushing slam after a heavy windup, dealing 175% weapon damage in a broad area. 30% slower. Maces and mauls only." },
             new SkillDefinition { Id = SkillId.ReapingArc, Name = "Reaping Arc", Short = "RPA", Grant = StatType.GrantReapingArc, RollsOn = "axes", ManaCosts = MeleeCosts, Color = new Color(0.9f, 0.48f, 0.3f), Description = "Melee skill (the weapon's attack): commit to a broad, forward axe sweep. After a deliberate windup, hit enemies in a wide arc for 140% weapon damage. 20% slower. Axes only." },
             new SkillDefinition { Id = SkillId.Whirlwind, Name = "Whirlwind", Short = "WHL", Grant = StatType.GrantWhirlwind, RollsOn = "swords and axes", ManaCosts = new[] { 2.5f }, Color = new Color(0.8f, 0.85f, 0.95f), Description = "Melee skill (the weapon's attack): hold the attack to spin with your weapon out, hitting every enemy in reach for 32% weapon damage 4 times a second with a sword (slower weapons hit less often, faster ones more), faster with attack speed. While spinning you pass through enemies and are carried towards the cursor, faster the further away it is, up to sprinting speed. Costs mana every half second until you let go or run dry. Swords and axes only." },
             new SkillDefinition { Id = SkillId.Fissure, Name = "Fissure", Short = "FIS", Grant = StatType.GrantFissure, RollsOn = "maces and mauls", ManaCosts = HeavyMeleeCosts, Color = new Color(0.86f, 0.55f, 0.3f), Description = "Melee skill (the weapon's attack): slam the ground and split it open in a fissure that races ahead of you, hitting every enemy along its path for 150% weapon damage. 25% slower. Maces and mauls only." },
-            new SkillDefinition { Id = SkillId.Aftershock, Name = "Aftershock", Short = "AFT", Grant = StatType.GrantAftershock, RollsOn = "maces and mauls", ManaCosts = HeavyMeleeCosts, Color = new Color(0.95f, 0.78f, 0.4f), Description = "Melee skill (the weapon's attack): slam the ground and send 3 widening tremors rolling ahead, each dealing 92% weapon damage. 25% slower. Maces and mauls only." },
-            new SkillDefinition { Id = SkillId.CrossSlash, Name = "Cross Slash", Short = "XSL", Grant = StatType.GrantCrossSlash, RollsOn = "daggers", ManaCosts = MeleeCosts, Color = new Color(0.75f, 0.9f, 1f), Description = "Melee skill (the weapon's attack): two quick crossing cuts carve an X around you, each hitting every enemy along its line, in front and behind, for 115% weapon damage. 10% slower. Daggers only." },
-            new SkillDefinition { Id = SkillId.VenomSlash, Name = "Venom Slash", Short = "VSL", Grant = StatType.GrantVenomSlash, RollsOn = "daggers", ManaCosts = LightMeleeCosts, Color = new Color(0.55f, 0.85f, 0.25f), Description = "Melee skill (the weapon's attack): a quick, wide slash that hits every enemy in front of you for 60% weapon damage and poisons each one for 70% weapon damage over 3 seconds. Poisons stack. Daggers only." },
-            new SkillDefinition { Id = SkillId.LungingThrust, Name = "Lunging Thrust", Short = "LTH", Grant = StatType.GrantLungingThrust, RollsOn = "swords", ManaCosts = MeleeCosts, Color = new Color(0.85f, 0.82f, 0.65f), Description = "Melee skill (the weapon's attack): brace, then lunge at the aimed enemy (up to a few steps away) and drive a sword into it for 165% weapon damage. 15% slower. Swords only." },
+            new SkillDefinition { Id = SkillId.Aftershock, Name = "Aftershock", Short = "AFT", Grant = StatType.GrantAftershock, RollsOn = "maces and mauls", ManaCosts = HeavyMeleeCosts, Color = new Color(0.95f, 0.78f, 0.4f), Description = "Melee skill (the weapon's attack): slam the ground and send 3 widening tremors rolling ahead, each dealing 150% weapon damage. 25% slower. Maces and mauls only." },
+            new SkillDefinition { Id = SkillId.CrossSlash, Name = "Cross Slash", Short = "XSL", Grant = StatType.GrantCrossSlash, RollsOn = "daggers", ManaCosts = MeleeCosts, Color = new Color(0.75f, 0.9f, 1f), Description = "Melee skill (the weapon's attack): two quick crossing cuts carve an X around you, each hitting every enemy along its line, in front and behind, for 40% weapon damage. 10% slower. Daggers only." },
+            new SkillDefinition { Id = SkillId.VenomSlash, Name = "Venom Slash", Short = "VSL", Grant = StatType.GrantVenomSlash, RollsOn = "daggers", ManaCosts = LightMeleeCosts, Color = new Color(0.55f, 0.85f, 0.25f), Description = "Melee skill (the weapon's attack): a quick, wide slash that hits every enemy in front of you for 38% weapon damage and poisons each one for 38% weapon damage over 3 seconds. Poisons stack. Daggers only." },
+            new SkillDefinition { Id = SkillId.LungingThrust, Name = "Lunging Thrust", Short = "LTH", Grant = StatType.GrantLungingThrust, RollsOn = "swords", ManaCosts = MeleeCosts, Color = new Color(0.85f, 0.82f, 0.65f), Description = "Melee skill (the weapon's attack): brace, then lunge at the aimed enemy (up to a few steps away) and drive a sword into it for 115% weapon damage. 15% slower. Swords only." },
         };
 
         public static SkillDefinition Get(SkillId id)
