@@ -37,6 +37,9 @@ namespace PoeClone.World
             Button(canvas.transform, "New build", new Vector2(18, -16), new Vector2(150, 42),
                 MinimalCombatMode.RestartArena);
 
+            Button(canvas.transform, "Settings", new Vector2(180, -16), new Vector2(150, 42),
+                () => FindAnyObjectByType<PoeClone.UI.EscapeMenuUI>()?.OpenSettings());
+
             Image background = UiKit.NewImage("ArenaSetup", canvas.transform, UiKit.PanelColor);
             panel = background.rectTransform;
             panel.anchorMin = panel.anchorMax = panel.pivot = new Vector2(.5f, .5f);

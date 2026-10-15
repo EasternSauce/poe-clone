@@ -1,3 +1,7 @@
+version: 2026-10-15-whirlwind-and-arena-settings
+- Fixed mobile aim input overriding Whirlwind's spinning animation.
+- Added Settings access in the arena, including the mobile menu and a button beside New build.
+
 version: 2026-10-15-arena-waves
 - Arena enemies stay aggressive across the whole arena, including boss adds, and re-engage after you revive.
 - Arena waves now roll 1–5 enemies. Three random bosses appear between waves throughout the run instead of waiting until the end.

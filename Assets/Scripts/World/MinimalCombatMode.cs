@@ -202,6 +202,8 @@ namespace PoeClone.World
                         spawnPoint = player.transform } }, 0);
                 gameObject.AddComponent<QuestTrackerUI>();
             }
+            if (FindAnyObjectByType<EscapeMenuUI>() == null)
+                gameObject.AddComponent<EscapeMenuUI>();
             gameObject.AddComponent<TouchControlsUI>();
             Physics.SyncTransforms();
         }

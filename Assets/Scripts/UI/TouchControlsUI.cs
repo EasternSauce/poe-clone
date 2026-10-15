@@ -142,14 +142,14 @@ namespace PoeClone.UI
             bool inventoryOpen = inventoryUI != null && inventoryUI.IsOpen;
             inventoryNavigationRoot.SetActive(inventoryOpen && !inventoryUI.IsStashOpen && !dead);
             bool characterOpen = characterUI != null && characterUI.IsOpen;
-            if (!PoeClone.World.MinimalCombatMode.Enabled && settingsMenu == null)
+            if (settingsMenu == null)
                 settingsMenu = FindAnyObjectByType<EscapeMenuUI>();
             bool menuOpen = WeaponSkillTreeUI.IsOpen || inventoryOpen || characterOpen || SkillBarUI.IsOpen || DialogueUI.IsOpen ||
                             PassiveTreeUI.IsOpen || (ChatUI.Enabled && ChatUI.PanelVisible) || (settingsMenu != null && settingsMenu.IsOpen);
 
             // Keep the menu buttons behind the active panel in both draw order and hit testing.
             // The panel's own close control remains available to dismiss it.
-            bool menus = (!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.MenusEnabled) && !dead && !menuOpen;
+            bool menus = (!PoeClone.World.MinimalCombatMode.Enabled || PoeClone.World.MinimalCombatMode.MenusEnabled || settingsMenu != null) && !dead && !menuOpen;
             menuRoot.SetActive(menus && menuExpanded);
             menuToggle.gameObject.SetActive(menus);
             questToggle.gameObject.SetActive(menus);
@@ -159,7 +159,7 @@ namespace PoeClone.UI
             if (menuOpen) menuExpanded = false;
             LayoutControls();
             if (settingsButton != null)
-                settingsButton.gameObject.SetActive(!PoeClone.World.MinimalCombatMode.Enabled);
+                settingsButton.gameObject.SetActive(settingsMenu != null);
 
             SetCombatShown(!dead && !menuOpen && !menuExpanded);
             UpdateSkillButtons();

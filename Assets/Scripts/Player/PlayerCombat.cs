@@ -183,7 +183,8 @@ namespace PoeClone.Player
                 // Keep turning to face the stick while it's held, even mid-cooldown, so the swing
                 // that finally lands is aimed at wherever it's currently pointing, not wherever it
                 // happened to point when the cooldown last ended.
-                if (attackPressed)
+                // Whirlwind owns its facing while channelling; stick aim only steers it.
+                if (attackPressed && SkillSet?.IsWhirling != true)
                     FaceAimPoint();
             }
             else
