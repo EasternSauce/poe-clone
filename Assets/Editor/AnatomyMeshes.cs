@@ -64,24 +64,42 @@ namespace PoeClone.EditorTools
 
         private static float Between(float from,float to,float value) => Mathf.SmoothStep(0,1,Mathf.InverseLerp(from,to,value));
 
-        // Skull, temple, cheek, jaw and chin profiles; interpolation avoids lathe ridges.
+        // Skull, temple, cheekbone, jaw and chin profiles of the front half; interpolation avoids lathe
+        // ridges. The cheeks and jaw taper well inside the temples, as a broad lower face reads as fat.
         private static readonly LowPolyMeshes.Ring[] Skull = {
-            R(-.5f, 0, 0, .02f), R(-.46f, .18f, .24f, .035f), R(-.38f, .29f, .32f, .01f),
-            R(-.25f, .38f, .37f, -.005f), R(-.10f, .445f, .415f, -.025f),
-            R(.08f, .445f, .425f, -.035f), R(.26f, .43f, .44f, -.035f),
-            R(.39f, .35f, .375f, -.03f), R(.47f, .19f, .22f, -.02f), R(.5f, 0, 0, -.01f) };
+            R(-.5f, 0, 0, .10f), R(-.465f, .11f, .22f, .13f), R(-.40f, .20f, .30f, .08f),
+            R(-.30f, .30f, .35f, .035f), R(-.17f, .36f, .385f, .005f), R(-.03f, .395f, .41f, -.015f),
+            R(.12f, .405f, .43f, -.03f), R(.27f, .395f, .44f, -.035f),
+            R(.39f, .33f, .375f, -.03f), R(.47f, .19f, .22f, -.02f), R(.5f, 0, 0, -.01f) };
+        // Back depth per Skull ring: a full occiput that tucks under into the neck instead of a jowl.
+        private static readonly float[] BackZ = { 0, .14f, .26f, .33f, .38f, .41f, .43f, .43f, .38f, .22f, 0 };
+
+        private static float Spline(float y, System.Func<int,float> value)
+        {
+            int k = 0;
+            while (k < Skull.Length - 2 && y > Skull[k + 1].Y) k++;
+            float t = Mathf.InverseLerp(Skull[k].Y, Skull[k + 1].Y, y);
+            float p0 = value(Mathf.Max(0, k - 1)), p1 = value(k), p2 = value(k + 1), p3 = value(Mathf.Min(Skull.Length - 1, k + 2));
+            return Mathf.Max(0, .5f * ((2*p1) + (-p0+p2)*t + (2*p0-5*p1+4*p2-p3)*t*t + (-p0+3*p1-3*p2+p3)*t*t*t));
+        }
 
         private static LowPolyMeshes.Ring Profile(float y)
         {
             int k = 0;
             while (k < Skull.Length - 2 && y > Skull[k + 1].Y) k++;
-            var a = Skull[k]; var b = Skull[k + 1];
-            float t = Mathf.InverseLerp(a.Y, b.Y, y);
-            float Smooth(float p0, float p1, float p2, float p3) => Mathf.Max(0,
-                .5f * ((2*p1) + (-p0+p2)*t + (2*p0-5*p1+4*p2-p3)*t*t + (-p0+3*p1-3*p2+p3)*t*t*t));
-            var before = Skull[Mathf.Max(0, k - 1)]; var after = Skull[Mathf.Min(Skull.Length - 1, k + 2)];
+            float t = Mathf.InverseLerp(Skull[k].Y, Skull[k + 1].Y, y);
             float jaw = profile != null ? Mathf.Lerp(profile.JawWidth,1,Mathf.SmoothStep(0,1,(y+.38f)/.35f)) : 1;
-            return R(y, Smooth(before.X, a.X, b.X, after.X)*jaw, Smooth(before.Z, a.Z, b.Z, after.Z), Mathf.Lerp(a.Forward, b.Forward, t));
+            return R(y, Spline(y, i => Skull[i].X)*jaw, Spline(y, i => Skull[i].Z), Mathf.Lerp(Skull[k].Forward, Skull[k + 1].Forward, t));
+        }
+
+        /// <summary>Bare skull without facial features; the back half has its own depth and narrows into the neck.</summary>
+        private static Vector3 SkullPoint(float angle, float y)
+        {
+            var ring = Profile(y);
+            float back = Mathf.Max(0, -Mathf.Cos(angle));
+            float x = Mathf.Sin(angle) * ring.X * (1 - .22f * back * Between(-.1f, -.4f, y));
+            float depth = Mathf.Cos(angle) > 0 ? ring.Z : Spline(y, i => BackZ[i]);
+            return new Vector3(x, y, Mathf.Cos(angle) * depth + ring.Forward);
         }
 
         /// <summary>Continuous front surface, also used to seat eyes, lids and brows.</summary>
@@ -97,7 +115,9 @@ namespace PoeClone.EditorTools
             z -= .012f * G(x,y,0,-.165f,.030f,.04f);
             z -= .010f*(G(x,y,-.081f,-.11f,.013f,.031f)+G(x,y,.081f,-.11f,.013f,.031f));
             z += .006f*(G(x,y,-.021f,-.185f,.012f,.038f)+G(x,y,.021f,-.185f,.012f,.038f));
-            z += .025f * (G(x,y,-.29f,-.08f,.12f,.095f) + G(x,y,.29f,-.08f,.12f,.095f));
+            // High cheekbones with a slight hollow beneath; a round low cheek reads as a fat, childish face.
+            z += .016f * (G(x,y,-.27f,-.01f,.11f,.05f) + G(x,y,.27f,-.01f,.11f,.05f));
+            z -= .010f * (G(x,y,-.25f,-.19f,.08f,.07f) + G(x,y,.25f,-.19f,.08f,.07f));
             z -= .025f * (G(x,y,-EyeCenter,.055f,.095f,.045f) + G(x,y,EyeCenter,.055f,.095f,.045f));
             z += .015f * (G(x,y,-EyeCenter,.125f,.13f,.05f) + G(x,y,EyeCenter,.125f,.13f,.05f));
             float seam=MouthSeam(x);
@@ -110,8 +130,8 @@ namespace PoeClone.EditorTools
         private static Color FaceColor(float x, float y)
         {
             Color c = Color.white;
-            float blush = G(x,y,-.29f,-.09f,.13f,.11f) + G(x,y,.29f,-.09f,.13f,.11f);
-            c = Color.Lerp(c, new Color(1.05f,.86f,.83f), blush * .32f);
+            float blush = G(x,y,-.27f,-.03f,.11f,.07f) + G(x,y,.27f,-.03f,.11f,.07f);
+            c = Color.Lerp(c, new Color(1.05f,.86f,.83f), blush * .14f);
             float lips = G(x,y,0,-.245f,.15f,.045f);
             c = Color.Lerp(c, new Color(.96f,.80f,.76f), lips * .25f);
             float nostrils = G(x,y,-.046f,-.117f,.021f,.012f) + G(x,y,.046f,-.117f,.021f,.012f);
@@ -135,13 +155,12 @@ namespace PoeClone.EditorTools
             var b = new Surface();
             b.Grid(sides, rows, (u,v) => {
                 float y = -.5f + v, angle = HeadAngle(u);
-                var ring = Profile(y);
-                float x = Mathf.Sin(angle) * ring.X;
-                float z = Mathf.Cos(angle) * ring.Z + ring.Forward;
-                if (Mathf.Cos(angle) > 0) z = Mathf.Lerp(z, FaceZ(x,y), Mathf.SmoothStep(0,1,Mathf.Cos(angle)));
-                return new Vector3(x,y,z);
+                Vector3 p = SkullPoint(angle, y);
+                if (Mathf.Cos(angle) > 0) p.z = Mathf.Lerp(p.z, FaceZ(p.x,y), Mathf.SmoothStep(0,1,Mathf.Cos(angle)));
+                return p;
             }, (u,v) => Mathf.Cos(HeadAngle(u)) > .15f ? FaceColor(Mathf.Sin(HeadAngle(u))*Profile(v-.5f).X,v-.5f) : Color.white,
                 true);
+            float earBase = Profile(-.03f).X - .055f;
             foreach (float side in new[] { -1f, 1f })
             {
                 // A folded auricle with an irregular outline, not an ellipsoid or open hole.
@@ -172,14 +191,14 @@ namespace PoeClone.EditorTools
                         float fold=Mathf.Max(Fold(p,new Vector2(-.10f,-.018f),new Vector2(-.027f,-.033f)),
                             Mathf.Max(Fold(p,new Vector2(-.027f,-.033f),new Vector2(.044f,-.015f)),
                             Fold(p,new Vector2(-.027f,-.033f),new Vector2(.017f,.021f))));
-                        float x=front?.390f+.070f*(1-r*r)+helix-concha+fold:.390f-.010f*(1-r*r);
+                        float x=front?earBase+.070f*(1-r*r)+helix-concha+fold:earBase-.010f*(1-r*r);
                         return new Vector3(side*x,p.x,p.y);
                     },(u,r)=>Color.Lerp(new Color(.96f,.87f,.84f),Color.white,r),false,new Vector3(front?side:-side,0,0));
                 // A continuous root joins the anterior rim to the temple, closing the frontal gap.
                 b.Grid(12,24,(u,v)=> {
                     float y=Mathf.Lerp(-.12f,.055f,v);
                     float root=Profile(y).X*.97f,t=u*Mathf.Sin(v*Mathf.PI);
-                    float x=Mathf.Lerp(root,.463f,t);
+                    float x=Mathf.Lerp(root,earBase+.073f,t);
                     float z=Mathf.Lerp(FaceZ(root,y)+.0005f,.032f,t)+.003f*Mathf.Sin(v*Mathf.PI)*Mathf.Sin(u*Mathf.PI);
                     return new Vector3(side*x,y,z);
                 },(u,v)=>Color.white,false,Vector3.forward);
@@ -252,27 +271,40 @@ namespace PoeClone.EditorTools
             return b.Mesh(name);
         }
 
+        // Hairline height by degrees from the front: forehead, temples, sideburn, a gap over the ear
+        // and a low nape. A level line around the head is what made the hair read as a bowl.
+        private static readonly Vector2[] HairlineKeys = {
+            new Vector2(0,.29f), new Vector2(28,.27f), new Vector2(50,.22f), new Vector2(64,.11f),
+            new Vector2(70,-.02f), new Vector2(76,-.03f), new Vector2(81,.11f), new Vector2(102,.12f),
+            new Vector2(110,.09f), new Vector2(128,-.05f), new Vector2(152,-.17f), new Vector2(180,-.21f) };
+
         private static float Hairline(float angle)
         {
-            float front=Mathf.Max(0,Mathf.Cos(angle));
-            float back=Mathf.Max(0,-Mathf.Cos(angle));
-            return .025f+front*front*(.18f+.045f*Mathf.Sin(angle+.5f))-.13f*back*back
-                +.006f*Mathf.Sin(angle*17)+.003f*Mathf.Sin(angle*37);
+            float degrees=Mathf.Abs(Mathf.DeltaAngle(0,angle*Mathf.Rad2Deg));
+            int k=0;
+            while(k<HairlineKeys.Length-2&&degrees>HairlineKeys[k+1].x) k++;
+            float t=Mathf.SmoothStep(0,1,Mathf.InverseLerp(HairlineKeys[k].x,HairlineKeys[k+1].x,degrees));
+            return Mathf.Lerp(HairlineKeys[k].y,HairlineKeys[k+1].y,t)+.004f*Mathf.Sin(angle*17)+.002f*Mathf.Sin(angle*37);
         }
 
         private static Vector3 HairPoint(float angle,float v,float relief=0)
         {
-            // Sweep toward the side part instead of radiating identical tubes from the crown.
-            float a=angle+.30f*(1-v)*Mathf.Sin(angle-.45f);
-            float y=Mathf.Lerp(Hairline(a),.5f,v);
-            var ring=Profile(y);
+            // Sweep toward the side part instead of radiating identical strands from the crown; the
+            // hairline itself stays put so sideburns and the gap over the ears line up with the ears.
+            float a=angle+.30f*Mathf.Sin(v*Mathf.PI)*Mathf.Sin(angle-.45f);
+            float hairline=Hairline(angle),y=Mathf.Lerp(hairline,.5f,v);
+            // Thins to the scalp at the hairline instead of ending in a ledge; short sides, fuller top.
+            float grow=Between(0,.14f,y-hairline),top=Mathf.Lerp(.5f,1,Between(.12f,.38f,y));
             float flow=angle*73+Mathf.Sin(angle*9)*.65f+v*2;
-            float ridge=(.007f*Mathf.Sin(angle*23+v*4+Mathf.Sin(angle*5))+.0025f*Mathf.Sin(flow)+.001f*Mathf.Sin(flow*2.7f))*Mathf.Sin(v*Mathf.PI);
+            float ridge=(.006f*Mathf.Sin(angle*23+v*4+Mathf.Sin(angle*5))+.0025f*Mathf.Sin(flow)+.001f*Mathf.Sin(flow*2.7f))*Mathf.Sin(v*Mathf.PI);
+            float thick=.006f+(.022f*top+ridge)*grow+relief;
             float end=v==1?0:1;
             float crown=Mathf.Pow(v,2);
             float lift=.022f*Mathf.Sin(v*Mathf.PI)*Mathf.Max(0,Mathf.Cos(a));
-            return new Vector3(Mathf.Sin(a)*(ring.X+.021f+ridge+relief)*end+.07f*crown,y+.013f+lift,
-                Mathf.Cos(a)*(ring.Z+.023f+ridge+relief)*end+ring.Forward-.035f*crown);
+            Vector3 skull=SkullPoint(a,y);
+            float forward=Profile(y).Forward;
+            return new Vector3((skull.x+Mathf.Sin(a)*thick)*end+.07f*crown,y+thick*Between(.2f,.5f,y)+lift,
+                (skull.z-forward+Mathf.Cos(a)*thick)*end+forward-.035f*crown);
         }
 
         private static Mesh Scalp()
@@ -280,21 +312,21 @@ namespace PoeClone.EditorTools
             var b=new Surface();
             b.Grid(192,48,(u,v)=>HairPoint(u*2*Mathf.PI,v),
                 (u,v)=>Color.white*(.94f+.045f*Mathf.Sin(u*458+v*2)+.025f*Mathf.Sin(u*91+v*5)),true);
-            // Small overlapping tips break the silhouette without thick rope-shaped locks.
-            for(int index=0;index<72;index++)
+            // Loose tips across the front soften the fringe; the short sides and back stay smooth.
+            for(int index=0;index<40;index++)
             {
-                float angle=index/72f*2*Mathf.PI;
-                float length=.19f+.07f*(.5f+.5f*Mathf.Sin(index*2.17f));
+                float angle=Mathf.Lerp(-1.35f,1.35f,index/39f)+.03f*Mathf.Sin(index*3.7f);
+                float length=.30f+.10f*(.5f+.5f*Mathf.Sin(index*2.17f));
                 var path=new List<Vector3>();
                 for(int j=0;j<=10;j++)
                 {
                     float t=j/10f;
-                    Vector3 point=HairPoint(angle,Mathf.Lerp(length,0,t),.002f);
-                    point.y-=.009f*Mathf.Pow(t,5);
+                    Vector3 point=HairPoint(angle,Mathf.Lerp(length,.03f,t),.003f);
+                    point.y-=.006f*Mathf.Pow(t,5);
                     path.Add(point);
                 }
                 float tone=.94f+.055f*Mathf.Sin(index*2.17f);
-                b.Lock(path,.009f+.003f*(.5f+.5f*Mathf.Sin(index)),.0025f,new Color(tone,tone,tone));
+                b.Lock(path,.010f+.003f*(.5f+.5f*Mathf.Sin(index)),.003f,new Color(tone,tone,tone));
             }
             return b.Mesh("AnatomyScalp");
         }

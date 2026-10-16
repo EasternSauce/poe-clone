@@ -1,3 +1,7 @@
+version: 2026-10-16-leaner-face
+- The hero's head is leaner and more natural: narrower cheeks and jaw, a defined chin, high cheekbones instead of round chubby cheeks, and no heavy jowl behind the jaw, so the face no longer looks too small for the head.
+- His hair is a proper short cut: a higher forehead, sideburns, hair around the ears and down to the nape, short sides with more on top, and a soft swept fringe instead of a bowl with a hard edge.
+
 version: 2026-10-16-weapon-tree-like-passives
 - The weapon tree now looks and works like the passive tree: it fills the screen, nodes are drawn the same way with notable and keystone names on the tree, and the side panel is gone.
 - On PC, hover a weapon tree node to see what it gives; on touch, tap to inspect and tap again to take it.
