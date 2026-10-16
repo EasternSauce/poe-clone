@@ -48,12 +48,16 @@ namespace PoeClone.Visuals
         private void Start()
         {
             originalTarget = Application.targetFrameRate;
-            Application.targetFrameRate = 60;
+            ApplyFrameCap();
+            Inventory.TouchMode.Changed += ApplyFrameCap;
             originalOverride = QualitySettings.renderPipeline;
             original = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             ignoreUntil = Time.unscaledTime + 8f;
             if (Inventory.TouchMode.Active) ApplyRendering();
         }
+
+        // Desktop is uncapped (browsers still pace to the display); touch devices cap at 60 for battery.
+        private static void ApplyFrameCap() => Application.targetFrameRate = Inventory.TouchMode.Active ? 60 : -1;
 
         /// <summary>Only optional effects call this. Damage callbacks, warnings and projectiles bypass it.</summary>
         public static bool AllowEffect(Vector3 position)
@@ -199,6 +203,7 @@ namespace PoeClone.Visuals
         private void OnDestroy()
         {
             RestoreRendering();
+            Inventory.TouchMode.Changed -= ApplyFrameCap;
             Application.targetFrameRate = originalTarget;
             DetailLevel = RenderLevel = 0;
         }
