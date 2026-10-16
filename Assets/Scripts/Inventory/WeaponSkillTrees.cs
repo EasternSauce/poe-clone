@@ -209,8 +209,8 @@ namespace PoeClone.Inventory
                 case E.DamageVsLowLife: return Percent(b.Value, damage + " against enemies below 50% life");
                 case E.FirstStrike: return More(b.Value, damage + " against enemies at full life");
                 case E.Cost: return Percent(b.Value, "resource cost");
-                case E.SingleProjectile: return "can't fire more than 1 projectile\nprojectiles cannot fork";
-                case E.NoFork: return "projectiles cannot fork";
+                case E.SingleProjectile: return "Can't fire more than 1 projectile\nProjectiles cannot fork";
+                case E.NoFork: return "Projectiles cannot fork";
                 case E.ChainRetention: return n + " percentage points of damage retained per lightning jump";
                 case E.ExtraWaves: return n + " additional tremors";
                 case E.MinionDeathBurst: return "Skeletons explode on combat death for " + b.Value.ToString("0.#") + "% of maximum life";

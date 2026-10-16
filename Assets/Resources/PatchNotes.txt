@@ -1,3 +1,6 @@
+version: 2026-10-16-fork-text
+- Weapon tree modifiers "Projectiles cannot fork" and "Can't fire more than 1 projectile" now start with a capital letter like the rest.
+
 version: 2026-10-16-friendlier-face
 - The hero no longer looks like a villain from the game camera: brows sit higher and slope gently down outward instead of a low scowl, the brow ridge and eye sockets are shallower, eyes are a little more open, cheeks are less hollow, the chin is rounder and the mouth has a slight smile.
 - Hair now follows the ears: it arches tightly over each ear and comes straight down behind it to the nape, instead of hovering above the ear and leaving a bare patch.
