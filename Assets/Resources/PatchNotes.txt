@@ -1,3 +1,10 @@
+version: 2026-10-16-weapon-tree-like-passives
+- The weapon tree now looks and works like the passive tree: it fills the screen, nodes are drawn the same way with notable and keystone names on the tree, and the side panel is gone.
+- On PC, hover a weapon tree node to see what it gives; on touch, tap to inspect and tap again to take it.
+- Weapon tree picks are a draft until you press Confirm, like passives: click a pending end node (or right-click) to undo it, and Cancel or closing asks before discarding.
+- Hover or tap the skill in the middle of the weapon tree to see its current damage, cost, points and reset price.
+- The weapon tree's zoom and reset view buttons are gone; scroll or pinch to zoom.
+
 version: 2026-10-16-smaller-download
 - The browser version downloads about 6 MB less: detailed character meshes (head, hands, arms, feet) are stored compressed, with no visible change.
 

@@ -181,6 +181,8 @@ namespace PoeClone.UI
             {
                 SkillBarUI.SetOpen(false);
                 WeaponSkillTreeUI.SetOpen(false);
+                // Unconfirmed weapon tree changes ask first; that tree stays until answered.
+                if (WeaponSkillTreeUI.IsOpen) return;
             }
             instance.panelRoot.SetActive(open);
             if (!open)
@@ -814,14 +816,14 @@ namespace PoeClone.UI
             content.anchoredPosition = Vector2.zero;
         }
 
-        private static void TopRight(RectTransform rt, Vector2 fromCorner, Vector2 size)
+        internal static void TopRight(RectTransform rt, Vector2 fromCorner, Vector2 size)
         {
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 1f);
             rt.anchoredPosition = new Vector2(-fromCorner.x, fromCorner.y);
             rt.sizeDelta = size;
         }
 
-        private static void TopStrip(RectTransform rt, float y, float height)
+        internal static void TopStrip(RectTransform rt, float y, float height)
         {
             rt.anchorMin = new Vector2(0f, 1f);
             rt.anchorMax = new Vector2(1f, 1f);
@@ -1142,7 +1144,7 @@ namespace PoeClone.UI
             UiKit.TopLeft((RectTransform)window.Find("Yes"), new Vector2(width * 0.5f + 12f, -208f), size);
         }
 
-        private static Image NewButton(RectTransform parent, string name, string label, Vector2 pos, Vector2 size)
+        internal static Image NewButton(RectTransform parent, string name, string label, Vector2 pos, Vector2 size)
         {
             Image button = UiKit.NewImage(name, parent, new Color(0.18f, 0.14f, 0.10f, 1f));
             UiKit.Inset(button);

@@ -39,10 +39,14 @@ namespace PoeClone.Skills
         }
         public int WeaponResetPrice => MainWeapon?.SkillProgress != null ? 75 + 50 * MainWeapon.SkillProgress.level * MainWeapon.SkillProgress.level : 0;
 
-        public bool AllocateWeaponNode(ItemData expectedWeapon, string id)
+        /// <summary>Allocates a confirmed draft in order; all or nothing.</summary>
+        public bool AllocateWeaponNodes(ItemData expectedWeapon, System.Collections.Generic.IReadOnlyList<string> ids)
         {
-            if (expectedWeapon == null || MainWeapon != expectedWeapon || !expectedWeapon.MainSkillGrant.HasValue ||
-                !expectedWeapon.SkillProgress.Allocate(expectedWeapon.MainSkillGrant.Value, id)) return false;
+            if (expectedWeapon == null || MainWeapon != expectedWeapon || !expectedWeapon.MainSkillGrant.HasValue || ids.Count == 0) return false;
+            var progress = expectedWeapon.SkillProgress.Copy();
+            foreach (string id in ids)
+                if (!progress.Allocate(expectedWeapon.MainSkillGrant.Value, id)) return false;
+            expectedWeapon.SkillProgress.nodes = progress.nodes;
             cachedTreeCount = -1;
             Minion.Desummon(transform);
             Changed?.Invoke();
