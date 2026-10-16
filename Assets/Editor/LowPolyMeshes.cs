@@ -255,8 +255,10 @@ namespace PoeClone.EditorTools
                 AssetDatabase.CreateAsset(mesh, path);
                 return mesh;
             }
-            existing.Clear();
+            // CopySerialized replaces the complete geometry. Clearing a referenced mesh first
+            // exposes empty bounds to its renderers and leaves their culling state stale.
             EditorUtility.CopySerialized(mesh, existing);
+            existing.RecalculateBounds();
             Object.DestroyImmediate(mesh);
             EditorUtility.SetDirty(existing);
             return existing;

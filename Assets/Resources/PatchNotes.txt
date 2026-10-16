@@ -1,3 +1,6 @@
+version: 2026-10-16-anatomy-visibility
+- Fixed character heads, hair and other procedural body parts disappearing after mesh rebuilds or camera detail changes.
+
 version: 2026-10-16-procedural-anatomy
 - Characters have a sculpted procedural face with a shaped nose, jaw, cheeks, lips, eyelids and ears, plus more natural hair and headwear proportions.
 - Hands and gloves now have individual fingers and thumbs, with relaxed and equipped grip poses. Arms, thighs, calves and bare feet have distinct anatomical shapes.

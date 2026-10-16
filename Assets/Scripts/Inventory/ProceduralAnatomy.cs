@@ -14,15 +14,37 @@ namespace PoeClone.Inventory
             public Mesh Near, Far, GripNear, GripFar;
             // 0: fixed anatomy, 1: left hand, 2: right hand.
             public int Hand;
+            [NonSerialized] internal Renderer Renderer;
         }
 
         [SerializeField] private Part[] parts = Array.Empty<Part>();
         private bool leftGrip, rightGrip;
 
-        public void Configure(Part[] value) => parts = value;
+        public void Configure(Part[] value)
+        {
+            parts = value;
+            SynchronizeBounds();
+        }
 
-        private void OnEnable() => RenderPipelineManager.beginCameraRendering += BeforeCamera;
+        private void OnEnable()
+        {
+            SynchronizeBounds();
+            RenderPipelineManager.beginCameraRendering += BeforeCamera;
+        }
         private void OnDisable() => RenderPipelineManager.beginCameraRendering -= BeforeCamera;
+
+        private void SynchronizeBounds()
+        {
+            // Include fixed anatomy (hair and limbs), not just the meshes with detail variants.
+            // Explicit local bounds also survive stale native renderer bounds after an Editor rebuild.
+            foreach (MeshFilter filter in GetComponentsInChildren<MeshFilter>(true))
+                if (filter.sharedMesh != null && filter.TryGetComponent<Renderer>(out var renderer))
+                    renderer.localBounds = filter.sharedMesh.bounds;
+
+            foreach (Part part in parts)
+                if (part.Filter != null)
+                    part.Renderer = part.Filter.GetComponent<Renderer>();
+        }
 
         public void SetEquipment(EquipmentSet equipment)
         {
@@ -55,7 +77,11 @@ namespace PoeClone.Inventory
                 }
                 bool grip = part.Hand == 1 ? leftGrip : part.Hand == 2 && rightGrip;
                 Mesh mesh = grip && part.GripNear != null ? (near ? part.GripNear : part.GripFar) : (near ? part.Near : part.Far);
-                if (mesh != null && part.Filter.sharedMesh != mesh) part.Filter.sharedMesh = mesh;
+                if (mesh != null && part.Filter.sharedMesh != mesh)
+                {
+                    part.Filter.sharedMesh = mesh;
+                    if (part.Renderer != null) part.Renderer.localBounds = mesh.bounds;
+                }
             }
         }
     }
