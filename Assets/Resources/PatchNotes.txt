@@ -1,3 +1,6 @@
+version: 2026-10-16-smaller-download
+- The browser version downloads about 6 MB less: detailed character meshes (head, hands, arms, feet) are stored compressed, with no visible change.
+
 version: 2026-10-16-glove-cuffs
 - Glove and gauntlet cuffs hug the forearm and meet the gloved hand at the wrist, so the hand no longer dangles below a wide floating cuff. Gauntlet knuckle plates sit on the back of the hand.
 - Desktop browsers render the world at full resolution instead of 70%, so it looks sharper.

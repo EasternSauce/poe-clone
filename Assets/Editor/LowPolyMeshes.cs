@@ -249,6 +249,10 @@ namespace PoeClone.EditorTools
         public static Mesh Save(string name, Mesh mesh)
         {
             string path = MeshDir + "/" + name + ".asset";
+            bool anatomy = name.StartsWith("Anatomy", System.StringComparison.Ordinal);
+            // Dense anatomy meshes dominate the Web download; Low compression quantizes their stored
+            // vertex data (normals stay within ~0.2 degrees) and roughly halves the build data.
+            if (anatomy) MeshUtility.SetMeshCompression(mesh, ModelImporterMeshCompression.Low);
             Mesh existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
             if (existing == null)
             {
@@ -257,7 +261,7 @@ namespace PoeClone.EditorTools
             }
             // Replacing anatomical assets rebuilds Unity's native mesh/LOD buffers as well as
             // the serialized data. CreateAsset preserves the existing .meta GUID and references.
-            if (name.StartsWith("Anatomy", System.StringComparison.Ordinal))
+            if (anatomy)
             {
                 string guid = AssetDatabase.AssetPathToGUID(path);
                 AssetDatabase.CreateAsset(mesh, path);
