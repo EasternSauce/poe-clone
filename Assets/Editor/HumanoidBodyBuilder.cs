@@ -125,7 +125,7 @@ namespace PoeClone.EditorTools
                 Part(u, "Hood", head, new Vector3(0f, 1.87f, 0f), new Vector3(0.47f, 0.33f, 0.48f));
                 Part(u, "HoodBrim", m["GearBand"], new Vector3(0f, 1.9f, 0.01f), new Vector3(0.5f, 0.035f, 0.5f));
                 Part(u, "Mantle", m["GearFlare"], new Vector3(0f, 1.47f, -0.02f), new Vector3(0.9f, 0.2f, 0.46f));
-                Part(u, "CloakBack", m["BodySkirt"], new Vector3(0f, 1.0f, -0.21f), new Vector3(0.66f, 1.12f, 0.07f));
+                Part(u, "CloakBack", m["BodySkirt"], new Vector3(0f, 1.0f, -0.25f), new Vector3(0.66f, 1.12f, 0.07f));
                 Transform pauldron = u.Find("Pauldron") ?? model.Find("UpperBody/UpperOffset/ArmL/Pauldron");
                 if (pauldron != null)
                 {

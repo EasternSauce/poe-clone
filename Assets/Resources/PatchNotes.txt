@@ -1,8 +1,9 @@
 version: 2026-10-16-character-run-and-face
 - Clothing, armour and weapon textures now stay fixed to the character instead of sliding across them while moving.
-- The player now runs at normal movement speed, leaning in with pumping arms, a heel kick and both feet leaving the ground between strides. Slower movement keeps the walk, and sprinting lengthens the stride.
+- Normal movement is an upright walk with calmer arm and leg swings, where each leg visibly takes the body's weight as it lands. Sprinting switches to a run: leaning in with pumping arms, a heel kick and both feet leaving the ground between strides.
 - Faces look more natural: larger, more open eyes with brighter whites and a darker lash line, fuller brows, soft shading around the eyes, nose and lips, a relaxed mouth and a less orange skin tone.
 - Hands and gloves are 20% larger to match the forearms, and held weapons sit in the larger grip.
+- The starting cape hangs from the shoulders and trails behind while moving, instead of swinging into the legs; the tunic no longer shows through it.
 
 version: 2026-10-16-character-expression-and-gait
 - Closeups have defined eyebrows, lips and nostrils, with denser facial geometry and smoothly attached ears.

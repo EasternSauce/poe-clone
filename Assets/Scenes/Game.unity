@@ -14494,9 +14494,9 @@ MonoBehaviour:
   capeParts:
   - {fileID: 28583285}
   - {fileID: 1520668634}
-  pitchPerSpeed: 10
+  pitchPerSpeed: 3
   maxPitchForward: 35
-  maxPitchBackward: 12
+  restPitch: 4
   rollPerStrafeSpeed: 14
   maxRoll: 25
   springSpeed: 8
@@ -23067,7 +23067,7 @@ Transform:
   m_GameObject: {fileID: 1520668633}
   serializedVersion: 2
   m_LocalRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
-  m_LocalPosition: {x: 0, y: 1, z: -0.21}
+  m_LocalPosition: {x: 0, y: 1, z: -0.25}
   m_LocalScale: {x: 0.66, y: 1.12, z: 0.07}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -28443,21 +28443,21 @@ MonoBehaviour:
   rightArm: {fileID: 2135272514}
   armRestAngle: 0
   legSwing: 38
-  armSwing: 28
+  armSwing: 16
   strideLength: 3.6
   bobHeight: 0.05
   blendSpeed: 8
   minMoveSpeed: 0.3
   walkKneeBend: 18
   walkElbowBend: 12
-  runStartSpeed: 4
-  runFullSpeed: 5.5
+  runStartSpeed: 8
+  runFullSpeed: 9.5
   runBlendSpeed: 6
   runLegSwing: 62
   runArmSwing: 58
   runKneeBend: 80
   runElbowBend: 85
-  runStrideLength: 4.4
+  runStrideLength: 5.4
   runBobHeight: 0.12
   runLean: 14
   staggerTiltAngle: -22

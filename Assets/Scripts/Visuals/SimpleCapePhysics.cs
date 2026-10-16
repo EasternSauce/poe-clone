@@ -7,7 +7,9 @@ namespace PoeClone.Visuals
     /// as a single rigid piece based on the player's horizontal movement and
     /// turning, plus a gentle idle wind flutter. No bones/cloth simulation -
     /// just a couple of spring-damped angles applied on top of each part's
-    /// resting local rotation. Cheap enough to run every frame with no setup.
+    /// resting local rotation. Each part hinges at its top edge and only ever
+    /// swings back or sideways, so it trails behind the legs instead of through them.
+    /// Cheap enough to run every frame with no setup.
     /// </summary>
     public class SimpleCapePhysics : MonoBehaviour
     {
@@ -15,9 +17,9 @@ namespace PoeClone.Visuals
         public Transform[] capeParts; // e.g. Mantle, CloakBack
 
         [Header("Movement Response")]
-        public float pitchPerSpeed = 10f;      // billow backward when moving forward, degrees per m/s
+        public float pitchPerSpeed = 3f;       // trail backward when moving forward, degrees per m/s
         public float maxPitchForward = 35f;
-        public float maxPitchBackward = 12f;
+        public float restPitch = 4f;          // hangs slightly away from the body even when still
         public float rollPerStrafeSpeed = 14f; // sway sideways with lateral velocity
         public float maxRoll = 25f;
 
@@ -34,6 +36,8 @@ namespace PoeClone.Visuals
         private float currentPitch, pitchVel;
         private float currentRoll, rollVel;
         private Quaternion[] restLocalRotations;
+        private Vector3[] restLocalPositions, hinges;
+        private float[] weights;
 
         private void Start()
         {
@@ -44,8 +48,21 @@ namespace PoeClone.Visuals
             if (capeParts != null)
             {
                 restLocalRotations = new Quaternion[capeParts.Length];
+                restLocalPositions = new Vector3[capeParts.Length];
+                hinges = new Vector3[capeParts.Length];
+                weights = new float[capeParts.Length];
                 for (int i = 0; i < capeParts.Length; i++)
-                    if (capeParts[i] != null) restLocalRotations[i] = capeParts[i].localRotation;
+                {
+                    Transform part = capeParts[i];
+                    if (part == null) continue;
+                    restLocalRotations[i] = part.localRotation;
+                    restLocalPositions[i] = part.localPosition;
+                    Mesh mesh = part.TryGetComponent<MeshFilter>(out var filter) ? filter.sharedMesh : null;
+                    float top = mesh != null ? mesh.bounds.max.y * part.localScale.y : 0f;
+                    hinges[i] = part.localPosition + part.localRotation * (Vector3.up * top);
+                    // A short shoulder piece (the mantle) only stirs; the long back panel trails.
+                    weights[i] = mesh != null && mesh.bounds.size.y * part.localScale.y < 0.4f ? 0.2f : 1f;
+                }
             }
         }
 
@@ -62,25 +79,23 @@ namespace PoeClone.Visuals
 
             Vector3 localVel = transform.InverseTransformDirection(worldVel);
 
-            // Moving forward pushes the cape back and up (billow); moving
-            // backward gives it a smaller forward lift so it doesn't flip
-            // unrealistically far the other way.
-            float maxPitch = localVel.z >= 0f ? maxPitchForward : maxPitchBackward;
-            float targetPitch = Mathf.Clamp(-localVel.z * pitchPerSpeed, -maxPitchBackward, maxPitch);
+            // Moving forward lets the hem trail back; it never swings forward into the legs.
+            float targetPitch = restPitch + Mathf.Clamp(localVel.z * pitchPerSpeed, 0f, maxPitchForward);
             float targetRoll = Mathf.Clamp(-localVel.x * rollPerStrafeSpeed, -maxRoll, maxRoll);
 
             // Gentle idle flutter so the cape is never perfectly static even when standing still.
-            targetPitch += Mathf.Sin(Time.time * windSpeed) * windAmplitude * 0.5f;
+            targetPitch += (Mathf.Sin(Time.time * windSpeed) * 0.5f + 0.5f) * windAmplitude * 0.5f;
             targetRoll += Mathf.Sin(Time.time * windSpeed * 1.3f + 1.7f) * windAmplitude;
 
             currentPitch = SpringTowards(currentPitch, targetPitch, ref pitchVel, dt);
             currentRoll = SpringTowards(currentRoll, targetRoll, ref rollVel, dt);
 
-            Quaternion sway = Quaternion.Euler(currentPitch, 0f, currentRoll);
             for (int i = 0; i < capeParts.Length; i++)
             {
                 if (capeParts[i] == null) continue;
-                capeParts[i].localRotation = restLocalRotations[i] * sway;
+                Quaternion sway = Quaternion.Euler(Mathf.Max(0f, currentPitch) * weights[i], 0f, currentRoll * weights[i]);
+                capeParts[i].localRotation = sway * restLocalRotations[i];
+                capeParts[i].localPosition = hinges[i] + sway * (restLocalPositions[i] - hinges[i]);
             }
         }
 

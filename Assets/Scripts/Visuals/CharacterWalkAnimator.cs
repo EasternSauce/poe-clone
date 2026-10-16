@@ -316,8 +316,10 @@ namespace PoeClone.Visuals
             float bob = simple ? 0f : Mathf.Abs(c) * bobAmount * blend * stepping;
             if (NaturalGait)
             {
-                // Walking vaults over the planted leg; running sinks onto it and rises through the flight.
-                float walkBob = -.022f-.012f*c*c;
+                // Walking: the body sinks just after each heel strike as the leg takes the weight
+                // (bending the knee), then rises over the straightened leg at mid-stance.
+                // Running sinks onto the planted leg and rises through the flight.
+                float walkBob = -.025f+.015f*Mathf.Cos(2f*(phase-WalkStance*Mathf.PI));
                 float runBob = -.03f-.03f*Mathf.Cos(2f*(phase-RunStance*Mathf.PI));
                 bob = Mathf.Lerp(walkBob,runBob,runBlend)*blend*stepping;
             }
@@ -341,14 +343,16 @@ namespace PoeClone.Visuals
                 PoseTwoHandedHold(rightArmSuppressed, leftArmSuppressed, s * armAmp, breath);
         }
 
-        // Share of the cycle a running foot is down: under half, so both feet leave the ground between steps.
+        // Share of the cycle a foot is down. Walking keeps one foot down at all times (both briefly);
+        // running is under half, so both feet leave the ground between steps.
+        private const float WalkStance = .64f;
         private const float RunStance = .38f;
 
         private void PoseNaturalLeg(Transform hip,Transform knee,AnatomicalAnkle ankle,float cycle,float side,float bodyOffset,float crouch)
         {
             float t=Mathf.Repeat(cycle/(2*Mathf.PI),1);
-            float stance=Mathf.Lerp(.64f,RunStance,runBlend);
-            float travel=Mathf.Lerp(.48f,.70f,runBlend);
+            float stance=Mathf.Lerp(WalkStance,RunStance,runBlend);
+            float travel=Mathf.Lerp(.42f,.70f,runBlend);
             float forward,lift,footPitch;
             if(t<stance)
             {
@@ -363,7 +367,7 @@ namespace PoeClone.Visuals
                 float swing=(t-stance)/(1-stance);
                 forward=Mathf.Lerp(-travel*.5f,travel*.5f,Mathf.SmoothStep(0,1,swing));
                 // A running leg kicks the heel up behind early in the swing, then reaches forward.
-                float walkLift=Mathf.Sin(swing*Mathf.PI)*.055f;
+                float walkLift=Mathf.Sin(swing*Mathf.PI)*.045f;
                 float runLift=Mathf.Sin(Mathf.Pow(swing,.6f)*Mathf.PI)*.30f;
                 if(runBlend>0) forward-=Mathf.Sin(swing*Mathf.PI)*Mathf.Max(0,.6f-swing)*.25f*runBlend;
                 lift=Mathf.Lerp(walkLift,runLift,runBlend);
@@ -378,7 +382,7 @@ namespace PoeClone.Visuals
             float bend=Mathf.Acos(Mathf.Clamp((thigh*thigh+distance*distance-shin*shin)/(2*thigh*distance),-1,1))*Mathf.Rad2Deg;
             float hipPitch=Mathf.Lerp(aim-bend,-35f,crouch);
             float kneePitch=Mathf.Lerp(180-Mathf.Acos(Mathf.Clamp((thigh*thigh+shin*shin-distance*distance)/(2*thigh*shin),-1,1))*Mathf.Rad2Deg,70f,crouch);
-            hip.localRotation=Quaternion.Euler(hipPitch,Mathf.Sin(cycle)*3f*weight,side*PlantSpread*plant);
+            hip.localRotation=Quaternion.Euler(hipPitch,Mathf.Sin(cycle)*2f*weight,side*PlantSpread*plant);
             knee.localRotation=Quaternion.Euler(kneePitch,0,0);
             ankle.Pose(Mathf.Clamp(footPitch*weight-hipPitch-kneePitch,-38f,30f));
         }
