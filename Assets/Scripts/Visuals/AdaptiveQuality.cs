@@ -6,7 +6,10 @@ using PoeClone.World;
 
 namespace PoeClone.Visuals
 {
-    /// <summary>Reduces CPU detail and GPU cost independently, with slow recovery and a 30 FPS floor target.</summary>
+    /// <summary>
+    /// On touch devices, reduces CPU detail and GPU cost independently, with slow recovery and a
+    /// 30 FPS floor target. Desktop (PC and desktop browsers) always keeps full quality.
+    /// </summary>
     public sealed class AdaptiveQuality : MonoBehaviour
     {
         public static int DetailLevel { get; private set; }
@@ -49,7 +52,7 @@ namespace PoeClone.Visuals
             originalOverride = QualitySettings.renderPipeline;
             original = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             ignoreUntil = Time.unscaledTime + 8f;
-            ApplyRendering();
+            if (Inventory.TouchMode.Active) ApplyRendering();
         }
 
         /// <summary>Only optional effects call this. Damage callbacks, warnings and projectiles bypass it.</summary>
@@ -63,6 +66,14 @@ namespace PoeClone.Visuals
 
         private void Update()
         {
+            if (!Inventory.TouchMode.Active)
+            {
+                // Touch mode can be switched off at runtime (editor simulation); drop any reductions.
+                if (runtime != null) { DetailLevel = RenderLevel = lastChanged = 0; assessing = false; RestoreRendering(); }
+                ResetWindow();
+                ignoreUntil = Time.unscaledTime + 3f;
+                return;
+            }
             var area = AreaManager.Instance;
             if (!Application.isFocused || Time.timeScale <= 0f || area == null || area.CurrentAreaIndex < 0 ||
                 area.IsSwitching || (area.loadingScreen != null && area.loadingScreen.IsShowing) ||
@@ -177,14 +188,17 @@ namespace PoeClone.Visuals
             if (cameraData != null) cameraData.renderPostProcessing = originalPost && RenderLevel < 2;
         }
         private void RestoreCamera() { if (cameraData != null) cameraData.renderPostProcessing = originalPost; }
-        private void OnDestroy()
+        private void RestoreRendering()
         {
             RestoreCamera();
-            if (runtime != null)
-            {
-                if (QualitySettings.renderPipeline == runtime) QualitySettings.renderPipeline = originalOverride;
-                Destroy(runtime);
-            }
+            if (runtime == null) return;
+            if (QualitySettings.renderPipeline == runtime) QualitySettings.renderPipeline = originalOverride;
+            Destroy(runtime);
+            runtime = runtimeSource = null;
+        }
+        private void OnDestroy()
+        {
+            RestoreRendering();
             Application.targetFrameRate = originalTarget;
             DetailLevel = RenderLevel = 0;
         }

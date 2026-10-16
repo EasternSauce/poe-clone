@@ -1,5 +1,7 @@
 version: 2026-10-16-glove-cuffs
 - Glove and gauntlet cuffs hug the forearm and meet the gloved hand at the wrist, so the hand no longer dangles below a wide floating cuff. Gauntlet knuckle plates sit on the back of the hand.
+- Desktop browsers render the world at full resolution instead of 70%, so it looks sharper.
+- On PC and desktop browsers, quality no longer drops automatically when the frame rate dips (lower resolution, fewer effects, simpler animations). Phones and tablets still adapt.
 
 version: 2026-10-16-zoom-keystones-portrait
 - Mouse wheel zoom in the browser moves at the same pace as on PC, instead of barely moving.
