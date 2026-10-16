@@ -471,6 +471,13 @@ namespace PoeClone.EditorTools
             return "life " + ps.CurrentHealth + ", mana " + ps.CurrentMana;
         }
 
+        /// <summary>Swaps the gameplay camera for an orbiting closeup of the player (false restores it).</summary>
+        public static string Closeup(bool on = true)
+        {
+            if (!on) { PoeClone.CameraSystem.CharacterCloseupCamera.Close(); return "closeup off"; }
+            return PoeClone.CameraSystem.CharacterCloseupCamera.Open() != null ? "closeup on" : "no camera";
+        }
+
         /// <summary>
         /// Generates a Normal item of a base at an item level, adds the given stats
         /// ("GrantBoneGolem=5, MinionLife=40"), and equips it in its slot (any off-hand item to the off hand).
