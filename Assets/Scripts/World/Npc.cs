@@ -56,6 +56,7 @@ namespace PoeClone.World
         private bool turnsToPlayer = true;
         private float labelHeight = 2.1f;
         private VillageRoutine routine;
+        private Bounds? modelBounds;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
@@ -106,6 +107,8 @@ namespace PoeClone.World
                 float lowerReach = npc.Role == NpcRole.QuestProp ? 64f : 16f;
                 bool inside = point.y >= Mathf.Min(feet.y, head.y) - lowerReach && point.y <= Mathf.Max(feet.y, head.y) + 10f &&
                               Mathf.Abs(point.x - (feet.x + head.x) * 0.5f) <= halfWidth;
+                if (!inside && npc.modelBounds.HasValue)
+                    inside = ScreenRectContains(cam, npc.modelBounds.Value, point);
                 if (inside && feet.z < bestDepth)
                 {
                     best = npc;
@@ -113,6 +116,40 @@ namespace PoeClone.World
                 }
             }
             return best;
+        }
+
+        /// <summary>Whether a point falls in the screen rectangle covering a world-space box.</summary>
+        private static bool ScreenRectContains(Camera cam, Bounds bounds, Vector2 point)
+        {
+            Vector3 min = bounds.min, max = bounds.max;
+            float left = float.MaxValue, right = float.MinValue, bottom = float.MaxValue, top = float.MinValue;
+            for (int i = 0; i < 8; i++)
+            {
+                var corner = new Vector3((i & 1) == 0 ? min.x : max.x, (i & 2) == 0 ? min.y : max.y, (i & 4) == 0 ? min.z : max.z);
+                Vector3 s = cam.WorldToScreenPoint(corner);
+                if (s.z <= cam.nearClipPlane)
+                    return false;
+                left = Mathf.Min(left, s.x);
+                right = Mathf.Max(right, s.x);
+                bottom = Mathf.Min(bottom, s.y);
+                top = Mathf.Max(top, s.y);
+            }
+            return point.x >= left && point.x <= right && point.y >= bottom && point.y <= top;
+        }
+
+        /// <summary>
+        /// Makes the whole drawn model clickable, not just the area round the name tag (for a
+        /// fixed prop wider than a person, like the stash chest). The prop must not move afterwards.
+        /// </summary>
+        public void UseModelHitBox()
+        {
+            Bounds? bounds = null;
+            foreach (MeshRenderer r in GetComponentsInChildren<MeshRenderer>())
+            {
+                if (bounds.HasValue) { Bounds b = bounds.Value; b.Encapsulate(r.bounds); bounds = b; }
+                else bounds = r.bounds;
+            }
+            modelBounds = bounds;
         }
 
         /// <summary>Builds an NPC from the enemy prefab at a spot, facing the given direction.</summary>

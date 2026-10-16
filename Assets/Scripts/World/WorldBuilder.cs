@@ -1559,7 +1559,7 @@ namespace PoeClone.World
             LocalBox(ct, new Vector3(0f, 0.78f, 0.54f), new Vector3(0.22f, 0.26f, 0.06f), kit.Mat("Iron"), solid: false);
 
             Claim(p, 1.8f);
-            Npc.CreateFixed(chest, NpcRole.Stash, "Stash", 1.7f);
+            Npc.CreateFixed(chest, NpcRole.Stash, "Stash", 1.7f).UseModelHitBox();
         }
 
         // ------------------------------------------------------------------ light sources

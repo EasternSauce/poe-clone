@@ -1,3 +1,6 @@
+version: 2026-10-16-stash-click
+- The stash chest opens when you click anywhere on it, not only on its name tag.
+
 version: 2026-10-16-cape-cloth-and-collars
 - The starting cape is soft cloth: it hangs in folds, curves back further towards the hem as you move, ripples and flutters, and billows behind you when sprinting.
 - The shoulder mantle sits a little higher, so the tunic's shoulders and the undershirt collar no longer poke through it.
