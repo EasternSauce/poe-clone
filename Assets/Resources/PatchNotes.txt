@@ -1,3 +1,8 @@
+version: 2026-10-16-cape-cloth-and-collars
+- The starting cape is soft cloth: it hangs in folds, curves back further towards the hem as you move, ripples and flutters, and billows behind you when sprinting.
+- The shoulder mantle sits a little higher, so the tunic's shoulders and the undershirt collar no longer poke through it.
+- Thumbs and fingers are smooth, continuous digits instead of a row of overlapping lumps.
+
 version: 2026-10-16-character-run-and-face
 - Clothing, armour and weapon textures now stay fixed to the character instead of sliding across them while moving.
 - Normal movement is an upright walk with calmer arm and leg swings, where each leg visibly takes the body's weight as it lands. Sprinting switches to a run: leaning in with pumping arms, a heel kick and both feet leaving the ground between strides.

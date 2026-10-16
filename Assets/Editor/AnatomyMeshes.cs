@@ -340,17 +340,16 @@ namespace PoeClone.EditorTools
                         }
                 }
                 float radius=finger==3?.056f:.066f;
-                for(int j=0;j<segments;j++)
-                    volume.Capsule(path[j],path[j+1],radius*Mathf.Lerp(1,.78f,j/(float)segments),radius*Mathf.Lerp(1,.78f,(j+1)/(float)segments));
+                volume.Tube(path,t=>radius*Mathf.Lerp(1,.78f,t));
                 Vector3 tangent=(path[segments]-path[segments-2]).normalized;
                 Vector3 outward=new Vector3(mirror,0,0);
                 outward=(outward-tangent*Vector3.Dot(outward,tangent)).normalized;
                 nails.Add(path[segments-1]);nailNormals.Add(outward);nailTangents.Add(tangent);
             }
             var thumb=new List<Vector3>();
-            for(int j=0;j<=6;j++)
+            for(int j=0;j<=16;j++)
             {
-                float t=j/6f;
+                float t=j/16f;
                 if(grip)
                     thumb.Add(new Vector3(-mirror*(.08f+.33f*t),.12f-.43f*t,.26f+.15f*Mathf.Sin(t*1.4f))+offset);
                 else
@@ -361,7 +360,8 @@ namespace PoeClone.EditorTools
                     thumb.Add(q*q*q*a+3*q*q*t*c1+3*q*t*t*c2+t*t*t*end);
                 }
             }
-            for(int j=0;j<6;j++) volume.Capsule(thumb[j],thumb[j+1],Mathf.Lerp(.065f,.050f,j/6f),Mathf.Lerp(.065f,.050f,(j+1)/6f));
+            // Broad at the root where it meets the thenar pad, tapering to a rounded tip.
+            volume.Tube(thumb,t=>Mathf.Lerp(.068f,.050f,Mathf.SmoothStep(0,1,t)));
             Color Pigment(Vector3 p)
             {
                 for(int i=0;i<nails.Count;i++)

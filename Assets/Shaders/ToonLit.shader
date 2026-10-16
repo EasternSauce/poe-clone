@@ -13,7 +13,7 @@ Shader "PoeClone/ToonLit"
         _AmbientBoost ("Ambient Fill", Range(0,1)) = 0.35
         _TriplanarTileSize ("Triplanar Tile Size (world units)", Float) = 2.0
         _TexInfluence ("Texture Influence", Range(0,1)) = 1.0
-        _ObjectTexture ("Texture Follows Object", Range(0,1)) = 0
+        _ObjectTexture ("Texture Follows Object", Range(0,2)) = 0
         _LivingWater ("Living Water", Range(0,1)) = 0
         _WaterOcean ("Ocean Wave Strength", Range(0,1)) = 0
         _SerpentScales ("Serpent Scale Surface", Range(0,1)) = 0
@@ -146,14 +146,15 @@ Shader "PoeClone/ToonLit"
                 OUT.waterMotion = IN.waterMotion;
                 // Worn and carried models set _ObjectTexture (per renderer): their pattern is
                 // projected in object space at world scale, so it moves with them instead of
-                // the body walking through a pattern fixed in the world.
+                // the body walking through a pattern fixed in the world. At 2 the mesh deforms
+                // (cloth), and texturing uses each vertex's rest position, stored in TEXCOORD1.
                 OUT.texturePosition = vpi.positionWS;
                 OUT.textureNormal = vni.normalWS;
                 if (_ObjectTexture > 0)
                 {
                     float4x4 m = GetObjectToWorldMatrix();
                     float3 scale = float3(length(m._m00_m10_m20), length(m._m01_m11_m21), length(m._m02_m12_m22));
-                    OUT.texturePosition = IN.positionOS.xyz * scale;
+                    OUT.texturePosition = (_ObjectTexture > 1.5 ? IN.waterMotion.xyz : IN.positionOS.xyz) * scale;
                     OUT.textureNormal = IN.normalOS / max(scale, 1e-5);
                 }
                 return OUT;

@@ -13,9 +13,24 @@ namespace PoeClone.EditorTools
             public Vector3 A, B, Radii;
             public float Radius, EndRadius;
             public bool Capsule, Palm;
+            public Vector3[] Points;
+            public float[] PointRadii;
 
             public float Distance(Vector3 p)
             {
+                if (Points != null)
+                {
+                    // One tube along the whole path: a hard minimum over segments that share their
+                    // end radii is seamless, where blending separate capsules bulges at every joint.
+                    float nearest = 1000;
+                    for (int i = 0; i < Points.Length - 1; i++)
+                    {
+                        Vector3 ab = Points[i+1]-Points[i];
+                        float t = Mathf.Clamp01(Vector3.Dot(p-Points[i],ab)/Mathf.Max(1e-8f,ab.sqrMagnitude));
+                        nearest = Mathf.Min(nearest, (p-Points[i]-ab*t).magnitude-Mathf.Lerp(PointRadii[i],PointRadii[i+1],t));
+                    }
+                    return nearest;
+                }
                 if (Capsule)
                 {
                     Vector3 ab = B-A;
@@ -46,6 +61,12 @@ namespace PoeClone.EditorTools
         public void Ellipsoid(Vector3 center,Vector3 radii) => shapes.Add(new Shape {A=center,Radii=radii});
         public void Capsule(Vector3 a,Vector3 b,float radius,float endRadius) =>
             shapes.Add(new Shape {A=a,B=b,Radius=radius,EndRadius=endRadius,Capsule=true});
+        public void Tube(IList<Vector3> points,Func<float,float> radius)
+        {
+            var radii=new float[points.Count];
+            for(int i=0;i<radii.Length;i++) radii[i]=radius(i/(float)(radii.Length-1));
+            shapes.Add(new Shape {Points=new List<Vector3>(points).ToArray(),PointRadii=radii});
+        }
 
         private float Field(Vector3 point)
         {

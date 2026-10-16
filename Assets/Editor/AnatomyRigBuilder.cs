@@ -57,10 +57,12 @@ namespace PoeClone.EditorTools
             upper.Find("HoodBrim").localScale = new Vector3(.395f,.04f,.405f);
 
             Set(upper.Find("Mantle"),meshes["AnatomyMantle"],null);
-            upper.Find("Mantle").localPosition=new Vector3(0,1.51f,0);
+            // High enough that its wider skirt covers the tunic's shoulders.
+            upper.Find("Mantle").localPosition=new Vector3(0,1.54f,0);
             Transform yoke=Child(upper,"Undercollar");
             Set(yoke,meshes["AnatomyYoke"],upper.Find("Torso").GetComponent<Renderer>().sharedMaterial);
-            yoke.localPosition=new Vector3(0,1.55f,.01f);yoke.localScale=new Vector3(.42f,.16f,.30f);
+            // Fills the neckline in front while staying inside the mantle at the back.
+            yoke.localPosition=new Vector3(0,1.55f,.03f);yoke.localScale=new Vector3(.42f,.16f,.28f);
             Mesh genericLimb=AssetDatabase.LoadAssetAtPath<Mesh>(LowPolyMeshes.MeshDir+"/BodyLimb.asset");
 
             foreach (string side in new[] { "L", "R" })

@@ -21,7 +21,8 @@ namespace PoeClone.Inventory
                 if (m == null || !m.HasProperty(ObjectTexture))
                     continue;
                 r.GetPropertyBlock(block);
-                block.SetFloat(ObjectTexture, 1f);
+                // Keep a deforming cloth's rest-pose mode (2, see SimpleCapePhysics).
+                block.SetFloat(ObjectTexture, Mathf.Max(1f, block.GetFloat(ObjectTexture)));
                 r.SetPropertyBlock(block);
             }
         }
