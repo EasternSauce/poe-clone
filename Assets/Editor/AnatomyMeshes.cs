@@ -17,15 +17,15 @@ namespace PoeClone.EditorTools
             foreach (bool detailed in new[] { true, false })
             {
                 string suffix = detailed ? "" : "Low";
-                Save(Head("AnatomyHead" + suffix, detailed ? 160 : 40, detailed ? 160 : 32));
+                Save(Simplified(Head("AnatomyHead" + suffix, detailed ? 160 : 40, detailed ? 160 : 32)));
                 Save(Eyes("AnatomyEyes" + suffix, detailed ? 32 : 12));
-                Save(Foot("AnatomyFoot" + suffix, detailed ? .035f : .075f));
+                Save(Simplified(Foot("AnatomyFoot" + suffix, detailed ? .035f : .075f)));
                 foreach (bool left in new[] { true, false })
                 foreach (bool grip in new[] { false, true })
-                    Save(Hand("AnatomyHand" + (left ? "L" : "R") + (grip ? "Grip" : "") + suffix,
-                        left, grip, detailed ? 12 : 6));
+                    Save(Simplified(Hand("AnatomyHand" + (left ? "L" : "R") + (grip ? "Grip" : "") + suffix,
+                        left, grip, detailed ? 12 : 6)));
             }
-            Save(Scalp());
+            Save(Simplified(Scalp()));
             Save(AnatomyLimbMeshes.Arm(-1));
             Save(AnatomyLimbMeshes.Arm(1));
             Save(AnatomyLimbMeshes.Leg());
@@ -40,6 +40,17 @@ namespace PoeClone.EditorTools
             Save(LowPolyMeshes.Shell("AnatomyMantle",48,.035f,0,360,false,
                 R(.5f,.09f,.17f,.06f),R(.32f,.19f,.27f,.05f),R(-.05f,.38f,.44f,.015f),R(-.5f,.5f,.5f)));
             return meshes;
+        }
+
+        // The dense bakes spend most vertices on flat or gently curved skin. Collapsing those keeps
+        // the surface within ~0.1% of its size and roughly quarters the build download for them.
+        private const float SimplifyError = .004f;
+
+        private static Mesh Simplified(Mesh mesh)
+        {
+            Mesh simplified = AnatomySimplifier.Simplify(mesh, SimplifyError);
+            Object.DestroyImmediate(mesh);
+            return simplified;
         }
 
         private static LowPolyMeshes.Ring R(float y, float x, float z, float forward = 0) =>
