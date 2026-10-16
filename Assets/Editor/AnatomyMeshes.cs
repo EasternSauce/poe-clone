@@ -67,8 +67,8 @@ namespace PoeClone.EditorTools
         // Skull, temple, cheekbone, jaw and chin profiles of the front half; interpolation avoids lathe
         // ridges. The cheeks and jaw taper well inside the temples, as a broad lower face reads as fat.
         private static readonly LowPolyMeshes.Ring[] Skull = {
-            R(-.5f, 0, 0, .10f), R(-.465f, .11f, .22f, .13f), R(-.40f, .20f, .30f, .08f),
-            R(-.30f, .30f, .35f, .035f), R(-.17f, .36f, .385f, .005f), R(-.03f, .395f, .41f, -.015f),
+            R(-.5f, 0, 0, .10f), R(-.465f, .135f, .22f, .13f), R(-.40f, .225f, .30f, .08f),
+            R(-.30f, .31f, .35f, .035f), R(-.17f, .36f, .385f, .005f), R(-.03f, .395f, .41f, -.015f),
             R(.12f, .405f, .43f, -.03f), R(.27f, .395f, .44f, -.035f),
             R(.39f, .33f, .375f, -.03f), R(.47f, .19f, .22f, -.02f), R(.5f, 0, 0, -.01f) };
         // Back depth per Skull ring: a full occiput that tucks under into the neck instead of a jowl.
@@ -115,11 +115,12 @@ namespace PoeClone.EditorTools
             z -= .012f * G(x,y,0,-.165f,.030f,.04f);
             z -= .010f*(G(x,y,-.081f,-.11f,.013f,.031f)+G(x,y,.081f,-.11f,.013f,.031f));
             z += .006f*(G(x,y,-.021f,-.185f,.012f,.038f)+G(x,y,.021f,-.185f,.012f,.038f));
-            // High cheekbones with a slight hollow beneath; a round low cheek reads as a fat, childish face.
+            // Cheekbones with only a faint dip beneath; a deep hollow and a heavy brow over sunken
+            // sockets read as gaunt and menacing, especially seen from above.
             z += .016f * (G(x,y,-.27f,-.01f,.11f,.05f) + G(x,y,.27f,-.01f,.11f,.05f));
-            z -= .010f * (G(x,y,-.25f,-.19f,.08f,.07f) + G(x,y,.25f,-.19f,.08f,.07f));
-            z -= .025f * (G(x,y,-EyeCenter,.055f,.095f,.045f) + G(x,y,EyeCenter,.055f,.095f,.045f));
-            z += .015f * (G(x,y,-EyeCenter,.125f,.13f,.05f) + G(x,y,EyeCenter,.125f,.13f,.05f));
+            z -= .004f * (G(x,y,-.25f,-.19f,.08f,.07f) + G(x,y,.25f,-.19f,.08f,.07f));
+            z -= .017f * (G(x,y,-EyeCenter,.055f,.095f,.045f) + G(x,y,EyeCenter,.055f,.095f,.045f));
+            z += .008f * (G(x,y,-EyeCenter,.14f,.13f,.05f) + G(x,y,EyeCenter,.14f,.13f,.05f));
             float seam=MouthSeam(x);
             z += .014f * G(x,y,0,seam+.011f,.135f,.014f) + .018f * G(x,y,0,seam-.012f,.13f,.018f);
             z -= .010f * G(x,y,0,seam,.145f,.004f);
@@ -138,17 +139,19 @@ namespace PoeClone.EditorTools
             c = Color.Lerp(c, new Color(.30f,.20f,.18f), Mathf.Clamp01(nostrils) * .8f);
             // Painted occlusion: without it the sockets, nose base and lip read flat and doll-like.
             float socket = G(x,y,-EyeCenter,.06f,.13f,.07f) + G(x,y,EyeCenter,.06f,.13f,.07f);
-            float shade = socket * .14f + G(x,y,0,-.135f,.07f,.022f) * .22f + G(x,y,0,-.29f,.11f,.022f) * .16f
+            float shade = socket * .07f + G(x,y,0,-.135f,.07f,.022f) * .22f + G(x,y,0,-.29f,.11f,.022f) * .16f
                 + (G(x,y,-.11f,-.17f,.025f,.06f) + G(x,y,.11f,-.17f,.025f,.06f)) * .10f;
             c *= 1 - Mathf.Clamp01(shade);
             c.a = 1;
-            float brow = G(x,y,-EyeCenter,.118f,.11f,.022f) + G(x,y,EyeCenter,.118f,.11f,.022f);
+            float browY = BrowArch(Mathf.Clamp01((Mathf.Abs(x) - .085f) / .165f)) + .004f;
+            float brow = G(x,y,-.168f,browY,.085f,.018f) + G(x,y,.168f,browY,.085f,.018f);
             float hairs = .8f + .2f * Mathf.Sin(x * 1200 + y * 220);
-            return Color.Lerp(c, new Color(.13f,.10f,.08f), Mathf.Clamp01(brow * hairs));
+            return Color.Lerp(c, new Color(.16f,.11f,.08f), Mathf.Clamp01(brow * hairs * .8f));
         }
 
         private static float HeadAngle(float u) => u*2*Mathf.PI-.65f*Mathf.Sin(u*2*Mathf.PI);
-        private static float MouthSeam(float x) => -.24f+.004f*Mathf.Pow(x/.145f,2);
+        // Corners lift a little: a level or downturned seam reads as a sneer under a shadowed brow.
+        private static float MouthSeam(float x) => -.24f+.008f*Mathf.Pow(x/.145f,2);
 
         private static Mesh Head(string name, int sides, int rows)
         {
@@ -214,8 +217,11 @@ namespace PoeClone.EditorTools
             foreach(float side in new[] {-1f,1f})
             {
                 b.Grid(sides>40?48:20,6,(u,v)=> {
-                    float x=side*(.085f+u*.19f),arch=.115f+.017f*Mathf.Sin(u*Mathf.PI);
-                    float width=.013f*Mathf.Sin(u*Mathf.PI*.8f+.35f)+.003f;
+                    // Raised well above the lid with the inner end above the outer: seen from the game
+                    // camera the face's curve lifts the outer end, so level brows read as a scowling V.
+                    // The tail also stops before the face turns away.
+                    float x=side*(.085f+u*.165f),arch=BrowArch(u)+.008f*Mathf.Sin(u*Mathf.PI);
+                    float width=.010f*Mathf.Sin(u*Mathf.PI*.8f+.35f)+.0025f;
                     float y=arch+(v*2-1)*width;
                     return new Vector3(x,y,FaceZ(x,y)+.002f);
                 },(u,v)=>new Color(.19f,.115f,.075f)*(.88f+.12f*Mathf.Sin(u*170+v*7)),false,Vector3.forward);
@@ -237,17 +243,21 @@ namespace PoeClone.EditorTools
                     path.Add(p);
                 }
                 // A dark lash line along the upper lid gives the eye its outline.
-                b.Tube(path,upper>0?.0075f:.0045f,8,upper>0?new Color(.32f,.22f,.18f):new Color(.92f,.80f,.76f));
+                b.Tube(path,upper>0?.006f:.0045f,8,upper>0?new Color(.32f,.22f,.18f):new Color(.92f,.80f,.76f));
             }
             return b.Mesh(name);
         }
 
-        private const float EyeWidth=.076f, EyeUpper=.029f, EyeLower=.017f, EyeY=.055f;
+        private const float EyeWidth=.076f, EyeUpper=.032f, EyeLower=.017f, EyeY=.055f;
+        // Brow line from the inner (0) to the outer (1) end, falling outward.
+        private static float BrowArch(float u) => .142f - .028f * u;
 
         private static Vector3 EyePoint(float side,float u,float v)
         {
             float x=side*EyeCenter+(u*2-1)*EyeWidth;
-            float y=EyeY+Mathf.Sin(u*Mathf.PI)*Mathf.Lerp(-EyeLower,EyeUpper,v);
+            // Outer corners sit slightly low for the same reason; an upward tilt reads as a glare from above.
+            float outward=side>0?u:1-u;
+            float y=EyeY+.005f*(.5f-outward)+Mathf.Sin(u*Mathf.PI)*Mathf.Lerp(-EyeLower,EyeUpper,v);
             float z=FaceZ(x,y)+.004f+Mathf.Sin(u*Mathf.PI)*Mathf.Sin(v*Mathf.PI)*.006f;
             return new Vector3(x,y,z);
         }
@@ -271,12 +281,15 @@ namespace PoeClone.EditorTools
             return b.Mesh(name);
         }
 
-        // Hairline height by degrees from the front: forehead, temples, sideburn, a gap over the ear
-        // and a low nape. A level line around the head is what made the hair read as a bowl.
+        // Hairline height by degrees from the front: forehead, temples, sideburn, then a tight arch
+        // hugging the ear (which spans roughly 81-100 degrees, top at y .085) that drops straight
+        // back down behind it into a low nape. A loose arch left a bare patch and a helmet edge.
         private static readonly Vector2[] HairlineKeys = {
-            new Vector2(0,.29f), new Vector2(28,.27f), new Vector2(50,.22f), new Vector2(64,.11f),
-            new Vector2(70,-.02f), new Vector2(76,-.03f), new Vector2(81,.11f), new Vector2(102,.12f),
-            new Vector2(110,.09f), new Vector2(128,-.05f), new Vector2(152,-.17f), new Vector2(180,-.21f) };
+            new Vector2(0,.29f), new Vector2(28,.27f), new Vector2(50,.22f), new Vector2(62,.13f),
+            new Vector2(68,0), new Vector2(72,-.05f), new Vector2(76,-.05f), new Vector2(80,.07f),
+            new Vector2(85,.12f), new Vector2(93,.125f), new Vector2(100,.10f), new Vector2(104,.06f),
+            new Vector2(109,-.03f), new Vector2(116,-.11f), new Vector2(135,-.22f), new Vector2(158,-.29f),
+            new Vector2(180,-.31f) };
 
         private static float Hairline(float angle)
         {
@@ -289,22 +302,24 @@ namespace PoeClone.EditorTools
 
         private static Vector3 HairPoint(float angle,float v,float relief=0)
         {
-            // Sweep toward the side part instead of radiating identical strands from the crown; the
-            // hairline itself stays put so sideburns and the gap over the ears line up with the ears.
-            float a=angle+.30f*Mathf.Sin(v*Mathf.PI)*Mathf.Sin(angle-.45f);
+            // Sweep toward the side part instead of radiating identical strands from the crown. Only the
+            // top sweeps: on the short sides it dragged the sideburn back over the ear. Weighting by v
+            // rather than height keeps the surface from folding where the hairline steps at the sideburn.
             float hairline=Hairline(angle),y=Mathf.Lerp(hairline,.5f,v);
+            float a=angle+.30f*Mathf.Sin(v*Mathf.PI)*Mathf.Sin(angle-.45f)*Between(.2f,.5f,v);
             // Thins to the scalp at the hairline instead of ending in a ledge; short sides, fuller top.
             float grow=Between(0,.14f,y-hairline),top=Mathf.Lerp(.5f,1,Between(.12f,.38f,y));
             float flow=angle*73+Mathf.Sin(angle*9)*.65f+v*2;
             float ridge=(.006f*Mathf.Sin(angle*23+v*4+Mathf.Sin(angle*5))+.0025f*Mathf.Sin(flow)+.001f*Mathf.Sin(flow*2.7f))*Mathf.Sin(v*Mathf.PI);
             float thick=.006f+(.022f*top+ridge)*grow+relief;
+            // No sideways crown offset: shifting the whole cap toward +x sank the thin left side and the
+            // crown into the skull, which showed through as a slit above the left ear and streaks on top.
             float end=v==1?0:1;
-            float crown=Mathf.Pow(v,2);
             float lift=.022f*Mathf.Sin(v*Mathf.PI)*Mathf.Max(0,Mathf.Cos(a));
             Vector3 skull=SkullPoint(a,y);
             float forward=Profile(y).Forward;
-            return new Vector3((skull.x+Mathf.Sin(a)*thick)*end+.07f*crown,y+thick*Between(.2f,.5f,y)+lift,
-                (skull.z-forward+Mathf.Cos(a)*thick)*end+forward-.035f*crown);
+            return new Vector3((skull.x+Mathf.Sin(a)*thick)*end,y+thick*Between(.2f,.5f,y)+lift,
+                (skull.z-forward+Mathf.Cos(a)*thick)*end+forward);
         }
 
         private static Mesh Scalp()
