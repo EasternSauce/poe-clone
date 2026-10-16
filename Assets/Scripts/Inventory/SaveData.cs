@@ -68,7 +68,11 @@ namespace PoeClone.Inventory
             item = ItemGenerator.Legalize(item);
             if (weaponSkill != null && item.MainSkillGrant.HasValue)
             {
+                // JsonUtility fills a missing weaponSkill with a level-1 default, so a weapon saved before
+                // skill progress existed must keep the rank rolled on its skill modifier. Ranks never go down.
+                int rolled = item.SkillProgress?.level ?? 1;
                 item.SkillProgress = weaponSkill.Copy();
+                item.SkillProgress.level = Math.Max(item.SkillProgress.level, rolled);
                 item.SkillProgress.Sanitize(item.MainSkillGrant.Value);
                 item.SynchronizeSkillLevel();
             }

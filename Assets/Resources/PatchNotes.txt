@@ -1,4 +1,5 @@
 version: 2026-10-16-fork-text
+- Weapons saved before weapon skill levels existed no longer load with their skill at level 1; they keep the level they dropped with. Uniques reset this way (such as Frostglass Bough) are restored to at least their lowest possible skill level.
 - Weapon tree modifiers "Projectiles cannot fork" and "Can't fire more than 1 projectile" now start with a capital letter like the rest.
 
 version: 2026-10-16-friendlier-face

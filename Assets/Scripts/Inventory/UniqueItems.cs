@@ -490,7 +490,11 @@ namespace PoeClone.Inventory
                 if (u.Name != item.Name) continue;
                 ItemData current = Build(u, null, item);
                 current.ItemLevel = item.ItemLevel;
+                // The unique's roll range is the floor for its skill rank (repairs ranks reset by old saves).
+                int floor = current.SkillProgress?.level ?? 1;
                 current.SkillProgress = item.SkillProgress;
+                if (current.SkillProgress != null && current.SkillProgress.level < floor)
+                    current.SkillProgress.level = floor;
                 current.SynchronizeSkillLevel();
                 return current;
             }
