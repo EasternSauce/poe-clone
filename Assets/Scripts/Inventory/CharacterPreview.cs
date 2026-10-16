@@ -45,7 +45,7 @@ namespace PoeClone.Inventory
             // The copy only needs to stand there: drop the walking animator and any other scripts.
             foreach (MonoBehaviour mb in model.GetComponentsInChildren<MonoBehaviour>(true))
             {
-                if (mb is EquipmentVisuals || mb is BaseGear || mb is EquipmentVisualInstance)
+                if (mb is EquipmentVisuals || mb is BaseGear || mb is EquipmentVisualInstance || mb is ProceduralAnatomy)
                     continue;
                 Destroy(mb);
             }

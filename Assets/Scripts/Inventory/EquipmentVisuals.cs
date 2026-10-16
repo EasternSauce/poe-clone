@@ -77,6 +77,8 @@ namespace PoeClone.Inventory
 
             foreach (BaseGear g in GetComponentsInChildren<BaseGear>(true))
                 g.gameObject.SetActive(true);
+            foreach (var anatomy in GetComponentsInChildren<ProceduralAnatomy>(true))
+                anatomy.SetEquipment(null);
         }
 
         private void OnChanged(EquipSlot slot, ItemData item)
@@ -151,6 +153,10 @@ namespace PoeClone.Inventory
                             ? child.localRotation * Quaternion.Euler(0f, gripTwist, 0f)
                             : child.localRotation;
                         instance.transform.localScale = child.localScale;
+                        // Legacy weapons placed the socket near the pommel. With actual fingers,
+                        // seat the one-handed melee grip in the palm while keeping the rig's sockets.
+                        if (slot == EquipSlot.MainHand && meleeWeapon && !SlotRules.IsTwoHandedMelee(item.WeaponType) && GetComponent<ProceduralAnatomy>() != null)
+                            SeatGrip(instance.transform, socket);
                         instance.AddComponent<EquipmentVisualInstance>();
                         if (tint != Color.white)
                             Tint(instance, tint);
@@ -162,6 +168,22 @@ namespace PoeClone.Inventory
             }
 
             UpdateBaseGear();
+        }
+
+        private static void SeatGrip(Transform weapon, Transform socket)
+        {
+            Transform grip = weapon.Find("Grip") ?? weapon.Find("Wrap");
+            if (grip != null)
+            {
+                weapon.position += socket.position - grip.position;
+                return;
+            }
+            Transform shaft = weapon.Find("Handle") ?? weapon.Find("Haft") ?? weapon.Find("Shaft");
+            if (shaft == null) return;
+            // Long unwrapped handles are held near the butt, rather than at their centre.
+            Vector3 point = shaft.localPosition;
+            point.y = shaft.localPosition.y - shaft.localScale.y * .5f + .10f;
+            weapon.position += socket.position - weapon.TransformPoint(point);
         }
 
         /// <summary>The equipped hammer's head in its current animated pose.</summary>
@@ -205,13 +227,15 @@ namespace PoeClone.Inventory
             return name;
         }
 
-private void UpdateBaseGear()
+        private void UpdateBaseGear()
         {
             foreach (BaseGear g in baseGear)
             {
                 if (g != null)
                     g.gameObject.SetActive(!BaseGearRules.IsHidden(g.HiddenBy, g.VisibleIfItemHasCape, equipment));
             }
+            foreach (var anatomy in GetComponentsInChildren<ProceduralAnatomy>(true))
+                anatomy.SetEquipment(equipment);
         }
 
         private static void Kill(GameObject go)

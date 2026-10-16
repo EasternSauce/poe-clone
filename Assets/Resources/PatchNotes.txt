@@ -1,3 +1,8 @@
+version: 2026-10-16-procedural-anatomy
+- Characters have a sculpted procedural face with a shaped nose, jaw, cheeks, lips, eyelids and ears, plus more natural hair and headwear proportions.
+- Hands and gloves now have individual fingers and thumbs, with relaxed and equipped grip poses. Arms, thighs, calves and bare feet have distinct anatomical shapes.
+- Skin uses softer lighting, subtle pore relief and varied surface smoothness. Close-up meshes automatically simplify at gameplay distance.
+
 version: 2026-10-15-viper-early-damage
 - Summoned vipers deal more damage at early character levels, with slower damage growth afterward so their level-34 base damage stays effectively unchanged.
 

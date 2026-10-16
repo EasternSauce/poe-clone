@@ -55,6 +55,8 @@ namespace PoeClone.EditorTools
             VarietyModels();
             SummonerModels();
 
+            AnatomyRigBuilder.UpgradeGloves();
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
