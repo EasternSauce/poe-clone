@@ -10,6 +10,7 @@ Shader "PoeClone/AnatomySkin"
         _Smoothness ("Smoothness", Range(0,1)) = 0.32
         _OcclusionMap ("Roughness Variation", 2D) = "white" {}
         _Subsurface ("Warm Wrapped Light", Range(0,1)) = 0.18
+        _FiberStrength ("Hair Fiber Contrast", Range(0,1)) = 0
     }
     SubShader
     {
@@ -37,7 +38,7 @@ Shader "PoeClone/AnatomySkin"
             CBUFFER_START(UnityPerMaterial)
                 half4 _BaseColor;
                 float4 _BaseMap_ST;
-                float _BumpScale, _DetailTiling, _Smoothness, _Subsurface;
+                float _BumpScale, _DetailTiling, _Smoothness, _Subsurface, _FiberStrength;
             CBUFFER_END
             #define MAX_MANUAL_LIGHTS 24
             float4 _ManualLightPosRange[MAX_MANUAL_LIGHTS];
@@ -88,6 +89,12 @@ Shader "PoeClone/AnatomySkin"
                     smoothness*=lerp(.7,1.1,SAMPLE_TEXTURE2D(_OcclusionMap,sampler_OcclusionMap,uv).r);
                 #endif
                 half3 albedo=_BaseColor.rgb*input.color.rgb*SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,input.uv*_BaseMap_ST.xy+_BaseMap_ST.zw).rgb;
+                if(_FiberStrength>0)
+                {
+                    float phase=input.uv.x*2400+sin(input.uv.y*16)*1.5;
+                    float filtered=1-saturate(fwidth(phase)/3.14159);
+                    albedo*=1+sin(phase)*.16*_FiberStrength*filtered;
+                }
                 float cave=max(max(InCave(input.positionWS,_CaveBounds),InCave(input.positionWS,_HollowBounds)),max(InCave(input.positionWS,_SanctuaryBounds),InCave(input.positionWS,_WorksBounds)));
                 cave=max(cave,max(InCave(input.positionWS,_WardBounds),InCave(input.positionWS,_RootBounds)));
                 float environment=lerp(1,.23,cave);

@@ -390,7 +390,7 @@ namespace PoeClone.EditorTools
             Transform chest = Node(root, "Socket_Chest", Vector3.zero, Vector3.zero);
 
             Torso(chest, "TanLight", new Vector3(0.71f, 0.7f, 0.41f));
-            Shape(chest, "Collar", "GearCuff", "Tan", new Vector3(0f, 0.34f, 0f), new Vector3(0.27f, 0.08f, 0.21f));
+            Shape(chest, "Collar", "GearCuff", "Tan", new Vector3(0f, 0.34f, 0f), new Vector3(0.19f, 0.08f, 0.18f));
             Shape(chest, "WaistBand", "GearBand", "Tan", new Vector3(0f, -0.3f, 0f), new Vector3(0.56f, 0.05f, 0.4f));
             Shape(chest, "Hem", "GearFlare", "TanLight", new Vector3(0f, -0.42f, 0f), new Vector3(0.62f, 0.16f, 0.44f));
             float[] ys = { 0.15f, 0.02f, -0.12f };
@@ -422,7 +422,7 @@ namespace PoeClone.EditorTools
 
             Torso(chest, "Silver", new Vector3(0.72f, 0.7f, 0.42f));
             Cube(chest, "Ridge", "Steel", new Vector3(0f, 0.04f, 0.208f), new Vector3(0.025f, 0.4f, 0.02f));
-            Shape(chest, "Gorget", "GearCuff", "Silver", new Vector3(0f, 0.35f, 0f), new Vector3(0.29f, 0.09f, 0.23f));
+            Shape(chest, "Gorget", "GearCuff", "Silver", new Vector3(0f, 0.35f, 0f), new Vector3(0.205f, 0.09f, 0.18f));
             Shape(chest, "Belt", "GearBand", "SteelDark", new Vector3(0f, -0.3f, 0f), new Vector3(0.57f, 0.05f, 0.41f));
             Shape(chest, "Fauld", "GearFlare", "Silver", new Vector3(0f, -0.43f, 0f), new Vector3(0.62f, 0.18f, 0.45f));
             Shape(chest, "FauldTrim", "GearBand", "Gold", new Vector3(0f, -0.515f, 0f), new Vector3(0.63f, 0.02f, 0.46f));
@@ -450,7 +450,7 @@ namespace PoeClone.EditorTools
             Transform chest = Node(root, "Socket_Chest", Vector3.zero, Vector3.zero);
 
             Torso(chest, "GearCloth", new Vector3(0.7f, 0.7f, 0.4f));
-            Shape(chest, "Collar", "GearCuff", "GearCloth", new Vector3(0f, 0.35f, 0f), new Vector3(0.26f, 0.09f, 0.2f));
+            Shape(chest, "Collar", "GearCuff", "GearCloth", new Vector3(0f, 0.35f, 0f), new Vector3(0.19f, 0.09f, 0.18f));
             Shape(chest, "Skirt", "BodySkirt", "GearCloth", new Vector3(0f, -0.6f, 0f), new Vector3(0.66f, 0.5f, 0.5f));
             Shape(chest, "Hem", "GearBand", "GearClothTrim", new Vector3(0f, -0.835f, 0f), new Vector3(0.68f, 0.04f, 0.52f));
             Shape(chest, "Sash", "GearBand", "GearCloth", new Vector3(0f, -0.3f, 0f), new Vector3(0.56f, 0.07f, 0.4f));

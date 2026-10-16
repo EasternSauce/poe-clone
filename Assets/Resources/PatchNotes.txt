@@ -1,3 +1,8 @@
+version: 2026-10-16-character-shape-refinement
+- Arms and legs now use continuous procedural surfaces that bend around elbows and knees, keeping limbs connected while walking. Forearms and wrists have slimmer proportions.
+- Nose profiles have a shorter bridge, rounded tip and softer nostril wings. Ears have asymmetric rims, inner folds and shaped lobes; eyes have softer lids and muted whites, and hair has a swept crown, finer strands and smaller hairline tips. Starting headwear fits over the revised hairstyle.
+- Necklines fit around the neck, with an undershirt collar filling the space beneath cloaks and armour.
+
 version: 2026-10-16-anatomy-visibility
 - Fixed character heads, hair and other procedural body parts disappearing after mesh rebuilds or camera detail changes.
 

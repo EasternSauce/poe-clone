@@ -39,6 +39,7 @@ Material:
     m_Floats:
     - _BumpScale: 0.2
     - _DetailTiling: 8
+    - _FiberStrength: 0
     - _Smoothness: 0.32
     - _Subsurface: 0.18
     m_Colors:

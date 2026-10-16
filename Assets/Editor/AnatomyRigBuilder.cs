@@ -17,7 +17,7 @@ namespace PoeClone.EditorTools
             var meshes = AnatomyMeshes.Build();
             Material skin = SkinMaterial();
             Material eyes = Material("AnatomyEyes", Shader.Find("PoeClone/AnatomySkin"));
-            eyes.SetColor("_BaseColor", Color.white); eyes.SetFloat("_Smoothness", .82f);
+            eyes.SetColor("_BaseColor", Color.white); eyes.SetFloat("_Smoothness", .32f);
             eyes.SetFloat("_BumpScale", 0); eyes.SetFloat("_Subsurface", 0);
             EditorUtility.SetDirty(eyes);
             var parts = new List<ProceduralAnatomy.Part>();
@@ -41,19 +41,39 @@ namespace PoeClone.EditorTools
             parts.Add(Detail(eyeSurface, meshes, "AnatomyEyes"));
 
             Transform hair = upper.Find("Hair");
-            Set(hair, meshes["AnatomyScalp"], hair.GetComponent<Renderer>().sharedMaterial);
+            Material hairMaterial=Material("AnatomyHair",Shader.Find("PoeClone/AnatomySkin"));
+            hairMaterial.SetColor("_BaseColor",new Color(.25f,.15f,.085f));
+            hairMaterial.SetFloat("_Smoothness",.3f);hairMaterial.SetFloat("_Subsurface",0);
+            hairMaterial.SetFloat("_BumpScale",0);hairMaterial.SetFloat("_FiberStrength",1);
+            EditorUtility.SetDirty(hairMaterial);
+            Set(hair, meshes["AnatomyScalp"], hairMaterial);
+            // The head supplies the silhouette shadow; fine hair tips must not stripe the scalp.
+            hair.GetComponent<Renderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
             hair.localPosition = head.localPosition; hair.localScale = head.localScale;
             // A fitted cap leaves the anatomical forehead visible and stays inside the existing helmet envelope.
-            upper.Find("Hood").localPosition = new Vector3(0,1.925f,-.005f);
-            upper.Find("Hood").localScale = new Vector3(.385f,.20f,.38f);
-            upper.Find("HoodBrim").localPosition = new Vector3(0,1.895f,.005f);
-            upper.Find("HoodBrim").localScale = new Vector3(.39f,.023f,.39f);
+            upper.Find("Hood").localPosition = new Vector3(0,1.94f,.015f);
+            upper.Find("Hood").localScale = new Vector3(.39f,.22f,.40f);
+            upper.Find("HoodBrim").localPosition = new Vector3(0,1.92f,.02f);
+            upper.Find("HoodBrim").localScale = new Vector3(.395f,.04f,.405f);
+
+            Set(upper.Find("Mantle"),meshes["AnatomyMantle"],null);
+            upper.Find("Mantle").localPosition=new Vector3(0,1.51f,0);
+            Transform yoke=Child(upper,"Undercollar");
+            Set(yoke,meshes["AnatomyYoke"],upper.Find("Torso").GetComponent<Renderer>().sharedMaterial);
+            yoke.localPosition=new Vector3(0,1.55f,.01f);yoke.localScale=new Vector3(.42f,.16f,.30f);
+            Mesh genericLimb=AssetDatabase.LoadAssetAtPath<Mesh>(LowPolyMeshes.MeshDir+"/BodyLimb.asset");
 
             foreach (string side in new[] { "L", "R" })
             {
                 Transform arm = upper.Find("Arm"+side), elbow=arm.Find("Elbow");
-                Set(arm.Find("Upper"),meshes["AnatomyUpperArm"],null);
-                Set(elbow.Find("Forearm"),meshes["AnatomyForearm"],skin);
+                arm.localPosition=new Vector3(side=="L"?-.36f:.36f,1.5f,0);
+                Material sleeve=arm.Find("Upper").GetComponent<Renderer>().sharedMaterial;
+                HideRigid(arm.Find("Upper"),genericLimb);
+                HideRigid(elbow.Find("Forearm"),genericLimb);
+                Transform anchor=upper.Find("ShoulderAnchor"+side);
+                if(anchor==null){anchor=new GameObject("ShoulderAnchor"+side).transform;anchor.SetParent(upper,false);}
+                anchor.localPosition=arm.localPosition;anchor.localRotation=Quaternion.identity;anchor.localScale=Vector3.one;
+                Skin(arm,"ContinuousArm",meshes["AnatomyConnectedArm"+side],elbow,new[] {sleeve,skin},anchor);
                 Transform hand = elbow.Find("Hand");
                 Set(hand,meshes["AnatomyHand"+side],skin);
                 (hand.GetComponent<BaseGear>() ?? hand.gameObject.AddComponent<BaseGear>()).HiddenBy = EquipSlot.Gloves;
@@ -63,15 +83,60 @@ namespace PoeClone.EditorTools
                 part.GripFar=meshes["AnatomyHand"+side+"GripLow"];
                 parts.Add(part);
                 Transform leg=model.Find("Leg"+side),knee=leg.Find("Knee");
-                Set(leg.Find("Thigh"),meshes["AnatomyThigh"],null);
-                Set(knee.Find("Shin"),meshes["AnatomyCalf"],null);
+                Material trousers=leg.Find("Thigh").GetComponent<Renderer>().sharedMaterial;
+                HideRigid(leg.Find("Thigh"),genericLimb);
+                HideRigid(knee.Find("Shin"),genericLimb);
+                Skin(leg,"ContinuousLeg",meshes["AnatomyConnectedLeg"],knee,new[] {trousers});
                 Set(knee.Find("Foot"),meshes["AnatomyFoot"],skin);
                 knee.Find("Foot").localScale = new Vector3(side=="L" ? -.175f : .175f,.1f,.33f);
                 parts.Add(Detail(knee.Find("Foot"),meshes,"AnatomyFoot"));
             }
-            Set(upper.Find("Neck"),null,skin);
+            Set(upper.Find("Neck"),meshes["AnatomyNeck"],skin);
+            upper.Find("Neck").localPosition=new Vector3(0,1.60f,.01f);
+            upper.Find("Neck").localScale=new Vector3(.15f,.19f,.14f);
             (model.GetComponent<ProceduralAnatomy>() ?? model.gameObject.AddComponent<ProceduralAnatomy>()).Configure(parts.ToArray());
             UpgradeGloves(meshes);
+            UpgradeCollars();
+        }
+
+        private static void HideRigid(Transform part,Mesh placeholder)
+        {
+            part.GetComponent<MeshFilter>().sharedMesh=placeholder;
+            part.GetComponent<Renderer>().enabled=false;
+        }
+
+        private static void Skin(Transform root,string name,Mesh mesh,Transform joint,Material[] materials,Transform anchor=null)
+        {
+            Transform child=root.Find(name);
+            if(child==null)
+            {
+                child=new GameObject(name,typeof(SkinnedMeshRenderer)).transform;
+                child.SetParent(root,false);
+            }
+            child.localPosition=Vector3.zero;child.localRotation=Quaternion.identity;child.localScale=Vector3.one;
+            var renderer=child.GetComponent<SkinnedMeshRenderer>();
+            renderer.sharedMesh=mesh;renderer.sharedMaterials=materials;
+            renderer.bones=anchor!=null?new[] {anchor,root,joint}:new[] {root,joint};
+            renderer.rootBone=root;renderer.quality=SkinQuality.Bone2;
+            // Cover bent elbows/knees as well as the bind pose, with no per-frame baking.
+            renderer.localBounds=new Bounds(new Vector3(0,-.35f,0),Vector3.one*1.9f);
+        }
+
+        private static void UpgradeCollars()
+        {
+            foreach(string id in new[] {"studded_vest","chain_hauberk","silk_robe"})
+            {
+                string path="Assets/Resources/Equipment/"+id+".prefab";
+                if(AssetDatabase.LoadAssetAtPath<GameObject>(path)==null)continue;
+                GameObject root=PrefabUtility.LoadPrefabContents(path);
+                try
+                {
+                    Transform collar=root.transform.Find("Socket_Chest/"+(id=="chain_hauberk"?"Gorget":"Collar"));
+                    collar.localScale=new Vector3(id=="chain_hauberk"?.205f:.19f,collar.localScale.y,.18f);
+                    PrefabUtility.SaveAsPrefabAsset(root,path);
+                }
+                finally {PrefabUtility.UnloadPrefabContents(root);}
+            }
         }
 
         private static ProceduralAnatomy.Part Detail(Transform t, Dictionary<string,Mesh> meshes,string name) =>

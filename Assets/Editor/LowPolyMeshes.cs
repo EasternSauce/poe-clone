@@ -255,8 +255,15 @@ namespace PoeClone.EditorTools
                 AssetDatabase.CreateAsset(mesh, path);
                 return mesh;
             }
-            // CopySerialized replaces the complete geometry. Clearing a referenced mesh first
-            // exposes empty bounds to its renderers and leaves their culling state stale.
+            // Replacing anatomical assets rebuilds Unity's native mesh/LOD buffers as well as
+            // the serialized data. CreateAsset preserves the existing .meta GUID and references.
+            if (name.StartsWith("Anatomy", System.StringComparison.Ordinal))
+            {
+                string guid = AssetDatabase.AssetPathToGUID(path);
+                AssetDatabase.CreateAsset(mesh, path);
+                Debug.Assert(AssetDatabase.AssetPathToGUID(path) == guid, "Mesh GUID changed: " + path);
+                return mesh;
+            }
             EditorUtility.CopySerialized(mesh, existing);
             existing.RecalculateBounds();
             Object.DestroyImmediate(mesh);
