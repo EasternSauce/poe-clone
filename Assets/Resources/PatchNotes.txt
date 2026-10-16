@@ -1,3 +1,9 @@
+version: 2026-10-16-character-run-and-face
+- Clothing, armour and weapon textures now stay fixed to the character instead of sliding across them while moving.
+- The player now runs at normal movement speed, leaning in with pumping arms, a heel kick and both feet leaving the ground between strides. Slower movement keeps the walk, and sprinting lengthens the stride.
+- Faces look more natural: larger, more open eyes with brighter whites and a darker lash line, fuller brows, soft shading around the eyes, nose and lips, a relaxed mouth and a less orange skin tone.
+- Hands and gloves are 20% larger to match the forearms, and held weapons sit in the larger grip.
+
 version: 2026-10-16-character-expression-and-gait
 - Closeups have defined eyebrows, lips and nostrils, with denser facial geometry and smoothly attached ears.
 - Hands join the forearms through a continuous stitched wrist and have a distinct flat palm beyond the wrist, shaped knuckles, palm creases and close, curled resting fingers. The thumb rests inward against the index finger; gloves and grips follow the corrected hand placement.

@@ -204,6 +204,7 @@ namespace PoeClone.Visuals
             equipmentVisuals = GetComponent<PoeClone.Inventory.EquipmentVisuals>();
             offHand = leftElbow != null ? leftElbow.Find("Hand") : null;
             mainHand = rightElbow != null ? rightElbow.Find("Hand") : null;
+            WornTexture.Anchor(gameObject);
 
             audioSource = GetComponent<AudioSource>();
             if (audioSource == null)
@@ -246,7 +247,8 @@ namespace PoeClone.Visuals
             float runTarget = Mathf.InverseLerp(runStartSpeed, runFullSpeed, speed);
             runBlend = Mathf.MoveTowards(runBlend, runTarget, runBlendSpeed * dt);
 
-            float stride = Mathf.Lerp(strideLength, runStrideLength, runBlend);
+            // Faster running lengthens the stride as well as quickening it, as a sprint does.
+            float stride = Mathf.Lerp(strideLength, runStrideLength * Mathf.Sqrt(Mathf.Max(1f, speed / runFullSpeed)), runBlend);
             phase += speed * dt / stride * Mathf.PI * 2f;
             float s = Mathf.Sin(phase);
             float c = Mathf.Cos(phase);
@@ -313,7 +315,12 @@ namespace PoeClone.Visuals
             float bobAmount = Mathf.Lerp(bobHeight, runBobHeight, runBlend);
             float bob = simple ? 0f : Mathf.Abs(c) * bobAmount * blend * stepping;
             if (NaturalGait)
-                bob = (-.022f-.012f*c*c+runBlend*.025f*s*s)*blend*stepping;
+            {
+                // Walking vaults over the planted leg; running sinks onto it and rises through the flight.
+                float walkBob = -.022f-.012f*c*c;
+                float runBob = -.03f-.03f*Mathf.Cos(2f*(phase-RunStance*Mathf.PI));
+                bob = Mathf.Lerp(walkBob,runBob,runBlend)*blend*stepping;
+            }
             float lunge = attackAnimator != null ? attackAnimator.Lunge : 0f;
             transform.localPosition = baseLocalPosition + Vector3.up * (bob - 0.28f * crouch) + Vector3.forward * lunge;
             if (NaturalGait)
@@ -334,11 +341,14 @@ namespace PoeClone.Visuals
                 PoseTwoHandedHold(rightArmSuppressed, leftArmSuppressed, s * armAmp, breath);
         }
 
+        // Share of the cycle a running foot is down: under half, so both feet leave the ground between steps.
+        private const float RunStance = .38f;
+
         private void PoseNaturalLeg(Transform hip,Transform knee,AnatomicalAnkle ankle,float cycle,float side,float bodyOffset,float crouch)
         {
             float t=Mathf.Repeat(cycle/(2*Mathf.PI),1);
-            float stance=Mathf.Lerp(.64f,.42f,runBlend);
-            float travel=Mathf.Lerp(.48f,.74f,runBlend);
+            float stance=Mathf.Lerp(.64f,RunStance,runBlend);
+            float travel=Mathf.Lerp(.48f,.70f,runBlend);
             float forward,lift,footPitch;
             if(t<stance)
             {
@@ -352,8 +362,12 @@ namespace PoeClone.Visuals
             {
                 float swing=(t-stance)/(1-stance);
                 forward=Mathf.Lerp(-travel*.5f,travel*.5f,Mathf.SmoothStep(0,1,swing));
-                lift=Mathf.Sin(swing*Mathf.PI)*Mathf.Lerp(.055f,.16f,runBlend);
-                footPitch=-6f*Mathf.Sin(swing*Mathf.PI);
+                // A running leg kicks the heel up behind early in the swing, then reaches forward.
+                float walkLift=Mathf.Sin(swing*Mathf.PI)*.055f;
+                float runLift=Mathf.Sin(Mathf.Pow(swing,.6f)*Mathf.PI)*.30f;
+                if(runBlend>0) forward-=Mathf.Sin(swing*Mathf.PI)*Mathf.Max(0,.6f-swing)*.25f*runBlend;
+                lift=Mathf.Lerp(walkLift,runLift,runBlend);
+                footPitch=Mathf.Lerp(-6f*Mathf.Sin(swing*Mathf.PI),25f*Mathf.Sin(swing*Mathf.PI)*(1-swing)-10f*swing,runBlend);
             }
             float weight=blend*(1-plant);
             Vector3 target=new Vector3(hip.localPosition.x,.05f-bodyOffset+lift*weight,forward*weight);

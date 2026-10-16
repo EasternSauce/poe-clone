@@ -105,13 +105,19 @@ namespace PoeClone.EditorTools
             c = Color.Lerp(c, new Color(.96f,.80f,.76f), lips * .25f);
             float nostrils = G(x,y,-.046f,-.117f,.021f,.012f) + G(x,y,.046f,-.117f,.021f,.012f);
             c = Color.Lerp(c, new Color(.30f,.20f,.18f), Mathf.Clamp01(nostrils) * .8f);
-            float brow = G(x,y,-EyeCenter,.125f,.11f,.018f) + G(x,y,EyeCenter,.125f,.11f,.018f);
+            // Painted occlusion: without it the sockets, nose base and lip read flat and doll-like.
+            float socket = G(x,y,-EyeCenter,.06f,.13f,.07f) + G(x,y,EyeCenter,.06f,.13f,.07f);
+            float shade = socket * .14f + G(x,y,0,-.135f,.07f,.022f) * .22f + G(x,y,0,-.29f,.11f,.022f) * .16f
+                + (G(x,y,-.11f,-.17f,.025f,.06f) + G(x,y,.11f,-.17f,.025f,.06f)) * .10f;
+            c *= 1 - Mathf.Clamp01(shade);
+            c.a = 1;
+            float brow = G(x,y,-EyeCenter,.118f,.11f,.022f) + G(x,y,EyeCenter,.118f,.11f,.022f);
             float hairs = .8f + .2f * Mathf.Sin(x * 1200 + y * 220);
             return Color.Lerp(c, new Color(.13f,.10f,.08f), Mathf.Clamp01(brow * hairs));
         }
 
         private static float HeadAngle(float u) => u*2*Mathf.PI-.65f*Mathf.Sin(u*2*Mathf.PI);
-        private static float MouthSeam(float x) => -.245f+.009f*Mathf.Pow(x/.145f,2);
+        private static float MouthSeam(float x) => -.24f+.004f*Mathf.Pow(x/.145f,2);
 
         private static Mesh Head(string name, int sides, int rows)
         {
@@ -178,8 +184,8 @@ namespace PoeClone.EditorTools
             foreach(float side in new[] {-1f,1f})
             {
                 b.Grid(sides>40?48:20,6,(u,v)=> {
-                    float x=side*(.085f+u*.19f),arch=.122f+.019f*Mathf.Sin(u*Mathf.PI);
-                    float width=.010f*Mathf.Sin(u*Mathf.PI)+.002f;
+                    float x=side*(.085f+u*.19f),arch=.115f+.017f*Mathf.Sin(u*Mathf.PI);
+                    float width=.013f*Mathf.Sin(u*Mathf.PI*.8f+.35f)+.003f;
                     float y=arch+(v*2-1)*width;
                     return new Vector3(x,y,FaceZ(x,y)+.002f);
                 },(u,v)=>new Color(.19f,.115f,.075f)*(.88f+.12f*Mathf.Sin(u*170+v*7)),false,Vector3.forward);
@@ -200,12 +206,13 @@ namespace PoeClone.EditorTools
                     Vector3 p=EyePoint(side,t,upper>0?1:0);
                     path.Add(p);
                 }
-                b.Tube(path,upper>0?.007f:.0045f,8,Color.white);
+                // A dark lash line along the upper lid gives the eye its outline.
+                b.Tube(path,upper>0?.0075f:.0045f,8,upper>0?new Color(.32f,.22f,.18f):new Color(.92f,.80f,.76f));
             }
             return b.Mesh(name);
         }
 
-        private const float EyeWidth=.073f, EyeUpper=.022f, EyeLower=.014f, EyeY=.055f;
+        private const float EyeWidth=.076f, EyeUpper=.029f, EyeLower=.017f, EyeY=.055f;
 
         private static Vector3 EyePoint(float side,float u,float v)
         {
@@ -226,7 +233,9 @@ namespace PoeClone.EditorTools
                     float iris=1-Between(.0225f,.025f,radius);
                     float pupil=1-Between(.0075f,.009f,radius);
                     Color irisColor=Color.Lerp(new Color(.28f,.16f,.075f),new Color(.065f,.045f,.028f),Between(.017f,.024f,radius));
-                    Color color=Color.Lerp(new Color(.56f,.52f,.46f),irisColor,iris);
+                    // Off-white sclera, a little shaded towards the corners as under real lids.
+                    Color sclera=Color.Lerp(new Color(.80f,.77f,.72f),new Color(.62f,.55f,.50f),Between(.04f,.075f,Mathf.Abs(dx)));
+                    Color color=Color.Lerp(sclera,irisColor,iris);
                     return Color.Lerp(color,new Color(.018f,.014f,.012f),pupil);
                 },false,Vector3.forward);
             return b.Mesh(name);
@@ -375,7 +384,27 @@ namespace PoeClone.EditorTools
                         }
                 return Color.white;
             }
-            return volume.Bake(name,new Vector3(-.65f,-.85f,-.40f),new Vector3(.65f,.3125f,.90f),sides>6?.018f:.06f,Pigment);
+            return GrowFromWrist(volume.Bake(name,new Vector3(-.65f,-.85f,-.40f),new Vector3(.65f,.3125f,.90f),sides>6?.018f:.06f,Pigment));
+        }
+
+        // Palm and fingers were small for the forearm. Scale the hand about the wrist, easing in
+        // just below the cut so the opening still matches the forearm it is stitched to.
+        public const float HandGrowth = 1.2f;
+        private const float WristY = .3125f;
+
+        private static Mesh GrowFromWrist(Mesh mesh)
+        {
+            Vector3[] vertices = mesh.vertices;
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                Vector3 p = vertices[i];
+                float below = WristY - p.y;
+                float growth = Mathf.Lerp(1, HandGrowth, Mathf.SmoothStep(0, 1, below / .15f));
+                vertices[i] = new Vector3(p.x * growth, WristY - below * growth, p.z * growth);
+            }
+            mesh.vertices = vertices;
+            mesh.RecalculateBounds();
+            return mesh;
         }
 
         private static Mesh Foot(string name,float spacing)

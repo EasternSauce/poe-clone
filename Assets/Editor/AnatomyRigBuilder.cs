@@ -17,7 +17,7 @@ namespace PoeClone.EditorTools
             var meshes = AnatomyMeshes.Build();
             Material skin = SkinMaterial();
             Material eyes = Material("AnatomyEyes", Shader.Find("PoeClone/AnatomySkin"));
-            eyes.SetColor("_BaseColor", Color.white); eyes.SetFloat("_Smoothness", .32f);
+            eyes.SetColor("_BaseColor", Color.white); eyes.SetFloat("_Smoothness", .8f);
             eyes.SetFloat("_BumpScale", 0); eyes.SetFloat("_Subsurface", 0);
             EditorUtility.SetDirty(eyes);
             var parts = new List<ProceduralAnatomy.Part>();
@@ -78,9 +78,11 @@ namespace PoeClone.EditorTools
                 Set(hand,meshes["AnatomyHand"+side],skin);
                 // Put the palm beyond the wrist, rather than burying it in the forearm surface.
                 hand.localPosition=new Vector3(0,-.39f,0);hand.localScale=new Vector3(.135f,.16f,.16f);
-                foreach(string socketName in new[] {"Socket_Hand"+side,"Socket_Ring"+side})
-                    elbow.Find(socketName).localPosition=new Vector3(0,-.39f,0);
-                elbow.Find(side=="L"?"Socket_OffHand":"Socket_MainHand").localPosition=new Vector3(0,-.49f,.05f);
+                // Hand-held sockets follow the hand's growth about the wrist (-.34), staying in the fist.
+                Vector3 Held(Vector3 p) => new Vector3(0,-.34f,0)+(p-new Vector3(0,-.34f,0))*AnatomyMeshes.HandGrowth;
+                elbow.Find("Socket_Hand"+side).localPosition=new Vector3(0,-.39f,0);
+                elbow.Find("Socket_Ring"+side).localPosition=Held(new Vector3(0,-.39f,0));
+                elbow.Find(side=="L"?"Socket_OffHand":"Socket_MainHand").localPosition=Held(new Vector3(0,-.49f,.05f));
                 (hand.GetComponent<BaseGear>() ?? hand.gameObject.AddComponent<BaseGear>()).HiddenBy = EquipSlot.Gloves;
                 hand.GetComponent<Renderer>().enabled=false;
                 parts.Add(new ProceduralAnatomy.Part {

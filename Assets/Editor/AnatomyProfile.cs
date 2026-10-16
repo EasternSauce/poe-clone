@@ -10,7 +10,7 @@ namespace PoeClone.EditorTools
         [Range(.8f,1.2f)] public float JawWidth = 1;
         [Range(.8f,1.2f)] public float EyeSpacing = 1;
         [Range(.5f,1.4f)] public float NoseProjection = 1;
-        public Color SkinColor = new Color(.62f,.415f,.315f);
+        public Color SkinColor = new Color(.63f,.45f,.36f);
 
         public static AnatomyProfile Load()
         {

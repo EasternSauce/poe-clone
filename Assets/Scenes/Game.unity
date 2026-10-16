@@ -4395,7 +4395,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a3e9494733c9a8043a56cc69a8ccbbe2, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: PoeClone.Inventory::PoeClone.Inventory.BaseGear
   hiddenBy: 5
   visibleIfItemHasCape: 0
@@ -4518,7 +4518,7 @@ Transform:
   m_GameObject: {fileID: 286379253}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.39, z: 0}
+  m_LocalPosition: {x: 0, y: -0.39999998, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5658,7 +5658,7 @@ Transform:
   m_GameObject: {fileID: 372410188}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.39, z: 0}
+  m_LocalPosition: {x: 0, y: -0.39999998, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7308,7 +7308,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5363cc3a825e674bad44766c3dd1899, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: PoeClone.Inventory::PoeClone.Inventory.AnatomicalAnkle
   joint: {fileID: 2033967473}
   foot: {fileID: 1650865039}
@@ -10134,7 +10134,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a3e9494733c9a8043a56cc69a8ccbbe2, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: PoeClone.Inventory::PoeClone.Inventory.BaseGear
   hiddenBy: 5
   visibleIfItemHasCape: 0
@@ -16320,7 +16320,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5363cc3a825e674bad44766c3dd1899, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: PoeClone.Inventory::PoeClone.Inventory.AnatomicalAnkle
   joint: {fileID: 1019344742}
   foot: {fileID: 113871036}
@@ -28450,14 +28450,14 @@ MonoBehaviour:
   minMoveSpeed: 0.3
   walkKneeBend: 18
   walkElbowBend: 12
-  runStartSpeed: 7.5
-  runFullSpeed: 9
+  runStartSpeed: 4
+  runFullSpeed: 5.5
   runBlendSpeed: 6
   runLegSwing: 62
   runArmSwing: 58
   runKneeBend: 80
   runElbowBend: 85
-  runStrideLength: 5.4
+  runStrideLength: 4.4
   runBobHeight: 0.12
   runLean: 14
   staggerTiltAngle: -22
@@ -28482,7 +28482,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 276dca8e3793ab94299c03cda68161e1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: PoeClone.Inventory::PoeClone.Inventory.ProceduralAnatomy
   parts:
   - Filter: {fileID: 2016574093}
@@ -30004,7 +30004,7 @@ Transform:
   m_GameObject: {fileID: 1967068115}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.49, z: 0.05}
+  m_LocalPosition: {x: 0, y: -0.52, z: 0.060000002}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -31495,7 +31495,7 @@ Transform:
   m_GameObject: {fileID: 2070417695}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.49, z: 0.05}
+  m_LocalPosition: {x: 0, y: -0.52, z: 0.060000002}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

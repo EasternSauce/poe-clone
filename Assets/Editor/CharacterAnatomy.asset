@@ -16,4 +16,4 @@ MonoBehaviour:
   JawWidth: 1
   EyeSpacing: 1
   NoseProjection: 1
-  SkinColor: {r: 0.62, g: 0.415, b: 0.315, a: 1}
+  SkinColor: {r: 0.63, g: 0.45, b: 0.36, a: 1}

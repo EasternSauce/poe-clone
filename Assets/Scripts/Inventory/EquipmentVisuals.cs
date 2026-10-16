@@ -158,6 +158,7 @@ namespace PoeClone.Inventory
                         if (slot == EquipSlot.MainHand && meleeWeapon && !SlotRules.IsTwoHandedMelee(item.WeaponType) && GetComponent<ProceduralAnatomy>() != null)
                             SeatGrip(instance.transform, socket);
                         instance.AddComponent<EquipmentVisualInstance>();
+                        WornTexture.Anchor(instance);
                         if (tint != Color.white)
                             Tint(instance, tint);
                         if (slot == EquipSlot.Boots && socket.GetComponentInParent<PoeClone.Inventory.AnatomicalAnkle>() is PoeClone.Inventory.AnatomicalAnkle ankle)

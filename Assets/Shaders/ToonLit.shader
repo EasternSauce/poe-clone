@@ -13,6 +13,7 @@ Shader "PoeClone/ToonLit"
         _AmbientBoost ("Ambient Fill", Range(0,1)) = 0.35
         _TriplanarTileSize ("Triplanar Tile Size (world units)", Float) = 2.0
         _TexInfluence ("Texture Influence", Range(0,1)) = 1.0
+        _ObjectTexture ("Texture Follows Object", Range(0,1)) = 0
         _LivingWater ("Living Water", Range(0,1)) = 0
         _WaterOcean ("Ocean Wave Strength", Range(0,1)) = 0
         _SerpentScales ("Serpent Scale Surface", Range(0,1)) = 0
@@ -62,6 +63,8 @@ Shader "PoeClone/ToonLit"
                 float fogCoord : TEXCOORD2;
                 float2 uv : TEXCOORD3;
                 float4 waterMotion : TEXCOORD4;
+                float3 texturePosition : TEXCOORD5;
+                float3 textureNormal : TEXCOORD6;
             };
 
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
@@ -78,6 +81,7 @@ Shader "PoeClone/ToonLit"
                 float _AmbientBoost;
                 float _TriplanarTileSize;
                 float _TexInfluence;
+                float _ObjectTexture;
                 float _SerpentScales;
                 float _LivingWater;
                 float _WaterOcean;
@@ -140,6 +144,18 @@ Shader "PoeClone/ToonLit"
                 OUT.fogCoord = ComputeFogFactor(vpi.positionCS.z);
                 OUT.uv = IN.uv;
                 OUT.waterMotion = IN.waterMotion;
+                // Worn and carried models set _ObjectTexture (per renderer): their pattern is
+                // projected in object space at world scale, so it moves with them instead of
+                // the body walking through a pattern fixed in the world.
+                OUT.texturePosition = vpi.positionWS;
+                OUT.textureNormal = vni.normalWS;
+                if (_ObjectTexture > 0)
+                {
+                    float4x4 m = GetObjectToWorldMatrix();
+                    float3 scale = float3(length(m._m00_m10_m20), length(m._m01_m11_m21), length(m._m02_m12_m22));
+                    OUT.texturePosition = IN.positionOS.xyz * scale;
+                    OUT.textureNormal = IN.normalOS / max(scale, 1e-5);
+                }
                 return OUT;
             }
 
@@ -233,7 +249,7 @@ Shader "PoeClone/ToonLit"
                 float band = smoothstep(_ShadowBandThreshold - _ShadowBandSmooth, _ShadowBandThreshold + _ShadowBandSmooth, lit);
                 band *= mainLight.shadowAttenuation;
 
-                half3 texCol = SampleTriplanar(IN.positionWS, normalWS, _TriplanarTileSize);
+                half3 texCol = SampleTriplanar(IN.texturePosition, normalize(IN.textureNormal), _TriplanarTileSize);
                 texCol = lerp(half3(1, 1, 1), texCol, _TexInfluence);
                 half3 albedo = texCol * _BaseColor.rgb;
                 albedo *= lerp(half3(1, 1, 1), scales.rgb, _SerpentScales);
