@@ -414,6 +414,8 @@ MonoBehaviour:
     Far: {fileID: 4300000, guid: e963d7eb016614148a0f426635a8f5a3, type: 2}
     GripNear: {fileID: 4300000, guid: 50f387fac4a7a7647ab3f9843b9497e3, type: 2}
     GripFar: {fileID: 4300000, guid: 90f534a683d5dfd42938bb6c24da0837, type: 2}
+    Skin: {fileID: 0}
+    Covered: {fileID: 0}
     Hand: 1
 --- !u!1 &4977830763657341068
 GameObject:
@@ -682,6 +684,8 @@ MonoBehaviour:
     Far: {fileID: 4300000, guid: 268f2bc46065de140aa2595d17052f47, type: 2}
     GripNear: {fileID: 4300000, guid: a79d525a52b24f04e92498b4df4a7a48, type: 2}
     GripFar: {fileID: 4300000, guid: 54960385f199dc24094656e461e33104, type: 2}
+    Skin: {fileID: 0}
+    Covered: {fileID: 0}
     Hand: 2
 --- !u!1 &7797192859999033537
 GameObject:

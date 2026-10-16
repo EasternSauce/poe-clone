@@ -17,7 +17,7 @@ namespace PoeClone.EditorTools
             foreach (bool detailed in new[] { true, false })
             {
                 string suffix = detailed ? "" : "Low";
-                Save(Head("AnatomyHead" + suffix, detailed ? 96 : 32, detailed ? 80 : 24));
+                Save(Head("AnatomyHead" + suffix, detailed ? 160 : 40, detailed ? 160 : 32));
                 Save(Eyes("AnatomyEyes" + suffix, detailed ? 32 : 12));
                 Save(Foot("AnatomyFoot" + suffix, detailed ? .035f : .075f));
                 foreach (bool left in new[] { true, false })
@@ -29,6 +29,10 @@ namespace PoeClone.EditorTools
             Save(AnatomyLimbMeshes.Arm(-1));
             Save(AnatomyLimbMeshes.Arm(1));
             Save(AnatomyLimbMeshes.Leg());
+            foreach(string side in new[] {"L","R"})
+                foreach(string suffix in new[] {"","Low","Grip","GripLow"})
+                    Save(AnatomyWristMeshes.Join("AnatomyArmHand"+side+suffix,
+                        meshes["AnatomyConnectedArm"+side],meshes["AnatomyHand"+side+suffix]));
             Save(LowPolyMeshes.Loft("AnatomyNeck",32,2,false,
                 R(.5f,0,0),R(.5f,.38f,.40f),R(.15f,.42f,.43f),R(-.25f,.48f,.48f),R(-.5f,.5f,.5f),R(-.5f,0,0)));
             Save(LowPolyMeshes.Loft("AnatomyYoke",40,2,false,
@@ -76,15 +80,18 @@ namespace PoeClone.EditorTools
             float z = ring.Forward + ring.Z * Mathf.Sqrt(Mathf.Max(0, 1 - x*x / Mathf.Max(.0001f, ring.X*ring.X)));
             // Integrated bridge, nasal tip, alar wings, philtrum, cheekbones, lips and chin.
             float nose = profile != null ? profile.NoseProjection : 1;
-            z += nose * (.042f * G(x,y,0,.015f,.060f,.14f) + .078f * G(x,y,0,-.085f,.080f,.082f)
+            z += nose * (.042f * G(x,y,0,.015f,.047f,.14f) + .078f * G(x,y,0,-.085f,.075f,.068f)
                 + .012f * G(x,y,0,-.135f,.026f,.028f));
             z += nose * .026f * (G(x,y,-.063f,-.11f,.038f,.038f) + G(x,y,.063f,-.11f,.038f,.038f));
             z -= .012f * G(x,y,0,-.165f,.030f,.04f);
+            z -= .010f*(G(x,y,-.081f,-.11f,.013f,.031f)+G(x,y,.081f,-.11f,.013f,.031f));
+            z += .006f*(G(x,y,-.021f,-.185f,.012f,.038f)+G(x,y,.021f,-.185f,.012f,.038f));
             z += .025f * (G(x,y,-.29f,-.08f,.12f,.095f) + G(x,y,.29f,-.08f,.12f,.095f));
             z -= .025f * (G(x,y,-EyeCenter,.055f,.095f,.045f) + G(x,y,EyeCenter,.055f,.095f,.045f));
             z += .015f * (G(x,y,-EyeCenter,.125f,.13f,.05f) + G(x,y,EyeCenter,.125f,.13f,.05f));
-            z += .016f * G(x,y,0,-.225f,.145f,.022f) + .018f * G(x,y,0,-.267f,.13f,.027f);
-            z -= .023f * G(x,y,0,-.244f,.15f,.009f);
+            float seam=MouthSeam(x);
+            z += .014f * G(x,y,0,seam+.011f,.135f,.014f) + .018f * G(x,y,0,seam-.012f,.13f,.018f);
+            z -= .010f * G(x,y,0,seam,.145f,.004f);
             z += .018f * G(x,y,0,-.385f,.16f,.065f);
             return z;
         }
@@ -95,8 +102,7 @@ namespace PoeClone.EditorTools
             float blush = G(x,y,-.29f,-.09f,.13f,.11f) + G(x,y,.29f,-.09f,.13f,.11f);
             c = Color.Lerp(c, new Color(1.05f,.86f,.83f), blush * .32f);
             float lips = G(x,y,0,-.245f,.15f,.045f);
-            c = Color.Lerp(c, new Color(.84f,.45f,.43f), lips * .85f);
-            c = Color.Lerp(c, new Color(.27f,.13f,.12f), G(x,y,0,-.245f,.14f,.008f) * .9f);
+            c = Color.Lerp(c, new Color(.96f,.80f,.76f), lips * .25f);
             float nostrils = G(x,y,-.046f,-.117f,.021f,.012f) + G(x,y,.046f,-.117f,.021f,.012f);
             c = Color.Lerp(c, new Color(.30f,.20f,.18f), Mathf.Clamp01(nostrils) * .8f);
             float brow = G(x,y,-EyeCenter,.125f,.11f,.018f) + G(x,y,EyeCenter,.125f,.11f,.018f);
@@ -104,17 +110,20 @@ namespace PoeClone.EditorTools
             return Color.Lerp(c, new Color(.13f,.10f,.08f), Mathf.Clamp01(brow * hairs));
         }
 
+        private static float HeadAngle(float u) => u*2*Mathf.PI-.65f*Mathf.Sin(u*2*Mathf.PI);
+        private static float MouthSeam(float x) => -.245f+.009f*Mathf.Pow(x/.145f,2);
+
         private static Mesh Head(string name, int sides, int rows)
         {
             var b = new Surface();
             b.Grid(sides, rows, (u,v) => {
-                float y = -.5f + v, angle = u * Mathf.PI * 2;
+                float y = -.5f + v, angle = HeadAngle(u);
                 var ring = Profile(y);
                 float x = Mathf.Sin(angle) * ring.X;
                 float z = Mathf.Cos(angle) * ring.Z + ring.Forward;
                 if (Mathf.Cos(angle) > 0) z = Mathf.Lerp(z, FaceZ(x,y), Mathf.SmoothStep(0,1,Mathf.Cos(angle)));
                 return new Vector3(x,y,z);
-            }, (u,v) => Mathf.Cos(u * Mathf.PI * 2) > .15f ? FaceColor(Mathf.Sin(u*Mathf.PI*2)*Profile(v-.5f).X,v-.5f) : Color.white,
+            }, (u,v) => Mathf.Cos(HeadAngle(u)) > .15f ? FaceColor(Mathf.Sin(HeadAngle(u))*Profile(v-.5f).X,v-.5f) : Color.white,
                 true);
             foreach (float side in new[] { -1f, 1f })
             {
@@ -149,8 +158,36 @@ namespace PoeClone.EditorTools
                         float x=front?.390f+.070f*(1-r*r)+helix-concha+fold:.390f-.010f*(1-r*r);
                         return new Vector3(side*x,p.x,p.y);
                     },(u,r)=>Color.Lerp(new Color(.96f,.87f,.84f),Color.white,r),false,new Vector3(front?side:-side,0,0));
-                b.Ellipsoid(new Vector3(side*.439f,-.138f,.008f),new Vector3(.024f,.027f,.026f),Color.white,20,12);
-                b.Ellipsoid(new Vector3(side*.450f,-.056f,.043f),new Vector3(.015f,.022f,.014f),Color.white,16,10);
+                // A continuous root joins the anterior rim to the temple, closing the frontal gap.
+                b.Grid(12,24,(u,v)=> {
+                    float y=Mathf.Lerp(-.12f,.055f,v);
+                    float root=Profile(y).X*.97f,t=u*Mathf.Sin(v*Mathf.PI);
+                    float x=Mathf.Lerp(root,.463f,t);
+                    float z=Mathf.Lerp(FaceZ(root,y)+.0005f,.032f,t)+.003f*Mathf.Sin(v*Mathf.PI)*Mathf.Sin(u*Mathf.PI);
+                    return new Vector3(side*x,y,z);
+                },(u,v)=>Color.white,false,Vector3.forward);
+            }
+            // Explicit high resolution feature surfaces keep their edges readable in closeups.
+            b.Grid(sides>40?72:24,20,(u,v)=> {
+                float x=(u*2-1)*.145f,envelope=Mathf.Sqrt(Mathf.Max(0,1-Mathf.Pow(x/.145f,2)));
+                float seam=MouthSeam(x),upper=seam+envelope*(.017f+.003f*Mathf.Cos(x*65)),lower=seam-envelope*.023f;
+                float y=v<.55f?Mathf.Lerp(lower,seam,v/.55f):Mathf.Lerp(seam,upper,(v-.55f)/.45f);
+                return new Vector3(x,y,FaceZ(x,y)+.0013f);
+            },(u,v)=>Mathf.Abs(v-.55f)<.012f?new Color(.31f,.13f,.12f):
+                Color.Lerp(new Color(.84f,.51f,.47f),new Color(.66f,.32f,.29f),v),false,Vector3.forward);
+            foreach(float side in new[] {-1f,1f})
+            {
+                b.Grid(sides>40?48:20,6,(u,v)=> {
+                    float x=side*(.085f+u*.19f),arch=.122f+.019f*Mathf.Sin(u*Mathf.PI);
+                    float width=.010f*Mathf.Sin(u*Mathf.PI)+.002f;
+                    float y=arch+(v*2-1)*width;
+                    return new Vector3(x,y,FaceZ(x,y)+.002f);
+                },(u,v)=>new Color(.19f,.115f,.075f)*(.88f+.12f*Mathf.Sin(u*170+v*7)),false,Vector3.forward);
+                b.Grid(32,5,(u,v)=> {
+                    float angle=u*2*Mathf.PI,x=side*.047f+Mathf.Cos(angle)*.017f*v;
+                    float y=-.124f+Mathf.Sin(angle)*.006f*v;
+                    return new Vector3(x,y,FaceZ(x,y)+.0015f);
+                },(u,v)=>Color.Lerp(new Color(.22f,.12f,.10f),new Color(.55f,.35f,.29f),v),false,Vector3.forward);
             }
             // Smaller, partially hooded openings keep the iris under the upper lid.
             foreach (float side in new[] { -1f, 1f })
@@ -244,33 +281,58 @@ namespace PoeClone.EditorTools
 
         private static Mesh Hand(string name, bool left, bool grip, int sides)
         {
-            var volume = new AnatomyVolume();
+            var volume = new AnatomyVolume(.020f);
             float mirror = left ? -1 : 1;
             Vector3 offset=grip ? new Vector3(mirror*.18f,-.28f,.33f) : Vector3.zero;
-            volume.Ellipsoid(new Vector3(0,.08f,0)+offset,new Vector3(.30f,.35f,.40f));
-            // A narrow wrist meets the continuous forearm without a second forearm-shaped bulge.
-            volume.Ellipsoid(new Vector3(0,.32f,-.015f),new Vector3(.26f,.24f,.24f));
-            volume.Capsule(new Vector3(0,.24f,0),new Vector3(0,.08f,0)+offset,.22f,.25f);
-            volume.Ellipsoid(new Vector3(-mirror*.09f,.02f,.22f)+offset,new Vector3(.18f,.23f,.22f));
+            // The palm is a thin metacarpal plate: broad at the knuckles, tapered at the wrist.
+            volume.Palm(new Vector3(0,.035f,0)+offset,new Vector3(.105f,.245f,.30f),.045f);
+            volume.Ellipsoid(new Vector3(0,.3125f,0),new Vector3(.1925926f,.19f,.165625f));
+            volume.Ellipsoid(new Vector3(-mirror*.065f,.01f,.19f)+offset,new Vector3(.065f,.16f,.105f));
+            float[] fingerZ={.2225f,.0775f,-.0675f,-.2125f};
+            for(int i=0;i<4;i++)
+            {
+                volume.Capsule(new Vector3(mirror*.09f,.16f,fingerZ[i]*.64f)+offset,
+                    new Vector3(mirror*.095f,-.17f,fingerZ[i])+offset,.022f,.030f);
+                volume.Ellipsoid(new Vector3(mirror*.015f,-.17f,fingerZ[i])+offset,new Vector3(.105f,.065f,.065f));
+            }
+            var creases=new[] {
+                new[] {new Vector2(-.10f,-.25f),new Vector2(-.07f,-.08f),new Vector2(-.095f,.08f),new Vector2(-.13f,.22f)},
+                new[] {new Vector2(.015f,-.24f),new Vector2(.045f,-.08f),new Vector2(.005f,.075f)},
+                new[] {new Vector2(.16f,.16f),new Vector2(.075f,.10f),new Vector2(-.035f,.085f),new Vector2(-.14f,.12f)} };
             float[] lengths = { .48f,.55f,.51f,.39f };
             var nails = new List<Vector3>();
             var nailNormals = new List<Vector3>();
             var nailTangents = new List<Vector3>();
             for (int finger=0;finger<4;finger++)
             {
-                float z=.285f-finger*.19f,length=lengths[finger];
+                float z=fingerZ[finger],length=lengths[finger];
                 var path=new List<Vector3>();
                 const int segments=6;
-                for(int j=0;j<=segments;j++)
+                if(grip)
+                    for(int j=0;j<=segments;j++)
+                    {
+                        float t=j/(float)segments,bend=2.65f*t;
+                        path.Add(new Vector3(-mirror*length*(1-Mathf.Cos(bend))/2.65f,
+                            -.29f-length*Mathf.Sin(bend)/2.65f,z)+offset);
+                    }
+                else
                 {
-                    float t=j/(float)segments,bend=(grip?2.65f:.32f)*t;
-                    float x=-mirror*length*(1-Mathf.Cos(bend))/(grip?2.65f:.32f);
-                    float y=-(grip?.29f:.18f)-length*Mathf.Sin(bend)/(grip?2.65f:.32f);
-                    path.Add(new Vector3(x,y,z+(grip?0:(z-.04f)*t*.13f))+offset);
+                    // MCP, PIP and DIP curl progressively; digits have slightly different rest arcs.
+                    Vector3 point=new Vector3(0,-.18f,z);
+                    path.Add(point);
+                    float[] angles={18f+finger*2,58f+finger*3,78f+finger*3};
+                    float[] proportions={.45f,.33f,.22f};
+                    for(int joint=0;joint<3;joint++)
+                        for(int step=0;step<2;step++)
+                        {
+                            float angle=angles[joint]*Mathf.Deg2Rad;
+                            point+=new Vector3(-mirror*Mathf.Sin(angle),-Mathf.Cos(angle),0)*length*proportions[joint]*.5f;
+                            path.Add(point);
+                        }
                 }
-                float radius=finger==3?.068f:.080f;
+                float radius=finger==3?.056f:.066f;
                 for(int j=0;j<segments;j++)
-                    volume.Capsule(path[j],path[j+1],radius*Mathf.Lerp(1,.77f,j/(float)segments),radius*Mathf.Lerp(1,.77f,(j+1)/(float)segments));
+                    volume.Capsule(path[j],path[j+1],radius*Mathf.Lerp(1,.78f,j/(float)segments),radius*Mathf.Lerp(1,.78f,(j+1)/(float)segments));
                 Vector3 tangent=(path[segments]-path[segments-2]).normalized;
                 Vector3 outward=new Vector3(mirror,0,0);
                 outward=(outward-tangent*Vector3.Dot(outward,tangent)).normalized;
@@ -280,10 +342,17 @@ namespace PoeClone.EditorTools
             for(int j=0;j<=6;j++)
             {
                 float t=j/6f;
-                thumb.Add(new Vector3(-mirror*(.08f+(grip?.33f:.16f)*t),
-                    .12f-(grip?.43f:.30f)*t,.26f+(grip?.15f:.31f)*Mathf.Sin(t*1.4f))+offset);
+                if(grip)
+                    thumb.Add(new Vector3(-mirror*(.08f+.33f*t),.12f-.43f*t,.26f+.15f*Mathf.Sin(t*1.4f))+offset);
+                else
+                {
+                    Vector3 a=new Vector3(-mirror*.045f,.09f,.18f),c1=new Vector3(-mirror*.09f,-.04f,.31f),
+                        c2=new Vector3(-mirror*.13f,-.24f,.29f),end=new Vector3(-mirror*.10f,-.34f,.2225f);
+                    float q=1-t;
+                    thumb.Add(q*q*q*a+3*q*q*t*c1+3*q*t*t*c2+t*t*t*end);
+                }
             }
-            for(int j=0;j<6;j++) volume.Capsule(thumb[j],thumb[j+1],Mathf.Lerp(.105f,.078f,j/6f),Mathf.Lerp(.105f,.078f,(j+1)/6f));
+            for(int j=0;j<6;j++) volume.Capsule(thumb[j],thumb[j+1],Mathf.Lerp(.065f,.050f,j/6f),Mathf.Lerp(.065f,.050f,(j+1)/6f));
             Color Pigment(Vector3 p)
             {
                 for(int i=0;i<nails.Count;i++)
@@ -295,9 +364,18 @@ namespace PoeClone.EditorTools
                     if(Vector3.Dot(delta,nailNormals[i])>.043f && along*along/(.055f*.055f)+sideways*sideways/(.043f*.043f)<1)
                         return new Color(1.05f,.90f,.86f);
                 }
+                Vector3 palm=p-offset;
+                if(palm.x*mirror<-.085f)
+                    foreach(var crease in creases)
+                        for(int i=0;i<crease.Length-1;i++)
+                        {
+                            Vector2 axis=crease[i+1]-crease[i],delta=new Vector2(palm.y,palm.z)-crease[i];
+                            float t=Mathf.Clamp01(Vector2.Dot(delta,axis)/axis.sqrMagnitude);
+                            if((delta-axis*t).sqrMagnitude<.009f*.009f)return new Color(.78f,.65f,.58f);
+                        }
                 return Color.white;
             }
-            return volume.Bake(name,new Vector3(-.75f,-.95f,-.52f),new Vector3(.75f,.62f,1.1f),sides>6?.035f:.09f,Pigment);
+            return volume.Bake(name,new Vector3(-.65f,-.85f,-.40f),new Vector3(.65f,.3125f,.90f),sides>6?.018f:.06f,Pigment);
         }
 
         private static Mesh Foot(string name,float spacing)

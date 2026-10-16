@@ -1,5 +1,6 @@
 using UnityEngine;
 using PoeClone.Combat;
+using PoeClone.Inventory;
 
 namespace PoeClone.Visuals
 {
@@ -58,6 +59,17 @@ namespace PoeClone.Visuals
         [SerializeField] private Transform rightKnee;
         [SerializeField] private Transform leftElbow;
         [SerializeField] private Transform rightElbow;
+
+        [Header("Anatomical gait (optional)")]
+        [SerializeField] private AnatomicalAnkle leftAnkle;
+        [SerializeField] private AnatomicalAnkle rightAnkle;
+        private bool NaturalGait => leftAnkle != null && rightAnkle != null;
+
+        public void ConfigureNaturalGait(AnatomicalAnkle left, AnatomicalAnkle right)
+        {
+            leftAnkle = left;
+            rightAnkle = right;
+        }
 
         private float runBlend;
         private AnimationBudget animationBudget;
@@ -149,7 +161,7 @@ namespace PoeClone.Visuals
             armRestAngle = angle;
         }
 
-public void Configure(
+        public void Configure(
             Transform leftLegPivot,
             Transform rightLegPivot,
             Transform leftArmPivot,
@@ -263,8 +275,11 @@ public void Configure(
             bool leftArmSuppressed = LeftArmSuppressed;
 
             float crouch = Mathf.Clamp01(Crouch + PlantCrouch * plant);
-            SetPivot(leftLeg, s * legAmp - 35f * crouch, -PlantSpread * plant);
-            SetPivot(rightLeg, -s * legAmp - 35f * crouch, PlantSpread * plant);
+            if (!NaturalGait)
+            {
+                SetPivot(leftLeg, s * legAmp - 35f * crouch, -PlantSpread * plant);
+                SetPivot(rightLeg, -s * legAmp - 35f * crouch, PlantSpread * plant);
+            }
             if (!leftArmSuppressed)
                 SetPivot(leftArm, Mathf.Lerp(armRestAngle - s * armAmp + breath * 2.5f + sway * 1.5f, WorkArms.x, WorkBlend));
             if (!rightArmSuppressed)
@@ -272,8 +287,11 @@ public void Configure(
 
             // Knees bend while the leg swings forward (more so when running).
             float kneeMax = Mathf.Lerp(walkKneeBend, runKneeBend, runBlend) * blend * stepping;
-            SetPivot(leftKnee, Mathf.Max(0f, -c) * kneeMax + 70f * crouch);
-            SetPivot(rightKnee, Mathf.Max(0f, c) * kneeMax + 70f * crouch);
+            if (!NaturalGait)
+            {
+                SetPivot(leftKnee, Mathf.Max(0f, -c) * kneeMax + 70f * crouch);
+                SetPivot(rightKnee, Mathf.Max(0f, c) * kneeMax + 70f * crouch);
+            }
 
             // Elbows bend forward; running holds the arms sharply bent.
             float elbow = -Mathf.Lerp(walkElbowBend, runElbowBend, runBlend) * blend;
@@ -294,8 +312,17 @@ public void Configure(
 
             float bobAmount = Mathf.Lerp(bobHeight, runBobHeight, runBlend);
             float bob = simple ? 0f : Mathf.Abs(c) * bobAmount * blend * stepping;
+            if (NaturalGait)
+                bob = (-.022f-.012f*c*c+runBlend*.025f*s*s)*blend*stepping;
             float lunge = attackAnimator != null ? attackAnimator.Lunge : 0f;
             transform.localPosition = baseLocalPosition + Vector3.up * (bob - 0.28f * crouch) + Vector3.forward * lunge;
+            if (NaturalGait)
+            {
+                // Move weight over the supporting leg; the torso keeps its existing counter-twist.
+                transform.localPosition += Vector3.right*(s*.018f*blend*stepping);
+                PoseNaturalLeg(leftLeg,leftKnee,leftAnkle,phase,-1f,bob-.28f*crouch,crouch);
+                PoseNaturalLeg(rightLeg,rightKnee,rightAnkle,phase+Mathf.PI,1f,bob-.28f*crouch,crouch);
+            }
             if (sweepingBroom != null && WorkSweep > 0f)
                 PoseSweepingBroom(!leftArmSuppressed, !rightArmSuppressed);
 
@@ -305,6 +332,41 @@ public void Configure(
             holdBlend = HoldsTwoHanded ? Mathf.MoveTowards(holdBlend, oneArmed ? 0f : 1f, 6f * dt) : 0f;
             if (HoldsTwoHanded)
                 PoseTwoHandedHold(rightArmSuppressed, leftArmSuppressed, s * armAmp, breath);
+        }
+
+        private void PoseNaturalLeg(Transform hip,Transform knee,AnatomicalAnkle ankle,float cycle,float side,float bodyOffset,float crouch)
+        {
+            float t=Mathf.Repeat(cycle/(2*Mathf.PI),1);
+            float stance=Mathf.Lerp(.64f,.42f,runBlend);
+            float travel=Mathf.Lerp(.48f,.74f,runBlend);
+            float forward,lift,footPitch;
+            if(t<stance)
+            {
+                float contact=t/stance;
+                forward=Mathf.Lerp(travel*.5f,-travel*.5f,contact);
+                lift=0;
+                footPitch=-8f*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(0,.18f,contact)))
+                    +12f*Mathf.SmoothStep(0,1,Mathf.InverseLerp(.72f,1,contact));
+            }
+            else
+            {
+                float swing=(t-stance)/(1-stance);
+                forward=Mathf.Lerp(-travel*.5f,travel*.5f,Mathf.SmoothStep(0,1,swing));
+                lift=Mathf.Sin(swing*Mathf.PI)*Mathf.Lerp(.055f,.16f,runBlend);
+                footPitch=-6f*Mathf.Sin(swing*Mathf.PI);
+            }
+            float weight=blend*(1-plant);
+            Vector3 target=new Vector3(hip.localPosition.x,.05f-bodyOffset+lift*weight,forward*weight);
+            Vector3 reach=target-hip.localPosition;
+            const float thigh=.42f,shin=.38f;
+            float distance=Mathf.Clamp(reach.magnitude,.12f,(thigh+shin)*.995f);
+            float aim=Mathf.Atan2(-reach.z,-reach.y)*Mathf.Rad2Deg;
+            float bend=Mathf.Acos(Mathf.Clamp((thigh*thigh+distance*distance-shin*shin)/(2*thigh*distance),-1,1))*Mathf.Rad2Deg;
+            float hipPitch=Mathf.Lerp(aim-bend,-35f,crouch);
+            float kneePitch=Mathf.Lerp(180-Mathf.Acos(Mathf.Clamp((thigh*thigh+shin*shin-distance*distance)/(2*thigh*shin),-1,1))*Mathf.Rad2Deg,70f,crouch);
+            hip.localRotation=Quaternion.Euler(hipPitch,Mathf.Sin(cycle)*3f*weight,side*PlantSpread*plant);
+            knee.localRotation=Quaternion.Euler(kneePitch,0,0);
+            ankle.Pose(Mathf.Clamp(footPitch*weight-hipPitch-kneePitch,-38f,30f));
         }
 
         private void PoseTwoHandedHold(bool rightArmSuppressed, bool leftArmSuppressed, float swing, float breath)
@@ -426,6 +488,7 @@ public void Configure(
             SetPivot(leftElbow, 0f);
             SetPivot(rightElbow, 0f);
             SetPivot(upperBody, 0f);
+            if (NaturalGait) { leftAnkle.Pose(0); rightAnkle.Pose(0); }
             transform.localPosition = baseLocalPosition;
             lastStepIndex = Mathf.FloorToInt(phase / Mathf.PI);
             nextFootstepAt = Time.time;
@@ -458,8 +521,7 @@ public void Configure(
             audioSource.PlayOneShot(clip, volume);
         }
 
-        
-private static void SetPivot(Transform pivot, float angle, float roll = 0f)
+        private static void SetPivot(Transform pivot, float angle, float roll = 0f)
         {
             if (pivot != null)
                 pivot.localRotation = Quaternion.Euler(angle, 0f, roll);

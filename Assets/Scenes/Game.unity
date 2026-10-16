@@ -4322,8 +4322,8 @@ Transform:
   m_GameObject: {fileID: 275108562}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.3, z: 0}
-  m_LocalScale: {x: 0.125, y: 0.15, z: 0.15}
+  m_LocalPosition: {x: 0, y: -0.39, z: 0}
+  m_LocalScale: {x: 0.135, y: 0.16, z: 0.16}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2060653405}
@@ -4335,7 +4335,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 275108562}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -4518,7 +4518,7 @@ Transform:
   m_GameObject: {fileID: 286379253}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.3, z: 0}
+  m_LocalPosition: {x: 0, y: -0.39, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5658,7 +5658,7 @@ Transform:
   m_GameObject: {fileID: 372410188}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.3, z: 0}
+  m_LocalPosition: {x: 0, y: -0.39, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7271,6 +7271,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 503549214}
+  - component: {fileID: 503549215}
   m_Layer: 0
   m_Name: Knee
   m_TagString: Untagged
@@ -7294,8 +7295,25 @@ Transform:
   - {fileID: 1075529593}
   - {fileID: 1650865039}
   - {fileID: 904020952}
+  - {fileID: 2033967473}
   m_Father: {fileID: 1794193160}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &503549215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 503549213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5363cc3a825e674bad44766c3dd1899, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: PoeClone.Inventory::PoeClone.Inventory.AnatomicalAnkle
+  joint: {fileID: 2033967473}
+  foot: {fileID: 1650865039}
+  footRestPosition: {x: 0, y: -0.38, z: 0.06}
+  footRestRotation: {x: 0, y: 0, z: 0, w: 1}
 --- !u!1 &509709330
 GameObject:
   m_ObjectHideFlags: 0
@@ -7758,7 +7776,7 @@ Transform:
   m_GameObject: {fileID: 553302536}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.3, z: 0}
+  m_LocalPosition: {x: 0, y: -0.39, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10043,8 +10061,8 @@ Transform:
   m_GameObject: {fileID: 667586193}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.3, z: 0}
-  m_LocalScale: {x: 0.125, y: 0.15, z: 0.15}
+  m_LocalPosition: {x: 0, y: -0.39, z: 0}
+  m_LocalScale: {x: 0.135, y: 0.16, z: 0.16}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 404555354}
@@ -10056,7 +10074,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 667586193}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -13748,6 +13766,7 @@ SkinnedMeshRenderer:
   m_Bones:
   - {fileID: 1927644275}
   - {fileID: 1048389057}
+  - {fileID: 1019344742}
   m_BlendShapeWeights: []
   m_RootBone: {fileID: 1927644275}
   m_AABB:
@@ -15757,6 +15776,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7886104307238168086, guid: 34db7ef6fb3c3aa4ebaaf7569a943834, type: 3}
   m_PrefabInstance: {fileID: 1017852851}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1019344741
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1019344742}
+  m_Layer: 0
+  m_Name: Ankle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1019344742
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1019344741}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.38, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1048389057}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1021913961
 GameObject:
   m_ObjectHideFlags: 0
@@ -16233,6 +16283,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1048389057}
+  - component: {fileID: 1048389058}
   m_Layer: 0
   m_Name: Knee
   m_TagString: Untagged
@@ -16256,8 +16307,25 @@ Transform:
   - {fileID: 1057954273}
   - {fileID: 113871036}
   - {fileID: 171023656}
+  - {fileID: 1019344742}
   m_Father: {fileID: 1927644275}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1048389058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1048389056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5363cc3a825e674bad44766c3dd1899, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: PoeClone.Inventory::PoeClone.Inventory.AnatomicalAnkle
+  joint: {fileID: 1019344742}
+  foot: {fileID: 113871036}
+  footRestPosition: {x: 0, y: -0.38, z: 0.06}
+  footRestRotation: {x: 0, y: 0, z: 0, w: 1}
 --- !u!1 &1051987498
 GameObject:
   m_ObjectHideFlags: 0
@@ -20509,6 +20577,7 @@ SkinnedMeshRenderer:
   m_Bones:
   - {fileID: 1794193160}
   - {fileID: 503549214}
+  - {fileID: 2033967473}
   m_BlendShapeWeights: []
   m_RootBone: {fileID: 1794193160}
   m_AABB:
@@ -28401,6 +28470,8 @@ MonoBehaviour:
   rightKnee: {fileID: 1048389057}
   leftElbow: {fileID: 404555354}
   rightElbow: {fileID: 2060653405}
+  leftAnkle: {fileID: 503549215}
+  rightAnkle: {fileID: 1048389058}
 --- !u!114 &1892388266
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28419,36 +28490,48 @@ MonoBehaviour:
     Far: {fileID: 4300000, guid: bb311bb311989fd4db96a0856bf63747, type: 2}
     GripNear: {fileID: 0}
     GripFar: {fileID: 0}
+    Skin: {fileID: 0}
+    Covered: {fileID: 0}
     Hand: 0
   - Filter: {fileID: 405732763}
     Near: {fileID: 4300000, guid: 7c0577d9d63a1324e927831020fbfed3, type: 2}
     Far: {fileID: 4300000, guid: feb92b59816b89343892260852454610, type: 2}
     GripNear: {fileID: 0}
     GripFar: {fileID: 0}
+    Skin: {fileID: 0}
+    Covered: {fileID: 0}
     Hand: 0
   - Filter: {fileID: 667586196}
-    Near: {fileID: 4300000, guid: 97b406df3293e174b9892f0aa475e342, type: 2}
-    Far: {fileID: 4300000, guid: e963d7eb016614148a0f426635a8f5a3, type: 2}
-    GripNear: {fileID: 4300000, guid: 50f387fac4a7a7647ab3f9843b9497e3, type: 2}
-    GripFar: {fileID: 4300000, guid: 90f534a683d5dfd42938bb6c24da0837, type: 2}
+    Near: {fileID: 4300000, guid: 3e8938a6e302d3a47b75ed1bb56efb71, type: 2}
+    Far: {fileID: 4300000, guid: 2d619bbfca57ba944bbdcc61f34629cf, type: 2}
+    GripNear: {fileID: 4300000, guid: 89b1e6c8de4259f4daccbd3630084755, type: 2}
+    GripFar: {fileID: 4300000, guid: 0320ae86f5623614d91189a32bfccf22, type: 2}
+    Skin: {fileID: 1890492461}
+    Covered: {fileID: 4300000, guid: 03d77abe5c4daea4b9b07b8bfaf86482, type: 2}
     Hand: 1
   - Filter: {fileID: 1650865041}
     Near: {fileID: 4300000, guid: 477c5db8f53736a4a9502e1245d384f0, type: 2}
     Far: {fileID: 4300000, guid: a3b2f2964b4690d498598df16d9e7613, type: 2}
     GripNear: {fileID: 0}
     GripFar: {fileID: 0}
+    Skin: {fileID: 0}
+    Covered: {fileID: 0}
     Hand: 0
   - Filter: {fileID: 275108565}
-    Near: {fileID: 4300000, guid: 8b76eca524b2cb04ab94cd8142c5602c, type: 2}
-    Far: {fileID: 4300000, guid: 268f2bc46065de140aa2595d17052f47, type: 2}
-    GripNear: {fileID: 4300000, guid: a79d525a52b24f04e92498b4df4a7a48, type: 2}
-    GripFar: {fileID: 4300000, guid: 54960385f199dc24094656e461e33104, type: 2}
+    Near: {fileID: 4300000, guid: 1f47677e02d58f448877bd6dd4de2c41, type: 2}
+    Far: {fileID: 4300000, guid: ba41ffb2b0d9d8740957e317c39c6b65, type: 2}
+    GripNear: {fileID: 4300000, guid: 0ff9461d1198c254aa0aebcc98f507df, type: 2}
+    GripFar: {fileID: 4300000, guid: 16ce900e432e9494b959f0da0e8829e4, type: 2}
+    Skin: {fileID: 798557018}
+    Covered: {fileID: 4300000, guid: 00265aae23c210f4ea2333ff37507048, type: 2}
     Hand: 2
   - Filter: {fileID: 113871038}
     Near: {fileID: 4300000, guid: 477c5db8f53736a4a9502e1245d384f0, type: 2}
     Far: {fileID: 4300000, guid: a3b2f2964b4690d498598df16d9e7613, type: 2}
     GripNear: {fileID: 0}
     GripFar: {fileID: 0}
+    Skin: {fileID: 0}
+    Covered: {fileID: 0}
     Hand: 0
 --- !u!1001 &1904599793
 PrefabInstance:
@@ -29673,7 +29756,7 @@ Transform:
   m_GameObject: {fileID: 1956200229}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.3, z: 0}
+  m_LocalPosition: {x: 0, y: -0.39, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -29921,7 +30004,7 @@ Transform:
   m_GameObject: {fileID: 1967068115}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.4, z: 0.05}
+  m_LocalPosition: {x: 0, y: -0.49, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -30942,6 +31025,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3259591659787392395, guid: d3145acaf7095c2458a8b0242de31cb2, type: 3}
   m_PrefabInstance: {fileID: 2029065711}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2033967472
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2033967473}
+  m_Layer: 0
+  m_Name: Ankle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2033967473
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2033967472}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.38, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 503549214}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2034389099
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -31381,7 +31495,7 @@ Transform:
   m_GameObject: {fileID: 2070417695}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.4, z: 0.05}
+  m_LocalPosition: {x: 0, y: -0.49, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

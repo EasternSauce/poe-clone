@@ -160,6 +160,8 @@ namespace PoeClone.Inventory
                         instance.AddComponent<EquipmentVisualInstance>();
                         if (tint != Color.white)
                             Tint(instance, tint);
+                        if (slot == EquipSlot.Boots && socket.GetComponentInParent<PoeClone.Inventory.AnatomicalAnkle>() is PoeClone.Inventory.AnatomicalAnkle ankle)
+                            ankle.FitFootwear(instance);
                         if (slot == EquipSlot.MainHand && child.name == "Socket_MainHand" && SlotRules.IsTwoHandedMelee(item.WeaponType))
                             TwoHandedWeapon = instance.transform;
                         list.Add(instance);

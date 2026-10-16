@@ -76,21 +76,34 @@ namespace PoeClone.EditorTools
                 Skin(arm,"ContinuousArm",meshes["AnatomyConnectedArm"+side],elbow,new[] {sleeve,skin},anchor);
                 Transform hand = elbow.Find("Hand");
                 Set(hand,meshes["AnatomyHand"+side],skin);
+                // Put the palm beyond the wrist, rather than burying it in the forearm surface.
+                hand.localPosition=new Vector3(0,-.39f,0);hand.localScale=new Vector3(.135f,.16f,.16f);
+                foreach(string socketName in new[] {"Socket_Hand"+side,"Socket_Ring"+side})
+                    elbow.Find(socketName).localPosition=new Vector3(0,-.39f,0);
+                elbow.Find(side=="L"?"Socket_OffHand":"Socket_MainHand").localPosition=new Vector3(0,-.49f,.05f);
                 (hand.GetComponent<BaseGear>() ?? hand.gameObject.AddComponent<BaseGear>()).HiddenBy = EquipSlot.Gloves;
-                var part=Detail(hand,meshes,"AnatomyHand"+side);
-                part.Hand=side=="L"?1:2;
-                part.GripNear=meshes["AnatomyHand"+side+"Grip"];
-                part.GripFar=meshes["AnatomyHand"+side+"GripLow"];
-                parts.Add(part);
+                hand.GetComponent<Renderer>().enabled=false;
+                parts.Add(new ProceduralAnatomy.Part {
+                    Filter=hand.GetComponent<MeshFilter>(),Skin=arm.Find("ContinuousArm").GetComponent<SkinnedMeshRenderer>(),
+                    Hand=side=="L"?1:2,Near=meshes["AnatomyArmHand"+side],Far=meshes["AnatomyArmHand"+side+"Low"],
+                    GripNear=meshes["AnatomyArmHand"+side+"Grip"],GripFar=meshes["AnatomyArmHand"+side+"GripLow"],
+                    Covered=meshes["AnatomyConnectedArm"+side] });
                 Transform leg=model.Find("Leg"+side),knee=leg.Find("Knee");
                 Material trousers=leg.Find("Thigh").GetComponent<Renderer>().sharedMaterial;
                 HideRigid(leg.Find("Thigh"),genericLimb);
                 HideRigid(knee.Find("Shin"),genericLimb);
-                Skin(leg,"ContinuousLeg",meshes["AnatomyConnectedLeg"],knee,new[] {trousers});
+                Transform ankle=knee.Find("Ankle");
+                if(ankle==null){ankle=new GameObject("Ankle").transform;ankle.SetParent(knee,false);}
+                ankle.localPosition=new Vector3(0,-.38f,0);ankle.localRotation=Quaternion.identity;
+                Skin(leg,"ContinuousLeg",meshes["AnatomyConnectedLeg"],knee,new[] {trousers},ankle:ankle);
                 Set(knee.Find("Foot"),meshes["AnatomyFoot"],skin);
                 knee.Find("Foot").localScale = new Vector3(side=="L" ? -.175f : .175f,.1f,.33f);
                 parts.Add(Detail(knee.Find("Foot"),meshes,"AnatomyFoot"));
+                (knee.GetComponent<PoeClone.Inventory.AnatomicalAnkle>() ?? knee.gameObject.AddComponent<PoeClone.Inventory.AnatomicalAnkle>()).Configure(ankle,knee.Find("Foot"));
             }
+            model.GetComponent<PoeClone.Visuals.CharacterWalkAnimator>().ConfigureNaturalGait(
+                model.Find("LegL/Knee").GetComponent<PoeClone.Inventory.AnatomicalAnkle>(),
+                model.Find("LegR/Knee").GetComponent<PoeClone.Inventory.AnatomicalAnkle>());
             Set(upper.Find("Neck"),meshes["AnatomyNeck"],skin);
             upper.Find("Neck").localPosition=new Vector3(0,1.60f,.01f);
             upper.Find("Neck").localScale=new Vector3(.15f,.19f,.14f);
@@ -105,7 +118,7 @@ namespace PoeClone.EditorTools
             part.GetComponent<Renderer>().enabled=false;
         }
 
-        private static void Skin(Transform root,string name,Mesh mesh,Transform joint,Material[] materials,Transform anchor=null)
+        private static void Skin(Transform root,string name,Mesh mesh,Transform joint,Material[] materials,Transform anchor=null,Transform ankle=null)
         {
             Transform child=root.Find(name);
             if(child==null)
@@ -116,7 +129,7 @@ namespace PoeClone.EditorTools
             child.localPosition=Vector3.zero;child.localRotation=Quaternion.identity;child.localScale=Vector3.one;
             var renderer=child.GetComponent<SkinnedMeshRenderer>();
             renderer.sharedMesh=mesh;renderer.sharedMaterials=materials;
-            renderer.bones=anchor!=null?new[] {anchor,root,joint}:new[] {root,joint};
+            renderer.bones=anchor!=null?new[] {anchor,root,joint}:ankle!=null?new[] {root,joint,ankle}:new[] {root,joint};
             renderer.rootBone=root;renderer.quality=SkinQuality.Bone2;
             // Cover bent elbows/knees as well as the bind pose, with no per-frame baking.
             renderer.localBounds=new Bounds(new Vector3(0,-.35f,0),Vector3.one*1.9f);

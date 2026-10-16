@@ -12,7 +12,7 @@ namespace PoeClone.EditorTools
         {
             public Vector3 A, B, Radii;
             public float Radius, EndRadius;
-            public bool Capsule;
+            public bool Capsule, Palm;
 
             public float Distance(Vector3 p)
             {
@@ -23,6 +23,13 @@ namespace PoeClone.EditorTools
                     return (p-A-ab*t).magnitude-Mathf.Lerp(Radius,EndRadius,t);
                 }
                 Vector3 q=p-A;
+                if(Palm)
+                {
+                    float width=Mathf.Lerp(Radii.z,Radii.z*.66f,Mathf.Clamp01((q.y+Radii.y)/(2*Radii.y)));
+                    Vector3 d=new Vector3(Mathf.Abs(q.x)-(Radii.x-Radius),Mathf.Abs(q.y)-(Radii.y-Radius),Mathf.Abs(q.z)-(width-Radius));
+                    Vector3 outside=Vector3.Max(d,Vector3.zero);
+                    return outside.magnitude+Mathf.Min(Mathf.Max(d.x,Mathf.Max(d.y,d.z)),0)-Radius;
+                }
                 Vector3 v=new Vector3(q.x/Radii.x,q.y/Radii.y,q.z/Radii.z);
                 Vector3 w=new Vector3(v.x/Radii.x,v.y/Radii.y,v.z/Radii.z);
                 float k=v.magnitude;
@@ -31,7 +38,11 @@ namespace PoeClone.EditorTools
             }
         }
 
+        private readonly float blendRadius;
+        public AnatomyVolume(float blendRadius=.055f) => this.blendRadius=blendRadius;
+
         private readonly List<Shape> shapes = new List<Shape>();
+        public void Palm(Vector3 center,Vector3 radii,float rounding) => shapes.Add(new Shape {A=center,Radii=radii,Radius=rounding,Palm=true});
         public void Ellipsoid(Vector3 center,Vector3 radii) => shapes.Add(new Shape {A=center,Radii=radii});
         public void Capsule(Vector3 a,Vector3 b,float radius,float endRadius) =>
             shapes.Add(new Shape {A=a,B=b,Radius=radius,EndRadius=endRadius,Capsule=true});
@@ -42,7 +53,7 @@ namespace PoeClone.EditorTools
             foreach(Shape shape in shapes)
             {
                 float next=shape.Distance(point);
-                const float blend=.055f;
+                float blend=blendRadius;
                 float h=Mathf.Max(blend-Mathf.Abs(distance-next),0)/blend;
                 distance=Mathf.Min(distance,next)-h*h*blend*.25f;
             }

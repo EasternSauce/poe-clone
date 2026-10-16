@@ -173,6 +173,8 @@ MonoBehaviour:
   rightKnee: {fileID: 2679910447178751692}
   leftElbow: {fileID: 5418287689747836137}
   rightElbow: {fileID: 539181977355909239}
+  leftAnkle: {fileID: 0}
+  rightAnkle: {fileID: 0}
 --- !u!1 &1408078426097545796
 GameObject:
   m_ObjectHideFlags: 0

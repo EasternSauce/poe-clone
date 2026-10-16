@@ -1,3 +1,8 @@
+version: 2026-10-16-character-expression-and-gait
+- Closeups have defined eyebrows, lips and nostrils, with denser facial geometry and smoothly attached ears.
+- Hands join the forearms through a continuous stitched wrist and have a distinct flat palm beyond the wrist, shaped knuckles, palm creases and close, curled resting fingers. The thumb rests inward against the index finger; gloves and grips follow the corrected hand placement.
+- The player walks with weight transfer, softer knee motion, heel-to-toe foot roll and flexible boot ankles.
+
 version: 2026-10-16-character-shape-refinement
 - Arms and legs now use continuous procedural surfaces that bend around elbows and knees, keeping limbs connected while walking. Forearms and wrists have slimmer proportions.
 - Nose profiles have a shorter bridge, rounded tip and softer nostril wings. Ears have asymmetric rims, inner folds and shaped lobes; eyes have softer lids and muted whites, and hair has a swept crown, finer strands and smaller hairline tips. Starting headwear fits over the revised hairstyle.

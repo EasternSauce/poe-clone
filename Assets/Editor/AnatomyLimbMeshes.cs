@@ -13,7 +13,7 @@ namespace PoeClone.EditorTools
                 R(-.08f,.088f,.092f), R(-.19f,.08f,.085f), R(-.30f,.067f,.073f),
                 R(-.38f,.061f,.064f), R(-.43f,.059f,.061f), R(-.49f,.060f,.063f,-.004f),
                 R(-.56f,.055f,.058f,-.005f), R(-.63f,.044f,.046f),
-                R(-.69f,.034f,.035f), R(-.735f,.032f,.033f), R(-.76f,0,0) },side);
+                R(-.69f,.034f,.035f), R(-.735f,.027f,.028f), R(-.755f,.026f,.0265f), R(-.78f,0,0) },side);
         }
 
         internal static Mesh Leg()
@@ -64,6 +64,12 @@ namespace PoeClone.EditorTools
                         int swap=firstBone;firstBone=secondBone;secondBone=swap;
                         float weight=firstWeight;firstWeight=secondWeight;secondWeight=weight;
                     }
+                    if(!arm && ring.Y<-.64f)
+                    {
+                        float ankle=Mathf.SmoothStep(0,1,Mathf.InverseLerp(-.64f,-.80f,ring.Y));
+                        firstBone=ankle>.5f?2:1;secondBone=ankle>.5f?1:2;
+                        firstWeight=Mathf.Max(ankle,1-ankle);secondWeight=1-firstWeight;
+                    }
                     weights.Add(new BoneWeight {boneIndex0=firstBone,weight0=firstWeight,boneIndex1=secondBone,weight1=secondWeight});
                 }
             void Tri(List<int> indices,int a,int b,int c)
@@ -86,7 +92,7 @@ namespace PoeClone.EditorTools
             if(arm){mesh.SetTriangles(sleeve,0);mesh.SetTriangles(skin,1);}else mesh.SetTriangles(skin,0);
             mesh.boneWeights=weights.ToArray();
             mesh.bindposes=arm?new[] {Matrix4x4.identity,Matrix4x4.identity,Matrix4x4.Translate(Vector3.up*.42f)}:
-                new[] {Matrix4x4.identity,Matrix4x4.Translate(Vector3.up*.42f)};
+                new[] {Matrix4x4.identity,Matrix4x4.Translate(Vector3.up*.42f),Matrix4x4.Translate(Vector3.up*.80f)};
             mesh.RecalculateNormals();
             var normals=mesh.normals;
             for(int row=0;row<rings.Count;row++)
