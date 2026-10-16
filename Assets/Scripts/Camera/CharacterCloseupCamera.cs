@@ -4,10 +4,10 @@ using UnityEngine.InputSystem;
 namespace PoeClone.CameraSystem
 {
     /// <summary>
-    /// Dev view for inspecting the character model up close while still walking around: the camera
-    /// orbits the player at chest height instead of the fixed gameplay angle. Movement stays
-    /// camera-relative, so WASD follows whichever way the view faces.
-    /// Middle-mouse drag or [ / ] orbits, PageUp / PageDown tilts, scroll zooms.
+    /// Dev view for inspecting the character model up close: the camera stays put and turns to
+    /// watch the player walk around it, so every side of the model comes into view. Movement stays
+    /// camera-relative. Middle-mouse drag or [ / ] orbits, PageUp / PageDown tilts and scroll zooms,
+    /// each re-placing the camera around the character's current position.
     /// </summary>
     public sealed class CharacterCloseupCamera : MonoBehaviour
     {
@@ -17,7 +17,9 @@ namespace PoeClone.CameraSystem
         private const float MinPitch = -10f, MaxPitch = 80f;
 
         private CameraFollow follow;
-        private float yaw = 45f, pitch = 15f, distance = 4f;
+        private float yaw = 45f, pitch = 15f, distance = 5f;
+        private float lastYaw, lastPitch, lastDistance;
+        private bool placed;
         private float savedNear;
 
         public static CharacterCloseupCamera Open()
@@ -82,12 +84,28 @@ namespace PoeClone.CameraSystem
                 if (Mathf.Abs(scroll) > 0.01f)
                     distance *= Mathf.Exp(-Mathf.Clamp(scroll / 120f, -3f, 3f) * 0.15f);
             }
-            pitch = Mathf.Clamp(pitch, MinPitch, MaxPitch);
-            distance = Mathf.Clamp(distance, MinDistance, MaxDistance);
-
-            Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
             Vector3 focus = target.position + Vector3.up * FocusHeight;
-            transform.SetPositionAndRotation(focus - rotation * Vector3.forward * distance, rotation);
+            if (placed && yaw == lastYaw && pitch == lastPitch && distance == lastDistance)
+            {
+                // Held in place: only turn to keep the character in view as they walk around.
+                Vector3 toFocus = focus - transform.position;
+                if (toFocus.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(toFocus);
+                Vector3 look = toFocus.normalized;
+                yaw = Mathf.Atan2(look.x, look.z) * Mathf.Rad2Deg;
+                pitch = Mathf.Asin(-look.y) * Mathf.Rad2Deg;
+                distance = toFocus.magnitude;
+            }
+            else
+            {
+                pitch = Mathf.Clamp(pitch, MinPitch, MaxPitch);
+                distance = Mathf.Clamp(distance, MinDistance, MaxDistance);
+                Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
+                transform.SetPositionAndRotation(focus - rotation * Vector3.forward * distance, rotation);
+                placed = true;
+            }
+            lastYaw = yaw;
+            lastPitch = pitch;
+            lastDistance = distance;
         }
     }
 }
