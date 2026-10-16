@@ -1,5 +1,6 @@
 version: 2026-10-16-zoom-keystones-portrait
 - Mouse wheel zoom in the browser moves at the same pace as on PC, instead of barely moving.
+- Touchpad zoom on PC moves smoothly instead of jumping between too fast and too slow.
 - Weapon tree keystones are diamonds, matching the passive tree.
 - The inventory and character select portraits hold great weapons and staves in both hands as in game, so they no longer pass through the body.
 - Dash uses the other swoosh recording.

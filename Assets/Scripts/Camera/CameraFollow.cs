@@ -52,15 +52,18 @@ namespace PoeClone.CameraSystem
         private const float FarthestDistanceScale = 1.3f;
 
         /// <summary>
-        /// This frame's mouse wheel movement in notches. The Input System reports about one unit per
-        /// notch when it normalizes, but Windows' raw range is 120 per notch and browsers send pixel or
-        /// line deltas, so small values are taken as notches and large ones as 120ths.
+        /// This frame's mouse wheel movement in notches. With the Input System's default uniform range a
+        /// notch reads as 1 on every platform, and touchpads send fractions of that; only the opt-in raw
+        /// Windows range reports 120 per notch.
         /// </summary>
         public static float WheelNotches(Mouse mouse)
         {
             float scroll = mouse.scroll.ReadValue().y;
             if (Mathf.Abs(scroll) < 0.01f) return 0f;
-            if (Mathf.Abs(scroll) >= 20f) scroll /= 120f;
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            if (InputSystem.settings.scrollDeltaBehavior == InputSettings.ScrollDeltaBehavior.KeepPlatformSpecificInputRange)
+                scroll /= 120f;
+#endif
             return Mathf.Clamp(scroll, -3f, 3f);
         }
 
