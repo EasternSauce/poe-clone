@@ -198,11 +198,38 @@ namespace PoeClone.EditorTools
                         detail.GripNear=meshes["AnatomyHand"+side+"Grip"];
                         detail.GripFar=meshes["AnatomyHand"+side+"GripLow"];
                         (socket.GetComponent<ProceduralAnatomy>() ?? socket.gameObject.AddComponent<ProceduralAnatomy>()).Configure(new[] {detail});
+                        FitCuff(socket,id=="iron_gauntlets",side=="L"?-1:1);
                     }
                     PrefabUtility.SaveAsPrefabAsset(root,path);
                 }
                 finally { PrefabUtility.UnloadPrefabContents(root); }
             }
+        }
+
+        // The cuff starts at the glove's wrist and hugs the forearm (the socket is 1.25x wider),
+        // so the hand reads as attached instead of dangling below a wide bucket.
+        private static void FitCuff(Transform socket,bool gauntlet,float side)
+        {
+            void Place(string name,Vector3 position,Vector3? scale=null)
+            {
+                Transform part=socket.Find(name);
+                if(part==null) return;
+                part.localPosition=position;
+                if(scale.HasValue) part.localScale=scale.Value;
+            }
+            if(gauntlet)
+            {
+                Place("Cuff",new Vector3(0,.08f,0),new Vector3(.10f,.17f,.105f));
+                Place("CuffTrim",new Vector3(0,.165f,0),new Vector3(.104f,.02f,.11f));
+                Place("Gem",new Vector3(side*.05f,.10f,0));
+                // Seated on the back of the hand rather than floating beside it.
+                Place("Knuckles",new Vector3(side*.012f,-.03f,0),new Vector3(.10f,.035f,.11f));
+                return;
+            }
+            Place("Cuff",new Vector3(0,.07f,0),new Vector3(.09f,.14f,.095f));
+            Place("CuffTrim",new Vector3(0,.008f,0),new Vector3(.076f,.016f,.08f));
+            Place("Stud",new Vector3(side*.043f,.10f,.01f),Vector3.one*.016f);
+            Place("Gem",new Vector3(side*.046f,.11f,0));
         }
 
         private static Material Material(string name,Shader shader)
