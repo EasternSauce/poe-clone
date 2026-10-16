@@ -9,7 +9,7 @@ namespace PoeClone.Visuals
     /// Speed is measured from actual movement, so the stride scales with how fast
     /// the character really moves (enemies at half speed walk at half cadence).
     /// </summary>
-    public class CharacterWalkAnimator : MonoBehaviour
+    public class CharacterWalkAnimator : MonoBehaviour, PoeClone.Inventory.IPreviewPose
     {
         [SerializeField] private Transform leftLeg;
         [SerializeField] private Transform rightLeg;
@@ -189,10 +189,13 @@ namespace PoeClone.Visuals
             rightElbow = rightElbowPivot;
         }
 
+        /// <summary>The inventory portrait's copy stands far from the player but animates every frame.</summary>
+        public void PrepareForPreview() => importantAnimation = true;
+
         private void Start()
         {
             var owner = GetComponentInParent<PoeClone.Enemies.EnemyHealth>();
-            importantAnimation = GetComponentInParent<PoeClone.Player.PlayerController>() != null ||
+            importantAnimation = importantAnimation || GetComponentInParent<PoeClone.Player.PlayerController>() != null ||
                 (owner != null && (owner.IsAlly || PoeClone.Enemies.EnemyKinds.Get(owner.KindIndex).IsBoss));
             soundBoard = PoeClone.Audio.SoundBoardSettings.Load();
             lastPosition = transform.position;

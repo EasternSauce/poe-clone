@@ -80,9 +80,7 @@ namespace PoeClone.CameraSystem
                     yaw += delta.x * 0.3f;
                     pitch -= delta.y * 0.3f;
                 }
-                float scroll = mouse.scroll.ReadValue().y;
-                if (Mathf.Abs(scroll) > 0.01f)
-                    distance *= Mathf.Exp(-Mathf.Clamp(scroll / 120f, -3f, 3f) * 0.15f);
+                distance *= Mathf.Exp(-CameraFollow.WheelNotches(mouse) * 0.15f);
             }
             Vector3 focus = target.position + Vector3.up * FocusHeight;
             if (placed && yaw == lastYaw && pitch == lastPitch && distance == lastDistance)

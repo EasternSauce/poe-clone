@@ -174,10 +174,16 @@ namespace PoeClone.UI
                 image.sprite = node.Keystone ? UiKit.Square : UiKit.Disc;
                 image.rectTransform.anchorMin = image.rectTransform.anchorMax = new Vector2(0, 1);
                 image.rectTransform.anchoredPosition = center + node.Position;
-                image.rectTransform.sizeDelta = Vector2.one * (node.Keystone ? 42 : node.Notable ? 42 : 34);
+                image.rectTransform.sizeDelta = Vector2.one * (node.Keystone ? 40 : node.Notable ? 42 : 34);
                 var text = UiKit.NewText("Node", image.transform, node.Keystone ? "K" : node.Notable ? "N" : (node.Depth + 1).ToString(),
                     17, UiKit.TextColor, TextAnchor.MiddleCenter);
                 UiKit.Stretch(text.rectTransform, 0);
+                // Keystones are diamonds, as on the passive tree; the letter stays upright.
+                if (node.Keystone)
+                {
+                    image.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f);
+                    text.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -45f);
+                }
                 string id = node.Id;
                 UiKit.OnClick(image, () =>
                 {

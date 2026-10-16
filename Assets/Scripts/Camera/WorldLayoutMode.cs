@@ -192,14 +192,9 @@ namespace PoeClone.CameraSystem
                 bool overToolbar = toolbar.Contains(new Vector2(at.x, Screen.height - at.y));
                 if (!overToolbar)
                 {
-                    float scroll = mouse.scroll.ReadValue().y;
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-                    if (InputSystem.settings.scrollDeltaBehavior == InputSettings.ScrollDeltaBehavior.KeepPlatformSpecificInputRange)
-                        scroll /= 120f;
-#endif
+                    float scroll = CameraFollow.WheelNotches(mouse);
                     if (scroll != 0 && GroundPoint(at, out Vector3 before))
                     {
-                        // Current Input System wheel deltas are normalized to one unit per notch.
                         zoom = Mathf.Clamp(zoom * Mathf.Exp(-scroll * 0.35f), 4, 2500);
                         ApplyCamera();
                         if (GroundPoint(at, out Vector3 after)) focus += before - after;

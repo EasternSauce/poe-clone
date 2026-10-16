@@ -51,6 +51,19 @@ namespace PoeClone.CameraSystem
         private const float ClosestDistanceScale = 0.6f;
         private const float FarthestDistanceScale = 1.3f;
 
+        /// <summary>
+        /// This frame's mouse wheel movement in notches. The Input System reports about one unit per
+        /// notch when it normalizes, but Windows' raw range is 120 per notch and browsers send pixel or
+        /// line deltas, so small values are taken as notches and large ones as 120ths.
+        /// </summary>
+        public static float WheelNotches(Mouse mouse)
+        {
+            float scroll = mouse.scroll.ReadValue().y;
+            if (Mathf.Abs(scroll) < 0.01f) return 0f;
+            if (Mathf.Abs(scroll) >= 20f) scroll /= 120f;
+            return Mathf.Clamp(scroll, -3f, 3f);
+        }
+
         private void UpdatePlayerZoom()
         {
             if (!TouchMode.Active)
@@ -59,8 +72,8 @@ namespace PoeClone.CameraSystem
                 Mouse mouse = Mouse.current;
                 if (mouse == null || UiKit.IsTextPromptOpen || UiKit.IsTypingInTextField() ||
                     (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())) return;
-                float scroll = mouse.scroll.ReadValue().y;
-                if (Mathf.Abs(scroll) > 0.01f) ChangePlayerZoom(Mathf.Exp(-Mathf.Clamp(scroll / 120f, -3f, 3f) * 0.1f));
+                float notches = WheelNotches(mouse);
+                if (notches != 0f) ChangePlayerZoom(Mathf.Exp(-notches * 0.1f));
                 return;
             }
 

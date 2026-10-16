@@ -2,6 +2,13 @@ using UnityEngine;
 
 namespace PoeClone.Inventory
 {
+    /// <summary>A component the portrait copy keeps, so it stands in the same idle and weapon pose as in game.</summary>
+    public interface IPreviewPose
+    {
+        /// <summary>Called on the copy: it never moves and is far from the player, but must animate every frame.</summary>
+        void PrepareForPreview();
+    }
+
     /// <summary>
     /// Renders a copy of the player's model, facing the viewer, into a texture for the inventory screen.
     /// The copy lives on a hidden stage far from the level and mirrors the worn equipment,
@@ -42,11 +49,17 @@ namespace PoeClone.Inventory
             // Face -z, toward the camera.
             model.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
 
-            // The copy only needs to stand there: drop the walking animator and any other scripts.
+            // The copy only needs to stand there: keep the idle pose (which holds a great weapon
+            // clear of the body) and drop every other script.
             foreach (MonoBehaviour mb in model.GetComponentsInChildren<MonoBehaviour>(true))
             {
                 if (mb is EquipmentVisuals || mb is BaseGear || mb is EquipmentVisualInstance || mb is ProceduralAnatomy)
                     continue;
+                if (mb is IPreviewPose pose)
+                {
+                    pose.PrepareForPreview();
+                    continue;
+                }
                 Destroy(mb);
             }
 
