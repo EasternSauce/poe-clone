@@ -84,7 +84,8 @@ namespace PoeClone.Visuals
             float t = now + seed;
             float yaw = glance.x + 2.5f * Mathf.Sin(t * .37f) + 1f * Mathf.Sin(t * .91f + 1f);
             float pitch = glance.y + 1.2f * Mathf.Sin(t * .29f + 2f);
-            float roll = 1.2f * Mathf.Sin(t * .23f + 4f);
+            // The head stays level while the shoulders tilt with a shift of weight.
+            float roll = 1.2f * Mathf.Sin(t * .23f + 4f) + (walk != null ? 2f * walk.WeightShift : 0f);
             Quaternion turn = Quaternion.Euler(pitch * life, yaw * life, roll * life);
             for (int i = 0; i < headParts.Length; i++)
             {

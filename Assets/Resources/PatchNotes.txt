@@ -1,6 +1,6 @@
 version: 2026-10-17-idle-fidgets
-- Standing still, the hero now clearly shifts his weight from leg to leg: his hips slide over the standing leg, the other knee bends with the heel raised, and his shoulders tilt and turn with it.
-- Every so often he fidgets impatiently: hands on his hips, rubbing his hands together, scratching his beard, or tapping a foot. Hands holding a weapon stay on it.
+- Standing still, the hero shifts his weight from leg to leg: his pelvis settles over the standing leg while the other hip drops and its knee bends, with both feet staying on the ground and his head level.
+- Every so often he fidgets: he curls each forearm up at the elbow twice, one arm a beat after the other, or scratches the forearm of his weapon arm with his other hand in front of him. A held sword comes along naturally, hanging down or resting back over his shoulder.
 - Fixed the inventory portrait standing stiffly instead of using the hero's natural stance and idle movement.
 
 version: 2026-10-17-face-life

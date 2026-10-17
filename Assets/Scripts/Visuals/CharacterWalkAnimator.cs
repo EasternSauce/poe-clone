@@ -69,6 +69,8 @@ namespace PoeClone.Visuals
         {
             leftAnkle = left;
             rightAnkle = right;
+            if (leftLeg != null) leftHipRest = leftLeg.localPosition;
+            if (rightLeg != null) rightHipRest = rightLeg.localPosition;
         }
 
         private float runBlend;
@@ -103,19 +105,24 @@ namespace PoeClone.Visuals
         private const float BreathRate = 1.9f;
 
         // Standing (anatomical gait only), the weight drifts from one leg to the other every few
-        // seconds: the hips slide over the supporting leg and the other knee relaxes.
-        private const float WeightShiftPeriod = 11f, WeightShiftDistance = .07f;
+        // seconds: the pelvis settles over the standing leg, the other hip drops and its knee bends
+        // with the foot still planted. A big sideways slide with a lifted foot read as hanging.
+        private const float WeightShiftPeriod = 11f, WeightShiftDistance = .035f, HipDrop = .03f;
         private float weightShift; // -1 on the left leg, 1 on the right
+        // Hip joints' rest places, stored when the rig is built: the portrait copies the model mid-shift.
+        [SerializeField] private Vector3 leftHipRest, rightHipRest;
 
-        // Standing a while, the hero fidgets now and then: hands on the hips, hands rubbing together,
-        // scratching the beard, or tapping the relaxed foot. Hand targets are in this model's space.
-        private enum Fidget { None, Hips, Rub, Chin, Tap }
+        /// <summary>-1 standing on the left leg, 1 on the right, 0 evenly or moving.</summary>
+        public float WeightShift => weightShift;
+
+        // Standing a while, the hero fidgets now and then: pumping each forearm up at the elbow, one
+        // after the other, or scratching the weapon arm's forearm with the off hand in front of him.
+        private enum Fidget { None, ElbowPump, ForearmScratch }
         private Fidget fidget;
-        private float fidgetBlend, fidgetUntil, nextFidgetAt;
-        private bool chinLeft;
-        private static readonly Vector3 HipHand = new Vector3(.30f, 1.0f, .02f);
-        private static readonly Vector3 RubHand = new Vector3(.035f, 1.06f, .27f);
-        private static readonly Vector3 ChinHand = new Vector3(.06f, 1.55f, .22f);
+        private float fidgetBlend, fidgetStart, fidgetUntil, nextFidgetAt;
+        private bool pumpLeftFirst;
+        private const float PumpPeriod = 1.1f, PumpDelay = .4f, PumpBend = -120f;
+        private static readonly Vector3 ScratchedHand = new Vector3(-.02f, 1.1f, .3f);
 
         /// <summary>1 standing still, 0 walking or running.</summary>
         public float Stillness => 1f - blend;
@@ -361,8 +368,8 @@ namespace PoeClone.Visuals
                 weightShift = simple ? 0f : (1.5f * hold - .5f * hold * hold * hold) * still * stepping * (1f - crouch);
                 // Move weight over the supporting leg; the torso keeps its existing counter-twist.
                 transform.localPosition += Vector3.right*(s*.018f*blend*stepping + weightShift*WeightShiftDistance);
-                // The shoulders dip on the supporting side and turn a little away from it.
-                if (upperBody != null) upperBody.localRotation *= Quaternion.Euler(0f, -2f * weightShift, -3f * weightShift);
+                // Against the pelvis, the shoulders dip on the standing side and turn a little away from it.
+                if (upperBody != null) upperBody.localRotation *= Quaternion.Euler(0f, -1.5f * weightShift, -2f * weightShift);
                 UpdateFidget(dt, still > .98f && !simple && plant <= 0f && crouch <= 0f && WorkBlend <= 0f &&
                     !HoldsTwoHanded && !rightArmSuppressed && !leftArmSuppressed);
                 PoseNaturalLeg(leftLeg,leftKnee,leftAnkle,phase,-1f,bob-.28f*crouch,crouch);
@@ -414,10 +421,11 @@ namespace PoeClone.Visuals
                 footPitch=Mathf.Lerp(-6f*Mathf.Sin(swing*Mathf.PI),25f*Mathf.Sin(swing*Mathf.PI)*(1-swing)-10f*swing,runBlend);
             }
             float weight=blend*(1-plant);
-            // The leg off the weight bends, heel raised, foot a touch forward; a fidget taps its toes.
+            // Off the weight, the hip drops and the knee bends forward over a planted foot, heel raised.
             float relax=Mathf.Max(0,-side*weightShift);
-            float tap=fidget==Fidget.Tap?Smooth(fidgetBlend)*relax*Mathf.Max(0,Mathf.Sin(Time.time*2*Mathf.PI*2.2f)):0;
-            Vector3 target=new Vector3(hip.localPosition.x,.05f-bodyOffset+lift*weight+.03f*relax,forward*weight+.06f*relax);
+            Vector3 rest=side<0?leftHipRest:rightHipRest;
+            if(rest!=Vector3.zero) hip.localPosition=rest+Vector3.down*(HipDrop*relax);
+            Vector3 target=new Vector3(hip.localPosition.x,.05f-bodyOffset+lift*weight,forward*weight+.04f*relax);
             Vector3 reach=target-hip.localPosition;
             const float thigh=.42f,shin=.38f;
             float distance=Mathf.Clamp(reach.magnitude,.12f,(thigh+shin)*.995f);
@@ -429,7 +437,7 @@ namespace PoeClone.Visuals
             float lean=-Mathf.Asin(Mathf.Clamp(weightShift*WeightShiftDistance/(thigh+shin),-1,1))*Mathf.Rad2Deg;
             hip.localRotation=Quaternion.Euler(hipPitch,Mathf.Sin(cycle)*2f*weight,side*PlantSpread*plant+lean);
             knee.localRotation=Quaternion.Euler(kneePitch,0,0);
-            ankle.Pose(Mathf.Clamp(footPitch*weight+15f*relax-30f*tap-hipPitch-kneePitch,-38f,30f));
+            ankle.Pose(Mathf.Clamp(footPitch*weight+10f*relax-hipPitch-kneePitch,-38f,30f));
         }
 
         private static float Smooth(float t) => t*t*(3f-2f*t);
@@ -444,15 +452,13 @@ namespace PoeClone.Visuals
             }
             else if (fidget == Fidget.None && now >= nextFidgetAt)
             {
-                // Only gestures the free hands can make; a held weapon stays where it is.
+                // The scratch needs a free off hand; the weapon hand may keep its weapon.
                 bool left = false, right = false;
                 equipmentVisuals?.HeldHands(out left, out right);
-                var choices = new System.Collections.Generic.List<Fidget> { Fidget.Hips, Fidget.Tap };
-                if (!left && !right) choices.Add(Fidget.Rub);
-                if (!left || !right) choices.Add(Fidget.Chin);
-                fidget = choices[Random.Range(0, choices.Count)];
-                chinLeft = right && !left || (!right && !left && Random.value < .3f);
-                fidgetUntil = now + Random.Range(2.5f, 4.5f);
+                fidget = !left && Random.value < .5f ? Fidget.ForearmScratch : Fidget.ElbowPump;
+                pumpLeftFirst = Random.value < .5f;
+                fidgetStart = now;
+                fidgetUntil = now + (fidget == Fidget.ElbowPump ? PumpDelay + 2f * PumpPeriod : Random.Range(3f, 4.5f));
             }
             bool on = fidget != Fidget.None && now < fidgetUntil;
             fidgetBlend = Mathf.MoveTowards(fidgetBlend, on ? 1f : 0f, dt / .45f);
@@ -471,26 +477,48 @@ namespace PoeClone.Visuals
             // An attack takes its arm at once, even while the gesture is still easing out.
             left |= LeftArmSuppressed;
             right |= RightArmSuppressed;
-            void Reach(Transform arm, Transform elbow, Transform hand, Vector3 local, float side) =>
-                PoseGrip(arm, elbow, hand, transform.TransformPoint(local), side, w);
+            float elapsed = t - fidgetStart;
             switch (fidget)
             {
-                case Fidget.Hips:
-                    if (!left) Reach(leftArm, leftElbow, offHand, Vector3.Scale(HipHand, new Vector3(-1f, 1f, 1f)), -1f);
-                    if (!right) Reach(rightArm, rightElbow, mainHand, HipHand, 1f);
+                case Fidget.ElbowPump:
+                    // Two slow curls of each forearm, the second arm a beat behind the first; a held
+                    // weapon or shield simply comes up with its hand.
+                    if (!LeftArmSuppressed) PumpElbow(leftArm, leftElbow, elapsed - (pumpLeftFirst ? 0f : PumpDelay), w);
+                    if (!RightArmSuppressed) PumpElbow(rightArm, rightElbow, elapsed - (pumpLeftFirst ? PumpDelay : 0f), w);
                     break;
-                case Fidget.Rub:
-                    // Hands meet in front and rub against each other, impatiently.
-                    Vector3 rub = new Vector3(0f, Mathf.Sin(t * 7f) * .02f, Mathf.Sin(t * 7f + 1f) * .01f);
-                    if (!left) Reach(leftArm, leftElbow, offHand, Vector3.Scale(RubHand, new Vector3(-1f, 1f, 1f)) + rub, -1f);
-                    if (!right) Reach(rightArm, rightElbow, mainHand, RubHand - rub, 1f);
-                    break;
-                case Fidget.Chin:
-                    Vector3 scratch = Vector3.up * Mathf.Sin(t * 9f) * .012f;
-                    if (chinLeft) { if (!left) Reach(leftArm, leftElbow, offHand, Vector3.Scale(ChinHand, new Vector3(-1f, 1f, 1f)) + scratch, -1f); }
-                    else if (!right) Reach(rightArm, rightElbow, mainHand, ChinHand + scratch, 1f);
+                case Fidget.ForearmScratch:
+                    if (left || RightArmSuppressed || mainHand == null || offHand == null) break;
+                    // The weapon arm (weapon and all) folds across the belly; the off hand meets it in
+                    // the middle and scratches back and forth along the top of its forearm.
+                    PoseGrip(rightArm, rightElbow, mainHand, transform.TransformPoint(ScratchedHand), 1f, w);
+                    HangHeldWeapon(w);
+                    Vector3 along = Vector3.Lerp(rightElbow.position, mainHand.position, .5f + .12f * Mathf.Sin(elapsed * 9f));
+                    Vector3 scratch = along + transform.TransformDirection(new Vector3(-.07f, .05f, .02f));
+                    PoseGrip(leftArm, leftElbow, offHand, scratch, -1f, w);
                     break;
             }
+        }
+
+        // Folded across the belly, the fist would hold its weapon straight out sideways; turn the
+        // forearm about its own axis so the blade hangs down and a little forward instead.
+        private void HangHeldWeapon(float weight)
+        {
+            Transform socket = rightElbow.Find("Socket_MainHand");
+            if (socket == null || socket.childCount == 0) return;
+            Vector3 axis = (mainHand.position - rightElbow.position).normalized;
+            Vector3 blade = Vector3.ProjectOnPlane(socket.GetChild(0).up, axis);
+            Vector3 wanted = Vector3.ProjectOnPlane(transform.TransformDirection(new Vector3(0f, -1f, .35f)), axis);
+            if (blade.sqrMagnitude < 1e-4f || wanted.sqrMagnitude < 1e-4f) return;
+            float twist = Vector3.SignedAngle(blade, wanted, axis) * weight;
+            rightElbow.rotation = Quaternion.AngleAxis(twist, axis) * rightElbow.rotation;
+        }
+
+        private static void PumpElbow(Transform arm, Transform elbow, float time, float weight)
+        {
+            if (arm == null || elbow == null || time <= 0f || time >= 2f * PumpPeriod) return;
+            float curl = (.5f - .5f * Mathf.Cos(time * 2f * Mathf.PI / PumpPeriod)) * weight;
+            elbow.localRotation = Quaternion.Slerp(elbow.localRotation, Quaternion.Euler(PumpBend, 0f, 0f), curl);
+            arm.localRotation = Quaternion.Euler(-10f * curl, 0f, 0f) * arm.localRotation;
         }
 
         private void PoseTwoHandedHold(bool rightArmSuppressed, bool leftArmSuppressed, float swing, float breath)
