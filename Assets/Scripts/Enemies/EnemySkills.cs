@@ -1020,7 +1020,9 @@ namespace PoeClone.Enemies
                 if (!mirror)
                 {
                     transform.rotation = Quaternion.LookRotation(toTarget);
-                    body.Move(toTarget.normalized * ChargeSpeed * Time.deltaTime + Vector3.down * 2f * Time.deltaTime);
+                    Vector3 from = transform.position;
+                    Vector3 want = from + toTarget.normalized * ChargeSpeed * Time.deltaTime + Vector3.down * 2f * Time.deltaTime;
+                    body.Move(World.GroundObstacleMotion.ClampToArea(body, from, want) - from);
                 }
                 yield return null;
             }
@@ -1041,6 +1043,8 @@ namespace PoeClone.Enemies
             {
                 Vector3 offset = Quaternion.AngleAxis(attempt * 40f, Vector3.up) * (away + side).normalized * 2.6f;
                 Vector3 spot = new Vector3(target.x + offset.x, transform.position.y, target.z + offset.z);
+                if (!EnemySpawner.TryPrepareSpawnPoint(spot, health.KindIndex, out spot, clearanceRadius: 0.6f))
+                    continue;
                 if (!OnlyCharacters(spot + Vector3.up * 0.3f, 0.5f))
                     continue; // scenery in the way
 

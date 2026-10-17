@@ -459,6 +459,11 @@ namespace PoeClone.Enemies
             float clearanceRadius = 1.2f, float spawnHeight = 1.1f)
         {
             point = candidate;
+            float scale = EnemyKinds.Get(kindIndex).Scale;
+            float radius = clearanceRadius * Mathf.Max(1f, scale);
+            if (AreaManager.Instance != null && !MinimalCombatMode.Enabled &&
+                !WorldBuilder.Shape(Network.CoopSession.AreaAt(candidate)).Contains(candidate, radius))
+                return false;
             float groundY = float.NegativeInfinity;
             float groundNormalY = 0f;
             Vector3 rayOrigin = new Vector3(candidate.x, 100f, candidate.z);
@@ -483,11 +488,9 @@ namespace PoeClone.Enemies
             if (float.IsNegativeInfinity(groundY) || groundNormalY < 0.7f)
                 return false;
 
-            float scale = EnemyKinds.Get(kindIndex).Scale;
             point.y = groundY + spawnHeight * scale;
             // Cover the full body and footprint, including large kinds. Ignore the floor itself,
             // but reject walls, rocks, scenery and characters at the actual spawn elevation.
-            float radius = clearanceRadius * Mathf.Max(1f, scale);
             float height = Mathf.Max(2.2f * scale, 1.8f);
             Vector3 half = new Vector3(radius, height * 0.5f, radius);
             Vector3 probe = new Vector3(point.x, groundY + 0.1f + half.y, point.z);

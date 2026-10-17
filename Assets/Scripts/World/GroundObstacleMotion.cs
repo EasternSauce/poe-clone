@@ -5,6 +5,35 @@ namespace PoeClone.World
     /// <summary>Checks scenery at ground level, even when a character's visual arc is airborne.</summary>
     internal static class GroundObstacleMotion
     {
+        // Riverbanks and streamed chunk edges must remain solid even when their
+        // collision mesh is absent, or a controller steps over a mesh seam.
+        public static Vector3 ClampToArea(CharacterController body, Vector3 from, Vector3 target)
+        {
+            if (body == null || AreaManager.Instance == null || MinimalCombatMode.Enabled)
+                return target;
+            AreaShape shape = WorldBuilder.Shape(Network.CoopSession.AreaAt(from));
+            // Standalone DevTest sandboxes do not use the world's area layouts.
+            if (!shape.Contains(from)) return target;
+            Vector3 path = target - from;
+            path.y = 0f;
+            int steps = Mathf.Max(1, Mathf.CeilToInt(path.magnitude / 0.25f));
+            float radius = body.radius * Mathf.Max(Mathf.Abs(body.transform.lossyScale.x), Mathf.Abs(body.transform.lossyScale.z));
+            float inside = shape.InsideDistance(from);
+            if (inside > path.magnitude + radius + body.skinWidth + 0.5f)
+                return target;
+            // Permit a character already touching the bank to move away from it.
+            float clearance = Mathf.Min(radius + body.skinWidth, Mathf.Max(0f, inside - 0.05f));
+            Vector3 safe = from;
+            for (int i = 1; i <= steps; i++)
+            {
+                Vector3 next = Vector3.Lerp(from, target, (float)i / steps);
+                if (!shape.Contains(next, clearance)) break;
+                safe = next;
+            }
+            safe.y = target.y;
+            return safe;
+        }
+
         public static Vector3 Clamp(CharacterController body, Vector3 from, Vector3 target)
         {
             return Sweep(body, from, target, out _);
@@ -24,6 +53,7 @@ namespace PoeClone.World
         {
             normal = Vector3.zero;
             if (body == null) return target;
+            target = ClampToArea(body, from, target);
             Vector3 path = target - from;
             path.y = 0f;
             float distance = path.magnitude;

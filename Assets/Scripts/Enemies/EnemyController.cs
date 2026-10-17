@@ -487,7 +487,9 @@ namespace PoeClone.Enemies
             velocity += slideOff * SlideOffSpeed;
             slideOff = Vector3.zero;
 
-            controller.Move(velocity * Time.deltaTime);
+            Vector3 from = transform.position;
+            Vector3 destination = PoeClone.World.GroundObstacleMotion.ClampToArea(controller, from, from + velocity * Time.deltaTime);
+            controller.Move(destination - from);
         }
 
         // Standing on another character (a leap that came down on a packmate, or a low creature
@@ -511,7 +513,7 @@ namespace PoeClone.Enemies
 
         // Picks a walking direction: straight at the player if the way is clear,
         // otherwise the smallest turn to either side that is clear.
-private Vector3 Steer(Vector3 desired)
+        private Vector3 Steer(Vector3 desired)
         {
             if (!IsBlocked(desired))
             {
@@ -548,8 +550,12 @@ private Vector3 Steer(Vector3 desired)
             return desired;
         }
 
-private bool IsBlocked(Vector3 direction)
+        private bool IsBlocked(Vector3 direction)
         {
+            Vector3 from = transform.position;
+            Vector3 ahead = from + direction * lookAhead;
+            if ((PoeClone.World.GroundObstacleMotion.ClampToArea(controller, from, ahead) - ahead).sqrMagnitude > 0.001f)
+                return true;
             float radius = controller.radius * 0.9f;
 
             // Start the cast slightly behind us. Unity ignores colliders the cast starts
