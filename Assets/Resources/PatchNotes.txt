@@ -1,3 +1,6 @@
+version: 2026-10-17-drizzle
+- Rain is now a light drizzle with widely spaced, short, transparent streaks, gentler motion and fewer world-space drops to keep gameplay clear.
+
 version: 2026-10-17-sparse-rain
 - Rain stays visible at every zoom with fewer, shorter, softer streaks and clear gaps for reading combat. Removed the screen-wide haze and reduced nearby rain drops.
 

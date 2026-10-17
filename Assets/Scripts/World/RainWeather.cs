@@ -37,8 +37,8 @@ namespace PoeClone.World
             main.startLifetime = 0.76f;
             main.startSpeed = 0;
             main.startSize = new ParticleSystem.MinMaxCurve(0.025f, 0.04f);
-            main.startColor = new Color(0.72f, 0.81f, 0.87f, 0.35f);
-            main.maxParticles = 420;
+            main.startColor = new Color(0.72f, 0.81f, 0.87f, 0.18f);
+            main.maxParticles = 140;
             main.cullingMode = ParticleSystemCullingMode.Pause;
             var shape = rain.shape;
             shape.shapeType = ParticleSystemShapeType.Box;
@@ -126,7 +126,7 @@ namespace PoeClone.World
             rain.transform.position = new Vector3(position.x, WorldBuilder.Center(area).y + 12, position.z);
             var emission = rain.emission;
             float budget = Application.isMobilePlatform || AdaptiveQuality.RenderLevel >= 2 ? 0.55f : 1f;
-            emission.rateOverTime = 420 * intensity * budget;
+            emission.rateOverTime = 140 * intensity * budget;
             if (!rain.isPlaying) rain.Play();
         }
 
