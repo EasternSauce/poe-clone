@@ -1,3 +1,7 @@
+version: 2026-10-17-beard-2
+- The hero's beard is subtler: thinner, trimmed lower on the cheeks, and matte instead of shiny.
+- Fixed the beard shimmering and flickering with skin showing through it, most visible in the inventory portrait.
+
 version: 2026-10-17-beard
 - The hero now has a short full beard and moustache, in the same brown as his hair. It covers the jaw and chin, joins the sideburns in front of the ears, and leaves the lips clear.
 

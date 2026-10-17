@@ -51,7 +51,14 @@ namespace PoeClone.EditorTools
             hair.GetComponent<Renderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
             hair.localPosition = head.localPosition; hair.localScale = head.localScale;
             Transform beard = Child(head, "Beard");
-            Set(beard, meshes["AnatomyBeard"], hairMaterial);
+            // Its own matte material: the hair's fibre stripes are sized for the scalp and alias on
+            // the much smaller beard, crawling even on a still head.
+            Material beardMaterial=Material("AnatomyBeard",Shader.Find("PoeClone/AnatomySkin"));
+            beardMaterial.SetColor("_BaseColor",new Color(.29f,.18f,.11f));
+            beardMaterial.SetFloat("_Smoothness",.1f);beardMaterial.SetFloat("_Subsurface",0);
+            beardMaterial.SetFloat("_BumpScale",0);beardMaterial.SetFloat("_FiberStrength",0);
+            EditorUtility.SetDirty(beardMaterial);
+            Set(beard, meshes["AnatomyBeard"], beardMaterial);
             beard.GetComponent<Renderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
             beard.localPosition = Vector3.zero; beard.localScale = Vector3.one;
             // A fitted cap leaves the anatomical forehead visible and stays inside the existing helmet envelope.
