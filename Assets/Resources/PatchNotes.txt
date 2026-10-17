@@ -1,3 +1,9 @@
+version: 2026-10-18-new-keystones
+- Three outer notables are now keystones, bringing the main passive tree to 12. Existing allocations carry over.
+- Fury: Borrowed Time takes half of hit damage left for life over four seconds. Life recovery pays off deferred damage first; outstanding damage is shown above the health bar.
+- Storm: Elemental Equilibrium makes successful fire, cold and lightning hits shift the target's resistances against your following hits for four seconds: +25% to the last element and -25% to the other two. Alternate elements to exploit it; damage over time and minions do not trigger it.
+- Necromancy: Shared Fate lets targetable minions within eight metres absorb half of hit damage left for your life, split equally. Overflow stays with you, and your minions cannot regenerate life.
+
 version: 2026-10-17-unused-effects
 - Removed obsolete global effects that no current item or passive grants: lightning arcs on attack crits, Dash-triggered Frost Nova, War Cry's extra recovery, global shatter, spell echo, melee splash and spreading Death Mark.
 - Also removed unused weapon-tree options for spell repeats, combined minion speed and forcing a single projectile. Active weapon-tree shatters and splash attacks remain available.

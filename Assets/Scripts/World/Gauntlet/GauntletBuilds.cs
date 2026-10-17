@@ -148,7 +148,7 @@ namespace PoeClone.World
             new GauntletBuild
             {
                 Id = "lightning_caster", Name = "Lightning Caster",
-                Summary = "Chain Lightning damage caster: Conductor, Thunderlord, Eye of the Storm and Archmage. Mantle of the Still Mind adds mana as damage; Conductor's Reach competes with rare staves.",
+                Summary = "Chain Lightning damage caster: Conductor, Eye of the Storm and Archmage. Mantle of the Still Mind adds mana as damage; Conductor's Reach competes with rare staves.",
                 MainHand = new[] { "staff" }, StaffSpell = StatType.GrantChainLightning, Armour = "int",
                 CoreSkills = new[] { StatType.GrantChainLightning },
                 Weights = Caster(StatType.SpellDamage, 2f, StatType.CastSpeed, 2f, StatType.LightningDamage, 2f,
@@ -156,7 +156,7 @@ namespace PoeClone.World
                     StatType.LightningSpellLevels, 3f, StatType.AllSpellLevels, 3f, StatType.LightningPenetration, 1.5f,
                     StatType.ElementalPenetration, 1.5f, StatType.ShockChance, 1.5f, StatType.AdditionalChains, 0.5f,
                     StatType.MoreLightningDamage, 2.5f, StatType.MoreSpellDamage, 2.5f, StatType.ManaAsDamage, 2f, StatType.PercentManaRegen, 1.5f),
-                Passives = new[] { "s_conductor", "k_thunderlord", "s_eye", "w_archmage", "w_l3", "w_life_heart", "s_life_mid_heart" },
+                Passives = new[] { "s_conductor", "s_eye", "w_archmage", "w_l3", "w_life_heart", "s_life_mid_heart" },
                 Uniques = new[] { "!Mantle of the Still Mind", "Conductor's Reach", "Pendant of the Fleeting Thought", "Stormcaller's Circlet" }
             },
             new GauntletBuild
@@ -255,7 +255,7 @@ namespace PoeClone.World
                 MainHand = new[] { "sword" }, OffHand = new[] { "shield_dex" }, Armour = "dex",
                 CoreSkills = new[] { StatType.GrantLungingThrust, StatType.GrantCleave },
                 Weights = Melee(StatType.Armour, 0.4f, StatType.Evasion, 1f, StatType.Dexterity, 0.7f, StatType.CriticalChance, 1.4f, StatType.CriticalMultiplier, 1.2f, StatType.LightningDamage, 0.9f, StatType.ShockChance, 0.6f),
-                Passives = new[] { "f_dancer", "f_precision", "f_feast", "k_stormblade", "f_life_heart", "s2", "k_thunderlord" },
+                Passives = new[] { "f_dancer", "f_precision", "f_feast", "k_stormblade", "f_life_heart", "s2" },
                 Uniques = new[] { "!Thundergrip", "!Storm's Receipt" }
             },
             new GauntletBuild
@@ -267,7 +267,7 @@ namespace PoeClone.World
                 Weights = Caster(StatType.MaxMana, 2f, StatType.IncreasedMana, 2f, StatType.ManaRegen, 1.4f, StatType.ManaAbsorb, 1.5f,
                     StatType.ManaAsDamage, 2f, StatType.LightningDamage, 1.4f, StatType.LightningSpellLevels, 2f, StatType.LightningPenetration, 1.2f,
                     StatType.AdditionalChains, 1.5f, StatType.MoreLightningDamage, 2f),
-                Passives = new[] { "w_l3", "k_mom", "s_eye", "s_conductor", "w_archmage", "w_life_mid", "k_thunderlord", "s_life_mid_heart" },
+                Passives = new[] { "w_l3", "k_mom", "s_eye", "s_conductor", "w_archmage", "w_life_mid", "s_life_mid_heart" },
                 Uniques = new[] { "!Mantle of the Still Mind", "Elder's Charm" }
             },
             new GauntletBuild

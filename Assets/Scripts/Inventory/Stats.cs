@@ -183,6 +183,9 @@ namespace PoeClone.Inventory
         GrantCrossSlash,
         GrantVenomSlash,
         FireDamageOverTime,         // % increased fire damage over time, including ignite; never hits
+        BorrowedTime,              // half of life damage from hits is deferred; recovery pays debt first
+        ElementalEquilibrium,      // elemental hits shift resistances for the attacker's following hits
+        SharedFate,                // nearby targetable minions share hit damage, but cannot regenerate
     }
 
     /// <summary>
@@ -739,6 +742,9 @@ namespace PoeClone.Inventory
                 case StatType.NoLifeRegen: return "No Life Regeneration";
                 case StatType.ManaCostReduction: return "Skill Cost Reduction";
                 case StatType.LifePercentOnKill: return "Life Recovered on Kill";
+                case StatType.BorrowedTime: return "Borrowed Time";
+                case StatType.ElementalEquilibrium: return "Elemental Equilibrium";
+                case StatType.SharedFate: return "Shared Fate";
                 default:
                     if (SkillGrants.IsGrant(stat))
                         return SkillGrants.SkillName(stat);
@@ -955,6 +961,9 @@ namespace PoeClone.Inventory
                 case StatType.NoLifeRegen: return "You cannot Regenerate Life";
                 case StatType.ManaCostReduction: return "Skills cost " + n + "% less";
                 case StatType.LifePercentOnKill: return "Recover " + n + "% of Maximum Life when you kill an enemy";
+                case StatType.BorrowedTime: return "50% of Hit Damage left for Life is taken over 4 seconds instead\nLife recovery pays off deferred damage before restoring Life";
+                case StatType.ElementalEquilibrium: return "Your elemental Hits give the enemy +25% Resistance to that element and -25% to the other elements against your Hits for 4 seconds\nOnly Fire, Cold and Lightning Hits change the element";
+                case StatType.SharedFate: return "Nearby targetable Minions take 50% of Hit Damage left for your Life, shared equally within 8 metres\nDamage beyond each Minion's remaining Life stays with you\nYour Minions cannot Regenerate Life";
                 default:
                     if (SkillGrants.IsGrant(m.Stat))
                         return "Grants Level " + n + " " + SkillGrants.SkillName(m.Stat);

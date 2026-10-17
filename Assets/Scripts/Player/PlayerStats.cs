@@ -41,6 +41,8 @@ namespace PoeClone.Player
         private float currentHealth;
         private float currentMana;
         private bool dead;
+        private readonly DamageDebt damageDebt = new DamageDebt();
+        public float DeferredDamage => damageDebt.Total;
 
         private enum RespawnPhase { None, Countdown, AwaitingRevive }
         private RespawnPhase respawnPhase = RespawnPhase.None;
@@ -56,6 +58,7 @@ namespace PoeClone.Player
             ArrivalProtected = true;
             poison.Clear();
             poisonShown = 0f;
+            damageDebt.Clear();
         }
 
         public void EndArrivalProtection()
@@ -203,6 +206,16 @@ namespace PoeClone.Player
         private void Update()
         {
             if (!dead)
+            {
+                float deferred = damageDebt.Tick(Time.deltaTime);
+                if (deferred > 0f)
+                {
+                    DamageTaken?.Invoke(Mathf.Min(deferred, currentHealth));
+                    currentHealth = Mathf.Max(0f, currentHealth - deferred);
+                    if (currentHealth <= 0f) Die();
+                }
+            }
+            if (!dead)
                 TickPoison();
             if (!dead)
             {
@@ -213,13 +226,13 @@ namespace PoeClone.Player
                 currentMana = Mathf.Min(MaxMana, currentMana + DefenceMath.ManaRegenPerSecond(MaxMana, Intelligence, manaRegen,
                     sheet != null ? sheet.Total(StatType.PercentManaRegen) : 0f) * Time.deltaTime);
                 float percentRegen = sheet != null && regenerates ? sheet.Total(StatType.PercentLifeRegen) : 0f;
-                currentHealth = Mathf.Min(MaxHealth, currentHealth + DefenceMath.LifeRegenPerSecond(MaxHealth, lifeRegen, percentRegen) * Time.deltaTime);
+                Heal(DefenceMath.LifeRegenPerSecond(MaxHealth, lifeRegen, percentRegen) * Time.deltaTime);
 
                 if (healOverTimeLeft > 0f)
                 {
                     float step = Mathf.Min(healOverTimeLeft, healOverTimeRate * Time.deltaTime);
                     healOverTimeLeft -= step;
-                    currentHealth = Mathf.Min(MaxHealth, currentHealth + step);
+                    Heal(step);
                 }
             }
 
@@ -285,6 +298,7 @@ namespace PoeClone.Player
             while (level < savedLevel)
                 LevelUp(announce: false);
             experience = Mathf.Clamp(savedExperience, 0, ExperienceRequiredForNextLevel() - 1);
+            damageDebt.Clear();
             currentHealth = MaxHealth;
             currentMana = MaxMana;
         }
@@ -300,6 +314,7 @@ namespace PoeClone.Player
             maxHealth += 10f;
             maxMana += 5f;
 
+            damageDebt.Clear();
             currentHealth = MaxHealth;
             currentMana = MaxMana;
 
@@ -421,7 +436,15 @@ namespace PoeClone.Player
             if (absorbed > 0f)
                 ManaAbsorbedHit?.Invoke(absorbed);
 
-            ApplyDamage(damage - absorbed, rollSeed);
+            float lifeDamage = damage - absorbed;
+            if (sheet != null && sheet.Total(StatType.SharedFate) > 0f)
+                lifeDamage -= Skills.Minion.AbsorbSharedDamage(transform, lifeDamage * 0.5f);
+            if (sheet != null && sheet.Total(StatType.BorrowedTime) > 0f)
+            {
+                damageDebt.Add(lifeDamage * 0.5f);
+                lifeDamage *= 0.5f;
+            }
+            ApplyDamage(lifeDamage, rollSeed);
             return true;
         }
 
@@ -505,7 +528,7 @@ namespace PoeClone.Player
 
             currentHealth = Mathf.Min(
                 MaxHealth,
-                currentHealth + amount
+                currentHealth + damageDebt.Recover(amount)
             );
         }
 
@@ -518,6 +541,8 @@ namespace PoeClone.Player
             dead = true;
             currentHealth = 0f;
             poison.Clear();
+            damageDebt.Clear();
+            healOverTimeLeft = 0f;
             respawnPhase = RespawnPhase.Countdown;
             countdownTimer = reviveCountdown;
             Died?.Invoke();

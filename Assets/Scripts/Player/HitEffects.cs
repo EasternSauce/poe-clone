@@ -122,11 +122,15 @@ namespace PoeClone.Player
                 else if (type == DamageType.Cold) elementalPenetration += sheet.Total(StatType.ColdPenetration);
                 else if (type == DamageType.Lightning) elementalPenetration += sheet.Total(StatType.LightningPenetration);
                 else if (type == DamageType.Poison) elementalPenetration += sheet.Total(StatType.PoisonPenetration);
+                if (!secondary && sheet.Total(StatType.ElementalEquilibrium) > 0f)
+                    elementalPenetration += enemy.EquilibriumPenetration(attacker, type);
             }
             damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration, throughExposedHead,
                 canEnrage: !melee, flinch: flinch, hitOrigin: hitOrigin ?? (attacker != null ? (Vector3?)attacker.position : null), rollSeed: rollSeed);
             // A warded hit cannot apply ailments, cull, or grant on-hit recovery.
             if (damage <= 0f) return;
+            if (!secondary && sheet != null && sheet.Total(StatType.ElementalEquilibrium) > 0f)
+                enemy.RecordEquilibriumHit(attacker, type);
             if (!secondary) WeaponSkillHit.Apply(attacker, enemy, damage, tree, type, wasChilled, melee: melee);
             string number = Mathf.Max(1, Mathf.RoundToInt(damage)).ToString();
             CombatText.Show(displayAt ?? (at + Vector3.up * 1.6f * scale), crit ? number + "!" : number, crit ? CritColor : color, crit ? 1.35f : 1f);

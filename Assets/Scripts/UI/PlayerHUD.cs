@@ -284,6 +284,9 @@ namespace PoeClone.UI
             }
             DrawBar(healthBar, health, HealthColor, trailHealth);
             DrawShadowedLabel(healthBar, $"{stats.CurrentHealth:0} / {stats.MaxHealth:0}", barLabelStyle);
+            if (stats.DeferredDamage > 0f)
+                DrawShadowedLabel(new Rect(x, healthBar.y - 22f, BarWidth, 20f),
+                    $"Deferred damage: {Mathf.CeilToInt(stats.DeferredDamage)}", captionStyle);
 
             Rect manaBar = new Rect(x, FrameY + 36f, BarWidth, 26f);
             DrawBar(manaBar, SafeRatio(stats.CurrentMana, stats.MaxMana), ManaColor);
