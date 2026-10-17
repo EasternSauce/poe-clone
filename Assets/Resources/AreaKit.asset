@@ -14,6 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PoeClone.World.AreaKit
   pine: {fileID: 3100951182581701973, guid: c4033c01632968640aa78da45374b281, type: 3}
   oak: {fileID: 3415585255158793178, guid: 34db7ef6fb3c3aa4ebaaf7569a943834, type: 3}
+  trees:
+  - {fileID: 3415585255158793178, guid: 34db7ef6fb3c3aa4ebaaf7569a943834, type: 3}
+  - {fileID: 3100951182581701973, guid: c4033c01632968640aa78da45374b281, type: 3}
+  - {fileID: 2398545182018222011, guid: e1aaf19cf5dcc1649a6a87bb0cfc02ae, type: 3}
+  - {fileID: 1896820456363138543, guid: 1bc701656b4c2564e9622c1f6b53fe9b, type: 3}
+  - {fileID: 8704468354470244279, guid: 9cf88bcd40a346b4fa0aa53db94189b8, type: 3}
+  - {fileID: 4502853729738422578, guid: d2324d100c7ea974e82f6b0983f99db1, type: 3}
+  - {fileID: 5258909369002350735, guid: f07e0885186888c47ac484ecc3517f97, type: 3}
+  - {fileID: 6676382619888708045, guid: 616a37d020da67d4bae64762a1b148a8, type: 3}
+  - {fileID: 6837508539582090722, guid: 768083c58c5373d4cbf9487b2f8c7ae7, type: 3}
+  - {fileID: 1630332130472571494, guid: b4491fd1e37c23a478ef15b9ddc36ce3, type: 3}
+  - {fileID: 1438822315177954434, guid: 8d404b2d424aaf24aa17ccb36d1db101, type: 3}
+  - {fileID: 616100386189867, guid: ce19436b05235f543a952d1bf34f9244, type: 3}
   bush: {fileID: 2918745532240324814, guid: d3145acaf7095c2458a8b0242de31cb2, type: 3}
   bushSmall: {fileID: 1939629006387498732, guid: ea067c10ff1528742a1284efc75d774a, type: 3}
   rock: {fileID: 5388122210501340907, guid: d822466c3ea86614990d1e4855c4df8d, type: 3}

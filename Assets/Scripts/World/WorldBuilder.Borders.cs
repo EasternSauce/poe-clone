@@ -126,7 +126,7 @@ namespace PoeClone.World
                         if (area == Frozen) Tint(prop, new Color(0.65f, 0.78f, 0.9f));
                     }
                     else if (area == Graveyard) prop = DeadTree(group, p, kit.Mat("DeadWood"));
-                    else prop = Prefab(Coin() ? kit.pine : kit.oak, group, p, R(0, 360), Vector3.one * R(1.1f, 1.5f));
+                    else prop = Prefab(BiomeTree(area, p), group, p, R(0, 360), Vector3.one * R(1.1f, 1.5f));
                     NoShadows(prop);
                 }
                 if (!shape.IsCave && !shape.IsCliff)
@@ -166,7 +166,7 @@ namespace PoeClone.World
                         if (area == Frozen) Tint(prop, new Color(0.65f, 0.78f, 0.9f));
                     }
                     else if (area == Graveyard) prop = DeadTree(group, p, kit.Mat("DeadWood"));
-                    else prop = Prefab(Coin() ? kit.pine : kit.oak, group, p, R(0, 360), Vector3.one * R(1.1f, 1.5f));
+                    else prop = Prefab(BiomeTree(area, p), group, p, R(0, 360), Vector3.one * R(1.1f, 1.5f));
                     NoShadows(prop);
                 }
                 if (!shape.IsCave && !shape.IsCliff)
@@ -229,7 +229,7 @@ namespace PoeClone.World
                     GameObject prop;
                     if (roll < 0.72)
                         prop = graveyard ? DeadTree(knoll.transform, p, kit.Mat("DeadWood"), R(1f, 1.5f))
-                            : Prefab(Coin() ? kit.pine : kit.oak, knoll.transform, p, R(0f, 360f), Vector3.one * R(1.05f, 1.6f));
+                            : Prefab(BiomeTree(area, p), knoll.transform, p, R(0f, 360f), Vector3.one * R(1.05f, 1.6f));
                     else if (roll < 0.95 || graveyard)
                         prop = Prefab(kit.rock, knoll.transform, p, R(0f, 360f), Vector3.one * R(0.7f, 1.5f));
                     else
@@ -420,7 +420,7 @@ namespace PoeClone.World
 
                 double roll = rng.NextDouble();
                 if (roll < 0.6)
-                    PlanPrefab(Coin() ? kit.pine : kit.oak, t, p, R(0f, 360f), Vector3.one * R(0.9f, 1.3f));
+                    PlanPrefab(BiomeTree(Greenwood, p), t, p, R(0f, 360f), Vector3.one * R(0.9f, 1.3f));
                 else if (roll < 0.8)
                     PlanPrefab(kit.rock, t, p, R(0f, 360f), Vector3.one * R(0.8f, 1.5f));
                 else

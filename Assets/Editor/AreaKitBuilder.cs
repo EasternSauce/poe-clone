@@ -71,6 +71,7 @@ namespace PoeClone.EditorTools
 
             kit.pine = Prefab("Pine");
             kit.oak = Prefab("Oak");
+            WindTreeBuilder.AssignSpecies(kit);
             kit.bush = Prefab("Bush");
             kit.bushSmall = Prefab("BushSmall");
             kit.rock = Prefab("Rock");

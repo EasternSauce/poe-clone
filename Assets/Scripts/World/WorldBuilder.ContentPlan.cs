@@ -80,12 +80,6 @@ namespace PoeClone.World
                 Candles(t, p);
         }
 
-        private void PlanDeadTree(Transform t, Vector3 p, Material wood, float size = 1f)
-        {
-            if (!DeferContent(p, () => DeadTree(t, p, wood, size)))
-                DeadTree(t, p, wood, size);
-        }
-
         private void PlanBones(Transform t, Vector3 p)
         {
             if (!DeferContent(p, () => Bones(t, p)))

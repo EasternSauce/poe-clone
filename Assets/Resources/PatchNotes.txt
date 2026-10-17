@@ -10,6 +10,11 @@ version: 2026-10-17-gateway-paths
 - Paths in Haven and the Haunted Graveyard now reach the gateways at their final wall positions.
 - A continuous woodland track connects Greenwood's Haven entrance to the southeast Lost Hollows gateway, crossing the existing southern bridge. Trees, rocks and grass leave the track clear.
 
+version: 2026-10-17-wind-trees
+- Trees are procedurally grown with crooked trunks, spreading roots, forked branches and uneven crowns. Twelve tree types each have six distinct growth forms.
+- Biomes use their own species: oak, pine and birch woodland; willows on woodland riverbanks; frosted conifers in Frozen Hollow; cypress among graveyard trees; scorched snags in the Ruins; acacia in drylands; palms and cypress near desert water; and bare, twisted orchard trees. Salt flats and underground areas stay treeless.
+- Wind bends the upper trees and rustles their crowns with passing gusts. Roots stay planted, and shadows follow the moving canopy.
+
 version: 2026-10-17-wind-grass
 - Grass in Greenwood, Haven, the Graveyard and the Orchard now has raised blades that sway with the same breeze as trees and cloth, with passing gusts and varied movement between tufts. Paths and occupied clearings stay clear.
 

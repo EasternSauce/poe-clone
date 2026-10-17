@@ -46,7 +46,7 @@ namespace PoeClone.World
                     foreach (var anchor in AreaLayouts.QuestAnchors["act2_jars"])
                         if ((at - (c + anchor)).sqrMagnitude < 10 * 10) objective = true;
                     if (objective) continue;
-                    PlanDeadTree(orchard, at, bark);
+                    PlanPrefab(kit.Tree("OrchardSnag"), orchard, at, R(0, 360), Vector3.one);
                     if (rng.NextDouble() < 0.6)
                     {
                         PlanBox(orchard, at + new Vector3(0.9f, 2.8f, 0), new Vector3(0.04f, 1.5f, 0.04f), kit.Mat("Wood"), false);

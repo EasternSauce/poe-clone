@@ -31,8 +31,9 @@ namespace PoeClone.World
                     world.y = floorY;
                     if (area == Greenwood || area == Haven || area == Graveyard)
                     {
-                        GameObject tree = DeadTree(parent, world, kit.Mat("DeadWood"), R(1.35f, 1.8f));
-                        tree.name = "WatersideSnag";
+                        GameObject tree = area == Graveyard ? DeadTree(parent, world, kit.Mat("DeadWood"), R(1.35f, 1.8f))
+                            : Prefab(BiomeTree(area, world), parent, world, R(0, 360), Vector3.one * R(1.0f, 1.3f));
+                        tree.name = area == Graveyard ? "WatersideSnag" : "WatersideWillow";
                     }
                     else
                     {

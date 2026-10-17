@@ -82,7 +82,7 @@ namespace PoeClone.Visuals
             if (instance == null) return;
             foreach (var behaviour in FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include))
             {
-                bool optional = behaviour is WindSway || behaviour is WindCloth || behaviour is WindborneSmoke ||
+                bool optional = behaviour is WindCloth || behaviour is WindborneSmoke ||
                     behaviour is LivingFlame || behaviour is TorchFlicker || behaviour is HoverSpin || behaviour is SimpleCapePhysics;
                 if (optional || behaviour is VillageRoutine ||
                     (behaviour is CharacterWalkAnimator && behaviour.GetComponentInParent<Npc>() != null))

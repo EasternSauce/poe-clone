@@ -73,7 +73,7 @@ namespace PoeClone.World
                 Claim(p, 1f);
             }
 
-            Scatter(t, 16, 6f, 46f, p => DeadTree(t, p, kit.Mat("DeadWood")), 1.8f);
+            Scatter(t, 16, 6f, 46f, p => rng.NextDouble() < 0.3 ? Prefab(BiomeTree(Graveyard, p), t, p, R(0, 360), Vector3.one) : DeadTree(t, p, kit.Mat("DeadWood")), 1.8f);
             Scatter(t, 9, 8f, 46f, p => LoneGraves(t, p), 1.8f);
             Scatter(t, 10, 8f, 46f, p => Prefab(kit.rock, t, p, R(0f, 360f), Vector3.one * R(0.8f, 1.4f)), 1.5f);
         }

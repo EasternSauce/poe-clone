@@ -36,8 +36,7 @@ namespace PoeClone.EditorTools
             BuildMaterials();
             BuildMeshes();
 
-            BuildPine();
-            BuildOak();
+            WindTreeBuilder.BuildAll();
             BuildBush(true);
             BuildBush(false);
             BuildRock(true);
@@ -388,44 +387,6 @@ private static void SaveMesh(string name, Mesh mesh)
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
             Object.DestroyImmediate(root);
             return prefab;
-        }
-
-private static GameObject BuildPine()
-        {
-            GameObject root = new GameObject("Pine");
-            Transform t = root.transform;
-            AddMesh(t, "Trunk", meshes["Cylinder"], mats["Bark"], Vector3.zero, new Vector3(0.45f, 1.4f, 0.45f));
-            ConvexCollider(AddMesh(t, "Cone1", meshes["Cone"], mats["PineA"], new Vector3(0f, 0.9f, 0f), new Vector3(1.6f, 2.0f, 1.6f)));
-            ConvexCollider(AddMesh(t, "Cone2", meshes["Cone"], mats["PineB"], new Vector3(0f, 2.0f, 0f), new Vector3(1.25f, 1.8f, 1.25f)));
-            ConvexCollider(AddMesh(t, "Cone3", meshes["Cone"], mats["PineA"], new Vector3(0f, 3.1f, 0f), new Vector3(0.85f, 1.5f, 0.85f)));
-            CapsuleCollider c = root.AddComponent<CapsuleCollider>();
-            c.center = new Vector3(0f, 1.2f, 0f);
-            c.radius = 0.35f;
-            c.height = 2.4f;
-            return SavePrefab(root, "Pine");
-        }
-
-        // Gives a foliage piece a collider that matches its visible mesh.
-        private static void ConvexCollider(GameObject go)
-        {
-            MeshCollider mc = go.AddComponent<MeshCollider>();
-            mc.sharedMesh = go.GetComponent<MeshFilter>().sharedMesh;
-            mc.convex = true;
-        }
-
-private static GameObject BuildOak()
-        {
-            GameObject root = new GameObject("Oak");
-            Transform t = root.transform;
-            AddMesh(t, "Trunk", meshes["Cylinder"], mats["Bark"], Vector3.zero, new Vector3(0.5f, 1.9f, 0.5f));
-            ConvexCollider(AddMesh(t, "CrownMain", meshes["FoliageA"], mats["OakA"], new Vector3(0f, 2.4f, 0f), new Vector3(2.5f, 2.0f, 2.5f)));
-            ConvexCollider(AddMesh(t, "CrownSideA", meshes["FoliageB"], mats["OakB"], new Vector3(0.8f, 2.0f, 0.4f), new Vector3(1.6f, 1.3f, 1.6f)));
-            ConvexCollider(AddMesh(t, "CrownSideB", meshes["FoliageB"], mats["OakB"], new Vector3(-0.7f, 2.8f, -0.5f), new Vector3(1.5f, 1.2f, 1.5f)));
-            CapsuleCollider c = root.AddComponent<CapsuleCollider>();
-            c.center = new Vector3(0f, 1.1f, 0f);
-            c.radius = 0.4f;
-            c.height = 2.2f;
-            return SavePrefab(root, "Oak");
         }
 
 // Solid props get walls that go straight up past the player's height. A rounded, low collider

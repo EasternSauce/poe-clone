@@ -341,6 +341,7 @@ namespace PoeClone.World
                 if (!UsesChunks(area)) yield return BuildBorders();
                 if (!UsesChunks(area)) ClearAreaTravel(area);
                 BuildQuestSites();
+                BuildActTwoTrees(area);
                 SetUpSpawners();
                 if (area == Desert) SetUpDesertEncounters();
                 if (area == Haven) BuildTownsfolk();
@@ -671,7 +672,7 @@ namespace PoeClone.World
             }
 
             // Trees and bushes round the outskirts.
-            Scatter(t, 16, 34f, 45f, p => Prefab(Coin() ? kit.oak : kit.pine, t, p, R(0f, 360f), Vector3.one * R(0.9f, 1.25f)), 2.2f);
+            Scatter(t, 16, 34f, 45f, p => Prefab(BiomeTree(Haven, p), t, p, R(0f, 360f), Vector3.one * R(0.9f, 1.25f)), 2.2f);
             Scatter(t, 18, 30f, 46f, p => Prefab(kit.bushSmall, t, p, R(0f, 360f), Vector3.one * R(0.3f, 0.5f)), 0.6f);
 
             Spots["Elder"] = c + new Vector3(-3.5f, 0f, 3.5f);
@@ -761,7 +762,7 @@ namespace PoeClone.World
             }
 
             Scatter(t, 8, 10f, 42f, p => Brazier(t, p), 1f);
-            Scatter(t, 14, 8f, 46f, p => DeadTree(t, p, kit.Mat("Charred")), 1.6f);
+            Scatter(t, 14, 8f, 46f, p => Prefab(BiomeTree(Ruins, p), t, p, R(0, 360), Vector3.one * R(0.9f, 1.2f)), 1.6f);
             Scatter(t, 10, 8f, 46f, p => Ball(t, p, R(0.6f, 1.2f), kit.Mat("Ash"), flatten: 0.35f, solid: false), 1f);
             Scatter(t, 14, 8f, 46f, p => Prefab(kit.rock, t, p, R(0f, 360f), Vector3.one * R(0.8f, 1.5f)), 1.5f);
         }
@@ -956,14 +957,7 @@ namespace PoeClone.World
         // A pine dusted with snow: its own materials, tinted pale.
         private GameObject FrostedPine(Transform t, Vector3 p)
         {
-            GameObject pine = Prefab(kit.pine, t, p, R(0f, 360f), Vector3.one * R(0.9f, 1.3f));
-            var block = new MaterialPropertyBlock();
-            foreach (Renderer r in pine.GetComponentsInChildren<Renderer>())
-            {
-                r.GetPropertyBlock(block);
-                block.SetColor("_BaseColor", new Color(0.78f, 0.88f, 0.92f));
-                r.SetPropertyBlock(block);
-            }
+            GameObject pine = Prefab(BiomeTree(Frozen, p), t, p, R(0f, 360f), Vector3.one * R(0.9f, 1.3f));
             return pine;
         }
 
@@ -1331,7 +1325,7 @@ namespace PoeClone.World
                     continue;
 
                 Transform prop = c.transform;
-                while (prop.parent != null && !ClearableGroups.Contains(prop.parent.name))
+                while (prop.parent != null && !ClearableGroups.Contains(prop.parent.name) && !prop.parent.name.StartsWith("BiomeTrees_"))
                     prop = prop.parent;
                 if (prop.parent == null)
                     continue;

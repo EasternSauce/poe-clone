@@ -14,6 +14,19 @@ namespace PoeClone.World
         [Header("Prefabs")]
         public GameObject pine;
         public GameObject oak;
+        [Tooltip("Procedurally baked species, selected by each biome's explicit palette.")]
+        public GameObject[] trees = new GameObject[0];
+
+        public GameObject Tree(string species)
+        {
+            foreach (GameObject tree in trees)
+                if (tree != null && tree.name == species) return tree;
+            if (species == "Pine") return pine;
+            if (species == "Oak") return oak;
+            Debug.LogError("AreaKit: missing tree species " + species);
+            return null;
+        }
+
         public GameObject bush;
         public GameObject bushSmall;
         public GameObject rock;

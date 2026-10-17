@@ -33,17 +33,9 @@ namespace PoeClone.World
                 foreach (Transform tree in trees.transform)
                 {
                     if (!tree.gameObject.activeInHierarchy) continue;
-                    Transform trunk = tree.Find("Trunk");
-                    MeshFilter trunkMesh = trunk != null ? trunk.GetComponent<MeshFilter>() : null;
-                    if (trunkMesh == null || trunkMesh.sharedMesh == null) continue;
-                    float trunkTop = tree.InverseTransformPoint(trunk.TransformPoint(
-                        Vector3.up * trunkMesh.sharedMesh.bounds.max.y)).y;
-                    var branch = new GameObject("BranchWithTiedRag").transform;
-                    branch.SetParent(tree, false);
-                    // Pines have shorter trunks than oaks; keep the root embedded in wood.
-                    branch.localPosition = new Vector3(0, Mathf.Min(1.8f, trunkTop - 0.15f), 0);
-                    PlanLocalBox(branch, new Vector3(0.55f, 0, 0), new Vector3(1.2f, 0.08f, 0.08f), kit.Mat("Bark"), false);
-                    WindCloth.Create(branch, new Vector3(0.85f, 0, 0), 0.32f, 0.8f,
+                    Transform socket = tree.Find("Trunk/OfferingSocket");
+                    if (socket == null) continue;
+                    WindCloth.Create(socket, Vector3.zero, 0.32f, 0.8f,
                         kit.Mat(count % 2 == 0 ? "ClothRed" : "ClothYellow"), true);
                     if (++count >= 4) break;
                 }
@@ -57,8 +49,6 @@ namespace PoeClone.World
                     WindborneSmoke.Create(chimney, Vector3.up * 0.52f,
                         chimney.lossyScale.x * 0.7f, 0.85f, chimney: true);
                 }
-                if ((renderer.name.StartsWith("Crown") || renderer.name.StartsWith("Cone")) && renderer.GetComponent<WindSway>() == null)
-                    renderer.gameObject.AddComponent<WindSway>();
             }
             // A weather-beaten standard beside the road; no collision in the travel lane.
             WindBanner(details, Haven, new Vector3(111, 0, 13), 18, "ClothBlue", false);

@@ -14,6 +14,7 @@ Shader "PoeClone/ToonLit"
         _TriplanarTileSize ("Triplanar Tile Size (world units)", Float) = 2.0
         _TexInfluence ("Texture Influence", Range(0,1)) = 1.0
         _ObjectTexture ("Texture Follows Object", Range(0,2)) = 0
+        _TreeWind ("Tree Wind", Range(0,1)) = 0
         _LivingWater ("Living Water", Range(0,1)) = 0
         _WaterOcean ("Ocean Wave Strength", Range(0,1)) = 0
         _RockSurface ("Natural Stone Surface", Range(0,1)) = 0
@@ -24,6 +25,49 @@ Shader "PoeClone/ToonLit"
     {
         Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" "Queue"="Geometry" }
         LOD 200
+
+        HLSLINCLUDE
+        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            CBUFFER_START(UnityPerMaterial)
+                float4 _BaseMap_ST;
+                float4 _BaseColor;
+                float4 _ShadowColor;
+                float4 _RimColor;
+                float _RimPower;
+                float _RimIntensity;
+                float _ShadowBandThreshold;
+                float _ShadowBandSmooth;
+                float _AmbientBoost;
+                float _TriplanarTileSize;
+                float _TexInfluence;
+                float _ObjectTexture;
+                float _SerpentScales;
+                float _LivingWater;
+                float _WaterOcean;
+                float _RockSurface;
+                float _RockMoss;
+                float _TreeWind;
+            CBUFFER_END
+        // Rooted world-space bending shared by the visible, shadow and depth passes.
+        float3 TreePosition(float3 rest, float4 motion)
+        {
+            if (_TreeWind <= 0) return rest;
+            float3 origin = TransformObjectToWorld(float3(0,0,0));
+            float t = _Time.y;
+            float angle = 0.65 + sin(t * 0.037) * 0.4;
+            float2 wind = float2(cos(angle), sin(angle));
+            float phase = dot(origin.xz, float2(0.071, 0.113));
+            float gust = 0.65 + 0.25 * sin(phase - t * 0.9) + 0.1 * sin(phase * 1.7 - t * 1.43);
+            float height = max(0, rest.y - 0.45);
+            float bend = height * height * (0.009 + gust * 0.009);
+            float flutter = sin(t * 2.3 + motion.y + phase) * sin(t * 0.71 + phase);
+            float2 offset = wind * bend + float2(-wind.y, wind.x) * flutter * motion.x * 0.025;
+            float3 world = TransformObjectToWorld(rest);
+            world.xz += offset;
+            return TransformWorldToObject(world);
+        }
+        ENDHLSL
+
 
         Pass
         {
@@ -55,6 +99,8 @@ Shader "PoeClone/ToonLit"
                 float3 normalOS : NORMAL;
                 float2 uv : TEXCOORD0;
                 float4 waterMotion : TEXCOORD1;
+                float3 restPosition : TEXCOORD2;
+                half4 color : COLOR;
             };
 
             struct Varyings
@@ -67,29 +113,12 @@ Shader "PoeClone/ToonLit"
                 float4 waterMotion : TEXCOORD4;
                 float3 texturePosition : TEXCOORD5;
                 float3 textureNormal : TEXCOORD6;
+                half3 treeColor : COLOR;
             };
 
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
 
-            CBUFFER_START(UnityPerMaterial)
-                float4 _BaseMap_ST;
-                float4 _BaseColor;
-                float4 _ShadowColor;
-                float4 _RimColor;
-                float _RimPower;
-                float _RimIntensity;
-                float _ShadowBandThreshold;
-                float _ShadowBandSmooth;
-                float _AmbientBoost;
-                float _TriplanarTileSize;
-                float _TexInfluence;
-                float _ObjectTexture;
-                float _SerpentScales;
-                float _LivingWater;
-                float _WaterOcean;
-                float _RockSurface;
-                float _RockMoss;
-            CBUFFER_END
+
 
             // ---------------------------------------------------------------
             // Manual point-light feed (fallback for URP's Forward+ additional
@@ -138,6 +167,8 @@ Shader "PoeClone/ToonLit"
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
+                IN.positionOS.xyz = TreePosition(IN.positionOS.xyz, IN.waterMotion);
+                OUT.treeColor = lerp(half3(1,1,1), IN.color.rgb, _TreeWind);
                 if (_LivingWater > 0)
                     IN.positionOS.y += WaterWave(TransformObjectToWorld(IN.positionOS.xyz).xz, IN.waterMotion);
                 VertexPositionInputs vpi = GetVertexPositionInputs(IN.positionOS.xyz);
@@ -158,7 +189,7 @@ Shader "PoeClone/ToonLit"
                 {
                     float4x4 m = GetObjectToWorldMatrix();
                     float3 scale = float3(length(m._m00_m10_m20), length(m._m01_m11_m21), length(m._m02_m12_m22));
-                    OUT.texturePosition = (_ObjectTexture > 1.5 ? IN.waterMotion.xyz : IN.positionOS.xyz) * scale;
+                    OUT.texturePosition = (_TreeWind > 0 ? IN.restPosition : (_ObjectTexture > 1.5 ? IN.waterMotion.xyz : IN.positionOS.xyz)) * scale;
                     OUT.textureNormal = IN.normalOS / max(scale, 1e-5);
                 }
                 return OUT;
@@ -274,9 +305,8 @@ Shader "PoeClone/ToonLit"
 
                 half3 texCol = SampleTriplanar(IN.texturePosition, normalize(IN.textureNormal), _TriplanarTileSize);
                 texCol = lerp(half3(1, 1, 1), texCol, _TexInfluence);
-                half3 albedo = texCol * _BaseColor.rgb;
+                half3 albedo = texCol * _BaseColor.rgb * IN.treeColor;
                 albedo *= lerp(half3(1, 1, 1), scales.rgb, _SerpentScales);
-
                 if (_RockSurface > 0)
                 {
                     float broad = StoneNoise(IN.positionWS * 1.7);
@@ -362,8 +392,57 @@ Shader "PoeClone/ToonLit"
             ENDHLSL
         }
 
-        UsePass "Universal Render Pipeline/Lit/ShadowCaster"
-        UsePass "Universal Render Pipeline/Lit/DepthOnly"
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode"="ShadowCaster" }
+            ZWrite On
+            ColorMask 0
+            HLSLPROGRAM
+            #pragma vertex shadowVert
+            #pragma fragment depthFrag
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
+            float3 _LightDirection;
+            float3 _LightPosition;
+            struct ShadowInput { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 motion : TEXCOORD1; };
+            float4 shadowVert(ShadowInput v) : SV_POSITION
+            {
+                float3 world = TransformObjectToWorld(TreePosition(v.positionOS.xyz, v.motion));
+                float3 normal = TransformObjectToWorldNormal(v.normalOS);
+                #if defined(_CASTING_PUNCTUAL_LIGHT_SHADOW)
+                float3 lightDirection = normalize(_LightPosition - world);
+                #else
+                float3 lightDirection = _LightDirection;
+                #endif
+                float4 clip = TransformWorldToHClip(ApplyShadowBias(world, normal, lightDirection));
+                #if UNITY_REVERSED_Z
+                clip.z = min(clip.z, UNITY_NEAR_CLIP_VALUE);
+                #else
+                clip.z = max(clip.z, UNITY_NEAR_CLIP_VALUE);
+                #endif
+                return clip;
+            }
+            half4 depthFrag() : SV_Target { return 0; }
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "DepthOnly"
+            Tags { "LightMode"="DepthOnly" }
+            ZWrite On
+            ColorMask R
+            HLSLPROGRAM
+            #pragma vertex depthVert
+            #pragma fragment depthFrag
+            struct DepthInput { float4 positionOS : POSITION; float4 motion : TEXCOORD1; };
+            float4 depthVert(DepthInput v) : SV_POSITION
+            {
+                return TransformObjectToHClip(TreePosition(v.positionOS.xyz, v.motion));
+            }
+            half4 depthFrag() : SV_Target { return 0; }
+            ENDHLSL
+        }
     }
     FallBack "Universal Render Pipeline/Lit"
 }
