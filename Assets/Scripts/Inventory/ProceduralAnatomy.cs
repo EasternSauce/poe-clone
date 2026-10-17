@@ -96,8 +96,12 @@ namespace PoeClone.Inventory
                     if (gloves && part.Covered != null) mesh = part.Covered;
                     if (mesh != null && part.Skin.sharedMesh != mesh)
                     {
-                        part.Skin.sharedMesh = null;
+                        // A skinned renderer that has drawn keeps buffers sized for its old mesh and
+                        // stops rendering after a swap ("does not match the expected mesh data size");
+                        // re-enabling it around the swap rebuilds them.
+                        part.Skin.enabled = false;
                         part.Skin.sharedMesh = mesh;
+                        part.Skin.enabled = true;
                         part.Skin.localBounds = new Bounds(new Vector3(0,-.4f,0),Vector3.one*1.9f);
                     }
                     continue;

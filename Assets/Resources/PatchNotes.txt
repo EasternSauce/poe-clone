@@ -1,3 +1,6 @@
+version: 2026-10-17-arm-render-fix-2
+- Fixed the hero's arm still disappearing (with a "Rendering stopped" error in the log) when picking up or switching weapons, for example after loading into the game with a one-handed sword.
+
 version: 2026-10-17-weapon-points-badge
 - On desktop the "Weapon tree [T]" button above the skill bar is gone. When your weapon has points to spend, a pulsing "+N weapon points (T)" button now appears under the passive points button; click it or press T to open the weapon tree.
 - The T key for the weapon tree is now listed with the other keys in Settings.
