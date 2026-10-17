@@ -102,6 +102,14 @@ namespace PoeClone.Visuals
         private float idleSeed;
         private const float BreathRate = 1.9f;
 
+        // Standing (anatomical gait only), the weight drifts from one leg to the other every few
+        // seconds: the hips slide over the supporting leg and the other knee relaxes.
+        private const float WeightShiftPeriod = 13f, WeightShiftDistance = .03f;
+        private float weightShift; // -1 on the left leg, 1 on the right
+
+        /// <summary>1 standing still, 0 walking or running.</summary>
+        public float Stillness => 1f - blend;
+
         // Braced for a held channel (see CharacterAttackAnimator.IsHolding): 0 striding, 1 planted.
         private float plant;
         private const float PlantCrouch = 0.35f;
@@ -338,8 +346,13 @@ namespace PoeClone.Visuals
             transform.localPosition = baseLocalPosition + Vector3.up * (bob - 0.28f * crouch) + Vector3.forward * lunge;
             if (NaturalGait)
             {
+                // Held on each leg for a while, easing across in between.
+                float hold = Mathf.Clamp(Mathf.Sin((Time.time + idleSeed * 7f) * 2f * Mathf.PI / WeightShiftPeriod) * 1.8f, -1f, 1f);
+                weightShift = simple ? 0f : (1.5f * hold - .5f * hold * hold * hold) * still * stepping * (1f - crouch);
                 // Move weight over the supporting leg; the torso keeps its existing counter-twist.
-                transform.localPosition += Vector3.right*(s*.018f*blend*stepping);
+                transform.localPosition += Vector3.right*(s*.018f*blend*stepping + weightShift*WeightShiftDistance);
+                // The shoulders dip a little on the supporting side.
+                if (upperBody != null) upperBody.localRotation *= Quaternion.Euler(0f, 0f, -1.5f * weightShift);
                 PoseNaturalLeg(leftLeg,leftKnee,leftAnkle,phase,-1f,bob-.28f*crouch,crouch);
                 PoseNaturalLeg(rightLeg,rightKnee,rightAnkle,phase+Mathf.PI,1f,bob-.28f*crouch,crouch);
             }
@@ -388,7 +401,9 @@ namespace PoeClone.Visuals
                 footPitch=Mathf.Lerp(-6f*Mathf.Sin(swing*Mathf.PI),25f*Mathf.Sin(swing*Mathf.PI)*(1-swing)-10f*swing,runBlend);
             }
             float weight=blend*(1-plant);
-            Vector3 target=new Vector3(hip.localPosition.x,.05f-bodyOffset+lift*weight,forward*weight);
+            // The leg off the weight bends a little, heel raised, foot a touch forward.
+            float relax=Mathf.Max(0,-side*weightShift);
+            Vector3 target=new Vector3(hip.localPosition.x,.05f-bodyOffset+lift*weight+.012f*relax,forward*weight+.035f*relax);
             Vector3 reach=target-hip.localPosition;
             const float thigh=.42f,shin=.38f;
             float distance=Mathf.Clamp(reach.magnitude,.12f,(thigh+shin)*.995f);
@@ -396,9 +411,11 @@ namespace PoeClone.Visuals
             float bend=Mathf.Acos(Mathf.Clamp((thigh*thigh+distance*distance-shin*shin)/(2*thigh*distance),-1,1))*Mathf.Rad2Deg;
             float hipPitch=Mathf.Lerp(aim-bend,-35f,crouch);
             float kneePitch=Mathf.Lerp(180-Mathf.Acos(Mathf.Clamp((thigh*thigh+shin*shin-distance*distance)/(2*thigh*shin),-1,1))*Mathf.Rad2Deg,70f,crouch);
-            hip.localRotation=Quaternion.Euler(hipPitch,Mathf.Sin(cycle)*2f*weight,side*PlantSpread*plant);
+            // Both legs lean against the hips' sideways slide, so the feet stay where they stand.
+            float lean=-Mathf.Asin(Mathf.Clamp(weightShift*WeightShiftDistance/(thigh+shin),-1,1))*Mathf.Rad2Deg;
+            hip.localRotation=Quaternion.Euler(hipPitch,Mathf.Sin(cycle)*2f*weight,side*PlantSpread*plant+lean);
             knee.localRotation=Quaternion.Euler(kneePitch,0,0);
-            ankle.Pose(Mathf.Clamp(footPitch*weight-hipPitch-kneePitch,-38f,30f));
+            ankle.Pose(Mathf.Clamp(footPitch*weight+10f*relax-hipPitch-kneePitch,-38f,30f));
         }
 
         private void PoseTwoHandedHold(bool rightArmSuppressed, bool leftArmSuppressed, float swing, float breath)

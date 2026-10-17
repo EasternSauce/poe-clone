@@ -1,3 +1,9 @@
+version: 2026-10-17-face-life
+- The hero's stare is gone: his upper eyelids now rest over the top of the iris instead of showing white above it, with a soft lid crease and faint shadows under the eyes.
+- His face is no longer perfectly mirrored: tiny differences in the brows, lids, nose and smile make it read as a real face.
+- He blinks every few seconds, sometimes twice.
+- Standing still, he looks around a little, now and then glancing aside, and shifts his weight from one leg to the other. This also plays on the inventory portrait.
+
 version: 2026-10-17-beard-2
 - The hero's beard is subtler: thinner, trimmed lower on the cheeks, and matte instead of shiny.
 - Fixed the beard shimmering and flickering with skin showing through it, most visible in the inventory portrait.

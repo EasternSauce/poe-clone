@@ -39,6 +39,10 @@ namespace PoeClone.EditorTools
             Set(eyeSurface, meshes["AnatomyEyes"], eyes);
             eyeSurface.localPosition = Vector3.zero; eyeSurface.localScale = Vector3.one;
             parts.Add(Detail(eyeSurface, meshes, "AnatomyEyes"));
+            Transform eyelids = Child(head, "Eyelids");
+            Set(eyelids, meshes["AnatomyEyelids"], skin);
+            eyelids.localPosition = Vector3.zero; eyelids.localScale = Vector3.one;
+            eyelids.GetComponent<Renderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
 
             Transform hair = upper.Find("Hair");
             Material hairMaterial=Material("AnatomyHair",Shader.Find("PoeClone/AnatomySkin"));
@@ -123,6 +127,12 @@ namespace PoeClone.EditorTools
             upper.Find("Neck").localPosition=new Vector3(0,1.60f,.01f);
             upper.Find("Neck").localScale=new Vector3(.15f,.19f,.14f);
             (model.GetComponent<ProceduralAnatomy>() ?? model.gameObject.AddComponent<ProceduralAnatomy>()).Configure(parts.ToArray());
+            // Everything on the head turns with it about the top of the neck.
+            var headParts = new List<Transform>();
+            foreach (string name in new[] { "Head", "Hair", "Hood", "HoodBrim", "Socket_Head" })
+                if (upper.Find(name) != null) headParts.Add(upper.Find(name));
+            (model.GetComponent<PoeClone.Visuals.CharacterIdleLife>() ?? model.gameObject.AddComponent<PoeClone.Visuals.CharacterIdleLife>())
+                .Configure(headParts.ToArray(), new Vector3(0,1.66f,.02f), eyelids.GetComponent<Renderer>());
             UpgradeGloves(meshes);
             UpgradeCollars();
         }

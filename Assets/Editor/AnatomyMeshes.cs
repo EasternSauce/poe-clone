@@ -27,6 +27,7 @@ namespace PoeClone.EditorTools
             }
             Save(Simplified(Scalp()));
             Save(Beard());
+            Save(Eyelids());
             Save(AnatomyLimbMeshes.Arm(-1));
             Save(AnatomyLimbMeshes.Arm(1));
             Save(AnatomyLimbMeshes.Leg());
@@ -110,7 +111,8 @@ namespace PoeClone.EditorTools
             float z = ring.Forward + ring.Z * Mathf.Sqrt(Mathf.Max(0, 1 - x*x / Mathf.Max(.0001f, ring.X*ring.X)));
             // Integrated bridge, nasal tip, alar wings, philtrum, cheekbones, lips and chin.
             float nose = profile != null ? profile.NoseProjection : 1;
-            z += nose * (.042f * G(x,y,0,.015f,.047f,.14f) + .078f * G(x,y,0,-.085f,.075f,.068f)
+            // The tip sits a hair off centre: a perfectly mirrored face reads as a mannequin.
+            z += nose * (.042f * G(x,y,0,.015f,.047f,.14f) + .078f * G(x,y,-.004f,-.085f,.075f,.068f)
                 + .012f * G(x,y,0,-.135f,.026f,.028f));
             z += nose * .026f * (G(x,y,-.063f,-.11f,.038f,.038f) + G(x,y,.063f,-.11f,.038f,.038f));
             z -= .012f * G(x,y,0,-.165f,.030f,.04f);
@@ -122,6 +124,8 @@ namespace PoeClone.EditorTools
             z -= .004f * (G(x,y,-.25f,-.19f,.08f,.07f) + G(x,y,.25f,-.19f,.08f,.07f));
             z -= .017f * (G(x,y,-EyeCenter,.055f,.095f,.045f) + G(x,y,EyeCenter,.055f,.095f,.045f));
             z += .008f * (G(x,y,-EyeCenter,.14f,.13f,.05f) + G(x,y,EyeCenter,.14f,.13f,.05f));
+            // Slight fullness under the eyes, so the lower lid doesn't sit on a flat cheek.
+            z += .0025f * (G(x,y,-EyeCenter,EyeY-.036f,.07f,.014f) + G(x,y,EyeCenter,EyeY-.036f,.07f,.014f));
             float seam=MouthSeam(x);
             z += .014f * G(x,y,0,seam+.011f,.135f,.014f) + .018f * G(x,y,0,seam-.012f,.13f,.018f);
             z -= .010f * G(x,y,0,seam,.145f,.004f);
@@ -142,9 +146,14 @@ namespace PoeClone.EditorTools
             float socket = G(x,y,-EyeCenter,.06f,.13f,.07f) + G(x,y,EyeCenter,.06f,.13f,.07f);
             float shade = socket * .07f + G(x,y,0,-.135f,.07f,.022f) * .22f + G(x,y,0,-.29f,.11f,.022f) * .16f
                 + (G(x,y,-.11f,-.17f,.025f,.06f) + G(x,y,.11f,-.17f,.025f,.06f)) * .10f;
+            // A soft crease above the upper lid and faint shadow under the eyes: lived-in, not tired.
+            float crease = G(x,y,-EyeCenter,EyeY+EyeUpper+.013f,.075f,.007f) + G(x,y,EyeCenter,EyeY+EyeUpper+.013f,.075f,.007f);
+            float bags = G(x,y,-EyeCenter,EyeY-.04f,.075f,.013f) + G(x,y,EyeCenter,EyeY-.04f,.075f,.013f);
+            shade += crease * .09f + bags * .05f;
+            c = Color.Lerp(c, new Color(.92f,.82f,.86f), bags * .12f);
             c *= 1 - Mathf.Clamp01(shade);
             c.a = 1;
-            float browY = BrowArch(Mathf.Clamp01((Mathf.Abs(x) - .085f) / .165f)) + .004f;
+            float browY = BrowArch(Mathf.Clamp01((Mathf.Abs(x) - .085f) / .165f), x) + .004f;
             float brow = G(x,y,-.168f,browY,.085f,.018f) + G(x,y,.168f,browY,.085f,.018f);
             float hairs = .8f + .2f * Mathf.Sin(x * 1200 + y * 220);
             return Color.Lerp(c, new Color(.16f,.11f,.08f), Mathf.Clamp01(brow * hairs * .8f));
@@ -152,7 +161,8 @@ namespace PoeClone.EditorTools
 
         private static float HeadAngle(float u) => u*2*Mathf.PI-.65f*Mathf.Sin(u*2*Mathf.PI);
         // Corners lift a little: a level or downturned seam reads as a sneer under a shadowed brow.
-        private static float MouthSeam(float x) => -.24f+.008f*Mathf.Pow(x/.145f,2);
+        // The right corner (+x) lifts a touch more, for a faint lopsided smile.
+        private static float MouthSeam(float x) => -.24f+.008f*Mathf.Pow(x/.145f,2)+.003f*Mathf.Pow(Mathf.Max(0,x)/.145f,2);
 
         private static Mesh Head(string name, int sides, int rows)
         {
@@ -216,7 +226,7 @@ namespace PoeClone.EditorTools
                     // Raised well above the lid with the inner end above the outer: seen from the game
                     // camera the face's curve lifts the outer end, so level brows read as a scowling V.
                     // The tail also stops before the face turns away.
-                    float x=side*(.085f+u*.165f),arch=BrowArch(u)+.008f*Mathf.Sin(u*Mathf.PI);
+                    float x=side*(.085f+u*.165f),arch=BrowArch(u,side)+.008f*Mathf.Sin(u*Mathf.PI);
                     float width=.010f*Mathf.Sin(u*Mathf.PI*.8f+.35f)+.0025f;
                     float y=arch+(v*2-1)*width;
                     return new Vector3(x,y,FaceZ(x,y)+.002f);
@@ -244,18 +254,39 @@ namespace PoeClone.EditorTools
             return b.Mesh(name);
         }
 
-        private const float EyeWidth=.076f, EyeUpper=.032f, EyeLower=.017f, EyeY=.055f;
-        // Brow line from the inner (0) to the outer (1) end, falling outward.
-        private static float BrowArch(float u) => .142f - .028f * u;
+        // The upper lid rests over the top of the iris; white showing above it reads as a fixed stare.
+        private const float EyeWidth=.076f, EyeUpper=.025f, EyeLower=.017f, EyeY=.055f;
+        // The iris sits above the opening's centre, tucked under the upper lid and touching the lower.
+        private const float IrisLift=.007f;
+        // Brow line from the inner (0) to the outer (1) end, falling outward; the right brow (+x)
+        // sits a touch higher.
+        private static float BrowArch(float u,float side) => .142f - .028f * u + (side > 0 ? .003f : 0);
 
         private static Vector3 EyePoint(float side,float u,float v)
         {
             float x=side*EyeCenter+(u*2-1)*EyeWidth;
             // Outer corners sit slightly low for the same reason; an upward tilt reads as a glare from above.
             float outward=side>0?u:1-u;
-            float y=EyeY+.005f*(.5f-outward)+Mathf.Sin(u*Mathf.PI)*Mathf.Lerp(-EyeLower,EyeUpper,v);
+            // The left upper lid is a shade heavier than the right.
+            float upper=EyeUpper-(side<0?.0015f:0);
+            float y=EyeY+.005f*(.5f-outward)+Mathf.Sin(u*Mathf.PI)*Mathf.Lerp(-EyeLower,upper,v);
             float z=FaceZ(x,y)+.004f+Mathf.Sin(u*Mathf.PI)*Mathf.Sin(v*Mathf.PI)*.006f;
             return new Vector3(x,y,z);
+        }
+
+        /// <summary>Closed lids over the openings, shown only for the moment of a blink.</summary>
+        private static Mesh Eyelids()
+        {
+            var b=new Surface();
+            const float seam=.3f;
+            foreach(float side in new[] {-1f,1f})
+                b.Grid(32,12,(u,v)=> {
+                    // Slightly fuller than the open eye's surface, as a lid rounds over the eyeball.
+                    Vector3 p=EyePoint(side,u,v);
+                    p.z+=.0015f+.003f*Mathf.Sin(u*Mathf.PI)*Mathf.Sin(v*Mathf.PI);
+                    return p;
+                },(u,v)=>Color.Lerp(new Color(.32f,.22f,.18f),Color.white,Between(.03f,.10f,Mathf.Abs(v-seam))),false,Vector3.forward);
+            return b.Mesh("AnatomyEyelids");
         }
 
         private static Mesh Eyes(string name,int steps)
@@ -264,7 +295,7 @@ namespace PoeClone.EditorTools
             foreach(float side in new[] {-1f,1f})
                 b.Grid(steps*2,16,(u,v)=>EyePoint(side,u,v),(u,v)=> {
                     Vector3 p=EyePoint(side,u,v);
-                    float dx=p.x-side*EyeCenter,dy=(p.y-EyeY)*1.12f;
+                    float dx=p.x-side*EyeCenter,dy=(p.y-EyeY-IrisLift)*1.12f;
                     float radius=Mathf.Sqrt(dx*dx+dy*dy);
                     float iris=1-Between(.0225f,.025f,radius);
                     float pupil=1-Between(.0075f,.009f,radius);
