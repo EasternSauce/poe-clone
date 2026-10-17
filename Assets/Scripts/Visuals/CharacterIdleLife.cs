@@ -82,10 +82,11 @@ namespace PoeClone.Visuals
             glance = Vector2.SmoothDamp(glance, glanceTarget, ref glanceVelocity, .35f);
 
             float t = now + seed;
-            float yaw = glance.x + 2.5f * Mathf.Sin(t * .37f) + 1f * Mathf.Sin(t * .91f + 1f);
+            // Turned back partway against the torso's turn as the weight shifts, so the gaze stays ahead.
+            float yaw = glance.x + 2.5f * Mathf.Sin(t * .37f) + 1f * Mathf.Sin(t * .91f + 1f) + (walk != null ? 4f * walk.WeightShift : 0f);
             float pitch = glance.y + 1.2f * Mathf.Sin(t * .29f + 2f);
             // The head stays level while the shoulders tilt with a shift of weight.
-            float roll = 1.2f * Mathf.Sin(t * .23f + 4f) + (walk != null ? 2f * walk.WeightShift : 0f);
+            float roll = 1.2f * Mathf.Sin(t * .23f + 4f) + (walk != null ? 3f * walk.WeightShift : 0f);
             Quaternion turn = Quaternion.Euler(pitch * life, yaw * life, roll * life);
             for (int i = 0; i < headParts.Length; i++)
             {

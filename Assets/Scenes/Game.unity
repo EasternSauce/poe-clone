@@ -4248,6 +4248,8 @@ MonoBehaviour:
   rightAnkle: {fileID: 1048389058}
   leftHipRest: {x: -0.15, y: 0.85, z: 0}
   rightHipRest: {x: 0.15, y: 0.85, z: 0}
+  leftShoulderRest: {x: -0.36, y: 1.5, z: 0}
+  rightShoulderRest: {x: 0.36, y: 1.5, z: 0}
 --- !u!114 &1892388266
 MonoBehaviour:
   m_ObjectHideFlags: 0
