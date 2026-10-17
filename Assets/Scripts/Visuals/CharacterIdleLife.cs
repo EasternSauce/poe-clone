@@ -85,13 +85,22 @@ namespace PoeClone.Visuals
             // Turned back partway against the torso's turn as the weight shifts, so the gaze stays ahead.
             float yaw = glance.x + 2.5f * Mathf.Sin(t * .37f) + 1f * Mathf.Sin(t * .91f + 1f) + (walk != null ? 4f * walk.WeightShift : 0f);
             float pitch = glance.y + 1.2f * Mathf.Sin(t * .29f + 2f);
+            // Let the chin dip with the forward body stretch, easing back with the arms.
+            if (walk != null) pitch += 8f * walk.StretchAmount;
             // The head stays level while the shoulders tilt with a shift of weight.
             float roll = 1.2f * Mathf.Sin(t * .23f + 4f) + (walk != null ? 3f * walk.WeightShift : 0f);
+            float neckStretch = walk != null ? walk.NeckStretchAmount : 0f;
+            // A small chin lift and forward reach lengthen the front of the neck, then each side.
+            // Quiet the idle glances so they do not fight this deliberate movement.
+            yaw *= 1f - neckStretch;
+            pitch = Mathf.Lerp(pitch, -4f, neckStretch);
+            roll = Mathf.Lerp(roll, 0f, neckStretch) + (walk != null ? walk.NeckStretchTilt : 0f);
             Quaternion turn = Quaternion.Euler(pitch * life, yaw * life, roll * life);
+            Vector3 chinReach = Vector3.forward * (.012f * neckStretch * life);
             for (int i = 0; i < headParts.Length; i++)
             {
                 if (headParts[i] == null) continue;
-                headParts[i].localPosition = neckPivot + turn * (restPositions[i] - neckPivot);
+                headParts[i].localPosition = neckPivot + turn * (restPositions[i] - neckPivot) + chinReach;
                 headParts[i].localRotation = turn * restRotations[i];
             }
         }

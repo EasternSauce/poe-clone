@@ -127,7 +127,31 @@ namespace PoeClone.Visuals
         private Fidget fidget, lastFidget;
         private float fidgetBlend, fidgetStart, fidgetUntil, nextFidgetAt;
         private bool stretchLeftFirst;
-        private const float StretchRise = 1.4f, StretchHold = .5f, StretchFall = 1.6f, StretchDelay = .9f;
+        private const float StretchRise = .95f, StretchHold = .4f, StretchFall = 1.1f, StretchDelay = .65f;
+        private const float ArmStretchDuration = StretchDelay + StretchRise + StretchHold + StretchFall;
+        private const float NeckStretchDuration = 2.4f;
+
+        /// <summary>The gentle body stretch shared with the head, independent of update order.</summary>
+        public float StretchAmount => fidget == Fidget.ArmStretch && !RightArmSuppressed && !LeftArmSuppressed
+            ? Mathf.Max(StretchReach(Time.time - fidgetStart), StretchReach(Time.time - fidgetStart - StretchDelay))
+                * Smooth(fidgetBlend) * Stillness : 0f;
+
+        /// <summary>The chin-forward finish after both arms have lowered.</summary>
+        public float NeckStretchAmount
+        {
+            get
+            {
+                if (fidget != Fidget.ArmStretch || RightArmSuppressed || LeftArmSuppressed) return 0f;
+                float t = Time.time - fidgetStart - ArmStretchDuration;
+                if (t <= 0f || t >= NeckStretchDuration) return 0f;
+                return Smooth(Mathf.Clamp01(t / .35f)) * Smooth(Mathf.Clamp01((NeckStretchDuration - t) / .4f))
+                    * Smooth(fidgetBlend) * Stillness;
+            }
+        }
+
+        /// <summary>One gentle tilt to each side, returning to center.</summary>
+        public float NeckStretchTilt => 8f * Mathf.Sin((Time.time - fidgetStart - ArmStretchDuration)
+            * 2f * Mathf.PI / NeckStretchDuration) * NeckStretchAmount;
         // Right side; the left mirrors it. A low, outward reach keeps the hand off the torso.
         private static readonly Vector3 StretchHandHigh = new Vector3(.43f, .95f, .16f);
         private static readonly Vector3 StretchElbowBend = new Vector3(.25f, -.45f, -.5f);
@@ -388,6 +412,7 @@ namespace PoeClone.Visuals
                 if (upperBody != null) upperBody.localRotation *= Quaternion.Euler(0f, -ShiftTorsoTurn * weightShift, -ShiftTorsoLean * weightShift);
                 UpdateFidget(dt, still > .98f && !simple && plant <= 0f && crouch <= 0f && WorkBlend <= 0f &&
                     !HoldsTwoHanded && !rightArmSuppressed && !leftArmSuppressed);
+                if (upperBody != null) upperBody.localRotation *= Quaternion.Euler(6f * StretchAmount, 0f, 0f);
                 PoseNaturalLeg(leftLeg,leftKnee,leftAnkle,phase,-1f,bob-.28f*crouch,crouch);
                 PoseNaturalLeg(rightLeg,rightKnee,rightAnkle,phase+Mathf.PI,1f,bob-.28f*crouch,crouch);
                 RestShoulders();
@@ -480,7 +505,7 @@ namespace PoeClone.Visuals
                 fidget = lastFidget = choices[Random.Range(0, choices.Count)];
                 stretchLeftFirst = Random.value < .5f;
                 fidgetStart = now;
-                fidgetUntil = now + (fidget == Fidget.ArmStretch ? StretchDelay + StretchRise + StretchHold + StretchFall : Random.Range(3f, 4.5f));
+                fidgetUntil = now + (fidget == Fidget.ArmStretch ? ArmStretchDuration + NeckStretchDuration : Random.Range(3f, 4.5f));
             }
             bool on = fidget != Fidget.None && now < fidgetUntil;
             fidgetBlend = Mathf.MoveTowards(fidgetBlend, on ? 1f : 0f, dt / .45f);
@@ -544,15 +569,20 @@ namespace PoeClone.Visuals
         // side: -1 left, 1 right.
         private void StretchArm(Transform arm, Transform elbow, Transform hand, Vector3 shoulderRest, float side, float time, float weight)
         {
-            float total = StretchRise + StretchHold + StretchFall;
-            if (arm == null || hand == null || time <= 0f || time >= total) return;
-            float reach = time < StretchRise ? Smooth(time / StretchRise)
-                : time < StretchRise + StretchHold ? 1f : Smooth(1f - (time - StretchRise - StretchHold) / StretchFall);
+            float reach = StretchReach(time);
+            if (arm == null || hand == null || reach <= 0f) return;
             Vector3 mirror = new Vector3(side, 1f, 1f);
             if (shoulderRest != Vector3.zero) arm.localPosition = shoulderRest + Vector3.Scale(StretchShrug, mirror) * reach * weight;
             Vector3 target = Vector3.Scale(StretchHandHigh, mirror);
             PoseGrip(arm, elbow, hand, transform.TransformPoint(target), side, reach * weight,
                 Vector3.Scale(StretchElbowBend, mirror));
+        }
+
+        private static float StretchReach(float time)
+        {
+            if (time <= 0f || time >= StretchRise + StretchHold + StretchFall) return 0f;
+            return time < StretchRise ? Smooth(time / StretchRise)
+                : time < StretchRise + StretchHold ? 1f : Smooth(1f - (time - StretchRise - StretchHold) / StretchFall);
         }
 
         // The stretch's shrug moves the shoulder joints; every frame starts from their rest.

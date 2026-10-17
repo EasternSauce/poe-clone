@@ -1,3 +1,6 @@
+version: 2026-10-17-idle-stretch-lean
+- During the idle arm stretch, the hero now leans forward slightly and dips his head, then straightens as his arms lower. The arm motion is about 30% shorter while keeping the lower lift and relaxed elbows. He finishes by reaching his chin forward and gently tilting his head to each side to stretch his neck. This also plays in the inventory portrait.
+
 version: 2026-10-17-gentler-idle-stretch
 - The arm stretch in the inventory portrait is slower and more relaxed, with roughly half the hand lift and elbows kept closer to the sides. The hands stay clear of the ribs instead of sliding up the torso, keeping the held sword clear through the motion.
 
