@@ -59,8 +59,6 @@ namespace PoeClone.World
             var vertices = new Vector3[points.Count * columns];
             var uv = new Vector2[vertices.Length];
             var verge = new Vector2[vertices.Length];
-            if (!roadClearings.TryGetValue(area, out var roadSites))
-                roadClearings[area] = roadSites = new List<Vector3>();
             var triangles = new List<int>();
             AreaShape shape = Shape(area);
             Vector3 center = Center(area);
@@ -100,9 +98,6 @@ namespace PoeClone.World
                 {
                     float clearance = Mathf.Max(left, right) + 1.1f;
                     Claim(center + points[i], clearance);
-                    // Keep road exclusions across Begin() calls and streamed grass rebuilds.
-                    Vector3 site = center + points[i];
-                    roadSites.Add(new Vector3(site.x, site.z, Mathf.Max(left, right) + 0.65f));
                     if (clearScenery)
                     {
                         ClearSpot(center + points[i], clearance);

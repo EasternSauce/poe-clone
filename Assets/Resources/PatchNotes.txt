@@ -1,3 +1,6 @@
+version: 2026-10-17-grass-placement
+- Grass stays off bare riverbanks, lake shores, the town square, roads and scenery clearings, including when nearby terrain streams in.
+
 version: 2026-10-17-skeleton-mage-life
 - Skeleton mage life tripled again, from 123 to 369 before minion life bonuses.
 

@@ -363,12 +363,8 @@ namespace PoeClone.World
                 else
                     yield return AreaDetails(area);
                 planningContent = false;
-                if (HasGrass(area))
-                {
-                    grassClearings[area] = claimed.ToArray();
-                    if (!UsesChunks(area))
-                        yield return BuildGrass(area, root.Find("Ground_" + AreaNames[area])?.gameObject);
-                }
+                if (HasGrass(area) && !UsesChunks(area))
+                    yield return BuildGrass(area, root.Find("Ground_" + AreaNames[area])?.gameObject);
                 Debug.Log($"Area load [{AreaNames[area]}] content plan: {(Time.realtimeSinceStartup - stageStarted) * 1000f:F0}ms.");
                 yield return EnsureArrival(area, focus ?? (arrival != null ? arrival : spawnPoints[area]).position);
                 builtAreas.Add(area);
@@ -1733,7 +1729,14 @@ namespace PoeClone.World
 
         private void Claim(Vector3 p, float radius)
         {
-            claimed.Add(new Vector3(p.x, p.z, radius));
+            var site = new Vector3(p.x, p.z, radius);
+            claimed.Add(site);
+            if (HasGrass(currentArea))
+            {
+                if (!grassClearings.TryGetValue(currentArea, out var clearings))
+                    grassClearings[currentArea] = clearings = new List<Vector3>();
+                clearings.Add(site);
+            }
         }
 
         private float R(float min, float max)

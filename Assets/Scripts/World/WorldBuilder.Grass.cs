@@ -7,9 +7,9 @@ namespace PoeClone.World
 {
     public partial class WorldBuilder
     {
-        private readonly Dictionary<int, Vector3[]> grassClearings = new Dictionary<int, Vector3[]>();
+        // Unlike the scattering pass's claimed list, these survive every Begin() call.
+        private readonly Dictionary<int, List<Vector3>> grassClearings = new Dictionary<int, List<Vector3>>();
         private Material grassMaterial;
-        private readonly Dictionary<int, List<Vector3>> roadClearings = new Dictionary<int, List<Vector3>>();
 
         private static bool HasGrass(int area) => area == Greenwood || area == Haven || area == Graveyard || area == Orchard;
 
@@ -20,23 +20,20 @@ namespace PoeClone.World
             if (floor == null) yield break;
             if (grassMaterial == null)
                 grassMaterial = new Material(Resources.Load<Shader>("Shaders/WindGrass")) { name = "Wind grass" };
-            Vector3[] clearings = grassClearings[area];
-            roadClearings.TryGetValue(area, out var roads);
+            grassClearings.TryGetValue(area, out var clearings);
+            AreaShape shape = Shape(area);
             bool Clear(Vector3 point)
             {
-                if (roads != null)
-                    foreach (Vector3 site in roads)
+                const float margin = 0.4f; // Leave room for scattered blade roots and wind-bent tips.
+                if (shape.IsBridge(point, margin) || shape.IsShore(point, margin)) return false;
+                if (clearings != null)
+                    foreach (Vector3 site in clearings)
                     {
                         float dx = point.x - site.x, dz = point.z - site.y;
-                        if (dx * dx + dz * dz < site.z * site.z) return false;
+                        float radius = site.z + margin;
+                        if (dx * dx + dz * dz < radius * radius) return false;
                     }
-                foreach (Vector3 site in clearings)
-                {
-                    float dx = point.x - site.x, dz = point.z - site.y;
-                    if (dx * dx + dz * dz < site.z * site.z) return false;
-                }
-                return !Shape(area).IsBridge(point, 0.5f) &&
-                    !Physics.CheckSphere(point + Vector3.up * 0.35f, 0.25f,
+                return !Physics.CheckSphere(point + Vector3.up * 0.35f, 0.25f,
                         Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
             }
             yield return WindGrass.Build(floor, grassMaterial, area * 7919, area == Haven, Clear);

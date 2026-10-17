@@ -737,6 +737,15 @@ namespace PoeClone.World
             return result;
         }
 
+        private float BankDistance(Vector3 local) => (ocean ? 7f : 2f) *
+            (1f + 0.55f * Mathf.Sin(local.x * 0.21f + Mathf.Sin(local.z * 0.13f) * 2f) *
+                Mathf.Sin(local.z * 0.17f - local.x * 0.05f + 1f)) +
+            ShorelineDistance(new Vector2(local.x, local.z));
+
+        /// <summary>Whether a world point lies on the bare bank or in the water.</summary>
+        public bool IsShore(Vector3 world, float margin = 0f) =>
+            HasWater && BankDistance(world - Center) >= -margin;
+
         // Shore strips are clipped from the rendered land triangles, so their outer edges
         // cannot disagree with the floor or break into undersampled narrow-band fragments.
         public Mesh BuildShoreMesh(Mesh chunkLand = null, List<(Vector3 a, Vector3 b)> chunkBoundary = null, Rect? region = null)
@@ -747,12 +756,10 @@ namespace PoeClone.World
             var vertices = new List<Vector3>();
             var triangles = new List<int>();
             // The bank narrows and widens along the water rather than running as an even band.
-            float Bank(Vector3 v) => (ocean ? 7f : 2f) * (1f + 0.55f * Mathf.Sin(v.x * 0.21f + Mathf.Sin(v.z * 0.13f) * 2f) *
-                Mathf.Sin(v.z * 0.17f - v.x * 0.05f + 1f)) + ShorelineDistance(new Vector2(v.x, v.z));
             for (int i = 0; i < indices.Length; i += 3)
             {
                 Vector3 a = points[indices[i]], b = points[indices[i + 1]], c = points[indices[i + 2]];
-                Clip(a, b, c, Bank(a), Bank(b), Bank(c), vertices, triangles, false);
+                Clip(a, b, c, BankDistance(a), BankDistance(b), BankDistance(c), vertices, triangles, false);
             }
             // Close the exposed earth between the water level and the grassy bank.
             foreach (var edge in chunkBoundary ?? landBoundary)
