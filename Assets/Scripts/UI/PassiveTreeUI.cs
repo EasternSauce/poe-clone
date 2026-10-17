@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -38,6 +39,7 @@ namespace PoeClone.UI
             public Image Ring;
             public Image SearchRing;
             public Image Body;
+            public PressFeedback Press;
             public Text Label;
             public string SearchText;   // name and bonuses, for the search box
         }
@@ -608,6 +610,8 @@ namespace PoeClone.UI
                 (suppressPinchClicks || Time.frameCount <= pinchEndedFrame + 1)))
                 return;
 
+            views.Find(view => view.Node == node)?.Press.Play();
+
             if (Spectating)
             {
                 selected = node;
@@ -883,6 +887,7 @@ namespace PoeClone.UI
             TopRight(close.rectTransform, new Vector2(12f, -12f), new Vector2(38f, 38f));
             Text x = UiKit.NewText("X", close.rectTransform, "X", 20, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(x.rectTransform, 0f);
+            PressFeedback.Attach(close);
             // A spectator shuts only their own copy (the player's stays open for the player).
             close.gameObject.AddComponent<TouchPointerRelay>().Up += _ =>
             {
@@ -1003,6 +1008,7 @@ namespace PoeClone.UI
                 Image body = UiKit.NewImage("Body", rr, Color.white);
                 body.sprite = node.Keystone ? UiKit.Square : UiKit.Disc;
                 UiKit.Stretch(body.rectTransform, node.Notable ? 6f : 4f);
+                PressFeedback press = PressFeedback.Attach(ring, body);
 
                 var handler = ring.gameObject.AddComponent<NodeHandler>();
                 PassiveNode captured = node;
@@ -1017,7 +1023,7 @@ namespace PoeClone.UI
                 var search = new StringBuilder(node.Name);
                 foreach (StatModifier mod in node.Mods)
                     search.Append('\n').Append(StatFormatter.ItemLine(mod));
-                views.Add(new NodeView { Node = node, Ring = ring, SearchRing = searchRing, Body = body, SearchText = search.ToString() });
+                views.Add(new NodeView { Node = node, Ring = ring, SearchRing = searchRing, Body = body, Press = press, SearchText = search.ToString() });
             }
 
             // Notables and keystones are named on the tree, so it reads at a glance (after the
@@ -1159,7 +1165,81 @@ namespace PoeClone.UI
             UiKit.AddOutline(button, UiKit.BorderColor, 1.5f);
             Text text = UiKit.NewText("Label", button.rectTransform, label, 17, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(text.rectTransform, 0f);
+            PressFeedback.Attach(button);
             return button;
+        }
+
+        // Animate the face independently of allocation colours and the node's fixed socket.
+        // Unscaled time keeps the press visible while the tree pauses gameplay.
+        private class PressFeedback : MonoBehaviour, IPointerDownHandler
+        {
+            private RectTransform face;
+            private Image shade;
+            private Vector3 restScale;
+            private Vector3 restPosition;
+            private bool node;
+            private Coroutine animation;
+            private float depth;
+
+            public static PressFeedback Attach(Image button, Image nodeFace = null)
+            {
+                var feedback = button.gameObject.AddComponent<PressFeedback>();
+                feedback.node = nodeFace != null;
+                Image visual = nodeFace != null ? nodeFace : button;
+                feedback.face = visual.rectTransform;
+                feedback.restScale = feedback.face.localScale;
+                feedback.restPosition = feedback.face.localPosition;
+                feedback.shade = UiKit.NewImage("PressShade", feedback.face, Color.clear);
+                feedback.shade.sprite = visual.sprite;
+                feedback.shade.type = visual.type;
+                feedback.shade.raycastTarget = false;
+                UiKit.Stretch(feedback.shade.rectTransform, 0f);
+                return feedback;
+            }
+
+            public void OnPointerDown(PointerEventData eventData)
+            {
+                if (!node && eventData.button == PointerEventData.InputButton.Left) Play();
+            }
+
+            public void Play()
+            {
+                if (animation != null) StopCoroutine(animation);
+                animation = StartCoroutine(Animate());
+            }
+
+            private IEnumerator Animate()
+            {
+                float initialDepth = depth;
+                float elapsed = 0f;
+                while (elapsed < 1f)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    float amount = elapsed < 0.08f
+                        ? Mathf.Lerp(initialDepth, 1f, Mathf.SmoothStep(0f, 1f, elapsed / 0.08f))
+                        : 1f - Mathf.SmoothStep(0f, 1f, (elapsed - 0.76f) / 0.24f);
+                    Apply(amount);
+                    yield return null;
+                }
+                Apply(0f);
+                animation = null;
+            }
+
+            private void Apply(float amount)
+            {
+                depth = amount;
+                face.localScale = restScale * Mathf.Lerp(1f, node ? 0.80f : 0.94f, amount);
+                // Control positions are owned by responsive layout; only node faces move.
+                if (node) face.localPosition = restPosition + Vector3.down * (3f * amount);
+                shade.color = new Color(0f, 0f, 0f, 0.35f * amount);
+            }
+
+            private void OnDisable()
+            {
+                if (animation != null) StopCoroutine(animation);
+                animation = null;
+                if (face != null && shade != null) Apply(0f);
+            }
         }
 
         private class ViewHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IScrollHandler, IPointerClickHandler

@@ -1,3 +1,6 @@
+version: 2026-10-17-passive-button-press
+- Passive tree nodes now visibly sink into their rims, hold briefly, and ease back over a second when clicked or tapped. Tree action buttons also compress and darken when pressed.
+
 version: 2026-10-17-summon-replacement
 - Summoning at the minion limit replaces the oldest summons of that type, including when recasting the same summon skill.
 - Skeleton mages have three times as much life. Their bolts travel 50% faster and fly straight instead of homing toward enemies.
