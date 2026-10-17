@@ -253,6 +253,9 @@ namespace PoeClone.EditorTools
             // Dense anatomy meshes dominate the Web download; Low compression quantizes their stored
             // vertex data (normals stay within ~0.2 degrees) and roughly halves the build data.
             if (anatomy) MeshUtility.SetMeshCompression(mesh, ModelImporterMeshCompression.Low);
+            // ProceduralAnatomy swaps skinned arm variants on one renderer, which stops rendering when
+            // their vertex strides differ. Store every anatomy mesh's colours as 8-bit, as limbs are.
+            if (anatomy && mesh.HasVertexAttribute(UnityEngine.Rendering.VertexAttribute.Color)) mesh.colors32 = mesh.colors32;
             Mesh existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
             if (existing == null)
             {

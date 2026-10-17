@@ -1,3 +1,6 @@
+version: 2026-10-17-arm-render-fix
+- Fixed the hero's arms sometimes disappearing (with an error in the log) when the hands changed pose, for example when holding a weapon.
+
 version: 2026-10-17-running-gait
 - The hero no longer walks like a Nordic walker or a toy soldier: each arm now swings with the opposite leg instead of a quarter step out of time, stays lightly bent, and no longer pivots back and forth on a single pin. The elbows ride a little out from the body and flare out as the arm swings back, and the hand comes in towards the chest as it swings forward.
 - Sprinting uses the same natural arm movement, with the arms pumping in time with the legs.
