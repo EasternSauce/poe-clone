@@ -53,7 +53,9 @@ When finishing a set of project changes, update `Assets/Resources/PatchNotes.txt
 
 After finishing every new feature or fix, refresh assets in the Unity Editor through Unity MCP `refresh_unity(scope="all", mode="force", compile="request", wait_for_ready=true)`. Wait for asset importing and script compilation to finish, then check the Unity console for errors before reporting completion.
 
-After completing a feature or fix and the required checks, commit the changes with a descriptive message and push the commit to the current branch's remote before reporting completion. Include only changes related to the completed work. If committing or pushing fails, report the blocker.
+**If Unity is in Play mode, stop Play yourself (`manage_editor(action="stop")`) without asking, then refresh.** Never compile into a running Play session, and never treat Play mode as a reason to postpone the checks or the commit.
+
+**Every finished feature or fix MUST be committed and pushed before you report completion. A turn that ends with uncommitted finished work is incomplete.** Commit with a descriptive message and push to the current branch's remote. Include only changes related to the completed work. Do not wait to be asked and do not ask for permission. Only a failed commit or push is a valid reason to stop, and then report the blocker.
 
 # Class gauntlet (balance testing)
 
