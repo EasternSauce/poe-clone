@@ -5,7 +5,7 @@ using PoeClone.Visuals;
 
 namespace PoeClone.World
 {
-    /// <summary>A small world-space shower around the viewed character; never changes lighting or fog.</summary>
+    /// <summary>World-space drops and a camera-wide rain veil, independent of the player's zoom.</summary>
     [DisallowMultipleComponent]
     public sealed class RainWeather : MonoBehaviour
     {
@@ -17,6 +17,9 @@ namespace PoeClone.World
         private CameraFollow follow;
         private ParticleSystem rain;
         private Material material;
+        private GameObject filter;
+        private Material filterMaterial;
+        private Mesh filterMesh;
         private int area = -1;
         private Vector3 previous;
 
@@ -24,7 +27,7 @@ namespace PoeClone.World
 
         private void CreateRain()
         {
-            var go = new GameObject("LightRain") { layer = 4 }; // Excluded from water reflections.
+            var go = new GameObject("RainDrops") { layer = 4 }; // Excluded from water reflections.
             go.transform.SetParent(transform, false);
             rain = go.AddComponent<ParticleSystem>();
             rain.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
@@ -33,12 +36,10 @@ namespace PoeClone.World
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.startLifetime = 0.76f;
             main.startSpeed = 0;
-            main.startSize = new ParticleSystem.MinMaxCurve(0.018f, 0.028f);
-            main.startColor = new Color(0.67f, 0.75f, 0.79f, 0.26f);
-            main.maxParticles = 320;
+            main.startSize = new ParticleSystem.MinMaxCurve(0.025f, 0.04f);
+            main.startColor = new Color(0.72f, 0.81f, 0.87f, 0.45f);
+            main.maxParticles = 700;
             main.cullingMode = ParticleSystemCullingMode.Pause;
-            var emission = rain.emission;
-            emission.rateOverTime = 180;
             var shape = rain.shape;
             shape.shapeType = ParticleSystemShapeType.Box;
             shape.scale = new Vector3(36, 0.01f, 36);
@@ -71,6 +72,33 @@ namespace PoeClone.World
             renderer.receiveShadows = false;
         }
 
+        private void UpdateFilter(float intensity)
+        {
+            if (filter == null)
+            {
+                filter = new GameObject("Screen rain") { layer = 4 };
+                filterMesh = new Mesh { name = "Screen rain quad" };
+                filterMesh.vertices = new[] { new Vector3(-1, -1), new Vector3(-1, 1), new Vector3(1, 1), new Vector3(1, -1) };
+                filterMesh.uv = new[] { Vector2.zero, Vector2.up, Vector2.one, Vector2.right };
+                filterMesh.triangles = new[] { 0, 1, 2, 0, 2, 3 };
+                filterMesh.RecalculateBounds();
+                filter.AddComponent<MeshFilter>().sharedMesh = filterMesh;
+                filterMaterial = new Material(Resources.Load<Shader>("Shaders/ScreenRain")) { name = "Screen rain veil" };
+                var renderer = filter.AddComponent<MeshRenderer>();
+                renderer.sharedMaterial = filterMaterial;
+                renderer.shadowCastingMode = ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
+            }
+            filter.SetActive(true);
+            filter.transform.SetParent(view.transform, false);
+            float distance = view.nearClipPlane + 0.1f;
+            float height = view.orthographic ? view.orthographicSize : Mathf.Tan(view.fieldOfView * Mathf.Deg2Rad * 0.5f) * distance;
+            filter.transform.localPosition = Vector3.forward * distance;
+            filter.transform.localRotation = Quaternion.identity;
+            filter.transform.localScale = new Vector3(height * view.aspect, height, 1);
+            filterMaterial.SetFloat("_Intensity", intensity);
+        }
+
         private void LateUpdate()
         {
             if (view == null)
@@ -84,10 +112,12 @@ namespace PoeClone.World
             if (focus == null || view == null || intensity == 0 || manager.IsSwitching || WorldBuilder.Instance == null)
             {
                 if (rain != null && rain.isPlaying) rain.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                if (filter != null) filter.SetActive(false);
                 area = -1;
                 return;
             }
             if (rain == null) CreateRain();
+            UpdateFilter(intensity);
             Vector3 position = focus.position;
             // Teleports must not leave a trailing shower in the previous location.
             if (area != nextArea || (position - previous).sqrMagnitude > 400) rain.Clear();
@@ -96,19 +126,23 @@ namespace PoeClone.World
             rain.transform.position = new Vector3(position.x, WorldBuilder.Center(area).y + 12, position.z);
             var emission = rain.emission;
             float budget = Application.isMobilePlatform || AdaptiveQuality.RenderLevel >= 2 ? 0.55f : 1f;
-            emission.rateOverTime = 250 * intensity * budget;
+            emission.rateOverTime = 700 * intensity * budget;
             if (!rain.isPlaying) rain.Play();
         }
 
         private void OnDisable()
         {
             if (rain != null) rain.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            if (filter != null) filter.SetActive(false);
             area = -1;
         }
 
         private void OnDestroy()
         {
             if (material != null) Destroy(material);
+            if (filter != null) Destroy(filter);
+            if (filterMaterial != null) Destroy(filterMaterial);
+            if (filterMesh != null) Destroy(filterMesh);
         }
     }
 }

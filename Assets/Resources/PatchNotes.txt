@@ -1,3 +1,7 @@
+version: 2026-10-17-rain-reflections
+- Rain is clearly visible across the screen at every camera zoom, with layered falling streaks and a light rain veil in Greenwood and the Haunted Graveyard.
+- Fixed bridge and scenery reflections sliding across the water as the camera moves. Reflections now follow every frame, including at reduced quality.
+
 version: 2026-10-17-natural-roads
 - Roads and cottage paths have muted packed-earth surfaces, fine gravel, subtle worn tracks and broken, softly blended verges that fit the surrounding terrain.
 - Grass stays clear of roads and their verges, including woodland tracks when nearby terrain streams in.

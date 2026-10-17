@@ -17,8 +17,7 @@ namespace PoeClone.Visuals
         private static UniversalAdditionalCameraData sourceData;
         private static CameraOverrideOption originalDepth, originalColor;
         private static RenderTexture texture;
-        private static int lastFrame = -1, capturedFrame = -1;
-        private static float capturedHeight;
+        private static int lastFrame = -1;
         private MeshRenderer surface;
         private bool planar;
         internal bool IsPuddle { get; set; }
@@ -83,12 +82,7 @@ namespace PoeClone.Visuals
                 };
                 texture.Create();
             }
-            // Keep the captured projection with its texture when reducing update frequency.
-            if (!resized && economical && Time.frameCount - capturedFrame < 2 && Mathf.Abs(level - capturedHeight) < 0.01f)
-            {
-                Shader.SetGlobalFloat("_WaterReflectionValid", 1f);
-                return;
-            }
+            // Lower resolution saves work without letting reflections lag behind a moving camera.
             Capture(view, level);
         }
 
@@ -132,11 +126,11 @@ namespace PoeClone.Visuals
             }
             finally { GL.invertCulling = inverted; }
             Shader.SetGlobalTexture("_WaterReflection", texture);
-            Shader.SetGlobalMatrix("_WaterReflectionVP", GL.GetGPUProjectionMatrix(reflection.projectionMatrix, true) * reflection.worldToCameraMatrix);
+            // URP's camera request already handles render-target orientation. Applying the target
+            // flip here again mirrors sampling vertically and makes reflections slide with the view.
+            Shader.SetGlobalMatrix("_WaterReflectionVP", GL.GetGPUProjectionMatrix(reflection.projectionMatrix, false) * reflection.worldToCameraMatrix);
             Shader.SetGlobalFloat("_WaterReflectionHeight", level);
             Shader.SetGlobalFloat("_WaterReflectionValid", 1f);
-            capturedHeight = level;
-            capturedFrame = Time.frameCount;
         }
 
         private static void RestoreSource()
@@ -148,7 +142,6 @@ namespace PoeClone.Visuals
             }
             sourceData = null;
             source = null;
-            capturedFrame = -1;
         }
 
         private static void ReleaseTexture()
@@ -168,7 +161,7 @@ namespace PoeClone.Visuals
             ReleaseTexture();
             if (reflection != null) Destroy(reflection.gameObject);
             reflection = null;
-            lastFrame = capturedFrame = -1;
+            lastFrame = -1;
         }
     }
 }
