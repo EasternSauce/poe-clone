@@ -110,7 +110,7 @@ namespace PoeClone.Skills
             switch (kind)
             {
                 case MinionKind.Mage:
-                    return new Profile { Life = 123f, Damage = 24f, DamageGrowth = .035f, Cooldown = 1.6f, Range = 8.5f, Speed = 6f, Look = "Skeleton Mage" };
+                    return new Profile { Life = 369f, Damage = 24f, DamageGrowth = .035f, Cooldown = 1.6f, Range = 8.5f, Speed = 6f, Look = "Skeleton Mage" };
                 case MinionKind.Wolf:
                     return new Profile { Life = 88f, Damage = 7.25f, DamageGrowth = .035f, Cooldown = 0.8f, Range = 2f, Speed = 9f, Look = "Spirit Wolf" };
                 case MinionKind.Golem:
