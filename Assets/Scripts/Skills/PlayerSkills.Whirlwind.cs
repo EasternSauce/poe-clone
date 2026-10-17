@@ -30,6 +30,7 @@ namespace PoeClone.Skills
         // Hits per second with a sword and no increased attack speed. Other weapons hit as much
         // faster or slower as their own swings are, so a maul's big hits don't come at a sword's rate.
         private const float WhirlSwordHitsPerSecond = 4f;
+        private const int WhirlHitsToStagger = 4;
         private const float WhirlFullSpeedDiameters = 5f;
 
         private bool whirling;
@@ -37,6 +38,8 @@ namespace PoeClone.Skills
         private float whirlNextMana;
         private float whirlNextHit;
         private Vector3 whirlFacing;
+        private readonly Dictionary<EnemyHealth, int> whirlHitStreaks = new Dictionary<EnemyHealth, int>();
+        private readonly List<EnemyHealth> whirlPreviousTargets = new List<EnemyHealth>();
         // Enemies whose colliders the player passes through while spinning, restored when it ends.
         private readonly Dictionary<EnemyHealth, Collider[]> whirlIgnored = new Dictionary<EnemyHealth, Collider[]>();
         private CharacterController body;
@@ -61,6 +64,7 @@ namespace PoeClone.Skills
             whirlFacing = transform.forward;
             whirlNextMana = Time.time + ChannelTick;
             whirlNextHit = Time.time;
+            whirlHitStreaks.Clear();
             controller.CancelWalk();
             controller.SetChannelling(true);
             PlaySkillSound(SkillId.Whirlwind, transform.position);
@@ -71,6 +75,8 @@ namespace PoeClone.Skills
             if (!whirling)
                 return;
             whirling = false;
+            whirlHitStreaks.Clear();
+            whirlPreviousTargets.Clear();
             foreach (Collider[] colliders in whirlIgnored.Values)
                 IgnoreEnemy(colliders, false);
             whirlIgnored.Clear();
@@ -163,8 +169,21 @@ namespace PoeClone.Skills
             Vector3 center = transform.position;
             Record(skill, level, reach, at: center);
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
-            foreach (EnemyHealth enemy in EnemiesWithin(center, reach))
-                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id);
+            List<EnemyHealth> targets = EnemiesWithin(center, reach);
+            // Missing an enemy for even one pulse breaks its streak, independently of other enemies.
+            whirlPreviousTargets.Clear();
+            whirlPreviousTargets.AddRange(whirlHitStreaks.Keys);
+            foreach (EnemyHealth enemy in whirlPreviousTargets)
+                if (enemy == null || !targets.Contains(enemy))
+                    whirlHitStreaks.Remove(enemy);
+            foreach (EnemyHealth enemy in targets)
+            {
+                whirlHitStreaks.TryGetValue(enemy, out int hits);
+                hits = enemy.Immune || damage <= 0f ? 0 : hits + 1;
+                bool flinch = hits >= WhirlHitsToStagger;
+                whirlHitStreaks[enemy] = flinch ? 0 : hits;
+                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id, flinch: flinch);
+            }
         }
 
         // Towards the cursor, as a share of full speed that grows with its distance. On touch: the
