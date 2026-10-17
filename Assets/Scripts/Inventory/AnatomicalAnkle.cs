@@ -3,8 +3,11 @@ using UnityEngine;
 namespace PoeClone.Inventory
 {
     /// <summary>An ankle pivot shared by the bare foot, trouser skin and equipped footwear.</summary>
-    public sealed class AnatomicalAnkle : MonoBehaviour
+    public sealed class AnatomicalAnkle : MonoBehaviour, IPreviewPose
     {
+        // The portrait copy keeps its ankles, so it stands with the same natural gait and idle.
+        public void PrepareForPreview() { }
+
         [SerializeField] private Transform joint;
         [SerializeField] private Transform foot;
         [SerializeField] private Vector3 footRestPosition;

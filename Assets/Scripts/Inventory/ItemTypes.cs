@@ -269,6 +269,14 @@ namespace PoeClone.Inventory
             return weaponType == WeaponType.Bow || weaponType == WeaponType.Staff || IsTwoHandedMelee(weaponType);
         }
 
+        /// <summary>Which hands hold something; the off hand also closes on a two-handed weapon.</summary>
+        public static void HeldHands(EquipmentSet equipment, out bool left, out bool right)
+        {
+            ItemData main = equipment?.Get(EquipSlot.MainHand);
+            right = main != null;
+            left = equipment?.Get(EquipSlot.OffHand) != null || (main != null && IsTwoHanded(main.WeaponType));
+        }
+
         /// <summary>
         /// Base attacks per second for a weapon type, before the AttackSpeed stat. Staves and
         /// sceptres swing like a mace; Unarmed is the bare-handed punch.

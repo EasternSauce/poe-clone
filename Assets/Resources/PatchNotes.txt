@@ -1,3 +1,8 @@
+version: 2026-10-17-idle-fidgets
+- Standing still, the hero now clearly shifts his weight from leg to leg: his hips slide over the standing leg, the other knee bends with the heel raised, and his shoulders tilt and turn with it.
+- Every so often he fidgets impatiently: hands on his hips, rubbing his hands together, scratching his beard, or tapping a foot. Hands holding a weapon stay on it.
+- Fixed the inventory portrait standing stiffly instead of using the hero's natural stance and idle movement.
+
 version: 2026-10-17-face-life
 - The hero's stare is gone: his upper eyelids now rest over the top of the iris instead of showing white above it, with a soft lid crease and faint shadows under the eyes.
 - His face is no longer perfectly mirrored: tiny differences in the brows, lids, nose and smile make it read as a real face.

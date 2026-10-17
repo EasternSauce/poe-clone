@@ -52,10 +52,7 @@ namespace PoeClone.Inventory
         public void SetEquipment(EquipmentSet equipment)
         {
             gloves = equipment?.Get(EquipSlot.Gloves) != null;
-            ItemData main = equipment?.Get(EquipSlot.MainHand);
-            rightGrip = main != null;
-            leftGrip = equipment?.Get(EquipSlot.OffHand) != null ||
-                (main != null && (SlotRules.IsTwoHandedMelee(main.WeaponType) || main.WeaponType == WeaponType.Bow || main.WeaponType == WeaponType.Staff));
+            SlotRules.HeldHands(equipment, out leftGrip, out rightGrip);
             Apply(null);
             ApplyParts(null,true);
         }

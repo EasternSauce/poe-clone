@@ -19,6 +19,9 @@ namespace PoeClone.Inventory
         /// <summary>The worn great weapon (greatsword, greataxe, maul), held in both hands; null otherwise. Its +Y runs from the grip to the head.</summary>
         public Transform TwoHandedWeapon { get; private set; }
 
+        /// <summary>Which of this model's hands hold something.</summary>
+        public void HeldHands(out bool left, out bool right) => SlotRules.HeldHands(equipment, out left, out right);
+
         private void Start()
         {
             if (equipment != null)
