@@ -42,6 +42,7 @@ namespace PoeClone.EditorTools
             BuildBush(false);
             BuildRock(true);
             BuildRock(false);
+            NaturalRockBuilder.BuildAll();
             BuildHouse();
             BuildPillar();
 

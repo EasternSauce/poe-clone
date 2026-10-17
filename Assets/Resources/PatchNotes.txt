@@ -1,3 +1,7 @@
+version: 2026-10-17-natural-rocks
+- Rocks now have sixteen weathered boulder, slab and fractured shapes, varied proportions and smaller companion stones instead of repeated matching chunks.
+- Stone colours vary subtly with the area, with muted grey, warm mineral, sandstone and cold stone tones. Patchy moss grows on sheltered upper surfaces in woodland and graveyard areas; dry and frozen areas stay bare.
+
 version: 2026-10-17-gateway-paths
 - Paths in Haven and the Haunted Graveyard now reach the gateways at their final wall positions.
 - A continuous woodland track connects Greenwood's Haven entrance to the southeast Lost Hollows gateway, crossing the existing southern bridge. Trees, rocks and grass leave the track clear.

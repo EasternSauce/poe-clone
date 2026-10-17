@@ -40,7 +40,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2912485500112861498}
-  m_Mesh: {fileID: 4300000, guid: 994547d400b23fd4f9b08ba6e420f423, type: 2}
+  m_Mesh: {fileID: 4300000, guid: 90a38348a39b1714c8dfc41f00c181ca, type: 2}
 --- !u!23 &5476601897166764704
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -100,6 +100,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9212010527905428900}
   - component: {fileID: 8641812042569461284}
+  - component: {fileID: 3534979115549970200}
   m_Layer: 0
   m_Name: Rock
   m_TagString: Untagged
@@ -145,6 +146,35 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.2, y: 2.4, z: 1.6}
   m_Center: {x: 0.3, y: 1.2, z: 0.1}
+--- !u!114 &3534979115549970200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5388122210501340907}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19e2db508c173ad48bfa4acc0f8a5fcf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PoeClone.Visuals.NaturalRock
+  variants:
+  - {fileID: 4300000, guid: eab40c55d1d13934eae0d976221b9bd0, type: 2}
+  - {fileID: 4300000, guid: 90a38348a39b1714c8dfc41f00c181ca, type: 2}
+  - {fileID: 4300000, guid: 0b1d8719f4bc87b4baeba1306928a85f, type: 2}
+  - {fileID: 4300000, guid: 62aef15d96b5e334fb80bf6b098d31b7, type: 2}
+  - {fileID: 4300000, guid: 26190976d972e5d41998cfab958ebe72, type: 2}
+  - {fileID: 4300000, guid: 9b646c893f744fb468030699be90e6b6, type: 2}
+  - {fileID: 4300000, guid: e366149342d3bb4459bb0da46b1195d6, type: 2}
+  - {fileID: 4300000, guid: b53ab9ff13f54f940b2bbe20590d58a7, type: 2}
+  - {fileID: 4300000, guid: 77d02a14880e78b4ba9b9b98b3e6d39d, type: 2}
+  - {fileID: 4300000, guid: 895a25f99dbf23942a458eb773a4cda4, type: 2}
+  - {fileID: 4300000, guid: 716b0b9c6b4b7ca45bcd386368628c21, type: 2}
+  - {fileID: 4300000, guid: 3c8cd3bab225b7b4a83e6451c7ffb98b, type: 2}
+  - {fileID: 4300000, guid: 64672f839d0b51b4e94dadd63676ab55, type: 2}
+  - {fileID: 4300000, guid: 22b981a93729a2541a66cf2a69891024, type: 2}
+  - {fileID: 4300000, guid: 8fa32889208782347a8934b2ca05511b, type: 2}
+  - {fileID: 4300000, guid: 051482371729fad4f95f4274ee09e081, type: 2}
 --- !u!1 &8613393511320693635
 GameObject:
   m_ObjectHideFlags: 0
@@ -185,7 +215,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8613393511320693635}
-  m_Mesh: {fileID: 4300000, guid: 0efc5f1ffdd04f442bd12e32bbe1f6c6, type: 2}
+  m_Mesh: {fileID: 4300000, guid: eab40c55d1d13934eae0d976221b9bd0, type: 2}
 --- !u!23 &2962639872176296365
 MeshRenderer:
   m_ObjectHideFlags: 0

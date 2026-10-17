@@ -16,6 +16,8 @@ Shader "PoeClone/ToonLit"
         _ObjectTexture ("Texture Follows Object", Range(0,2)) = 0
         _LivingWater ("Living Water", Range(0,1)) = 0
         _WaterOcean ("Ocean Wave Strength", Range(0,1)) = 0
+        _RockSurface ("Natural Stone Surface", Range(0,1)) = 0
+        _RockMoss ("Stone Moss Coverage", Range(0,1)) = 0
         _SerpentScales ("Serpent Scale Surface", Range(0,1)) = 0
     }
     SubShader
@@ -85,6 +87,8 @@ Shader "PoeClone/ToonLit"
                 float _SerpentScales;
                 float _LivingWater;
                 float _WaterOcean;
+                float _RockSurface;
+                float _RockMoss;
             CBUFFER_END
 
             // ---------------------------------------------------------------
@@ -207,6 +211,24 @@ Shader "PoeClone/ToonLit"
                 return half4(scales, relief);
             }
 
+            // Continuous world-space weathering avoids UV seams and repeated painted spots.
+            float StoneNoise(float3 p)
+            {
+                float3 cell = floor(p), f = frac(p);
+                f = f * f * (3.0 - 2.0 * f);
+                float4 h0 = frac(sin(float4(dot(cell, float3(127.1,311.7,74.7)),
+                    dot(cell + float3(1,0,0), float3(127.1,311.7,74.7)),
+                    dot(cell + float3(0,1,0), float3(127.1,311.7,74.7)),
+                    dot(cell + float3(1,1,0), float3(127.1,311.7,74.7)))) * 43758.5453);
+                cell.z += 1;
+                float4 h1 = frac(sin(float4(dot(cell, float3(127.1,311.7,74.7)),
+                    dot(cell + float3(1,0,0), float3(127.1,311.7,74.7)),
+                    dot(cell + float3(0,1,0), float3(127.1,311.7,74.7)),
+                    dot(cell + float3(1,1,0), float3(127.1,311.7,74.7)))) * 43758.5453);
+                return lerp(lerp(lerp(h0.x,h0.y,f.x),lerp(h0.z,h0.w,f.x),f.y),
+                    lerp(lerp(h1.x,h1.y,f.x),lerp(h1.z,h1.w,f.x),f.y),f.z);
+            }
+
             half4 frag(Varyings IN) : SV_Target
             {
                 float3 normalWS = normalize(IN.normalWS);
@@ -254,6 +276,24 @@ Shader "PoeClone/ToonLit"
                 texCol = lerp(half3(1, 1, 1), texCol, _TexInfluence);
                 half3 albedo = texCol * _BaseColor.rgb;
                 albedo *= lerp(half3(1, 1, 1), scales.rgb, _SerpentScales);
+
+                if (_RockSurface > 0)
+                {
+                    float broad = StoneNoise(IN.positionWS * 1.7);
+                    #if defined(_MOBILE_LITE)
+                    float grain = broad;
+                    #else
+                    float grain = StoneNoise(IN.positionWS * 19.0);
+                    #endif
+                    albedo *= 0.82 + broad * 0.30 + grain * 0.12;
+                    float upward = smoothstep(-0.08, 0.72, normalWS.y);
+                    float sheltered = 0.7 + dot(normalWS.xz, normalize(float2(-0.6, 0.8))) * 0.3;
+                    float moss = smoothstep(0.49, 0.68, broad + _RockMoss * 0.48 - 0.24)
+                        * upward * sheltered * step(0.01, _RockMoss);
+                    half3 mossColor = lerp(half3(0.16,0.21,0.085), half3(0.32,0.37,0.16), grain);
+                    albedo = lerp(albedo, mossColor, moss * 0.92);
+                }
+
 
                 half3 litColor = albedo * mainLight.color.rgb;
                 half3 shadowedColor = albedo * _ShadowColor.rgb;
