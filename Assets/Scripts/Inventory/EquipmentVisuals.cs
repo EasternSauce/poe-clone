@@ -187,10 +187,12 @@ namespace PoeClone.Inventory
 
         private static void SeatGrip(Transform weapon, Transform socket)
         {
+            // The fingers close around the palm; the legacy socket was below and ahead of it.
+            Vector3 palm = socket.parent.TransformPoint(HandPoint(new Vector3(-.14f, -.32f, 0f)));
             Transform grip = weapon.Find("Grip") ?? weapon.Find("Wrap");
             if (grip != null)
             {
-                weapon.position += socket.position - grip.position;
+                weapon.position += palm - grip.position;
                 return;
             }
             Transform shaft = weapon.Find("Handle") ?? weapon.Find("Haft") ?? weapon.Find("Shaft");
@@ -198,7 +200,55 @@ namespace PoeClone.Inventory
             // Long unwrapped handles are held near the butt, rather than at their centre.
             Vector3 point = shaft.localPosition;
             point.y = shaft.localPosition.y - shaft.localScale.y * .5f + .10f;
-            weapon.position += socket.position - weapon.TransformPoint(point);
+            weapon.position += palm - weapon.TransformPoint(point);
+        }
+
+        // Matches the baked hand's scale and 1.2x growth about its wrist, in elbow space.
+        private static Vector3 HandPoint(Vector3 point) => new Vector3(
+            point.x * .135f * 1.2f,
+            -.39f + (.3125f + (point.y - .3125f) * 1.2f) * .16f,
+            point.z * .16f * 1.2f);
+
+        private void FitRings()
+        {
+            if (GetComponent<ProceduralAnatomy>() == null) return;
+            HeldHands(out bool left, out bool right);
+            foreach (EquipSlot slot in new[] { EquipSlot.Ring1, EquipSlot.Ring2 })
+            {
+                if (!spawned.TryGetValue(slot, out var rings)) continue;
+                bool isLeft = slot == EquipSlot.Ring2;
+                float mirror = isLeft ? -1f : 1f;
+                bool grip = isLeft ? left : right;
+                // Centre of the ring finger's proximal phalanx, following its rest or grip arc.
+                const float along = .065f;
+                float angle = grip ? along / .51f * 2.65f : 22f * Mathf.Deg2Rad;
+                Vector3 finger = grip
+                    ? new Vector3(-mirror * .51f * (1f - Mathf.Cos(angle)) / 2.65f,
+                        -.18f - .51f * Mathf.Sin(angle) / 2.65f, -.0675f)
+                    : new Vector3(-mirror * Mathf.Sin(angle) * along,
+                        -.18f - Mathf.Cos(angle) * along, -.0675f);
+                foreach (GameObject ring in rings)
+                {
+                    if (ring == null) continue;
+                    Transform socket = ring.transform.parent;
+                    ring.transform.position = socket.parent.TransformPoint(HandPoint(finger));
+                    ring.transform.rotation = socket.parent.rotation *
+                        Quaternion.Euler(0f, 0f, -mirror * angle * Mathf.Rad2Deg) *
+                        Quaternion.Euler(0f, mirror * 90f, 0f);
+                    ring.transform.localScale = Vector3.one;
+                    Transform band = ring.transform.Find("Band"), gem = ring.transform.Find("Gem");
+                    if (band != null)
+                    {
+                        band.localPosition = Vector3.zero;
+                        band.localScale = new Vector3(.025f, .009f, .022f);
+                    }
+                    if (gem != null)
+                    {
+                        gem.localPosition = new Vector3(0f, 0f, .012f);
+                        gem.localScale = new Vector3(.012f, .010f, .008f);
+                    }
+                }
+            }
         }
 
         /// <summary>The equipped hammer's head in its current animated pose.</summary>
@@ -218,7 +268,6 @@ namespace PoeClone.Inventory
             return false;
         }
 
-        // Rings are written once ("Socket_Ring"); the slot decides which hand they go on.
         // A higher tier of a shared look: its colours multiplied by the tier's tint (property
         // blocks, so the shared materials stay as they are).
         private static void Tint(GameObject instance, Color tint)
@@ -237,6 +286,7 @@ namespace PoeClone.Inventory
 
         private static string ResolveSocket(string name, EquipSlot slot)
         {
+            // Rings share a prefab; the slot decides which hand wears it.
             if (name == "Socket_Ring")
                 return slot == EquipSlot.Ring2 ? "Socket_RingL" : "Socket_RingR";
             return name;
@@ -251,6 +301,7 @@ namespace PoeClone.Inventory
             }
             foreach (var anatomy in GetComponentsInChildren<ProceduralAnatomy>(true))
                 anatomy.SetEquipment(equipment);
+            FitRings();
         }
 
         private static void Kill(GameObject go)

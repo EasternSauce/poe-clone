@@ -7,6 +7,21 @@ namespace PoeClone.EditorTools
     public static class AnatomyMeshes
     {
         private static AnatomyProfile profile;
+        /// <summary>Rebake only held-hand variants, preserving unrelated anatomy assets.</summary>
+        public static void RebuildGrips()
+        {
+            foreach (string side in new[] { "L", "R" })
+            foreach (bool detailed in new[] { true, false })
+            {
+                string suffix = detailed ? "Grip" : "GripLow";
+                Mesh hand = LowPolyMeshes.Save("AnatomyHand" + side + suffix,
+                    Simplified(Hand("AnatomyHand" + side + suffix, side == "L", true, detailed ? 12 : 6)));
+                Mesh arm = UnityEditor.AssetDatabase.LoadAssetAtPath<Mesh>(LowPolyMeshes.MeshDir + "/AnatomyConnectedArm" + side + ".asset");
+                LowPolyMeshes.Save("AnatomyArmHand" + side + suffix,
+                    AnatomyWristMeshes.Join("AnatomyArmHand" + side + suffix, arm, hand));
+            }
+            UnityEditor.AssetDatabase.SaveAssets();
+        }
         private static float EyeCenter => .185f * (profile != null ? profile.EyeSpacing : 1);
         // Separate from BodyHead/BodyLimb: those generic shapes also build armour and creatures.
         public static Dictionary<string, Mesh> Build()
@@ -441,17 +456,16 @@ namespace PoeClone.EditorTools
         {
             var volume = new AnatomyVolume(.020f);
             float mirror = left ? -1 : 1;
-            Vector3 offset=grip ? new Vector3(mirror*.18f,-.28f,.33f) : Vector3.zero;
             // The palm is a thin metacarpal plate: broad at the knuckles, tapered at the wrist.
-            volume.Palm(new Vector3(0,.035f,0)+offset,new Vector3(.105f,.245f,.30f),.045f);
+            volume.Palm(new Vector3(0,.035f,0),new Vector3(.105f,.245f,.30f),.045f);
             volume.Ellipsoid(new Vector3(0,.3125f,0),new Vector3(.1925926f,.19f,.165625f));
-            volume.Ellipsoid(new Vector3(-mirror*.065f,.01f,.19f)+offset,new Vector3(.065f,.16f,.105f));
+            volume.Ellipsoid(new Vector3(-mirror*.065f,.01f,.19f),new Vector3(.065f,.16f,.105f));
             float[] fingerZ={.2225f,.0775f,-.0675f,-.2125f};
             for(int i=0;i<4;i++)
             {
-                volume.Capsule(new Vector3(mirror*.09f,.16f,fingerZ[i]*.64f)+offset,
-                    new Vector3(mirror*.095f,-.17f,fingerZ[i])+offset,.022f,.030f);
-                volume.Ellipsoid(new Vector3(mirror*.015f,-.17f,fingerZ[i])+offset,new Vector3(.105f,.065f,.065f));
+                volume.Capsule(new Vector3(mirror*.09f,.16f,fingerZ[i]*.64f),
+                    new Vector3(mirror*.095f,-.17f,fingerZ[i]),.022f,.030f);
+                volume.Ellipsoid(new Vector3(mirror*.015f,-.17f,fingerZ[i]),new Vector3(.105f,.065f,.065f));
             }
             var creases=new[] {
                 new[] {new Vector2(-.10f,-.25f),new Vector2(-.07f,-.08f),new Vector2(-.095f,.08f),new Vector2(-.13f,.22f)},
@@ -471,7 +485,7 @@ namespace PoeClone.EditorTools
                     {
                         float t=j/(float)segments,bend=2.65f*t;
                         path.Add(new Vector3(-mirror*length*(1-Mathf.Cos(bend))/2.65f,
-                            -.29f-length*Mathf.Sin(bend)/2.65f,z)+offset);
+                            -.18f-length*Mathf.Sin(bend)/2.65f,z));
                     }
                 else
                 {
@@ -499,15 +513,16 @@ namespace PoeClone.EditorTools
             for(int j=0;j<=16;j++)
             {
                 float t=j/16f;
-                if(grip)
-                    thumb.Add(new Vector3(-mirror*(.08f+.33f*t),.12f-.43f*t,.26f+.15f*Mathf.Sin(t*1.4f))+offset);
-                else
+                Vector3 a=new Vector3(-mirror*.045f,.09f,.18f),c1=new Vector3(-mirror*.09f,-.04f,.31f),
+                    c2=new Vector3(-mirror*.13f,-.24f,.29f),end=new Vector3(-mirror*.10f,-.34f,.2225f);
+                if (grip)
                 {
-                    Vector3 a=new Vector3(-mirror*.045f,.09f,.18f),c1=new Vector3(-mirror*.09f,-.04f,.31f),
-                        c2=new Vector3(-mirror*.13f,-.24f,.29f),end=new Vector3(-mirror*.10f,-.34f,.2225f);
-                    float q=1-t;
-                    thumb.Add(q*q*q*a+3*q*q*t*c1+3*q*t*t*c2+t*t*t*end);
+                    c1=new Vector3(-mirror*.14f,.02f,.37f);
+                    c2=new Vector3(-mirror*.32f,-.14f,.33f);
+                    end=new Vector3(-mirror*.26f,-.30f,.19f);
                 }
+                float q=1-t;
+                thumb.Add(q*q*q*a+3*q*q*t*c1+3*q*t*t*c2+t*t*t*end);
             }
             // Broad at the root where it meets the thenar pad, tapering to a rounded tip.
             volume.Tube(thumb,t=>Mathf.Lerp(.068f,.050f,Mathf.SmoothStep(0,1,t)));
@@ -522,12 +537,11 @@ namespace PoeClone.EditorTools
                     if(Vector3.Dot(delta,nailNormals[i])>.043f && along*along/(.055f*.055f)+sideways*sideways/(.043f*.043f)<1)
                         return new Color(1.05f,.90f,.86f);
                 }
-                Vector3 palm=p-offset;
-                if(palm.x*mirror<-.085f)
+                if(p.x*mirror<-.085f)
                     foreach(var crease in creases)
                         for(int i=0;i<crease.Length-1;i++)
                         {
-                            Vector2 axis=crease[i+1]-crease[i],delta=new Vector2(palm.y,palm.z)-crease[i];
+                            Vector2 axis=crease[i+1]-crease[i],delta=new Vector2(p.y,p.z)-crease[i];
                             float t=Mathf.Clamp01(Vector2.Dot(delta,axis)/axis.sqrMagnitude);
                             if((delta-axis*t).sqrMagnitude<.009f*.009f)return new Color(.78f,.65f,.58f);
                         }

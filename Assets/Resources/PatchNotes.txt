@@ -1,3 +1,7 @@
+version: 2026-10-17-hand-grip-rings
+- Fixed the weapon hand looking detached: the palm stays joined to the wrist, fingers curl from their knuckles, and the thumb wraps across the grip. One-handed melee grips now sit inside the fist.
+- Equipped rings now fit the ring finger, with their stones on the back, and follow the open or gripping hand pose in the inventory portrait and game.
+
 version: 2026-10-17-idle-stretch-lean
 - During the idle arm stretch, the hero now leans forward slightly and dips his head, then straightens as his arms lower. The arm motion is about 30% shorter while keeping the lower lift and relaxed elbows. He finishes by reaching his chin forward and gently tilting his head to each side to stretch his neck. This also plays in the inventory portrait.
 
