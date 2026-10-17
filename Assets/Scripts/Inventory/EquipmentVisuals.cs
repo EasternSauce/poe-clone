@@ -149,8 +149,14 @@ namespace PoeClone.Inventory
                              item.WeaponType == WeaponType.Greatsword || item.WeaponType == WeaponType.Greataxe ||
                              item.WeaponType == WeaponType.Maul || item.WeaponType == WeaponType.Sceptre);
                         float gripTwist = meleeWeapon ? 270f : 180f;
-                        instance.transform.localRotation = slot == EquipSlot.MainHand && child.name == "Socket_MainHand"
-                            ? child.localRotation * Quaternion.Euler(0f, gripTwist, 0f)
+                        bool heldInHand = slot == EquipSlot.MainHand && child.name == "Socket_MainHand";
+                        // One-handed weapons are built pointing straight ahead out of the fist, end-on
+                        // to the portrait camera. Turn them out from the body about the forearm, so
+                        // the blade shows as a diagonal (and reads better from the game camera too).
+                        bool oneHanded = item.Type == ItemType.Weapon && !SlotRules.IsTwoHanded(item.WeaponType);
+                        Quaternion splay = heldInHand && oneHanded ? Quaternion.Euler(0f, OneHandedSplay, 0f) : Quaternion.identity;
+                        instance.transform.localRotation = heldInHand
+                            ? splay * child.localRotation * Quaternion.Euler(0f, gripTwist, 0f)
                             : child.localRotation;
                         instance.transform.localScale = child.localScale;
                         // Legacy weapons placed the socket near the pommel. With actual fingers,
@@ -172,6 +178,9 @@ namespace PoeClone.Inventory
 
             UpdateBaseGear();
         }
+
+        // Degrees a one-handed main-hand weapon turns outward from straight ahead.
+        private const float OneHandedSplay = 28f;
 
         private static void SeatGrip(Transform weapon, Transform socket)
         {
