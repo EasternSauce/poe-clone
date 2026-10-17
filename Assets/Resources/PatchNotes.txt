@@ -1,3 +1,7 @@
+version: 2026-10-17-natural-roads
+- Roads and cottage paths have muted packed-earth surfaces, fine gravel, subtle worn tracks and broken, softly blended verges that fit the surrounding terrain.
+- Grass stays clear of roads and their verges, including woodland tracks when nearby terrain streams in.
+
 version: 2026-10-17-light-rain
 - Light rain falls in Greenwood and the Haunted Graveyard, with sparse, faint streaks that keep enemies and ground warnings clear.
 - Scattered shallow puddles reflect the surroundings. Raindrops make overlapping rings that disturb puddle, lake and river reflections in rainy areas.

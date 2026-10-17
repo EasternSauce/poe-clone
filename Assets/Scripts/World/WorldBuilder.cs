@@ -208,6 +208,7 @@ namespace PoeClone.World
         {
             ReleaseStreamedResources();
             if (grassMaterial != null) Destroy(grassMaterial);
+            foreach (Material roadMaterial in roadMaterials.Values) Destroy(roadMaterial);
             if (Instance == this)
                 Instance = null;
         }

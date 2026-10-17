@@ -55,8 +55,12 @@ namespace PoeClone.World
                 }
             }
             points.Add(knots[knots.Length - 1]);
-            var vertices = new Vector3[points.Count * 2];
+            const int columns = 7;
+            var vertices = new Vector3[points.Count * columns];
             var uv = new Vector2[vertices.Length];
+            var verge = new Vector2[vertices.Length];
+            if (!roadClearings.TryGetValue(area, out var roadSites))
+                roadClearings[area] = roadSites = new List<Vector3>();
             var triangles = new List<int>();
             AreaShape shape = Shape(area);
             Vector3 center = Center(area);
@@ -72,23 +76,33 @@ namespace PoeClone.World
                     * (1f + flare * Mathf.Exp(-distance / 3f));
                 float left = half * (1f + 0.22f * (Mathf.PerlinNoise(distance * 0.55f, width * 7.3f) - 0.5f));
                 float right = half * (1f + 0.22f * (Mathf.PerlinNoise(distance * 0.55f + 41f, width * 7.3f) - 0.5f));
-                vertices[i * 2] = points[i] + side * left + Vector3.up * 0.035f;
-                vertices[i * 2 + 1] = points[i] - side * right + Vector3.up * 0.035f;
-                uv[i * 2] = new Vector2(0, distance / width);
-                uv[i * 2 + 1] = new Vector2(1, distance / width);
-                bool inside = shape.Contains(center + vertices[i * 2]) &&
-                    shape.Contains(center + vertices[i * 2 + 1]);
+                for (int col = 0; col < columns; col++)
+                {
+                    float across = col / (float)(columns - 1);
+                    int v = i * columns + col;
+                    vertices[v] = points[i] + side * Mathf.Lerp(left, -right, across) + Vector3.up * 0.018f;
+                    uv[v] = new Vector2(across, distance);
+                    verge[v] = new Vector2(Mathf.Min(across, 1f - across) * (left + right), 0f);
+                }
+                bool inside = shape.Contains(center + vertices[i * columns]) &&
+                    shape.Contains(center + vertices[i * columns + columns - 1]);
                 if (i > 0 && inside && previousInside)
                 {
-                    int v = i * 2;
-                    triangles.Add(v - 2); triangles.Add(v - 1); triangles.Add(v);
-                    triangles.Add(v); triangles.Add(v - 1); triangles.Add(v + 1);
+                    for (int col = 0; col < columns - 1; col++)
+                    {
+                        int v = i * columns + col;
+                        triangles.Add(v - columns); triangles.Add(v - columns + 1); triangles.Add(v);
+                        triangles.Add(v); triangles.Add(v - columns + 1); triangles.Add(v + 1);
+                    }
                 }
                 previousInside = inside;
                 if (inside)
                 {
                     float clearance = Mathf.Max(left, right) + 1.1f;
                     Claim(center + points[i], clearance);
+                    // Keep road exclusions across Begin() calls and streamed grass rebuilds.
+                    Vector3 site = center + points[i];
+                    roadSites.Add(new Vector3(site.x, site.z, Mathf.Max(left, right) + 0.65f));
                     if (clearScenery)
                     {
                         ClearSpot(center + points[i], clearance);
@@ -96,7 +110,7 @@ namespace PoeClone.World
                     }
                 }
             }
-            var mesh = new Mesh { name = name, vertices = vertices, uv = uv };
+            var mesh = new Mesh { name = name, vertices = vertices, uv = uv, uv2 = verge };
             mesh.SetTriangles(triangles, 0);
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
@@ -105,8 +119,22 @@ namespace PoeClone.World
             road.transform.position = center;
             road.AddComponent<MeshFilter>().sharedMesh = mesh;
             var renderer = road.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial = material;
+            renderer.sharedMaterial = RoadMaterial(material);
             renderer.shadowCastingMode = ShadowCastingMode.Off;
+        }
+
+        private readonly Dictionary<Material, Material> roadMaterials = new Dictionary<Material, Material>();
+
+        private Material RoadMaterial(Material soil)
+        {
+            if (!roadMaterials.TryGetValue(soil, out var material))
+            {
+                material = new Material(Resources.Load<Shader>("Shaders/NaturalRoad")) { name = soil.name + " Road" };
+                material.SetTexture("_BaseMap", soil.GetTexture("_BaseMap"));
+                material.SetColor("_BaseColor", soil == MudFloor ? Color.white : new Color(0.78f, 0.81f, 0.83f));
+                roadMaterials[soil] = material;
+            }
+            return material;
         }
 
         private void BuildVillageHomes(Transform parent)
