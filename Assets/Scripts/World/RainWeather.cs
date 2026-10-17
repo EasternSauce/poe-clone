@@ -1,0 +1,114 @@
+using UnityEngine;
+using UnityEngine.Rendering;
+using PoeClone.CameraSystem;
+using PoeClone.Visuals;
+
+namespace PoeClone.World
+{
+    /// <summary>A small world-space shower around the viewed character; never changes lighting or fog.</summary>
+    [DisallowMultipleComponent]
+    public sealed class RainWeather : MonoBehaviour
+    {
+        public static float Intensity(int area) => area == WorldBuilder.Greenwood ? 0.7f :
+            area == WorldBuilder.Graveyard ? 0.45f : 0f;
+
+        private AreaManager manager;
+        private Camera view;
+        private CameraFollow follow;
+        private ParticleSystem rain;
+        private Material material;
+        private int area = -1;
+        private Vector3 previous;
+
+        private void Awake() => manager = GetComponent<AreaManager>();
+
+        private void CreateRain()
+        {
+            var go = new GameObject("LightRain") { layer = 4 }; // Excluded from water reflections.
+            go.transform.SetParent(transform, false);
+            rain = go.AddComponent<ParticleSystem>();
+            rain.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = rain.main;
+            main.playOnAwake = false;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.startLifetime = 0.76f;
+            main.startSpeed = 0;
+            main.startSize = new ParticleSystem.MinMaxCurve(0.018f, 0.028f);
+            main.startColor = new Color(0.67f, 0.75f, 0.79f, 0.26f);
+            main.maxParticles = 320;
+            main.cullingMode = ParticleSystemCullingMode.Pause;
+            var emission = rain.emission;
+            emission.rateOverTime = 180;
+            var shape = rain.shape;
+            shape.shapeType = ParticleSystemShapeType.Box;
+            shape.scale = new Vector3(36, 0.01f, 36);
+            var velocity = rain.velocityOverLifetime;
+            velocity.enabled = true;
+            velocity.space = ParticleSystemSimulationSpace.World;
+            velocity.x = 1.2f; velocity.y = -18f; velocity.z = 0.55f;
+            // Stop drops on roofs and bridges. Ignore actors and triggers, with a small static collision budget.
+            var collision = rain.collision;
+            collision.enabled = true;
+            collision.type = ParticleSystemCollisionType.World;
+            collision.mode = ParticleSystemCollisionMode.Collision3D;
+            collision.quality = ParticleSystemCollisionQuality.Low;
+            collision.enableDynamicColliders = false;
+            collision.maxCollisionShapes = 32;
+            collision.lifetimeLoss = 1;
+            var color = rain.colorOverLifetime;
+            color.enabled = true;
+            var gradient = new Gradient();
+            gradient.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) },
+                new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(1, 0.12f), new GradientAlphaKey(1, 0.85f), new GradientAlphaKey(0, 1) });
+            color.color = gradient;
+            material = new Material(Resources.Load<Shader>("Shaders/AmbientParticle")) { name = "Soft rain streaks" };
+            var renderer = go.GetComponent<ParticleSystemRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.renderMode = ParticleSystemRenderMode.Stretch;
+            renderer.lengthScale = 1.5f;
+            renderer.velocityScale = 0.018f;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+        }
+
+        private void LateUpdate()
+        {
+            if (view == null)
+            {
+                view = Camera.main;
+                if (view != null) follow = view.GetComponent<CameraFollow>();
+            }
+            Transform focus = follow != null && follow.Target != null ? follow.Target : manager.player;
+            int nextArea = manager.CurrentAreaIndex;
+            float intensity = Intensity(nextArea);
+            if (focus == null || view == null || intensity == 0 || manager.IsSwitching || WorldBuilder.Instance == null)
+            {
+                if (rain != null && rain.isPlaying) rain.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                area = -1;
+                return;
+            }
+            if (rain == null) CreateRain();
+            Vector3 position = focus.position;
+            // Teleports must not leave a trailing shower in the previous location.
+            if (area != nextArea || (position - previous).sqrMagnitude > 400) rain.Clear();
+            area = nextArea;
+            previous = position;
+            rain.transform.position = new Vector3(position.x, WorldBuilder.Center(area).y + 12, position.z);
+            var emission = rain.emission;
+            float budget = Application.isMobilePlatform || AdaptiveQuality.RenderLevel >= 2 ? 0.55f : 1f;
+            emission.rateOverTime = 250 * intensity * budget;
+            if (!rain.isPlaying) rain.Play();
+        }
+
+        private void OnDisable()
+        {
+            if (rain != null) rain.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            area = -1;
+        }
+
+        private void OnDestroy()
+        {
+            if (material != null) Destroy(material);
+        }
+    }
+}

@@ -21,6 +21,7 @@ namespace PoeClone.Visuals
         private static float capturedHeight;
         private MeshRenderer surface;
         private bool planar;
+        internal bool IsPuddle { get; set; }
 
         private void OnEnable()
         {
@@ -48,7 +49,11 @@ namespace PoeClone.Visuals
                 visible = true;
                 if (!candidate.planar) continue;
                 float d = candidate.surface.bounds.SqrDistance(view.transform.position);
-                if (d < distance) { nearest = candidate; distance = d; }
+                // Preserve the river/lake capture when both are visible. Small puddles can use
+                // environment reflections; they must not make the larger water lose its reflection.
+                bool preferred = nearest != null && nearest.IsPuddle && !candidate.IsPuddle;
+                bool sameKind = nearest == null || nearest.IsPuddle == candidate.IsPuddle;
+                if (preferred || sameKind && d < distance) { nearest = candidate; distance = d; }
             }
             if (!visible) { RestoreSource(); return; }
             if (source != view)

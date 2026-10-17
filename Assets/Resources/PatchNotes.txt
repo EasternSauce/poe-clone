@@ -1,3 +1,7 @@
+version: 2026-10-17-light-rain
+- Light rain falls in Greenwood and the Haunted Graveyard, with sparse, faint streaks that keep enemies and ground warnings clear.
+- Scattered shallow puddles reflect the surroundings. Raindrops make overlapping rings that disturb puddle, lake and river reflections in rainy areas.
+
 version: 2026-10-17-natural-rocks
 - Rocks now have sixteen weathered boulder, slab and fractured shapes, varied proportions and smaller companion stones instead of repeated matching chunks.
 - Stone colours vary subtly with the area, with muted grey, warm mineral, sandstone and cold stone tones. Patchy moss grows on sheltered upper surfaces in woodland and graveyard areas; dry and frozen areas stay bare.

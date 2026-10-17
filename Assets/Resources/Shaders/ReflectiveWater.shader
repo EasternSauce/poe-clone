@@ -5,6 +5,8 @@ Shader "PoeClone/ReflectiveWater"
         _BaseColor ("Deep Water", Color) = (0.13, 0.17, 0.15, 1)
         _WaterOcean ("Ocean Swell", Range(0,1)) = 0
         _Waterfall ("Falling Sheet", Range(0,1)) = 0
+        _RainIntensity ("Rain Ripples", Range(0,1)) = 0
+        _Puddle ("Shallow Puddle", Range(0,1)) = 0
     }
     SubShader
     {
@@ -14,6 +16,7 @@ Shader "PoeClone/ReflectiveWater"
             Name "Water"
             Tags { "LightMode"="UniversalForward" }
             Cull Off
+            Blend SrcAlpha OneMinusSrcAlpha
             ZWrite Off
             HLSLPROGRAM
             #pragma vertex vert
@@ -28,6 +31,8 @@ Shader "PoeClone/ReflectiveWater"
                 half4 _BaseColor;
                 float _WaterOcean;
                 float _Waterfall;
+                float _RainIntensity;
+                float _Puddle;
             CBUFFER_END
             TEXTURE2D(_WaterReflection); SAMPLER(sampler_WaterReflection);
             float4x4 _WaterReflectionVP;
@@ -79,13 +84,50 @@ Shader "PoeClone/ReflectiveWater"
                 float river = sin(flow.z * 2.2 + sin(across * 0.65) * 0.7 - t * 3.5) * 0.035;
                 return lerp(wind * (1 + _WaterOcean * 1.8), river, flow.w);
             }
+
+            float2 RainHash(float2 cell)
+            {
+                float3 p = frac(cell.xyx * float3(0.1031, 0.1030, 0.0973));
+                p += dot(p, p.yzx + 33.33);
+                return frac((p.xx + p.yz) * p.zy);
+            }
+
+            // Overlapping expanding wave fronts perturb both reflected and refracted light.
+            // World coordinates keep impacts stationary across water meshes and chunk seams.
+            float2 RainSlope(float2 p, out float rings)
+            {
+                float2 grid = p / 1.6;
+                // Rings reach less than half a cell: only the four nearest cells can contribute.
+                float2 baseCell = floor(grid - 0.5);
+                float2 slope = 0;
+                rings = 0;
+                [unroll] for (int y = 0; y <= 1; y++)
+                    [unroll] for (int x = 0; x <= 1; x++)
+                    {
+                        float2 cell = baseCell + float2(x, y);
+                        float2 seed = RainHash(cell);
+                        float clock = _Time.y * 1.05 + seed.x * 9;
+                        float cycle = floor(clock);
+                        float age = frac(clock);
+                        float2 hit = cell + 0.18 + RainHash(cell + cycle * 17.3) * 0.64;
+                        float2 delta = (grid - hit) * 1.6;
+                        float distance = length(delta);
+                        float front = distance - age * 0.7;
+                        float envelope = exp(-abs(front) * 32) * smoothstep(0, 0.08, age) * (1 - age);
+                        // Some cells miss each cycle, avoiding a uniformly boiling surface.
+                        envelope *= step(1 - _RainIntensity, seed.y);
+                        slope += delta / max(distance, 0.015) * sin(front * 65) * envelope * 0.12;
+                        rings += envelope * 0.09;
+                    }
+                return slope;
+            }
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
                 float3 p = TransformObjectToWorld(IN.positionOS.xyz);
                 OUT.baseHeight = p.y;
                 float3 n = TransformObjectToWorldNormal(IN.normalOS);
-                if (_Waterfall < 0.5) p.y += Wave(p.xz, IN.motion);
+                if (_Waterfall < 0.5) p.y += Wave(p.xz, IN.motion) * (1 - _Puddle);
                 else p += n * sin(IN.uv.y * 24 - _Time.y * 8 + IN.uv.x * 13) * 0.04;
                 OUT.positionWS = p;
                 OUT.positionCS = TransformWorldToHClip(p);
@@ -107,6 +149,9 @@ Shader "PoeClone/ReflectiveWater"
                     float2(-0.27, 0.63) * cos(dot(p, float2(-0.27, 0.63)) - t * 0.61) * 0.08;
                 float2 riverSlope = flow * cos(current) * 0.15 + across * sin(dot(p, across) * 3.7 + IN.motion.z - t * 2.5) * 0.045;
                 float2 slope = lerp(windSlope * (1 + _WaterOcean), riverSlope, IN.motion.w);
+                slope *= lerp(1, 0.08, _Puddle);
+                float rainRings = 0;
+                if (_RainIntensity > 0 && _Waterfall < 0.5) slope += RainSlope(p, rainRings);
                 float streak = 0;
                 float3 normal = normalize(float3(-slope.x, 1, -slope.y));
                 if (_Waterfall > 0.5)
@@ -146,7 +191,7 @@ Shader "PoeClone/ReflectiveWater"
                 }
                 half3 tint = _BaseColor.rgb * max(illumination, half3(0.12, 0.12, 0.12));
                 // Clear shallows expose the sloping bed; long water paths absorb more light.
-                float absorption = 1 - exp(-depth * 0.12);
+                float absorption = lerp(1 - exp(-depth * 0.12), 0.08, _Puddle);
                 half3 color = lerp(bed, tint, _Waterfall > 0.5 ? 0.25 : absorption);
                 float3 reflectedDirection = reflect(-view, normal);
                 half3 reflected = GlossyEnvironmentReflection(reflectedDirection, 0.12, 1);
@@ -157,13 +202,17 @@ Shader "PoeClone/ReflectiveWater"
                     float edge = saturate(min(min(uv.x, uv.y), min(1 - uv.x, 1 - uv.y)) * 25);
                     reflected = lerp(reflected, SAMPLE_TEXTURE2D(_WaterReflection, sampler_WaterReflection, saturate(uv)).rgb, edge);
                 }
-                color = lerp(color, reflected, saturate(fresnel * 0.85 + 0.18));
+                color = lerp(color, reflected, saturate(fresnel * 0.85 + lerp(0.18, 0.3, _Puddle)));
                 float specular = pow(saturate(dot(normal, normalize(view + sun.direction))), 160) * sun.shadowAttenuation;
                 color += sun.color * specular * 0.7 * lerp(1, 0.23, cave);
                 float foam = _Waterfall > 0.5 ? streak * 0.65 + smoothstep(0.78, 1, IN.uv.y) * 0.3 :
                     (1 - smoothstep(0.03, 0.32, depth)) * (0.12 + 0.08 * sin(current + p.x * 3));
+                foam *= 1 - _Puddle;
                 color = lerp(color, half3(0.73, 0.75, 0.68) * max(illumination, half3(0.3, 0.3, 0.3)), saturate(foam));
-                return half4(MixFog(color, IN.fog), 1);
+                color += rainRings * max(illumination, half3(0.22, 0.22, 0.22));
+                float edge = length(IN.uv * 2 - 1);
+                float alpha = lerp(1, 1 - smoothstep(0.72, 1, edge), _Puddle);
+                return half4(MixFog(color, IN.fog), alpha);
             }
             ENDHLSL
         }

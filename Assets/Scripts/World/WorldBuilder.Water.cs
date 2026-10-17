@@ -34,7 +34,11 @@ namespace PoeClone.World
                     water.SetFloat("_RimIntensity", 0.08f);
                     water.SetFloat("_TexInfluence", 0.24f);
                 }
-                else water.SetFloat("_WaterOcean", shape.HasOcean ? 1 : 0);
+                else
+                {
+                    water.SetFloat("_WaterOcean", shape.HasOcean ? 1 : 0);
+                    water.SetFloat("_RainIntensity", RainWeather.Intensity(area));
+                }
                 var shore = new Material(kit.Mat(frozen ? "Snow" : shape.HasOcean ? "Tan" : "TanDark"));
                 shore.SetFloat("_TriplanarTileSize", 3f);
                 shore.SetFloat("_TexInfluence", 0.35f);
@@ -56,6 +60,7 @@ namespace PoeClone.World
             var waterMaterial = materials.water;
             var shoreMaterial = materials.shore;
             var timberMaterial = materials.timber;
+            BuildRainPuddles(area, group, waterMaterial, region);
             Mesh surface = shape.BuildWaterMesh(region);
             if (region.HasValue) TrackChunkMesh(area, surface);
             if (!frozen)

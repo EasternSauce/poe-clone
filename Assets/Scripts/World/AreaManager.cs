@@ -46,6 +46,7 @@ namespace PoeClone.World
         private void Awake()
         {
             Instance = this;
+            gameObject.AddComponent<RainWeather>();
             AreaChanged += PlayAreaMusic;
         }
 
