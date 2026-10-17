@@ -1,3 +1,6 @@
+version: 2026-10-17-wind-grass
+- Grass in Greenwood, Haven, the Graveyard and the Orchard now has raised blades that sway with the same breeze as trees and cloth, with passing gusts and varied movement between tufts. Paths and occupied clearings stay clear.
+
 version: 2026-10-17-upper-arm-shape
 - The hero's upper arms have shaped shoulder caps, biceps and triceps, with a clearer taper into the elbows, especially visible from the front in the inventory portrait.
 

@@ -207,6 +207,7 @@ namespace PoeClone.World
         private void OnDestroy()
         {
             ReleaseStreamedResources();
+            if (grassMaterial != null) Destroy(grassMaterial);
             if (Instance == this)
                 Instance = null;
         }
@@ -360,6 +361,12 @@ namespace PoeClone.World
                 else
                     yield return AreaDetails(area);
                 planningContent = false;
+                if (HasGrass(area))
+                {
+                    grassClearings[area] = claimed.ToArray();
+                    if (!UsesChunks(area))
+                        yield return BuildGrass(area, root.Find("Ground_" + AreaNames[area])?.gameObject);
+                }
                 Debug.Log($"Area load [{AreaNames[area]}] content plan: {(Time.realtimeSinceStartup - stageStarted) * 1000f:F0}ms.");
                 yield return EnsureArrival(area, focus ?? (arrival != null ? arrival : spawnPoints[area]).position);
                 builtAreas.Add(area);

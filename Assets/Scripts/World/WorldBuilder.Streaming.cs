@@ -15,6 +15,7 @@ namespace PoeClone.World
             public readonly List<Action> OptionalContent = new List<Action>();
             public int Completed, OptionalCompleted;
             public bool TerrainReady, Ready, MinimapReady;
+            public GameObject Ground;
         }
         private sealed class StreamedArea
         {
@@ -224,6 +225,7 @@ namespace PoeClone.World
             }
             ClearAreaTravel(area, rect);
             Physics.SyncTransforms();
+            yield return BuildGrass(area, chunk.Ground);
             var spawner = SpawnerFor(area);
             if (spawner != null)
             {
@@ -249,6 +251,7 @@ namespace PoeClone.World
             Mesh land = shape.BuildChunkGround(rect, true, shoreBoundary);
             TrackChunkMesh(area, land);
             var ground = new GameObject("Ground_" + AreaNames[area] + "_" + cell.x + "_" + cell.y);
+            GetChunk(area, cell).Ground = ground;
             ground.transform.SetParent(group, false);
             ground.AddComponent<MeshFilter>().sharedMesh = land;
             ground.AddComponent<MeshRenderer>().sharedMaterial = streamedAreas[area].Ground;
