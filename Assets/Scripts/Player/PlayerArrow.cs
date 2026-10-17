@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using PoeClone.Inventory;
 using PoeClone.Combat;
@@ -41,6 +42,47 @@ namespace PoeClone.Player
         private float skillIncreased;
         private int piercesLeft, chainsLeft;
         private bool forked;
+        private float sourceDamageMultiplier = 1f;
+        private bool returnRulesInitialized, returns;
+        private float returnStarted;
+        private readonly ReturningProjectileFlight returnFlight = new ReturningProjectileFlight();
+        private bool returning => returnFlight.Returning;
+        private readonly HashSet<IDamageable> returnPassed = new HashSet<IDamageable>();
+        private HashSet<IDamageable> returnVolley;
+        private static ConditionalWeakTable<HashSet<IDamageable>, HashSet<IDamageable>> returnVolleys =
+            new ConditionalWeakTable<HashSet<IDamageable>, HashSet<IDamageable>>();
+        private float DamageMultiplier => sourceDamageMultiplier * (returns ? ReturningProjectileFlight.DamageMultiplier : 1f);
+
+        /// <summary>Keep damage attributed to the player while launching from an effigy.</summary>
+        public PlayerArrow From(Transform origin, float multiplier)
+            => FromPosition(origin.position, multiplier);
+
+        public PlayerArrow FromPosition(Vector3 origin, float multiplier = 1f)
+        {
+            transform.position = origin + Vector3.up * 0.3f + direction * 0.6f;
+            launchPosition = transform.position;
+            sourceDamageMultiplier = Mathf.Max(0f, multiplier);
+            return this;
+        }
+
+        private void InitializeReturnRules()
+        {
+            if (returnRulesInitialized) return;
+            returnRulesInitialized = true;
+            returns = isAttack && !harmless && owner != null &&
+                owner.GetComponent<PlayerInventory>()?.Stats.Total(StatType.ReturningVolley) > 0f;
+            if (!returns) return;
+            pierced = new HashSet<Enemies.EnemyHealth>();
+            returnVolley = volley != null ? returnVolleys.GetValue(volley, _ => new HashSet<IDamageable>()) : new HashSet<IDamageable>();
+        }
+
+        private void BeginReturn()
+        {
+            if (!returnFlight.BeginReturn()) return;
+            returnStarted = Time.time;
+            returnPassed.Clear();
+            pierced.Clear();
+        }
 
         public PlayerArrow WithSkill(WeaponSkillBonuses bonuses, float increasedDamage = 0f)
         {
@@ -126,7 +168,7 @@ namespace PoeClone.Player
         // The first hit on this target from this projectile's volley (always true without one).
         private bool FirstVolleyHit(IDamageable target)
         {
-            return volley == null || volley.Add(target);
+            return returning ? returnVolley.Add(target) : volley == null || volley.Add(target);
         }
 
         /// <summary>Where arrows leave the bow: chest height, a little in front.</summary>
@@ -145,6 +187,22 @@ namespace PoeClone.Player
         public static void LaunchVisual(Transform shooter, float range, Vector3? direction = null)
         {
             Create(shooter, range, 0f, harmless: true, direction: direction);
+        }
+
+        /// <summary>A rain arrow that struck an enemy continues from its impact before returning.</summary>
+        public static void ReturnAfterRainImpact(Transform shooter, Vector3 impact, Vector3 shotOrigin, float damage,
+            WeaponSkillBonuses tree, HashSet<IDamageable> struck)
+        {
+            Vector3 direction = impact - shotOrigin;
+            direction.y = 0f;
+            direction = direction.sqrMagnitude > 0.001f ? direction.normalized : shooter.forward;
+            var arrow = Create(shooter, 3f, damage, false, direction: direction);
+            arrow.volley = struck;
+            arrow.WithSkill(tree).FromPosition(impact - direction * 0.6f);
+            arrow.launchPosition = shotOrigin;
+            arrow.InitializeReturnRules();
+            arrow.returnFlight.HitEnemy();
+            foreach (var target in struck) arrow.returnPassed.Add(target);
         }
 
         /// <summary>
@@ -244,7 +302,19 @@ namespace PoeClone.Player
 
         private void Update()
         {
-            float step = Mathf.Min(Speed * (tree?.ProjectileSpeedMultiplier ?? 1f) * Time.deltaTime, travelLeft);
+            InitializeReturnRules();
+            if (returns && returnFlight.CanTurn) BeginReturn();
+            float remaining = returns && returnFlight.HasHit ? returnFlight.RemainingDistance : travelLeft;
+            if (returning)
+            {
+                if (owner == null || Time.time - returnStarted > 6f) { Destroy(gameObject); return; }
+                Vector3 toOwner = owner.position + Vector3.up * 0.3f - transform.position;
+                if (toOwner.magnitude <= 0.3f) { Destroy(gameObject); return; }
+                direction = toOwner.normalized;
+                transform.rotation = Quaternion.LookRotation(direction);
+                remaining = toOwner.magnitude;
+            }
+            float step = Mathf.Min(Speed * (tree?.ProjectileSpeedMultiplier ?? 1f) * Time.deltaTime, remaining);
             if (step <= 0f)
             {
                 Destroy(gameObject);
@@ -282,6 +352,22 @@ namespace PoeClone.Player
                 }
             }
 
+            if (returns && nearest != null)
+            {
+                var target = nearest.Value.collider.GetComponentInParent<IDamageable>();
+                if (target is Enemies.EnemyHealth || target is Enemies.SerpentPursuit)
+                {
+                    float moved = Mathf.Clamp(nearest.Value.distance, 0f, step);
+                    transform.position += direction * moved;
+                    returnFlight.Advance(moved);
+                    returnFlight.HitEnemy();
+                    returnPassed.Add(target);
+                    Strike(nearest.Value.collider);
+                    if (burstRadius > 0f) Burst(transform.position, nearest.Value.collider);
+                    return;
+                }
+            }
+
             // A piercing arrow strikes the enemy and keeps going (it sweeps on from here next frame,
             // past that enemy).
             if (nearest != null && pierced != null)
@@ -314,6 +400,7 @@ namespace PoeClone.Player
 
             transform.position += motion;
             travelLeft -= step;
+            if (returns) returnFlight.Advance(step);
         }
 
         private bool PassesEnemy(Vector3 heading, float length, out Vector3 at)
@@ -350,7 +437,9 @@ namespace PoeClone.Player
                 RaycastHit hit = Hits[k];
                 if (owner != null && hit.collider.transform.IsChildOf(owner))
                     continue;
-                if (pierced != null && pierced.Count > 0)
+                if (returns && returnPassed.Contains(hit.collider.GetComponentInParent<IDamageable>()))
+                    continue;
+                if (pierced != null)
                 {
                     Enemies.EnemyHealth passed = hit.collider.GetComponentInParent<Enemies.EnemyHealth>();
                     if (passed != null && (passed.IsDead || pierced.Contains(passed)))
@@ -382,7 +471,7 @@ namespace PoeClone.Player
                     continue;
                 if (target is Enemies.EnemyHealth enemy && !enemy.IsDead && FirstVolleyHit(target))
                     HitEffects.Deal(owner, enemy, damage * 0.4f, isAttack, textColor, damageType, igniteBonus: igniteBonus,
-                        projectileDistance: DistanceTo(at), hitOrigin: launchPosition, tree: tree, skillIncreased: skillIncreased);
+                        projectileDistance: DistanceTo(at), hitOrigin: launchPosition, tree: tree, skillIncreased: skillIncreased, sourceDamageMultiplier: DamageMultiplier);
             }
         }
 
@@ -405,18 +494,19 @@ namespace PoeClone.Player
                         ai.Chill(chillSeconds * (tree?.DurationMultiplier ?? 1f));
                 }
                 HitEffects.Deal(owner, enemy, damage, isAttack, textColor, damageType, igniteBonus: igniteBonus,
-                    projectileDistance: DistanceTo(enemy.transform.position), venomArrowLevel: venomArrowLevel, hitOrigin: launchPosition, tree: tree, skillIncreased: skillIncreased);
+                    projectileDistance: DistanceTo(enemy.transform.position), venomArrowLevel: venomArrowLevel, hitOrigin: launchPosition, tree: tree, skillIncreased: skillIncreased, sourceDamageMultiplier: DamageMultiplier);
                 return;
             }
 
             if (target is Enemies.SerpentPursuit serpent)
             {
                 serpent.TakeArrowHit(owner, damage, isAttack, damageType, textColor, igniteBonus,
-                    projectileDistance: DistanceTo(serpent.MouthPosition), venomArrowLevel: venomArrowLevel, tree: tree, skillIncreased: skillIncreased);
+                    projectileDistance: DistanceTo(serpent.MouthPosition), venomArrowLevel: venomArrowLevel, tree: tree, skillIncreased: skillIncreased,
+                    sourceDamageMultiplier: DamageMultiplier);
                 return;
             }
 
-            target.TakeDamage(damage);
+            target.TakeDamage(damage * DamageMultiplier);
 
             var hitTransform = (target as Component)?.transform;
             if (hitTransform != null)

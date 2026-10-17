@@ -21,7 +21,7 @@ namespace PoeClone.Skills
             }
 
             SkillDefinition skill = SkillBook.Get(cast.Skill);
-            PlaySkillSound(cast.Skill, caster.position);
+            PlaySkillSound(cast.Skill, cast.At);
             Vector3 facing = cast.Facing;
             facing.y = 0f;
             if (facing.sqrMagnitude < 0.0001f)
@@ -39,14 +39,15 @@ namespace PoeClone.Skills
                 case SkillId.FireBolt:
                     if (cast.Points != null && cast.Points.Length > 0)
                         foreach (Vector3 flight in cast.Points)
-                            PlayerArrow.LaunchBolt(caster, flight.magnitude, 0f, skill.Color, cast.Size, flight.normalized, harmless: true);
+                            PlayerArrow.LaunchBolt(caster, flight.magnitude, 0f, skill.Color, cast.Size, flight.normalized, harmless: true).FromPosition(cast.At);
                     else foreach (Vector3 direction in HitEffects.Spread(facing, Mathf.Max(1, cast.Count), 12f))
-                        PlayerArrow.LaunchBolt(caster, BoltRange, 0f, skill.Color, cast.Size, direction, harmless: true);
+                        PlayerArrow.LaunchBolt(caster, BoltRange, 0f, skill.Color, cast.Size, direction, harmless: true).FromPosition(cast.At);
                     break;
 
                 case SkillId.IceShard:
                     foreach (Vector3 direction in HitEffects.Spread(facing, Mathf.Max(1, cast.Count), 7f))
-                        PlayerArrow.LaunchShard(caster, ShardRange, 0f, skill.Color, 0f, direction, harmless: true);
+                        PlayerArrow.LaunchShard(caster, cast.Points != null && cast.Points.Length > 0 ? cast.Points[0].magnitude : ShardRange,
+                            0f, skill.Color, 0f, direction, harmless: true).FromPosition(cast.At);
                     break;
 
                 case SkillId.Dash:

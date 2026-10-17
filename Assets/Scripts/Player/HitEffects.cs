@@ -48,7 +48,7 @@ namespace PoeClone.Player
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
             DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null,
             bool throughExposedHead = false, bool melee = false, float projectileDistance = -1f, int venomArrowLevel = 0,
-            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f, WeaponSkillBonuses tree = null, float skillIncreased = 0f, bool flinch = true)
+            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f, WeaponSkillBonuses tree = null, float skillIncreased = 0f, bool flinch = true, float sourceDamageMultiplier = 1f)
         {
             // Utility effects must never become hits through added mana damage or on-hit stats.
             if (enemy == null || enemy.IsDead || damage <= 0f)
@@ -81,7 +81,7 @@ namespace PoeClone.Player
             if (sheet != null && !secondary)
                 damage += stats.MaxMana * Mathf.Max(0f, sheet.Total(StatType.ManaAsDamage)) / 100f * manaDamageMultiplier;
 
-            damage *= skillMore;
+            damage *= skillMore * sourceDamageMultiplier;
             bool crit = false;
             float baseDamage = damage;
             if (sheet != null)

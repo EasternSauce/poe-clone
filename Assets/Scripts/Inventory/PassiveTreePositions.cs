@@ -48,7 +48,11 @@ namespace PoeClone.Inventory
                     throw new InvalidOperationException("Non-finite position for passive: " + entry.id);
             }
             if (seen.Count != expected.Count)
-                throw new InvalidOperationException("The layout must include every passive node.");
+            {
+                var missing = new List<string>();
+                foreach (string id in expected) if (!seen.Contains(id)) missing.Add(id);
+                throw new InvalidOperationException("The layout must include every passive node. Missing: " + string.Join(", ", missing));
+            }
         }
     }
 }

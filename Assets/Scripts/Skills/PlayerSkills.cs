@@ -100,7 +100,7 @@ namespace PoeClone.Skills
             };
         }
 
-        private void Record(SkillDefinition skill, int level, float size = 0f, int count = 0, Vector3[] points = null, Vector3? at = null)
+        private void Record(SkillDefinition skill, int level, float size = 0f, int count = 0, Vector3[] points = null, Vector3? at = null, Vector3? facing = null)
         {
             CastCount++;
             recentCasts[CastCount % RecentCastCount] = new CastRecord
@@ -109,7 +109,7 @@ namespace PoeClone.Skills
                 Skill = skill.Id,
                 Level = level,
                 At = at ?? transform.position,
-                Facing = transform.forward,
+                Facing = facing ?? transform.forward,
                 Size = size,
                 Count = count,
                 Points = points,
@@ -488,6 +488,11 @@ namespace PoeClone.Skills
         // turned the player at the moment of release); from the bar it aims itself.
         private void Cast(SkillDefinition skill, int level, bool asAttack = false)
         {
+            if (skill.DamageSpell && Stat(StatType.SpellboundEffigies) > 0f)
+            {
+                PlaceSpellEffigy(skill, level, asAttack);
+                return;
+            }
             PlaySkillSound(skill.Id, transform.position);
             float area = SkillArea(skill.Id);
             float damage = skill.DamageForCharacter(inventory != null ? inventory.Stats.Level : 1);

@@ -1134,6 +1134,9 @@ namespace PoeClone.Enemies
                 Skin = new Color(0.38f, 0.21f, 0.19f), Cloth = new Color(0.57f, 0.31f, 0.36f), Pants = new Color(0.44f, 0.36f, 0.25f),
                 Eyes = new Color(1f, 0.40f, 0.53f), DropChance = 1, RareBonus = 0.5f, Drops = 5
             },
+            // Append only: effigies share the friendly entity snapshot path.
+            new EnemyKind { Name = "Spell Effigy", SpawnWeight = 0f, MaxHealth = 90f, Scale = 1f,
+                Style = EnemyAttackStyle.Ranged, AttackRange = 12f },
         };
 
         public const int SlimelingIndex = 20;
@@ -1237,6 +1240,12 @@ namespace PoeClone.Enemies
             Transform model = enemy.transform.Find("Model");
             if (model == null)
                 model = enemy.transform;
+
+            if (kind.Name == "Spell Effigy")
+            {
+                PoeClone.Skills.SpellEffigy.BuildVisual(model);
+                return;
+            }
 
             if (kind.IsCreature)
             {

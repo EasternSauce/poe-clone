@@ -183,6 +183,18 @@ namespace PoeClone.Inventory
         GrantCrossSlash,
         GrantVenomSlash,
         FireDamageOverTime,         // % increased fire damage over time, including ignite; never hits
+        UnwaveringStance,
+        ReturningVolley,
+        SpellboundEffigies,
+        AdditionalEffigies,
+        Contagion,
+        EffigyLife,
+        EffigyArmour,
+        EffigyResistances,
+        EffigyDamage,
+        EffigyCastSpeed,
+        EffigyRegen,
+        EffigyRange,
     }
 
     /// <summary>
@@ -411,6 +423,8 @@ namespace PoeClone.Inventory
 
         /// <summary>Increased cast speed from all sources adds together.</summary>
         public float CastRateMultiplier => Math.Max(0.5f, 1f + Total(StatType.CastSpeed) / 100f);
+        public float EvadeChance => Total(StatType.UnwaveringStance) > 0f ? 0f : DefenceMath.EvadeChance(Total(StatType.Evasion));
+        public float StunAvoidance => Total(StatType.UnwaveringStance) > 0f ? 100f : Total(StatType.AvoidStun);
 
         public float DamageMultiplier(bool attack, bool bow, bool lowLife, bool chilled,
             StatType element, bool damageOverTime = false, bool spell = true, float skillIncreased = 0f)
@@ -739,6 +753,18 @@ namespace PoeClone.Inventory
                 case StatType.NoLifeRegen: return "No Life Regeneration";
                 case StatType.ManaCostReduction: return "Skill Cost Reduction";
                 case StatType.LifePercentOnKill: return "Life Recovered on Kill";
+                case StatType.UnwaveringStance: return "Unwavering Stance";
+                case StatType.ReturningVolley: return "Returning Volley";
+                case StatType.SpellboundEffigies: return "Spellbound Effigies";
+                case StatType.AdditionalEffigies: return "Additional Effigies";
+                case StatType.Contagion: return "Contagion";
+                case StatType.EffigyLife: return "Effigy Life";
+                case StatType.EffigyArmour: return "Effigy Armour";
+                case StatType.EffigyResistances: return "Effigy Resistances";
+                case StatType.EffigyDamage: return "Effigy Damage";
+                case StatType.EffigyCastSpeed: return "Effigy Cast Speed";
+                case StatType.EffigyRegen: return "Effigy Life Regeneration";
+                case StatType.EffigyRange: return "Effigy Targeting Range";
                 default:
                     if (SkillGrants.IsGrant(stat))
                         return SkillGrants.SkillName(stat);
@@ -820,6 +846,12 @@ namespace PoeClone.Inventory
                 case StatType.CurseOnHit:
                 case StatType.ManaCostReduction:
                 case StatType.LifePercentOnKill:
+                case StatType.EffigyLife:
+                case StatType.EffigyResistances:
+                case StatType.EffigyDamage:
+                case StatType.EffigyCastSpeed:
+                case StatType.EffigyRegen:
+                case StatType.EffigyRange:
                     return true;
                 default:
                     return false;
@@ -955,6 +987,18 @@ namespace PoeClone.Inventory
                 case StatType.NoLifeRegen: return "You cannot Regenerate Life";
                 case StatType.ManaCostReduction: return "Skills cost " + n + "% less";
                 case StatType.LifePercentOnKill: return "Recover " + n + "% of Maximum Life when you kill an enemy";
+                case StatType.UnwaveringStance: return "You cannot be Staggered\nYou cannot Evade enemy Attacks";
+                case StatType.ReturningVolley: return "Attack Projectiles return to you after hitting an enemy and travelling 3 more metres\nThey can hit enemies once on each leg\n40% less Damage with returning Projectiles\nReturning Projectiles cannot Fork or Chain";
+                case StatType.SpellboundEffigies: return "Your damaging Spells place Effigies that cast for you\nMaximum 2 Effigies, lasting 15 seconds\nEffigies deal 50% less Damage";
+                case StatType.AdditionalEffigies: return sign + n + " to maximum Effigies";
+                case StatType.Contagion: return "Poisoned enemies that die spread all your remaining Poison stacks to enemies within 5 metres\nCopied stacks keep their Damage and remaining Duration";
+                case StatType.EffigyLife: return Increased(m, "Effigy Maximum Life");
+                case StatType.EffigyArmour: return sign + n + " Effigy Armour";
+                case StatType.EffigyResistances: return sign + n + "% to all Effigy Resistances";
+                case StatType.EffigyDamage: return Increased(m, "Effigy Damage");
+                case StatType.EffigyCastSpeed: return Increased(m, "Effigy Cast Speed");
+                case StatType.EffigyRegen: return "Effigies Regenerate " + n + "% of Maximum Life per second";
+                case StatType.EffigyRange: return Increased(m, "Effigy Targeting Range");
                 default:
                     if (SkillGrants.IsGrant(m.Stat))
                         return "Grants Level " + n + " " + SkillGrants.SkillName(m.Stat);

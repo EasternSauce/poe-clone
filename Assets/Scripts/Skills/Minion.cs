@@ -16,7 +16,8 @@ namespace PoeClone.Skills
         Mage,       // Skeleton Mages: permanent, capped, hangs back and casts bolts
         Wolf,       // Spirit Wolves: a temporary pack, fast, enemies can't target them
         Golem,
-        Viper
+        Viper,
+        Effigy
     }
 
     /// <summary>
@@ -73,6 +74,7 @@ namespace PoeClone.Skills
         private const float TeleportDistance = 10f; // about half the screen: past this it blinks back to the owner
 
         private Transform owner;
+        public Transform Owner => owner;
         private CharacterController body;
         private CharacterAttackAnimator attack;
         private float damage;
@@ -132,7 +134,7 @@ namespace PoeClone.Skills
         }
 
         /// <summary>Stays until destroyed (warriors and mages); only one such kind can be up at a time.</summary>
-        public static bool IsPermanent(MinionKind kind) => Duration(kind, 1, null) <= 0f;
+        public static bool IsPermanent(MinionKind kind) => kind == MinionKind.Warrior || kind == MinionKind.Mage;
 
         /// <summary>How long a temporary minion lasts (0: until destroyed).</summary>
         public static float Duration(MinionKind kind, int level, StatSheet sheet)
@@ -285,6 +287,35 @@ namespace PoeClone.Skills
                 minion.Crumble();
         }
 
+        public static Minion PlaceEffigy(Transform owner, SkillId skill, int level, Vector3 at)
+        {
+            var sheet = owner.GetComponent<PlayerInventory>().Stats;
+            var existing = All.FindAll(m => m != null && m.owner == owner && m.Kind == MinionKind.Effigy && !m.dead);
+            while (existing.Count >= EffigyRules.Limit(sheet)) { existing[0].Crumble(); existing.RemoveAt(0); }
+            var go = new GameObject(SkillBook.Get(skill).Name + " Effigy");
+            go.transform.SetPositionAndRotation(at, owner.rotation);
+            go.layer = 2;
+            var model = new GameObject("Model").transform;
+            model.SetParent(go.transform, false);
+            SpellEffigy.BuildVisual(model, SkillBook.Get(skill).Color);
+            var minion = go.AddComponent<Minion>();
+            minion.owner = owner;
+            minion.Kind = MinionKind.Effigy;
+            minion.LookIndex = EnemyKinds.IndexOf("Spell Effigy");
+            minion.Id = ++nextId;
+            minion.MaxLife = EffigyRules.Life(sheet);
+            minion.Life = minion.MaxLife;
+            go.AddComponent<SpellEffigy>().Initialize(owner, minion, skill, level);
+            All.Add(minion);
+            SkillEffects.Shockwave(at, 1.1f, SkillBook.Get(skill).Color, 0.35f);
+            return minion;
+        }
+
+        public void RegenerateEffigy(float percent)
+        {
+            if (!dead && Kind == MinionKind.Effigy && percent > 0f) Life = Mathf.Min(MaxLife, Life + MaxLife * percent / 100f);
+        }
+
         private static void Create(GameObject prefab, Transform owner, MinionKind kind, Vector3 at, int level, StatSheet sheet)
         {
             Profile profile = ProfileOf(kind);
@@ -393,7 +424,9 @@ namespace PoeClone.Skills
                 return;
             PlayerInventory inventory = owner != null ? owner.GetComponent<PlayerInventory>() : null;
             StatSheet sheet = inventory != null ? inventory.Stats : null;
-            amount = DamageTaken(amount, type, sheet, tree);
+            amount = Kind == MinionKind.Effigy
+                ? EffigyRules.DamageTaken(amount, type == DamageType.Physical, sheet)
+                : DamageTaken(amount, type, sheet, tree);
             Life -= amount;
             damagedAt = Time.time;
             Color color = type == DamageType.Physical ? new Color(1f, 0.55f, 0.45f) : CombatText.ColorFor(type);
@@ -488,6 +521,7 @@ namespace PoeClone.Skills
 
         private void Start()
         {
+            if (Kind == MinionKind.Effigy) return;
             attack.StrikeFrame += OnStrike;
             float a = Random.value * Mathf.PI * 2f;
             // Mages keep a step further back than the melee minions.
@@ -524,6 +558,7 @@ namespace PoeClone.Skills
 
         private void Update()
         {
+            if (Kind == MinionKind.Effigy) return;
             Player.PlayerStats ownerStats = owner != null ? owner.GetComponent<Player.PlayerStats>() : null;
             if (owner == null || Time.time >= expiresAt || (ownerStats != null && ownerStats.IsDead))
             {

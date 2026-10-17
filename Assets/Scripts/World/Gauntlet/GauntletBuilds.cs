@@ -148,7 +148,7 @@ namespace PoeClone.World
             new GauntletBuild
             {
                 Id = "lightning_caster", Name = "Lightning Caster",
-                Summary = "Chain Lightning damage caster: Conductor, Thunderlord, Eye of the Storm and Archmage. Mantle of the Still Mind adds mana as damage; Conductor's Reach competes with rare staves.",
+                Summary = "Chain Lightning damage caster: Conductor, Thunderlord and Eye of the Storm. Mantle of the Still Mind adds mana as damage; Conductor's Reach competes with rare staves.",
                 MainHand = new[] { "staff" }, StaffSpell = StatType.GrantChainLightning, Armour = "int",
                 CoreSkills = new[] { StatType.GrantChainLightning },
                 Weights = Caster(StatType.SpellDamage, 2f, StatType.CastSpeed, 2f, StatType.LightningDamage, 2f,
@@ -156,7 +156,7 @@ namespace PoeClone.World
                     StatType.LightningSpellLevels, 3f, StatType.AllSpellLevels, 3f, StatType.LightningPenetration, 1.5f,
                     StatType.ElementalPenetration, 1.5f, StatType.ShockChance, 1.5f, StatType.AdditionalChains, 0.5f,
                     StatType.MoreLightningDamage, 2.5f, StatType.MoreSpellDamage, 2.5f, StatType.ManaAsDamage, 2f, StatType.PercentManaRegen, 1.5f),
-                Passives = new[] { "s_conductor", "k_thunderlord", "s_eye", "w_archmage", "w_l3", "w_life_heart", "s_life_mid_heart" },
+                Passives = new[] { "s_conductor", "k_thunderlord", "s_eye", "w_l3", "w_life_heart", "s_life_mid_heart" },
                 Uniques = new[] { "!Mantle of the Still Mind", "Conductor's Reach", "Pendant of the Fleeting Thought", "Stormcaller's Circlet" }
             },
             new GauntletBuild
@@ -167,7 +167,7 @@ namespace PoeClone.World
                 CoreSkills = new[] { StatType.GrantFireBolt }, SupportSkills = new[] { StatType.GrantFrostNova, StatType.GrantWarCry },
                 Weights = Caster(StatType.FireDamage, 1.6f, StatType.FireSpellLevels, 2f, StatType.IgniteChance, 0.6f,
                     StatType.FirePenetration, 1.2f, StatType.ElementalPenetration, 1.2f, StatType.ExplodeOnKill, 0.4f, StatType.MoreFireDamage, 2f),
-                Passives = new[] { "z_hub", "w_m2", "w_archmage", "z_t2", "k_inferno", "z_t1", "w_l3", "s_eye", "z_life_heart", "w_life_heart", "k_twincast" },
+                Passives = new[] { "z_hub", "w_m2", "z_t2", "k_inferno", "z_t1", "w_l3", "s_eye", "z_life_heart", "w_life_heart", "k_twincast" },
                 Uniques = new[] { "The Unfinished Sentence", "Emberheart", "Elder's Charm" }
             },
             new GauntletBuild
@@ -179,7 +179,7 @@ namespace PoeClone.World
                 Weights = Caster(StatType.ColdDamage, 1.6f, StatType.ColdSpellLevels, 2f, StatType.ColdPenetration, 1.2f,
                     StatType.ElementalPenetration, 1.2f, StatType.DamageVsChilled, 1f, StatType.MoreColdDamage, 2f,
                     StatType.AdditionalSpellProjectiles, 1.5f, StatType.AdditionalProjectiles, 1.5f),
-                Passives = new[] { "s_sp2", "k_glacial", "s_eye", "w_m2", "w_archmage", "s_stride", "w_l3", "s_life_mid_heart", "w_life_heart", "k_twincast" },
+                Passives = new[] { "s_sp2", "k_glacial", "s_eye", "w_m2", "s_stride", "w_l3", "s_life_mid_heart", "w_life_heart", "k_twincast" },
                 Uniques = new[] { "Frostglass Bough", "Twinflame Loop", "Elder's Charm" }
             },
             new GauntletBuild
@@ -235,7 +235,7 @@ namespace PoeClone.World
                 MainHand = new[] { "staff" }, Armour = "int",
                 CoreSkills = new[] { StatType.GrantVenomSpout }, SupportSkills = new[] { StatType.GrantFrostNova },
                 Weights = Caster(StatType.PoisonDamage, 1.8f, StatType.DamageOverTime, 1.5f, StatType.PoisonPenetration, 1.3f, StatType.MorePoisonDamage, 2f),
-                Passives = new[] { "v3", "k_viper", "v5", "w_m2", "w_archmage", "s_eye", "g_life_heart", "w_life_heart" },
+                Passives = new[] { "v3", "k_viper", "v5", "w_m2", "s_eye", "g_life_heart", "w_life_heart" },
                 Uniques = new[] { "!Crook of the Last Shepherd@21", "!Widow's Brood@21", "Elder's Charm" }
             },
             new GauntletBuild
@@ -267,7 +267,7 @@ namespace PoeClone.World
                 Weights = Caster(StatType.MaxMana, 2f, StatType.IncreasedMana, 2f, StatType.ManaRegen, 1.4f, StatType.ManaAbsorb, 1.5f,
                     StatType.ManaAsDamage, 2f, StatType.LightningDamage, 1.4f, StatType.LightningSpellLevels, 2f, StatType.LightningPenetration, 1.2f,
                     StatType.AdditionalChains, 1.5f, StatType.MoreLightningDamage, 2f),
-                Passives = new[] { "w_l3", "k_mom", "s_eye", "s_conductor", "w_archmage", "w_life_mid", "k_thunderlord", "s_life_mid_heart" },
+                Passives = new[] { "w_l3", "k_mom", "s_eye", "s_conductor", "w_life_mid", "k_thunderlord", "s_life_mid_heart" },
                 Uniques = new[] { "!Mantle of the Still Mind", "Elder's Charm" }
             },
             new GauntletBuild
@@ -321,7 +321,7 @@ namespace PoeClone.World
                     StatType.SpellLeech, 1.5f, StatType.Armour, 0.5f, StatType.MaxMana, 0f, StatType.IncreasedMana, 0f, StatType.ManaRegen, 0f,
                     StatType.LightningDamage, 1.5f, StatType.LightningSpellLevels, 2f, StatType.LightningPenetration, 1.2f, StatType.AdditionalChains, 1.5f,
                     StatType.MoreLightningDamage, 2f, StatType.Intelligence, 0.5f, StatType.Strength, 0.5f),
-                Passives = new[] { "k_bloodthirst", "m_life_heart", "s_conductor", "s_eye", "k_thunderlord", "w_archmage", "z_t4", "z_t3" },
+                Passives = new[] { "k_bloodthirst", "m_life_heart", "s_conductor", "s_eye", "k_thunderlord", "z_t4", "z_t3" },
                 Uniques = new[] { "Conductor's Reach", "Stormcaller's Circlet", "Bloodroot Cord" }
             },
             new GauntletBuild
@@ -332,7 +332,7 @@ namespace PoeClone.World
                 CoreSkills = new[] { StatType.GrantIceShard }, SupportSkills = new[] { StatType.GrantFrostNova },
                 Weights = Caster(StatType.AllSpellLevels, 3f, StatType.ColdSpellLevels, 2.5f, StatType.ColdDamage, 1.4f, StatType.ColdPenetration, 1f,
                     StatType.AdditionalSpellProjectiles, 1.5f, StatType.AdditionalProjectiles, 1.5f, StatType.MoreSpellDamage, 2f),
-                Passives = new[] { "w_m2", "w_archmage", "k_twincast", "s_eye", "s_sp2", "k_glacial", "w_l3", "w_life_heart", "s_life_mid_heart" },
+                Passives = new[] { "w_m2", "k_twincast", "s_eye", "s_sp2", "k_glacial", "w_l3", "w_life_heart", "s_life_mid_heart" },
                 Uniques = new[] { "!The Glass Diadem", "Pendant of the Fleeting Thought" }
             },
         };

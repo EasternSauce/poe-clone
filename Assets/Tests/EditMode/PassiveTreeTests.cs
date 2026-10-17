@@ -164,7 +164,7 @@ namespace PoeClone.Tests
                 special |= node.PerBranchMods.Length > 0;
                 Assert.IsTrue(special, node.Name);
             }
-            Assert.AreEqual(9, keystones, "Skill-specific keystones moved into weapon trees");
+            Assert.AreEqual(14, keystones, "Combat-changing keystones belong on the main passive tree");
         }
 
         [Test]

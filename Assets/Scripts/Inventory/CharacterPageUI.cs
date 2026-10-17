@@ -388,6 +388,10 @@ namespace PoeClone.Inventory
             specialText.text = special.Length > 0
                 ? special.ToString()
                 : "<color=#" + UiKit.Hex(UiKit.DimText) + ">None yet: keystones and unique items grant these.</color>";
+            float specialHeight = Mathf.Max(SpecialRows * RowHeight, specialText.preferredHeight + RowHeight * 0.5f);
+            specialText.rectTransform.sizeDelta = new Vector2(PanelWidth - 70f, specialHeight);
+            fullHeight = -specialText.rectTransform.anchoredPosition.y + specialHeight + 30f;
+            panel.sizeDelta = new Vector2(0f, fullHeight);
         }
 
         // What a defensive/resource stat actually does right now, shown small and dim after its name.
@@ -401,7 +405,7 @@ namespace PoeClone.Inventory
                     hint = Percent(reduction) + " less from a " + StatFormatter.Number(DefenceMath.ReferenceHit) + " hit";
                     break;
                 case StatType.Evasion:
-                    hint = Percent(DefenceMath.EvadeChance(sheet.Total(StatType.Evasion))) + " to evade attacks";
+                    hint = Percent(sheet.EvadeChance) + " to evade attacks";
                     break;
                 case StatType.MaxMana:
                     float regen = DefenceMath.ManaRegenPerSecond(sheet.Total(StatType.MaxMana), sheet.Total(StatType.Intelligence),

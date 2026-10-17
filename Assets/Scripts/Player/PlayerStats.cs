@@ -388,7 +388,7 @@ namespace PoeClone.Player
 
             if (sheet != null)
             {
-                if (attack && EventRandom.Value(rollSeed, EventRandom.Evade) < DefenceMath.EvadeChance(sheet.Total(StatType.Evasion)))
+                if (attack && EventRandom.Value(rollSeed, EventRandom.Evade) < sheet.EvadeChance)
                 {
                     CombatText.Show(textAt, "Evaded", CombatText.AvoidColor, 0.8f);
                     return false;
@@ -490,7 +490,7 @@ namespace PoeClone.Player
             Stagger stagger = GetComponent<Stagger>();
             if (stagger == null)
                 stagger = gameObject.AddComponent<Stagger>();
-            float avoidStun = inventory != null ? inventory.Stats.Total(StatType.AvoidStun) : 0f;
+            float avoidStun = inventory != null ? inventory.Stats.StunAvoidance : 0f;
             if (EventRandom.Value(rollSeed, EventRandom.Stagger) < DefenceMath.StaggerChance(amount, MaxHealth, avoidStun))
                 stagger.Trigger();
 

@@ -163,13 +163,19 @@ namespace PoeClone.Skills
         {
             if (this == null || stats == null || stats.IsDead)
                 return;
+            bool returns = Stat(StatType.ReturningVolley) > 0f;
+            var struck = returns ? PlayerArrow.NewVolley() : null;
             foreach (EnemyHealth enemy in EnemiesWithin(at, radius))
             {
                 Vector3 distance = at - shotOrigin;
                 distance.y = 0f;
                 HitEffects.Deal(transform, enemy, damage, attack: true, CombatText.PhysicalColor,
-                    projectileDistance: distance.magnitude, tree: tree);
+                    projectileDistance: distance.magnitude, tree: tree,
+                    sourceDamageMultiplier: returns ? ReturningProjectileFlight.DamageMultiplier : 1f);
+                struck?.Add(enemy);
             }
+            if (returns && struck.Count > 0)
+                PlayerArrow.ReturnAfterRainImpact(transform, at, shotOrigin, damage, tree, struck);
         }
 
         // A spectator's copy of a bow skill's shot (see PlayVisual): the same arrows, harmless.

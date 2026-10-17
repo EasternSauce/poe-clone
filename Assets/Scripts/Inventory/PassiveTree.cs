@@ -124,7 +124,7 @@ namespace PoeClone.Inventory
         private static void BuildNecromancy()
         {
             Sector(PassiveBranch.Necromancy, 117f);
-            N("n_ward", "Grave Ward", 1.6f, 0.3f, Mod(StatType.MinionLife, 10), Mod(StatType.MinionArmour, 60), Mod(StatType.PercentManaRegen, 0.5f));
+            N("n_ward", "Grave Ward", 1.6f, 0.3f, Mod(StatType.MinionLife, 10), Mod(StatType.MinionArmour, 60), Mod(StatType.PercentManaRegen, 0.5f), Mod(StatType.EffigyLife, 10), Mod(StatType.EffigyArmour, 60));
             N("n1", "Grave Whispers", 2.6f, 0f, Road());
             N("n2", "Bone Servants", 2.9f, -0.35f, Road());
             N("n3", "Ossuary", 2.9f, 0.35f, Road());
@@ -156,7 +156,7 @@ namespace PoeClone.Inventory
             N("v2", "Venomous Wounds", 3.18f, -0.30f, Road());
             Nt("v3", "Path of Venom", 3.69f, -0.23f, Mod(StatType.PoisonDamage, 18), Mod(StatType.DamageOverTime, 12), Mod(StatType.PoisonPenetration, 8));
             N("junction_v3", "", 3.69f, -0.23f, Road());
-            Nt("k_viper", "Viper's Kiss", 4.16f, -0.23f, Mod(StatType.PoisonDamage, 14), Mod(StatType.DamageOverTime, 8), Mod(StatType.PoisonResistance, 10));
+            Ks("k_viper", "Contagion", 4.16f, -0.23f, Mod(StatType.Contagion, 1));
             Chain("g10", "v1", "v2", "junction_v3");
             Chain("v2", "k_viper");
             N("v4", "Caustic Blood", 3.16f, 0.09f, Road());
@@ -179,7 +179,7 @@ namespace PoeClone.Inventory
             // Left arm: defence.
             N("m3", "Iron Skin", 1.2f, -0.3f, Road(), Mod(StatType.FireResistance, 5), Mod(StatType.ColdResistance, 5), Mod(StatType.LightningResistance, 5));
             N("m4", "Thick Hide", 1.5f, -0.45f, Road(), Mod(StatType.FireResistance, 5), Mod(StatType.ColdResistance, 5), Mod(StatType.LightningResistance, 5));
-            Nt("m5", "Juggernaut", 1.85f, -0.55f, Mod(StatType.MaxLife, 30), Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 5), Mod(StatType.AvoidStun, 8), Mod(StatType.PercentLifeRegen, 0.5f), Mod(StatType.DamageTaken, -5), Mod(StatType.FireResistance, 10), Mod(StatType.ColdResistance, 10), Mod(StatType.LightningResistance, 10));
+            Nt("m5", "Juggernaut", 1.85f, -0.55f, Mod(StatType.MaxLife, 30), Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 5), Mod(StatType.AvoidStun, 8), Mod(StatType.PercentLifeRegen, 0.5f), Mod(StatType.DamageTaken, -5), Mod(StatType.FireResistance, 10), Mod(StatType.ColdResistance, 10), Mod(StatType.LightningResistance, 10), Mod(StatType.EffigyArmour, 150));
             N("junction_m5", "", 1.85f, -0.55f, Road());
             Chain("m2", "m3", "m4", "junction_m5");
 
@@ -244,7 +244,7 @@ namespace PoeClone.Inventory
             Nt("f_berserk", "Berserker", 2.25f, -0.7f, Mod(StatType.AttackDamage, 16), Mod(StatType.LifeLeech, 1));
             N("junction_f_berserk", "", 2.25f, -0.7f, Road());
             Chain("f_b1", "junction_f_berserk");
-            Nt("k_pain", "Lasting Resolve", 2.65f, -1.0f, Mod(StatType.AttackDamage, 12), Mod(StatType.AvoidStun, 15));
+            Ks("k_pain", "Unwavering Stance", 2.65f, -1.0f, Mod(StatType.UnwaveringStance, 1));
             Chain("f_b1", "k_pain");
 
             Nt("f_frenzy", "Frenzy", 2.25f, 0.7f, Mod(StatType.OnslaughtOnKill, 15), Mod(StatType.AttackSpeed, 6));
@@ -287,7 +287,7 @@ namespace PoeClone.Inventory
             Nt("g_longshot", "Longshot", 3.6f, 0.78f, Mod(StatType.BowDamage, 18), Mod(StatType.CriticalMultiplier, 15));
             Chain("g10", "g_shaft", "g_longshot");
 
-            Nt("g_phase", "Phase Run", 2.4f, -0.2f, Mod(StatType.MovementSpeed, 6), Mod(StatType.OnslaughtOnKill, 10), Mod(StatType.Evasion, 40));
+            Ks("g_phase", "Returning Volley", 2.4f, -0.2f, Mod(StatType.ReturningVolley, 1));
             Chain("g9", "g_phase");
 
             Nt("g_hoarfrost", "Hoarfrost", 2.1f, -0.6f, Mod(StatType.ChillOnHit, 8), Mod(StatType.DamageVsChilled, 10));
@@ -313,13 +313,13 @@ namespace PoeClone.Inventory
             N("junction_s_conductor", "", 2.41f, 0f, Road());
             N("s_sp5", "Haste", 2.12f, 0.63f, Road());
             N("s_sp6", "Flow", 1.4f, 0.69f, Mod(StatType.CastSpeed, 5));
-            Nt("s_eye", "Eye of the Storm", 1.8f, 0.05f, Mod(StatType.CastSpeed, 16), Mod(StatType.ManaRegen, 20));
+            Nt("s_eye", "Eye of the Storm", 1.8f, 0.05f, Mod(StatType.CastSpeed, 16), Mod(StatType.ManaRegen, 20), Mod(StatType.EffigyCastSpeed, 12));
             Chain("s2", "s_sp1", "s_sp2", "s_sp3", "junction_s_conductor", "s_sp5", "s_sp6", "s_eye");
 
             Nt("k_thunderlord", "Thunderlord", 2.85f, 0f, Mod(StatType.ShockChance, 15), Mod(StatType.LightningDamage, 18));
             Chain("s_sp3", "k_thunderlord");
 
-            Nt("s_stride", "Frozen Stride", 2.3f, -0.95f, Mod(StatType.ColdDamage, 10), Mod(StatType.MovementSpeed, 5), Mod(StatType.CastSpeed, 5), Mod(StatType.ColdPenetration, 6));
+            Nt("s_stride", "Frozen Stride", 2.3f, -0.95f, Mod(StatType.ColdDamage, 10), Mod(StatType.MovementSpeed, 5), Mod(StatType.CastSpeed, 5), Mod(StatType.ColdPenetration, 6), Mod(StatType.EffigyRange, 15));
             N("junction_s_stride", "", 2.3f, -0.95f, Road());
             Chain("s_sp3", "junction_s_stride");
             Nt("k_glacial", "Winter's Reach", 2.75f, -1.15f, Mod(StatType.ColdDamage, 16), Mod(StatType.ColdPenetration, 8));
@@ -339,7 +339,7 @@ namespace PoeClone.Inventory
             // Mind: mana, ending in Mind over Matter.
             N("w4", "Deep Well", 1.5f, -0.45f, Road());
             N("w_l2", "Clarity", 1.85f, -0.5f, Road());
-            Nt("w_l3", "Arcane Mind", 2.2f, -0.5f, Mod(StatType.CastSpeed, 8), Mod(StatType.MaxMana, 30), Mod(StatType.IncreasedMana, 10), Mod(StatType.PercentManaRegen, 1f));
+            Nt("w_l3", "Arcane Mind", 2.2f, -0.5f, Mod(StatType.CastSpeed, 8), Mod(StatType.MaxMana, 30), Mod(StatType.IncreasedMana, 10), Mod(StatType.PercentManaRegen, 1f), Mod(StatType.EffigyLife, 20));
             N("junction_w_l3", "", 2.2f, -0.5f, Road());
             Chain("w3", "w4", "w_l2", "junction_w_l3");
             Ks("k_mom", "Mind over Matter", 2.65f, -0.6f, Mod(StatType.ManaAbsorb, 30));
@@ -348,7 +348,7 @@ namespace PoeClone.Inventory
             // Power: spell damage, ending in a projectile keystone shared with bow builds.
             N("w_m1", "Quick Incantation", 1.55f, 0f, Road());
             N("w_m2", "Sorcery", 1.9f, 0f, Road());
-            Nt("w_archmage", "Archmage", 2.25f, 0f, Mod(StatType.SpellDamage, 15), Mod(StatType.CastSpeed, 10), Mod(StatType.AreaOfEffect, 12), Mod(StatType.ElementalPenetration, 5));
+            Ks("w_archmage", "Spellbound Effigies", 2.25f, 0f, Mod(StatType.SpellboundEffigies, 1));
             Chain("w3", "w_m1", "w_m2", "w_archmage");
             Ks("k_twincast", "Arcane Power", 2.7f, 0f, Mod(StatType.AdditionalProjectiles, 1));
             Chain("w_m2", "k_twincast");
@@ -356,7 +356,7 @@ namespace PoeClone.Inventory
             // Wards: resistances.
             N("w6", "Warding", 1.5f, 0.45f, Road());
             N("w7", "Grounding", 1.85f, 0.5f, Road());
-            Nt("w_r3", "Elemental Ward", 2.2f, 0.5f, Mod(StatType.FireResistance, 15), Mod(StatType.ColdResistance, 15), Mod(StatType.LightningResistance, 15));
+            Nt("w_r3", "Elemental Ward", 2.2f, 0.5f, Mod(StatType.FireResistance, 15), Mod(StatType.ColdResistance, 15), Mod(StatType.LightningResistance, 15), Mod(StatType.EffigyResistances, 12));
             N("junction_w_r3", "", 2.2f, 0.5f, Road());
             Chain("w3", "w6", "w7", "junction_w_r3");
 
@@ -382,9 +382,9 @@ namespace PoeClone.Inventory
             N("z_s4", "Fervent Heart", 1.93f, 0.48f, Road());
             Nt("z_t1", "Wildfire", 2.15f, -0.9f, Mod(StatType.IgniteChance, 50), Mod(StatType.FireDamage, 12), Mod(StatType.FirePenetration, 8), Mod(StatType.FireDamageOverTime, 25));
             N("junction_z_t1", "", 2.15f, -0.9f, Road());
-            Nt("z_t2", "Funeral Pyre", 2.6f, -0.34f, Mod(StatType.FireDamage, 18), Mod(StatType.IgniteChance, 50), Mod(StatType.FireDamageOverTime, 35));
+            Nt("z_t2", "Funeral Pyre", 2.6f, -0.34f, Mod(StatType.FireDamage, 18), Mod(StatType.IgniteChance, 50), Mod(StatType.FireDamageOverTime, 35), Mod(StatType.EffigyDamage, 20));
             N("junction_z_t2", "", 2.6f, -0.34f, Road());
-            Nt("z_t3", "Lifeblood", 2.6f, 0.34f, Mod(StatType.PercentLifeRegen, 0.6f), Mod(StatType.IncreasedLife, 6));
+            Nt("z_t3", "Lifeblood", 2.6f, 0.34f, Mod(StatType.PercentLifeRegen, 0.6f), Mod(StatType.IncreasedLife, 6), Mod(StatType.EffigyLife, 20), Mod(StatType.EffigyRegen, 1));
             N("junction_z_t3", "", 2.6f, 0.34f, Road());
             Nt("z_t4", "Zealot's Vigour", 2.15f, 0.9f, Mod(StatType.LifeRegen, 4), Mod(StatType.MaxLife, 25));
             N("junction_z_t4", "", 2.15f, 0.9f, Road());
@@ -396,7 +396,7 @@ namespace PoeClone.Inventory
 
             Ks("k_inferno", "Pyre", 3.05f, -0.45f, Mod(StatType.ExplodeOnKill, 20));
             Chain("z_s2", "k_inferno");
-            Nt("k_secondwind", "Renewed Vigour", 3.05f, 0.45f, Mod(StatType.PercentLifeRegen, 0.6f), Mod(StatType.CastSpeed, 8));
+            Ks("k_secondwind", "Greater Congregation", 3.05f, 0.45f, Mod(StatType.AdditionalEffigies, 1));
             Chain("z_s3", "k_secondwind");
         }
 
@@ -603,6 +603,9 @@ namespace PoeClone.Inventory
                     throw new InvalidOperationException("Keystone must have one approach: " + keystone.Id);
 
                 PassiveNode from = byId[keystone.Links[0]];
+                // Promoted notables can already have an authored travel approach.
+                if (from.Id.StartsWith("travel_") && from.Links.Count == 2)
+                    continue;
                 float dx = keystone.X - from.X;
                 float dy = keystone.Y - from.Y;
                 float length = (float)Math.Sqrt(dx * dx + dy * dy);
@@ -753,7 +756,10 @@ namespace PoeClone.Inventory
                 case "k_unbreakable": return Mod(StatType.Armour, 8);
                 case "k_volley": return Mod(StatType.BowDamage, 3);
                 case "k_inferno": return Mod(StatType.FireDamage, 3);
-                case "k_secondwind": return Mod(StatType.CastSpeed, 2);
+                case "k_secondwind": return Mod(StatType.EffigyLife, 5);
+                case "w_archmage": return Mod(StatType.EffigyDamage, 4);
+                case "g_phase": return Mod(StatType.BowDamage, 3);
+                case "k_pain": return Mod(StatType.Armour, 8);
             }
 
             // Dedicated attribute spurs grant +10 on the approach and +30 at the notable.
