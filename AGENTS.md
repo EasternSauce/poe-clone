@@ -33,6 +33,11 @@ Do not run complex Unity tests unless the user specifically asks. Leave gameplay
 
 Keep demo equipment changes inside the temporary session. Do not change new-character loadouts just to prepare a visual check.
 
+Plain Editor Play (no DevTest session) is the dev build: it skips patch notes and starts the user's first saved character in Greenwood at the Haven gate arrival, or shows the main menu when no characters exist. It plays the user's real character, so gameplay checks still go through `QuickStart`. Loading takes several seconds after Play begins, and screenshots taken earlier only show the loading screen. If you do use plain Play, do not screenshot or query gameplay on a fixed delay. Repeat this check until it returns `ready`:
+```csharp
+return PoeClone.Player.SaveSystem.CharacterLoaded && Time.timeScale > 0f ? "ready" : "loading";
+```
+
 When a check is finished, delete every screenshot or capture you took only for your own testing (for example under `Captures/` or `Assets/Screenshots/`, including their `.meta` files). Keep only images you show to the user or that they asked for, and tell them where those are. Never delete screenshots you did not create.
 
 # Inspiration assets
