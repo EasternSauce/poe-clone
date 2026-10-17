@@ -317,7 +317,7 @@ namespace PoeClone.Visuals
 
             // Faster running lengthens the stride as well as quickening it, as a sprint does.
             float stride = Mathf.Lerp(strideLength, runStrideLength * Mathf.Sqrt(Mathf.Max(1f, speed / runFullSpeed)), runBlend);
-            // Quicken the shared arm/leg cycle by 70% at full sprint, easing in from walking.
+            // Quicken the leg cycle by 70% at full sprint, easing in from walking.
             float cadence = Mathf.Lerp(1f, 1.7f, runBlend);
             phase += speed * dt / stride * Mathf.PI * 2f * cadence;
             float s = Mathf.Sin(phase);
@@ -352,10 +352,10 @@ namespace PoeClone.Visuals
                 SetPivot(leftLeg, s * legAmp - 35f * crouch, -PlantSpread * plant);
                 SetPivot(rightLeg, -s * legAmp - 35f * crouch, PlantSpread * plant);
             }
-            // Each arm swings with the opposite leg. The anatomical gait has its feet furthest apart
-            // at phase 0 and PI (cosine), the blocky one at the sine peaks; out of step by a quarter
-            // cycle, the arms reach forward as the legs pass, like planting walking poles.
-            float armWave = NaturalGait ? -c : s;
+            // Arms complete one swing cycle for every two leg cycles. Keep the anatomical
+            // gait's cosine offset and the blocky gait's sine offset at this slower cadence.
+            float armPhase = phase * 0.5f;
+            float armWave = NaturalGait ? -Mathf.Cos(armPhase) : Mathf.Sin(armPhase);
             float leftSwing = -armWave * armAmp, rightSwing = armWave * armAmp;
             float armArc = NaturalGait ? blend * (1f - WorkBlend) * Mathf.Lerp(.35f, 1f, runBlend) : 0f;
             if (!leftArmSuppressed)
