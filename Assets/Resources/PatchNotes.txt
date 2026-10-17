@@ -1,3 +1,6 @@
+version: 2026-10-17-gentler-idle-stretch
+- The arm stretch in the inventory portrait is slower and more relaxed, with roughly half the hand lift and elbows kept closer to the sides. The hands stay clear of the ribs instead of sliding up the torso, keeping the held sword clear through the motion.
+
 version: 2026-10-17-idle-fidgets
 - Standing still, the hero now and then settles his weight onto one leg and stays there a while: both feet stay planted, his hips slide slightly over the standing leg, the other knee eases, and his torso turns and leans into a relaxed, slightly lazy posture while his head stays level.
 - Every 10 to 20 seconds he fidgets, never the same way twice in a row: a stretch of each arm in turn (shoulder rolling back, elbow out and back, hand sliding up his side), scratching the forearm of his weapon arm with his other hand, or reaching across to scratch his other shoulder. A held sword comes along naturally.

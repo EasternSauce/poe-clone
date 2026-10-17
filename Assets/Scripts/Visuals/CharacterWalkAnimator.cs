@@ -120,19 +120,18 @@ namespace PoeClone.Visuals
         public float WeightShift => weightShift;
 
         // Standing a while, the hero fidgets now and then, never the same way twice running: a stretch
-        // of each arm in turn (the shoulder rolls up and back, the elbow drives out and back and the
-        // hand slides up the side of the torso), scratching the weapon arm's forearm with the off hand
+        // of each arm in turn (a small shoulder roll with the hand clear of the ribs),
+        // scratching the weapon arm's forearm with the off hand
         // in front of him, or reaching across with the off hand to scratch the other shoulder.
         private enum Fidget { None, ArmStretch, ForearmScratch, ShoulderScratch }
         private Fidget fidget, lastFidget;
         private float fidgetBlend, fidgetStart, fidgetUntil, nextFidgetAt;
         private bool stretchLeftFirst;
-        private const float StretchRise = .6f, StretchHold = .35f, StretchFall = .7f, StretchDelay = .5f;
-        // Right side; the left mirrors it. The hand travels the line from low to high on the flank.
-        private static readonly Vector3 StretchHandLow = new Vector3(.31f, .98f, .01f);
-        private static readonly Vector3 StretchHandHigh = new Vector3(.27f, 1.2f, -.03f);
-        private static readonly Vector3 StretchElbowBend = new Vector3(.8f, -.1f, -.6f);
-        private static readonly Vector3 StretchShrug = new Vector3(0f, .025f, -.02f);
+        private const float StretchRise = 1.4f, StretchHold = .5f, StretchFall = 1.6f, StretchDelay = .9f;
+        // Right side; the left mirrors it. A low, outward reach keeps the hand off the torso.
+        private static readonly Vector3 StretchHandHigh = new Vector3(.43f, .95f, .16f);
+        private static readonly Vector3 StretchElbowBend = new Vector3(.25f, -.45f, -.5f);
+        private static readonly Vector3 StretchShrug = new Vector3(0f, .012f, -.01f);
         private static readonly Vector3 ScratchedHand = new Vector3(-.02f, 1.1f, .3f);
         // The off hand's wrist below the far shoulder and clear of the shoulder cape (which reaches
         // z .24), so the fingers land over the front of the shoulder instead of inside the cape.
@@ -540,8 +539,9 @@ namespace PoeClone.Visuals
             rightElbow.rotation = Quaternion.AngleAxis(twist, axis) * rightElbow.rotation;
         }
 
-        // The shoulder rolls up and back, the elbow drives out and back, and the hand slides up the
-        // flank in a straight line, holds a moment and slides back down. side: -1 left, 1 right.
+        // Slowly ease from the hanging pose into a small outward stretch and back. Solving the
+        // peak pose then blending by reach avoids a separate fast lift onto a flank-scratching path.
+        // side: -1 left, 1 right.
         private void StretchArm(Transform arm, Transform elbow, Transform hand, Vector3 shoulderRest, float side, float time, float weight)
         {
             float total = StretchRise + StretchHold + StretchFall;
@@ -550,9 +550,8 @@ namespace PoeClone.Visuals
                 : time < StretchRise + StretchHold ? 1f : Smooth(1f - (time - StretchRise - StretchHold) / StretchFall);
             Vector3 mirror = new Vector3(side, 1f, 1f);
             if (shoulderRest != Vector3.zero) arm.localPosition = shoulderRest + Vector3.Scale(StretchShrug, mirror) * reach * weight;
-            Vector3 along = Vector3.Scale(Vector3.Lerp(StretchHandLow, StretchHandHigh, reach), mirror);
-            // Eases onto the line from the hanging pose, then follows it.
-            PoseGrip(arm, elbow, hand, transform.TransformPoint(along), side, Smooth(Mathf.Clamp01(reach / .3f)) * weight,
+            Vector3 target = Vector3.Scale(StretchHandHigh, mirror);
+            PoseGrip(arm, elbow, hand, transform.TransformPoint(target), side, reach * weight,
                 Vector3.Scale(StretchElbowBend, mirror));
         }
 
