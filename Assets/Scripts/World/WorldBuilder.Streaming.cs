@@ -288,6 +288,7 @@ namespace PoeClone.World
             yield return null;
             started = PoeClone.UI.PerformanceDiagnostics.Begin();
             BuildChunkBorder(area, group, boundary, rect);
+            if (area == Cave) DressCaveEdges(Group("Cave"), area, boundary);
             Physics.SyncTransforms();
             PoeClone.UI.PerformanceDiagnostics.End("Borders + physics sync", started);
         }

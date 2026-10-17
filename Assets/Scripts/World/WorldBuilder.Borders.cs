@@ -243,7 +243,7 @@ namespace PoeClone.World
             Begin(Cave, 660);
             Transform group = Group("Cave");
             // Only roomy chambers receive solid scenery; passages keep their full clearance.
-            Scatter(group, 12, 16, 170, p => Prefab(kit.rock, group, p, R(0, 360), Vector3.one * R(0.7f, 1.1f)), 1.4f);
+            Scatter(group, 14, 16, 170, p => CaveFormation(group, p, Vector3.forward, false), 4.5f);
             Scatter(group, 12, 12, 170, p => Bones(group, p), 0.5f);
             foreach (Vector3 local in new[] { new Vector3(-126, 0, -74), new Vector3(124, 0, 84), new Vector3(47, 0, -64), new Vector3(-64, 0, 62) })
             {

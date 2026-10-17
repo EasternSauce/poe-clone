@@ -1,3 +1,7 @@
+version: 2026-10-17-cave-formations
+- The Lost Hollows and the Warren have large weathered boulders, clustered stalagmites and wall shelves with hanging stalactites. Narrow passages, gateways and quest sites stay clear.
+- Damp formations have patchy moss on their rocks, soft moss beds and occasional ceiling drops with small splashes beneath the stalactites.
+
 version: 2026-10-17-rain-movement
 - Drizzle now scrolls with the scenery as the camera follows the player, with gentle depth differences between rain layers.
 

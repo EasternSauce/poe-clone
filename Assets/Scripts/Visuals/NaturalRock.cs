@@ -7,6 +7,8 @@ namespace PoeClone.Visuals
     public sealed class NaturalRock : MonoBehaviour
     {
         public Mesh[] variants;
+        // Explicit damp patches in caves; negative values keep the area's default coverage.
+        public float mossCoverage = -1f;
 
         private void Start() => Dress();
 
@@ -23,6 +25,7 @@ namespace PoeClone.Visuals
             bool green = area == WorldBuilder.Greenwood || area == WorldBuilder.Haven || area == WorldBuilder.Graveyard;
             bool dry = WorldBuilder.IsActTwo(area);
             float moss = green && random.NextDouble() < 0.65 ? Range(0.38f, 0.86f) : 0f;
+            if (mossCoverage >= 0f) moss = Mathf.Clamp01(mossCoverage);
             Color cool = new Color(0.43f, 0.46f, 0.47f);
             Color warm = new Color(0.53f, 0.49f, 0.42f);
             Color tint = Color.Lerp(cool, warm, Range(0f, 1f));

@@ -249,6 +249,7 @@ namespace PoeClone.World
             Vector3 c = Center(Warren);
             Transform t = Floor(Warren, "The Warren", DirtFloor);
             Begin(Warren, 721);
+            DressCaveEdges(t, Warren);
             Vector3 throne = c + new Vector3(0f, 0f, 22f);
             Box(t, throne + new Vector3(0f, 0.5f, 0f), new Vector3(2.4f, 1f, 1.6f), kit.Mat("Wood"));
             Box(t, throne + new Vector3(0f, 1.8f, 0.7f), new Vector3(2.4f, 2.6f, 0.4f), kit.Mat("Wood"));
