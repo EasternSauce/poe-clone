@@ -42,9 +42,6 @@ namespace PoeClone.Visuals
         [SerializeField] private float runStrideLength = 5.4f;
         [SerializeField] private float runBobHeight = 0.12f;
         [SerializeField] private float runLean = 14f;
-        [Tooltip("The forward lean blends in between these speeds, so a character can run upright and only lean into a sprint.")]
-        [SerializeField] private float leanStartSpeed = 7.5f;
-        [SerializeField] private float leanFullSpeed = 9f;
 
         [Header("Stagger")]
         [Tooltip("How far the upper body rocks back when staggered (see Combat.Stagger).")]
@@ -75,7 +72,6 @@ namespace PoeClone.Visuals
         }
 
         private float runBlend;
-        private float leanBlend;
         private AnimationBudget animationBudget;
         private bool importantAnimation;
 
@@ -253,7 +249,6 @@ namespace PoeClone.Visuals
             // 0 = walk, 1 = run. Driven by real speed, so it kicks in when sprinting.
             float runTarget = Mathf.InverseLerp(runStartSpeed, runFullSpeed, speed);
             runBlend = Mathf.MoveTowards(runBlend, runTarget, runBlendSpeed * dt);
-            leanBlend = Mathf.MoveTowards(leanBlend, Mathf.InverseLerp(leanStartSpeed, leanFullSpeed, speed), runBlendSpeed * dt);
 
             // Faster running lengthens the stride as well as quickening it, as a sprint does.
             float stride = Mathf.Lerp(strideLength, runStrideLength * Mathf.Sqrt(Mathf.Max(1f, speed / runFullSpeed)), runBlend);
@@ -295,10 +290,11 @@ namespace PoeClone.Visuals
             // cycle, the arms reach forward as the legs pass, like planting walking poles.
             float armWave = NaturalGait ? -c : s;
             float leftSwing = -armWave * armAmp, rightSwing = armWave * armAmp;
+            float armArc = NaturalGait ? blend * (1f - WorkBlend) * Mathf.Lerp(.35f, 1f, runBlend) : 0f;
             if (!leftArmSuppressed)
-                SetPivot(leftArm, Mathf.Lerp(armRestAngle + leftSwing + breath * 2.5f + sway * 1.5f, WorkArms.x, WorkBlend));
+                SetArm(leftArm, Mathf.Lerp(armRestAngle + leftSwing + breath * 2.5f + sway * 1.5f, WorkArms.x, WorkBlend), -1f, armWave, armArc);
             if (!rightArmSuppressed)
-                SetPivot(rightArm, Mathf.Lerp(armRestAngle + rightSwing + breath * 2.5f - sway * 1.5f, WorkArms.y, WorkBlend));
+                SetArm(rightArm, Mathf.Lerp(armRestAngle + rightSwing + breath * 2.5f - sway * 1.5f, WorkArms.y, WorkBlend), 1f, -armWave, armArc);
 
             // Knees bend while the leg swings forward (more so when running).
             float kneeMax = Mathf.Lerp(walkKneeBend, runKneeBend, runBlend) * blend * stepping;
@@ -324,7 +320,7 @@ namespace PoeClone.Visuals
             float walkTwist = simple ? 0f : armWave * 5f * blend;
             if (upperBody != null)
                 upperBody.localRotation = Quaternion.Euler(
-                    runLean * leanBlend * blend + staggerTilt + torsoPitch - breath * 1.2f + 25f * crouch + Hunch + WorkLean * WorkBlend,
+                    runLean * runBlend * blend + staggerTilt + torsoPitch - breath * 1.2f + 25f * crouch + Hunch + WorkLean * WorkBlend,
                     torsoYaw + walkTwist + sway * 2f, 0f);
 
             float bobAmount = Mathf.Lerp(bobHeight, runBobHeight, runBlend);
@@ -364,7 +360,7 @@ namespace PoeClone.Visuals
         private const float RunStance = .38f;
 
         // Extra elbow bend per degree of forward arm swing while walking.
-        private const float WalkElbowFold = 1.2f;
+        private const float WalkElbowFold = .3f;
 
         private void PoseNaturalLeg(Transform hip,Transform knee,AnatomicalAnkle ankle,float cycle,float side,float bodyOffset,float crouch)
         {
@@ -515,7 +511,6 @@ namespace PoeClone.Visuals
             phase = 0f;
             blend = 0f;
             runBlend = 0f;
-            leanBlend = 0f;
             SetPivot(leftLeg, 0f);
             SetPivot(rightLeg, 0f);
             SetPivot(leftArm, armRestAngle);
@@ -556,6 +551,23 @@ namespace PoeClone.Visuals
             nextFootstepAt = Time.time + (isTownNpc
                 ? Mathf.Max(0.22f, clip.length / Mathf.Max(0.1f, audioSource.pitch)) : 0.22f);
             audioSource.PlayOneShot(clip, volume);
+        }
+
+        // A real arm does not swing on a pin. The elbow is carried a little out from the ribs and
+        // flares further out as it drives back; swinging forward, the upper arm turns in so the
+        // bent forearm crosses towards the front of the chest. side: -1 left, 1 right.
+        // forward: -1 arm fully back, 1 fully forward. weight 0 swings on the pitch axis alone.
+        private const float ArmCarry = 10f, ArmFlareBack = 12f, ArmTuckFront = 8f;
+        private const float ArmTurnIn = 12f, ArmTurnInFront = 30f;
+
+        private static void SetArm(Transform arm, float pitch, float side, float forward, float weight)
+        {
+            if (arm == null) return;
+            float front = Mathf.Max(0f, forward), back = Mathf.Max(0f, -forward);
+            float abduct = (ArmCarry + ArmFlareBack * back - ArmTuckFront * front) * weight;
+            float turnIn = (ArmTurnIn + ArmTurnInFront * front) * weight;
+            arm.localRotation = Quaternion.Euler(pitch, 0f, 0f) * Quaternion.Euler(0f, 0f, side * abduct)
+                * Quaternion.Euler(0f, -side * turnIn, 0f);
         }
 
         private static void SetPivot(Transform pivot, float angle, float roll = 0f)

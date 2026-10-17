@@ -28442,25 +28442,23 @@ MonoBehaviour:
   rightArm: {fileID: 2135272514}
   armRestAngle: 0
   legSwing: 38
-  armSwing: 16
+  armSwing: 11
   strideLength: 3.6
   bobHeight: 0.05
   blendSpeed: 8
   minMoveSpeed: 0.3
   walkKneeBend: 18
-  walkElbowBend: 12
-  runStartSpeed: 3
-  runFullSpeed: 5.5
+  walkElbowBend: 10
+  runStartSpeed: 8
+  runFullSpeed: 9.5
   runBlendSpeed: 6
   runLegSwing: 62
   runArmSwing: 58
   runKneeBend: 80
   runElbowBend: 85
-  runStrideLength: 4.2
+  runStrideLength: 5.4
   runBobHeight: 0.12
   runLean: 14
-  leanStartSpeed: 7
-  leanFullSpeed: 10
   staggerTiltAngle: -22
   footstepClips:
   - {fileID: 8300000, guid: 7f7a0231b21167146bd2e6082030430e, type: 3}
