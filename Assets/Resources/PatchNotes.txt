@@ -1,5 +1,5 @@
 version: 2026-10-17-sprint-cadence
-- Sprinting arm and leg movements are 100% faster, with footsteps kept in sync.
+- Sprinting arm and leg movements are 70% faster, with footsteps kept in sync.
 
 version: 2026-10-17-stable-puddle-reflections
 - Puddle reflections no longer switch off when rivers or lakes enter view while walking nearby.

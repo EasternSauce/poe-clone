@@ -317,8 +317,8 @@ namespace PoeClone.Visuals
 
             // Faster running lengthens the stride as well as quickening it, as a sprint does.
             float stride = Mathf.Lerp(strideLength, runStrideLength * Mathf.Sqrt(Mathf.Max(1f, speed / runFullSpeed)), runBlend);
-            // Double the shared arm/leg cycle at full sprint, easing in from walking.
-            float cadence = Mathf.Lerp(1f, 2f, runBlend);
+            // Quicken the shared arm/leg cycle by 70% at full sprint, easing in from walking.
+            float cadence = Mathf.Lerp(1f, 1.7f, runBlend);
             phase += speed * dt / stride * Mathf.PI * 2f * cadence;
             float s = Mathf.Sin(phase);
             float c = Mathf.Cos(phase);
