@@ -26,6 +26,7 @@ namespace PoeClone.EditorTools
                         left, grip, detailed ? 12 : 6)));
             }
             Save(Simplified(Scalp()));
+            Save(Simplified(Beard()));
             Save(AnatomyLimbMeshes.Arm(-1));
             Save(AnatomyLimbMeshes.Arm(1));
             Save(AnatomyLimbMeshes.Leg());
@@ -156,12 +157,7 @@ namespace PoeClone.EditorTools
         private static Mesh Head(string name, int sides, int rows)
         {
             var b = new Surface();
-            b.Grid(sides, rows, (u,v) => {
-                float y = -.5f + v, angle = HeadAngle(u);
-                Vector3 p = SkullPoint(angle, y);
-                if (Mathf.Cos(angle) > 0) p.z = Mathf.Lerp(p.z, FaceZ(p.x,y), Mathf.SmoothStep(0,1,Mathf.Cos(angle)));
-                return p;
-            }, (u,v) => Mathf.Cos(HeadAngle(u)) > .15f ? FaceColor(Mathf.Sin(HeadAngle(u))*Profile(v-.5f).X,v-.5f) : Color.white,
+            b.Grid(sides, rows, (u,v) => SkinPoint(HeadAngle(u), -.5f + v), (u,v) => Mathf.Cos(HeadAngle(u)) > .15f ? FaceColor(Mathf.Sin(HeadAngle(u))*Profile(v-.5f).X,v-.5f) : Color.white,
                 true);
             float earBase = Profile(-.03f).X - .055f;
             foreach (float side in new[] { -1f, 1f })
@@ -344,6 +340,67 @@ namespace PoeClone.EditorTools
                 b.Lock(path,.010f+.003f*(.5f+.5f*Mathf.Sin(index)),.003f,new Color(tone,tone,tone));
             }
             return b.Mesh("AnatomyScalp");
+        }
+
+        // Upper edge of the beard by degrees from the chin: just under the lower lip, up round the
+        // mouth corners, then along the cheek to the sideburn in front of the ear (hair ends at 72-76).
+        private static readonly Vector2[] BeardKeys = {
+            new Vector2(0,-.285f), new Vector2(20,-.28f), new Vector2(29,-.275f), new Vector2(34,-.21f),
+            new Vector2(40,-.16f), new Vector2(52,-.12f), new Vector2(64,-.07f), new Vector2(74,-.02f),
+            new Vector2(78,-.02f) };
+        private const float BeardSide = 78, BeardBottom = -.47f;
+
+        private static float BeardLine(float degrees)
+        {
+            degrees=Mathf.Abs(degrees);
+            int k=0;
+            while(k<BeardKeys.Length-2&&degrees>BeardKeys[k+1].x) k++;
+            float t=Mathf.SmoothStep(0,1,Mathf.InverseLerp(BeardKeys[k].x,BeardKeys[k+1].x,degrees));
+            return Mathf.Lerp(BeardKeys[k].y,BeardKeys[k+1].y,t)+.003f*Mathf.Sin(degrees*.6f);
+        }
+
+        // The head's skin as baked: the skull blended into the face towards the front.
+        private static Vector3 SkinPoint(float angle,float y)
+        {
+            Vector3 p=SkullPoint(angle,y);
+            if(Mathf.Cos(angle)>0) p.z=Mathf.Lerp(p.z,FaceZ(p.x,y),Mathf.SmoothStep(0,1,Mathf.Cos(angle)));
+            return p;
+        }
+
+        private static Vector3 SkinNormal(float angle,float y)
+        {
+            const float e=.002f;
+            Vector3 n=Vector3.Cross(SkinPoint(angle,y+e)-SkinPoint(angle,y-e),SkinPoint(angle+e,y)-SkinPoint(angle-e,y)).normalized;
+            Vector3 p=SkinPoint(angle,y);
+            return Vector3.Dot(n,new Vector3(p.x,0,p.z-Profile(y).Forward))<0?-n:n;
+        }
+
+        /// <summary>A short full beard over the jaw and chin and a moustache above the lip, leaving the mouth bare.</summary>
+        private static Mesh Beard()
+        {
+            var b=new Surface();
+            b.Grid(120,36,(u,v)=> {
+                float degrees=Mathf.Lerp(-BeardSide,BeardSide,u),angle=degrees*Mathf.Deg2Rad;
+                float line=BeardLine(degrees),y=Mathf.Lerp(line,BeardBottom,v);
+                // Thins to the skin at every edge instead of ending in a ledge; fullest on the chin,
+                // where it grows forward and down a little past the jaw.
+                float grow=Mathf.Min(Between(0,.05f,line-y),Mathf.Min(Between(BeardSide,BeardSide-12,Mathf.Abs(degrees)),Between(BeardBottom,BeardBottom+.05f,y)));
+                float chin=Mathf.Pow(Mathf.Cos(angle),3)*Mathf.Exp(-Mathf.Pow((y+.39f)/.07f,2));
+                float ridge=.002f*Mathf.Sin(degrees*1.9f+v*5)+.001f*Mathf.Sin(degrees*4.3f);
+                float thick=.004f+(.010f+.016f*chin+ridge)*grow;
+                return SkinPoint(angle,y)+SkinNormal(angle,y)*thick;
+            },(u,v)=>Color.white*(.94f+.045f*Mathf.Sin(u*210+v*2)+.025f*Mathf.Sin(u*41+v*5)),true);
+            // Moustache from under the nose to the top of the upper lip, drooping at the corners
+            // to join the beard.
+            const float half=.175f;
+            b.Grid(48,10,(u,v)=> {
+                float x=(u*2-1)*half,s=Mathf.Abs(x)/half;
+                float top=-.148f-.035f*s*s,bottom=-.214f-.048f*Between(.55f,1,s);
+                float y=Mathf.Lerp(top,bottom,v);
+                float thick=.003f+.011f*Mathf.Pow(Mathf.Max(0,Mathf.Sin(v*Mathf.PI)),.6f)*Between(1,.8f,s)*(1-.25f*Mathf.Exp(-Mathf.Pow(x/.02f,2)));
+                return new Vector3(x,y,FaceZ(x,y)+thick);
+            },(u,v)=>Color.white*(.93f+.05f*Mathf.Sin(u*90+v*3)),false,Vector3.forward);
+            return b.Mesh("AnatomyBeard");
         }
 
         private static Mesh Hand(string name, bool left, bool grip, int sides)

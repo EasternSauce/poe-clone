@@ -50,6 +50,10 @@ namespace PoeClone.EditorTools
             // The head supplies the silhouette shadow; fine hair tips must not stripe the scalp.
             hair.GetComponent<Renderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
             hair.localPosition = head.localPosition; hair.localScale = head.localScale;
+            Transform beard = Child(head, "Beard");
+            Set(beard, meshes["AnatomyBeard"], hairMaterial);
+            beard.GetComponent<Renderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
+            beard.localPosition = Vector3.zero; beard.localScale = Vector3.one;
             // A fitted cap leaves the anatomical forehead visible and stays inside the existing helmet envelope.
             upper.Find("Hood").localPosition = new Vector3(0,1.94f,.015f);
             upper.Find("Hood").localScale = new Vector3(.39f,.22f,.40f);
