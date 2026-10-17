@@ -297,6 +297,7 @@ namespace PoeClone.UI
             { "I", "Inventory" },
             { "C", "Character" },
             { "P", "Passive tree" },
+            { "T", "Weapon tree" },
             { "M", "Show or hide the map" },
             { "Enter", "Chat" },
             { "Esc", "This menu" },

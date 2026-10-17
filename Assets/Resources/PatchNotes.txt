@@ -1,3 +1,7 @@
+version: 2026-10-17-weapon-points-badge
+- On desktop the "Weapon tree [T]" button above the skill bar is gone. When your weapon has points to spend, a pulsing "+N weapon points (T)" button now appears under the passive points button; click it or press T to open the weapon tree.
+- The T key for the weapon tree is now listed with the other keys in Settings.
+
 version: 2026-10-17-scene-cleanup
 - Behind the scenes: Greenwood's original trees, houses, ruins, torches and birds now come from their own prefab instead of the game scene, and an old test scene and unused ground texture were removed. The game world is unchanged.
 

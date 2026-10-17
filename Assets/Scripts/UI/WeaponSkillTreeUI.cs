@@ -113,10 +113,8 @@ namespace PoeClone.UI
         {
             if (skills == null || !skills.enabled) skills = FindAnyObjectByType<PlayerSkills>();
             bool usable = skills != null && skills.enabled && skills.MainWeapon != null && !skills.GetComponent<PlayerStats>().IsDead;
-            badge.gameObject.SetActive(!TouchMode.Active && usable && !IsOpen && !DialogueUI.IsOpen && !PassiveTreeUI.IsOpen);
-            if (!usable) { if (IsOpen) Close(); return; }
-            int available = skills.MainWeapon.SkillProgress.Available;
-            badgeText.text = "Weapon tree [T]" + (available > 0 ? " · " + available : "");
+            if (!usable) { badge.gameObject.SetActive(false); if (IsOpen) Close(); return; }
+            UpdateBadge(skills.MainWeapon.SkillProgress.Available);
             var k = Keyboard.current;
             if (!UiKit.IsTypingInTextField() && k != null)
             {
@@ -132,6 +130,23 @@ namespace PoeClone.UI
             if (draft.level != weapon.SkillProgress.level) { draft.level = weapon.SkillProgress.level; dirty = true; }
             if (!closeRequested) UpdatePinch();
             if (dirty) { dirty = false; Refresh(); }
+        }
+
+        // A pulsing button under the passive points one while the weapon has points to spend
+        // (desktop; touch shows them on its WEAPON button). Clicking it opens the tree.
+        private void UpdateBadge(int available)
+        {
+            bool show = !TouchMode.Active && available > 0 && !IsOpen && !DialogueUI.IsOpen && !PassiveTreeUI.IsOpen && !SkillBarUI.PickerOpen;
+            if (badge.gameObject.activeSelf != show) badge.gameObject.SetActive(show);
+            if (!show) return;
+            float scale = canvas.scaleFactor;
+            badge.rectTransform.anchoredPosition = new Vector2(16f / scale, -PassiveTreeUI.BadgeBottomPixels / scale);
+            string text = "+" + available + " weapon point" + (available > 1 ? "s" : "") + "  (T)";
+            if (badgeText.text != text) badgeText.text = text;
+            badge.rectTransform.sizeDelta = new Vector2(badgeText.preferredWidth + 36f, 36f);
+            float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 3f);
+            badgeText.color = Color.Lerp(UiKit.Gold, new Color(1f, 0.95f, 0.7f), pulse);
+            badge.color = new Color(0.12f, 0.09f, 0.04f, 0.75f + 0.15f * pulse);
         }
 
         // ------------------------------------------------------------------ draft
@@ -621,13 +636,16 @@ namespace PoeClone.UI
             yes.gameObject.AddComponent<TouchPointerRelay>().Up += _ => DiscardAndClose();
             discardDialog.SetActive(false);
 
-            badge = UiKit.NewImage("Weapon tree shortcut", canvas.transform, UiKit.PanelColor);
-            badge.rectTransform.anchorMin = badge.rectTransform.anchorMax = new Vector2(0.5f, 0);
-            badge.rectTransform.anchoredPosition = new Vector2(-325, 116);
-            badge.rectTransform.sizeDelta = new Vector2(194, 40);
-            badgeText = UiKit.NewText("Label", badge.transform, "Weapon tree [T]", 18, UiKit.Gold, TextAnchor.MiddleCenter);
-            UiKit.Stretch(badgeText.rectTransform, 2);
-            UiKit.OnClick(badge, () => SetOpen(!IsOpen));
+            badge = UiKit.NewImage("WeaponPointsBadge", canvas.transform, new Color(0.12f, 0.09f, 0.04f, 0.85f));
+            badge.raycastTarget = true;
+            badge.rectTransform.anchorMin = badge.rectTransform.anchorMax = badge.rectTransform.pivot = new Vector2(0f, 1f);
+            UiKit.Grain(badge);
+            UiKit.AddOutline(badge, UiKit.Gold, 2f);
+            badgeText = UiKit.NewText("Text", badge.transform, "", 17, UiKit.Gold, TextAnchor.MiddleCenter);
+            badgeText.font = UiKit.TitleFont;
+            UiKit.Stretch(badgeText.rectTransform, 0f);
+            UiKit.OnClick(badge, () => SetOpen(true));
+            badge.gameObject.SetActive(false);
         }
 
         private sealed class ViewHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IScrollHandler, IPointerClickHandler

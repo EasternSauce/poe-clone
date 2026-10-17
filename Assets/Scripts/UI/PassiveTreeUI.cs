@@ -358,6 +358,10 @@ namespace PoeClone.UI
             }
         }
 
+        // Screen pixels where the next points button goes: under this one while it shows,
+        // otherwise in its place.
+        public static float BadgeBottomPixels { get; private set; }
+
         // A pulsing button below the level/health HUD while there are points to spend;
         // clicking it opens the tree.
         private void UpdateBadge()
@@ -371,14 +375,15 @@ namespace PoeClone.UI
             bool show = touchMenusVisible && unspent > 0 && !panelRoot.activeSelf && !SkillBarUI.PickerOpen && !passives.GetComponent<PlayerStats>().IsDead;
             if (badge.gameObject.activeSelf != show)
                 badge.gameObject.SetActive(show);
-            if (!show)
-                return;
 
             // PlayerHUD uses screen pixels (OnGUI), while this badge lives on a scaled canvas.
             float scale = badge.canvas.scaleFactor;
             float top = (PlayerHUD.BottomPixels + 8f) / scale;
             if (touch)
                 top = Mathf.Max(top, TouchControlsUI.PassiveBadgeTop);
+            BadgeBottomPixels = top * scale;
+            if (!show)
+                return;
             badge.rectTransform.anchoredPosition = new Vector2(touch ? 16f : 16f / scale, -top);
 
             badge.rectTransform.localScale = Vector3.one;
@@ -388,6 +393,7 @@ namespace PoeClone.UI
             if (badgeText.text != text)
                 badgeText.text = text;
             badge.rectTransform.sizeDelta = new Vector2(badgeText.preferredWidth + 36f, touch ? 64f : 36f);
+            BadgeBottomPixels = (top + badge.rectTransform.sizeDelta.y + 8f) * scale;
             float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 3f);
             badgeText.color = Color.Lerp(UiKit.Gold, new Color(1f, 0.95f, 0.7f), pulse);
             badge.color = new Color(0.12f, 0.09f, 0.04f, 0.75f + 0.15f * pulse);
