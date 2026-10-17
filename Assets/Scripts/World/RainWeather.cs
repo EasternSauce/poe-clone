@@ -7,6 +7,7 @@ namespace PoeClone.World
 {
     /// <summary>World-space drops and sparse screen-wide rain, independent of the player's zoom.</summary>
     [DisallowMultipleComponent]
+    [DefaultExecutionOrder(100)] // Sample camera movement after CameraFollow has finished.
     public sealed class RainWeather : MonoBehaviour
     {
         public static float Intensity(int area) => area == WorldBuilder.Greenwood ? 0.7f :
@@ -22,6 +23,8 @@ namespace PoeClone.World
         private Mesh filterMesh;
         private int area = -1;
         private Vector3 previous;
+        private Vector3 previousViewPosition;
+        private Vector2 screenScroll;
 
         private void Awake() => manager = GetComponent<AreaManager>();
 
@@ -72,7 +75,7 @@ namespace PoeClone.World
             renderer.receiveShadows = false;
         }
 
-        private void UpdateFilter(float intensity)
+        private void UpdateFilter(float intensity, Transform focus, bool resetMotion)
         {
             if (filter == null)
             {
@@ -90,13 +93,27 @@ namespace PoeClone.World
                 renderer.receiveShadows = false;
             }
             filter.SetActive(true);
-            filter.transform.SetParent(view.transform, false);
+            if (filter.transform.parent != view.transform) filter.transform.SetParent(view.transform, false);
             float distance = view.nearClipPlane + 0.1f;
             float height = view.orthographic ? view.orthographicSize : Mathf.Tan(view.fieldOfView * Mathf.Deg2Rad * 0.5f) * distance;
             filter.transform.localPosition = Vector3.forward * distance;
             filter.transform.localRotation = Quaternion.identity;
             filter.transform.localScale = new Vector3(height * view.aspect, height, 1);
             filterMaterial.SetFloat("_Intensity", intensity);
+            if (resetMotion) screenScroll = Vector2.zero;
+            else
+            {
+                // Translate the pattern opposite the camera's movement, at the viewed character's
+                // depth. Screen-height units match the shader at any aspect ratio or zoom.
+                Vector3 delta = view.transform.position - previousViewPosition;
+                float depth = Mathf.Max(view.nearClipPlane, Vector3.Dot(focus.position - view.transform.position, view.transform.forward));
+                float visibleHeight = view.orthographic ? view.orthographicSize * 2 :
+                    2 * Mathf.Tan(view.fieldOfView * Mathf.Deg2Rad * 0.5f) * depth;
+                screenScroll += new Vector2(Vector3.Dot(delta, view.transform.right), Vector3.Dot(delta, view.transform.up)) /
+                    Mathf.Max(visibleHeight, 0.01f);
+            }
+            previousViewPosition = view.transform.position;
+            filterMaterial.SetVector("_Scroll", new Vector4(screenScroll.x, screenScroll.y, 0, 0));
         }
 
         private void LateUpdate()
@@ -117,10 +134,11 @@ namespace PoeClone.World
                 return;
             }
             if (rain == null) CreateRain();
-            UpdateFilter(intensity);
             Vector3 position = focus.position;
             // Teleports must not leave a trailing shower in the previous location.
-            if (area != nextArea || (position - previous).sqrMagnitude > 400) rain.Clear();
+            bool resetMotion = area != nextArea || (position - previous).sqrMagnitude > 400;
+            if (resetMotion) rain.Clear();
+            UpdateFilter(intensity, focus, resetMotion);
             area = nextArea;
             previous = position;
             rain.transform.position = new Vector3(position.x, WorldBuilder.Center(area).y + 12, position.z);

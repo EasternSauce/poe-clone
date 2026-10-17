@@ -16,6 +16,7 @@ Shader "PoeClone/ScreenRain"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             CBUFFER_START(UnityPerMaterial)
                 float _Intensity;
+                float4 _Scroll;
             CBUFFER_END
             struct A { float4 positionOS : POSITION; float2 uv : TEXCOORD0; };
             struct V { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; };
@@ -27,10 +28,11 @@ Shader "PoeClone/ScreenRain"
                 return o;
             }
             float Hash(float2 p) { return frac(sin(dot(p, float2(127.1, 311.7))) * 43758.5453); }
-            float Drops(float2 uv, float density, float speed, float seed)
+            float Drops(float2 uv, float density, float speed, float seed, float parallax)
             {
                 // Coordinates measured in screen heights keep the rain equally visible in portrait.
                 float2 p = float2(uv.x * _ScreenParams.x / _ScreenParams.y, uv.y);
+                p += _Scroll.xy * parallax;
                 p.x += p.y * 0.16;
                 p.x *= density;
                 // Stagger each column's fall so streaks never form horizontal rows.
@@ -46,7 +48,7 @@ Shader "PoeClone/ScreenRain"
             }
             half4 frag(V i) : SV_Target
             {
-                float rain = Drops(i.uv, 42, 0.65, 3) + Drops(i.uv, 22, 1.0, 17) * 0.65;
+                float rain = Drops(i.uv, 42, 0.65, 3, 0.65) + Drops(i.uv, 22, 1.0, 17, 1.0) * 0.65;
                 // Even a streak's brightest centre leaves the scene mostly visible through it.
                 return half4(0.68, 0.77, 0.84, saturate(rain * _Intensity * 0.35));
             }
