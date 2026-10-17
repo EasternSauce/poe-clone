@@ -46,7 +46,7 @@ namespace PoeClone.World
             // Worn winding track in from the Hollows' gate, petering out in the eastern plots: the
             // graveyard is a dead end.
             WindingPath(t, "GraveyardTrack", Graveyard, 3.6f, MudFloor,
-                AreaLayouts.GateLocal(Graveyard, Cave), AreaLayouts.GateApproachLocal(Graveyard, Cave), Flat(-65, 5), Flat(-33, -5),
+                GatePathEnd(Graveyard, Cave), AreaLayouts.GateApproachLocal(Graveyard, Cave), Flat(-65, 5), Flat(-33, -5),
                 Flat(0, 0), Flat(32, 6), Flat(63, -5), Flat(84, 2));
             Claim(c + new Vector3(-30f, 0f, 0f), 3f);
             Claim(c + new Vector3(0f, 0f, 0f), 3f);

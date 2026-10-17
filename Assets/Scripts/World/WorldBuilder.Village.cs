@@ -31,6 +31,12 @@ namespace PoeClone.World
         private void WindingPath(Transform parent, string name, int area, float width, Material material,
             float flare, params Vector3[] knots)
         {
+            WindingPath(parent, name, area, width, material, flare, false, knots);
+        }
+
+        private void WindingPath(Transform parent, string name, int area, float width, Material material,
+            float flare, bool clearScenery, params Vector3[] knots)
+        {
             if (knots.Length < 2) return;
             var points = new List<Vector3>();
             for (int segment = 0; segment < knots.Length - 1; segment++)
@@ -79,7 +85,16 @@ namespace PoeClone.World
                     triangles.Add(v); triangles.Add(v - 1); triangles.Add(v + 1);
                 }
                 previousInside = inside;
-                if (inside) Claim(center + points[i], half + 1.1f);
+                if (inside)
+                {
+                    float clearance = Mathf.Max(left, right) + 1.1f;
+                    Claim(center + points[i], clearance);
+                    if (clearScenery)
+                    {
+                        ClearSpot(center + points[i], clearance);
+                        ReserveSite(center + points[i], clearance);
+                    }
+                }
             }
             var mesh = new Mesh { name = name, vertices = vertices, uv = uv };
             mesh.SetTriangles(triangles, 0);

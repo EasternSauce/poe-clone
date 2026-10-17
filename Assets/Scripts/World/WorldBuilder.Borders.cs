@@ -357,6 +357,12 @@ namespace PoeClone.World
                 if (clock.Elapsed.TotalMilliseconds >= 2d) { yield return null; clock.Restart(); }
             }
         }
+        // Use the same wall placement as Connect: authored anchors can be several metres
+        // in front of the final doorway.
+        private static Vector3 GatePathEnd(int area, int destination) =>
+            GateByWall(area, Center(area) + AreaLayouts.GateLocal(area, destination),
+                AreaLayouts.GateYaw(area, destination)) - Center(area);
+
         // A dirt road from the town plaza out to each of Haven's gates, each opening out where it
         // meets the square.
         private void BuildHavenRoads(Transform t)
@@ -364,7 +370,7 @@ namespace PoeClone.World
             Material dirt = DirtFloor;
             WindingPath(t, "GateLane", Haven, 4.2f, dirt, 1.3f,
                 Flat(10, 0), Flat(28, 3), Flat(48, -8), Flat(70, -5),
-                Flat(92, 8), AreaLayouts.GateApproachLocal(Haven, Greenwood), AreaLayouts.GateLocal(Haven, Greenwood));
+                Flat(92, 8), AreaLayouts.GateApproachLocal(Haven, Greenwood), GatePathEnd(Haven, Greenwood));
             WindingPath(t, "SouthLane", Haven, 3.6f, dirt, 1.3f,
                 Flat(0, -10), Flat(-3, -24), Flat(4, -39), Flat(-9, -58), Flat(-20, -80));
             WindingPath(t, "NorthLane", Haven, 3.4f, dirt, 1.3f,
@@ -397,6 +403,13 @@ namespace PoeClone.World
             Begin(Greenwood, 606);
             AreaShape shape = Shape(Greenwood);
             Transform t = Group("Outskirts");
+            // Follow the southern glade and its existing bridge to the relocated Hollows gate.
+            // Bridge knots stay aligned with the deck so the track never crosses open water.
+            WindingPath(t, "GreenwoodGateTrack", Greenwood, 3.4f, DirtFloor, 0f, true,
+                GatePathEnd(Greenwood, Haven), AreaLayouts.GateApproachLocal(Greenwood, Haven),
+                Flat(-50, -10), Flat(-12, -18), Flat(0, -48),
+                Flat(10, -62), Flat(24, -65), Flat(38, -68), Flat(65, -78), Flat(92, -84),
+                Flat(122, -106), AreaLayouts.GateApproachLocal(Greenwood, Cave), GatePathEnd(Greenwood, Cave));
             for (int k = 0, attempts = 0; k < 120 && attempts < 1500; attempts++)
             {
                 Vector3 p = shape.Center + Flat(R(-AreaShape.MaxRadius, AreaShape.MaxRadius), R(-AreaShape.MaxRadius, AreaShape.MaxRadius));
