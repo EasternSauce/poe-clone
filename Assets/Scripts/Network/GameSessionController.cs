@@ -65,10 +65,17 @@ namespace PoeClone.Network
         /// <summary>Shown on the start menu after a co-op game ended (the scene reloads for it).</summary>
         private static string startNotice;
 
+        // Editor Play (the dev build) skips the menus once per Play, so Return to Main Menu still reaches them.
+        private static bool devStartUsed;
+
+        /// <summary>An area that replaces the saved destination for this start (the dev build's Greenwood).</summary>
+        public int StartAreaOverride { get; private set; } = -1;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
             startNotice = null;
+            devStartUsed = false;
         }
         private NamePromptUI namePrompt;
         private AudioListener menuAudioListener;
@@ -106,7 +113,7 @@ namespace PoeClone.Network
         private bool notifyAfterUpdate;
         private System.Collections.Generic.List<LootDrop.UpdateRecord> updateDrops;
         private System.Collections.Generic.List<EnemySpawner.UpdateState> updatePopulations;
-        public bool ResumingUpdate => updateResume != null;
+        public bool ResumingUpdate => notifyAfterUpdate;
 
         public EnemySpawner.UpdateState TakeUpdatePopulation(int area)
         {
@@ -206,7 +213,22 @@ namespace PoeClone.Network
                 StartGame(coopGame: hosting || coop != null);
                 return;
             }
+            if (Application.isEditor && TryDevStart()) return;
             ShowStartMenu();
+        }
+
+        // The dev build plays the first character alone at Greenwood's arrival, which packs keep clear.
+        // DevTest sessions (DevQuery set) pick their temporary character through the menus instead.
+        private bool TryDevStart()
+        {
+            var first = SaveSystem.Profiles().Find(p => p != null);
+            if (devStartUsed || first == null || PlayerPrefs.HasKey("PoeClone.DevQuery")) return false;
+            devStartUsed = true;
+            SaveSystem.SelectProfile(first.id);
+            PlayerName = SaveSystem.ActiveCharacterName;
+            StartAreaOverride = WorldBuilder.Greenwood;
+            StartGame(coopGame: false);
+            return true;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -264,6 +286,7 @@ namespace PoeClone.Network
             while (build.MoveNext())
                 yield return null;
 
+            PlaceDevStart();
             // A fresh streamed area initially prepares its spawn. An update can resume
             // several chunks away: finish that destination's collision before loading
             // the character can unpause movement and gravity.
@@ -838,6 +861,17 @@ namespace PoeClone.Network
                 SetWorldActive(true);
             }
             StateChanged?.Invoke();
+        }
+
+        // Greenwood's own spawn sits among its packs: the dev start arrives through Haven's gate, as a fresh visit does.
+        private void PlaceDevStart()
+        {
+            if (StartAreaOverride < 0 || updateResume != null || WorldBuilder.Instance == null) return;
+            int area = StartAreaOverride;
+            StartAreaOverride = -1;
+            Transform arrival = WorldBuilder.Instance.GateArrival(area, WorldBuilder.Haven);
+            if (arrival != null)
+                updateResume = new UpdateResume { area = area, position = arrival.position, facing = arrival.eulerAngles.y };
         }
 
         private void RestoreUpdateLocation()

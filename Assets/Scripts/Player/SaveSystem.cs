@@ -108,6 +108,7 @@ namespace PoeClone.Player
             get
             {
                 var session = GameSessionController.Instance;
+                if (session != null && session.StartAreaOverride >= 0) return session.StartAreaOverride;
                 var data = session != null && session.Role == SessionRole.Spectator ? null :
                     ProfileSave(new Profile { id = ActiveProfileId });
                 return ResolveStartingArea(data);

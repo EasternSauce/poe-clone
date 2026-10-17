@@ -268,6 +268,8 @@ namespace PoeClone.World
 
         private readonly Dictionary<int, Transform> waystoneArrivals = new Dictionary<int, Transform>();
         public Transform WaystoneArrival(int area) => waystoneArrivals.TryGetValue(area, out var arrival) ? arrival : null;
+        /// <summary>Where the gate from <paramref name="from"/> leads into <paramref name="area"/>.</summary>
+        public Transform GateArrival(int area, int from) => root.Find("Arrive_" + AreaNames[area] + "_from_" + AreaNames[from]);
         private GameObject groundTemplate;
         private EnemySpawner originalSpawner;
         private WorldAmbience ambience;

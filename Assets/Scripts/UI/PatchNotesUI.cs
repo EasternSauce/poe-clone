@@ -70,10 +70,10 @@ namespace PoeClone.UI
             root.SetActive(false);
         }
 
-        /// <summary>Called after the main menu is built, before choosing a character.</summary>
+        /// <summary>Called after the main menu is built, before choosing a character. Not in the dev build (Editor Play).</summary>
         public void ShowIfUnseen()
         {
-            if (root == null || PlayerPrefs.GetString(SeenKey, "") == version) return;
+            if (Application.isEditor || root == null || PlayerPrefs.GetString(SeenKey, "") == version) return;
             root.SetActive(true);
             IsShowing = true;
             PlayerHUD.SetHiddenBy(this, true);
