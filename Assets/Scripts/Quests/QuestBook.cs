@@ -163,9 +163,9 @@ namespace PoeClone.Quests
                 Id = "gravelord", Story = Gravelord, Title = "The Gravelord", Giver = NpcRole.Gravekeeper, After = "relics",
                 Goal = QuestGoal.KillBoss, Target = "Gravelord Mortis", Area = WorldBuilder.Graveyard,
                 Objective = "Slay Gravelord Mortis at the crypt",
-                Offer = "Now finish him. He's at the crypt doors, calling his dead to him. Don't let them surround you.",
+                Offer = "Now finish him. Mortis was this yard's priest once, before my grandfather's time. He blessed every grave here and swore the dead would stay in them. Something called to him, and now he digs them up again. He's at the crypt doors, calling his dead to him. Don't let them surround you.",
                 Reminder = "Mortis waits by the crypt, north-west of the path. He calls the dead - keep moving.",
-                Thanks = "Mortis is gone. But before he fell he spoke of the Shepherd, sleeping under the northwestern ice. The priest was only a servant. The dead he stationed at the Hollows' deep road will still be there. We must clear that road ourselves before anyone can reach the ruins.",
+                Thanks = "Mortis is gone. But before he fell he spoke of the Shepherd, sleeping under the northwestern ice. He said he was set here to keep the dead down, and the Shepherd's call wore him through until he raised them instead. The dead he stationed at the Hollows' deep road will still be there. We must clear that road ourselves before anyone can reach the ruins.",
                 RewardGold = 300, RewardExperience = 2500, RewardHealthPotions = 3, RewardItem = ItemRarity.Rare, RewardItemLevel = 18,
                 RewardRespec = 1
             },
@@ -284,7 +284,7 @@ namespace PoeClone.Quests
                 Objective = "Find the door north-west of Rimeheart's throne",
                 Offer = "One more thing, and then you can rest. Go to the door the scouts wrote of, north-west of the throne. Read what's written there. Don't try to open it.\n\nI mean that. Don't.",
                 Reminder = "The door is north-west of Rimeheart's throne in the Frozen Hollow. Read it. Don't open it.",
-                Thanks = "\"Three wardens hold his door: the priest, the king, the queen. When the last warden falls, he wakes.\"\n\nThe priest, the king, the queen. Mortis, the Warlord, Rimeheart - we killed his gaolers, one by one. Vex's totems, the funeral bell, the Warlord's host: all of it answered the Shepherd's call, and every warden we put down let it ring a little louder. We did his work for him.",
+                Thanks = "\"Three wardens hold his door: the priest, the king, the queen. When the last warden falls, he wakes.\"\n\nThe priest, the king, the queen. Mortis, the Warlord, Rimeheart - we killed his gaolers, one by one. Mortis told us the call had turned him; we thought he meant he served it. Vex's totems, the funeral bell, the Warlord's host: all of it answered the Shepherd's call, and every warden we put down let it ring a little louder. We did his work for him.",
                 RewardGold = 400, RewardExperience = 3000
             },
             new QuestDefinition

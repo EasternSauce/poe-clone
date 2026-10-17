@@ -337,9 +337,9 @@ namespace PoeClone.Enemies
                 Name = "Gravelord Mortis", HealthMultiplier = 30f, DamageMultiplier = 3f, SpawnWeight = 0f, Tempo = 0.8f, BossEnrageDamage = 1.5f, BossEnrageDamageTaken = 0.8f,
                 MaxHealth = 16.72131f, Armour = 255.102f, FireResistance = 20f, ColdResistance = 20f, LightningResistance = 20f, Experience = 150,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
-                Damage = 9.333333f, AttackCooldown = 1.4f, AttackRange = 3.0f,
-                SpeedRatio = 0.95f, Scale = 1.15f,
-                // A gaunt gravedigger, not much taller than a man: coat, waistcoat, grey skin, grave-light eyes.
+                Damage = 9.333333f, AttackCooldown = 1.4f, AttackRange = 4.6f,
+                SpeedRatio = 0.95f, Scale = 2.3f,
+                // The yard's old priest, a gaunt gravedigger twice a man's height: coat, stole, grey skin, grave-light eyes.
                 Body = CreatureBody.Gravedigger,
                 Skin = new Color(0.20f, 0.24f, 0.21f), Cloth = new Color(0.12f, 0.12f, 0.13f), Pants = new Color(0.62f, 0.67f, 0.58f), Eyes = new Color(0.3f, 1.0f, 0.4f),
                 DropChance = 1f, RareBonus = 0.6f, Drops = 3,

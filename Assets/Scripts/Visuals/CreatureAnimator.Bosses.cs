@@ -71,6 +71,7 @@ namespace PoeClone.Visuals
                 propBaseScale = Prop.localScale;
             if (Jaw != null)
                 coreBaseScale = Jaw.localScale;
+            CaptureClipRest();
         }
 
         private void UpdateBossAct(float dt)
@@ -112,7 +113,8 @@ namespace PoeClone.Visuals
             bool goblin = Body == CreatureBody.TunnelKing;
             bool ringer = Body == CreatureBody.BellRinger;
             bool armour = Body == CreatureBody.HollowArmor;
-            float hunch = Body == CreatureBody.Gravedigger ? 16f : ringer ? 26f : goblin ? 14f : 3f;
+            bool digger = Body == CreatureBody.Gravedigger;
+            float hunch = digger ? 16f : ringer ? 26f : goblin ? 14f : 3f;
             phase += speed * dt * (goblin ? 5.2f : armour ? 2.1f : 2.8f);
 
             float p = ActProgress;
@@ -135,12 +137,22 @@ namespace PoeClone.Visuals
 
             foreach (Leg leg in Legs)
             {
-                float stride = Mathf.Sin(phase + (leg.Group == 0 ? 0f : Mathf.PI)) * moveBlend;
+                float gait = phase + (leg.Group == 0 ? 0f : Mathf.PI);
+                float stride = Mathf.Sin(gait) * moveBlend;
                 if (!leg.Front)
                 {
                     float legPitch = -10f + stride * (goblin ? 40f : 26f) - crouchBlend * 30f - slamDown * 20f;
+                    float knee = leg.Bend + Mathf.Max(0f, -stride) * 30f;
+                    if (digger)
+                    {
+                        // A real step: the knee folds as the leg swings through and the thigh lifts,
+                        // and stays a little soft while it bears his weight.
+                        float swing = Mathf.Max(0f, -Mathf.Cos(gait)) * moveBlend;
+                        legPitch -= swing * 12f;
+                        knee = leg.Bend + swing * 58f + moveBlend * 6f;
+                    }
                     leg.Hip.localRotation = Quaternion.Euler(legPitch, 0f, leg.Lift);
-                    leg.Knee.localRotation = Quaternion.Euler(leg.Bend + Mathf.Max(0f, -stride) * 30f + crouchBlend * 45f + slamDown * 35f, 0f, 0f);
+                    leg.Knee.localRotation = Quaternion.Euler(knee + crouchBlend * 45f + slamDown * 35f, 0f, 0f);
                     continue;
                 }
 
@@ -148,6 +160,13 @@ namespace PoeClone.Visuals
                 float pitch = -12f - stride * 14f + Mathf.Sin(t * 1.6f + leg.Side) * 3f;
                 float roll = leg.Lift;
                 float elbow = leg.Bend;
+                // His spade is carried upright before him in both hands (the left follows it, see
+                // GripOffHand): the right forearm raised, hardly swinging.
+                if (digger && right)
+                {
+                    pitch = -20f + stride * 4f + Mathf.Sin(t * 1.6f) * 2f;
+                    elbow = leg.Bend - 75f;
+                }
 
                 // The plain blow: the right arm (both, for the armour's greatsword) winds up and swings.
                 if (right || armour)
@@ -320,6 +339,7 @@ namespace PoeClone.Visuals
 
         private void BossDeath()
         {
+            clip = null;
             Sunk = 0f;
             transform.localPosition = modelBase;
             switch (Body)

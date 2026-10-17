@@ -55,7 +55,7 @@ namespace PoeClone.Inventory
             new Unique
             {
                 BaseId = "hand_axe", Name = "Bonehew", RequiredLevel = 1, Weight = Common,
-                Flavour = "Mortis swung it for a thousand years. It remembers every one.",
+                Flavour = "Mortis split coffin lids with it for a thousand years. It remembers every one.",
                 Mods = new[] { Roll(StatType.PhysicalDamage, 4, 7), Roll(StatType.Strength, 8, 12), Roll(StatType.MaxLife, 24, 40), Roll(StatType.LifePercentOnKill, 2, 3) }
             },
             new Unique

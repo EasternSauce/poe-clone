@@ -1,3 +1,9 @@
+version: 2026-10-17-gravelord-rework
+- Gravelord Mortis is twice as tall and rebuilt: a stooped undertaker in a long split greatcoat and a priest's shoulder cape and stole, with heavy boots, real hands, patched sleeves, a rosary with a grave-bell, and a tall hat with a grave-candle and mourning ribbons. He carries a proper round-pointed shovel in both hands, and his coffin is slung slantwise across his back.
+- Mortis now has four plain attacks instead of one: an overhead chop, a flat sweep, a rising scoop and a lunge with his dead hand. He walks with real knee bend instead of sliding.
+- Burrow is reworked: Mortis drives his shovel into the ground, flings a spadeful over his shoulder and dives in. A heaving mound of soil tunnels to you, leaving a trail of turned earth, and he bursts up out of the ground, howling. Its damage and warning are unchanged.
+- Mortis's story is clearer: he was the graveyard's old priest, sworn to keep the dead in their graves, until the Shepherd's call turned him. The Gravelord quest text and Bonehew's flavour text say so.
+
 version: 2026-10-16-fork-text
 - Weapons saved before weapon skill levels existed no longer load with their skill at level 1; they keep the level they dropped with. Uniques reset this way (such as Frostglass Bough) are restored to at least their lowest possible skill level.
 - Weapon tree modifiers "Projectiles cannot fork" and "Can't fire more than 1 projectile" now start with a capital letter like the rest.

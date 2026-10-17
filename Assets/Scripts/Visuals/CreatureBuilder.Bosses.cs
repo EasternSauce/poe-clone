@@ -32,67 +32,286 @@ namespace PoeClone.Visuals
 
         // ------------------------------------------------------------------ Gravelord Mortis
 
-        // Main: coat. Second: waistcoat and trousers. Accent: grey-green skin. Eyes: grave-light.
+        private static readonly Color Stole = new Color(0.28f, 0.2f, 0.3f);
+        private static readonly Color Leather = new Color(0.14f, 0.1f, 0.08f);
+
+        // The yard's old priest, turned gravedigger: a tall, stooped man in a long split greatcoat
+        // and a priest's shoulder cape, heavy boots, bony hands, a spade in his right. Every part
+        // overlaps the one it hangs from. Main: coat. Second: waistcoat and trousers. Accent:
+        // grey-green skin. Eyes: grave-light.
         private static void BuildGravedigger(Transform model, Ctx c)
         {
             Transform body = Pivot(model, "Gravedigger", new Vector3(0f, 1.45f, 0f));
             c.Anim.BodyPivot = body;
-            Ico(c, body, c.Colors.Main, new Vector3(0f, 0.05f, 0f), new Vector3(0.44f, 0.8f, 0.3f));
-            Ico(c, body, c.Colors.Second, new Vector3(0f, 0.08f, 0.09f), new Vector3(0.26f, 0.6f, 0.16f));
-            Ico(c, body, c.Colors.Second, new Vector3(0f, -0.38f, 0f), new Vector3(0.36f, 0.28f, 0.26f));
-            // Buttons down the waistcoat and a rope belt.
+            // Chest and belly in the coat, the waistcoat showing down the front, the hips below.
+            Ico(c, body, c.Colors.Main, new Vector3(0f, 0.08f, 0f), new Vector3(0.56f, 0.82f, 0.36f));
+            Ico(c, body, c.Colors.Second, new Vector3(0f, 0.08f, 0.1f), new Vector3(0.3f, 0.64f, 0.2f));
+            Ico(c, body, c.Colors.Second, new Vector3(0f, -0.32f, 0f), new Vector3(0.44f, 0.3f, 0.3f));
             for (int i = 0; i < 4; i++)
-                Part(body, PrimitiveType.Sphere, Bone, new Vector3(0f, 0.25f - i * 0.12f, 0.17f), Vector3.one * 0.04f, Vector3.zero, false);
-            Part(body, PrimitiveType.Cylinder, Wood, new Vector3(0f, -0.3f, 0f), new Vector3(0.4f, 0.025f, 0.3f), Vector3.zero);
+                Part(body, PrimitiveType.Sphere, Bone, new Vector3(0f, 0.26f - i * 0.12f, 0.2f), Vector3.one * 0.035f, Vector3.zero, false);
+            Part(body, PrimitiveType.Cylinder, Leather, new Vector3(0f, -0.24f, 0f), new Vector3(0.5f, 0.035f, 0.36f), Vector3.zero);
+            Part(body, PrimitiveType.Cube, Iron, new Vector3(0f, -0.24f, 0.18f), new Vector3(0.08f, 0.07f, 0.02f), Vector3.zero, false);
 
-            Transform head = Pivot(body, "Head", new Vector3(0f, 0.56f, 0.1f));
+            // Neck, then a long gaunt head: sunken cheeks, grave-light in deep sockets.
+            Ico(c, body, c.Colors.Accent, new Vector3(0f, 0.5f, 0.06f), new Vector3(0.13f, 0.18f, 0.13f));
+            Transform head = Pivot(body, "Head", new Vector3(0f, 0.66f, 0.1f));
             c.Anim.Head = head;
-            Ico(c, head, c.Colors.Accent, Vector3.zero, new Vector3(0.24f, 0.3f, 0.25f));
-            Part(head, PrimitiveType.Cube, Dark, new Vector3(0f, 0.03f, 0.115f), new Vector3(0.18f, 0.07f, 0.03f), Vector3.zero, false);
+            Ico(c, head, c.Colors.Accent, Vector3.zero, new Vector3(0.24f, 0.32f, 0.26f));
+            Ico(c, head, c.Colors.Accent, new Vector3(0f, -0.02f, 0.12f), new Vector3(0.06f, 0.1f, 0.06f));
             for (int side = -1; side <= 1; side += 2)
             {
-                Part(head, PrimitiveType.Sphere, c.Colors.Eyes, new Vector3(side * 0.05f, 0.035f, 0.125f), new Vector3(0.045f, 0.03f, 0.02f), Vector3.zero, false);
-                Part(head, PrimitiveType.Cube, Dark, new Vector3(side * 0.08f, -0.06f, 0.1f), new Vector3(0.04f, 0.08f, 0.03f), new Vector3(0f, side * 20f, 0f), false);
+                Part(head, PrimitiveType.Sphere, Dark, new Vector3(side * 0.055f, 0.04f, 0.11f), new Vector3(0.07f, 0.055f, 0.04f), Vector3.zero, false);
+                Part(head, PrimitiveType.Sphere, c.Colors.Eyes, new Vector3(side * 0.055f, 0.04f, 0.125f), new Vector3(0.03f, 0.025f, 0.02f), Vector3.zero, false);
+                Part(head, PrimitiveType.Sphere, Color.Lerp(c.Colors.Accent, Dark, 0.45f), new Vector3(side * 0.075f, -0.045f, 0.095f), new Vector3(0.05f, 0.07f, 0.03f), new Vector3(0f, side * 25f, 0f), false);
+                // Lank grey hair hanging from under the hat.
+                Part(head, PrimitiveType.Cube, new Color(0.5f, 0.52f, 0.48f), new Vector3(side * 0.11f, -0.04f, -0.04f), new Vector3(0.04f, 0.2f, 0.12f), new Vector3(0f, 0f, side * -6f), false);
             }
             Transform jaw = Pivot(head, "Jaw", new Vector3(0f, -0.1f, 0.04f));
             c.Anim.Jaw = jaw;
-            Ico(c, jaw, c.Colors.Accent, new Vector3(0f, -0.04f, 0.04f), new Vector3(0.15f, 0.1f, 0.14f));
+            Ico(c, jaw, c.Colors.Accent, new Vector3(0f, -0.05f, 0.03f), new Vector3(0.17f, 0.12f, 0.16f));
             for (int i = 0; i < 4; i++)
-                Part(jaw, PrimitiveType.Cube, Bone, new Vector3(-0.045f + i * 0.03f, 0.01f, 0.1f), new Vector3(0.02f, 0.035f, 0.02f), Vector3.zero, false);
-            // A wide-brimmed hat, its brim drooping.
-            Part(head, PrimitiveType.Cylinder, Dark, new Vector3(0f, 0.13f, 0f), new Vector3(0.64f, 0.015f, 0.6f), new Vector3(-6f, 0f, 0f));
-            Part(head, PrimitiveType.Cylinder, Dark, new Vector3(0f, 0.24f, -0.01f), new Vector3(0.3f, 0.11f, 0.3f), new Vector3(-8f, 0f, 4f));
-            Part(head, PrimitiveType.Cylinder, c.Colors.Second, new Vector3(0f, 0.17f, -0.005f), new Vector3(0.31f, 0.025f, 0.31f), new Vector3(-8f, 0f, 4f), false);
-            Ico(c, body, c.Colors.Second, new Vector3(0f, 0.42f, 0.04f), new Vector3(0.3f, 0.12f, 0.26f));
+                Part(jaw, PrimitiveType.Cube, Bone, new Vector3(-0.045f + i * 0.03f, 0.0f, 0.1f), new Vector3(0.02f, 0.035f, 0.02f), Vector3.zero, false);
+            GravediggerHat(c, head);
 
-            Transform tails = Pivot(body, "CoatTails", new Vector3(0f, -0.32f, -0.1f));
+            // What is left of the priest: a short cape over the shoulders, a white collar, the
+            // burial stole and its blessed stone, gone grave-green.
+            Ico(c, body, Color.Lerp(c.Colors.Main, Dark, 0.4f), new Vector3(0f, 0.33f, -0.02f), new Vector3(0.84f, 0.14f, 0.5f));
+            Ico(c, body, c.Colors.Main, new Vector3(0f, 0.38f, -0.02f), new Vector3(0.78f, 0.24f, 0.46f));
+            Part(body, PrimitiveType.Cylinder, Bone, new Vector3(0f, 0.47f, 0.05f), new Vector3(0.22f, 0.03f, 0.2f), Vector3.zero, false);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Part(body, PrimitiveType.Cube, Stole, new Vector3(side * 0.08f, 0.02f, 0.205f), new Vector3(0.07f, 0.84f, 0.02f), new Vector3(0f, 0f, side * -4f), false);
+                // The stole goes on over his shoulders and down his back, with a frayed fringe at its ends.
+                Part(body, PrimitiveType.Cube, Stole, new Vector3(side * 0.1f, 0.49f, -0.02f), new Vector3(0.075f, 0.025f, 0.46f), new Vector3(0f, side * 6f, 0f), false);
+                for (int f = 0; f < 3; f++)
+                    Part(body, PrimitiveType.Cube, Bone, new Vector3(side * 0.08f + (f - 1) * 0.02f, -0.42f, 0.205f), new Vector3(0.012f, 0.06f, 0.01f), Vector3.zero, false);
+            }
+            Part(body, PrimitiveType.Sphere, c.Colors.Eyes, new Vector3(0f, 0.33f, 0.22f), Vector3.one * 0.06f, Vector3.zero, false);
+
+            // The greatcoat's skirt, split at the front: side panels hang from the hips, the back
+            // ones from the tails (which swing as he walks).
+            Transform tails = Pivot(body, "CoatTails", new Vector3(0f, -0.28f, -0.12f));
             c.Anim.Tail = tails;
             for (int i = 0; i < 3; i++)
-                Cone(c, tails, c.Colors.Main, new Vector3((i - 1) * 0.13f, -0.3f, 0f), new Vector3(0.14f, 0.7f, 0.05f), new Vector3(178f, 0f, (i - 1) * 8f));
+                Part(tails, PrimitiveType.Cube, c.Colors.Main, new Vector3((i - 1) * 0.15f, -0.38f, -0.02f), new Vector3(0.17f, 0.8f, 0.04f), new Vector3(-6f, (i - 1) * 25f, 0f));
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Part(body, PrimitiveType.Cube, c.Colors.Main, new Vector3(side * 0.24f, -0.62f, 0.02f), new Vector3(0.04f, 0.78f, 0.26f), new Vector3(0f, 0f, side * 6f));
+                Part(body, PrimitiveType.Cube, c.Colors.Main, new Vector3(side * 0.17f, -0.6f, 0.15f), new Vector3(0.12f, 0.74f, 0.04f), new Vector3(8f, side * -30f, side * 4f));
+            }
 
             for (int side = -1; side <= 1; side += 2)
             {
-                AddRevenantLimb(c, body, side, false, c.Colors.Second, 0.6f, 0.62f);
-                AddRevenantLimb(c, body, side, true, c.Colors.Main, 0.56f, 0.64f);
-                Cone(c, body, c.Colors.Main, new Vector3(side * 0.25f, 0.34f, 0f), new Vector3(0.12f, 0.2f, 0.12f), new Vector3(0f, 0f, side * -60f));
+                GravediggerLeg(c, body, side);
+                GravediggerArm(c, body, side);
             }
 
-            // The shovel, its blade forward and down.
+            // The spade, in both fists. At rest he carries it upright before him like a crozier,
+            // the blade over his head, so it never trails through the ground.
             CreatureAnimator.Leg right = Arm(c, 1);
-            Transform shovel = Pivot(right.Knee, "Shovel", new Vector3(0f, -0.62f, 0.05f));
-            shovel.localRotation = Quaternion.Euler(-60f, 0f, 0f);
-            Part(shovel, PrimitiveType.Cylinder, Wood, new Vector3(0f, -0.2f, 0f), new Vector3(0.05f, 0.65f, 0.05f), Vector3.zero);
-            Part(shovel, PrimitiveType.Cube, Wood, new Vector3(0f, 0.45f, 0f), new Vector3(0.2f, 0.05f, 0.05f), Vector3.zero);
-            Part(shovel, PrimitiveType.Cube, Iron, new Vector3(0f, -0.98f, 0f), new Vector3(0.32f, 0.38f, 0.04f), Vector3.zero);
-            Cone(c, shovel, Iron, new Vector3(0f, -1.2f, 0f), new Vector3(0.32f, 0.12f, 0.04f), new Vector3(180f, 0f, 0f));
+            Transform shovel = Pivot(right.Knee, "Shovel", SpadeGrip);
+            shovel.localRotation = Quaternion.Euler(ShovelRest, 0f, 0f);
+            c.Anim.Tool = shovel;
+            BuildSpade(shovel);
+            // The left hand takes the D-grip.
+            c.Anim.OffHand = Pivot(shovel, "OffHandGrip", new Vector3(0f, 0.3f, 0f));
+            c.Anim.OffHandGrip = SpadeGrip;
+            c.Anim.AttackClips = GravediggerClips.Attacks;
 
-            // The coffin strapped to his back.
-            Transform coffin = Pivot(body, "Coffin", new Vector3(0f, -0.12f, -0.36f));
-            coffin.localRotation = Quaternion.Euler(8f, 0f, 0f);
+            // The coffin slung slantwise across his back, its head up over his left shoulder, on a
+            // strap running from that shoulder down across his chest to his right hip.
+            Transform coffin = Pivot(body, "Coffin", new Vector3(-0.06f, -0.04f, -0.36f));
+            coffin.localRotation = Quaternion.Euler(10f, 8f, 28f);
             c.Anim.Prop = coffin;
             BuildCoffin(coffin, c);
+            Part(body, PrimitiveType.Cube, Leather, new Vector3(0f, 0.12f, 0.02f), new Vector3(0.05f, 0.95f, 0.42f), new Vector3(0f, 0f, 38f));
+            Part(body, PrimitiveType.Cube, Iron, new Vector3(-0.1f, 0.25f, 0.215f), new Vector3(0.07f, 0.07f, 0.015f), new Vector3(0f, 0f, 38f), false);
+            Part(body, PrimitiveType.Cube, Leather, new Vector3(0f, -0.14f, -0.06f), new Vector3(0.58f, 0.045f, 0.46f), Vector3.zero);
+        }
+
+        // A trousered leg in a heavy boot, the hip ball sunk into the pelvis.
+        private static void GravediggerLeg(Ctx c, Transform body, int side)
+        {
+            const float upper = 0.58f, lower = 0.56f;
+            Transform hip = Pivot(body, "Hip", new Vector3(side * 0.13f, -0.36f, 0f));
+            hip.localRotation = Quaternion.Euler(-10f, 0f, side * 3f);
+            Ico(c, hip, c.Colors.Second, Vector3.zero, Vector3.one * 0.22f);
+            Ico(c, hip, c.Colors.Second, new Vector3(0f, -upper * 0.5f, 0f), new Vector3(0.21f, upper + 0.08f, 0.21f));
+            Transform knee = Pivot(hip, "Knee", new Vector3(0f, -upper, 0f));
+            knee.localRotation = Quaternion.Euler(12f, 0f, 0f);
+            Ico(c, knee, c.Colors.Second, Vector3.zero, Vector3.one * 0.19f);
+            Ico(c, knee, c.Colors.Second, new Vector3(0f, -lower * 0.45f, 0f), new Vector3(0.17f, lower * 0.9f, 0.17f));
+            // Boot: the shaft over the shin, the foot, a turned-down cuff.
+            Part(knee, PrimitiveType.Cylinder, Leather, new Vector3(0f, -lower + 0.17f, 0f), new Vector3(0.2f, 0.13f, 0.2f), Vector3.zero);
+            Part(knee, PrimitiveType.Cylinder, Leather, new Vector3(0f, -lower + 0.31f, 0f), new Vector3(0.22f, 0.025f, 0.22f), Vector3.zero, false);
+            Part(knee, PrimitiveType.Cube, Leather, new Vector3(0f, -lower - 0.02f, 0.07f), new Vector3(0.19f, 0.13f, 0.36f), Vector3.zero);
+            c.Anim.Legs.Add(new CreatureAnimator.Leg { Hip = hip, Knee = knee, Side = side, Front = false, Group = side < 0 ? 0 : 1, Lift = side * 3f, Bend = 12f });
+        }
+
+        // A patched coat sleeve with a buttoned turn-back cuff, ending in a worn leather glove; the
+        // shoulder ball sits inside the shoulder cape. The right forearm has a strapped bracer
+        // (the spade arm); the left wrist is wound with the priest's rosary, a little grave-bell on it.
+        private static void GravediggerArm(Ctx c, Transform body, int side)
+        {
+            const float upper = 0.55f, lower = 0.5f;
+            Color patch = Color.Lerp(c.Colors.Main, Wood, 0.35f);
+            Transform shoulder = Pivot(body, "Shoulder", new Vector3(side * 0.27f, 0.3f, 0f));
+            shoulder.localRotation = Quaternion.Euler(-12f, 0f, side * 12f);
+            Ico(c, shoulder, c.Colors.Main, Vector3.zero, Vector3.one * 0.24f);
+            Ico(c, shoulder, c.Colors.Main, new Vector3(0f, -upper * 0.5f, 0f), new Vector3(0.18f, upper + 0.08f, 0.18f));
+            // A square patch on the outside of the sleeve, stitched round.
+            Part(shoulder, PrimitiveType.Cube, patch, new Vector3(side * 0.088f, -0.3f, 0f), new Vector3(0.02f, 0.13f, 0.11f), Vector3.zero, false);
+            for (int k = 0; k < 4; k++)
+                Part(shoulder, PrimitiveType.Cube, Bone, new Vector3(side * 0.1f, -0.25f - k * 0.033f, 0.058f), new Vector3(0.008f, 0.015f, 0.008f), Vector3.zero, false);
+
+            Transform elbow = Pivot(shoulder, "Elbow", new Vector3(0f, -upper, 0f));
+            elbow.localRotation = Quaternion.Euler(-20f, 0f, 0f);
+            Ico(c, elbow, Leather, new Vector3(0f, 0f, -0.02f), new Vector3(0.18f, 0.17f, 0.16f));
+            Ico(c, elbow, c.Colors.Main, new Vector3(0f, -lower * 0.42f, 0f), new Vector3(0.16f, lower * 0.9f, 0.16f));
+            // The cuff: wide, turned back, three bone buttons.
+            Part(elbow, PrimitiveType.Cylinder, c.Colors.Second, new Vector3(0f, -lower + 0.06f, 0f), new Vector3(0.21f, 0.07f, 0.21f), Vector3.zero);
+            for (int k = 0; k < 3; k++)
+                Part(elbow, PrimitiveType.Sphere, Bone, new Vector3(side * 0.1f, -lower + 0.03f + k * 0.03f, 0.03f), Vector3.one * 0.022f, Vector3.zero, false);
+            if (side > 0)
+            {
+                Part(elbow, PrimitiveType.Cylinder, Leather, new Vector3(0f, -lower * 0.55f, 0f), new Vector3(0.18f, 0.08f, 0.18f), Vector3.zero);
+                for (int k = -1; k <= 1; k += 2)
+                    Part(elbow, PrimitiveType.Cylinder, Iron, new Vector3(0f, -lower * 0.55f + k * 0.05f, 0f), new Vector3(0.185f, 0.012f, 0.185f), Vector3.zero, false);
+            }
+            else
+            {
+                Color bead = new Color(0.55f, 0.5f, 0.42f);
+                for (int k = 0; k < 9; k++)
+                {
+                    float a = k * Mathf.PI * 2f / 9f;
+                    Part(elbow, PrimitiveType.Sphere, bead, new Vector3(Mathf.Cos(a) * 0.1f, -lower - 0.01f + Mathf.Sin(a * 2f) * 0.01f, Mathf.Sin(a) * 0.1f), Vector3.one * 0.03f, Vector3.zero, false);
+                }
+                for (int k = 0; k < 3; k++)
+                    Part(elbow, PrimitiveType.Sphere, bead, new Vector3(0.03f, -lower - 0.05f - k * 0.035f, 0.1f), Vector3.one * 0.028f, Vector3.zero, false);
+                Cone(c, elbow, Iron, new Vector3(0.03f, -lower - 0.17f, 0.1f), new Vector3(0.05f, 0.05f, 0.05f), Vector3.zero);
+            }
+            GravediggerHand(c, elbow, side, lower);
+            c.Anim.Legs.Add(new CreatureAnimator.Leg { Hip = shoulder, Knee = elbow, Side = side, Front = true, Group = side < 0 ? 0 : 1, Lift = side * 12f, Bend = -20f });
+        }
+
+        // Where his right fist holds the spade, in the forearm's space (the grip hand's socket,
+        // as on the player's rig, grown to his hand's size).
+        private static readonly Vector3 SpadeGrip = new Vector3(0f, -0.65f, 0.07f);
+
+        // The player's gripping hand at his size, grey and dead, closed round the spade's handle.
+        private static void GravediggerHand(Ctx c, Transform forearm, int side, float lower)
+        {
+            BossMeshes meshes = BossMeshes.Get();
+            if (meshes == null)
+                return;
+            Mesh mesh = side > 0 ? meshes.HandRGrip : meshes.HandLGrip;
+            GameObject hand = RuntimePrimitives.CreateMesh(mesh, forearm, c.Colors.Accent, "Hand");
+            hand.transform.localPosition = new Vector3(0f, -lower - 0.02f, 0f);
+            hand.transform.localScale = new Vector3(0.2f, 0.235f, 0.235f);
+        }
+
+        public const float ShovelRest = -35f;
+
+        // A gravedigger's shovel: D-grip, ash handle, a riveted iron socket, a round-pointed blade
+        // caked with grave-dirt.
+        private static void BuildSpade(Transform shovel)
+        {
+            Part(shovel, PrimitiveType.Cylinder, Wood, new Vector3(0f, -0.2f, 0f), new Vector3(0.055f, 0.45f, 0.055f), Vector3.zero);
+            Part(shovel, PrimitiveType.Cube, Wood, new Vector3(0f, 0.33f, 0f), new Vector3(0.17f, 0.045f, 0.055f), Vector3.zero);
+            for (int side = -1; side <= 1; side += 2)
+                Part(shovel, PrimitiveType.Cube, Wood, new Vector3(side * 0.065f, 0.29f, 0f), new Vector3(0.035f, 0.1f, 0.045f), new Vector3(0f, 0f, side * 12f));
+            // The iron socket the shaft goes into, tapering out onto the back of the blade.
+            Part(shovel, PrimitiveType.Cylinder, Iron, new Vector3(0f, -0.66f, 0f), new Vector3(0.075f, 0.06f, 0.075f), Vector3.zero);
+            Part(shovel, PrimitiveType.Cylinder, Iron, new Vector3(0f, -0.73f, -0.005f), new Vector3(0.1f, 0.03f, 0.07f), Vector3.zero);
+            Part(shovel, PrimitiveType.Sphere, Iron, new Vector3(0f, -0.8f, -0.012f), new Vector3(0.1f, 0.16f, 0.03f), Vector3.zero, false);
             for (int k = -1; k <= 1; k += 2)
-                Part(body, PrimitiveType.Cube, Wood, new Vector3(0f, 0.15f + k * 0.18f, -0.12f), new Vector3(0.48f, 0.04f, 0.5f), Vector3.zero);
+                Part(shovel, PrimitiveType.Sphere, Steel, new Vector3(0f, -0.66f + k * 0.022f, 0.038f), Vector3.one * 0.018f, Vector3.zero, false);
+            // The blade, dished forward, its top edge rolled over into a tread for his boot.
+            GameObject blade = RuntimePrimitives.CreateMesh(SpadeBlade(), shovel, Iron, "Blade");
+            blade.transform.localPosition = new Vector3(0f, -0.74f, 0f);
+            Part(shovel, PrimitiveType.Cylinder, Iron, new Vector3(0f, -0.745f, 0.01f), new Vector3(0.028f, 0.15f, 0.028f), new Vector3(0f, 0f, 90f), false);
+            Part(shovel, PrimitiveType.Sphere, new Color(0.24f, 0.18f, 0.12f), new Vector3(0.05f, -0.98f, 0.03f), new Vector3(0.12f, 0.09f, 0.03f), Vector3.zero, false);
+        }
+
+        private static Mesh spadeBlade;
+
+        // A round-point shovel blade hanging down from its top edge at the origin: straight sides,
+        // then curving in to a soft point, dished towards +Z, drawn from both sides.
+        private static Mesh SpadeBlade()
+        {
+            if (spadeBlade != null)
+                return spadeBlade;
+            const float length = 0.42f, half = 0.15f, straight = 0.5f, dish = 0.035f;
+            const int rows = 10, columns = 6;
+            var vertices = new System.Collections.Generic.List<Vector3>();
+            var triangles = new System.Collections.Generic.List<int>();
+            for (int face = 0; face < 2; face++)
+            {
+                int start = vertices.Count;
+                for (int i = 0; i <= rows; i++)
+                {
+                    float along = i / (float)rows;
+                    float curve = along <= straight ? 1f : Mathf.Sqrt(Mathf.Max(0f, 1f - Mathf.Pow((along - straight) / (1f - straight), 2f)));
+                    float width = Mathf.Max(0.004f, half * curve);
+                    for (int j = 0; j <= columns; j++)
+                    {
+                        float x = Mathf.Lerp(-width, width, j / (float)columns);
+                        float z = dish * (x / half) * (x / half) + (face == 0 ? -0.004f : 0.004f);
+                        vertices.Add(new Vector3(x, -along * length, z));
+                    }
+                }
+                for (int i = 0; i < rows; i++)
+                {
+                    for (int j = 0; j < columns; j++)
+                    {
+                        int a = start + i * (columns + 1) + j, b = a + 1, cc = a + columns + 1, d = cc + 1;
+                        // One face looks along -Z, the other along +Z.
+                        if (face == 0)
+                            triangles.AddRange(new[] { a, b, d, a, d, cc });
+                        else
+                            triangles.AddRange(new[] { a, d, b, a, cc, d });
+                    }
+                }
+            }
+            spadeBlade = new Mesh { name = "SpadeBlade" };
+            spadeBlade.SetVertices(vertices);
+            spadeBlade.SetTriangles(triangles, 0);
+            spadeBlade.RecalculateNormals();
+            spadeBlade.RecalculateBounds();
+            return spadeBlade;
+        }
+
+        // A tall undertaker's hat, seen from above most of the fight: a worn, dusty-edged brim with
+        // a grave-candle stuck to it (wax run down the brim, a grave-light flame), a crepe band
+        // with an iron buckle and the mourner's long crepe "weepers" hanging down his back.
+        private static void GravediggerHat(Ctx c, Transform head)
+        {
+            Color crepe = new Color(0.05f, 0.05f, 0.06f);
+            Color dusty = new Color(0.22f, 0.2f, 0.19f);
+            Color wax = new Color(0.86f, 0.84f, 0.74f);
+            Part(head, PrimitiveType.Cylinder, dusty, new Vector3(0f, 0.13f, 0f), new Vector3(0.68f, 0.015f, 0.64f), new Vector3(-6f, 0f, 0f));
+            Part(head, PrimitiveType.Cylinder, Dark, new Vector3(0f, 0.136f, 0.002f), new Vector3(0.58f, 0.016f, 0.54f), new Vector3(-6f, 0f, 0f), false);
+            // The brim's edge droops at the front and back, with a nick torn out of it.
+            for (int k = -1; k <= 1; k += 2)
+                Part(head, PrimitiveType.Cube, dusty, new Vector3(0f, 0.11f + k * 0.012f, k * 0.31f), new Vector3(0.3f, 0.014f, 0.06f), new Vector3(k * 14f, 0f, 0f));
+            Part(head, PrimitiveType.Cube, Dark, new Vector3(-0.3f, 0.135f, -0.1f), new Vector3(0.05f, 0.02f, 0.05f), new Vector3(0f, 30f, 0f), false);
+
+            // A tall crown, dented on top.
+            Part(head, PrimitiveType.Cylinder, Dark, new Vector3(0f, 0.27f, -0.01f), new Vector3(0.3f, 0.14f, 0.3f), new Vector3(-8f, 0f, 4f));
+            Part(head, PrimitiveType.Cylinder, dusty, new Vector3(0.01f, 0.405f, -0.03f), new Vector3(0.27f, 0.006f, 0.27f), new Vector3(-8f, 0f, 4f), false);
+            Part(head, PrimitiveType.Cube, Dark, new Vector3(0.01f, 0.4f, -0.03f), new Vector3(0.2f, 0.02f, 0.05f), new Vector3(-8f, 20f, 4f), false);
+            Part(head, PrimitiveType.Cylinder, crepe, new Vector3(0f, 0.175f, -0.005f), new Vector3(0.315f, 0.04f, 0.315f), new Vector3(-8f, 0f, 4f), false);
+            Part(head, PrimitiveType.Cube, Iron, new Vector3(0.01f, 0.178f, 0.15f), new Vector3(0.07f, 0.05f, 0.015f), new Vector3(-8f, 0f, 4f), false);
+            Part(head, PrimitiveType.Cube, Dark, new Vector3(0.01f, 0.178f, 0.157f), new Vector3(0.04f, 0.025f, 0.01f), new Vector3(-8f, 0f, 4f), false);
+            for (int k = -1; k <= 1; k += 2)
+                Part(head, PrimitiveType.Cube, crepe, new Vector3(k * 0.05f, -0.06f, -0.2f), new Vector3(0.07f, 0.48f, 0.012f), new Vector3(18f, k * 6f, k * 4f), false);
+
+            // The grave-candle on the brim, right of the crown.
+            Part(head, PrimitiveType.Cylinder, wax, new Vector3(0.21f, 0.18f, 0.08f), new Vector3(0.045f, 0.05f, 0.045f), Vector3.zero, false);
+            Part(head, PrimitiveType.Cylinder, wax, new Vector3(0.21f, 0.143f, 0.08f), new Vector3(0.09f, 0.008f, 0.08f), Vector3.zero, false);
+            for (int k = 0; k < 3; k++)
+                Part(head, PrimitiveType.Sphere, wax, new Vector3(0.24f + k * 0.03f, 0.14f - k * 0.006f, 0.1f + k * 0.02f), Vector3.one * (0.03f - k * 0.006f), Vector3.zero, false);
+            Part(head, PrimitiveType.Sphere, c.Colors.Eyes, new Vector3(0.21f, 0.255f, 0.08f), new Vector3(0.035f, 0.06f, 0.035f), Vector3.zero, false);
         }
 
         /// <summary>A plain coffin (Mortis carries one, and throws it), its foot at the origin's -Y.</summary>
@@ -100,13 +319,82 @@ namespace PoeClone.Visuals
         {
             Color w = wood ?? new Color(0.24f, 0.17f, 0.12f);
             Color dark = new Color(0.12f, 0.09f, 0.07f);
-            PartPublic(root, PrimitiveType.Cube, w, new Vector3(0f, 0.45f, 0f), new Vector3(0.44f, 0.42f, 0.22f), Vector3.zero);
-            PartPublic(root, PrimitiveType.Cube, w, new Vector3(0f, 0f, 0f), new Vector3(0.56f, 0.6f, 0.22f), Vector3.zero);
-            PartPublic(root, PrimitiveType.Cube, w, new Vector3(0f, -0.48f, 0f), new Vector3(0.4f, 0.5f, 0.22f), Vector3.zero);
-            PartPublic(root, PrimitiveType.Cube, dark, new Vector3(0f, 0.1f, -0.115f), new Vector3(0.06f, 0.7f, 0.02f), Vector3.zero);
-            PartPublic(root, PrimitiveType.Cube, dark, new Vector3(0f, 0.28f, -0.115f), new Vector3(0.3f, 0.06f, 0.02f), Vector3.zero);
-            for (int k = -1; k <= 1; k += 2)
-                PartPublic(root, PrimitiveType.Cube, new Color(0.3f, 0.3f, 0.32f), new Vector3(0f, k * 0.3f, 0f), new Vector3(0.6f, 0.05f, 0.25f), Vector3.zero);
+            Color iron = new Color(0.3f, 0.3f, 0.32f);
+            // The box, its lid (out on the -Z face) a little proud of it, a raised panel on the lid
+            // and a cross on that.
+            RuntimePrimitives.CreateMesh(CoffinShape(1f, 0.1f, 0f), root, w, "CoffinBox");
+            RuntimePrimitives.CreateMesh(CoffinShape(1.06f, 0.025f, -0.12f), root, Color.Lerp(w, dark, 0.35f), "CoffinLid");
+            RuntimePrimitives.CreateMesh(CoffinShape(0.8f, 0.012f, -0.15f), root, Color.Lerp(w, Color.white, 0.08f), "CoffinPanel");
+            PartPublic(root, PrimitiveType.Cube, dark, new Vector3(0f, 0.05f, -0.165f), new Vector3(0.05f, 0.62f, 0.015f), Vector3.zero);
+            PartPublic(root, PrimitiveType.Cube, dark, new Vector3(0f, 0.25f, -0.165f), new Vector3(0.26f, 0.05f, 0.015f), Vector3.zero);
+            // Iron handles down both long sides.
+            for (int side = -1; side <= 1; side += 2)
+            {
+                for (int k = 0; k < 2; k++)
+                {
+                    float y = k == 0 ? 0.12f : -0.3f;
+                    float x = side * (k == 0 ? 0.265f : 0.21f) + side * 0.03f;
+                    PartPublic(root, PrimitiveType.Cube, iron, new Vector3(x, y, 0f), new Vector3(0.025f, 0.12f, 0.025f), new Vector3(0f, 0f, side * (k == 0 ? -10f : -6f)));
+                }
+            }
+        }
+
+        // The coffin's six-sided outline (narrow head, widest at the shoulders, tapering to the
+        // foot), scaled and pushed out into a slab this thick, centred at depth z.
+        private static readonly System.Collections.Generic.Dictionary<Vector3, Mesh> coffinShapes = new System.Collections.Generic.Dictionary<Vector3, Mesh>();
+
+        private static Mesh CoffinShape(float scale, float halfDepth, float z)
+        {
+            var key = new Vector3(scale, halfDepth, z);
+            if (coffinShapes.TryGetValue(key, out Mesh cached) && cached != null)
+                return cached;
+            Vector2[] outline =
+            {
+                new Vector2(0.15f, 0.58f), new Vector2(0.28f, 0.3f), new Vector2(0.17f, -0.6f),
+                new Vector2(-0.17f, -0.6f), new Vector2(-0.28f, 0.3f), new Vector2(-0.15f, 0.58f)
+            };
+            var vertices = new System.Collections.Generic.List<Vector3>();
+            var triangles = new System.Collections.Generic.List<int>();
+            void Face(Vector3 normal, params Vector3[] corners)
+            {
+                int start = vertices.Count;
+                vertices.AddRange(corners);
+                for (int i = 1; i + 1 < corners.Length; i++)
+                {
+                    Vector3 a = corners[0], b = corners[i], cc = corners[i + 1];
+                    // Unity draws the face whose winding's cross product points along its normal.
+                    if (Vector3.Dot(Vector3.Cross(b - a, cc - a), normal) >= 0f)
+                        triangles.AddRange(new[] { start, start + i, start + i + 1 });
+                    else
+                        triangles.AddRange(new[] { start, start + i + 1, start + i });
+                }
+            }
+            int n = outline.Length;
+            var front = new Vector3[n];
+            var back = new Vector3[n];
+            for (int i = 0; i < n; i++)
+            {
+                front[i] = new Vector3(outline[i].x * scale, outline[i].y * scale, z + halfDepth);
+                back[i] = new Vector3(outline[i].x * scale, outline[i].y * scale, z - halfDepth);
+            }
+            Face(Vector3.forward, front);
+            Face(Vector3.back, back);
+            for (int i = 0; i < n; i++)
+            {
+                int j = (i + 1) % n;
+                Vector3 edge = back[j] - back[i];
+                Vector3 outward = new Vector3(edge.y, -edge.x, 0f).normalized;
+                if (Vector3.Dot(outward, new Vector3(back[i].x, back[i].y, 0f)) < 0f)
+                    outward = -outward;
+                Face(outward, back[i], back[j], front[j], front[i]);
+            }
+            var mesh = new Mesh { name = "Coffin" };
+            mesh.SetVertices(vertices);
+            mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            coffinShapes[key] = mesh;
+            return mesh;
         }
 
         private static void BuildCoffin(Transform root, Ctx c) => BuildCoffin(root);

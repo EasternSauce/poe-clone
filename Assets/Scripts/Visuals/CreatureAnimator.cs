@@ -197,6 +197,7 @@ namespace PoeClone.Visuals
                     AnimateBoss(dt, t, windUp, lunge, bite, recoil);
                     break;
             }
+            ApplyClip();
         }
 
         // The attack, as three curves over the swing the attack animator is timing:

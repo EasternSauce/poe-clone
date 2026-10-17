@@ -979,6 +979,116 @@ namespace PoeClone.EditorTools
             Physics.SyncTransforms();
         }
 
+        // ------------------------------------------------------------------ one move, over and over
+
+        private static BossAbilities moveDemoBoss;
+        private static string moveDemoMove;
+        private static int moveDemoLeft, moveDemoRun;
+        private static float moveDemoNext, moveDemoGap, moveDemoDistance;
+        private static bool moveDemoPlaying;
+        private static string moveDemoLog = "not running";
+
+        /// <summary>
+        /// Shows one boss move again and again: spawns the boss (if there isn't one of that name),
+        /// holds it still between moves, and before each one sets it this far from the player at
+        /// a new angle, facing them. The move's name as in <see cref="FieldMove"/> ("closer" for
+        /// the boss's way of closing in). Run in a QuickStart sandbox; MoveDemoStatus for progress.
+        /// </summary>
+        public static string MoveDemo(string boss, string move, int times = 6, float gap = 3f, float distance = 14f)
+        {
+            if (!Application.isPlaying)
+                return "start play first (QuickStart)";
+            MoveDemoStop();
+            God();
+            moveDemoBoss = null;
+            foreach (BossAbilities b in UnityEngine.Object.FindObjectsByType<BossAbilities>())
+                if (b.name == boss && !b.GetComponent<EnemyHealth>().IsDead)
+                    moveDemoBoss = b;
+            if (moveDemoBoss == null)
+            {
+                string spawned = FieldBoss(boss, distance);
+                foreach (BossAbilities b in UnityEngine.Object.FindObjectsByType<BossAbilities>())
+                    if (b.name == boss)
+                        moveDemoBoss = b;
+                if (moveDemoBoss == null)
+                    return spawned;
+            }
+            moveDemoBoss.Scripted = true;
+            EnemyController controller = moveDemoBoss.GetComponent<EnemyController>();
+            if (controller != null)
+                controller.enabled = false;
+            moveDemoMove = move;
+            moveDemoLeft = times;
+            moveDemoRun = 0;
+            moveDemoGap = gap;
+            moveDemoDistance = distance;
+            moveDemoPlaying = false;
+            moveDemoNext = Time.time + 1f;
+            EditorApplication.update += MoveDemoTick;
+            moveDemoLog = "starting " + move + " x" + times;
+            return moveDemoLog;
+        }
+
+        public static string MoveDemoStatus() => moveDemoLog;
+
+        public static string MoveDemoStop()
+        {
+            EditorApplication.update -= MoveDemoTick;
+            if (moveDemoBoss != null)
+            {
+                EnemyController controller = moveDemoBoss.GetComponent<EnemyController>();
+                if (controller != null)
+                    controller.enabled = true;
+            }
+            moveDemoLog = "stopped";
+            return moveDemoLog;
+        }
+
+        private static void MoveDemoTick()
+        {
+            PlayerStats ps = Stats();
+            if (!Application.isPlaying || moveDemoBoss == null || ps == null || moveDemoBoss.GetComponent<EnemyHealth>().IsDead)
+            {
+                EditorApplication.update -= MoveDemoTick;
+                moveDemoLog = "stopped (play ended or boss gone) after " + moveDemoRun;
+                return;
+            }
+            if (moveDemoBoss.Busy)
+            {
+                moveDemoPlaying = true;
+                return;
+            }
+            // A move just ended: the gap is counted from its end.
+            if (moveDemoPlaying)
+            {
+                moveDemoPlaying = false;
+                moveDemoNext = Time.time + moveDemoGap;
+                return;
+            }
+            if (Time.time < moveDemoNext)
+                return;
+            if (moveDemoLeft <= 0)
+            {
+                MoveDemoStop();
+                moveDemoLog = "done: " + moveDemoMove + " x" + moveDemoRun;
+                return;
+            }
+
+            Vector3 at = ps.transform.position + Quaternion.Euler(0f, moveDemoRun * 70f, 0f) * Vector3.forward * moveDemoDistance;
+            at.y = moveDemoBoss.transform.position.y;
+            var cc = moveDemoBoss.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+            moveDemoBoss.transform.SetPositionAndRotation(at, Quaternion.LookRotation(Vector3.ProjectOnPlane(ps.transform.position - at, Vector3.up)));
+            if (cc != null) cc.enabled = true;
+            Physics.SyncTransforms();
+            moveDemoRun++;
+            moveDemoLeft--;
+            moveDemoLog = moveDemoMove + " " + moveDemoRun + ": " + moveDemoBoss.Play(moveDemoMove);
+            moveDemoPlaying = true;
+            // If the move never starts, try again after the gap.
+            moveDemoNext = Time.time + moveDemoGap;
+        }
+
         /// <summary>Makes the nearest field boss play one of its moves now (by its name: "Toll", "Charge", "closer", "roar"...).</summary>
         public static string FieldMove(string move)
         {
