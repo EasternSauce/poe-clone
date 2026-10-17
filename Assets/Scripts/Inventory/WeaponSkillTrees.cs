@@ -182,7 +182,6 @@ namespace PoeClone.Inventory
                 case E.Chains: return n + " chains";
                 case E.Pierce: return "Pierces " + b.Value + " additional enemies";
                 case E.Fork: return "Projectiles fork on their first enemy impact";
-                case E.Repeat: return "Repeats this spell " + b.Value + " additional time";
                 case E.Chill: return "Hits grant a " + b.Value.ToString("0.#") + "% chance to chill\nChill slows movement by 50% for a base duration of 2 seconds";
                 case E.Shock: return "Hits grant a " + b.Value.ToString("0.#") + "% chance to shock";
                 case E.Ignite: return "Hits grant a " + b.Value.ToString("0.#") + "% chance to ignite";
@@ -194,7 +193,6 @@ namespace PoeClone.Inventory
                 case E.MinionDuration: return Percent(b.Value, "summoned minion duration");
                 case E.Minions: return n + " maximum summoned minions";
                 case E.MinionLife: return Percent(b.Value, "minion maximum life");
-                case E.MinionSpeed: return Percent(b.Value, "minion attack and movement speed");
                 case E.MinionMoveSpeed: return Percent(b.Value, "minion movement speed");
                 case E.MinionArmour: return n + " minion armour";
                 case E.MinionResists: return Percent(b.Value, "minion elemental and poison resistances");
@@ -209,7 +207,6 @@ namespace PoeClone.Inventory
                 case E.DamageVsLowLife: return Percent(b.Value, damage + " against enemies below 50% life");
                 case E.FirstStrike: return More(b.Value, damage + " against enemies at full life");
                 case E.Cost: return Percent(b.Value, "resource cost");
-                case E.SingleProjectile: return "Can't fire more than 1 projectile\nProjectiles cannot fork";
                 case E.NoFork: return "Projectiles cannot fork";
                 case E.ChainRetention: return n + " percentage points of damage retained per lightning jump";
                 case E.ExtraWaves: return n + " additional tremors";

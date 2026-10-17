@@ -6,11 +6,11 @@ namespace PoeClone.Inventory
 {
     public enum WeaponSkillEffect
     {
-        Damage, Speed, Area, Range, Projectiles, Chains, Pierce, Fork, Repeat,
+        Damage, Speed, Area, Range, Projectiles, Chains, Pierce, Fork, LegacyRepeat,
         Chill, Shock, Ignite, Shatter, Explode, Poison, Cloud, Duration,
-        Minions, MinionLife, MinionSpeed, MinionArmour, MinionResists,
+        Minions, MinionLife, LegacyMinionSpeed, MinionArmour, MinionResists,
         Leech, Cull, Splash, Fire, Cold, Lightning, DamageVsChilled,
-        Cost, SingleProjectile, ChainRetention, ExtraWaves, MinionDeathBurst,
+        Cost, LegacySingleProjectile, ChainRetention, ExtraWaves, MinionDeathBurst,
         MoreDamage, LifeOnHit, ProjectileSpeed, MinionMoveSpeed, MinionDuration,
         HalfMinions, MinionSize, RainSpread, RainSalvos, FireOrbit, ChargeDamage,
         ChargeTime, ArmourPenetration, DamageVsLowLife, PackHunt, MinionRegen,
@@ -121,8 +121,7 @@ namespace PoeClone.Inventory
         public float ProjectileSpeedMultiplier => Mathf.Max(0.25f, 1f + Get(WeaponSkillEffect.ProjectileSpeed) / 100f);
         public float DurationMultiplier => Mathf.Max(0.1f, 1f + Get(WeaponSkillEffect.Duration) / 100f);
         public float MinionDurationMultiplier => Mathf.Max(0.1f, 1f + Get(WeaponSkillEffect.MinionDuration) / 100f);
-        public bool SingleProjectile => Get(WeaponSkillEffect.SingleProjectile) > 0;
-        public int ExtraProjectiles => SingleProjectile ? 0 : Mathf.RoundToInt(Get(WeaponSkillEffect.Projectiles));
+        public int ExtraProjectiles => Mathf.RoundToInt(Get(WeaponSkillEffect.Projectiles));
         public int ExtraMinions => Mathf.RoundToInt(Get(WeaponSkillEffect.Minions));
         public WeaponSkillBonuses(ItemData item)
         {
@@ -151,9 +150,9 @@ namespace PoeClone.Inventory
             stat == StatType.AdditionalArrows || stat == StatType.AdditionalSpellProjectiles ||
             stat == StatType.AdditionalProjectiles || stat == StatType.AdditionalChains ||
             stat == StatType.AdditionalMinions || stat == StatType.AdditionalSkeletons ||
-            stat == StatType.SpellEcho || stat == StatType.Shatter || stat == StatType.ExplodeOnKill ||
-            stat == StatType.GlacialStep || stat == StatType.SecondWind || stat == StatType.Stormblade ||
-            stat == StatType.DeathsHerald || stat == StatType.MeleeSplash;
+            stat == StatType.LegacySpellEcho || stat == StatType.LegacyShatter || stat == StatType.ExplodeOnKill ||
+            stat == StatType.LegacyGlacialStep || stat == StatType.LegacySecondWind || stat == StatType.LegacyStormblade ||
+            stat == StatType.LegacyDeathsHerald || stat == StatType.LegacyMeleeSplash;
 
         public static StatType[] Pool(ItemType type, WeaponType weapon)
         {

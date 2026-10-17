@@ -217,7 +217,7 @@ namespace PoeClone.Tests
             Assert.AreEqual("You take 15% more Damage", StatFormatter.ItemLine(new StatModifier(StatType.DamageTaken, 15)));
             Assert.AreEqual("40% less Maximum Life", StatFormatter.ItemLine(new StatModifier(StatType.MoreLife, -40)));
             Assert.AreEqual("Attacks deal Fire damage instead of Physical", StatFormatter.ItemLine(new StatModifier(StatType.PhysicalToFire, 1)));
-            Assert.IsTrue(StatFormatter.IsSpecial(StatType.SpellEcho));
+            Assert.IsTrue(StatFormatter.IsSpecial(StatType.ManaAsDamage));
         }
 
         [Test]
@@ -225,8 +225,8 @@ namespace PoeClone.Tests
         {
             var singleAbilityStats = new[]
             {
-                StatType.AdditionalChains, StatType.MarkEffect, StatType.GlacialStep,
-                StatType.SecondWind, StatType.DeathsHerald, StatType.RaiseSkeletonsLevels,
+                StatType.AdditionalChains, StatType.MarkEffect, StatType.LegacyGlacialStep,
+                StatType.LegacySecondWind, StatType.LegacyDeathsHerald, StatType.RaiseSkeletonsLevels,
                 StatType.SkeletonMagesLevels, StatType.SpiritWolvesLevels, StatType.BoneGolemLevels
             };
             foreach (PassiveNode node in PassiveTree.Nodes)

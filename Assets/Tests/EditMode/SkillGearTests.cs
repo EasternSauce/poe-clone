@@ -8,6 +8,43 @@ namespace PoeClone.Tests
 {
     public class SkillGearTests
     {
+        [Test]
+        public void EverySupportedWeaponEffectHasATreeSource()
+        {
+            var supplied = new HashSet<WeaponSkillEffect>();
+            foreach (StatType grant in Enum.GetValues(typeof(StatType)))
+            {
+                var nodes = WeaponSkillTrees.For(grant);
+                if (nodes == null) continue;
+                foreach (var node in nodes)
+                    foreach (var bonus in node.Bonuses)
+                        supplied.Add(bonus.Effect);
+            }
+            foreach (WeaponSkillEffect effect in Enum.GetValues(typeof(WeaponSkillEffect)))
+            {
+                bool retired = effect.ToString().StartsWith("Legacy", StringComparison.Ordinal);
+                Assert.AreEqual(!retired, supplied.Contains(effect), effect.ToString());
+            }
+        }
+
+        [TestCase(57, StatType.LegacyGlacialStep)]
+        [TestCase(58, StatType.LegacyShatter)]
+        [TestCase(59, StatType.LegacySecondWind)]
+        [TestCase(60, StatType.LegacyStormblade)]
+        [TestCase(79, StatType.LegacyDeathsHerald)]
+        [TestCase(131, StatType.LegacySpellEcho)]
+        [TestCase(132, StatType.LegacyMeleeSplash)]
+        public void RetiredEffectsKeepSavedIdsAndMigrateOldGear(int savedId, StatType retired)
+        {
+            Assert.AreEqual(savedId, (int)retired, "Saved stat IDs must not shift when effects are removed");
+            var saved = new[] { new StatModifier((StatType)savedId, 5, 2), new StatModifier(StatType.MaxLife, 40) };
+            var normalized = WeaponSkillRules.Normalize(ItemType.Ring, WeaponType.Sword, saved);
+            Assert.IsFalse(normalized.Any(mod => mod.Stat == retired));
+            Assert.AreEqual(25f, normalized.Single(mod => mod.Stat == StatType.Damage).Value);
+            Assert.AreEqual(2, normalized.Single(mod => mod.Stat == StatType.Damage).Tier);
+            Assert.AreEqual(40f, normalized.Single(mod => mod.Stat == StatType.MaxLife).Value);
+        }
+
         [TestCase(0, 1)]
         [TestCase(1, 0)]
         [TestCase(0, 2)]

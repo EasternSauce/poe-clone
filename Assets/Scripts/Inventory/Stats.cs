@@ -74,11 +74,11 @@ namespace PoeClone.Inventory
         OnslaughtOnKill,            // % chance on kill to gain Onslaught (faster attacks, casts and movement)
         ExplodeOnKill,              // % chance for a killed enemy to explode, burning those around it
 
-        // Skill synergies (keystones): each makes two of the game's skills or effects work together.
-        GlacialStep,                // 1: Dash ends in a Frost Nova
-        Shatter,                    // % chance for a chilled enemy killed to burst into ice, chilling and hurting those near
-        SecondWind,                 // 1: War Cry also refills mana and extends Onslaught
-        Stormblade,                 // % chance for an attack critical strike to arc lightning to nearby enemies
+        // Retired skill synergies: keep numeric IDs stable for saved items.
+        LegacyGlacialStep, // reserved saved ID; effect removed
+        LegacyShatter, // reserved saved ID; effect removed
+        LegacySecondWind, // reserved saved ID; effect removed
+        LegacyStormblade, // reserved saved ID; effect removed
 
         GrantTeleport,              // a skill grant like the ones above (added later, so it sits here)
         GrantRaiseSkeletons,
@@ -103,7 +103,7 @@ namespace PoeClone.Inventory
         MarkEffect,                 // % increased effect of Death Mark (the extra damage minions deal to it)
         MinionDuration,             // % increased duration of temporary minions
         SoulBond,                   // % of minion damage dealt returned to the player as life
-        DeathsHerald,               // 1: a marked enemy that dies bursts and passes the mark on
+        LegacyDeathsHerald, // reserved saved ID; effect removed
         BoneArmour,                 // % less damage taken by minions
         GrantGraveRot,              // a grimoire's curse (a bar skill)
 
@@ -163,8 +163,8 @@ namespace PoeClone.Inventory
         PhysicalToFire,             // 1: attacks deal Fire damage instead of Physical
         PhysicalToCold,             // 1: attacks deal Cold damage instead of Physical
         PhysicalToLightning,        // 1: attacks deal Lightning damage instead of Physical
-        SpellEcho,                  // % chance for a damaging spell to cast again for free
-        MeleeSplash,                // % of a melee attack's damage dealt to enemies around each target
+        LegacySpellEcho, // reserved saved ID; effect removed
+        LegacyMeleeSplash, // reserved saved ID; effect removed
         Rampage,                    // % more damage per kill in the last 4 seconds (up to 10 kills)
         DamageTaken,                // % more damage taken (negative: less)
         ManaAsDamage,               // hits deal extra damage equal to this % of maximum mana
@@ -692,10 +692,6 @@ namespace PoeClone.Inventory
                 case StatType.ManaOnKill: return "Mana on Kill";
                 case StatType.OnslaughtOnKill: return "Onslaught on Kill";
                 case StatType.ExplodeOnKill: return "Corpse Explosion";
-                case StatType.GlacialStep: return "Glacial Step";
-                case StatType.Shatter: return "Shatter";
-                case StatType.SecondWind: return "Second Wind";
-                case StatType.Stormblade: return "Stormblade";
                 case StatType.MinionDamage: return "Minion Damage";
                 case StatType.MinionLife: return "Minion Life";
                 case StatType.MinionArmour: return "Minion Armour";
@@ -712,7 +708,6 @@ namespace PoeClone.Inventory
                 case StatType.MarkEffect: return "Death Mark Effect";
                 case StatType.MinionDuration: return "Minion Duration";
                 case StatType.SoulBond: return "Soul Bond";
-                case StatType.DeathsHerald: return "Death's Herald";
                 case StatType.BoneArmour: return "Minion Damage Taken";
                 case StatType.PoisonOnHit: return "Poison on Hit";
                 case StatType.VenomCloudOnHit: return "Venom Clouds";
@@ -734,8 +729,6 @@ namespace PoeClone.Inventory
                 case StatType.PhysicalToFire: return "Attacks Deal Fire";
                 case StatType.PhysicalToCold: return "Attacks Deal Cold";
                 case StatType.PhysicalToLightning: return "Attacks Deal Lightning";
-                case StatType.SpellEcho: return "Spell Echo";
-                case StatType.MeleeSplash: return "Melee Splash";
                 case StatType.Rampage: return "Rampage";
                 case StatType.DamageTaken: return "Damage Taken";
                 case StatType.ManaAsDamage: return "Mana as Damage";
@@ -810,8 +803,6 @@ namespace PoeClone.Inventory
                 case StatType.PercentManaRegen:
                 case StatType.OnslaughtOnKill:
                 case StatType.ExplodeOnKill:
-                case StatType.Shatter:
-                case StatType.Stormblade:
                 case StatType.MinionDamage:
                 case StatType.MinionDamagePenalty:
                 case StatType.MinionLife:
@@ -821,8 +812,6 @@ namespace PoeClone.Inventory
                 case StatType.MinionDuration:
                 case StatType.SoulBond:
                 case StatType.BoneArmour:
-                case StatType.SpellEcho:
-                case StatType.MeleeSplash:
                 case StatType.Rampage:
                 case StatType.DamageTaken:
                 case StatType.ManaAsDamage:
@@ -915,10 +904,6 @@ namespace PoeClone.Inventory
                 case StatType.ManaOnKill: return "Gain " + n + " Mana per enemy killed";
                 case StatType.OnslaughtOnKill: return n + "% chance on kill to gain Onslaught";
                 case StatType.ExplodeOnKill: return n + "% chance for enemies you kill to explode, dealing 200% of their Maximum Life as Fire damage around them";
-                case StatType.GlacialStep: return "Dash ends in a Frost Nova that chills everything around you";
-                case StatType.Shatter: return n + "% chance for Chilled enemies you kill to Shatter, dealing Cold damage and chilling those nearby";
-                case StatType.SecondWind: return "War Cry also restores a third of your Mana and extends Onslaught by 2 seconds";
-                case StatType.Stormblade: return n + "% chance for Attack Critical Strikes to arc Lightning to 3 nearby enemies";
                 case StatType.MinionDamage: return Increased(m, "Minion Damage");
                 case StatType.MinionLife: return Increased(m, "Minion Life");
                 case StatType.MinionArmour: return sign + n + " to Minion Armour";
@@ -935,7 +920,6 @@ namespace PoeClone.Inventory
                 case StatType.MarkEffect: return Increased(m, "effect of Death Mark");
                 case StatType.MinionDuration: return Increased(m, "minion duration");
                 case StatType.SoulBond: return n + "% of Minion Damage is returned to you as Life";
-                case StatType.DeathsHerald: return "When a Marked enemy dies, the Mark leaps to the nearest enemy";
                 case StatType.BloodMagic: return "Removes all Mana. Skills cost Life instead of Mana";
                 case StatType.IronReflexes: return "Converts Evasion Rating to Armour. Dexterity grants no Evasion Rating";
                 case StatType.PointBlank: return "Projectile Hits deal up to 30% more Damage nearby, and up to 30% less Damage at long range";
@@ -961,8 +945,6 @@ namespace PoeClone.Inventory
                 case StatType.PhysicalToFire: return "Attacks deal Fire damage instead of Physical";
                 case StatType.PhysicalToCold: return "Attacks deal Cold damage instead of Physical";
                 case StatType.PhysicalToLightning: return "Attacks deal Lightning damage instead of Physical";
-                case StatType.SpellEcho: return n + "% chance for damaging Spells to cast a second time for free";
-                case StatType.MeleeSplash: return "Melee basic attacks deal " + n + "% of their damage to enemies around each target";
                 case StatType.Rampage: return n + "% more Damage for each enemy killed in the last 4 seconds (up to 10)";
                 case StatType.DamageTaken: return "You take " + n + "% " + (m.Value < 0f ? "less" : "more") + " Damage";
                 case StatType.ManaAsDamage: return "Hits deal extra damage equal to " + n + "% of your Maximum Mana";

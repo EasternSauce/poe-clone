@@ -14,8 +14,8 @@ namespace PoeClone.Player
     /// The player's damage reaching an enemy, and what the special stats do on top: the damage
     /// bonuses that depend on the hit or the moment (elements, attacks, low life, chilled or
     /// shocked targets, critical strikes), the ailments (ignite, shock, chill), life leech, culling
-    /// strike, and everything that happens on a kill (life/mana, Onslaught, corpse explosions,
-    /// shatter). Every player hit on an enemy goes through <see cref="Deal"/>: melee swings,
+    /// strike, and everything that happens on a kill (life/mana, Onslaught, corpse explosions).
+    /// Every player hit on an enemy goes through <see cref="Deal"/>: melee swings,
     /// arrows, bolts and the other skills.
     /// </summary>
     public static class HitEffects
@@ -30,12 +30,7 @@ namespace PoeClone.Player
         private const float ExplosionRadius = 3.2f;
         private const float ExplosionShare = 2f;
         private const float ChainDelay = 0.1f;
-        private const float ShatterRadius = 3f;
-        private const float ShatterShare = 0.12f;
-        private const float StormbladeShare = 0.5f;
-        private const float StormbladeJump = 6f;
         private const float CurseOnHitSeconds = 4f;
-        private const float SplashRadius = 2.4f;
         private const float RetaliationRadius = 3.5f;
 
         private static readonly Color ExplosionColor = new Color(1f, 0.45f, 0.12f);
@@ -178,9 +173,6 @@ namespace PoeClone.Player
 
                 if (!enemy.IsDead && ai != null && Roll(sheet, StatType.ChillOnHit, rollSeed))
                     ai.Chill(ChillSeconds);
-
-                if (crit && !secondary && Roll(sheet, StatType.Stormblade, rollSeed))
-                    Stormblade(attacker, enemy, baseDamage * StormbladeShare, melee);
             }
 
             if (!enemy.IsDead)
@@ -207,7 +199,7 @@ namespace PoeClone.Player
             }
 
             if (enemy.IsDead)
-                OnKill(attacker, stats, sheet, enemy, at, enemyMaxLife, wasChilled || (ai != null && ai.IsChilled), secondary, fromExplosion, melee, rollSeed);
+                OnKill(attacker, stats, sheet, enemy, at, enemyMaxLife, secondary, fromExplosion, melee, rollSeed);
         }
 
         // Everything that adds up as "increased damage" for this hit, as one multiplier.
@@ -234,23 +226,6 @@ namespace PoeClone.Player
             return DamageType.Physical;
         }
 
-        /// <summary>
-        /// Melee Splash: a basic melee blow also hurts the enemies around the one it struck, for a
-        /// share of the swing's damage (enemies the swing hit directly are left out).
-        /// </summary>
-        public static void Splash(Transform attacker, EnemyHealth struck, float damage, ICollection<EnemyHealth> alreadyHit)
-        {
-            float share = Stat(attacker, StatType.MeleeSplash);
-            if (share <= 0f || struck == null)
-                return;
-            Vector3 at = struck.transform.position;
-            foreach (EnemyHealth other in EnemiesNear(at, SplashRadius, struck))
-            {
-                if (alreadyHit != null && alreadyHit.Contains(other)) continue;
-                Deal(attacker, other, damage * share / 100f, true, CombatText.PhysicalColor, secondary: true, melee: true, hitOrigin: at);
-            }
-        }
-
         /// <summary>Block Retaliation: a block answers with a burst of physical damage around the player.</summary>
         public static void Retaliate(Transform player, StatSheet sheet)
         {
@@ -275,7 +250,7 @@ namespace PoeClone.Player
         // melee: the kill came from a melee hit (or what one set off), so what it sets off is melee
         // too and never enrages (see EnemyController.OnIncomingHit).
         private static void OnKill(Transform attacker, PlayerStats stats, StatSheet sheet, EnemyHealth enemy, Vector3 at,
-            float enemyMaxLife, bool chilled, bool secondary, bool fromExplosion, bool melee, int rollSeed)
+            float enemyMaxLife, bool secondary, bool fromExplosion, bool melee, int rollSeed)
         {
             float life = sheet.Total(StatType.LifeOnKill) + stats.MaxHealth * Mathf.Max(0f, sheet.Total(StatType.LifePercentOnKill)) / 100f;
             if (life > 0f)
@@ -304,9 +279,7 @@ namespace PoeClone.Player
                 return;
 
             if (Roll(sheet, StatType.ExplodeOnKill, rollSeed))
-                Burst(attacker, enemy, at, ExplosionRadius, enemyMaxLife * ExplosionShare, DamageType.Fire, ExplosionColor, melee);
-            else if (chilled && Roll(sheet, StatType.Shatter, rollSeed))
-                Burst(attacker, enemy, at, ShatterRadius, enemyMaxLife * ShatterShare, DamageType.Cold, CombatText.ColdColor, melee);
+                Burst(attacker, enemy, at, ExplosionRadius, enemyMaxLife * ExplosionShare, melee);
         }
 
         /// <summary>A corpse explosion's (or shatter's) look and sound, without the damage.</summary>
@@ -331,26 +304,18 @@ namespace PoeClone.Player
             }
         }
 
-        // A corpse explosion or a shatter: damages everything around the dead enemy (and a shatter chills it).
-        private static void Burst(Transform attacker, EnemyHealth dead, Vector3 at, float radius, float damage,
-            DamageType type, Color color, bool melee)
+        // Corpse explosions damage nearby enemies and can set off further explosions.
+        private static void Burst(Transform attacker, EnemyHealth dead, Vector3 at, float radius, float damage, bool melee)
         {
-            bool shatter = type == DamageType.Cold;
-            PlayBurstVisual(at, radius, shatter);
+            PlayBurstVisual(at, radius, false);
             // Logged with the skill casts, so spectators see (and hear) it too.
             PlayerSkills skills = attacker != null ? attacker.GetComponent<PlayerSkills>() : null;
             if (skills != null)
-                skills.RecordBurst(shatter ? PlayerSkills.ShatterCast : PlayerSkills.CorpseExplosionCast, at, radius);
+                skills.RecordBurst(PlayerSkills.CorpseExplosionCast, at, radius);
 
             foreach (EnemyHealth other in EnemiesNear(at, radius, dead))
             {
-                if (type == DamageType.Cold)
-                {
-                    EnemyController ai = other.GetComponent<EnemyController>();
-                    if (ai != null)
-                        ai.Chill(ChillSeconds);
-                }
-                Deal(attacker, other, damage, false, color, type, secondary: true, hitOrigin: at, fromExplosion: !shatter, melee: melee);
+                Deal(attacker, other, damage, false, ExplosionColor, DamageType.Fire, secondary: true, hitOrigin: at, fromExplosion: true, melee: melee);
             }
         }
 
@@ -358,38 +323,7 @@ namespace PoeClone.Player
         {
             yield return new WaitForSeconds(ChainDelay);
             if (attacker != null)
-                Burst(attacker, dead, at, ExplosionRadius, damage, DamageType.Fire, ExplosionColor, melee);
-        }
-
-        // Stormblade: lightning leaps from the struck enemy to up to three others close by. From a
-        // melee crit the arcs count as melee too (they never enrage).
-        private static void Stormblade(Transform attacker, EnemyHealth from, float damage, bool melee)
-        {
-            var struck = new HashSet<EnemyHealth> { from };
-            Vector3 origin = from.transform.position + Vector3.up * 0.8f;
-            for (int k = 0; k < 3; k++)
-            {
-                EnemyHealth next = null;
-                float best = StormbladeJump * StormbladeJump;
-                foreach (EnemyHealth e in EnemyHealth.Active)
-                {
-                    if (e == null || e.IsDead || struck.Contains(e))
-                        continue;
-                    float d = (e.transform.position - origin).sqrMagnitude;
-                    if (d < best)
-                    {
-                        best = d;
-                        next = e;
-                    }
-                }
-                if (next == null)
-                    return;
-                Vector3 to = next.transform.position + Vector3.up * 0.8f;
-                SkillEffects.Arc(origin, to, CombatText.LightningColor);
-                struck.Add(next);
-                Deal(attacker, next, damage, false, CombatText.LightningColor, DamageType.Lightning, secondary: true, hitOrigin: origin, melee: melee);
-                origin = to;
-            }
+                Burst(attacker, dead, at, ExplosionRadius, damage, melee);
         }
 
         private static List<EnemyHealth> EnemiesNear(Vector3 at, float radius, EnemyHealth except)

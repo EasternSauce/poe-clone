@@ -1,3 +1,8 @@
+version: 2026-10-17-unused-effects
+- Removed obsolete global effects that no current item or passive grants: lightning arcs on attack crits, Dash-triggered Frost Nova, War Cry's extra recovery, global shatter, spell echo, melee splash and spreading Death Mark.
+- Also removed unused weapon-tree options for spell repeats, combined minion speed and forcing a single projectile. Active weapon-tree shatters and splash attacks remain available.
+- Old item stat IDs retain their existing migration so saved equipment loads safely.
+
 version: 2026-10-17-keystone-mechanics
 - Restored keystone effects: Bone Resolve grants +1 maximum minion, Steady Aim grants +1 arrow, Arcane Power grants +1 projectile, and Pyre grants a 20% chance for enemies to explode on kill.
 

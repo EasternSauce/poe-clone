@@ -501,7 +501,7 @@ namespace PoeClone.Skills
                     if (!asAttack && attackAnimator != null)
                         attackAnimator.PlayAttack(WeaponType.Unarmed);
                     var bolts = PlayerArrow.NewVolley();
-                    int boltCount = tree.SingleProjectile ? 1 : 1 + extraProjectiles;
+                    int boltCount = 1 + extraProjectiles;
                     foreach (Vector3 direction in HitEffects.Spread(transform.forward, boltCount, 12f))
                         PlayerArrow.LaunchBolt(transform, BoltRange * SkillProjectileRange(skill.Id), damage, skill.Color, 1.6f * area, direction, volley: bolts).WithSkill(tree);
                     var flights = new List<Vector3>();
@@ -706,7 +706,7 @@ namespace PoeClone.Skills
                 attackAnimator.PlayAttack(WeaponType.Unarmed);
             Vector3 hitAt = target.transform.position + Vector3.up * 0.5f * target.transform.localScale.y;
             SkillEffects.Arc(from, hitAt, skill.Color, 0.25f);
-            Minion.Mark(target, transform);
+            Minion.Mark(target);
             Hit(target, damage, skill.Color, attack: false, skillId: skill.Id);
             Record(skill, level, 0f, 0, new[] { from, hitAt });
         }

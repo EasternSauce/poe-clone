@@ -569,7 +569,6 @@ namespace PoeClone.Player
             // A sceptre's blow puts Death Mark on what it strikes (the aimed enemy if it's among them).
             bool marks = weaponType == WeaponType.Sceptre;
             EnemyHealth toMark = null;
-            var struck = new List<EnemyHealth>();
 
             for (int i = 0; i < count; i++)
             {
@@ -586,7 +585,6 @@ namespace PoeClone.Player
                     if (target is EnemyHealth enemy)
                     {
                         HitEffects.Deal(transform, enemy, pendingDamage, attack: true, CombatText.PhysicalColor, melee: true);
-                        struck.Add(enemy);
                         if (marks && !enemy.IsDead && (toMark == null || enemy == aimEnemy))
                             toMark = enemy;
                         continue;
@@ -611,12 +609,8 @@ namespace PoeClone.Player
                 }
             }
 
-            // Melee Splash spills each blow onto the enemies around what it struck.
-            foreach (EnemyHealth enemy in struck)
-                HitEffects.Splash(transform, enemy, pendingDamage, struck);
-
             if (toMark != null)
-                PoeClone.Skills.Minion.Mark(toMark, transform);
+                PoeClone.Skills.Minion.Mark(toMark);
         }
 
         // Arrows in a bow shot: one, plus Additional Arrows.

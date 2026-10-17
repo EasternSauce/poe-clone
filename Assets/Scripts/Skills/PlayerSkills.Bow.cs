@@ -87,17 +87,14 @@ namespace PoeClone.Skills
                 forward = ProjectileAimAssist.Direction(transform.position, forward, projectileRange);
                 Face(forward);
             }
-            // Piercing Shot always retains additional arrows, including gear bonuses.
-            arrows = id == SkillId.PiercingShot
-                ? Mathf.Max(1, arrows + Mathf.RoundToInt(tree.Get(WeaponSkillEffect.Projectiles)))
-                : tree.SingleProjectile ? 1 : Mathf.Max(1, arrows + tree.ExtraProjectiles);
+            arrows = Mathf.Max(1, arrows + tree.ExtraProjectiles);
             Vector3 shotOrigin = transform.position;
 
             switch (id)
             {
                 case SkillId.SplitShot:
                 {
-                    int count = tree.SingleProjectile ? 1 : arrows + SplitExtra;
+                    int count = arrows + SplitExtra;
                     float each = damage * skill.WeaponMultiplierAt(level);
                     var volley = PlayerArrow.NewVolley();
                     foreach (Vector3 direction in HitEffects.Spread(forward, count, SplitSpread))

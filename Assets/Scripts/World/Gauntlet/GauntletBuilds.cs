@@ -155,8 +155,7 @@ namespace PoeClone.World
                     StatType.MaxMana, 2f, StatType.IncreasedMana, 2f, StatType.ManaRegen, 1.4f,
                     StatType.LightningSpellLevels, 3f, StatType.AllSpellLevels, 3f, StatType.LightningPenetration, 1.5f,
                     StatType.ElementalPenetration, 1.5f, StatType.ShockChance, 1.5f, StatType.AdditionalChains, 0.5f,
-                    StatType.MoreLightningDamage, 2.5f, StatType.MoreSpellDamage, 2.5f, StatType.ManaAsDamage, 2f,
-                    StatType.SpellEcho, 3f, StatType.PercentManaRegen, 1.5f),
+                    StatType.MoreLightningDamage, 2.5f, StatType.MoreSpellDamage, 2.5f, StatType.ManaAsDamage, 2f, StatType.PercentManaRegen, 1.5f),
                 Passives = new[] { "s_conductor", "k_thunderlord", "s_eye", "w_archmage", "w_l3", "w_life_heart", "s_life_mid_heart" },
                 Uniques = new[] { "!Mantle of the Still Mind", "Conductor's Reach", "Pendant of the Fleeting Thought", "Stormcaller's Circlet" }
             },
@@ -167,19 +166,18 @@ namespace PoeClone.World
                 MainHand = new[] { "staff" }, StaffSpell = StatType.GrantFireBolt, Armour = "int",
                 CoreSkills = new[] { StatType.GrantFireBolt }, SupportSkills = new[] { StatType.GrantFrostNova, StatType.GrantWarCry },
                 Weights = Caster(StatType.FireDamage, 1.6f, StatType.FireSpellLevels, 2f, StatType.IgniteChance, 0.6f,
-                    StatType.FirePenetration, 1.2f, StatType.ElementalPenetration, 1.2f, StatType.ExplodeOnKill, 0.4f, StatType.MoreFireDamage, 2f,
-                    StatType.SpellEcho, 3f),
+                    StatType.FirePenetration, 1.2f, StatType.ElementalPenetration, 1.2f, StatType.ExplodeOnKill, 0.4f, StatType.MoreFireDamage, 2f),
                 Passives = new[] { "z_hub", "w_m2", "w_archmage", "z_t2", "k_inferno", "z_t1", "w_l3", "s_eye", "z_life_heart", "w_life_heart", "k_twincast" },
                 Uniques = new[] { "The Unfinished Sentence", "Emberheart", "Elder's Charm" }
             },
             new GauntletBuild
             {
                 Id = "frost_caster", Name = "Frost Caster",
-                Summary = "Ice Shard and Frost Nova: Storm and Wisdom. Frostglass Bough (shatter) from level 17.",
+                Summary = "Ice Shard and Frost Nova: Storm and Wisdom. Frostglass Bough (cold penetration) from level 17.",
                 MainHand = new[] { "staff" }, StaffSpell = StatType.GrantIceShard, Armour = "int",
                 CoreSkills = new[] { StatType.GrantIceShard }, SupportSkills = new[] { StatType.GrantFrostNova },
                 Weights = Caster(StatType.ColdDamage, 1.6f, StatType.ColdSpellLevels, 2f, StatType.ColdPenetration, 1.2f,
-                    StatType.ElementalPenetration, 1.2f, StatType.DamageVsChilled, 1f, StatType.Shatter, 0.6f, StatType.MoreColdDamage, 2f,
+                    StatType.ElementalPenetration, 1.2f, StatType.DamageVsChilled, 1f, StatType.MoreColdDamage, 2f,
                     StatType.AdditionalSpellProjectiles, 1.5f, StatType.AdditionalProjectiles, 1.5f),
                 Passives = new[] { "s_sp2", "k_glacial", "s_eye", "w_m2", "w_archmage", "s_stride", "w_l3", "s_life_mid_heart", "w_life_heart", "k_twincast" },
                 Uniques = new[] { "Frostglass Bough", "Twinflame Loop", "Elder's Charm" }
@@ -198,10 +196,10 @@ namespace PoeClone.World
             new GauntletBuild
             {
                 Id = "mace_juggernaut", Name = "Mace Juggernaut", Melee = true,
-                Summary = "Pulverize and Fissure with a maul: Might and Iron Reflexes, built tanky. Cinderwake (melee splash) from level 17.",
+                Summary = "Pulverize and Fissure with a maul: Might and Iron Reflexes, built tanky. Cinderwake (area and attack damage) from level 17.",
                 MainHand = new[] { "maul", "mace" }, OffHand = new[] { "shield_str" }, Armour = "str",
                 CoreSkills = new[] { StatType.GrantPulverize, StatType.GrantFissure }, SupportSkills = new[] { StatType.GrantWarCry },
-                Weights = Melee(StatType.ArmourPenetration, 0.8f, StatType.MeleeSplash, 2f, StatType.MoreMeleeDamage, 2f),
+                Weights = Melee(StatType.ArmourPenetration, 0.8f, StatType.MoreMeleeDamage, 2f),
                 Passives = new[] { "m_life_heart", "m8", "m_bloodbath", "m5", "k_unbreakable", "f_feast", "m_life_guard", "f_life_heart" },
                 Uniques = new[] { "Cinderwake", "Bloodroot Cord" }
             },
@@ -252,12 +250,11 @@ namespace PoeClone.World
             },
             new GauntletBuild
             {
-                Id = "stormblade_duelist", Name = "Stormblade Duelist", Melee = true,
-                Summary = "A critical-strike sword with Lunging Thrust whose crits arc lightning. Thundergrip and Storm's Receipt from level 17.",
+                Id = "stormblade_duelist", Name = "Lightning Duelist", Melee = true,
+                Summary = "A critical-strike sword with Lunging Thrust. Thundergrip adds shock chance; Storm's Receipt converts physical attacks to lightning from level 17.",
                 MainHand = new[] { "sword" }, OffHand = new[] { "shield_dex" }, Armour = "dex",
                 CoreSkills = new[] { StatType.GrantLungingThrust, StatType.GrantCleave },
-                Weights = Melee(StatType.Armour, 0.4f, StatType.Evasion, 1f, StatType.Dexterity, 0.7f, StatType.CriticalChance, 1.4f, StatType.CriticalMultiplier, 1.2f,
-                    StatType.Stormblade, 1.2f, StatType.LightningDamage, 0.9f, StatType.ShockChance, 0.6f),
+                Weights = Melee(StatType.Armour, 0.4f, StatType.Evasion, 1f, StatType.Dexterity, 0.7f, StatType.CriticalChance, 1.4f, StatType.CriticalMultiplier, 1.2f, StatType.LightningDamage, 0.9f, StatType.ShockChance, 0.6f),
                 Passives = new[] { "f_dancer", "f_precision", "f_feast", "k_stormblade", "f_life_heart", "s2", "k_thunderlord" },
                 Uniques = new[] { "!Thundergrip", "!Storm's Receipt" }
             },
@@ -289,7 +286,7 @@ namespace PoeClone.World
                 Summary = "Whirlwind with a greatsword, the attack held down to spin through packs, War Cry for Onslaught.",
                 MainHand = new[] { "greatsword", "sword" }, OffHand = new[] { "shield_str" }, Armour = "str",
                 CoreSkills = new[] { StatType.GrantWhirlwind }, SupportSkills = new[] { StatType.GrantWarCry },
-                Weights = Melee(StatType.MoreMeleeDamage, 2f, StatType.MeleeSplash, 1f),
+                Weights = Melee(StatType.MoreMeleeDamage, 2f),
                 Passives = new[] { "m8", "m_bloodbath", "f_feast", "m_life_heart", "m5", "f_life_heart" }
             },
             new GauntletBuild
@@ -299,8 +296,7 @@ namespace PoeClone.World
                 MainHand = new[] { "bow" }, OffHand = new[] { "quiver" }, Armour = "dex",
                 CoreSkills = new[] { StatType.GrantSplitShot, StatType.GrantPiercingShot }, SupportSkills = new[] { StatType.GrantRainOfArrows },
                 BowSkill = SkillId.SplitShot,
-                Weights = Archer(StatType.ColdDamage, 1.4f, StatType.ChillOnHit, 0.8f, StatType.DamageVsChilled, 1.2f, StatType.ColdPenetration, 1f,
-                    StatType.Shatter, 0.5f),
+                Weights = Archer(StatType.ColdDamage, 1.4f, StatType.ChillOnHit, 0.8f, StatType.DamageVsChilled, 1.2f, StatType.ColdPenetration, 1f),
                 Passives = new[] { "g_hoarfrost", "g8", "k_volley", "g_deadeye", "b_arctic", "s_stride", "k_glacial", "g_life_heart" },
                 Uniques = new[] { "!Rimefletch@7" }
             },

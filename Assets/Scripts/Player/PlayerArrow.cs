@@ -57,7 +57,7 @@ namespace PoeClone.Player
         private void OnSkillImpact(Enemies.EnemyHealth hit)
         {
             if (tree == null || hit == null) return;
-            if (!forked && !tree.SingleProjectile && tree.Get(WeaponSkillEffect.NoFork) <= 0 && tree.Get(WeaponSkillEffect.Fork) > 0 && travelLeft > 1f)
+            if (!forked && tree.Get(WeaponSkillEffect.NoFork) <= 0 && tree.Get(WeaponSkillEffect.Fork) > 0 && travelLeft > 1f)
             {
                 forked = true;
                 foreach (float angle in new[] { -28f, 28f })

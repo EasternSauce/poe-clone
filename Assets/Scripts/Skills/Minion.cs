@@ -44,7 +44,6 @@ namespace PoeClone.Skills
             All.Clear();
             nextId = 0;
             marked = null;
-            markOwner = null;
         }
 
         /// <summary>Stable for this minion's life (its spectator copy is keyed by it).</summary>
@@ -407,7 +406,6 @@ namespace PoeClone.Skills
         // ------------------------------------------------------------------ Death Mark
 
         private static EnemyHealth marked;
-        private static Transform markOwner;
         private static float markUntil;
         private static GameObject markVisual;
         private static readonly Color MarkColor = new Color(0.55f, 1f, 0.45f);
@@ -421,7 +419,7 @@ namespace PoeClone.Skills
         /// Puts Death Mark on an enemy (a grimoire's bolt, a sceptre's blow): the minions go for it
         /// and hit it harder. One mark at a time; a new one moves it.
         /// </summary>
-        public static void Mark(EnemyHealth enemy, Transform owner)
+        public static void Mark(EnemyHealth enemy)
         {
             if (enemy == null || enemy.IsDead)
                 return;
@@ -434,7 +432,6 @@ namespace PoeClone.Skills
                 markVisual = BuildMarkVisual(enemy);
                 SkillEffects.Shockwave(enemy.transform.position, 1.2f * enemy.transform.localScale.x, MarkColor, 0.3f);
             }
-            markOwner = owner;
             markUntil = Time.time + MarkSeconds;
         }
 
@@ -456,36 +453,7 @@ namespace PoeClone.Skills
             return 1f + 0.3f * effect;
         }
 
-        // Death's Herald: a marked enemy that dies bursts for a fifth of its life round it, and the
-        // mark leaps on to the nearest enemy.
-        private static void OnMarkedDied()
-        {
-            EnemyHealth dying = marked;
-            Transform owner = markOwner;
-            Unmark();
-            if (dying == null || owner == null)
-                return;
-            PlayerInventory inventory = owner.GetComponent<PlayerInventory>();
-            if (Stat(inventory != null ? inventory.Stats : null, StatType.DeathsHerald) <= 0f)
-                return;
-
-            Vector3 at = dying.transform.position;
-            EnemyHealth next = null;
-            float nextDistance = 8f;
-            foreach (EnemyHealth e in EnemyHealth.Active.ToArray())
-            {
-                if (e == null || e.IsDead || e == dying)
-                    continue;
-                float d = Flat(e.transform.position - at).magnitude;
-                if (!e.IsDead && d < nextDistance)
-                {
-                    nextDistance = d;
-                    next = e;
-                }
-            }
-            if (next != null)
-                Mark(next, owner);
-        }
+        private static void OnMarkedDied() => Unmark();
 
         // A slowly turning ring of grave-light over the marked enemy's head.
         private static GameObject BuildMarkVisual(EnemyHealth enemy)
