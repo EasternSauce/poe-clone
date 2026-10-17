@@ -7,6 +7,22 @@ namespace PoeClone.EditorTools
     public static class AnatomyMeshes
     {
         private static AnatomyProfile profile;
+        /// <summary>Rebake arm contours and all hand poses without rebuilding unrelated anatomy.</summary>
+        public static void RebuildArms()
+        {
+            foreach (string side in new[] { "L", "R" })
+            {
+                Mesh arm = LowPolyMeshes.Save("AnatomyConnectedArm" + side, AnatomyLimbMeshes.Arm(side == "L" ? -1 : 1));
+                foreach (string suffix in new[] { "", "Low", "Grip", "GripLow" })
+                {
+                    Mesh hand = UnityEditor.AssetDatabase.LoadAssetAtPath<Mesh>(LowPolyMeshes.MeshDir + "/AnatomyHand" + side + suffix + ".asset");
+                    LowPolyMeshes.Save("AnatomyArmHand" + side + suffix,
+                        AnatomyWristMeshes.Join("AnatomyArmHand" + side + suffix, arm, hand));
+                }
+            }
+            UnityEditor.AssetDatabase.SaveAssets();
+        }
+
         /// <summary>Rebake only held-hand variants, preserving unrelated anatomy assets.</summary>
         public static void RebuildGrips()
         {

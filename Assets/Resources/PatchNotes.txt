@@ -1,3 +1,6 @@
+version: 2026-10-17-upper-arm-shape
+- The hero's upper arms have shaped shoulder caps, biceps and triceps, with a clearer taper into the elbows, especially visible from the front in the inventory portrait.
+
 version: 2026-10-17-hand-grip-rings
 - Fixed the weapon hand looking detached: the palm stays joined to the wrist, fingers curl from their knuckles, and the thumb wraps across the grip. One-handed melee grips now sit inside the fist.
 - Equipped rings now fit the ring finger, with their stones on the back, and follow the open or gripping hand pose in the inventory portrait and game.

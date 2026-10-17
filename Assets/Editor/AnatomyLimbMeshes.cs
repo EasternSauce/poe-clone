@@ -10,7 +10,7 @@ namespace PoeClone.EditorTools
         {
             return Build("AnatomyConnectedArm"+(side<0?"L":"R"), true, new[] {
                 R(.03f,0,0), R(.015f,.065f,.07f), R(-.02f,.087f,.09f),
-                R(-.08f,.088f,.092f), R(-.19f,.08f,.085f), R(-.30f,.067f,.073f),
+                R(-.08f,.084f,.084f), R(-.19f,.069f,.070f), R(-.30f,.056f,.060f),
                 R(-.38f,.061f,.064f), R(-.43f,.059f,.061f), R(-.49f,.060f,.063f,-.004f),
                 R(-.56f,.055f,.058f,-.005f), R(-.63f,.044f,.046f),
                 R(-.69f,.034f,.035f), R(-.735f,.027f,.028f), R(-.755f,.026f,.0265f), R(-.78f,0,0) },side);
@@ -28,6 +28,33 @@ namespace PoeClone.EditorTools
         }
 
         private static LowPolyMeshes.Ring R(float y,float x,float z,float forward=0) => new LowPolyMeshes.Ring(y,x,z,forward);
+
+        // Muscle volumes vary around the arm as well as along it. In particular, the front
+        // silhouette needs an outer deltoid, an inset biceps belly and a narrower elbow;
+        // a stack of elliptical rings alone reads as a tapered cylinder in the portrait.
+        private static Vector3 UpperArmSurface(Vector3 position,float angle,float side)
+        {
+            if(position.y >= .015f || position.y <= -.46f) return position;
+            float outward=Mathf.Sin(angle)*side,front=Mathf.Cos(angle);
+            float Lobe(float height,float length,float direction,float sharpness)
+            {
+                float t=(position.y-height)/length;
+                return Mathf.Exp(-2*t*t)*Mathf.Pow(Mathf.Clamp01(direction),sharpness);
+            }
+            float cap=Lobe(-.075f,.105f,(outward+.35f)*.74f,1.5f);
+            float biceps=Lobe(-.225f,.115f,front*.94f-outward*.34f,2);
+            float triceps=Lobe(-.185f,.145f,-front*.90f+outward*.44f,2);
+            float brachialis=Lobe(-.305f,.075f,outward,3);
+            float elbow=Lobe(-.408f,.035f,Mathf.Abs(outward),4);
+            // The shoulder forms a teardrop over the upper arm. Offset the front/back
+            // bellies towards opposite sides so the highlights don't form concentric bands.
+            float fade=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.015f,-.035f,position.y))
+                *Mathf.SmoothStep(0,1,Mathf.InverseLerp(-.46f,-.43f,position.y));
+            float bulge=(.022f*cap+.024f*biceps+.021f*triceps+.014f*brachialis+.007f*elbow)*fade;
+            position.x+=Mathf.Sin(angle)*bulge;
+            position.z+=front*bulge;
+            return position;
+        }
 
         private static Mesh Build(string name,bool arm,LowPolyMeshes.Ring[] sections,float side=0)
         {
@@ -52,7 +79,8 @@ namespace PoeClone.EditorTools
                 {
                     float u=column/(float)sides,angle=u*2*Mathf.PI;
                     float shoulder=arm?Mathf.Clamp01((ring.Y+.16f)/.19f):0;
-                    positions.Add(new Vector3(Mathf.Sin(angle)*ring.X-side*.12f*shoulder,ring.Y,Mathf.Cos(angle)*ring.Z+ring.Forward));
+                    var position=new Vector3(Mathf.Sin(angle)*ring.X-side*.12f*shoulder,ring.Y,Mathf.Cos(angle)*ring.Z+ring.Forward);
+                    positions.Add(arm?UpperArmSurface(position,angle,side):position);
                     uv.Add(new Vector2(u,(ring.Y+.86f)/.96f));
                     float lower=Mathf.SmoothStep(0,1,Mathf.InverseLerp(-.32f,-.52f,ring.Y));
                     float torso=arm?1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.015f,-.15f,ring.Y)):0;
