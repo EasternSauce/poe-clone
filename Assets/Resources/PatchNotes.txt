@@ -1,3 +1,6 @@
+version: 2026-10-17-keystone-mechanics
+- Restored keystone effects: Bone Resolve grants +1 maximum minion, Steady Aim grants +1 arrow, Arcane Power grants +1 projectile, and Pyre grants a 20% chance for enemies to explode on kill.
+
 version: 2026-10-17-grass-placement
 - Grass stays off bare riverbanks, lake shores, the town square, roads and scenery clearings, including when nearby terrain streams in.
 

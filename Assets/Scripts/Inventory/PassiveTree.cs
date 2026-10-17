@@ -775,13 +775,7 @@ namespace PoeClone.Inventory
                 Link(ids[k - 1], ids[k]);
         }
 
-        private static StatModifier Mod(StatType stat, float value)
-        {
-            if (WeaponSkillRules.IsLevelBonus(stat)) return new StatModifier(StatType.MinionDamage, 15);
-            if (WeaponSkillRules.IsSkillMechanic(stat))
-                return new StatModifier(stat == StatType.AdditionalMinions || stat == StatType.AdditionalSkeletons ? StatType.MinionLife : StatType.Damage, 15);
-            return new StatModifier(stat, value);
-        }
+        private static StatModifier Mod(StatType stat, float value) => new StatModifier(stat, value);
 
         private static PassiveNode Add(string id, string name, PassiveBranch branch, bool notable, float x, float y, params StatModifier[] mods)
         {
