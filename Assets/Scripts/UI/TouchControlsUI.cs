@@ -60,6 +60,7 @@ namespace PoeClone.UI
             public Image Back;
             public Image Icon;
             public Image Cooldown;
+            public Text Charges;
         }
 
         private readonly List<SkillButton> skillButtons = new List<SkillButton>();
@@ -236,6 +237,7 @@ namespace PoeClone.UI
                     button.Back.color = new Color(0.08f, 0.07f, 0.06f, 0.3f);
                     button.Icon.enabled = false;
                     button.Cooldown.fillAmount = 0f;
+                    button.Charges.text = "";
                     continue;
                 }
 
@@ -248,6 +250,7 @@ namespace PoeClone.UI
                     button.Back.color = new Color(0.08f, 0.07f, 0.06f, 0.3f);
                     button.Icon.color = new Color(1f, 1f, 1f, 0.25f);
                     button.Cooldown.fillAmount = 0f;
+                    button.Charges.text = "";
                     continue;
                 }
                 bool affordable = skills.CanAffordAt(k);
@@ -255,7 +258,10 @@ namespace PoeClone.UI
                 button.Back.color = new Color(c.r * 0.45f, c.g * 0.45f, c.b * 0.45f, 0.8f);
                 button.Icon.color = Color.white;
                 float total = skills.CooldownTotalAt(k);
-                button.Cooldown.fillAmount = total > 0f ? skills.CooldownLeftAt(k) / total : 0f;
+                int charges = skills.ChargesAt(k);
+                button.Cooldown.fillAmount = total > 0f ? skills.RechargeLeftAt(k) / total : 0f;
+                button.Cooldown.color = new Color(0f, 0f, 0f, charges > 0 ? 0.25f : 0.6f);
+                button.Charges.text = skills.MaxChargesAt(k) > 1 ? charges.ToString() : "";
             }
         }
 
@@ -550,7 +556,11 @@ namespace PoeClone.UI
                     16, UiKit.Gold, TextAnchor.LowerRight);
                 number.raycastTarget = false;
                 UiKit.Stretch(number.rectTransform, 10f);
-                skillButtons.Add(new SkillButton { Back = back, Icon = icon, Cooldown = cooldown });
+                Text charges = UiKit.NewText("Charges", back.rectTransform, "", 18, UiKit.TextColor, TextAnchor.UpperRight);
+                charges.raycastTarget = false;
+                UiKit.Stretch(charges.rectTransform, 10f);
+                UiKit.AddOutline(charges, new Color(0f, 0f, 0f, 0.8f), 1f);
+                skillButtons.Add(new SkillButton { Back = back, Icon = icon, Cooldown = cooldown, Charges = charges });
             }
 
             // Larger potion targets, with life nearest the attack stick.

@@ -120,6 +120,23 @@ namespace PoeClone.Tests
         }
 
         [Test]
+        public void EachCooldownRestoresOneCharge()
+        {
+            object bindings = Activator.CreateInstance(RuntimeType("PoeClone.Skills.SkillBindings"), new object[] { 1 });
+            object dash = Enum.Parse(RuntimeType("PoeClone.Skills.SkillId"), "Dash");
+            var item = new ItemData("Boots", ItemType.Boots, 1, 1, Color.white);
+            Call(bindings, "SetSource", 0, dash, item, EquipSlot.Boots, 1);
+            Call(bindings, "StartCooldown", 0, 4f, 10f);
+            Call(bindings, "StartCooldown", 0, 4f, 10f);
+
+            Assert.AreEqual(18f, Field(Binding(bindings, 0), "ReadyAt"));
+            Assert.AreEqual(1, Call(bindings, "ChargesAt", 0, 3, 10f));
+            Assert.AreEqual(2, Call(bindings, "ChargesAt", 0, 3, 15f));
+            Assert.AreEqual(3, Call(bindings, "ChargesAt", 0, 3, 18f));
+            Assert.AreEqual(3f, Call(bindings, "RechargeLeftAt", 0, 15f));
+        }
+
+        [Test]
         public void MenuReplicaWaitsForItsSessionAndKeepsEarlyGearAcrossReset()
         {
             var go = new GameObject("MenuReplicaBoundaryTest");

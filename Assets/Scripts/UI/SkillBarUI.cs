@@ -41,6 +41,7 @@ namespace PoeClone.UI
             public Image Cooldown;
             public Image NoMana;
             public Text Name;
+            public readonly List<Image> Pips = new List<Image>();   // charges, for skills that store several
         }
 
         private class Row
@@ -446,6 +447,7 @@ namespace PoeClone.UI
                 view.Name.text = "";
                 view.Cooldown.fillAmount = 0f;
                 view.NoMana.enabled = false;
+                ShowCharges(view, 0, 0);
                 return;
             }
 
@@ -462,16 +464,41 @@ namespace PoeClone.UI
                 view.Name.text = "";
                 view.Cooldown.fillAmount = 0f;
                 view.NoMana.enabled = false;
+                ShowCharges(view, 0, 0);
                 return;
             }
 
             view.Back.color = new Color(skill.Color.r * 0.45f, skill.Color.g * 0.45f, skill.Color.b * 0.45f, 0.95f);
             view.Icon.color = Color.white;
             view.Name.text = "<size=9>lvl </size><size=12>" + level + "</size>";
-            float left = slot >= 0 ? skills.CooldownLeftAt(slot) : skills.CooldownLeft(skill.Id);
+            int maxCharges = slot >= 0 ? skills.MaxChargesAt(slot) : 1;
+            int charges = slot >= 0 ? skills.ChargesAt(slot) : 0;
+            ShowCharges(view, maxCharges > 1 ? maxCharges : 0, charges);
+            // With a charge still in hand, the next one's recharge sweeps lighter.
+            float left = slot >= 0 ? skills.RechargeLeftAt(slot) : skills.CooldownLeft(skill.Id);
             float total = slot >= 0 ? skills.CooldownTotalAt(slot) : skills.CooldownTotal(skill.Id);
             view.Cooldown.fillAmount = total > 0f ? left / total : 0f;
+            view.Cooldown.color = new Color(0f, 0f, 0f, charges > 0 ? 0.3f : 0.65f);
             view.NoMana.enabled = slot >= 0 ? !skills.CanAffordAt(slot) : !skills.CanAfford(skill.Id);
+        }
+
+        // A row of small squares along the slot's top, lit for each charge ready.
+        private static void ShowCharges(SlotView view, int max, int ready)
+        {
+            while (view.Pips.Count < max)
+            {
+                Image pip = UiKit.NewImage("Charge", view.Back.rectTransform, Color.white);
+                pip.raycastTarget = false;
+                UiKit.TopLeft(pip.rectTransform, new Vector2(4f + view.Pips.Count * 10f, -4f), new Vector2(7f, 7f));
+                pip.gameObject.AddComponent<Outline>().effectColor = new Color(0f, 0f, 0f, 0.85f);
+                view.Pips.Add(pip);
+            }
+            for (int i = 0; i < view.Pips.Count; i++)
+            {
+                Image pip = view.Pips[i];
+                pip.enabled = i < max;
+                pip.color = i < ready ? UiKit.Gold : new Color(0.2f, 0.18f, 0.15f, 0.9f);
+            }
         }
 
         private void UpdatePotionSlot(SlotView view, bool health)
@@ -715,6 +742,8 @@ namespace PoeClone.UI
                     text.Append("Attack time: ").Append(Num(skills.MeleeInterval(skill.Id))).Append("s\n");
                 else if (cooldown > 0f)
                     text.Append(attack ? "Cast time: " : "Cooldown: ").Append(Num(cooldown)).Append("s\n");
+                if (skill.Charges > 1)
+                    text.Append("Charges: ").Append(skill.Charges).Append(", one back per cooldown\n");
                 if (!string.IsNullOrEmpty(source))
                     text.Append("<color=#").Append(dim).Append(">From ").Append(source).Append("</color>\n");
             }

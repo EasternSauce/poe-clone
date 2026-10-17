@@ -1,3 +1,7 @@
+version: 2026-10-17-dash-charges
+- Dash now holds 3 charges, shown as small pips in the corner of its skill bar slot (and as a number on touch buttons). Each use spends one, and each full cooldown brings one back, so you can dash up to three times in a row.
+- While Dash still has a charge, its slot shows the next charge recharging with a lighter shade instead of darkening as if it were on cooldown.
+
 version: 2026-10-17-arm-render-fix-2
 - Fixed the hero's arm still disappearing (with a "Rendering stopped" error in the log) when picking up or switching weapons, for example after loading into the game with a one-handed sword.
 

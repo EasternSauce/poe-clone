@@ -60,6 +60,7 @@ namespace PoeClone.Skills
         public SkillElement Element;
         public float[] ManaCosts;   // fixed base cost; array retained for authoring compatibility
         public float Cooldown;      // at level 1; for a staff's attack spell, the time between casts
+        public int Charges = 1;     // uses stored up; each full cooldown brings one back
         public float BaseDamage;    // spells: damage at level 1, before Intelligence and Spell Damage
         public Color Color;
 
@@ -190,7 +191,7 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.Dash, Name = "Dash", Short = "DSH", Grant = StatType.GrantDash, RollsOn = "boots",
-                ManaCosts = new[] { 6f }, Cooldown = 3.5f, Color = new Color(0.7f, 0.9f, 0.7f),
+                ManaCosts = new[] { 6f }, Cooldown = 3.5f, Charges = 3, Color = new Color(0.7f, 0.9f, 0.7f),
                 Description = "Dart forward a short distance, out of trouble or into the fight. Its weapon tree supplies improvements."
             },
             new SkillDefinition

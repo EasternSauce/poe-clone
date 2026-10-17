@@ -71,18 +71,40 @@ namespace PoeClone.Skills
             entries[slot].Cooldown = cooldown;
         }
 
+        /// <summary>
+        /// Spends one charge. ReadyAt is when every charge is back: each use queues one more
+        /// cooldown behind the charges already recharging, so a one-charge skill is ready at now + cooldown.
+        /// </summary>
         public void StartCooldown(int slot, float cooldown, float now)
         {
             Binding source = entries[slot];
+            float readyAt = System.Math.Max(source.ReadyAt, now) + cooldown;
             for (int i = 0; i < Count; i++)
             {
                 ref Binding binding = ref entries[i];
                 if (binding.Skill == source.Skill && binding.Item == source.Item && binding.GrantLevel == source.GrantLevel)
                 {
                     binding.Cooldown = cooldown;
-                    binding.ReadyAt = now + cooldown;
+                    binding.ReadyAt = readyAt;
                 }
             }
+        }
+
+        /// <summary>Charges a binding has at <paramref name="now"/>, out of <paramref name="maxCharges"/>.</summary>
+        public int ChargesAt(int slot, int maxCharges, float now)
+        {
+            float owed = entries[slot].ReadyAt - now;
+            if (owed <= 0f || entries[slot].Cooldown <= 0f) return maxCharges;
+            return System.Math.Max(0, maxCharges - (int)System.Math.Ceiling(owed / entries[slot].Cooldown));
+        }
+
+        /// <summary>Seconds until the next charge comes back (0 when all are ready).</summary>
+        public float RechargeLeftAt(int slot, float now)
+        {
+            float owed = entries[slot].ReadyAt - now;
+            float cooldown = entries[slot].Cooldown;
+            if (owed <= 0f || cooldown <= 0f) return System.Math.Max(0f, owed);
+            return owed - ((float)System.Math.Ceiling(owed / cooldown) - 1f) * cooldown;
         }
     }
 }

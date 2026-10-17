@@ -309,7 +309,12 @@ namespace PoeClone.Skills
 
         public float ManaCostForGrant(SkillGrant grant) => CostOf(grant.Id, GrantLevelWithBonuses(grant));
 
-        public float CooldownLeftAt(int slot) => slot >= 0 && slot < bindings.Count ? Mathf.Max(0f, bindings[slot].ReadyAt - Time.time) : 0f;
+        /// <summary>Seconds until the slot can be used again: 0 while it has a charge left.</summary>
+        public float CooldownLeftAt(int slot) => ChargesAt(slot) > 0 ? 0f : RechargeLeftAt(slot);
+        /// <summary>Seconds until the slot's next charge returns, even while others remain.</summary>
+        public float RechargeLeftAt(int slot) => slot >= 0 && slot < bindings.Count ? bindings.RechargeLeftAt(slot, Time.time) : 0f;
+        public int MaxChargesAt(int slot) => Slot(slot) != null ? Mathf.Max(1, SkillBook.Get(Slot(slot).Value).Charges) : 1;
+        public int ChargesAt(int slot) => slot >= 0 && slot < bindings.Count ? bindings.ChargesAt(slot, MaxChargesAt(slot), Time.time) : 0;
         public float CooldownTotalAt(int slot) => slot >= 0 && slot < bindings.Count
             ? (bindings[slot].Cooldown > 0f ? bindings[slot].Cooldown : CooldownAt(slot)) : 0f;
         public float ManaCostAt(int slot) => Slot(slot) != null ? CostOf(Slot(slot).Value, LevelAt(slot)) : 0f;
