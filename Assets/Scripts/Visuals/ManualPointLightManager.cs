@@ -46,9 +46,6 @@ namespace PoeClone.Visuals
 
         private static ManualPointLightManager instance;
 
-        [Tooltip("Legacy scoping option, kept only for backwards compatibility with existing scenes. Lights are now collected from the whole active scene (see CollectLights), so this is no longer used to restrict the search.")]
-        public Transform lightsRoot;
-
         [Tooltip("Only Point and Spot lights found anywhere in the scene are used, up to MaxLights.")]
         public bool includeInactiveAtStart = true;
 
@@ -79,8 +76,8 @@ namespace PoeClone.Visuals
         // Scans the whole scene rather than a single subtree: torches (and any other point/spot
         // lights) get added in various places in this project - some under a shared "Torches"
         // container, some as children of their own structure (e.g. gateway pillars) - and a
-        // subtree-scoped search silently missed whichever ones lived outside lightsRoot, leaving
-        // them fully unlit with no error.
+        // subtree-scoped search silently missed whichever ones lived outside it, leaving them
+        // fully unlit with no error.
         private void CollectLights()
         {
             _lights.Clear();

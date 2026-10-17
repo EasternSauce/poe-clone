@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -10,60 +9,47 @@ namespace PoeClone.EditorTools
 {
     /// <summary>
     /// Builds a consistent low-poly look from primitives: one palette, flat-shaded
-    /// meshes, procedural ground texture, prefabs, characters and a scattered world.
-    /// Re-runnable: PoeClone > Build Stylized World.
+    /// meshes, prop prefabs and characters. Greenwood's placed scenery is its own prefab
+    /// (GreenwoodScenery), edited by hand. Re-runnable: PoeClone > Build Stylized World.
     /// </summary>
     public static class StylizedWorldBuilder
     {
         private const string MatDir = "Assets/Materials/Stylized";
         private const string MeshDir = "Assets/Meshes/Stylized";
         private const string PrefabDir = "Assets/Prefabs/Environment";
-        private const string TexDir = "Assets/Textures";
         private const string EnemyPrefabPath = "Assets/Prefabs/Enemy.prefab";
+        private static readonly string[] PropPrefabs = { "Pine", "Oak", "Bush", "BushSmall", "Rock", "RockSmall", "House", "Pillar" };
 
         private static Dictionary<string, Material> mats;
         private static Dictionary<string, Mesh> meshes;
-        private static List<Vector3> occupied; // x, z, radius
-        private static System.Random rng;
 
         [MenuItem("PoeClone/Build Stylized World")]
         public static void BuildAll()
         {
-            rng = new System.Random(1337);
-            occupied = new List<Vector3>();
             mats = new Dictionary<string, Material>();
             meshes = new Dictionary<string, Mesh>();
 
             EnsureFolder(MatDir);
             EnsureFolder(MeshDir);
             EnsureFolder(PrefabDir);
-            EnsureFolder(TexDir);
 
             BuildMaterials();
             BuildMeshes();
-            ApplyGround(BuildGroundTexture());
 
-            GameObject pine = BuildPine();
-            GameObject oak = BuildOak();
-            GameObject bush = BuildBush(true);
-            GameObject bushSmall = BuildBush(false);
-            GameObject rock = BuildRock(true);
-            GameObject rockSmall = BuildRock(false);
-            GameObject house = BuildHouse();
-            GameObject pillar = BuildPillar();
+            BuildPine();
+            BuildOak();
+            BuildBush(true);
+            BuildBush(false);
+            BuildRock(true);
+            BuildRock(false);
+            BuildHouse();
+            BuildPillar();
 
             BuildCharacters();
             // Force a reimport so Unity resolves the freshly-saved mesh references
             // (otherwise it can cache null references in the imported prefab).
-            pine = Reimport("Pine");
-            oak = Reimport("Oak");
-            bush = Reimport("Bush");
-            bushSmall = Reimport("BushSmall");
-            rock = Reimport("Rock");
-            rockSmall = Reimport("RockSmall");
-            house = Reimport("House");
-            pillar = Reimport("Pillar");
-            BuildEnvironment(pine, oak, rock, bush, house, pillar, rockSmall, bushSmall);
+            foreach (string p in PropPrefabs)
+                AssetDatabase.ImportAsset(PrefabDir + "/" + p + ".prefab", ImportAssetOptions.ForceUpdate);
             EquipmentBuilder.BuildAll();
             ApplyLighting();
 
@@ -71,7 +57,7 @@ namespace PoeClone.EditorTools
             AssetDatabase.Refresh();
             EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             int missing = 0;
-            foreach (string p in new[] { "Pine", "Oak", "Bush", "BushSmall", "Rock", "RockSmall", "House", "Pillar" })
+            foreach (string p in PropPrefabs)
             {
                 GameObject pf = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabDir + "/" + p + ".prefab");
                 foreach (MeshFilter mf in pf.GetComponentsInChildren<MeshFilter>())
@@ -83,7 +69,7 @@ namespace PoeClone.EditorTools
                     }
                 }
             }
-            Debug.Log("StylizedWorldBuilder: done. Objects placed: " + occupied.Count + ", missing mesh refs: " + missing);
+            Debug.Log("StylizedWorldBuilder: done. Missing mesh refs: " + missing);
         }
 
         // ------------------------------------------------------------ utilities
@@ -101,31 +87,11 @@ namespace PoeClone.EditorTools
             }
         }
 
-private static GameObject Reimport(string prefabName)
-        {
-            string path = PrefabDir + "/" + prefabName + ".prefab";
-            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
-            return AssetDatabase.LoadAssetAtPath<GameObject>(path);
-        }
-
-
         private static Color H(string hex)
         {
             Color c;
             ColorUtility.TryParseHtmlString(hex, out c);
             return c;
-        }
-
-        private static float R(float a, float b)
-        {
-            return a + (float)rng.NextDouble() * (b - a);
-        }
-
-        private static float Gauss()
-        {
-            double u1 = 1.0 - rng.NextDouble();
-            double u2 = rng.NextDouble();
-            return (float)(System.Math.Sqrt(-2.0 * System.Math.Log(u1)) * System.Math.Cos(2.0 * System.Math.PI * u2));
         }
 
         private static void Kill(Object o)
@@ -167,6 +133,8 @@ private static GameObject Reimport(string prefabName)
             Mat("Roof", H("#7a3a2c"), 0.05f);
             Mat("Wood", H("#5a3d26"), 0.05f);
             Mat("Stone", H("#9b9890"), 0.1f);
+            // Runtime grounds get a generated texture and a white tint; this colour only shows in the editor.
+            Mat("GroundStylized", H("#3f5c2d"), 0f);
 
             Mat("Skin", H("#d9a884"), 0.15f);
             Mat("Cloth", H("#3a5f9a"), 0.05f);
@@ -378,107 +346,6 @@ private static void SaveMesh(string name, Mesh mesh)
             string[] names = { "Cone", "Cylinder", "IcoHead", "FoliageA", "FoliageB", "RockA", "RockB" };
             foreach (string n in names)
                 meshes[n] = AssetDatabase.LoadAssetAtPath<Mesh>(MeshDir + "/" + n + ".asset");
-        }
-
-        // ------------------------------------------------------------ ground
-
-        private static float PNoise(float u, float v, int period, int seed)
-        {
-            float fx = u * period;
-            float fy = v * period;
-            int x0 = Mathf.FloorToInt(fx);
-            int y0 = Mathf.FloorToInt(fy);
-            float tx = fx - x0;
-            float ty = fy - y0;
-            tx = tx * tx * (3f - 2f * tx);
-            ty = ty * ty * (3f - 2f * ty);
-            int x1 = (x0 + 1) % period;
-            int y1 = (y0 + 1) % period;
-            x0 %= period;
-            y0 %= period;
-            float a = Hash(x0, y0, seed);
-            float b = Hash(x1, y0, seed);
-            float c = Hash(x0, y1, seed);
-            float d = Hash(x1, y1, seed);
-            return Mathf.Lerp(Mathf.Lerp(a, b, tx), Mathf.Lerp(c, d, tx), ty);
-        }
-
-        private static Texture2D BuildGroundTexture()
-        {
-            // Deterministic (fixed hash seeds below, no Random calls) - but generating it
-            // is not free, and re-encoding/importing a 1024x1024 PNG on every world build
-            // is wasted work when the output never changes. Build it once and reuse.
-            {
-                string existingPath = TexDir + "/Ground.png";
-                Texture2D existing = AssetDatabase.LoadAssetAtPath<Texture2D>(existingPath);
-                if (existing != null)
-                    return existing;
-            }
-
-            const int size = 1024;
-            Color grassA = H("#34502a");
-            Color grassB = H("#48672f");
-            Color dirt = H("#66502f");
-
-            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, true);
-            Color[] px = new Color[size * size];
-            for (int y = 0; y < size; y++)
-            {
-                for (int x = 0; x < size; x++)
-                {
-                    float u = x / (float)size;
-                    float v = y / (float)size;
-                    float n = 0.5f * PNoise(u, v, 6, 1) + 0.3f * PNoise(u, v, 12, 2) + 0.2f * PNoise(u, v, 24, 3);
-                    Color c = Color.Lerp(grassA, grassB, n);
-
-                    float patch = PNoise(u, v, 3, 9) * 0.75f + PNoise(u, v, 6, 10) * 0.25f;
-                    float dirtT = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.55f, 0.85f, patch));
-                    c = Color.Lerp(c, dirt, dirtT * 0.5f);
-
-                    // Fine detail at several scales so the ground stays crisp when you are up close.
-                    float speckle = (PNoise(u, v, 64, 5) - 0.5f) * 0.06f
-                                  + (PNoise(u, v, 256, 6) - 0.5f) * 0.10f
-                                  + (PNoise(u, v, 512, 7) - 0.5f) * 0.06f;
-                    c.r = Mathf.Clamp01(c.r + speckle);
-                    c.g = Mathf.Clamp01(c.g + speckle);
-                    c.b = Mathf.Clamp01(c.b + speckle);
-                    c.a = 1f;
-                    px[y * size + x] = c;
-                }
-            }
-            tex.SetPixels(px);
-            tex.Apply();
-
-            string path = TexDir + "/Ground.png";
-            File.WriteAllBytes(Path.Combine(Directory.GetCurrentDirectory(), path), tex.EncodeToPNG());
-            Object.DestroyImmediate(tex);
-            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
-
-            TextureImporter ti = AssetImporter.GetAtPath(path) as TextureImporter;
-            if (ti != null)
-            {
-                ti.wrapMode = TextureWrapMode.Repeat;
-                ti.filterMode = FilterMode.Bilinear;
-                ti.anisoLevel = 8;
-                ti.textureCompression = TextureImporterCompression.Uncompressed;
-                ti.mipmapEnabled = true;
-                ti.SaveAndReimport();
-            }
-            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-        }
-
-        private static void ApplyGround(Texture2D tex)
-        {
-            Material gm = Mat("GroundStylized", Color.white, 0f);
-            gm.SetTexture("_BaseMap", tex);
-            // Fewer, larger repeats read as far less obviously tiled than many small ones,
-            // since the same dirt-patch shapes don't line up into a visible grid as quickly.
-            gm.SetTextureScale("_BaseMap", new Vector2(2.4f, 2.4f));
-            EditorUtility.SetDirty(gm);
-
-            GameObject ground = GameObject.Find("Ground");
-            if (ground != null)
-                ground.GetComponent<Renderer>().sharedMaterial = gm;
         }
 
         // ------------------------------------------------------------ prefab helpers
@@ -825,143 +692,6 @@ private static void TagBaseGear(GameObject go, EquipSlot hiddenBy, bool visibleI
             {
                 PrefabUtility.UnloadPrefabContents(root);
             }
-        }
-
-        // ------------------------------------------------------------ world scatter
-
-        private static Transform Child(GameObject parent, string name)
-        {
-            GameObject go = new GameObject(name);
-            go.transform.SetParent(parent.transform, false);
-            return go.transform;
-        }
-
-        private static bool Free(float x, float z, float r, float clearOrigin)
-        {
-            if (new Vector2(x, z).magnitude < clearOrigin + r)
-                return false;
-            for (int i = 0; i < occupied.Count; i++)
-            {
-                Vector3 o = occupied[i];
-                float dx = x - o.x;
-                float dz = z - o.y;
-                float rr = r + o.z + 0.4f;
-                if (dx * dx + dz * dz < rr * rr)
-                    return false;
-            }
-            return true;
-        }
-
-        private static GameObject Spawn(GameObject prefab, Transform parent, float x, float z, float yaw, Vector3 scale, float radius, float clearOrigin, bool check)
-        {
-            if (check && !Free(x, z, radius, clearOrigin))
-                return null;
-            GameObject go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
-            go.transform.position = new Vector3(x, 0f, z);
-            go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
-            go.transform.localScale = scale;
-            occupied.Add(new Vector3(x, z, radius));
-            return go;
-        }
-
-        private static void SpawnTree(GameObject pine, GameObject oak, Transform parent, float x, float z, bool check)
-        {
-            if (Mathf.Abs(x) > 44f || Mathf.Abs(z) > 44f)
-                return;
-            bool isPine = rng.NextDouble() < 0.6;
-            float s = R(0.8f, 1.4f);
-            Spawn(isPine ? pine : oak, parent, x, z, R(0f, 360f), Vector3.one * s, 0.9f * s, 9f, check);
-        }
-
-        private static void BuildRing(Transform parent, GameObject pillar, Vector2 c, int count, float radius)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                float a = (i / (float)count) * Mathf.PI * 2f + R(-0.15f, 0.15f);
-                float px = c.x + Mathf.Cos(a) * radius;
-                float pz = c.y + Mathf.Sin(a) * radius;
-                Spawn(pillar, parent, px, pz, R(0f, 360f), new Vector3(1f, R(0.45f, 1f), 1f), 1f, 0f, false);
-            }
-            occupied.Add(new Vector3(c.x, c.y, 3.5f));
-        }
-
-        private static void BuildEnvironment(GameObject pine, GameObject oak, GameObject rock, GameObject bush, GameObject house, GameObject pillar, GameObject rockSmall, GameObject bushSmall)
-        {
-            Kill(GameObject.Find("TestProps"));
-            Kill(GameObject.Find("Environment"));
-            Kill(GameObject.Find("WorldBounds"));
-
-            GameObject env = new GameObject("Environment");
-            Transform tTrees = Child(env, "Trees");
-            Transform tRocks = Child(env, "Rocks");
-            Transform tBushes = Child(env, "Bushes");
-            Transform tHouses = Child(env, "Houses");
-            Transform tRuins = Child(env, "Ruins");
-            // No border trees: the map edge is enforced by invisible walls.
-            // Landmarks first so the random scatter works around them.
-            BuildRing(tRuins, pillar, new Vector2(24f, -20f), 6, 5f);
-            BuildRing(tRuins, pillar, new Vector2(-27f, 22f), 5, 4.2f);
-
-            int housesPlaced = 0;
-            for (int attempt = 0; attempt < 300 && housesPlaced < 3; attempt++)
-            {
-                if (Spawn(house, tHouses, R(-38f, 38f), R(-38f, 38f), R(0f, 360f), Vector3.one, 4.2f, 16f, true) != null)
-                    housesPlaced++;
-            }
-
-            // Forest clumps.
-            for (int c = 0; c < 10; c++)
-            {
-                float cx = R(-38f, 38f);
-                float cz = R(-38f, 38f);
-                if (new Vector2(cx, cz).magnitude < 14f)
-                    continue;
-                int n = rng.Next(7, 13);
-                for (int i = 0; i < n; i++)
-                    SpawnTree(pine, oak, tTrees, cx + Gauss() * 4.5f, cz + Gauss() * 4.5f, true);
-            }
-
-            // Lone trees.
-            for (int i = 0; i < 25; i++)
-                SpawnTree(pine, oak, tTrees, R(-42f, 42f), R(-42f, 42f), true);
-
-            // Rocks. Solid and walkable variants use distinct, non-overlapping scale
-            // ranges (not just a threshold on a continuous range) so it's visually
-            // obvious which rocks block you and which don't.
-            for (int i = 0; i < 32; i++)
-            {
-                bool solid = rng.NextDouble() < 0.55;
-                float s = solid ? R(0.85f, 1.6f) : R(0.25f, 0.45f);
-                Spawn(solid ? rock : rockSmall, tRocks, R(-44f, 44f), R(-44f, 44f), R(0f, 360f), new Vector3(s, s * R(0.8f, 1.3f), s), 1.3f * s, 9f, true);
-            }
-
-            // Bushes: small ones can be walked through, bigger ones are solid walls.
-            // Distinct scale ranges (not a threshold split of one continuous range)
-            // so size alone tells you whether a bush blocks you.
-            for (int i = 0; i < 45; i++)
-            {
-                bool solid = rng.NextDouble() < 0.5;
-                float s = solid ? R(0.8f, 1.3f) : R(0.3f, 0.5f);
-                Spawn(solid ? bush : bushSmall, tBushes, R(-44f, 44f), R(-44f, 44f), R(0f, 360f), Vector3.one * s, 0.7f * s, 6f, true);
-            }
-
-            // Invisible walls keep the player inside the map.
-
-            GameObject bounds = new GameObject("WorldBounds");
-            AddWall(bounds.transform, new Vector3(0f, 5f, 49.5f), new Vector3(100f, 10f, 1f));
-            AddWall(bounds.transform, new Vector3(0f, 5f, -49.5f), new Vector3(100f, 10f, 1f));
-            AddWall(bounds.transform, new Vector3(49.5f, 5f, 0f), new Vector3(1f, 10f, 100f));
-            AddWall(bounds.transform, new Vector3(-49.5f, 5f, 0f), new Vector3(1f, 10f, 100f));
-        }
-
-
-
-        private static void AddWall(Transform parent, Vector3 pos, Vector3 size)
-        {
-            GameObject go = new GameObject("Wall");
-            go.transform.SetParent(parent, false);
-            go.transform.position = pos;
-            go.AddComponent<BoxCollider>().size = size;
         }
 
         // ------------------------------------------------------------ lighting

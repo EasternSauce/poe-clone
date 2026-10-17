@@ -77,6 +77,7 @@ namespace PoeClone.EditorTools
             kit.rockSmall = Prefab("RockSmall");
             kit.house = Prefab("House");
             kit.pillar = Prefab("Pillar");
+            kit.greenwoodScenery = Prefab("GreenwoodScenery");
 
             kit.cone = AssetDatabase.LoadAssetAtPath<Mesh>(MeshDir + "/Cone.asset");
             kit.cylinder = AssetDatabase.LoadAssetAtPath<Mesh>(MeshDir + "/Cylinder.asset");

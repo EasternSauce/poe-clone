@@ -20,6 +20,8 @@ namespace PoeClone.World
         public GameObject rockSmall;
         public GameObject house;
         public GameObject pillar;
+        [Tooltip("Greenwood's hand-placed central props, torches and birds; relocated into its layout at runtime.")]
+        public GameObject greenwoodScenery;
 
         [Header("Meshes")]
         public Mesh cone;

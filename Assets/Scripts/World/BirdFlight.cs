@@ -40,7 +40,6 @@ namespace PoeClone.World
         public Vector2 groundWalkInterval = new Vector2(1.5f, 3f);
         public float groundWalkSpeed = 0.5f;
         public float fleeRadius = 6f;
-        public Transform player;
 
         [Header("Ground spawn (set by the builder for birds that start already landed)")]
         public Transform groundSpawnPoint; // if set, the bird starts perched here and never auto-departs

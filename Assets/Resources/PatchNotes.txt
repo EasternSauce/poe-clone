@@ -1,3 +1,6 @@
+version: 2026-10-17-scene-cleanup
+- Behind the scenes: Greenwood's original trees, houses, ruins, torches and birds now come from their own prefab instead of the game scene, and an old test scene and unused ground texture were removed. The game world is unchanged.
+
 version: 2026-10-17-arm-render-fix
 - Fixed the hero's arms sometimes disappearing (with an error in the log) when the hands changed pose, for example when holding a weapon.
 

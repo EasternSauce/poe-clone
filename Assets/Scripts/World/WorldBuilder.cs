@@ -221,12 +221,16 @@ namespace PoeClone.World
             GameObject ground = GameObject.Find("Ground");
             PlayerController player = FindAnyObjectByType<PlayerController>();
 
-            if (kit == null || manager == null || ground == null || player == null)
+            if (kit == null || kit.greenwoodScenery == null || manager == null || ground == null || player == null)
             {
-                Debug.LogError("WorldBuilder: missing area kit, area manager, ground or player; the world cannot be built.");
+                Debug.LogError("WorldBuilder: missing area kit, Greenwood scenery, area manager, ground or player; the world cannot be built.");
                 yield break;
             }
 
+            // Before any gate or waystone clears its spot, so props in the way are removed.
+            Instantiate(kit.greenwoodScenery).name = "Greenwood Scenery";
+            Physics.SyncTransforms();
+            ManualPointLightManager.Refresh();
             groundTemplate = ground;
             originalSpawner = FindAnyObjectByType<EnemySpawner>();
             if (originalSpawner != null) originalSpawner.enabled = false;
@@ -1314,7 +1318,7 @@ namespace PoeClone.World
                 if (c.GetComponentInParent<PlayerController>() != null || c.GetComponentInParent<EnemyHealth>() != null ||
                     c.GetComponentInParent<AreaGate>() != null || c.GetComponentInParent<Waystone>() != null || c.GetComponentInParent<Npc>() != null)
                     continue;
-                if (c.gameObject.name.StartsWith("Ground") || c.gameObject.name == "Wall" || c.transform.root.name == "WorldBounds")
+                if (c.gameObject.name.StartsWith("Ground") || c.gameObject.name == "Wall")
                     continue;
 
                 Transform prop = c.transform;

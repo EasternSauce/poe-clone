@@ -82,7 +82,7 @@ public static class TextureAndThemeBuilder
 
             string matName = mat.name;
 
-            // Ground keeps its own texture (already photographic-ish tiled grass);
+            // Ground gets a generated texture per area at runtime;
             // just move it onto the new shader for consistent lighting.
             bool isGround = matName == "GroundStylized";
 
@@ -103,7 +103,7 @@ public static class TextureAndThemeBuilder
                 // The shader is fully triplanar now (the custom meshes have no UVs at
                 // all), but for a flat horizontal plane the triplanar Y-projection
                 // (world XZ) is exactly the same as a standard top-down UV projection,
-                // so this still shows the existing generated ground texture correctly.
+                // so this still shows the runtime ground textures correctly.
                 mat.SetFloat("_TriplanarTileSize", 40f);
                 mat.SetFloat("_TexInfluence", 1f);
             }
