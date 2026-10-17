@@ -110,7 +110,7 @@ namespace PoeClone.Skills
             switch (kind)
             {
                 case MinionKind.Mage:
-                    return new Profile { Life = 41f, Damage = 24f, DamageGrowth = .035f, Cooldown = 1.6f, Range = 8.5f, Speed = 6f, Look = "Skeleton Mage" };
+                    return new Profile { Life = 123f, Damage = 24f, DamageGrowth = .035f, Cooldown = 1.6f, Range = 8.5f, Speed = 6f, Look = "Skeleton Mage" };
                 case MinionKind.Wolf:
                     return new Profile { Life = 88f, Damage = 7.25f, DamageGrowth = .035f, Cooldown = 0.8f, Range = 2f, Speed = 9f, Look = "Spirit Wolf" };
                 case MinionKind.Golem:
@@ -181,11 +181,6 @@ namespace PoeClone.Skills
 
         // ------------------------------------------------------------------ summoning
 
-        /// <summary>
-        /// Raises minions toward a chosen point, at most six metres from the owner.
-        /// Summons fill empty slots up to their kind's limit. Recasting at the cap commands them. Raising a
-        /// permanent kind (warriors or mages) dismisses the other permanent kind.
-        /// </summary>
         public static SkillId SkillFor(MinionKind kind)
         {
             switch (kind)
@@ -209,7 +204,7 @@ namespace PoeClone.Skills
             int cap = (kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1) + (tree?.ExtraMinions ?? 0);
             return tree != null && tree.Get(WeaponSkillEffect.HalfMinions) > 0 ? cap / 2 : cap;
         }
-        public static bool CanCommand(Transform owner, MinionKind kind) =>
+        public static bool AtCap(Transform owner, MinionKind kind) =>
             LivingCount(owner, kind) >= CapFor(owner, kind);
 
         public static int LivingCount(Transform owner, MinionKind kind)
@@ -220,13 +215,11 @@ namespace PoeClone.Skills
                     count++;
             return count;
         }
-        public static void Command(Transform owner, EnemyHealth target, MinionKind? kind = null)
-        {
-            if (target == null || target.IsDead) return;
-            foreach (Minion m in All)
-                if (m != null && m.owner == owner && !m.dead && (!kind.HasValue || m.Kind == kind.Value)) { m.target = target; m.retargetAt = Time.time + 3f; }
-        }
-
+        /// <summary>
+        /// Raises minions toward a chosen point, at most six metres from the owner.
+        /// Replaces the oldest summons when their kind's limit would be exceeded.
+        /// Raising a permanent kind dismisses the other permanent kind.
+        /// </summary>
         public static void Summon(Transform owner, MinionKind kind, int level, Vector3 target)
         {
             EnemySpawner spawner = FindAnyObjectByType<EnemySpawner>();
@@ -244,9 +237,12 @@ namespace PoeClone.Skills
                 foreach (Minion other in All.FindAll(m => m.owner == owner && m.Kind != kind && IsPermanent(m.Kind)))
                     other.Crumble();
             }
-            // Fill empty slots; the main attack never replaces a healthy minion at the cap.
-            int existing = All.FindAll(m => m.owner == owner && m.Kind == kind && !m.dead).Count;
-            int count = Mathf.Min(cap - existing, kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1);
+            int count = Mathf.Min(cap, kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1);
+            // All keeps creation order; dismiss only this owner's oldest matching summons.
+            var existing = All.FindAll(m => m.owner == owner && m.Kind == kind && !m.dead);
+            int replacements = Mathf.Max(0, existing.Count + count - cap);
+            for (int k = 0; k < replacements; k++)
+                existing[k].Crumble();
             for (int k = 0; k < count; k++)
             {
                 Vector3 forward = target - owner.position;
@@ -816,15 +812,15 @@ namespace PoeClone.Skills
             return v;
         }
 
-        /// <summary>A skeleton mage's bolt: flies to its target and lands the mage's hit.</summary>
+        /// <summary>A skeleton mage's bolt: flies straight and hits the first enemy in its path.</summary>
         private class MinionBolt : MonoBehaviour
         {
             private Minion caster;
             private Vector3 launchPosition;
-            private EnemyHealth target;
+            private Vector3 direction;
             private float travelLeft;
             private HashSet<EnemyHealth> volley;
-            private const float Speed = 14f;
+            private const float Speed = 21f;
 
             public static void Launch(Minion caster, EnemyHealth target, HashSet<EnemyHealth> volley, int index)
             {
@@ -839,37 +835,52 @@ namespace PoeClone.Skills
                 var bolt = root.AddComponent<MinionBolt>();
                 bolt.caster = caster;
                 bolt.launchPosition = root.transform.position;
-                bolt.target = target;
+                bolt.direction = (target.transform.position + Vector3.up * 0.4f * target.transform.localScale.y - root.transform.position).normalized;
                 bolt.volley = volley;
                 bolt.travelLeft = caster.attackRange + 1f;
             }
 
             private void Update()
             {
-                if (caster == null || target == null || target.IsDead || travelLeft <= 0f)
+                if (caster == null || travelLeft <= 0f)
                 {
                     Destroy(gameObject);
                     return;
                 }
-                Vector3 aim = target.transform.position + Vector3.up * 0.4f * target.transform.localScale.y;
-                Vector3 to = aim - transform.position;
-                float step = Speed * caster.tree.ProjectileSpeedMultiplier * Time.deltaTime;
+                float step = Mathf.Min(travelLeft, Speed * caster.tree.ProjectileSpeedMultiplier * Time.deltaTime);
                 travelLeft -= step;
                 transform.Rotate(400f * Time.deltaTime, 280f * Time.deltaTime, 0f);
-                if (Graveward.Stops(transform.position, transform.position + to.normalized * Mathf.Min(step, to.magnitude), out Vector3 warded))
+                if (Graveward.Stops(transform.position, transform.position + direction * step, out Vector3 warded))
                 {
                     SkillEffects.Shockwave(warded, 0.5f, new Color(0.5f, 0.85f, 1f), 0.2f);
                     Destroy(gameObject);
                     return;
                 }
-                if (to.magnitude <= step + 0.3f)
+                EnemyHealth hit = null;
+                float nearest = float.MaxValue;
+                foreach (EnemyHealth enemy in EnemyHealth.Active)
                 {
-                    if (volley.Add(target)) caster.Deal(target, 1f, launchPosition);
-                    SkillEffects.Shockwave(aim, 0.7f, new Color(0.5f, 0.85f, 1f), 0.2f);
+                    if (enemy == null || enemy.IsDead || volley.Contains(enemy))
+                        continue;
+                    Vector3 aim = enemy.transform.position + Vector3.up * 0.4f * enemy.transform.localScale.y;
+                    float along = Mathf.Clamp(Vector3.Dot(aim - transform.position, direction), 0f, step);
+                    float radius = 0.3f + 0.4f * enemy.transform.localScale.x;
+                    if ((aim - (transform.position + direction * along)).sqrMagnitude <= radius * radius && along < nearest)
+                    {
+                        hit = enemy;
+                        nearest = along;
+                    }
+                }
+                if (hit != null)
+                {
+                    Vector3 at = transform.position + direction * nearest;
+                    volley.Add(hit);
+                    caster.Deal(hit, 1f, launchPosition);
+                    SkillEffects.Shockwave(at, 0.7f, new Color(0.5f, 0.85f, 1f), 0.2f);
                     Destroy(gameObject);
                     return;
                 }
-                transform.position += to.normalized * step;
+                transform.position += direction * step;
             }
         }
     }

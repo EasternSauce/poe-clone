@@ -442,7 +442,6 @@ namespace PoeClone.Skills
             SkillId? main = MainSkill;
             if (main == null || stats == null)
                 return false;
-            if (SkillBook.Get(main.Value).Summon && Minion.CanCommand(transform, MinionKindOf(main.Value))) return true;
             if (!stats.TrySpendMana(ManaCost(main.Value)))
                 return false;
             StartCooldown(main.Value);
@@ -462,11 +461,6 @@ namespace PoeClone.Skills
             SkillId? main = MainSkill;
             if (main == null)
                 return;
-            if (SkillBook.Get(main.Value).Summon && Minion.CanCommand(transform, MinionKindOf(main.Value)))
-            {
-                Minion.Command(transform, AimedEnemy(MarkReach) ?? EnemyInDirection(transform.forward, MarkReach), MinionKindOf(main.Value));
-                return;
-            }
             Cast(SkillBook.Get(main.Value), Mathf.Max(1, Level(main.Value)), asAttack: true);
         }
 

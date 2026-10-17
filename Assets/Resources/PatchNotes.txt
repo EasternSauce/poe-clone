@@ -1,3 +1,7 @@
+version: 2026-10-17-summon-replacement
+- Summoning at the minion limit replaces the oldest summons of that type, including when recasting the same summon skill.
+- Skeleton mages have three times as much life. Their bolts travel 50% faster and fly straight instead of homing toward enemies.
+
 version: 2026-10-17-river-enemy-boundaries
 - Enemies stay on walkable ground when chasing, retreating, charging or leaping, including at riverbanks and terrain seams.
 - Enemy teleports and spawns reject water and missing ground, preventing unreachable enemies attacking from below the river.
