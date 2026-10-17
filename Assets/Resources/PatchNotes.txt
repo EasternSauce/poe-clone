@@ -1,3 +1,6 @@
+version: 2026-10-17-running-gait
+- The hero now actually runs at normal speed instead of shuffling along with stiff arms like a Nordic walker: bent arms pump in time with the opposite leg, the knees drive forward, the heels kick up behind and both feet leave the ground between strides. He stays upright and only leans forward when sprinting.
+
 version: 2026-10-17-gravelord-rework
 - Gravelord Mortis is twice as tall and rebuilt: a stooped undertaker in a long split greatcoat and a priest's shoulder cape and stole, with heavy boots, real hands, patched sleeves, a rosary with a grave-bell, and a tall hat with a grave-candle and mourning ribbons. He carries a proper round-pointed shovel in both hands, and his coffin is slung slantwise across his back.
 - Mortis now has four plain attacks instead of one: an overhead chop, a flat sweep, a rising scoop and a lunge with his dead hand. He walks with real knee bend instead of sliding.
