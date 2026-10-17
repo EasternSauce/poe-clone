@@ -47,6 +47,23 @@ namespace PoeClone.Visuals
 
         public static readonly BossClip[] Attacks = { Chop, Sweep, Scoop, DeadHand };
 
+        // ------------------------------------------------------------------ Open Graves
+
+        /// <summary>The blade goes into the ground: the graves open.</summary>
+        public const float GraveStrike = 1.1f;
+
+        // The rite: plants the shovel blade-down before him, both hands on the grip, and bows his
+        // head over it as at a graveside; then heaves it up over his shoulder and drives it into
+        // the earth.
+        public static readonly BossClip Grave = BossClip.Make("Grave",
+            0f, N(),
+            0.30f, N().Torso(28f).Drop(0.08f).R(-50f, 0f, -10f, -45f).Stance(-5f, 15f, 10f, 10f).Look(30f).Hold(120f).Tails(-5f),
+            0.62f, N().Torso(30f, 0f, 3f).Drop(0.08f).R(-50f, 0f, -10f, -45f).Stance(-5f, 15f, 10f, 10f).Look(36f).Hold(120f).Tails(-5f),
+            0.85f, N().Torso(-8f, 10f).R(-165f, 0f, -5f, -30f).Stance(-10f, 10f, 10f, 5f).Look(-15f).Hold(40f).Tails(15f),
+            GraveStrike, N().Torso(44f).Drop(0.12f, 0.12f).R(-80f, 0f, 0f, -10f).Stance(-25f, 42f, 15f, 25f).Look(10f).Hold(35f).Tails(-20f),
+            1.35f, N().Torso(42f).Drop(0.12f, 0.12f).R(-78f, 0f, 0f, -10f).Stance(-25f, 42f, 15f, 25f).Look(14f).Hold(35f).Tails(-10f),
+            1.7f, N());
+
         // ------------------------------------------------------------------ Burrow
 
         /// <summary>The blade bites the ground in front of him.</summary>

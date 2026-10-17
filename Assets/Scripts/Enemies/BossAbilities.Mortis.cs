@@ -363,50 +363,205 @@ namespace PoeClone.Enemies
             }
         }
 
-        // Strikes the ground with the shovel: graves open under the player, and the hands in them
-        // hold whoever is still standing there.
+        // The graveside rite: he plants the shovel and bows over it, then drives it into the earth,
+        // and graves open under the player (and round them, later in the fight). Dead arms burst
+        // up out of each and hold whoever is still standing there.
         private IEnumerator OpenGraves(int count)
         {
-            Act(CreatureAnimator.BossAct.Slam, 0.8f / T);
-            float windUp = 1.1f / T;
+            Face(ToPlayer());
+            float started = Time.time;
+            anim?.PlayClip(GravediggerClips.Grave, T);
+            float windUp = GravediggerClips.GraveStrike / T;
             const float radius = 2.2f;
             Vector3 center = PlayerAt;
             for (int k = 0; k < count; k++)
             {
                 Vector3 at = k == 0 ? center : OpenNear(center + Quaternion.Euler(0f, k * 120f + Random.Range(-20f, 20f), 0f) * Vector3.forward * 4.5f);
+                float yaw = Random.Range(0f, 360f);
                 PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(at, radius, windUp + k * 0.15f / T, DamageType.Physical, spot =>
                 {
                     if (this == null || health.IsDead)
                         return;
-                    GraveHands(spot, radius);
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, OpenGrave(spot, radius, yaw));
                     if (HitIfInside(spot, radius, 1.0f, DamageType.Physical))
                     {
                         playerMotion?.Root(1.0f);
                         CombatText.Show(player.transform.position + Vector3.up * 2.2f, "Grasped!", DeadHand, 1f);
+                        PoeClone.Visuals.DistanceActivity.StartTracked(this, Grasp(player.transform.position));
                     }
                 }, kind));
             }
-            yield return Pause(0.8f);
+            Vector3 blade = transform.position + transform.forward * 1.3f * Size;
+            yield return UntilClip(started, GravediggerClips.GraveStrike);
+            CameraSystem.CameraFollow.Shake(0.2f, 0.3f);
+            SkillEffects.Shockwave(blade, 0.8f * Size, Soil, 0.35f);
+            Clods(blade, 8, 4f, Vector3.zero);
+            yield return UntilClip(started, GravediggerClips.Grave.Duration);
         }
 
-        // An open pit with dead hands clawing up out of it, gone after a moment.
+        private static readonly Color Headstone = new Color(0.46f, 0.46f, 0.44f);
+        private static readonly Color Rag = new Color(0.16f, 0.15f, 0.13f);
+
+        // A grave opening: the ground splits into a dark pit, grave-light down in it, soil heaped
+        // along its sides; a cracked headstone shoulders up at its head, and dead arms claw up out
+        // of it. After a moment the arms sink and the earth closes over it again.
+        private IEnumerator OpenGrave(Vector3 at, float radius, float yaw)
+        {
+            Transform grave = Prop("OpenGrave").transform;
+            leftovers.Add(grave.gameObject);
+            at.y = Debris.GroundBelow(at + Vector3.up);
+            grave.SetPositionAndRotation(at, Quaternion.Euler(0f, yaw, 0f));
+            float length = radius * 1.25f, width = radius * 0.62f;
+
+            Piece(grave, PrimitiveType.Cube, new Color(0.05f, 0.04f, 0.035f), new Vector3(0f, 0.03f, 0f), new Vector3(width, 0.02f, length));
+            Transform glow = Piece(grave, PrimitiveType.Cube, Color.Lerp(GraveLight, Color.black, 0.45f), new Vector3(0f, 0.04f, 0f), new Vector3(width * 0.6f, 0.02f, length * 0.75f)).transform;
+            var heaps = new System.Collections.Generic.List<Transform>();
+            for (int side = -1; side <= 1; side += 2)
+                heaps.Add(DirtHeap(grave, SoilShade(), new Vector3(side * width * 0.62f, 0f, Roll(-0.2f, 0.2f)), new Vector3(0.9f, 0.5f, length * 1.05f), (side < 0 ? 180f : 0f) + Roll(-8f, 8f)).transform);
+            heaps.Add(DirtHeap(grave, SoilShade(), new Vector3(0f, 0f, -length * 0.58f), new Vector3(width * 1.2f, 0.4f, 0.8f), Roll(0f, 360f)).transform);
+
+            // The headstone: a slab with a rounded top, an engraved cross, a crack, leaning.
+            Transform stone = new GameObject("Headstone").transform;
+            stone.SetParent(grave, false);
+            stone.localPosition = new Vector3(Roll(-0.15f, 0.15f), 0f, length * 0.58f);
+            Quaternion lean = Quaternion.Euler(Roll(-14f, -6f), Roll(-12f, 12f), Roll(-10f, 10f));
+            Piece(stone, PrimitiveType.Cube, Headstone, new Vector3(0f, 0.55f, 0f), new Vector3(0.95f, 1.1f, 0.2f));
+            Piece(stone, PrimitiveType.Cylinder, Headstone, new Vector3(0f, 1.1f, 0f), new Vector3(0.95f, 0.1f, 0.95f), new Vector3(90f, 0f, 0f)).transform.localScale = new Vector3(0.95f, 0.1f, 0.6f);
+            Color carved = Color.Lerp(Headstone, Color.black, 0.5f);
+            Piece(stone, PrimitiveType.Cube, carved, new Vector3(0f, 0.75f, -0.105f), new Vector3(0.08f, 0.5f, 0.02f));
+            Piece(stone, PrimitiveType.Cube, carved, new Vector3(0f, 0.88f, -0.105f), new Vector3(0.32f, 0.08f, 0.02f));
+            Piece(stone, PrimitiveType.Cube, carved, new Vector3(0.25f, 0.4f, -0.105f), new Vector3(0.03f, 0.45f, 0.02f), new Vector3(0f, 0f, 25f));
+            Piece(stone, PrimitiveType.Cube, Color.Lerp(Headstone, new Color(0.3f, 0.4f, 0.2f), 0.5f), new Vector3(-0.3f, 0.1f, -0.1f), new Vector3(0.3f, 0.2f, 0.04f));
+
+            var arms = new System.Collections.Generic.List<Transform>();
+            for (int i = 0; i < 5; i++)
+            {
+                Vector3 p = new Vector3(Roll(-0.3f, 0.3f) * width, 0f, (i / 4f - 0.5f) * length * 0.75f + Roll(-0.15f, 0.15f));
+                arms.Add(RisingArm(grave, p, Roll(0f, 360f), i % 2 == 0, Roll(1.4f, 1.8f)));
+            }
+            Clods(at, 14, 5f, Vector3.zero, 1.1f);
+
+            // Bursts open: the earth heaves up, the stone shoulders up, then the arms.
+            const float open = 0.18f;
+            for (float t = 0f; t <= 1.7f && grave != null; t += Time.deltaTime)
+            {
+                float rise = Mathf.Clamp01(t / open);
+                foreach (Transform heap in heaps)
+                    heap.localScale = new Vector3(heap.localScale.x, Mathf.Lerp(0.05f, 0.5f, rise), heap.localScale.z);
+                stone.localPosition = new Vector3(stone.localPosition.x, Mathf.Lerp(-1.2f, 0f, Mathf.Clamp01(t / 0.3f)), stone.localPosition.z);
+                stone.localRotation = Quaternion.Slerp(Quaternion.identity, lean, Mathf.Clamp01(t / 0.3f));
+                glow.localScale = new Vector3(width * 0.6f, 0.02f, length * 0.75f) * (0.85f + 0.15f * Mathf.Sin(t * 9f));
+                ClawArms(arms, t - 0.08f, 1.25f);
+                yield return null;
+            }
+            if (grave == null)
+                yield break;
+            // The earth closes over it.
+            for (float t = 0f; t < 0.5f && grave != null; t += Time.deltaTime)
+            {
+                grave.position = at + Vector3.down * (t / 0.5f) * 1.2f;
+                yield return null;
+            }
+            if (grave != null)
+                Destroy(grave.gameObject);
+        }
+
+        // Two dead hands burst up at the player's feet and grip their ankles while they're held.
+        private IEnumerator Grasp(Vector3 at)
+        {
+            Transform root = Prop("Grasp").transform;
+            leftovers.Add(root.gameObject);
+            at.y = Debris.GroundBelow(at + Vector3.up);
+            root.position = at;
+            var arms = new System.Collections.Generic.List<Transform>();
+            for (int side = -1; side <= 1; side += 2)
+            {
+                // Low, facing in towards the ankles they close on.
+                arms.Add(RisingArm(root, new Vector3(side * 0.4f, 0f, Roll(-0.2f, 0.2f)), -side * 90f + Roll(-20f, 20f), side < 0, 0.7f));
+                DirtHeap(root, SoilShade(), new Vector3(side * 0.35f, 0f, 0f), new Vector3(0.5f, 0.15f, 0.5f), Roll(0f, 360f));
+            }
+            for (float t = 0f; t <= 1.3f && root != null; t += Time.deltaTime)
+            {
+                ClawArms(arms, t, 1.0f, grip: true);
+                yield return null;
+            }
+            if (root != null)
+                Destroy(root.gameObject);
+        }
+
+        // Dead arms bursting up out of the ground (Exhume's crack): a heap of broken soil each,
+        // the arms clawing, then gone.
         private void GraveHands(Vector3 at, float radius)
         {
-            GameObject grave = Prop("OpenGrave");
-            leftovers.Add(grave);
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, BurstOfArms(at, radius));
+        }
+
+        private IEnumerator BurstOfArms(Vector3 at, float radius)
+        {
+            Transform root = Prop("GraveHands").transform;
+            leftovers.Add(root.gameObject);
             at.y = Debris.GroundBelow(at + Vector3.up);
-            grave.transform.position = at;
-            Piece(grave.transform, PrimitiveType.Cylinder, new Color(0.08f, 0.06f, 0.05f), Vector3.up * 0.05f, new Vector3(radius * 1.3f, 0.02f, radius * 0.8f));
-            for (int i = 0; i < 6; i++)
+            root.position = at;
+            var arms = new System.Collections.Generic.List<Transform>();
+            for (int i = 0; i < 3; i++)
             {
-                float a = i * Mathf.PI * 2f / 6f + Random.value * 0.5f;
-                Vector3 p = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * radius * Random.Range(0.3f, 0.75f);
-                Transform hand = Piece(grave.transform, PrimitiveType.Cube, DeadHand, p + Vector3.up * 0.4f, new Vector3(0.12f, 0.8f, 0.12f),
-                    new Vector3(Random.Range(-25f, 25f), 0f, Random.Range(-25f, 25f))).transform;
-                for (int f = 0; f < 3; f++)
-                    Piece(hand, PrimitiveType.Cube, DeadHand, new Vector3((f - 1) * 0.35f, 0.6f, 0f), new Vector3(0.25f, 0.3f, 0.6f), new Vector3(0f, 0f, (f - 1) * 15f));
+                float a = i * 2.1f + Roll(0f, 0.6f);
+                Vector3 p = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * radius * Roll(0.15f, 0.55f);
+                arms.Add(RisingArm(root, p, Roll(0f, 360f), i % 2 == 0, Roll(1.2f, 1.5f)));
+                DirtHeap(root, SoilShade(), p, new Vector3(0.6f, 0.2f, 0.6f), Roll(0f, 360f));
             }
-            Destroy(grave, 1.6f);
+            Clods(at, 5, 3.5f, Vector3.zero, 0.8f);
+            for (float t = 0f; t <= 1.3f && root != null; t += Time.deltaTime)
+            {
+                ClawArms(arms, t, 0.95f);
+                yield return null;
+            }
+            if (root != null)
+                Destroy(root.gameObject);
+        }
+
+        // A dead arm reaching up out of the ground: a grey forearm in a rotted sleeve, the
+        // player's open hand mesh at its end, fingers up. Returns the part that moves.
+        private static Transform RisingArm(Transform parent, Vector3 at, float yaw, bool left, float size)
+        {
+            Transform root = new GameObject("DeadArm").transform;
+            root.SetParent(parent, false);
+            root.localPosition = at;
+            root.localRotation = Quaternion.Euler(0f, yaw, 0f);
+            Transform arm = new GameObject("Arm").transform;
+            arm.SetParent(root, false);
+            arm.localPosition = Vector3.down * size;
+            Piece(arm, PrimitiveType.Cube, DeadHand, new Vector3(0f, 0.38f, 0f) * size, new Vector3(0.1f, 0.7f, 0.09f) * size);
+            Piece(arm, PrimitiveType.Cube, Rag, new Vector3(0f, 0.12f, 0f) * size, new Vector3(0.16f, 0.24f, 0.14f) * size, new Vector3(0f, 25f, 6f));
+            Piece(arm, PrimitiveType.Cube, Rag, new Vector3(0.03f, 0.27f, 0.02f) * size, new Vector3(0.05f, 0.12f, 0.12f) * size, new Vector3(0f, 0f, -20f));
+            BossMeshes meshes = BossMeshes.Get();
+            if (meshes != null)
+            {
+                GameObject hand = RuntimePrimitives.CreateMesh(left ? meshes.HandL : meshes.HandR, arm, DeadHand, "Hand");
+                hand.transform.localPosition = new Vector3(0f, 0.8f, 0f) * size;
+                hand.transform.localRotation = Quaternion.Euler(0f, 0f, 180f);
+                hand.transform.localScale = new Vector3(0.135f, 0.16f, 0.16f) * size * 1.6f;
+            }
+            return arm;
+        }
+
+        // The arms shoot up out of the ground one after another, claw and sway (or close on the
+        // ankles they grip), and sink away when the time's up.
+        private static void ClawArms(System.Collections.Generic.List<Transform> arms, float t, float until, bool grip = false)
+        {
+            for (int i = 0; i < arms.Count; i++)
+            {
+                Transform arm = arms[i];
+                if (arm == null)
+                    continue;
+                float own = t - i * 0.06f;
+                float up = Mathf.Clamp01(own / 0.16f) * (1f - Mathf.Clamp01((own - until) / 0.3f));
+                float height = arm.GetChild(0).localScale.y / 0.7f;
+                arm.localPosition = Vector3.down * height * (1f - Mathf.Sin(up * Mathf.PI * 0.5f));
+                float sway = grip ? 0f : Mathf.Sin(own * 7f + i * 1.3f);
+                float clutch = grip ? Mathf.Clamp01((own - 0.15f) / 0.2f) * 55f : 0f;
+                arm.localRotation = Quaternion.Euler(-15f + sway * 14f + clutch, 0f, Mathf.Sin(own * 5f + i) * 10f);
+            }
         }
 
         // Swings the coffin off his back and hurls it: it lands with a crash, then the dead break out of it.
