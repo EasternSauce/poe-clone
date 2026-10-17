@@ -5,7 +5,7 @@ using PoeClone.Visuals;
 
 namespace PoeClone.World
 {
-    /// <summary>World-space drops and a camera-wide rain veil, independent of the player's zoom.</summary>
+    /// <summary>World-space drops and sparse screen-wide rain, independent of the player's zoom.</summary>
     [DisallowMultipleComponent]
     public sealed class RainWeather : MonoBehaviour
     {
@@ -37,8 +37,8 @@ namespace PoeClone.World
             main.startLifetime = 0.76f;
             main.startSpeed = 0;
             main.startSize = new ParticleSystem.MinMaxCurve(0.025f, 0.04f);
-            main.startColor = new Color(0.72f, 0.81f, 0.87f, 0.45f);
-            main.maxParticles = 700;
+            main.startColor = new Color(0.72f, 0.81f, 0.87f, 0.35f);
+            main.maxParticles = 420;
             main.cullingMode = ParticleSystemCullingMode.Pause;
             var shape = rain.shape;
             shape.shapeType = ParticleSystemShapeType.Box;
@@ -83,7 +83,7 @@ namespace PoeClone.World
                 filterMesh.triangles = new[] { 0, 1, 2, 0, 2, 3 };
                 filterMesh.RecalculateBounds();
                 filter.AddComponent<MeshFilter>().sharedMesh = filterMesh;
-                filterMaterial = new Material(Resources.Load<Shader>("Shaders/ScreenRain")) { name = "Screen rain veil" };
+                filterMaterial = new Material(Resources.Load<Shader>("Shaders/ScreenRain")) { name = "Sparse screen rain" };
                 var renderer = filter.AddComponent<MeshRenderer>();
                 renderer.sharedMaterial = filterMaterial;
                 renderer.shadowCastingMode = ShadowCastingMode.Off;
@@ -126,7 +126,7 @@ namespace PoeClone.World
             rain.transform.position = new Vector3(position.x, WorldBuilder.Center(area).y + 12, position.z);
             var emission = rain.emission;
             float budget = Application.isMobilePlatform || AdaptiveQuality.RenderLevel >= 2 ? 0.55f : 1f;
-            emission.rateOverTime = 700 * intensity * budget;
+            emission.rateOverTime = 420 * intensity * budget;
             if (!rain.isPlaying) rain.Play();
         }
 

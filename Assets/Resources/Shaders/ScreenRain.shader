@@ -40,13 +40,14 @@ Shader "PoeClone/ScreenRain"
                 float2 local = frac(p);
                 float width = max(fwidth(p.x), 0.015);
                 float streak = 1 - smoothstep(width * 0.35, width * 1.15, abs(local.x - lerp(0.15, 0.85, random)));
-                float tail = smoothstep(0.05, 0.18, local.y) * (1 - smoothstep(0.32, 0.9, local.y));
-                return streak * tail * step(0.35, random) * lerp(0.35, 0.8, random);
+                float tail = smoothstep(0.05, 0.15, local.y) * (1 - smoothstep(0.24, 0.65, local.y));
+                // Leave most cells empty: readable individual drops, with clear space between them.
+                return streak * tail * step(0.7, random) * lerp(0.3, 0.65, random);
             }
             half4 frag(V i) : SV_Target
             {
-                float rain = Drops(i.uv, 95, 0.9, 3) + Drops(i.uv, 55, 1.45, 17) * 0.8;
-                return half4(0.68, 0.77, 0.84, saturate((rain + 0.025) * _Intensity));
+                float rain = Drops(i.uv, 72, 0.9, 3) + Drops(i.uv, 40, 1.45, 17) * 0.65;
+                return half4(0.68, 0.77, 0.84, saturate(rain * _Intensity * 0.85));
             }
             ENDHLSL
         }
