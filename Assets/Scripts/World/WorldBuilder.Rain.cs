@@ -5,7 +5,7 @@ namespace PoeClone.World
 {
     public partial class WorldBuilder
     {
-        // One small mesh per terrain chunk, sharing the river material and reflection capture.
+        // One small mesh per terrain chunk, sharing the river material and a puddle-height capture.
         private void BuildRainPuddles(int area, Transform parent, Material water, Rect? region)
         {
             if (RainWeather.Intensity(area) == 0) return;

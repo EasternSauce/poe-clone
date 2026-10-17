@@ -1,3 +1,6 @@
+version: 2026-10-17-stable-puddle-reflections
+- Puddle reflections no longer switch off when rivers or lakes enter view while walking nearby.
+
 version: 2026-10-17-whirlwind-stagger
 - Whirlwind now staggers each enemy only on every fourth consecutive hit. Missing that enemy or ending the spin resets the count.
 

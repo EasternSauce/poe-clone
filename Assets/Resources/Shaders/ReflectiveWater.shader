@@ -37,6 +37,9 @@ Shader "PoeClone/ReflectiveWater"
             TEXTURE2D(_WaterReflection); SAMPLER(sampler_WaterReflection);
             float4x4 _WaterReflectionVP;
             float _WaterReflectionHeight, _WaterReflectionValid;
+            TEXTURE2D(_PuddleReflection); SAMPLER(sampler_PuddleReflection);
+            float4x4 _PuddleReflectionVP;
+            float _PuddleReflectionHeight, _PuddleReflectionValid;
             float4 _CaveBounds, _HollowBounds, _SanctuaryBounds, _WorksBounds, _WardBounds, _RootBounds;
             float4 _ManualLightPosRange[24], _ManualLightColorIntensity[24];
             int _ManualLightCount;
@@ -195,12 +198,20 @@ Shader "PoeClone/ReflectiveWater"
                 half3 color = lerp(bed, tint, _Waterfall > 0.5 ? 0.25 : absorption);
                 float3 reflectedDirection = reflect(-view, normal);
                 half3 reflected = GlossyEnvironmentReflection(reflectedDirection, 0.12, 1);
-                if (_Waterfall < 0.5 && _WaterReflectionValid > 0.5 && abs(IN.baseHeight - _WaterReflectionHeight) < 0.08)
+                float reflectionValid = _Puddle > 0.5 ? _PuddleReflectionValid : _WaterReflectionValid;
+                float reflectionHeight = _Puddle > 0.5 ? _PuddleReflectionHeight : _WaterReflectionHeight;
+                if (_Waterfall < 0.5 && reflectionValid > 0.5 && abs(IN.baseHeight - reflectionHeight) < 0.08)
                 {
-                    float4 projected = mul(_WaterReflectionVP, float4(p.x, IN.baseHeight, p.y, 1));
+                    float4 position = float4(p.x, IN.baseHeight, p.y, 1);
+                    float4 projected = _Puddle > 0.5 ? mul(_PuddleReflectionVP, position) : mul(_WaterReflectionVP, position);
                     float2 uv = projected.xy / projected.w * 0.5 + 0.5 + distortion;
                     float edge = saturate(min(min(uv.x, uv.y), min(1 - uv.x, 1 - uv.y)) * 25);
-                    reflected = lerp(reflected, SAMPLE_TEXTURE2D(_WaterReflection, sampler_WaterReflection, saturate(uv)).rgb, edge);
+                    half3 sceneReflection;
+                    if (_Puddle > 0.5)
+                        sceneReflection = SAMPLE_TEXTURE2D(_PuddleReflection, sampler_PuddleReflection, saturate(uv)).rgb;
+                    else
+                        sceneReflection = SAMPLE_TEXTURE2D(_WaterReflection, sampler_WaterReflection, saturate(uv)).rgb;
+                    reflected = lerp(reflected, sceneReflection, edge);
                 }
                 color = lerp(color, reflected, saturate(fresnel * 0.85 + lerp(0.18, 0.3, _Puddle)));
                 float specular = pow(saturate(dot(normal, normalize(view + sun.direction))), 160) * sun.shadowAttenuation;
