@@ -139,7 +139,7 @@ namespace PoeClone.Inventory
 
             Ks("k_legion", "Bone Resolve", 3.6f, -0.28f, Mod(StatType.AdditionalMinions, 1));
             Chain("n2", "k_legion");
-            Ks("k_soulbond", "Shared Fate", 3.6f, 0.28f, Mod(StatType.SharedFate, 1));
+            Nt("k_soulbond", "Undying Host", 3.6f, 0.28f, Mod(StatType.MinionLife, 20), Mod(StatType.MinionArmour, 250), Mod(StatType.MinionResistances, 10));
             Chain("n3", "k_soulbond");
             Nt("k_herald", "Grave Dominion", 3.5f, -0.95f, Mod(StatType.MinionDamage, 30), Mod(StatType.MinionSpeed, 15));
             Chain("n4", "k_herald");
@@ -244,7 +244,7 @@ namespace PoeClone.Inventory
             Nt("f_berserk", "Berserker", 2.25f, -0.7f, Mod(StatType.AttackDamage, 16), Mod(StatType.LifeLeech, 1));
             N("junction_f_berserk", "", 2.25f, -0.7f, Road());
             Chain("f_b1", "junction_f_berserk");
-            Ks("k_pain", "Borrowed Time", 2.65f, -1.0f, Mod(StatType.BorrowedTime, 1));
+            Nt("k_pain", "Lasting Resolve", 2.65f, -1.0f, Mod(StatType.AttackDamage, 12), Mod(StatType.AvoidStun, 15));
             Chain("f_b1", "k_pain");
 
             Nt("f_frenzy", "Frenzy", 2.25f, 0.7f, Mod(StatType.OnslaughtOnKill, 15), Mod(StatType.AttackSpeed, 6));
@@ -316,7 +316,7 @@ namespace PoeClone.Inventory
             Nt("s_eye", "Eye of the Storm", 1.8f, 0.05f, Mod(StatType.CastSpeed, 16), Mod(StatType.ManaRegen, 20));
             Chain("s2", "s_sp1", "s_sp2", "s_sp3", "junction_s_conductor", "s_sp5", "s_sp6", "s_eye");
 
-            Ks("k_thunderlord", "Elemental Equilibrium", 2.85f, 0f, Mod(StatType.ElementalEquilibrium, 1));
+            Nt("k_thunderlord", "Thunderlord", 2.85f, 0f, Mod(StatType.ShockChance, 15), Mod(StatType.LightningDamage, 18));
             Chain("s_sp3", "k_thunderlord");
 
             Nt("s_stride", "Frozen Stride", 2.3f, -0.95f, Mod(StatType.ColdDamage, 10), Mod(StatType.MovementSpeed, 5), Mod(StatType.CastSpeed, 5), Mod(StatType.ColdPenetration, 6));
@@ -743,12 +743,10 @@ namespace PoeClone.Inventory
             switch (b)
             {
                 case "k_legion": return Mod(StatType.MinionLife, 4);
-                case "k_soulbond": return Mod(StatType.MinionLife, 4);
                 case "k_herald": return Mod(StatType.MinionDamage, 5);
                 case "k_viper": return Mod(StatType.PoisonDamage, 3);
                 case "k_frostbite": return Mod(StatType.Dexterity, 6);
-                case "k_thunderlord": return Mod(StatType.ElementalPenetration, 2);
-                case "k_pain": return Mod(StatType.LifeRegen, 1);
+                case "k_thunderlord": return Mod(StatType.ShockChance, 3);
                 case "k_twincast": return Mod(StatType.SpellDamage, 3);
                 case "k_bloodthirst": return Mod(StatType.IncreasedLife, 3);
                 case "k_mom": return Mod(StatType.MaxMana, 5);

@@ -403,29 +403,6 @@ namespace PoeClone.Skills
                 Crumble(true);
         }
 
-        /// <summary>Shared Fate transfers already-mitigated life damage; it cannot be mitigated twice.</summary>
-        public static float AbsorbSharedDamage(Transform owner, float amount)
-        {
-            if (owner == null || amount <= 0f) return 0f;
-            var recipients = All.FindAll(m => m != null && m.owner == owner && m.Targetable &&
-                m.Life > 0f && m.gameObject.activeInHierarchy && Flat(m.transform.position - owner.position).sqrMagnitude <= 64f);
-            if (recipients.Count == 0) return 0f;
-            float each = amount / recipients.Count;
-            float absorbed = 0f;
-            foreach (var minion in recipients)
-            {
-                if (minion == null || minion.dead) continue;
-                float taken = Mathf.Min(each, minion.Life);
-                minion.Life -= taken;
-                absorbed += taken;
-                minion.damagedAt = Time.time;
-                CombatText.Show(minion.transform.position + Vector3.up * 1.4f * minion.transform.localScale.y,
-                    Mathf.CeilToInt(taken).ToString(), CombatText.PlayerHurtColor, 0.7f);
-                if (minion.Life <= 0f) minion.Crumble(true);
-            }
-            return absorbed;
-        }
-
         // ------------------------------------------------------------------ Death Mark
 
         private static EnemyHealth marked;
@@ -603,9 +580,7 @@ namespace PoeClone.Skills
                 }
             }
 
-            var ownerInventory = owner.GetComponent<PlayerInventory>();
-            if (ownerInventory == null || ownerInventory.Stats.Total(StatType.SharedFate) <= 0f)
-                Life = Mathf.Min(MaxLife, Life + MaxLife * tree.Get(WeaponSkillEffect.MinionRegen) / 100f * Time.deltaTime);
+            Life = Mathf.Min(MaxLife, Life + MaxLife * tree.Get(WeaponSkillEffect.MinionRegen) / 100f * Time.deltaTime);
             cooldown -= Time.deltaTime;
             if (face.sqrMagnitude > 0.001f)
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(face), 10f * Time.deltaTime);

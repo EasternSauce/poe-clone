@@ -48,39 +48,6 @@ namespace PoeClone.Enemies
 
         private float currentHealth;
         private bool dead;
-        private Dictionary<Transform, ElementalEquilibriumState> equilibrium;
-
-        private static EquilibriumElement EquilibriumElementFor(DamageType type)
-        {
-            switch (type)
-            {
-                case DamageType.Fire: return EquilibriumElement.Fire;
-                case DamageType.Cold: return EquilibriumElement.Cold;
-                case DamageType.Lightning: return EquilibriumElement.Lightning;
-                default: return EquilibriumElement.None;
-            }
-        }
-
-        /// <summary>Personal exposure is included in hit claims, so co-op prediction and the host agree.</summary>
-        public float EquilibriumPenetration(Transform attacker, DamageType type)
-        {
-            return attacker != null && equilibrium != null && equilibrium.TryGetValue(attacker, out var state)
-                ? state.Penetration(EquilibriumElementFor(type), Time.time) : 0f;
-        }
-
-        public void RecordEquilibriumHit(Transform attacker, DamageType type)
-        {
-            var element = EquilibriumElementFor(type);
-            if (attacker == null || dead || !ElementalEquilibriumState.IsElemental(element)) return;
-            if (equilibrium == null) equilibrium = new Dictionary<Transform, ElementalEquilibriumState>();
-            if (!equilibrium.TryGetValue(attacker, out var state))
-                equilibrium.Add(attacker, state = new ElementalEquilibriumState());
-            bool changed = state.Penetration(element, Time.time) >= 0f;
-            state.Record(element, Time.time);
-            if (changed)
-                UI.CombatText.Show(transform.position + Vector3.up * (BarHeight + 0.6f),
-                    "Resists " + type, UI.CombatText.ColorFor(type), 0.7f);
-        }
 
         public float MaxHealth => maxHealth;
         public float CurrentHealth => currentHealth;
@@ -94,7 +61,6 @@ namespace PoeClone.Enemies
         {
             if (!IsQuestObject) return;
             dead = false;
-            equilibrium?.Clear();
             currentHealth = maxHealth;
             CharacterController body = GetComponent<CharacterController>();
             if (body != null) body.enabled = true;
@@ -194,7 +160,6 @@ namespace PoeClone.Enemies
         public void Configure(int kindIndex, EnemyKind kind, int level = 1)
         {
             KindIndex = kindIndex;
-            equilibrium?.Clear();
             MonsterLevel = Mathf.Max(1, level);
             maxHealth = kind.MaxHealth * EnemyKinds.LifeScale(MonsterLevel, kind) * Party.MonsterLifeScale;
             currentHealth = maxHealth;
