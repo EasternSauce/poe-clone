@@ -68,10 +68,13 @@ namespace PoeClone.Skills
         public const float BaseResistance = 10f;
 
         private const float FollowRadius = 2.5f;
-        private const float EngageRadius = 8f;
-        private const float Leash = 36f;            // only enemies this close to the owner are fought...
+        // Far Command doubles the engage radius and leash; Bone Tether shortens the teleport.
+        private const float EngageRadius = 6f;
+        private const float MageEngageRadius = 9f;
+        private const float Leash = 24f;            // only enemies this close to the owner are fought...
         private const float MarkLeash = 64f;        // ...or the marked one, a good deal further off
-        private const float TeleportDistance = 20f;
+        private const float TeleportDistance = 32f;
+        private const float TetherTeleportDistance = 20f;
 
         private Transform owner;
         public Transform Owner => owner;
@@ -92,6 +95,8 @@ namespace PoeClone.Skills
         private float damagedAt = float.NegativeInfinity;
         private bool dead;
         private float soulBond;
+        private float commandRange = 1f;
+        private bool tether;
         private WeaponSkillBonuses tree;
 
         // ------------------------------------------------------------------ numbers
@@ -112,7 +117,7 @@ namespace PoeClone.Skills
             switch (kind)
             {
                 case MinionKind.Mage:
-                    return new Profile { Life = 369f, Damage = 24f, DamageGrowth = .035f, Cooldown = 1.6f, Range = 17f, Speed = 6f, Look = "Skeleton Mage" };
+                    return new Profile { Life = 369f, Damage = 24f, DamageGrowth = .035f, Cooldown = 1.6f, Range = 12f, Speed = 6f, Look = "Skeleton Mage" };
                 case MinionKind.Wolf:
                     return new Profile { Life = 88f, Damage = 7.25f, DamageGrowth = .035f, Cooldown = 0.8f, Range = 2f, Speed = 9f, Look = "Spirit Wolf" };
                 case MinionKind.Golem:
@@ -432,6 +437,8 @@ namespace PoeClone.Skills
             minion.speed = profile.Speed * haste;
             minion.attack.PlaybackSpeed = attackHaste;
             minion.soulBond = Mathf.Max(0f, Stat(sheet, StatType.SoulBond));
+            minion.commandRange = Stat(sheet, StatType.MinionCommandRange) > 0f ? 2f : 1f;
+            minion.tether = Stat(sheet, StatType.MinionTether) > 0f;
             float duration = Duration(kind, 1, sheet);
             duration *= minion.tree.MinionDurationMultiplier;
             minion.expiresAt = duration > 0f ? Time.time + duration : float.PositiveInfinity;
@@ -639,7 +646,7 @@ namespace PoeClone.Skills
             }
 
             Vector3 toOwner = Flat(owner.position - transform.position);
-            if (Time.time >= teleportRetryAt && toOwner.magnitude > TeleportDistance &&
+            if (Time.time >= teleportRetryAt && toOwner.magnitude > (tether ? TetherTeleportDistance : TeleportDistance) &&
                 (target == null || Flat(target.transform.position - owner.position).magnitude > MarkLeash))
             {
                 if (TeleportToOwner()) return;
@@ -677,8 +684,8 @@ namespace PoeClone.Skills
                 Vector3 toSlot = Flat(owner.position + slot - transform.position);
                 if (toSlot.magnitude > 0.6f)
                 {
-                    // Catching up: the further behind, the faster (up to twice the pace).
-                    move = toSlot.normalized * Mathf.Lerp(1f, 2f, Mathf.InverseLerp(2f, 7f, toSlot.magnitude));
+                    // Bone Tether: the further behind, the faster (up to twice the pace).
+                    move = toSlot.normalized * (tether ? Mathf.Lerp(1f, 2f, Mathf.InverseLerp(2f, 7f, toSlot.magnitude)) : 1f);
                     face = toSlot;
                 }
             }
@@ -731,12 +738,12 @@ namespace PoeClone.Skills
                 return mark;
 
             EnemyHealth best = null;
-            float bestDistance = Kind == MinionKind.Mage ? Mathf.Max(EngageRadius + 2f, attackRange) : EngageRadius;
+            float bestDistance = (Kind == MinionKind.Mage ? MageEngageRadius : EngageRadius) * commandRange;
             foreach (EnemyHealth e in EnemyHealth.Active)
             {
                 if (e == null || e.IsDead)
                     continue;
-                if (Flat(e.transform.position - owner.position).magnitude > Leash)
+                if (Flat(e.transform.position - owner.position).magnitude > Leash * commandRange)
                     continue;
                 float d = Flat(e.transform.position - transform.position).magnitude;
                 if (d < bestDistance)

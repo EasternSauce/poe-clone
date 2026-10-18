@@ -145,6 +145,10 @@ namespace PoeClone.Inventory
             Chain("n4", "k_herald");
             Nt("k_spiritpact", "Spirit Pact", 3.5f, 0.95f, Mod(StatType.MinionDuration, 25), Mod(StatType.MinionSpeed, 12));
             Chain("n5", "k_spiritpact");
+            Ks("k_command", "Far Command", 3.6f, -0.62f, Mod(StatType.MinionCommandRange, 1));
+            Chain("n4", "k_command");
+            Ks("k_tether", "Bone Tether", 3.6f, 0f, Mod(StatType.MinionTether, 1));
+            Chain("n_lord", "k_tether");
         }
 
         private static void BuildVenom()
@@ -747,6 +751,8 @@ namespace PoeClone.Inventory
             {
                 case "k_legion": return Mod(StatType.MinionLife, 4);
                 case "k_herald": return Mod(StatType.MinionDamage, 5);
+                case "k_command": return Mod(StatType.MinionDamage, 4);
+                case "k_tether": return Mod(StatType.MinionSpeed, 3);
                 case "k_viper": return Mod(StatType.PoisonDamage, 3);
                 case "k_frostbite": return Mod(StatType.Dexterity, 6);
                 case "k_thunderlord": return Mod(StatType.ShockChance, 3);
