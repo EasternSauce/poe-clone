@@ -87,7 +87,7 @@ namespace PoeClone.Enemies
         public void SetRarity(EnemyRarity rarity)
         {
             Rarity = rarity;
-            if (rarity == EnemyRarity.Normal) return;
+            if (dead || rarity == EnemyRarity.Normal) return;
             var outline = GetComponent<Outline>() ?? gameObject.AddComponent<Outline>();
             outline.SetPersistentColor(rarity == EnemyRarity.Rare
                 ? new Color(1f, 0.78f, 0.08f) : new Color(0.16f, 0.45f, 1f));
@@ -487,6 +487,8 @@ namespace PoeClone.Enemies
 
         private void DisableLiveBehaviour()
         {
+            GetComponent<Outline>()?.Clear();
+
             EnemyController controller = GetComponent<EnemyController>();
             if (controller != null)
                 controller.enabled = false;

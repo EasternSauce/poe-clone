@@ -1,3 +1,7 @@
+version: 2026-10-18-enemy-outlines-and-attack-facing
+- Magic and rare enemies lose their blue or yellow outlines when they die.
+- Attempting an attack while it is still on cooldown no longer turns your character towards the target or interrupts walking. Touch attacks also wait until the next attack begins before turning, while charged shots can still be aimed as they charge.
+
 version: 2026-10-18-rain-ambience
 - Rain in Greenwood and Graveyard now has a subtle, softly looping sound that fades out when you leave and follows your ambience and sound volume settings.
 

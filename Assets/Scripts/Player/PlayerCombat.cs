@@ -178,12 +178,6 @@ namespace PoeClone.Player
                 // every tap on a button would also swing.
                 // A charged shot releases when the finger lifts, not when the stick crosses centre.
                 attackPressed = VirtualInput.AttackHeld || (sniperCharging && VirtualInput.AimHeld);
-                // Keep turning to face the stick while it's held, even mid-cooldown, so the swing
-                // that finally lands is aimed at wherever it's currently pointing, not wherever it
-                // happened to point when the cooldown last ended.
-                // Whirlwind owns its facing while channelling; stick aim only steers it.
-                if (attackPressed && SkillSet?.IsWhirling != true)
-                    FaceAimPoint();
             }
             else
             {
@@ -311,6 +305,10 @@ namespace PoeClone.Player
 
         private void StartAttack()
         {
+            // A recovering spell must not turn the player or interrupt their walk.
+            if (HasMainSkill && (SkillSet.IsCasting || SkillSet.CooldownLeft(SkillSet.MainSkill.Value) > 0f))
+                return;
+
             GetComponent<PlayerStats>()?.EndArrivalProtection();
             WeaponType weaponType = CurrentWeaponType();
 
@@ -342,7 +340,6 @@ namespace PoeClone.Player
             // physical swing or mana warning while a spell is merely recovering.
             if (HasMainSkill)
             {
-                if (SkillSet.IsCasting || SkillSet.CooldownLeft(SkillSet.MainSkill.Value) > 0f) return;
                 if (SkillSet.TryStartMain()) return;
                 CombatText.Show(transform.position + Vector3.up * 2f, "Not enough " + SkillSet.CostResource, CombatText.ColdColor, 0.6f);
             }

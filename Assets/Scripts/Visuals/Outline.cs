@@ -50,6 +50,13 @@ namespace PoeClone.Visuals
             Sync();
         }
 
+        public void Clear()
+        {
+            highlighted = false;
+            persistent = false;
+            Sync();
+        }
+
         /// <summary>The body changed (parts added or swapped): the clones are made again on next use.</summary>
         public void Rebuild()
         {
