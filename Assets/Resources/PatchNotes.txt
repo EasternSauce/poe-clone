@@ -1,3 +1,6 @@
+version: 2026-10-18-smooth-minion-following
+- Summoned minions now slow smoothly as they reach their follow position, fixing the repeated catch-up and stopping that made them look like they were rubberbanding while you walked.
+
 version: 2026-10-18-escalating-hordes
 - Ordinary area enemy density is doubled. Each time you kill 50% of the area's current population, remaining respawn cooldowns are halved and another wave is added beside a randomly selected half of the original spawn homes. Added enemies count towards the next kill target but never create more spawn homes themselves, so each wave adds the same amount instead of multiplying the horde.
 - Reinforcements and respawns wait until players are at least 30 metres away, and appear as their terrain streams in. Leaving an area for two minutes removes its reinforcements and resets its kill progress and respawn timers to baseline.

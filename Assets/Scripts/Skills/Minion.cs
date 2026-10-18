@@ -68,6 +68,8 @@ namespace PoeClone.Skills
         public const float BaseResistance = 10f;
 
         private const float FollowRadius = 2.5f;
+        private const float FollowStopDistance = 0.6f;
+        private const float FollowArrivalTime = 0.25f;
         // Far Command doubles the engage radius and leash; Bone Tether shortens the teleport.
         private const float EngageRadius = 6f;
         private const float MageEngageRadius = 9f;
@@ -705,10 +707,15 @@ namespace PoeClone.Skills
             else
             {
                 Vector3 toSlot = Flat(owner.position + slot - transform.position);
-                if (toSlot.magnitude > 0.6f)
+                float distance = toSlot.magnitude;
+                if (distance > FollowStopDistance)
                 {
                     // Bone Tether: the further behind, the faster (up to twice the pace).
-                    move = toSlot.normalized * (tether ? Mathf.Lerp(1f, 2f, Mathf.InverseLerp(2f, 7f, toSlot.magnitude)) : 1f);
+                    float catchUp = tether ? Mathf.Lerp(1f, 2f, Mathf.InverseLerp(2f, 7f, distance)) : 1f;
+                    // Ease into the slot instead of alternating full speed and a dead stop when
+                    // the owner walks more slowly than us. Cap the step on long frames too.
+                    float arrivalSpeed = (distance - FollowStopDistance) / Mathf.Max(FollowArrivalTime, Time.deltaTime);
+                    move = toSlot / distance * (Mathf.Min(speed * catchUp, arrivalSpeed) / speed);
                     face = toSlot;
                 }
             }
