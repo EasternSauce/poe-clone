@@ -14,7 +14,7 @@ namespace PoeClone.UI
     /// been seen is kept per area at a coarser grid and saved with the character (see
     /// <see cref="Export"/>), so dead ends stay on the map between visits. Haven is always fully shown.
     /// The full-screen map uses a second texture of the same area (<see cref="OutlineFor"/>): only
-    /// the edges of what can't be walked on, and water, with walkable ground left clear.
+    /// the edges of what can't be walked on, everything else left clear.
     /// </summary>
     public static class MinimapTerrain
     {
@@ -38,7 +38,6 @@ namespace PoeClone.UI
             public Color32[] OutlineBase;
             public bool OutlineStale = true;    // the ground changed: rebuild the outline
             public bool OutlineFogStale = true; // more was seen: reapply the fog to it
-            public int Area;
         }
 
         private static readonly Dictionary<int, AreaMap> maps = new Dictionary<int, AreaMap>();
@@ -61,7 +60,7 @@ namespace PoeClone.UI
 
         /// <summary>
         /// The area as outlines for the full-screen map: a line along the edge of anything that
-        /// can't be walked on, water filled see-through, the rest clear; hidden where unseen like
+        /// can't be walked on (water included), everything else clear; hidden where unseen like
         /// the minimap. Only built and updated while something asks for it.
         /// </summary>
         public static Texture2D OutlineFor(int area)
@@ -87,10 +86,9 @@ namespace PoeClone.UI
                 int width = Mathf.Max(1, Mathf.RoundToInt(OutlineWidth * (float)resolution / Resolution));
                 bool[] edges = Edges(walkable, resolution, width);
                 Color32 line = new Color32(235, 225, 200, 235);
-                Color32 water = map.Area == WorldBuilder.Frozen ? new Color32(140, 200, 230, 110) : new Color32(50, 130, 190, 120);
                 map.OutlineBase = new Color32[walkable.Length];
                 for (int i = 0; i < walkable.Length; i++)
-                    map.OutlineBase[i] = edges[i] ? line : map.Cells[i] == Cell.Water ? water : new Color32(0, 0, 0, 0);
+                    map.OutlineBase[i] = edges[i] ? line : new Color32(0, 0, 0, 0);
             }
             if (map.OutlineFogStale)
             {
@@ -215,7 +213,7 @@ namespace PoeClone.UI
             if (maps.TryGetValue(area, out AreaMap map) && map.Texture != null)
                 return map;
 
-            IEnumerator bake = Bake(area, map = new AreaMap { Area = area }, float.PositiveInfinity);
+            IEnumerator bake = Bake(area, map = new AreaMap(), float.PositiveInfinity);
             while (bake.MoveNext()) { }
             return Store(area, map);
         }
@@ -229,7 +227,7 @@ namespace PoeClone.UI
                 yield break;
 
             Physics.SyncTransforms();
-            var map = new AreaMap { Area = area };
+            var map = new AreaMap();
             IEnumerator bake = Bake(area, map, SliceMs);
             while (bake.MoveNext())
                 yield return null;

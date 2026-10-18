@@ -158,7 +158,7 @@ namespace PoeClone.UI
             mapTab.gameObject.SetActive(false);
 
             // The whole area over the screen, under every other panel: just outlines of what
-            // can't be walked on, and water, so the fight stays in plain sight behind it.
+            // can't be walked on, so the fight stays in plain sight behind it.
             Canvas overlayCanvas = UiKit.NewCanvas("MapOverlayCanvas", transform, 35, out _);
             overlay = UiKit.NewRect("MapOverlay", overlayCanvas.transform);
             UiKit.Stretch(overlay, 0f);
