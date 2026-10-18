@@ -131,7 +131,7 @@ Shader "PoeClone/ReflectiveWater"
                 OUT.baseHeight = p.y;
                 float3 n = TransformObjectToWorldNormal(IN.normalOS);
                 if (_Waterfall < 0.5) p.y += Wave(p.xz, IN.motion) * (1 - _Puddle);
-                else p += n * sin(IN.uv.y * 24 - _Time.y * 8 + IN.uv.x * 13) * 0.04;
+                else p += n * sin(IN.uv.y * 24 - _Time.y * 8 + IN.uv.x * 13) * 0.04 * smoothstep(0, 0.12, IN.uv.y);
                 OUT.positionWS = p;
                 OUT.positionCS = TransformWorldToHClip(p);
                 OUT.normalWS = n;
@@ -154,16 +154,22 @@ Shader "PoeClone/ReflectiveWater"
                 float2 slope = lerp(windSlope * (1 + _WaterOcean), riverSlope, IN.motion.w);
                 slope *= lerp(1, 0.08, _Puddle);
                 float rainRings = 0;
-                if (_RainIntensity > 0 && _Waterfall < 0.5) slope += RainSlope(p, rainRings);
+                bool falling = _Waterfall > 0.5 && IN.uv.y > 0;
+                if (_RainIntensity > 0 && !falling) slope += RainSlope(p, rainRings);
                 float streak = 0;
                 float3 normal = normalize(float3(-slope.x, 1, -slope.y));
-                if (_Waterfall > 0.5)
+                if (falling)
                 {
                     // UV.y increases down the sheet; accelerating phase stretches falling ribbons.
                     float phase = sqrt(max(IN.uv.y, 0.001)) * 30 - t * 7;
-                    streak = smoothstep(0.25, 0.85, sin(IN.uv.x * 57 + sin(phase) * 1.3)) *
-                             (0.4 + 0.6 * sin(phase * 0.7) * sin(phase * 0.7));
-                    normal = normalize(IN.normalWS + float3(flow.x, 0.2, flow.y) * sin(phase + IN.uv.x * 37) * 0.15);
+                    streak = smoothstep(0.55, 0.95, sin(IN.uv.x * 57 + sin(phase) * 0.65)) *
+                             smoothstep(-0.1, 0.8, sin(phase * 0.7 + IN.uv.x * 19));
+                    // Perturb along the sheet's tangents, keeping highlights on the falling face.
+                    float3 sheetNormal = normalize(IN.normalWS);
+                    float3 crossSheet = float3(across.x, 0, across.y);
+                    float3 alongSheet = normalize(cross(sheetNormal, crossSheet));
+                    normal = normalize(sheetNormal + crossSheet * sin(IN.uv.x * 57 + phase * 0.3) * 0.12 +
+                        alongSheet * sin(phase + IN.uv.x * 37) * 0.07);
                     normal *= IS_FRONT_VFACE(facing, 1, -1);
                 }
                 float3 view = GetWorldSpaceNormalizeViewDir(IN.positionWS);
@@ -172,9 +178,16 @@ Shader "PoeClone/ReflectiveWater"
                 float3 behind = SceneWorld(screenUV);
                 float depth = max(0, IN.positionWS.y - behind.y);
                 float2 distortion = slope * 0.009;
+                if (falling)
+                {
+                    // Project sheet ripples into the view rather than treating a vertical face as a lake.
+                    float3 viewNormal = TransformWorldToViewDir(normal);
+                    distortion = viewNormal.xy * 0.012;
+                }
                 float2 refractedUV = saturate(screenUV + distortion);
                 float3 refractedWorld = SceneWorld(refractedUV);
-                if (refractedWorld.y > IN.positionWS.y + 0.02) refractedUV = screenUV;
+                if (falling ? TransformWorldToView(refractedWorld).z > TransformWorldToView(IN.positionWS).z + 0.02 :
+                    refractedWorld.y > IN.positionWS.y + 0.02) refractedUV = screenUV;
                 half3 bed = SampleSceneColor(refractedUV);
                 Light sun = GetMainLight(TransformWorldToShadowCoord(IN.positionWS));
                 half3 illumination = SampleSH(normal) + sun.color * (0.25 + 0.75 * saturate(dot(normal, sun.direction))) * sun.shadowAttenuation;
@@ -195,7 +208,8 @@ Shader "PoeClone/ReflectiveWater"
                 half3 tint = _BaseColor.rgb * max(illumination, half3(0.12, 0.12, 0.12));
                 // Clear shallows expose the sloping bed; long water paths absorb more light.
                 float absorption = lerp(1 - exp(-depth * 0.12), 0.08, _Puddle);
-                half3 color = lerp(bed, tint, _Waterfall > 0.5 ? 0.25 : absorption);
+                // A thin falling sheet stays clear between aerated ribbons.
+                half3 color = lerp(bed, tint, falling ? 0.10 + streak * 0.12 : absorption);
                 float3 reflectedDirection = reflect(-view, normal);
                 half3 reflected = GlossyEnvironmentReflection(reflectedDirection, 0.12, 1);
                 float reflectionValid = _Puddle > 0.5 ? _PuddleReflectionValid : _WaterReflectionValid;
@@ -216,7 +230,8 @@ Shader "PoeClone/ReflectiveWater"
                 color = lerp(color, reflected, saturate(fresnel * 0.85 + lerp(0.18, 0.3, _Puddle)));
                 float specular = pow(saturate(dot(normal, normalize(view + sun.direction))), 160) * sun.shadowAttenuation;
                 color += sun.color * specular * 0.7 * lerp(1, 0.23, cave);
-                float foam = _Waterfall > 0.5 ? streak * 0.65 + smoothstep(0.78, 1, IN.uv.y) * 0.3 :
+                float foam = falling ? streak * (0.12 + smoothstep(0.5, 1, IN.uv.y) * 0.16) +
+                    smoothstep(0.88, 1, IN.uv.y) * (0.18 + streak * 0.22) :
                     (1 - smoothstep(0.03, 0.32, depth)) * (0.12 + 0.08 * sin(current + p.x * 3));
                 foam *= 1 - _Puddle;
                 color = lerp(color, half3(0.73, 0.75, 0.68) * max(illumination, half3(0.3, 0.3, 0.3)), saturate(foam));

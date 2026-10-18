@@ -1,3 +1,6 @@
+version: 2026-10-18-waterfall-refinement
+- Waterfalls now keep the river's natural tint, with clearer falling ribbons, rippling reflective highlights and softer spray. Foam gathers near the impact instead of whitening the whole sheet, and the channel above the falls keeps its flowing water appearance.
+
 version: 2026-10-18-equipment-fit
 - Refitted armour, shoulders, helmets, hoods, gloves, belts and amulets to the current player proportions. Boots have narrower calves and feet and bend more smoothly at the ankles.
 - Armour now replaces the starting tunic and covers the trousers beneath it. Skirts and armour hems follow the hips and legs during movement and inventory idle poses, reducing clothing poking through and rigid waist movement.

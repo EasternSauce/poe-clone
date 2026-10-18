@@ -167,8 +167,9 @@ namespace PoeClone.World
             var sheetMaterial = new Material(riverWater) { name = "Waterfall" };
             waterfallMaterials.Add(sheetMaterial);
             if (!frozen) sheetMaterial.SetFloat("_Waterfall", 1);
-            Color tone = sheetMaterial.GetColor("_BaseColor");
-            sheetMaterial.SetColor("_BaseColor", Color.Lerp(tone, Color.white, frozen ? 0.15f : 0.22f));
+            // Liquid falls keep the river tint; aeration is handled by the shader's foam.
+            if (frozen)
+                sheetMaterial.SetColor("_BaseColor", Color.Lerp(sheetMaterial.GetColor("_BaseColor"), Color.white, 0.15f));
             var sheet = new GameObject("Sheet") { layer = 4 };
             sheet.transform.SetParent(fall, false);
             sheet.AddComponent<MeshFilter>().sharedMesh = mesh;
@@ -216,7 +217,7 @@ namespace PoeClone.World
             main.startLifetime = new ParticleSystem.MinMaxCurve(1.4f, 2.5f);
             main.startSpeed = 0;
             main.startSize = new ParticleSystem.MinMaxCurve(0.5f, 1.3f);
-            main.startColor = new Color(0.82f, 0.93f, 0.95f, 0.65f);
+            main.startColor = new Color(0.73f, 0.75f, 0.68f, 0.48f);
             main.startRotation = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
             main.simulationSpace = ParticleSystemSimulationSpace.Local;
             main.maxParticles = 100;
@@ -262,7 +263,7 @@ namespace PoeClone.World
             main.startLifetime = new ParticleSystem.MinMaxCurve(1.2f, 2.2f);
             main.startSpeed = 0f;
             main.startSize = new ParticleSystem.MinMaxCurve(1.2f, 2.4f);
-            main.startColor = new Color(0.88f, 0.94f, 1f, 0.3f);
+            main.startColor = new Color(0.78f, 0.80f, 0.75f, 0.18f);
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.maxParticles = 60;
