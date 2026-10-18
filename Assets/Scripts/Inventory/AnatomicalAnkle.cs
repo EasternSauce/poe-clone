@@ -13,18 +13,23 @@ namespace PoeClone.Inventory
         [SerializeField] private Vector3 footRestPosition;
         [SerializeField] private Quaternion footRestRotation = Quaternion.identity;
 
-        public void Configure(Transform joint, Transform foot)
+        public void Configure(Transform joint, Transform foot = null)
         {
             this.joint = joint;
             this.foot = foot;
-            footRestPosition = foot.localPosition;
-            footRestRotation = foot.localRotation;
+            if (foot != null)
+            {
+                footRestPosition = foot.localPosition;
+                footRestRotation = foot.localRotation;
+            }
         }
 
         public void Pose(float angle)
         {
             Quaternion rotation = Quaternion.Euler(angle, 0, 0);
             joint.localRotation = rotation;
+            // Booted NPCs use skinned footwear instead of a separate bare foot.
+            if (foot == null) return;
             foot.localPosition = joint.localPosition + rotation * (footRestPosition - joint.localPosition);
             foot.localRotation = rotation * footRestRotation;
         }

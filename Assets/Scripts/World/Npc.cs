@@ -170,6 +170,7 @@ namespace PoeClone.World
             Strip<EnemyHealth>(go);
 
             EnemyKinds.ApplyLook(go, look);
+            go.GetComponentInChildren<CharacterWalkAnimator>(true)?.ConfigureTownGait();
 
             go.transform.SetParent(parent, false);
             go.transform.SetPositionAndRotation(position, Quaternion.LookRotation(facing.sqrMagnitude > 0f ? facing : Vector3.back));

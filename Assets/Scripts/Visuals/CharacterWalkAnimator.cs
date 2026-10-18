@@ -65,6 +65,24 @@ namespace PoeClone.Visuals
         [SerializeField] private AnatomicalAnkle rightAnkle;
         private bool NaturalGait => leftAnkle != null && rightAnkle != null;
 
+        /// <summary>Uses the player's jointed gait with the town rig's skinned boots.</summary>
+        public void ConfigureTownGait()
+        {
+            AnatomicalAnkle BindBoot(Transform knee)
+            {
+                Transform ankle = knee.Find("Ankle");
+                var gait = knee.GetComponent<AnatomicalAnkle>() ?? knee.gameObject.AddComponent<AnatomicalAnkle>();
+                gait.Configure(ankle);
+                GameObject boot = knee.Find("Boot").gameObject;
+                if (boot.GetComponent<AnatomicalFootwear>() == null)
+                    gait.FitFootwear(boot);
+                return gait;
+            }
+
+            ConfigureNaturalGait(BindBoot(leftKnee), BindBoot(rightKnee));
+            walkElbowBend = 20f;
+        }
+
         public void ConfigureNaturalGait(AnatomicalAnkle left, AnatomicalAnkle right)
         {
             leftAnkle = left;
@@ -375,9 +393,9 @@ namespace PoeClone.Visuals
                 SetPivot(leftLeg, s * legAmp - 35f * crouch, -PlantSpread * plant);
                 SetPivot(rightLeg, -s * legAmp - 35f * crouch, PlantSpread * plant);
             }
-            // Arms complete one swing cycle for every two leg cycles. Keep the anatomical
-            // gait's cosine offset and the blocky gait's sine offset at this slower cadence.
-            float armPhase = phase * 0.5f;
+            // Townsfolk swing opposite the stepping leg, once per stride. Other rigs
+            // retain their existing cadence.
+            float armPhase = phase * (isTownNpc ? 1f : 0.5f);
             float armWave = NaturalGait ? -Mathf.Cos(armPhase) : Mathf.Sin(armPhase);
             float leftSwing = -armWave * armAmp, rightSwing = armWave * armAmp;
             float armArc = NaturalGait ? blend * (1f - WorkBlend) * Mathf.Lerp(.35f, 1f, runBlend) : 0f;

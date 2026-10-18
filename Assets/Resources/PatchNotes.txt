@@ -1,3 +1,6 @@
+version: 2026-10-18-natural-npc-walking
+- Townsfolk now use the hero's jointed walking gait, with knees that flex through each step and boots that bend at the ankles. Their arms swing twice as fast to follow their steps, with relaxed elbow bends and shoulder movement.
+
 version: 2026-10-18-smooth-minion-following
 - Summoned minions now slow smoothly as they reach their follow position, fixing the repeated catch-up and stopping that made them look like they were rubberbanding while you walked.
 
