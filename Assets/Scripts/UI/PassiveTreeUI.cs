@@ -96,9 +96,14 @@ namespace PoeClone.UI
         {
             if (Spectating || closeRequested) return;
             if (!HasPendingChanges) return;
+            var added = new HashSet<string>(draft.Taken);
+            added.ExceptWith(passives.Allocation.Taken);
             if (!passives.ConfirmDraft(draft, resetPending, respecMode)) return;
             var audio = AudioManager.Instance;
             if (audio != null) audio.PlayUI(audio.Sfx("passive_confirm"));
+            foreach (NodeView v in views)
+                if (added.Contains(v.Node.Id))
+                    PassiveShockwave.Spawn(content, NodePosition(v.Node), v.Ring.rectTransform.sizeDelta.x, BranchColor(v.Node.Branch));
             respecMode = false;
             BeginDraft();
             hovered = null;
@@ -644,11 +649,8 @@ namespace PoeClone.UI
             if (draft == null) BeginDraft();
             closeRequested = false;
             if (take && draft.Has(node.Id) && (resetPending || !passives.Allocation.Has(node.Id))) draft.Refund(node.Id);
-            else if (take && draft.Take(node.Id, passives.Level))
-            {
-                if (Audio.AudioManager.Instance != null)
-                    Audio.AudioManager.Instance.PlayUI(Audio.AudioManager.Instance.Sfx("ui_click"));
-            }
+            else if (take && draft.Take(node.Id, passives.Level) && AudioManager.Instance != null)
+                AudioManager.Instance.PlayUI(AudioManager.Instance.Sfx("ui_click"));
             dirty = true;
         }
 

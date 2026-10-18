@@ -1,3 +1,6 @@
+version: 2026-10-18-passive-shockwave
+- Confirming passives, on the passive tree or a weapon's skill tree, sends a soft shockwave out of every newly taken node: a ring in the node's colour that swells, slows down and fades. It is sized to the node, so it looks smaller when zoomed out.
+
 version: 2026-10-18-full-map
 - Press Tab, or click the new Map tab beside the minimap, to swap the minimap for a map of the whole area laid over the screen, centred on the middle of the screen and scrolling smoothly with the view as you move, your white arrow marking where you are. It draws only the outlines of what you can't walk through (walls, rocks, trees, river banks, the edge of the area), leaving everything else clear so the game stays in plain view. It covers everything you've explored and shows gates labelled with where they lead, the waystone, quest objects, townsfolk, nearby monsters and your co-op partner. Press Tab or click the tab again to go back to the minimap. Open menus still cover it.
 

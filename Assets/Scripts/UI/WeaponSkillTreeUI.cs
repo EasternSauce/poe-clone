@@ -186,6 +186,10 @@ namespace PoeClone.UI
             if (!skills.AllocateWeaponNodes(weapon, added)) return;
             var audio = AudioManager.Instance;
             if (audio != null) audio.PlayUI(audio.Sfx("passive_confirm"));
+            Color skill = SkillBook.ForGrant(Grant).Color;
+            foreach (NodeView v in views)
+                if (v.Node != null && added.Contains(v.Node.Id))
+                    PassiveShockwave.Spawn(content, v.Node.Position, v.Ring.rectTransform.sizeDelta.x, skill);
             draft = weapon.SkillProgress.Copy();
             hovered = null;
             ShowInfo(null);
