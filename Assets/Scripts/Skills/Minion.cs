@@ -112,7 +112,7 @@ namespace PoeClone.Skills
             switch (kind)
             {
                 case MinionKind.Mage:
-                    return new Profile { Life = 369f, Damage = 24f, DamageGrowth = .035f, Cooldown = 1.6f, Range = 8.5f, Speed = 6f, Look = "Skeleton Mage" };
+                    return new Profile { Life = 369f, Damage = 24f, DamageGrowth = .035f, Cooldown = 1.6f, Range = 17f, Speed = 6f, Look = "Skeleton Mage" };
                 case MinionKind.Wolf:
                     return new Profile { Life = 88f, Damage = 7.25f, DamageGrowth = .035f, Cooldown = 0.8f, Range = 2f, Speed = 9f, Look = "Spirit Wolf" };
                 case MinionKind.Golem:
@@ -715,7 +715,7 @@ namespace PoeClone.Skills
                 return mark;
 
             EnemyHealth best = null;
-            float bestDistance = Kind == MinionKind.Mage ? EngageRadius + 2f : EngageRadius;
+            float bestDistance = Kind == MinionKind.Mage ? Mathf.Max(EngageRadius + 2f, attackRange) : EngageRadius;
             foreach (EnemyHealth e in EnemyHealth.Active)
             {
                 if (e == null || e.IsDead)
@@ -741,15 +741,14 @@ namespace PoeClone.Skills
 
             if (Kind == MinionKind.Mage)
             {
+                // Like the player's volleys: extra bolts fan out round the aim, and each enemy is
+                // hurt by the first bolt of the volley to reach it only.
                 var volley = new HashSet<EnemyHealth>();
-                var targets = new List<EnemyHealth> { hit };
-                foreach (var enemy in EnemyHealth.Active)
-                    if (enemy != null && enemy != hit && !enemy.IsDead && Flat(enemy.transform.position - transform.position).magnitude <= attackRange)
-                        targets.Add(enemy);
-                targets.Sort((a, b) => (a == hit ? -1f : (a.transform.position - hit.transform.position).sqrMagnitude)
-                    .CompareTo(b == hit ? -1f : (b.transform.position - hit.transform.position).sqrMagnitude));
-                for (int i = 0; i < 1 + tree.ExtraProjectiles; i++)
-                    MinionBolt.Launch(this, targets[i % targets.Count], volley, i);
+                Vector3 origin = EnemyCombat.BoltOrigin(transform);
+                Vector3 aim = hit.transform.position + Vector3.up * 0.4f * hit.transform.localScale.y - origin;
+                Vector3[] fan = HitEffects.Spread(aim, 1 + tree.ExtraProjectiles, PlayerCombat.ArrowSpreadDegrees);
+                for (int i = 0; i < fan.Length; i++)
+                    MinionBolt.Launch(this, origin, (fan[i] * Flat(aim).magnitude + Vector3.up * aim.y).normalized, volley);
 
                 return;
             }
@@ -869,7 +868,7 @@ namespace PoeClone.Skills
             return v;
         }
 
-        /// <summary>A skeleton mage's bolt: flies straight and hits the first enemy in its path.</summary>
+        /// <summary>A skeleton mage's bolt: flies straight and stops on the first enemy in its path.</summary>
         private class MinionBolt : MonoBehaviour
         {
             private Minion caster;
@@ -879,11 +878,10 @@ namespace PoeClone.Skills
             private HashSet<EnemyHealth> volley;
             private const float Speed = 21f;
 
-            public static void Launch(Minion caster, EnemyHealth target, HashSet<EnemyHealth> volley, int index)
+            public static void Launch(Minion caster, Vector3 origin, Vector3 direction, HashSet<EnemyHealth> volley)
             {
                 var root = new GameObject("Minion Bolt");
-                // From the staff's head, spread sideways when several leave at once.
-                root.transform.position = EnemyCombat.BoltOrigin(caster.transform) + caster.transform.right * ((index % 3 - 1) * 0.3f);
+                root.transform.position = origin;
                 Color color = CombatText.ColorFor(WeaponSkillHit.Element(caster.tree, DamageType.Physical));
                 GameObject core = RuntimePrimitives.Create(PrimitiveType.Sphere, root.transform, color);
                 core.transform.localScale = Vector3.one * 0.26f;
@@ -893,7 +891,7 @@ namespace PoeClone.Skills
                 var bolt = root.AddComponent<MinionBolt>();
                 bolt.caster = caster;
                 bolt.launchPosition = root.transform.position;
-                bolt.direction = (target.transform.position + Vector3.up * 0.4f * target.transform.localScale.y - root.transform.position).normalized;
+                bolt.direction = direction;
                 bolt.volley = volley;
                 bolt.travelLeft = caster.attackRange + 1f;
             }
@@ -918,7 +916,7 @@ namespace PoeClone.Skills
                 float nearest = float.MaxValue;
                 foreach (EnemyHealth enemy in EnemyHealth.Active)
                 {
-                    if (enemy == null || enemy.IsDead || volley.Contains(enemy))
+                    if (enemy == null || enemy.IsDead)
                         continue;
                     Vector3 aim = enemy.transform.position + Vector3.up * 0.4f * enemy.transform.localScale.y;
                     float along = Mathf.Clamp(Vector3.Dot(aim - transform.position, direction), 0f, step);
@@ -932,8 +930,9 @@ namespace PoeClone.Skills
                 if (hit != null)
                 {
                     Vector3 at = transform.position + direction * nearest;
-                    volley.Add(hit);
-                    caster.Deal(hit, 1f, launchPosition);
+                    // A later bolt of the same volley stops on the enemy but does no damage.
+                    if (volley.Add(hit))
+                        caster.Deal(hit, 1f, launchPosition);
                     SkillEffects.Shockwave(at, 0.7f, new Color(0.5f, 0.85f, 1f), 0.2f);
                     Destroy(gameObject);
                     return;

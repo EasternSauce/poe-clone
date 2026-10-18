@@ -1,3 +1,7 @@
+version: 2026-10-18-skeleton-mage-volleys
+- Skeleton Mages attack from twice as far: their bolts reach 17 metres instead of 8.5, and they pick out enemies that far away.
+- Extra Skeleton Mage bolts now fan out round the aim like your own volleys instead of all flying at separate targets. Each enemy takes damage only from the first bolt of a volley to reach it.
+
 version: 2026-10-18-faster-teleport
 - Teleport casts 80% faster: its casting gesture now takes 0.05 seconds instead of 0.25. Its cooldown is unchanged.
 
