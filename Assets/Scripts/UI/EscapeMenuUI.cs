@@ -299,6 +299,7 @@ namespace PoeClone.UI
             { "P", "Passive tree" },
             { "T", "Weapon tree" },
             { "M", "Show or hide the map" },
+            { "Tab", "Full-screen map" },
             { "Enter", "Chat" },
             { "Esc", "This menu" },
         };

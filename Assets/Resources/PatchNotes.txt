@@ -1,3 +1,6 @@
+version: 2026-10-18-full-map
+- Press Tab, or click the new Map tab beside the minimap, to swap the minimap for a see-through map of the whole area laid over the screen, centred on you. It shows everything you've explored, gates labelled with where they lead, the waystone, quest objects, townsfolk, nearby monsters and your co-op partner. Press Tab or click the tab again to go back to the minimap. Open menus still cover it.
+
 version: 2026-10-18-minions-persist
 - Raised Skeletons and Skeleton Mages now stay with your character when you leave the game: they're back at your side when you log in again, as long as you still wear the gear that grants them.
 
