@@ -283,21 +283,16 @@ namespace PoeClone.EditorTools
                     BuildHoodIcon(item);
                     continue;
                 }
-                string inkSource = InkSource(line, tier);
-                if (inkSource != null) b = ColourInk(Load("Assets/Editor/ItemIconSources/Icons Png/" + inkSource), item.ArtTint, line != "helm_dex");
-                else
-                {
-                    // Change proportions and add actual trim/rivets, rather than relying on runtime tint.
-                    b = Trim(b);
-                    int width = Mathf.Max(1, Mathf.RoundToInt(b.W * (0.82f + tier * 0.09f)));
-                    Bitmap shaped = new Bitmap(width, b.H);
-                    for (int y = 0; y < shaped.H; y++)
-                        for (int x = 0; x < shaped.W; x++)
-                            shaped.P[y * shaped.W + x] = SampleStraight(b, x * b.W / (float)width, y);
-                    b = shaped;
-                    for (int i = 0; i < b.P.Length; i++)
-                        if (b.P[i].a > 0f) b.P[i] *= new Color(item.ArtTint.r, item.ArtTint.g, item.ArtTint.b, 1f);
-                }
+                // Change proportions and add actual trim/rivets, rather than relying on runtime tint.
+                b = Trim(b);
+                int width = Mathf.Max(1, Mathf.RoundToInt(b.W * (0.82f + tier * 0.09f)));
+                Bitmap shaped = new Bitmap(width, b.H);
+                for (int y = 0; y < shaped.H; y++)
+                    for (int x = 0; x < shaped.W; x++)
+                        shaped.P[y * shaped.W + x] = SampleStraight(b, x * b.W / (float)width, y);
+                b = shaped;
+                for (int i = 0; i < b.P.Length; i++)
+                    if (b.P[i].a > 0f) b.P[i] *= new Color(item.ArtTint.r, item.ArtTint.g, item.ArtTint.b, 1f);
                 b = FitTo(Trim(b), item.Width * PxPerCell, item.Height * PxPerCell, 8);
                 AddBaseTrim(b, tier, line);
                 Save(id, AddOutline(b, 2, OutlineColor));
@@ -364,7 +359,7 @@ namespace PoeClone.EditorTools
 
         private static Bitmap AngleWeapon(Bitmap b, ItemData item)
         {
-            // Measure the long axis so painted art, ink art and already angled icons
+            // Measure the long axis so painted art and already angled icons
             // all converge on the same pose without accumulating rotation on rebuilds.
             double weight = 0, mx = 0, my = 0;
             for (int y = 0; y < b.H; y++)
@@ -389,19 +384,6 @@ namespace PoeClone.EditorTools
             if (Mathf.Abs(rotation) < 1f) return b;
             return FitTo(Trim(Rotate(Trim(b), rotation)), item.Width * PxPerCell,
                 item.Height * PxPerCell, 8);
-        }
-
-        private static string InkSource(string line, int tier)
-        {
-            if (line == "shield_int") return "600x600_0007_Conduit.png";
-            if (line == "shield_str" && tier >= 2) return "600x600_0014_TowerShield.png";
-            if (line == "shield_dex" && tier > 0) return "600x600_0016_SpikedShield.png";
-            // Bows use the painted short bow with base-specific proportions and trim.
-            // Keep both rejected ink bow illustrations out of every equipment base.
-            if (line == "sword" && tier > 0) return tier == 1 ? "600x600_0043_ArmingSword.png" : "600x600_0044_Sword.png";
-            if (line == "greatsword" && tier > 0) return tier == 1 ? "600x1200_0011_Claymore.png" : "600x1200_0002_Zweihander.png";
-            if (line == "maul" && tier > 0) return tier == 1 ? "600x1200_0009_Warhammer.png" : "600x1200_0006_Maul.png";
-            return null;
         }
 
         // The ink hood has open contours: background removal eats the neck cloth.
@@ -433,38 +415,6 @@ namespace PoeClone.EditorTools
             b = FitTo(Trim(b), item.Width * PxPerCell, item.Height * PxPerCell, 8);
             AddBaseTrim(b, item.Requirements.Level / 7, "helm_dex");
             Save(item.Id, AddOutline(b, 2, OutlineColor));
-        }
-
-        // These inspiration icons are ink drawings. Remove only the white region connected to
-        // the canvas edges, preserving enclosed cloth/metal areas and their dark drawn detail.
-        private static Bitmap ColourInk(Bitmap b, Color tint, bool brightInk)
-        {
-            var outside = new bool[b.P.Length];
-            var queue = new Queue<int>();
-            for (int y = 0; y < b.H; y++) { queue.Enqueue(y * b.W); queue.Enqueue(y * b.W + b.W - 1); }
-            for (int x = 0; x < b.W; x++) { queue.Enqueue(x); queue.Enqueue((b.H - 1) * b.W + x); }
-            while (queue.Count > 0)
-            {
-                int i = queue.Dequeue();
-                if (outside[i] || (b.P[i].a > 0.1f && b.P[i].grayscale < 0.94f)) continue;
-                outside[i] = true;
-                int x = i % b.W, y = i / b.W;
-                if (x > 0) queue.Enqueue(i - 1);
-                if (x + 1 < b.W) queue.Enqueue(i + 1);
-                if (y > 0) queue.Enqueue(i - b.W);
-                if (y + 1 < b.H) queue.Enqueue(i + b.W);
-            }
-            for (int i = 0; i < b.P.Length; i++)
-            {
-                if (outside[i] || b.P[i].a < 0.1f) { b.P[i] = Color.clear; continue; }
-                float y = (i / b.W) / (float)b.H;
-                float light = 0.35f + 0.65f * y;
-                b.P[i] = brightInk
-                    ? Color.Lerp(tint * (0.4f + 0.4f * y), Color.Lerp(tint, Color.white, 0.45f), b.P[i].grayscale)
-                    : Color.Lerp(new Color(0.12f, 0.10f, 0.09f), tint * light, b.P[i].grayscale);
-                b.P[i].a = 1f;
-            }
-            return b;
         }
 
         private static void AddBaseTrim(Bitmap b, int tier, string line)
