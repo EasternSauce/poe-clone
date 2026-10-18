@@ -18,8 +18,7 @@ namespace PoeClone.UI
     /// they're off the map) and the player (white). North is always up on the map, matching screen-up
     /// in the normal isometric view. No second camera, cheap on the web.
     /// M hides/shows it. Tab, or the small Map tab beside it, swaps it for the whole area laid
-    /// over the screen around the player with the same markers, the player's mark on the
-    /// character itself, menus still on top. Installed by GameSessionController.
+    /// over the screen, scrolling with the camera, with the same markers, menus still on top. Installed by GameSessionController.
     /// </summary>
     [DefaultExecutionOrder(100)]
     public class MinimapUI : MonoBehaviour
@@ -245,20 +244,20 @@ namespace PoeClone.UI
                 return;
 
             Vector3 centre = WorldBuilder.Center(areas.CurrentAreaIndex);
-            Vector2 anchor = Vector2.zero; // where the player's mark goes in the layer
+            Vector3 middle = player.transform.position; // what sits in the middle of the view
             if (view == full)
             {
                 // The whole area at the scale that fits it on the shorter side of the screen,
-                // pinned under the character where they are on screen: the camera trails a
-                // moving player, so that isn't always the middle.
+                // centred on the ground in the middle of the screen, so it scrolls with the
+                // world as the camera does (which trails a moving player a little).
                 Rect screen = overlay.rect;
                 float shorter = Mathf.Min(screen.width, screen.height);
                 full.Scale = shorter * 0.92f / AreaSize;
                 full.PartnerEdge = shorter * 0.5f - 16f;
                 Camera cam = Camera.main;
-                if (cam != null && RectTransformUtility.ScreenPointToLocalPointInRectangle(overlay,
-                        cam.WorldToScreenPoint(player.transform.position), null, out Vector2 local))
-                    anchor = local - screen.center;
+                Ray ray = cam != null ? cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f)) : default;
+                if (cam != null && new Plane(Vector3.up, player.transform.position).Raycast(ray, out float distance))
+                    middle = ray.GetPoint(distance);
                 if (overlayName.text != name)
                     overlayName.text = name;
             }
@@ -266,9 +265,9 @@ namespace PoeClone.UI
                 playerSkills = player.GetComponent<Skills.PlayerSkills>();
             Vector3 forward = playerSkills != null ? playerSkills.Heading : player.transform.forward;
             Vector2 heading = Rotate(new Vector2(forward.x, forward.z), Yaw);
-            view.PlayerDot.rectTransform.anchoredPosition = anchor;
+            view.Content.anchoredPosition = -Rotate(ToMap(middle, centre, view.Scale), Yaw);
+            view.PlayerDot.rectTransform.anchoredPosition = view.At(player.transform.position, centre);
             view.PlayerDot.rectTransform.localRotation = Quaternion.Euler(0f, 0f, Vector2.SignedAngle(Vector2.up, heading));
-            view.Content.anchoredPosition = anchor - Rotate(ToMap(player.transform.position, centre, view.Scale), Yaw);
             view.Terrain.rectTransform.sizeDelta = Vector2.one * (AreaSize * view.Scale);
             UpdatePartner(view, centre);
             for (int k = 0; k < view.LabelsUsed; k++)
