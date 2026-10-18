@@ -483,7 +483,7 @@ namespace PoeClone.EditorTools
         {
             var sheet = StatSheet.Build(Base(level), null);
             var skill = SkillBook.Get(a.SkillId);
-            float capacity = sheet.CastRateMultiplier / Mathf.Max(.01f, skill.Cooldown);
+            float capacity = 1f / Mathf.Max(.01f, skill.UseInterval(sheet.CastRateMultiplier, sheet.CooldownRecoveryMultiplier));
             var s = new Sample { archetype = a.id, level = level, sample = -1, supports = "Support reference: no equipment or passives",
                 cost = ResourceCost(skill, level, WeaponType.Sword, null, sheet), usesPerSecond = capacity,
                 manaPool = sheet.Total(StatType.MaxMana), life = sheet.Total(StatType.MaxLife) };
@@ -564,7 +564,7 @@ namespace PoeClone.EditorTools
         {
             var skill = SkillBook.Get(kit.archetype.SkillId);
             float speed = Mathf.Max(.5f, 1 + ((skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.AttackSpeed) : sheet.Total(StatType.CastSpeed)) + tree.Get(E.Speed)) / 100);
-            uses = skill.Summon && !Minion.IsPermanent(PlayerSkills.MinionKindOf(skill.Id)) ? speed / .65f : skill.Cooldown > 0 ? speed / skill.Cooldown :
+            uses = skill.Spell ? 1f / Mathf.Max(.01f, skill.UseInterval(speed, sheet.CooldownRecoveryMultiplier)) :
                 SlotRules.BaseAttacksPerSecond(kit.weapon.WeaponType) * speed * (skill.Bow ? PlayerSkills.BowSpeed(skill.Id) : PlayerSkills.MeleeSpeed(skill.Id));
             if (skill.Channelled) uses = 4 * SlotRules.BaseAttacksPerSecond(kit.weapon.WeaponType) / SlotRules.BaseAttacksPerSecond(WeaponType.Sword) * speed;
             if (skill.Id == SkillId.PiercingShot) uses = 1 / PiercingInterval(speed, tree.Get(E.ChargeTime));

@@ -543,7 +543,9 @@ namespace PoeClone.UI
                 var skill = SkillBook.Get(row.Id);
                 int level = skills.GrantLevelWithBonuses(grant);
                 string cost = Num(skills.ManaCostForGrant(grant)) + " " + skills.CostResource;
-                string timing = skill.Bow ? "per shot" : Num(skills.CooldownForGrant(grant)) + "s cooldown";
+                string timing = skill.Bow ? "per shot" : skill.Spell ? Num(skills.CastTime(skill.Id)) + "s cast" : "per use";
+                float recovery = skills.CooldownForGrant(grant);
+                if (recovery > 0f) timing += ", " + Num(recovery) + "s cooldown";
                 string damage = skills.DamageSummary(skill.Id, level);
                 string bindings = "";
                 for (int k = 0; k < SkillBook.TouchSlotCount; k++)
@@ -740,8 +742,10 @@ namespace PoeClone.UI
                             skill.MeleeAttack ? " per attack" : "").Append('\n');
                 if (skill.MeleeAttack && !skill.Channelled)
                     text.Append("Attack time: ").Append(Num(skills.MeleeInterval(skill.Id))).Append("s\n");
-                else if (cooldown > 0f)
-                    text.Append(attack ? "Cast time: " : "Cooldown: ").Append(Num(cooldown)).Append("s\n");
+                else if (skill.Spell)
+                    text.Append("Cast time: ").Append(Num(skills.CastTime(skill.Id))).Append("s\n");
+                if (cooldown > 0f)
+                    text.Append("Cooldown: ").Append(Num(cooldown)).Append("s\n");
                 if (skill.Charges > 1)
                     text.Append("Charges: ").Append(skill.Charges).Append(", one back per cooldown\n");
                 if (!string.IsNullOrEmpty(source))

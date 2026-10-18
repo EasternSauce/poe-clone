@@ -511,6 +511,7 @@ namespace PoeClone.Visuals
         private Pose rest;
         private CharacterWalkAnimator walkAnimator;
         private float timer;
+        private bool castingGesture;
         private float speedMultiplier = 1f; // cast speed for casts, attack speed for melee skills
         private bool strikeFired;
         // A channelled skill's pose stays at its wind-up until released (see HoldSkillPose).
@@ -601,11 +602,12 @@ namespace PoeClone.Visuals
             Play(PickProfile(weaponType));
         }
 
-        /// <summary>Scale the casting gesture too, so it cannot cap a fast caster's attack rate.</summary>
-        public void PlayCast(float castRateMultiplier)
+        /// <summary>Play the held weapon's casting swing over the exact supplied duration.</summary>
+        public void PlayCast(WeaponType weaponType, float duration)
         {
-            Play(UnarmedProfile);
-            speedMultiplier = Mathf.Max(0.5f, castRateMultiplier);
+            Play(ProfileFor(weaponType));
+            speedMultiplier = activeProfile.Duration / Mathf.Max(0.001f, duration);
+            castingGesture = true;
         }
 
         /// <summary>
@@ -714,7 +716,7 @@ namespace PoeClone.Visuals
             if (offArmPosed)
                 Apply(offArm, offElbow, rest);
 
-            if (!strikeFired)
+            if (castingGesture || !strikeFired)
                 AttackCancelled?.Invoke();
         }
 
@@ -745,6 +747,7 @@ namespace PoeClone.Visuals
         private void Play(AttackProfile profile)
         {
             speedMultiplier = 1f;
+            castingGesture = false;
             AttackCount++;
             ProfileId = Array.IndexOf(ProfilesById, profile);
             activeProfile = profile;
@@ -780,7 +783,7 @@ namespace PoeClone.Visuals
                 return;
             }
 
-            timer += Time.deltaTime * PlaybackSpeed * speedMultiplier;
+            timer += Time.deltaTime * (castingGesture ? 1f : PlaybackSpeed) * speedMultiplier;
             if (holding)
                 timer = Mathf.Min(timer, activeProfile.Duration * activeProfile.StrikeTime * 0.999f);
             float f = Mathf.Clamp01(timer / activeProfile.Duration);

@@ -20,6 +20,100 @@ namespace PoeClone.Tests
         private static object Binding(object bindings, int slot) =>
             bindings.GetType().GetProperty("Item").GetValue(bindings, new object[] { slot });
 
+        [TestCase(1f, 1f, .1f, 4f)]
+        [TestCase(2f, 1f, .05f, 4f)]
+        [TestCase(1f, 2f, .1f, 2f)]
+        public void SpellCastDurationAndCooldownScaleIndependently(float castRate, float recoveryRate, float cast, float cooldown)
+        {
+            object skill = Activator.CreateInstance(RuntimeType("PoeClone.Skills.SkillDefinition"));
+            skill.GetType().GetField("Spell").SetValue(skill, true);
+            skill.GetType().GetField("CastTime").SetValue(skill, .1f);
+            skill.GetType().GetField("Cooldown").SetValue(skill, 4f);
+            Assert.AreEqual(cast, (float)Call(skill, "CastDuration", castRate), .0001f);
+            Assert.AreEqual(cooldown, (float)Call(skill, "RecoveryDuration", recoveryRate), .0001f);
+            Assert.AreEqual(cast + cooldown, (float)Call(skill, "UseInterval", castRate, recoveryRate), .0001f,
+                "The full cast must finish before the separate cooldown starts");
+        }
+
+        [Test]
+        public void EverySpellHasAnExplicitPositiveCastTimeAndSpamSpellsHaveNoCooldown()
+        {
+            var spam = new HashSet<string> { "FireBolt", "IceShard", "ChainLightning", "VenomSpout" };
+            foreach (object skill in (IEnumerable)RuntimeType("PoeClone.Skills.SkillBook").GetField("All").GetValue(null))
+            {
+                if (!(bool)Field(skill, "Spell")) continue;
+                string id = Field(skill, "Id").ToString();
+                Assert.Greater((float)Field(skill, "CastTime"), 0f, id);
+                if (spam.Contains(id)) Assert.AreEqual(0f, Field(skill, "Cooldown"), id);
+                if (id == "RaiseSkeletons" || id == "SkeletonMages") Assert.AreEqual(4f, Field(skill, "Cooldown"), id);
+            }
+        }
+
+        [Test]
+        public void CastSpeedAndCooldownRecoveryAreSeparateStats()
+        {
+            var sheet = StatSheet.Build(new BaseStats().Set(StatType.CastSpeed, 100), null);
+            Assert.AreEqual(2f, sheet.CastRateMultiplier);
+            Assert.AreEqual(1f, sheet.CooldownRecoveryMultiplier);
+            sheet = StatSheet.Build(new BaseStats().Set(StatType.CooldownRecovery, 100), null);
+            Assert.AreEqual(1f, sheet.CastRateMultiplier);
+            Assert.AreEqual(2f, sheet.CooldownRecoveryMultiplier);
+            var legacy = new StatModifier(StatType.LegacyCooldownRecovery, 25);
+            Assert.AreEqual(StatType.CooldownRecovery, legacy.Stat);
+        }
+
+        [TestCase(StatType.GrantRaiseSkeletons)]
+        [TestCase(StatType.GrantSkeletonMages)]
+        public void EquippedSkeletonSpellUsesCastSpeedOnlyForItsGesture(StatType grant)
+        {
+            var go = new GameObject("Equipped skeleton timing check");
+            go.SetActive(false);
+            try
+            {
+                var inventory = go.AddComponent<PlayerInventory>();
+                Type type = RuntimeType("PoeClone.Skills.PlayerSkills");
+                Component skills = go.AddComponent(type);
+                var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                var equipment = new EquipmentSet();
+                typeof(PlayerInventory).GetProperty("Equipment").SetValue(inventory, equipment);
+                type.GetField("inventory", flags).SetValue(skills, inventory);
+                var weapon = new ItemData("timing-check", "Test Sceptre", ItemType.Weapon, 1, 1, Color.white,
+                    new[] { new StatModifier(grant, 1f) }, weaponType: WeaponType.Sceptre);
+                Assert.IsTrue(equipment.TryEquip(EquipSlot.MainHand, weapon, out _));
+                object id = type.GetProperty("MainSkill").GetValue(skills);
+                var basis = new BaseStats().Set(StatType.CastSpeed, 100);
+                typeof(PlayerInventory).GetProperty("Stats").SetValue(inventory, StatSheet.Build(basis, null));
+                Assert.AreEqual(.325f, (float)Call(skills, "CastTime", id), .0001f);
+                Assert.AreEqual(4f, (float)Call(skills, "Cooldown", id), .0001f);
+                basis.Set(StatType.CooldownRecovery, 100);
+                typeof(PlayerInventory).GetProperty("Stats").SetValue(inventory, StatSheet.Build(basis, null));
+                Assert.AreEqual(.325f, (float)Call(skills, "CastTime", id), .0001f);
+                Assert.AreEqual(2f, (float)Call(skills, "Cooldown", id), .0001f);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [TestCase(WeaponType.Staff)]
+        [TestCase(WeaponType.Sceptre)]
+        [TestCase(WeaponType.Unarmed)]
+        public void CastingGestureUsesSpecifiedDurationInsteadOfGenericAttackSpeed(WeaponType weapon)
+        {
+            var go = new GameObject("Cast duration check");
+            go.SetActive(false);
+            try
+            {
+                Component animator = go.AddComponent(RuntimeType("PoeClone.Visuals.CharacterAttackAnimator"));
+                Call(animator, "PlayCast", weapon, .1f);
+                var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                object profile = animator.GetType().GetField("activeProfile", flags).GetValue(animator);
+                float duration = (float)Field(profile, "Duration");
+                float rate = (float)animator.GetType().GetField("speedMultiplier", flags).GetValue(animator);
+                Assert.AreEqual(.1f, duration / rate, .0001f);
+                Assert.IsTrue((bool)animator.GetType().GetField("castingGesture", flags).GetValue(animator));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
         private static IEnumerator Schedule(IEnumerator routine) => (IEnumerator)
             RuntimeType("PoeClone.World.WorldBuildScheduler").GetMethod("Run")
                 .Invoke(null, new object[] { routine, double.MaxValue });

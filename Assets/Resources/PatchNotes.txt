@@ -1,3 +1,9 @@
+version: 2026-10-18-separate-spell-timing
+- Every spell has its own cast duration, shown by the speed of the held weapon's casting swing. Cast speed shortens that animation only.
+- Spell effects release when the cast finishes. Cooldowns begin afterwards and are shortened only by the separate Cooldown Recovery Rate stat. The skill bar shows actual cooldown recovery, never the casting animation.
+- Fire Bolt, Ice Shard, Chain Lightning and Venom Spout have no cooldown and can be cast again as soon as their animation finishes. Skeleton summons retain a four-second cooldown after casting.
+- Spell tooltips show cast time and cooldown separately. Spell-casting effigies and balance estimates use the same separate timing rules.
+
 version: 2026-10-18-skeleton-weapon-cooldown
 - Fixed skeleton warrior and mage summons using a hidden 0.65-second base interval when cast as the weapon's main attack. Both now use their listed four-second base cooldown, reduced by cast speed.
 

@@ -39,7 +39,6 @@ namespace PoeClone.Skills
             at.y = Visuals.Debris.GroundBelow(at + Vector3.up * 3f) + 0.03f;
             Minion.PlaceEffigy(transform, skill.Id, level, at);
             PlaySkillSound(skill.Id, ground.Value);
-            if (!asAttack && attackAnimator != null) attackAnimator.PlayAttack(WeaponType.Unarmed);
         }
 
         public float EffigyReach(SkillId id, WeaponSkillBonuses tree)
@@ -56,8 +55,8 @@ namespace PoeClone.Skills
         }
 
         public float EffigyInterval(SkillId id, WeaponSkillBonuses tree) =>
-            SkillBook.Get(id).Cooldown / EffigyRules.CastRate(inventory.Stats, tree.Get(WeaponSkillEffect.Speed),
-                controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f);
+            SkillBook.Get(id).UseInterval(EffigyRules.CastRate(inventory.Stats, tree.Get(WeaponSkillEffect.Speed),
+                controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f), CooldownRecoveryMultiplier);
 
         public void CastFromEffigy(SpellEffigy effigy, EnemyHealth target)
         {

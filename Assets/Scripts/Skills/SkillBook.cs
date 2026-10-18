@@ -59,7 +59,8 @@ namespace PoeClone.Skills
         public bool Spell;
         public SkillElement Element;
         public float[] ManaCosts;   // fixed base cost; array retained for authoring compatibility
-        public float Cooldown;      // at level 1; for a staff's attack spell, the time between casts
+        public float CastTime;      // full casting gesture before release; shortened only by cast speed
+        public float Cooldown;      // recovery after casting finishes; shortened only by cooldown recovery
         public int Charges = 1;     // uses stored up; each full cooldown brings one back
         public float BaseDamage;    // spells: damage at level 1, before Intelligence and Spell Damage
         public Color Color;
@@ -91,11 +92,15 @@ namespace PoeClone.Skills
             return ManaCosts[0];
         }
 
-        /// <summary>Base cooldown. Speed comes from character stats and allocated tree nodes.</summary>
+        /// <summary>Base cooldown, independent of the casting animation.</summary>
         public float CooldownAt(int level)
         {
             return Cooldown;
         }
+
+        public float CastDuration(float castRate) => Spell ? CastTime / Mathf.Max(0.01f, castRate) : 0f;
+        public float RecoveryDuration(float recoveryRate) => Cooldown / Mathf.Max(0.01f, recoveryRate);
+        public float UseInterval(float castRate, float recoveryRate) => CastDuration(castRate) + RecoveryDuration(recoveryRate);
 
         /// <summary>A spell that deals damage itself (Fire Bolt, Frost Nova, ...), not a summon, curse or movement spell.</summary>
         public bool DamageSpell => Spell && BaseDamage > 0f && !Summon;
@@ -184,8 +189,8 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.FireBolt, Name = "Fire Bolt", Short = "FB", Grant = StatType.GrantFireBolt, RollsOn = "staves",
-                Spell = true, Element = SkillElement.Fire, BaseDamage = 16f,
-                ManaCosts = new[] { 3.5f }, Cooldown = 1.0f, Color = new Color(1f, 0.5f, 0.15f),
+                Spell = true, CastTime = 1.0f, Element = SkillElement.Fire, BaseDamage = 16f,
+                ManaCosts = new[] { 3.5f }, Color = new Color(1f, 0.5f, 0.15f),
                 Description = "Hurl a bolt of fire that bursts on the first enemy it hits. Each enemy is hit by one bolt at most."
             },
             new SkillDefinition
@@ -197,70 +202,70 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.FrostNova, Name = "Frost Nova", Short = "FN", Grant = StatType.GrantFrostNova, RollsOn = "staves, helmets, gloves",
-                Spell = true, Element = SkillElement.Cold, BaseDamage = 6f,
+                Spell = true, CastTime = 0.65f, Element = SkillElement.Cold, BaseDamage = 6f,
                 ManaCosts = new[] { 10f }, Cooldown = 8f, Color = new Color(0.55f, 0.85f, 1f),
                 Description = "A ring of frost bursts from you, damaging and slowing nearby enemies."
             },
             new SkillDefinition
             {
                 Id = SkillId.WarCry, Name = "War Cry", Short = "CRY", Grant = StatType.GrantWarCry, RollsOn = "staves, amulets, belts",
-                Spell = true, BaseDamage = 8f, ManaCosts = new[] { 9f }, Cooldown = 10f, Color = new Color(1f, 0.7f, 0.25f),
+                Spell = true, CastTime = 0.5f, BaseDamage = 8f, ManaCosts = new[] { 9f }, Cooldown = 10f, Color = new Color(1f, 0.7f, 0.25f),
                 Description = "Unleash a physical shockwave around you and gain Onslaught for 4 seconds, increasing attack speed, cast speed and movement speed."
             },
             new SkillDefinition
             {
                 Id = SkillId.ChainLightning, Name = "Chain Lightning", Short = "CL", Grant = StatType.GrantChainLightning, RollsOn = "staves",
-                Spell = true, Element = SkillElement.Lightning, BaseDamage = 22f,
-                ManaCosts = new[] { 4.2f }, Cooldown = 1.1f, Color = new Color(1f, 0.95f, 0.4f),
+                Spell = true, CastTime = 1.1f, Element = SkillElement.Lightning, BaseDamage = 22f,
+                ManaCosts = new[] { 4.2f }, Color = new Color(1f, 0.95f, 0.4f),
                 Description = "Strikes the enemy under your cursor (or the nearest). Starts with no chains; allocate chaining passives to arc to other enemies. Hits harder when aimed, and up close."
             },
             new SkillDefinition
             {
                 Id = SkillId.IceShard, Name = "Ice Shard", Short = "IS", Grant = StatType.GrantIceShard, RollsOn = "staves",
-                Spell = true, Element = SkillElement.Cold, BaseDamage = 18f,
-                ManaCosts = new[] { 2.8f }, Cooldown = 0.85f, Color = new Color(0.6f, 0.9f, 1f),
+                Spell = true, CastTime = 0.85f, Element = SkillElement.Cold, BaseDamage = 18f,
+                ManaCosts = new[] { 2.8f }, Color = new Color(0.6f, 0.9f, 1f),
                 Description = "Fling a chilling shard of ice. Frozen Fan, beside the tree origin, grants +2 projectiles for one point. Each enemy is hit by one shard per volley at most."
             },
             new SkillDefinition
             {
                 Id = SkillId.Teleport, Name = "Teleport", Short = "TP", Grant = StatType.GrantTeleport, RollsOn = "amulets, rings, gloves",
-                Spell = true, ManaCosts = new[] { 18f }, Cooldown = 0.6f, Color = new Color(0.75f, 0.45f, 1f),
+                Spell = true, CastTime = 0.25f, ManaCosts = new[] { 18f }, Cooldown = 0.6f, Color = new Color(0.75f, 0.45f, 1f),
                 Description = "Vanish and reappear where you aim, up to half a screen away - straight through walls, trees and enemies. Costly in mana, but ready again almost at once."
             },
             new SkillDefinition
             {
                 Id = SkillId.RaiseSkeletons, Name = "Raise Skeletons", Short = "SKL", Grant = StatType.GrantRaiseSkeletons, RollsOn = "sceptres",
-                Spell = true, ManaCosts = new[] { 21f }, Cooldown = 4f, Color = new Color(0.55f, 1f, 0.6f),
+                Spell = true, CastTime = 0.65f, ManaCosts = new[] { 21f }, Cooldown = 4f, Color = new Color(0.55f, 1f, 0.6f),
                 Description = "Raise two skeleton warriors that stay until destroyed, up to 2 at once. Weapon tree nodes raise the limit. Recasting replaces the oldest summons at the limit. Only one kind of lasting minion can serve you: raising skeleton warriors dismisses your skeleton mages."
             },
             new SkillDefinition
             {
                 Id = SkillId.DeathMark, Name = "Recall Minions", Short = "RCL", Grant = StatType.GrantDeathMark, RollsOn = "grimoires",
-                Spell = true, ManaCosts = new[] { 3.1f }, Cooldown = 0.8f, Color = new Color(0.55f, 1f, 0.45f),
+                Spell = true, CastTime = 0.4f, ManaCosts = new[] { 3.1f }, Cooldown = 0.8f, Color = new Color(0.55f, 1f, 0.45f),
                 Description = "Teleport your living mobile minions to safe ground beside you. Does not require an enemy target. Spell effigies remain where they were placed."
             },
             new SkillDefinition
             {
                 Id = SkillId.SkeletonMages, Name = "Skeleton Mages", Short = "SKM", Grant = StatType.GrantSkeletonMages, RollsOn = "sceptres",
-                Spell = true, ManaCosts = new[] { 27f }, Cooldown = 4f, Color = new Color(0.5f, 0.85f, 1f),
+                Spell = true, CastTime = 0.65f, ManaCosts = new[] { 27f }, Cooldown = 4f, Color = new Color(0.5f, 0.85f, 1f),
                 Description = "Raise a skeleton mage that hangs back and hurls straight-flying bolts and stays until destroyed, up to 1 at once. Weapon tree nodes raise the limit. Recasting replaces the oldest summons at the limit. Only one kind of lasting minion can serve you: raising skeleton mages dismisses your skeleton warriors."
             },
             new SkillDefinition
             {
                 Id = SkillId.SpiritWolves, Name = "Spirit Wolves", Short = "WLF", Grant = StatType.GrantSpiritWolves, RollsOn = "sceptres",
-                Spell = true, ManaCosts = new[] { 36f }, Cooldown = 18f, Color = new Color(0.6f, 0.9f, 1f),
+                Spell = true, CastTime = 0.65f, ManaCosts = new[] { 36f }, Cooldown = 18f, Color = new Color(0.6f, 0.9f, 1f),
                 Description = "Call a pack of 2 ghostly wolves that hunt briefly. Wolves cannot be targeted."
             },
             new SkillDefinition
             {
                 Id = SkillId.BoneGolem, Name = "Bone Golem", Short = "GLM", Grant = StatType.GrantBoneGolem, RollsOn = "sceptres",
-                Spell = true, ManaCosts = new[] { 45f }, Cooldown = 30f, Color = new Color(0.92f, 0.88f, 0.7f),
+                Spell = true, CastTime = 0.65f, ManaCosts = new[] { 45f }, Cooldown = 30f, Color = new Color(0.92f, 0.88f, 0.7f),
                 Description = "Raise a hulking golem of bone that taunts nearby enemies. One golem before weapon tree improvements."
             },
             new SkillDefinition
             {
                 Id = SkillId.GraveRot, Name = "Grave Rot", Short = "ROT", Grant = StatType.GrantGraveRot, RollsOn = "grimoires, helmets",
-                Spell = true, ManaCosts = new[] { 16f }, Cooldown = 6f, Color = Curse.RotColor,
+                Spell = true, CastTime = 0.65f, ManaCosts = new[] { 16f }, Cooldown = 6f, Color = Curse.RotColor,
                 Description = "Curse the ground where you aim: every enemy there rots for 6 seconds, dealing 20% less damage."
             },
             new SkillDefinition
@@ -289,8 +294,8 @@ namespace PoeClone.Skills
             },
             new SkillDefinition { Id = SkillId.FangStrike, Name = "Fang Strike", Short = "FNG", Grant = StatType.GrantFangStrike, RollsOn = "daggers", ManaCosts = LightMeleeCosts, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Melee skill (the weapon's attack): strike the aimed enemy for 45% weapon damage and inflict a poison that deals 30% weapon damage over 3 seconds. Poisons stack. Daggers only." },
             new SkillDefinition { Id = SkillId.VenomArrow, Name = "Venom Arrow", Short = "VNM", Grant = StatType.GrantVenomArrow, RollsOn = "bows", ManaCosts = new[] { 4.5f }, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Bow skill (the weapon's attack): attacks inflict a stronger poison and leave a brief venom cloud." },
-            new SkillDefinition { Id = SkillId.VenomSpout, Name = "Venom Spout", Short = "SPT", Grant = StatType.GrantVenomSpout, RollsOn = "staves", Spell = true, BaseDamage = 14f, ManaCosts = new[] { 7f }, Cooldown = 1.3f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Erupt poison beneath your target, damaging and poisoning enemies in the area." },
-            new SkillDefinition { Id = SkillId.SummonViper, Name = "Summon Viper", Short = "VIP", Grant = StatType.GrantSummonViper, RollsOn = "sceptres", Spell = true, ManaCosts = new[] { 30f }, Cooldown = 12f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Call a viper spirit to fight at your side, up to 1 at once. Weapon tree nodes raise the limit." },
+            new SkillDefinition { Id = SkillId.VenomSpout, Name = "Venom Spout", Short = "SPT", Grant = StatType.GrantVenomSpout, RollsOn = "staves", Spell = true, CastTime = 1.3f, BaseDamage = 14f, ManaCosts = new[] { 7f }, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Erupt poison beneath your target, damaging and poisoning enemies in the area." },
+            new SkillDefinition { Id = SkillId.SummonViper, Name = "Summon Viper", Short = "VIP", Grant = StatType.GrantSummonViper, RollsOn = "sceptres", Spell = true, CastTime = 0.65f, ManaCosts = new[] { 30f }, Cooldown = 12f, Color = new Color(0.48f, 0.9f, 0.22f), Description = "Call a viper spirit to fight at your side, up to 1 at once. Weapon tree nodes raise the limit." },
             new SkillDefinition { Id = SkillId.Pulverize, Name = "Pulverize", Short = "PVL", Grant = StatType.GrantPulverize, RollsOn = "maces and mauls", ManaCosts = HeavyMeleeCosts, Color = new Color(0.95f, 0.65f, 0.28f), Description = "Melee skill (the weapon's attack): plant your feet and bring a mace down in a crushing slam after a heavy windup, dealing 175% weapon damage in a broad area. 30% slower. Maces and mauls only." },
             new SkillDefinition { Id = SkillId.ReapingArc, Name = "Reaping Arc", Short = "RPA", Grant = StatType.GrantReapingArc, RollsOn = "axes", ManaCosts = MeleeCosts, Color = new Color(0.9f, 0.48f, 0.3f), Description = "Melee skill (the weapon's attack): commit to a broad, forward axe sweep. After a deliberate windup, hit enemies in a wide arc for 140% weapon damage. 20% slower. Axes only." },
             new SkillDefinition { Id = SkillId.Whirlwind, Name = "Whirlwind", Short = "WHL", Grant = StatType.GrantWhirlwind, RollsOn = "swords and axes", ManaCosts = new[] { 2.5f }, Color = new Color(0.8f, 0.85f, 0.95f), Description = "Melee skill (the weapon's attack): hold the attack to spin with your weapon out, hitting every enemy in reach for 32% weapon damage 4 times a second with a sword (slower weapons hit less often, faster ones more), faster with attack speed. Every fourth consecutive hit on an enemy can stagger it; missing that enemy or ending the spin resets the count. While spinning you pass through enemies and are carried towards the cursor, faster the further away it is, up to sprinting speed. Costs mana every half second until you let go or run dry. Swords and axes only." },

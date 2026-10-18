@@ -71,8 +71,6 @@ namespace PoeClone.Player
         // arm animations (Fire Bolt, Chain Lightning, Cleave), and their strike frames must not
         // also land a weapon hit or loose an arrow.
         private bool swingPending;
-        // The pending swing is the staff's spell rather than a weapon blow.
-        private bool castPending;
         // The bow skill the pending shot is (the one on when the draw started), if any.
         private PoeClone.Skills.SkillId? bowSkillPending;
         private int bowLevelPending;
@@ -154,7 +152,6 @@ namespace PoeClone.Player
         {
             CancelSniperCharge();
             swingPending = false;
-            castPending = false;
             bowSkillPending = null;
             bowLevelPending = 0;
             cooldownTimer = 0f;
@@ -341,17 +338,14 @@ namespace PoeClone.Player
                 return;
             }
 
-            // A staff casts its spell; without the mana for it, it's swung instead.
-            castPending = HasMainSkill && SkillSet.TrySpendMain();
-            if (castPending)
-            {
-                cooldownTimer = SkillSet.MainInterval();
-                swingPending = true;
-                attackAnimator.PlayCast(SkillSet.SkillCastRate(SkillSet.WeaponSkill.Value));
-                return;
-            }
+            // Spell casting owns its animation and separate recovery; never fall through to a
+            // physical swing or mana warning while a spell is merely recovering.
             if (HasMainSkill)
+            {
+                if (SkillSet.IsCasting || SkillSet.CooldownLeft(SkillSet.MainSkill.Value) > 0f) return;
+                if (SkillSet.TryStartMain()) return;
                 CombatText.Show(transform.position + Vector3.up * 2f, "Not enough " + SkillSet.CostResource, CombatText.ColdColor, 0.6f);
+            }
 
             // The weapon's melee skill replaces the swing: its own move, at its own pace.
             if (!CharacterAttackAnimator.IsRanged(weaponType) && SkillSet != null && SkillSet.TryStartMeleeSkill(out float skillInterval))
@@ -525,13 +519,6 @@ namespace PoeClone.Player
             // Aimed now, as it leaves: wherever the cursor (or aim stick) points at this moment.
             ReaimAtRelease();
 
-            if (castPending)
-            {
-                castPending = false;
-                SkillSet.ReleaseMain();
-                return;
-            }
-
             WeaponType weaponType = CurrentWeaponType();
             float range = CharacterAttackAnimator.IsRanged(weaponType) ? Reach(weaponType) : MeleeReach(weaponType);
 
@@ -644,11 +631,9 @@ namespace PoeClone.Player
         // go, it falls back to what was aimed at when the swing started (the enemy, else the point).
         private void ReaimAtRelease()
         {
-            bool projectileSpell = castPending && (SkillSet?.MainSkill == PoeClone.Skills.SkillId.FireBolt ||
-                SkillSet?.MainSkill == PoeClone.Skills.SkillId.IceShard);
             bool projectileBow = CharacterAttackAnimator.IsRanged(CurrentWeaponType()) &&
                 bowSkillPending != PoeClone.Skills.SkillId.RainOfArrows;
-            if (TouchMode.Active && (projectileSpell || projectileBow))
+            if (TouchMode.Active && projectileBow)
             {
                 // Projectile release starts from raw input, including after the stick is released.
                 // Never reuse a highlighted target or the last assisted facing as the cone center.
@@ -658,7 +643,7 @@ namespace PoeClone.Player
                     transform.rotation = Quaternion.LookRotation(rawDirection);
                 return;
             }
-            if (TouchMode.Active && !castPending && !CharacterAttackAnimator.IsRanged(CurrentWeaponType()))
+            if (TouchMode.Active && !CharacterAttackAnimator.IsRanged(CurrentWeaponType()))
             {
                 // Always search around the player's raw input, never around a previously locked
                 // target. Releasing the stick keeps its last direction, not an enemy lock.

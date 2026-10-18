@@ -41,6 +41,11 @@ namespace PoeClone.Skills
         private CharacterAttackAnimator attackAnimator;
         private EquipmentSet boundEquipment;
         private ItemData boundMainHand;
+        private SkillId? castingSkill;
+        private int castingLevel, castingSlot;
+        private float castEndsAt;
+        private ItemData castingWeapon;
+        public bool IsCasting => castingSkill.HasValue;
 
         /// <summary>Slots, gear-granted skills or their levels changed (the bars redraw).</summary>
         public event Action Changed;
@@ -130,6 +135,7 @@ namespace PoeClone.Skills
             attackAnimator = GetComponentInChildren<CharacterAttackAnimator>();
             if (stats != null)
                 stats.Died += OnPlayerDied;
+            if (attackAnimator != null) attackAnimator.AttackCancelled += CancelPendingCast;
         }
 
         private void Start()
@@ -146,6 +152,7 @@ namespace PoeClone.Skills
 
         private void OnDestroy()
         {
+            if (attackAnimator != null) attackAnimator.AttackCancelled -= CancelPendingCast;
             if (stats != null)
                 stats.Died -= OnPlayerDied;
             if (boundEquipment != null)
@@ -156,6 +163,7 @@ namespace PoeClone.Skills
 
         private void OnDisable()
         {
+            CancelPendingCast();
             EndWhirlwind();
         }
 
@@ -167,6 +175,7 @@ namespace PoeClone.Skills
         /// <summary>Cancel pending casts and committed attacks when leaving an area or dying.</summary>
         public void CancelActions()
         {
+            CancelPendingCast();
             EndWhirlwind();
             StopAllCoroutines();
             if (controller != null)
@@ -217,31 +226,14 @@ namespace PoeClone.Skills
             (Stat(StatType.CastSpeed) + BonusesFor(id).Get(WeaponSkillEffect.Speed)) / 100f) *
             (controller != null && controller.HasOnslaught ? PlayerController.OnslaughtMore : 1f);
 
-        /// <summary>Cooldown at the skill's current level, after cast speed. Bow and melee skills have none.</summary>
-        public float Cooldown(SkillId id)
-        {
-            SkillDefinition skill = SkillBook.Get(id);
-            // Permanent skeleton summons use their listed cooldown even as the weapon's attack.
-            if (skill.Summon && !Minion.IsPermanent(MinionKindOf(id)) && WeaponSkill == id)
-                return 0.65f / (SkillCastRate(id));
-            if (skill.Bow || skill.MeleeAttack)
-                return 0f;
-            return skill.CooldownAt(1) / (SkillCastRate(id));
-        }
+        public float CooldownRecoveryMultiplier => inventory?.Stats?.CooldownRecoveryMultiplier ?? 1f;
+        public float CastTime(SkillId id) => SkillBook.Get(id).CastDuration(SkillCastRate(id));
 
-        public float CooldownAt(int slot)
-        {
-            SkillId? id = Slot(slot);
-            if (id == null) return 0f;
-            SkillDefinition skill = SkillBook.Get(id.Value);
-            return skill.CooldownAt(Mathf.Max(1, LevelAt(slot))) / CastRateMultiplier;
-        }
+        /// <summary>Recovery after the cast ends. Cast speed never shortens this timer.</summary>
+        public float Cooldown(SkillId id) => SkillBook.Get(id).RecoveryDuration(CooldownRecoveryMultiplier);
 
-        public float CooldownForGrant(SkillGrant grant)
-        {
-            SkillDefinition skill = SkillBook.Get(grant.Id);
-            return skill.CooldownAt(GrantLevelWithBonuses(grant)) / CastRateMultiplier;
-        }
+        public float CooldownAt(int slot) => Slot(slot) is SkillId id ? Cooldown(id) : 0f;
+        public float CooldownForGrant(SkillGrant grant) => Cooldown(grant.Id);
 
         /// <summary>
         /// A skill's cost at a skill level for this character (higher characters pay more). A melee
@@ -305,7 +297,7 @@ namespace PoeClone.Skills
             float l = Mathf.Max(0, characterLevel - 1);
             float earlyProgress = l / 10f;
             float pressure = l + 19f * (1f - Mathf.Exp(-earlyProgress * earlyProgress));
-            return pressure * Mathf.Min(1f, skill.Cooldown);
+            return pressure * Mathf.Min(1f, skill.CastTime + skill.Cooldown);
         }
 
         public float ManaCostForGrant(SkillGrant grant) => CostOf(grant.Id, GrantLevelWithBonuses(grant));
@@ -355,6 +347,8 @@ namespace PoeClone.Skills
                 return;
             }
 
+            AdvanceCast();
+
             int pressed = VirtualInput.SkillPressed;
             VirtualInput.SkillPressed = -1;
 
@@ -402,11 +396,11 @@ namespace PoeClone.Skills
                 CombatText.Show(transform.position + Vector3.up * 2f, skill.Name + ": not on your gear", UiKit.DimText, 0.8f);
                 return false;
             }
-            if (CooldownLeftAt(slot) > 0f || controller.IsDashing || controller.IsSkillCommitted)
+            if (IsCasting || CooldownLeftAt(slot) > 0f || controller.IsDashing || controller.IsSkillCommitted)
                 return false;
 
-            // Gestures wait for the current swing (or spin); Dash and War Cry can cut in.
-            bool usesArms = skill.Id != SkillId.Dash && skill.Id != SkillId.WarCry;
+            // Casting gestures wait for the current swing or spin; Dash remains immediate.
+            bool usesArms = skill.Spell;
             if (usesArms && (IsWhirling || (attackAnimator != null && attackAnimator.IsAttacking)))
                 return false;
 
@@ -416,53 +410,72 @@ namespace PoeClone.Skills
                 return false;
             }
 
-            float cooldown = CooldownAt(slot);
-            bindings.StartCooldown(slot, cooldown, Time.time);
             stats.EndArrivalProtection();
             controller.CancelWalk();
-            Cast(skill, level);
+            if (skill.Spell)
+                BeginCast(skill.Id, level, slot);
+            else
+            {
+                bindings.StartCooldown(slot, CooldownAt(slot), Time.time);
+                Cast(skill, level);
+            }
             return true;
         }
 
-        private void StartCooldown(SkillId id)
+        private void CancelPendingCast()
         {
+            if (!IsCasting) return;
+            castingSkill = null;
+            castingWeapon = null;
+            controller?.SetSkillCommit(false);
+        }
+
+        private void BeginCast(SkillId id, int level, int slot)
+        {
+            castingSkill = id;
+            castingLevel = level;
+            castingSlot = slot;
+            castingWeapon = MainWeapon;
+            float duration = CastTime(id);
+            castEndsAt = Time.time + duration;
+            controller?.SetSkillCommit(true);
+            Face(AimDirection());
+            ItemData weapon = inventory?.Equipment.GetActive(EquipSlot.MainHand);
+            attackAnimator?.PlayCast(weapon?.WeaponType ?? WeaponType.Unarmed, duration);
+        }
+
+        private void AdvanceCast()
+        {
+            if (!IsCasting || Time.time < castEndsAt) return;
+            SkillId id = castingSkill.Value;
+            int slot = castingSlot;
+            int level = castingLevel;
+            bool valid = slot < 0 ? MainWeapon == castingWeapon && MainSkill == id : Slot(slot) == id && LevelAt(slot) > 0;
+            CancelPendingCast();
+            if (!valid) return;
+            // Recovery begins after the entire gesture, and only recovery appears on the bar.
             float cooldown = Cooldown(id);
-            cooldownOf[id] = cooldown;
-            readyAt[id] = Time.time + cooldown;
+            if (slot >= 0)
+                bindings.StartCooldown(slot, cooldown, Time.time);
+            else
+            {
+                cooldownOf[id] = cooldown;
+                readyAt[id] = Time.time + cooldown;
+            }
+            Face(AimDirection());
+            Cast(SkillBook.Get(id), level, asAttack: true);
         }
 
-        // ------------------------------------------------------------------ the staff's attack
-
-        /// <summary>
-        /// Pays for one cast of the staff's attack spell (PlayerCombat starts the cast animation
-        /// when this succeeds, and calls <see cref="ReleaseMain"/> at its strike frame). False
-        /// without the mana for it: the staff is swung instead.
-        /// </summary>
-        public bool TrySpendMain()
+        /// <summary>Begin the main spell's timed gesture only when its separate recovery is over.</summary>
+        public bool TryStartMain()
         {
             SkillId? main = MainSkill;
-            if (main == null || stats == null)
+            if (main == null || stats == null || IsCasting || CooldownLeft(main.Value) > 0f)
                 return false;
-            if (!stats.TrySpendMana(ManaCost(main.Value)))
-                return false;
-            StartCooldown(main.Value);
+            if (!stats.TrySpendMana(ManaCost(main.Value))) return false;
+            stats.EndArrivalProtection();
+            BeginCast(main.Value, Mathf.Max(1, Level(main.Value)), -1);
             return true;
-        }
-
-        /// <summary>Seconds between casts of the attack spell (level and Cast Speed shorten it).</summary>
-        public float MainInterval()
-        {
-            SkillId? main = MainSkill;
-            return main != null ? Cooldown(main.Value) : 1f;
-        }
-
-        /// <summary>The attack spell leaves the staff, the way the player is facing right now.</summary>
-        public void ReleaseMain()
-        {
-            SkillId? main = MainSkill;
-            if (main == null)
-                return;
-            Cast(SkillBook.Get(main.Value), Mathf.Max(1, Level(main.Value)), asAttack: true);
         }
 
         /// <summary>How far the attack spell reaches (for PlayerCombat's aim highlight).</summary>
@@ -502,8 +515,6 @@ namespace PoeClone.Skills
             {
                 case SkillId.FireBolt:
                     Face(ProjectileAimAssist.Direction(transform.position, asAttack ? transform.forward : AimDirection(), BoltRange));
-                    if (!asAttack && attackAnimator != null)
-                        attackAnimator.PlayAttack(WeaponType.Unarmed);
                     var bolts = PlayerArrow.NewVolley();
                     int boltCount = 1 + extraProjectiles;
                     foreach (Vector3 direction in HitEffects.Spread(transform.forward, boltCount, 12f))
@@ -524,8 +535,6 @@ namespace PoeClone.Skills
 
                 case SkillId.IceShard:
                     Face(ProjectileAimAssist.Direction(transform.position, asAttack ? transform.forward : AimDirection(), ShardRange));
-                    if (!asAttack && attackAnimator != null)
-                        attackAnimator.PlayAttack(WeaponType.Unarmed);
                     // Each enemy is hurt by one shard of the fan: the spread covers more of them,
                     // it doesn't stack on one.
                     var shards = PlayerArrow.NewVolley();
@@ -578,8 +587,6 @@ namespace PoeClone.Skills
                 case SkillId.SpiritWolves:
                 case SkillId.BoneGolem:
                 case SkillId.SummonViper:
-                    if (!asAttack && attackAnimator != null)
-                        attackAnimator.PlayAttack(WeaponType.Unarmed);
                     float summonDistance = TouchMode.Active ? 3f : AimDistance() ?? 3f;
                     Minion.Summon(transform, MinionKindOf(skill.Id), level,
                         transform.position + AimDirection() * summonDistance);
@@ -675,8 +682,6 @@ namespace PoeClone.Skills
             Vector3 at = aimed != null ? aimed.transform.position : transform.position + direction * distance;
             float radius = 3.5f * area;
             Face(direction);
-            if (attackAnimator != null)
-                attackAnimator.PlayAttack(WeaponType.Unarmed);
             SkillEffects.Shockwave(at, radius, skill.Color, 0.5f, type: SkillEffects.DamagePattern(skill));
 
             float seconds = 6f;
@@ -689,8 +694,6 @@ namespace PoeClone.Skills
 
         private void RecallMinions(SkillDefinition skill, int level)
         {
-            if (attackAnimator != null)
-                attackAnimator.PlayAttack(WeaponType.Unarmed);
             Minion.Recall(transform);
             SkillEffects.Shockwave(transform.position, 2f, skill.Color, 0.3f);
             Record(skill, level, 2f);
@@ -731,8 +734,6 @@ namespace PoeClone.Skills
             }
 
             Face(target.transform.position - transform.position);
-            if (!asAttack && attackAnimator != null)
-                attackAnimator.PlayAttack(WeaponType.Unarmed);
 
             var tree = BonusesFor(skill.Id);
             int jumps = Mathf.Max(1, 1 + Mathf.RoundToInt(tree.Get(WeaponSkillEffect.Chains)));

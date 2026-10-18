@@ -52,8 +52,8 @@ namespace PoeClone.Inventory
         FireSpellLevels,
         ColdSpellLevels,
         LightningSpellLevels,
-        CastSpeed,                  // % faster casts and skill cooldowns
-        LegacyCooldownRecovery,     // reserved saved ID; migrated to CastSpeed
+        CastSpeed,                  // % faster casting animations; does not affect cooldowns
+        LegacyCooldownRecovery,     // reserved saved ID; migrated to CooldownRecovery
 
         // Mostly from the passive tree (see HitEffects for what each does in a fight).
         FireDamage,                 // % increased fire damage
@@ -195,6 +195,7 @@ namespace PoeClone.Inventory
         EffigyCastSpeed,
         EffigyRegen,
         EffigyRange,
+        CooldownRecovery,          // % increased cooldown recovery rate; does not affect cast time
     }
 
     /// <summary>
@@ -335,7 +336,7 @@ namespace PoeClone.Inventory
 
         public StatModifier(StatType stat, float value, int tier = 0)
         {
-            Stat = stat == StatType.LegacyCooldownRecovery ? StatType.CastSpeed : stat;
+            Stat = stat == StatType.LegacyCooldownRecovery ? StatType.CooldownRecovery : stat;
             Value = value;
             Tier = tier;
         }
@@ -358,7 +359,7 @@ namespace PoeClone.Inventory
 
         public BaseStats Set(StatType stat, float value)
         {
-            values[(int)(stat == StatType.LegacyCooldownRecovery ? StatType.CastSpeed : stat)] = value;
+            values[(int)(stat == StatType.LegacyCooldownRecovery ? StatType.CooldownRecovery : stat)] = value;
             return this;
         }
     }
@@ -420,6 +421,9 @@ namespace PoeClone.Inventory
 
         /// <summary>Each separate more/less source multiplies independently, including identical stat types.</summary>
         public float Multiplier(StatType stat) => multipliers[(int)stat];
+
+        /// <summary>Only cooldown recovery modifiers affect the separate recovery timer.</summary>
+        public float CooldownRecoveryMultiplier => Math.Max(0.01f, 1f + Total(StatType.CooldownRecovery) / 100f);
 
         /// <summary>Increased cast speed from all sources adds together.</summary>
         public float CastRateMultiplier => Math.Max(0.5f, 1f + Total(StatType.CastSpeed) / 100f);
@@ -690,7 +694,8 @@ namespace PoeClone.Inventory
                 case StatType.ColdSpellLevels: return "Cold Spell Levels";
                 case StatType.LightningSpellLevels: return "Lightning Spell Levels";
                 case StatType.CastSpeed: return "Cast Speed";
-                case StatType.LegacyCooldownRecovery: return "Cast Speed";
+                case StatType.LegacyCooldownRecovery:
+                case StatType.CooldownRecovery: return "Cooldown Recovery Rate";
                 case StatType.FireDamage: return "Fire Damage";
                 case StatType.ColdDamage: return "Cold Damage";
                 case StatType.LightningDamage: return "Lightning Damage";
@@ -815,6 +820,7 @@ namespace PoeClone.Inventory
                 case StatType.MeleeRange:
                 case StatType.CastSpeed:
                 case StatType.LegacyCooldownRecovery:
+                case StatType.CooldownRecovery:
                 case StatType.FireDamage:
                 case StatType.ColdDamage:
                 case StatType.LightningDamage:
@@ -920,7 +926,8 @@ namespace PoeClone.Inventory
                 case StatType.ColdSpellLevels: return sign + n + " to Level of all Cold Spells";
                 case StatType.LightningSpellLevels: return sign + n + " to Level of all Lightning Spells";
                 case StatType.CastSpeed: return n + "% increased Cast Speed";
-                case StatType.LegacyCooldownRecovery: return n + "% increased Cast Speed";
+                case StatType.LegacyCooldownRecovery:
+                case StatType.CooldownRecovery: return n + "% increased Cooldown Recovery Rate";
                 case StatType.FireDamage: return Increased(m, "Fire Damage");
                 case StatType.ColdDamage: return Increased(m, "Cold Damage");
                 case StatType.LightningDamage: return Increased(m, "Lightning Damage");
