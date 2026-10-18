@@ -1,3 +1,6 @@
+version: 2026-10-18-graveyard-lane
+- Widened the opening between the Haunted Graveyard's central yard and north-east plots so the visible path can be walked through.
+
 version: 2026-10-18-fixed-enemy-homes
 - Ordinary enemies return as the same type at their original spawn point, two minutes after death. Nearby players block respawning, so cleared ground stays clear until you leave and return.
 - Distant respawns stay unloaded until their terrain chunk is nearby and ready. Distant enemies remain hidden and inactive through the existing distance-sleep system.

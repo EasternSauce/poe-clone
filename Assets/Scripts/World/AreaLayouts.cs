@@ -288,6 +288,8 @@ namespace PoeClone.World
                         .Route(26, -124, 0, -78, 0, 0, 0, 80, 0, 98, 0)
                         .Route(24, -78, 0, -91, -50, -2, -99, 87, -46, 80, 0)
                         .Route(24, -78, 0, -76, 85, -8, 65, 62, 82, 80, 0)
+                        // Keep the opening from the central yard to the north-east plots passable.
+                        .Route(14, 22, 30, 48, 62)
                         // A lane off the north-east plots to the gate of the Drowned Belfry.
                         .Route(12, 108, 88, 152, 98)
                         .Lake(-30, -48, 23, 18).Exclude(36, -46, 22, 18)
