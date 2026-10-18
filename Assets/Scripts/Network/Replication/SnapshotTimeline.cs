@@ -279,6 +279,10 @@ namespace PoeClone.Network.Replication
             dst.rs = src.rs;
             dst.stg = src.stg;
             dst.ch = src.ch;
+            dst.k = src.k;
+            dst.lv = src.lv;
+            dst.er = src.er;
+            dst.de = src.de;
             dst.bs = src.bs;
             dst.bp = src.bp;
             dst.bm = src.bm;

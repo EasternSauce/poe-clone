@@ -13,7 +13,7 @@ namespace PoeClone.Enemies
     public class EnemySpawner : MonoBehaviour
     {
         [SerializeField] private GameObject enemyPrefab;
-        [SerializeField] private int enemyCount = 24;
+        [SerializeField] private int enemyCount = 48;
 
         [Header("Respawning")]
         [Tooltip("A dead enemy's spot refills once the player is at least this far from it (well off screen).")]
@@ -33,6 +33,7 @@ namespace PoeClone.Enemies
             public Vector3 Position;
             public float DiedAt;
             public int Kind;
+            public float ReadyAt;
         }
 
         private const float CheckInterval = 1f;
@@ -42,6 +43,16 @@ namespace PoeClone.Enemies
         private readonly Dictionary<EnemyHealth, Vector3> enemyHomes = new Dictionary<EnemyHealth, Vector3>();
         private PlayerController player;
         private float nextCheckAt;
+        private const float EscalationKillFraction = 0.5f;
+        private const float AreaResetSeconds = 120f;
+        private readonly List<(Vector3 point, int kind)> baselineHomes = new List<(Vector3, int)>();
+        private readonly HashSet<Vector3> extraHomes = new HashSet<Vector3>();
+        private int killsSinceEscalation;
+        private float leftAt = -1f;
+        private bool areaActive;
+        public int BaselinePopulation => baselineHomes.Count;
+        public int TotalPopulation => baselineHomes.Count + extraHomes.Count;
+        public int KillsToEscalation => Mathf.Max(1, Mathf.CeilToInt(TotalPopulation * EscalationKillFraction));
 
         // Set by WorldBuilder for each area: where the area is, how tough its enemies are, and
         // which kinds live there (one weight per EnemyKinds entry; null = their default weights).
@@ -117,7 +128,7 @@ namespace PoeClone.Enemies
             enemyPrefab = prefab;
             center = new Vector3(areaCenter.x, 0f, areaCenter.z);
             areaHalfSize = halfSize;
-            enemyCount = count;
+            enemyCount = count * 2;
             monsterLevel = Mathf.Max(1, level);
             kindWeights = weights;
         }
@@ -128,6 +139,7 @@ namespace PoeClone.Enemies
         public void Adopt(EnemyHealth enemy)
         {
             enemy.transform.SetParent(transform, true);
+            if (enemy.IsDensityExtra) extraHomes.Add(enemy.transform.position);
             TrackHome(enemy, enemy.transform.position, enemy.KindIndex);
         }
 
@@ -141,6 +153,8 @@ namespace PoeClone.Enemies
             public Vector3 position;
             public float facing, healthFraction, corpseRemaining;
             public bool dead, hasHome;
+            public EnemyRarity rarity;
+            public bool extra;
             public Vector3 home;
         }
 
@@ -156,6 +170,7 @@ namespace PoeClone.Enemies
         {
             public Vector3 position;
             public float elapsed;
+            public float remaining;
             public string kind;
         }
 
@@ -166,13 +181,22 @@ namespace PoeClone.Enemies
             public List<UpdateEnemy> enemies = new List<UpdateEnemy>();
             public List<UpdateHome> homes = new List<UpdateHome>();
             public List<UpdateVacancy> vacancies = new List<UpdateVacancy>();
+            public List<UpdateHome> baseline = new List<UpdateHome>();
+            public List<Vector3> extras = new List<Vector3>();
+            public int escalationKills;
+            public float awaySeconds;
+            public bool hasSpawnCooldowns;
         }
 
         private readonly List<UpdateEnemy> pendingUpdateEnemies = new List<UpdateEnemy>();
 
         public UpdateState CaptureForUpdate()
         {
-            var state = new UpdateState { area = streamingArea };
+            var state = new UpdateState { area = streamingArea, escalationKills = killsSinceEscalation, hasSpawnCooldowns = true,
+                awaySeconds = leftAt < 0f ? 0f : Time.realtimeSinceStartup - leftAt };
+            foreach (var home in baselineHomes)
+                state.baseline.Add(new UpdateHome { position = home.point, kind = EnemyKinds.Get(home.kind).Name });
+            state.extras.AddRange(extraHomes);
             state.enemies.AddRange(pendingUpdateEnemies);
             foreach (var enemy in GetComponentsInChildren<EnemyHealth>(true))
             {
@@ -183,6 +207,7 @@ namespace PoeClone.Enemies
                 state.enemies.Add(new UpdateEnemy { kind = kind.Name, position = enemy.transform.position,
                     facing = enemy.transform.eulerAngles.y, healthFraction = enemy.CurrentHealth / enemy.MaxHealth,
                     dead = enemy.IsDead, corpseRemaining = enemy.CorpseTimeRemaining,
+                    rarity = enemy.Rarity, extra = enemy.IsDensityExtra,
                     hasHome = enemyHomes.ContainsKey(enemy),
                     home = enemyHomes.TryGetValue(enemy, out var home) ? home : enemy.transform.position });
             }
@@ -191,7 +216,8 @@ namespace PoeClone.Enemies
             foreach (var bucket in vacancies.Values)
                 foreach (var vacancy in bucket)
                     state.vacancies.Add(new UpdateVacancy { position = vacancy.Position,
-                        kind = EnemyKinds.Get(vacancy.Kind).Name, elapsed = Time.time - vacancy.DiedAt });
+                        kind = EnemyKinds.Get(vacancy.Kind).Name, elapsed = Time.time - vacancy.DiedAt,
+                        remaining = Mathf.Max(0f, vacancy.ReadyAt - Time.time) });
             return state;
         }
 
@@ -199,6 +225,15 @@ namespace PoeClone.Enemies
         {
             var state = PoeClone.Network.GameSessionController.Instance?.TakeUpdatePopulation(area);
             if (state == null) return false;
+            killsSinceEscalation = state.escalationKills;
+            if (state.awaySeconds > 0f) leftAt = Time.realtimeSinceStartup - state.awaySeconds;
+            if (state.baseline != null)
+                foreach (var home in state.baseline)
+                {
+                    int kind = EnemyKinds.IndexOf(home.kind);
+                    if (kind >= 0) baselineHomes.Add((home.position, kind));
+                }
+            if (state.extras != null) extraHomes.UnionWith(state.extras);
             foreach (var home in state.homes)
             {
                 int kind = EnemyKinds.IndexOf(home.kind);
@@ -216,7 +251,17 @@ namespace PoeClone.Enemies
                     try { kind = PickKind(vacancy.position); }
                     finally { Random.state = previous; }
                 }
-                AddVacancy(new Vacancy { Position = vacancy.position, Kind = kind, DiedAt = Time.time - vacancy.elapsed });
+                AddVacancy(new Vacancy { Position = vacancy.position, Kind = kind, DiedAt = Time.time - vacancy.elapsed,
+                    ReadyAt = Time.time + (state.hasSpawnCooldowns ? vacancy.remaining : Mathf.Max(0f, RespawnDelay - vacancy.elapsed)) });
+            }
+            // Compatibility with older handoffs that stored only living enemies and pending homes.
+            if (baselineHomes.Count == 0)
+            {
+                baselineHomes.AddRange(openingHomes);
+                foreach (var enemy in state.enemies)
+                    if (!enemy.dead && !enemy.extra) RegisterBaseline(enemy.home, EnemyKinds.IndexOf(enemy.kind));
+                foreach (var vacancy in state.vacancies)
+                    RegisterBaseline(vacancy.position, EnemyKinds.IndexOf(vacancy.kind));
             }
             return true;
         }
@@ -254,6 +299,7 @@ namespace PoeClone.Enemies
                 // Thin the completed map-wide plan, without refilling its removed slots.
                 // A gradual density increase avoids a crowded rim at the clear boundary.
                 openingHomes.RemoveAll(home => Random.value >= ArrivalSpawnChance(home.point));
+                baselineHomes.AddRange(openingHomes);
             }
             finally { Random.state = previous; }
         }
@@ -276,7 +322,9 @@ namespace PoeClone.Enemies
                 bool safe = TryPrepareSpawnPoint(point, kind, out point, clearanceRadius, spawnHeight);
                 // Updated scenery may block the old spot. Keep the enemy nearby on safe ground.
                 if (!safe && !TryFindSpawnPointNear(record.position, out point, out _, kind)) continue;
-                var enemy = Spawn(point, kind, refills: !record.dead, home: record.hasHome ? record.home : record.position).GetComponent<EnemyHealth>();
+                var enemy = Spawn(point, kind, refills: !record.dead, home: record.hasHome ? record.home : record.position,
+                    rarity: record.rarity).GetComponent<EnemyHealth>();
+                enemy.IsDensityExtra = record.extra;
                 enemy.transform.rotation = Quaternion.Euler(0f, record.facing, 0f);
                 if (record.dead) enemy.RestoreUpdateCorpse(record.corpseRemaining);
                 else enemy.ApplyReplicatedHealth(enemy.MaxHealth * Mathf.Clamp01(record.healthFraction), enemy.MaxHealth);
@@ -308,7 +356,7 @@ namespace PoeClone.Enemies
                     if (!valid) continue;
                     var previous = Random.state;
                     Random.InitState(seed);
-                    try { Spawn(at, home.kind); }
+                    try { Spawn(at, home.kind, home: home.point); }
                     finally { Random.state = previous; }
                     break;
                 }
@@ -396,14 +444,16 @@ namespace PoeClone.Enemies
                     for (int k = bucket.Count - 1; k >= 0; k--)
                     {
                         Vacancy vacancy = bucket[k];
-                        if (Time.time - vacancy.DiedAt < RespawnDelay) continue;
+                        if (Time.time < vacancy.ReadyAt) continue;
                         float distance = PoeClone.Visuals.WorldActivity.DistanceSquared(vacancy.Position);
                         if (distance < respawnDistance * respawnDistance || distance > radius * radius) continue;
                         // A visited chunk can still be far away. Never instantiate there just because
                         // its cooldown elapsed, nor probe physics before its terrain has streamed in.
                         if (streamingArea >= 0 && (WorldBuilder.Instance == null ||
                             !WorldBuilder.Instance.IsPositionReady(streamingArea, vacancy.Position))) continue;
-                        if (!TryPrepareSpawnPoint(vacancy.Position, vacancy.Kind, out var point, clearanceRadius, spawnHeight)) continue;
+                        if (!TryPrepareSpawnPoint(vacancy.Position, vacancy.Kind, out var point, clearanceRadius, spawnHeight) &&
+                            !TryFindSpawnPointNear(vacancy.Position, out point, out _, vacancy.Kind)) continue;
+                        if (PoeClone.Visuals.WorldActivity.DistanceSquared(point) < respawnDistance * respawnDistance) continue;
                         Spawn(point, vacancy.Kind, home: vacancy.Position);
                         bucket.RemoveAt(k);
                     }
@@ -426,12 +476,84 @@ namespace PoeClone.Enemies
 
         private void TrackHome(EnemyHealth enemy, Vector3 home, int kind)
         {
+            enemy.IsDensityExtra = extraHomes.Contains(home);
+            if (!enemy.IsDensityExtra) RegisterBaseline(home, kind);
             enemyHomes[enemy] = home;
             enemy.Died += () =>
             {
-                enemyHomes.Remove(enemy);
-                AddVacancy(new Vacancy { Position = home, Kind = kind, DiedAt = Time.time });
+                if (!enemyHomes.Remove(enemy)) return;
+                AddVacancy(new Vacancy { Position = home, Kind = kind, DiedAt = Time.time, ReadyAt = Time.time + RespawnDelay });
+                if (areaActive && ++killsSinceEscalation >= KillsToEscalation) Escalate();
             };
+        }
+
+        private void RegisterBaseline(Vector3 home, int kind)
+        {
+            if (kind < 0 || baselineHomes.Exists(entry => entry.point == home)) return;
+            baselineHomes.Add((home, kind));
+        }
+
+        private void Escalate()
+        {
+            if (baselineHomes.Count == 0) return;
+            killsSinceEscalation = 0;
+            foreach (var bucket in vacancies.Values)
+                for (int i = 0; i < bucket.Count; i++)
+                {
+                    var vacancy = bucket[i];
+                    vacancy.ReadyAt = Time.time + Mathf.Max(0f, vacancy.ReadyAt - Time.time) * 0.5f;
+                    bucket[i] = vacancy;
+                }
+
+            // Sample without replacement from the immutable baseline, including unstreamed homes.
+            var choices = new List<(Vector3 point, int kind)>(baselineHomes);
+            int additions = Mathf.Max(1, Mathf.RoundToInt(choices.Count * 0.5f));
+            int added = 0;
+            for (int i = 0; i < additions; i++)
+            {
+                int pick = Random.Range(i, choices.Count);
+                var anchor = choices[pick];
+                choices[pick] = choices[i];
+                choices[i] = anchor;
+                for (int attempt = 0; attempt < maxAttemptsPerEnemy; attempt++)
+                {
+                    Vector2 offset = Random.insideUnitCircle * respawnScatter;
+                    Vector3 point = anchor.point + new Vector3(offset.x, 0f, offset.y);
+                    if (offset.sqrMagnitude < 1f || NearSafeSpot(point) || ArrivalSpawnChance(point) <= 0f ||
+                        inside != null && !inside(point) || extraHomes.Contains(point)) continue;
+                    extraHomes.Add(point);
+                    added++;
+                    AddVacancy(new Vacancy { Position = point, Kind = PickKind(point), ReadyAt = Time.time, DiedAt = Time.time });
+                    break;
+                }
+            }
+            if (added > 0) PoeClone.UI.PlayerHUD.ShowAreaThreat("The land stirs... more horrors gather.");
+        }
+
+        private void ResetEscalation()
+        {
+            killsSinceEscalation = 0;
+            var livingHomes = new HashSet<Vector3>();
+            var remove = new List<EnemyHealth>();
+            foreach (var entry in enemyHomes)
+                if (extraHomes.Contains(entry.Value)) remove.Add(entry.Key);
+                else livingHomes.Add(entry.Value);
+            foreach (var enemy in remove) enemyHomes.Remove(enemy);
+            foreach (var enemy in GetComponentsInChildren<EnemyHealth>(true))
+                if (enemy.IsDensityExtra)
+                {
+                    PoeClone.Visuals.DistanceActivity.SetAvailable(enemy.gameObject, false);
+                    Destroy(enemy.gameObject);
+                }
+            pendingUpdateEnemies.RemoveAll(enemy => enemy.extra);
+            foreach (var enemy in pendingUpdateEnemies)
+                if (!enemy.dead) livingHomes.Add(enemy.home);
+            foreach (var home in openingHomes) livingHomes.Add(home.point);
+            vacancies.Clear();
+            extraHomes.Clear();
+            foreach (var home in baselineHomes)
+                if (!livingHomes.Contains(home.point))
+                    AddVacancy(new Vacancy { Position = home.point, Kind = home.kind, ReadyAt = Time.time });
         }
 
         /// <summary>
@@ -475,14 +597,14 @@ namespace PoeClone.Enemies
             }
         }
 
-        private GameObject Spawn(Vector3 point, int kindIndex, bool refills = true, Vector3? home = null)
+        private GameObject Spawn(Vector3 point, int kindIndex, bool refills = true, Vector3? home = null, EnemyRarity? rarity = null)
         {
             long started = PoeClone.UI.PerformanceDiagnostics.Begin();
             try
             {
                 Quaternion rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
                 GameObject enemy = Instantiate(enemyPrefab, point, rotation, transform);
-                EnemyKinds.Apply(enemy, kindIndex, monsterLevel);
+                EnemyKinds.Apply(enemy, kindIndex, monsterLevel, rarity ?? RollRarity());
 
                 EnemyHealth health = enemy.GetComponent<EnemyHealth>();
                 if (health != null && refills)
@@ -598,10 +720,25 @@ namespace PoeClone.Enemies
         /// </summary>
         public void SetAreaActive(bool active)
         {
+            if (active && !areaActive)
+            {
+                if (leftAt >= 0f && Time.realtimeSinceStartup - leftAt >= AreaResetSeconds) ResetEscalation();
+                leftAt = -1f;
+            }
+            else if (!active && areaActive) leftAt = Time.realtimeSinceStartup;
+            areaActive = active;
             enabled = active;
             for (int i = 0; i < transform.childCount; i++)
                 PoeClone.Visuals.DistanceActivity.SetAvailable(transform.GetChild(i).gameObject, active);
         }
+
+        public static EnemyRarity RollRarity()
+        {
+            // Layout generation deliberately seeds Unity's RNG; rarity must remain a fresh roll.
+            double roll = rarityRandom.NextDouble();
+            return roll < 0.05f ? EnemyRarity.Rare : roll < 0.25f ? EnemyRarity.Magic : EnemyRarity.Normal;
+        }
+        private static readonly System.Random rarityRandom = new System.Random();
 
         private bool TryFindSpawnPoint(out Vector3 point, out int kindIndex)
         {

@@ -678,7 +678,7 @@ namespace PoeClone.Network
             }
 
             if (e.sk > prev.sk && !coopGuest)
-                EnemySkills.PlayVisual(this, EnemyKinds.Get(e.k), puppet.Root.transform, new Vector3(e.sx, puppet.Root.transform.position.y, e.sz), e.sk, e.en != 0, playerStats != null ? playerStats.transform : null);
+                EnemySkills.PlayVisual(this, EnemyKinds.Get(e.k).WithRarity((EnemyRarity)e.er), puppet.Root.transform, new Vector3(e.sx, puppet.Root.transform.position.y, e.sz), e.sk, e.en != 0, playerStats != null ? playerStats.transform : null);
 
             if (e.stg > prev.stg && puppet.Stagger != null)
             {
@@ -895,9 +895,10 @@ namespace PoeClone.Network
             GameObject go = Instantiate(enemyPrefab, position, rotation, puppetParent);
             go.name = $"EnemyPuppet_{e.i}";
 
-            EnemyKind kind = EnemyKinds.Get(e.k);
+            EnemyKind kind = EnemyKinds.Get(e.k).WithRarity((EnemyRarity)e.er);
             EnemyKinds.ApplyLook(go, kind);
             go.GetComponent<EnemyHealth>()?.SetKindIndex(e.k);
+            go.GetComponent<EnemyHealth>()?.SetRarity((EnemyRarity)e.er);
 
             // Awake has run (adding EnemyCombat + the attack animator); Start hasn't. Switch off
             // everything that would think for itself before it gets the chance.

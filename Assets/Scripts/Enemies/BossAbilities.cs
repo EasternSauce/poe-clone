@@ -782,7 +782,7 @@ namespace PoeClone.Enemies
                 if (!EnemySpawner.TryPrepareSpawnPoint(at, kindIndex, out at))
                     continue;
                 GameObject minion = Instantiate(minionPrefab, at, Quaternion.LookRotation(Flat(transform.position - at) + Vector3.forward * 0.001f), transform.parent);
-                EnemyKinds.Apply(minion, kindIndex, level);
+                EnemyKinds.Apply(minion, kindIndex, level, EnemySpawner.RollRarity());
                 EnemyHealth h = minion.GetComponent<EnemyHealth>();
                 minions.Add(h);
                 minion.GetComponent<EnemyController>()?.Alert();

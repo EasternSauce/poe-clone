@@ -81,6 +81,17 @@ namespace PoeClone.Enemies
 
         /// <summary>Which <see cref="EnemyKinds"/> entry this is (replicated, and decides loot).</summary>
         public int KindIndex { get; private set; }
+        public EnemyRarity Rarity { get; private set; }
+        public bool IsDensityExtra { get; set; }
+
+        public void SetRarity(EnemyRarity rarity)
+        {
+            Rarity = rarity;
+            if (rarity == EnemyRarity.Normal) return;
+            var outline = GetComponent<Outline>() ?? gameObject.AddComponent<Outline>();
+            outline.SetPersistentColor(rarity == EnemyRarity.Rare
+                ? new Color(1f, 0.78f, 0.08f) : new Color(0.16f, 0.45f, 1f));
+        }
 
         /// <summary>How tough this one is (areas deeper in the world spawn higher levels).</summary>
         public int MonsterLevel { get; private set; } = 1;
@@ -507,7 +518,7 @@ namespace PoeClone.Enemies
             DisableLiveBehaviour();
 
             EnemyKind kind = EnemyKinds.Get(KindIndex);
-            GrantKillRewards(KindIndex, MonsterLevel, experienceReward, transform.position, dropLoot: true);
+            GrantKillRewards(KindIndex, MonsterLevel, experienceReward, transform.position, dropLoot: true, rarity: Rarity);
             Killed?.Invoke(this);
 
             if (kind.SplitInto >= 0)
@@ -529,7 +540,7 @@ namespace PoeClone.Enemies
         /// <paramref name="dropLoot"/>, its loot rolled here too (a co-op guest gets the
         /// experience of the host's kills, while the loot lands on the host's shared ground).
         /// </summary>
-        public static void GrantKillRewards(int kindIndex, int monsterLevel, int experience, Vector3 at, bool dropLoot)
+        public static void GrantKillRewards(int kindIndex, int monsterLevel, int experience, Vector3 at, bool dropLoot, EnemyRarity rarity = EnemyRarity.Normal)
         {
             PlayerStats player = FindAnyObjectByType<PlayerStats>();
             if (KillRewards.CanReceiveExperience(player, at))
@@ -538,7 +549,7 @@ namespace PoeClone.Enemies
                 player.GetComponent<PoeClone.Skills.PlayerSkills>()?.GainWeaponExperience(experience);
             }
 
-            EnemyKind kind = EnemyKinds.Get(kindIndex);
+            EnemyKind kind = EnemyKinds.Get(kindIndex).WithRarity(rarity);
             dropLoot &= LootDrop.EnemyDropsActive;
             if (dropLoot)
             {
@@ -639,7 +650,7 @@ namespace PoeClone.Enemies
                 if (!EnemySpawner.TryPrepareSpawnPoint(at, kindIndex, out at, clearanceRadius: 0.6f))
                     continue;
                 GameObject child = Instantiate(spawner.EnemyPrefab, at, transform.rotation * Quaternion.Euler(0f, k * 50f, 0f), transform.parent);
-                EnemyKinds.Apply(child, kindIndex, MonsterLevel);
+                EnemyKinds.Apply(child, kindIndex, MonsterLevel, EnemySpawner.RollRarity());
                 EnemyController ai = child.GetComponent<EnemyController>();
                 if (ai != null)
                     ai.Alert();

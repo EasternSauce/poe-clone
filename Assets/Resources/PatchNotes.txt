@@ -1,3 +1,10 @@
+version: 2026-10-18-escalating-hordes
+- Ordinary area enemy density is doubled. Each time you kill 50% of the area's current population, remaining respawn cooldowns are halved and another wave is added beside a randomly selected half of the original spawn homes. Added enemies count towards the next kill target but never create more spawn homes themselves, so each wave adds the same amount instead of multiplying the horde.
+- Reinforcements and respawns wait until players are at least 30 metres away, and appear as their terrain streams in. Leaving an area for two minutes removes its reinforcements and resets its kill progress and respawn timers to baseline.
+- Each reinforcement wave announces itself for four seconds in the centre of the screen: "The land stirs... more horrors gather."
+- Ordinary enemies independently roll 20% magic or 5% rare on every spawn, including your first visit. Magic enemies have blue outlines, 30% increased size, double life, 20% increased damage, and 20% faster movement, attacks and abilities. Rare enemies have yellow outlines, double size, five times life, 50% increased damage, and 50% faster movement, attacks and abilities. Bosses keep their authored stats.
+- Magic enemies give double experience and gold, twice the gear rolls, double the gear-drop chance and improved item rarity. Rare enemies give five times experience and gold, four times the gear rolls, triple the gear-drop chance and a larger item-rarity bonus.
+
 version: 2026-10-18-horde-and-fixes
 - Fixed the character's legs wiggling rapidly for a few seconds after stopping or casting.
 - Trees no longer grow out of the rock banks along area borders; they stand just inside the edge instead. Trees on wooded knolls keep clear of the rocks there too.

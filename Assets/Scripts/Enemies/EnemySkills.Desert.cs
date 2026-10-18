@@ -45,18 +45,18 @@ namespace PoeClone.Enemies
             Vector3 from = transform.position;
             Vector3 axis = FissureDirection(from, target);
             int interrupted = stagger != null ? stagger.TriggerCount : 0;
-            busyUntil = Time.time + windup + duration + 0.65f;
-            desertBraceUntil = Time.time + windup;
-            GetComponentInChildren<CreatureAnimator>()?.Crouch(windup);
-            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(from, axis, duration * speed, 2, windup, DamageType.Physical, null));
-            yield return new WaitForSeconds(windup);
+            busyUntil = Time.time + (windup + duration + 0.65f) / kind.AbilitySpeed;
+            desertBraceUntil = Time.time + windup / kind.AbilitySpeed;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(windup / kind.AbilitySpeed);
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(from, axis, duration * speed, 2, windup / kind.AbilitySpeed, DamageType.Physical, null));
+            yield return new WaitForSeconds(windup / kind.AbilitySpeed);
             if (!CastAlive(interrupted)) yield break;
             bool hit = false;
-            for (float t = 0; t < duration && CastAlive(interrupted); t += Time.deltaTime)
+            for (float t = 0; t < duration && CastAlive(interrupted); t += (Time.deltaTime * kind.AbilitySpeed))
             {
                 Vector3 before = transform.position;
                 if (!mirror && body != null && body.enabled)
-                    body.Move(axis * (speed * Time.deltaTime) + Vector3.down * 2f * Time.deltaTime);
+                    body.Move(axis * (speed * (Time.deltaTime * kind.AbilitySpeed)) + Vector3.down * 2f * (Time.deltaTime * kind.AbilitySpeed));
                 if (!hit && CanSpecialHit() && aimedAtLocal && SegmentDistance(before, transform.position + axis * 0.8f, player.transform.position) < 1.3f)
                 {
                     player.TakeHit(damage, DamageType.Physical);
@@ -73,10 +73,10 @@ namespace PoeClone.Enemies
             Vector3 from = transform.position;
             Vector3 axis = FissureDirection(from, target);
             int interrupted = stagger != null ? stagger.TriggerCount : 0;
-            busyUntil = Time.time + windup + 0.65f;
-            GetComponentInChildren<CreatureAnimator>()?.Crouch(windup);
-            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(from, axis, 4, 1.3f, windup, DamageType.Physical, null));
-            yield return new WaitForSeconds(windup);
+            busyUntil = Time.time + (windup + 0.65f) / kind.AbilitySpeed;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(windup / kind.AbilitySpeed);
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(from, axis, 4, 1.3f, windup / kind.AbilitySpeed, DamageType.Physical, null));
+            yield return new WaitForSeconds(windup / kind.AbilitySpeed);
             if (!CastAlive(interrupted)) yield break;
             SkillEffects.Shockwave(from + axis * 2.4f, 0.8f, new Color(0.65f, 0.72f, 0.22f), 0.25f);
             if (CanSpecialHit() && InsideDesertLine(from, axis, 4, 1.3f, player.transform.position) &&
@@ -88,7 +88,7 @@ namespace PoeClone.Enemies
         {
             const float travel = 1.1f, warning = 0.7f;
             int interrupted = stagger != null ? stagger.TriggerCount : 0;
-            busyUntil = Time.time + travel + warning + 1f;
+            busyUntil = Time.time + (travel + warning + 1f) / kind.AbilitySpeed;
             Vector3 from = transform.position;
             burrowModel = transform.Find("Model");
             if (burrowModel != null)
@@ -100,11 +100,11 @@ namespace PoeClone.Enemies
             try
             {
                 float nextRipple = 0;
-                for (float t = 0; t < travel && CastAlive(interrupted); t += Time.deltaTime)
+                for (float t = 0; t < travel && CastAlive(interrupted); t += (Time.deltaTime * kind.AbilitySpeed))
                 {
-                    Vector3 destination = Vector3.Lerp(from, new Vector3(target.x, from.y, target.z), Mathf.Clamp01((t + Time.deltaTime) / travel));
+                    Vector3 destination = Vector3.Lerp(from, new Vector3(target.x, from.y, target.z), Mathf.Clamp01((t + (Time.deltaTime * kind.AbilitySpeed)) / travel));
                     if (!mirror && body != null && body.enabled)
-                        body.Move(destination - transform.position + Vector3.down * Time.deltaTime);
+                        body.Move(destination - transform.position + Vector3.down * (Time.deltaTime * kind.AbilitySpeed));
                     if (t >= nextRipple)
                     {
                         nextRipple += 0.12f;
@@ -114,8 +114,8 @@ namespace PoeClone.Enemies
                 }
                 if (!CastAlive(interrupted)) yield break;
                 Vector3 eruption = transform.position;
-                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(eruption, 2.4f, warning, DamageType.Physical, null));
-                yield return new WaitForSeconds(warning);
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(eruption, 2.4f, warning / kind.AbilitySpeed, DamageType.Physical, null));
+                yield return new WaitForSeconds(warning / kind.AbilitySpeed);
                 if (!CastAlive(interrupted)) yield break;
                 RestoreBurrow();
                 SkillEffects.Shockwave(eruption, 2.4f, DustColor, 0.4f);
@@ -127,10 +127,10 @@ namespace PoeClone.Enemies
         private IEnumerator DesertFan(Vector3 target, float damage)
         {
             int interrupted = stagger != null ? stagger.TriggerCount : 0;
-            busyUntil = Time.time + 1.65f;
+            busyUntil = Time.time + 1.65f / kind.AbilitySpeed;
             PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(transform.position, FissureDirection(transform.position, target),
-                kind.AttackRange, 24, 0.8f, () => CastAlive(interrupted)));
-            yield return new WaitForSeconds(0.8f);
+                kind.AttackRange, 24, 0.8f / kind.AbilitySpeed, () => CastAlive(interrupted)));
+            yield return new WaitForSeconds(0.8f / kind.AbilitySpeed);
             if (CastAlive(interrupted)) Volley(transform, kind, target, aimedAtLocal ? player : null, damage);
         }
 
@@ -139,9 +139,9 @@ namespace PoeClone.Enemies
             if (activeSandstorm != null) yield break;
             const float windup = 0.9f;
             int interrupted = stagger != null ? stagger.TriggerCount : 0;
-            busyUntil = Time.time + windup + 0.4f;
-            SkillEffects.Rise(transform, new Color(0.75f, 0.52f, 0.26f), windup);
-            for (float t = 0; t < windup; t += Time.deltaTime)
+            busyUntil = Time.time + (windup + 0.4f) / kind.AbilitySpeed;
+            SkillEffects.Rise(transform, new Color(0.75f, 0.52f, 0.26f), windup / kind.AbilitySpeed);
+            for (float t = 0; t < windup; t += (Time.deltaTime * kind.AbilitySpeed))
             {
                 if (!CastAlive(interrupted)) yield break;
                 if (aim != null) target = aim.position;
@@ -160,14 +160,14 @@ namespace PoeClone.Enemies
             if (move == 1) { yield return DesertRush(target, damage * 1.25f); yield break; }
             const float windup = 0.9f;
             int interrupted = stagger != null ? stagger.TriggerCount : 0;
-            busyUntil = Time.time + windup + 0.8f;
+            busyUntil = Time.time + (windup + 0.8f) / kind.AbilitySpeed;
             Vector3 from = transform.position;
             Vector3 axis = FissureDirection(from, target);
             if (move == 0)
-                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(from, axis, 4.8f, 65, windup, () => CastAlive(interrupted)));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(from, axis, 4.8f, 65, windup / kind.AbilitySpeed, () => CastAlive(interrupted)));
             else
-                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(from, axis, 13, 2.3f, windup, DamageType.Physical, null));
-            yield return new WaitForSeconds(windup);
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(from, axis, 13, 2.3f, windup / kind.AbilitySpeed, DamageType.Physical, null));
+            yield return new WaitForSeconds(windup / kind.AbilitySpeed);
             if (!CastAlive(interrupted)) yield break;
             if (move == 0)
             {
@@ -191,7 +191,7 @@ namespace PoeClone.Enemies
                         player.TakeHit(damage * 1.2f, DamageType.Physical);
                         hit = true;
                     }
-                    yield return new WaitForSeconds(0.07f);
+                    yield return new WaitForSeconds(0.07f / kind.AbilitySpeed);
                 }
             }
         }
@@ -203,40 +203,40 @@ namespace PoeClone.Enemies
             switch (kind.Skill)
             {
                 case EnemySkill.DesertCharge:
-                    yield return GroundTelegraph.RunLine(from, axis, 9.75f, 2, 0.65f, DamageType.Physical, null);
+                    yield return GroundTelegraph.RunLine(from, axis, 9.75f, 2, 0.65f / kind.AbilitySpeed, DamageType.Physical, null);
                     break;
                 case EnemySkill.ScorpionSting:
-                    body.GetComponentInChildren<CreatureAnimator>()?.Crouch(0.85f);
-                    yield return GroundTelegraph.RunLine(from, axis, 4, 1.3f, 0.85f, DamageType.Physical, null);
+                    body.GetComponentInChildren<CreatureAnimator>()?.Crouch(0.85f / kind.AbilitySpeed);
+                    yield return GroundTelegraph.RunLine(from, axis, 4, 1.3f, 0.85f / kind.AbilitySpeed, DamageType.Physical, null);
                     break;
                 case EnemySkill.SandBurrow:
                     for (float t = 0; t < 1.1f && body != null; t += 0.12f)
                     {
                         SkillEffects.Shockwave(body.position, 1.1f, DustColor, 0.22f);
-                        yield return new WaitForSeconds(0.12f);
+                        yield return new WaitForSeconds(0.12f / kind.AbilitySpeed);
                     }
-                    if (body != null) yield return GroundTelegraph.Run(body.position, 2.4f, 0.7f, DamageType.Physical, null);
+                    if (body != null) yield return GroundTelegraph.Run(body.position, 2.4f, 0.7f / kind.AbilitySpeed, DamageType.Physical, null);
                     break;
                 case EnemySkill.JavelinFan:
-                    yield return GroundTelegraph.RunCone(from, axis, kind.AttackRange, 24, 0.8f);
+                    yield return GroundTelegraph.RunCone(from, axis, kind.AttackRange, 24, 0.8f / kind.AbilitySpeed);
                     if (body != null) Volley(body, kind, target, null, 0);
                     break;
                 case EnemySkill.RollingSandstorm:
-                    SkillEffects.Rise(body, new Color(0.75f, 0.52f, 0.26f), 0.9f);
-                    yield return new WaitForSeconds(0.9f);
+                    SkillEffects.Rise(body, new Color(0.75f, 0.52f, 0.26f), 0.9f / kind.AbilitySpeed);
+                    yield return new WaitForSeconds(0.9f / kind.AbilitySpeed);
                     if (body != null) RollingSandstorm.Launch(body.position, body.forward, 0, null, null, true);
                     break;
                 case EnemySkill.Tollkeeper:
                     int move = (useCount - 1) % 3;
-                    if (move == 0) yield return GroundTelegraph.RunCone(from, axis, 4.8f, 65, 0.9f);
-                    else if (move == 1) yield return GroundTelegraph.RunLine(from, axis, 9.75f, 2, 0.65f, DamageType.Physical, null);
+                    if (move == 0) yield return GroundTelegraph.RunCone(from, axis, 4.8f, 65, 0.9f / kind.AbilitySpeed);
+                    else if (move == 1) yield return GroundTelegraph.RunLine(from, axis, 9.75f, 2, 0.65f / kind.AbilitySpeed, DamageType.Physical, null);
                     else
                     {
-                        yield return GroundTelegraph.RunLine(from, axis, 13, 2.3f, 0.9f, DamageType.Physical, null);
+                        yield return GroundTelegraph.RunLine(from, axis, 13, 2.3f, 0.9f / kind.AbilitySpeed, DamageType.Physical, null);
                         for (int i = 1; i <= 6; i++)
                         {
                             SkillEffects.Shockwave(from + axis * i * 2, 1.2f, DustColor, 0.25f);
-                            yield return new WaitForSeconds(0.07f);
+                            yield return new WaitForSeconds(0.07f / kind.AbilitySpeed);
                         }
                     }
                     break;

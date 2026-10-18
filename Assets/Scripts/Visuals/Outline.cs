@@ -27,6 +27,20 @@ namespace PoeClone.Visuals
         private readonly List<Renderer> sources = new List<Renderer>();
         private bool built;
         private bool highlighted;
+        private bool persistent;
+        private MaterialPropertyBlock colorProperties;
+
+        public void SetPersistentColor(Color color)
+        {
+            persistent = true;
+            colorProperties = new MaterialPropertyBlock();
+            colorProperties.SetColor("_Color", color);
+            colorProperties.SetColor("_BaseColor", color);
+            if (!built) Build();
+            foreach (var clone in clones)
+                clone.GetComponent<Renderer>().SetPropertyBlock(colorProperties);
+            Sync();
+        }
 
         public void SetHighlighted(bool on)
         {
@@ -47,14 +61,17 @@ namespace PoeClone.Visuals
             clones.Clear();
             sources.Clear();
             built = false;
-            if (highlighted)
+            if (highlighted || persistent)
                 Build();
+            if (colorProperties != null)
+                foreach (var clone in clones)
+                    clone.GetComponent<Renderer>().SetPropertyBlock(colorProperties);
             Sync();
         }
 
         private void LateUpdate()
         {
-            if (highlighted)
+            if (highlighted || persistent)
                 Sync();
         }
 
@@ -66,7 +83,7 @@ namespace PoeClone.Visuals
                 if (clones[i] == null)
                     continue;
                 Renderer source = sources[i];
-                bool show = highlighted && source != null && source.enabled && source.gameObject.activeInHierarchy;
+                bool show = (highlighted || persistent) && source != null && source.enabled && source.gameObject.activeInHierarchy;
                 if (clones[i].activeSelf != show)
                     clones[i].SetActive(show);
                 // A skinned limb swaps meshes (an open or gripping hand, its detail): follow it, with

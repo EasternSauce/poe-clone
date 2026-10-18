@@ -12,7 +12,7 @@ namespace PoeClone.Enemies
         private IEnumerator CourtSkill(Vector3 target, float damage)
         {
             int interrupted = stagger != null ? stagger.TriggerCount : 0;
-            busyUntil = Time.time + 2;
+            busyUntil = Time.time + 2 / kind.AbilitySpeed;
             bool hit = false;
             yield return CourtPattern(this, kind, transform, target, (at, radius) =>
             {
@@ -31,7 +31,7 @@ namespace PoeClone.Enemies
             if (host == null || body == null) yield break;
             Vector3 from = body.position;
             Vector3 axis = FissureDirection(from, target);
-            body.GetComponentInChildren<CreatureAnimator>()?.Crouch(1.05f);
+            body.GetComponentInChildren<CreatureAnimator>()?.Crouch(1.05f / kind.AbilitySpeed);
             bool jar = kind.Skill == EnemySkill.JarShatter;
             Color color = jar ? new Color(0.64f, 0.73f, 0.25f) : new Color(0.36f, 0.85f, 0.74f);
             for (int i = 0; i < 5; i++)
@@ -40,7 +40,7 @@ namespace PoeClone.Enemies
                     from + axis * (i + 1) * 2.7f;
                 float radius = jar ? 1.65f : 1.35f;
                 float delay = jar ? 1.05f : 1.05f + i * 0.1f;
-                PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(at, radius, delay, kind.DamageType, point =>
+                PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(at, radius, delay / kind.AbilitySpeed, kind.DamageType, point =>
                 {
                     if (body == null || !body.gameObject.activeInHierarchy) return;
                     var alive = body.GetComponent<EnemyHealth>();
@@ -49,7 +49,7 @@ namespace PoeClone.Enemies
                     hit?.Invoke(point, radius);
                 }));
             }
-            yield return new WaitForSeconds(1.8f);
+            yield return new WaitForSeconds(1.8f / kind.AbilitySpeed);
         }
     }
 }

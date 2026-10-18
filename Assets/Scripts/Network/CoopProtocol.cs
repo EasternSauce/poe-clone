@@ -80,6 +80,7 @@ namespace PoeClone.Network
     [Serializable]
     public class EnemyHandoff
     {
+        public int er, de;    // rarity and density reinforcement
         public int k;         // kind
         public int lv;        // level
         public float x, y, z, r;

@@ -5,6 +5,8 @@ using PoeClone.Visuals;
 
 namespace PoeClone.Enemies
 {
+    public enum EnemyRarity { Normal, Magic, Rare }
+
     public enum EnemyAttackStyle
     {
         Melee,
@@ -80,6 +82,27 @@ namespace PoeClone.Enemies
     /// </summary>
     public sealed class EnemyKind
     {
+        public float AbilitySpeed = 1f;
+
+        // A private per-spawn copy: never mutate the shared species roster.
+        public EnemyKind WithRarity(EnemyRarity rarity)
+        {
+            if (rarity == EnemyRarity.Normal || IsBoss) return this;
+            var variant = (EnemyKind)MemberwiseClone();
+            bool rare = rarity == EnemyRarity.Rare;
+            variant.Scale *= rare ? 2f : 1.3f;
+            variant.HealthMultiplier *= rare ? 5f : 2f;
+            variant.DamageMultiplier *= rare ? 1.5f : 1.2f;
+            variant.Tempo *= rare ? 1.5f : 1.2f;
+            variant.AbilitySpeed *= rare ? 1.5f : 1.2f;
+            variant.ProjectileSpeed *= variant.AbilitySpeed;
+            variant.Experience *= rare ? 5 : 2;
+            variant.Drops *= rare ? 4 : 2;
+            variant.DropChance = Mathf.Min(1f, DropChance * (rare ? 3f : 2f));
+            variant.RareBonus += rare ? 0.35f : 0.15f;
+            return variant;
+        }
+
         public string Name;
         public float SpawnWeight;
 
@@ -1212,12 +1235,17 @@ namespace PoeClone.Enemies
         public static float ExperienceScale(int level) => 1f + 0.4f * (Mathf.Max(1, level) - 1);
 
         /// <summary>Makes a freshly spawned enemy this kind and level: its look and all its gameplay numbers.</summary>
-        public static void Apply(GameObject enemy, int index, int level = 1)
+        public static void Apply(GameObject enemy, int index, int level = 1, EnemyRarity rarity = EnemyRarity.Normal)
         {
-            EnemyKind kind = Get(index);
+            EnemyKind kind = Get(index).WithRarity(rarity);
             ApplyLook(enemy, kind);
+            // Keep enlarged feet on the same floor; replicated poses already include this lift.
+            var body = enemy.GetComponent<CharacterController>();
+            if (body != null && rarity != EnemyRarity.Normal && !kind.IsBoss)
+                enemy.transform.position += Vector3.up * (kind.Scale - Get(index).Scale) * (body.height * 0.5f - body.center.y);
 
             enemy.GetComponent<EnemyHealth>()?.Configure(index, kind, level);
+            enemy.GetComponent<EnemyHealth>()?.SetRarity(kind.IsBoss ? EnemyRarity.Normal : rarity);
             enemy.GetComponent<EnemyController>()?.Configure(kind);
             enemy.GetComponent<EnemyCombat>()?.Configure(kind, level);
 

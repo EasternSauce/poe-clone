@@ -67,6 +67,35 @@ namespace PoeClone.UI
         private string titleSub;
         private float titleShownAt = -100f;
         private bool titlePending;
+        private static string threatText;
+        private static float threatShownAt = -100f;
+        private static int threatArea = -1;
+
+        public static void ShowAreaThreat(string message)
+        {
+            threatText = message;
+            threatShownAt = Time.unscaledTime;
+            threatArea = PoeClone.World.AreaManager.Instance != null
+                ? PoeClone.World.AreaManager.Instance.CurrentAreaIndex : -1;
+        }
+
+        private void DrawAreaThreat(float scale)
+        {
+            float age = Time.unscaledTime - threatShownAt;
+            var areas = PoeClone.World.AreaManager.Instance;
+            if (threatText == null || age < 0f || age > 4f ||
+                areas != null && areas.CurrentAreaIndex != threatArea) return;
+            float alpha = Mathf.Clamp01(age / 0.35f) * Mathf.Clamp01((4f - age) / 1f);
+            float width = Screen.width / scale;
+            float height = Screen.height / scale;
+            var style = new GUIStyle { font = UiKit.TitleFont, fontSize = TouchMode.Active ? 28 : 34,
+                alignment = TextAnchor.MiddleCenter, wordWrap = true };
+            var rect = new Rect(width * 0.1f, height * 0.5f - 52f, width * 0.8f, 104f);
+            style.normal.textColor = new Color(0f, 0f, 0f, alpha);
+            GUI.Label(new Rect(rect.x + 2f, rect.y + 2f, rect.width, rect.height), threatText, style);
+            style.normal.textColor = new Color(0.9f, 0.28f, 0.22f, alpha);
+            GUI.Label(rect, threatText, style);
+        }
         private PoeClone.World.AreaManager subscribedAreas;
 
         private void Update()
@@ -210,6 +239,8 @@ namespace PoeClone.UI
         private static void ResetPartner()
         {
             Partner = null;
+            threatText = null;
+            threatShownAt = -100f;
         }
 
         // The frame's layout, in HUD units (see Scale).
@@ -364,6 +395,7 @@ namespace PoeClone.UI
             if (stats.IsDead)
                 DrawDeathOverlay(stats, SpectatorMode, Screen.width / scale, Screen.height / scale);
             DrawAreaTitle(Screen.width / scale);
+            DrawAreaThreat(scale);
 
             // OnGUI draws over every uGUI window, so the frame steps aside while the character
             // page (which sits in the same corner) is open.

@@ -74,7 +74,7 @@ namespace PoeClone.Network
                     foreach (EntityState state in hostWorld.e ?? System.Array.Empty<EntityState>())
                         if (state != null && state.i < PoeClone.Skills.Minion.ReplicationIdBase &&
                             AreaAt(new Vector3(state.x, state.y, state.z)) == hostWorld.area)
-                            world.Add(new EnemyHandoff { k = state.k, lv = state.lv,
+                            world.Add(new EnemyHandoff { k = state.k, lv = state.lv, er = state.er, de = state.de,
                                 x = state.x, y = state.y, z = state.z, r = state.r,
                                 hp = state.d != 0 ? 0f : state.mhp > 0f ? state.hp / state.mhp : 1f });
                     RestoreWorld(hostWorld.area, world.ToArray());
@@ -111,7 +111,7 @@ namespace PoeClone.Network
             var world = new List<EnemyHandoff>();
             foreach (EnemyHealth enemy in FindObjectsByType<EnemyHealth>(FindObjectsInactive.Include))
                 if (!enemy.IsQuestObject && !enemy.IsEncounterEnemy && !enemy.IsRemote && enemy.enabled && AreaAt(enemy.transform.position) == area)
-                    world.Add(new EnemyHandoff { k = enemy.KindIndex, lv = enemy.MonsterLevel,
+                    world.Add(new EnemyHandoff { k = enemy.KindIndex, lv = enemy.MonsterLevel, er = (int)enemy.Rarity, de = enemy.IsDensityExtra ? 1 : 0,
                         x = enemy.transform.position.x, y = enemy.transform.position.y, z = enemy.transform.position.z,
                         r = enemy.transform.eulerAngles.y, hp = enemy.IsDead ? 0f : enemy.CurrentHealth / enemy.MaxHealth });
             return world.ToArray();
@@ -144,7 +144,10 @@ namespace PoeClone.Network
                 if (state == null || state.hp <= 0f) continue;
                 GameObject enemy = Instantiate(spawner.EnemyPrefab, new Vector3(state.x, state.y, state.z),
                     Quaternion.Euler(0f, state.r, 0f));
-                EnemyKinds.Apply(enemy, state.k, Mathf.Max(1, state.lv));
+                EnemyKinds.Apply(enemy, state.k, Mathf.Max(1, state.lv), (EnemyRarity)state.er);
+                // The handoff's authoritative pose already includes the enlarged body's floor offset.
+                enemy.transform.position = new Vector3(state.x, state.y, state.z);
+                enemy.GetComponent<EnemyHealth>().IsDensityExtra = state.de != 0;
                 EnemyHealth health = enemy.GetComponent<EnemyHealth>();
                 health.ApplyReplicatedHealth(health.MaxHealth * Mathf.Clamp01(state.hp), health.MaxHealth);
                 EnemyKind kind = EnemyKinds.Get(state.k);

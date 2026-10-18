@@ -14,7 +14,7 @@ namespace PoeClone.Enemies
         private IEnumerator BasinSkill(Vector3 target, float damage)
         {
             int interrupted = stagger != null ? stagger.TriggerCount : 0;
-            busyUntil = Time.time + BasinWindup + 0.7f;
+            busyUntil = Time.time + (BasinWindup + 0.7f) / kind.AbilitySpeed;
             bool hit = false;
             yield return BasinPattern(this, kind, transform, target, (at, radius) =>
             {
@@ -34,7 +34,7 @@ namespace PoeClone.Enemies
             if (body == null || host == null) yield break;
             Vector3 from = body.position;
             Vector3 axis = FissureDirection(from, target);
-            body.GetComponentInChildren<CreatureAnimator>()?.Crouch(BasinWindup);
+            body.GetComponentInChildren<CreatureAnimator>()?.Crouch(BasinWindup / kind.AbilitySpeed);
             Vector3[] points;
             float radius;
             if (kind.Skill == EnemySkill.SaltBurst)
@@ -56,7 +56,7 @@ namespace PoeClone.Enemies
             foreach (Vector3 point in points)
             {
                 float patchRadius = radius;
-                PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(point, radius, BasinWindup, DamageType.Physical, at =>
+                PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(point, radius, BasinWindup / kind.AbilitySpeed, DamageType.Physical, at =>
                 {
                     if (body == null || !body.gameObject.activeInHierarchy) return;
                     EnemyHealth alive = body.GetComponent<EnemyHealth>();
@@ -66,7 +66,7 @@ namespace PoeClone.Enemies
                     hit?.Invoke(at, patchRadius);
                 }));
             }
-            yield return new WaitForSeconds(BasinWindup + 0.4f);
+            yield return new WaitForSeconds((BasinWindup + 0.4f) / kind.AbilitySpeed);
         }
     }
 }

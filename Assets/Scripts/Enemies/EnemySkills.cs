@@ -63,7 +63,7 @@ namespace PoeClone.Enemies
             level = monsterLevel;
             enabled = true;
             // The first use comes a little into a fight, not the moment it starts.
-            nextUse = Time.time + Random.Range(2.5f, 5f);
+            nextUse = Time.time + (Random.Range(2.5f, 5f)) / kind.AbilitySpeed;
         }
 
         /// <summary>Co-op guest: makes this a copy that only plays the host's casts (see <see cref="Mirror"/>).</summary>
@@ -141,7 +141,7 @@ namespace PoeClone.Enemies
             if (!InPosition(distance))
                 return;
 
-            nextUse = Time.time + kind.SkillCooldown * Random.Range(0.8f, 1.2f);
+            nextUse = Time.time + (kind.SkillCooldown * Random.Range(0.8f, 1.2f)) / kind.AbilitySpeed;
             Use(distance);
         }
 
@@ -246,13 +246,13 @@ namespace PoeClone.Enemies
                     PoeClone.Visuals.DistanceActivity.StartTracked(this, TollkeeperMove(target, damage));
                     break;
                 case EnemySkill.Slam:
-                    busyUntil = Time.time + SlamWindUp;
-                    PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(transform.position, SlamRadius(kind, transform), SlamWindUp, kind.DamageType,
+                    busyUntil = Time.time + SlamWindUp / kind.AbilitySpeed;
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(transform.position, SlamRadius(kind, transform), SlamWindUp / kind.AbilitySpeed, kind.DamageType,
                         center => HitIfInside(center, SlamRadius(kind, transform), damage * 1.4f)));
                     break;
                 case EnemySkill.Strike:
                     float windUp = StrikeWindUp(kind);
-                    PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(target, StrikeRadius, windUp, kind.DamageType,
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(target, StrikeRadius, windUp / kind.AbilitySpeed, kind.DamageType,
                         center => HitIfInside(center, StrikeRadius, damage * 1.3f)));
                     break;
                 case EnemySkill.Volley:
@@ -281,15 +281,15 @@ namespace PoeClone.Enemies
                     PoeClone.Visuals.DistanceActivity.StartTracked(this, Leap(target, damage * 1.4f));
                     break;
                 case EnemySkill.ThornGarden:
-                    busyUntil = Time.time + RootWindUp;
-                    GetComponentInChildren<CreatureAnimator>()?.Crouch(RootWindUp);
+                    busyUntil = Time.time + RootWindUp / kind.AbilitySpeed;
+                    GetComponentInChildren<CreatureAnimator>()?.Crouch(RootWindUp / kind.AbilitySpeed);
                     PoeClone.Visuals.DistanceActivity.StartTracked(this, CooldownAfter(ThornGarden(this, transform.position, target, kind,
                         () => CanSpecialHit(), center => HitIfInside(center, RootRadius, damage * 0.35f))));
                     break;
                 case EnemySkill.Wail:
-                    busyUntil = Time.time + WailWindUp;
-                    GetComponentInChildren<CreatureAnimator>()?.Crouch(WailWindUp);
-                    PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunRing(LastTarget, WailInnerRadius, WailOuterRadius, WailWindUp, kind.DamageType, center =>
+                    busyUntil = Time.time + WailWindUp / kind.AbilitySpeed;
+                    GetComponentInChildren<CreatureAnimator>()?.Crouch(WailWindUp / kind.AbilitySpeed);
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunRing(LastTarget, WailInnerRadius, WailOuterRadius, WailWindUp / kind.AbilitySpeed, kind.DamageType, center =>
                     {
                         if (!CanSpecialHit()) return;
                         float range = Flat(player.transform.position - center).magnitude;
@@ -298,8 +298,8 @@ namespace PoeClone.Enemies
                     }));
                     break;
                 case EnemySkill.FrostFissures:
-                    busyUntil = Time.time + FissureWindUp;
-                    GetComponentInChildren<CreatureAnimator>()?.Crouch(FissureWindUp);
+                    busyUntil = Time.time + FissureWindUp / kind.AbilitySpeed;
+                    GetComponentInChildren<CreatureAnimator>()?.Crouch(FissureWindUp / kind.AbilitySpeed);
                     Vector3 fissureFrom = transform.position;
                     FrostFissures(this, fissureFrom, target, kind, () =>
                     {
@@ -309,8 +309,8 @@ namespace PoeClone.Enemies
                     });
                     break;
                 case EnemySkill.LastOffering:
-                    busyUntil = Time.time + OfferingWindUp;
-                    GetComponentInChildren<CreatureAnimator>()?.Crouch(OfferingWindUp);
+                    busyUntil = Time.time + OfferingWindUp / kind.AbilitySpeed;
+                    GetComponentInChildren<CreatureAnimator>()?.Crouch(OfferingWindUp / kind.AbilitySpeed);
                     int offeringStagger = stagger != null ? stagger.TriggerCount : 0;
                     PoeClone.Visuals.DistanceActivity.StartTracked(this, Offering(target, damage * 1.4f, offeringStagger));
                     break;
@@ -357,20 +357,20 @@ namespace PoeClone.Enemies
         private IEnumerator BoneWhirl(float damage)
         {
             float radius = WhirlRadius(transform);
-            busyUntil = Time.time + WhirlWindUp + WhirlSeconds + 0.2f;
-            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(transform.position, radius, WhirlWindUp, kind.DamageType, null));
-            yield return new WaitForSeconds(WhirlWindUp);
+            busyUntil = Time.time + (WhirlWindUp + WhirlSeconds + 0.2f) / kind.AbilitySpeed;
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(transform.position, radius, WhirlWindUp / kind.AbilitySpeed, kind.DamageType, null));
+            yield return new WaitForSeconds(WhirlWindUp / kind.AbilitySpeed);
             float nextTick = 0f;
-            for (float t = 0f; t < WhirlSeconds; t += Time.deltaTime)
+            for (float t = 0f; t < WhirlSeconds; t += (Time.deltaTime * kind.AbilitySpeed))
             {
                 if (health.IsDead || health.Reassembling)
                     break;
-                transform.Rotate(0f, 1080f * Time.deltaTime, 0f);
+                transform.Rotate(0f, 1080f * (Time.deltaTime * kind.AbilitySpeed), 0f);
                 if (!mirror && aim != null)
                 {
                     Vector3 to = Flat(aim.position - transform.position);
                     if (to.magnitude > radius * 0.4f)
-                        body.Move(to.normalized * WhirlSpeed * Time.deltaTime + Vector3.down * 2f * Time.deltaTime);
+                        body.Move(to.normalized * WhirlSpeed * (Time.deltaTime * kind.AbilitySpeed) + Vector3.down * 2f * (Time.deltaTime * kind.AbilitySpeed));
                 }
                 if (t >= nextTick)
                 {
@@ -383,18 +383,18 @@ namespace PoeClone.Enemies
                 }
                 yield return null;
             }
-            busyUntil = Time.time + 0.2f;
+            busyUntil = Time.time + 0.2f / kind.AbilitySpeed;
         }
 
-        private static IEnumerator WhirlVisual(MonoBehaviour host, Transform body)
+        private static IEnumerator WhirlVisual(MonoBehaviour host, Transform body, EnemyKind kind)
         {
             float radius = WhirlRadius(body);
-            PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(body.position, radius, WhirlWindUp, DamageType.Physical, null));
-            yield return new WaitForSeconds(WhirlWindUp);
+            PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(body.position, radius, WhirlWindUp / kind.AbilitySpeed, DamageType.Physical, null));
+            yield return new WaitForSeconds(WhirlWindUp / kind.AbilitySpeed);
             for (float t = 0f; t < WhirlSeconds && body != null; t += WhirlTick)
             {
                 SkillEffects.Shockwave(body.position, radius, DustColor, 0.25f);
-                yield return new WaitForSeconds(WhirlTick);
+                yield return new WaitForSeconds(WhirlTick / kind.AbilitySpeed);
             }
         }
 
@@ -408,9 +408,9 @@ namespace PoeClone.Enemies
         // warden falls). It fights on while the ring closes.
         private IEnumerator BonePrison(Vector3 centre, float damage)
         {
-            busyUntil = Time.time + 0.5f;
-            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunRing(centre, PrisonRadius - PrisonBand, PrisonRadius + PrisonBand, PrisonWindUp, kind.DamageType, null));
-            yield return new WaitForSeconds(PrisonWindUp);
+            busyUntil = Time.time + 0.5f / kind.AbilitySpeed;
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunRing(centre, PrisonRadius - PrisonBand, PrisonRadius + PrisonBand, PrisonWindUp / kind.AbilitySpeed, kind.DamageType, null));
+            yield return new WaitForSeconds(PrisonWindUp / kind.AbilitySpeed);
             if (health.IsDead)
                 yield break;
             GameObject cage = RaisePrison(centre, kind);
@@ -424,7 +424,7 @@ namespace PoeClone.Enemies
                 yield break;
 
             UI.CombatText.Show(player.transform.position + Vector3.up * 2.4f, "Trapped!", kind.Eyes, 1.1f);
-            for (float t = 0f; t < PrisonSeconds && cage != null && !health.IsDead && !player.IsDead; t += Time.deltaTime)
+            for (float t = 0f; t < PrisonSeconds && cage != null && !health.IsDead && !player.IsDead; t += (Time.deltaTime * kind.AbilitySpeed))
                 yield return null;
             if (cage != null)
                 Destroy(cage);
@@ -432,7 +432,7 @@ namespace PoeClone.Enemies
 
         private static IEnumerator PrisonVisual(Vector3 centre, EnemyKind kind)
         {
-            yield return new WaitForSeconds(PrisonWindUp);
+            yield return new WaitForSeconds(PrisonWindUp / kind.AbilitySpeed);
             RaisePrison(centre, kind);
         }
 
@@ -478,8 +478,8 @@ namespace PoeClone.Enemies
         // slows whoever stands in it.
         private void WebSpit(Vector3 target, float damage)
         {
-            busyUntil = Time.time + 0.35f;
-            VenomGlob.Lob(EnemyCombat.BoltOrigin(transform), target, WebFlight, 0.45f, WebRadius, WebSeconds,
+            busyUntil = Time.time + 0.35f / kind.AbilitySpeed;
+            VenomGlob.Lob(EnemyCombat.BoltOrigin(transform), target, WebFlight / kind.AbilitySpeed, 0.45f, WebRadius, WebSeconds,
                 spot => HitIfInside(spot, WebRadius, damage),
                 (spot, radius) =>
                 {
@@ -498,11 +498,11 @@ namespace PoeClone.Enemies
             Vector3 origin = transform.position;
             Vector3 facing = FissureDirection(origin, target);
             int staggerCount = stagger != null ? stagger.TriggerCount : 0;
-            busyUntil = Time.time + BreathOfFireWindUp + 0.35f;
-            GetComponentInChildren<CreatureAnimator>()?.Crouch(BreathOfFireWindUp);
-            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(origin, facing, BreathOfFireRange, BreathOfFireHalfAngle, BreathOfFireWindUp,
+            busyUntil = Time.time + (BreathOfFireWindUp + 0.35f) / kind.AbilitySpeed;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(BreathOfFireWindUp / kind.AbilitySpeed);
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(origin, facing, BreathOfFireRange, BreathOfFireHalfAngle, BreathOfFireWindUp / kind.AbilitySpeed,
                 () => CastAlive(staggerCount), kind.DamageType));
-            yield return new WaitForSeconds(BreathOfFireWindUp);
+            yield return new WaitForSeconds(BreathOfFireWindUp / kind.AbilitySpeed);
             if (!CastAlive(staggerCount)) yield break;
             FlameCone(origin, facing, kind);
             Audio.AudioManager.Instance?.PlayEffect("combat.ground." + kind.DamageType, origin);
@@ -517,8 +517,8 @@ namespace PoeClone.Enemies
 
         private static IEnumerator FireBreathVisual(MonoBehaviour host, Vector3 origin, Vector3 facing, EnemyKind kind)
         {
-            PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.RunCone(origin, facing, BreathOfFireRange, BreathOfFireHalfAngle, BreathOfFireWindUp, null, kind.DamageType));
-            yield return new WaitForSeconds(BreathOfFireWindUp);
+            PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.RunCone(origin, facing, BreathOfFireRange, BreathOfFireHalfAngle, BreathOfFireWindUp / kind.AbilitySpeed, null, kind.DamageType));
+            yield return new WaitForSeconds(BreathOfFireWindUp / kind.AbilitySpeed);
             FlameCone(origin, facing, kind);
         }
 
@@ -544,11 +544,11 @@ namespace PoeClone.Enemies
         private IEnumerator Howl(float damage)
         {
             int staggerCount = stagger != null ? stagger.TriggerCount : 0;
-            busyUntil = Time.time + HowlWindUp + 0.2f;
-            GetComponentInChildren<CreatureAnimator>()?.Crouch(HowlWindUp);
+            busyUntil = Time.time + (HowlWindUp + 0.2f) / kind.AbilitySpeed;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(HowlWindUp / kind.AbilitySpeed);
             Vector3 at = transform.position;
             bool cut = false;
-            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(at, HowlRadius, HowlWindUp, kind.DamageType, center =>
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(at, HowlRadius, HowlWindUp / kind.AbilitySpeed, kind.DamageType, center =>
             {
                 if (cut || !CanSpecialHit()) return;
                 if (Flat(player.transform.position - center).magnitude <= HowlRadius)
@@ -557,7 +557,7 @@ namespace PoeClone.Enemies
                     player.GetComponent<PlayerController>()?.Chill(2.5f);
                 }
             }));
-            yield return new WaitForSeconds(HowlWindUp);
+            yield return new WaitForSeconds(HowlWindUp / kind.AbilitySpeed);
             if (!CastAlive(staggerCount)) { cut = true; yield break; }
             if (mirror)
                 yield break; // the host's game hastens the pack
@@ -588,10 +588,10 @@ namespace PoeClone.Enemies
             Vector3 origin = transform.position;
             Vector3 axis = FissureDirection(origin, target);
             int staggerCount = stagger != null ? stagger.TriggerCount : 0;
-            busyUntil = Time.time + SpikeWindUp + 0.2f;
-            GetComponentInChildren<CreatureAnimator>()?.Crouch(SpikeWindUp);
+            busyUntil = Time.time + (SpikeWindUp + 0.2f) / kind.AbilitySpeed;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(SpikeWindUp / kind.AbilitySpeed);
             bool cut = false;
-            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(origin + axis * 0.8f, axis, SpikeLength, SpikeWidth, SpikeWindUp, kind.DamageType, () =>
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunLine(origin + axis * 0.8f, axis, SpikeLength, SpikeWidth, SpikeWindUp / kind.AbilitySpeed, kind.DamageType, () =>
             {
                 if (cut) return;
                 RaiseSpikes(origin + axis * 0.8f, axis, kind);
@@ -605,7 +605,7 @@ namespace PoeClone.Enemies
                     player.GetComponent<PlayerController>()?.Chill(1.5f);
                 }
             }));
-            yield return new WaitForSeconds(SpikeWindUp);
+            yield return new WaitForSeconds(SpikeWindUp / kind.AbilitySpeed);
             if (!CastAlive(staggerCount)) cut = true;
         }
 
@@ -637,10 +637,10 @@ namespace PoeClone.Enemies
         // A piercing screech: a ring marks its reach, then it hurts and hurls back whoever is inside.
         private void Shriek(float damage)
         {
-            busyUntil = Time.time + ShriekWindUp + 0.2f;
+            busyUntil = Time.time + (ShriekWindUp + 0.2f) / kind.AbilitySpeed;
             int staggerCount = stagger != null ? stagger.TriggerCount : 0;
             float radius = ShriekRadius(transform);
-            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(transform.position, radius, ShriekWindUp, kind.DamageType, center =>
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(transform.position, radius, ShriekWindUp / kind.AbilitySpeed, kind.DamageType, center =>
             {
                 if (!CastAlive(staggerCount) || !CanSpecialHit()) return;
                 SkillEffects.Shockwave(center, radius * 0.6f, kind.Eyes, 0.3f);
@@ -656,11 +656,11 @@ namespace PoeClone.Enemies
             CharacterController playerBody = player != null ? player.GetComponent<CharacterController>() : null;
             if (playerBody == null) yield break;
             const float seconds = 0.22f;
-            for (float t = 0f; t < seconds; t += Time.deltaTime)
+            for (float t = 0f; t < seconds; t += (Time.deltaTime * kind.AbilitySpeed))
             {
                 if (player == null || player.IsDead || !playerBody.enabled) yield break;
                 Vector3 from = player.transform.position;
-                Vector3 to = from + direction * (ShriekKnockback / seconds) * Time.deltaTime;
+                Vector3 to = from + direction * (ShriekKnockback / seconds) * (Time.deltaTime * kind.AbilitySpeed);
                 to = World.GroundObstacleMotion.Clamp(playerBody, from, to);
                 playerBody.Move(to - from);
                 yield return null;
@@ -674,7 +674,7 @@ namespace PoeClone.Enemies
         public static void RainOfArrows(MonoBehaviour host, EnemyKind kind, Vector3 at, PlayerStats target, float damage, int rollSeed = 0)
         {
             if (rollSeed == 0) rollSeed = EventRandom.NextSeed();
-            PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(at, ArrowRainRadius, ArrowRainDelay, DamageType.Physical, center =>
+            PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(at, ArrowRainRadius, ArrowRainDelay / kind.AbilitySpeed, DamageType.Physical, center =>
             {
                 if (target == null || target.IsDead || Sanctuary.Contains(target.transform.position, 1f)) return;
                 if (Flat(target.transform.position - center).magnitude <= ArrowRainRadius)
@@ -705,7 +705,7 @@ namespace PoeClone.Enemies
 
         private IEnumerator Offering(Vector3 target, float damage, int staggerCount)
         {
-            yield return new WaitForSeconds(OfferingWindUp);
+            yield return new WaitForSeconds(OfferingWindUp / kind.AbilitySpeed);
             if (!CastAlive(staggerCount)) yield break;
             SkillEffects.Arc(transform.position + Vector3.up * 0.15f, target + Vector3.up * 0.3f, kind.Eyes, 0.25f);
             EnemyOffering.Place(target, kind, damage, player);
@@ -714,9 +714,9 @@ namespace PoeClone.Enemies
         private IEnumerator RaiseGraveward(Vector3 target)
         {
             int staggerCount = stagger != null ? stagger.TriggerCount : 0;
-            busyUntil = Time.time + WardWindUp;
-            GetComponentInChildren<CreatureAnimator>()?.Crouch(WardWindUp);
-            yield return new WaitForSeconds(WardWindUp);
+            busyUntil = Time.time + WardWindUp / kind.AbilitySpeed;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(WardWindUp / kind.AbilitySpeed);
+            yield return new WaitForSeconds(WardWindUp / kind.AbilitySpeed);
             if (!CastAlive(staggerCount)) yield break;
             Graveward.Raise(transform, Flat(target - transform.position), kind.Eyes);
         }
@@ -734,19 +734,19 @@ namespace PoeClone.Enemies
             Vector3 facing = FissureDirection(origin, target);
             int staggerCount = stagger != null ? stagger.TriggerCount : 0;
             float duration = BreathWindUp + BreathChannel;
-            busyUntil = Time.time + duration;
-            GetComponentInChildren<CreatureAnimator>()?.Crouch(duration);
-            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(origin, facing, BreathRange, BreathHalfAngle, duration,
+            busyUntil = Time.time + duration / kind.AbilitySpeed;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(duration / kind.AbilitySpeed);
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(origin, facing, BreathRange, BreathHalfAngle, duration / kind.AbilitySpeed,
                 () => CastAlive(staggerCount)));
             float exposure = 0f;
             try
             {
-                for (float t = 0f; t < duration; t += Time.deltaTime)
+                for (float t = 0f; t < duration; t += (Time.deltaTime * kind.AbilitySpeed))
                 {
                     if (!CastAlive(staggerCount)) yield break;
                     if (t >= BreathWindUp && CanSpecialHit() && InsideBreath(origin, facing, player.transform.position))
                     {
-                        exposure += Time.deltaTime;
+                        exposure += (Time.deltaTime * kind.AbilitySpeed);
                         if (exposure >= BreathDamageInterval)
                         {
                             exposure -= BreathDamageInterval;
@@ -758,7 +758,7 @@ namespace PoeClone.Enemies
                         if (playerBody != null && playerBody.enabled && (motion == null || !motion.IsDashing))
                         {
                             Vector3 offset = Flat(origin - player.transform.position);
-                            float step = Mathf.Min(5.4f * Time.deltaTime, Mathf.Max(0f, offset.magnitude - 1.8f));
+                            float step = Mathf.Min(5.4f * (Time.deltaTime * kind.AbilitySpeed), Mathf.Max(0f, offset.magnitude - 1.8f));
                             Vector3 destination = player.transform.position + offset.normalized * step;
                             destination = World.GroundObstacleMotion.Clamp(playerBody, player.transform.position, destination);
                             playerBody.Move(destination - player.transform.position);
@@ -782,13 +782,13 @@ namespace PoeClone.Enemies
 
         private static IEnumerator OfferingVisual(Vector3 target, EnemyKind kind)
         {
-            yield return new WaitForSeconds(OfferingWindUp);
+            yield return new WaitForSeconds(OfferingWindUp / kind.AbilitySpeed);
             EnemyOffering.Place(target, kind, 0f, null);
         }
 
         private static IEnumerator WardVisual(Transform caster, Vector3 target, EnemyKind kind)
         {
-            yield return new WaitForSeconds(WardWindUp);
+            yield return new WaitForSeconds(WardWindUp / kind.AbilitySpeed);
             if (caster != null) Graveward.Raise(caster, Flat(target - caster.position), kind.Eyes);
         }
 
@@ -807,7 +807,7 @@ namespace PoeClone.Enemies
         {
             nextUse = float.MaxValue;
             yield return PoeClone.Visuals.DistanceActivity.StartTracked(this, cast);
-            nextUse = Time.time + kind.SkillCooldown;
+            nextUse = Time.time + kind.SkillCooldown / kind.AbilitySpeed;
         }
 
         private bool CanSpecialHit() => this != null && health != null && !health.IsDead &&
@@ -825,9 +825,9 @@ namespace PoeClone.Enemies
             for (int i = 0; i < centers.Length; i++)
             {
                 centers[i] = target + direction * ((i - 1.5f) * 6.25f);
-                PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(centers[i], RootRadius, RootWindUp, DamageType.Physical, null));
+                PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(centers[i], RootRadius, RootWindUp / kind.AbilitySpeed, DamageType.Physical, null));
             }
-            yield return new WaitForSeconds(RootWindUp);
+            yield return new WaitForSeconds(RootWindUp / kind.AbilitySpeed);
             if (active != null && !active()) yield break;
             var roots = new GameObject("BriarboundThornPatches");
             Object.Destroy(roots, 4.1f); // Also cleans up if the host is destroyed mid-coroutine.
@@ -850,7 +850,7 @@ namespace PoeClone.Enemies
                     SkillEffects.Shockwave(center, RootRadius, kind.Pants, 0.5f);
                     hit?.Invoke(center);
                 }
-                yield return new WaitForSeconds(0.5f);
+                yield return new WaitForSeconds(0.5f / kind.AbilitySpeed);
             }
             Object.Destroy(roots);
         }
@@ -876,7 +876,7 @@ namespace PoeClone.Enemies
             Vector3 axis = FissureDirection(from, target);
             Vector3 side = Vector3.Cross(Vector3.up, axis);
             PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.RunLine(target - axis * FissureHalfLength, axis,
-                FissureHalfLength * 2f, FissureWidth, FissureWindUp, kind.DamageType, () =>
+                FissureHalfLength * 2f, FissureWidth, FissureWindUp / kind.AbilitySpeed, kind.DamageType, () =>
                 {
                     // One resolution for both beams prevents double damage at their intersection.
                     hit?.Invoke();
@@ -886,7 +886,7 @@ namespace PoeClone.Enemies
                         target + side * FissureHalfLength + Vector3.up * 0.25f, kind.Eyes, 0.4f);
                 }));
             PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.RunLine(target - side * FissureHalfLength, side,
-                FissureHalfLength * 2f, FissureWidth, FissureWindUp, kind.DamageType, null));
+                FissureHalfLength * 2f, FissureWidth, FissureWindUp / kind.AbilitySpeed, kind.DamageType, null));
         }
 
         // Crouches, springs into the air in a fast arc and comes down near the player's launch position
@@ -898,13 +898,13 @@ namespace PoeClone.Enemies
             if (!mirror)
                 landing = World.GroundObstacleMotion.Clamp(body, transform.position, KeepClear(landing, LeapGap(transform)));
             LastTarget = landing;
-            busyUntil = Time.time + LeapCrouch + LeapAir + 0.3f;
-            GetComponentInChildren<CreatureAnimator>()?.Crouch(LeapCrouch);
+            busyUntil = Time.time + (LeapCrouch + LeapAir + 0.3f) / kind.AbilitySpeed;
+            GetComponentInChildren<CreatureAnimator>()?.Crouch(LeapCrouch / kind.AbilitySpeed);
 
             bool calledOff = false;
             bool struck = false;
             float radius = LeapRadius(transform);
-            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(landing, radius, LeapCrouch + LeapAir, kind.DamageType, center =>
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(landing, radius, (LeapCrouch + LeapAir) / kind.AbilitySpeed, kind.DamageType, center =>
             {
                 if (calledOff)
                     return;
@@ -913,7 +913,7 @@ namespace PoeClone.Enemies
                 SkillEffects.Shockwave(center, radius, DustColor, 0.35f);
             }, source: kind));
 
-            for (float t = 0f; t < LeapCrouch; t += Time.deltaTime)
+            for (float t = 0f; t < LeapCrouch; t += (Time.deltaTime * kind.AbilitySpeed))
             {
                 if (health.IsDead || (stagger != null && stagger.IsStaggered))
                 {
@@ -933,7 +933,7 @@ namespace PoeClone.Enemies
             SkillEffects.Shockwave(start, 1.0f * transform.localScale.x, DustColor, 0.3f);
 
             float gap = LeapGap(transform);
-            for (float t = 0f; t < LeapAir && !health.IsDead; t += Time.deltaTime)
+            for (float t = 0f; t < LeapAir && !health.IsDead; t += (Time.deltaTime * kind.AbilitySpeed))
             {
                 float f = Mathf.Clamp01(t / LeapAir);
                 float rise = height * 4f * f * (1f - f);
@@ -1002,9 +1002,9 @@ namespace PoeClone.Enemies
         // is carried by the host's snapshots (a little behind), so it watches a little longer.
         private IEnumerator Charge(float damage)
         {
-            busyUntil = Time.time + ChargeMaxSeconds;
+            busyUntil = Time.time + ChargeMaxSeconds / kind.AbilitySpeed;
             SkillEffects.Shockwave(transform.position, 1.2f, DustColor, 0.3f);
-            float until = Time.time + ChargeMaxSeconds + (mirror ? 0.3f : 0f);
+            float until = Time.time + (ChargeMaxSeconds + (mirror ? 0.3f : 0f)) / kind.AbilitySpeed;
             while (Time.time < until && !health.IsDead && aim != null)
             {
                 if (stagger != null && stagger.IsStaggered)
@@ -1021,12 +1021,12 @@ namespace PoeClone.Enemies
                 {
                     transform.rotation = Quaternion.LookRotation(toTarget);
                     Vector3 from = transform.position;
-                    Vector3 want = from + toTarget.normalized * ChargeSpeed * Time.deltaTime + Vector3.down * 2f * Time.deltaTime;
+                    Vector3 want = from + toTarget.normalized * ChargeSpeed * (Time.deltaTime * kind.AbilitySpeed) + Vector3.down * 2f * (Time.deltaTime * kind.AbilitySpeed);
                     body.Move(World.GroundObstacleMotion.ClampToArea(body, from, want) - from);
                 }
                 yield return null;
             }
-            busyUntil = Time.time + 0.2f;
+            busyUntil = Time.time + 0.2f / kind.AbilitySpeed;
         }
 
         // Reappears a couple of metres to one side of the player, if there's room.
@@ -1107,7 +1107,7 @@ namespace PoeClone.Enemies
                 if (!EnemySpawner.TryPrepareSpawnPoint(at, EnemyKinds.SkeletonIndex, out at))
                     continue;
                 GameObject skeleton = Instantiate(spawner.EnemyPrefab, at, transform.rotation, transform.parent);
-                EnemyKinds.Apply(skeleton, EnemyKinds.SkeletonIndex, level);
+                EnemyKinds.Apply(skeleton, EnemyKinds.SkeletonIndex, level, EnemySpawner.RollRarity());
                 minions.Add(skeleton.GetComponent<EnemyHealth>());
                 SkillEffects.Shockwave(at, 1.2f, SummonColor, 0.5f);
             }
@@ -1183,7 +1183,7 @@ namespace PoeClone.Enemies
                     break;
                 case EnemySkill.DraggingBreath:
                     PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.RunCone(body.position, FissureDirection(body.position, target),
-                        BreathRange, BreathHalfAngle, BreathWindUp + BreathChannel));
+                        BreathRange, BreathHalfAngle, (BreathWindUp + BreathChannel) / kind.AbilitySpeed));
                     break;
                 case EnemySkill.Graveward:
                     PoeClone.Visuals.DistanceActivity.StartTracked(host, WardVisual(body, target, kind));
@@ -1192,16 +1192,16 @@ namespace PoeClone.Enemies
                     PoeClone.Visuals.DistanceActivity.StartTracked(host, ThornGarden(host, body.position, target, kind, null, null));
                     break;
                 case EnemySkill.Wail:
-                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.RunRing(target, WailInnerRadius, WailOuterRadius, WailWindUp, kind.DamageType, null));
+                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.RunRing(target, WailInnerRadius, WailOuterRadius, WailWindUp / kind.AbilitySpeed, kind.DamageType, null));
                     break;
                 case EnemySkill.FrostFissures:
                     FrostFissures(host, body.position, target, kind, null);
                     break;
                 case EnemySkill.Slam:
-                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(body.position, SlamRadius(kind, body), SlamWindUp, kind.DamageType, null));
+                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(body.position, SlamRadius(kind, body), SlamWindUp / kind.AbilitySpeed, kind.DamageType, null));
                     break;
                 case EnemySkill.Strike:
-                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(target, StrikeRadius, StrikeWindUp(kind), kind.DamageType, null));
+                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(target, StrikeRadius, (StrikeWindUp(kind)) / kind.AbilitySpeed, kind.DamageType, null));
                     break;
                 case EnemySkill.Volley:
                     Volley(body, kind, target, null, 0f, enraged, follow);
@@ -1219,33 +1219,33 @@ namespace PoeClone.Enemies
                     SkillEffects.Shockwave(body.position, 2.5f, SummonColor, 0.5f);
                     break;
                 case EnemySkill.WebSpit:
-                    VenomGlob.Lob(EnemyCombat.BoltOrigin(body), target, WebFlight, 0.45f, WebRadius, WebSeconds, null, null, WebColor, WebWarning);
+                    VenomGlob.Lob(EnemyCombat.BoltOrigin(body), target, WebFlight / kind.AbilitySpeed, 0.45f, WebRadius, WebSeconds, null, null, WebColor, WebWarning);
                     break;
                 case EnemySkill.FireBreath:
                     PoeClone.Visuals.DistanceActivity.StartTracked(host, FireBreathVisual(host, body.position, FissureDirection(body.position, target), kind));
                     break;
                 case EnemySkill.Howl:
-                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(body.position, HowlRadius, HowlWindUp, kind.DamageType, null));
+                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(body.position, HowlRadius, HowlWindUp / kind.AbilitySpeed, kind.DamageType, null));
                     break;
                 case EnemySkill.IceSpikes:
                     Vector3 spikeAxis = FissureDirection(body.position, target);
                     Vector3 spikeStart = body.position + spikeAxis * 0.8f;
-                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.RunLine(spikeStart, spikeAxis, SpikeLength, SpikeWidth, SpikeWindUp, kind.DamageType,
+                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.RunLine(spikeStart, spikeAxis, SpikeLength, SpikeWidth, SpikeWindUp / kind.AbilitySpeed, kind.DamageType,
                         () => RaiseSpikes(spikeStart, spikeAxis, kind)));
                     break;
                 case EnemySkill.Shriek:
-                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(body.position, ShriekRadius(body), ShriekWindUp, kind.DamageType, null));
+                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(body.position, ShriekRadius(body), ShriekWindUp / kind.AbilitySpeed, kind.DamageType, null));
                     break;
                 case EnemySkill.BoneWhirl:
-                    PoeClone.Visuals.DistanceActivity.StartTracked(host, WhirlVisual(host, body));
+                    PoeClone.Visuals.DistanceActivity.StartTracked(host, WhirlVisual(host, body, kind));
                     break;
                 case EnemySkill.BonePrison:
-                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.RunRing(target, PrisonRadius - PrisonBand, PrisonRadius + PrisonBand, PrisonWindUp, kind.DamageType, null));
+                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.RunRing(target, PrisonRadius - PrisonBand, PrisonRadius + PrisonBand, PrisonWindUp / kind.AbilitySpeed, kind.DamageType, null));
                     PoeClone.Visuals.DistanceActivity.StartTracked(host, PrisonVisual(target, kind));
                     break;
                 case EnemySkill.Leap:
                     float leapRadius = LeapRadius(body);
-                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(target, leapRadius, LeapCrouch + LeapAir, kind.DamageType,
+                    PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(target, leapRadius, (LeapCrouch + LeapAir) / kind.AbilitySpeed, kind.DamageType,
                         center => SkillEffects.Shockwave(center, leapRadius, DustColor, 0.35f), source: kind));
                     break;
             }
