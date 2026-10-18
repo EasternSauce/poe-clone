@@ -222,6 +222,7 @@ namespace PoeClone.Player
             // A save can name skills from gear this character no longer wears, and a new
             // character must not inherit bindings from the scene player or another profile.
             stats.GetComponent<PlayerSkills>()?.ClearUnavailableSlots();
+            RestoreMinions(stats);
             loaded = true;
             nextSave = Time.unscaledTime + SaveEvery;
             QuestLog.Instance.RecordCurrentArea();
@@ -329,6 +330,13 @@ namespace PoeClone.Player
             }
 
             data.mapSeen = MinimapTerrain.Export();
+
+            // Raised skeletons and mages stay with the character until they fall.
+            foreach (MinionKind kind in new[] { MinionKind.Warrior, MinionKind.Mage })
+            {
+                int living = Minion.LivingCount(stats.transform, kind);
+                if (living > 0) { data.minionKind = (int)kind; data.minions = living; }
+            }
 
             PlayerPrefs.SetString(Key, JsonUtility.ToJson(data));
             PlayerPrefs.Save();
@@ -499,6 +507,20 @@ namespace PoeClone.Player
                 PlayerPrefs.SetString(Key, JsonUtility.ToJson(data));
                 PlayerPrefs.Save();
             }
+        }
+
+        /// <summary>Raises the permanent minions the save had again, after gear is back (re-equipping dismisses summons).</summary>
+        private static void RestoreMinions(PlayerStats stats)
+        {
+            SaveData data = ProfileSave(new Profile { id = ActiveProfileId });
+            if (data == null || data.version != SaveData.CurrentVersion || data.minions <= 0) return;
+            var kind = (MinionKind)data.minionKind;
+            PlayerSkills skills = stats.GetComponent<PlayerSkills>();
+            // Only while the character still wears the gear that grants that summon.
+            if (!Minion.IsPermanent(kind) || skills == null ||
+                !skills.AvailableGrants().Exists(g => g.Id == Minion.SkillFor(kind)))
+                return;
+            Minion.Restore(stats.transform, kind, data.minions);
         }
 
         private static void RestoreSharedStash(PlayerInventory inventory, SaveData oldCharacter = null)

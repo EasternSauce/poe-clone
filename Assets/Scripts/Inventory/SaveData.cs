@@ -149,6 +149,8 @@ namespace PoeClone.Inventory
         public List<string> mapSeen = new List<string>();  // minimap fog of war, per area (MinimapTerrain)
         public bool gearSkills;                            // saved since skills come from gear (older characters get a staff once)
         public bool waystonesReset;                        // saved after the one-time waystone reset (older saves lose their visited areas once)
+        public int minionKind;                             // MinionKind of the living permanent minions
+        public int minions;                                // how many of them were up (0: none)
 
         private static void RestoreTab(InventoryGrid tab, List<PlacedRecord> records, List<ItemData> leftOver)
         {

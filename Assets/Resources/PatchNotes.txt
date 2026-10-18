@@ -1,3 +1,6 @@
+version: 2026-10-18-minions-persist
+- Raised Skeletons and Skeleton Mages now stay with your character when you leave the game: they're back at your side when you log in again, as long as you still wear the gear that grants them.
+
 version: 2026-10-18-town-portal-cancel
 - Moving cancels the town portal straight away, including clicking to walk somewhere, and its rising blue orbs vanish the moment it's interrupted instead of finishing their climb.
 

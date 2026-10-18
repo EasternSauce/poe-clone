@@ -262,6 +262,22 @@ namespace PoeClone.Skills
             }
         }
 
+        /// <summary>Brings back saved permanent minions around the owner, up to their current cap.</summary>
+        public static void Restore(Transform owner, MinionKind kind, int count)
+        {
+            EnemySpawner spawner = FindAnyObjectByType<EnemySpawner>();
+            if (spawner == null || spawner.EnemyPrefab == null || owner == null || !IsPermanent(kind))
+                return;
+            StatSheet sheet = owner.GetComponent<PlayerInventory>()?.Stats;
+            count = Mathf.Min(count, CapFor(owner, kind) - LivingCount(owner, kind));
+            for (int k = 0; k < count; k++)
+            {
+                float angle = k * Mathf.PI * 2f / count;
+                Vector3 desired = owner.position + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * FollowRadius;
+                Create(spawner.EnemyPrefab, owner, kind, ClearSummonPoint(owner, desired) + Vector3.up * 0.3f, 1, sheet);
+            }
+        }
+
         private static Vector3 ClearSummonPoint(Transform owner, Vector3 desired)
         {
             Vector3 from = owner.position + Vector3.up;
