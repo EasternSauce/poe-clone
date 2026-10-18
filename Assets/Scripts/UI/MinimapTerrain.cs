@@ -13,6 +13,8 @@ namespace PoeClone.UI
     /// outline of the open ground drawn lighter), shown only where the player has been. What has
     /// been seen is kept per area at a coarser grid and saved with the character (see
     /// <see cref="Export"/>), so dead ends stay on the map between visits. Haven is always fully shown.
+    /// The full-screen map uses a second texture of the same area (<see cref="OutlineFor"/>): only
+    /// the edges of what can't be walked on, and water, with walkable ground left clear.
     /// </summary>
     public static class MinimapTerrain
     {
@@ -27,8 +29,16 @@ namespace PoeClone.UI
             public Texture2D Texture;
             public Color32[] Base;
             public Color32[] Terrain;
+            public Cell[] Cells;
+            public Cell[] TerrainCells; // before streamed scenery, chunked areas only
             public bool[] Seen;
             public bool Dirty;
+            public float[] Visible;     // fog: how seen each fog cell is, from the last redraw
+            public Texture2D Outline;
+            public Color32[] OutlineBase;
+            public bool OutlineStale = true;    // the ground changed: rebuild the outline
+            public bool OutlineFogStale = true; // more was seen: reapply the fog to it
+            public int Area;
         }
 
         private static readonly Dictionary<int, AreaMap> maps = new Dictionary<int, AreaMap>();
@@ -47,6 +57,47 @@ namespace PoeClone.UI
         public static Texture2D TextureFor(int area)
         {
             return Get(area).Texture;
+        }
+
+        /// <summary>
+        /// The area as outlines for the full-screen map: a line along the edge of anything that
+        /// can't be walked on, water filled see-through, the rest clear; hidden where unseen like
+        /// the minimap. Only built and updated while something asks for it.
+        /// </summary>
+        public static Texture2D OutlineFor(int area)
+        {
+            AreaMap map = Get(area);
+            int resolution = map.Texture.width;
+            if (map.Outline == null)
+            {
+                map.Outline = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false)
+                {
+                    name = "MapOutline_" + area,
+                    filterMode = FilterMode.Bilinear,
+                    wrapMode = TextureWrapMode.Clamp
+                };
+            }
+            if (map.OutlineStale)
+            {
+                map.OutlineStale = false;
+                map.OutlineFogStale = true;
+                var walkable = new bool[map.Cells.Length];
+                for (int i = 0; i < walkable.Length; i++)
+                    walkable[i] = map.Cells[i] == Cell.Open || map.Cells[i] == Cell.Bridge;
+                int width = Mathf.Max(1, Mathf.RoundToInt(OutlineWidth * (float)resolution / Resolution));
+                bool[] edges = Edges(walkable, resolution, width);
+                Color32 line = new Color32(235, 225, 200, 235);
+                Color32 water = map.Area == WorldBuilder.Frozen ? new Color32(140, 200, 230, 110) : new Color32(50, 130, 190, 120);
+                map.OutlineBase = new Color32[walkable.Length];
+                for (int i = 0; i < walkable.Length; i++)
+                    map.OutlineBase[i] = edges[i] ? line : map.Cells[i] == Cell.Water ? water : new Color32(0, 0, 0, 0);
+            }
+            if (map.OutlineFogStale)
+            {
+                map.OutlineFogStale = false;
+                ApplyFog(map.Outline, map.OutlineBase, map.Visible);
+            }
+            return map.Outline;
         }
 
         /// <summary>Marks everything near the player as seen; redraws the texture if that changed anything.</summary>
@@ -164,7 +215,7 @@ namespace PoeClone.UI
             if (maps.TryGetValue(area, out AreaMap map) && map.Texture != null)
                 return map;
 
-            IEnumerator bake = Bake(area, map = new AreaMap(), float.PositiveInfinity);
+            IEnumerator bake = Bake(area, map = new AreaMap { Area = area }, float.PositiveInfinity);
             while (bake.MoveNext()) { }
             return Store(area, map);
         }
@@ -178,7 +229,7 @@ namespace PoeClone.UI
                 yield break;
 
             Physics.SyncTransforms();
-            var map = new AreaMap();
+            var map = new AreaMap { Area = area };
             IEnumerator bake = Bake(area, map, SliceMs);
             while (bake.MoveNext())
                 yield return null;
@@ -212,6 +263,7 @@ namespace PoeClone.UI
         private const int SampleResolution = 320;
         private const float FieldClamp = 4f;      // metres: distances past this don't move an edge
         private const int RimWidth = 2;           // texels of lighter outline along the open ground
+        private const int OutlineWidth = 2;       // texels of line along unwalkable ground, full map
         private const float SliceMs = 12f;        // work per frame when baking behind a loading screen
 
         // Fills in the map, yielding between rows once a slice has used up its time.
@@ -278,7 +330,10 @@ namespace PoeClone.UI
                     clock.Restart();
                 }
             }
-            bool[] rims = Rims(cells, resolution, rimWidth);
+            var openCells = new bool[cells.Length];
+            for (int i = 0; i < cells.Length; i++)
+                openCells[i] = cells[i] == Cell.Open;
+            bool[] rims = Edges(openCells, resolution, rimWidth);
 
             Color tint = WorldBuilder.AreaColor(area);
             Color open = Color.Lerp(new Color(0.42f, 0.40f, 0.36f), tint, 0.45f) * 0.85f;
@@ -331,7 +386,12 @@ namespace PoeClone.UI
                 wrapMode = TextureWrapMode.Clamp
             };
             map.Base = pixels;
-            if (WorldBuilder.UsesChunks(area)) map.Terrain = (Color32[])pixels.Clone();
+            map.Cells = cells;
+            if (WorldBuilder.UsesChunks(area))
+            {
+                map.Terrain = (Color32[])pixels.Clone();
+                map.TerrainCells = (Cell[])cells.Clone();
+            }
             map.Seen = new bool[FogResolution * FogResolution];
             map.Dirty = true;
         }
@@ -371,9 +431,17 @@ namespace PoeClone.UI
                     int sx = Mathf.Clamp(Mathf.RoundToInt(px - localBounds.xMin + 1f), 0, nx - 1);
                     int sz = Mathf.Clamp(Mathf.RoundToInt(pz - localBounds.yMin + 1f), 0, nz - 1);
                     if (solid[sz * nx + sx])
+                    {
                         map.Base[i] = new Color32((byte)(terrain.r * 0.38f), (byte)(terrain.g * 0.38f), (byte)(terrain.b * 0.38f), 230);
-                    else map.Base[i] = terrain;
+                        map.Cells[i] = Cell.Solid;
+                    }
+                    else
+                    {
+                        map.Base[i] = terrain;
+                        map.Cells[i] = map.TerrainCells[i];
+                    }
                 }
+            map.OutlineStale = true;
             if (redraw) Redraw(map);
         }
 
@@ -406,11 +474,11 @@ namespace PoeClone.UI
             return Mathf.Lerp(Mathf.Lerp(field[i], field[i + 1], fx), Mathf.Lerp(field[i + n], field[i + n + 1], fx), fy);
         }
 
-        // Open ground within RimWidth texels of something solid or the outside: the line that shows
-        // where you can't go. A square neighbourhood, checked along rows and then along columns.
-        private static bool[] Rims(Cell[] cells, int resolution, int rimWidth)
+        // Open ground within so many texels of anything not open (or the texture's edge): the line
+        // that shows where you can't go. A square neighbourhood, checked along rows and then columns.
+        private static bool[] Edges(bool[] open, int resolution, int rimWidth)
         {
-            var across = new bool[cells.Length];
+            var across = new bool[open.Length];
             for (int y = 0; y < resolution; y++)
             {
                 for (int x = 0; x < resolution; x++)
@@ -419,18 +487,18 @@ namespace PoeClone.UI
                     for (int d = -rimWidth; d <= rimWidth && !across[i]; d++)
                     {
                         int nx = x + d;
-                        across[i] = nx < 0 || nx >= resolution || cells[i + d] != Cell.Open;
+                        across[i] = nx < 0 || nx >= resolution || !open[i + d];
                     }
                 }
             }
 
-            var rims = new bool[cells.Length];
+            var rims = new bool[open.Length];
             for (int y = 0; y < resolution; y++)
             {
                 for (int x = 0; x < resolution; x++)
                 {
                     int i = y * resolution + x;
-                    if (cells[i] != Cell.Open)
+                    if (!open[i])
                         continue;
                     for (int d = -rimWidth; d <= rimWidth && !rims[i]; d++)
                     {
@@ -469,9 +537,16 @@ namespace PoeClone.UI
                     visible[y * n + x] = seen / samples;
                 }
             }
+            map.Visible = visible;
+            map.OutlineFogStale = true;
+            ApplyFog(map.Texture, map.Base, visible);
+        }
 
-            int resolution = map.Texture.width;
-            NativeArray<Color32> shown = map.Texture.GetPixelData<Color32>(0);
+        private static void ApplyFog(Texture2D texture, Color32[] pixels, float[] visible)
+        {
+            const int n = FogResolution;
+            int resolution = texture.width;
+            NativeArray<Color32> shown = texture.GetPixelData<Color32>(0);
             float toFog = (float)n / resolution;
             for (int y = 0; y < resolution; y++)
             {
@@ -479,12 +554,12 @@ namespace PoeClone.UI
                 for (int x = 0; x < resolution; x++)
                 {
                     int i = y * resolution + x;
-                    Color32 c = map.Base[i];
+                    Color32 c = pixels[i];
                     c.a = (byte)(c.a * Sample(visible, n, (x + 0.5f) * toFog - 0.5f, v));
                     shown[i] = c;
                 }
             }
-            map.Texture.Apply(false);
+            texture.Apply(false);
         }
     }
 }

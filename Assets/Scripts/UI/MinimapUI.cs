@@ -106,7 +106,7 @@ namespace PoeClone.UI
             frame.sizeDelta = new Vector2(Size, Size);
             back.gameObject.AddComponent<RectMask2D>();
 
-            corner = NewView(frame, Size / ViewSize, Size * 0.5f - 10f, 1f, 1f);
+            corner = NewView(frame, Size / ViewSize, Size * 0.5f - 10f, 1f);
 
             playerDot = UiKit.NewImage("Player", frame, Color.white);
             playerDot.sprite = IconFactory.Facing;
@@ -163,13 +163,12 @@ namespace PoeClone.UI
             TouchMode.AddBlocker(mapTab);
             mapTab.gameObject.SetActive(false);
 
-            // The whole area over the screen, under every other panel; see-through, so the
-            // fight stays visible behind it.
+            // The whole area over the screen, under every other panel: just outlines of what
+            // can't be walked on, and water, so the fight stays in plain sight behind it.
             Canvas overlayCanvas = UiKit.NewCanvas("MapOverlayCanvas", transform, 35, out _);
-            Image dim = UiKit.NewImage("MapOverlay", overlayCanvas.transform, new Color(0f, 0f, 0f, 0.25f));
-            overlay = dim.rectTransform;
+            overlay = UiKit.NewRect("MapOverlay", overlayCanvas.transform);
             UiKit.Stretch(overlay, 0f);
-            full = NewView(overlay, 1f, 0f, 0.6f, 1.4f);
+            full = NewView(overlay, 1f, 0f, 1.4f);
             full.Labelled = true;
             overlayName = UiKit.NewText("AreaName", overlay, "", 22, UiKit.Gold, TextAnchor.MiddleCenter);
             overlayName.font = UiKit.TitleFont;
@@ -180,7 +179,7 @@ namespace PoeClone.UI
             overlay.gameObject.SetActive(false);
         }
 
-        private static MapView NewView(RectTransform layer, float scale, float partnerEdge, float terrainAlpha, float markerSize)
+        private static MapView NewView(RectTransform layer, float scale, float partnerEdge, float markerSize)
         {
             var view = new MapView { Layer = layer, Scale = scale, PartnerEdge = partnerEdge, MarkerSize = markerSize };
             view.Content = UiKit.NewRect("Content", layer);
@@ -191,7 +190,6 @@ namespace PoeClone.UI
             terrainGo.transform.SetParent(view.Content, false);
             view.Terrain = terrainGo.GetComponent<RawImage>();
             view.Terrain.raycastTarget = false;
-            view.Terrain.color = new Color(1f, 1f, 1f, terrainAlpha);
             view.Terrain.rectTransform.anchorMin = view.Terrain.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
 
             view.PartnerMark = UiKit.NewImage("Partner", layer, PartnerColor);
@@ -276,6 +274,8 @@ namespace PoeClone.UI
                 return;
             nextRefresh = Time.unscaledTime + Refresh;
             UpdateTerrain(areas.CurrentAreaIndex);
+            if (view == full)
+                full.Terrain.texture = MinimapTerrain.OutlineFor(areas.CurrentAreaIndex);
             Redraw(view, areas.CurrentAreaIndex, centre);
         }
 
@@ -345,7 +345,7 @@ namespace PoeClone.UI
             if (terrainArea != area)
             {
                 Physics.SyncTransforms();
-                corner.Terrain.texture = full.Terrain.texture = MinimapTerrain.TextureFor(area);
+                corner.Terrain.texture = MinimapTerrain.TextureFor(area);
                 terrainArea = area;
             }
             MinimapTerrain.Reveal(area, player.transform.position);
