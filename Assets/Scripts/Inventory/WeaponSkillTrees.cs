@@ -145,7 +145,7 @@ namespace PoeClone.Inventory
                 P("Veteran Bones", U(E.MinionLife, 12), "Bone Shields", M(B(E.MinionArmour, 100), B(E.MinionResists, 60)), "Bone Champion", M(B(E.HalfMinions, 1), B(E.MoreDamage, 70), B(E.MinionLife, 50), B(E.MinionSize, 50)), "Unbroken Phalanx", B(E.MinionArmour, 160), B(E.MinionResists, 75)),
                 P("Sharpened Blades", M(B(E.Damage, 10)), "Relentless Warriors", M(B(E.Speed, 15)), "Final Service", M(B(E.MinionDeathBurst, 35)), "Drilled Warriors", B(E.Speed, 20)));
             Add(t, StatType.GrantSkeletonMages,
-                P("Winter School", U(E.ProjectileSpeed, 12), "More Missiles", M(B(E.Projectiles, 2), B(E.MoreDamage, -20)), "Frozen Curriculum", M(B(E.Cold, 1), B(E.Chill, 20), B(E.Duration, 35)), "More Apprentices", B(E.Minions, 1), B(E.MoreDamage, -15)),
+                P("Winter School", U(E.ProjectileSpeed, 12), "More Missiles", M(B(E.Projectiles, 2)), "Frozen Curriculum", M(B(E.Cold, 1), B(E.Chill, 20), B(E.Duration, 35)), "More Apprentices", B(E.Minions, 1), B(E.MoreDamage, -15)),
                 P("Storm School", U(E.MinionMoveSpeed, 12), "Quick Lessons", M(B(E.Speed, 12)), "Storm College", M(B(E.Lightning, 1), B(E.Shock, 20), B(E.Speed, 10)), "Arcane Reach", B(E.Area, 40), B(E.Minions, 1), B(E.MoreDamage, -15)),
                 P("Fire School", U(E.MinionLife, 12), "Warded Robes", M(B(E.MinionArmour, 150), B(E.MinionResists, 100)), "Fire College", M(B(E.Fire, 1), B(E.Ignite, 20)), "Grand Conclave", B(E.Minions, 1), B(E.MoreDamage, -15)));
             Add(t, StatType.GrantSpiritWolves,

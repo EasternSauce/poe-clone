@@ -1,3 +1,6 @@
+version: 2026-10-18-skeleton-mage-missiles
+- Skeleton mages' More Missiles passive now grants two additional projectiles without the 20% less damage penalty.
+
 version: 2026-10-18-approved-keystones
 - Five new main-tree keystones replace outer notables: Unwavering Stance (Fury), Returning Volley and Contagion (Grace), Spellbound Effigies (Wisdom), and Greater Congregation (Zeal). Existing allocated nodes carry over.
 - Unwavering Stance prevents stagger but removes attack evasion; evasion rating can still be converted to armour with Iron Reflexes.
