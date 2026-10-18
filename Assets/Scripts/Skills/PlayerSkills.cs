@@ -765,7 +765,7 @@ namespace PoeClone.Skills
 
         // ------------------------------------------------------------------ teleport
 
-        /// <summary>How far Teleport reaches: about half the screen, a little further each level.</summary>
+        /// <summary>How far Teleport reaches: about half the screen.</summary>
         public static float TeleportRange(int level) => 9f;
 
         // On mobile, full range straight ahead; on desktop, to the aimed point (or as far as it
@@ -782,8 +782,10 @@ namespace PoeClone.Skills
                 distance = Mathf.Clamp(aimed.Value, 0.05f, distance);
 
             // Ordinary walls can be crossed, but progression seals stop the jump on this side.
+            Physics.SyncTransforms();
             CharacterController body = GetComponent<CharacterController>();
-            float radius = body != null ? body.radius : 0.4f;
+            Vector3 scale = transform.lossyScale;
+            float radius = body != null ? body.radius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z)) : 0.4f;
             foreach (RaycastHit hit in Physics.SphereCastAll(start, radius, direction, distance, ~0, QueryTriggerInteraction.Ignore))
             {
                 var barrier = hit.collider.GetComponentInParent<Quests.QuestBarrier>();
@@ -802,7 +804,7 @@ namespace PoeClone.Skills
                 if (spot.HasValue)
                 {
                     landing = spot;
-                    // Refine the last blocked interval to stop within a centimetre of the wall.
+                    // Refine the last blocked interval while preserving the landing clearance.
                     float low = d, high = Mathf.Min(distance, d + landingStep);
                     for (int i = 0; i < 4; i++)
                     {
@@ -822,6 +824,7 @@ namespace PoeClone.Skills
             }
 
             SkillEffects.Shockwave(start, 1.4f, skill.Color, 0.3f, type: SkillEffects.DamagePattern(skill));
+            controller?.StopMovement();
             Face(direction);
             bool wasEnabled = body != null && body.enabled;
             if (body != null)
@@ -858,42 +861,63 @@ namespace PoeClone.Skills
         {
             if (World.WorldBuilder.Instance != null && !World.WorldBuilder.Instance.CanMoveTo(at)) return null;
             CharacterController body = GetComponent<CharacterController>();
-            float radius = body != null ? body.radius : 0.4f;
+            Vector3 scale = transform.lossyScale;
+            float radialScale = Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+            float radius = body != null ? body.radius * radialScale : 0.4f;
+            float height = body != null ? Mathf.Max(radius * 2f, body.height * Mathf.Abs(scale.y)) : 2f;
+            float clearance = 0.04f + (body != null ? body.skinWidth * radialScale : 0.08f);
             var areas = World.AreaManager.Instance;
             if (areas != null && areas.CurrentAreaIndex >= 0 &&
-                !World.WorldBuilder.Shape(areas.CurrentAreaIndex).Contains(at, radius))
+                !World.WorldBuilder.Shape(areas.CurrentAreaIndex).Contains(at, radius + clearance))
                 return null;
 
-            float y = transform.position.y;
             float floor = GroundBelowPlayer();
-            if (!Physics.Raycast(new Vector3(at.x, floor + 2f, at.z), Vector3.down, out RaycastHit ground, 3.5f, ~0, QueryTriggerInteraction.Ignore))
-                return null;
-            if (Mathf.Abs(ground.point.y - floor) > 1.2f || ground.normal.y < 0.7f)
+            RaycastHit ground = default;
+            float nearest = float.MaxValue;
+            foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(at.x, floor + 2f, at.z), Vector3.down, 3.5f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.collider.transform.IsChildOf(transform) || hit.distance >= nearest) continue;
+                ground = hit;
+                nearest = hit.distance;
+            }
+            if (ground.collider == null || Mathf.Abs(ground.point.y - floor) > 1.2f || ground.normal.y < 0.7f)
                 return null;
 
-            float height = body != null ? body.height : 2f;
-            Vector3 feet = new Vector3(at.x, ground.point.y, at.z);
-            Vector3 bottom = feet + Vector3.up * (radius + 0.15f);
-            Vector3 top = feet + Vector3.up * Mathf.Max(radius + 0.2f, height - radius);
-            int count = Physics.OverlapCapsuleNonAlloc(bottom, top, radius, landingBuffer, ~0, QueryTriggerInteraction.Ignore);
+            Vector3 centerOffset = body != null ? transform.TransformVector(body.center) : Vector3.up;
+            // Align the actual controller feet with the ground, even when the old position is embedded.
+            Vector3 landing = new Vector3(at.x, ground.point.y + height * 0.5f - centerOffset.y + 0.03f, at.z);
+            Vector3 center = landing + centerOffset;
+            // Match ground movement's flat footprint: a capsule alone misses low objects by the toes.
+            // Leave only a small ground tolerance, rather than ignoring the entire supporting collider.
+            Vector3 half = new Vector3(radius + clearance, (height - 0.1f) * 0.5f, radius + clearance);
+            center.y += 0.05f;
+            int count = Physics.OverlapBoxNonAlloc(center, half, landingBuffer, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore);
             if (count == landingBuffer.Length) return null;
             for (int k = 0; k < count; k++)
             {
                 Collider c = landingBuffer[k];
-                if (c == ground.collider || c.transform.IsChildOf(transform))
+                if (c.transform.IsChildOf(transform))
                     continue;
                 return null;
             }
-            // The player's pivot stands at the same height over this ground as over its own.
-            return new Vector3(at.x, y + (ground.point.y - floor), at.z);
+            return landing;
         }
 
         private float GroundBelowPlayer()
         {
             Vector3 p = transform.position;
+            CharacterController body = GetComponent<CharacterController>();
+            if (body != null)
+            {
+                Vector3 scale = transform.lossyScale;
+                float radius = body.radius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+                float height = Mathf.Max(radius * 2f, body.height * Mathf.Abs(scale.y));
+                p = transform.TransformPoint(body.center) - Vector3.up * (height * 0.5f);
+            }
             float best = float.MaxValue;
             float y = p.y;
-            foreach (RaycastHit hit in Physics.RaycastAll(p + Vector3.up * 1.5f, Vector3.down, 5f, ~0, QueryTriggerInteraction.Ignore))
+            // Start near the feet so a rock overhead cannot become the reference floor.
+            foreach (RaycastHit hit in Physics.RaycastAll(p + Vector3.up * 0.25f, Vector3.down, 3.5f, ~0, QueryTriggerInteraction.Ignore))
             {
                 if (hit.collider.transform.IsChildOf(transform) || hit.distance >= best)
                     continue;

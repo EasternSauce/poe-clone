@@ -1,3 +1,6 @@
+version: 2026-10-18-teleport-clearance
+- Teleport now checks your full body and foot clearance at its destination, including low obstacles and scenery that shares a ground collider. Blocked landings stop short with space to move, and teleporting out of an obstructed position realigns your feet with the ground.
+
 version: 2026-10-18-waterfall-refinement
 - Waterfalls now keep the river's natural tint, with clearer falling ribbons, rippling reflective highlights and softer spray. Foam gathers near the impact instead of whitening the whole sheet, and the channel above the falls keeps its flowing water appearance.
 
