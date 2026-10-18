@@ -293,7 +293,7 @@ namespace PoeClone.Inventory
             Gear("shield_int", Leaning.Int, "arcane_focus", "Arcane Focus", ItemType.Shield, 2, 2, 8, "buckler", Gilded, Mod(StatType.MaxMana, 34), Mod(StatType.BlockChance, 14)),
             Gear("shield_int", Leaning.Int, "archon_focus", "Archon Focus", ItemType.Shield, 2, 2, 12, "buckler", Royal, Mod(StatType.MaxMana, 48), Mod(StatType.BlockChance, 18)),
 
-            // ---- Grimoires: the summoner's support off hand; Death Mark is an optional roll.
+            // ---- Grimoires: the summoner's support off hand; Recall Minions is an optional roll.
             Gear("grimoire", Leaning.Int, "grimoire", "Bone Grimoire", ItemType.Grimoire, 2, 2, 1, null, Plain, Mod(StatType.MinionLife, 10)),
             Gear("grimoire", Leaning.Int, "crypt_grimoire", "Crypt Grimoire", ItemType.Grimoire, 2, 2, 4, "grimoire", Verdant, Mod(StatType.MinionLife, 15), Mod(StatType.Intelligence, 8)),
             Gear("grimoire", Leaning.Int, "lich_codex", "Lich Codex", ItemType.Grimoire, 2, 2, 8, "grimoire", Shadow, Mod(StatType.MinionLife, 20), Mod(StatType.Intelligence, 12), Mod(StatType.MinionDamage, 6)),

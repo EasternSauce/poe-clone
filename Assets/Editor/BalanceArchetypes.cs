@@ -81,7 +81,7 @@ namespace PoeClone.EditorTools
                 case SkillId.Teleport: return "Repeatable mobility";
                 case SkillId.FrostNova: return "Cold burst and crowd control";
                 case SkillId.WarCry: return "Physical burst and Onslaught";
-                case SkillId.DeathMark: return "Marked-target army amplifier";
+                case SkillId.DeathMark: return "Recall mobile minions to the caster";
                 case SkillId.GraveRot: return "Curse and damage suppression";
                 default: throw new InvalidOperationException("Uncatalogued support skill " + id);
             }

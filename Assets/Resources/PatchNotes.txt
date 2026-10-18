@@ -1,3 +1,9 @@
+version: 2026-10-18-minion-recall
+- Minion teleports now check walkable ground, slopes and scenery clearance, try nearby safe positions, and stay put if no safe destination is available. Minion movement also respects riverbanks and area boundaries.
+- Doubled minion leash distances and increased the automatic teleport distance from 10 to 20 metres.
+- Replaced the grimoire Death Mark spell with Recall Minions, which teleports your living mobile minions to you without an enemy target. Existing equipment and skill bindings carry over. Sceptre attacks still mark enemies.
+- Both Raise Skeletons and Skeleton Mages now have a four-second base cooldown.
+
 version: 2026-10-18-graveyard-lane
 - Widened the opening between the Haunted Graveyard's central yard and north-east plots so the visible path can be walked through.
 

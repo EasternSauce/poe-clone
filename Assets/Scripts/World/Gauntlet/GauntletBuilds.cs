@@ -206,7 +206,7 @@ namespace PoeClone.World
             new GauntletBuild
             {
                 Id = "necromancer", Name = "Necromancer",
-                Summary = "Skeletons, Skeleton Mages and a Bone Golem, attacking with a Death Mark grimoire: Necromancy and Bone Legion. Gravewarden's Rod from level 9.",
+                Summary = "Skeletons, Skeleton Mages and a Bone Golem, supported by a Recall Minions grimoire: Necromancy and Bone Legion. Gravewarden's Rod from level 9.",
                 MainHand = new[] { "sceptre" }, OffHand = new[] { "grimoire" }, Armour = "int",
                 CoreSkills = new[] { StatType.GrantRaiseSkeletons, StatType.GrantSkeletonMages },
                 SupportSkills = new[] { StatType.GrantBoneGolem, StatType.GrantSpiritWolves, StatType.GrantGraveRot },

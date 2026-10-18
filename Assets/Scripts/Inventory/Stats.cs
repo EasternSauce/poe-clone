@@ -87,7 +87,7 @@ namespace PoeClone.Inventory
         // minions stronger. Minions only care about these minion stats, never the player's own
         // damage stats, so a summoner build has to commit to them: without them minions are
         // flimsy helpers, not a wall to hide behind.
-        GrantDeathMark,             // optional grimoire support: marks an enemy for the minions
+        GrantDeathMark,             // legacy saved stat ID: grants Recall Minions
         GrantSkeletonMages,
         GrantSpiritWolves,
         GrantBoneGolem,
@@ -279,7 +279,7 @@ namespace PoeClone.Inventory
                 case StatType.GrantIceShard: return "Ice Shard";
                 case StatType.GrantTeleport: return "Teleport";
                 case StatType.GrantRaiseSkeletons: return "Raise Skeletons";
-                case StatType.GrantDeathMark: return "Death Mark";
+                case StatType.GrantDeathMark: return "Recall Minions";
                 case StatType.GrantSkeletonMages: return "Skeleton Mages";
                 case StatType.GrantSpiritWolves: return "Spirit Wolves";
                 case StatType.GrantBoneGolem: return "Bone Golem";

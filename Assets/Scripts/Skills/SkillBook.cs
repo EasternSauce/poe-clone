@@ -15,7 +15,7 @@ namespace PoeClone.Skills
         IceShard,
         Teleport,
         RaiseSkeletons,
-        DeathMark,
+        DeathMark, // Legacy saved ID: now Recall Minions.
         SkeletonMages,
         SpiritWolves,
         BoneGolem,
@@ -235,14 +235,14 @@ namespace PoeClone.Skills
             },
             new SkillDefinition
             {
-                Id = SkillId.DeathMark, Name = "Death Mark", Short = "DM", Grant = StatType.GrantDeathMark, RollsOn = "grimoires",
-                Spell = true, BaseDamage = 3f, ManaCosts = new[] { 3.1f }, Cooldown = 0.8f, Color = new Color(0.55f, 1f, 0.45f),
-                Description = "Support ability from grimoires: mark an enemy for 6 seconds. Your minions rush it and deal 30% more damage to it (more with Death Mark Effect). The bolt itself barely hurts."
+                Id = SkillId.DeathMark, Name = "Recall Minions", Short = "RCL", Grant = StatType.GrantDeathMark, RollsOn = "grimoires",
+                Spell = true, ManaCosts = new[] { 3.1f }, Cooldown = 0.8f, Color = new Color(0.55f, 1f, 0.45f),
+                Description = "Teleport your living mobile minions to safe ground beside you. Does not require an enemy target. Spell effigies remain where they were placed."
             },
             new SkillDefinition
             {
                 Id = SkillId.SkeletonMages, Name = "Skeleton Mages", Short = "SKM", Grant = StatType.GrantSkeletonMages, RollsOn = "sceptres",
-                Spell = true, ManaCosts = new[] { 27f }, Cooldown = 5f, Color = new Color(0.5f, 0.85f, 1f),
+                Spell = true, ManaCosts = new[] { 27f }, Cooldown = 4f, Color = new Color(0.5f, 0.85f, 1f),
                 Description = "Raise a skeleton mage that hangs back and hurls straight-flying bolts and stays until destroyed, up to 1 at once. Weapon tree nodes raise the limit. Recasting replaces the oldest summons at the limit. Only one kind of lasting minion can serve you: raising skeleton mages dismisses your skeleton warriors."
             },
             new SkillDefinition

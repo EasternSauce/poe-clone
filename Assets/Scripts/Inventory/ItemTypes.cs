@@ -19,7 +19,7 @@ namespace PoeClone.Inventory
         Quiver,  // off hand, worn with a bow
         Potion,  // lies on the ground; picked up into the potion slots, never the bag
         Gold,    // lies on the ground; picked up into the purse
-        Grimoire, // off hand: minion stats and optional support abilities such as Death Mark
+        Grimoire, // off hand: minion stats and optional support abilities such as Recall Minions
         Consumable
     }
 

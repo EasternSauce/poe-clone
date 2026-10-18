@@ -51,7 +51,6 @@ namespace PoeClone.Skills
                 case SkillId.ChainLightning: return ChainReach * tree.RangeMultiplier;
                 case SkillId.FrostNova: return 5f * SkillArea(id);
                 case SkillId.WarCry: return 4f * SkillArea(id);
-                case SkillId.DeathMark: return MarkReach;
                 default: return 12f * tree.RangeMultiplier;
             }
         }
@@ -143,16 +142,7 @@ namespace PoeClone.Skills
                     Record(skill, effigy.Level, radius, points: skill.Id == SkillId.VenomSpout ? new[] { center } : null, at: at, facing: facing);
                     break;
                 }
-                case SkillId.DeathMark:
-                {
-                    Vector3 from = at + Vector3.up * 1.6f;
-                    Vector3 to = target.transform.position + Vector3.up * 0.5f;
-                    SkillEffects.Arc(from, to, skill.Color);
-                    Minion.Mark(target);
-                    HitFromEffigy(target, damage, DamageType.Physical);
-                    Record(skill, effigy.Level, points: new[] { from, to }, at: at, facing: facing);
-                    break;
-                }
+
             }
         }
 

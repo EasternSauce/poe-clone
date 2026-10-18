@@ -120,12 +120,8 @@ namespace PoeClone.Skills
                         SkillEffects.Shockwave(cast.Points[0], cast.Size, skill.Color, 0.5f, type: SkillEffects.DamagePattern(skill));
                     break;
 
-                case SkillId.DeathMark:
-                    if (cast.Points != null && cast.Points.Length > 1)
-                    {
-                        SkillEffects.Arc(cast.Points[0], cast.Points[1], skill.Color, 0.25f);
-                        SkillEffects.Shockwave(cast.Points[1], 1.1f, skill.Color, 0.3f, type: SkillEffects.DamagePattern(skill));
-                    }
+                case SkillId.DeathMark: // Recall Minions uses the original saved skill ID.
+                    SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, 0.3f);
                     break;
 
                 case SkillId.ChainLightning:

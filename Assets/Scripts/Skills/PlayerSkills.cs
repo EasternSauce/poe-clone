@@ -275,7 +275,7 @@ namespace PoeClone.Skills
         /// <summary>
         /// How much more a skill costs at a character level, rising smoothly from 1x at level 1:
         /// to 1.3x at level 34 for most skills, 1.5x for summons and Grave Rot, 2x for melee skills
-        /// used as the attack (not Whirlwind). Bow skills and Death Mark barely change cost with their
+        /// used as the attack (not Whirlwind). Bow skills barely change cost with their
         /// own level (gear rarely raises it), so they climb steeply with the character instead
         /// (about 8x by level 34). Damage spells continue to 1.9x at level 100, and also pay
         /// DamageSpellManaSurcharge; their costs never flatten out at level 34.
@@ -283,7 +283,7 @@ namespace PoeClone.Skills
         public static float CharacterCostMultiplier(SkillDefinition skill, int characterLevel)
         {
             float l = Mathf.Max(0, characterLevel - 1);
-            if (skill.Bow || skill.Id == SkillId.DeathMark)
+            if (skill.Bow)
                 return 1f + 0.15f * l + 0.0019f * l * l;
             if (skill.DamageSpell)
                 return 1f + 0.3f * l / 33f;
@@ -296,11 +296,11 @@ namespace PoeClone.Skills
         /// a low-rank staff should not bypass mana management on a higher-level character.
         /// The early ramp adds about 12 mana at level 7, then grows smoothly to 52 at 34 and
         /// 118 at 100. Faster spells pay less per cast; long-cooldown spells cap at the same
-        /// surcharge as a one-second spell. Level 1 adds nothing. Death Mark keeps its own curve.
+        /// surcharge as a one-second spell. Level 1 adds nothing.
         /// </summary>
         public static float DamageSpellManaSurcharge(SkillDefinition skill, int characterLevel)
         {
-            if (!skill.DamageSpell || skill.Id == SkillId.DeathMark) return 0f;
+            if (!skill.DamageSpell) return 0f;
             float l = Mathf.Max(0, characterLevel - 1);
             float earlyProgress = l / 10f;
             float pressure = l + 19f * (1f - Mathf.Exp(-earlyProgress * earlyProgress));
@@ -470,8 +470,6 @@ namespace PoeClone.Skills
             SkillId? main = MainSkill;
             if (main == SkillId.ChainLightning)
                 return ChainReach * BonusesFor(SkillId.ChainLightning).RangeMultiplier;
-            if (main == SkillId.DeathMark)
-                return MarkReach;
             if (main == SkillId.VenomSpout)
                 return 12f * BonusesFor(SkillId.VenomSpout).RangeMultiplier;
             return (main == SkillId.IceShard ? ShardRange : BoltRange) * (main.HasValue ? SkillProjectileRange(main.Value) : 1f);
@@ -588,7 +586,7 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.DeathMark:
-                    DeathMark(skill, damage, level, asAttack);
+                    RecallMinions(skill, level);
                     break;
 
                 case SkillId.GraveRot:
@@ -688,32 +686,13 @@ namespace PoeClone.Skills
             Record(skill, level, radius, 0, new[] { at });
         }
 
-        // How far Death Mark reaches.
-        private const float MarkReach = 14f;
-
-        // A bolt of grave-light that marks what it strikes: the aimed enemy, else the nearest one
-        // the cast points at, else the nearest one at all. It barely hurts; the mark is the point.
-        private void DeathMark(SkillDefinition skill, float damage, int level, bool asAttack)
+        private void RecallMinions(SkillDefinition skill, int level)
         {
-            Vector3 from = transform.position + Vector3.up * 0.9f;
-            EnemyHealth target = AimedEnemy(MarkReach) ?? EnemyInDirection(asAttack ? transform.forward : AimDirection(), MarkReach) ??
-                                 Nearest(transform.position, MarkReach * 0.6f, new HashSet<EnemyHealth>());
-            if (target == null)
-            {
-                Vector3 to = from + transform.forward * 4f;
-                SkillEffects.Arc(from, to, skill.Color, 0.2f);
-                Record(skill, level, 0f, 0, new[] { from, to });
-                return;
-            }
-
-            Face(target.transform.position - transform.position);
-            if (!asAttack && attackAnimator != null)
+            if (attackAnimator != null)
                 attackAnimator.PlayAttack(WeaponType.Unarmed);
-            Vector3 hitAt = target.transform.position + Vector3.up * 0.5f * target.transform.localScale.y;
-            SkillEffects.Arc(from, hitAt, skill.Color, 0.25f);
-            Minion.Mark(target);
-            Hit(target, damage, skill.Color, attack: false, skillId: skill.Id);
-            Record(skill, level, 0f, 0, new[] { from, hitAt });
+            Minion.Recall(transform);
+            SkillEffects.Shockwave(transform.position, 2f, skill.Color, 0.3f);
+            Record(skill, level, 2f);
         }
 
         // How far Chain Lightning reaches for its first target, and how far each arc jumps.

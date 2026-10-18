@@ -161,9 +161,10 @@ namespace PoeClone.Skills
                     Skull(a, c, 0.33f, 0.53f, 0.72f);
                     Skull(a, c, 0.7f, 0.43f, 0.57f);
                     break;
-                case SkillId.DeathMark:
+                case SkillId.DeathMark: // Recall Minions: summons gathering inside a portal.
                     a.Add(Ring(0.5f, 0.5f, 0.36f, 0.06f));
-                    Skull(a, c, 0.5f, 0.52f, 0.82f);
+                    Skull(a, c, 0.35f, 0.52f, 0.48f);
+                    Skull(a, c, 0.65f, 0.52f, 0.48f);
                     break;
                 case SkillId.SkeletonMages:
                     Skull(a, c, 0.45f, 0.4f, 0.9f);

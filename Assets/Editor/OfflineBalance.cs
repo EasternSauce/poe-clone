@@ -484,11 +484,10 @@ namespace PoeClone.EditorTools
             var sheet = StatSheet.Build(Base(level), null);
             var skill = SkillBook.Get(a.SkillId);
             float capacity = sheet.CastRateMultiplier / Mathf.Max(.01f, skill.Cooldown);
-            float rotation = skill.Id == SkillId.DeathMark ? Mathf.Min(capacity, 1 / Minion.MarkSeconds) : capacity;
             var s = new Sample { archetype = a.id, level = level, sample = -1, supports = "Support reference: no equipment or passives",
                 cost = ResourceCost(skill, level, WeaponType.Sword, null, sheet), usesPerSecond = capacity,
                 manaPool = sheet.Total(StatType.MaxMana), life = sheet.Total(StatType.MaxLife) };
-            s.fullSpeedManaPerSecond = s.cost * capacity; s.manaPerSecond = s.cost * rotation;
+            s.fullSpeedManaPerSecond = s.cost * capacity; s.manaPerSecond = s.fullSpeedManaPerSecond;
             s.manaRegen = DefenceMath.ManaRegenPerSecond(s.manaPool, sheet.Total(StatType.Intelligence));
             s.netManaDrain = s.manaPerSecond - s.manaRegen; FixEmptyTime(s);
             s.sustainableUseFraction = s.manaPerSecond <= 0 ? 1 : Mathf.Clamp01(s.manaRegen / s.manaPerSecond);
@@ -531,15 +530,13 @@ namespace PoeClone.EditorTools
                 s.replacementManaPerSecond = replacementUses * s.cost;
                 s.minionUptime = Mathf.Min(1, s.usesPerSecond / Mathf.Max(.000001f, replacementUses));
                 s.manaPerSecond = Mathf.Min(replacementUses, s.usesPerSecond) * s.cost;
-                // Refresh the mark as it expires, rather than waste mana spamming it.
-                bool marked = cfg.assumeDeathMarkAvailable || sheet.Total(StatType.GrantDeathMark) > 0;
+                // Recall Minions no longer supplies a mark; model sceptre marks only when explicitly assumed.
+                bool marked = cfg.assumeDeathMarkAvailable;
                 s.unmarkedRawDps = s.rawDps;
-                s.supports = marked ? cfg.assumeDeathMarkAvailable ? "Death Mark (assumed)" : "Death Mark (rolled on grimoire)" : "No Death Mark";
+                s.supports = marked ? "Sceptre mark (assumed)" : "No Death Mark";
                 if (marked)
                 {
-                    float interval = Mathf.Max(Minion.MarkSeconds, SkillBook.Get(SkillId.DeathMark).Cooldown / sheet.CastRateMultiplier);
-                    s.supportManaPerSecond = ResourceCost(SkillBook.Get(SkillId.DeathMark), kit.basis.Level, kit.weapon.WeaponType, null, sheet) / interval;
-                    s.markUptime = Mathf.Min(1, Minion.MarkSeconds / interval);
+                    s.markUptime = 1f;
                     float mark = 1 + .3f * (1 + Mathf.Max(-100, sheet.Total(StatType.MarkEffect)) / 100) * s.markUptime;
                     s.hitDps *= mark; s.dotDps *= mark;
                     s.rawDps = s.hitDps + s.dotDps;

@@ -69,9 +69,9 @@ namespace PoeClone.Skills
 
         private const float FollowRadius = 2.5f;
         private const float EngageRadius = 8f;
-        private const float Leash = 18f;            // only enemies this close to the owner are fought...
-        private const float MarkLeash = 32f;        // ...or the marked one, a good deal further off
-        private const float TeleportDistance = 10f; // about half the screen: past this it blinks back to the owner
+        private const float Leash = 36f;            // only enemies this close to the owner are fought...
+        private const float MarkLeash = 64f;        // ...or the marked one, a good deal further off
+        private const float TeleportDistance = 20f;
 
         private Transform owner;
         public Transform Owner => owner;
@@ -88,6 +88,7 @@ namespace PoeClone.Skills
         private EnemyHealth striking;
         private Vector3 slot;
         private float retargetAt;
+        private float teleportRetryAt;
         private float damagedAt = float.NegativeInfinity;
         private bool dead;
         private float soulBond;
@@ -288,6 +289,58 @@ namespace PoeClone.Skills
                 return;
             foreach (Minion minion in All.FindAll(m => m != null && m.owner == owner))
                 minion.Crumble();
+        }
+
+        /// <summary>Recall this owner's mobile summons; effigies remain where they were placed.</summary>
+        public static void Recall(Transform owner)
+        {
+            if (owner == null) return;
+            foreach (Minion minion in All)
+                if (minion != null && minion.owner == owner && !minion.dead && minion.Kind != MinionKind.Effigy)
+                    minion.TeleportToOwner();
+        }
+
+        private bool TeleportToOwner()
+        {
+            // Try the formation slot first, then nearby alternatives toward the owner.
+            // Never use an unchecked fallback when the bank or scenery leaves no room.
+            Vector3 desired = owner.position + slot;
+            Vector3 at;
+            bool found = TryRecallPoint(desired, out at);
+            for (int ring = 0; ring < 3 && !found; ring++)
+                for (int i = 0; i < 12 && !found; i++)
+                {
+                    float angle = i * Mathf.PI / 6f;
+                    float radius = 1f + ring;
+                    found = TryRecallPoint(owner.position + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius, out at);
+                }
+            if (!found) found = TryRecallPoint(owner.position, out at);
+            if (!found) return false;
+
+            SkillEffects.Shockwave(transform.position, 1f, new Color(0.5f, 1f, 0.6f), 0.3f);
+            body.enabled = false;
+            transform.position = at;
+            body.enabled = true;
+            verticalVelocity = 0f;
+            target = null;
+            striking = null;
+            retargetAt = Time.time + 0.3f;
+            SkillEffects.Shockwave(at, 1f, new Color(0.5f, 1f, 0.6f), 0.3f);
+            return true;
+        }
+
+        private bool TryRecallPoint(Vector3 candidate, out Vector3 point)
+        {
+            float scale = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.z));
+            float kindScale = Mathf.Max(1f, EnemyKinds.Get(LookIndex).Scale);
+            float clearance = (body.radius * scale + body.skinWidth) / kindScale;
+            if (!EnemySpawner.TryPrepareSpawnPoint(candidate, LookIndex, out point,
+                    clearanceRadius: clearance, spawnHeight: 0.1f, ignoreCharacters: true))
+                return false;
+            // Reject lower riverbeds, other floors and a path crossing an area boundary.
+            if (Mathf.Abs(point.y - owner.position.y) > 2f) return false;
+            Vector3 reachable = PoeClone.World.GroundObstacleMotion.ClampToArea(body, owner.position, point);
+            return Flat(reachable - point).sqrMagnitude < 0.001f;
         }
 
         public static Minion PlaceEffigy(Transform owner, SkillId skill, int level, Vector3 at)
@@ -570,15 +623,11 @@ namespace PoeClone.Skills
             }
 
             Vector3 toOwner = Flat(owner.position - transform.position);
-            if (toOwner.magnitude > TeleportDistance && (target == null || Flat(target.transform.position - owner.position).magnitude > MarkLeash))
+            if (Time.time >= teleportRetryAt && toOwner.magnitude > TeleportDistance &&
+                (target == null || Flat(target.transform.position - owner.position).magnitude > MarkLeash))
             {
-                SkillEffects.Shockwave(transform.position, 1f, new Color(0.5f, 1f, 0.6f), 0.3f);
-                body.enabled = false;
-                transform.position = owner.position + slot;
-                body.enabled = true;
-                target = null;
-                SkillEffects.Shockwave(transform.position, 1f, new Color(0.5f, 1f, 0.6f), 0.3f);
-                return;
+                if (TeleportToOwner()) return;
+                teleportRetryAt = Time.time + 0.5f;
             }
 
             if (Time.time >= retargetAt || (target != null && target.IsDead))
@@ -628,7 +677,9 @@ namespace PoeClone.Skills
             verticalVelocity -= 20f * Time.deltaTime;
             Vector3 velocity = move * speed;
             velocity.y = verticalVelocity;
-            body.Move(velocity * Time.deltaTime);
+            Vector3 from = transform.position;
+            Vector3 destination = PoeClone.World.GroundObstacleMotion.ClampToArea(body, from, from + velocity * Time.deltaTime);
+            body.Move(destination - from);
         }
 
         private float Reach(EnemyHealth enemy)
