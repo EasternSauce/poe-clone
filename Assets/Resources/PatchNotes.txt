@@ -1,3 +1,7 @@
+version: 2026-10-18-varied-cave-formations
+- Cave formations no longer repeat one identical cluster. Each spot now grows its own feature: lone or grouped stalagmites around a tall spire, boulder piles of mixed sizes, mossy rubble beds, or a boulder with a few mineral spikes beside it.
+- Wall dressing is unevenly spaced, with bare stretches, overhangs of different widths with a ragged fringe of stalactites, and boulders or stalagmites pressed against the rock. Moss gathers around the bases of rocks, and drips fall from the longest stalactite of only some overhangs.
+
 version: 2026-10-18-minion-command
 - Minions now pick fights closer to you: melee minions go for enemies within 6 metres instead of 8, Skeleton Mages within 9 instead of 17, and they only chase enemies up to 24 metres from you instead of 36.
 - Minions no longer sprint to catch up with you, and they teleport back to you once 32 metres behind instead of 20.
