@@ -1,3 +1,8 @@
+version: 2026-10-18-equipment-fit
+- Refitted armour, shoulders, helmets, hoods, gloves, belts and amulets to the current player proportions. Boots have narrower calves and feet and bend more smoothly at the ankles.
+- Armour now replaces the starting tunic and covers the trousers beneath it. Skirts and armour hems follow the hips and legs during movement and inventory idle poses, reducing clothing poking through and rigid waist movement.
+- Hoods turn with the head while their cowls stay on the shoulders. Bows and spell focuses sit in the left palm, and changing equipment removes the old visual immediately.
+
 version: 2026-10-18-enemy-outlines-and-attack-facing
 - Magic and rare enemies lose their blue or yellow outlines when they die.
 - Attempting an attack while it is still on cooldown no longer turns your character towards the target or interrupts walking. Touch attacks also wait until the next attack begins before turning, while charged shots can still be aimed as they charge.

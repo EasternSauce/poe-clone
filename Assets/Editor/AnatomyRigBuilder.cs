@@ -261,7 +261,19 @@ namespace PoeClone.EditorTools
         // Existing glove IDs and materials are retained; fingers use the same grip system as bare hands.
         public static void UpgradeGloves(Dictionary<string,Mesh> meshes = null)
         {
-            if (meshes == null) meshes=AnatomyMeshes.Build();
+            if (meshes == null)
+            {
+                // Equipment rebuilds reuse baked hands. Rebaking every anatomical asset here
+                // invalidates the open scene's native mesh references until the scene is reloaded.
+                meshes = new Dictionary<string, Mesh>();
+                foreach (string side in new[] { "L", "R" })
+                foreach (string suffix in new[] { "", "Low", "Grip", "GripLow" })
+                {
+                    string name = "AnatomyHand" + side + suffix;
+                    meshes[name] = AssetDatabase.LoadAssetAtPath<Mesh>(LowPolyMeshes.MeshDir + "/" + name + ".asset");
+                    if (meshes[name] == null) throw new System.InvalidOperationException("Missing baked hand: " + name);
+                }
+            }
             foreach(string id in new[] {"leather_gloves","iron_gauntlets","silk_gloves"})
             {
                 string path="Assets/Resources/Equipment/"+id+".prefab";
@@ -273,7 +285,10 @@ namespace PoeClone.EditorTools
                     {
                         Transform socket=root.transform.Find("Socket_Hand"+side);
                         Transform glove=socket.Find("Glove");
-                        glove.localScale=new Vector3(.135f,.16f,.16f);
+                        // The baked hand already includes its anatomical growth. Do not widen it
+                        // again through the old 1.25x socket, especially when closing the fingers.
+                        socket.localScale=Vector3.one;
+                        glove.localScale=new Vector3(.139f,.162f,.165f);
                         Set(glove,meshes["AnatomyHand"+side],null);
                         Transform old=socket.Find("Fingers");
                         if(old!=null) Object.DestroyImmediate(old.gameObject);
@@ -283,6 +298,12 @@ namespace PoeClone.EditorTools
                         detail.GripFar=meshes["AnatomyHand"+side+"GripLow"];
                         (socket.GetComponent<ProceduralAnatomy>() ?? socket.gameObject.AddComponent<ProceduralAnatomy>()).Configure(new[] {detail});
                         FitCuff(socket,id=="iron_gauntlets",side=="L"?-1:1);
+                        foreach (Transform part in socket)
+                        {
+                            if (part == glove) continue;
+                            part.localPosition = Vector3.Scale(part.localPosition, new Vector3(1.15f, 1, 1.15f));
+                            part.localScale = Vector3.Scale(part.localScale, new Vector3(1.15f, 1, 1.15f));
+                        }
                     }
                     PrefabUtility.SaveAsPrefabAsset(root,path);
                 }
@@ -290,7 +311,7 @@ namespace PoeClone.EditorTools
             }
         }
 
-        // The cuff starts at the glove's wrist and hugs the forearm (the socket is 1.25x wider),
+        // The cuff starts at the glove's wrist and hugs the forearm,
         // so the hand reads as attached instead of dangling below a wide bucket.
         private static void FitCuff(Transform socket,bool gauntlet,float side)
         {
@@ -305,7 +326,7 @@ namespace PoeClone.EditorTools
             {
                 Place("Cuff",new Vector3(0,.08f,0),new Vector3(.10f,.17f,.105f));
                 Place("CuffTrim",new Vector3(0,.165f,0),new Vector3(.104f,.02f,.11f));
-                Place("Gem",new Vector3(side*.05f,.10f,0));
+                Place("Gem",new Vector3(side*.05f,.10f,0),new Vector3(.025f,.05f,.04f));
                 // Seated on the back of the hand rather than floating beside it.
                 Place("Knuckles",new Vector3(side*.012f,-.03f,0),new Vector3(.10f,.035f,.11f));
                 return;
@@ -313,7 +334,7 @@ namespace PoeClone.EditorTools
             Place("Cuff",new Vector3(0,.07f,0),new Vector3(.09f,.14f,.095f));
             Place("CuffTrim",new Vector3(0,.008f,0),new Vector3(.076f,.016f,.08f));
             Place("Stud",new Vector3(side*.043f,.10f,.01f),Vector3.one*.016f);
-            Place("Gem",new Vector3(side*.046f,.11f,0));
+            Place("Gem",new Vector3(side*.046f,.11f,0),new Vector3(.025f,.05f,.04f));
         }
 
         private static Material Material(string name,Shader shader)

@@ -32,6 +32,25 @@ namespace PoeClone.EditorTools
         private static readonly Dictionary<string, Material> Mats = new Dictionary<string, Material>();
         private static readonly Dictionary<string, Mesh> Meshes = new Dictionary<string, Mesh>();
 
+        [MenuItem("PoeClone/Refit Worn Armour")]
+        public static void RefitWornArmour()
+        {
+            LoadMeshes();
+            Mats.Clear();
+            foreach (string guid in AssetDatabase.FindAssets("t:Material", new[] { MatDir }))
+            {
+                Material material = AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GUIDToAssetPath(guid));
+                Mats[material.name] = material;
+            }
+            Helmets();
+            BodyArmours();
+            Boots();
+            AnatomyRigBuilder.UpgradeGloves();
+            Belt();
+            JadeAmulet();
+            AssetDatabase.SaveAssets();
+        }
+
         [MenuItem("PoeClone/Build Equipment")]
         public static void BuildAll()
         {
@@ -101,6 +120,18 @@ namespace PoeClone.EditorTools
             Meshes.Clear();
             foreach (KeyValuePair<string, Mesh> pair in LowPolyMeshes.BuildShared())
                 Meshes[pair.Key] = pair.Value;
+            var rings = new List<LowPolyMeshes.Ring>();
+            for (int i = 0; i <= 16; i++)
+            {
+                float t = i / 16f;
+                rings.Add(LowPolyMeshes.R(.5f - t, Mathf.Lerp(.39f, .52f, Mathf.Min(1f, t * 4f))));
+            }
+            Meshes["FittedSkirt"] = LowPolyMeshes.Save("FittedSkirt",
+                LowPolyMeshes.Shell("FittedSkirt", 32, .035f, 0, 360, false, rings.ToArray()));
+            rings.Clear();
+            for (int i = 0; i <= 8; i++) rings.Add(LowPolyMeshes.R(.5f - i / 8f, .5f));
+            Meshes["FittedHem"] = LowPolyMeshes.Save("FittedHem",
+                LowPolyMeshes.Shell("FittedHem", 32, .035f, 0, 360, false, rings.ToArray()));
             foreach (string name in new[] { "Cone", "Cylinder", "IcoHead" })
             {
                 Mesh m = AssetDatabase.LoadAssetAtPath<Mesh>(LowPolyMeshes.MeshDir + "/" + name + ".asset");
@@ -194,9 +225,7 @@ namespace PoeClone.EditorTools
             return new GameObject(id);
         }
 
-        // Arms and legs were thickened after the gear below was fitted to them. Gear on the hands,
-        // feet and shoulders is widened by this much (not lengthened) through its socket node's scale,
-        // which EquipmentVisuals copies, so the sizes written below stay those of the slimmer limbs.
+        // Legacy hand shapes; UpgradeGloves replaces this with the anatomical hand's own size.
         private const float LimbWidth = 1.25f;
 
         // A direct child of the prefab root, named for the character socket it attaches to.
@@ -261,8 +290,73 @@ namespace PoeClone.EditorTools
 
         private static void Save(GameObject root, string id)
         {
+            FitCurrentAnatomy(root, id);
             PrefabUtility.SaveAsPrefabAsset(root, OutDir + "/" + id + ".prefab");
             Object.DestroyImmediate(root);
+        }
+
+        private static void FitCurrentAnatomy(GameObject root, string id)
+        {
+            if (id == "studded_vest" || id == "chain_hauberk" || id == "silk_robe")
+            {
+                Transform chest = root.transform.Find("Socket_Chest");
+                foreach (Transform part in chest)
+                {
+                    part.localPosition = Vector3.Scale(part.localPosition, new Vector3(.93f, 1f, .91f));
+                    part.localScale = Vector3.Scale(part.localScale, new Vector3(.93f, 1f, .91f));
+                }
+                // A continuous overlap at the waist, with the same tailored silhouette as the chest.
+                foreach (string name in new[] { "Hem", "Fauld", "FauldTrim", "Skirt" })
+                {
+                    Transform part = chest.Find(name);
+                    if (part == null) continue;
+                    Vector3 scale = part.localScale;
+                    if (name == "Hem" && id == "studded_vest") { scale.y = .33f; part.localPosition = new Vector3(0, -.40f, 0); }
+                    if (name == "Fauld") { scale.y = .34f; part.localPosition = new Vector3(0, -.40f, 0); }
+                    if (name == "FauldTrim") part.localPosition = new Vector3(0, -.56f, 0);
+                    if (name == "Skirt") { scale.y = .65f; part.localPosition = new Vector3(0, -.56f, 0); }
+                    part.localScale = scale;
+                }
+                if (id == "silk_robe") chest.Find("Hem").localPosition = new Vector3(0, -.865f, 0);
+                Transform skirt = chest.Find(id == "chain_hauberk" ? "Fauld" : "Skirt");
+                Transform hem = chest.Find(id == "chain_hauberk" ? "FauldTrim" : "Hem");
+                if (skirt != null && hem != null)
+                    hem.localScale = new Vector3(skirt.localScale.x * 1.065f, hem.localScale.y, skirt.localScale.z * 1.065f);
+                foreach (string side in new[] { "L", "R" })
+                {
+                    Transform shoulder = root.transform.Find("Socket_Shoulder" + side);
+                    foreach (Transform part in shoulder)
+                    {
+                        part.localPosition = Vector3.Scale(part.localPosition, new Vector3(.84f, 1f, .88f));
+                        part.localScale = Vector3.Scale(part.localScale, new Vector3(.84f, 1f, .88f));
+                    }
+                    // The connected arm already provides a fitted, animated fabric sleeve.
+                    // Old open cylinders floated above it and exposed hollow shoulder holes.
+                    Transform sleeve = shoulder.Find("Sleeve");
+                    if (sleeve != null) Object.DestroyImmediate(sleeve.gameObject);
+                    Transform trim = shoulder.Find("SleeveTrim");
+                    if (trim != null)
+                    {
+                        trim.localPosition = new Vector3(0, -.32f, 0);
+                        trim.localScale = new Vector3(.14f, .018f, .15f);
+                    }
+
+                }
+            }
+            if (id == "iron_helmet" || id == "bronze_helmet" || id == "sage_circlet" || id == "hunter_hood")
+            {
+                Transform head = root.transform.Find("Socket_Head");
+                head.localScale = new Vector3(.86f, .91f, .86f);
+                if (id == "hunter_hood")
+                {
+                    // The cowl rests on the shoulders, independently of head glances and stretches.
+                    Transform cowl = head.Find("Cowl");
+                    Transform neck = Node(root, "Socket_Neck", Vector3.zero, Vector3.zero);
+                    cowl.SetParent(neck, false);
+                    cowl.localPosition = new Vector3(0, -.005f, -.01f);
+                    cowl.localScale = new Vector3(.45f, .12f, .34f);
+                }
+            }
         }
 
         // ------------------------------------------------------------------ helmets
@@ -377,8 +471,8 @@ namespace PoeClone.EditorTools
         {
             return new[]
             {
-                LimbNode(root, "Socket_ShoulderL"),
-                LimbNode(root, "Socket_ShoulderR")
+                Node(root, "Socket_ShoulderL", Vector3.zero, Vector3.zero),
+                Node(root, "Socket_ShoulderR", Vector3.zero, Vector3.zero)
             };
         }
 
@@ -392,7 +486,7 @@ namespace PoeClone.EditorTools
             Torso(chest, "TanLight", new Vector3(0.71f, 0.7f, 0.41f));
             Shape(chest, "Collar", "GearCuff", "Tan", new Vector3(0f, 0.34f, 0f), new Vector3(0.19f, 0.08f, 0.18f));
             Shape(chest, "WaistBand", "GearBand", "Tan", new Vector3(0f, -0.3f, 0f), new Vector3(0.56f, 0.05f, 0.4f));
-            Shape(chest, "Hem", "GearFlare", "TanLight", new Vector3(0f, -0.42f, 0f), new Vector3(0.62f, 0.16f, 0.44f));
+            Shape(chest, "Hem", "FittedSkirt", "TanLight", new Vector3(0f, -0.42f, 0f), new Vector3(0.62f, 0.16f, 0.44f));
             float[] ys = { 0.15f, 0.02f, -0.12f };
             float[] zs = { 0.207f, 0.208f, 0.183f };
             for (int i = 0; i < ys.Length; i++)
@@ -424,8 +518,8 @@ namespace PoeClone.EditorTools
             Cube(chest, "Ridge", "Steel", new Vector3(0f, 0.04f, 0.208f), new Vector3(0.025f, 0.4f, 0.02f));
             Shape(chest, "Gorget", "GearCuff", "Silver", new Vector3(0f, 0.35f, 0f), new Vector3(0.205f, 0.09f, 0.18f));
             Shape(chest, "Belt", "GearBand", "SteelDark", new Vector3(0f, -0.3f, 0f), new Vector3(0.57f, 0.05f, 0.41f));
-            Shape(chest, "Fauld", "GearFlare", "Silver", new Vector3(0f, -0.43f, 0f), new Vector3(0.62f, 0.18f, 0.45f));
-            Shape(chest, "FauldTrim", "GearBand", "Gold", new Vector3(0f, -0.515f, 0f), new Vector3(0.63f, 0.02f, 0.46f));
+            Shape(chest, "Fauld", "FittedSkirt", "Silver", new Vector3(0f, -0.43f, 0f), new Vector3(0.62f, 0.18f, 0.45f));
+            Shape(chest, "FauldTrim", "FittedHem", "Gold", new Vector3(0f, -0.515f, 0f), new Vector3(0.63f, 0.02f, 0.46f));
             foreach (float s in new[] { -1f, 1f })
                 Shape(chest, "Engraving", "GearLeaf", "Steel", new Vector3(0.12f * s, 0.12f, 0.205f), new Vector3(0.06f, 0.13f, 0.01f), new Vector3(0f, 16f * s, -22f * s));
             Shape(chest, "Gem", "IcoHead", "GemGreen", new Vector3(0f, 0.22f, 0.205f), new Vector3(0.065f, 0.08f, 0.04f));
@@ -451,8 +545,8 @@ namespace PoeClone.EditorTools
 
             Torso(chest, "GearCloth", new Vector3(0.7f, 0.7f, 0.4f));
             Shape(chest, "Collar", "GearCuff", "GearCloth", new Vector3(0f, 0.35f, 0f), new Vector3(0.19f, 0.09f, 0.18f));
-            Shape(chest, "Skirt", "BodySkirt", "GearCloth", new Vector3(0f, -0.6f, 0f), new Vector3(0.66f, 0.5f, 0.5f));
-            Shape(chest, "Hem", "GearBand", "GearClothTrim", new Vector3(0f, -0.835f, 0f), new Vector3(0.68f, 0.04f, 0.52f));
+            Shape(chest, "Skirt", "FittedSkirt", "GearCloth", new Vector3(0f, -0.6f, 0f), new Vector3(0.66f, 0.5f, 0.5f));
+            Shape(chest, "Hem", "FittedHem", "GearClothTrim", new Vector3(0f, -0.835f, 0f), new Vector3(0.68f, 0.04f, 0.52f));
             Shape(chest, "Sash", "GearBand", "GearCloth", new Vector3(0f, -0.3f, 0f), new Vector3(0.56f, 0.07f, 0.4f));
             Shape(chest, "SashTrim", "GearBand", "GearClothTrim", new Vector3(0f, -0.335f, 0f), new Vector3(0.565f, 0.015f, 0.405f));
             float[] ys = { 0.18f, 0.04f, -0.1f };
@@ -509,64 +603,51 @@ namespace PoeClone.EditorTools
             Save(root, id);
         }
 
-        // ------------------------------------------------------------------ boots
-
-        // Socket_FootL/R is the centre of the boot (BodyBoot, 0.19 x 0.46 x 0.3): from just below the
-        // knee to the ground, the foot reaching forward at the bottom. The shaft is drawn back a little.
+        // Footwear is built in knee space: the ankle is at -.38 and the sole at -.43.
+        // Dense cross-sections around the ankle let the foot flex without folding a long shin face.
         private static void Boots()
         {
-            LeatherBoots();
-            IronGreaves();
-            SilkSlippers();
+            Meshes["FittedBoot"] = LowPolyMeshes.Save("FittedBoot", LowPolyMeshes.Loft("FittedBoot", 24, 2.2f, false,
+                new LowPolyMeshes.Ring(.005f, 0, 0),
+                new LowPolyMeshes.Ring(0, .085f, .09f, .012f),
+                new LowPolyMeshes.Ring(-.06f, .092f, .10f, 0),
+                new LowPolyMeshes.Ring(-.13f, .098f, .106f, -.012f),
+                new LowPolyMeshes.Ring(-.20f, .092f, .10f, -.018f),
+                new LowPolyMeshes.Ring(-.26f, .081f, .095f, -.013f),
+                new LowPolyMeshes.Ring(-.30f, .071f, .088f, -.008f),
+                new LowPolyMeshes.Ring(-.33f, .068f, .087f, -.005f),
+                new LowPolyMeshes.Ring(-.36f, .075f, .13f, .04f),
+                new LowPolyMeshes.Ring(-.39f, .086f, .177f, .055f),
+                new LowPolyMeshes.Ring(-.425f, .083f, .175f, .055f),
+                new LowPolyMeshes.Ring(-.43f, 0, 0, .055f)));
+            BootSet("leather_boots", "TanLight", "TanDark", false);
+            BootSet("iron_greaves", "Silver", "Gold", true);
+            BootSet("silk_slippers", "GearCloth", "GearClothTrim", false);
         }
 
-        private static void LeatherBoots()
+        private static void BootSet(string id, string material, string trim, bool plate)
         {
-            GameObject root = NewRoot("leather_boots");
-            foreach (string socket in new[] { "Socket_FootL", "Socket_FootR" })
+            GameObject root = NewRoot(id);
+            foreach (string side in new[] { "L", "R" })
             {
-                float s = socket == "Socket_FootL" ? -1f : 1f;
-                Transform foot = LimbNode(root, socket);
-                Shape(foot, "Boot", "BodyBoot", "TanLight", new Vector3(0f, -0.005f, 0f), new Vector3(0.235f, 0.475f, 0.335f));
-                Shape(foot, "Cuff", "GearCuff", "Tan", new Vector3(0f, 0.22f, -0.027f), new Vector3(0.23f, 0.1f, 0.25f));
-                Shape(foot, "StrapHigh", "GearBand", "TanDark", new Vector3(0f, 0.03f, -0.037f), new Vector3(0.205f, 0.03f, 0.225f));
-                Shape(foot, "StrapLow", "GearBand", "TanDark", new Vector3(0f, -0.1f, -0.027f), new Vector3(0.205f, 0.03f, 0.25f));
-                Cube(foot, "Buckle", "Gold", new Vector3(0.1f * s, 0.03f, -0.03f), new Vector3(0.015f, 0.045f, 0.045f));
-                Cube(foot, "BuckleLow", "Gold", new Vector3(0.1f * s, -0.1f, -0.02f), new Vector3(0.015f, 0.045f, 0.045f));
+                Transform foot = Node(root, "Socket_Foot" + side, Vector3.zero, Vector3.zero);
+                // Cancel the socket's old centre; the mesh itself is measured from the knee.
+                Shape(foot, "Boot", "FittedBoot", material, new Vector3(0, .20f, -.02f), Vector3.one);
+                Shape(foot, "Cuff", "GearCuff", material, new Vector3(0, .175f, -.012f), new Vector3(.185f, .055f, .197f));
+                Shape(foot, "CuffTrim", "GearBand", trim, new Vector3(0, .20f, -.008f), new Vector3(.188f, .014f, .20f));
+                if (plate)
+                {
+                    Cube(foot, "Ridge", "SteelDark", new Vector3(0, .025f, .083f), new Vector3(.014f, .22f, .012f));
+                    Shape(foot, "KneeCop", "GearDome", material, new Vector3(0, .16f, .078f), new Vector3(.13f, .04f, .11f), new Vector3(90, 0, 0));
+                    Shape(foot, "ToeCap", "GearDome", "SteelDark", new Vector3(0, -.19f, .16f), new Vector3(.145f, .035f, .09f), new Vector3(90, 0, 0));
+                }
+                else
+                {
+                    Shape(foot, "Strap", "GearBand", trim, new Vector3(0, .015f, -.035f), new Vector3(.18f, .025f, .195f));
+                    Cube(foot, "Buckle", "Gold", new Vector3(side == "L" ? -.09f : .09f, .015f, -.035f), new Vector3(.012f, .03f, .035f));
+                }
             }
-            Save(root, "leather_boots");
-        }
-
-        // Tall polished greaves: a knee cop, a ridge down the shin, a gold top trim and a pointed toe cap.
-        private static void IronGreaves()
-        {
-            GameObject root = NewRoot("iron_greaves");
-            foreach (string socket in new[] { "Socket_FootL", "Socket_FootR" })
-            {
-                Transform foot = LimbNode(root, socket);
-                Shape(foot, "Greave", "BodyBoot", "Silver", new Vector3(0f, -0.005f, 0f), new Vector3(0.24f, 0.48f, 0.34f));
-                Shape(foot, "Trim", "GearBand", "Gold", new Vector3(0f, 0.23f, -0.027f), new Vector3(0.2f, 0.025f, 0.22f));
-                Shape(foot, "KneeCop", "GearDome", "Silver", new Vector3(0f, 0.22f, 0.05f), new Vector3(0.15f, 0.07f, 0.15f), new Vector3(90f, 0f, 0f));
-                Cube(foot, "Ridge", "SteelDark", new Vector3(0f, 0.03f, 0.072f), new Vector3(0.018f, 0.26f, 0.02f));
-                Shape(foot, "ToeCap", "GearDome", "SteelDark", new Vector3(0f, -0.19f, 0.14f), new Vector3(0.13f, 0.07f, 0.08f), new Vector3(90f, 0f, 0f));
-            }
-            Save(root, "iron_greaves");
-        }
-
-        // Soft pale boots with a deep turned-down cuff edged in teal, leaf stitching and a curled toe.
-        private static void SilkSlippers()
-        {
-            GameObject root = NewRoot("silk_slippers");
-            foreach (string socket in new[] { "Socket_FootL", "Socket_FootR" })
-            {
-                Transform foot = LimbNode(root, socket);
-                Shape(foot, "Boot", "BodyBoot", "GearCloth", new Vector3(0f, -0.01f, 0f), new Vector3(0.225f, 0.46f, 0.33f));
-                Shape(foot, "Cuff", "GearCuff", "GearCloth", new Vector3(0f, 0.19f, -0.027f), new Vector3(0.27f, 0.13f, 0.29f));
-                Shape(foot, "CuffTrim", "GearBand", "GearClothTrim", new Vector3(0f, 0.252f, -0.027f), new Vector3(0.275f, 0.02f, 0.295f));
-                Shape(foot, "Stitch", "GearLeaf", "GearClothTrim", new Vector3(0f, 0.02f, 0.072f), new Vector3(0.045f, 0.09f, 0.01f));
-                Shape(foot, "Toe", "Cone", "GearCloth", new Vector3(0f, -0.2f, 0.15f), new Vector3(0.05f, 0.08f, 0.04f), new Vector3(80f, 0f, 0f));
-            }
-            Save(root, "silk_slippers");
+            Save(root, id);
         }
 
         // ------------------------------------------------------------------ belt, amulet, rings
@@ -577,6 +658,7 @@ namespace PoeClone.EditorTools
         {
             GameObject root = NewRoot("rope_belt");
             Transform waist = Node(root, "Socket_Waist", Vector3.zero, Vector3.zero);
+            waist.localScale = new Vector3(.9f, 1f, .87f);
 
             Shape(waist, "Band", "GearBand", "TanLight", Vector3.zero, new Vector3(0.56f, 0.075f, 0.41f));
             Shape(waist, "BuckleRim", "GearLeaf", "Gold", new Vector3(0f, 0f, 0.205f), new Vector3(0.115f, 0.15f, 0.02f), new Vector3(0f, 0f, 90f));
@@ -594,6 +676,8 @@ namespace PoeClone.EditorTools
         {
             GameObject root = NewRoot("jade_amulet");
             Transform neck = Node(root, "Socket_Neck", Vector3.zero, Vector3.zero);
+
+            neck.localScale = new Vector3(.9f, 1f, .91f);
 
             Vector3 pendant = new Vector3(0f, -0.16f, 0.205f);
             Bar(neck, "ChainL", "Steel", new Vector3(-0.08f, 0.07f, 0.0f), pendant, 0.015f);

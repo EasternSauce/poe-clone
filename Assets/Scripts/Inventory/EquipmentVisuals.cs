@@ -15,6 +15,10 @@ namespace PoeClone.Inventory
         private readonly Dictionary<EquipSlot, List<GameObject>> spawned = new Dictionary<EquipSlot, List<GameObject>>();
         private BaseGear[] baseGear = new BaseGear[0];
         private EquipmentSet equipment;
+        [SerializeField] private Material originalLeftSleeve, originalRightSleeve;
+        [SerializeField] private Mesh originalLegMesh;
+        private Mesh shortCoveredLeg, longCoveredLeg;
+        private readonly Dictionary<SkinnedMeshRenderer, Material[]> sleeves = new Dictionary<SkinnedMeshRenderer, Material[]>();
 
         /// <summary>The worn great weapon (greatsword, greataxe, maul), held in both hands; null otherwise. Its +Y runs from the grip to the head.</summary>
         public Transform TwoHandedWeapon { get; private set; }
@@ -35,6 +39,8 @@ namespace PoeClone.Inventory
         private void OnDestroy()
         {
             Unbind();
+            ReleaseMesh(shortCoveredLeg);
+            ReleaseMesh(longCoveredLeg);
         }
 
         /// <summary>Starts mirroring the given equipment on this model.</summary>
@@ -49,6 +55,7 @@ namespace PoeClone.Inventory
             spawned.Clear();
 
             CollectSockets();
+            CollectClothing();
             baseGear = GetComponentsInChildren<BaseGear>(true);
 
             if (equipment == null)
@@ -82,6 +89,7 @@ namespace PoeClone.Inventory
                 g.gameObject.SetActive(true);
             foreach (var anatomy in GetComponentsInChildren<ProceduralAnatomy>(true))
                 anatomy.SetEquipment(null);
+            UpdateClothing(null);
         }
 
         private void OnChanged(EquipSlot slot, ItemData item)
@@ -166,12 +174,16 @@ namespace PoeClone.Inventory
                         // seat the one-handed melee grip in the palm while keeping the rig's sockets.
                         if (slot == EquipSlot.MainHand && meleeWeapon && !SlotRules.IsTwoHandedMelee(item.WeaponType) && GetComponent<ProceduralAnatomy>() != null)
                             SeatGrip(instance.transform, socket);
+                        if (child.name == "Socket_OffHand" && instance.transform.Find("Grip") != null && GetComponent<ProceduralAnatomy>() != null)
+                            SeatGrip(instance.transform, socket, true);
                         instance.AddComponent<EquipmentVisualInstance>();
                         WornTexture.Anchor(instance);
                         if (tint != Color.white)
                             Tint(instance, tint);
                         if (slot == EquipSlot.Boots && socket.GetComponentInParent<PoeClone.Inventory.AnatomicalAnkle>() is PoeClone.Inventory.AnatomicalAnkle ankle)
                             ankle.FitFootwear(instance);
+                        if (slot == EquipSlot.BodyArmour && child.name == "Socket_Chest" && GetComponent<ProceduralAnatomy>() != null)
+                            instance.AddComponent<FittedGarment>().Bind(transform, socket);
                         if (slot == EquipSlot.MainHand && child.name == "Socket_MainHand" && SlotRules.IsTwoHandedMelee(item.WeaponType))
                             TwoHandedWeapon = instance.transform;
                         list.Add(instance);
@@ -185,10 +197,10 @@ namespace PoeClone.Inventory
         // Degrees a one-handed main-hand weapon turns outward from straight ahead.
         private const float OneHandedSplay = 28f;
 
-        private static void SeatGrip(Transform weapon, Transform socket)
+        private static void SeatGrip(Transform weapon, Transform socket, bool left = false)
         {
             // The fingers close around the palm; the legacy socket was below and ahead of it.
-            Vector3 palm = socket.parent.TransformPoint(HandPoint(new Vector3(-.14f, -.32f, 0f)));
+            Vector3 palm = socket.parent.TransformPoint(HandPoint(new Vector3(left ? .14f : -.14f, -.32f, 0f)));
             Transform grip = weapon.Find("Grip") ?? weapon.Find("Wrap");
             if (grip != null)
             {
@@ -301,11 +313,122 @@ namespace PoeClone.Inventory
             }
             foreach (var anatomy in GetComponentsInChildren<ProceduralAnatomy>(true))
                 anatomy.SetEquipment(equipment);
+            UpdateClothing(equipment);
             FitRings();
+        }
+
+        private void CollectClothing()
+        {
+            // These are replacement garments, not an extra shell over the starting tunic.
+            Transform upper = transform.Find("UpperBody/UpperOffset");
+            if (upper == null || GetComponent<ProceduralAnatomy>() == null) return;
+            foreach (string name in new[] { "Torso", "TunicSkirt", "Undercollar", "Belt", "BeltBuckle", "Pouch" })
+            {
+                Transform part = upper.Find(name);
+                if (part == null) continue;
+                var marker = part.GetComponent<BaseGear>() ?? part.gameObject.AddComponent<BaseGear>();
+                marker.HiddenBy = EquipSlot.BodyArmour;
+            }
+            foreach (string side in new[] { "L", "R" })
+            {
+                Transform arm = upper.Find("Arm" + side + "/ContinuousArm");
+                if (arm != null && arm.TryGetComponent<SkinnedMeshRenderer>(out var skin) && !sleeves.ContainsKey(skin))
+                {
+                    Material[] materials = skin.sharedMaterials;
+                    Material original = side == "L" ? originalLeftSleeve : originalRightSleeve;
+                    if (original == null && materials.Length > 0) original = materials[0];
+                    if (side == "L") originalLeftSleeve = original; else originalRightSleeve = original;
+                    if (materials.Length > 0) materials[0] = original;
+                    sleeves.Add(skin, materials);
+                }
+            }
+            Transform leg = transform.Find("LegL/ContinuousLeg");
+            if (originalLegMesh == null && leg != null)
+                originalLegMesh = leg.GetComponent<SkinnedMeshRenderer>().sharedMesh;
+        }
+
+        private void UpdateClothing(EquipmentSet set)
+        {
+            ItemData armour = set?.Get(EquipSlot.BodyArmour);
+            bool replaced = armour != null && spawned.TryGetValue(EquipSlot.BodyArmour, out var pieces) && pieces.Count > 0;
+            Material sleeve = null;
+            if (replaced)
+            {
+                GameObject prefab = Resources.Load<GameObject>("Equipment/" + ItemGenerator.ModelFor(armour, out _));
+                Transform body = prefab != null ? prefab.transform.Find("Socket_Chest/Body") : null;
+                if (body != null) sleeve = body.GetComponent<Renderer>().sharedMaterial;
+            }
+            foreach (var arm in sleeves)
+            {
+                if (arm.Key == null) continue;
+                Material[] materials = (Material[])arm.Value.Clone();
+                if (sleeve != null && materials.Length > 0) materials[0] = sleeve;
+                arm.Key.sharedMaterials = materials;
+                var block = new MaterialPropertyBlock();
+                if (sleeve != null && sleeve.HasProperty("_BaseColor"))
+                {
+                    ItemGenerator.ModelFor(armour, out Color tint);
+                    block.SetColor("_BaseColor", sleeve.GetColor("_BaseColor") * armour.ArtTint * tint);
+                }
+                arm.Key.SetPropertyBlock(sleeve != null ? block : null, 0);
+            }
+            if (originalLegMesh != null)
+            {
+                Mesh legs = originalLegMesh;
+                if (replaced)
+                {
+                    bool robe = ItemGenerator.ModelFor(armour, out _) == "silk_robe";
+                    if (robe && longCoveredLeg == null) longCoveredLeg = CoveredLeg(-.42f);
+                    if (!robe && shortCoveredLeg == null) shortCoveredLeg = CoveredLeg(-.10f);
+                    legs = robe ? longCoveredLeg : shortCoveredLeg;
+                }
+                foreach (string side in new[] { "L", "R" })
+                {
+                    Transform leg = transform.Find("Leg" + side + "/ContinuousLeg");
+                    if (leg == null) continue;
+                    var skin = leg.GetComponent<SkinnedMeshRenderer>();
+                    if (skin.sharedMesh == legs) continue;
+                    bool shown = skin.enabled;
+                    skin.enabled = false;
+                    skin.sharedMesh = legs;
+                    skin.enabled = shown;
+                }
+            }
+        }
+
+        private Mesh CoveredLeg(float top)
+        {
+            Mesh mesh = Instantiate(originalLegMesh);
+            mesh.name = "ArmourCoveredLeg";
+            Vector3[] vertices = mesh.vertices;
+            for (int submesh = 0; submesh < mesh.subMeshCount; submesh++)
+            {
+                int[] triangles = mesh.GetTriangles(submesh);
+                var visible = new List<int>(triangles.Length);
+                for (int i = 0; i < triangles.Length; i += 3)
+                    if (vertices[triangles[i]].y <= top && vertices[triangles[i + 1]].y <= top && vertices[triangles[i + 2]].y <= top)
+                    {
+                        visible.Add(triangles[i]);
+                        visible.Add(triangles[i + 1]);
+                        visible.Add(triangles[i + 2]);
+                    }
+                mesh.SetTriangles(visible, submesh, false);
+            }
+            return mesh;
+        }
+
+        private static void ReleaseMesh(Mesh mesh)
+        {
+            if (mesh == null) return;
+            if (Application.isPlaying) Destroy(mesh);
+            else DestroyImmediate(mesh);
         }
 
         private static void Kill(GameObject go)
         {
+            // Destroy is deferred in Play mode. Hide old equipment immediately, including clones
+            // copied into the portrait, so it cannot overlap the replacement for a frame.
+            go.SetActive(false);
             if (Application.isPlaying)
                 Destroy(go);
             else
