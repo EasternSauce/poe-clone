@@ -221,7 +221,8 @@ namespace PoeClone.Skills
         public float Cooldown(SkillId id)
         {
             SkillDefinition skill = SkillBook.Get(id);
-            if (skill.Summon && WeaponSkill == id)
+            // Permanent skeleton summons use their listed cooldown even as the weapon's attack.
+            if (skill.Summon && !Minion.IsPermanent(MinionKindOf(id)) && WeaponSkill == id)
                 return 0.65f / (SkillCastRate(id));
             if (skill.Bow || skill.MeleeAttack)
                 return 0f;

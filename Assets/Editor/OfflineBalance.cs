@@ -564,7 +564,7 @@ namespace PoeClone.EditorTools
         {
             var skill = SkillBook.Get(kit.archetype.SkillId);
             float speed = Mathf.Max(.5f, 1 + ((skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.AttackSpeed) : sheet.Total(StatType.CastSpeed)) + tree.Get(E.Speed)) / 100);
-            uses = skill.Summon ? speed / .65f : skill.Cooldown > 0 ? speed / skill.Cooldown :
+            uses = skill.Summon && !Minion.IsPermanent(PlayerSkills.MinionKindOf(skill.Id)) ? speed / .65f : skill.Cooldown > 0 ? speed / skill.Cooldown :
                 SlotRules.BaseAttacksPerSecond(kit.weapon.WeaponType) * speed * (skill.Bow ? PlayerSkills.BowSpeed(skill.Id) : PlayerSkills.MeleeSpeed(skill.Id));
             if (skill.Channelled) uses = 4 * SlotRules.BaseAttacksPerSecond(kit.weapon.WeaponType) / SlotRules.BaseAttacksPerSecond(WeaponType.Sword) * speed;
             if (skill.Id == SkillId.PiercingShot) uses = 1 / PiercingInterval(speed, tree.Get(E.ChargeTime));

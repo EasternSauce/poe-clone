@@ -1,3 +1,6 @@
+version: 2026-10-18-skeleton-weapon-cooldown
+- Fixed skeleton warrior and mage summons using a hidden 0.65-second base interval when cast as the weapon's main attack. Both now use their listed four-second base cooldown, reduced by cast speed.
+
 version: 2026-10-18-minion-recall
 - Minion teleports now check walkable ground, slopes and scenery clearance, try nearby safe positions, and stay put if no safe destination is available. Minion movement also respects riverbanks and area boundaries.
 - Doubled minion leash distances and increased the automatic teleport distance from 10 to 20 metres.
