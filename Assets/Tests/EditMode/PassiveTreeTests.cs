@@ -164,7 +164,7 @@ namespace PoeClone.Tests
                 special |= node.PerBranchMods.Length > 0;
                 Assert.IsTrue(special, node.Name);
             }
-            Assert.AreEqual(16, keystones, "Combat-changing keystones belong on the main passive tree");
+            Assert.AreEqual(17, keystones, "Combat-changing keystones belong on the main passive tree");
         }
 
         [Test]
@@ -216,7 +216,7 @@ namespace PoeClone.Tests
                 }
             }
             Assert.AreEqual(48, attributes);
-            Assert.AreEqual(23, themed);
+            Assert.AreEqual(26, themed);
         }
 
         [Test]

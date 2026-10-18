@@ -103,32 +103,7 @@ namespace PoeClone.World
                 if (IsActTwo(area)) continue; // Desert dunes and sandstone are authored separately.
                 float walked = 0f;
                 foreach (var edge in shape.Boundary)
-                {
-                    walked += Vector3.Distance(edge.a, edge.b);
-                    if (walked < 6f) continue;
-                    walked = 0f;
-                    Vector3 p = shape.Center + (edge.a + edge.b) * 0.5f;
-                    Vector3 outward = Vector3.Cross(edge.b - edge.a, Vector3.up).normalized;
-                    if (shape.Contains(p + outward * 0.4f)) outward = -outward;
-                    p += outward * 4.5f;
-                    if (NearGate(area, p, 12f) || shape.Contains(p, -3f) || shape.WaterDistance(p) > -9f) continue;
-                    GameObject prop;
-                    if (shape.InCut(p) && !shape.IsCave && !shape.IsCliff)
-                    {
-                        // Boulders strewn along a knoll's rock bank; the knoll brings its own trees.
-                        if (rng.NextDouble() < 0.25) continue;
-                        p += outward * R(-3f, -2f) + Vector3.up * 1.2f;
-                        prop = Prefab(kit.rock, group, p, R(0, 360), new Vector3(R(1.3f, 2.2f), R(0.8f, 1.5f), R(1.3f, 2.2f)));
-                    }
-                    else if (shape.IsCave || shape.IsCliff || rng.NextDouble() < 0.3)
-                    {
-                        prop = Prefab(kit.rock, group, p, R(0, 360), new Vector3(R(2, 3), R(1.7f, 2.6f), R(2, 3)));
-                        if (area == Frozen) Tint(prop, new Color(0.65f, 0.78f, 0.9f));
-                    }
-                    else if (area == Graveyard) prop = DeadTree(group, p, kit.Mat("DeadWood"));
-                    else prop = Prefab(BiomeTree(area, p), group, p, R(0, 360), Vector3.one * R(1.1f, 1.5f));
-                    NoShadows(prop);
-                }
+                    BorderProp(area, group, shape, edge, ref walked);
                 if (!shape.IsCave && !shape.IsCliff)
                     foreach (var cut in shape.Cuts)
                         Knoll(group, area, shape.Center + Flat(cut.center.x, cut.center.y), cut.radii);
@@ -140,39 +115,53 @@ namespace PoeClone.World
             if (IsActTwo(area)) return;
             Begin(area, unchecked(900 + area + Mathf.RoundToInt(rect.x * 131f + rect.y * 17f)));
             AreaShape shape = Shape(area);
-                float walked = 0f;
-                foreach (var edge in boundary)
+            float walked = 0f;
+            foreach (var edge in boundary)
+                BorderProp(area, group, shape, edge, ref walked, rect);
+            if (!shape.IsCave && !shape.IsCliff)
+                foreach (var cut in shape.Cuts)
+                    if (rect.Contains(cut.center))
+                        Knoll(group, area, shape.Center + Flat(cut.center.x, cut.center.y), cut.radii);
+        }
+
+        // Every 6 m along the edge: a boulder on the rock bank, or a tree just inside the edge.
+        // Trees never stand on the bank itself (it is solid rock); with no room inside, a boulder goes up instead.
+        private void BorderProp(int area, Transform group, AreaShape shape, (Vector3 a, Vector3 b) edge, ref float walked, Rect? rect = null)
+        {
+            walked += Vector3.Distance(edge.a, edge.b);
+            if (walked < 6f) return;
+            walked = 0f;
+            Vector3 local = (edge.a + edge.b) * 0.5f;
+            if (rect.HasValue && !rect.Value.Contains(new Vector2(local.x, local.z))) return;
+            Vector3 edgePoint = shape.Center + local;
+            Vector3 outward = Vector3.Cross(edge.b - edge.a, Vector3.up).normalized;
+            if (shape.Contains(edgePoint + outward * 0.4f)) outward = -outward;
+            Vector3 p = edgePoint + outward * 4.5f;
+            if (NearGate(area, p, 12f) || shape.Contains(p, -3f) || shape.WaterDistance(p) > -9f) return;
+            GameObject prop;
+            if (shape.InCut(p) && !shape.IsCave && !shape.IsCliff)
+            {
+                // Boulders strewn along a knoll's rock bank; the knoll brings its own trees.
+                if (rng.NextDouble() < 0.25) return;
+                p += outward * R(-3f, -2f) + Vector3.up * 1.2f;
+                prop = Prefab(kit.rock, group, p, R(0, 360), new Vector3(R(1.3f, 2.2f), R(0.8f, 1.5f), R(1.3f, 2.2f)));
+            }
+            else
+            {
+                bool boulder = shape.IsCave || shape.IsCliff || rng.NextDouble() < 0.3;
+                Vector3 inside = edgePoint - outward * R(2f, 3.5f);
+                if (!boulder && (!shape.Contains(inside, 1.5f) || shape.WaterDistance(inside) > -4f ||
+                    shape.IsBridge(inside, 3f) || HitsScenery(inside + Vector3.up * 1.2f, 1.5f)))
+                    boulder = true;
+                if (boulder)
                 {
-                    walked += Vector3.Distance(edge.a, edge.b);
-                    if (walked < 6f) continue;
-                    walked = 0f;
-                    Vector3 p = shape.Center + (edge.a + edge.b) * 0.5f;
-                    if (!rect.Contains(new Vector2(p.x - shape.Center.x, p.z - shape.Center.z))) continue;
-                    Vector3 outward = Vector3.Cross(edge.b - edge.a, Vector3.up).normalized;
-                    if (shape.Contains(p + outward * 0.4f)) outward = -outward;
-                    p += outward * 4.5f;
-                    if (NearGate(area, p, 12f) || shape.Contains(p, -3f) || shape.WaterDistance(p) > -9f) continue;
-                    GameObject prop;
-                    if (shape.InCut(p) && !shape.IsCave && !shape.IsCliff)
-                    {
-                        // Boulders strewn along a knoll's rock bank; the knoll brings its own trees.
-                        if (rng.NextDouble() < 0.25) continue;
-                        p += outward * R(-3f, -2f) + Vector3.up * 1.2f;
-                        prop = Prefab(kit.rock, group, p, R(0, 360), new Vector3(R(1.3f, 2.2f), R(0.8f, 1.5f), R(1.3f, 2.2f)));
-                    }
-                    else if (shape.IsCave || shape.IsCliff || rng.NextDouble() < 0.3)
-                    {
-                        prop = Prefab(kit.rock, group, p, R(0, 360), new Vector3(R(2, 3), R(1.7f, 2.6f), R(2, 3)));
-                        if (area == Frozen) Tint(prop, new Color(0.65f, 0.78f, 0.9f));
-                    }
-                    else if (area == Graveyard) prop = DeadTree(group, p, kit.Mat("DeadWood"));
-                    else prop = Prefab(BiomeTree(area, p), group, p, R(0, 360), Vector3.one * R(1.1f, 1.5f));
-                    NoShadows(prop);
+                    prop = Prefab(kit.rock, group, p, R(0, 360), new Vector3(R(2, 3), R(1.7f, 2.6f), R(2, 3)));
+                    if (area == Frozen) Tint(prop, new Color(0.65f, 0.78f, 0.9f));
                 }
-                if (!shape.IsCave && !shape.IsCliff)
-                    foreach (var cut in shape.Cuts)
-                        if (rect.Contains(cut.center))
-                            Knoll(group, area, shape.Center + Flat(cut.center.x, cut.center.y), cut.radii);
+                else if (area == Graveyard) prop = DeadTree(group, inside, kit.Mat("DeadWood"));
+                else prop = Prefab(BiomeTree(area, inside), group, inside, R(0, 360), Vector3.one * R(1.1f, 1.5f));
+            }
+            NoShadows(prop);
         }
 
         // An exclusion in the open: a wooded knoll rising off its rock bank, instead of a pit.
@@ -216,26 +205,40 @@ namespace PoeClone.World
             knoll.AddComponent<MeshRenderer>().sharedMaterial = FloorMaterial("KnollTurf_" + AreaNames[area], GroundTexture(area), 7f,
                 new Color(0.92f, 0.92f, 0.9f));
 
-            // Thick woods on top, thinning to rocks and scrub round the edge.
+            // Thick woods on top, thinning to rocks and scrub round the edge. Rocks go down first
+            // so no tree then grows out of one; the bank's own boulders ring the rim, so it stays rocky.
             bool graveyard = area == Graveyard;
+            var spots = new List<(Vector3 p, double roll)>();
             for (float z = -rz; z <= rz; z += 3.4f)
                 for (float x = -rx; x <= rx; x += 3.4f)
                 {
                     Vector3 local = new Vector3(x + R(-1.2f, 1.2f), 0f, z + R(-1.2f, 1.2f));
                     float u = Mathf.Sqrt(local.x * local.x / (rx * rx) + local.z * local.z / (rz * rz));
                     if (u > 0.94f) continue;
-                    Vector3 p = center + local + Vector3.up * (Height(u) - 0.05f);
                     double roll = rng.NextDouble() + (u > 0.75f ? 0.25 : 0.0);
-                    GameObject prop;
-                    if (roll < 0.72)
-                        prop = graveyard ? DeadTree(knoll.transform, p, kit.Mat("DeadWood"), R(1f, 1.5f))
-                            : Prefab(BiomeTree(area, p), knoll.transform, p, R(0f, 360f), Vector3.one * R(1.05f, 1.6f));
-                    else if (roll < 0.95 || graveyard)
-                        prop = Prefab(kit.rock, knoll.transform, p, R(0f, 360f), Vector3.one * R(0.7f, 1.5f));
-                    else
-                        prop = Prefab(kit.bushSmall, knoll.transform, p, R(0f, 360f), Vector3.one * R(0.4f, 0.65f));
-                    NoShadows(prop);
+                    spots.Add((center + local + Vector3.up * (Height(u) - 0.05f), u > 0.86f && roll < 0.72 ? 0.8 : roll));
                 }
+            var rocks = new List<Vector3>();
+            foreach (var (p, roll) in spots)
+                if (roll >= 0.72 && (roll < 0.95 || graveyard))
+                {
+                    NoShadows(Prefab(kit.rock, knoll.transform, p, R(0f, 360f), Vector3.one * R(0.7f, 1.5f)));
+                    rocks.Add(p);
+                }
+            foreach (var (p, roll) in spots)
+            {
+                if (roll < 0.72)
+                {
+                    bool clear = true;
+                    foreach (Vector3 rock in rocks)
+                        if ((rock - p).sqrMagnitude < 2f * 2f) clear = false;
+                    if (clear)
+                        NoShadows(graveyard ? DeadTree(knoll.transform, p, kit.Mat("DeadWood"), R(1f, 1.5f))
+                            : Prefab(BiomeTree(area, p), knoll.transform, p, R(0f, 360f), Vector3.one * R(1.05f, 1.6f)));
+                }
+                else if (roll >= 0.95 && !graveyard)
+                    NoShadows(Prefab(kit.bushSmall, knoll.transform, p, R(0f, 360f), Vector3.one * R(0.4f, 0.65f)));
+            }
         }
 
         private void BuildCave()

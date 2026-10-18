@@ -97,6 +97,8 @@ namespace PoeClone.Skills
         private float soulBond;
         private float commandRange = 1f;
         private bool tether;
+        // Marching Horde: % increased attack and movement speed for each of the owner's minions.
+        private float hordeSpeed, baseSpeed, baseCooldown, moveIncrease, attackIncrease;
         private WeaponSkillBonuses tree;
 
         // ------------------------------------------------------------------ numbers
@@ -426,16 +428,17 @@ namespace PoeClone.Skills
             minion.body = go.GetComponent<CharacterController>();
             minion.attack = model.GetComponent<CharacterAttackAnimator>() ?? model.gameObject.AddComponent<CharacterAttackAnimator>();
 
-            float haste = Mathf.Max(0.2f, 1f + (Stat(sheet, StatType.MinionSpeed) + minion.tree.Get(WeaponSkillEffect.MinionMoveSpeed)) / 100f);
-            float attackHaste = Mathf.Max(0.2f, 1f + (Stat(sheet, StatType.MinionSpeed) + minion.tree.Get(WeaponSkillEffect.Speed)) / 100f);
+            minion.moveIncrease = Stat(sheet, StatType.MinionSpeed) + minion.tree.Get(WeaponSkillEffect.MinionMoveSpeed);
+            minion.attackIncrease = Stat(sheet, StatType.MinionSpeed) + minion.tree.Get(WeaponSkillEffect.Speed);
+            minion.hordeSpeed = Mathf.Max(0f, Stat(sheet, StatType.MinionHordeSpeed));
+            minion.baseSpeed = profile.Speed;
+            minion.baseCooldown = profile.Cooldown;
             go.transform.localScale *= 1f + minion.tree.Get(WeaponSkillEffect.MinionSize) / 100f;
             minion.MaxLife = LifeFor(kind, 1, sheet, minion.tree);
             minion.Life = minion.MaxLife;
             minion.damage = DamageFor(kind, 1, sheet, minion.tree);
-            minion.attackCooldown = profile.Cooldown / attackHaste;
             minion.attackRange = profile.Range * minion.tree.RangeMultiplier * (kind == MinionKind.Mage ? DefenceMath.RadiusMultiplier(Stat(sheet, StatType.AreaOfEffect) + minion.tree.Get(WeaponSkillEffect.Area)) : 1f);
-            minion.speed = profile.Speed * haste;
-            minion.attack.PlaybackSpeed = attackHaste;
+            minion.ApplySpeed(0);
             minion.soulBond = Mathf.Max(0f, Stat(sheet, StatType.SoulBond));
             minion.commandRange = Stat(sheet, StatType.MinionCommandRange) > 0f ? 2f : 1f;
             minion.tether = Stat(sheet, StatType.MinionTether) > 0f;
@@ -635,9 +638,29 @@ namespace PoeClone.Skills
             Destroy(gameObject);
         }
 
+        private void ApplySpeed(int horde)
+        {
+            float bonus = hordeSpeed * horde;
+            speed = baseSpeed * Mathf.Max(0.2f, 1f + (moveIncrease + bonus) / 100f);
+            float attackHaste = Mathf.Max(0.2f, 1f + (attackIncrease + bonus) / 100f);
+            attackCooldown = baseCooldown / attackHaste;
+            attack.PlaybackSpeed = attackHaste;
+        }
+
+        /// <summary>The owner's living minions that Marching Horde counts (effigies are not summoned servants).</summary>
+        private static int HordeCount(Transform owner)
+        {
+            int count = 0;
+            foreach (Minion minion in All)
+                if (minion != null && minion.owner == owner && minion.Kind != MinionKind.Effigy && !minion.dead)
+                    count++;
+            return count;
+        }
+
         private void Update()
         {
             if (Kind == MinionKind.Effigy) return;
+            if (hordeSpeed > 0f) ApplySpeed(HordeCount(owner));
             Player.PlayerStats ownerStats = owner != null ? owner.GetComponent<Player.PlayerStats>() : null;
             if (owner == null || Time.time >= expiresAt || (ownerStats != null && ownerStats.IsDead))
             {
@@ -891,7 +914,10 @@ namespace PoeClone.Skills
             return v;
         }
 
-        /// <summary>A skeleton mage's bolt: flies straight and stops on the first enemy in its path.</summary>
+        /// <summary>
+        /// A skeleton mage's bolt: a pulsing violet soul with motes circling its flight line and a
+        /// fading tail. Flies straight and stops on the first enemy in its path.
+        /// </summary>
         private class MinionBolt : MonoBehaviour
         {
             private Minion caster;
@@ -901,38 +927,64 @@ namespace PoeClone.Skills
             private HashSet<EnemyHealth> volley;
             private const float Speed = 21f;
 
+            private static readonly Color Core = new Color(0.78f, 0.42f, 1f);
+            private static readonly Color Mote = new Color(0.93f, 0.8f, 1f);
+            private static readonly Color TailHead = new Color(0.6f, 0.22f, 0.95f);
+            private static readonly Color TailEnd = new Color(0.25f, 0.06f, 0.42f);
+            private const int TailLength = 8;
+            private const float TailSpacing = 0.015f; // seconds between tail samples
+
+            private Transform core, orbit;
+            private readonly Transform[] tail = new Transform[TailLength];
+            private readonly Vector3[] trail = new Vector3[TailLength];
+            private float age, nextSample;
+
             public static void Launch(Minion caster, Vector3 origin, Vector3 direction, HashSet<EnemyHealth> volley)
             {
                 var root = new GameObject("Minion Bolt");
-                root.transform.position = origin;
-                Color color = CombatText.ColorFor(WeaponSkillHit.Element(caster.tree, DamageType.Physical));
-                GameObject core = RuntimePrimitives.Create(PrimitiveType.Sphere, root.transform, color);
-                core.transform.localScale = Vector3.one * 0.26f;
-                GameObject spark = RuntimePrimitives.Create(PrimitiveType.Sphere, root.transform, new Color(0.85f, 0.95f, 1f));
-                spark.transform.localScale = Vector3.one * 0.12f;
-                spark.transform.localPosition = new Vector3(0.16f, 0f, 0f);
+                root.transform.SetPositionAndRotation(origin, Quaternion.LookRotation(direction));
                 var bolt = root.AddComponent<MinionBolt>();
+                bolt.core = RuntimePrimitives.Create(PrimitiveType.Sphere, root.transform, Core).transform;
+                // Stretched along the flight, so it reads as speed rather than a ball.
+                GameObject sheath = RuntimePrimitives.Create(PrimitiveType.Sphere, root.transform, TailHead);
+                sheath.transform.localPosition = new Vector3(0f, 0f, -0.12f);
+                sheath.transform.localScale = new Vector3(0.2f, 0.2f, 0.42f);
+                bolt.orbit = new GameObject("Motes").transform;
+                bolt.orbit.SetParent(root.transform, false);
+                for (int i = 0; i < 3; i++)
+                {
+                    float a = i * Mathf.PI * 2f / 3f;
+                    GameObject mote = RuntimePrimitives.Create(PrimitiveType.Sphere, bolt.orbit, Mote);
+                    mote.transform.localPosition = new Vector3(Mathf.Cos(a), Mathf.Sin(a), -0.15f * i) * 0.2f;
+                    mote.transform.localScale = Vector3.one * 0.075f;
+                }
+                for (int i = 0; i < TailLength; i++)
+                {
+                    float t = i / (float)(TailLength - 1);
+                    GameObject puff = RuntimePrimitives.Create(PrimitiveType.Sphere, root.transform, Color.Lerp(TailHead, TailEnd, t));
+                    bolt.tail[i] = puff.transform;
+                    bolt.trail[i] = origin;
+                }
                 bolt.caster = caster;
-                bolt.launchPosition = root.transform.position;
+                bolt.launchPosition = origin;
                 bolt.direction = direction;
                 bolt.volley = volley;
                 bolt.travelLeft = caster.attackRange + 1f;
+                bolt.Animate();
             }
 
             private void Update()
             {
                 if (caster == null || travelLeft <= 0f)
                 {
-                    Destroy(gameObject);
+                    Burst(transform.position, 0.45f);
                     return;
                 }
                 float step = Mathf.Min(travelLeft, Speed * caster.tree.ProjectileSpeedMultiplier * Time.deltaTime);
                 travelLeft -= step;
-                transform.Rotate(400f * Time.deltaTime, 280f * Time.deltaTime, 0f);
                 if (Graveward.Stops(transform.position, transform.position + direction * step, out Vector3 warded))
                 {
-                    SkillEffects.Shockwave(warded, 0.5f, new Color(0.5f, 0.85f, 1f), 0.2f);
-                    Destroy(gameObject);
+                    Burst(warded, 0.5f);
                     return;
                 }
                 EnemyHealth hit = null;
@@ -956,11 +1008,40 @@ namespace PoeClone.Skills
                     // A later bolt of the same volley stops on the enemy but does no damage.
                     if (volley.Add(hit))
                         caster.Deal(hit, 1f, launchPosition);
-                    SkillEffects.Shockwave(at, 0.7f, new Color(0.5f, 0.85f, 1f), 0.2f);
-                    Destroy(gameObject);
+                    Burst(at, 0.8f);
                     return;
                 }
                 transform.position += direction * step;
+                age += Time.deltaTime;
+                Animate();
+            }
+
+            // The core throbs, the motes wheel round the flight line, and the tail trails the path
+            // flown, each puff smaller and darker than the one before.
+            private void Animate()
+            {
+                core.localScale = Vector3.one * (0.27f + 0.05f * Mathf.Sin(age * 38f));
+                orbit.localRotation = Quaternion.Euler(0f, 0f, age * 720f);
+                if (age >= nextSample)
+                {
+                    nextSample = age + TailSpacing;
+                    for (int i = TailLength - 1; i > 0; i--)
+                        trail[i] = trail[i - 1];
+                }
+                trail[0] = transform.position;
+                for (int i = 0; i < TailLength; i++)
+                {
+                    float t = (i + 1) / (float)(TailLength + 1);
+                    tail[i].position = trail[i] - direction * 0.18f;
+                    tail[i].localScale = Vector3.one * (0.2f * (1f - t) * (0.85f + 0.15f * Mathf.Sin(age * 30f + i)));
+                }
+            }
+
+            private void Burst(Vector3 at, float radius)
+            {
+                SkillEffects.Shockwave(at, radius, Core, 0.25f);
+                SkillEffects.Blast(at, radius * 0.5f, TailHead, 0.2f);
+                Destroy(gameObject);
             }
         }
     }

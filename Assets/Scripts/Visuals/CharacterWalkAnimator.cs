@@ -80,6 +80,9 @@ namespace PoeClone.Visuals
         private bool importantAnimation;
 
         private Vector3 lastPosition;
+        // Speed is measured on the parent: this model slides itself (weight shift, lunge, sway),
+        // and reading that back as walking flickers the stride on and off after stopping.
+        private Vector3 RootPosition => transform.parent != null ? transform.parent.position : transform.position;
         private Vector3 baseLocalPosition;
         private bool basePoseCaptured;
         private bool isTownNpc;
@@ -283,7 +286,7 @@ namespace PoeClone.Visuals
             importantAnimation = importantAnimation || GetComponentInParent<PoeClone.Player.PlayerController>() != null ||
                 (owner != null && (owner.IsAlly || PoeClone.Enemies.EnemyKinds.Get(owner.KindIndex).IsBoss));
             soundBoard = PoeClone.Audio.SoundBoardSettings.Load();
-            lastPosition = transform.position;
+            lastPosition = RootPosition;
             CaptureBasePose();
             isTownNpc = GetComponentInParent<PoeClone.World.Npc>() != null;
             idleSeed = Random.value * 10f;
@@ -313,9 +316,9 @@ namespace PoeClone.Visuals
             if (dt <= 0f)
                 return;
 
-            Vector3 delta = transform.position - lastPosition;
+            Vector3 delta = RootPosition - lastPosition;
             delta.y = 0f;
-            lastPosition = transform.position;
+            lastPosition = RootPosition;
 
             // Placement, warps and network corrections are not walking. Do not let a
             // position jump feed a huge speed into the stride and footstep cadence.
@@ -777,7 +780,7 @@ namespace PoeClone.Visuals
         public void ResetAnimatorState()
         {
             CaptureBasePose();
-            lastPosition = transform.position;
+            lastPosition = RootPosition;
             speed = 0f;
             phase = 0f;
             blend = 0f;

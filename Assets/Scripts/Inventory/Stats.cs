@@ -198,6 +198,7 @@ namespace PoeClone.Inventory
         CooldownRecovery,          // % increased cooldown recovery rate; does not affect cast time
         MinionTether,              // 1: minions rush back to the owner and teleport to them from closer
         MinionCommandRange,        // 1: minions engage and chase enemies from twice as far
+        MinionHordeSpeed,          // % increased minion attack and movement speed per summoned minion
     }
 
     /// <summary>
@@ -778,6 +779,7 @@ namespace PoeClone.Inventory
                 case StatType.EffigyRange: return "Effigy Targeting Range";
                 case StatType.MinionTether: return "Bone Tether";
                 case StatType.MinionCommandRange: return "Far Command";
+                case StatType.MinionHordeSpeed: return "Marching Horde";
                 default:
                     if (SkillGrants.IsGrant(stat))
                         return SkillGrants.SkillName(stat);
@@ -1016,6 +1018,7 @@ namespace PoeClone.Inventory
                 case StatType.EffigyRange: return Increased(m, "Effigy Targeting Range");
                 case StatType.MinionTether: return "Minions far behind you move up to twice as fast to catch up\nMinions teleport to you from 20 metres away instead of 32";
                 case StatType.MinionCommandRange: return "Minions engage enemies from twice as far away\nMinions chase enemies twice as far from you";
+                case StatType.MinionHordeSpeed: return "Minions have " + n + "% increased Attack and Movement Speed for each minion you have summoned";
                 default:
                     if (SkillGrants.IsGrant(m.Stat))
                         return "Grants Level " + n + " " + SkillGrants.SkillName(m.Stat);

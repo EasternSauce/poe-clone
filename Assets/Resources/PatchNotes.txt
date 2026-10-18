@@ -1,3 +1,10 @@
+version: 2026-10-18-horde-and-fixes
+- Fixed the character's legs wiggling rapidly for a few seconds after stopping or casting.
+- Trees no longer grow out of the rock banks along area borders; they stand just inside the edge instead. Trees on wooded knolls keep clear of the rocks there too.
+- Skeleton Mage bolts are now a pulsing violet soul with motes circling it and a fading purple tail, bursting in purple on impact.
+- Waystones now list the area you are in, greyed out, instead of hiding it.
+- New Necromancy keystone Marching Horde (past Lord of Bones): minions have 4% increased attack and movement speed for each minion you have summoned.
+
 version: 2026-10-18-varied-cave-formations
 - Cave formations no longer repeat one identical cluster. Each spot now grows its own feature: lone or grouped stalagmites around a tall spire, boulder piles of mixed sizes, mossy rubble beds, or a boulder with a few mineral spikes beside it.
 - Wall dressing is unevenly spaced, with bare stretches, overhangs of different widths with a ragged fringe of stalactites, and boulders or stalagmites pressed against the rock. Moss gathers around the bases of rocks, and drips fall from the longest stalactite of only some overhangs.
