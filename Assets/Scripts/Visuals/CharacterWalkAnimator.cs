@@ -220,7 +220,10 @@ namespace PoeClone.Visuals
             sweepRightHand = rightElbow != null ? rightElbow.Find("Hand") : null;
         }
 
-        /// <summary>Changes the arms' rest pitch (town NPCs built from the monster rig hold theirs down).</summary>
+        /// <summary>Arm rest pitch of the zombie shamble, both arms held straight out in front of the chest.</summary>
+        public const float ReachingArmAngle = -65f;
+
+        /// <summary>Changes the arms' rest pitch (each enemy kind picks hanging or reaching, see EnemyKind.ReachingArms).</summary>
         public void SetArmRestAngle(float angle)
         {
             armRestAngle = angle;

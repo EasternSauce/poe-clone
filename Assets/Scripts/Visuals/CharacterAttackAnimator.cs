@@ -147,6 +147,17 @@ namespace PoeClone.Visuals
             Range = 1.8f
         };
 
+        // The same swipe from arms hanging at the sides: the hand comes up high, clawed, and
+        // rakes down and across at the target. Same timing as the raised-arm claw.
+        private static readonly AttackProfile HangingClawProfile = new AttackProfile
+        {
+            Duration = ClawProfile.Duration,
+            StrikeTime = ClawProfile.StrikeTime,
+            WindupOffset = new Pose(-115f, -20f, 0f, 75f),
+            StrikeOffset = new Pose(-60f, 15f, 0f, 20f),
+            Range = ClawProfile.Range
+        };
+
         // A broad axe cut: draw the head across the shoulder, then sweep its edge through the target.
         private static readonly AttackProfile AxeProfile = new AttackProfile
         {
@@ -508,7 +519,8 @@ namespace PoeClone.Visuals
         }
 
         private AttackProfile activeProfile;
-        private Pose rest;
+        // Read live: an enemy's look sets its arms' rest after this component wakes.
+        private Pose Rest => new Pose(walkAnimator != null ? walkAnimator.ArmRestAngle : 0f, 0f, 0f, 0f);
         private CharacterWalkAnimator walkAnimator;
         private float timer;
         private bool castingGesture;
@@ -575,8 +587,6 @@ namespace PoeClone.Visuals
                 offElbow = FindDescendant(offArm, "Elbow");
 
             walkAnimator = GetComponent<CharacterWalkAnimator>();
-            float restPitch = walkAnimator != null ? walkAnimator.ArmRestAngle : 0f;
-            rest = new Pose(restPitch, 0f, 0f, 0f);
         }
 
         /// <summary>Base attacks-per-second for a weapon type, before the AttackSpeed stat is applied.</summary>
@@ -696,10 +706,10 @@ namespace PoeClone.Visuals
             Play(spit ? SpitProfile : BiteProfile);
         }
 
-        /// <summary>Enemy claw swipe: a separate profile from player weapons since it's tuned for a different rest pose.</summary>
+        /// <summary>Enemy claw swipe, from arms reaching forward (the zombie) or hanging at the sides.</summary>
         public void PlayClawAttack()
         {
-            Play(ClawProfile);
+            Play(Rest.ArmPitch < -30f ? ClawProfile : HangingClawProfile);
         }
 
         /// <summary>Immediately cancels an in-progress swing and snaps back to rest. Used when staggered.</summary>
@@ -712,9 +722,9 @@ namespace PoeClone.Visuals
             IsAttacking = false;
             holding = false;
             TorsoPitch = TorsoYaw = Lunge = 0f;
-            Apply(weaponArm, weaponElbow, rest);
+            Apply(weaponArm, weaponElbow, Rest);
             if (offArmPosed)
-                Apply(offArm, offElbow, rest);
+                Apply(offArm, offElbow, Rest);
 
             if (castingGesture || !strikeFired)
                 AttackCancelled?.Invoke();
@@ -799,16 +809,16 @@ namespace PoeClone.Visuals
             // A great weapon's swing is the same whatever the arms' rest: the poses are real angles
             // (a big enemy whose arms rest raised still hauls the maul up and over the same way).
             bool absolute = p.Absolute || p.TwoHandGrip;
-            Pose windup = absolute ? p.WindupOffset : rest + p.WindupOffset;
-            Pose strike = absolute ? p.StrikeOffset : rest + p.StrikeOffset;
+            Pose windup = absolute ? p.WindupOffset : Rest + p.WindupOffset;
+            Pose strike = absolute ? p.StrikeOffset : Rest + p.StrikeOffset;
             // A great weapon is held at the guard between swings, so its arm leaves from and
             // returns to that instead of hanging at rest.
             Pose start = walkAnimator != null && walkAnimator.HoldsTwoHanded
                 ? new Pose(CharacterWalkAnimator.GuardPitch, CharacterWalkAnimator.GuardYaw, CharacterWalkAnimator.GuardRoll, CharacterWalkAnimator.GuardElbow)
-                : rest;
+                : Rest;
 
             Pose pose;
-            Pose offPose = rest;
+            Pose offPose = Rest;
             if (p.SwingStart > 0f && f < p.StrikeTime)
             {
                 if (f < p.SwingStart)
@@ -817,7 +827,7 @@ namespace PoeClone.Visuals
                     float t = p.SideLift > 0f ? Mathf.SmoothStep(0f, 1f, f / p.SwingStart) : EaseOut(f / p.SwingStart);
                     pose = Lerp(start, windup, t);
                     pose.ArmRoll += p.SideLift * Mathf.Sin(t * Mathf.PI);
-                    offPose = Lerp(rest, p.OffWindup, t);
+                    offPose = Lerp(Rest, p.OffWindup, t);
                 }
                 else
                 {
@@ -832,14 +842,14 @@ namespace PoeClone.Visuals
             {
                 float t = EaseOut(p.StrikeTime > 0f ? f / p.StrikeTime : 1f);
                 pose = Lerp(start, windup, t);
-                offPose = Lerp(rest, p.OffWindup, t);
+                offPose = Lerp(Rest, p.OffWindup, t);
             }
             else
             {
                 float recoverSpan = 1f - p.StrikeTime;
                 float t = recoverSpan > 0f ? (f - p.StrikeTime) / recoverSpan : 1f;
                 pose = Lerp(strike, start, t);
-                offPose = Lerp(p.OffStrike, rest, t);
+                offPose = Lerp(p.OffStrike, Rest, t);
             }
 
             Apply(weaponArm, weaponElbow, pose);
@@ -851,7 +861,7 @@ namespace PoeClone.Visuals
             // The body joins in: it twists with the arm's sweep, leans back into the wind-up and
             // forward through the blow, and steps into it. Measured from rest, so a swing that
             // only ever raises the arm (the bow) barely moves the body.
-            Pose fromRest = new Pose(pose.ArmPitch - rest.ArmPitch, pose.ArmYaw - rest.ArmYaw, 0f, 0f);
+            Pose fromRest = new Pose(pose.ArmPitch - Rest.ArmPitch, pose.ArmYaw - Rest.ArmYaw, 0f, 0f);
             if (p.Absolute)
             {
                 // Leans in over the draw and straightens up through the recovery.
@@ -906,7 +916,7 @@ namespace PoeClone.Visuals
 
         private Pose GripPose(Pose weapon)
         {
-            float raised = Mathf.Clamp01(-(weapon.ArmPitch - rest.ArmPitch) / 60f);
+            float raised = Mathf.Clamp01(-(weapon.ArmPitch - Rest.ArmPitch) / 60f);
             return new Pose(weapon.ArmPitch, weapon.ArmYaw + GripTurnIn * raised, -weapon.ArmRoll * 0.5f, weapon.ElbowBend + 15f);
         }
 

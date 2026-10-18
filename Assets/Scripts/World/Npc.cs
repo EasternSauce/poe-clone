@@ -171,11 +171,6 @@ namespace PoeClone.World
 
             EnemyKinds.ApplyLook(go, look);
 
-            // Arms down at the sides (the rig's default is the zombie reach).
-            CharacterWalkAnimator walk = go.GetComponentInChildren<CharacterWalkAnimator>();
-            if (walk != null)
-                walk.SetArmRestAngle(0f);
-
             go.transform.SetParent(parent, false);
             go.transform.SetPositionAndRotation(position, Quaternion.LookRotation(facing.sqrMagnitude > 0f ? facing : Vector3.back));
             Destroy(holder);

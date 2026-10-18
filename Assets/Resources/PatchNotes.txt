@@ -1,3 +1,6 @@
+version: 2026-10-18-enemy-arm-stances
+- Only zombies shamble with their arms held straight out in front of the chest. Other humanoid enemies and summons keep their arms at their sides, and the unarmed ones raise a clawed hand high and rake it down at you instead.
+
 version: 2026-10-18-anatomical-enemies
 - Humanoid enemies, townsfolk and your summons now share the hero's anatomy: connected arms and legs that bend smoothly at the elbows and knees, fingered hands that close around held weapons, staffs and spears, and a proper neck.
 - Humanoid enemies have sculpted heads and faces, with their glowing eyes set in the eye sockets and their horns kept.

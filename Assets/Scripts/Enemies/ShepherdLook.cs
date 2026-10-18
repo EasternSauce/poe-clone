@@ -69,13 +69,9 @@ namespace PoeClone.Enemies
             if (off != null)
                 anim.Lantern = BuildLantern(off, root);
 
-            // An old man's arms hang at his sides, not raised like a monster's.
             CharacterWalkAnimator walk = model.GetComponent<CharacterWalkAnimator>();
             if (walk != null)
-            {
                 walk.Hunch = Stoop;
-                walk.SetArmRestAngle(0f);
-            }
         }
 
         /// <summary>

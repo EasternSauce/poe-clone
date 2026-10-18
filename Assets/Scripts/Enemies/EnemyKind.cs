@@ -123,6 +123,7 @@ namespace PoeClone.Enemies
         public bool Javelin;
         public bool RainOfArrows; // archers: each shot is loosed skywards and rains down on a marked spot
         public bool Skeletal;     // humanoids: bones instead of flesh (SkeletonLook)
+        public bool ReachingArms; // humanoids: arms held out straight in front (the zombie shamble), else hanging
 
         /// <summary>The first killing blow drops it into a bone pile that stands up again unless smashed.</summary>
         public bool Reassembles;
@@ -214,7 +215,7 @@ namespace PoeClone.Enemies
         {
             new EnemyKind
             {
-                Name = "Zombie", SpawnWeight = 30f, Undead = true,
+                Name = "Zombie", SpawnWeight = 30f, Undead = true, ReachingArms = true,
                 MaxHealth = 25.20492f, Experience = 20,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 15.89362f, AttackCooldown = 1.4f, AttackRange = 2.0f,
@@ -1274,6 +1275,8 @@ namespace PoeClone.Enemies
             bool staff = kind.IsRanged && !kind.Bow && !kind.Javelin;
             SlotRules.HeldHands(gear, out bool gripLeft, out bool gripRight);
             gripRight |= desertWeapon || staff;
+
+            model.GetComponent<CharacterWalkAnimator>()?.SetArmRestAngle(kind.ReachingArms ? CharacterWalkAnimator.ReachingArmAngle : 0f);
 
             if (kind.Boss == BossStyle.Shepherd)
                 ShepherdLook.Build(model);
