@@ -6,11 +6,9 @@ using PoeClone.World;
 namespace PoeClone.Enemies
 {
     /// <summary>
-    /// Scatters a mixed group of enemies (see <see cref="EnemyKinds"/>) at random positions when the
-    /// scene starts. Every kill is remembered: once the player has walked far enough away from where
-    /// it died (and a little time has passed), a new enemy of a random kind appears there, so a
-    /// cleared spot is populated again when you come back, but never refills while you stand in it.
-    /// Avoids scenery, other enemies and travel arrivals without relocating rejected enemies.
+    /// Plans fixed enemy homes and kinds independently of combat randomness. Killed enemies return
+    /// to their original homes after two minutes, only while players are away. Unvisited homes and
+    /// distant vacancies remain data; only nearby, ready chunks can construct replacements.
     /// </summary>
     public class EnemySpawner : MonoBehaviour
     {
@@ -20,9 +18,8 @@ namespace PoeClone.Enemies
         [Header("Respawning")]
         [Tooltip("A dead enemy's spot refills once the player is at least this far from it (well off screen).")]
         [SerializeField] private float respawnDistance = 30f;
-        [Tooltip("...and at least this long after the kill.")]
-        [SerializeField] private float respawnDelay = 10f;
-        [Tooltip("How far from the original spot the replacement may stand.")]
+        private const float RespawnDelay = 120f;
+        [Tooltip("Spread of pack members and initial placement retries.")]
         [SerializeField] private float respawnScatter = 4f;
 
         [Header("Area")]
@@ -35,11 +32,14 @@ namespace PoeClone.Enemies
         {
             public Vector3 Position;
             public float DiedAt;
+            public int Kind;
         }
 
         private const float CheckInterval = 1f;
 
-        private readonly List<Vacancy> vacancies = new List<Vacancy>();
+        // Key by the existing terrain grid: far-away vacancies have no periodic work.
+        private readonly Dictionary<Vector2Int, List<Vacancy>> vacancies = new Dictionary<Vector2Int, List<Vacancy>>();
+        private readonly Dictionary<EnemyHealth, Vector3> enemyHomes = new Dictionary<EnemyHealth, Vector3>();
         private PlayerController player;
         private float nextCheckAt;
 
@@ -128,8 +128,7 @@ namespace PoeClone.Enemies
         public void Adopt(EnemyHealth enemy)
         {
             enemy.transform.SetParent(transform, true);
-            Vector3 home = enemy.transform.position;
-            enemy.Died += () => OnEnemyDied(enemy != null ? enemy.transform.position : home);
+            TrackHome(enemy, enemy.transform.position, enemy.KindIndex);
         }
 
         private int streamingArea = -1;
@@ -141,7 +140,8 @@ namespace PoeClone.Enemies
             public string kind;
             public Vector3 position;
             public float facing, healthFraction, corpseRemaining;
-            public bool dead;
+            public bool dead, hasHome;
+            public Vector3 home;
         }
 
         [System.Serializable]
@@ -156,6 +156,7 @@ namespace PoeClone.Enemies
         {
             public Vector3 position;
             public float elapsed;
+            public string kind;
         }
 
         [System.Serializable]
@@ -181,12 +182,16 @@ namespace PoeClone.Enemies
                 if (enemy.IsDead && enemy.CorpseTimeRemaining <= 0f) continue;
                 state.enemies.Add(new UpdateEnemy { kind = kind.Name, position = enemy.transform.position,
                     facing = enemy.transform.eulerAngles.y, healthFraction = enemy.CurrentHealth / enemy.MaxHealth,
-                    dead = enemy.IsDead, corpseRemaining = enemy.CorpseTimeRemaining });
+                    dead = enemy.IsDead, corpseRemaining = enemy.CorpseTimeRemaining,
+                    hasHome = enemyHomes.ContainsKey(enemy),
+                    home = enemyHomes.TryGetValue(enemy, out var home) ? home : enemy.transform.position });
             }
             foreach (var home in openingHomes)
                 state.homes.Add(new UpdateHome { position = home.point, kind = EnemyKinds.Get(home.kind).Name });
-            foreach (var vacancy in vacancies)
-                state.vacancies.Add(new UpdateVacancy { position = vacancy.Position, elapsed = Time.time - vacancy.DiedAt });
+            foreach (var bucket in vacancies.Values)
+                foreach (var vacancy in bucket)
+                    state.vacancies.Add(new UpdateVacancy { position = vacancy.Position,
+                        kind = EnemyKinds.Get(vacancy.Kind).Name, elapsed = Time.time - vacancy.DiedAt });
             return state;
         }
 
@@ -201,7 +206,18 @@ namespace PoeClone.Enemies
             }
             pendingUpdateEnemies.AddRange(state.enemies);
             foreach (var vacancy in state.vacancies)
-                vacancies.Add(new Vacancy { Position = vacancy.position, DiedAt = Time.time - vacancy.elapsed });
+            {
+                int kind = EnemyKinds.IndexOf(vacancy.kind);
+                // Older update snapshots did not store a kind; resolve their roster with a fixed seed.
+                if (kind < 0)
+                {
+                    var previous = Random.state;
+                    Random.InitState(HomeSeed(vacancy.position));
+                    try { kind = PickKind(vacancy.position); }
+                    finally { Random.state = previous; }
+                }
+                AddVacancy(new Vacancy { Position = vacancy.position, Kind = kind, DiedAt = Time.time - vacancy.elapsed });
+            }
             return true;
         }
 
@@ -260,7 +276,7 @@ namespace PoeClone.Enemies
                 bool safe = TryPrepareSpawnPoint(point, kind, out point, clearanceRadius, spawnHeight);
                 // Updated scenery may block the old spot. Keep the enemy nearby on safe ground.
                 if (!safe && !TryFindSpawnPointNear(record.position, out point, out _, kind)) continue;
-                var enemy = Spawn(point, kind, refills: !record.dead).GetComponent<EnemyHealth>();
+                var enemy = Spawn(point, kind, refills: !record.dead, home: record.hasHome ? record.home : record.position).GetComponent<EnemyHealth>();
                 enemy.transform.rotation = Quaternion.Euler(0f, record.facing, 0f);
                 if (record.dead) enemy.RestoreUpdateCorpse(record.corpseRemaining);
                 else enemy.ApplyReplicatedHealth(enemy.MaxHealth * Mathf.Clamp01(record.healthFraction), enemy.MaxHealth);
@@ -287,7 +303,7 @@ namespace PoeClone.Enemies
                     long started = PoeClone.UI.PerformanceDiagnostics.Begin();
                     bool valid;
                     Vector3 at;
-                    try { valid = TryPrepareSpawnPoint(candidate, home.kind, out at, clearanceRadius, spawnHeight); }
+                    try { valid = TryPrepareSpawnPoint(candidate, home.kind, out at, clearanceRadius, spawnHeight, ignoreCharacters: true); }
                     finally { PoeClone.UI.PerformanceDiagnostics.End("Enemy placement checks", started); }
                     if (!valid) continue;
                     var previous = Random.state;
@@ -314,6 +330,14 @@ namespace PoeClone.Enemies
 
             if (streamingArea >= 0) return;
 
+            var previous = Random.state;
+            Random.InitState(HomeSeed(center));
+            try { SpawnOpeningPopulation(); }
+            finally { Random.state = previous; }
+        }
+
+        private void SpawnOpeningPopulation()
+        {
             // Pack animals bring the rest of their pack (counted towards the total).
             int spawned = 0;
             int planned = 0;
@@ -339,7 +363,7 @@ namespace PoeClone.Enemies
                 for (int k = 0; k < pack && planned < enemyCount; k++)
                 {
                     planned++;
-                    if (TryFindSpawnPointNear(point, out Vector3 near, out _, kindIndex) &&
+                    if (TryFindSpawnPointNear(point, out Vector3 near, out _, kindIndex, ignoreCharacters: true) &&
                         Random.value < ArrivalSpawnChance(near))
                     {
                         Spawn(near, kindIndex);
@@ -359,32 +383,55 @@ namespace PoeClone.Enemies
                 return;
             nextCheckAt = Time.time + CheckInterval;
 
-            Vector3 playerPos = player != null ? player.transform.position : Vector3.zero;
-
-            for (int k = vacancies.Count - 1; k >= 0; k--)
-            {
-                Vacancy v = vacancies[k];
-                if (Time.time - v.DiedAt < respawnDelay)
-                    continue;
-
-                Vector3 offset = v.Position - playerPos;
-                offset.y = 0f;
-                if (offset.magnitude < respawnDistance)
-                    continue;
-
-                // A blocked spot (something moved in) is retried on a later check.
-                if (TryFindSpawnPointNear(v.Position, out Vector3 point, out int kindIndex) &&
-                    ArrivalSpawnChance(point) > 0f)
+            if (player == null) return;
+            float radius = PoeClone.Visuals.WorldActivity.SleepRadius;
+            Vector3 position = player.transform.position;
+            Vector2Int min = HomeChunk(position - new Vector3(radius, 0, radius));
+            Vector2Int max = HomeChunk(position + new Vector3(radius, 0, radius));
+            for (int z = min.y; z <= max.y; z++)
+                for (int x = min.x; x <= max.x; x++)
                 {
-                    Spawn(point, kindIndex);
-                    vacancies.RemoveAt(k);
+                    var cell = new Vector2Int(x, z);
+                    if (!vacancies.TryGetValue(cell, out var bucket)) continue;
+                    for (int k = bucket.Count - 1; k >= 0; k--)
+                    {
+                        Vacancy vacancy = bucket[k];
+                        if (Time.time - vacancy.DiedAt < RespawnDelay) continue;
+                        float distance = PoeClone.Visuals.WorldActivity.DistanceSquared(vacancy.Position);
+                        if (distance < respawnDistance * respawnDistance || distance > radius * radius) continue;
+                        // A visited chunk can still be far away. Never instantiate there just because
+                        // its cooldown elapsed, nor probe physics before its terrain has streamed in.
+                        if (streamingArea >= 0 && (WorldBuilder.Instance == null ||
+                            !WorldBuilder.Instance.IsPositionReady(streamingArea, vacancy.Position))) continue;
+                        if (!TryPrepareSpawnPoint(vacancy.Position, vacancy.Kind, out var point, clearanceRadius, spawnHeight)) continue;
+                        Spawn(point, vacancy.Kind, home: vacancy.Position);
+                        bucket.RemoveAt(k);
+                    }
+                    if (bucket.Count == 0) vacancies.Remove(cell);
                 }
-            }
         }
 
-        private void OnEnemyDied(Vector3 position)
+        private Vector2Int HomeChunk(Vector3 point) => WorldBuilder.ChunkAt(point - center);
+
+        private int HomeSeed(Vector3 point) => unchecked(monsterLevel * 7919 ^
+            Mathf.RoundToInt(point.x * 131f) ^ Mathf.RoundToInt(point.z * 17f));
+
+        private void AddVacancy(Vacancy vacancy)
         {
-            vacancies.Add(new Vacancy { Position = position, DiedAt = Time.time });
+            var cell = HomeChunk(vacancy.Position);
+            if (!vacancies.TryGetValue(cell, out var bucket))
+                vacancies.Add(cell, bucket = new List<Vacancy>());
+            bucket.Add(vacancy);
+        }
+
+        private void TrackHome(EnemyHealth enemy, Vector3 home, int kind)
+        {
+            enemyHomes[enemy] = home;
+            enemy.Died += () =>
+            {
+                enemyHomes.Remove(enemy);
+                AddVacancy(new Vacancy { Position = home, Kind = kind, DiedAt = Time.time });
+            };
         }
 
         /// <summary>
@@ -428,7 +475,7 @@ namespace PoeClone.Enemies
             }
         }
 
-        private GameObject Spawn(Vector3 point, int kindIndex, bool refills = true)
+        private GameObject Spawn(Vector3 point, int kindIndex, bool refills = true, Vector3? home = null)
         {
             long started = PoeClone.UI.PerformanceDiagnostics.Begin();
             try
@@ -439,12 +486,10 @@ namespace PoeClone.Enemies
 
                 EnemyHealth health = enemy.GetComponent<EnemyHealth>();
                 if (health != null && refills)
-                {
-                    Transform body = enemy.transform;
-                    Vector3 home = point;
-                    // Where it stood when it died; its spawn point if the body is already gone.
-                    health.Died += () => OnEnemyDied(body != null ? body.position : home);
-                }
+                    TrackHome(health, home ?? point, kindIndex);
+                // Restored corpses and scripted ambushes finish setup before distance sleep applies.
+                if (refills)
+                    PoeClone.Visuals.DistanceActivity.Attach(enemy).Evaluate(PoeClone.Visuals.WorldActivity.SleepRadius);
                 return enemy;
             }
             finally { PoeClone.UI.PerformanceDiagnostics.End("Enemy instantiation / model", started); }
@@ -456,7 +501,7 @@ namespace PoeClone.Enemies
         private static readonly Collider[] spawnObstacles = new Collider[64];
 
         internal static bool TryPrepareSpawnPoint(Vector3 candidate, int kindIndex, out Vector3 point,
-            float clearanceRadius = 1.2f, float spawnHeight = 1.1f)
+            float clearanceRadius = 1.2f, float spawnHeight = 1.1f, bool ignoreCharacters = false)
         {
             point = candidate;
             float scale = EnemyKinds.Get(kindIndex).Scale;
@@ -504,6 +549,8 @@ namespace PoeClone.Enemies
             }
             for (int i = 0; i < obstacleCount; i++)
             {
+                if (ignoreCharacters && (obstacles[i].GetComponentInParent<CharacterController>() != null ||
+                    obstacles[i].GetComponentInParent<EnemyHealth>() != null)) continue;
                 if (!IsGround(obstacles[i]))
                     return false;
             }
@@ -518,7 +565,7 @@ namespace PoeClone.Enemies
             return name == "Ground" || name.StartsWith("Ground_");
         }
 
-        private bool TryFindSpawnPointNear(Vector3 center, out Vector3 point, out int kindIndex, int requestedKind = -1)
+        private bool TryFindSpawnPointNear(Vector3 center, out Vector3 point, out int kindIndex, int requestedKind = -1, bool ignoreCharacters = false)
         {
             for (int attempt = 0; attempt < maxAttemptsPerEnemy; attempt++)
             {
@@ -531,7 +578,7 @@ namespace PoeClone.Enemies
 
                 kindIndex = requestedKind >= 0 ? requestedKind : PickKind(candidate);
                 if ((inside == null || inside(candidate)) && !NearSafeSpot(candidate) &&
-                    TryPrepareSpawnPoint(candidate, kindIndex, out point, clearanceRadius, spawnHeight))
+                    TryPrepareSpawnPoint(candidate, kindIndex, out point, clearanceRadius, spawnHeight, ignoreCharacters))
                 {
                     return true;
                 }
@@ -570,7 +617,7 @@ namespace PoeClone.Enemies
                     continue;
 
                 kindIndex = PickKind(candidate);
-                if (!TryPrepareSpawnPoint(candidate, kindIndex, out point, clearanceRadius, spawnHeight))
+                if (!TryPrepareSpawnPoint(candidate, kindIndex, out point, clearanceRadius, spawnHeight, ignoreCharacters: true))
                     continue;
 
                 return true;

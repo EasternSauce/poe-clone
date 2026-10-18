@@ -1,3 +1,7 @@
+version: 2026-10-18-fixed-enemy-homes
+- Ordinary enemies return as the same type at their original spawn point, two minutes after death. Nearby players block respawning, so cleared ground stays clear until you leave and return.
+- Distant respawns stay unloaded until their terrain chunk is nearby and ready. Distant enemies remain hidden and inactive through the existing distance-sleep system.
+
 version: 2026-10-18-bone-resolve-and-fast-clicks
 - Fixed Bone Resolve's +1 maximum minion applying to summon limits, including skeleton mages. Extra Skeletons bonuses now also increase warrior and mage limits.
 - Fixed Arcane Power's extra projectile applying to projectile spells, spell-casting effigies and bow skills. Extra spell projectile bonuses now also apply to Fire Bolt and Ice Shard.

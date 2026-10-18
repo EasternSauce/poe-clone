@@ -4375,7 +4375,6 @@ MonoBehaviour:
   enemyPrefab: {fileID: 1574276915870265490, guid: b74681846e77ada4780a3452dd9d082d, type: 3}
   enemyCount: 24
   respawnDistance: 30
-  respawnDelay: 10
   respawnScatter: 4
   areaHalfSize: 40
   clearanceRadius: 1.2
