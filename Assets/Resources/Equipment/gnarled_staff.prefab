@@ -802,7 +802,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6239203717654905390}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4d5f9e915d6d20419eb25cce7ac5d84, type: 3}
+  m_Script: {fileID: 11500000, guid: cf5900fc65ce4cdf93e4ad27e32c6d99, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PoeClone.Enemies.UprightStaff
 --- !u!1 &6606630907255984633

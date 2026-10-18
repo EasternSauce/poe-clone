@@ -695,7 +695,7 @@ namespace PoeClone.Skills
                     attack.PlayCreatureAttack(false);
                     break;
                 case MinionKind.Mage:
-                    attack.PlayAttack(WeaponType.Unarmed);
+                    attack.PlayStaffBolt();
                     break;
                 case MinionKind.Golem:
                     attack.PlayClawAttack();
@@ -882,7 +882,8 @@ namespace PoeClone.Skills
             public static void Launch(Minion caster, EnemyHealth target, HashSet<EnemyHealth> volley, int index)
             {
                 var root = new GameObject("Minion Bolt");
-                root.transform.position = caster.transform.position + Vector3.up * 1.1f * caster.transform.localScale.y + caster.transform.forward * 0.5f + caster.transform.right * ((index % 3 - 1) * 0.3f);
+                // From the staff's head, spread sideways when several leave at once.
+                root.transform.position = EnemyCombat.BoltOrigin(caster.transform) + caster.transform.right * ((index % 3 - 1) * 0.3f);
                 Color color = CombatText.ColorFor(WeaponSkillHit.Element(caster.tree, DamageType.Physical));
                 GameObject core = RuntimePrimitives.Create(PrimitiveType.Sphere, root.transform, color);
                 core.transform.localScale = Vector3.one * 0.26f;

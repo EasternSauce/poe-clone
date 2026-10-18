@@ -69,10 +69,8 @@ namespace PoeClone.Enemies
         }
 
         /// <summary>
-        /// Where a bolt or arrow starts: a caster's staff orb, or else in front of the chest,
-        /// scaled with the enemy. The orb is placed where <see cref="UprightStaff"/> holds it, worked
-        /// out here rather than read back from the bones, since this runs mid-swing in the attack
-        /// animator's Update, before the staff is straightened for the frame.
+        /// Where a bolt or arrow starts: a caster's staff orb (where the thrust held it last
+        /// frame), or else in front of the chest, scaled with the enemy.
         /// </summary>
         public static Vector3 BoltOrigin(Transform enemy)
         {
@@ -81,11 +79,8 @@ namespace PoeClone.Enemies
                 // A creature spits from its mouth.
                 if (t.name == CreatureAnimator.MouthName && t.GetComponentInParent<CreatureAnimator>() != null)
                     return t.position;
-                if (t.name != EnemyKinds.StaffOrbName)
-                    continue;
-                Transform staff = t.parent;
-                float reach = Vector3.Distance(t.position, staff.position);
-                return staff.position + UprightStaff.Up(enemy) * reach;
+                if (t.name == EnemyKinds.StaffOrbName)
+                    return t.position;
             }
 
             float scale = enemy.localScale.y;
@@ -151,8 +146,8 @@ namespace PoeClone.Enemies
             swingAtMinion = minion;
             swingAtPartner = minion == null && atPartner;
             attackAnimator.PlaybackSpeed = (controller != null ? controller.AttackSpeedMultiplier : 1f) * kind.Tempo;
-            // Archers draw their bow like the player does; armed brutes swing their weapon;
-            // everyone else swipes.
+            // Archers draw their bow like the player does; armed brutes swing their weapon; casters
+            // thrust their staff; everyone else swipes.
             swingPending = true;
             if (kind.Bow)
                 attackAnimator.PlayAttack(WeaponType.Bow);
@@ -160,6 +155,8 @@ namespace PoeClone.Enemies
                 attackAnimator.PlayAttack(kind.Weapon);
             else if (kind.IsCreature)
                 attackAnimator.PlayCreatureAttack(kind.IsRanged);
+            else if (kind.HoldsStaff)
+                attackAnimator.PlayStaffBolt();
             else
                 attackAnimator.PlayClawAttack();
             EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);

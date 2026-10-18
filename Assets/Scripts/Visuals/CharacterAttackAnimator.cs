@@ -85,7 +85,86 @@ namespace PoeClone.Visuals
             // An overhead wind-up lifts the arm out to the side by this much (roll) on the way up,
             // so the weapon doesn't rise through the target and read as an upward blow.
             public float SideLift;
+
+            // A staff swing or cast: the staff itself is posed (see StaffPose) and both arms are
+            // solved onto it by CharacterWalkAnimator, instead of posing the arms directly.
+            public bool Staff;
+            public StaffPose StaffWindup;
+            public StaffPose StaffStrike;
         }
+
+        /// <summary>
+        /// Where a two-handed staff is, in the upper body's space: the main hand's grip, relative to
+        /// the midpoint of the shoulders and measured in arm lengths (so it fits any rig), and the
+        /// staff's lean from upright. The off hand holds lower down the shaft.
+        /// </summary>
+        public struct StaffPose
+        {
+            public Vector3 Grip;
+            public float Tilt;  // the head forward (+) or back (-) from upright, degrees
+            public float Lean;  // the head out to the weapon side (+) or across the body (-)
+            public float Bow;   // the upper body leans forward (+) with it
+            public float Turn;  // and twists towards the weapon side (+)
+
+            public StaffPose(Vector3 grip, float tilt, float lean, float bow = 0f, float turn = 0f)
+            {
+                Grip = grip;
+                Tilt = tilt;
+                Lean = lean;
+                Bow = bow;
+                Turn = turn;
+            }
+
+            /// <summary>The direction from the grip to the staff's head, in the upper body's space.</summary>
+            public Vector3 Up => Quaternion.Euler(Tilt, 0f, -Lean) * Vector3.up;
+
+            public static StaffPose Lerp(StaffPose a, StaffPose b, float t)
+            {
+                return new StaffPose(Vector3.Lerp(a.Grip, b.Grip, t), Mathf.Lerp(a.Tilt, b.Tilt, t), Mathf.Lerp(a.Lean, b.Lean, t),
+                    Mathf.Lerp(a.Bow, b.Bow, t), Mathf.Lerp(a.Turn, b.Turn, t));
+            }
+        }
+
+        /// <summary>A staff carried at the ready: upright in front of the weapon shoulder, both hands on it.</summary>
+        public static readonly StaffPose StaffGuard = new StaffPose(new Vector3(0.3f, -0.25f, 0.45f), 8f, 14f);
+
+        // A staff's spell: the staff drawn back and up, then thrust out with its head at the target.
+        private static readonly AttackProfile StaffCastProfile = new AttackProfile
+        {
+            Duration = 0.6f,
+            StrikeTime = 0.8f,
+            SwingStart = 0.5f,
+            Staff = true,
+            StaffWindup = new StaffPose(new Vector3(0.2f, -0.08f, 0.22f), -22f, 14f, -8f, -12f),
+            StaffStrike = new StaffPose(new Vector3(0.06f, -0.12f, 0.82f), 62f, 0f, 12f, 6f),
+            Range = 2.2f
+        };
+
+        // A caster's bolt (enemies and the Skeleton Mage): the same thrust, quicker, with the bolt
+        // leaving as early in the swing as their old swipe did.
+        private static readonly AttackProfile StaffBoltProfile = new AttackProfile
+        {
+            Duration = 0.45f,
+            StrikeTime = 0.5f,
+            SwingStart = 0.25f,
+            Staff = true,
+            StaffWindup = StaffCastProfile.StaffWindup,
+            StaffStrike = StaffCastProfile.StaffStrike,
+            Range = 1.8f
+        };
+
+        // Out of mana, a staff is a club: hauled up behind the head in both hands and brought down
+        // head first in front. The mace's pace and reach, so it is a pure change of look.
+        private static readonly AttackProfile StaffSwingProfile = new AttackProfile
+        {
+            Duration = 0.7f,
+            StrikeTime = 0.55f,
+            SwingStart = 0.36f,
+            Staff = true,
+            StaffWindup = new StaffPose(new Vector3(0.14f, 0.32f, 0.12f), -55f, 6f, -12f, -10f),
+            StaffStrike = new StaffPose(new Vector3(0.04f, -0.4f, 0.66f), 112f, -4f, 22f, 4f),
+            Range = 2.2f
+        };
 
         private static readonly AttackProfile UnarmedProfile = new AttackProfile
         {
@@ -496,7 +575,10 @@ namespace PoeClone.Visuals
             WhirlwindProfile,
             WhirlwindGreatProfile,
             CrossCutProfile,
-            CrossCutMirroredProfile
+            CrossCutMirroredProfile,
+            StaffCastProfile,
+            StaffBoltProfile,
+            StaffSwingProfile
         };
 
         /// <summary>Whether the profile with this id shoots (an arrow) rather than hits.</summary>
@@ -552,7 +634,13 @@ namespace PoeClone.Visuals
         public float Lunge { get; private set; }
 
         /// <summary>True while a two-handed attack is posing the off arm (the walk cycle leaves it alone).</summary>
-        public bool DrivesOffArm => IsAttacking && activeProfile != null && (activeProfile.UsesOffArm || activeProfile.TwoHandGrip);
+        public bool DrivesOffArm => IsAttacking && activeProfile != null && (activeProfile.UsesOffArm || activeProfile.TwoHandGrip || activeProfile.Staff);
+
+        /// <summary>True while a staff swing or cast plays: <see cref="CurrentStaffPose"/> says where the staff is.</summary>
+        public bool PosesStaff => IsAttacking && activeProfile != null && activeProfile.Staff;
+
+        /// <summary>The staff's pose this frame during a staff swing or cast (see <see cref="PosesStaff"/>).</summary>
+        public StaffPose CurrentStaffPose { get; private set; }
 
         /// <summary>True while a swing holds the weapon in both hands (the great weapons).</summary>
         public bool SwingsTwoHanded => IsAttacking && activeProfile != null && activeProfile.TwoHandGrip;
@@ -615,7 +703,7 @@ namespace PoeClone.Visuals
         /// <summary>Play the held weapon's casting swing over the exact supplied duration.</summary>
         public void PlayCast(WeaponType weaponType, float duration)
         {
-            Play(ProfileFor(weaponType));
+            Play(weaponType == WeaponType.Staff ? StaffCastProfile : ProfileFor(weaponType));
             speedMultiplier = activeProfile.Duration / Mathf.Max(0.001f, duration);
             castingGesture = true;
         }
@@ -706,6 +794,12 @@ namespace PoeClone.Visuals
             Play(spit ? SpitProfile : BiteProfile);
         }
 
+        /// <summary>A caster's bolt thrust from its staff (enemy casters, the Skeleton Mage).</summary>
+        public void PlayStaffBolt()
+        {
+            Play(StaffBoltProfile);
+        }
+
         /// <summary>Enemy claw swipe, from arms reaching forward (the zombie) or hanging at the sides.</summary>
         public void PlayClawAttack()
         {
@@ -776,7 +870,7 @@ namespace PoeClone.Visuals
                 case WeaponType.Mace: return MaceProfile;
                 case WeaponType.Dagger: return DaggerProfile;
                 case WeaponType.Bow: return BowProfile;
-                case WeaponType.Staff: return MaceProfile; // swung two-handed when there's no mana to cast
+                case WeaponType.Staff: return StaffSwingProfile; // when there's no mana to cast
                 case WeaponType.Greatsword: return GreatswordProfile;
                 case WeaponType.Greataxe: return GreataxeProfile;
                 case WeaponType.Maul: return MaulProfile;
@@ -817,46 +911,73 @@ namespace PoeClone.Visuals
                 ? new Pose(CharacterWalkAnimator.GuardPitch, CharacterWalkAnimator.GuardYaw, CharacterWalkAnimator.GuardRoll, CharacterWalkAnimator.GuardElbow)
                 : Rest;
 
-            Pose pose;
-            Pose offPose = Rest;
+            // Which leg of the swing this is (0: into the wind-up, 1: wind-up to strike, 2: back
+            // from the strike) and how far along it.
+            int leg;
+            float t;
             if (p.SwingStart > 0f && f < p.StrikeTime)
             {
                 if (f < p.SwingStart)
                 {
                     // An overhead lift gathers slowly up the side instead of whipping up in front.
-                    float t = p.SideLift > 0f ? Mathf.SmoothStep(0f, 1f, f / p.SwingStart) : EaseOut(f / p.SwingStart);
-                    pose = Lerp(start, windup, t);
-                    pose.ArmRoll += p.SideLift * Mathf.Sin(t * Mathf.PI);
-                    offPose = Lerp(Rest, p.OffWindup, t);
+                    leg = 0;
+                    t = p.SideLift > 0f ? Mathf.SmoothStep(0f, 1f, f / p.SwingStart) : EaseOut(f / p.SwingStart);
                 }
                 else
                 {
-                    float t = (f - p.SwingStart) / (p.StrikeTime - p.SwingStart);
-                    if (p.SideLift > 0f)
+                    leg = 1;
+                    t = (f - p.SwingStart) / (p.StrikeTime - p.SwingStart);
+                    if (p.SideLift > 0f || p.Staff)
                         t *= t; // and the blow gathers speed on the way down
-                    pose = Lerp(windup, strike, t);
-                    offPose = Lerp(p.OffWindup, p.OffStrike, t);
                 }
             }
             else if (f < p.StrikeTime)
             {
-                float t = EaseOut(p.StrikeTime > 0f ? f / p.StrikeTime : 1f);
-                pose = Lerp(start, windup, t);
-                offPose = Lerp(Rest, p.OffWindup, t);
+                leg = 0;
+                t = EaseOut(p.StrikeTime > 0f ? f / p.StrikeTime : 1f);
             }
             else
             {
+                leg = 2;
                 float recoverSpan = 1f - p.StrikeTime;
-                float t = recoverSpan > 0f ? (f - p.StrikeTime) / recoverSpan : 1f;
+                t = recoverSpan > 0f ? (f - p.StrikeTime) / recoverSpan : 1f;
+            }
+
+            Pose pose;
+            Pose offPose;
+            if (leg == 0)
+            {
+                pose = Lerp(start, windup, t);
+                if (p.SwingStart > 0f)
+                    pose.ArmRoll += p.SideLift * Mathf.Sin(t * Mathf.PI);
+                offPose = Lerp(Rest, p.OffWindup, t);
+            }
+            else if (leg == 1)
+            {
+                pose = Lerp(windup, strike, t);
+                offPose = Lerp(p.OffWindup, p.OffStrike, t);
+            }
+            else
+            {
                 pose = Lerp(strike, start, t);
                 offPose = Lerp(p.OffStrike, Rest, t);
             }
 
-            Apply(weaponArm, weaponElbow, pose);
-            if (p.UsesOffArm)
-                Apply(offArm, offElbow, offPose);
-            else if (p.TwoHandGrip)
-                Apply(offArm, offElbow, GripPose(pose));
+            if (p.Staff)
+            {
+                // The walk animator places the staff here and solves both arms onto it.
+                CurrentStaffPose = leg == 0 ? StaffPose.Lerp(StaffGuard, p.StaffWindup, t)
+                    : leg == 1 ? StaffPose.Lerp(p.StaffWindup, p.StaffStrike, t)
+                    : StaffPose.Lerp(p.StaffStrike, StaffGuard, Mathf.SmoothStep(0f, 1f, t));
+            }
+            else
+            {
+                Apply(weaponArm, weaponElbow, pose);
+                if (p.UsesOffArm)
+                    Apply(offArm, offElbow, offPose);
+                else if (p.TwoHandGrip)
+                    Apply(offArm, offElbow, GripPose(pose));
+            }
 
             // The body joins in: it twists with the arm's sweep, leans back into the wind-up and
             // forward through the blow, and steps into it. Measured from rest, so a swing that
@@ -899,6 +1020,11 @@ namespace PoeClone.Visuals
                 {
                     TorsoYaw = fromRest.ArmYaw * 0.45f;
                     Lunge *= 1.6f;
+                }
+                if (p.Staff)
+                {
+                    TorsoPitch = CurrentStaffPose.Bow;
+                    TorsoYaw = CurrentStaffPose.Turn;
                 }
             }
 

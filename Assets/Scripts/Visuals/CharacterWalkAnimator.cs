@@ -191,6 +191,23 @@ namespace PoeClone.Visuals
         /// <summary>True while this character carries a great weapon in both hands (see <see cref="GuardPitch"/>).</summary>
         public bool HoldsTwoHanded => equipmentVisuals != null && equipmentVisuals.TwoHandedWeapon != null;
 
+        // A staff held in both hands (see HeldStaff): placed from the guard or the playing staff
+        // swing's pose, with both hands solved onto the shaft (see PoseStaff).
+        private Transform heldStaff;
+        private Transform offPalm;
+        private const float StaffOffGrip = 0.3f; // arm lengths from the main hand down the shaft to the off hand
+
+        /// <summary>True while this character carries a staff in both hands.</summary>
+        public bool HoldsStaff => heldStaff != null;
+
+        public void HoldStaff(Transform staff) => heldStaff = staff;
+
+        public void ReleaseStaff(Transform staff)
+        {
+            if (heldStaff == staff)
+                heldStaff = null;
+        }
+
         /// <summary>The right/left arm's rest pitch (0 for the player, more raised for monsters). Shared with CharacterAttackAnimator so its swing offsets land correctly regardless of rig.</summary>
         public float ArmRestAngle => armRestAngle;
 
@@ -416,7 +433,7 @@ namespace PoeClone.Visuals
                 // Against the pelvis, the shoulders dip on the standing side and turn a little away from it.
                 if (upperBody != null) upperBody.localRotation *= Quaternion.Euler(0f, -ShiftTorsoTurn * weightShift, -ShiftTorsoLean * weightShift);
                 UpdateFidget(dt, still > .98f && !simple && plant <= 0f && crouch <= 0f && WorkBlend <= 0f &&
-                    !HoldsTwoHanded && !rightArmSuppressed && !leftArmSuppressed);
+                    !HoldsTwoHanded && !HoldsStaff && !rightArmSuppressed && !leftArmSuppressed);
                 if (upperBody != null) upperBody.localRotation *= Quaternion.Euler(6f * StretchAmount, 0f, 0f);
                 PoseNaturalLeg(leftLeg,leftKnee,leftAnkle,phase,-1f,bob-.28f*crouch,crouch);
                 PoseNaturalLeg(rightLeg,rightKnee,rightAnkle,phase+Mathf.PI,1f,bob-.28f*crouch,crouch);
@@ -430,7 +447,9 @@ namespace PoeClone.Visuals
             // swing poses both arms and starts and ends in this same guard.
             bool oneArmed = attackAnimator != null && attackAnimator.IsAttacking && !attackAnimator.DrivesOffArm;
             holdBlend = HoldsTwoHanded ? Mathf.MoveTowards(holdBlend, oneArmed ? 0f : 1f, 6f * dt) : 0f;
-            if (HoldsTwoHanded)
+            if (HoldsStaff)
+                PoseStaff(s * armAmp, breath);
+            else if (HoldsTwoHanded)
                 PoseTwoHandedHold(rightArmSuppressed, leftArmSuppressed, s * armAmp, breath);
         }
 
@@ -630,6 +649,60 @@ namespace PoeClone.Visuals
                     BringGripInReach(weapon);
                 PoseGrip(leftArm, leftElbow, offHand, weapon.TransformPoint(Vector3.up * OffGripAlong), -1f, weight);
             }
+        }
+
+        private void PoseStaff(float swing, float breath)
+        {
+            if (rightArm == null || rightElbow == null || mainHand == null || leftArm == null || leftElbow == null || offHand == null)
+                return;
+
+            CharacterAttackAnimator.StaffPose pose;
+            if (attackAnimator != null && attackAnimator.PosesStaff)
+                pose = attackAnimator.CurrentStaffPose;
+            else if (attackAnimator != null && attackAnimator.IsAttacking)
+                return; // some other gesture has the arms; the staff rides along in the hand
+            else
+            {
+                // Walking rocks the staff a little; breathing lifts it.
+                pose = CharacterAttackAnimator.StaffGuard;
+                pose.Tilt += swing * 0.15f;
+                pose.Grip.y += breath * 0.01f;
+            }
+
+            Transform frame = upperBody != null ? upperBody : transform;
+            float armLength = Vector3.Distance(rightArm.position, rightElbow.position) + Vector3.Distance(rightElbow.position, mainHand.position);
+            Vector3 shoulders = (leftArm.position + rightArm.position) * 0.5f;
+            Vector3 up = frame.TransformDirection(pose.Up);
+            Vector3 grip = shoulders + frame.TransformDirection(pose.Grip) * armLength;
+            float offAlong = StaffOffGrip * armLength;
+
+            // Drawn in towards the chest until both hands reach the shaft.
+            float reach = 0.97f * armLength;
+            Vector3 anchor = shoulders + frame.forward * 0.4f * armLength;
+            for (int i = 0; i < 12 && (Vector3.Distance(grip, rightArm.position) > reach || Vector3.Distance(grip - up * offAlong, leftArm.position) > reach); i++)
+                grip = Vector3.Lerp(grip, anchor, 0.25f);
+
+            // Solved from the same start every frame, so the arms' twist never drifts.
+            rightArm.localRotation = leftArm.localRotation = Quaternion.Euler(-40f, 0f, 0f);
+            rightElbow.localRotation = leftElbow.localRotation = Quaternion.Euler(-60f, 0f, 0f);
+
+            SolveHand(rightArm, rightElbow, mainHand, heldStaff, grip, 1f);
+            heldStaff.rotation = Quaternion.LookRotation(Vector3.Cross(frame.right, up), up);
+
+            if (offPalm == null || !offPalm.IsChildOf(leftElbow))
+                offPalm = leftElbow.Find("Socket_OffHand") ?? offHand;
+            SolveHand(leftArm, leftElbow, offHand, offPalm, heldStaff.position - up * offAlong, -1f);
+        }
+
+        // Puts the palm (a point the hand carries) on the target: the arm is solved for the hand,
+        // then again with the palm's offset taken off, which lands it close enough. The elbows
+        // hang mostly down, so the arm reaching across the body doesn't wing out.
+        private void SolveHand(Transform arm, Transform elbow, Transform hand, Transform palm, Vector3 target, float side)
+        {
+            var bend = new Vector3(side * 0.45f, -1f, -0.15f);
+            PoseGrip(arm, elbow, hand, target, side, 1f, bend);
+            if (palm != hand)
+                PoseGrip(arm, elbow, hand, target - (palm.position - hand.position), side, 1f, bend);
         }
 
         // A swing poses the weapon arm at full stretch, where the off hand can't reach the haft.

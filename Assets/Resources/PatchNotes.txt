@@ -1,3 +1,8 @@
+version: 2026-10-18-two-handed-staves
+- Skeleton Mages have their own look: a deep, peaked black hood with the skull peering out of its shadow, a cowl over the shoulders, strips of black and brown cloth hanging down the back, glowing purple eyes, and a dark wood and bone staff whose bone prongs cradle a purple orb.
+- Every staff is now held in both hands, by the hero, enemy casters and Skeleton Mages alike. At rest it stands upright at the weapon side.
+- New staff animations: spells draw the staff back and thrust it forward with the orb aimed at the target, enemy and Skeleton Mage bolts leave from the orb, and an out-of-mana staff attack hauls the staff up behind the head and brings it down in front. The staff now follows every animation instead of always staying upright.
+
 version: 2026-10-18-enemy-arm-stances
 - Only zombies shamble with their arms held straight out in front of the chest. Other humanoid enemies and summons keep their arms at their sides, and the unarmed ones raise a clawed hand high and rake it down at you instead.
 

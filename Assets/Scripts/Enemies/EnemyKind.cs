@@ -124,6 +124,7 @@ namespace PoeClone.Enemies
         public bool RainOfArrows; // archers: each shot is loosed skywards and rains down on a marked spot
         public bool Skeletal;     // humanoids: bones instead of flesh (SkeletonLook)
         public bool ReachingArms; // humanoids: arms held out straight in front (the zombie shamble), else hanging
+        public bool BoneMage;     // the Skeleton Mage: a hood, rags down its back and a bone staff (SkeletonMageLook)
 
         /// <summary>The first killing blow drops it into a bone pile that stands up again unless smashed.</summary>
         public bool Reassembles;
@@ -164,6 +165,9 @@ namespace PoeClone.Enemies
 
         public bool IsRanged => Style == EnemyAttackStyle.Ranged;
         public bool IsCreature => Body != CreatureBody.Humanoid;
+
+        /// <summary>A caster: carries a staff in both hands and thrusts its bolts from it.</summary>
+        public bool HoldsStaff => IsRanged && !Bow && !Javelin && !IsCreature;
 
         /// <summary>How high above its pivot (at scale 1) the floating health bar sits.</summary>
         public float BarHeight
@@ -588,8 +592,8 @@ namespace PoeClone.Enemies
             {
                 Name = "Skeleton Mage", SpawnWeight = 0f,
                 MaxHealth = 14f, Style = EnemyAttackStyle.Ranged, AttackRange = 8.5f, ProjectileSpeed = 14f, SpeedRatio = 0.85f, Scale = 0.92f,
-                Cloth = new Color(0.25f, 0.32f, 0.55f), Skin = new Color(0.92f, 0.90f, 0.82f), Pants = new Color(0.16f, 0.18f, 0.30f), Eyes = new Color(0.5f, 0.85f, 1.0f), HideHorns = true,
-                StaffOrb = new Color(0.5f, 0.85f, 1.0f), Skeletal = true
+                Cloth = new Color(0.16f, 0.12f, 0.10f), Skin = new Color(0.92f, 0.90f, 0.82f), Pants = new Color(0.10f, 0.08f, 0.08f), Eyes = new Color(0.78f, 0.35f, 1.0f), HideHorns = true,
+                StaffOrb = new Color(0.72f, 0.32f, 1.0f), Skeletal = true, BoneMage = true
             },
             new EnemyKind
             {
@@ -1269,12 +1273,13 @@ namespace PoeClone.Enemies
                 }
             }
 
-            // Archers carry the Short Bow from their gear list; casters get a staff, desert kinds a
-            // blade or spear. Whatever is held, the hand closes round it.
+            // Archers carry the Short Bow from their gear list; casters get a staff in both hands,
+            // desert kinds a blade or spear. Whatever is held, the hand closes round it.
             bool desertWeapon = kind.Javelin || kind.Skill == EnemySkill.DesertCharge || kind.Skill == EnemySkill.Tollkeeper;
-            bool staff = kind.IsRanged && !kind.Bow && !kind.Javelin;
+            bool staff = kind.HoldsStaff;
             SlotRules.HeldHands(gear, out bool gripLeft, out bool gripRight);
             gripRight |= desertWeapon || staff;
+            gripLeft |= staff;
 
             model.GetComponent<CharacterWalkAnimator>()?.SetArmRestAngle(kind.ReachingArms ? CharacterWalkAnimator.ReachingArmAngle : 0f);
 
@@ -1282,6 +1287,8 @@ namespace PoeClone.Enemies
                 ShepherdLook.Build(model);
             if (kind.Skeletal)
                 SkeletonLook.Build(model, kind, gripLeft, gripRight);
+            if (kind.BoneMage)
+                SkeletonMageLook.Build(model, kind);
 
             if (gear != null)
             {
@@ -1292,9 +1299,9 @@ namespace PoeClone.Enemies
             if (desertWeapon)
                 AddDesertWeapon(model, kind);
             if (staff)
-                AddStaff(model, kind.StaffOrb);
+                AddStaff(model, kind);
             if (desertWeapon || staff)
-                model.GetComponent<ProceduralAnatomy>()?.HoldProp(false, true);
+                model.GetComponent<ProceduralAnatomy>()?.HoldProp(staff, true);
         }
 
         // The smallest a creature's collider gets, in metres (see BuildCreature).
@@ -1415,12 +1422,13 @@ namespace PoeClone.Enemies
             return Color.clear;
         }
 
-        // A plain shaft with a glowing orb on top, in the caster's element colour, held in the
-        // weapon hand. Built from primitives (colliders removed: it must not block hits or movement).
+        // A plain shaft with a glowing orb on top, in the caster's element colour, held in both
+        // hands (the Skeleton Mage has its own). Built from primitives (colliders removed: it must
+        // not block hits or movement).
         /// <summary>Name of the glowing orb on a caster's staff (bolts start there).</summary>
         public const string StaffOrbName = "StaffOrb";
 
-        private static void AddStaff(Transform model, Color orb)
+        private static void AddStaff(Transform model, EnemyKind kind)
         {
             Transform hand = FindChild(model, "Socket_MainHand") ?? FindChild(model, "Socket_HandR");
             if (hand == null)
@@ -1428,13 +1436,18 @@ namespace PoeClone.Enemies
 
             var staff = new GameObject("Staff");
             staff.transform.SetParent(hand, false);
-            staff.AddComponent<UprightStaff>().Bind(model.parent != null ? model.parent : model);
+            staff.AddComponent<HeldStaff>();
+            if (kind.BoneMage)
+            {
+                SkeletonMageLook.BuildStaff(staff.transform, kind);
+                return;
+            }
 
             GameObject shaft = RuntimePrimitives.Create(PrimitiveType.Cylinder, staff.transform, new Color(0.35f, 0.24f, 0.14f));
             shaft.transform.localScale = new Vector3(0.09f, 0.8f, 0.09f);
             shaft.transform.localPosition = new Vector3(0f, 0.25f, 0f);
 
-            GameObject top = RuntimePrimitives.Create(PrimitiveType.Sphere, staff.transform, orb);
+            GameObject top = RuntimePrimitives.Create(PrimitiveType.Sphere, staff.transform, kind.StaffOrb);
             top.name = StaffOrbName;
             top.transform.localScale = Vector3.one * 0.32f;
             top.transform.localPosition = new Vector3(0f, 1.1f, 0f);
