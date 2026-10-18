@@ -64,6 +64,53 @@ namespace PoeClone.Visuals
             1.35f, N().Torso(42f).Drop(0.12f, 0.12f).R(-78f, 0f, 0f, -10f).Stance(-25f, 42f, 15f, 25f).Look(14f).Hold(35f).Tails(-10f),
             1.7f, N());
 
+        // ------------------------------------------------------------------ Coffin toss
+
+        public const float CoffinRelease = 0.8f;
+
+        // Lets go of the spade with his left hand, reaches back, hauls the coffin over that
+        // shoulder, then steps into a one-handed throw. Carry offsets move the actual back prop.
+        public static readonly BossClip Coffin = BossClip.Make("Coffin",
+            0f, N(),
+            0.25f, N().Torso(8f, -25f).R(-15f, 0f, 15f, -65f).L(-155f, -35f, 15f, -55f).Look(-10f, -25f).Carry(UnityEngine.Vector3.zero, UnityEngine.Vector3.zero).OneHand(),
+            0.55f, N().Torso(-12f, -30f).R(-15f, 0f, 20f, -65f).L(-170f, 0f, 10f, -35f).Stance(10f, 10f, -15f, 20f).Look(-20f).Carry(new UnityEngine.Vector3(-0.25f, 0.9f, 0.25f), new UnityEngine.Vector3(-35f, 0f, -28f)).OneHand(),
+            CoffinRelease, N().Torso(32f, 25f).Drop(0.1f, 0.18f).R(-15f, 0f, 15f, -65f).L(-95f, -15f, 5f, -5f).Stance(-25f, 35f, 15f, 15f).Look(5f).Carry(new UnityEngine.Vector3(-0.3f, 0.6f, 1.15f), new UnityEngine.Vector3(-65f, 0f, -28f)).Tails(-20f).OneHand(),
+            1.05f, N().Torso(35f, 32f).Drop(0.1f, 0.18f).R(-15f, 0f, 15f, -65f).L(-80f, -20f, 5f, -10f).Stance(-25f, 35f, 15f, 15f).Look(5f).Tails(-15f).OneHand(),
+            1.45f, N());
+
+        // ------------------------------------------------------------------ Exhume
+
+        public const float ExhumeStrike = 0.85f;
+        // Ground contact in the boss root's space, measured from the planted blade pose below.
+        public static readonly UnityEngine.Vector3 ExhumeContact = new UnityEngine.Vector3(0.47f, 0f, 1.17f);
+
+        // A deliberate blade-first plant, then he leans back and tears a furrow towards himself.
+        // The crack runs away from that contact while the shovel stays low through the drag.
+        public static readonly BossClip Exhume = BossClip.Make("Exhume",
+            0f, N(),
+            0.55f, N().Torso(-12f).R(-160f, 0f, -5f, -20f).Stance(8f, 5f, -15f, 15f).Look(-15f).Hold(35f).Tails(15f),
+            ExhumeStrike, N().Torso(20f).Drop(0.24f, 0.15f).R(-30f, 0f, -5f, -70f).Stance(-25f, 45f, 15f, 25f).Look(25f).Hold(125f).Tails(-20f),
+            1.02f, N().Torso(20f).Drop(0.24f, 0.15f).R(-30f, 0f, -5f, -70f).Stance(-25f, 45f, 15f, 25f).Look(25f).Hold(125f),
+            1.45f, N().Torso(20f).Drop(0.24f, -0.15f).R(-30f, 0f, -5f, -70f).Stance(-10f, 25f, 10f, 35f).Look(25f).Hold(125f).Tails(15f),
+            1.8f, N());
+
+        // ------------------------------------------------------------------ Full shovel sweep
+
+        public const float SweepStart = 0.75f;
+        public const float SweepEnd = 1.2f;
+
+        // Coils up first, then holds the spade out low with both hands while the root turns.
+        // Keeping this pose steady makes the blade, its dust trail and the hit travel together.
+        private static BossPose SweepOut() => N().Torso(32f).Drop(0.12f).R(-48f, 0f, 0f, -5f).Stance(-12f, 30f, 12f, 25f, 6f).Look(5f).Hold(-14f).Tails(15f, -30f);
+
+        public static readonly BossClip FullSweep = BossClip.Make("FullSweep",
+            0f, N(),
+            0.48f, N().Torso(32f, -55f).Drop(0.12f).R(-48f, -45f, 10f, -5f).Stance(-12f, 30f, 12f, 25f, 6f).Look(5f, 30f).Hold(-14f).Tails(-5f, 20f),
+            SweepStart, SweepOut(),
+            SweepEnd, SweepOut(),
+            1.42f, N().Torso(24f, 30f).Drop(0.08f).R(-65f, 30f, 0f, -30f).Look(5f, -15f).Hold(-35f).Tails(10f, -20f),
+            1.7f, N());
+
         // ------------------------------------------------------------------ Burrow
 
         /// <summary>The blade bites the ground in front of him.</summary>

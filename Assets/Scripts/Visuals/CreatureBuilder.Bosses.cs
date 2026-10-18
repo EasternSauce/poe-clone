@@ -323,10 +323,14 @@ namespace PoeClone.Visuals
             // The box, its lid (out on the -Z face) a little proud of it, a raised panel on the lid
             // and a cross on that.
             RuntimePrimitives.CreateMesh(CoffinShape(1f, 0.1f, 0f), root, w, "CoffinBox");
-            RuntimePrimitives.CreateMesh(CoffinShape(1.06f, 0.025f, -0.12f), root, Color.Lerp(w, dark, 0.35f), "CoffinLid");
-            RuntimePrimitives.CreateMesh(CoffinShape(0.8f, 0.012f, -0.15f), root, Color.Lerp(w, Color.white, 0.08f), "CoffinPanel");
-            PartPublic(root, PrimitiveType.Cube, dark, new Vector3(0f, 0.05f, -0.165f), new Vector3(0.05f, 0.62f, 0.015f), Vector3.zero);
-            PartPublic(root, PrimitiveType.Cube, dark, new Vector3(0f, 0.25f, -0.165f), new Vector3(0.26f, 0.05f, 0.015f), Vector3.zero);
+            // One hinged lid: the panel and cross move with it when the thrown coffin opens.
+            Transform lid = Pivot(root, "Lid", new Vector3(-0.3f, 0f, -0.1f));
+            RuntimePrimitives.CreateMesh(CoffinShape(1.06f, 0.025f, -0.12f), lid, Color.Lerp(w, dark, 0.35f), "CoffinLid");
+            RuntimePrimitives.CreateMesh(CoffinShape(0.8f, 0.012f, -0.15f), lid, Color.Lerp(w, Color.white, 0.08f), "CoffinPanel");
+            PartPublic(lid, PrimitiveType.Cube, dark, new Vector3(0f, 0.05f, -0.165f), new Vector3(0.05f, 0.62f, 0.015f), Vector3.zero);
+            PartPublic(lid, PrimitiveType.Cube, dark, new Vector3(0f, 0.25f, -0.165f), new Vector3(0.26f, 0.05f, 0.015f), Vector3.zero);
+            foreach (Transform detail in lid)
+                detail.localPosition -= lid.localPosition;
             // Iron handles down both long sides.
             for (int side = -1; side <= 1; side += 2)
             {

@@ -18,6 +18,7 @@ namespace PoeClone.Visuals
         public float ElbowR, ElbowL, KneeR, KneeL, Jaw;
         /// <summary>How firmly the left hand holds the weapon (bodies with an off-hand grip): 1 both hands, 0 the left arm free.</summary>
         public float TwoHands = 1f;
+        public float PropGrip;
 
         public BossPose OneHand() { TwoHands = 0f; return this; }
 
@@ -37,7 +38,7 @@ namespace PoeClone.Visuals
         public BossPose Mouth(float open) { Jaw = open; return this; }
         public BossPose Hold(float pitch, float yaw = 0f, float roll = 0f) { Tool = new Vector3(pitch, yaw, roll); return this; }
         public BossPose Tails(float pitch, float yaw = 0f, float roll = 0f) { Coat = new Vector3(pitch, yaw, roll); return this; }
-        public BossPose Carry(Vector3 at, Vector3 euler) { PropAt = at; PropRot = euler; return this; }
+        public BossPose Carry(Vector3 at, Vector3 euler) { PropAt = at; PropRot = euler; PropGrip = 1f; return this; }
 
         public static BossPose Lerp(BossPose a, BossPose b, float f)
         {
@@ -51,7 +52,8 @@ namespace PoeClone.Visuals
                 PropAt = Vector3.Lerp(a.PropAt, b.PropAt, f), PropRot = Vector3.Lerp(a.PropRot, b.PropRot, f),
                 ElbowR = Mathf.Lerp(a.ElbowR, b.ElbowR, f), ElbowL = Mathf.Lerp(a.ElbowL, b.ElbowL, f),
                 KneeR = Mathf.Lerp(a.KneeR, b.KneeR, f), KneeL = Mathf.Lerp(a.KneeL, b.KneeL, f),
-                Jaw = Mathf.Lerp(a.Jaw, b.Jaw, f), TwoHands = Mathf.Lerp(a.TwoHands, b.TwoHands, f)
+                Jaw = Mathf.Lerp(a.Jaw, b.Jaw, f), TwoHands = Mathf.Lerp(a.TwoHands, b.TwoHands, f),
+                PropGrip = Mathf.Lerp(a.PropGrip, b.PropGrip, f)
             };
         }
     }
@@ -140,7 +142,7 @@ namespace PoeClone.Visuals
         }
 
         /// <summary>Its plain attacks, one picked per swing (in place of the body's single built-in blow).</summary>
-        public BossClip[] AttackClips;
+        [NonSerialized] public BossClip[] AttackClips;
 
         /// <summary>A point on the held weapon the left hand grips (Mortis's spade handle), or null.</summary>
         public Transform OffHand;
@@ -155,6 +157,7 @@ namespace PoeClone.Visuals
         private void ApplyClip()
         {
             float twoHands = 1f;
+            float propGrip = 0f;
             if (clip != null)
             {
                 float time = frozenAt >= 0f ? frozenAt : (Time.time - clipStart) * clipSpeed;
@@ -168,6 +171,7 @@ namespace PoeClone.Visuals
                     float w = frozenAt >= 0f ? 1f : Mathf.Clamp01(Mathf.Min(time / ClipBlendIn, (clip.Duration - time) / ClipBlendOut));
                     ApplyPose(p, w);
                     twoHands = Mathf.Lerp(1f, p.TwoHands, w);
+                    propGrip = p.PropGrip * w;
                 }
             }
             else if (AttackClips != null && AttackClips.Length > 0 && attack != null && attack.IsAttacking)
@@ -182,6 +186,8 @@ namespace PoeClone.Visuals
                 twoHands = Mathf.Lerp(1f, p.TwoHands, w);
             }
             GripOffHand(twoHands);
+            if (Prop != null && propGrip > 0.001f)
+                GripLeftHand(Prop.TransformPoint(new Vector3(-0.22f, 0.12f, 0f)), propGrip);
         }
 
         // A new swing picks one of its attacks at random from the attack's own count (so a
@@ -210,12 +216,17 @@ namespace PoeClone.Visuals
         {
             if (OffHand == null || weight <= 0.001f)
                 return;
+            GripLeftHand(OffHand.position, weight);
+        }
+
+        private void GripLeftHand(Vector3 grip, float weight)
+        {
             Leg arm = Legs.Find(l => l.Front && l.Side < 0);
             if (arm == null)
                 return;
             Quaternion hipWas = arm.Hip.localRotation, kneeWas = arm.Knee.localRotation;
 
-            Vector3 target = arm.Hip.parent.InverseTransformPoint(OffHand.position) - arm.Hip.localPosition;
+            Vector3 target = arm.Hip.parent.InverseTransformPoint(grip) - arm.Hip.localPosition;
             float upper = arm.Knee.localPosition.magnitude;
             Vector2 g = new Vector2(OffHandGrip.y, OffHandGrip.z);
             float reach = g.magnitude;
@@ -230,7 +241,7 @@ namespace PoeClone.Visuals
             arm.Knee.localRotation = Quaternion.Euler(e, 0f, 0f);
             Vector3 hand = arm.Knee.TransformPoint(OffHandGrip);
             Vector3 shoulder = arm.Hip.position;
-            arm.Hip.rotation = Quaternion.FromToRotation(hand - shoulder, OffHand.position - shoulder) * arm.Hip.rotation;
+            arm.Hip.rotation = Quaternion.FromToRotation(hand - shoulder, grip - shoulder) * arm.Hip.rotation;
 
             arm.Hip.localRotation = Quaternion.Slerp(hipWas, arm.Hip.localRotation, weight);
             arm.Knee.localRotation = Quaternion.Slerp(kneeWas, arm.Knee.localRotation, weight);

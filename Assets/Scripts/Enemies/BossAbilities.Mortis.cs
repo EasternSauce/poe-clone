@@ -37,8 +37,19 @@ namespace PoeClone.Enemies
 
         private IEnumerator MortisRises()
         {
-            Summon(0, 3, GraveLight);
-            yield return OpenGraves(3);
+            yield return OpenGraves(3, risingDead: 3);
+        }
+
+        // Raise the visual only: the minion's grounded collider and navigation stay in place.
+        private static IEnumerator RiseFromGrave(Transform model, float seconds)
+        {
+            Vector3 rest = model.localPosition;
+            for (float t = 0f; t < seconds && model != null; t += Time.deltaTime)
+            {
+                model.localPosition = rest + Vector3.down * 1.8f * (1f - Mathf.SmoothStep(0f, 1f, t / seconds));
+                yield return null;
+            }
+            if (model != null) model.localPosition = rest;
         }
 
         // Digs in: drives the shovel into the ground, flings a spadeful over his shoulder and dives
@@ -366,7 +377,7 @@ namespace PoeClone.Enemies
         // The graveside rite: he plants the shovel and bows over it, then drives it into the earth,
         // and graves open under the player (and round them, later in the fight). Dead arms burst
         // up out of each and hold whoever is still standing there.
-        private IEnumerator OpenGraves(int count)
+        private IEnumerator OpenGraves(int count, int risingDead = 0)
         {
             Face(ToPlayer());
             float started = Time.time;
@@ -396,6 +407,8 @@ namespace PoeClone.Enemies
             CameraSystem.CameraFollow.Shake(0.2f, 0.3f);
             SkillEffects.Shockwave(blade, 0.8f * Size, Soil, 0.35f);
             Clods(blade, 8, 4f, Vector3.zero);
+            if (risingDead > 0 && !health.IsDead)
+                Summon(0, risingDead, GraveLight, riseSeconds: 0.55f / T);
             yield return UntilClip(started, GravediggerClips.Grave.Duration);
         }
 
@@ -567,98 +580,190 @@ namespace PoeClone.Enemies
         // Swings the coffin off his back and hurls it: it lands with a crash, then the dead break out of it.
         private IEnumerator CoffinToss()
         {
-            float windUp = 0.7f / T;
-            Act(CreatureAnimator.BossAct.Throw, windUp);
-            Face(ToPlayer());
-            yield return new WaitForSeconds(windUp * 0.78f);
-
             Transform onBack = anim != null ? anim.Prop : null;
             if (onBack == null)
                 yield break;
+            Face(ToPlayer());
+            float started = Time.time;
+            anim.PlayClip(GravediggerClips.Coffin, T);
+            yield return UntilClip(started, GravediggerClips.CoffinRelease);
+
+            if (health.IsDead || onBack == null)
+                yield break;
             coffinOnBack = false;
+            GameObject coffin = Copy(onBack);
+            coffin.name = "ThrownCoffin";
             foreach (Renderer r in onBack.GetComponentsInChildren<Renderer>())
                 r.enabled = false;
-            GameObject coffin = Prop("ThrownCoffin");
-            CreatureBuilder.BuildCoffin(coffin.transform);
-            coffin.transform.localScale = Vector3.one * Size;
-            coffin.transform.SetPositionAndRotation(onBack.position, Quaternion.LookRotation(ToPlayer()) * Quaternion.Euler(90f, 0f, 0f));
             Vector3 target = PlayerAt;
-            const float radius = 2.4f;
-            PoeClone.Visuals.DistanceActivity.StartTracked(this, Lob(coffin, onBack.position, target, 0.85f / T, radius, DamageType.Physical, at =>
-            {
-                HitIfInside(at, radius, 1.5f, DamageType.Physical);
-                SkillEffects.Shockwave(at, radius, Dust, 0.4f);
-                CameraSystem.CameraFollow.Shake(0.25f, 0.35f);
-                PoeClone.Visuals.DistanceActivity.StartTracked(this, CoffinOpens(coffin, at));
-            }, keep: true, spin: 0f));
-            yield return Pause(0.4f);
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, MortisCoffinFlight(coffin, target));
             PoeClone.Visuals.DistanceActivity.StartTracked(this, CoffinBack(onBack));
+            yield return UntilClip(started, GravediggerClips.Coffin.Duration);
+        }
+
+        // Leaves his hand in its exact carried pose, then tips lid-up as it arcs onto the mark.
+        private IEnumerator MortisCoffinFlight(GameObject coffin, Vector3 target)
+        {
+            leftovers.Add(coffin);
+            const float radius = 2.4f;
+            float flight = 0.85f / T;
+            Vector3 from = coffin.transform.position;
+            Quaternion release = coffin.transform.rotation;
+            Vector3 direction = Flat(target - from).normalized;
+            Quaternion landing = Quaternion.LookRotation(direction.sqrMagnitude > 0.01f ? direction : transform.forward) * Quaternion.Euler(90f, 0f, 0f);
+            target.y = Debris.GroundBelow(target + Vector3.up) + 0.12f * Size;
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(target, radius, flight, DamageType.Physical, null, kind));
+            float arc = Mathf.Max(2f, Flat(target - from).magnitude * 0.35f);
+            for (float t = 0f; t < flight && coffin != null; t += Time.deltaTime)
+            {
+                float f = Mathf.Clamp01(t / flight);
+                coffin.transform.position = Vector3.Lerp(from, target, f) + Vector3.up * arc * 4f * f * (1f - f);
+                coffin.transform.rotation = Quaternion.Slerp(release, landing, Mathf.SmoothStep(0f, 1f, f));
+                yield return null;
+            }
+            if (coffin == null || health.IsDead)
+                yield break;
+            coffin.transform.SetPositionAndRotation(target, landing);
+            HitIfInside(target, radius, 1.5f, DamageType.Physical);
+            Clods(target, 12, 4f, Vector3.zero);
+            CameraSystem.CameraFollow.Shake(0.25f, 0.35f);
+            yield return CoffinOpens(coffin, target);
         }
 
         private IEnumerator CoffinOpens(GameObject coffin, Vector3 at)
         {
-            yield return new WaitForSeconds(1.0f / T);
-            if (coffin != null)
+            Transform lid = coffin.transform.Find("Lid");
+            Vector3 rest = coffin.transform.position;
+            Quaternion rotation = coffin.transform.rotation;
+            // A few heavy knocks from inside, then the lid hinges away and the dead climb out.
+            float rattle = 0.45f / T;
+            for (float t = 0f; t < rattle && coffin != null; t += Time.deltaTime)
             {
-                SkillEffects.Blast(coffin.transform.position + Vector3.up * 0.5f, 1.4f, GraveLight, 0.4f);
-                Destroy(coffin);
+                float knock = Mathf.Sin(t * T * 40f) * Mathf.Sin(t / rattle * Mathf.PI);
+                coffin.transform.position = rest + Vector3.up * Mathf.Abs(knock) * 0.06f * Size;
+                coffin.transform.rotation = rotation * Quaternion.Euler(0f, knock * 3f, 0f);
+                yield return null;
             }
-            if (this != null && !health.IsDead)
-                Summon(0, 2, GraveLight, at, 1.4f);
+            if (coffin == null || health.IsDead)
+                yield break;
+            coffin.transform.SetPositionAndRotation(rest, rotation);
+            Piece(coffin.transform, PrimitiveType.Cube, GraveLight, new Vector3(0f, 0f, -0.105f), new Vector3(0.3f, 0.85f, 0.02f));
+            float open = 0.55f / T;
+            for (float t = 0f; t < open && coffin != null; t += Time.deltaTime)
+            {
+                if (lid != null)
+                    lid.localRotation = Quaternion.Euler(0f, 110f * Mathf.SmoothStep(0f, 1f, t / open), 0f);
+                yield return null;
+            }
+            if (coffin == null || health.IsDead)
+                yield break;
+            if (lid != null) lid.localRotation = Quaternion.Euler(0f, 110f, 0f);
+            GraveHands(at, 0.6f);
+            Summon(0, 2, GraveLight, at, 1.4f, riseSeconds: 0.55f / T);
+            yield return Settle(coffin.transform, 1.8f / T, 0.8f / T);
         }
 
         // A while later he has dug another one out from somewhere.
         private IEnumerator CoffinBack(Transform onBack)
         {
             yield return new WaitForSeconds(5f);
-            if (onBack == null)
+            if (onBack == null || health.IsDead)
                 yield break;
             foreach (Renderer r in onBack.GetComponentsInChildren<Renderer>())
-                r.enabled = true;
+                r.enabled = bodyVisible;
             coffinOnBack = true;
         }
 
         // Drives the shovel in and drags it: the ground splits towards the player, the dead clawing at the crack.
         private IEnumerator Exhume()
         {
-            float windUp = 0.75f / T;
+            float windUp = GravediggerClips.ExhumeStrike / T;
             Vector3 dir = ToPlayer();
             Face(dir);
-            Act(CreatureAnimator.BossAct.Slam, windUp * 1.15f);
-            Vector3 origin = transform.position + dir * (1.2f * Size);
+            float started = Time.time;
+            anim?.PlayClip(GravediggerClips.Exhume, T);
+            Vector3 origin = transform.TransformPoint(GravediggerClips.ExhumeContact);
             EruptionLine(origin, dir, secondPhase ? 9 : 7, 1.6f, 1.5f, windUp, 0.08f, DamageType.Physical, 1.25f,
-                at => GraveHands(at, 1.1f));
-            yield return new WaitForSeconds(windUp);
+                at =>
+                {
+                    ExhumeCrack(at, dir);
+                    GraveHands(at, 1.1f);
+                });
+            yield return UntilClip(started, GravediggerClips.ExhumeStrike);
             CameraSystem.CameraFollow.Shake(0.2f, 0.3f);
-            SkillEffects.Shockwave(origin, 1.8f, Earth, 0.35f);
-            yield return Pause(0.35f);
+            Clods(origin, 10, 4f, -dir);
+            yield return UntilClip(started, GravediggerClips.Exhume.Duration);
+        }
+
+        // Each eruption extends the same narrow, ragged fissure, rather than unrelated circles.
+        private void ExhumeCrack(Vector3 at, Vector3 dir)
+        {
+            Transform crack = Prop("ExhumeCrack").transform;
+            leftovers.Add(crack.gameObject);
+            at.y = Debris.GroundBelow(at + Vector3.up) + 0.04f;
+            crack.SetPositionAndRotation(at, Quaternion.LookRotation(dir));
+            for (int i = 0; i < 3; i++)
+            {
+                float x = i == 1 ? 0.12f : -0.08f;
+                Piece(crack, PrimitiveType.Cube, new Color(0.055f, 0.045f, 0.03f), new Vector3(x, 0f, (i - 1) * 0.56f), new Vector3(0.65f, 0.03f, 0.8f), new Vector3(0f, i == 1 ? -18f : 18f, 0f));
+                Piece(crack, PrimitiveType.Cube, GraveLight, new Vector3(x, 0.025f, (i - 1) * 0.56f), new Vector3(0.08f, 0.02f, 0.8f), new Vector3(0f, i == 1 ? -18f : 18f, 0f));
+            }
+            for (int side = -1; side <= 1; side += 2)
+                DirtHeap(crack, SoilShade(), new Vector3(side * 0.55f, -0.04f, 0f), new Vector3(0.55f, 0.25f, 1.85f), side * 8f);
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, Settle(crack, 1.2f, 0.65f));
         }
 
         // Swings the shovel all round himself at the height of a man's knees.
         private IEnumerator ShovelSweep()
         {
-            float windUp = 0.7f / T;
+            Face(ToPlayer());
+            float started = Time.time;
+            anim?.PlayClip(GravediggerClips.FullSweep, T);
+            float windUp = GravediggerClips.SweepStart / T;
             float radius = 3.2f + 0.8f * Size;
-            Act(CreatureAnimator.BossAct.Spin, windUp + 0.3f / T);
-            bool swept = false;
-            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(transform.position, radius, windUp, DamageType.Physical, at =>
-            {
-                if (this == null || health.IsDead)
-                    return;
-                swept = true;
-                HitIfInside(at, radius, 1.3f, DamageType.Physical, attack: true);
-                SkillEffects.Shockwave(at, radius, Dust, 0.3f);
-            }, kind));
-            yield return new WaitForSeconds(windUp);
+            PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(transform.position, radius, windUp, DamageType.Physical, null, kind));
+            yield return UntilClip(started, GravediggerClips.SweepStart);
             float yaw = transform.eulerAngles.y;
-            float spin = 0.35f / T;
-            for (float t = 0f; t < spin && swept; t += Time.deltaTime)
+            Vector3 bladeDirection = anim != null && anim.Tool != null
+                ? Flat(anim.Tool.TransformPoint(new Vector3(0f, -1.05f, 0f)) - transform.position).normalized
+                : transform.forward;
+            if (bladeDirection.sqrMagnitude < 0.01f) bladeDirection = transform.forward;
+            float bladeYaw = Mathf.Atan2(bladeDirection.x, bladeDirection.z) * Mathf.Rad2Deg;
+            float spin = (GravediggerClips.SweepEnd - GravediggerClips.SweepStart) / T;
+            bool hit = false;
+            float previous = 0f, nextDust = 0f;
+            for (float t = 0f; !health.IsDead; t += Time.deltaTime)
             {
-                transform.rotation = Quaternion.Euler(0f, yaw + 360f * (t / spin), 0f);
+                float angle = 360f * Mathf.Clamp01(t / spin);
+                transform.rotation = Quaternion.Euler(0f, yaw + angle, 0f);
+                // Judge only the sector the blade crossed this frame, including the final sector.
+                // The old sweep hit the entire circle before he had even begun turning.
+                if (!hit && player != null && !player.IsDead)
+                {
+                    Vector3 off = Flat(player.transform.position - transform.position);
+                    float bearing = Mathf.Repeat(Mathf.Atan2(off.x, off.z) * Mathf.Rad2Deg - bladeYaw, 360f);
+                    bool crossed = bearing >= previous - 12f && bearing <= angle + 12f;
+                    if (off.magnitude <= radius && (crossed || off.magnitude < 0.7f))
+                    {
+                        hit = true;
+                        HitIfInside(transform.position, radius, 1.3f, DamageType.Physical, attack: true);
+                    }
+                }
+                // Short-lived soil kicked out by the shovel follows the dangerous leading edge.
+                while (nextDust <= angle)
+                {
+                    Vector3 along = Quaternion.Euler(0f, nextDust, 0f) * bladeDirection;
+                    Vector3 at = transform.position + along * radius;
+                    Clods(at, 2, 1.6f, along, 0.65f);
+                    Furrow(transform.position + along * (radius * 0.72f), Vector3.Cross(Vector3.up, along));
+                    nextDust += 24f;
+                }
+                previous = angle;
+                if (t >= spin) break;
                 yield return null;
             }
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
-            yield return Pause(0.2f);
+            yield return UntilClip(started, GravediggerClips.FullSweep.Duration);
         }
     }
 }

@@ -1,3 +1,9 @@
+version: 2026-10-18-mortis-readable-abilities
+- Gravelord Mortis now hauls his coffin over his shoulder before throwing it. It lands lid-up, rattles and hinges open before skeletons rise beside it, then sinks into the earth. Burrowing no longer makes a thrown coffin reappear on his back early.
+- Exhume has a blade-first plant and a low dragging motion, with a connected, glowing fissure and dead hands following the crack towards you.
+- Shovel Sweep now has a distinct windup, a low two-handed turn and a trail of kicked-up earth. Its hit follows the sweep around him instead of striking the whole circle before he turns.
+- Mortis's half-life reinforcements now rise from the ground when his graveside shovel strike lands.
+
 version: 2026-10-18-teleport-clearance
 - Teleport now checks your full body and foot clearance at its destination, including low obstacles and scenery that shares a ground collider. Blocked landings stop short with space to move, and teleporting out of an obstructed position realigns your feet with the ground.
 

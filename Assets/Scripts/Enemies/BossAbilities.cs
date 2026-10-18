@@ -68,6 +68,7 @@ namespace PoeClone.Enemies
         private float mirrorRage = 1f;
         private CharacterController body;
         private CreatureAnimator anim;
+        private bool bodyVisible = true;
         private EnemyController controller;
 
         // Set up per boss (SetUp* in each boss's file).
@@ -765,7 +766,7 @@ namespace PoeClone.Enemies
             leftovers.Add(pool);
         }
 
-        private void Summon(int kindIndex, int count, Color glow, Vector3? around = null, float spread = -1f)
+        private void Summon(int kindIndex, int count, Color glow, Vector3? around = null, float spread = -1f, float riseSeconds = 0f)
         {
             minions.RemoveAll(m => m == null || m.IsDead);
             count = Mathf.Min(count, CurrentMaxMinions - minions.Count);
@@ -786,6 +787,9 @@ namespace PoeClone.Enemies
                 EnemyHealth h = minion.GetComponent<EnemyHealth>();
                 minions.Add(h);
                 minion.GetComponent<EnemyController>()?.Alert();
+                Transform model = minion.transform.Find("Model");
+                if (riseSeconds > 0f && model != null)
+                    PoeClone.Visuals.DistanceActivity.StartTracked(this, RiseFromGrave(model, riseSeconds));
                 SkillEffects.Shockwave(at, 1.4f, glow, 0.5f);
             }
         }
@@ -843,11 +847,15 @@ namespace PoeClone.Enemies
         // Hides or shows the whole body (a smoke bomb, burrowing).
         private void SetVisible(bool visible)
         {
+            bodyVisible = visible;
             Transform model = transform.Find("Model");
             if (model == null)
                 return;
             foreach (Renderer r in model.GetComponentsInChildren<Renderer>(true))
                 r.enabled = visible;
+            if (visible && kind != null && kind.Boss == BossStyle.Gravelord && !coffinOnBack && anim != null && anim.Prop != null)
+                foreach (Renderer r in anim.Prop.GetComponentsInChildren<Renderer>(true))
+                    r.enabled = false;
         }
 
         // A named part of the body (the coffin, the bell, the spear), or null.
