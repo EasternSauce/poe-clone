@@ -3,6 +3,8 @@ Shader "PoeClone/Outline"
     Properties
     {
         _Color ("Color", Color) = (1,1,1,1)
+        // Skinned hulls can't be inflated by scale (bones place their vertices): push along normals.
+        _Extrude ("Extrude", Float) = 0
     }
     SubShader
     {
@@ -24,6 +26,7 @@ Shader "PoeClone/Outline"
             struct Attributes
             {
                 float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
             };
 
             struct Varyings
@@ -33,12 +36,13 @@ Shader "PoeClone/Outline"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _Color;
+                float _Extrude;
             CBUFFER_END
 
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
-                OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
+                OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz + IN.normalOS * _Extrude);
                 return OUT;
             }
 

@@ -78,13 +78,81 @@ namespace PoeClone.EditorTools
             Set(yoke,meshes["AnatomyYoke"],upper.Find("Torso").GetComponent<Renderer>().sharedMaterial);
             // Fills the neckline in front while staying inside the mantle at the back.
             yoke.localPosition=new Vector3(0,1.55f,.03f);yoke.localScale=new Vector3(.42f,.16f,.28f);
+            Body(model, meshes, skin, null, true, parts);
+            (model.GetComponent<ProceduralAnatomy>() ?? model.gameObject.AddComponent<ProceduralAnatomy>()).Configure(parts.ToArray());
+            // Everything on the head turns with it about the top of the neck.
+            var headParts = new List<Transform>();
+            foreach (string name in new[] { "Head", "Hair", "Hood", "HoodBrim", "Socket_Head" })
+                if (upper.Find(name) != null) headParts.Add(upper.Find(name));
+            (model.GetComponent<PoeClone.Visuals.CharacterIdleLife>() ?? model.gameObject.AddComponent<PoeClone.Visuals.CharacterIdleLife>())
+                .Configure(headParts.ToArray(), new Vector3(0,1.66f,.02f), eyelids.GetComponent<Renderer>());
+            UpgradeGloves(meshes);
+            UpgradeCollars();
+        }
+
+        /// <summary>
+        /// The humanoid template every enemy, NPC and summon is instanced from (the Enemy prefab):
+        /// the player's connected arms and legs, fingered hands that close round held weapons, and
+        /// neck, with a lighter head of the same anatomy whose glowing eyes sit in its sockets.
+        /// Materials keep the "EnemySkin"/"EnemyCloth" names that kinds recolour. Enemies always wear
+        /// their rigid boots, so they keep a fixed ankle and no bare feet.
+        /// </summary>
+        public static void ApplyEnemy(Transform model)
+        {
+            var meshes = new Dictionary<string, Mesh>();
+            foreach (string guid in AssetDatabase.FindAssets("t:Mesh Anatomy", new[] { LowPolyMeshes.MeshDir }))
+            {
+                var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(AssetDatabase.GUIDToAssetPath(guid));
+                if (mesh != null) meshes[mesh.name] = mesh;
+            }
+            meshes["AnatomyHeadEnemy"] = AnatomyMeshes.BuildEnemyHead();
+
+            Transform upper = model.Find("UpperBody/UpperOffset");
+            Transform head = upper.Find("Head");
+            // The zombie (the prefab's own colours) keeps the rig's green skin; every other kind recolours it.
+            Color flesh = AssetDatabase.LoadAssetAtPath<Material>(MaterialDir + "EnemySkin.mat").GetColor("_BaseColor");
+            Material skin = Material("EnemySkinAnatomy", Shader.Find("PoeClone/AnatomySkin"));
+            skin.CopyPropertiesFromMaterial(AssetDatabase.LoadAssetAtPath<Material>(MaterialDir + "AnatomySkin.mat"));
+            skin.SetColor("_BaseColor", flesh);
+            EditorUtility.SetDirty(skin);
+
+            Set(head, meshes["AnatomyHeadEnemy"], skin);
+            head.localPosition = new Vector3(0, 1.8f, .04f);
+            head.localScale = AnatomyProfile.Load().HeadSize * 1.06f;
+            foreach (string side in new[] { "L", "R" })
+            {
+                // Small glowing eyes set into the sockets, a little in front of the surface.
+                Vector3 socket = AnatomyMeshes.EyeSocket(side == "L" ? -1 : 1);
+                Transform eye = upper.Find("Eye" + side);
+                eye.localPosition = head.localPosition + Vector3.Scale(socket, head.localScale) + new Vector3(0, 0, -.004f);
+                eye.localScale = new Vector3(.05f, .028f, .03f);
+                Transform horn = upper.Find("Horn" + side);
+                horn.localPosition = new Vector3(side == "L" ? -.1f : .1f, 1.93f, .02f);
+            }
+
+            Material cloth = upper.Find("Torso").GetComponent<Renderer>().sharedMaterial;
+            var parts = new List<ProceduralAnatomy.Part>();
+            Body(model, meshes, skin, cloth, false, parts);
+            (model.GetComponent<ProceduralAnatomy>() ?? model.gameObject.AddComponent<ProceduralAnatomy>()).Configure(parts.ToArray());
+        }
+
+        /// <summary>
+        /// The limbs shared by the player and the enemy template: connected skinned arms and legs on
+        /// the rig's own joints, anatomical hands with grip poses, and a neck. Sleeves take the
+        /// rig's upper-arm material unless one is given. Feet: the bare anatomical foot on an ankle
+        /// with the natural gait (the player), or none, the rig's boots covering the ankle.
+        /// </summary>
+        private static void Body(Transform model, Dictionary<string, Mesh> meshes, Material skin, Material sleeveMaterial,
+            bool feet, List<ProceduralAnatomy.Part> parts)
+        {
+            Transform upper = model.Find("UpperBody/UpperOffset");
             Mesh genericLimb=AssetDatabase.LoadAssetAtPath<Mesh>(LowPolyMeshes.MeshDir+"/BodyLimb.asset");
 
             foreach (string side in new[] { "L", "R" })
             {
                 Transform arm = upper.Find("Arm"+side), elbow=arm.Find("Elbow");
                 arm.localPosition=new Vector3(side=="L"?-.36f:.36f,1.5f,0);
-                Material sleeve=arm.Find("Upper").GetComponent<Renderer>().sharedMaterial;
+                Material sleeve=sleeveMaterial != null ? sleeveMaterial : arm.Find("Upper").GetComponent<Renderer>().sharedMaterial;
                 HideRigid(arm.Find("Upper"),genericLimb);
                 HideRigid(elbow.Find("Forearm"),genericLimb);
                 Transform anchor=upper.Find("ShoulderAnchor"+side);
@@ -115,30 +183,25 @@ namespace PoeClone.EditorTools
                 if(ankle==null){ankle=new GameObject("Ankle").transform;ankle.SetParent(knee,false);}
                 ankle.localPosition=new Vector3(0,-.38f,0);ankle.localRotation=Quaternion.identity;
                 Skin(leg,"ContinuousLeg",meshes["AnatomyConnectedLeg"],knee,new[] {trousers},ankle:ankle);
+                if (!feet) continue;
                 Set(knee.Find("Foot"),meshes["AnatomyFoot"],skin);
                 knee.Find("Foot").localScale = new Vector3(side=="L" ? -.175f : .175f,.1f,.33f);
                 parts.Add(Detail(knee.Find("Foot"),meshes,"AnatomyFoot"));
                 (knee.GetComponent<PoeClone.Inventory.AnatomicalAnkle>() ?? knee.gameObject.AddComponent<PoeClone.Inventory.AnatomicalAnkle>()).Configure(ankle,knee.Find("Foot"));
             }
-            model.GetComponent<PoeClone.Visuals.CharacterWalkAnimator>().ConfigureNaturalGait(
-                model.Find("LegL/Knee").GetComponent<PoeClone.Inventory.AnatomicalAnkle>(),
-                model.Find("LegR/Knee").GetComponent<PoeClone.Inventory.AnatomicalAnkle>());
+            if (feet)
+                model.GetComponent<PoeClone.Visuals.CharacterWalkAnimator>().ConfigureNaturalGait(
+                    model.Find("LegL/Knee").GetComponent<PoeClone.Inventory.AnatomicalAnkle>(),
+                    model.Find("LegR/Knee").GetComponent<PoeClone.Inventory.AnatomicalAnkle>());
             Set(upper.Find("Neck"),meshes["AnatomyNeck"],skin);
             upper.Find("Neck").localPosition=new Vector3(0,1.60f,.01f);
             upper.Find("Neck").localScale=new Vector3(.15f,.19f,.14f);
-            (model.GetComponent<ProceduralAnatomy>() ?? model.gameObject.AddComponent<ProceduralAnatomy>()).Configure(parts.ToArray());
-            // Everything on the head turns with it about the top of the neck.
-            var headParts = new List<Transform>();
-            foreach (string name in new[] { "Head", "Hair", "Hood", "HoodBrim", "Socket_Head" })
-                if (upper.Find(name) != null) headParts.Add(upper.Find(name));
-            (model.GetComponent<PoeClone.Visuals.CharacterIdleLife>() ?? model.gameObject.AddComponent<PoeClone.Visuals.CharacterIdleLife>())
-                .Configure(headParts.ToArray(), new Vector3(0,1.66f,.02f), eyelids.GetComponent<Renderer>());
-            UpgradeGloves(meshes);
-            UpgradeCollars();
         }
 
         private static void HideRigid(Transform part,Mesh placeholder)
         {
+            // The enemy rig's boots stand in for a shin.
+            if(part==null) return;
             part.GetComponent<MeshFilter>().sharedMesh=placeholder;
             part.GetComponent<Renderer>().enabled=false;
         }

@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15a23bb5fc3a5184cbaf9bf9c35c2333, type: 3}
+  m_Name: SkeletonMeshes
+  m_EditorClassIdentifier: Assembly-CSharp::PoeClone.Visuals.SkeletonMeshes
+  Bone: {fileID: 2100000, guid: fa096ce19808e814286fa1191b556fc3, type: 2}
+  Skull:
+    Mesh: {fileID: 4300000, guid: c8482aa846efcd646ba5ca0d2f714ee3, type: 2}
+    Centre: {x: 0.000035598874, y: 1.8907294, z: -0.009247348}
+  Jaw:
+    Mesh: {fileID: 4300000, guid: a04557ac16b07914885b492e8b753016, type: 2}
+    Centre: {x: -0.000031691045, y: 1.7676772, z: 0.05262863}
+  Spine:
+    Mesh: {fileID: 4300000, guid: ca763e6f7ad97b94282a3f75fbefa2cb, type: 2}
+    Centre: {x: 0, y: 1.3574996, z: -0.09153711}
+  Ribcage:
+    Mesh: {fileID: 4300000, guid: 48d0a0b0451f3bb4fb3b7895b716abaf, type: 2}
+    Centre: {x: 0, y: 1.3157415, z: -0.001390487}
+  Pelvis:
+    Mesh: {fileID: 4300000, guid: 08e44ebf74429c5438505cde6356d583, type: 2}
+    Centre: {x: 0, y: 0.8904735, z: 0.0022954047}
+  Loincloth:
+    Mesh: {fileID: 4300000, guid: 3b442692b150f9f4aaa99faeb2d6620a, type: 2}
+    Centre: {x: 0, y: 0.80131805, z: -0.010000005}
+  HumerusL:
+    Mesh: {fileID: 4300000, guid: 14feb86a6fd2a6045b22766d5fedf8a2, type: 2}
+    Centre: {x: 0.0044707917, y: -0.19550471, z: -0.004967412}
+  HumerusR:
+    Mesh: {fileID: 4300000, guid: 587272cf1c51c0c4ca6df6c494e2161b, type: 2}
+    Centre: {x: -0.004297089, y: -0.19540799, z: -0.00502651}
+  FemurL:
+    Mesh: {fileID: 4300000, guid: fea22b72f2e6a2a48b7b658259ba1496, type: 2}
+    Centre: {x: -0.012989493, y: -0.19497599, z: 0}
+  FemurR:
+    Mesh: {fileID: 4300000, guid: e343b3051509496469d85e2e58cad82f, type: 2}
+    Centre: {x: 0.012989493, y: -0.19497599, z: 0}
+  ShinL:
+    Mesh: {fileID: 4300000, guid: 6c5d51c775008a94188be9b75fdbfc62, type: 2}
+    Centre: {x: 0.0000000018626451, y: -0.20096216, z: 0.06452465}
+  ShinR:
+    Mesh: {fileID: 4300000, guid: 06d2dca784a250447b8050cb0d034a4c, type: 2}
+    Centre: {x: 0.0000000018626451, y: -0.20096216, z: 0.06452465}
+  ForearmL:
+    Mesh: {fileID: 4300000, guid: eeafde6012cb20943bc162c19390eb20, type: 2}
+    Centre: {x: 0.021390237, y: -0.23489353, z: 0.006145425}
+  ForearmR:
+    Mesh: {fileID: 4300000, guid: eb52c5659517d3c4a8210b2bb5cfdd41, type: 2}
+    Centre: {x: -0.021390237, y: -0.23489353, z: 0.0059661474}
+  ForearmLGrip:
+    Mesh: {fileID: 4300000, guid: 01ea6f84b1c88564396da6f7105db15b, type: 2}
+    Centre: {x: 0.023722272, y: -0.22259854, z: 0.009187581}
+  ForearmRGrip:
+    Mesh: {fileID: 4300000, guid: 3fa8b51f2abf6584cabebcf917c0f051, type: 2}
+    Centre: {x: -0.023722272, y: -0.22259854, z: 0.009187581}

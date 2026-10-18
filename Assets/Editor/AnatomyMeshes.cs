@@ -75,6 +75,20 @@ namespace PoeClone.EditorTools
             return meshes;
         }
 
+        /// <summary>The humanoid enemies' head: the hero's skull and face, light enough for a crowd.</summary>
+        public static Mesh BuildEnemyHead()
+        {
+            profile = AnatomyProfile.Load();
+            return LowPolyMeshes.Save("AnatomyHeadEnemy", Simplified(Head("AnatomyHeadEnemy", 40, 36, false)));
+        }
+
+        /// <summary>Centre of one eye opening on the unit head (side -1 left, 1 right).</summary>
+        public static Vector3 EyeSocket(float side)
+        {
+            profile = AnatomyProfile.Load();
+            return EyePoint(side, .5f, .5f);
+        }
+
         // The dense bakes spend most vertices on flat or gently curved skin. Collapsing those keeps
         // the surface within ~0.1% of its size and roughly quarters the build download for them.
         private const float SimplifyError = .004f;
@@ -195,7 +209,7 @@ namespace PoeClone.EditorTools
         // The right corner (+x) lifts a touch more, for a faint lopsided smile.
         private static float MouthSeam(float x) => -.24f+.008f*Mathf.Pow(x/.145f,2)+.003f*Mathf.Pow(Mathf.Max(0,x)/.145f,2);
 
-        private static Mesh Head(string name, int sides, int rows)
+        private static Mesh Head(string name, int sides, int rows, bool features = true)
         {
             var b = new Surface();
             b.Grid(sides, rows, (u,v) => SkinPoint(HeadAngle(u), -.5f + v), (u,v) => Mathf.Cos(HeadAngle(u)) > .15f ? FaceColor(Mathf.Sin(HeadAngle(u))*Profile(v-.5f).X,v-.5f) : Color.white,
@@ -224,7 +238,7 @@ namespace PoeClone.EditorTools
                     return .018f*Mathf.Exp(-(p-from-axis*t).sqrMagnitude/(.009f*.009f));
                 }
                 foreach(bool front in new[] {true,false})
-                    b.Grid(80,28,(u,r)=> {
+                    b.Grid(features?80:24,features?28:6,(u,r)=> {
                         Vector2 p=Vector2.Lerp(new Vector2(-.043f,-.002f),Boundary(u),r);
                         float helix=.075f*Mathf.Exp(-Mathf.Pow((r-.82f)/.13f,2))*Mathf.Clamp01((1-r)/.1f);
                         float concha=.005f*G(p.x,p.y,-.045f,.015f,.05f,.035f);
@@ -235,7 +249,7 @@ namespace PoeClone.EditorTools
                         return new Vector3(side*x,p.x,p.y);
                     },(u,r)=>Color.Lerp(new Color(.96f,.87f,.84f),Color.white,r),false,new Vector3(front?side:-side,0,0));
                 // A continuous root joins the anterior rim to the temple, closing the frontal gap.
-                b.Grid(12,24,(u,v)=> {
+                b.Grid(features?12:4,features?24:8,(u,v)=> {
                     float y=Mathf.Lerp(-.12f,.055f,v);
                     float root=Profile(y).X*.97f,t=u*Mathf.Sin(v*Mathf.PI);
                     float x=Mathf.Lerp(root,earBase+.073f,t);
@@ -243,6 +257,10 @@ namespace PoeClone.EditorTools
                     return new Vector3(side*x,y,z);
                 },(u,v)=>Color.white,false,Vector3.forward);
             }
+            // Enemies are only seen from the game camera: the painted face carries lips and brows,
+            // and their glowing eyes sit in the sockets instead of lidded eyeballs.
+            if (!features)
+                return b.Mesh(name);
             // Explicit high resolution feature surfaces keep their edges readable in closeups.
             b.Grid(sides>40?72:24,20,(u,v)=> {
                 float x=(u*2-1)*.145f,envelope=Mathf.Sqrt(Mathf.Max(0,1-Mathf.Pow(x/.145f,2)));
@@ -487,10 +505,58 @@ namespace PoeClone.EditorTools
                 new[] {new Vector2(-.10f,-.25f),new Vector2(-.07f,-.08f),new Vector2(-.095f,.08f),new Vector2(-.13f,.22f)},
                 new[] {new Vector2(.015f,-.24f),new Vector2(.045f,-.08f),new Vector2(.005f,.075f)},
                 new[] {new Vector2(.16f,.16f),new Vector2(.075f,.10f),new Vector2(-.035f,.085f),new Vector2(-.14f,.12f)} };
-            float[] lengths = { .48f,.55f,.51f,.39f };
             var nails = new List<Vector3>();
             var nailNormals = new List<Vector3>();
             var nailTangents = new List<Vector3>();
+            List<Vector3>[] digits = Digits(left, grip);
+            for (int finger=0;finger<4;finger++)
+            {
+                List<Vector3> path=digits[finger];
+                const int segments=6;
+                float radius=finger==3?.056f:.066f;
+                volume.Tube(path,t=>radius*Mathf.Lerp(1,.78f,t));
+                Vector3 tangent=(path[segments]-path[segments-2]).normalized;
+                Vector3 outward=new Vector3(mirror,0,0);
+                outward=(outward-tangent*Vector3.Dot(outward,tangent)).normalized;
+                nails.Add(path[segments-1]);nailNormals.Add(outward);nailTangents.Add(tangent);
+            }
+            // Broad at the root where it meets the thenar pad, tapering to a rounded tip.
+            volume.Tube(digits[4],t=>Mathf.Lerp(.068f,.050f,Mathf.SmoothStep(0,1,t)));
+            Color Pigment(Vector3 p)
+            {
+                for(int i=0;i<nails.Count;i++)
+                {
+                    Vector3 delta=p-nails[i];
+                    float along=Vector3.Dot(delta,nailTangents[i]);
+                    Vector3 across=Vector3.Cross(nailTangents[i],nailNormals[i]);
+                    float sideways=Vector3.Dot(delta,across);
+                    if(Vector3.Dot(delta,nailNormals[i])>.043f && along*along/(.055f*.055f)+sideways*sideways/(.043f*.043f)<1)
+                        return new Color(1.05f,.90f,.86f);
+                }
+                if(p.x*mirror<-.085f)
+                    foreach(var crease in creases)
+                        for(int i=0;i<crease.Length-1;i++)
+                        {
+                            Vector2 axis=crease[i+1]-crease[i],delta=new Vector2(p.y,p.z)-crease[i];
+                            float t=Mathf.Clamp01(Vector2.Dot(delta,axis)/axis.sqrMagnitude);
+                            if((delta-axis*t).sqrMagnitude<.009f*.009f)return new Color(.78f,.65f,.58f);
+                        }
+                return Color.white;
+            }
+            return GrowFromWrist(volume.Bake(name,new Vector3(-.65f,-.85f,-.40f),new Vector3(.65f,.3125f,.90f),sides>6?.018f:.06f,Pigment));
+        }
+
+        /// <summary>
+        /// Centre lines of the four fingers (knuckle to tip, seven points each) and the thumb
+        /// (root to tip), in the hand's unit space before <see cref="GrowFromWrist"/>. Shared by the
+        /// fleshed hand and the skeleton's finger bones, so both close round the same grip.
+        /// </summary>
+        internal static List<Vector3>[] Digits(bool left, bool grip)
+        {
+            float mirror = left ? -1 : 1;
+            float[] fingerZ={.2225f,.0775f,-.0675f,-.2125f};
+            float[] lengths = { .48f,.55f,.51f,.39f };
+            var digits = new List<Vector3>[5];
             for (int finger=0;finger<4;finger++)
             {
                 float z=fingerZ[finger],length=lengths[finger];
@@ -518,12 +584,7 @@ namespace PoeClone.EditorTools
                             path.Add(point);
                         }
                 }
-                float radius=finger==3?.056f:.066f;
-                volume.Tube(path,t=>radius*Mathf.Lerp(1,.78f,t));
-                Vector3 tangent=(path[segments]-path[segments-2]).normalized;
-                Vector3 outward=new Vector3(mirror,0,0);
-                outward=(outward-tangent*Vector3.Dot(outward,tangent)).normalized;
-                nails.Add(path[segments-1]);nailNormals.Add(outward);nailTangents.Add(tangent);
+                digits[finger]=path;
             }
             var thumb=new List<Vector3>();
             for(int j=0;j<=16;j++)
@@ -540,31 +601,21 @@ namespace PoeClone.EditorTools
                 float q=1-t;
                 thumb.Add(q*q*q*a+3*q*q*t*c1+3*q*t*t*c2+t*t*t*end);
             }
-            // Broad at the root where it meets the thenar pad, tapering to a rounded tip.
-            volume.Tube(thumb,t=>Mathf.Lerp(.068f,.050f,Mathf.SmoothStep(0,1,t)));
-            Color Pigment(Vector3 p)
-            {
-                for(int i=0;i<nails.Count;i++)
-                {
-                    Vector3 delta=p-nails[i];
-                    float along=Vector3.Dot(delta,nailTangents[i]);
-                    Vector3 across=Vector3.Cross(nailTangents[i],nailNormals[i]);
-                    float sideways=Vector3.Dot(delta,across);
-                    if(Vector3.Dot(delta,nailNormals[i])>.043f && along*along/(.055f*.055f)+sideways*sideways/(.043f*.043f)<1)
-                        return new Color(1.05f,.90f,.86f);
-                }
-                if(p.x*mirror<-.085f)
-                    foreach(var crease in creases)
-                        for(int i=0;i<crease.Length-1;i++)
-                        {
-                            Vector2 axis=crease[i+1]-crease[i],delta=new Vector2(p.y,p.z)-crease[i];
-                            float t=Mathf.Clamp01(Vector2.Dot(delta,axis)/axis.sqrMagnitude);
-                            if((delta-axis*t).sqrMagnitude<.009f*.009f)return new Color(.78f,.65f,.58f);
-                        }
-                return Color.white;
-            }
-            return GrowFromWrist(volume.Bake(name,new Vector3(-.65f,-.85f,-.40f),new Vector3(.65f,.3125f,.90f),sides>6?.018f:.06f,Pigment));
+            digits[4]=thumb;
+            return digits;
         }
+
+        /// <summary>A point of the baked hand in its parent's (the elbow's) space, as the rig places it.</summary>
+        internal static Vector3 HandToElbow(Vector3 p)
+        {
+            float below = WristY - p.y;
+            float growth = Mathf.Lerp(1, HandGrowth, Mathf.SmoothStep(0, 1, below / .15f));
+            p = new Vector3(p.x * growth, WristY - below * growth, p.z * growth);
+            return new Vector3(0, -.39f, 0) + Vector3.Scale(p, HandScale);
+        }
+
+        /// <summary>The bare hand's local scale under the elbow (see <see cref="AnatomyRigBuilder"/>).</summary>
+        internal static readonly Vector3 HandScale = new Vector3(.135f, .16f, .16f);
 
         // Palm and fingers were small for the forearm. Scale the hand about the wrist, easing in
         // just below the cut so the opening still matches the forearm it is stitched to.

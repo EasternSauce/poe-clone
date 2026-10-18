@@ -21,6 +21,8 @@ namespace PoeClone.Inventory
 
         [SerializeField] private Part[] parts = Array.Empty<Part>();
         private bool leftGrip, rightGrip, gloves;
+        // Held props that aren't equipment (an enemy caster's staff) close the hand too.
+        private bool leftProp, rightProp;
         private Camera skinCamera;
 
         public void Configure(Part[] value)
@@ -53,6 +55,19 @@ namespace PoeClone.Inventory
         {
             gloves = equipment?.Get(EquipSlot.Gloves) != null;
             SlotRules.HeldHands(equipment, out leftGrip, out rightGrip);
+            leftGrip |= leftProp;
+            rightGrip |= rightProp;
+            Apply(null);
+            ApplyParts(null,true);
+        }
+
+        /// <summary>Closes a hand round something held that isn't equipment (an enemy's staff or spear).</summary>
+        public void HoldProp(bool left, bool right)
+        {
+            leftProp |= left;
+            rightProp |= right;
+            leftGrip |= left;
+            rightGrip |= right;
             Apply(null);
             ApplyParts(null,true);
         }
@@ -95,10 +110,12 @@ namespace PoeClone.Inventory
                     {
                         // A skinned renderer that has drawn keeps buffers sized for its old mesh and
                         // stops rendering after a swap ("does not match the expected mesh data size");
-                        // re-enabling it around the swap rebuilds them.
+                        // re-enabling it around the swap rebuilds them. One deliberately hidden (a
+                        // skeleton's flesh) stays hidden.
+                        bool shown = part.Skin.enabled;
                         part.Skin.enabled = false;
                         part.Skin.sharedMesh = mesh;
-                        part.Skin.enabled = true;
+                        part.Skin.enabled = shown;
                         part.Skin.localBounds = new Bounds(new Vector3(0,-.4f,0),Vector3.one*1.9f);
                     }
                     continue;

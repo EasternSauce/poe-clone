@@ -1,3 +1,9 @@
+version: 2026-10-18-anatomical-enemies
+- Humanoid enemies, townsfolk and your summons now share the hero's anatomy: connected arms and legs that bend smoothly at the elbows and knees, fingered hands that close around held weapons, staffs and spears, and a proper neck.
+- Humanoid enemies have sculpted heads and faces, with their glowing eyes set in the eye sockets and their horns kept.
+- Skeletons are rebuilt from sculpted bones: a skull with deep eye sockets, cheekbones and teeth, a separate jaw, a curved spine, a full ribcage with collarbones and shoulder blades, a pelvis under a torn loincloth, and arms and legs down to finger and toe bones. Skeleton warriors, mages and archers raised by the player use the same bones.
+- The hover outline now also traces enemies' connected limbs.
+
 version: 2026-10-18-separate-spell-timing
 - Every spell has its own cast duration, shown by the speed of the held weapon's casting swing. Cast speed shortens that animation only.
 - Spell effects release when the cast finishes. Cooldowns begin afterwards and are shortened only by the separate Cooldown Recovery Rate stat. The skill bar shows actual cooldown recovery, never the casting animation.

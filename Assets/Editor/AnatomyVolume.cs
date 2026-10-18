@@ -12,7 +12,7 @@ namespace PoeClone.EditorTools
         {
             public Vector3 A, B, Radii;
             public float Radius, EndRadius;
-            public bool Capsule, Palm;
+            public bool Capsule, Palm, Carve;
             public Vector3[] Points;
             public float[] PointRadii;
 
@@ -67,6 +67,11 @@ namespace PoeClone.EditorTools
             for(int i=0;i<radii.Length;i++) radii[i]=radius(i/(float)(radii.Length-1));
             shapes.Add(new Shape {Points=new List<Vector3>(points).ToArray(),PointRadii=radii});
         }
+        /// <summary>Hollows an ellipsoid out of everything added before it (eye sockets, a nasal cavity).</summary>
+        public void Carve(Vector3 center,Vector3 radii) => shapes.Add(new Shape {A=center,Radii=radii,Carve=true});
+
+        /// <summary>Signed distance to the surface; negative inside.</summary>
+        public float Distance(Vector3 point) => Field(point);
 
         private float Field(Vector3 point)
         {
@@ -75,6 +80,13 @@ namespace PoeClone.EditorTools
             {
                 float next=shape.Distance(point);
                 float blend=blendRadius;
+                if(shape.Carve)
+                {
+                    // Smooth subtraction with a tighter fillet, so socket rims stay crisp.
+                    float k=blend*.5f,c=Mathf.Clamp01(.5f-.5f*(distance+next)/k);
+                    distance=Mathf.Lerp(distance,-next,c)+k*c*(1-c);
+                    continue;
+                }
                 float h=Mathf.Max(blend-Mathf.Abs(distance-next),0)/blend;
                 distance=Mathf.Min(distance,next)-h*h*blend*.25f;
             }

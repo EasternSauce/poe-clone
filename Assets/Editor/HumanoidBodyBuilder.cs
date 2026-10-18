@@ -9,8 +9,9 @@ namespace PoeClone.EditorTools
     /// <summary>
     /// Gives the humanoid rig (the scene's Player and the Enemy prefab, which NPCs also use) its
     /// body: smooth tapered limbs, a torso narrowing to the waist, a neck and a smaller head,
-    /// instead of boxes and a big round head. The player also receives anatomical facial surfaces,
-    /// fingered hands and skin detail; the joints, sockets and animators stay as they are. Meshes are unit-sized like the
+    /// instead of boxes and a big round head. Both then receive the player's anatomy (connected
+    /// limbs, fingered hands; the player also a full face, hair and feet, enemies a lighter head with
+    /// glowing eyes); the joints, sockets and animators stay as they are. Meshes are unit-sized like the
     /// cubes they replace, so code that scales a part by name still works.
     /// Re-runnable: PoeClone > Reshape Humanoids.
     /// </summary>
@@ -34,6 +35,17 @@ namespace PoeClone.EditorTools
                 Debug.LogWarning("HumanoidBodyBuilder: no Player/Model in the open scene; only the enemy prefab was reshaped.");
             }
 
+            ReshapeEnemies();
+            Debug.Log("HumanoidBodyBuilder: reshaped " + (playerModel != null ? "the player and " : "") + "the enemy prefab.");
+        }
+
+        /// <summary>
+        /// Only the humanoid template (the Enemy prefab every enemy, NPC and summon is made from),
+        /// reusing the player's baked anatomy without rebaking it.
+        /// </summary>
+        [MenuItem("PoeClone/Reshape Enemy Humanoids")]
+        public static void ReshapeEnemies()
+        {
             GameObject root = PrefabUtility.LoadPrefabContents(EnemyPrefabPath);
             try
             {
@@ -44,8 +56,8 @@ namespace PoeClone.EditorTools
             {
                 PrefabUtility.UnloadPrefabContents(root);
             }
+            SkeletonMeshBuilder.Build();
             AssetDatabase.SaveAssets();
-            Debug.Log("HumanoidBodyBuilder: reshaped " + (playerModel != null ? "the player and " : "") + "the enemy prefab.");
         }
 
         /// <summary>Reshapes one rig (a "Model" built by <see cref="StylizedWorldBuilder"/>).</summary>
@@ -106,6 +118,7 @@ namespace PoeClone.EditorTools
                 Part(u, "EyeR", head, new Vector3(0.075f, 1.83f, 0.19f), new Vector3(0.075f, 0.05f, 0.05f));
                 Part(u, "HornL", null, new Vector3(-0.11f, 1.95f, 0.02f), new Vector3(0.07f, 0.18f, 0.07f));
                 Part(u, "HornR", null, new Vector3(0.11f, 1.95f, 0.02f), new Vector3(0.07f, 0.18f, 0.07f));
+                AnatomyRigBuilder.ApplyEnemy(model);
             }
             else
             {

@@ -1268,10 +1268,17 @@ namespace PoeClone.Enemies
                 }
             }
 
+            // Archers carry the Short Bow from their gear list; casters get a staff, desert kinds a
+            // blade or spear. Whatever is held, the hand closes round it.
+            bool desertWeapon = kind.Javelin || kind.Skill == EnemySkill.DesertCharge || kind.Skill == EnemySkill.Tollkeeper;
+            bool staff = kind.IsRanged && !kind.Bow && !kind.Javelin;
+            SlotRules.HeldHands(gear, out bool gripLeft, out bool gripRight);
+            gripRight |= desertWeapon || staff;
+
             if (kind.Boss == BossStyle.Shepherd)
                 ShepherdLook.Build(model);
             if (kind.Skeletal)
-                SkeletonLook.Build(model, kind);
+                SkeletonLook.Build(model, kind, gripLeft, gripRight);
 
             if (gear != null)
             {
@@ -1279,11 +1286,12 @@ namespace PoeClone.Enemies
                 visuals.Bind(gear);
             }
 
-            // Archers carry the Short Bow from their gear list; casters get a staff.
-            if (kind.Javelin || kind.Skill == EnemySkill.DesertCharge && !kind.IsCreature || kind.Skill == EnemySkill.Tollkeeper)
+            if (desertWeapon)
                 AddDesertWeapon(model, kind);
-            if (kind.IsRanged && !kind.Bow && !kind.Javelin)
+            if (staff)
                 AddStaff(model, kind.StaffOrb);
+            if (desertWeapon || staff)
+                model.GetComponent<ProceduralAnatomy>()?.HoldProp(false, true);
         }
 
         // The smallest a creature's collider gets, in metres (see BuildCreature).
@@ -1341,8 +1349,6 @@ namespace PoeClone.Enemies
             }
         }
 
-        // Swaps the colour of each of the rig's own materials (cloth, skin, pants, eyes) for the
-        // kind's, through property blocks so the shared materials themselves stay untouched.
         // The kind's gear list, each piece in the first free slot that takes it.
         private static EquipmentSet GearOf(EnemyKind kind)
         {
@@ -1361,23 +1367,35 @@ namespace PoeClone.Enemies
             return gear;
         }
 
+        // Swaps the colour of each of the rig's own materials (cloth, skin, pants, eyes) for the
+        // kind's, through property blocks so the shared materials themselves stay untouched. A
+        // connected arm is sleeve and skin in one renderer, so each material slot gets its own.
         private static void Recolour(Transform root, EnemyKind kind)
         {
             var block = new MaterialPropertyBlock();
             foreach (Renderer r in root.GetComponentsInChildren<Renderer>(true))
             {
-                Material material = r.sharedMaterial;
-                if (material == null)
-                    continue;
+                Material[] materials = r.sharedMaterials;
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    if (materials[i] == null)
+                        continue;
 
-                Color color = ColourFor(material.name, kind);
-                if (color.a <= 0f)
-                    continue;
+                    Color color = ColourFor(materials[i].name, kind);
+                    if (color.a <= 0f)
+                        continue;
 
-                r.GetPropertyBlock(block);
-                block.SetColor(BaseColorId, color);
-                block.SetColor(ColorId, color);
-                r.SetPropertyBlock(block);
+                    if (materials.Length == 1)
+                        r.GetPropertyBlock(block);
+                    else
+                        r.GetPropertyBlock(block, i);
+                    block.SetColor(BaseColorId, color);
+                    block.SetColor(ColorId, color);
+                    if (materials.Length == 1)
+                        r.SetPropertyBlock(block);
+                    else
+                        r.SetPropertyBlock(block, i);
+                }
             }
         }
 
