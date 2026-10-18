@@ -1,3 +1,8 @@
+version: 2026-10-18-bone-resolve-and-fast-clicks
+- Fixed Bone Resolve's +1 maximum minion applying to summon limits, including skeleton mages. Extra Skeletons bonuses now also increase warrior and mage limits.
+- Fixed Arcane Power's extra projectile applying to projectile spells, spell-casting effigies and bow skills. Extra spell projectile bonuses now also apply to Fire Bolt and Ice Shard.
+- Passive tree nodes and action buttons now complete their click animation in 0.12 seconds instead of one second.
+
 version: 2026-10-18-skeleton-mage-missiles
 - Skeleton mages' More Missiles passive now grants two additional projectiles without the 20% less damage penalty.
 

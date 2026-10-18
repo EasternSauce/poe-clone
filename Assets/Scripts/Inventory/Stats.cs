@@ -426,6 +426,10 @@ namespace PoeClone.Inventory
         public float EvadeChance => Total(StatType.UnwaveringStance) > 0f ? 0f : DefenceMath.EvadeChance(Total(StatType.Evasion));
         public float StunAvoidance => Total(StatType.UnwaveringStance) > 0f ? 100f : Total(StatType.AvoidStun);
 
+        /// <summary>Global extra projectiles for skills; basic bow shots use Additional Arrows separately.</summary>
+        public int ExtraSkillProjectiles(bool spell) => Math.Max(0, (int)Math.Round(
+            Total(StatType.AdditionalProjectiles) + (spell ? Total(StatType.AdditionalSpellProjectiles) : 0f)));
+
         public float DamageMultiplier(bool attack, bool bow, bool lowLife, bool chilled,
             StatType element, bool damageOverTime = false, bool spell = true, float skillIncreased = 0f)
         {

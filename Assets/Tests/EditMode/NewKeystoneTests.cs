@@ -10,6 +10,50 @@ namespace PoeClone.Tests
         private static StatSheet Sheet(params StatModifier[] mods) =>
             StatSheet.Build(new BaseStats(), new EquipmentSet(), mods);
 
+        private static int MinionCap(string name, StatSheet sheet)
+        {
+            var minions = System.Type.GetType("PoeClone.Skills.Minion, Assembly-CSharp", true);
+            var kinds = minions.Assembly.GetType("PoeClone.Skills.MinionKind");
+            return (int)minions.GetMethod("CapFor", new[] { kinds, typeof(WeaponSkillBonuses), typeof(StatSheet) })
+                .Invoke(null, new object[] { System.Enum.Parse(kinds, name), null, sheet });
+        }
+
+        [Test]
+        public void ArcanePowerAddsProjectilesToSpellsAndBowSkills()
+        {
+            var sheet = Sheet(PassiveTree.Get("k_twincast").Mods);
+            Assert.AreEqual(1, sheet.ExtraSkillProjectiles(true));
+            Assert.AreEqual(1, sheet.ExtraSkillProjectiles(false));
+            var combined = Sheet(new StatModifier(StatType.AdditionalProjectiles, 1),
+                new StatModifier(StatType.AdditionalSpellProjectiles, 2), new StatModifier(StatType.AdditionalArrows, 3));
+            Assert.AreEqual(3, combined.ExtraSkillProjectiles(true));
+            Assert.AreEqual(1, combined.ExtraSkillProjectiles(false), "Bow arrows are added separately by PlayerCombat");
+        }
+
+        [TestCase("Warrior", 2)]
+        [TestCase("Mage", 1)]
+        [TestCase("Wolf", 2)]
+        [TestCase("Golem", 1)]
+        [TestCase("Viper", 1)]
+        public void BoneResolveRaisesEachSummonLimit(string kind, int baseCap)
+        {
+            Assert.AreEqual(baseCap, MinionCap(kind, Sheet()));
+            var sheet = Sheet(PassiveTree.Get("k_legion").Mods);
+            Assert.AreEqual(baseCap + 1, MinionCap(kind, sheet));
+        }
+
+        [TestCase("Warrior", 5)]
+        [TestCase("Mage", 4)]
+        [TestCase("Wolf", 3)]
+        [TestCase("Golem", 2)]
+        [TestCase("Viper", 2)]
+        public void ExtraSkeletonsStackWithBoneResolveOnlyForSkeletons(string kind, int expected)
+        {
+            var sheet = Sheet(new StatModifier(StatType.AdditionalMinions, 1),
+                new StatModifier(StatType.AdditionalSkeletons, 2));
+            Assert.AreEqual(expected, MinionCap(kind, sheet));
+        }
+
         [Test]
         public void UnwaveringStanceStopsEvasionAndStaggerWithoutDeletingEvasionRating()
         {

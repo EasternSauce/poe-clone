@@ -196,13 +196,16 @@ namespace PoeClone.Skills
         private static WeaponSkillBonuses TreeFor(Transform owner, MinionKind kind) =>
             owner != null ? owner.GetComponent<PlayerSkills>()?.BonusesFor(SkillFor(kind)) ?? new WeaponSkillBonuses(null) : new WeaponSkillBonuses(null);
         public static int CapFor(Transform owner, MinionKind kind)
-            => CapFor(kind, TreeFor(owner, kind));
+            => CapFor(kind, TreeFor(owner, kind), owner != null ? owner.GetComponent<PlayerInventory>()?.Stats : null);
 
         /// <summary>The same cap for gameplay, tooltips and simulations without a player object.</summary>
-        public static int CapFor(MinionKind kind, WeaponSkillBonuses tree)
+        public static int CapFor(MinionKind kind, WeaponSkillBonuses tree) => CapFor(kind, tree, null);
+
+        public static int CapFor(MinionKind kind, WeaponSkillBonuses tree, StatSheet sheet)
         {
-            if (kind == MinionKind.Golem) return 1;
-            int cap = (kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1) + (tree?.ExtraMinions ?? 0);
+            int cap = (kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1) +
+                (tree?.ExtraMinions ?? 0) + Mathf.RoundToInt(Stat(sheet, StatType.AdditionalMinions));
+            if (IsPermanent(kind)) cap += Mathf.RoundToInt(Stat(sheet, StatType.AdditionalSkeletons));
             return tree != null && tree.Get(WeaponSkillEffect.HalfMinions) > 0 ? cap / 2 : cap;
         }
         public static bool AtCap(Transform owner, MinionKind kind) =>

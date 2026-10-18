@@ -1210,14 +1210,16 @@ namespace PoeClone.UI
 
             private IEnumerator Animate()
             {
+                const float pressSeconds = 0.025f;
+                const float releaseSeconds = 0.095f;
                 float initialDepth = depth;
                 float elapsed = 0f;
-                while (elapsed < 1f)
+                while (elapsed < pressSeconds + releaseSeconds)
                 {
                     elapsed += Time.unscaledDeltaTime;
-                    float amount = elapsed < 0.08f
-                        ? Mathf.Lerp(initialDepth, 1f, Mathf.SmoothStep(0f, 1f, elapsed / 0.08f))
-                        : 1f - Mathf.SmoothStep(0f, 1f, (elapsed - 0.76f) / 0.24f);
+                    float amount = elapsed < pressSeconds
+                        ? Mathf.Lerp(initialDepth, 1f, Mathf.SmoothStep(0f, 1f, elapsed / pressSeconds))
+                        : 1f - Mathf.SmoothStep(0f, 1f, (elapsed - pressSeconds) / releaseSeconds);
                     Apply(amount);
                     yield return null;
                 }

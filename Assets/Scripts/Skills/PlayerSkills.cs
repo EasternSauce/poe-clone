@@ -497,7 +497,7 @@ namespace PoeClone.Skills
             float area = SkillArea(skill.Id);
             float damage = skill.DamageForCharacter(inventory != null ? inventory.Stats.Level : 1);
             var tree = BonusesFor(skill.Id);
-            int extraProjectiles = tree.ExtraProjectiles;
+            int extraProjectiles = tree.ExtraProjectiles + (inventory?.Stats.ExtraSkillProjectiles(true) ?? 0);
 
             switch (skill.Id)
             {

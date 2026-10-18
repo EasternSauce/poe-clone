@@ -87,7 +87,7 @@ namespace PoeClone.Skills
                 forward = ProjectileAimAssist.Direction(transform.position, forward, projectileRange);
                 Face(forward);
             }
-            arrows = Mathf.Max(1, arrows + tree.ExtraProjectiles);
+            arrows = Mathf.Max(1, arrows + tree.ExtraProjectiles + (inventory?.Stats.ExtraSkillProjectiles(false) ?? 0));
             Vector3 shotOrigin = transform.position;
 
             switch (id)

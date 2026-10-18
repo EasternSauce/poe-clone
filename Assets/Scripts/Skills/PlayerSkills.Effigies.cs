@@ -82,7 +82,7 @@ namespace PoeClone.Skills
                 case SkillId.IceShard:
                 {
                     var volley = PlayerArrow.NewVolley();
-                    int count = 1 + tree.ExtraProjectiles;
+                    int count = 1 + tree.ExtraProjectiles + inventory.Stats.ExtraSkillProjectiles(true);
                     var flights = new List<Vector3>();
                     float range = (skill.Id == SkillId.FireBolt ? BoltRange : ShardRange) * tree.RangeMultiplier * area;
                     foreach (Vector3 direction in HitEffects.Spread(facing, count, skill.Id == SkillId.FireBolt ? 12f : 7f))

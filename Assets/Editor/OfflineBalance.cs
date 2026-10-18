@@ -519,7 +519,7 @@ namespace PoeClone.EditorTools
             if (skill.Summon)
             {
                 var kind = PlayerSkills.MinionKindOf(skill.Id);
-                int cap = Minion.CapFor(kind, tree), batch = kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1;
+                int cap = Minion.CapFor(kind, tree, sheet), batch = kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1;
                 s.armyCost = Mathf.Ceil((float)cap / batch) * s.cost;
                 s.minionLife = Minion.LifeFor(kind, 1, sheet, tree);
                 Incoming(kit.basis.Level, sheet, tree, true, s.bossEnraged, out var hit, out var dps);
@@ -585,7 +585,7 @@ namespace PoeClone.EditorTools
             if (skill.Summon)
             {
                 var kind = PlayerSkills.MinionKindOf(skill.Id);
-                int cap = Minion.CapFor(kind, tree);
+                int cap = Minion.CapFor(kind, tree, sheet);
                 float interval = kind == MinionKind.Warrior ? 1.1f : kind == MinionKind.Mage ? 1.6f : kind == MinionKind.Wolf ? .8f : kind == MinionKind.Golem ? 1.5f : 1.15f;
                 rate = Mathf.Max(.2f, 1 + (sheet.Total(StatType.MinionSpeed) + tree.Get(E.Speed)) / 100) / interval;
                 baseHit = Minion.DamageFor(kind, 1, sheet, tree);
@@ -603,7 +603,8 @@ namespace PoeClone.EditorTools
                 {
                     float spread = PlayerSkills.RainRadius * Mathf.Max(.25f, 1 + tree.Get(E.RainSpread) / 100);
                     float radius = PlayerSkills.RainHitRadius * DefenceMath.RadiusMultiplier(sheet.Total(StatType.AreaOfEffect) + tree.Get(E.Area));
-                    hits = PlayerSkills.ExpectedRainHits(1 + tree.ExtraProjectiles,
+                    hits = PlayerSkills.ExpectedRainHits(1 + tree.ExtraProjectiles + sheet.ExtraSkillProjectiles(false) +
+                        Mathf.Max(0, Mathf.RoundToInt(sheet.Total(StatType.AdditionalArrows))),
                         1 + Mathf.RoundToInt(tree.Get(E.RainSalvos)), spread, radius);
                 }
                 baseHit += sheet.Total(StatType.MaxMana) * sheet.Total(StatType.ManaAsDamage) / 100;
