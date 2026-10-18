@@ -195,10 +195,13 @@ namespace PoeClone.Skills
             Destroy(root);
         }
 
-        /// <summary>A ring of small orbs rising around a character (healing, level-ups).</summary>
-        public static void Rise(Transform around, Color color, float seconds = 0.9f)
+        /// <summary>
+        /// A ring of small orbs rising around a character (healing, level-ups). Returns the effect's
+        /// root (null when skipped) so a cancelled channel can destroy it early.
+        /// </summary>
+        public static GameObject Rise(Transform around, Color color, float seconds = 0.9f)
         {
-            if (!AdaptiveQuality.AllowEffect(around.position)) return;
+            if (!AdaptiveQuality.AllowEffect(around.position)) return null;
             var go = new GameObject("Rise");
             go.transform.SetParent(around, false);
             int orbCount = AdaptiveQuality.DetailLevel >= 2 ? 3 : 8;
@@ -210,6 +213,7 @@ namespace PoeClone.Skills
                 orb.transform.localPosition = new Vector3(Mathf.Cos(a) * 0.6f, -0.9f, Mathf.Sin(a) * 0.6f);
             }
             go.AddComponent<SkillEffects>().StartCoroutine(Climb(go, seconds));
+            return go;
         }
 
         private static IEnumerator Pop(GameObject root, Transform ball, float radius, float seconds)

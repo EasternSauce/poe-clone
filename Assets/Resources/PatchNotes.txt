@@ -1,3 +1,6 @@
+version: 2026-10-18-town-portal-cancel
+- Moving cancels the town portal straight away, including clicking to walk somewhere, and its rising blue orbs vanish the moment it's interrupted instead of finishing their climb.
+
 version: 2026-10-18-skeleton-mage-volleys
 - Skeleton Mages attack from twice as far: their bolts reach 17 metres instead of 8.5, and they pick out enemies that far away.
 - Extra Skeleton Mage bolts now fan out round the aim like your own volleys instead of all flying at separate targets. Each enemy takes damage only from the first bolt of a volley to reach it.

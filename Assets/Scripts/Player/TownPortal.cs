@@ -8,8 +8,9 @@ namespace PoeClone.Player
 {
     /// <summary>
     /// B (or the TOWN button on touch): a short channel, then home to Haven's waystone - to sell,
-    /// buy potions and hand quests in, and take the waystone back out again. Moving, dashing or
-    /// getting hit cancels it. Self-added by <see cref="PlayerController"/>.
+    /// buy potions and hand quests in, and take the waystone back out again. Moving (keys, stick or
+    /// click), dashing or getting hit cancels it, along with its rising orbs.
+    /// Self-added by <see cref="PlayerController"/>.
     /// </summary>
     [RequireComponent(typeof(PlayerController))]
     public class TownPortal : MonoBehaviour
@@ -22,6 +23,7 @@ namespace PoeClone.Player
         private PlayerStats stats;
         private float channelStarted = -1f;
         private float healthAtStart;
+        private GameObject channelEffect;
 
         /// <summary>Requested from the touch button (read and cleared every frame).</summary>
         public static bool Pressed;
@@ -43,7 +45,7 @@ namespace PoeClone.Player
 
         private void OnDisable()
         {
-            channelStarted = -1f;
+            StopChannel();
         }
 
         private void Update()
@@ -60,14 +62,14 @@ namespace PoeClone.Player
             {
                 if (Interrupted())
                 {
-                    channelStarted = -1f;
+                    StopChannel();
                     CombatText.Show(transform.position + Vector3.up * 2.2f, "Portal interrupted", new Color(0.8f, 0.8f, 0.8f), 0.8f);
                     return;
                 }
 
                 if (Time.time - channelStarted >= ChannelSeconds)
                 {
-                    channelStarted = -1f;
+                    StopChannel();
                     GoHome();
                 }
                 return;
@@ -98,14 +100,23 @@ namespace PoeClone.Player
             controller.CancelWalk();
             channelStarted = Time.time;
             healthAtStart = stats.CurrentHealth;
-            Skills.SkillEffects.Rise(transform, PortalColor, ChannelSeconds);
+            channelEffect = Skills.SkillEffects.Rise(transform, PortalColor, ChannelSeconds);
             CombatText.Show(transform.position + Vector3.up * 2.2f, "Town portal...", PortalColor, 0.8f);
         }
 
         private bool Interrupted()
         {
             return stats.IsDead || stats.CurrentHealth < healthAtStart - 0.01f ||
-                   controller.InputDirection().sqrMagnitude > 0.01f || controller.IsDashing;
+                   controller.InputDirection().sqrMagnitude > 0.01f || controller.IsWalkingToTarget ||
+                   controller.IsDashing;
+        }
+
+        private void StopChannel()
+        {
+            channelStarted = -1f;
+            if (channelEffect != null)
+                Destroy(channelEffect);
+            channelEffect = null;
         }
 
         private void GoHome()
