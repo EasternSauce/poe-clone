@@ -83,11 +83,11 @@ namespace PoeClone.Tests
                 object id = type.GetProperty("MainSkill").GetValue(skills);
                 var basis = new BaseStats().Set(StatType.CastSpeed, 100);
                 typeof(PlayerInventory).GetProperty("Stats").SetValue(inventory, StatSheet.Build(basis, null));
-                Assert.AreEqual(.325f, (float)Call(skills, "CastTime", id), .0001f);
+                Assert.AreEqual(.0975f, (float)Call(skills, "CastTime", id), .0001f);
                 Assert.AreEqual(4f, (float)Call(skills, "Cooldown", id), .0001f);
                 basis.Set(StatType.CooldownRecovery, 100);
                 typeof(PlayerInventory).GetProperty("Stats").SetValue(inventory, StatSheet.Build(basis, null));
-                Assert.AreEqual(.325f, (float)Call(skills, "CastTime", id), .0001f);
+                Assert.AreEqual(.0975f, (float)Call(skills, "CastTime", id), .0001f);
                 Assert.AreEqual(2f, (float)Call(skills, "Cooldown", id), .0001f);
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }

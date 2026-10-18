@@ -1,3 +1,6 @@
+version: 2026-10-18-faster-skeleton-casts
+- Raise Skeletons and Skeleton Mages cast 70% faster: their casting gesture now takes 0.2 seconds instead of 0.65. Their four-second cooldown is unchanged.
+
 version: 2026-10-18-two-handed-staves
 - Skeleton Mages have their own look: a deep, peaked black hood with the skull peering out of its shadow, a cowl over the shoulders, strips of black and brown cloth hanging down the back, glowing purple eyes, and a dark wood and bone staff whose bone prongs cradle a purple orb.
 - Every staff is now held in both hands, by the hero, enemy casters and Skeleton Mages alike. At rest it stands upright at the weapon side.

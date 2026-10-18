@@ -235,7 +235,7 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.RaiseSkeletons, Name = "Raise Skeletons", Short = "SKL", Grant = StatType.GrantRaiseSkeletons, RollsOn = "sceptres",
-                Spell = true, CastTime = 0.65f, ManaCosts = new[] { 21f }, Cooldown = 4f, Color = new Color(0.55f, 1f, 0.6f),
+                Spell = true, CastTime = 0.195f, ManaCosts = new[] { 21f }, Cooldown = 4f, Color = new Color(0.55f, 1f, 0.6f),
                 Description = "Raise two skeleton warriors that stay until destroyed, up to 2 at once. Weapon tree nodes raise the limit. Recasting replaces the oldest summons at the limit. Only one kind of lasting minion can serve you: raising skeleton warriors dismisses your skeleton mages."
             },
             new SkillDefinition
@@ -247,7 +247,7 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.SkeletonMages, Name = "Skeleton Mages", Short = "SKM", Grant = StatType.GrantSkeletonMages, RollsOn = "sceptres",
-                Spell = true, CastTime = 0.65f, ManaCosts = new[] { 27f }, Cooldown = 4f, Color = new Color(0.5f, 0.85f, 1f),
+                Spell = true, CastTime = 0.195f, ManaCosts = new[] { 27f }, Cooldown = 4f, Color = new Color(0.5f, 0.85f, 1f),
                 Description = "Raise a skeleton mage that hangs back and hurls straight-flying bolts and stays until destroyed, up to 1 at once. Weapon tree nodes raise the limit. Recasting replaces the oldest summons at the limit. Only one kind of lasting minion can serve you: raising skeleton mages dismisses your skeleton warriors."
             },
             new SkillDefinition
