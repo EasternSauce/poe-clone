@@ -18,6 +18,7 @@ MonoBehaviour:
   dungeon: {fileID: 8300000, guid: af83f923ca26590449fdca485903d8bf, type: 3}
   blizzard: {fileID: 8300000, guid: dc00ceda08aa5724b82ee7f4db5b8b3f, type: 3}
   lava: {fileID: 8300000, guid: 426caa63da865984ba9cb062502831a3, type: 3}
+  rain: {fileID: 8300000, guid: 5ad093e0c31e4ebe9cde04ceed306344, type: 3}
   river: {fileID: 8300000, guid: 04371fcb226551e4f923e0fa9a12d39d, type: 3}
   pond: {fileID: 8300000, guid: 4ef1734e5f885dd4095976e93a60d1bf, type: 3}
   ocean: {fileID: 8300000, guid: cea933188974dcb4abe550b6789ee38a, type: 3}

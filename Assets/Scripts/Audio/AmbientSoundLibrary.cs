@@ -15,7 +15,7 @@ namespace PoeClone.Audio
             return text != null ? JsonUtility.FromJson<Catalog>(text.text) : new Catalog { entries = System.Array.Empty<Entry>() };
         }
 
-        public AudioClip town, night, cave, dungeon, blizzard, lava;
+        public AudioClip town, night, cave, dungeon, blizzard, lava, rain;
         public AudioClip river, pond, ocean, fire, gust;
         public AudioClip[] stones, creaks;
     }

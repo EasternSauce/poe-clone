@@ -46,6 +46,7 @@ namespace PoeClone.World
                 area == WorldBuilder.Cave || area == WorldBuilder.Warren ? "cave" :
                 area == WorldBuilder.ActArena || area == WorldBuilder.DrownedWorks || area == WorldBuilder.BuriedWard || area == WorldBuilder.FirstRoot ? "dungeon" : "";
             var fields = new HashSet<string> { bed, "fire", "creaks" };
+            if (RainWeather.Intensity(area) > 0) fields.Add("rain");
             AreaShape shape = WorldBuilder.Shape(area);
             if (shape.HasWater && area != WorldBuilder.Frozen) { fields.Add("river"); fields.Add("pond"); }
             if (shape.HasOcean) fields.Add("ocean");
@@ -68,6 +69,7 @@ namespace PoeClone.World
 
         private void AddAreaVoices(AmbientSoundLibrary library)
         {
+            if (RainWeather.Intensity(buildingArea) > 0) Bed(buildingArea, library.rain);
             Loop(WorldBuilder.Haven, library.town,
                 p => Falloff(FlatDistance(p, WorldBuilder.Center(WorldBuilder.Haven)), 24, 85));
             Bed(WorldBuilder.Graveyard, library.night);

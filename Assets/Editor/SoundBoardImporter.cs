@@ -103,6 +103,7 @@ namespace PoeClone.EditorTools
             var locations = new Dictionary<string, string> {
                 { "town", "Haven town bed" }, { "night", "Graveyard bed" }, { "cave", "Cave bed" },
                 { "dungeon", "Act arena bed" }, { "blizzard", "Frozen area bed" }, { "lava", "Ruins bed and nearby lava" },
+                { "rain", "Rainy areas (Greenwood and Graveyard)" },
                 { "river", "River banks" }, { "pond", "Lake banks" }, { "ocean", "Coastline" }, { "fire", "Nearby fires" },
                 { "gust", "Greenwood, Graveyard, Ruins and Frozen wind gusts" }, { "stones", "Cave and act arena stone sounds" }, { "creaks", "Bridges" }
             };

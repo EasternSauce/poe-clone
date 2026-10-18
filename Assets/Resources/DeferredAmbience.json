@@ -37,6 +37,12 @@
             ]
         },
         {
+            "name": "rain",
+            "paths": [
+                "AmbienceRainQuiet"
+            ]
+        },
+        {
             "name": "river",
             "paths": [
                 "DeferredAudio/679f809f3ba2b164fa3a7cde55d56627/River_flow_–_Calm_fl_#1-1766768653145"

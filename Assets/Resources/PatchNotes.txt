@@ -1,3 +1,6 @@
+version: 2026-10-18-rain-ambience
+- Rain in Greenwood and Graveyard now has a subtle, softly looping sound that fades out when you leave and follows your ambience and sound volume settings.
+
 version: 2026-10-18-item-icon-placeholders
 - Removed the ink-style sword, greatsword, maul, shield and focus icons. Affected items temporarily use existing painted equipment icons.
 
