@@ -206,6 +206,7 @@ namespace PoeClone.World
 
         private void OnDestroy()
         {
+            foreach (Object asset in gateVisualAssets) if (asset != null) Destroy(asset);
             ReleaseStreamedResources();
             if (grassMaterial != null) Destroy(grassMaterial);
             foreach (Material roadMaterial in roadMaterials.Values) Destroy(roadMaterial);
@@ -1183,32 +1184,7 @@ namespace PoeClone.World
             gate.transform.SetParent(root, false);
             gate.SetActive(false);
 
-            Material stone = kit.Mat("Stone");
-            for (int side = -1; side <= 1; side += 2)
-            {
-                var pillar = new GameObject("Pillar").transform;
-                pillar.SetParent(gate.transform, false);
-                pillar.localPosition = new Vector3(side * 2.6f, 0f, 0f);
-                LocalBox(pillar, new Vector3(0f, 0.175f, 0f), new Vector3(1.1f, 0.35f, 1.1f), stone, solid: false).name = "Base";
-                LocalCyl(pillar, new Vector3(0f, 2f, 0f), 0.7f, 3.3f, stone, solid: false).name = "Column";
-                LocalBox(pillar, new Vector3(0f, 3.7f, 0f), new Vector3(1f, 0.3f, 1f), stone, solid: false).name = "Cap";
-                // Colliderless parts lose their shadow by default; without the pillars the
-                // lintel's shadow floats on the grass away from the gate.
-                foreach (Renderer r in pillar.GetComponentsInChildren<Renderer>())
-                    r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-                var pillarCollider = pillar.gameObject.AddComponent<BoxCollider>();
-                pillarCollider.center = new Vector3(0f, 1.925f, 0f);
-                pillarCollider.size = new Vector3(1f, 3.85f, 1f);
-            }
-            LocalBox(gate.transform, new Vector3(0f, 3.85f, 0f), new Vector3(6.2f, 0.4f, 1f), stone).name = "Lintel";
-
-            Shader portalShader = Shader.Find("Universal Render Pipeline/Lit") ?? kit.Mat("Water").shader;
-            Material portal = new Material(portalShader);
-            portal.SetColor("_BaseColor", new Color(.3f, .4f, .5f));
-            portal.SetFloat("_Smoothness", .1f);
-            portal.EnableKeyword("_EMISSION");
-            portal.SetColor("_EmissionColor", new Color(.15f, .2f, .25f));
-            LocalBox(gate.transform, new Vector3(0f, 1.9f, 0f), new Vector3(4.2f, 3.4f, .15f), portal, solid: false).name = "PortalPanel";
+            BuildGateVisual(gate.transform, gateVisualAssets);
 
             var trigger = gate.AddComponent<BoxCollider>();
             trigger.isTrigger = true;
@@ -1280,12 +1256,11 @@ namespace PoeClone.World
             {
                 var block = new MaterialPropertyBlock();
                 panel.GetPropertyBlock(block);
-                block.SetColor("_BaseColor", AreaColors[to] * 0.6f);
-                block.SetColor("_EmissionColor", AreaColors[to] * 0.35f);
+                block.SetColor("_BaseColor", GatePortalTint(AreaColors[to]));
                 panel.SetPropertyBlock(block);
             }
 
-            WorldLabel.Create(gate.transform, "To " + AreaNames[to], AreaColors[to] + new Color(0.2f, 0.2f, 0.2f), 5.2f);
+            WorldLabel.Create(gate.transform, "To " + AreaNames[to], AreaColors[to] + new Color(0.2f, 0.2f, 0.2f), 6.1f);
             Claim(position, 4f);
             gate.SetActive(true);
         }
