@@ -307,7 +307,6 @@ namespace PoeClone.Player
             if (!announce)
                 return;
 
-            Debug.Log($"Player reached level {level}");
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlayAtPoint(AudioManager.Instance.playerLevelUp, transform.position);
         }

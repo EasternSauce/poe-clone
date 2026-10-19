@@ -79,7 +79,6 @@ namespace PoeClone.EditorTools
             EditorUtility.SetDirty(ambient);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("Deferred audio catalogs generated: " + original.soundGroups.Count + " sound groups and " + entries.Count + " ambience fields.");
         }
 
         private static AudioClip PermanentClip(AudioClip clip) => clip != null ? Resources.Load<AudioClip>(ResourcePath(clip)) : null;

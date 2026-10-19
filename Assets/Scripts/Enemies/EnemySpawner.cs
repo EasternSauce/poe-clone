@@ -387,7 +387,6 @@ namespace PoeClone.Enemies
         private void SpawnOpeningPopulation()
         {
             // Pack animals bring the rest of their pack (counted towards the total).
-            int spawned = 0;
             int planned = 0;
             int misses = 0;
             while (planned < enemyCount && misses < enemyCount)
@@ -400,10 +399,7 @@ namespace PoeClone.Enemies
 
                 planned++;
                 if (Random.value < ArrivalSpawnChance(point))
-                {
                     Spawn(point, kindIndex);
-                    spawned++;
-                }
 
                 int pack = EnemyKinds.Get(kindIndex).PackSize;
                 if (pack > 0)
@@ -413,14 +409,9 @@ namespace PoeClone.Enemies
                     planned++;
                     if (TryFindSpawnPointNear(point, out Vector3 near, out _, kindIndex, ignoreCharacters: true) &&
                         Random.value < ArrivalSpawnChance(near))
-                    {
                         Spawn(near, kindIndex);
-                        spawned++;
-                    }
                 }
             }
-
-            Debug.Log($"EnemySpawner: spawned {spawned}/{enemyCount} enemies.");
         }
 
         // Disabled on a spectator's copy of the scene (SpectatorReplica), which only shows the

@@ -3,8 +3,8 @@ using UnityEngine;
 namespace PoeClone.UI
 {
     /// <summary>
-    /// What is being loaded right now, shown under the loading screens. When a step ends its
-    /// time goes to the console ("[Loading] ..."), so slow steps are easy to find.
+    /// What is being loaded right now, shown under the loading screens. Step timings
+    /// are recorded by PerformanceDiagnostics without adding console messages.
     /// </summary>
     public static class LoadingStatus
     {
@@ -15,10 +15,7 @@ namespace PoeClone.UI
         {
             float now = Time.realtimeSinceStartup;
             if (Step.Length > 0)
-            {
                 PerformanceDiagnostics.LoadingCompleted(Step, (now - stepStart) * 1000d);
-                Debug.Log($"[Loading] {Step}: {(now - stepStart) * 1000f:0} ms");
-            }
             Step = step ?? string.Empty;
             stepStart = now;
         }

@@ -143,7 +143,6 @@ namespace PoeClone.Visuals
             ResetWindow();
             ignoreUntil = Time.unscaledTime + 3f;
             ApplyRendering();
-            Debug.Log($"[Performance] detail reduction {DetailLevel}/5, rendering reduction {RenderLevel}/5 ({FrameMilliseconds:0.0} ms/frame)");
         }
 
         private void ApplyRendering()

@@ -299,7 +299,6 @@ namespace PoeClone.World
             buildingArea = true;
             loadingArea = area;
             float started = Time.realtimeSinceStartup;
-            float stageStarted = started;
             try
             {
                 Loading("Terrain: " + AreaNames[area]);
@@ -308,8 +307,6 @@ namespace PoeClone.World
                     yield return PrepareStreamedArea(area);
                 else if (area != ActArena && area != Warren && area != Belfry)
                     yield return BuildGround(groundTemplate, area);
-                Debug.Log($"Area load [{AreaNames[area]}] layout/materials: {(Time.realtimeSinceStartup - stageStarted) * 1000f:F0}ms.");
-                stageStarted = Time.realtimeSinceStartup;
                 Loading("Scenery: " + AreaNames[area]);
                 yield return null;
                 if (IsActTwo(area) || area == ActArena) EnsureDesertMaterials();
@@ -365,13 +362,11 @@ namespace PoeClone.World
                 planningContent = false;
                 if (HasGrass(area) && !UsesChunks(area))
                     yield return BuildGrass(area, root.Find("Ground_" + AreaNames[area])?.gameObject);
-                Debug.Log($"Area load [{AreaNames[area]}] content plan: {(Time.realtimeSinceStartup - stageStarted) * 1000f:F0}ms.");
                 yield return EnsureArrival(area, focus ?? (arrival != null ? arrival : spawnPoints[area]).position);
                 builtAreas.Add(area);
                 // Audio is optional and never blocks entry.
                 ambience.Build(FindAnyObjectByType<AreaManager>(), FindAnyObjectByType<PlayerController>().transform, area);
                 if (!UsesChunks(area)) WorldActivity.Refresh();
-                Debug.Log($"Area load [{AreaNames[area]}] world ready: {(Time.realtimeSinceStartup - started) * 1000f:F0}ms.");
             }
             finally { planningContent = false; loadingArea = -1; buildingArea = false; }
         }

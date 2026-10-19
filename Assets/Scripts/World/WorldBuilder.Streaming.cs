@@ -176,8 +176,7 @@ namespace PoeClone.World
 
         private IEnumerator BuildNearby(int area, Vector3 position, float radius, bool background)
         {
-            var clock = System.Diagnostics.Stopwatch.StartNew();
-            int firstFrame = Time.frameCount, count = 0;
+            bool builtAny = false;
             foreach (var cell in NearbyChunks(area, position, radius))
             {
                 // Finish an in-progress chunk safely, then give travel/pause priority over
@@ -185,18 +184,16 @@ namespace PoeClone.World
                 var manager = AreaManager.Instance;
                 if (background && (manager == null || manager.IsSwitching || manager.CurrentAreaIndex != area || Time.timeScale <= 0f)) break;
                 if (GetChunk(area, cell).Ready) continue;
-                count++;
+                builtAny = true;
                 yield return BuildChunk(area, cell);
             }
-            if (count > 0)
+            if (builtAny)
             {
                 if (loadingArrival) Loading("Finalizing: " + AreaNames[area]);
                 Physics.SyncTransforms();
                 ManualPointLightManager.Refresh();
                 WorldActivity.Refresh();
             }
-            if (!background)
-                Debug.Log($"Area load [{AreaNames[area]}] arrival: {count} new chunks, radius {radius:F0}m, {clock.Elapsed.TotalMilliseconds:F0}ms, {Time.frameCount - firstFrame} frames.");
         }
 
         private IEnumerator BuildChunk(int area, Vector2Int cell)

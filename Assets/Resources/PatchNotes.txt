@@ -1,3 +1,6 @@
+version: 2026-10-19-quieter-console
+- Removed routine loading, area-generation, enemy-spawn, level-up and automatic quality-change messages from the console. Loading status and performance diagnostics remain available.
+
 version: 2026-10-19-shader-build-warnings
 - Web builds exclude the unused PC graphics tier and its GPU debugging resources. Skin and world shaders skip an unused lighting loop in clustered rendering, preserving the existing torch lighting.
 - Removed an unused experimental automation package that produced a runtime-configuration warning during builds.
