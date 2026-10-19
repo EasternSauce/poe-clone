@@ -217,6 +217,8 @@ namespace PoeClone.Network
         {
             CoopEvent e = EnemyEvent(CoopProtocol.Skill, source, atPartner);
             e.a = damage;
+            if (source.TryGetComponent<EnemyController>(out var controller) && controller.TargetMinion != null)
+                e.f |= CoopProtocol.FlagAtMinion;
             SetAim(e, target);
             Send(e);
         }
@@ -228,6 +230,11 @@ namespace PoeClone.Network
             e.sd = seed;
             e.sp = speed;
             e.lv = level;
+            if (source.TryGetComponent<EnemyController>(out var controller) && controller.TargetMinion != null)
+            {
+                e.f |= CoopProtocol.FlagAtMinion;
+                SetAim(e, source.GetComponent<BossAbilities>().AimPosition);
+            }
             Send(e);
         }
 

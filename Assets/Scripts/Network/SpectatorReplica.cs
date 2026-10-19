@@ -194,10 +194,11 @@ namespace PoeClone.Network
             if (puppet == null || puppet.Health.IsDead) return;
             puppet.Root.transform.SetPositionAndRotation(new Vector3(e.x, e.y, e.z), Quaternion.Euler(0f, e.r, 0f));
             bool atUs = (e.f & CoopProtocol.FlagAtYou) != 0;
+            bool atMinion = (e.f & CoopProtocol.FlagAtMinion) != 0;
             if (e.k == CoopProtocol.Skill)
-                puppet.Root.GetComponent<EnemySkills>()?.Mirror(new Vector3(e.tx, e.ty, e.tz), e.a, atUs);
+                puppet.Root.GetComponent<EnemySkills>()?.Mirror(new Vector3(e.tx, e.ty, e.tz), e.a, atUs, atMinion);
             else
-                puppet.Root.GetComponent<BossAbilities>()?.PlayMirror(e.mv, atUs, e.sd, e.sp, e.lv);
+                puppet.Root.GetComponent<BossAbilities>()?.PlayMirror(e.mv, atUs, e.sd, e.sp, e.lv, atMinion ? new Vector3(e.tx, e.ty, e.tz) : (Vector3?)null);
         }
 
         /// <summary>Co-op guest: this game's copy of one of the host's enemies, or null.</summary>

@@ -1,3 +1,6 @@
+version: 2026-10-19-enemy-ability-aggro
+- Monster abilities and field boss moves now aim at the minion holding their aggro. Charges aimed at a minion only hit you if you are within their hit area.
+
 version: 2026-10-19-arena-minion-recall
 - Minions can now teleport back to you in the arena, its starting room and corridor, and the minimal combat arena.
 

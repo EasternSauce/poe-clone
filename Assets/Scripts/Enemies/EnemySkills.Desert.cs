@@ -148,7 +148,7 @@ namespace PoeClone.Enemies
             for (float t = 0; t < windup; t += (Time.deltaTime * kind.AbilitySpeed))
             {
                 if (!CastAlive(interrupted)) yield break;
-                if (aim != null) target = aim.position;
+                if (aim != null || mirrorMinionAim.HasValue) target = AimPosition;
                 Vector3 axis = FissureDirection(transform.position, target);
                 transform.rotation = Quaternion.LookRotation(axis);
                 yield return null;

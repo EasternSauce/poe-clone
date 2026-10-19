@@ -41,6 +41,7 @@ namespace PoeClone.Network
         public const int FlagFlinch = 4;
         public const int FlagOrigin = 8;
         public const int FlagAtYou = 16;
+        public const int FlagAtMinion = 128;
         public const int FlagPops = 32;
         public const int FlagAttack = 64;
     }

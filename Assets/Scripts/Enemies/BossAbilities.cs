@@ -30,7 +30,7 @@ namespace PoeClone.Enemies
     /// faster. While a move plays the boss is <see cref="Busy"/> (its controller and plain attacks
     /// wait). Added by <see cref="World.BossLair"/> when it places the boss.
     ///
-    /// Co-op: the host's boss aims each move at whichever player it's after (its controller's
+    /// Co-op: the host's boss aims each move at its aggro target (its controller's
     /// threat) and tells the guest, whose copy of the boss plays the same move with the same
     /// random rolls (<see cref="PlayMirror"/>). Each game judges only its own player: the move
     /// hurts whoever stands in it, on both screens.
@@ -58,8 +58,10 @@ namespace PoeClone.Enemies
         // The local player: the only one whose hits this game decides.
         private PlayerStats player;
         private PlayerController playerMotion;
-        // Who its moves go for: the local player, or (co-op) the partner's character.
+        // Who its moves go for: its aggro target, including a vulnerable summon.
         private Transform aim;
+        private Minion aimMinion;
+        private Vector3? mirrorMinionAim;
         private bool aimedAtLocal = true;
         // Co-op guest: a copy of the host's boss, playing only the moves it's told about, at the
         // host's boss's attack speed.
@@ -147,7 +149,7 @@ namespace PoeClone.Enemies
         /// <see cref="Party.BossMoveCloser"/> / <see cref="Party.BossMoveRoar"/>). Plays it here with
         /// the same random rolls, aimed at us or at the host's character.
         /// </summary>
-        public void PlayMirror(int move, bool atUs, int seed, float speed, int monsterLevel)
+        public void PlayMirror(int move, bool atUs, int seed, float speed, int monsterLevel, Vector3? minionTarget = null)
         {
             if (!mirror || kind == null || health.IsDead)
                 return;
@@ -156,6 +158,7 @@ namespace PoeClone.Enemies
                 player = FindAnyObjectByType<PlayerStats>();
                 playerMotion = player != null ? player.GetComponent<PlayerController>() : null;
             }
+            mirrorMinionAim = minionTarget;
             aimedAtLocal = atUs;
             aim = atUs ? (player != null ? player.transform : null) : Party.Partner;
             mirrorSpeed = speed;
@@ -283,9 +286,10 @@ namespace PoeClone.Enemies
             if (busy || Scripted || mirror)
                 return;
 
-            // Co-op: whoever it's after (see EnemyController's threat); alone, the local player.
+            // Use the same target as movement and basic attacks.
             aimedAtLocal = controller == null || !controller.TargetsPartner;
-            aim = aimedAtLocal ? player.transform : controller.TargetPlayer;
+            aimMinion = controller != null ? controller.TargetMinion : null;
+            aim = aimMinion != null ? aimMinion.transform : controller != null ? controller.TargetPlayer : player.transform;
             float distance = Flat(AimPosition - transform.position).magnitude;
             if (!AimAlive || distance > engageRange)
             {
@@ -504,10 +508,20 @@ namespace PoeClone.Enemies
 
         // ------------------------------------------------------------------ shared pieces
 
-        // Where the player its moves go for is (the local player unless co-op says otherwise).
-        private Vector3 AimPosition => aim != null ? aim.position : player != null ? player.transform.position : transform.position;
+        /// <summary>Position of the current move's aggro target.</summary>
+        public Vector3 AimPosition => mirrorMinionAim ?? (aim != null ? aim.position : player != null ? player.transform.position : transform.position);
 
-        private bool AimAlive => aimedAtLocal || aim == null ? player != null && !player.IsDead && !player.ArrivalProtected : Party.PartnerTargetable;
+        private bool AimAlive
+        {
+            get
+            {
+                if (mirrorMinionAim.HasValue) return true;
+                if (aimMinion != null) return aimMinion.Targetable;
+                return aimedAtLocal || aim == null
+                    ? player != null && !player.IsDead && !player.ArrivalProtected
+                    : Party.PartnerTargetable;
+            }
+        }
 
         private Vector3 PlayerAt => Flat(AimPosition) + Vector3.up * transform.position.y;
 
