@@ -12,7 +12,7 @@ namespace PoeClone.EditorTools
     /// ribcage on the upper body, the pelvis and a ragged loincloth on the model, and each limb's
     /// bones on its shoulder, elbow, hip or knee. Coordinates are the model's at scale 1 (feet at
     /// y 0). Crevices are darkened in the vertex colours; the hands reuse the fleshed hand's finger
-    /// paths, open or closed round a grip. Run by PoeClone > Reshape Enemy Humanoids.
+    /// paths, open or closed round a grip. Included in PoeClone > Maintenance > Equipment > Reshape Humanoids.
     /// </summary>
     public static class SkeletonMeshBuilder
     {

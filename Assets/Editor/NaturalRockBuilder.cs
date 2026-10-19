@@ -7,7 +7,7 @@ namespace PoeClone.EditorTools
 {
     public static class NaturalRockBuilder
     {
-        [MenuItem("PoeClone/Rebuild Natural Rocks")]
+        [MenuItem("PoeClone/Maintenance/World/Rebuild Natural Rocks")]
         public static void BuildAll()
         {
             var variants = new Mesh[16];

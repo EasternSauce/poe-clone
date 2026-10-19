@@ -13,13 +13,13 @@ namespace PoeClone.EditorTools
     /// limbs, fingered hands; the player also a full face, hair and feet, enemies a lighter head with
     /// glowing eyes); the joints, sockets and animators stay as they are. Meshes are unit-sized like the
     /// cubes they replace, so code that scales a part by name still works.
-    /// Re-runnable: PoeClone > Reshape Humanoids.
+    /// Re-runnable: PoeClone > Maintenance > Equipment > Reshape Humanoids.
     /// </summary>
     public static class HumanoidBodyBuilder
     {
         private const string EnemyPrefabPath = "Assets/Prefabs/Enemy.prefab";
 
-        [MenuItem("PoeClone/Reshape Humanoids")]
+        [MenuItem("PoeClone/Maintenance/Equipment/Reshape Humanoids")]
         public static void ReshapeAll()
         {
             GameObject player = GameObject.Find("Player");
@@ -43,7 +43,6 @@ namespace PoeClone.EditorTools
         /// Only the humanoid template (the Enemy prefab every enemy, NPC and summon is made from),
         /// reusing the player's baked anatomy without rebaking it.
         /// </summary>
-        [MenuItem("PoeClone/Reshape Enemy Humanoids")]
         public static void ReshapeEnemies()
         {
             GameObject root = PrefabUtility.LoadPrefabContents(EnemyPrefabPath);

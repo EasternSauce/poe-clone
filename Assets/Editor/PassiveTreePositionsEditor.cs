@@ -44,7 +44,7 @@ namespace PoeClone.EditorTools
         private Vector2 hoverMouse;
         private bool mouseInWindow;
 
-        [MenuItem("PoeClone/Passive Tree Positions Editor", priority = 31)]
+        [MenuItem("PoeClone/Editors/Passive Tree Positions Editor", priority = 31)]
         public static void Open()
         {
             var window = GetWindow<PassiveTreePositionsEditor>("Passive Positions");

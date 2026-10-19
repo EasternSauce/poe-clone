@@ -11,7 +11,7 @@ namespace PoeClone.EditorTools
     /// The source files are only ever read. Each icon is recoloured to match the gear's 3D model,
     /// given the same outline / contrast / saturation as every other icon, fitted to the item's
     /// cell size, and written to Assets/Resources/ItemIcons as a new PNG.
-    /// Re-runnable: PoeClone > Build Item Icons.
+    /// Re-runnable: PoeClone > Maintenance > Equipment > Build Item Icons.
     /// </summary>
     public static class ItemIconBuilder
     {
@@ -39,7 +39,7 @@ namespace PoeClone.EditorTools
 
         private delegate Bitmap Recolor(Bitmap b);
 
-        [MenuItem("PoeClone/Build Item Icons")]
+        [MenuItem("PoeClone/Maintenance/Equipment/Build Item Icons")]
         public static void BuildAll()
         {
             Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), OutDir));
@@ -79,7 +79,6 @@ namespace PoeClone.EditorTools
         }
 
         /// <summary>Just the weapons added after the starter set, leaving the other icons untouched.</summary>
-        [MenuItem("PoeClone/Build Weapon Icons")]
         public static void BuildWeaponIcons()
         {
             Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), OutDir));
@@ -89,7 +88,6 @@ namespace PoeClone.EditorTools
         }
 
         /// <summary>The art for the Strength / Intelligence gear lines and the great weapons.</summary>
-        [MenuItem("PoeClone/Build Variety Icons")]
         public static void BuildVarietyIcons()
         {
             Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), OutDir));
@@ -99,7 +97,6 @@ namespace PoeClone.EditorTools
         }
 
         /// <summary>Just the summoner's sceptre and grimoire.</summary>
-        [MenuItem("PoeClone/Build Summoner Icons")]
         public static void BuildSummonerIcons()
         {
             Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), OutDir));
@@ -248,7 +245,6 @@ namespace PoeClone.EditorTools
         }
 
         /// <summary>Separate base icons; models continue to use the original ArtId.</summary>
-        [MenuItem("PoeClone/Build Base Icons")]
         public static void BuildBaseIcons()
         {
             BuildBaseIcons(null);
@@ -301,7 +297,6 @@ namespace PoeClone.EditorTools
             Debug.Log("ItemIconBuilder: separate icons built for every equipment base.");
         }
 
-        [MenuItem("PoeClone/Build Replacement Equipment Icons")]
         public static void BuildReplacementEquipmentIcons()
         {
             BuildReplacementIcon("spiked_buckler");
@@ -317,7 +312,6 @@ namespace PoeClone.EditorTools
             return true;
         }
 
-        [MenuItem("PoeClone/Build Crude Bow Icon")]
         public static void BuildCrudeBowIcon()
         {
             // Match the painted equipment set, retaining the source's shading and detail.
@@ -326,13 +320,11 @@ namespace PoeClone.EditorTools
                     new Color(0.48f, 0.32f, 0.16f), new Color(0.82f, 0.67f, 0.43f), false), 45f);
         }
 
-        [MenuItem("PoeClone/Build Bow Icons")]
         public static void BuildBowIcons()
         {
             BuildBaseIcons("short_bow");
         }
 
-        [MenuItem("PoeClone/Build Sash Icons")]
         public static void BuildSashIcons()
         {
             MakeClothSash();
@@ -346,7 +338,6 @@ namespace PoeClone.EditorTools
                     new Color(0.66f, 0.62f, 0.49f), new Color(0.95f, 0.92f, 0.78f), false));
         }
 
-        [MenuItem("PoeClone/Build Angled Weapon Icons")]
         public static void BuildAngledWeaponIcons()
         {
             foreach (string id in ItemGenerator.BaseIds)
@@ -388,7 +379,6 @@ namespace PoeClone.EditorTools
 
         // The ink hood has open contours: background removal eats the neck cloth.
         // Use repaired, transparent painted art instead, retaining it across rebuilds.
-        [MenuItem("PoeClone/Build Hood Icons")]
         public static void BuildHoodIcons()
         {
             foreach (string id in ItemGenerator.BaseIds)

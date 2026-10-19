@@ -21,7 +21,7 @@ namespace PoeClone.EditorTools
                 kit.trees[i] = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/{Species[i]}.prefab");
         }
 
-        [MenuItem("PoeClone/Rebuild Wind Trees")]
+        [MenuItem("PoeClone/Maintenance/World/Rebuild Wind Trees")]
         public static void BuildAll()
         {
             foreach (string species in Species)

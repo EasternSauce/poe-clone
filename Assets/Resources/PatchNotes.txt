@@ -1,3 +1,6 @@
+version: 2026-10-19-editor-menu-cleanup
+- Cleaned up the Unity PoeClone menu: removed redundant partial asset rebuild shortcuts and grouped full rebuilds under Maintenance, item and passive editors under Editors, and automated gauntlets under Balance. Class Gauntlet remains directly accessible.
+
 version: 2026-10-19-silent-ailment-ticks
 - Poison and ignite damage ticks are silent.
 - Poison damage landing on the same enemy at the same time now shows one combined damage number, including venom clouds, instead of separate rounded numbers for each stack.

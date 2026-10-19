@@ -10,7 +10,7 @@ namespace PoeClone.EditorTools
     /// Each direct child of a prefab is named after the character socket it attaches to
     /// (Socket_Head, Socket_HandL, ...). "Socket_Ring" lands on whichever hand the ring slot uses.
     /// Worn pieces are shaped round the body of <see cref="HumanoidBodyBuilder"/>; see the socket
-    /// notes above each group. Re-runnable: PoeClone > Build Equipment.
+    /// notes above each group. Re-runnable: PoeClone > Maintenance > Equipment > Build Equipment.
     /// </summary>
     public static partial class EquipmentBuilder
     {
@@ -32,7 +32,6 @@ namespace PoeClone.EditorTools
         private static readonly Dictionary<string, Material> Mats = new Dictionary<string, Material>();
         private static readonly Dictionary<string, Mesh> Meshes = new Dictionary<string, Mesh>();
 
-        [MenuItem("PoeClone/Refit Worn Armour")]
         public static void RefitWornArmour()
         {
             LoadMeshes();
@@ -52,7 +51,7 @@ namespace PoeClone.EditorTools
             AssetDatabase.SaveAssets();
         }
 
-        [MenuItem("PoeClone/Build Equipment")]
+        [MenuItem("PoeClone/Maintenance/Equipment/Build Equipment")]
         public static void BuildAll()
         {
             EnsureFolder("Assets/Resources");
@@ -987,7 +986,6 @@ namespace PoeClone.EditorTools
         /// Just the weapons added after the starter set (axe, mace, dagger, bow, quiver), leaving the
         /// other prefabs untouched. Build Equipment also builds these.
         /// </summary>
-        [MenuItem("PoeClone/Build Weapons")]
         public static void BuildWeapons()
         {
             EnsureFolder(OutDir);
@@ -1000,7 +998,6 @@ namespace PoeClone.EditorTools
         }
 
         /// <summary>The great (two-handed) weapons, leaving the other prefabs untouched.</summary>
-        [MenuItem("PoeClone/Build Great Weapons")]
         public static void BuildVariety()
         {
             EnsureFolder(OutDir);
@@ -1058,7 +1055,6 @@ namespace PoeClone.EditorTools
         }
 
         /// <summary>Just the summoner's sceptre and grimoire, leaving every other prefab untouched.</summary>
-        [MenuItem("PoeClone/Build Summoner Equipment")]
         public static void BuildSummoner()
         {
             EnsureFolder("Assets/Resources");

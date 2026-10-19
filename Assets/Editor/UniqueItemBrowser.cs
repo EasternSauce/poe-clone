@@ -24,7 +24,7 @@ namespace PoeClone.EditorTools
         private int hovered = -1;
         private Vector2 hoveredAt;
 
-        [MenuItem("PoeClone/Unique Item Browser", priority = 33)]
+        [MenuItem("PoeClone/Editors/Unique Item Browser", priority = 33)]
         public static void Open()
         {
             var window = GetWindow<UniqueItemBrowser>("Unique Items");

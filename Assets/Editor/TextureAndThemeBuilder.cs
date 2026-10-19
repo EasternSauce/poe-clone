@@ -13,7 +13,7 @@ public static class TextureAndThemeBuilder
     private const string TexDir = "Assets/Textures/Generated";
     private const string MatDir = "Assets/Materials/Stylized";
 
-    [MenuItem("PoeClone/Apply Thematic Shader + Textures")]
+    [MenuItem("PoeClone/Maintenance/World/Apply Thematic Shader + Textures")]
     public static void Apply()
     {
         Directory.CreateDirectory(Path.Combine(Application.dataPath, "../" + TexDir).Replace("Assets/../Assets", "Assets"));

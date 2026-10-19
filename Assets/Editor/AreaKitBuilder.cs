@@ -56,7 +56,7 @@ namespace PoeClone.EditorTools
             ("Plaster", "Bone", "#d8cbab"),
         };
 
-        [MenuItem("PoeClone/Build Area Kit")]
+        [MenuItem("PoeClone/Maintenance/World/Build Area Kit")]
         public static void Build()
         {
             if (!AssetDatabase.IsValidFolder("Assets/Resources"))

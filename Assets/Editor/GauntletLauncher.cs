@@ -37,10 +37,10 @@ namespace PoeClone.EditorTools
         [MenuItem("PoeClone/Class Gauntlet", priority = 35)]
         private static void ManualMenu() => Debug.Log(Manual());
 
-        [MenuItem("PoeClone/Class Gauntlet (Automated)", priority = 36)]
+        [MenuItem("PoeClone/Balance/Class Gauntlet (Automated)", priority = 36)]
         private static void AutoMenu() => Debug.Log(Auto());
 
-        [MenuItem("PoeClone/Class Gauntlet (Stop Automated)", priority = 37)]
+        [MenuItem("PoeClone/Balance/Class Gauntlet (Stop Automated)", priority = 37)]
         private static void StopMenu() => Debug.Log(StopAuto());
 
         [InitializeOnLoadMethod]

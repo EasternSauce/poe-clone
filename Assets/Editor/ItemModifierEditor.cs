@@ -17,7 +17,7 @@ namespace PoeClone.EditorTools
         private string search = "";
         private Vector2 listScroll, detailScroll;
 
-        [MenuItem("PoeClone/Item Modifier Editor", priority = 32)]
+        [MenuItem("PoeClone/Editors/Item Modifier Editor", priority = 32)]
         public static void Open()
         {
             var window = GetWindow<ItemModifierEditor>("Item Modifiers");

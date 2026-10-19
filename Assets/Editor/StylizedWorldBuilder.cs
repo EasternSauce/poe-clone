@@ -10,7 +10,7 @@ namespace PoeClone.EditorTools
     /// <summary>
     /// Builds a consistent low-poly look from primitives: one palette, flat-shaded
     /// meshes, prop prefabs and characters. Greenwood's placed scenery is its own prefab
-    /// (GreenwoodScenery), edited by hand. Re-runnable: PoeClone > Build Stylized World.
+    /// (GreenwoodScenery), edited by hand. Re-runnable: PoeClone > Maintenance > World > Build Stylized World.
     /// </summary>
     public static class StylizedWorldBuilder
     {
@@ -23,7 +23,7 @@ namespace PoeClone.EditorTools
         private static Dictionary<string, Material> mats;
         private static Dictionary<string, Mesh> meshes;
 
-        [MenuItem("PoeClone/Build Stylized World")]
+        [MenuItem("PoeClone/Maintenance/World/Build Stylized World")]
         public static void BuildAll()
         {
             mats = new Dictionary<string, Material>();
