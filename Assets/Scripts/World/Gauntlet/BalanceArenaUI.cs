@@ -16,7 +16,7 @@ namespace PoeClone.World
         private readonly List<Vector2> layoutPositions = new List<Vector2>();
         private readonly List<Vector2> layoutSizes = new List<Vector2>();
         private Vector2 lastCanvasSize;
-        private Text status, levelLabel, skillLabel, detail, pageLabel;
+        private Text status, levelLabel, skillLabel, detail, pageLabel, levelGroupLabel;
         private Image randomLevelButton, randomBuildButton, lowerLevelButton;
         private readonly List<Image> routeButtons = new List<Image>();
         private readonly List<Text> routeLabels = new List<Text>();
@@ -25,7 +25,9 @@ namespace PoeClone.World
         private bool randomLevel, randomBuild;
         private List<BalanceArenaBuilds.Entry> choices;
         private string[] skills;
+        private List<BalanceArenaBuilds.Entry> visibleChoices;
         private const int PageSize = 6;
+        private static readonly Color HighestDps = new Color(.45f, 1f, .65f);
         private static readonly Color Selected = new Color(1f, .62f, .3f);
 
         public void Bind(GauntletMode gauntlet)
@@ -69,11 +71,12 @@ namespace PoeClone.World
             Button(panel, "Previous skill", new Vector2(40, -200), new Vector2(220, 48), () => ChangeSkill(-1));
             skillLabel = Label(panel, "", new Vector2(275, -200), new Vector2(570, 48), 24);
             Button(panel, "Next skill", new Vector2(860, -200), new Vector2(220, 48), () => ChangeSkill(1));
+            levelGroupLabel = Label(panel, "", new Vector2(40, -256), new Vector2(1040, 28), 18);
             for (int i = 0; i < PageSize; i++)
             {
                 int index = i;
-                Image b = Button(panel, "", new Vector2(40, -270 - i * 54), new Vector2(1040, 46), () => {
-                    route = choices[page * PageSize + index].id; randomBuild = false; Refresh();
+                Image b = Button(panel, "", new Vector2(40, -290 - i * 50), new Vector2(1040, 46), () => {
+                    route = visibleChoices[index].id; randomBuild = false; Refresh();
                 });
                 routeButtons.Add(b);
                 Text label = b.GetComponentInChildren<Text>();
@@ -139,7 +142,7 @@ namespace PoeClone.World
                         }
                         else { at.x = 94f; dimensions.x = w - 188f; }
                     }
-                    else if (y >= 270f && y <= 540f) { at = new Vector2(24f, at.y - 80f); dimensions.x = w - 48f; }
+                    else if (y >= 256f && y <= 540f) { at = new Vector2(24f, at.y - 80f); dimensions.x = w - 48f; }
                     else if (y == 604f)
                     {
                         at.y = -684f;
@@ -190,23 +193,38 @@ namespace PoeClone.World
             if (!choices.Any(b => b.id == route)) route = choices[0].id;
             level = Mathf.Max(level, MinimumLevel);
             lowerLevelButton.color = !randomLevel && level <= MinimumLevel ? new Color(.45f, .45f, .45f) : Color.white;
-            int pages = Mathf.Max(1, (choices.Count + PageSize - 1) / PageSize);
+            // Keep each minimum-level group on its own pages so its heading and DPS leader
+            // remain unambiguous, even when the group spans several pages.
+            var routePages = new List<List<BalanceArenaBuilds.Entry>>();
+            var leaders = new Dictionary<int, float>();
+            foreach (var group in choices.GroupBy(b => b.level).OrderBy(g => g.Key))
+            {
+                var ranked = group.OrderByDescending(b => BalanceArenaBuilds.EstimatedDps(Preview(b)))
+                    .ThenBy(b => b.name, System.StringComparer.Ordinal).ThenBy(b => b.id, System.StringComparer.Ordinal).ToList();
+                leaders[group.Key] = BalanceArenaBuilds.EstimatedDps(Preview(ranked[0]));
+                for (int offset = 0; offset < ranked.Count; offset += PageSize)
+                    routePages.Add(ranked.Skip(offset).Take(PageSize).ToList());
+            }
+            int pages = routePages.Count;
             page = Mathf.Clamp(page, 0, pages - 1);
+            visibleChoices = routePages[page];
+            levelGroupLabel.text = "Available from Lv " + visibleChoices[0].level + " · Highest DPS first";
             levelLabel.text = randomLevel ? "Level " + MinimumLevel + "–34" : "Level " + level;
             skillLabel.text = skill + "  (" + (System.Array.IndexOf(skills, skill) + 1) + "/" + skills.Length + ")";
             randomLevelButton.color = randomLevel ? Selected : Color.white;
             randomBuildButton.color = randomBuild ? Selected : Color.white;
             for (int i = 0; i < PageSize; i++)
             {
-                int at = page * PageSize + i;
-                routeButtons[i].gameObject.SetActive(at < choices.Count);
-                if (at >= choices.Count) continue;
-                var choice = choices[at];
-                int previewLevel = randomLevel ? choice.level : Mathf.Max(level, choice.level);
-                var preview = BalanceArenaBuilds.Data.builds.First(b => b.id == choice.id && b.level == previewLevel);
+                routeButtons[i].gameObject.SetActive(i < visibleChoices.Count);
+                if (i >= visibleChoices.Count) continue;
+                var choice = visibleChoices[i];
+                var preview = Preview(choice);
+                float dps = BalanceArenaBuilds.EstimatedDps(preview);
+                bool highest = dps == leaders[choice.level];
                 routeLabels[i].text = choice.name + "  · Lv " + choice.level + "+" +
-                    "\n≈ " + BalanceArenaBuilds.EstimatedDps(preview).ToString("N0") + " DPS at Lv " + previewLevel;
-                routeButtons[i].color = !randomBuild && choices[at].id == route ? Selected : Color.white;
+                    "\n≈ " + dps.ToString("N0") + " DPS at Lv " + preview.level + (highest ? " · TOP DPS" : "");
+                routeLabels[i].color = highest ? HighestDps : UiKit.TextColor;
+                routeButtons[i].color = !randomBuild && choice.id == route ? Selected : Color.white;
             }
             pageLabel.text = "Routes " + (page + 1) + " / " + pages;
             detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected: " + skill + " · " + choices.First(b => b.id == route).name) +
@@ -214,6 +232,11 @@ namespace PoeClone.World
                 "\nWorst 30% ground-loot gear. DPS: single target, full army; excludes movement/mana downtime." +
                 "\n20 waves of " + GauntletMode.ArenaMinMonsters + "–" + GauntletMode.ArenaMaxMonsters +
                 " enemies and occasional bosses. No XP, loot or saves.";
+        }
+        private BalanceArenaBuilds.Entry Preview(BalanceArenaBuilds.Entry choice)
+        {
+            int previewLevel = randomLevel ? choice.level : Mathf.Max(level, choice.level);
+            return BalanceArenaBuilds.Data.builds.First(b => b.id == choice.id && b.level == previewLevel);
         }
         private void StartRun()
         {

@@ -8,38 +8,40 @@ namespace PoeClone.Skills
     {
         private const int Size = 64;
         private delegate bool Shape(float x, float y);
-        private static readonly Dictionary<SkillId, Sprite> Cache = new Dictionary<SkillId, Sprite>();
+        private static readonly Dictionary<(SkillId, int), Sprite> Cache = new Dictionary<(SkillId, int), Sprite>();
 
-        public static Sprite Get(SkillId id)
+        public static Sprite Get(SkillId id, int resolution = Size)
         {
-            if (Cache.TryGetValue(id, out Sprite sprite) && sprite != null)
+            int size = Mathf.Clamp(resolution, Size, 256);
+            var key = (id, size);
+            if (Cache.TryGetValue(key, out Sprite sprite) && sprite != null)
                 return sprite;
 
             var ink = new List<Shape>();
             var cut = new List<Shape>();
             Draw(id, ink, cut);
-            Texture2D texture = new Texture2D(Size, Size, TextureFormat.RGBA32, false);
-            texture.name = "SkillIcon_" + id;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            texture.name = "SkillIcon_" + id + "_" + size;
             texture.filterMode = FilterMode.Bilinear;
             texture.wrapMode = TextureWrapMode.Clamp;
-            var pixels = new Color32[Size * Size];
-            for (int y = 0; y < Size; y++)
-                for (int x = 0; x < Size; x++)
+            var pixels = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
                 {
                     int hits = 0;
                     for (int sy = 0; sy < 3; sy++)
                         for (int sx = 0; sx < 3; sx++)
                         {
-                            float u = (x + (sx + 0.5f) / 3f) / Size;
-                            float v = (y + (sy + 0.5f) / 3f) / Size;
+                            float u = (x + (sx + 0.5f) / 3f) / size;
+                            float v = (y + (sy + 0.5f) / 3f) / size;
                             if (Contains(ink, u, v) && !Contains(cut, u, v)) hits++;
                         }
-                    pixels[y * Size + x] = new Color32(255, 255, 255, (byte)(hits * 255 / 9));
+                    pixels[y * size + x] = new Color32(255, 255, 255, (byte)(hits * 255 / 9));
                 }
             texture.SetPixels32(pixels);
             texture.Apply();
-            sprite = Sprite.Create(texture, new Rect(0, 0, Size, Size), new Vector2(0.5f, 0.5f), 100f);
-            Cache[id] = sprite;
+            sprite = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+            Cache[key] = sprite;
             return sprite;
         }
 

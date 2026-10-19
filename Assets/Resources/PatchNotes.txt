@@ -1,3 +1,9 @@
+version: 2026-10-19-arena-build-level-groups
+- Arena build routes are grouped by their minimum level and sorted by estimated DPS, highest first. Each level group highlights its top DPS builds in green.
+
+version: 2026-10-19-weapon-tree-zoom-clarity
+- Weapon tree node names and the central skill icon stay sharper when zooming in on mobile and desktop.
+
 version: 2026-10-19-skeleton-mage-projectile-spells
 - Skeleton Mage bolts are physical projectile spells by default. Spell damage and increased minion damage both apply, and spell projectile bonuses add bolts.
 - Skeleton Mages use cast speed instead of attack speed. Their weapon-tree speed bonuses now correctly describe minion cast speed.

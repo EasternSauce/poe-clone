@@ -19,6 +19,7 @@ namespace PoeClone.UI
     public sealed class WeaponSkillTreeUI : MonoBehaviour
     {
         private const float MinZoom = 0.5f, MaxZoom = 2.5f, Margin = 20f;
+        private const int LabelResolution = 3; // Covers maximum zoom without magnifying font atlas pixels.
         private static readonly Color Locked = new Color(0.16f, 0.15f, 0.14f, 1f);
         private static readonly Color Pending = new Color(0.3f, 0.85f, 1f);
         private static WeaponSkillTreeUI instance;
@@ -489,7 +490,7 @@ namespace PoeClone.UI
             origin.Ring.color = UiKit.Gold;
             origin.Body.color = definition.Color;
             var icon = UiKit.NewImage("Skill icon", origin.Body.transform, Color.white);
-            icon.sprite = SkillIconFactory.Get(definition.Id);
+            icon.sprite = SkillIconFactory.Get(definition.Id, 256);
             icon.raycastTarget = false;
             UiKit.Stretch(icon.rectTransform, 5f);
             foreach (var node in nodes)
@@ -500,13 +501,16 @@ namespace PoeClone.UI
             {
                 if (v.Node == null || !(v.Node.Notable || v.Node.Keystone)) continue;
                 float size = v.Ring.rectTransform.sizeDelta.x;
-                Text label = UiKit.NewText("Label_" + v.Node.Id, content, v.Node.Name, 13, UiKit.DimText, TextAnchor.UpperCenter);
+                Text label = UiKit.NewText("Label_" + v.Node.Id, content, v.Node.Name, 13 * LabelResolution, UiKit.DimText, TextAnchor.UpperCenter);
                 label.raycastTarget = false;
                 RectTransform tr = label.rectTransform;
                 tr.anchorMin = tr.anchorMax = new Vector2(0.5f, 0.5f);
                 tr.pivot = new Vector2(0.5f, 1f);
                 tr.anchoredPosition = v.Node.Position - new Vector2(0f, size * (v.Node.Keystone ? 0.72f : 0.5f) + 2f);
-                tr.sizeDelta = new Vector2(130f, 18f);
+                // uGUI text rasterization follows the canvas scale, not the tree transform.
+                // Render larger glyphs and shrink their geometry to preserve layout at every zoom.
+                tr.sizeDelta = new Vector2(130f, 18f) * LabelResolution;
+                tr.localScale = Vector3.one / LabelResolution;
                 v.Label = label;
             }
             dirty = true;
