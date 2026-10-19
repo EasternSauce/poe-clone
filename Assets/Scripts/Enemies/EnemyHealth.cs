@@ -54,6 +54,16 @@ namespace PoeClone.Enemies
         public bool IsDead => dead;
         /// <summary>Attackable quest scenery uses normal targeting, but awards no monster kills or loot.</summary>
         public bool IsQuestObject { get; set; }
+        public bool IsTrainingDummy { get; private set; }
+
+        public void ConfigureTrainingDummy()
+        {
+            IsTrainingDummy = true;
+            IsQuestObject = true; // Static scenery: never replicated as a monster or awarded as a kill.
+            BossName = "Training Doll";
+            // A neutral life percentage avoids permanent full-life or low-life damage bonuses.
+            currentHealth = maxHealth * 0.75f;
+        }
         /// <summary>Spawned for a quest encounter, which owns it: never handed to a co-op partner as an ordinary monster.</summary>
         public bool IsEncounterEnemy { get; set; }
 
@@ -249,6 +259,14 @@ namespace PoeClone.Enemies
                     UI.CombatText.Show(transform.position + Vector3.up * 1.5f * transform.localScale.y, "Immune", UI.CombatText.AvoidColor, 0.8f);
                 }
                 return 0f;
+            }
+
+            // An indestructible, unarmoured target. Use the same damage event as monsters,
+            // including damage over time, without death rewards, stagger or a shrinking life pool.
+            if (IsTrainingDummy)
+            {
+                DamageApplied?.Invoke(amount);
+                return amount;
             }
 
             EnemyKind kind = EnemyKinds.Get(KindIndex);

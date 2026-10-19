@@ -638,6 +638,9 @@ namespace PoeClone.World
             BuildVillageHomes(t);
             BuildSmithWorkshop(t, c + Flat(10f, -15f));
             BuildVillageCommons(t);
+            Vector3 trainingSpot = c + Flat(18f, -8f);
+            Claim(trainingSpot, 4f);
+            TrainingDummy.Create(t, trainingSpot);
             foreach (Vector3 local in new[] { Flat(-9, -17), Flat(-21, 12), Flat(-31, -12),
                 Flat(21, 31), Flat(95, -5), Flat(-23, -14) })
                 Claim(c + local, 2f);

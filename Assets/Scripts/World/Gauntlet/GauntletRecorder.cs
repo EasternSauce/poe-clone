@@ -229,7 +229,7 @@ namespace PoeClone.World
         public void Tick()
         {
             foreach (EnemyHealth e in EnemyHealth.Active)
-                if (e != null && !e.IsDead && !tracked.ContainsKey(e))
+                if (e != null && !e.IsDead && !e.IsTrainingDummy && !tracked.ContainsKey(e))
                     Track(e);
 
             if (skills != null && skills.CastCount != lastCastNumber)

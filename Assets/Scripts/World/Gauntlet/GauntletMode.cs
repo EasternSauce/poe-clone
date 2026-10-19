@@ -99,6 +99,8 @@ namespace PoeClone.World
             };
 
             BuildRooms();
+            if (MinimalCombatMode.ArenaEnabled)
+                TrainingDummy.Create(transform, Vector3.zero);
             PoeClone.Network.UiEventSystemBootstrap.EnsureExists();
         }
 
@@ -415,14 +417,14 @@ namespace PoeClone.World
         private bool NoEnemiesLeft()
         {
             foreach (EnemyHealth e in EnemyHealth.Active)
-                if (e != null && !e.IsDead && !e.IsRemote) return false;
+                if (e != null && !e.IsDead && !e.IsRemote && !e.IsTrainingDummy) return false;
             return true;
         }
 
         private static void ClearEnemies()
         {
             foreach (EnemyHealth e in new List<EnemyHealth>(EnemyHealth.Active))
-                if (e != null && !e.IsDead) Destroy(e.gameObject);
+                if (e != null && !e.IsDead && !e.IsTrainingDummy) Destroy(e.gameObject);
         }
 
         // ------------------------------------------------------------------ spawning

@@ -820,7 +820,10 @@ namespace PoeClone.Skills
                 return mark;
 
             EnemyHealth best = null;
-            float bestDistance = (Kind == MinionKind.Mage ? MageEngageRadius : EngageRadius) * commandRange;
+            EnemyHealth training = null;
+            float engageRadius = (Kind == MinionKind.Mage ? MageEngageRadius : EngageRadius) * commandRange;
+            float bestDistance = engageRadius;
+            float trainingDistance = engageRadius;
             foreach (EnemyHealth e in EnemyHealth.Active)
             {
                 if (e == null || e.IsDead)
@@ -828,13 +831,23 @@ namespace PoeClone.Skills
                 if (Flat(e.transform.position - owner.position).magnitude > Leash * commandRange)
                     continue;
                 float d = Flat(e.transform.position - transform.position).magnitude;
+                // Practise automatically while idle, but never abandon an arena enemy for the doll.
+                if (e.IsTrainingDummy)
+                {
+                    if (d < trainingDistance)
+                    {
+                        trainingDistance = d;
+                        training = e;
+                    }
+                    continue;
+                }
                 if (d < bestDistance)
                 {
                     bestDistance = d;
                     best = e;
                 }
             }
-            return best;
+            return best != null ? best : training;
         }
 
         private void OnStrike()
