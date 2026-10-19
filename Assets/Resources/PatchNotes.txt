@@ -1,3 +1,8 @@
+version: 2026-10-19-map-toggle-and-waterfall-fix
+- The Map button stays in place when opening or closing the map outline, so it can be used as a toggle.
+- Quest details start hidden unless you have saved a preference to show them.
+- Fixed waterfall foam reporting a particle velocity error.
+
 version: 2026-10-19-audio-listener-handoff
 - Fixed the menu and gameplay audio listeners briefly overlapping during startup and when returning to the main menu.
 

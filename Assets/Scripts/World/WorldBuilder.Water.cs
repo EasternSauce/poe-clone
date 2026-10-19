@@ -232,6 +232,7 @@ namespace PoeClone.World
             velocity.enabled = true;
             velocity.space = ParticleSystemSimulationSpace.Local;
             velocity.x = new ParticleSystem.MinMaxCurve(-0.25f, 0.25f);
+            velocity.y = new ParticleSystem.MinMaxCurve(0f, 0f);
             velocity.z = new ParticleSystem.MinMaxCurve(0.8f, 1.8f);
             var fade = particles.colorOverLifetime;
             fade.enabled = true;

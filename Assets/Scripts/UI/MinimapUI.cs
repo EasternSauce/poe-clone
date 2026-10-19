@@ -79,11 +79,14 @@ namespace PoeClone.UI
         private InventoryUI inventoryUI;
         private CharacterPageUI characterUI;
 
-        /// <summary>How far down from the top the map reaches (others stack below it), 0 when hidden.</summary>
-        public static float Bottom => instance != null && instance.frame != null && instance.frame.gameObject.activeSelf ? (Size + NamePlateHeight + 6f) * Scale + TopInset : 0f;
+        /// <summary>Space below the map or its toggle, for panels stacked underneath.</summary>
+        public static float Bottom => instance == null ? 0f :
+            instance.frame != null && instance.frame.gameObject.activeSelf ? (Size + NamePlateHeight + 6f) * Scale + TopInset :
+            instance.mapTab != null && instance.mapTab.gameObject.activeSelf ? instance.mapTab.sizeDelta.y * Scale + TopInset : 0f;
 
         /// <summary>Space occupied from the right edge, for panels placed beside the map.</summary>
-        public static float OccupiedWidth => instance != null && instance.frame != null && instance.frame.gameObject.activeSelf ? Size * Scale + 16f : 0f;
+        public static float OccupiedWidth => instance != null && instance.mapTab != null && instance.mapTab.gameObject.activeSelf ?
+            (Size + 4f + instance.mapTab.sizeDelta.x) * Scale + 16f : 0f;
 
         private static float TopInset => 16f;
 
@@ -291,12 +294,12 @@ namespace PoeClone.UI
             drawn = view;
         }
 
-        // The corner map's place and name plate, and the Map tab beside it (in the corner when
-        // the map is hidden or the full map is up).
+        // Keep the Map toggle beside the corner map's reserved space in both views,
+        // so another click at the same position closes the outline.
         private void PlaceCorner(string name)
         {
             mapTab.localScale = Vector3.one * Scale;
-            mapTab.anchoredPosition = new Vector2(frame.gameObject.activeSelf ? -16f - (Size + 4f) * Scale : -16f, -TopInset);
+            mapTab.anchoredPosition = new Vector2(-16f - (Size + 4f) * Scale, -TopInset);
             mapTabPlate.color = overlayOn ? UiKit.Gold : Color.white;
 
             frame.anchoredPosition = new Vector2(-16f, -TopInset);

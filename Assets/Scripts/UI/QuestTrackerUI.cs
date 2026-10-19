@@ -36,7 +36,7 @@ namespace PoeClone.UI
 
         private void Awake()
         {
-            showDetails = PlayerPrefs.GetInt(DetailsPreference, 1) != 0;
+            showDetails = PlayerPrefs.GetInt(DetailsPreference, 0) != 0;
             Canvas canvas = UiKit.NewCanvas("QuestTrackerCanvas", transform, 40, out CanvasGroup group);
             canvas.gameObject.AddComponent<GraphicRaycaster>();
             group.interactable = true;
