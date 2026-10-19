@@ -34,7 +34,20 @@ namespace PoeClone.EditorTools
                 .Distinct().OrderBy(path => path, StringComparer.Ordinal).ToArray();
             if (invalid.Length > 0)
                 throw new BuildFailedException("Move gameplay audio into Assets/Audio:\n" + string.Join("\n", invalid));
-            return "All referenced and Resources-loaded gameplay audio is under Assets/Audio.";
+            var deferred = referenced.Concat(resources).Distinct()
+                .Where(path => InAudio(path) && !path.StartsWith("Assets/Audio/Music/", StringComparison.OrdinalIgnoreCase))
+                .Where(path =>
+                {
+                    var importer = AssetImporter.GetAtPath(path) as AudioImporter;
+                    if (importer == null) return true;
+                    bool Delayed(AudioImporterSampleSettings sample) => !sample.preloadAudioData || sample.loadType != AudioClipLoadType.DecompressOnLoad;
+                    return importer.loadInBackground || Delayed(importer.defaultSampleSettings) ||
+                        new[] { "WebGL", "Standalone", "Android", "iOS" }.Any(platform =>
+                            importer.ContainsSampleSettingsOverride(platform) && Delayed(importer.GetOverrideSampleSettings(platform)));
+                }).OrderBy(path => path, StringComparer.Ordinal).ToArray();
+            if (deferred.Length > 0)
+                throw new BuildFailedException("Sound effects must preload and decode synchronously:\n" + string.Join("\n", deferred));
+            return "All gameplay audio is under Assets/Audio; sound effects preload and decode before gameplay.";
         }
     }
 }

@@ -230,13 +230,13 @@
     },
     {
       "id": "skill.DeathMark",
-      "path": "Assets/Audio/Resources/DeferredAudio/d632a08f948dde844ba9d76d0b850fb9/Rune_activate_–_Anci_#2-1766768897281.wav",
+      "path": "Assets/Audio/SoundLibrary/Movement/Rune_activate_–_Anci_#2-1766768897281.wav",
       "muted": false,
       "volume": 1
     },
     {
       "id": "skill.SpiritWolves",
-      "path": "Assets/Audio/Resources/DeferredAudio/7cf214a211511994ab81d9a4040bf591/shade1.wav",
+      "path": "Assets/Audio/SoundLibrary/Creatures & voices/shade1.wav",
       "muted": false,
       "volume": 1
     },
@@ -296,7 +296,7 @@
     },
     {
       "id": "skill.SummonViper",
-      "path": "Assets/Audio/Resources/DeferredAudio/4e7a0dd692f52b04ca8954a5669176ee/slime1.wav",
+      "path": "Assets/Audio/SoundLibrary/Creatures & voices/slime1.wav",
       "muted": false,
       "volume": 1
     },
@@ -338,7 +338,7 @@
     },
     {
       "id": "enemy.Zombie.Death",
-      "path": "Assets/Audio/Resources/DeferredAudio/9eebe2b36c407154ba474f0edada8c37/mnstr1.wav",
+      "path": "Assets/Audio/SoundLibrary/Creatures & voices/mnstr1.wav",
       "muted": false,
       "volume": 1
     },
@@ -374,7 +374,7 @@
     },
     {
       "id": "enemy.Brute.Death",
-      "path": "Assets/Audio/Resources/DeferredAudio/d9bf550722614fc4e8214f91b243d4b2/giant2.wav",
+      "path": "Assets/Audio/SoundLibrary/Creatures & voices/giant2.wav",
       "muted": false,
       "volume": 1
     },
@@ -386,7 +386,7 @@
     },
     {
       "id": "enemy.Archer.Death",
-      "path": "Assets/Audio/Resources/DeferredAudio/53346a3d498e76e4daeb7ae7899bdce4/Player_hurt_–_Short__#1-1766764352490.mp3",
+      "path": "Assets/Audio/SoundLibrary/Creatures & voices/Player_hurt_–_Short__#1-1766764352490.mp3",
       "muted": false,
       "volume": 1
     },

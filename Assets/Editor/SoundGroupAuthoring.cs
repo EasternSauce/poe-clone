@@ -38,7 +38,7 @@ namespace PoeClone.EditorTools
             else if (voice.StartsWith("Goblin_attack_")) voice = "Humanoid grunts";
             else if (voice.StartsWith("Skeleton_attack_")) voice = "Skeleton";
             else if (voice.StartsWith("Zombie_moan_")) voice = "Zombie";
-            else if (voice.StartsWith("Magic_projectile_lau_")) voice = "Magic projectile";
+            else if (voice == "Skill_Dark07") voice = "Dark projectile";
             else if (voice.StartsWith("Player_hurt_")) voice = "Human";
             int take = voice.IndexOf('#');
             if (take >= 0) voice = voice.Substring(0, take).TrimEnd('_', ' ', ',', '–');
@@ -75,7 +75,6 @@ namespace PoeClone.EditorTools
                     string name = clips[0].name;
                     string prefix = name.StartsWith("Zombie_moan_") ? "Zombie_moan_" :
                         name.StartsWith("Skeleton_attack_") ? "Skeleton_attack_" :
-                        name.StartsWith("Magic_projectile_lau_") ? "Magic_projectile_lau_" :
                         name.StartsWith("Goblin_attack_") ? "Goblin_attack_" : null;
                     if (prefix != null) clips = Takes(clips[0], prefix == "Goblin_attack_" ? 4 : 0);
                 }

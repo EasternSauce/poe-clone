@@ -33,38 +33,9 @@ namespace PoeClone.World
         {
             manager = areaManager;
             player = listener;
-            if (prepared.Add(area)) StartCoroutine(LoadAreaAudio(area));
-        }
-
-        private System.Collections.IEnumerator LoadAreaAudio(int area)
-        {
-            // The catalog contains paths only: other areas' recordings remain unloaded.
-            var catalog = AmbientSoundLibrary.LoadCatalog();
-            var library = ScriptableObject.CreateInstance<AmbientSoundLibrary>();
-            string bed = area == WorldBuilder.Haven ? "town" : area == WorldBuilder.Graveyard || area == WorldBuilder.Belfry || area == WorldBuilder.Orchard ? "night" :
-                area == WorldBuilder.Ruins ? "lava" : area == WorldBuilder.Frozen ? "blizzard" :
-                area == WorldBuilder.Cave || area == WorldBuilder.Warren ? "cave" :
-                area == WorldBuilder.ActArena || area == WorldBuilder.DrownedWorks || area == WorldBuilder.BuriedWard || area == WorldBuilder.FirstRoot ? "dungeon" : "";
-            var fields = new HashSet<string> { bed, "fire", "creaks" };
-            if (RainWeather.Intensity(area) > 0) fields.Add("rain");
-            AreaShape shape = WorldBuilder.Shape(area);
-            if (shape.HasWater && area != WorldBuilder.Frozen) { fields.Add("river"); fields.Add("pond"); }
-            if (shape.HasOcean) fields.Add("ocean");
-            fields.Add(bed == "cave" || bed == "dungeon" ? "stones" : "gust");
-            foreach (var entry in catalog.entries)
-            {
-                if (!fields.Contains(entry.name)) continue;
-                foreach (string path in entry.paths)
-                    while (!DeferredAudio.Finished(path)) yield return null;
-                var field = typeof(AmbientSoundLibrary).GetField(entry.name);
-                if (field == null) continue;
-                if (field.FieldType == typeof(AudioClip))
-                    field.SetValue(library, entry.paths.Length > 0 ? DeferredAudio.Get(entry.paths[0]) : null);
-                else field.SetValue(library, Array.ConvertAll(entry.paths, DeferredAudio.Get));
-            }
+            if (!prepared.Add(area)) return;
             buildingArea = area;
-            AddAreaVoices(library);
-            Destroy(library);
+            AddAreaVoices(AmbientSoundLibrary.Load());
         }
 
         private void AddAreaVoices(AmbientSoundLibrary library)

@@ -44,7 +44,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/cfa9bd3a439dd5d49a9bda17e114751a/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.wav",
+      "file": "Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.wav",
       "sha256": "48c5ac3fbb566e5d2faebd0ca53914316c50686f66befa5cee11940dbca18dc6",
       "sources": [
         {
@@ -115,7 +115,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/e452f29912848904aa8fe6e4e14ca4af/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3",
+      "file": "Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3",
       "sha256": "7b6871303ba53955b4689c9c694fdbf0f4940be346b2a27e7b2509c039de6da9",
       "sources": [
         {
@@ -136,7 +136,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/9efd46fd6de73d249aadb300d7aaa135/Bridge_creak_–_Old_w_#1-1766767266448.wav",
+      "file": "World & ambience/Bridge_creak_–_Old_w_#1-1766767266448.wav",
       "sha256": "4f224aabb017543b6750a9ade8af7dc8b5556e46c1be85f0db81f77699df4b97",
       "sources": [
         {
@@ -247,7 +247,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/914b85ad31c126b488f0f7594656f551/Campfire_–_Medium_fi_#1-1766768610324.wav",
+      "file": "World & ambience/Campfire_–_Medium_fi_#1-1766768610324.wav",
       "sha256": "61698c83b8a2c89adab68c737f350b1601965c0a1cd0c6c5db0ed1ada16e3468",
       "sources": [
         {
@@ -288,7 +288,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/186286c1a37cbfc44a8ef0e817f8ec20/Cave_ambience_–_Holl_#1-1766768454355.wav",
+      "file": "World & ambience/Cave_ambience_–_Holl_#1-1766768454355.wav",
       "sha256": "f7ce20d0f248578ba656ecbd97d14a7ab8244085942968f3e4e3a9980062e60f",
       "sources": [
         {
@@ -409,7 +409,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/13bbdc148f8a33943a6354bc5d0534f1/Dungeon_ambience_–_W_#1-1766768410723.wav",
+      "file": "World & ambience/Dungeon_ambience_–_W_#1-1766768410723.wav",
       "sha256": "7358decfb929a4d2316135da0d630994853d37a3164c25ab5787806ad1e737e4",
       "sources": [
         {
@@ -460,7 +460,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
+      "file": "Creatures & voices/enemy_death_3.mp3",
       "sha256": "cf6ec7e3f8e34e3ff7da2341ff0ce8f1589ee6cde9b06b40e04ce7059aae9819",
       "sources": [
         {
@@ -531,7 +531,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/1245c323736a13c42907875be83718b4/Fire_spell_cast_–_Ma_#1-1766763536495.wav",
+      "file": "Magic & spells/Fire_spell_cast_–_Ma_#1-1766763536495.wav",
       "sha256": "29bd082125fc391bef6165801baf5af3158e0794fa2d172b999fbf40901c07bd",
       "sources": [
         {
@@ -542,7 +542,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/0baa0ce2e866e4148be378ed358e9cfc/Fire_spell_cast_–_Ma_#2-1766763532663.wav",
+      "file": "Magic & spells/Fire_spell_cast_–_Ma_#2-1766763532663.wav",
       "sha256": "02ff46ce8790af18d254a64207b211e8e595823d218e2cc2dbeb6b609375ed7c",
       "sources": [
         {
@@ -553,7 +553,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/9e354d1480751074f9acaf05e867e765/Fire_spell_cast_–_Ma_#3-1766763528875.wav",
+      "file": "Magic & spells/Fire_spell_cast_–_Ma_#3-1766763528875.wav",
       "sha256": "2ec43e6b913974bd5ea2e7524d6adc5c0c0da81760dbc2f5edae56aef3b10e33",
       "sources": [
         {
@@ -564,7 +564,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/80973afbd0af4e54887c1d71eba65338/Fire_spell_cast_–_Ma_#4-1766763524728.wav",
+      "file": "Magic & spells/Fire_spell_cast_–_Ma_#4-1766763524728.wav",
       "sha256": "f96a1abb47b7679e9132e9c6abd6d4c632d0dffc9220ae5767feceda949633a4",
       "sources": [
         {
@@ -575,7 +575,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/b6ac0d81b294c1c469116a2abf7dc203/Fire_spell_impact_–__#1-1766764398952.wav",
+      "file": "Magic & spells/Fire_spell_impact_–__#1-1766764398952.wav",
       "sha256": "7603117009637f7e5b4e3a9d82761a274ab7f5b902119be1dbe02fb0b6a16c35",
       "sources": [
         {
@@ -586,7 +586,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/206d0858514daa24b820483f918732f2/Fire_spell_impact_–__#2-1766764396374.wav",
+      "file": "Magic & spells/Fire_spell_impact_–__#2-1766764396374.wav",
       "sha256": "23a6a0747eeb5e20a8acf64ca4810f0884cec42de34cc55df21e88d2c91ad2fb",
       "sources": [
         {
@@ -597,7 +597,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/c1d37e81fe7b6be43ad4eb2e90ea8297/Fire_spell_impact_–__#3-1766764393616.wav",
+      "file": "Magic & spells/Fire_spell_impact_–__#3-1766764393616.wav",
       "sha256": "8c1d8359e934b1b7aaf7ec9772102e2cc60ed33bb8ce47e32ab52a23c46832c0",
       "sources": [
         {
@@ -608,7 +608,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/5ba3fb1c77358404faa53a309dc852f5/Fire_spell_impact_–__#4-1766764388701.wav",
+      "file": "Magic & spells/Fire_spell_impact_–__#4-1766764388701.wav",
       "sha256": "6cd8a455292b113bd0e34c9921b69aa692c83dee6ee1fd2137ddde26902fcc62",
       "sources": [
         {
@@ -923,7 +923,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/255f0c0a1b85a6d4490764b5ca6fcfb6/gate_open.mp3",
+      "file": "World & ambience/gate_open.mp3",
       "sha256": "1805d7e7e2b02c3fd234825258cc73b7b095aa5db624fb26bd18c6d19a72c520",
       "sources": [
         {
@@ -954,7 +954,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/7f546aab911c796469bc86aa483bc3c1/Goblin_attack_–_Smal_#1-1766768039592.wav",
+      "file": "Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.wav",
       "sha256": "2f5280278d5f15a6e2f1cfa88d9ae0394af7a80313855d0452d1f2c7dca91c6b",
       "sources": [
         {
@@ -965,7 +965,7 @@
       "category": "Creatures & voices"
     },
     {
-      "file": "../Resources/DeferredAudio/8c6b9f048d26b7d4f9083f5a2a51a1fb/Goblin_attack_–_Smal_#2-1766768045094.wav",
+      "file": "Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.wav",
       "sha256": "b21e65c8e05f718be97ac25ae35082bdd247dc9b387497de1d0aa1ce4fe10c37",
       "sources": [
         {
@@ -976,7 +976,7 @@
       "category": "Creatures & voices"
     },
     {
-      "file": "../Resources/DeferredAudio/e54b84efebc0e3140824e6af94c7fd52/Goblin_attack_–_Smal_#3-1766768042373.wav",
+      "file": "Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.wav",
       "sha256": "dabeb0d5e47889e7618c9e9ff45b3b84433513059492e24961a8683f118f883c",
       "sources": [
         {
@@ -987,7 +987,7 @@
       "category": "Creatures & voices"
     },
     {
-      "file": "../Resources/DeferredAudio/fd5a645aa0a8dab43bc784ef58e7e2c3/Goblin_attack_–_Smal_#4-1766768042374.wav",
+      "file": "Creatures & voices/Goblin_attack_–_Smal_#4-1766768042374.wav",
       "sha256": "98c9fcfb1a8c9edc1ac5124371344e2519b89ebd79b2ef46cb992f228105cffb",
       "sources": [
         {
@@ -1038,7 +1038,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/e47cac14cd6eb9d41827b58ce8068688/Heavy_weapon_whoosh,_#3-1766763893457.wav",
+      "file": "Combat & weapons/Heavy_weapon_whoosh,_#3-1766763893457.wav",
       "sha256": "eac60608d4d6dbcf734fbc152557b3af30dec204d855957c849b1aebe1f8e337",
       "sources": [
         {
@@ -1049,7 +1049,7 @@
       "category": "Combat & weapons"
     },
     {
-      "file": "../Resources/DeferredAudio/82457c5c2e8fe8b49af6460c9440c7a9/Heavy_weapon_whoosh,_#4-1766763889384.wav",
+      "file": "Combat & weapons/Heavy_weapon_whoosh,_#4-1766763889384.wav",
       "sha256": "792f915fab7b6dbb95cf8006f6dc6569859c17d4a6ac355433d9ac92586daf47",
       "sources": [
         {
@@ -1060,7 +1060,7 @@
       "category": "Combat & weapons"
     },
     {
-      "file": "../Resources/DeferredAudio/d170febca97f1304186a715fe6c0e6de/Ice_impact_–_Ice_sha_#1-1766764678544.wav",
+      "file": "Magic & spells/Ice_impact_–_Ice_sha_#1-1766764678544.wav",
       "sha256": "ca8f8d0b0e20c32757b4501d0709e9c7e4455bfa978adc41b326d941f58c99fb",
       "sources": [
         {
@@ -1071,7 +1071,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/c116096b92069294fae8395cf0261d22/Ice_impact_–_Ice_sha_#2-1766764676177.wav",
+      "file": "Magic & spells/Ice_impact_–_Ice_sha_#2-1766764676177.wav",
       "sha256": "f70a7635a1720fc9ca334c96de435c57557961127c87005f5f1f5f3efa8ece79",
       "sources": [
         {
@@ -1082,7 +1082,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/c638bbb2e560ec542a9a35b9f7bd6471/Ice_impact_–_Ice_sha_#3-1766764673747.wav",
+      "file": "Magic & spells/Ice_impact_–_Ice_sha_#3-1766764673747.wav",
       "sha256": "2c8eb0ab37d08b554e4aec28207b58ff3d73970a7845e08e736ee225fbf4d8f8",
       "sources": [
         {
@@ -1093,7 +1093,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/83a318a4623c6934ba8e5c9e59dd23a3/Ice_impact_–_Ice_sha_#4-1766764669612.wav",
+      "file": "Magic & spells/Ice_impact_–_Ice_sha_#4-1766764669612.wav",
       "sha256": "f7dc39e0e5f03c5938a87492322bfd9ecd083b16ad0c9b9c876f2e14ba34df99",
       "sources": [
         {
@@ -1104,7 +1104,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/dca7bf23617b8d94e831631973b189cf/Ice_spell_cast_–_Col_#1-1766764638425.wav",
+      "file": "Magic & spells/Ice_spell_cast_–_Col_#1-1766764638425.wav",
       "sha256": "4c0a5d282db3ceb7a9f820e2b5225e7d63d77703684e3daea4cd87db37e6aaea",
       "sources": [
         {
@@ -1115,7 +1115,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/baebd906a7b26f8488065c779d86a236/Ice_spell_cast_–_Col_#2-1766764635940.wav",
+      "file": "Magic & spells/Ice_spell_cast_–_Col_#2-1766764635940.wav",
       "sha256": "235521fb9bd161161400d4db8f23bc4201abeeda0e4cfc2ad63b8f0ea3700e11",
       "sources": [
         {
@@ -1126,7 +1126,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/248bf64a66391f342ad88f75667b5195/Ice_spell_cast_–_Col_#3-1766764633331.wav",
+      "file": "Magic & spells/Ice_spell_cast_–_Col_#3-1766764633331.wav",
       "sha256": "7d8205ecff8dfeb2dff146dced55d81c9fb55c128b50efa47b1b5373e11b600d",
       "sources": [
         {
@@ -1137,7 +1137,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/8e5af03101da8614488f2cacfbb197ab/Ice_spell_cast_–_Col_#4-1766764626746.wav",
+      "file": "Magic & spells/Ice_spell_cast_–_Col_#4-1766764626746.wav",
       "sha256": "151421f0bbf5b783d4626a379177c09a5e2f7105e8d14a020120e3d2b1efbaa0",
       "sources": [
         {
@@ -1228,7 +1228,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/930568f126afc52489657fd26c39e0e2/Lightning_cast_–_Ele_#1-1766764720689.wav",
+      "file": "Magic & spells/Lightning_cast_–_Ele_#1-1766764720689.wav",
       "sha256": "20496d6988e6149ef52500a40889f1798cf5015c8d991890533cd25c9a221eca",
       "sources": [
         {
@@ -1239,7 +1239,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/b6c92be9d13caa54996055dcaa75702b/Lightning_cast_–_Ele_#2-1766764718272.wav",
+      "file": "Magic & spells/Lightning_cast_–_Ele_#2-1766764718272.wav",
       "sha256": "2ac91b4d09769c96d27e7feb71af8c58b98afb3c228de3fadcb4318ed1a8c146",
       "sources": [
         {
@@ -1250,7 +1250,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/97e945ae92222c44390d90fdb4f64b92/Lightning_cast_–_Ele_#3-1766764718272.wav",
+      "file": "Magic & spells/Lightning_cast_–_Ele_#3-1766764718272.wav",
       "sha256": "cbf7334dc7572834b74a59cf8001deb144a055d78976a66707f2e4c5e457f2ba",
       "sources": [
         {
@@ -1261,7 +1261,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/dd9de4f76b1dab64eae434e9dc5f29b7/Lightning_cast_–_Ele_#4-1766764715064.wav",
+      "file": "Magic & spells/Lightning_cast_–_Ele_#4-1766764715064.wav",
       "sha256": "ee82ebfcfafef8f2168773a877d7398d3a4e2be0bb9e30fdd23e0d31d46eb73a",
       "sources": [
         {
@@ -1272,51 +1272,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/355b235ee981d3f4c8be6af0ec53cbba/Magic_projectile_lau_#1-1766764866448.wav",
-      "sha256": "fcd49c3bd4c5913b2095d35f6f9d804f6262d077772cc0dbb2618f7c6e9e38bb",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#1-1766764866448.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ],
-      "category": "Magic & spells"
-    },
-    {
-      "file": "../Resources/DeferredAudio/6a63def20b20d9f4a87544ea5f02adb9/Magic_projectile_lau_#2-1766764864417.wav",
-      "sha256": "46d24398460a198bd12ffd801e3df3e2b5179630365b5332c84ab2c638a8cf5d",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#2-1766764864417.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ],
-      "category": "Magic & spells"
-    },
-    {
-      "file": "../Resources/DeferredAudio/b38388df553e1c54b81d24471c4c78ab/Magic_projectile_lau_#3-1766764862223.wav",
-      "sha256": "81dbdcc068afb731d9c3883ff13d09f2e100fb7a425a1c1c26e1e3969dc7612b",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#3-1766764862223.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ],
-      "category": "Magic & spells"
-    },
-    {
-      "file": "../Resources/DeferredAudio/02c1defc161216d46b98d4b14ac4bbc6/Magic_projectile_lau_#4-1766764858633.wav",
-      "sha256": "0d084b152ad236ad641f02d218e59ef7ab81d717be06082ce72ea4d4930b083c",
-      "sources": [
-        {
-          "file": "150+ Free RPG Sounds/150+ Free RPG Sounds/Magic_projectile_lau_#4-1766764858633.mp3",
-          "pack": "150+ Free RPG Sounds"
-        }
-      ],
-      "category": "Magic & spells"
-    },
-    {
-      "file": "../Resources/DeferredAudio/5c0fac3889ebab5409249a7eaa49ece5/Night_ambience_–_Cri_#1-1766769107163.wav",
+      "file": "World & ambience/Night_ambience_–_Cri_#1-1766769107163.wav",
       "sha256": "8473cf392c52a50264e9280c9b571bce76c3517241f80f67cf8e4d57b65f09c4",
       "sources": [
         {
@@ -1347,7 +1303,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/53346a3d498e76e4daeb7ae7899bdce4/Player_hurt_–_Short__#1-1766764352490.mp3",
+      "file": "Creatures & voices/Player_hurt_–_Short__#1-1766764352490.mp3",
       "sha256": "4cc8773c13c672d669ae0b93e6cc8cd204aa27676316c8f6df4b0ba5ff0bcc78",
       "sources": [
         {
@@ -1358,7 +1314,7 @@
       "category": "Other"
     },
     {
-      "file": "../Resources/DeferredAudio/c9231fc3231190746981c42ec7a39ea7/Player_hurt_–_Short__#2-1766764349848.mp3",
+      "file": "Creatures & voices/Player_hurt_–_Short__#2-1766764349848.mp3",
       "sha256": "fe2ad6f82850725f8a24ae0d4f9052142bfa7d30dc87d8223c016f311bc4210c",
       "sources": [
         {
@@ -1369,7 +1325,7 @@
       "category": "Other"
     },
     {
-      "file": "../Resources/DeferredAudio/f522f31d1b03ba4429e43ef6ca4978db/Player_hurt_–_Short__#3-1766764346956.mp3",
+      "file": "Creatures & voices/Player_hurt_–_Short__#3-1766764346956.mp3",
       "sha256": "18dc0927c47e9fb1d3858a7f388234027172208fc362eddef2715f9e5b6c5a1e",
       "sources": [
         {
@@ -1380,7 +1336,7 @@
       "category": "Other"
     },
     {
-      "file": "../Resources/DeferredAudio/faaf481ebebb292429d7c6328210e57c/Player_hurt_–_Short__#4-1766764341901.mp3",
+      "file": "Creatures & voices/Player_hurt_–_Short__#4-1766764341901.mp3",
       "sha256": "3ba2240940b1da96cd859cb14112158a6a0f40af63ae8c974bf40f049e0ad44e",
       "sources": [
         {
@@ -1471,7 +1427,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/679f809f3ba2b164fa3a7cde55d56627/River_flow_–_Calm_fl_#1-1766768653145.wav",
+      "file": "World & ambience/River_flow_–_Calm_fl_#1-1766768653145.wav",
       "sha256": "ed2b39a7ecdaee60d91a6ab0d66c0faee1af4dd1788731be5e3930a1d8f03902",
       "sources": [
         {
@@ -1512,7 +1468,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/d632a08f948dde844ba9d76d0b850fb9/Rune_activate_–_Anci_#2-1766768897281.wav",
+      "file": "Movement/Rune_activate_–_Anci_#2-1766768897281.wav",
       "sha256": "8ba38ae8f2113056776586745f61dd0703a53b16c330391b877f01e70a720e93",
       "sources": [
         {
@@ -1723,7 +1679,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/25116355f0bab0a4783cbf7970fc6b0e/Shield_block_–_Metal_#1-1766764259584.mp3",
+      "file": "Combat & weapons/Shield_block_–_Metal_#1-1766764259584.mp3",
       "sha256": "69b152edcd4089e433d5a8c71838dbc44ae136ec311f5a5f477f1e2a9e9a7b0d",
       "sources": [
         {
@@ -1734,7 +1690,7 @@
       "category": "Combat & weapons"
     },
     {
-      "file": "../Resources/DeferredAudio/b05ed5164b5fe5f458494bd853e9d590/Shield_block_–_Metal_#4-1766764263919.mp3",
+      "file": "Combat & weapons/Shield_block_–_Metal_#4-1766764263919.mp3",
       "sha256": "8320b1f427784eb2ac3dae07a138db715632f53afe34158ed17195caa93551ad",
       "sources": [
         {
@@ -1745,7 +1701,7 @@
       "category": "Combat & weapons"
     },
     {
-      "file": "../Resources/DeferredAudio/c2325df0784d83f429ca366f6a48baf1/Skeleton_attack_–_Bo_#1-1766768184245.wav",
+      "file": "Creatures & voices/Skeleton_attack_–_Bo_#1-1766768184245.wav",
       "sha256": "09bf6f57ad61b6b4e08429f25d349268065c49ce027f2d5859e31378eaa488d2",
       "sources": [
         {
@@ -1756,7 +1712,7 @@
       "category": "Creatures & voices"
     },
     {
-      "file": "../Resources/DeferredAudio/7a4691fc63546a4449e253e381aadb76/Skeleton_attack_–_Bo_#2-1766768184245.wav",
+      "file": "Creatures & voices/Skeleton_attack_–_Bo_#2-1766768184245.wav",
       "sha256": "7af565d34d7cb5c49d1970f26531c2f4b573c4acec2747f2f933549a98825278",
       "sources": [
         {
@@ -1767,7 +1723,7 @@
       "category": "Creatures & voices"
     },
     {
-      "file": "../Resources/DeferredAudio/21976b785f5667d4db786eb1be748f04/Skeleton_attack_–_Bo_#3-1766768181651.wav",
+      "file": "Creatures & voices/Skeleton_attack_–_Bo_#3-1766768181651.wav",
       "sha256": "b6962bd6a5db5c2faf259437596f78dca28fbe57d0e8f5c705bd917bcdad91ce",
       "sources": [
         {
@@ -1778,7 +1734,7 @@
       "category": "Creatures & voices"
     },
     {
-      "file": "../Resources/DeferredAudio/2d30a6c688412ee45bf5dab5bcf3cd3e/Skeleton_attack_–_Bo_#4-1766768179054.wav",
+      "file": "Creatures & voices/Skeleton_attack_–_Bo_#4-1766768179054.wav",
       "sha256": "b62802232ca999169e58bcf4bce7c651a6132a65a3aa2a6b9b1e1cc8df50979e",
       "sources": [
         {
@@ -1789,7 +1745,7 @@
       "category": "Creatures & voices"
     },
     {
-      "file": "../Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3",
+      "file": "Creatures & voices/enemy_aggro_4.mp3",
       "sha256": "95d6b86c836aee6dd69bb30d5a61481a08e2c0747816d7a4e3cc3e2827d16383",
       "sources": [
         {
@@ -1940,7 +1896,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/99c2a2eab45cc9c4e987fed32a6ad088/Town_ambience_–_Dist_#1-1766768998365.wav",
+      "file": "World & ambience/Town_ambience_–_Dist_#1-1766768998365.wav",
       "sha256": "532695613973d4d8136ccd32d4cfdb1f9056b1750b48ace6d80c9a62d3e8f1a6",
       "sources": [
         {
@@ -1981,7 +1937,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
+      "file": "Creatures & voices/enemy_aggro_2.mp3",
       "sha256": "6c371cdec8a0c95ba160f3c32f03d0bbf7f15e951ce7cb2e55e0ebe7bc33b5f6",
       "sources": [
         {
@@ -2052,7 +2008,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/6b9dc44f97fad134a8d71a982364e622/Zombie_moan_–_Slow_u_#1-1766768225594.wav",
+      "file": "Creatures & voices/Zombie_moan_–_Slow_u_#1-1766768225594.wav",
       "sha256": "834e455609523315349e034b6d72fd131215304881e0055830f619dabd70c9b3",
       "sources": [
         {
@@ -2063,7 +2019,7 @@
       "category": "Creatures & voices"
     },
     {
-      "file": "../Resources/DeferredAudio/2fac7e5e9bdcc6940a234e62370e525a/Zombie_moan_–_Slow_u_#2-1766768233458.wav",
+      "file": "Creatures & voices/Zombie_moan_–_Slow_u_#2-1766768233458.wav",
       "sha256": "cf5dc5504d19a665247222bbca21851cae4d6b77ba4fbde09dd685366387899c",
       "sources": [
         {
@@ -2074,7 +2030,7 @@
       "category": "Creatures & voices"
     },
     {
-      "file": "../Resources/DeferredAudio/7b262f15006fc4f40997ce2d939ddc12/Zombie_moan_–_Slow_u_#3-1766768231428.wav",
+      "file": "Creatures & voices/Zombie_moan_–_Slow_u_#3-1766768231428.wav",
       "sha256": "8cbd9fec1c7efeeb2df9e3a1b7afba1533a12aaf5398aa8c44a0a9f5045c5e9a",
       "sources": [
         {
@@ -2085,7 +2041,7 @@
       "category": "Creatures & voices"
     },
     {
-      "file": "../Resources/DeferredAudio/1a30b7825fe05cf4a9f9c90c7237e15d/Zombie_moan_–_Slow_u_#4-1766768225595.wav",
+      "file": "Creatures & voices/Zombie_moan_–_Slow_u_#4-1766768225595.wav",
       "sha256": "d372f47f02d2807735bd8fa22f20c86c07e1893786842cdc58c7e37e55cb4fd0",
       "sources": [
         {
@@ -2466,7 +2422,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/11f715b1c8f197444a40883ec7abffe9/Skill_Warrior08_slash.wav",
+      "file": "Combat & weapons/Skill_Warrior08_slash.wav",
       "sha256": "78155722ef69cb6583864b6a5ea722d2546e8eb0fee91c15706c9bbd880f1f23",
       "sources": [
         {
@@ -2477,7 +2433,7 @@
       "category": "Combat & weapons"
     },
     {
-      "file": "../Resources/DeferredAudio/c4a60c91fccae564fb4ff984a6f34c8e/Skill_Warrior09_slash.wav",
+      "file": "Combat & weapons/Skill_Warrior09_slash.wav",
       "sha256": "e52abab529f12dcc975b3d6076d4f4ac5f45494cde62a5eded7ef63c8c8c0df9",
       "sources": [
         {
@@ -2498,7 +2454,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/9997a642aa2eb70489f97b2a8fe7dd44/Ambience_Blizzard.wav",
+      "file": "World & ambience/Ambience_Blizzard.wav",
       "sha256": "7eb44ee6b2d631daef7bd8873feb4bb9209eb48528325455d317275b396b1f88",
       "sources": [
         {
@@ -2559,7 +2515,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/cb84086d88e83a24484594a05021cdf7/Ambience_Gust.wav",
+      "file": "World & ambience/Ambience_Gust.wav",
       "sha256": "f88d7dd2f1bfd782e5ba21ae0dbcb5a609a5e67202383ef2a816057155cbbfc4",
       "sources": [
         {
@@ -2570,7 +2526,7 @@
       "category": "World & ambience"
     },
     {
-      "file": "../Resources/DeferredAudio/79cab01d1f50ab14290e56eabca29922/Ambience_Lava.wav",
+      "file": "World & ambience/Ambience_Lava.wav",
       "sha256": "843f0edcbfcc608415bf562394c998c22c2bdd57ec5213c168e4cf4854357588",
       "sources": [
         {
@@ -2581,7 +2537,7 @@
       "category": "World & ambience"
     },
     {
-      "file": "../Resources/DeferredAudio/a021fdad7304c154087f1c5e9954bc67/Ambience_Ocean.wav",
+      "file": "World & ambience/Ambience_Ocean.wav",
       "sha256": "e8c810d9894c6ae8d1eaa8797131044d8c4d1c19fc67474c3ac1eaee7bebaa27",
       "sources": [
         {
@@ -2592,7 +2548,7 @@
       "category": "World & ambience"
     },
     {
-      "file": "../Resources/DeferredAudio/b8c79fdb98e1eac4ebdf382eeb02c369/Ambience_Pond.wav",
+      "file": "World & ambience/Ambience_Pond.wav",
       "sha256": "6d987ef305e29655886aa9a946867014524c59c69f73127f582f70aafb4b0c7f",
       "sources": [
         {
@@ -2783,7 +2739,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/6137abbe3c91d6a4aa83bc9fe5ec0b0c/Skill_Arrow01_rain_of_arrows_or_volley.wav",
+      "file": "Magic & spells/Skill_Arrow01_rain_of_arrows_or_volley.wav",
       "sha256": "42621f1073d2335db144265c3435501e8384506cdc992b4443615029a04380f4",
       "sources": [
         {
@@ -2814,7 +2770,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/bb7bc20a872fae9448751bc20ed1a0b1/Skill_Arrow04_rain_of_barrage_of_arrows.wav",
+      "file": "Magic & spells/Skill_Arrow04_rain_of_barrage_of_arrows.wav",
       "sha256": "4bd5b52f01f985b4750b9500fca84e40e091053a10f0b39cc5a1206728649e4d",
       "sources": [
         {
@@ -3155,7 +3111,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/035d4ac07f532014dbef52a5982a2c58/Skill_Earth04.wav",
+      "file": "Magic & spells/Skill_Earth04.wav",
       "sha256": "7bb46a882ad16d5e4385f7968be786926aacaa27ecca9a51d52a53e11bbcb3ee",
       "sources": [
         {
@@ -3266,7 +3222,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/8e9bd9596ae84c74d96709f431c8a509/Skill_Electric05.wav",
+      "file": "Magic & spells/Skill_Electric05.wav",
       "sha256": "9e73d79ca9859c20234268dee337c8940a6b2c1e2cf24f965e705031fe886eb0",
       "sources": [
         {
@@ -3587,7 +3543,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/90017fa58bd917c4c9a9f6f55984bd59/Skill_Golem01.wav",
+      "file": "Magic & spells/Skill_Golem01.wav",
       "sha256": "4cfa2951fcd7d0a895b71a9d02b49514b36e27906db86fa0857b7f41f8b26fa8",
       "sources": [
         {
@@ -3598,7 +3554,7 @@
       "category": "Magic & spells"
     },
     {
-      "file": "../Resources/DeferredAudio/543a9c5eb91184d488c7cbefbcd6a286/Skill_Golem02.wav",
+      "file": "Magic & spells/Skill_Golem02.wav",
       "sha256": "624373207439d5388ffc6894af5a19becec264b22d9dcb3ef1090ce756aa74a6",
       "sources": [
         {
@@ -3819,7 +3775,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/612fa68abc7eb7545805eda4de8f77cd/Skill_Poison02.wav",
+      "file": "Magic & spells/Skill_Poison02.wav",
       "sha256": "93eb0379313debafd2b249584804128149699d4c67a347e30233096aaba88642",
       "sources": [
         {
@@ -3840,7 +3796,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/63d66c806b870864f956a713fa805ac8/Skill_Poison04.wav",
+      "file": "Magic & spells/Skill_Poison04.wav",
       "sha256": "40380e2fee8c088168515021ce71090fc28b46a1a974b499757823141f7f3bca",
       "sources": [
         {
@@ -4031,7 +3987,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/e6cee02b9ccb0ee44b27aab26d38647a/Skill_Warrior02_warcry.wav",
+      "file": "Combat & weapons/Skill_Warrior02_warcry.wav",
       "sha256": "3ce4179f23c1ac06601addf3f4a61f1356c218e1dca160d63664e3634596ad63",
       "sources": [
         {
@@ -4042,7 +3998,7 @@
       "category": "Combat & weapons"
     },
     {
-      "file": "../Resources/DeferredAudio/36e6fb9b32783334e89099c932c772ac/Skill_Warrior03_warcry.wav",
+      "file": "Combat & weapons/Skill_Warrior03_warcry.wav",
       "sha256": "95206dfb859021a9604acd75ec41ccfe4c823cbee3dcfc44be7d7c4c6eab714b",
       "sources": [
         {
@@ -4063,7 +4019,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/95b4faaea37a0ec4686ca30780a2e629/Skill_Warrior05_warcry.wav",
+      "file": "Combat & weapons/Skill_Warrior05_warcry.wav",
       "sha256": "8c68ec3098cf5700f3783d35c749ca8fb64b11a7cc0fb2f943bcf9dc113a2fc7",
       "sources": [
         {
@@ -4584,7 +4540,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/477e2ac8cbdb9734cbe6c7b7190a8539/Weapon_Dagger01.wav",
+      "file": "Combat & weapons/Weapon_Dagger01.wav",
       "sha256": "7602d012d7e7165178978c04a65b1eef7e76ca8ae4a019213b9cf7b02e06f933",
       "sources": [
         {
@@ -4595,7 +4551,7 @@
       "category": "Combat & weapons"
     },
     {
-      "file": "../Resources/DeferredAudio/c580aed8e2f4aa74799a6c7699ac3b2e/Weapon_Dagger02.wav",
+      "file": "Combat & weapons/Weapon_Dagger02.wav",
       "sha256": "667553fdce2845a88517849ead12eeadd7f06cd7e119ebb4f73074faf03a3bb6",
       "sources": [
         {
@@ -4606,7 +4562,7 @@
       "category": "Combat & weapons"
     },
     {
-      "file": "../Resources/DeferredAudio/76816d8514db62d44853ae881bab1f1b/Weapon_Dagger03.wav",
+      "file": "Combat & weapons/Weapon_Dagger03.wav",
       "sha256": "6320cdaeab870fca6fde6994c6337d008409ba0d8e192872dc743b7f81c60623",
       "sources": [
         {
@@ -4617,7 +4573,7 @@
       "category": "Combat & weapons"
     },
     {
-      "file": "../Resources/DeferredAudio/7115ddf875125fe4184a2e86e2dc2ec2/Weapon_Hammer01.wav",
+      "file": "Combat & weapons/Weapon_Hammer01.wav",
       "sha256": "cb5b4745f8f572eb61a1bdd56789e1d6a195d97eedc4f2db6df3dbe85a6de24e",
       "sources": [
         {
@@ -4628,7 +4584,7 @@
       "category": "Combat & weapons"
     },
     {
-      "file": "../Resources/DeferredAudio/0d34f70c76723dc4491b68349ab710eb/Weapon_Hammer02.wav",
+      "file": "Combat & weapons/Weapon_Hammer02.wav",
       "sha256": "e1508c07708c337681635cac65d65e824b79847b8dc12f39f7a0f1cf3d40ff05",
       "sources": [
         {
@@ -4699,7 +4655,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/11e8e45bb20ed4847a20eebcd566d8df/Weapon_Scythe01.wav",
+      "file": "Combat & weapons/Weapon_Scythe01.wav",
       "sha256": "8032a7727be7bbd93ba17fc72fe56a63ccf9bacd65b3f00c16acd2fada095963",
       "sources": [
         {
@@ -4710,7 +4666,7 @@
       "category": "Combat & weapons"
     },
     {
-      "file": "../Resources/DeferredAudio/bcc0c9117d5e06349a06300b34c23c85/Weapon_Scythe02.wav",
+      "file": "Combat & weapons/Weapon_Scythe02.wav",
       "sha256": "518c35d1713e4f5602c854d9164030fe616f111726548446e9b45e1a92a89a2c",
       "sources": [
         {
@@ -4851,7 +4807,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/e7dfd1b3bebb3554e8e17a1e856cfe5f/best_corpse_explosion.wav",
+      "file": "Combat & weapons/best_corpse_explosion.wav",
       "sha256": "f4a092dbb8f9a9ce71c7b2aed4e44a0c243590c4a71cf0b435a17abe5aa5a6b3",
       "sources": [
         {
@@ -4912,7 +4868,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav",
+      "file": "Creatures & voices/enemy_death_1.wav",
       "sha256": "679882a81a208b5aa2644c3183ca532911e8d0a8092b38ceea099cde2775b54c",
       "sources": [
         {
@@ -4964,7 +4920,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/a1be5d23278eec44386ec4494ebbbadd/denied.wav",
+      "file": "Interface/denied.wav",
       "sha256": "b82cdf1e4f349e68ede0dcd7dbf7476698872e3a5b81fbec9aeb4804caa059fa",
       "sources": [
         {
@@ -5147,7 +5103,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/d6db9b0f706b9f44ab573ff623bdd80f/88_Teleport_02.wav",
+      "file": "Magic & spells/88_Teleport_02.wav",
       "sha256": "f2db42eef88ff2d22f6abc5e56a6861c423cc15f41661bc3333e02da737d4672",
       "sources": [
         {
@@ -5168,7 +5124,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/befeaf8be63b1ca408fde06b5ec1a044/13_Ice_explosion_01.wav",
+      "file": "Magic & spells/13_Ice_explosion_01.wav",
       "sha256": "b76c65adbc704f095fbc27593f0c2ad3dd0e6f2c105a6b70b7a6e061694d2c96",
       "sources": [
         {
@@ -5729,7 +5685,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/a2b8b8cdeff89c2448613d5735632aea/giant1.wav",
+      "file": "Creatures & voices/giant1.wav",
       "sha256": "e9aeb6012c03fb426019f8d485d0da8a6aaf2e46499acd3636afe05966cd752e",
       "sources": [
         {
@@ -5740,7 +5696,7 @@
       "category": "Creatures & voices"
     },
     {
-      "file": "../Resources/DeferredAudio/d9bf550722614fc4e8214f91b243d4b2/giant2.wav",
+      "file": "Creatures & voices/giant2.wav",
       "sha256": "3e5b30a8fa8f6eb8f94bb50a43fb410669f78da13f4108f60f8a851ddde2f2a8",
       "sources": [
         {
@@ -5781,7 +5737,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/9eebe2b36c407154ba474f0edada8c37/mnstr1.wav",
+      "file": "Creatures & voices/mnstr1.wav",
       "sha256": "4d4979bb409239dee5e7848c9931d2c28c165069db4cdab5a2e38be52d8fb10d",
       "sources": [
         {
@@ -5994,7 +5950,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/7cf214a211511994ab81d9a4040bf591/shade1.wav",
+      "file": "Creatures & voices/shade1.wav",
       "sha256": "962c30499b62b49eb78e70ae72073b26f3a6328bf3bab1ad093f3d7a4db26f7c",
       "sources": [
         {
@@ -6065,7 +6021,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/89f5b9dde8bbc014782a4f78b81ee4fd/shade2.wav",
+      "file": "Creatures & voices/shade2.wav",
       "sha256": "f83ebcb33463c08a8b1845adaee0df836f047ad05c91ac6ad57f9acd6813a76e",
       "sources": [
         {
@@ -6076,7 +6032,7 @@
       "category": "Creatures & voices"
     },
     {
-      "file": "../Resources/DeferredAudio/d5691548e075a484ebd59eeb78b79e80/shade3.wav",
+      "file": "Creatures & voices/shade3.wav",
       "sha256": "e3835f7d72240580a609e40159a70cd084a4d9a851c5f6c469db385ba9691a05",
       "sources": [
         {
@@ -6147,7 +6103,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/4e7a0dd692f52b04ca8954a5669176ee/slime1.wav",
+      "file": "Creatures & voices/slime1.wav",
       "sha256": "522bbe111f080fa762d0109e99db5fef8e23d030003294562972d8dd49a744a8",
       "sources": [
         {
@@ -6209,7 +6165,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/a68f118bb0f707249a8d19af894e3f43/slime6.wav",
+      "file": "Creatures & voices/slime6.wav",
       "sha256": "0a84418a672321c5615988062c71c7d28f31b132c5484275c2ef56389a62b8bd",
       "sources": [
         {
@@ -6220,7 +6176,7 @@
       "category": "Creatures & voices"
     },
     {
-      "file": "../Resources/DeferredAudio/d7de322055b75ab4eb1f81f31af80124/slime7.wav",
+      "file": "Creatures & voices/slime7.wav",
       "sha256": "8145ccd81fc086aba7e05706c19833db20e165e96446d6ffc66130ec8dd6dac3",
       "sources": [
         {
@@ -6272,7 +6228,7 @@
       ]
     },
     {
-      "file": "../Resources/DeferredAudio/3c6f39ae65d8a5d4b82c74978ed0b6b0/swing_1.wav",
+      "file": "Combat & weapons/swing_1.wav",
       "sha256": "c7d50b9cb20ccda5aee6c023f4450915594061e36f3f9e78af241ca9fde0f817",
       "sources": [
         {
@@ -6283,7 +6239,7 @@
       "category": "Combat & weapons"
     },
     {
-      "file": "../Resources/DeferredAudio/96c0d6e4e43e1c14ab0f5fe923514579/swing_2.wav",
+      "file": "Combat & weapons/swing_2.wav",
       "sha256": "2e4064e294d136e06c40cc562df969493907e6873f39895ca86b4a6b2e034c6e",
       "sources": [
         {
@@ -6294,7 +6250,7 @@
       "category": "Combat & weapons"
     },
     {
-      "file": "../Resources/DeferredAudio/3c608d1f2d639f94ca6ed4c6ff2a98e4/swing_3.wav",
+      "file": "Combat & weapons/swing_3.wav",
       "sha256": "d725421956c9958de6d7a17c4fca299abe583a1800c59eaec358ec2e82d79bae",
       "sources": [
         {

@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-15T16:39:33.3358450Z",
+    "generatedAt": "2026-10-19T19:44:22.4917579Z",
     "effects": [
         {
             "id": "player.swing",
@@ -8,9 +8,9 @@
             "soundGroup": "sound.player.swing",
             "purpose": "Melee swings",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/3c608d1f2d639f94ca6ed4c6ff2a98e4/swing_3.wav",
-                "Assets/Audio/Resources/DeferredAudio/3c6f39ae65d8a5d4b82c74978ed0b6b0/swing_1.wav",
-                "Assets/Audio/Resources/DeferredAudio/96c0d6e4e43e1c14ab0f5fe923514579/swing_2.wav"
+                "Assets/Audio/SoundLibrary/Combat & weapons/swing_1.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/swing_2.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/swing_3.wav"
             ],
             "usages": [
                 {
@@ -35,7 +35,7 @@
             "soundGroup": "sound.player.bow",
             "purpose": "Bow releases",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/e452f29912848904aa8fe6e4e14ca4af/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
             ],
             "usages": [
                 {
@@ -85,7 +85,7 @@
             "soundGroup": "sound.combat.hit",
             "purpose": "Weapon hit impacts",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/cfa9bd3a439dd5d49a9bda17e114751a/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.wav"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.wav"
             ],
             "usages": [
                 {
@@ -942,6 +942,16 @@
                     "muted": false
                 },
                 {
+                    "id": "combat.hit/Spell Effigy",
+                    "label": "Spell Effigy / receives a hit",
+                    "enemy": "Spell Effigy",
+                    "portrait": "portraits/Spell%20Effigy.png",
+                    "sources": [
+                        "Assets/Scripts/Enemies/EnemyHealth.cs"
+                    ],
+                    "muted": false
+                },
+                {
                     "id": "combat.hit/The Shepherd",
                     "label": "The Shepherd / weapon impact",
                     "enemy": "The Shepherd",
@@ -960,8 +970,8 @@
             "soundGroup": "sound.combat.block",
             "purpose": "Shield blocks",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/25116355f0bab0a4783cbf7970fc6b0e/Shield_block_–_Metal_#1-1766764259584.mp3",
-                "Assets/Audio/Resources/DeferredAudio/b05ed5164b5fe5f458494bd853e9d590/Shield_block_–_Metal_#4-1766764263919.mp3"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Shield_block_–_Metal_#1-1766764259584.mp3",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Shield_block_–_Metal_#4-1766764263919.mp3"
             ],
             "usages": [
                 {
@@ -984,7 +994,7 @@
             "soundGroup": "sound.combat.bite",
             "purpose": "Snake-arm bite impacts",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/cfa9bd3a439dd5d49a9bda17e114751a/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.wav"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Axe_hit_armor_–_Deep_#1-1766764038219_weak_hit.wav"
             ],
             "usages": [
                 {
@@ -1016,7 +1026,7 @@
             "soundGroup": "sound.combat.ground.Physical",
             "purpose": "Physical ground impacts",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/035d4ac07f532014dbef52a5982a2c58/Skill_Earth04.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Earth04.wav"
             ],
             "usages": [
                 {
@@ -1210,10 +1220,10 @@
             "soundGroup": "sound.combat.ground.Fire",
             "purpose": "Fire ground impacts",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/206d0858514daa24b820483f918732f2/Fire_spell_impact_–__#2-1766764396374.wav",
-                "Assets/Audio/Resources/DeferredAudio/5ba3fb1c77358404faa53a309dc852f5/Fire_spell_impact_–__#4-1766764388701.wav",
-                "Assets/Audio/Resources/DeferredAudio/b6ac0d81b294c1c469116a2abf7dc203/Fire_spell_impact_–__#1-1766764398952.wav",
-                "Assets/Audio/Resources/DeferredAudio/c1d37e81fe7b6be43ad4eb2e90ea8297/Fire_spell_impact_–__#3-1766764393616.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#1-1766764398952.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#2-1766764396374.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#3-1766764393616.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_impact_–__#4-1766764388701.wav"
             ],
             "usages": [
                 {
@@ -1297,10 +1307,10 @@
             "soundGroup": "sound.combat.ground.Cold",
             "purpose": "Cold ground impacts",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/83a318a4623c6934ba8e5c9e59dd23a3/Ice_impact_–_Ice_sha_#4-1766764669612.wav",
-                "Assets/Audio/Resources/DeferredAudio/c116096b92069294fae8395cf0261d22/Ice_impact_–_Ice_sha_#2-1766764676177.wav",
-                "Assets/Audio/Resources/DeferredAudio/c638bbb2e560ec542a9a35b9f7bd6471/Ice_impact_–_Ice_sha_#3-1766764673747.wav",
-                "Assets/Audio/Resources/DeferredAudio/d170febca97f1304186a715fe6c0e6de/Ice_impact_–_Ice_sha_#1-1766764678544.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#1-1766764678544.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#2-1766764676177.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#3-1766764673747.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#4-1766764669612.wav"
             ],
             "usages": [
                 {
@@ -1404,7 +1414,7 @@
             "soundGroup": "sound.combat.ground.Lightning",
             "purpose": "Lightning ground impacts",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/8e9bd9596ae84c74d96709f431c8a509/Skill_Electric05.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Electric05.wav"
             ],
             "usages": [
                 {
@@ -1458,8 +1468,8 @@
             "soundGroup": "sound.combat.ground.Poison",
             "purpose": "Poison ground impacts",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/a68f118bb0f707249a8d19af894e3f43/slime6.wav",
-                "Assets/Audio/Resources/DeferredAudio/d7de322055b75ab4eb1f81f31af80124/slime7.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/slime6.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/slime7.wav"
             ],
             "usages": [
                 {
@@ -1503,10 +1513,10 @@
             "soundGroup": "sound.player.hurt",
             "purpose": "Player hurt voice",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/53346a3d498e76e4daeb7ae7899bdce4/Player_hurt_–_Short__#1-1766764352490.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c9231fc3231190746981c42ec7a39ea7/Player_hurt_–_Short__#2-1766764349848.mp3",
-                "Assets/Audio/Resources/DeferredAudio/f522f31d1b03ba4429e43ef6ca4978db/Player_hurt_–_Short__#3-1766764346956.mp3",
-                "Assets/Audio/Resources/DeferredAudio/faaf481ebebb292429d7c6328210e57c/Player_hurt_–_Short__#4-1766764341901.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Player_hurt_–_Short__#1-1766764352490.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Player_hurt_–_Short__#2-1766764349848.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Player_hurt_–_Short__#3-1766764346956.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Player_hurt_–_Short__#4-1766764341901.mp3"
             ],
             "usages": [
                 {
@@ -1531,7 +1541,7 @@
             "soundGroup": "sound.player.reward",
             "purpose": "Level-up and quest rewards",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/02c09b0084c54cc43850d935b952c200/level_up.wav"
+                "Assets/Audio/SoundLibrary/Interface/level_up.wav"
             ],
             "usages": [
                 {
@@ -1556,7 +1566,7 @@
             "soundGroup": "sound.player.steps",
             "purpose": "Walking footsteps",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/bf4f83921a7f06c44b147fc62cfcdf82/footstep_grass_1.wav"
+                "Assets/Audio/SoundLibrary/Movement/footstep_grass_1.wav"
             ],
             "usages": [
                 {
@@ -1898,6 +1908,16 @@
                         "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
                     ],
                     "muted": false
+                },
+                {
+                    "id": "player.steps/Spell Effigy",
+                    "label": "Spell Effigy / footsteps",
+                    "enemy": "Spell Effigy",
+                    "portrait": "portraits/Spell%20Effigy.png",
+                    "sources": [
+                        "Assets/Scripts/Visuals/CharacterWalkAnimator.cs"
+                    ],
+                    "muted": false
                 }
             ]
         },
@@ -1908,7 +1928,7 @@
             "soundGroup": "sound.ui.open",
             "purpose": "Inventory open",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/9df4dba7b36659f48a08668689523534/inventory_open.wav"
+                "Assets/Audio/SoundLibrary/Interface/inventory_open.wav"
             ],
             "usages": [
                 {
@@ -1931,7 +1951,7 @@
             "soundGroup": "sound.ui.close",
             "purpose": "Inventory close",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/e62ed051481e07d47bad072848f78967/inventory_close.wav"
+                "Assets/Audio/SoundLibrary/Interface/inventory_close.wav"
             ],
             "usages": [
                 {
@@ -1954,7 +1974,7 @@
             "soundGroup": "sound.ui.denied",
             "purpose": "Denied action",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/a1be5d23278eec44386ec4494ebbbadd/denied.wav"
+                "Assets/Audio/SoundLibrary/Interface/denied.wav"
             ],
             "usages": [
                 {
@@ -1989,7 +2009,8 @@
                         "Assets/Scripts/Quests/QuestProp.cs",
                         "Assets/Scripts/UI/DialogueUI.cs",
                         "Assets/Scripts/UI/PassiveTreeUI.cs",
-                        "Assets/Scripts/UI/SkillBarUI.cs"
+                        "Assets/Scripts/UI/SkillBarUI.cs",
+                        "Assets/Scripts/UI/WeaponSkillTreeUI.cs"
                     ],
                     "muted": false
                 }
@@ -2002,7 +2023,7 @@
             "soundGroup": "sound.item.pickup",
             "purpose": "Pickup — equipment",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/7baf97f3279ffef40b747402df81ee46/item_pickup.wav"
+                "Assets/Audio/SoundLibrary/Interface/item_pickup.wav"
             ],
             "usages": [
                 {
@@ -2026,7 +2047,7 @@
             "soundGroup": "sound.item.place",
             "purpose": "Place — general equipment",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/46190f48c471d1e47b59959d5fb422de/item_place.wav"
+                "Assets/Audio/SoundLibrary/Interface/item_place.wav"
             ],
             "usages": [
                 {
@@ -2313,7 +2334,7 @@
             "soundGroup": "sound.world.gate",
             "purpose": "Area gate",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/255f0c0a1b85a6d4490764b5ca6fcfb6/gate_open.mp3"
+                "Assets/Audio/SoundLibrary/World & ambience/gate_open.mp3"
             ],
             "usages": [
                 {
@@ -2358,10 +2379,10 @@
             "soundGroup": "sound.world.shatter",
             "purpose": "Ice and barrier shattering",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/83a318a4623c6934ba8e5c9e59dd23a3/Ice_impact_–_Ice_sha_#4-1766764669612.wav",
-                "Assets/Audio/Resources/DeferredAudio/c116096b92069294fae8395cf0261d22/Ice_impact_–_Ice_sha_#2-1766764676177.wav",
-                "Assets/Audio/Resources/DeferredAudio/c638bbb2e560ec542a9a35b9f7bd6471/Ice_impact_–_Ice_sha_#3-1766764673747.wav",
-                "Assets/Audio/Resources/DeferredAudio/d170febca97f1304186a715fe6c0e6de/Ice_impact_–_Ice_sha_#1-1766764678544.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#1-1766764678544.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#2-1766764676177.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#3-1766764673747.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_impact_–_Ice_sha_#4-1766764669612.wav"
             ],
             "usages": [
                 {
@@ -2384,10 +2405,10 @@
             "soundGroup": "sound.combat.shatter",
             "purpose": "Freeze shatter impacts",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1413fd013f1c423c9b7bdaa3e0580011/Freeze_shatter_3.wav",
-                "Assets/Audio/Resources/DeferredAudio/42cd39830fe04363b0a6e0a5ef732399/Freeze_shatter_1.wav",
-                "Assets/Audio/Resources/DeferredAudio/841b191074a84b67a6b809f770e93718/Freeze_shatter_2.wav",
-                "Assets/Audio/Resources/DeferredAudio/9d0f11b337334f87b090243b7c97daa7/Freeze_shatter_4.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Freeze_shatter_1.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Freeze_shatter_2.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Freeze_shatter_3.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Freeze_shatter_4.wav"
             ],
             "usages": [
                 {
@@ -2409,7 +2430,7 @@
             "soundGroup": "sound.world.explosion",
             "purpose": "Corpse and quest explosions",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/e7dfd1b3bebb3554e8e17a1e856cfe5f/best_corpse_explosion.wav"
+                "Assets/Audio/SoundLibrary/Combat & weapons/best_corpse_explosion.wav"
             ],
             "usages": [
                 {
@@ -2464,8 +2485,8 @@
             "soundGroup": "sound.skill.Cleave",
             "purpose": "Cleave",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/11f715b1c8f197444a40883ec7abffe9/Skill_Warrior08_slash.wav",
-                "Assets/Audio/Resources/DeferredAudio/c4a60c91fccae564fb4ff984a6f34c8e/Skill_Warrior09_slash.wav"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Skill_Warrior08_slash.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Skill_Warrior09_slash.wav"
             ],
             "usages": [
                 {
@@ -2487,10 +2508,10 @@
             "soundGroup": "sound.skill.FireBolt",
             "purpose": "Fire projectile casting",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/0baa0ce2e866e4148be378ed358e9cfc/Fire_spell_cast_–_Ma_#2-1766763532663.wav",
-                "Assets/Audio/Resources/DeferredAudio/1245c323736a13c42907875be83718b4/Fire_spell_cast_–_Ma_#1-1766763536495.wav",
-                "Assets/Audio/Resources/DeferredAudio/80973afbd0af4e54887c1d71eba65338/Fire_spell_cast_–_Ma_#4-1766763524728.wav",
-                "Assets/Audio/Resources/DeferredAudio/9e354d1480751074f9acaf05e867e765/Fire_spell_cast_–_Ma_#3-1766763528875.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_cast_–_Ma_#1-1766763536495.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_cast_–_Ma_#2-1766763532663.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_cast_–_Ma_#3-1766763528875.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Fire_spell_cast_–_Ma_#4-1766763524728.wav"
             ],
             "usages": [
                 {
@@ -2526,7 +2547,7 @@
             "soundGroup": "sound.skill.Dash",
             "purpose": "Dash",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/e47cac14cd6eb9d41827b58ce8068688/Heavy_weapon_whoosh,_#3-1766763893457.wav"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Heavy_weapon_whoosh,_#4-1766763889384.wav"
             ],
             "usages": [
                 {
@@ -2548,7 +2569,7 @@
             "soundGroup": "sound.skill.FrostNova",
             "purpose": "Frost Nova",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/befeaf8be63b1ca408fde06b5ec1a044/13_Ice_explosion_01.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/13_Ice_explosion_01.wav"
             ],
             "usages": [
                 {
@@ -2570,9 +2591,9 @@
             "soundGroup": "sound.skill.WarCry",
             "purpose": "War Cry",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/36e6fb9b32783334e89099c932c772ac/Skill_Warrior03_warcry.wav",
-                "Assets/Audio/Resources/DeferredAudio/95b4faaea37a0ec4686ca30780a2e629/Skill_Warrior05_warcry.wav",
-                "Assets/Audio/Resources/DeferredAudio/e6cee02b9ccb0ee44b27aab26d38647a/Skill_Warrior02_warcry.wav"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Skill_Warrior02_warcry.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Skill_Warrior03_warcry.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Skill_Warrior05_warcry.wav"
             ],
             "usages": [
                 {
@@ -2594,10 +2615,10 @@
             "soundGroup": "sound.skill.ChainLightning",
             "purpose": "Lightning spell casting",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/930568f126afc52489657fd26c39e0e2/Lightning_cast_–_Ele_#1-1766764720689.wav",
-                "Assets/Audio/Resources/DeferredAudio/97e945ae92222c44390d90fdb4f64b92/Lightning_cast_–_Ele_#3-1766764718272.wav",
-                "Assets/Audio/Resources/DeferredAudio/b6c92be9d13caa54996055dcaa75702b/Lightning_cast_–_Ele_#2-1766764718272.wav",
-                "Assets/Audio/Resources/DeferredAudio/dd9de4f76b1dab64eae434e9dc5f29b7/Lightning_cast_–_Ele_#4-1766764715064.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#1-1766764720689.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#2-1766764718272.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#3-1766764718272.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#4-1766764715064.wav"
             ],
             "usages": [
                 {
@@ -2619,10 +2640,10 @@
             "soundGroup": "sound.skill.IceShard",
             "purpose": "Ice projectile casting",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/248bf64a66391f342ad88f75667b5195/Ice_spell_cast_–_Col_#3-1766764633331.wav",
-                "Assets/Audio/Resources/DeferredAudio/8e5af03101da8614488f2cacfbb197ab/Ice_spell_cast_–_Col_#4-1766764626746.wav",
-                "Assets/Audio/Resources/DeferredAudio/baebd906a7b26f8488065c779d86a236/Ice_spell_cast_–_Col_#2-1766764635940.wav",
-                "Assets/Audio/Resources/DeferredAudio/dca7bf23617b8d94e831631973b189cf/Ice_spell_cast_–_Col_#1-1766764638425.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_spell_cast_–_Col_#1-1766764638425.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_spell_cast_–_Col_#2-1766764635940.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_spell_cast_–_Col_#3-1766764633331.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Ice_spell_cast_–_Col_#4-1766764626746.wav"
             ],
             "usages": [
                 {
@@ -2658,7 +2679,7 @@
             "soundGroup": "sound.skill.Teleport",
             "purpose": "Teleport",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/d6db9b0f706b9f44ab573ff623bdd80f/88_Teleport_02.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/88_Teleport_02.wav"
             ],
             "usages": [
                 {
@@ -2680,9 +2701,9 @@
             "soundGroup": "sound.skill.RaiseSkeletons",
             "purpose": "Raise Skeletons",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/7cf214a211511994ab81d9a4040bf591/shade1.wav",
-                "Assets/Audio/Resources/DeferredAudio/89f5b9dde8bbc014782a4f78b81ee4fd/shade2.wav",
-                "Assets/Audio/Resources/DeferredAudio/d5691548e075a484ebd59eeb78b79e80/shade3.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/shade1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/shade2.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/shade3.wav"
             ],
             "usages": [
                 {
@@ -2714,7 +2735,7 @@
             "soundGroup": "sound.skill.DeathMark",
             "purpose": "Death Mark",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/d632a08f948dde844ba9d76d0b850fb9/Rune_activate_–_Anci_#2-1766768897281.wav"
+                "Assets/Audio/SoundLibrary/Movement/Rune_activate_–_Anci_#2-1766768897281.wav"
             ],
             "usages": [
                 {
@@ -2736,7 +2757,7 @@
             "soundGroup": "sound.skill.SpiritWolves",
             "purpose": "Spirit Wolves",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/7cf214a211511994ab81d9a4040bf591/shade1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/shade1.wav"
             ],
             "usages": [
                 {
@@ -2758,8 +2779,8 @@
             "soundGroup": "sound.skill.BoneGolem",
             "purpose": "Bone Golem",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/543a9c5eb91184d488c7cbefbcd6a286/Skill_Golem02.wav",
-                "Assets/Audio/Resources/DeferredAudio/90017fa58bd917c4c9a9f6f55984bd59/Skill_Golem01.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Golem01.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Golem02.wav"
             ],
             "usages": [
                 {
@@ -2781,7 +2802,7 @@
             "soundGroup": "sound.skill.GraveRot",
             "purpose": "Grave Rot",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/63d66c806b870864f956a713fa805ac8/Skill_Poison04.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison04.wav"
             ],
             "usages": [
                 {
@@ -2803,7 +2824,7 @@
             "soundGroup": "sound.skill.SplitShot",
             "purpose": "Split Shot",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/e452f29912848904aa8fe6e4e14ca4af/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
             ],
             "usages": [
                 {
@@ -2825,7 +2846,7 @@
             "soundGroup": "sound.skill.PiercingShot",
             "purpose": "Piercing Shot",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/e452f29912848904aa8fe6e4e14ca4af/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
             ],
             "usages": [
                 {
@@ -2847,8 +2868,8 @@
             "soundGroup": "sound.skill.RainOfArrows",
             "purpose": "Rain Of Arrows",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/6137abbe3c91d6a4aa83bc9fe5ec0b0c/Skill_Arrow01_rain_of_arrows_or_volley.wav",
-                "Assets/Audio/Resources/DeferredAudio/bb7bc20a872fae9448751bc20ed1a0b1/Skill_Arrow04_rain_of_barrage_of_arrows.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Arrow01_rain_of_arrows_or_volley.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Arrow04_rain_of_barrage_of_arrows.wav"
             ],
             "usages": [
                 {
@@ -2870,7 +2891,7 @@
             "soundGroup": "sound.skill.BurningArrow",
             "purpose": "Burning Arrow",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/e452f29912848904aa8fe6e4e14ca4af/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
             ],
             "usages": [
                 {
@@ -2914,7 +2935,7 @@
             "soundGroup": "sound.skill.VenomArrow",
             "purpose": "Venom Arrow",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/e452f29912848904aa8fe6e4e14ca4af/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Bow_and_arrow_shot_–_#3-1766764176083_arrow_release.mp3"
             ],
             "usages": [
                 {
@@ -2936,7 +2957,7 @@
             "soundGroup": "sound.skill.VenomSpout",
             "purpose": "Venom Spout",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/612fa68abc7eb7545805eda4de8f77cd/Skill_Poison02.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Poison02.wav"
             ],
             "usages": [
                 {
@@ -2958,7 +2979,7 @@
             "soundGroup": "sound.skill.SummonViper",
             "purpose": "Summon Viper",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/4e7a0dd692f52b04ca8954a5669176ee/slime1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/slime1.wav"
             ],
             "usages": [
                 {
@@ -2980,8 +3001,8 @@
             "soundGroup": "sound.skill.Pulverize",
             "purpose": "Pulverize",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/0d34f70c76723dc4491b68349ab710eb/Weapon_Hammer02.wav",
-                "Assets/Audio/Resources/DeferredAudio/7115ddf875125fe4184a2e86e2dc2ec2/Weapon_Hammer01.wav"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Weapon_Hammer01.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Weapon_Hammer02.wav"
             ],
             "usages": [
                 {
@@ -3003,8 +3024,8 @@
             "soundGroup": "sound.skill.ReapingArc",
             "purpose": "Reaping Arc",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/11e8e45bb20ed4847a20eebcd566d8df/Weapon_Scythe01.wav",
-                "Assets/Audio/Resources/DeferredAudio/bcc0c9117d5e06349a06300b34c23c85/Weapon_Scythe02.wav"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Weapon_Scythe01.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Weapon_Scythe02.wav"
             ],
             "usages": [
                 {
@@ -3026,9 +3047,9 @@
             "soundGroup": "sound.skill.LungingThrust",
             "purpose": "Lunging Thrust",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/477e2ac8cbdb9734cbe6c7b7190a8539/Weapon_Dagger01.wav",
-                "Assets/Audio/Resources/DeferredAudio/76816d8514db62d44853ae881bab1f1b/Weapon_Dagger03.wav",
-                "Assets/Audio/Resources/DeferredAudio/c580aed8e2f4aa74799a6c7699ac3b2e/Weapon_Dagger02.wav"
+                "Assets/Audio/SoundLibrary/Combat & weapons/Weapon_Dagger01.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Weapon_Dagger02.wav",
+                "Assets/Audio/SoundLibrary/Combat & weapons/Weapon_Dagger03.wav"
             ],
             "usages": [
                 {
@@ -3050,7 +3071,7 @@
             "soundGroup": "sound.enemy.Carrion Saint.Attack",
             "purpose": "Carrion Saint / attack voice",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/9eebe2b36c407154ba474f0edada8c37/mnstr1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/mnstr1.wav"
             ],
             "usages": [
                 {
@@ -3074,9 +3095,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -3100,10 +3121,10 @@
             "soundGroup": "sound.enemy.Zombie.Attack",
             "purpose": "Zombie / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1a30b7825fe05cf4a9f9c90c7237e15d/Zombie_moan_–_Slow_u_#4-1766768225595.wav",
-                "Assets/Audio/Resources/DeferredAudio/2fac7e5e9bdcc6940a234e62370e525a/Zombie_moan_–_Slow_u_#2-1766768233458.wav",
-                "Assets/Audio/Resources/DeferredAudio/6b9dc44f97fad134a8d71a982364e622/Zombie_moan_–_Slow_u_#1-1766768225594.wav",
-                "Assets/Audio/Resources/DeferredAudio/7b262f15006fc4f40997ce2d939ddc12/Zombie_moan_–_Slow_u_#3-1766768231428.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Zombie_moan_–_Slow_u_#1-1766768225594.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Zombie_moan_–_Slow_u_#2-1766768233458.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Zombie_moan_–_Slow_u_#3-1766768231428.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Zombie_moan_–_Slow_u_#4-1766768225595.wav"
             ],
             "usages": [
                 {
@@ -3129,7 +3150,7 @@
             "soundGroup": "sound.enemy.Zombie.Death",
             "purpose": "mnstr / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/9eebe2b36c407154ba474f0edada8c37/mnstr1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/mnstr1.wav"
             ],
             "usages": [
                 {
@@ -3153,9 +3174,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -3179,9 +3200,9 @@
             "soundGroup": "sound.enemy.Raider.Attack",
             "purpose": "Humanoid grunts / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/7f546aab911c796469bc86aa483bc3c1/Goblin_attack_–_Smal_#1-1766768039592.wav",
-                "Assets/Audio/Resources/DeferredAudio/8c6b9f048d26b7d4f9083f5a2a51a1fb/Goblin_attack_–_Smal_#2-1766768045094.wav",
-                "Assets/Audio/Resources/DeferredAudio/e54b84efebc0e3140824e6af94c7fd52/Goblin_attack_–_Smal_#3-1766768042373.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.wav"
             ],
             "usages": [
                 {
@@ -3207,7 +3228,7 @@
             "soundGroup": "sound.enemy.Raider.Death",
             "purpose": "Humanoid grunts / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/fd5a645aa0a8dab43bc784ef58e7e2c3/Goblin_attack_–_Smal_#4-1766768042374.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#4-1766768042374.wav"
             ],
             "usages": [
                 {
@@ -3231,9 +3252,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -3257,7 +3278,7 @@
             "soundGroup": "sound.enemy.Brute.Attack",
             "purpose": "giant / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/a2b8b8cdeff89c2448613d5735632aea/giant1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/giant1.wav"
             ],
             "usages": [
                 {
@@ -3283,7 +3304,7 @@
             "soundGroup": "sound.enemy.Brute.Death",
             "purpose": "giant / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/d9bf550722614fc4e8214f91b243d4b2/giant2.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/giant2.wav"
             ],
             "usages": [
                 {
@@ -3307,9 +3328,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -3333,8 +3354,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -3358,9 +3379,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -3384,8 +3405,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -3409,9 +3430,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -3435,8 +3456,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -3460,9 +3481,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -3486,10 +3507,10 @@
             "soundGroup": "sound.skill.ChainLightning",
             "purpose": "Lightning spell casting",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/930568f126afc52489657fd26c39e0e2/Lightning_cast_–_Ele_#1-1766764720689.wav",
-                "Assets/Audio/Resources/DeferredAudio/97e945ae92222c44390d90fdb4f64b92/Lightning_cast_–_Ele_#3-1766764718272.wav",
-                "Assets/Audio/Resources/DeferredAudio/b6c92be9d13caa54996055dcaa75702b/Lightning_cast_–_Ele_#2-1766764718272.wav",
-                "Assets/Audio/Resources/DeferredAudio/dd9de4f76b1dab64eae434e9dc5f29b7/Lightning_cast_–_Ele_#4-1766764715064.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#1-1766764720689.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#2-1766764718272.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#3-1766764718272.wav",
+                "Assets/Audio/SoundLibrary/Magic & spells/Lightning_cast_–_Ele_#4-1766764715064.wav"
             ],
             "usages": [
                 {
@@ -3515,8 +3536,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -3540,9 +3561,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -3566,10 +3587,10 @@
             "soundGroup": "sound.enemy.Skeleton.Attack",
             "purpose": "Skeleton / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/21976b785f5667d4db786eb1be748f04/Skeleton_attack_–_Bo_#3-1766768181651.wav",
-                "Assets/Audio/Resources/DeferredAudio/2d30a6c688412ee45bf5dab5bcf3cd3e/Skeleton_attack_–_Bo_#4-1766768179054.wav",
-                "Assets/Audio/Resources/DeferredAudio/7a4691fc63546a4449e253e381aadb76/Skeleton_attack_–_Bo_#2-1766768184245.wav",
-                "Assets/Audio/Resources/DeferredAudio/c2325df0784d83f429ca366f6a48baf1/Skeleton_attack_–_Bo_#1-1766768184245.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#1-1766768184245.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#2-1766768184245.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#3-1766768181651.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#4-1766768179054.wav"
             ],
             "usages": [
                 {
@@ -3595,8 +3616,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -3620,9 +3641,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -3646,7 +3667,7 @@
             "soundGroup": "sound.enemy.Wraith.Attack",
             "purpose": "shade / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/7cf214a211511994ab81d9a4040bf591/shade1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/shade1.wav"
             ],
             "usages": [
                 {
@@ -3672,8 +3693,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -3697,9 +3718,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -3723,9 +3744,9 @@
             "soundGroup": "sound.enemy.Raider.Attack",
             "purpose": "Humanoid grunts / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/7f546aab911c796469bc86aa483bc3c1/Goblin_attack_–_Smal_#1-1766768039592.wav",
-                "Assets/Audio/Resources/DeferredAudio/8c6b9f048d26b7d4f9083f5a2a51a1fb/Goblin_attack_–_Smal_#2-1766768045094.wav",
-                "Assets/Audio/Resources/DeferredAudio/e54b84efebc0e3140824e6af94c7fd52/Goblin_attack_–_Smal_#3-1766768042373.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.wav"
             ],
             "usages": [
                 {
@@ -3751,8 +3772,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -3776,9 +3797,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -3802,7 +3823,7 @@
             "soundGroup": "sound.enemy.Brute.Attack",
             "purpose": "giant / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/a2b8b8cdeff89c2448613d5735632aea/giant1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/giant1.wav"
             ],
             "usages": [
                 {
@@ -3828,8 +3849,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -3853,9 +3874,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -3879,7 +3900,7 @@
             "soundGroup": "sound.enemy.Brute.Attack",
             "purpose": "giant / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/a2b8b8cdeff89c2448613d5735632aea/giant1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/giant1.wav"
             ],
             "usages": [
                 {
@@ -3905,8 +3926,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -4007,9 +4028,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -4031,12 +4052,9 @@
             "label": "Forest Shaman — Attack",
             "group": "Enemies",
             "soundGroup": "sound.enemy.Forest Shaman.Attack",
-            "purpose": "Magic projectile / attack voices",
+            "purpose": "Dark projectile casting",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/02c1defc161216d46b98d4b14ac4bbc6/Magic_projectile_lau_#4-1766764858633.wav",
-                "Assets/Audio/Resources/DeferredAudio/355b235ee981d3f4c8be6af0ec53cbba/Magic_projectile_lau_#1-1766764866448.wav",
-                "Assets/Audio/Resources/DeferredAudio/6a63def20b20d9f4a87544ea5f02adb9/Magic_projectile_lau_#2-1766764864417.wav",
-                "Assets/Audio/Resources/DeferredAudio/b38388df553e1c54b81d24471c4c78ab/Magic_projectile_lau_#3-1766764862223.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Dark07.wav"
             ],
             "usages": [
                 {
@@ -4062,8 +4080,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -4087,9 +4105,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -4111,12 +4129,9 @@
             "label": "Necromancer — Attack",
             "group": "Enemies",
             "soundGroup": "sound.enemy.Forest Shaman.Attack",
-            "purpose": "Magic projectile / attack voices",
+            "purpose": "Dark projectile casting",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/02c1defc161216d46b98d4b14ac4bbc6/Magic_projectile_lau_#4-1766764858633.wav",
-                "Assets/Audio/Resources/DeferredAudio/355b235ee981d3f4c8be6af0ec53cbba/Magic_projectile_lau_#1-1766764866448.wav",
-                "Assets/Audio/Resources/DeferredAudio/6a63def20b20d9f4a87544ea5f02adb9/Magic_projectile_lau_#2-1766764864417.wav",
-                "Assets/Audio/Resources/DeferredAudio/b38388df553e1c54b81d24471c4c78ab/Magic_projectile_lau_#3-1766764862223.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Dark07.wav"
             ],
             "usages": [
                 {
@@ -4142,8 +4157,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -4167,9 +4182,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -4193,8 +4208,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -4218,9 +4233,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -4244,7 +4259,7 @@
             "soundGroup": "sound.enemy.Brute.Attack",
             "purpose": "giant / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/a2b8b8cdeff89c2448613d5735632aea/giant1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/giant1.wav"
             ],
             "usages": [
                 {
@@ -4270,8 +4285,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -5235,9 +5250,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -5261,10 +5276,10 @@
             "soundGroup": "sound.enemy.Skeleton.Attack",
             "purpose": "Skeleton / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/21976b785f5667d4db786eb1be748f04/Skeleton_attack_–_Bo_#3-1766768181651.wav",
-                "Assets/Audio/Resources/DeferredAudio/2d30a6c688412ee45bf5dab5bcf3cd3e/Skeleton_attack_–_Bo_#4-1766768179054.wav",
-                "Assets/Audio/Resources/DeferredAudio/7a4691fc63546a4449e253e381aadb76/Skeleton_attack_–_Bo_#2-1766768184245.wav",
-                "Assets/Audio/Resources/DeferredAudio/c2325df0784d83f429ca366f6a48baf1/Skeleton_attack_–_Bo_#1-1766768184245.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#1-1766768184245.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#2-1766768184245.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#3-1766768181651.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Skeleton_attack_–_Bo_#4-1766768179054.wav"
             ],
             "usages": [
                 {
@@ -5290,8 +5305,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -5315,9 +5330,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -5339,12 +5354,9 @@
             "label": "Skeleton Mage — Attack",
             "group": "Enemies",
             "soundGroup": "sound.enemy.Forest Shaman.Attack",
-            "purpose": "Magic projectile / attack voices",
+            "purpose": "Dark projectile casting",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/02c1defc161216d46b98d4b14ac4bbc6/Magic_projectile_lau_#4-1766764858633.wav",
-                "Assets/Audio/Resources/DeferredAudio/355b235ee981d3f4c8be6af0ec53cbba/Magic_projectile_lau_#1-1766764866448.wav",
-                "Assets/Audio/Resources/DeferredAudio/6a63def20b20d9f4a87544ea5f02adb9/Magic_projectile_lau_#2-1766764864417.wav",
-                "Assets/Audio/Resources/DeferredAudio/b38388df553e1c54b81d24471c4c78ab/Magic_projectile_lau_#3-1766764862223.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Dark07.wav"
             ],
             "usages": [
                 {
@@ -5353,6 +5365,7 @@
                     "enemy": "Skeleton Mage",
                     "portrait": "portraits/Skeleton%20Mage.png",
                     "sources": [
+                        "Assets/Scripts/Skills/Minion.cs",
                         "Assets/Scripts/Enemies/EnemySounds.cs",
                         "Assets/Scripts/Enemies/EnemyKind.cs",
                         "Assets/Scripts/Enemies/EnemyCombat.cs",
@@ -5370,8 +5383,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -5472,9 +5485,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -5498,7 +5511,7 @@
             "soundGroup": "sound.enemy.Brute.Attack",
             "purpose": "giant / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/a2b8b8cdeff89c2448613d5735632aea/giant1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/giant1.wav"
             ],
             "usages": [
                 {
@@ -5524,8 +5537,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -5549,9 +5562,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -5575,7 +5588,7 @@
             "soundGroup": "sound.enemy.Brute.Attack",
             "purpose": "giant / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/a2b8b8cdeff89c2448613d5735632aea/giant1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/giant1.wav"
             ],
             "usages": [
                 {
@@ -5601,8 +5614,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -5636,9 +5649,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -5660,12 +5673,9 @@
             "label": "Briarbound — Attack",
             "group": "Enemies",
             "soundGroup": "sound.enemy.Forest Shaman.Attack",
-            "purpose": "Magic projectile / attack voices",
+            "purpose": "Dark projectile casting",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/02c1defc161216d46b98d4b14ac4bbc6/Magic_projectile_lau_#4-1766764858633.wav",
-                "Assets/Audio/Resources/DeferredAudio/355b235ee981d3f4c8be6af0ec53cbba/Magic_projectile_lau_#1-1766764866448.wav",
-                "Assets/Audio/Resources/DeferredAudio/6a63def20b20d9f4a87544ea5f02adb9/Magic_projectile_lau_#2-1766764864417.wav",
-                "Assets/Audio/Resources/DeferredAudio/b38388df553e1c54b81d24471c4c78ab/Magic_projectile_lau_#3-1766764862223.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Dark07.wav"
             ],
             "usages": [
                 {
@@ -5691,8 +5701,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -5716,9 +5726,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -5740,12 +5750,9 @@
             "label": "Grave Siren — Attack",
             "group": "Enemies",
             "soundGroup": "sound.enemy.Forest Shaman.Attack",
-            "purpose": "Magic projectile / attack voices",
+            "purpose": "Dark projectile casting",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/02c1defc161216d46b98d4b14ac4bbc6/Magic_projectile_lau_#4-1766764858633.wav",
-                "Assets/Audio/Resources/DeferredAudio/355b235ee981d3f4c8be6af0ec53cbba/Magic_projectile_lau_#1-1766764866448.wav",
-                "Assets/Audio/Resources/DeferredAudio/6a63def20b20d9f4a87544ea5f02adb9/Magic_projectile_lau_#2-1766764864417.wav",
-                "Assets/Audio/Resources/DeferredAudio/b38388df553e1c54b81d24471c4c78ab/Magic_projectile_lau_#3-1766764862223.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Dark07.wav"
             ],
             "usages": [
                 {
@@ -5771,8 +5778,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -5796,9 +5803,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -5822,9 +5829,9 @@
             "soundGroup": "sound.enemy.Raider.Attack",
             "purpose": "Humanoid grunts / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/7f546aab911c796469bc86aa483bc3c1/Goblin_attack_–_Smal_#1-1766768039592.wav",
-                "Assets/Audio/Resources/DeferredAudio/8c6b9f048d26b7d4f9083f5a2a51a1fb/Goblin_attack_–_Smal_#2-1766768045094.wav",
-                "Assets/Audio/Resources/DeferredAudio/e54b84efebc0e3140824e6af94c7fd52/Goblin_attack_–_Smal_#3-1766768042373.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.wav"
             ],
             "usages": [
                 {
@@ -5850,8 +5857,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -5875,9 +5882,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -5901,9 +5908,9 @@
             "soundGroup": "sound.enemy.Raider.Attack",
             "purpose": "Humanoid grunts / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/7f546aab911c796469bc86aa483bc3c1/Goblin_attack_–_Smal_#1-1766768039592.wav",
-                "Assets/Audio/Resources/DeferredAudio/8c6b9f048d26b7d4f9083f5a2a51a1fb/Goblin_attack_–_Smal_#2-1766768045094.wav",
-                "Assets/Audio/Resources/DeferredAudio/e54b84efebc0e3140824e6af94c7fd52/Goblin_attack_–_Smal_#3-1766768042373.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.wav"
             ],
             "usages": [
                 {
@@ -5929,8 +5936,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -5954,9 +5961,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -5980,9 +5987,9 @@
             "soundGroup": "sound.enemy.Raider.Attack",
             "purpose": "Humanoid grunts / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/7f546aab911c796469bc86aa483bc3c1/Goblin_attack_–_Smal_#1-1766768039592.wav",
-                "Assets/Audio/Resources/DeferredAudio/8c6b9f048d26b7d4f9083f5a2a51a1fb/Goblin_attack_–_Smal_#2-1766768045094.wav",
-                "Assets/Audio/Resources/DeferredAudio/e54b84efebc0e3140824e6af94c7fd52/Goblin_attack_–_Smal_#3-1766768042373.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.wav"
             ],
             "usages": [
                 {
@@ -6008,8 +6015,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -6033,9 +6040,9 @@
             "soundGroup": "sound.enemy.Zombie.Aggro",
             "purpose": "Humanoid / alert calls",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1d93491d6e5aeb44a8999ee27f033d11/enemy_aggro_2.mp3",
-                "Assets/Audio/Resources/DeferredAudio/1eb92fc01d0692c4c9a5fc0cc17d75ae/enemy_aggro_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/9c9efb6d6946dac4d923757fa11f9911/enemy_aggro_4.mp3"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_2.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_3.mp3",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_aggro_4.mp3"
             ],
             "usages": [
                 {
@@ -6059,9 +6066,9 @@
             "soundGroup": "sound.enemy.Raider.Attack",
             "purpose": "Humanoid grunts / attack voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/7f546aab911c796469bc86aa483bc3c1/Goblin_attack_–_Smal_#1-1766768039592.wav",
-                "Assets/Audio/Resources/DeferredAudio/8c6b9f048d26b7d4f9083f5a2a51a1fb/Goblin_attack_–_Smal_#2-1766768045094.wav",
-                "Assets/Audio/Resources/DeferredAudio/e54b84efebc0e3140824e6af94c7fd52/Goblin_attack_–_Smal_#3-1766768042373.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#1-1766768039592.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#2-1766768045094.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/Goblin_attack_–_Smal_#3-1766768042373.wav"
             ],
             "usages": [
                 {
@@ -6087,8 +6094,8 @@
             "soundGroup": "sound.enemy.Fire Caster.Death",
             "purpose": "Humanoid / death voices",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/1250d2b585d435b4bab7dba7f2c89dea/enemy_death_3.mp3",
-                "Assets/Audio/Resources/DeferredAudio/c56702ab3b2b9fb488d8e1293487f5f2/enemy_death_1.wav"
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_1.wav",
+                "Assets/Audio/SoundLibrary/Creatures & voices/enemy_death_3.mp3"
             ],
             "usages": [
                 {
@@ -6112,7 +6119,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/99c2a2eab45cc9c4e987fed32a6ad088/Town_ambience_–_Dist_#1-1766768998365.wav"
+                "Assets/Audio/SoundLibrary/World & ambience/Town_ambience_–_Dist_#1-1766768998365.wav"
             ],
             "usages": [
                 {
@@ -6135,7 +6142,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/5c0fac3889ebab5409249a7eaa49ece5/Night_ambience_–_Cri_#1-1766769107163.wav"
+                "Assets/Audio/SoundLibrary/World & ambience/Night_ambience_–_Cri_#1-1766769107163.wav"
             ],
             "usages": [
                 {
@@ -6158,7 +6165,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/186286c1a37cbfc44a8ef0e817f8ec20/Cave_ambience_–_Holl_#1-1766768454355.wav"
+                "Assets/Audio/SoundLibrary/World & ambience/Cave_ambience_–_Holl_#1-1766768454355.wav"
             ],
             "usages": [
                 {
@@ -6181,7 +6188,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/13bbdc148f8a33943a6354bc5d0534f1/Dungeon_ambience_–_W_#1-1766768410723.wav"
+                "Assets/Audio/SoundLibrary/World & ambience/Dungeon_ambience_–_W_#1-1766768410723.wav"
             ],
             "usages": [
                 {
@@ -6204,7 +6211,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/9997a642aa2eb70489f97b2a8fe7dd44/Ambience_Blizzard.wav"
+                "Assets/Audio/SoundLibrary/World & ambience/Ambience_Blizzard.wav"
             ],
             "usages": [
                 {
@@ -6227,12 +6234,35 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/79cab01d1f50ab14290e56eabca29922/Ambience_Lava.wav"
+                "Assets/Audio/SoundLibrary/World & ambience/Ambience_Lava.wav"
             ],
             "usages": [
                 {
                     "id": "ambient.lava",
                     "label": "Ruins bed and nearby lava",
+                    "enemy": "",
+                    "portrait": "",
+                    "sources": [
+                        "Assets/Scripts/World/WorldAmbience.cs",
+                        "Assets/Resources/AmbientSoundLibrary.asset"
+                    ],
+                    "muted": false
+                }
+            ]
+        },
+        {
+            "id": "ambient.rain",
+            "label": "Rainy areas (Greenwood and Graveyard)",
+            "group": "World & ambience",
+            "soundGroup": "",
+            "purpose": "",
+            "current": [
+                "Assets/Audio/Resources/AmbienceRainQuiet.wav"
+            ],
+            "usages": [
+                {
+                    "id": "ambient.rain",
+                    "label": "Rainy areas (Greenwood and Graveyard)",
                     "enemy": "",
                     "portrait": "",
                     "sources": [
@@ -6250,7 +6280,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/679f809f3ba2b164fa3a7cde55d56627/River_flow_–_Calm_fl_#1-1766768653145.wav"
+                "Assets/Audio/SoundLibrary/World & ambience/River_flow_–_Calm_fl_#1-1766768653145.wav"
             ],
             "usages": [
                 {
@@ -6273,7 +6303,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/b8c79fdb98e1eac4ebdf382eeb02c369/Ambience_Pond.wav"
+                "Assets/Audio/SoundLibrary/World & ambience/Ambience_Pond.wav"
             ],
             "usages": [
                 {
@@ -6296,7 +6326,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/a021fdad7304c154087f1c5e9954bc67/Ambience_Ocean.wav"
+                "Assets/Audio/SoundLibrary/World & ambience/Ambience_Ocean.wav"
             ],
             "usages": [
                 {
@@ -6319,7 +6349,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/914b85ad31c126b488f0f7594656f551/Campfire_–_Medium_fi_#1-1766768610324.wav"
+                "Assets/Audio/SoundLibrary/World & ambience/Campfire_–_Medium_fi_#1-1766768610324.wav"
             ],
             "usages": [
                 {
@@ -6342,7 +6372,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/cb84086d88e83a24484594a05021cdf7/Ambience_Gust.wav"
+                "Assets/Audio/SoundLibrary/World & ambience/Ambience_Gust.wav"
             ],
             "usages": [
                 {
@@ -6365,7 +6395,7 @@
             "soundGroup": "",
             "purpose": "",
             "current": [
-                "Assets/Audio/Resources/DeferredAudio/9efd46fd6de73d249aadb300d7aaa135/Bridge_creak_–_Old_w_#1-1766767266448.wav"
+                "Assets/Audio/SoundLibrary/World & ambience/Bridge_creak_–_Old_w_#1-1766767266448.wav"
             ],
             "usages": [
                 {

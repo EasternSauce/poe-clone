@@ -62,6 +62,7 @@ namespace PoeClone.EditorTools
                     if (fields.TryGetValue(id, out var field)) tokens.Add(field);
                     string[] files = Sources(tokens.ToArray());
                     if (id.StartsWith("skill.")) files = files.Concat(new[] { "Assets/Scripts/Skills/PlayerSkills.cs" }).Distinct().ToArray();
+                    if (id == "enemy.Skeleton Mage.Attack") files = files.Concat(new[] { "Assets/Scripts/Skills/Minion.cs" }).Distinct().ToArray();
                     if (enemy.Length > 0 && enemy != "Carrion Saint") files = files.Concat(new[] {
                         "Assets/Scripts/Enemies/EnemySounds.cs", "Assets/Scripts/Enemies/EnemyKind.cs",
                         id.EndsWith(".Death") ? "Assets/Scripts/Enemies/EnemyHealth.cs" :

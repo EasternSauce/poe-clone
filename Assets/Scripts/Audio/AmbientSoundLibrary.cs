@@ -5,14 +5,18 @@ namespace PoeClone.Audio
     [CreateAssetMenu(menuName = "PoeClone/Ambient Sound Library")]
     public sealed class AmbientSoundLibrary : ScriptableObject
     {
-        [System.Serializable]
-        public sealed class Entry { public string name; public string[] paths; }
-        [System.Serializable]
-        public sealed class Catalog { public Entry[] entries; }
-        public static Catalog LoadCatalog()
+        public static AmbientSoundLibrary Load() => Resources.Load<AmbientSoundLibrary>("AmbientSoundLibrary");
+
+        public System.Collections.Generic.IEnumerable<AudioClip> Clips
         {
-            var text = Resources.Load<TextAsset>("DeferredAmbience");
-            return text != null ? JsonUtility.FromJson<Catalog>(text.text) : new Catalog { entries = System.Array.Empty<Entry>() };
+            get
+            {
+                yield return town; yield return night; yield return cave; yield return dungeon;
+                yield return blizzard; yield return lava; yield return rain;
+                yield return river; yield return pond; yield return ocean; yield return fire; yield return gust;
+                foreach (var clip in stones) yield return clip;
+                foreach (var clip in creaks) yield return clip;
+            }
         }
 
         public AudioClip town, night, cave, dungeon, blizzard, lava, rain;

@@ -12,19 +12,6 @@ namespace PoeClone.Audio
         {
             public string id, purpose;
             public AudioClip[] clips = Array.Empty<AudioClip>();
-            public string[] clipPaths = Array.Empty<string>();
-            public IEnumerable<AudioClip> LoadedClips
-            {
-                get
-                {
-                    foreach (var clip in clips) if (clip != null) yield return clip;
-                    foreach (string path in clipPaths)
-                    {
-                        var clip = DeferredAudio.Get(path);
-                        if (clip != null) yield return clip;
-                    }
-                }
-            }
             [Tooltip("Minimum seconds between plays from this group, shared by every caller. Requests during it stay silent.")]
             [Min(0f)] public float cooldown;
             [Tooltip("Never dropped when too many sounds play at once; ordinary sounds are dropped first.")]
@@ -38,7 +25,7 @@ namespace PoeClone.Audio
                     return null;
                 AudioClip next = null;
                 int count = 0;
-                foreach (var clip in LoadedClips)
+                foreach (var clip in clips)
                     if (clip != null && UnityEngine.Random.Range(0, ++count) == 0)
                         next = clip;
                 next = next != null ? next : fallback;
@@ -90,14 +77,13 @@ namespace PoeClone.Audio
             if (!Application.isPlaying) return Resources.Load<SoundBoardSettings>("SoundBoardSettings");
 #endif
             if (runtime != null) return runtime;
-            var catalog = Resources.Load<TextAsset>("DeferredSoundBoard");
-            if (catalog == null)
+            var source = Resources.Load<SoundBoardSettings>("SoundBoardSettings");
+            if (source == null)
             {
-                Debug.LogError("DeferredSoundBoard catalog is missing; regenerate deferred audio catalogs.");
+                Debug.LogError("SoundBoardSettings is missing.");
                 return null;
             }
-            runtime = CreateInstance<SoundBoardSettings>();
-            JsonUtility.FromJsonOverwrite(catalog.text, runtime);
+            runtime = Instantiate(source);
             runtime.Rebuild();
             return runtime;
         }
@@ -149,13 +135,6 @@ namespace PoeClone.Audio
             if (clip == null) return null;
             if (byRecording == null) Rebuild();
             if (byRecording.TryGetValue(clip, out var found)) return found;
-            foreach (var group in soundGroups)
-                foreach (string path in group.clipPaths)
-                    if (System.IO.Path.GetFileName(path) == clip.name)
-                    {
-                        byRecording[clip] = group;
-                        return group;
-                    }
             return null;
         }
 

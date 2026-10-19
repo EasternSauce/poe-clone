@@ -1,3 +1,8 @@
+version: 2026-10-19-preloaded-audio-library
+- Replaced the four magic projectile launch recordings with a short dark spell sound for skeleton mages and other casters that shared them.
+- Sound effects and ambience now finish loading and decoding before gameplay starts, preventing missing first-use sounds.
+- Audio recordings now live in named sound-library folders instead of individual GUID folders.
+
 version: 2026-10-19-skeleton-mage-projectile-audio
 - Summoned skeleton mages now play a magic projectile launch sound when casting, once per volley.
 

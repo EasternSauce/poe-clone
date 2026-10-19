@@ -215,7 +215,7 @@ namespace PoeClone.Player
                 if (sniperFullFraction >= 1f && !sniperSoundPlayed)
                 {
                     sniperSoundPlayed = true;
-                    AudioManager.Instance?.PlayAtPoint(Resources.Load<AudioClip>("Sfx/piercing_charge_ready"), transform.position);
+                    AudioManager.Instance?.PlayAtPoint(AudioManager.Instance.Sfx("piercing_charge_ready"), transform.position);
                     PoeClone.Skills.SkillEffects.Shockwave(transform.position, 0.9f, new Color(1f, 0.85f, 0.4f), 0.18f);
                 }
                 if (!attackPressed) ReleaseSniper();

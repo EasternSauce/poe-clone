@@ -44,6 +44,7 @@ namespace PoeClone.EditorTools
             { "skill.FrostNova", new[] { "13_Ice_explosion_01" } },
             { "skill.ChainLightning", new[] { "Lightning_cast_" } },
             { "skill.RaiseSkeletons", new[] { "shade1", "shade2", "shade3" } },
+            { "enemy.Forest Shaman.Attack", new[] { "Skill_Dark07" } },
             { "skill.BoneGolem", new[] { "Skill_Golem01", "Skill_Golem02" } },
             { "skill.Dash", new[] { "Heavy_weapon_whoosh,_#4-1766763889384" } },
             { "skill.WarCry", new[] { "Skill_Warrior02_warcry", "Skill_Warrior03_warcry", "Skill_Warrior05_warcry" } },

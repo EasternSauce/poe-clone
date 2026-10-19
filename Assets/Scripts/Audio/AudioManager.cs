@@ -77,6 +77,9 @@ namespace PoeClone.Audio
         {
             Instance = null;
             effectsVolume = musicVolume = null;
+            coreSounds.Clear();
+            preloadedSounds.Clear();
+            soundsReady = false;
         }
 
         /// <summary>The player's sound effects volume: combat, world, ambience and interface sounds.</summary>
@@ -108,8 +111,9 @@ namespace PoeClone.Audio
 
         private AudioSource uiSource;
         private SoundBoardSettings soundBoard;
-        private readonly System.Collections.Generic.Dictionary<string, AudioClip> coreSounds =
-            new System.Collections.Generic.Dictionary<string, AudioClip>();
+        private static readonly Dictionary<string, AudioClip> coreSounds = new Dictionary<string, AudioClip>();
+        private static readonly HashSet<AudioClip> preloadedSounds = new HashSet<AudioClip>();
+        private static bool soundsReady;
 
         public void ReloadSoundBoard() => soundBoard = SoundBoardSettings.Load();
 
@@ -119,22 +123,49 @@ namespace PoeClone.Audio
             AudioClip clip = effect != null ? effect.Choose(fallback) : fallback;
             PlayWorld(clip, position, pitch);
         }
-        /// <summary>Core cues are ready at startup; optional recordings load in the background.</summary>
+        /// <summary>All sound effects are loaded before the first scene starts.</summary>
         public AudioClip Sfx(string name) => coreSounds.TryGetValue(System.IO.Path.GetFileName(name), out var clip)
-            ? clip : DeferredAudio.Get("Sfx/" + name);
+            ? clip : null;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void PreloadSounds()
+        {
+            if (soundsReady) return;
+            var board = SoundBoardSettings.Load();
+            if (board == null) throw new System.InvalidOperationException("Cannot start without the sound board.");
+            foreach (var group in board.soundGroups)
+                foreach (var clip in group.clips) Preload(clip);
+            foreach (var effect in board.effects)
+            {
+                Preload(effect.selected);
+                foreach (var clip in effect.defaults) Preload(clip);
+            }
+            var ambience = AmbientSoundLibrary.Load();
+            if (ambience == null) throw new System.InvalidOperationException("Cannot start without the ambience library.");
+            foreach (var clip in ambience.Clips) Preload(clip);
+            foreach (var clip in Resources.LoadAll<AudioClip>("Sfx"))
+            {
+                Preload(clip);
+                coreSounds[clip.name] = clip;
+            }
+            soundsReady = true;
+        }
+
+        private static void Preload(AudioClip clip)
+        {
+            if (clip == null || preloadedSounds.Contains(clip)) return;
+            if (clip.loadState != AudioDataLoadState.Loaded && !clip.LoadAudioData())
+                throw new System.InvalidOperationException("Cannot load sound: " + clip.name);
+            if (clip.loadState != AudioDataLoadState.Loaded)
+                throw new System.InvalidOperationException("Sound must load synchronously before gameplay: " + clip.name);
+            preloadedSounds.Add(clip);
+        }
 
         private void Awake()
         {
             Instance = this;
+            PreloadSounds();
             ReloadSoundBoard();
-            // The small core library includes potion, skill and interface feedback. Load it
-            // before control returns so first-use cues are never discarded by deferred loading.
-            foreach (var clip in Resources.LoadAll<AudioClip>("Sfx"))
-            {
-                clip.LoadAudioData();
-                coreSounds[clip.name] = clip;
-            }
-            StartCoroutine(WarmSounds());
             AudioListener.volume = MasterVolume;
 
             uiSource = gameObject.AddComponent<AudioSource>();
@@ -143,18 +174,6 @@ namespace PoeClone.Audio
             // Interface and potion sounds answer the player's own input; a busy fight's one-shots
             // must not take their voice.
             uiSource.priority = 0;
-        }
-
-        private System.Collections.IEnumerator WarmSounds()
-        {
-            if (soundBoard == null) yield break;
-            // Bound background work to one recording at a time instead of a loading burst.
-            foreach (var group in soundBoard.soundGroups)
-                foreach (string path in group.clipPaths)
-                {
-                    while (!DeferredAudio.Finished(path)) yield return null;
-                    yield return null;
-                }
         }
 
         private void OnDestroy()
