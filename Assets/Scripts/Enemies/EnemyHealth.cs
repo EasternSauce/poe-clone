@@ -228,7 +228,7 @@ namespace PoeClone.Enemies
         }
 
         public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration, bool throughExposedHead = false,
-            bool flinch = true, Vector3? hitOrigin = null, int rollSeed = 0, string impactSound = null)
+            bool flinch = true, Vector3? hitOrigin = null, int rollSeed = 0, string impactSound = null, bool playImpactSound = true)
         {
             if (dead || amount <= 0f)
                 return 0f;
@@ -258,7 +258,7 @@ namespace PoeClone.Enemies
                 return 0f;
             }
 
-            if (impactSound != null)
+            if (playImpactSound && impactSound != null)
                 AudioManager.Instance?.PlayEffect(impactSound, transform.position);
 
             // An indestructible, unarmoured target. Use the same damage event as monsters,
@@ -320,9 +320,28 @@ namespace PoeClone.Enemies
                 stagger.Trigger();
             }
 
-            if (impactSound == null && AudioManager.Instance != null)
+            if (playImpactSound && impactSound == null && AudioManager.Instance != null)
                 AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.meleeHit, transform.position);
             return amount;
+        }
+
+        private float poisonDamageToShow;
+
+        /// <summary>Ailment ticks never stagger or play impact sounds. Poison numbers combine per target and frame.</summary>
+        public float TakeDamageOverTime(float amount, DamageType type, float penetration = 0f)
+        {
+            float dealt = TakeDamage(amount, type, 0f, penetration, flinch: false, playImpactSound: false);
+            if (type == DamageType.Poison && dealt > 0f)
+                poisonDamageToShow += dealt;
+            return dealt;
+        }
+
+        private void LateUpdate()
+        {
+            if (poisonDamageToShow <= 0f) return;
+            UI.CombatText.Show(transform.position + Vector3.up * 2f,
+                Mathf.CeilToInt(poisonDamageToShow).ToString(), new Color(0.38f, 0.72f, 0.15f), 0.6f);
+            poisonDamageToShow = 0f;
         }
 
         // ------------------------------------------------------------------ ailments (player passives)
@@ -364,10 +383,10 @@ namespace PoeClone.Enemies
                 yield return new WaitForSeconds(tick);
                 if (dead)
                     break;
-                float amount = burnPerSecond * tick;
-                UI.CombatText.Show(transform.position + Vector3.up * 1.3f * transform.localScale.y,
-                    Mathf.Max(1, Mathf.RoundToInt(amount)).ToString(), UI.CombatText.FireColor, 0.6f);
-                TakeDamage(amount, DamageType.Fire, 0f, 0f, flinch: false);
+                float dealt = TakeDamageOverTime(burnPerSecond * tick, DamageType.Fire);
+                if (dealt > 0f)
+                    UI.CombatText.Show(transform.position + Vector3.up * 1.3f * transform.localScale.y,
+                        Mathf.Max(1, Mathf.RoundToInt(dealt)).ToString(), UI.CombatText.FireColor, 0.6f);
             }
             burning = null;
         }

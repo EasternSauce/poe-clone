@@ -109,13 +109,11 @@ namespace PoeClone.Player
                 {
                     while (!enemy.IsDead && stack.Clock.TryTick(Time.time, out float amount))
                     {
-                        float dealt = enemy.TakeDamage(amount * stack.Count, Combat.DamageType.Poison, 0f,
-                            stack.Penetration, flinch: false);
+                        float dealt = enemy.TakeDamageOverTime(amount * stack.Count, Combat.DamageType.Poison,
+                            stack.Penetration);
                         if (dealt > 0f && enemy.IsDead && stack.Tree != null)
                             WeaponSkillHit.Apply(transform, enemy, dealt, stack.Tree, Combat.DamageType.Poison,
                                 enemy.GetComponent<EnemyController>()?.IsChilled == true, minion: stack.MinionDamage, melee: stack.Melee);
-                        if (dealt > 0f)
-                            UI.CombatText.Show(enemy.transform.position + Vector3.up * 2f, Mathf.CeilToInt(dealt).ToString(), Green, 0.6f);
                     }
                     if (stack.Clock.Finished) target.Stacks.Remove(stack);
                     else nextPoisonTick = Mathf.Min(nextPoisonTick, stack.Clock.NextTick);
@@ -140,7 +138,7 @@ namespace PoeClone.Player
                 {
                     Vector3 d = enemy.transform.position - at; d.y = 0f;
                     if (enemy.IsDead || d.sqrMagnitude > 9f * radiusMultiplier * radiusMultiplier) continue;
-                    float dealt = enemy.TakeDamage(perSecond * 0.5f, PoeClone.Combat.DamageType.Poison, 0f, penetration, flinch: false);
+                    float dealt = enemy.TakeDamageOverTime(perSecond * 0.5f, Combat.DamageType.Poison, penetration);
                     if (dealt > 0f && enemy.IsDead && tree != null)
                         WeaponSkillHit.Apply(owner, enemy, dealt, tree, PoeClone.Combat.DamageType.Poison, enemy.GetComponent<EnemyController>()?.IsChilled == true, minion: minionDamage, melee: melee);
                 }
