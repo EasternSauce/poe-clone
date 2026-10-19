@@ -1,3 +1,8 @@
+version: 2026-10-19-tailored-armour-and-clothing
+- Worn leather now has quilted panels, sewn seams and side straps. Steel armour has overlapping abdominal plates, layered shoulder guards, a separate backplate and tassets over mail. Robes have pleats, sewn panels, a diagonal wrap and a split front skirt.
+- Added boot lacing, tongues, welts and segmented shin plates, reinforced glove cuffs, helmet ribs and hood seams. Cloth, leather and metal use distinct worn surface textures with softer highlights.
+- Garment seams and armour skirt details follow the character's leg rig when moving.
+
 version: 2026-10-19-faster-teleport
 - Halved Teleport's base cooldown from 0.6 seconds to 0.3 seconds.
 - Moved Haven's training doll to an open practice space southeast of the town square, with more room for minions.

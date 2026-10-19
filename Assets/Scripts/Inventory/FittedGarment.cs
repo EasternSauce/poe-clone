@@ -19,8 +19,8 @@ namespace PoeClone.Inventory
                 new Vector3(.15f, .85f, 0), new Vector3(-.15f, .43f, 0), new Vector3(.15f, .43f, 0) };
             foreach (MeshFilter filter in GetComponentsInChildren<MeshFilter>(true))
             {
-                if (filter.name != "Hem" && filter.name != "Skirt" && filter.name != "Fauld" && filter.name != "FauldTrim") continue;
-                if (!filter.TryGetComponent<MeshRenderer>(out var original) || filter.sharedMesh == null) continue;
+                if (!IsLowerGarment(filter.transform)) continue;
+                if (!filter.TryGetComponent<MeshRenderer>(out var original) || !original.enabled || filter.sharedMesh == null) continue;
                 Mesh mesh = Instantiate(filter.sharedMesh);
                 mesh.name += "_Fitted";
                 meshes.Add(mesh);
@@ -80,6 +80,14 @@ namespace PoeClone.Inventory
                     if (Application.isPlaying) Destroy(mesh);
                     else DestroyImmediate(mesh);
                 }
+        }
+
+        private bool IsLowerGarment(Transform part)
+        {
+            // Seams, pleats and tassets follow the same bones as the garment underneath them.
+            for (Transform p = part; p != null && p != transform; p = p.parent)
+                if (p.name == "Hem" || p.name == "Skirt" || p.name == "Fauld" || p.name == "FauldTrim") return true;
+            return false;
         }
     }
 }

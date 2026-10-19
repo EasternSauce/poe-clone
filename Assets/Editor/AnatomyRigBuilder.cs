@@ -305,6 +305,7 @@ namespace PoeClone.EditorTools
                             part.localScale = Vector3.Scale(part.localScale, new Vector3(1.15f, 1, 1.15f));
                         }
                     }
+                    EquipmentBuilder.TailorGloves(root, id);
                     PrefabUtility.SaveAsPrefabAsset(root,path);
                 }
                 finally { PrefabUtility.UnloadPrefabContents(root); }

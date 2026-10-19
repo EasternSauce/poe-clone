@@ -12,7 +12,7 @@ namespace PoeClone.EditorTools
     /// Worn pieces are shaped round the body of <see cref="HumanoidBodyBuilder"/>; see the socket
     /// notes above each group. Re-runnable: PoeClone > Build Equipment.
     /// </summary>
-    public static class EquipmentBuilder
+    public static partial class EquipmentBuilder
     {
         private const string OutDir = "Assets/Resources/Equipment";
         private const string MatDir = "Assets/Materials/Stylized";
@@ -44,6 +44,7 @@ namespace PoeClone.EditorTools
             }
             Helmets();
             BodyArmours();
+            Gloves();
             Boots();
             AnatomyRigBuilder.UpgradeGloves();
             Belt();
@@ -291,6 +292,7 @@ namespace PoeClone.EditorTools
         private static void Save(GameObject root, string id)
         {
             FitCurrentAnatomy(root, id);
+            TailorWearable(root, id);
             PrefabUtility.SaveAsPrefabAsset(root, OutDir + "/" + id + ".prefab");
             Object.DestroyImmediate(root);
         }
