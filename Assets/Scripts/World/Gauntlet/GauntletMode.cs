@@ -245,7 +245,7 @@ namespace PoeClone.World
                 var e = new Encounter { Kinds = new List<int>() };
                 if (MinimalCombatMode.ArenaEnabled)
                 {
-                    int size = plan.Next(1, 6);
+                    int size = plan.Next(15, 26);
                     e.Elite = roll < 0.15;
                     e.Label = (e.Elite ? "elite group" : "mixed group") + " (" + size + ")";
                     for (int i = 0; i < size; i++)
