@@ -1,3 +1,7 @@
+version: 2026-10-19-faster-teleport
+- Halved Teleport's base cooldown from 0.6 seconds to 0.3 seconds.
+- Moved Haven's training doll to an open practice space southeast of the town square, with more room for minions.
+
 version: 2026-10-19-training-dolls
 - Added indestructible training dolls beside Haven's smithy and in the centre of the balance arena. Their readouts show damage dealt over the last 5 seconds and total damage, including minion hits and damage over time. A new test resets the total after 5 seconds without damage.
 - Minions automatically practise on nearby dolls when no monsters are in range, and prioritise real enemies during arena fights. Dolls give no loot or experience and do not block wave completion.

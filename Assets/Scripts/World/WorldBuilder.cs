@@ -638,8 +638,9 @@ namespace PoeClone.World
             BuildVillageHomes(t);
             BuildSmithWorkshop(t, c + Flat(10f, -15f));
             BuildVillageCommons(t);
-            Vector3 trainingSpot = c + Flat(18f, -8f);
-            Claim(trainingSpot, 4f);
+            // An open practice yard southeast of the square, clear of homes and the smithy.
+            Vector3 trainingSpot = c + Flat(28f, -20f);
+            Claim(trainingSpot, 6f);
             TrainingDummy.Create(t, trainingSpot);
             foreach (Vector3 local in new[] { Flat(-9, -17), Flat(-21, 12), Flat(-31, -12),
                 Flat(21, 31), Flat(95, -5), Flat(-23, -14) })

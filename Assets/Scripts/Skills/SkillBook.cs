@@ -229,7 +229,7 @@ namespace PoeClone.Skills
             new SkillDefinition
             {
                 Id = SkillId.Teleport, Name = "Teleport", Short = "TP", Grant = StatType.GrantTeleport, RollsOn = "amulets, rings, gloves",
-                Spell = true, CastTime = 0.05f, ManaCosts = new[] { 18f }, Cooldown = 0.6f, Color = new Color(0.75f, 0.45f, 1f),
+                Spell = true, CastTime = 0.05f, ManaCosts = new[] { 18f }, Cooldown = 0.3f, Color = new Color(0.75f, 0.45f, 1f),
                 Description = "Vanish and reappear where you aim, up to half a screen away - straight through walls, trees and enemies. Costly in mana, but ready again almost at once."
             },
             new SkillDefinition
