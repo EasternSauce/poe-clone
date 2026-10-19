@@ -172,9 +172,8 @@ namespace PoeClone.Tests
             CollectionAssert.AreEqual(new[] { "child started", "child disposed", "parent disposed" }, log);
         }
 
-        [TestCase(true)]
-        [TestCase(false)]
-        public void MovingBindingsPreservesCooldownAndReplicaDuplicates(bool moveExisting)
+        [Test]
+        public void DuplicateBindingsPreserveSlotsAndShareCooldown()
         {
             object bindings = Activator.CreateInstance(RuntimeType("PoeClone.Skills.SkillBindings"), new object[] { 4 });
             object dash = Enum.Parse(RuntimeType("PoeClone.Skills.SkillId"), "Dash");
@@ -182,15 +181,20 @@ namespace PoeClone.Tests
             Call(bindings, "SetSource", 0, dash, item, EquipSlot.Ring1, 5);
             Call(bindings, "StartCooldown", 0, 6f, 10f);
 
-            Call(bindings, "Assign", 3, dash, item, EquipSlot.Ring1, 5, moveExisting);
+            Call(bindings, "Assign", 3, dash, item, EquipSlot.Ring1, 5);
 
             Assert.AreEqual(16f, Field(Binding(bindings, 3), "ReadyAt"));
             Assert.AreEqual(6f, Field(Binding(bindings, 3), "Cooldown"));
-            Assert.AreEqual(moveExisting ? null : dash, Field(Binding(bindings, 0), "Skill"));
-            Assert.AreEqual(moveExisting ? 0f : 16f, Field(Binding(bindings, 0), "ReadyAt"));
+            Assert.AreEqual(dash, Field(Binding(bindings, 0), "Skill"));
+            Assert.AreEqual(16f, Field(Binding(bindings, 0), "ReadyAt"));
+            Call(bindings, "StartCooldown", 3, 6f, 17f);
+            Assert.AreEqual(23f, Field(Binding(bindings, 0), "ReadyAt"));
+            Assert.AreEqual(23f, Field(Binding(bindings, 3), "ReadyAt"));
             Call(bindings, "Clear", 3);
             Assert.IsNull(Field(Binding(bindings, 3), "Item"));
             Assert.AreEqual(0f, Field(Binding(bindings, 3), "Cooldown"));
+            Assert.AreEqual(dash, Field(Binding(bindings, 0), "Skill"));
+            Assert.AreEqual(23f, Field(Binding(bindings, 0), "ReadyAt"));
         }
 
         [Test]

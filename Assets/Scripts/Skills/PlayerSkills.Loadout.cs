@@ -207,7 +207,7 @@ namespace PoeClone.Skills
             {
                 if (grant.Id != id || grant.Source != source || grant.GrantLevel != grantLevel) continue;
                 if (enabled && !TouchMode.Active) PlayerPotions.SetPotionAt(slot, 0);
-                bindings.Assign(slot, id, grant.Item, source, grantLevel, moveExisting: enabled);
+                bindings.Assign(slot, id, grant.Item, source, grantLevel);
                 Changed?.Invoke();
                 return;
             }

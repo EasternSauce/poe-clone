@@ -50,7 +50,7 @@ namespace PoeClone.Skills
             entries[slot].Item = null;
         }
 
-        public void Assign(int slot, SkillId skill, ItemData item, EquipSlot source, int grantLevel, bool moveExisting)
+        public void Assign(int slot, SkillId skill, ItemData item, EquipSlot source, int grantLevel)
         {
             float ready = entries[slot].Skill == skill ? entries[slot].ReadyAt : 0f;
             float cooldown = entries[slot].Skill == skill ? entries[slot].Cooldown : 0f;
@@ -61,11 +61,7 @@ namespace PoeClone.Skills
                     cooldown = entries[i].Cooldown;
                 }
 
-            // Moving a skill cannot bypass a cooldown. Spectators may mirror duplicate slots.
-            if (moveExisting)
-                for (int i = 0; i < Count; i++)
-                    if (i != slot && entries[i].Skill == skill) Clear(i);
-
+            // Duplicate bindings retain the existing cooldown instead of granting a fresh use.
             SetSource(slot, skill, item, source, grantLevel);
             entries[slot].ReadyAt = ready;
             entries[slot].Cooldown = cooldown;

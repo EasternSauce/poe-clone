@@ -1,3 +1,6 @@
+version: 2026-10-19-duplicate-skill-bindings
+- The same spell can be bound to multiple skill bar slots. Copies of the same granted spell share cooldowns and charges.
+
 version: 2026-10-19-silent-friendly-minions
 - Friendly minions no longer make walking sounds, including minions seen in co-op and spectator mode.
 
