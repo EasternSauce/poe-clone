@@ -1,3 +1,6 @@
+version: 2026-10-19-greenwood-music
+- Greenwood now plays Oppressive Gloom as its background music.
+
 version: 2026-10-19-duplicate-skill-bindings
 - The same spell can be bound to multiple skill bar slots. Copies of the same granted spell share cooldowns and charges.
 

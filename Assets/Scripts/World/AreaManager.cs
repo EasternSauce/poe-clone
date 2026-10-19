@@ -55,7 +55,7 @@ namespace PoeClone.World
             string track;
             switch (index)
             {
-                case WorldBuilder.Greenwood: track = "Dark Quest"; break;
+                case WorldBuilder.Greenwood: track = "Oppressive Gloom"; break;
                 case WorldBuilder.Haven: track = "Adrift on the Currents of Time (Main Menu _ Ambience)"; break;
                 case WorldBuilder.Cave:
                 case WorldBuilder.BuriedWard:
