@@ -1,3 +1,6 @@
+version: 2026-10-19-weathered-equipment-colours
+- Purple equipment tier tints now use aged bronze, ash grey and muted green-grey shades across worn gear and shared item art, making them easier to distinguish from missing-material colours.
+
 version: 2026-10-19-summon-damage-and-quick-lessons
 - Enemy abilities now damage vulnerable summons inside their actual hit areas, including Rimeheart's frost rings, boss explosions, beams, charges, breath attacks, ground hazards, traps and projectile volleys. Each summon has its own hit limits and hazard cooldowns; spirit wolves remain untargetable.
 - Raise Skeletons and Skeleton Mages now have a 2-second base cooldown.

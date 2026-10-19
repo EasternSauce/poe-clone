@@ -107,21 +107,22 @@ namespace PoeClone.Inventory
             public Leaning Leaning;
         }
 
-        // Tier tints (over the shared art): each line's art gets darker, richer or gilded as it climbs.
+        // Tier tints over shared art: weathered metals, ash and muted cloth colours.
+        // Avoid saturated violet, which can resemble Unity's missing-shader magenta.
         private static readonly Color Plain = Color.white;
         private static readonly Color Steel = new Color(0.78f, 0.86f, 1.0f);
-        private static readonly Color Dusk = new Color(0.78f, 0.70f, 0.92f);
+        private static readonly Color Dusk = new Color(0.72f, 0.73f, 0.68f);
         private static readonly Color Gilded = new Color(1.0f, 0.86f, 0.55f);
-        private static readonly Color Royal = new Color(0.86f, 0.62f, 1.0f);
+        private static readonly Color Royal = new Color(0.82f, 0.73f, 0.55f);
         private static readonly Color Dark = new Color(0.58f, 0.58f, 0.66f);
-        private static readonly Color Shadow = new Color(0.62f, 0.55f, 0.78f);
+        private static readonly Color Shadow = new Color(0.48f, 0.59f, 0.55f);
         private static readonly Color Verdant = new Color(0.55f, 0.85f, 0.55f);
         private static readonly Color Topaz = new Color(1.0f, 0.95f, 0.45f);
         private static readonly Color Lapis = new Color(0.55f, 0.65f, 1.0f);
         private static readonly Color Amber = new Color(1.0f, 0.72f, 0.32f);
         private static readonly Color Moon = new Color(0.86f, 0.92f, 1.0f);
         private static readonly Color Pale = new Color(0.92f, 0.86f, 0.74f);
-        private static readonly Color Silk = new Color(0.72f, 0.62f, 1.0f);
+        private static readonly Color Silk = new Color(0.64f, 0.72f, 0.70f);
 
         // The item colours drawn under each piece of art (the silhouette fallback, the spectator wire).
         private static readonly Dictionary<string, Color> ArtColours = new Dictionary<string, Color>
