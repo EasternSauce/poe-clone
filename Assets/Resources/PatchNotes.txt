@@ -1,3 +1,6 @@
+version: 2026-10-19-audio-listener-handoff
+- Fixed the menu and gameplay audio listeners briefly overlapping during startup and when returning to the main menu.
+
 version: 2026-10-19-quieter-console
 - Removed routine loading, area-generation, enemy-spawn, level-up and automatic quality-change messages from the console. Loading status and performance diagnostics remain available.
 

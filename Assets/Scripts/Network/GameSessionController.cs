@@ -258,6 +258,10 @@ namespace PoeClone.Network
                 suspendedRoots.Add(root);
                 root.SetActive(false);
             }
+            // Scene listeners must be inactive before adding the menu listener. Creating
+            // it in Awake overlaps the camera listener while Unity loads the startup scene.
+            if (menuAudioListener == null)
+                menuAudioListener = gameObject.AddComponent<AudioListener>();
         }
 
         private void PrepareGameplay()
@@ -326,7 +330,6 @@ namespace PoeClone.Network
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            menuAudioListener = gameObject.AddComponent<AudioListener>();
             gameObject.AddComponent<PoeClone.Audio.MusicPlayer>().Play("Dark Quest");
 
             // Pause while choosing and loading the local character.
