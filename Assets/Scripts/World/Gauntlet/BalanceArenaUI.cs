@@ -76,7 +76,11 @@ namespace PoeClone.World
                     route = choices[page * PageSize + index].id; randomBuild = false; Refresh();
                 });
                 routeButtons.Add(b);
-                routeLabels.Add(b.GetComponentInChildren<Text>());
+                Text label = b.GetComponentInChildren<Text>();
+                label.resizeTextForBestFit = true;
+                label.resizeTextMinSize = 12;
+                label.resizeTextMaxSize = 19;
+                routeLabels.Add(label);
             }
             Button(panel, "Previous routes", new Vector2(40, -604), new Vector2(240, 42), () => { page--; Refresh(); });
             pageLabel = Label(panel, "", new Vector2(290, -604), new Vector2(540, 42), 18);
@@ -197,14 +201,19 @@ namespace PoeClone.World
                 int at = page * PageSize + i;
                 routeButtons[i].gameObject.SetActive(at < choices.Count);
                 if (at >= choices.Count) continue;
-                routeLabels[i].text = choices[at].name + "  · Lv " + choices[at].level + "+";
+                var choice = choices[at];
+                int previewLevel = randomLevel ? choice.level : Mathf.Max(level, choice.level);
+                var preview = BalanceArenaBuilds.Data.builds.First(b => b.id == choice.id && b.level == previewLevel);
+                routeLabels[i].text = choice.name + "  · Lv " + choice.level + "+" +
+                    "\n≈ " + BalanceArenaBuilds.EstimatedDps(preview).ToString("N0") + " DPS at Lv " + previewLevel;
                 routeButtons[i].color = !randomBuild && choices[at].id == route ? Selected : Color.white;
             }
             pageLabel.text = "Routes " + (page + 1) + " / " + pages;
             detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected: " + skill + " · " + choices.First(b => b.id == route).name) +
                 (randomBuild ? "\nRandom builds use routes available at the chosen level." : "\nMinimum level " + MinimumLevel + ". Change build to lower the level further.") +
-                "\nGround-loot rarity rolls; random pick from the worst 30% per slot. Survey passives; no uniques." +
-                "\n20 waves of 1–5 enemies and occasional bosses at your level. No XP, loot or saves.";
+                "\nWorst 30% ground-loot gear. DPS: single target, full army; excludes movement/mana downtime." +
+                "\n20 waves of " + GauntletMode.ArenaMinMonsters + "–" + GauntletMode.ArenaMaxMonsters +
+                " enemies and occasional bosses. No XP, loot or saves.";
         }
         private void StartRun()
         {

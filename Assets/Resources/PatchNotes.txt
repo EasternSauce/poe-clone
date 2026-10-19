@@ -1,3 +1,8 @@
+version: 2026-10-19-arena-middle-ground-and-dps
+- Arena waves now spawn 7-12 monsters at once, down from 15-25.
+- Each route in the arena build picker shows approximate single-target DPS at the preview level, using typical poor ground-loot equipment and its skill/passive trees. Minion estimates include a full army; movement and mana downtime are excluded. Random-level previews use each route's minimum level.
+- Arena builds now fall back to wearable armour when their recorded armour family has no suitable base.
+
 version: 2026-10-19-consistent-monster-combat
 - Monsters use the same movement speed, attack speed, damage and defences against melee, ranged and minion builds. Ranged and minion hits no longer trigger temporary combat boosts or nearby pack reactions.
 - Enemy arrows and spells fly straight at their normal speed, and aimed attacks target your position when launched.

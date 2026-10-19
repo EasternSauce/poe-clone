@@ -31,6 +31,34 @@ namespace PoeClone.World
         public static Catalogue Data => catalogue ?? (catalogue = JsonUtility.FromJson<Catalogue>(Resources.Load<TextAsset>("BalanceArenaBuilds").text));
         private static string[] Split(string text) => string.IsNullOrEmpty(text) ? new string[0] : text.Split(',');
 
+        private static readonly Dictionary<Entry, float> damageEstimates = new Dictionary<Entry, float>();
+
+        /// <summary>Median of three repeatable poor-loot kits, without touching player state or RNG.</summary>
+        public static float EstimatedDps(Entry entry)
+        {
+            if (damageEstimates.TryGetValue(entry, out float cached)) return cached;
+            int seed = entry.level;
+            foreach (char c in entry.id) seed = unchecked(seed * 31 + c);
+            var rolls = new float[3];
+            for (int i = 0; i < rolls.Length; i++)
+            {
+                var kit = CreateKit(entry, new System.Random(unchecked(seed + i * 7919)));
+                var equipment = new EquipmentSet { EnforceRequirements = true };
+                foreach (var pick in kit.Picks) equipment.Restore(pick.Slot, pick.Item, out _);
+                var basis = new BaseStats { Level = entry.level }
+                    .Set(StatType.Strength, 9 + entry.level).Set(StatType.Dexterity, 9 + entry.level)
+                    .Set(StatType.Intelligence, 9 + entry.level).Set(StatType.MaxLife, 90 + entry.level * 10)
+                    .Set(StatType.MaxMana, 45 + entry.level * 5).Set(StatType.PhysicalDamage, PlayerStatsLink.BasePhysicalDamage);
+                var sheet = StatSheet.Build(basis, equipment, Split(entry.passives).SelectMany(id => PassiveTree.Get(id).Mods));
+                var weapon = equipment.GetActive(EquipSlot.MainHand);
+                rolls[i] = weapon == null ? 0 : SingleTargetDamage.Estimate(
+                    SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill)), weapon, sheet,
+                    new WeaponSkillBonuses(weapon), out _, out _, out _);
+            }
+            Array.Sort(rolls);
+            return damageEstimates[entry] = rolls[1];
+        }
+
         public static GauntletLoadout.Result Equip(Entry entry, PlayerStats player, PlayerInventory inventory, System.Random rng)
         {
             var passives = player.GetComponent<PlayerPassives>();
@@ -68,6 +96,11 @@ namespace PoeClone.World
                 string line = ItemGenerator.LineOf(recordedBase);
                 var available = bases.Where(item => ItemGenerator.LineOf(item.Id) == line)
                     .OrderByDescending(item => item.Requirements.Level).FirstOrDefault();
+                // Some hybrid armour families have no low-requirement tier. Fall back
+                // to wearable armour in this slot rather than aborting the whole build.
+                if (available == null && slot != EquipSlot.MainHand && slot != EquipSlot.OffHand)
+                    available = bases.Where(item => SlotRules.Accepts(slot, item))
+                        .OrderByDescending(item => item.Requirements.Level).ThenBy(item => item.Id).FirstOrDefault();
                 if (available == null) throw new InvalidOperationException("Arena: no wearable base for " + recordedBase);
                 StatType? grant = slot == EquipSlot.MainHand
                     ? (StatType?)SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill)).Grant : null;

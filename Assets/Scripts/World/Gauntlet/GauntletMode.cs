@@ -18,6 +18,8 @@ namespace PoeClone.World
     public sealed class GauntletMode : MonoBehaviour
     {
         public const int EncounterCount = 20;
+        public const int ArenaMinMonsters = 7;
+        public const int ArenaMaxMonsters = 12;
         public const int BossCount = 3;
         public const int DefaultRolls = 10;
 
@@ -245,7 +247,7 @@ namespace PoeClone.World
                 var e = new Encounter { Kinds = new List<int>() };
                 if (MinimalCombatMode.ArenaEnabled)
                 {
-                    int size = plan.Next(15, 26);
+                    int size = plan.Next(ArenaMinMonsters, ArenaMaxMonsters + 1);
                     e.Elite = roll < 0.15;
                     e.Label = (e.Elite ? "elite group" : "mixed group") + " (" + size + ")";
                     for (int i = 0; i < size; i++)
