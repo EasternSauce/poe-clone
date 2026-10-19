@@ -1,3 +1,7 @@
+version: 2026-10-19-editor-production-arena
+- Unity's PoeClone menu now opens Balance Test Arena with the same build selector, training doll and fights as the production arena.
+- Arena buttons now use standard Unity buttons, and arena startup preserves and initializes the UI input system.
+
 version: 2026-10-19-editor-menu-cleanup
 - Cleaned up the Unity PoeClone menu: removed redundant partial asset rebuild shortcuts and grouped full rebuilds under Maintenance, item and passive editors under Editors, and automated gauntlets under Balance. Class Gauntlet remains directly accessible.
 

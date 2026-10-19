@@ -153,6 +153,7 @@ namespace PoeClone.World
                 }
                 bool keep = root == gameObject || root == player.gameObject ||
                     root.GetComponent<Camera>() != null || root.GetComponent<Light>() != null ||
+                    root.GetComponent<UnityEngine.EventSystems.EventSystem>() != null ||
                     (AudioEnabled && root.GetComponent<PoeClone.Audio.AudioManager>() != null) || root.GetComponent<PlayerHUD>() != null ||
                     (InventoryMenuEnabled && inventoryMenu != null) ||
                     (CharacterMenuEnabled && characterMenu != null) ||
@@ -205,6 +206,7 @@ namespace PoeClone.World
             if (FindAnyObjectByType<EscapeMenuUI>() == null)
                 gameObject.AddComponent<EscapeMenuUI>();
             gameObject.AddComponent<TouchControlsUI>();
+            PoeClone.Network.UiEventSystemBootstrap.EnsureExists();
             Physics.SyncTransforms();
         }
 

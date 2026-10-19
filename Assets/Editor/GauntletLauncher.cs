@@ -10,7 +10,7 @@ using PoeClone.World;
 namespace PoeClone.EditorTools
 {
     /// <summary>
-    /// Starts the debug class gauntlet (<see cref="GauntletMode"/>) in Play, and queues automated
+    /// Starts the production balance arena in Play, and queues automated class gauntlet
     /// runs: one Play session per build and level, against frozen enemies, then a combined table
     /// in GauntletResults/. From the MCP bridge:
     /// <code>
@@ -34,7 +34,7 @@ namespace PoeClone.EditorTools
         private const string SummaryPendingKey = "PoeClone.Gauntlet.SummaryPending";
         private const double RunTimeoutSeconds = 30 * 60;
 
-        [MenuItem("PoeClone/Class Gauntlet", priority = 35)]
+        [MenuItem("PoeClone/Balance Test Arena", priority = 35)]
         private static void ManualMenu() => Debug.Log(Manual());
 
         [MenuItem("PoeClone/Balance/Class Gauntlet (Automated)", priority = 36)]
@@ -52,12 +52,12 @@ namespace PoeClone.EditorTools
             EditorApplication.update += Advance;
         }
 
-        /// <summary>The gauntlet you play yourself: pick a level and a build on its first screen.</summary>
+        /// <summary>The same balance arena and build selector as the production arena=1 entry.</summary>
         public static string Manual()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) return "Stop Play before starting the gauntlet.";
-            Launch("");
-            return "Starting the class gauntlet. Stop Play to end it (results are written either way).";
+            Launch("", arena: true);
+            return "Starting the production balance test arena. Stop Play to end it; your character is never saved.";
         }
 
         /// <summary>
@@ -109,12 +109,12 @@ namespace PoeClone.EditorTools
             return result;
         }
 
-        private static void Launch(string extra)
+        private static void Launch(string extra, bool arena = false)
         {
             if (!SessionState.GetBool(ActiveKey, false))
                 SessionState.SetString(PreviousQueryKey, PlayerPrefs.GetString(DevQueryKey, ""));
             SessionState.SetBool(ActiveKey, true);
-            PlayerPrefs.SetString(DevQueryKey, "?minimal=1&gauntlet=1&drops=0&quests=0" + extra);
+            PlayerPrefs.SetString(DevQueryKey, (arena ? "?arena=1" : "?minimal=1&gauntlet=1&drops=0&quests=0") + extra);
             PlayerPrefs.Save();
             EditorApplication.isPlaying = true;
         }
