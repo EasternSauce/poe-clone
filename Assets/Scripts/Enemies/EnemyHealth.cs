@@ -25,9 +25,6 @@ namespace PoeClone.Enemies
         [SerializeField] private int experienceReward = 20;
 
         [Header("Death")]
-        [Tooltip("Beat before the body topples, so the knee-buckle/limb collapse (CharacterDeathAnimator) reads before the big rotation grabs the eye.")]
-        [SerializeField] private float deathWindUp = 0.15f;
-        [SerializeField] private float collapseDuration = 0.6f;
         [SerializeField] private float corpseSeconds = 25f;
         private float CorpseLifetime => corpseSeconds * (EnemyKinds.Get(KindIndex).IsBoss ? 8f : 4f * AdaptiveQuality.CorpseScale);
         private float diedAt;
@@ -469,7 +466,7 @@ namespace PoeClone.Enemies
         }
 
         /// <summary>
-        /// Spectator replica: the same death the real enemy just had (limb collapse + topple),
+        /// Spectator replica: the same rig animation as the real enemy,
         /// minus experience, AI and sound side effects. <paramref name="instant"/> lays out an
         /// enemy that was already a corpse before the spectator first saw it, without replaying the fall.
         /// </summary>
@@ -483,16 +480,7 @@ namespace PoeClone.Enemies
             currentHealth = 0f;
             Died?.Invoke();
             DisableLiveBehaviour();
-            if (PlayDeathPose(instant))
-                return;
-
-            if (instant)
-            {
-                transform.rotation = Quaternion.Euler(80f, transform.eulerAngles.y, 0f);
-                return;
-            }
-
-            StartCoroutine(Collapse(removeCorpse: false));
+            PlayDeathPose(instant);
         }
 
         private void DisableLiveBehaviour()
@@ -536,13 +524,8 @@ namespace PoeClone.Enemies
             if (kind.SplitInto >= 0)
                 SplitApart(kind.SplitInto);
 
-            if (PlayDeathPose(instant: false))
-            {
-                StartCoroutine(RemoveCorpse());
-                return;
-            }
-
-            StartCoroutine(Collapse(removeCorpse: true));
+            PlayDeathPose(instant: false);
+            StartCoroutine(RemoveCorpse());
         }
 
         public int ExperienceReward => experienceReward;
@@ -586,27 +569,24 @@ namespace PoeClone.Enemies
             KillRewards.Grant(kind, monsterLevel, at, dropLoot);
         }
 
-        // A creature has a death of its own (it lies where it falls, no topple); a humanoid gets
-        // arm splay. foldUpperBody: false -- the root topple (Collapse) already lies the
-        // whole rig on the ground, so the player's torso fold would double up on top of it.
-        // Returns whether it was a creature.
-        private bool PlayDeathPose(bool instant)
+        // Each rig owns the complete fall; corpse cleanup never rotates the gameplay root.
+        private void PlayDeathPose(bool instant)
         {
             CarrionSaintAnimator saint = GetComponentInChildren<CarrionSaintAnimator>();
             if (saint != null)
             {
+                saint.Stop();
+                saint.enabled = false;
                 StartCoroutine(CarrionCollapse(saint.transform, instant));
-                return true;
+                return;
             }
             CreatureAnimator creature = GetComponentInChildren<CreatureAnimator>();
             if (creature != null)
             {
                 creature.PlayDeath(instant);
-                return true;
+                return;
             }
-
-            CharacterDeathAnimator.PlayOn(transform, foldUpperBody: false);
-            return false;
+            CharacterDeathAnimator.PlayOn(transform, instant);
         }
 
         // The Carrion Saint's hind legs buckle under its own mass. Its body stays upright
@@ -675,41 +655,6 @@ namespace PoeClone.Enemies
         {
             if (corpseSeconds <= 0f)
                 yield break;
-            yield return new WaitForSeconds(CorpseLifetime);
-            yield return SinkAndDestroy();
-        }
-
-        // Topples the whole root forward (pivoting on the character's own position, roughly hip
-        // height) and sinks it by about that same height, so the pivot ends up at ground level and
-        // the rig lands lying flat instead of hanging in the air off to one side. Confirmed visually
-        // (screenshot) that folding the legs/knees/upper-body locally *and* toppling the root both
-        // fight over the same space and hide the legs under the torso either way -- toppling the
-        // root alone, with the limbs left in their natural standing proportions (foldUpperBody:
-        // false above), is what actually reads as a body lying on the ground with visible legs.
-        // The corpse is left in place afterward rather than destroyed.
-        private IEnumerator Collapse(bool removeCorpse)
-        {
-            yield return new WaitForSeconds(deathWindUp);
-
-            Vector3 startPosition = transform.position;
-            Vector3 sunkPosition = startPosition + Vector3.down * 1.0f;
-            Quaternion startRotation = transform.rotation;
-            Quaternion toppledRotation = Quaternion.Euler(80f, transform.eulerAngles.y, 0f);
-
-            float t = 0f;
-            while (t < collapseDuration)
-            {
-                t += Time.deltaTime;
-                float f = Mathf.Clamp01(t / collapseDuration);
-                transform.position = Vector3.Lerp(startPosition, sunkPosition, f);
-                transform.rotation = Quaternion.Slerp(startRotation, toppledRotation, f);
-                yield return null;
-            }
-
-            // Only the real game removes corpses; a spectator's puppet goes when the player's does.
-            if (!removeCorpse || corpseSeconds <= 0f)
-                yield break;
-
             yield return new WaitForSeconds(CorpseLifetime);
             yield return SinkAndDestroy();
         }

@@ -1,3 +1,8 @@
+version: 2026-10-19-forward-death-animations
+- Players and humanoid enemies now buckle at the knees, reach out to brace and fall face first, settling into a prone corpse pose. Reviving restores the standing rig.
+- Creature deaths now include a loss of support, a falling phase and an impact settle: curling insect legs, buckling beasts, collapsing wings and splatting slimes. Upright monster bosses also fall face first.
+- Corpses keep their original gameplay position during the fall, including in co-op and spectator mode.
+
 version: 2026-10-19-greenwood-music
 - Greenwood now plays Oppressive Gloom as its background music.
 

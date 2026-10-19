@@ -376,13 +376,12 @@ namespace PoeClone.Visuals
                     if (Prop != null) AddSettle(Prop, Prop.localPosition + Vector3.down * 0.6f, Prop.localRotation, Vector3.one * 0.05f);
                     break;
                 default:
-                    // Falls on its back (the bell-ringer onto its bell, forwards).
-                    bool forward = Body == CreatureBody.BellRinger || Body == CreatureBody.TunnelKing;
-                    AddSettle(BodyPivot, new Vector3(bodyBase.x, 0.3f, bodyBase.z), Quaternion.Euler(forward ? 80f : -78f, 15f, 10f));
+                    // Upright bosses buckle at the knees, brace, then land face down.
+                    AddSettle(BodyPivot, new Vector3(bodyBase.x, 0.3f, bodyBase.z), Quaternion.Euler(90f, 0f, 0f));
                     foreach (Leg leg in Legs)
                     {
-                        AddSettle(leg.Hip, leg.Hip.localPosition, Quaternion.Euler(leg.Front ? -35f : 20f, 0f, leg.Side * 25f));
-                        AddSettle(leg.Knee, leg.Knee.localPosition, Quaternion.Euler(leg.Front ? -60f : 55f, 0f, 0f));
+                        AddSettle(leg.Hip, leg.Hip.localPosition, Quaternion.Euler(leg.Front ? -5f : 0f, 0f, leg.Side * (leg.Front ? 42f : 9f)));
+                        AddSettle(leg.Knee, leg.Knee.localPosition, Quaternion.Euler(leg.Front ? -12f : 15f, 0f, 0f));
                     }
                     if (Head != null) AddSettle(Head, headBase, Quaternion.Euler(25f, 25f, 0f));
                     break;

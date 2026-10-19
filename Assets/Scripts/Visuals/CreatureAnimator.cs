@@ -75,15 +75,15 @@ namespace PoeClone.Visuals
         private struct Settle
         {
             public Transform T;
-            public Vector3 FromPos, ToPos;
-            public Quaternion FromRot, ToRot;
-            public Vector3 FromScale, ToScale;
+            public Vector3 FromPos, BucklePos, ToPos;
+            public Quaternion FromRot, BuckleRot, ToRot;
+            public Vector3 FromScale, BuckleScale, ToScale;
         }
 
         private readonly List<Settle> settles = new List<Settle>();
         private bool dead;
         private float deathTimer;
-        private const float DeathSeconds = 0.75f;
+        private const float DeathSeconds = 1.15f;
 
         public bool IsDead => dead;
 
@@ -520,11 +520,11 @@ namespace PoeClone.Visuals
                 case CreatureBody.CinderPenitent:
                 case CreatureBody.Hollowmaw:
                 case CreatureBody.BarrowCastellan:
-                    AddSettle(BodyPivot, new Vector3(bodyBase.x, 0.22f, bodyBase.z), Quaternion.Euler(78f, 15f, 12f));
+                    AddSettle(BodyPivot, new Vector3(bodyBase.x, 0.22f, bodyBase.z), Quaternion.Euler(90f, 0f, 0f));
                     foreach (Leg leg in Legs)
                     {
-                        AddSettle(leg.Hip, leg.Hip.localPosition, Quaternion.Euler(leg.Front ? -35f : 20f, 0f, leg.Side * 25f));
-                        AddSettle(leg.Knee, leg.Knee.localPosition, Quaternion.Euler(leg.Front ? -60f : 55f, 0f, 0f));
+                        AddSettle(leg.Hip, leg.Hip.localPosition, Quaternion.Euler(leg.Front ? -5f : 0f, 0f, leg.Side * (leg.Front ? 42f : 9f)));
+                        AddSettle(leg.Knee, leg.Knee.localPosition, Quaternion.Euler(leg.Front ? -12f : 15f, 0f, 0f));
                     }
                     if (Head != null) AddSettle(Head, headBase, Quaternion.Euler(25f, 25f, 0f));
                     break;
@@ -580,6 +580,8 @@ namespace PoeClone.Visuals
                     break;
             }
 
+            BuildDeathBuckle();
+            enabled = true;
             if (instant)
                 UpdateDeath(0f);
         }
@@ -592,40 +594,103 @@ namespace PoeClone.Visuals
             {
                 T = t,
                 FromPos = t.localPosition,
+                BucklePos = t.localPosition,
                 ToPos = toPos,
                 FromRot = t.localRotation,
+                BuckleRot = t.localRotation,
                 ToRot = toRot,
                 FromScale = t.localScale,
+                BuckleScale = t.localScale,
                 ToScale = toScale ?? t.localScale
             });
         }
 
-        private void UpdateDeath(float dt)
+        // The loss of support precedes the fall. These are rig-specific intermediate poses,
+        // not a root rotation: forelegs buckle, shells roll after curling, wings lose lift.
+        private void BuildDeathBuckle()
         {
-            if (deathTimer > DeathSeconds && dt > 0f)
-                return;
-            deathTimer += dt;
-            if (AdaptiveQuality.DetailLevel >= 4) deathTimer = DeathSeconds;
-            float f = Mathf.Clamp01(deathTimer / DeathSeconds);
-
-            // Bats fall (accelerating); bugs hop as they flip; the rest just slump.
-            float fall = Body == CreatureBody.Bat ? f * f : Smooth(f);
-            float hop = Body == CreatureBody.Spider || Body == CreatureBody.Beetle ? Mathf.Sin(f * Mathf.PI) * 0.35f : 0f;
-            float turn = Smooth(f);
-
+            bool insect = Body == CreatureBody.Spider || Body == CreatureBody.Beetle ||
+                Body == CreatureBody.Scorpion || Body == CreatureBody.SaltCrab || Body == CreatureBody.BrineSpitter;
+            bool beast = Body == CreatureBody.Wolf || Body == CreatureBody.Sandlurker || Body == CreatureBody.Boar;
             for (int i = 0; i < settles.Count; i++)
             {
                 Settle s = settles[i];
-                if (s.T == null)
-                    continue;
-                Vector3 pos = Vector3.Lerp(s.FromPos, s.ToPos, fall);
                 if (s.T == BodyPivot)
-                    pos.y += hop;
-                s.T.localPosition = pos;
-                s.T.localRotation = Quaternion.Slerp(s.FromRot, s.ToRot, turn);
-                s.T.localScale = Vector3.Lerp(s.FromScale, s.ToScale, turn);
+                {
+                    if (Body == CreatureBody.Slime)
+                    {
+                        s.BucklePos = bodyBase;
+                        s.BuckleRot = bodyBaseRotation;
+                        s.BuckleScale = new Vector3(0.82f, 1.22f, 0.82f);
+                    }
+                    else if (Body == CreatureBody.Bat)
+                    {
+                        s.BucklePos = s.FromPos + new Vector3(0, -0.12f, 0.1f);
+                        s.BuckleRot = bodyBaseRotation * Quaternion.Euler(30, 0, 18);
+                    }
+                    else
+                    {
+                        s.BucklePos = Vector3.Lerp(s.FromPos, s.ToPos, insect ? 0.15f : 0.32f);
+                        s.BuckleRot = bodyBaseRotation * Quaternion.Euler(insect ? 8 : beast ? 22 : 26, 0, insect ? 20 : 0);
+                    }
+                }
+                else
+                {
+                    // Heads droop first; loose tails, jaws and carried props lag behind impact.
+                    s.BuckleRot = Quaternion.Slerp(s.FromRot, s.ToRot, s.T == Head ? 0.6f : 0.18f);
+                    foreach (Leg leg in Legs)
+                    {
+                        if (s.T == leg.Hip)
+                            s.BuckleRot = insect ? Quaternion.Euler(0, leg.Yaw, leg.Lift - 22) :
+                                Quaternion.Euler(leg.Front ? -62 : -30, 0, leg.Side * 12);
+                        if (s.T == leg.Knee)
+                            s.BuckleRot = insect ? Quaternion.Euler(0, 0, leg.Bend - 45) :
+                                Quaternion.Euler(leg.Front ? (beast ? 65 : -35) : 85, 0, 0);
+                    }
+                    if (s.T == WingL || s.T == WingR)
+                        s.BuckleRot = (s.T == WingL ? wingLBase : wingRBase) * Quaternion.Euler(25, 0, -55);
+                    if (s.T == WristL || s.T == WristR)
+                        s.BuckleRot = Quaternion.Euler(0, 0, -65);
+                }
+                settles[i] = s;
             }
+        }
 
+        private void UpdateDeath(float dt)
+        {
+            if (deathTimer > DeathSeconds && dt > 0f) return;
+            deathTimer += dt;
+            float f = Mathf.Clamp01(deathTimer / DeathSeconds);
+            bool buckle = f < 0.3f;
+            float t = buckle ? Smooth(f / 0.3f) : Mathf.Clamp01((f - 0.3f) / 0.45f);
+            // Gravity accelerates the body into contact; limbs open at different rates.
+            float fall = buckle ? t : t * t;
+            float impact = f > 0.75f ? Mathf.Sin((f - 0.75f) / 0.25f * Mathf.PI) : 0f;
+            for (int i = 0; i < settles.Count; i++)
+            {
+                Settle s = settles[i];
+                if (s.T == null) continue;
+                Vector3 pos = buckle ? Vector3.Lerp(s.FromPos, s.BucklePos, fall) : Vector3.Lerp(s.BucklePos, s.ToPos, fall);
+                bool trailing = s.T == Tail || s.T == Jaw || s.T == Prop;
+                float turn = s.T == BodyPivot ? Smooth(t) :
+                    Smooth((f - 0.3f) / (s.T == Head ? 0.38f : trailing ? 0.58f : 0.5f));
+                Quaternion rot = buckle ? Quaternion.Slerp(s.FromRot, s.BuckleRot, t) :
+                    Quaternion.Slerp(s.BuckleRot, s.ToRot, turn);
+                Vector3 scale = buckle ? Vector3.Lerp(s.FromScale, s.BuckleScale, t) : Vector3.Lerp(s.BuckleScale, s.ToScale, Smooth(t));
+                if (s.T == BodyPivot)
+                {
+                    pos.y += impact * (Body == CreatureBody.Slime ? 0 : 0.045f);
+                    if (Body == CreatureBody.Slime)
+                        scale = Vector3.Scale(scale, new Vector3(1 + impact * 0.08f, 1 - impact * 0.2f, 1 + impact * 0.08f));
+                }
+                else if (s.T != Prop)
+                {
+                    // A single small release at contact, fading completely into the corpse pose.
+                    rot *= Quaternion.Euler(impact * (i % 2 == 0 ? 6 : -6), 0, 0);
+                }
+                s.T.SetLocalPositionAndRotation(pos, rot);
+                s.T.localScale = scale;
+            }
             if (f >= 1f)
             {
                 deathTimer = DeathSeconds + 1f;
