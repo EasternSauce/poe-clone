@@ -84,8 +84,8 @@ namespace PoeClone.Inventory
         GrantRaiseSkeletons,
 
         // The summoner (see Skills.Minion): a grimoire's Death Mark, the summons, and what makes
-        // minions stronger. Minions only care about these minion stats, never the player's own
-        // damage stats, so a summoner build has to commit to them: without them minions are
+        // minions stronger. Minions use these stats rather than the player's own
+        // damage stats except mage spell damage and cast speed. Without minion investment they are
         // flimsy helpers, not a wall to hide behind.
         GrantDeathMark,             // legacy saved stat ID: grants Recall Minions
         GrantSkeletonMages,

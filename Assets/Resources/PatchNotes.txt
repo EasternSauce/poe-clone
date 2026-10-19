@@ -1,3 +1,7 @@
+version: 2026-10-19-skeleton-mage-projectile-spells
+- Skeleton Mage bolts are physical projectile spells by default. Spell damage and increased minion damage both apply, and spell projectile bonuses add bolts.
+- Skeleton Mages use cast speed instead of attack speed. Their weapon-tree speed bonuses now correctly describe minion cast speed.
+
 version: 2026-10-19-enemy-ability-aggro
 - Monster abilities and field boss moves now aim at the minion holding their aggro. Charges aimed at a minion only hit you if you are within their hit area.
 

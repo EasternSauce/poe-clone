@@ -42,7 +42,7 @@ namespace PoeClone.World
                 var kind = PlayerSkills.MinionKindOf(skill.Id);
                 int cap = Minion.CapFor(kind, tree, sheet);
                 float interval = kind == MinionKind.Warrior ? 1.1f : kind == MinionKind.Mage ? 1.6f : kind == MinionKind.Wolf ? .8f : kind == MinionKind.Golem ? 1.5f : 1.15f;
-                rate = Mathf.Max(.2f, 1 + (sheet.Total(StatType.MinionSpeed) + tree.Get(E.Speed)) / 100) / interval;
+                rate = Mathf.Max(.2f, 1 + (Minion.ActionSpeedIncreaseFor(kind, sheet, tree)) / 100) / interval;
                 baseHit = Minion.DamageFor(kind, 1, sheet, tree);
                 if (kind == MinionKind.Wolf) baseHit *= (100 + sheet.Total(StatType.MinionDamage) + sheet.Total(StatType.Intelligence) * .5f + tree.Get(E.Damage) + Math.Min(4, cap - 1) * tree.Get(E.PackHunt)) /
                     Mathf.Max(1, 100 + sheet.Total(StatType.MinionDamage) + sheet.Total(StatType.Intelligence) * .5f + tree.Get(E.Damage));

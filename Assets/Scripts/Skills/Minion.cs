@@ -83,6 +83,7 @@ namespace PoeClone.Skills
         private CharacterController body;
         private CharacterAttackAnimator attack;
         private float damage;
+        private int extraProjectiles;
         private float expiresAt;
         private float speed;
         private float attackCooldown;
@@ -167,11 +168,21 @@ namespace PoeClone.Skills
             Mathf.Max(1f, LifeAt(kind, level) * Mathf.Max(0.1f, 1f +
                 (Stat(sheet, StatType.MinionLife) + (tree?.Get(WeaponSkillEffect.MinionLife) ?? 0f)) / 100f));
 
-        /// <summary>Damage per hit with the owner's Minion Damage, for the skills panel.</summary>
+        /// <summary>Mage bolts are projectile spells as well as minion hits.</summary>
+        public static bool UsesProjectileSpell(MinionKind kind) => kind == MinionKind.Mage;
+
+        /// <summary>Mages inherit cast speed; attack-speed bonuses only affect attacking minions.</summary>
+        public static float ActionSpeedIncreaseFor(MinionKind kind, StatSheet sheet, WeaponSkillBonuses tree = null) =>
+            Stat(sheet, UsesProjectileSpell(kind) ? StatType.CastSpeed : StatType.MinionSpeed) +
+            (tree?.Get(WeaponSkillEffect.Speed) ?? 0f);
+
+        /// <summary>Minion damage stacks additively with spell damage for mage bolts.</summary>
         public static float DamageFor(MinionKind kind, int level, StatSheet sheet, WeaponSkillBonuses tree = null) =>
             DamageAt(kind, level) * (1f + ProfileOf(kind).DamageGrowth * Mathf.Max(0, (sheet?.Level ?? 1) - 1)) * Mathf.Max(0f, 1f +
-                (Stat(sheet, StatType.Intelligence) * 0.5f + Stat(sheet, StatType.MinionDamage) + (tree?.Get(WeaponSkillEffect.Damage) ?? 0f)) / 100f) * (tree?.MoreDamageMultiplier ?? 1f) *
-            (sheet != null ? sheet.Multiplier(StatType.MoreMinionDamage) * sheet.Multiplier(StatType.MinionDamagePenalty) : 1f);
+                (Stat(sheet, StatType.Intelligence) * 0.5f + Stat(sheet, StatType.MinionDamage) +
+                 (UsesProjectileSpell(kind) ? Stat(sheet, StatType.SpellDamage) : 0f) + (tree?.Get(WeaponSkillEffect.Damage) ?? 0f)) / 100f) * (tree?.MoreDamageMultiplier ?? 1f) *
+            (sheet != null ? sheet.Multiplier(StatType.MoreMinionDamage) * sheet.Multiplier(StatType.MinionDamagePenalty) *
+                (UsesProjectileSpell(kind) ? sheet.Multiplier(StatType.MoreSpellDamage) : 1f) : 1f);
 
         public static float ArmourFor(StatSheet sheet, WeaponSkillBonuses tree = null) =>
             Mathf.Max(0f, BaseArmour + Stat(sheet, StatType.MinionArmour)) + (tree?.Get(WeaponSkillEffect.MinionArmour) ?? 0f);
@@ -444,7 +455,8 @@ namespace PoeClone.Skills
             minion.attack = model.GetComponent<CharacterAttackAnimator>() ?? model.gameObject.AddComponent<CharacterAttackAnimator>();
 
             minion.moveIncrease = Stat(sheet, StatType.MinionSpeed) + minion.tree.Get(WeaponSkillEffect.MinionMoveSpeed);
-            minion.attackIncrease = Stat(sheet, StatType.MinionSpeed) + minion.tree.Get(WeaponSkillEffect.Speed);
+            minion.attackIncrease = ActionSpeedIncreaseFor(kind, sheet, minion.tree);
+            minion.extraProjectiles = UsesProjectileSpell(kind) ? sheet?.ExtraSkillProjectiles(spell: true) ?? 0 : 0;
             minion.hordeSpeed = Mathf.Max(0f, Stat(sheet, StatType.MinionHordeSpeed));
             minion.baseSpeed = profile.Speed;
             minion.baseCooldown = profile.Cooldown;
@@ -681,7 +693,7 @@ namespace PoeClone.Skills
         {
             float bonus = hordeSpeed * horde;
             speed = baseSpeed * Mathf.Max(0.2f, 1f + (moveIncrease + bonus) / 100f);
-            float attackHaste = Mathf.Max(0.2f, 1f + (attackIncrease + bonus) / 100f);
+            float attackHaste = Mathf.Max(0.2f, 1f + (attackIncrease + (UsesProjectileSpell(Kind) ? 0f : bonus)) / 100f);
             if (Kind == MinionKind.Mage && Time.time < mageRallyUntil)
                 attackHaste *= 1f + tree.Get(WeaponSkillEffect.MageCastSpeedAfterSummon) / 100f;
             attackCooldown = baseCooldown / attackHaste;
@@ -839,7 +851,7 @@ namespace PoeClone.Skills
                 var volley = new HashSet<EnemyHealth>();
                 Vector3 origin = EnemyCombat.BoltOrigin(transform);
                 Vector3 aim = hit.transform.position + Vector3.up * 0.4f * hit.transform.localScale.y - origin;
-                Vector3[] fan = HitEffects.Spread(aim, 1 + tree.ExtraProjectiles, PlayerCombat.ArrowSpreadDegrees);
+                Vector3[] fan = HitEffects.Spread(aim, 1 + tree.ExtraProjectiles + extraProjectiles, PlayerCombat.ArrowSpreadDegrees);
                 for (int i = 0; i < fan.Length; i++)
                     MinionBolt.Launch(this, origin, (fan[i] * Flat(aim).magnitude + Vector3.up * aim.y).normalized, volley);
 

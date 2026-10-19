@@ -176,7 +176,7 @@ namespace PoeClone.Inventory
                 case E.Damage: return Percent(b.Value, damage);
                 case E.MoreDamage: return More(b.Value, damage);
                 case E.MageCastSpeedAfterSummon: return More(b.Value, "skeleton mage cast speed if you have summoned a minion in the last 4 seconds");
-                case E.Speed: return Percent(b.Value, minion ? "minion attack speed" : attack ? "attack speed" : "cast speed");
+                case E.Speed: return Percent(b.Value, grant == StatType.GrantSkeletonMages ? "minion cast speed" : minion ? "minion attack speed" : attack ? "attack speed" : "cast speed");
                 case E.Area: return Percent(b.Value, "area of effect" + (grant == StatType.GrantRainOfArrows ? " per arrow impact" : ""));
                 case E.Range: return Percent(b.Value, attack && !minion && !SkillGrants.IsBowSkill(grant) ? "melee range" : "range");
                 case E.Projectiles: return n + (grant == StatType.GrantRainOfArrows ? " arrows per salvo" : minion ? " minion projectiles" : " projectiles");

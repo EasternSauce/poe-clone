@@ -248,7 +248,7 @@ namespace PoeClone.Skills
             {
                 Id = SkillId.SkeletonMages, Name = "Skeleton Mages", Short = "SKM", Grant = StatType.GrantSkeletonMages, RollsOn = "sceptres",
                 Spell = true, CastTime = 0.195f, ManaCosts = new[] { 27f }, Cooldown = 2f, Color = new Color(0.5f, 0.85f, 1f),
-                Description = "Raise a skeleton mage that hangs back and hurls straight-flying bolts and stays until destroyed, up to 1 at once. Weapon tree nodes raise the limit. Recasting replaces the oldest summons at the limit. Only one kind of lasting minion can serve you: raising skeleton mages dismisses your skeleton warriors."
+                Description = "Raise a skeleton mage that hangs back and casts straight-flying physical projectile spells and stays until destroyed, up to 1 at once. Weapon tree nodes raise the limit. Recasting replaces the oldest summons at the limit. Only one kind of lasting minion can serve you: raising skeleton mages dismisses your skeleton warriors."
             },
             new SkillDefinition
             {
