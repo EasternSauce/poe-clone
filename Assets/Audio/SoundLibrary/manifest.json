@@ -4,6 +4,16 @@
   "sourceFiles": 1231,
   "sounds": [
     {
+      "file": "Movement/Dash_Air_Rush.wav",
+      "sha256": "24669bab901e2b3abeac8b63bbaf7198027a25325b44c17bf9ca2b400d5e1255",
+      "sources": [
+        {
+          "file": "tools/synthesize-dash.py",
+          "pack": "Original synthesized airflow"
+        }
+      ]
+    },
+    {
       "file": "Interface/Achievement_unlock_–_#1-1766766517076.mp3",
       "sha256": "ea388aaac8f19bf913fe5de426023c35481ebea1cb4438a013d6445e01cad882",
       "sources": [

@@ -1,5 +1,5 @@
 version: 2026-10-19-dash-wind-audio
-- Dash now plays a rushing wind sound instead of a heavy weapon swing.
+- Dash now plays a short, smooth air rush with no weapon strike or impact sound.
 
 version: 2026-10-19-preloaded-audio-library
 - Replaced the four magic projectile launch recordings with a short dark spell sound for skeleton mages and other casters that shared them.

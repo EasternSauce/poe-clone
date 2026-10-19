@@ -2547,7 +2547,7 @@
             "soundGroup": "sound.skill.Dash",
             "purpose": "Dash",
             "current": [
-                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Wind03.wav"
+                "Assets/Audio/SoundLibrary/Movement/Dash_Air_Rush.wav"
             ],
             "usages": [
                 {
