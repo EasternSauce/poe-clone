@@ -863,6 +863,8 @@ namespace PoeClone.Skills
                 // hurt by the first bolt of the volley to reach it only.
                 var volley = new HashSet<EnemyHealth>();
                 Vector3 origin = EnemyCombat.BoltOrigin(transform);
+                // Share the hostile mage's projectile cue, once per cast rather than per bolt.
+                PoeClone.Audio.AudioManager.Instance?.PlayEffect("enemy.Skeleton Mage.Attack", origin);
                 Vector3 aim = hit.transform.position - origin;
                 Vector3[] fan = HitEffects.Spread(aim, 1 + tree.ExtraProjectiles + extraProjectiles, PlayerCombat.ArrowSpreadDegrees);
                 for (int i = 0; i < fan.Length; i++)

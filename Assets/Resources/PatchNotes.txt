@@ -1,3 +1,6 @@
+version: 2026-10-19-skeleton-mage-projectile-audio
+- Summoned skeleton mages now play a magic projectile launch sound when casting, once per volley.
+
 version: 2026-10-19-spaced-damage-numbers
 - Simultaneous damage numbers now spread sideways and into separate rows with space between their text, making rapid hits and critical strikes easier to read.
 
