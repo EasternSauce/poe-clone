@@ -6,7 +6,7 @@ import { Workbook, SpreadsheetFile } from '@oai/artifact-tool';
 // calculated observations; it does not substitute spreadsheet formulas for combat.
 const directory = path.resolve(process.argv[2] ?? 'BalanceResults');
 const report = JSON.parse(await fs.readFile(path.join(directory, process.argv[3] ?? 'survey.json'), 'utf8'));
-if (!report.model.startsWith('boss-single-target-') || report.targets?.length !== 102) {
+if (report.model !== 'boss-single-target-v2' || report.targets?.length !== 102) {
   throw new Error('A fresh full boss survey with explicit target metadata is required.');
 }
 const archetypeOrder = new Map(report.archetypes.map((a, i) => [a.id, i]));
@@ -141,11 +141,11 @@ const survivalValues = survivalRows.map(r => {
   const s = r.representative;
   return [skillLabel(r.skill), r.name, r.family, r.level, r.viableFraction, s?.life ?? null, s?.incomingHit ?? null, s?.incomingDps ?? null,
     s?.hitsToDie ?? null, optional(s?.secondsToDie ?? null, s?.secondsToDie >= 1e6), s?.lifeRecovery ?? null,
-    s?.minionLife || null, optional(s?.minionSecondsToDie || null, s?.minionSecondsToDie < 0), r.family === 'Minion' ? s?.minionUptime ?? null : null, r.status, s?.bossEnraged ? 'Enraged' : 'Calm'];
+    s?.minionLife || null, optional(s?.minionSecondsToDie || null, s?.minionSecondsToDie < 0), r.family === 'Minion' ? s?.minionUptime ?? null : null, r.status];
 });
-layout = table(survival, 'Melee and minion survival', 'Equal-weight Mortis/Warlord/Rimeheart basic-attack pressure. Ranged/minions enrage; solo melee stays calm. Melee requires ≥4 unavoided hits and ≥6 seconds. Blank survival time means recovery covers incoming damage, or wolves are untargetable.',
-  ['Skill', 'Archetype', 'Family', 'Level', 'Viable fraction', 'Player life', 'Enemy hit after defence', 'Incoming DPS', 'Hits to death', 'Seconds to death', 'Life recovery / second', 'Minion life', 'Minion seconds to death', 'Army uptime', 'Review', 'Boss state'],
-  survivalValues, 'SurvivalResults', [20, 55, 12, 9, 19, 16, 26, 18, 19, 21, 25, 17, 26, 18, 45, 15]);
+layout = table(survival, 'Melee and minion survival', 'Equal-weight Mortis/Warlord/Rimeheart basic-attack pressure. Melee requires ≥4 unavoided hits and ≥6 seconds. Blank survival time means recovery covers incoming damage, or wolves are untargetable.',
+  ['Skill', 'Archetype', 'Family', 'Level', 'Viable fraction', 'Player life', 'Enemy hit after defence', 'Incoming DPS', 'Hits to death', 'Seconds to death', 'Life recovery / second', 'Minion life', 'Minion seconds to death', 'Army uptime', 'Review'],
+  survivalValues, 'SurvivalResults', [20, 55, 12, 9, 19, 16, 26, 18, 19, 21, 25, 17, 26, 18, 45]);
 for (const c of ['F', 'G', 'H', 'I', 'J', 'K', 'L', 'M']) number(survival, c, layout.end);
 percentage(survival, 'E', layout.end); percentage(survival, 'N', layout.end);
 survival.getRange(`E5:E${layout.end}`).conditionalFormats.add('cellIs', { operator: 'lessThan', formula: .25, format: { fill: colors.red } });
@@ -159,12 +159,12 @@ catalogue.getRange(`F5:G${layout.end}`).format.rowHeight = 47;
 
 const targetValues = report.targets.map(t => [t.name, t.level, t.weight, t.life, t.armour,
   t.fireResistance, t.coldResistance, t.lightningResistance, t.poisonResistance, t.attackType,
-  t.calmHit, t.enragedHit, t.calmAttacksPerSecond, t.enragedAttacksPerSecond, t.enragedDamageTaken]);
+  t.rawHit, t.attacksPerSecond]);
 layout = table(targets, 'Boss reference targets', 'Each boss has one-third weight at every character level. These are scaled references, not campaign appearance levels. Basic attacks only; phases and special moves are excluded.',
-  ['Boss', 'Level', 'Weight', 'Life', 'Armour', 'Fire resist %', 'Cold resist %', 'Lightning resist %', 'Poison resist %', 'Attack type', 'Calm raw hit', 'Enraged raw hit', 'Calm attacks / s', 'Enraged attacks / s', 'Enraged damage taken'],
-  targetValues, 'BossReferenceTargets', [26, 9, 12, 16, 16, 18, 18, 22, 18, 16, 20, 20, 23, 24, 26]);
-for (const c of ['D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N']) number(targets, c, layout.end);
-percentage(targets, 'C', layout.end); percentage(targets, 'O', layout.end);
+  ['Boss', 'Level', 'Weight', 'Life', 'Armour', 'Fire resist %', 'Cold resist %', 'Lightning resist %', 'Poison resist %', 'Attack type', 'Raw hit', 'Attacks / s'],
+  targetValues, 'BossReferenceTargets', [26, 9, 12, 16, 16, 18, 18, 22, 18, 16, 20, 23]);
+for (const c of ['D', 'E', 'F', 'G', 'H', 'I', 'K', 'L']) number(targets, c, layout.end);
+percentage(targets, 'C', layout.end);
 
 const methodValues = [
   ['Generated UTC', new Date(report.generatedUtc)], ['Model', report.model], ['Source revision before changes', report.sourceRevision],

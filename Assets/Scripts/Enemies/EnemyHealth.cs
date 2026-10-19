@@ -119,7 +119,6 @@ namespace PoeClone.Enemies
             public float ArmourPenetration;
             public float ElementalPenetration;
             public bool ThroughExposedHead;
-            public bool CanEnrage;
             public bool Flinch;
             public bool HasOrigin;
             public Vector3 Origin;
@@ -213,16 +212,16 @@ namespace PoeClone.Enemies
 
         public void TakeDamage(float amount)
         {
-            TakeDamage(amount, DamageType.Physical, 0f, 0f, canEnrage: false);
+            TakeDamage(amount, DamageType.Physical, 0f, 0f);
         }
 
         public void TakeDamage(float amount, DamageType type)
         {
-            TakeDamage(amount, type, 0f, 0f, canEnrage: false);
+            TakeDamage(amount, type, 0f, 0f);
         }
 
         public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration, bool throughExposedHead = false,
-            bool canEnrage = false, bool flinch = true, Vector3? hitOrigin = null, int rollSeed = 0)
+            bool flinch = true, Vector3? hitOrigin = null, int rollSeed = 0)
         {
             if (dead || amount <= 0f)
                 return 0f;
@@ -237,7 +236,7 @@ namespace PoeClone.Enemies
                     Amount = amount, RollSeed = rollSeed != 0 ? rollSeed : EventRandom.NextSeed(),
                     Type = type, ArmourPenetration = armourPenetration,
                     ElementalPenetration = elementalPenetration, ThroughExposedHead = throughExposedHead,
-                    CanEnrage = canEnrage, Flinch = flinch, HasOrigin = hitOrigin.HasValue,
+                    Flinch = flinch, HasOrigin = hitOrigin.HasValue,
                     Origin = hitOrigin ?? Vector3.zero
                 }) ?? 0;
             }
@@ -252,14 +251,7 @@ namespace PoeClone.Enemies
                 return 0f;
             }
 
-            // Enrage takes effect before defenses, including on the first ranged/minion hit.
-            EnemyController ai = GetComponent<EnemyController>();
-            if (!IsRemote)
-                ai?.OnIncomingHit(canEnrage);
-
             EnemyKind kind = EnemyKinds.Get(KindIndex);
-            if (kind.IsBoss && ai != null && ai.IsEnraged)
-                amount *= kind.BossEnrageDamageTaken;
             amount *= GetComponent<EnemySkills>()?.DesertBraceMultiplier(hitOrigin) ?? 1f;
             switch (type)
             {

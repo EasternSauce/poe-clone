@@ -27,12 +27,12 @@ namespace PoeClone.Enemies
             closerRange = 15f;
             closerEvery = 9f;
             moveEvery = 3.2f;
-            moveEveryEnraged = 2.3f;
+            secondPhaseMoveEvery = 2.3f;
             Add("Beam", () => Sunbeam(secondPhase ? 2 : 1), 0f, 22f);
             Add("Hands", StoneHands, 0f, 26f);
             Add("Flare", SolarFlare, 0f, 8f);
             Add("Relocate", SinkAndRise, 0f, 26f, allowed: () => Time.time >= nextRelocate);
-            enrage = SolarFlare;
+            phaseTransition = SolarFlare;
         }
 
         // Light gathers in the sun it holds up, a line marks where the beam will start, then the

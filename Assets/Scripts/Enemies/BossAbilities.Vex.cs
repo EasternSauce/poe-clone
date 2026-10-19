@@ -39,12 +39,12 @@ namespace PoeClone.Enemies
             closerRange = 7f;
             closerEvery = 4.5f;
             moveEvery = 2.4f;
-            moveEveryEnraged = 1.6f;
+            secondPhaseMoveEvery = 1.6f;
             Add("Backstab", SmokeBackstab, 0f, 14f);
             Add("Snares", () => Snares(3, PlayerAt, 4.5f), 0f, 14f, allowed: () => snares.Count <= MaxTraps - 3);
             Add("Spores", SporeLob, 3f, 15f);
             Add("Knives", () => KnifeFan(secondPhase ? 7 : 5), 2.5f, 15f);
-            enrage = VexRings;
+            phaseTransition = VexRings;
         }
 
         private IEnumerator VexRings()

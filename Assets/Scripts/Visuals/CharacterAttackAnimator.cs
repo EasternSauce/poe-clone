@@ -616,7 +616,7 @@ namespace PoeClone.Visuals
         /// <summary>True while a channelled skill's pose is held (Whirlwind): the legs brace instead of striding.</summary>
         public bool IsHolding => IsAttacking && holding;
 
-        /// <summary>How fast swings play (an enraged enemy swings faster). 1 is normal.</summary>
+        /// <summary>How fast swings play. 1 is normal.</summary>
         public float PlaybackSpeed { get; set; } = 1f;
 
         /// <summary>How far through the current swing (0 to 1); 0 when not attacking.</summary>

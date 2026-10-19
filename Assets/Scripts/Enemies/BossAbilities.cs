@@ -62,10 +62,9 @@ namespace PoeClone.Enemies
         private Transform aim;
         private bool aimedAtLocal = true;
         // Co-op guest: a copy of the host's boss, playing only the moves it's told about, at the
-        // host's boss's attack speed and damage.
+        // host's boss's attack speed.
         private bool mirror;
         private float mirrorSpeed = 1f;
-        private float mirrorRage = 1f;
         private CharacterController body;
         private CreatureAnimator anim;
         private bool bodyVisible = true;
@@ -76,12 +75,12 @@ namespace PoeClone.Enemies
         private Func<IEnumerator> closer;           // how it gets to a player out of reach
         private float closerRange = 6f;              // ...beyond this distance
         private float closerEvery = 3.5f;
-        private Func<IEnumerator> enrage;            // its half-life roar's own effect
+        private Func<IEnumerator> phaseTransition;   // its half-life roar's own effect
         private float engageRange = 18f;
         private float moveEvery = 3.0f;
-        private float moveEveryEnraged = 2.0f;
-        private int calmMaxMinions = 2;
-        private int enragedMaxMinions = 3;
+        private float secondPhaseMoveEvery = 2.0f;
+        private int firstPhaseMaxMinions = 2;
+        private int secondPhaseMaxMinions = 3;
 
         private float nextMove;
         private float nextCloser;
@@ -148,7 +147,7 @@ namespace PoeClone.Enemies
         /// <see cref="Party.BossMoveCloser"/> / <see cref="Party.BossMoveRoar"/>). Plays it here with
         /// the same random rolls, aimed at us or at the host's character.
         /// </summary>
-        public void PlayMirror(int move, bool atUs, int seed, float speed, float rage, int monsterLevel)
+        public void PlayMirror(int move, bool atUs, int seed, float speed, int monsterLevel)
         {
             if (!mirror || kind == null || health.IsDead)
                 return;
@@ -160,7 +159,6 @@ namespace PoeClone.Enemies
             aimedAtLocal = atUs;
             aim = atUs ? (player != null ? player.transform : null) : Party.Partner;
             mirrorSpeed = speed;
-            mirrorRage = rage;
             level = monsterLevel;
 
             IEnumerator routine = null;
@@ -184,8 +182,7 @@ namespace PoeClone.Enemies
         private void StartMove(int index, IEnumerator routine)
         {
             int seed = EventRandom.NextSeed();
-            Party.BossMoveStarted?.Invoke(this, index, !aimedAtLocal, seed, SpeedMultiplier,
-                controller != null ? controller.DamageMultiplierAgainst(partner: true) : 1f, level);
+            Party.BossMoveStarted?.Invoke(this, index, !aimedAtLocal, seed, SpeedMultiplier, level);
             PoeClone.Visuals.DistanceActivity.StartTracked(this, RunBusy(routine, seed));
         }
 
@@ -326,7 +323,7 @@ namespace PoeClone.Enemies
             if (move == null)
                 return;
             last = move.Name;
-            nextMove = Time.time + (secondPhase ? moveEveryEnraged : moveEvery) / T;
+            nextMove = Time.time + (secondPhase ? secondPhaseMoveEvery : moveEvery) / T;
             EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
             StartMove(moves.IndexOf(move), move.Run());
         }
@@ -500,8 +497,8 @@ namespace PoeClone.Enemies
                     SkillEffects.Shockwave(transform.position, 2f + 4f * t, GroundTelegraph.FillColor(kind.DamageType), 0.35f);
                 yield return null;
             }
-            if (enrage != null)
-                yield return enrage();
+            if (phaseTransition != null)
+                yield return phaseTransition();
             nextMove = Time.time + 1.2f / T;
         }
 
@@ -800,12 +797,11 @@ namespace PoeClone.Enemies
             return minions.Count;
         }
 
-        private int CurrentMaxMinions => secondPhase ? enragedMaxMinions : calmMaxMinions;
+        private int CurrentMaxMinions => secondPhase ? secondPhaseMaxMinions : firstPhaseMaxMinions;
 
         private float DamageOf(float multiplier)
         {
-            float rage = mirror ? mirrorRage : controller != null ? controller.DamageMultiplierAgainst(partner: false) : 1f;
-            return kind.Damage * multiplier * EnemyKinds.DamageScale(level, kind) * rage;
+            return kind.Damage * multiplier * EnemyKinds.DamageScale(level, kind);
         }
 
         private bool HitIfInside(Vector3 center, float radius, float damageMultiplier, DamageType? type = null, bool attack = false)

@@ -436,7 +436,7 @@ namespace PoeClone.Skills
             {
                 Hit(target, WeaponDamage() * skill.WeaponMultiplierAt(level), skill.Color, true, melee: true, skillId: skill.Id);
                 WeaponVenom.Apply(transform, target, WeaponDamage(), SkillBook.FangStrikePoison, 0f, inventory.Stats,
-                    canEnrage: false, durationMultiplier: BonusesFor(skill.Id).DurationMultiplier, radiusMultiplier: BonusesFor(skill.Id).AreaMultiplier, tree: BonusesFor(skill.Id));
+                    melee: true, durationMultiplier: BonusesFor(skill.Id).DurationMultiplier, radiusMultiplier: BonusesFor(skill.Id).AreaMultiplier, tree: BonusesFor(skill.Id));
             }
         }
 
@@ -460,7 +460,7 @@ namespace PoeClone.Skills
                     continue;
                 Hit(enemy, damage, skill.Color, attack: true, melee: true, skillId: skill.Id);
                 if (!enemy.IsDead)
-                    WeaponVenom.Apply(transform, enemy, WeaponDamage(), poison, 0f, inventory.Stats, canEnrage: false, durationMultiplier: BonusesFor(skill.Id).DurationMultiplier, radiusMultiplier: BonusesFor(skill.Id).AreaMultiplier, tree: BonusesFor(skill.Id));
+                    WeaponVenom.Apply(transform, enemy, WeaponDamage(), poison, 0f, inventory.Stats, melee: true, durationMultiplier: BonusesFor(skill.Id).DurationMultiplier, radiusMultiplier: BonusesFor(skill.Id).AreaMultiplier, tree: BonusesFor(skill.Id));
             }
         }
     }

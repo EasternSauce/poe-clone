@@ -25,7 +25,6 @@ namespace PoeClone.Enemies
         private string last;
         private EnemyController controller;
         private float Tempo => 0.8f * (controller != null ? controller.AttackSpeedMultiplier : 1f);
-        private float HitDamage(bool partner) => damage * (controller != null ? controller.DamageMultiplierAgainst(partner) : 1f);
         public void Configure(float hit)
         {
             damage = hit; health = GetComponent<EnemyHealth>();
@@ -118,8 +117,8 @@ namespace PoeClone.Enemies
                     Mathf.Abs(Vector3.Cross(transform.forward, offset).y) <= ChargeWidth * 0.5f;
                 return offset.magnitude <= reach && (clip == "RearSlam" || Vector3.Dot(transform.forward, offset.normalized) >= -0.2f);
             });
-            if (atPartner) Party.PartnerDamaged?.Invoke(HitDamage(true) * (clip == "Charge" ? 1.3f : clip == "RearSlam" ? 1.5f : 1f),
-                DamageType.Physical, true, HitDamage(true) * 0.2f, 2f);
+            if (atPartner) Party.PartnerDamaged?.Invoke(damage * (clip == "Charge" ? 1.3f : clip == "RearSlam" ? 1.5f : 1f),
+                DamageType.Physical, true, damage * 0.2f, 2f);
             if (player == null || player.IsDead) return;
             Vector3 d = player.transform.position - transform.position; d.y = 0f;
             if (clip == "Charge")
@@ -127,13 +126,13 @@ namespace PoeClone.Enemies
                 Vector3 along = player.transform.position - chargeFrom; along.y = 0f;
                 if (Vector3.Dot(along, transform.forward) < 0f || Vector3.Dot(along, transform.forward) > chargeLength + 2f
                     || Mathf.Abs(Vector3.Cross(transform.forward, along).y) > ChargeWidth * 0.5f) return;
-                if (player.TakeHit(HitDamage(false) * 1.3f, DamageType.Physical)) player.Poison(HitDamage(false) * 0.2f, 2f);
+                if (player.TakeHit(damage * 1.3f, DamageType.Physical)) player.Poison(damage * 0.2f, 2f);
                 CameraSystem.CameraFollow.Shake(0.2f, 0.3f);
                 return;
             }
             if (d.magnitude > reach) return;
             if (clip != "RearSlam" && Vector3.Dot(transform.forward, d.normalized) < -0.2f) return;
-            if (player.TakeHit(HitDamage(false) * (clip == "RearSlam" ? 1.5f : 1f), DamageType.Physical)) player.Poison(HitDamage(false) * 0.2f, 2f);
+            if (player.TakeHit(damage * (clip == "RearSlam" ? 1.5f : 1f), DamageType.Physical)) player.Poison(damage * 0.2f, 2f);
             CameraSystem.CameraFollow.Shake(0.15f, 0.2f);
         }
         private void OnDestroy()

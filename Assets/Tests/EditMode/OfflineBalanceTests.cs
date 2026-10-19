@@ -243,16 +243,15 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void BossMitigation_AppliesEnrageBeforeArmour_AndCapsPhysicalPenetration()
+        public void BossMitigation_UsesLiveDefences_AndCapsPhysicalPenetration()
         {
-            float Hit(float penetration, float damageTaken, bool physical) =>
-                (float)Call("BossMitigatedHit", 100f, 250f, 20f, penetration, damageTaken, physical);
-            Assert.AreEqual(80f * (1 - DefenceMath.ArmourReduction(250f, 80f)), Hit(0, .8f, true), .0001);
-            Assert.AreNotEqual(Hit(0, 1, true) * .8f, Hit(0, .8f, true), "Enrage must change armour's hit-size denominator");
-            Assert.AreEqual(80f, Hit(100, .8f, true), .0001);
-            Assert.AreEqual(Hit(100, .8f, true), Hit(150, .8f, true), .0001);
-            Assert.AreEqual(64f, Hit(0, .8f, false), .0001);
-            Assert.AreEqual(80f, Hit(20, .8f, false), .0001);
+            float Hit(float penetration, bool physical) =>
+                (float)Call("BossMitigatedHit", 100f, 250f, 20f, penetration, physical);
+            Assert.AreEqual(100f * (1 - DefenceMath.ArmourReduction(250f, 100f)), Hit(0, true), .0001);
+            Assert.AreEqual(100f, Hit(100, true), .0001);
+            Assert.AreEqual(Hit(100, true), Hit(150, true), .0001);
+            Assert.AreEqual(80f, Hit(0, false), .0001);
+            Assert.AreEqual(100f, Hit(20, false), .0001);
         }
 
         [Test]
@@ -265,7 +264,7 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void BossTargets_ExportThreeEquallyWeightedLiveBosses_AtEveryLevel_WithBothStates()
+        public void BossTargets_ExportThreeEquallyWeightedLiveBosses_AtEveryLevel()
         {
             var targets = ((IEnumerable)Call("BossTargets")).Cast<object>().ToList();
             Assert.AreEqual(3 * 34, targets.Count);
@@ -279,9 +278,8 @@ namespace PoeClone.Tests
             foreach (var target in targets)
             {
                 Assert.Greater((float)Field(target, "armour"), 0);
-                Assert.Greater((float)Field(target, "enragedHit"), (float)Field(target, "calmHit"));
-                Assert.AreEqual((float)Field(target, "calmAttacksPerSecond") * 1.25f, (float)Field(target, "enragedAttacksPerSecond"), .0001);
-                Assert.AreEqual(.8f, (float)Field(target, "enragedDamageTaken"), .0001);
+                Assert.Greater((float)Field(target, "rawHit"), 0);
+                Assert.Greater((float)Field(target, "attacksPerSecond"), 0);
             }
         }
 

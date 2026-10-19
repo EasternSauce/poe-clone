@@ -10,7 +10,7 @@ namespace PoeClone.Enemies
         private void SetUpSaltMatriarch()
         {
             moveEvery = 3.4f;
-            moveEveryEnraged = 2.7f;
+            secondPhaseMoveEvery = 2.7f;
             Add("Salt Claws", BasinClaws, 0, 7);
             Add("Crust Fracture", BasinFracture, 3, 18);
             Add("Brood Quake", BasinBroodQuake, 0, 18, secondPhaseOnly: true);
@@ -19,7 +19,7 @@ namespace PoeClone.Enemies
         private void SetUpDryWellKeeper()
         {
             moveEvery = 3.6f;
-            moveEveryEnraged = 2.8f;
+            secondPhaseMoveEvery = 2.8f;
             Add("Dry Wells", BasinWells, 0, 18);
             Add("Crossed Channels", BasinChannels, 0, 18);
             Add("Dredgers Awaken", BasinDredgers, 0, 18, secondPhaseOnly: true,

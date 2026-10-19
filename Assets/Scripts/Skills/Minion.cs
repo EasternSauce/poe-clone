@@ -861,7 +861,7 @@ namespace PoeClone.Skills
             var ai = enemy.GetComponent<EnemyController>();
             bool chilled = ai != null && ai.IsChilled;
             DamageType element = WeaponSkillHit.Element(tree, DamageType.Physical);
-            float dealt = enemy.TakeDamage(amount, element, 0f, 0f, canEnrage: true, hitOrigin: hitOrigin ?? transform.position);
+            float dealt = enemy.TakeDamage(amount, element, 0f, 0f, hitOrigin: hitOrigin ?? transform.position);
             WeaponSkillHit.Apply(owner, enemy, dealt, tree, element, chilled, minion: true);
             if (dealt <= 0f)
                 return;

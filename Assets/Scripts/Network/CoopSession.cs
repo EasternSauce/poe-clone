@@ -180,7 +180,7 @@ namespace PoeClone.Network
             outgoing.it = null;
             outgoing.mv = outgoing.lv = 0;
             outgoing.sd = 0;
-            outgoing.sp = outgoing.dm = 0f;
+            outgoing.sp = 0f;
             outgoing.v = null;
             outgoing.w = null;
             return outgoing;
@@ -216,20 +216,17 @@ namespace PoeClone.Network
         private void SendEnemySkill(Component source, bool atPartner, float damage, Vector3 target)
         {
             CoopEvent e = EnemyEvent(CoopProtocol.Skill, source, atPartner);
-            if (source.GetComponent<EnemyController>()?.IsEnraged == true)
-                e.f |= CoopProtocol.FlagEnrage;
             e.a = damage;
             SetAim(e, target);
             Send(e);
         }
 
-        private void SendBossMove(Component source, int move, bool atPartner, int seed, float speed, float rage, int level)
+        private void SendBossMove(Component source, int move, bool atPartner, int seed, float speed, int level)
         {
             CoopEvent e = EnemyEvent(CoopProtocol.BossMove, source, atPartner);
             e.mv = move;
             e.sd = seed;
             e.sp = speed;
-            e.dm = rage;
             e.lv = level;
             Send(e);
         }
@@ -290,7 +287,7 @@ namespace PoeClone.Network
             e.dt = (int)hit.Type;
             e.ap = hit.ArmourPenetration;
             e.ep = hit.ElementalPenetration;
-            e.f = (hit.ThroughExposedHead ? CoopProtocol.FlagHead : 0) | (hit.CanEnrage ? CoopProtocol.FlagEnrage : 0) |
+            e.f = (hit.ThroughExposedHead ? CoopProtocol.FlagHead : 0) |
                   (hit.Flinch ? CoopProtocol.FlagFlinch : 0) | (hit.HasOrigin ? CoopProtocol.FlagOrigin : 0);
             SetAt(e, hit.Origin);
             string json = JsonUtility.ToJson(e);
@@ -336,8 +333,6 @@ namespace PoeClone.Network
             e.n = (int)kind;
             e.sd = seed;
             e.f = atPartner ? CoopProtocol.FlagAtYou : 0;
-            if (enemy.GetComponent<EnemyController>()?.IsEnraged == true)
-                e.f |= CoopProtocol.FlagEnrage;
             e.a = damage;
             e.r = reach;
             SetAt(e, from);
@@ -553,20 +548,11 @@ namespace PoeClone.Network
             if (enemy == null || enemy.IsDead || (!enemy.gameObject.activeInHierarchy && !Visuals.DistanceActivity.IsSleeping(enemy.gameObject)) ||
                 AreaAt(enemy.transform.position) != e.ar || float.IsNaN(e.a) || float.IsInfinity(e.a))
                 return;
-            Party.ApplyingPartnerDamage = true;
-            try
-            {
-                enemy.TakeDamage(e.a, (DamageType)e.dt, e.ap, e.ep,
-                    throughExposedHead: (e.f & CoopProtocol.FlagHead) != 0,
-                    canEnrage: (e.f & CoopProtocol.FlagEnrage) != 0,
-                    flinch: (e.f & CoopProtocol.FlagFlinch) != 0,
-                    hitOrigin: (e.f & CoopProtocol.FlagOrigin) != 0 ? new Vector3(e.x, e.y, e.z) : (Vector3?)null,
-                    rollSeed: e.sd);
-            }
-            finally
-            {
-                Party.ApplyingPartnerDamage = false;
-            }
+            enemy.TakeDamage(e.a, (DamageType)e.dt, e.ap, e.ep,
+                throughExposedHead: (e.f & CoopProtocol.FlagHead) != 0,
+                flinch: (e.f & CoopProtocol.FlagFlinch) != 0,
+                hitOrigin: (e.f & CoopProtocol.FlagOrigin) != 0 ? new Vector3(e.x, e.y, e.z) : (Vector3?)null,
+                rollSeed: e.sd);
         }
 
         // Host: first come, first served - if it's still on the ground, it's theirs.
@@ -615,9 +601,9 @@ namespace PoeClone.Network
                     break;
                 case Party.AttackKind.Bolt:
                     if (atUs)
-                        EnemyProjectile.LaunchAt(from, aim, stats, kind, e.a, rollSeed: e.sd, enraged: (e.f & CoopProtocol.FlagEnrage) != 0);
+                        EnemyProjectile.LaunchAt(from, aim, stats, kind, e.a, rollSeed: e.sd);
                     else
-                        EnemyProjectile.LaunchVisual(from, aim, kind, (e.f & CoopProtocol.FlagEnrage) != 0, Party.Partner);
+                        EnemyProjectile.LaunchVisual(from, aim, kind);
                     break;
                 case Party.AttackKind.Rain:
                     EnemySkills.RainOfArrows(this, kind, aim, atUs ? stats : null, atUs ? e.a : 0f, rollSeed: e.sd);

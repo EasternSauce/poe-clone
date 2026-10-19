@@ -10,7 +10,6 @@ namespace PoeClone.Enemies
     public class SerpentPursuit : MonoBehaviour, IDamageable
     {
         // One fixed physical hit at area level 12: about seven Carrion Saint auto-attacks.
-        // Tune this directly; enrage does not change it.
         private const float SwallowDamage = 400f;
         internal const float Radius = 1.8f;
         private const float StartSpeed = 10f;

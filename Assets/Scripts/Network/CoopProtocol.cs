@@ -38,7 +38,6 @@ namespace PoeClone.Network
 
         // CoopEvent.f bits.
         public const int FlagHead = 1;
-        public const int FlagEnrage = 2;
         public const int FlagFlinch = 4;
         public const int FlagOrigin = 8;
         public const int FlagAtYou = 16;
@@ -69,8 +68,7 @@ namespace PoeClone.Network
         public GearItem it;       // drop, got, put: the item with all its stats
         public int mv;            // boss move: which (Party.BossMoveCloser / BossMoveRoar for those)
         public int sd;            // event seed: boss patterns, attack visuals and defensive rolls; ambush: request ticket
-        public float sp;          // boss move: attack speed multiplier (rage, haste)
-        public float dm;          // boss move: damage multiplier (rage)
+        public float sp;          // boss move: attack speed multiplier (haste)
         public int lv;            // boss move: monster level; world: the area
         public float[] v;         // effect: its numbers (see Party.EffectKind)
         public EnemyHandoff[] w;  // world: the monsters handed over

@@ -41,25 +41,7 @@ namespace PoeClone.Combat
         public static bool PartnerAlive { get; set; }
         public static bool PartnerArrivalProtected { get; set; }
 
-        /// <summary>Host: true while the partner's hit (a claim from the guest) is being applied.</summary>
-        public static bool ApplyingPartnerDamage { get; set; }
-
         public enum AttackKind { Melee, Bolt, Rain }
-
-        // When each player last enraged a monster (their own or their minions' hits). Monsters in a
-        // rage hit a player who enraged none lately with calm damage per second (see EnemyController).
-        public const float EnrageBlameSeconds = 10f;
-        private static float localEnragedAt = float.NegativeInfinity;
-        private static float partnerEnragedAt = float.NegativeInfinity;
-
-        public static void NoteEnrage(bool partner)
-        {
-            if (partner) partnerEnragedAt = Time.time;
-            else localEnragedAt = Time.time;
-        }
-
-        public static bool EnragedLately(bool partner) =>
-            Time.time - (partner ? partnerEnragedAt : localEnragedAt) < EnrageBlameSeconds;
 
         /// <summary>
         /// Host: a monster's attack the guest has to see or take. Bolts and arrow rain go out
@@ -88,9 +70,9 @@ namespace PoeClone.Combat
 
         /// <summary>
         /// Host: a field boss started a move (boss, move, aimed at the partner, random seed, attack
-        /// speed and damage multipliers, level). The guest plays it on its copy of the boss.
+        /// speed multiplier, level). The guest plays it on its copy of the boss.
         /// </summary>
-        public static System.Action<Component, int, bool, int, float, float, int> BossMoveStarted;
+        public static System.Action<Component, int, bool, int, float, int> BossMoveStarted;
 
         /// <summary>
         /// Host: a blow of the act boss's, judged here against the partner's character, landed
@@ -142,8 +124,6 @@ namespace PoeClone.Combat
             Partner = null;
             PartnerAlive = false;
             PartnerArrivalProtected = false;
-            ApplyingPartnerDamage = false;
-            localEnragedAt = partnerEnragedAt = float.NegativeInfinity;
             SharingArea = false;
             EnemyAttacked = null;
             EnemySkillUsed = null;

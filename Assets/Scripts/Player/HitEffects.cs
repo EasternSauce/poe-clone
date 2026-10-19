@@ -124,7 +124,7 @@ namespace PoeClone.Player
                 else if (type == DamageType.Poison) elementalPenetration += sheet.Total(StatType.PoisonPenetration);
             }
             damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration, throughExposedHead,
-                canEnrage: !melee, flinch: flinch, hitOrigin: hitOrigin ?? (attacker != null ? (Vector3?)attacker.position : null), rollSeed: rollSeed);
+                flinch: flinch, hitOrigin: hitOrigin ?? (attacker != null ? (Vector3?)attacker.position : null), rollSeed: rollSeed);
             // A warded hit cannot apply ailments, cull, or grant on-hit recovery.
             if (damage <= 0f) return;
             if (!secondary) WeaponSkillHit.Apply(attacker, enemy, damage, tree, type, wasChilled, melee: melee);
@@ -143,7 +143,7 @@ namespace PoeClone.Player
                     poison += SkillBook.VenomArrowPoison;
                     cloud += SkillBook.VenomArrowCloud;
                 }
-                WeaponVenom.Apply(attacker, enemy, baseDamage, poison, cloud, sheet, canEnrage: !melee, durationMultiplier: tree?.DurationMultiplier ?? 1f, radiusMultiplier: tree?.AreaMultiplier ?? 1f, tree: tree);
+                WeaponVenom.Apply(attacker, enemy, baseDamage, poison, cloud, sheet, melee: melee, durationMultiplier: tree?.DurationMultiplier ?? 1f, radiusMultiplier: tree?.AreaMultiplier ?? 1f, tree: tree);
             }
 
             if (!attack && !secondary)
@@ -248,7 +248,7 @@ namespace PoeClone.Player
         }
 
         // melee: the kill came from a melee hit (or what one set off), so what it sets off is melee
-        // too and never enrages (see EnemyController.OnIncomingHit).
+        // too.
         private static void OnKill(Transform attacker, PlayerStats stats, StatSheet sheet, EnemyHealth enemy, Vector3 at,
             float enemyMaxLife, bool secondary, bool fromExplosion, bool melee, int rollSeed)
         {

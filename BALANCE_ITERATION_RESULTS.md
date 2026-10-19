@@ -1,5 +1,7 @@
 # Iterative boss balance results — 2026-10-15
 
+These historical results predate the current uniform boss combat model. Regenerate surveys before comparing current builds.
+
 Three complete boss surveys: an unchanged-gameplay baseline followed by two tuning passes. Each uses 20 seeded builds per available archetype/level, 20 rare rolls per equipment slot, all 318 catalogue entries and every character level 1–34. Each survey evaluates 78,240 builds and exports 10,812 archetype/level rows.
 
 The headline comparison is each of the 24 main skills’ strongest available viable archetype at each level (816 comparisons). The top fifth of viable builds is averaged, then melee DPS is divided by 1.5 and minion DPS by 1.3. The peer baseline is the median across skills at that level. Utility branches are retained and are not required to match damage branches in stationary DPS.
@@ -79,10 +81,9 @@ The before/after figures use the same boss model and sampling budgets. The earli
 ## Benchmark and validation
 
 - Equal-weight Gravelord Mortis, Ashen Warlord and Rimeheart, continuously scaled to character level. Actual armour, resistances and basic attacks are exported in the workbook’s Boss targets sheet.
-- Solo ranged/spell/minion hits enrage the boss. Solo melee keeps it calm. Enrage damage-taken changes apply before armour/resistance; pressure includes boss hit scaling, Tempo and the 25% enrage attack-rate increase.
 - One boss’s basic attacks are shared across the targetable minion army for expected replacement demand; wolves remain untargetable. Mana setup, replacement costs, sustain and melee survival thresholds stay active.
 - Full balance unit tests were rerun after each pass: 15/15 baseline checks and 17/17 checks after each tuning pass. Matched passive checks also compared pass-one/pass-two effects on 18 identical gear/character-passive sets, with two allocations per set; all temporary node overrides were restored. Focused tests cover boss mitigation order, penetration caps, reference targets, shared army pressure, character versus weapon-rank progression, report coverage and resource reconciliation.
-- This measures stationary single-target performance, not a full boss fight. Special moves, phases, wards, movement, clearing and co-op enrage spillover are excluded. Ailment ramp, secondary effects and expected proc rates remain approximate. Twenty samples do not establish that every possible build is balanced.
+- This measures stationary single-target performance, not a full boss fight. Special moves, phases, wards, movement, clearing are excluded. Ailment ramp, secondary effects and expected proc rates remain approximate. Twenty samples do not establish that every possible build is balanced.
 
 Broader regression checks: **65/75 passed; 10 failed**. The failures concern existing mana absorption, passive-tree topology/rewards/spacing, cast-speed eligibility and gear-grant expectations. The relevant implementations and test files have no substantive changes in this work (`git diff --ignore-space-at-eol` is empty for them). They were left unchanged when stopping after pass two:
 

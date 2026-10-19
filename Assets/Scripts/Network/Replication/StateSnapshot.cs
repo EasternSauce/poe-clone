@@ -34,7 +34,6 @@ namespace PoeClone.Network.Replication
         public int sk;     // enemies: special skills used so far (EnemySkills) - same counter trick as atk
         public float sx;   // ...and where the latest one was aimed
         public float sz;
-        public int en;     // enemies: 1 = enraged
         public float bs;   // boss visual scale
         public int bh;     // 1 = boss health bar hidden during dialogue or transformation
         public int bp;     // Shepherd phase (0 for other entities)

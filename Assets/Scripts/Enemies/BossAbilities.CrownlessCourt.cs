@@ -10,9 +10,9 @@ namespace PoeClone.Enemies
         private void SetUpHarvestMother()
         {
             moveEvery = 3.8f;
-            moveEveryEnraged = 3;
-            calmMaxMinions = 4;
-            enragedMaxMinions = 6;
+            secondPhaseMoveEvery = 3;
+            firstPhaseMaxMinions = 4;
+            secondPhaseMaxMinions = 6;
             Add("Thirsting Roots", HarvestRoots, 0, 18);
             Add("Bitter Fruit", HarvestFruit, 0, 18);
             Add("The Well Collects", HarvestBrood, 0, 18,
@@ -22,9 +22,9 @@ namespace PoeClone.Enemies
         private void SetUpIshara()
         {
             moveEvery = 3.7f;
-            moveEveryEnraged = 2.9f;
-            calmMaxMinions = 2;
-            enragedMaxMinions = 2;
+            secondPhaseMoveEvery = 2.9f;
+            firstPhaseMaxMinions = 2;
+            secondPhaseMaxMinions = 2;
             Add("Borrowed Current", IsharaCurrent, 0, 20);
             Add("Rising Tithe", IsharaTide, 0, 20);
             Add("Court of the Drowned", IsharaCourt, 0, 20, secondPhaseOnly: true,

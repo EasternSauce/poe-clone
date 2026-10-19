@@ -434,7 +434,6 @@ namespace PoeClone.Network
 
                 var ai = enemy.GetComponent<EnemyController>();
                 e.ch = ai != null && ai.CurrentState == EnemyController.State.Chasing ? 1 : 0;
-                e.en = ai != null && ai.IsEnraged ? 1 : 0;
                 e.k = enemy.KindIndex;
                 e.er = (int)enemy.Rarity;
                 e.de = enemy.IsDensityExtra ? 1 : 0;
@@ -506,7 +505,6 @@ namespace PoeClone.Network
                 e.ap = attack != null ? attack.ProfileId : 0;
                 e.stg = 0;
                 e.ch = 0;
-                e.en = 0;
                 e.k = minion.LookIndex;
                 e.er = 0;
                 e.de = 0;

@@ -29,9 +29,9 @@ namespace PoeClone.Enemies
             * (walker != null ? walker.AttackSpeedMultiplier : 1f);
         private const float Breather = 0.075f;
 
-        private const float HookEvery = 2.25f;
-        private const float LungeEvery = 3f;
-        private const float CallEvery = 4f;
+        private const float HookEvery = 4.5f;
+        private const float LungeEvery = 6f;
+        private const float CallEvery = 8f;
         private const float SnakeWindUp = 0.45f;
 
         // Where his moves reach, at scale 1 (they grow with him).
@@ -57,11 +57,11 @@ namespace PoeClone.Enemies
         private readonly System.Collections.Generic.List<SnakeLimb> backSnakes = new System.Collections.Generic.List<SnakeLimb>();
 
         // Phase 2's specials, each on its own timer, never two straight after one another.
-        private const float VolleyEvery = 3f;
-        private const float SpoutsEvery = 4.5f;
-        private const float SnatchEvery = 4f;
-        private const float DiveEvery = 5.5f;
-        private const float SpecialGap = 0.6f;
+        private const float VolleyEvery = 6f;
+        private const float SpoutsEvery = 9f;
+        private const float SnatchEvery = 8f;
+        private const float DiveEvery = 11f;
+        private const float SpecialGap = 1.2f;
         private float nextVolley, nextSpouts, nextSnatch, nextDive, nextSpecial;
         private EnemyController walker;
 
@@ -209,19 +209,19 @@ namespace PoeClone.Enemies
             }
             if (now >= nextLunge && distance > 4.5f * Scale * 0.8f && distance < LungeLength * Grow + 0.8f * Scale)
             {
-                nextLunge = now + LungeEvery * SpecialCooldownScale;
+                nextLunge = now + LungeEvery;
                 Begin("CobraLunge");
                 return;
             }
             if (now >= nextCall && (distance > reach || now >= nextSwing))
             {
-                nextCall = now + CallEvery * SpecialCooldownScale;
+                nextCall = now + CallEvery;
                 Begin("SerpentCall");
                 return;
             }
             if (now >= nextHook && distance <= HookReach * Scale)
             {
-                nextHook = now + HookEvery * SpecialCooldownScale;
+                nextHook = now + HookEvery;
                 Begin("HookPull");
                 return;
             }
@@ -284,10 +284,10 @@ namespace PoeClone.Enemies
         private void StartPhaseTwoTimers()
         {
             float now = Time.time;
-            nextVolley = now + 0.75f * SpecialCooldownScale;
-            nextSnatch = now + 1.75f * SpecialCooldownScale;
-            nextSpouts = now + 3.25f * SpecialCooldownScale;
-            nextDive = now + 4.75f * SpecialCooldownScale;
+            nextVolley = now + 1.5f;
+            nextSnatch = now + 3.5f;
+            nextSpouts = now + 6.5f;
+            nextDive = now + 9.5f;
             nextSpecial = now + 0.5f;
         }
 
@@ -300,27 +300,27 @@ namespace PoeClone.Enemies
                 if (now >= nextSnatch && distance > 3f * Grow)
                 {
                     special = "Snatch";
-                    nextSnatch = now + SnatchEvery * SpecialCooldownScale;
+                    nextSnatch = now + SnatchEvery;
                 }
                 else if (now >= nextDive)
                 {
                     special = "SerpentDive";
-                    nextDive = now + DiveEvery * SpecialCooldownScale;
+                    nextDive = now + DiveEvery;
                 }
                 else if (now >= nextSpouts)
                 {
                     special = "Spouts";
-                    nextSpouts = now + SpoutsEvery * SpecialCooldownScale;
+                    nextSpouts = now + SpoutsEvery;
                 }
                 else if (now >= nextVolley && distance > BiteReach * Scale * 0.5f)
                 {
                     special = "VenomVolley";
-                    nextVolley = now + VolleyEvery * SpecialCooldownScale;
+                    nextVolley = now + VolleyEvery;
                 }
                 if (special != null)
                 {
                     Begin(special);
-                    nextSpecial = now + anim.Current.Duration / Pace + SpecialGap * SpecialCooldownScale;
+                    nextSpecial = now + anim.Current.Duration / Pace + SpecialGap;
                     return;
                 }
             }
@@ -363,11 +363,7 @@ namespace PoeClone.Enemies
 
         // ------------------------------------------------------------------ phase 2's specials
 
-        private float BaseHit(bool partner) => kind.Damage * EnemyKinds.DamageScale(level, kind)
-            * (walker != null ? walker.DamageMultiplierAgainst(partner) : 1f);
-
-        // Special cooldowns are doubled while calm; enrage restores their current cadence.
-        private float SpecialCooldownScale => walker != null && walker.IsEnraged ? 1f : 2f;
+        private float BaseHit() => kind.Damage * EnemyKinds.DamageScale(level, kind);
 
         // A glob of venom from a mouth to near the player: splash damage where it lands, then a
         // puddle that poisons whoever stands in it.
@@ -382,9 +378,9 @@ namespace PoeClone.Enemies
                 (centre, r) =>
                 {
                     if (Party.PartnerInside(p => Flat(p - centre).magnitude <= r))
-                        Party.PartnerDamaged?.Invoke(0f, kind.DamageType, false, BaseHit(true) * 0.16666667f, 2f);
+                        Party.PartnerDamaged?.Invoke(0f, kind.DamageType, false, BaseHit() * 0.16666667f, 2f);
                     if (player != null && !player.IsDead && Flat(player.transform.position - centre).magnitude <= r)
-                        player.PoisonFromPool(BaseHit(false) * 0.16666667f, 2f);
+                        player.PoisonFromPool(BaseHit() * 0.16666667f, 2f);
                 });
         }
 
@@ -939,13 +935,13 @@ namespace PoeClone.Enemies
         private void HitPartner(System.Func<Vector3, bool> inside, float multiplier, bool attack = true)
         {
             if (health == null || health.IsDead || !Party.PartnerInside(inside)) return;
-            float hit = BaseHit(true) * multiplier;
+            float hit = BaseHit() * multiplier;
             Party.PartnerDamaged?.Invoke(hit, kind.DamageType, attack, Phase >= 2 ? hit * PoisonShare : 0f, PoisonSeconds);
         }
 
         private void Damage(float multiplier, bool attack = true)
         {
-            float hit = BaseHit(false) * multiplier;
+            float hit = BaseHit() * multiplier;
             if (player.TakeHit(hit, kind.DamageType, attack) && Phase >= 2 && !player.IsDead)
                 player.Poison(hit * PoisonShare, PoisonSeconds);
         }

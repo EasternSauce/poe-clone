@@ -52,7 +52,6 @@ namespace PoeClone.Enemies
         private bool aimedAtLocal = true;
         // Co-op guest: a copy of one of the host's enemies, only playing the casts it's told about.
         private bool mirror;
-        private bool mirrorEnraged;
         private float nextUse;
         private float busyUntil = -1f;
         private readonly List<EnemyHealth> minions = new List<EnemyHealth>();
@@ -79,14 +78,13 @@ namespace PoeClone.Enemies
         /// hurting the local player wherever it should; a charge, volley or leap only if it was
         /// aimed at us. The copy's movement comes from the host's snapshots.
         /// </summary>
-        public void Mirror(Vector3 target, float damage, bool atUs, bool enraged = false)
+        public void Mirror(Vector3 target, float damage, bool atUs)
         {
             if (kind == null || health.IsDead)
                 return;
             if (player == null)
                 player = FindAnyObjectByType<PlayerStats>();
             aimedAtLocal = atUs;
-            mirrorEnraged = enraged;
             aim = atUs ? (player != null ? player.transform : null) : Party.Partner;
             Cast(target, damage);
         }
@@ -189,18 +187,11 @@ namespace PoeClone.Enemies
         private void Use(float distance)
         {
             Vector3 target = aim.position;
-            // Short attacks can lead the player; longer warnings mark their position at launch.
-            // (Only the local player's motion is tracked well enough to lead.)
-            bool enraged = controller != null && controller.IsEnraged;
-            if (enraged && aimedAtLocal && kind.Skill == EnemySkill.Strike && StrikeWindUp(kind) <= 0.7f)
-                target = PlayerMotion.Predict(player, StrikeWindUp(kind));
-            else if (enraged && aimedAtLocal && kind.Skill == EnemySkill.Volley)
-                target = PlayerMotion.Intercept(player, EnemyCombat.BoltOrigin(transform), EnemyProjectile.Speed(kind, enraged));
             if (kind.Skill == EnemySkill.Leap)
                 target = LeapLanding(transform.position, target, LeapGap(transform));
             float damage = kind.Damage * EnemyKinds.HitScale(level, kind, kind.DamageType);
-            Party.EnemySkillUsed?.Invoke(this, !aimedAtLocal, damage * (controller != null ? controller.SkillDamageMultiplierAgainst(partner: true) : 1f), target);
-            Cast(target, damage * (controller != null ? controller.SkillDamageMultiplierAgainst(partner: false) : 1f));
+            Party.EnemySkillUsed?.Invoke(this, !aimedAtLocal, damage, target);
+            Cast(target, damage);
         }
 
         // The cast itself: on the host (or alone), and on a co-op guest's copy.
@@ -256,8 +247,7 @@ namespace PoeClone.Enemies
                         center => HitIfInside(center, StrikeRadius, damage * 1.3f)));
                     break;
                 case EnemySkill.Volley:
-                    Volley(transform, kind, target, aimedAtLocal ? player : null, damage,
-                        mirror ? mirrorEnraged : controller != null && controller.IsEnraged, aim);
+                    Volley(transform, kind, target, aimedAtLocal ? player : null, damage);
                     break;
                 case EnemySkill.Charge:
                     PoeClone.Visuals.DistanceActivity.StartTracked(this, Charge(damage * 1.3f));
@@ -1139,7 +1129,7 @@ namespace PoeClone.Enemies
         }
 
         // Three arrows (or bolts) fanned out at the target.
-        private static void Volley(Transform body, EnemyKind kind, Vector3 target, PlayerStats hit, float damage, bool enraged = false, Transform follow = null)
+        private static void Volley(Transform body, EnemyKind kind, Vector3 target, PlayerStats hit, float damage)
         {
             Vector3 from = EnemyCombat.BoltOrigin(body);
             var volleyHit = new bool[1]; // the player is hurt by one arrow of the three at most
@@ -1147,9 +1137,9 @@ namespace PoeClone.Enemies
             {
                 Vector3 aim = from + Quaternion.AngleAxis(k * 14f, Vector3.up) * (target - from);
                 if (hit != null)
-                    EnemyProjectile.LaunchAt(from, aim, hit, kind, damage, volleyHit, enraged: enraged);
+                    EnemyProjectile.LaunchAt(from, aim, hit, kind, damage, volleyHit);
                 else
-                    EnemyProjectile.LaunchVisual(from, aim, kind, enraged, follow);
+                    EnemyProjectile.LaunchVisual(from, aim, kind);
             }
         }
 
@@ -1157,7 +1147,7 @@ namespace PoeClone.Enemies
         /// Spectator replica: the look of a skill an enemy just used, with no damage. Movement
         /// (charges, blinks) arrives with the replicated pose; this adds the flashes and patches.
         /// </summary>
-        public static void PlayVisual(MonoBehaviour host, EnemyKind kind, Transform body, Vector3 target, int useCount = 1, bool enraged = false, Transform follow = null)
+        public static void PlayVisual(MonoBehaviour host, EnemyKind kind, Transform body, Vector3 target, int useCount = 1)
         {
             switch (kind.Skill)
             {
@@ -1204,7 +1194,7 @@ namespace PoeClone.Enemies
                     PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(target, StrikeRadius, (StrikeWindUp(kind)) / kind.AbilitySpeed, kind.DamageType, null));
                     break;
                 case EnemySkill.Volley:
-                    Volley(body, kind, target, null, 0f, enraged, follow);
+                    Volley(body, kind, target, null, 0f);
                     break;
                 case EnemySkill.Charge:
                     SkillEffects.Shockwave(body.position, 1.2f, DustColor, 0.3f);

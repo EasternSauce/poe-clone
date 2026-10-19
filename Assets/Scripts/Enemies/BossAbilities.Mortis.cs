@@ -26,13 +26,13 @@ namespace PoeClone.Enemies
             closer = Burrow;
             closerRange = 7f;
             closerEvery = 5.5f;
-            calmMaxMinions = 2;
-            enragedMaxMinions = 4;
+            firstPhaseMaxMinions = 2;
+            secondPhaseMaxMinions = 4;
             Add("Grave", () => OpenGraves(secondPhase ? 3 : 1), 0f, 14f);
             Add("Coffin", CoffinToss, 3f, 16f, allowed: () => coffinOnBack && LiveMinions() < CurrentMaxMinions);
             Add("Exhume", Exhume, 0f, 12f);
             Add("Sweep", ShovelSweep, 0f, 5f);
-            enrage = MortisRises;
+            phaseTransition = MortisRises;
         }
 
         private IEnumerator MortisRises()

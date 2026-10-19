@@ -27,14 +27,14 @@ namespace PoeClone.Enemies
             closer = Pounce;
             closerRange = 7f;
             closerEvery = 4.5f;
-            calmMaxMinions = 2;
-            enragedMaxMinions = 3;
+            firstPhaseMaxMinions = 2;
+            secondPhaseMaxMinions = 3;
             Add("Spear", () => SpearThrow(1), 3f, 20f);
             Add("Fan", () => SpearThrow(3), 3f, 20f, secondPhaseOnly: true);
             Add("Net", NetThrow, 2.5f, 14f);
             Add("Sweep", SpearSweep, 0f, 4f);
             Add("Pack", CallPack, 0f, 20f, allowed: () => LiveMinions() < CurrentMaxMinions);
-            enrage = () => SpearThrow(3);
+            phaseTransition = () => SpearThrow(3);
         }
 
         // Her wolves come running the first time the player gets close.

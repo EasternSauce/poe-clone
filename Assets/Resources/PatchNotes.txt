@@ -1,3 +1,7 @@
+version: 2026-10-19-consistent-monster-combat
+- Monsters use the same movement speed, attack speed, damage and defences against melee, ranged and minion builds. Ranged and minion hits no longer trigger temporary combat boosts or nearby pack reactions.
+- Enemy arrows and spells fly straight at their normal speed, and aimed attacks target your position when launched.
+
 version: 2026-10-19-arena-larger-waves
 - Arena waves now spawn 15-25 monsters at once, up from 1-5.
 
@@ -428,7 +432,6 @@ version: 2026-10-15-iterative-boss-balance
 - Rebalanced main skills over two full boss-benchmark passes at every level from 1 through 34. Extreme bow and dagger damage is lower, Aftershock hits harder, and weak summons receive substantial base-damage buffs.
 - Main attack spells now gain 6% of their level-one base damage per character level after the first. Minion base damage also grows with character level: 3.5% per level, 4.5% for bone golems and 2.2% for vipers. Weapon rank still grants specialization points rather than automatic damage.
 - Burning Arrow and Split Shot earn more damage from their weapon passives. Rain of Arrows is stronger before specialization, with less concentrated overlap from its focused route. Fang Strike and Fissure's strongest routes are toned down; Cross Slash's Bladedance gains damage.
-- Offline balance reports now benchmark equally weighted Mortis, Ashen Warlord and Rimeheart with actual boss defences, scaled basic attacks and skill-triggered enrage. Boss target stats and states are included in the workbook.
 
 version: 2026-10-15-summoner-support-and-balance-survey
 - Rain of Arrows' Broad Coverage keystone is now Pinning Rain: it retains wider spread and two additional arrows, and hits always chill enemies, slowing their movement by 50% for 2 seconds. Further hits refresh the chill.
@@ -443,11 +446,6 @@ version: 2026-10-14-dialogue-and-graveyard
 - Finishing all available quest dialogue closes the conversation. Click the NPC again to trade or use their other options.
 - Skeletons, Skeleton Archers, Bone Reavers and Bone Wardens move faster.
 - Moved the caravan cargo trail into the western grave plots, farther from Gravelord Mortis, and updated its directions.
-
-version: 2026-10-14-enrage-pursuit
-- Enraged mage bolts seek their target until they come within 3 units, then fly straight for a final dodge window.
-- Enraged archers fire projectiles 50% faster, including volleys.
-- Enraged melee enemies gain an additional 300% increased movement speed that fades over 1.5 seconds, then repeats after a 1-second cooldown. Refreshing enrage does not restart the burst.
 
 version: 2026-10-14-weapon-tree-redesign
 - Rebuilt all 24 weapon trees with winding, branching paths, stronger destinations behind related small passives, and modest damage alongside utility. Removed floating branch labels and fixed overflowing node descriptions.
@@ -485,7 +483,6 @@ version: 2026-10-14-modifier-count-distributions
 - Unique modifier lists remain individually designed around each item's theme, without a shared minimum or maximum.
 
 version: 2026-10-14-loot-movement-and-feedback
-- Enrage keeps its combat effects without text, red pulses or an announcement, including on one-shot kills.
 - Reassembling skeletons return to full life when collapsing into a bone pile.
 - Magic items roll 2 or 3 random modifiers (50% each); Rare items roll 4, 5 or 6 (50% / 35% / 15%). Eligible modifier tiers have equal chances; tiers 10 or more item levels below the item cannot roll.
 - Minion duration modifiers use general wording and apply to every temporary minion; permanent minions remain permanent.
@@ -669,7 +666,6 @@ version: 2026-10-12-mobile-and-objectives
 version: 2026-10-12-quests-and-travel
 - Quest offers and hand-ins open automatically when you speak to the right NPC. Quests are accepted and rewards collected automatically; each dialogue appears once, with no quest menu or replay option. Objectives now include the quest's directions and encounter instructions.
 - Entering a gate immediately protects you from damage and stops movement, dashes and pending attacks. You remain still through the loading fade and only regain control after the new area is ready and visible.
-- Non-damaging effects cannot trigger damage bonuses, on-hit effects or enrage. Grave Rot remains a curse without a damaging hit.
 - Kill experience now requires you to be alive, in the same area and within 60 metres of the defeated enemy, including co-op kills.
 - World sound effects, including another player's attacks and nearby monster deaths, now fade with distance and become silent at 32 metres. Interface sounds keep their usual volume.
 
@@ -918,7 +914,6 @@ version: 2026-10-11-melee-skill-toggles
 - New melee skills: Fissure (maces and mauls) splits the ground in a crack that races ahead of you, hitting everything along it. Aftershock (maces and mauls) sends 3 tremors (4 from level 6) rolling ahead, each further out and wider than the last. Cross Slash (daggers) carves an X around you with two quick crossing cuts. Venom Slash (daggers) is a quick, wide slash that poisons everything in front of you.
 - Melee skills now roll only on weapons that suit them: Cleave and Whirlwind on swords and axes, Pulverize, Fissure and Aftershock on maces and mauls, and Fang Strike, Cross Slash and Venom Slash on daggers. Daggers roll their skills more often. A mace, maul or dagger you already own loses Cleave or Whirlwind, since those no longer roll on it.
 - Melee skills reach big enemies at the edge of their body, like a plain swing, instead of needing to reach their centre (daggers could not reach the larger bosses).
-- Lightning from Stormblade, corpse explosions and shatters set off by a melee hit no longer enrage enemies.
 
 version: 2026-10-11-weapon-attack-speed
 - Increased Attack Speed on weapons rolls much higher: 30-40% at item level 1, rising to about 85-105% by item level 34 and up to 145% on the highest item levels. Weapons you already own with this stat are raised to at least 30%. Attack speed on gloves, rings, amulets and quivers is unchanged.
@@ -952,7 +947,6 @@ version: 2026-10-11-dont-look-back
 - The Long Bow and Imperial Bow have new icons.
 
 version: 2026-10-11-tanks-and-critters
-- Enraged monsters no longer punish players who didn't enrage them. If you haven't enraged any monster (with ranged or minion hits) in the last 10 seconds, enraged monsters hit you softer: they still attack faster, but their damage per second against you stays where it was before the rage. Whoever enraged them still takes the full enraged damage. This mostly matters in co-op, where your partner's arrows and minions used to make every monster hit the melee player much harder.
 - The tank side of the tree (Might) now reduces the damage you take: Toughness 5% less, Brawn 3%, Endurance 3%, Thick Hide 2%, Juggernaut 5%, Stout Heart 4% and Steel Heart 2%. A Might melee build takes about 15% less damage by level 7 and 20-24% less from level 21 on.
 - The skill bar is now a single row: LMB, then Q E R F, then 1 2 3 4, then the mouse buttons, instead of the number keys sitting above the letters.
 - Squirrels, rabbits and hares run off in random directions when startled and change direction every second or so, instead of all being chased into one corner of the map.
@@ -1726,7 +1720,6 @@ version: 2026-10-06-carrion-melee-hitbox
 - Carrion Saint's phase-three damageable hitbox is twice as wide, so short melee weapons can connect more reliably.
 
 version: 2026-10-06-shepherd-pacing-damage
-- Shepherd and Carrion Saint specials now come half as often while calm; enrage restores their previous ability cadence.
 - Shepherd and Carrion Saint damage is reduced by 25%.
 
 version: 2026-10-06-carrion-swallow

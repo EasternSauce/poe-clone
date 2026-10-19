@@ -26,7 +26,7 @@ namespace PoeClone.Enemies
             closerRange = 8f;
             closerEvery = 6f;
             moveEvery = 3.4f;
-            moveEveryEnraged = 2.6f;
+            secondPhaseMoveEvery = 2.6f;
             Add("Charge", () => Charge(secondPhase ? 2 : 1), 5f, 20f);
             Add("Roots", RootBurst, 0f, 16f);
             Add("Thorns", ThornShake, 0f, 7f);

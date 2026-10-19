@@ -33,7 +33,7 @@ namespace PoeClone.Enemies
             Add("Embers", EmberToss, 3f, 18f);
             Add("Cleave", Cleave, 0f, 7f);
             Add("Plates", PlateVolley, 0f, 18f, secondPhaseOnly: true);
-            enrage = ShedPlates;
+            phaseTransition = ShedPlates;
         }
 
         private IEnumerator AshLeap()

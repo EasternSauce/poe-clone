@@ -119,7 +119,6 @@ namespace PoeClone.Enemies
             bool atPartner = controller != null && controller.TargetsPartner;
             if ((playerStats.IsDead || playerStats.ArrivalProtected) && !atPartner)
                 return;
-            PlayerMotion.Track(playerStats);
 
             if (cooldownTimer > 0f || attackAnimator.IsAttacking || stagger.IsStaggered)
                 return;
@@ -193,7 +192,7 @@ namespace PoeClone.Enemies
                 if (minion.IsDead)
                     return;
                 if (kind.IsRanged)
-                    EnemyProjectile.LaunchAt(BoltOrigin(transform), minion, kind, RollDamage(), controller != null && controller.IsEnraged);
+                    EnemyProjectile.LaunchAt(BoltOrigin(transform), minion, kind, RollDamage());
                 else if (DistanceTo(minion.transform.position) <= (attackRange + 0.3f * minion.transform.localScale.x) * ReachSlack)
                     minion.TakeHit(RollDamage(), kind.AttackDamageType);
                 return;
@@ -201,10 +200,7 @@ namespace PoeClone.Enemies
 
             if (kind.RainOfArrows)
             {
-                // The shot goes up and comes down where the player stands (enraged: where they'll be).
-                Vector3 spot = controller != null && controller.IsEnraged
-                    ? PlayerMotion.Predict(playerStats, EnemySkills.ArrowRainDelay)
-                    : playerStats.transform.position;
+                Vector3 spot = playerStats.transform.position;
                 float rain = RollDamage();
                 int seed = EventRandom.NextSeed();
                 EnemySkills.RainOfArrows(this, kind, spot, playerStats, rain, seed);
@@ -214,15 +210,11 @@ namespace PoeClone.Enemies
 
             if (kind.IsRanged)
             {
-                // Enraged archers lead using their faster arrow speed; spells track after launch.
                 Vector3 from = BoltOrigin(transform);
-                bool enraged = controller != null && controller.IsEnraged;
-                Vector3 aim = enraged && (kind.Bow || kind.Javelin)
-                    ? PlayerMotion.Intercept(playerStats, from, EnemyProjectile.Speed(kind, enraged))
-                    : playerStats.transform.position;
+                Vector3 aim = playerStats.transform.position;
                 float bolt = RollDamage();
                 int seed = EventRandom.NextSeed();
-                EnemyProjectile.LaunchAt(from, aim, playerStats, kind, bolt, rollSeed: seed, enraged: enraged);
+                EnemyProjectile.LaunchAt(from, aim, playerStats, kind, bolt, rollSeed: seed);
                 Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Bolt, false, bolt, 0f, from, aim, seed);
                 return;
             }
@@ -247,7 +239,7 @@ namespace PoeClone.Enemies
             if (!Party.PartnerTargetable)
                 return;
             Vector3 at = Party.Partner.position;
-            float damage = RollDamage(atPartner: true);
+            float damage = RollDamage();
             int seed = EventRandom.NextSeed();
             if (kind.RainOfArrows)
             {
@@ -257,7 +249,7 @@ namespace PoeClone.Enemies
             else if (kind.IsRanged)
             {
                 Vector3 from = BoltOrigin(transform);
-                EnemyProjectile.LaunchVisual(from, at, kind, controller != null && controller.IsEnraged, Party.Partner);
+                EnemyProjectile.LaunchVisual(from, at, kind);
                 Party.EnemyAttacked?.Invoke(this, Party.AttackKind.Bolt, true, damage, 0f, from, at, seed);
             }
             else
@@ -272,11 +264,10 @@ namespace PoeClone.Enemies
         }
 
         // Lightning is famously swingy in PoE; everything else varies a little.
-        private float RollDamage(bool atPartner = false)
+        private float RollDamage()
         {
             float spread = kind.AttackDamageType == DamageType.Lightning ? 0.6f : 0.15f;
-            float rage = controller != null ? controller.DamageMultiplierAgainst(atPartner) : 1f;
-            return damage * rage * Curse.DealtMultiplier(this) * Mathf.Lerp(1f - spread, 1f + spread, EventRandom.Value(EventRandom.NextSeed(), EventRandom.DamageSpread));
+            return damage * Curse.DealtMultiplier(this) * Mathf.Lerp(1f - spread, 1f + spread, EventRandom.Value(EventRandom.NextSeed(), EventRandom.DamageSpread));
         }
 
         private float DistanceToPlayer()

@@ -27,13 +27,13 @@ namespace PoeClone.Enemies
             closer = BellLeap;
             closerRange = 10f;
             closerEvery = 6f;
-            calmMaxMinions = 2;
-            enragedMaxMinions = 4;
+            firstPhaseMaxMinions = 2;
+            secondPhaseMaxMinions = 4;
             Add("Toll", () => Toll(secondPhase ? 3 : 2), 0f, 16f);
             Add("Drop", BellDrop, 2f, 14f, allowed: () => bellOnBack);
             Add("Discord", Discord, 0f, 17f);
             Add("Hammer", HammerBlow, 0f, 4.5f);
-            enrage = () => Toll(3);
+            phaseTransition = () => Toll(3);
         }
 
         // Strikes the bell: rings of sound roll out, one after another.

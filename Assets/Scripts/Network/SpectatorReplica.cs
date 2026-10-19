@@ -195,9 +195,9 @@ namespace PoeClone.Network
             puppet.Root.transform.SetPositionAndRotation(new Vector3(e.x, e.y, e.z), Quaternion.Euler(0f, e.r, 0f));
             bool atUs = (e.f & CoopProtocol.FlagAtYou) != 0;
             if (e.k == CoopProtocol.Skill)
-                puppet.Root.GetComponent<EnemySkills>()?.Mirror(new Vector3(e.tx, e.ty, e.tz), e.a, atUs, (e.f & CoopProtocol.FlagEnrage) != 0);
+                puppet.Root.GetComponent<EnemySkills>()?.Mirror(new Vector3(e.tx, e.ty, e.tz), e.a, atUs);
             else
-                puppet.Root.GetComponent<BossAbilities>()?.PlayMirror(e.mv, atUs, e.sd, e.sp, e.dm, e.lv);
+                puppet.Root.GetComponent<BossAbilities>()?.PlayMirror(e.mv, atUs, e.sd, e.sp, e.lv);
         }
 
         /// <summary>Co-op guest: this game's copy of one of the host's enemies, or null.</summary>
@@ -678,7 +678,7 @@ namespace PoeClone.Network
             }
 
             if (e.sk > prev.sk && !coopGuest)
-                EnemySkills.PlayVisual(this, EnemyKinds.Get(e.k).WithRarity((EnemyRarity)e.er), puppet.Root.transform, new Vector3(e.sx, puppet.Root.transform.position.y, e.sz), e.sk, e.en != 0, playerStats != null ? playerStats.transform : null);
+                EnemySkills.PlayVisual(this, EnemyKinds.Get(e.k).WithRarity((EnemyRarity)e.er), puppet.Root.transform, new Vector3(e.sx, puppet.Root.transform.position.y, e.sz), e.sk);
 
             if (e.stg > prev.stg && puppet.Stagger != null)
             {
@@ -977,7 +977,7 @@ namespace PoeClone.Network
                     if (kind.RainOfArrows)
                         EnemySkills.RainOfArrows(this, kind, playerStats.transform.position, null, 0f);
                     else
-                        EnemyProjectile.LaunchVisual(EnemyCombat.BoltOrigin(body), playerStats.transform.position, kind, puppet.Applied.en != 0, playerStats.transform);
+                        EnemyProjectile.LaunchVisual(EnemyCombat.BoltOrigin(body), playerStats.transform.position, kind);
                 };
             }
 

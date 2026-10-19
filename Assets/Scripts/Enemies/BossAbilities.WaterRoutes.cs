@@ -12,7 +12,7 @@ namespace PoeClone.Enemies
         private void SetUpSluiceWarden()
         {
             moveEvery = 3.7f;
-            moveEveryEnraged = 2.9f;
+            secondPhaseMoveEvery = 2.9f;
             Add("Gatebreaker", WardenGatebreaker, 0, 7);
             Add("Released Channels", WardenTorrents, 0, 18);
             Add("Overflow", WardenOverflow, 0, 18, secondPhaseOnly: true);
@@ -21,7 +21,7 @@ namespace PoeClone.Enemies
         private void SetUpLastEngineer()
         {
             moveEvery = 3.8f;
-            moveEveryEnraged = 3f;
+            secondPhaseMoveEvery = 3f;
             Add("Piston Sequence", EngineerPistons, 0, 18);
             Add("Steam Vents", EngineerSteam, 0, 18);
             Add("Brine Pressure", EngineerPressure, 0, 18, secondPhaseOnly: true);

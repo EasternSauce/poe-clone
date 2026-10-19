@@ -22,15 +22,15 @@ namespace PoeClone.Enemies
         {
             engageRange = 21f;
             moveEvery = 3.2f;
-            moveEveryEnraged = 2.2f;
-            calmMaxMinions = 0;
-            enragedMaxMinions = 3;
+            secondPhaseMoveEvery = 2.2f;
+            firstPhaseMaxMinions = 0;
+            secondPhaseMaxMinions = 3;
             Add("Pulse", () => GlacialPulse(secondPhase ? 2 : 1), 0f, 17f);
             Add("Spiral", ShardSpiral, 0f, 16f);
             Add("Mirrors", IceMirrors, 0f, 19f);
             Add("Lances", FrostLances, 4f, 21f);
             Add("Brood", HatchBrood, 0f, 21f, secondPhaseOnly: true, allowed: () => LiveMinions() < CurrentMaxMinions);
-            enrage = () => GlacialPulse(2);
+            phaseTransition = () => GlacialPulse(2);
         }
 
         private Vector3 HeartAt => EnemyCombat.BoltOrigin(transform);

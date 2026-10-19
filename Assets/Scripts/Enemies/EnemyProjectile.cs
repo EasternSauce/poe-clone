@@ -8,20 +8,13 @@ using PoeClone.Visuals;
 namespace PoeClone.Enemies
 {
     /// <summary>
-    /// A caster's bolt or an archer's arrow. Enraged spells track their target until close,
-    /// then commit to a straight line; hits if it passes close enough, otherwise fizzles
+    /// A caster's bolt or an archer's arrow. Flies straight and hits if it passes close enough, otherwise fizzles
     /// at the end of its range. Spectators get the same bolt as a harmless visual.
     /// </summary>
     public class EnemyProjectile : MonoBehaviour
     {
         private const float HitRadius = 0.75f;
         private const float AimHeight = 0.2f; // above the player's pivot: chest height
-        private const float HomingCutoff = 3f;
-        private const float EnragedArrowSpeed = 1.5f;
-
-        public static float Speed(EnemyKind kind, bool enraged) =>
-            Mathf.Max(1f, kind.ProjectileSpeed) * (enraged && kind.Bow ? EnragedArrowSpeed : 1f);
-
         private Vector3 velocity;
         private float travelLeft;
         private float damage;
@@ -34,34 +27,33 @@ namespace PoeClone.Enemies
         private bool blockedByScenery;
         private float spin;
         private bool[] volleyHit;     // shared by arrows loosed together: only the first to land hurts
-        private Transform homingTarget;
 
         /// <summary>A real bolt aimed at a point (a volley's side arrows), that can still hit the player.</summary>
-        public static void LaunchAt(Vector3 from, Vector3 aimAt, PlayerStats target, EnemyKind kind, float damage, bool[] volleyHit = null, int rollSeed = 0, bool enraged = false)
+        public static void LaunchAt(Vector3 from, Vector3 aimAt, PlayerStats target, EnemyKind kind, float damage, bool[] volleyHit = null, int rollSeed = 0)
         {
             if (target == null)
                 return;
-            EnemyProjectile bolt = Create(from, new Vector3(aimAt.x, target.transform.position.y + AimHeight, aimAt.z), kind, damage, target, rollSeed, enraged, target.transform);
+            EnemyProjectile bolt = Create(from, new Vector3(aimAt.x, target.transform.position.y + AimHeight, aimAt.z), kind, damage, target, rollSeed);
             bolt.volleyHit = volleyHit;
         }
 
         /// <summary>A real bolt at one of the player's minions (an enemy drawn off the player by it).</summary>
-        public static void LaunchAt(Vector3 from, Minion target, EnemyKind kind, float damage, bool enraged = false)
+        public static void LaunchAt(Vector3 from, Minion target, EnemyKind kind, float damage)
         {
             if (target == null)
                 return;
-            EnemyProjectile bolt = Create(from, target.transform.position + Vector3.up * AimHeight, kind, damage, null, enraged: enraged, follow: target.transform);
+            EnemyProjectile bolt = Create(from, target.transform.position + Vector3.up * AimHeight, kind, damage, null);
             bolt.minion = target;
             bolt.travelLeft = kind.AttackRange * 1.6f;
         }
 
         /// <summary>A harmless bolt for spectators (the hit itself arrives in the replicated health).</summary>
-        public static void LaunchVisual(Vector3 from, Vector3 targetPosition, EnemyKind kind, bool enraged = false, Transform follow = null)
+        public static void LaunchVisual(Vector3 from, Vector3 targetPosition, EnemyKind kind)
         {
-            Create(from, targetPosition + Vector3.up * AimHeight, kind, 0f, null, enraged: enraged, follow: follow);
+            Create(from, targetPosition + Vector3.up * AimHeight, kind, 0f, null);
         }
 
-        private static EnemyProjectile Create(Vector3 from, Vector3 aimAt, EnemyKind kind, float damage, PlayerStats target, int rollSeed = 0, bool enraged = false, Transform follow = null)
+        private static EnemyProjectile Create(Vector3 from, Vector3 aimAt, EnemyKind kind, float damage, PlayerStats target, int rollSeed = 0)
         {
             Vector3 direction = aimAt - from;
             if (direction.sqrMagnitude < 0.0001f)
@@ -92,8 +84,7 @@ namespace PoeClone.Enemies
             var bolt = root.AddComponent<EnemyProjectile>();
             bolt.spins = !kind.Bow && !kind.Javelin;
             bolt.blockedByScenery = kind.Javelin;
-            bolt.velocity = direction * Speed(kind, enraged);
-            bolt.homingTarget = enraged && !kind.Bow && !kind.Javelin ? follow : null;
+            bolt.velocity = direction * Mathf.Max(1f, kind.ProjectileSpeed);
             // A real bolt flies on past a dodge; a visual one just needs to reach its mark.
             bolt.travelLeft = target != null ? kind.AttackRange * 1.6f : Vector3.Distance(from, aimAt);
             bolt.damage = damage;
@@ -108,25 +99,6 @@ namespace PoeClone.Enemies
         {
             Vector3 previousPosition = transform.position;
             float step = velocity.magnitude * Time.deltaTime;
-            if (homingTarget != null)
-            {
-                if ((target != null && target.IsDead) || (minion != null && minion.IsDead))
-                    homingTarget = null;
-                else
-                {
-                    Vector3 toTarget = homingTarget.position + Vector3.up * AimHeight - transform.position;
-                    float distance = toTarget.magnitude;
-                    // Stop steering permanently on entering the cutoff, including a frame that crosses it.
-                    if (distance <= HomingCutoff)
-                        homingTarget = null;
-                    else
-                    {
-                        velocity = toTarget / distance * velocity.magnitude;
-                        if (distance - step <= HomingCutoff)
-                            homingTarget = null;
-                    }
-                }
-            }
             if (blockedByScenery && step > 0)
             {
                 foreach (RaycastHit obstacle in Physics.RaycastAll(transform.position, velocity.normalized, step,

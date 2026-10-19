@@ -20,11 +20,11 @@ namespace PoeClone.Player
         {
             public PoisonStackClock Clock;
             public float Penetration;
-            public bool CanEnrage, MinionDamage;
+            public bool Melee, MinionDamage;
             public WeaponSkillBonuses Tree;
             public long Count = 1;
             public PoisonStack Copy() => new PoisonStack { Clock = Clock.Copy(), Penetration = Penetration,
-                CanEnrage = CanEnrage, MinionDamage = MinionDamage, Tree = Tree, Count = Count };
+                Melee = Melee, MinionDamage = MinionDamage, Tree = Tree, Count = Count };
         }
         private sealed class PoisonTarget
         {
@@ -35,7 +35,7 @@ namespace PoeClone.Player
         private readonly Dictionary<EnemyHealth, PoisonTarget> poisoned = new Dictionary<EnemyHealth, PoisonTarget>();
         private float nextPoisonTick = float.PositiveInfinity;
         public static void Apply(Transform attacker, EnemyHealth enemy, float hit, float poison, float cloud, StatSheet sheet = null,
-            bool canEnrage = true, bool minionDamage = false, float durationMultiplier = 1f, float radiusMultiplier = 1f, WeaponSkillBonuses tree = null)
+            bool melee = false, bool minionDamage = false, float durationMultiplier = 1f, float radiusMultiplier = 1f, WeaponSkillBonuses tree = null)
         {
             var venom = attacker.GetComponent<WeaponVenom>();
             if (venom == null) venom = attacker.gameObject.AddComponent<WeaponVenom>();
@@ -48,12 +48,12 @@ namespace PoeClone.Player
                 venom.AddPoison(enemy, new PoisonStack {
                     Clock = new PoisonStackClock(hit * poison / 100f * multiplier / 6f, Mathf.Max(1, Mathf.RoundToInt(6f * durationMultiplier)), Time.time),
                     Penetration = sheet?.Total(StatType.PoisonPenetration) ?? 0f,
-                    CanEnrage = canEnrage, Tree = tree, MinionDamage = minionDamage });
+                    Melee = melee, Tree = tree, MinionDamage = minionDamage });
             if (cloud > 0f && Time.time >= (tree != null && venom.skillCloudTimes.TryGetValue(tree, out float next) ? next : tree == null ? venom.nextCloud : 0f))
             {
                 if (tree != null) venom.skillCloudTimes[tree] = Time.time + 1f;
                 else venom.nextCloud = Time.time + 1f;
-                venom.StartCoroutine(venom.Cloud(enemy.transform.position, hit * cloud / 100f * multiplier, sheet?.Total(StatType.PoisonPenetration) ?? 0f, canEnrage, durationMultiplier, radiusMultiplier, tree, attacker, minionDamage));
+                venom.StartCoroutine(venom.Cloud(enemy.transform.position, hit * cloud / 100f * multiplier, sheet?.Total(StatType.PoisonPenetration) ?? 0f, melee, durationMultiplier, radiusMultiplier, tree, attacker, minionDamage));
             }
         }
         private void AddPoison(EnemyHealth enemy, PoisonStack stack)
@@ -68,7 +68,7 @@ namespace PoeClone.Player
             }
             // Copies with identical potency and deadlines can share storage without losing stacks.
             var matching = target.Stacks.Find(s => s.Clock.Matches(stack.Clock) && s.Penetration == stack.Penetration &&
-                s.CanEnrage == stack.CanEnrage && s.MinionDamage == stack.MinionDamage && s.Tree == stack.Tree);
+                s.Melee == stack.Melee && s.MinionDamage == stack.MinionDamage && s.Tree == stack.Tree);
             if (matching != null) matching.Count += stack.Count;
             else target.Stacks.Add(stack);
         }
@@ -110,10 +110,10 @@ namespace PoeClone.Player
                     while (!enemy.IsDead && stack.Clock.TryTick(Time.time, out float amount))
                     {
                         float dealt = enemy.TakeDamage(amount * stack.Count, Combat.DamageType.Poison, 0f,
-                            stack.Penetration, canEnrage: stack.CanEnrage, flinch: false);
+                            stack.Penetration, flinch: false);
                         if (dealt > 0f && enemy.IsDead && stack.Tree != null)
                             WeaponSkillHit.Apply(transform, enemy, dealt, stack.Tree, Combat.DamageType.Poison,
-                                enemy.GetComponent<EnemyController>()?.IsChilled == true, minion: stack.MinionDamage, melee: !stack.CanEnrage);
+                                enemy.GetComponent<EnemyController>()?.IsChilled == true, minion: stack.MinionDamage, melee: stack.Melee);
                         if (dealt > 0f)
                             UI.CombatText.Show(enemy.transform.position + Vector3.up * 2f, Mathf.CeilToInt(dealt).ToString(), Green, 0.6f);
                     }
@@ -124,7 +124,7 @@ namespace PoeClone.Player
                 if (!enemy.IsDead && target.Stacks.Count == 0) RemovePoison(target);
             }
         }
-        private IEnumerator Cloud(Vector3 at, float perSecond, float penetration, bool canEnrage, float durationMultiplier, float radiusMultiplier, WeaponSkillBonuses tree, Transform owner, bool minionDamage)
+        private IEnumerator Cloud(Vector3 at, float perSecond, float penetration, bool melee, float durationMultiplier, float radiusMultiplier, WeaponSkillBonuses tree, Transform owner, bool minionDamage)
         {
             at.y = Debris.GroundBelow(at + Vector3.up * 3f) + 0.1f;
             var visual = RuntimePrimitives.Create(PrimitiveType.Cylinder, null, Green);
@@ -140,9 +140,9 @@ namespace PoeClone.Player
                 {
                     Vector3 d = enemy.transform.position - at; d.y = 0f;
                     if (enemy.IsDead || d.sqrMagnitude > 9f * radiusMultiplier * radiusMultiplier) continue;
-                    float dealt = enemy.TakeDamage(perSecond * 0.5f, PoeClone.Combat.DamageType.Poison, 0f, penetration, canEnrage: canEnrage, flinch: false);
+                    float dealt = enemy.TakeDamage(perSecond * 0.5f, PoeClone.Combat.DamageType.Poison, 0f, penetration, flinch: false);
                     if (dealt > 0f && enemy.IsDead && tree != null)
-                        WeaponSkillHit.Apply(owner, enemy, dealt, tree, PoeClone.Combat.DamageType.Poison, enemy.GetComponent<EnemyController>()?.IsChilled == true, minion: minionDamage, melee: !canEnrage);
+                        WeaponSkillHit.Apply(owner, enemy, dealt, tree, PoeClone.Combat.DamageType.Poison, enemy.GetComponent<EnemyController>()?.IsChilled == true, minion: minionDamage, melee: melee);
                 }
             }
             Destroy(visual);

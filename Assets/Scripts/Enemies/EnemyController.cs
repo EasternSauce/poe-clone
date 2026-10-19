@@ -121,91 +121,10 @@ namespace PoeClone.Enemies
         private float MoveSpeed =>
             (player != null
                 ? player.MoveSpeed * speedRatioToPlayer
-                : fallbackSpeed) * (Time.time < chilledUntil ? 0.5f : 1f) * (IsHasted ? HasteSpeed : 1f) * EnrageMoveMultiplier;
-
-        private float EnrageMoveMultiplier
-        {
-            get
-            {
-                if (!IsEnraged) return 1f;
-                float speed = kind != null && kind.IsBoss ? 1.25f : EnrageSpeed;
-                if (kind == null || kind.IsRanged) return speed;
-                float phase = (Time.time - enragedAt) % (MeleeBurstSeconds + MeleeBurstCooldown);
-                return speed + MeleeBurstIncrease * Mathf.Clamp01(1f - phase / MeleeBurstSeconds);
-            }
-        }
-
-        // Ranged and minion hits enrage regardless of distance. Every such hit refreshes the timer.
-        private const float EnrageSpreadRadius = 8f;
-        private const float EnrageSeconds = 5f;
-        private const float EnrageSpeed = 2.4f;
-        private const float EnrageDamage = 1.35f;
-        private const float MeleeBurstIncrease = 3f;
-        private const float MeleeBurstSeconds = 1.5f;
-        private const float MeleeBurstCooldown = 1f;
-
-        private float enragedUntil = -1f;
-        private float enragedAt;
-
-        public bool IsEnraged => Time.time < enragedUntil;
-
-        private float RageAttackSpeed => kind != null && kind.IsBoss ? 1.25f : 1.5f;
-
-        /// <summary>
-        /// What its hits on the local player or the partner are multiplied by right now. An enraged
-        /// enemy hits harder, except a player who enraged nothing lately: its quicker hits land softer
-        /// on them, keeping their damage per second where it was before the rage.
-        /// </summary>
-        public float DamageMultiplierAgainst(bool partner)
-        {
-            if (!IsEnraged)
-                return 1f;
-            if (!Party.EnragedLately(partner))
-                return 1f / RageAttackSpeed;
-            return kind != null && kind.IsBoss ? kind.BossEnrageDamage : EnrageDamage;
-        }
-
-        /// <summary>The same for its special skill, whose cooldown the rage doesn't shorten.</summary>
-        public float SkillDamageMultiplierAgainst(bool partner) => Party.EnragedLately(partner) ? DamageMultiplierAgainst(partner) : 1f;
+                : fallbackSpeed) * (Time.time < chilledUntil ? 0.5f : 1f) * (IsHasted ? HasteSpeed : 1f);
 
         /// <summary>How much faster it attacks right now.</summary>
-        public float AttackSpeedMultiplier => (IsEnraged ? RageAttackSpeed : 1f) * (IsHasted ? HasteAttackSpeed : 1f);
-
-        // spread: also rouses and enrages every living enemy within EnrageSpreadRadius (those
-        // don't spread it further, so it can't run across the whole map).
-        private void Enrage(bool spread = true)
-        {
-            if (!IsEnraged)
-                enragedAt = Time.time;
-            enragedUntil = Time.time + EnrageSeconds;
-
-            if (!spread)
-                return;
-            foreach (Collider hit in Physics.OverlapSphere(transform.position, EnrageSpreadRadius, ~0, QueryTriggerInteraction.Ignore))
-            {
-                EnemyController other = hit.GetComponentInParent<EnemyController>();
-                if (other == null || other == this || other.IsEnraged || !other.isActiveAndEnabled || (other.kind != null && other.kind.IsBoss))
-                    continue;
-                if (other.health != null && other.health.IsDead)
-                    continue;
-                other.Aggro();
-                other.Enrage(false);
-            }
-        }
-
-        // Called by EnemyHealth before an eligible hit is applied, including a killing blow.
-        public void OnIncomingHit(bool canEnrage)
-        {
-            if (health == null)
-                health = GetComponent<EnemyHealth>();
-            if (!canEnrage || health == null || health.IsDead)
-                return;
-            Party.NoteEnrage(Party.ApplyingPartnerDamage);
-            if (IsEnraged)
-                enragedUntil = Time.time + EnrageSeconds;
-            else
-                Enrage();
-        }
+        public float AttackSpeedMultiplier => IsHasted ? HasteAttackSpeed : 1f;
 
         private void Awake()
         {

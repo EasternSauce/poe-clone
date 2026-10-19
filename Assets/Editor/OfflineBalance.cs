@@ -19,7 +19,7 @@ namespace PoeClone.EditorTools
     /// <summary>Boss single-target approximations in Edit mode. No scene, player, save or gameplay is touched.</summary>
     public static class OfflineBalance
     {
-        public const string Model = "boss-single-target-v1";
+        public const string Model = "boss-single-target-v2";
         private static readonly BossStyle[] BossStyles = { BossStyle.Gravelord, BossStyle.Warlord, BossStyle.FrostQueen };
         private static EnemyKind[] benchmarkBosses;
         [Serializable] public sealed class Target
@@ -27,7 +27,7 @@ namespace PoeClone.EditorTools
             public string name, bossStyle, attackType;
             public int level;
             public float weight, life, armour, fireResistance, coldResistance, lightningResistance, poisonResistance,
-                calmHit, enragedHit, calmAttacksPerSecond, enragedAttacksPerSecond, enragedDamageTaken;
+                rawHit, attacksPerSecond;
         }
         public static List<Target> BossTargets()
         {
@@ -41,8 +41,7 @@ namespace PoeClone.EditorTools
                         level = level, weight = 1f / BossStyles.Length, life = boss.MaxHealth * EnemyKinds.LifeScale(level, boss),
                         armour = boss.Armour * EnemyKinds.ArmourScale(level), fireResistance = boss.FireResistance,
                         coldResistance = boss.ColdResistance, lightningResistance = boss.LightningResistance, poisonResistance = boss.PoisonResistance,
-                        calmHit = hit, enragedHit = hit * boss.BossEnrageDamage, calmAttacksPerSecond = rate,
-                        enragedAttacksPerSecond = rate * 1.25f, enragedDamageTaken = boss.BossEnrageDamageTaken });
+                        rawHit = hit, attacksPerSecond = rate });
                 }
             return targets;
         }
@@ -56,7 +55,6 @@ namespace PoeClone.EditorTools
         [Serializable] public sealed class Sample
         {
             public string archetype, passives, weaponNodes, gear, supports, excluded;
-            public bool bossEnraged;
             public int level, sample, weaponRank;
             public float rawDps, sustainedDps, hitDps, dotDps, cost, usesPerSecond, manaPerSecond,
                 supportManaPerSecond, manaPool, manaRegen, netManaDrain, secondsToEmpty,
@@ -188,7 +186,7 @@ namespace PoeClone.EditorTools
         {
             var data = JsonUtility.FromJson<Report>(File.ReadAllText("BalanceResults/survey.json"));
             if (data.model != Model || data.targets == null || data.targets.Count != BossStyles.Length * 34) return "Missing boss target metadata";
-            if (data.targets.Any(t => t.weight <= 0 || t.armour < 0 || t.calmHit <= 0 || t.enragedAttacksPerSecond <= 0)) return "Invalid boss target metadata";
+            if (data.targets.Any(t => t.weight <= 0 || t.armour < 0 || t.rawHit <= 0 || t.attacksPerSecond <= 0)) return "Invalid boss target metadata";
             if (data.rows.Count != data.archetypes.Count * 34) return "Missing archetype/level rows";
             if (data.rows.Select(r => r.archetype + "/" + r.level).Distinct().Count() != data.rows.Count) return "Duplicate rows";
             var byRow = data.samples.GroupBy(s => s.archetype + "/" + s.level).ToDictionary(g => g.Key, g => g.ToList());
@@ -203,10 +201,8 @@ namespace PoeClone.EditorTools
                 if (valid.Count != row.viable) return "Viability count mismatch";
                 if (row.topCount > 0 && Mathf.Abs(TopFifth(valid).Average(s => s.sustainedDps) - row.topDps) > .001) return "Wrong cohort mean";
             }
-            var families = data.archetypes.ToDictionary(a => a.id, a => a.family);
             foreach (var s in data.samples)
             {
-                if (s.bossEnraged != (families[s.archetype] != "Melee")) return "Wrong solo enrage state";
                 if (s.encounterUseFraction < 0 || s.encounterUseFraction > 1 || s.minionUptime < 0 || s.minionUptime > 1 ||
                     float.IsNaN(s.sustainedDps) || float.IsInfinity(s.sustainedDps) || s.sustainedDps < 0 || s.sustainedDps > s.rawDps + .001) return "Invalid damage/sustain";
                 if (Mathf.Abs(s.netManaDrain - (s.manaPerSecond + s.supportManaPerSecond - s.manaRegen)) > .001) return "Resource reconciliation";
@@ -506,7 +502,7 @@ namespace PoeClone.EditorTools
             var sheet = prepared ?? StatSheet.Build(kit.basis, kit.equipment, kit.passives);
             var tree = new WeaponSkillBonuses(kit.weapon);
             var skill = SkillBook.Get(kit.archetype.SkillId);
-            var s = new Sample { life = sheet.Total(StatType.MaxLife), manaPool = sheet.Total(StatType.MaxMana), minionUptime = 1, bossEnraged = !skill.MeleeAttack };
+            var s = new Sample { life = sheet.Total(StatType.MaxLife), manaPool = sheet.Total(StatType.MaxMana), minionUptime = 1 };
             s.rawDps = Damage(kit, sheet, tree, out s.hitDps, out s.dotDps, out s.usesPerSecond);
             s.cost = ResourceCost(skill, kit.basis.Level, kit.weapon.WeaponType, tree, sheet);
             float payments = skill.Channelled ? 1 / PlayerSkills.ChannelTick : s.usesPerSecond;
@@ -521,7 +517,7 @@ namespace PoeClone.EditorTools
                 int cap = Minion.CapFor(kind, tree, sheet), batch = kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1;
                 s.armyCost = Mathf.Ceil((float)cap / batch) * s.cost;
                 s.minionLife = Minion.LifeFor(kind, 1, sheet, tree);
-                Incoming(kit.basis.Level, sheet, tree, true, s.bossEnraged, out var hit, out var dps);
+                Incoming(kit.basis.Level, sheet, tree, true, out var hit, out var dps);
                 float recovery = s.minionLife * tree.Get(E.MinionRegen) / 100;
                 s.minionSecondsToDie = MinionLifetime(s.minionLife, dps, cap, recovery, kind == MinionKind.Wolf);
                 float duration = Minion.Duration(kind, 1, sheet) * tree.MinionDurationMultiplier;
@@ -549,7 +545,7 @@ namespace PoeClone.EditorTools
             s.encounterUseFraction = UseFraction(Mathf.Max(0, s.manaPool - s.armyCost), s.manaRegen, spend, cfg.encounterSeconds);
             if (s.cost > s.manaPool || s.armyCost > s.manaPool + s.manaRegen * cfg.encounterSeconds) s.excluded = "Cannot afford setup or one use";
             s.sustainedDps = s.rawDps * s.encounterUseFraction * s.minionUptime;
-            Incoming(kit.basis.Level, sheet, tree, false, s.bossEnraged, out s.incomingHit, out s.incomingDps);
+            Incoming(kit.basis.Level, sheet, tree, false, out s.incomingHit, out s.incomingDps);
             s.lifeRecovery = sheet.Total(StatType.NoLifeRegen) > 0 ? 0 : DefenceMath.LifeRegenPerSecond(s.life, sheet.Total(StatType.LifeRegen), sheet.Total(StatType.PercentLifeRegen));
             float leech = skill.Summon ? sheet.Total(StatType.SoulBond) : skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.LifeLeech) : sheet.Total(StatType.SpellLeech);
             s.lifeRecovery += s.hitDps * s.encounterUseFraction * (leech + tree.Get(E.Leech)) / 100;
@@ -577,7 +573,6 @@ namespace PoeClone.EditorTools
                 else if (sheet.Total(StatType.PhysicalToCold) > 0) element = DamageType.Cold;
                 else if (sheet.Total(StatType.PhysicalToLightning) > 0) element = DamageType.Lightning;
             }
-            bool enraged = !skill.MeleeAttack;
             float rate = uses, hits = 1, multiplier;
             if (skill.Summon)
             {
@@ -612,15 +607,15 @@ namespace PoeClone.EditorTools
                 if (skill.Bow && sheet.Total(StatType.PointBlank) > 0) multiplier *= StatSheet.PointBlankMultiplier(6);
             }
             float shock = ChanceUptime(tree.Get(E.Shock) + (element == DamageType.Lightning && !skill.Summon ? sheet.Total(StatType.ShockChance) : 0), rate * hits, 4 * tree.DurationMultiplier);
-            float dealt = AgainstEnemy(baseHit * multiplier * (1 + .25f * shock), element, kit.basis.Level, sheet, tree, skill.Summon, enraged);
+            float dealt = AgainstEnemy(baseHit * multiplier * (1 + .25f * shock), element, kit.basis.Level, sheet, tree, skill.Summon);
             hitDps = dealt * rate * hits;
             dotDps = 0;
             float poison = tree.Get(E.Poison) / 100;
             float cloud = tree.Get(E.Cloud) / 100;
             float duration = Mathf.Max(1, Mathf.Round(6 * tree.DurationMultiplier)) / 6;
             if (skill.Id == SkillId.SummonViper) poison += .45f;
-            dotDps += AgainstEnemy(dealt * poison * duration, DamageType.Poison, kit.basis.Level, sheet, tree, true, enraged) * rate * hits;
-            dotDps += AgainstEnemy(dealt * cloud, DamageType.Poison, kit.basis.Level, sheet, tree, true, enraged) * Mathf.Min(1, rate * hits) * 3 * duration;
+            dotDps += AgainstEnemy(dealt * poison * duration, DamageType.Poison, kit.basis.Level, sheet, tree, true) * rate * hits;
+            dotDps += AgainstEnemy(dealt * cloud, DamageType.Poison, kit.basis.Level, sheet, tree, true) * Mathf.Min(1, rate * hits) * 3 * duration;
             if (!skill.Summon)
             {
                 float builtPoison = skill.Id == SkillId.FangStrike ? SkillBook.FangStrikePoison / 100 : skill.Id == SkillId.VenomSlash ? SkillBook.VenomSlashPoison / 100 : skill.Id == SkillId.VenomSpout ? 1 : 0;
@@ -628,8 +623,8 @@ namespace PoeClone.EditorTools
                 float extraPoison = attack ? sheet.Total(StatType.PoisonOnHit) / 100 + (skill.Id == SkillId.VenomArrow ? SkillBook.VenomArrowPoison / 100 : 0) : 0;
                 float extraCloud = attack ? sheet.Total(StatType.VenomCloudOnHit) / 100 + (skill.Id == SkillId.VenomArrow ? SkillBook.VenomArrowCloud / 100 : 0) : 0;
                 float dotMultiplier = sheet.DamageMultiplier(false, false, false, false, StatType.PoisonDamage, damageOverTime: true, skillIncreased: tree.Get(E.Damage));
-                dotDps += AgainstEnemy(dotBase * (builtPoison + extraPoison) * dotMultiplier * duration, DamageType.Poison, kit.basis.Level, sheet, tree, false, enraged) * rate * hits;
-                dotDps += AgainstEnemy(baseHit * extraCloud * dotMultiplier, DamageType.Poison, kit.basis.Level, sheet, tree, false, enraged) * Mathf.Min(1, rate * hits) * 3 * duration;
+                dotDps += AgainstEnemy(dotBase * (builtPoison + extraPoison) * dotMultiplier * duration, DamageType.Poison, kit.basis.Level, sheet, tree, false) * rate * hits;
+                dotDps += AgainstEnemy(baseHit * extraCloud * dotMultiplier, DamageType.Poison, kit.basis.Level, sheet, tree, false) * Mathf.Min(1, rate * hits) * 3 * duration;
             }
             if (element == DamageType.Fire)
             {
@@ -637,7 +632,7 @@ namespace PoeClone.EditorTools
                 float ownerIgnite = skill.Summon ? 0 : ChanceUptime(sheet.Total(StatType.IgniteChance) + (skill.Id == SkillId.BurningArrow ? 20 : 0), rate * hits, 3 * tree.DurationMultiplier);
                 float ownerBurn = baseHit * tree.MoreDamageMultiplier * sheet.DamageMultiplier(false, false, false, false, StatType.FireDamage, damageOverTime: true, skillIncreased: tree.Get(E.Damage)) * 5 / (3 * tree.DurationMultiplier);
                 // Ignites refresh/replace, never stack per projectile or per minion.
-                dotDps += AgainstEnemy(Mathf.Max(dealt * 5 / (3 * tree.DurationMultiplier) * treeIgnite, ownerBurn * ownerIgnite), DamageType.Fire, kit.basis.Level, sheet, tree, true, enraged);
+                dotDps += AgainstEnemy(Mathf.Max(dealt * 5 / (3 * tree.DurationMultiplier) * treeIgnite, ownerBurn * ownerIgnite), DamageType.Fire, kit.basis.Level, sheet, tree, true);
             }
             return Mathf.Max(0, hitDps + dotDps);
         }
@@ -649,14 +644,13 @@ namespace PoeClone.EditorTools
         public static float MinionLifetime(float life, float bossDps, int cap, float recovery, bool untargetable) =>
             untargetable || bossDps / Mathf.Max(1, cap) <= recovery ? -1 : life / (bossDps / Mathf.Max(1, cap) - recovery);
 
-        /// <summary>Enrage changes the incoming base before armour, just as EnemyHealth.TakeDamage does.</summary>
-        public static float BossMitigatedHit(float damage, float armour, float resistance, float penetration, float damageTaken, bool physical)
+        /// <summary>Uses the same armour and resistance rules as EnemyHealth.TakeDamage.</summary>
+        public static float BossMitigatedHit(float damage, float armour, float resistance, float penetration, bool physical)
         {
-            damage *= damageTaken;
             return physical ? damage * (1 - DefenceMath.ArmourReduction(armour * (1 - Mathf.Clamp01(penetration / 100)), damage)) :
                 DefenceMath.AfterResistance(damage, resistance - penetration);
         }
-        private static float AgainstEnemy(float damage, DamageType type, int level, StatSheet sheet, WeaponSkillBonuses tree, bool minion, bool enraged)
+        private static float AgainstEnemy(float damage, DamageType type, int level, StatSheet sheet, WeaponSkillBonuses tree, bool minion)
         {
             float total = 0;
             foreach (var enemy in benchmarkBosses)
@@ -667,18 +661,17 @@ namespace PoeClone.EditorTools
                 float penetration = minion ? 0 : physical ? sheet.Total(StatType.ArmourPenetration) + tree.Get(E.ArmourPenetration) :
                     type == DamageType.Poison ? sheet.Total(StatType.PoisonPenetration) : sheet.Total(StatType.ElementalPenetration) +
                     sheet.Total(type == DamageType.Fire ? StatType.FirePenetration : type == DamageType.Cold ? StatType.ColdPenetration : StatType.LightningPenetration);
-                total += BossMitigatedHit(damage, enemy.Armour * EnemyKinds.ArmourScale(level), resistance, penetration,
-                    enraged ? enemy.BossEnrageDamageTaken : 1, physical);
+                total += BossMitigatedHit(damage, enemy.Armour * EnemyKinds.ArmourScale(level), resistance, penetration, physical);
             }
             return total / benchmarkBosses.Length;
         }
-        private static void Incoming(int level, StatSheet sheet, WeaponSkillBonuses tree, bool minion, bool enraged, out float hit, out float dps)
+        private static void Incoming(int level, StatSheet sheet, WeaponSkillBonuses tree, bool minion, out float hit, out float dps)
         {
             hit = dps = 0; float weights = 0;
             foreach (var enemy in benchmarkBosses)
             {
                 var type = enemy.AttackDamageType;
-                float amount = enemy.Damage * EnemyKinds.HitScale(level, enemy, type) * (enraged ? enemy.BossEnrageDamage : 1);
+                float amount = enemy.Damage * EnemyKinds.HitScale(level, enemy, type);
                 if (minion)
                     amount = Minion.DamageTaken(amount, type, sheet, tree);
                 else
@@ -690,7 +683,7 @@ namespace PoeClone.EditorTools
                 }
                 float avoided = minion ? 1 : (1 - DefenceMath.BlockChance(sheet.Total(StatType.BlockChance))) * (1 - DefenceMath.EvadeChance(sheet.Total(StatType.Evasion)));
                 hit += amount;
-                dps += amount * avoided * enemy.Tempo * (enraged ? 1.25f : 1f) / enemy.AttackCooldown;
+                dps += amount * avoided * enemy.Tempo / enemy.AttackCooldown;
                 weights += 1;
             }
             hit /= Mathf.Max(.01f, weights); dps /= Mathf.Max(.01f, weights);
@@ -702,7 +695,7 @@ namespace PoeClone.EditorTools
             "20 seeded builds per available archetype and level by default; the sample count is configurable. Random connected character passives, random compatible weapon family and nonterminal weapon nodes. Travel costs count. Top fifth means arithmetic mean of the best ceil(viable count / 5) builds by 30-second DPS.",
             "Weapon rank progresses from 1 at character level 1 to 10 at 34. This is a trained-weapon scenario, not an actual equip gate. Destinations are unavailable until this scenario has enough weapon points.",
             "Reference bosses: Gravelord Mortis, Ashen Warlord and Rimeheart, each weighted one-third and scaled to each character level 1-34. Targets export actual scaled life, armour, resistances and basic attacks. This continuous benchmark is not their campaign appearance schedule.",
-            "Solo encounter: bows, spells and minions continuously enrage the boss from the first hit; melee alone does not. Boss damage-taken is applied before armour/resistance, including ailments. Enrage increases incoming basic-hit damage by the boss definition and attack speed by 25%. No co-op enrage spillover, culling, flinching or first-strike/cull benefits.",
+            "Solo encounter: all skills face the same boss defences and basic attacks. No culling, flinching or first-strike/cull benefits.",
             "One reference boss attacks freely with its scaled basic hit and actual Tempo/AttackCooldown. No special attacks, phases or downtime. This is an explicit pressure test, not a full boss-fight prediction.",
             "Melee requires at least 4 average unavoided hits and 6 seconds survival with expected block/evasion and attack recovery. Leech is instantaneous in the game. No life/mana gain on kill is assumed.",
             "Minion pressure is one reference boss's basic attacks shared evenly across targetable minions (expected army attrition; no boss splash). Wolves cannot be targeted. Replacement demand includes death and expiration, batches and the main-skill 0.65s cooldown. Army setup cost is reserved from starting mana; no pre-summoning assumed.",
@@ -710,7 +703,7 @@ namespace PoeClone.EditorTools
             "Death Mark is used if rolled on the equipped grimoire. Refresh every 6 seconds; include its mana cost and Mark Effect scaling. No free support grant is assumed. Sceptres alone supply summon main skills.",
             "Support skills are not ranked for DPS. Their separate mana rows use an unequipped character with no passives as a reference. Main-build optional Grave Rot/War Cry/Frost Nova rotations are not estimated. Death Mark is included in minion builds when granted.",
             "Extra projectiles never shotgun. Rain uses impact-area/spread-area overlap expectation; Cross Slash assumes both cuts connect; Aftershock assumes one wave hits a stationary target. First-strike/cull/on-kill/Fire Orbit clear benefits are not credited.",
-            "Poison stacks, clouds are limited to one creation per second, and ignite does not stack. Ailments use expected uptime and steady-state damage; secondary scaling, short-fight ramp and proc/crit variance are approximate. Enemy special skills, phase-specific wards and movement are excluded; continuous skill-triggered enrage is included.",
+            "Poison stacks, clouds are limited to one creation per second, and ignite does not stack. Ailments use expected uptime and steady-state damage; secondary scaling, short-fight ramp and proc/crit variance are approximate. Enemy special skills, phase-specific wards and movement are excluded.",
             "DPS baseline is the median of each skill's best available normalized archetype at that level. Melee and Piercing Shot divide by 1.5; minions by 1.2. A 25% band flags review, not automatic tuning. Utility destinations get a separate low-DPS label.",
             "Blood Magic and Mind over Matter coupling require a resource time simulation, so paths containing those passives are excluded from the sampled pool. Shared stat investment is sampled; this is not an exhaustive search of every rare or passive combination."
         };

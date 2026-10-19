@@ -12,9 +12,9 @@ namespace PoeClone.Enemies
         private void SetUpOssan()
         {
             moveEvery = 3.8f;
-            moveEveryEnraged = 3;
-            calmMaxMinions = 2;
-            enragedMaxMinions = 3;
+            secondPhaseMoveEvery = 3;
+            firstPhaseMaxMinions = 2;
+            secondPhaseMaxMinions = 3;
             Add("Names Behind Bars", OssanBars, 0, 20);
             Add("The Forgotten Bell", OssanBell, 0, 20);
             Add("Erase the Witnesses", OssanWitnesses, 0, 20, secondPhaseOnly: true,
@@ -70,9 +70,9 @@ namespace PoeClone.Enemies
         private void SetUpFirstRoot()
         {
             moveEvery = 4;
-            moveEveryEnraged = 3.2f;
-            calmMaxMinions = 3;
-            enragedMaxMinions = 4;
+            secondPhaseMoveEvery = 3.2f;
+            firstPhaseMaxMinions = 3;
+            secondPhaseMaxMinions = 4;
             Add("Veins of the Stolen River", FirstRootVeins, 0, 20);
             Add("A Heart That Drinks", FirstRootPulse, 0, 20);
             Add("Fruit of the Dead", FirstRootBrood, 0, 20,

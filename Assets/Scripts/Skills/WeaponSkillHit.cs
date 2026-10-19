@@ -34,7 +34,7 @@ namespace PoeClone.Skills
                 if (type == DamageType.Fire && Roll(b.Get(E.Ignite))) enemy.Ignite(dealt * 5f, 3f * b.DurationMultiplier);
                 // These effects are a share of the final hit; do not apply owner damage increases twice.
                 if (b.Get(E.Poison) > 0 || b.Get(E.Cloud) > 0)
-                    WeaponVenom.Apply(owner, enemy, dealt, b.Get(E.Poison), b.Get(E.Cloud), inventory?.Stats, minionDamage: true, canEnrage: !melee, durationMultiplier: b.DurationMultiplier, radiusMultiplier: b.AreaMultiplier, tree: b);
+                    WeaponVenom.Apply(owner, enemy, dealt, b.Get(E.Poison), b.Get(E.Cloud), inventory?.Stats, minionDamage: true, melee: melee, durationMultiplier: b.DurationMultiplier, radiusMultiplier: b.AreaMultiplier, tree: b);
                 if (b.Get(E.Cull) > 0 && !EnemyKinds.Get(enemy.KindIndex).IsBoss && enemy.CurrentHealth < enemy.MaxHealth * 0.1f)
                     enemy.TakeDamage(enemy.CurrentHealth + enemy.MaxHealth + 1f);
             }
@@ -53,7 +53,7 @@ namespace PoeClone.Skills
             foreach (EnemyHealth other in EnemyHealth.Active.ToArray())
             {
                 if (other == null || other == enemy || other.IsDead || Vector3.Distance(at, other.transform.position) > radius) continue;
-                other.TakeDamage(amount, burstType, 0f, 0f, canEnrage: !melee, hitOrigin: at);
+                other.TakeDamage(amount, burstType, 0f, 0f, hitOrigin: at);
                 if (shatter) other.GetComponent<EnemyController>()?.Chill(seconds);
             }
         }
