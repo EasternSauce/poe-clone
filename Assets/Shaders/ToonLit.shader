@@ -335,7 +335,9 @@ Shader "PoeClone/ToonLit"
                 cave = max(cave, max(InCave(IN.positionWS, _WardBounds), InCave(IN.positionWS, _RootBounds)));
                 color *= lerp(1.0, 0.23, cave);
 
-                #if defined(_ADDITIONAL_LIGHTS) || defined(_CLUSTER_LIGHT_LOOP)
+                // Clustered mode uses the manual light feed below; URP returns a constant
+                // zero from GetAdditionalLightsCount there, so omit this unused loop.
+                #if defined(_ADDITIONAL_LIGHTS) && !USE_CLUSTER_LIGHT_LOOP
                 int pixelLightCount = GetAdditionalLightsCount();
                 for (int i = 0; i < pixelLightCount; i++)
                 {

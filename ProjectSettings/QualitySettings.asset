@@ -115,6 +115,7 @@ QualitySettings:
     excludedTargetPlatforms:
     - Android
     - iPhone
+    - WebGL
   - serializedVersion: 5
     name: Web
     pixelLightCount: 1

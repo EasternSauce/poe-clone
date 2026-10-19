@@ -101,7 +101,9 @@ Shader "PoeClone/AnatomySkin"
                 Light main=GetMainLight(TransformWorldToShadowCoord(input.positionWS));
                 half3 color=albedo*(SampleSH(n)*.65+.12)*environment;
                 color+=Illuminate(albedo,n,view,main.direction,main.color,main.shadowAttenuation*environment,smoothness);
-                #if defined(_ADDITIONAL_LIGHTS) || defined(_CLUSTER_LIGHT_LOOP)
+                // Clustered mode uses the manual light feed below; URP returns a constant
+                // zero from GetAdditionalLightsCount there, so omit this unused loop.
+                #if defined(_ADDITIONAL_LIGHTS) && !USE_CLUSTER_LIGHT_LOOP
                     uint lightCount=GetAdditionalLightsCount();
                     for(uint j=0;j<lightCount;j++)
                     {
