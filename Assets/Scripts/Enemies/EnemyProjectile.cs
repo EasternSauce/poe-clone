@@ -8,13 +8,12 @@ using PoeClone.Visuals;
 namespace PoeClone.Enemies
 {
     /// <summary>
-    /// A caster's bolt or an archer's arrow. Flies straight and hits if it passes close enough, otherwise fizzles
+    /// A caster's bolt or an archer's arrow. Flies horizontally and hits if it passes close enough, otherwise fizzles
     /// at the end of its range. Spectators get the same bolt as a harmless visual.
     /// </summary>
     public class EnemyProjectile : MonoBehaviour
     {
         private const float HitRadius = 0.75f;
-        private const float AimHeight = 0.2f; // above the player's pivot: chest height
         private Vector3 velocity;
         private float travelLeft;
         private float damage;
@@ -31,8 +30,7 @@ namespace PoeClone.Enemies
         /// <summary>A real bolt aimed at a point (a volley's side arrows), that can still hit the player.</summary>
         public static void LaunchAt(Vector3 from, Vector3 aimAt, PlayerStats target, EnemyKind kind, float damage, bool[] volleyHit = null, int rollSeed = 0, System.Collections.Generic.HashSet<Minion> volleyMinions = null)
         {
-            float targetY = target != null ? target.transform.position.y : aimAt.y;
-            EnemyProjectile bolt = Create(from, new Vector3(aimAt.x, targetY + AimHeight, aimAt.z), kind, damage, target, rollSeed);
+            EnemyProjectile bolt = Create(from, aimAt, kind, damage, target, rollSeed);
             bolt.volleyHit = volleyHit;
             bolt.volleyMinions = volleyMinions;
         }
@@ -42,19 +40,21 @@ namespace PoeClone.Enemies
         {
             if (target == null)
                 return;
-            EnemyProjectile bolt = Create(from, target.transform.position + Vector3.up * AimHeight, kind, damage, null);
+            EnemyProjectile bolt = Create(from, target.transform.position, kind, damage, null);
             bolt.travelLeft = kind.AttackRange * 1.6f;
         }
 
         /// <summary>A harmless bolt for spectators (the hit itself arrives in the replicated health).</summary>
         public static void LaunchVisual(Vector3 from, Vector3 targetPosition, EnemyKind kind)
         {
-            Create(from, targetPosition + Vector3.up * AimHeight, kind, 0f, null);
+            Create(from, targetPosition, kind, 0f, null);
         }
 
         private static EnemyProjectile Create(Vector3 from, Vector3 aimAt, EnemyKind kind, float damage, PlayerStats target, int rollSeed = 0)
         {
             Vector3 direction = aimAt - from;
+            direction.y = 0f;
+            float aimDistance = direction.magnitude;
             if (direction.sqrMagnitude < 0.0001f)
                 direction = Vector3.forward;
             direction.Normalize();
@@ -85,7 +85,7 @@ namespace PoeClone.Enemies
             bolt.blockedByScenery = kind.Javelin;
             bolt.velocity = direction * Mathf.Max(1f, kind.ProjectileSpeed);
             // A real bolt flies on past a dodge; a visual one just needs to reach its mark.
-            bolt.travelLeft = damage > 0f ? kind.AttackRange * 1.6f : Vector3.Distance(from, aimAt);
+            bolt.travelLeft = damage > 0f ? kind.AttackRange * 1.6f : aimDistance;
             bolt.damage = damage;
             bolt.rollSeed = damage > 0f ? (rollSeed != 0 ? rollSeed : EventRandom.NextSeed()) : 0;
             bolt.damageType = kind.AttackDamageType;
@@ -120,7 +120,7 @@ namespace PoeClone.Enemies
 
             if (target != null && !target.IsDead)
             {
-                if (PassesWithin(previousPosition, target.transform.position + Vector3.up * AimHeight, HitRadius))
+                if (PassesWithin(previousPosition, target.transform.position, HitRadius))
                 {
                     if (volleyHit == null || !volleyHit[0])
                         target.TakeHit(damage, damageType, attack: isAttack, rollSeed: rollSeed);
@@ -132,7 +132,7 @@ namespace PoeClone.Enemies
             }
 
             if (Minion.HitInArea(damage, damageType,
-                p => PassesWithin(previousPosition, p + Vector3.up * AimHeight, HitRadius * Mathf.Sqrt(1.4f)),
+                p => PassesWithin(previousPosition, p, HitRadius * Mathf.Sqrt(1.4f)),
                 volleyMinions, stopAfterFirst: true))
             {
                 Destroy(gameObject);
@@ -143,13 +143,16 @@ namespace PoeClone.Enemies
                 Destroy(gameObject);
         }
 
-        // Check the whole frame's flight so fast arrows cannot skip over their target.
+        // Sweep ground-plane footprints so launch height cannot make horizontal shots miss.
         private bool PassesWithin(Vector3 from, Vector3 point, float radius)
         {
             Vector3 flight = transform.position - from;
+            Vector3 offset = point - from;
+            flight.y = 0f;
+            offset.y = 0f;
             float along = flight.sqrMagnitude > 0f
-                ? Mathf.Clamp01(Vector3.Dot(point - from, flight) / flight.sqrMagnitude) : 0f;
-            return (point - (from + flight * along)).sqrMagnitude <= radius * radius;
+                ? Mathf.Clamp01(Vector3.Dot(offset, flight) / flight.sqrMagnitude) : 0f;
+            return (offset - flight * along).sqrMagnitude <= radius * radius;
         }
     }
 }

@@ -863,10 +863,10 @@ namespace PoeClone.Skills
                 // hurt by the first bolt of the volley to reach it only.
                 var volley = new HashSet<EnemyHealth>();
                 Vector3 origin = EnemyCombat.BoltOrigin(transform);
-                Vector3 aim = hit.transform.position + Vector3.up * 0.4f * hit.transform.localScale.y - origin;
+                Vector3 aim = hit.transform.position - origin;
                 Vector3[] fan = HitEffects.Spread(aim, 1 + tree.ExtraProjectiles + extraProjectiles, PlayerCombat.ArrowSpreadDegrees);
                 for (int i = 0; i < fan.Length; i++)
-                    MinionBolt.Launch(this, origin, (fan[i] * Flat(aim).magnitude + Vector3.up * aim.y).normalized, volley);
+                    MinionBolt.Launch(this, origin, fan[i], volley);
 
                 return;
             }
@@ -988,7 +988,7 @@ namespace PoeClone.Skills
 
         /// <summary>
         /// A skeleton mage's bolt: a pulsing violet soul with motes circling its flight line and a
-        /// fading tail. Flies straight and stops on the first enemy in its path.
+        /// fading tail. Flies horizontally and stops on the first enemy in its path.
         /// </summary>
         private class MinionBolt : MonoBehaviour
         {
@@ -1065,10 +1065,11 @@ namespace PoeClone.Skills
                 {
                     if (enemy == null || enemy.IsDead)
                         continue;
-                    Vector3 aim = enemy.transform.position + Vector3.up * 0.4f * enemy.transform.localScale.y;
-                    float along = Mathf.Clamp(Vector3.Dot(aim - transform.position, direction), 0f, step);
+                    // Combat uses ground-plane footprints, independent of the staff's launch height.
+                    Vector3 offset = Flat(enemy.transform.position - transform.position);
+                    float along = Mathf.Clamp(Vector3.Dot(offset, direction), 0f, step);
                     float radius = 0.3f + 0.4f * enemy.transform.localScale.x;
-                    if ((aim - (transform.position + direction * along)).sqrMagnitude <= radius * radius && along < nearest)
+                    if ((offset - direction * along).sqrMagnitude <= radius * radius && along < nearest)
                     {
                         hit = enemy;
                         nearest = along;

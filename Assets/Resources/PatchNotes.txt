@@ -1,3 +1,7 @@
+version: 2026-10-19-horizontal-projectiles
+- Skeleton Mage bolts and enemy arrows and bolts now fly horizontally at their launch height. Missed shots no longer aim into the floor and disappear before bursting behind their target.
+- Their hit checks now use ground-plane footprints so horizontal shots still hit targets regardless of launch height.
+
 version: 2026-10-19-readable-combat-text
 - Enlarged floating damage numbers and strengthened their shadows for easier reading. Text bounds now fit large numbers and combat messages.
 - Enlarged the training doll's damage readout and spaced its information over four lines, with a panel that grows to fit the text.
