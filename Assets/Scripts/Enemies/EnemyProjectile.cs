@@ -20,6 +20,7 @@ namespace PoeClone.Enemies
         private int rollSeed;
         private DamageType damageType;
         private bool isAttack;
+        private bool isBow;
         private PlayerStats target;   // null = visual only (or aimed at a minion)
         private System.Collections.Generic.HashSet<Minion> volleyMinions;
         private bool spins;
@@ -90,6 +91,7 @@ namespace PoeClone.Enemies
             bolt.rollSeed = damage > 0f ? (rollSeed != 0 ? rollSeed : EventRandom.NextSeed()) : 0;
             bolt.damageType = kind.AttackDamageType;
             bolt.isAttack = kind.Bow || kind.Javelin;
+            bolt.isBow = kind.Bow;
             bolt.target = target;
             return bolt;
         }
@@ -122,8 +124,9 @@ namespace PoeClone.Enemies
             {
                 if (PassesWithin(previousPosition, target.transform.position, HitRadius))
                 {
-                    if (volleyHit == null || !volleyHit[0])
-                        target.TakeHit(damage, damageType, attack: isAttack, rollSeed: rollSeed);
+                    if ((volleyHit == null || !volleyHit[0]) &&
+                        target.TakeHit(damage, damageType, attack: isAttack, rollSeed: rollSeed) && isBow)
+                        PoeClone.Audio.AudioManager.Instance?.PlayEffect("combat.bow.impact", transform.position);
                     if (volleyHit != null)
                         volleyHit[0] = true;
                     Destroy(gameObject);
@@ -135,6 +138,7 @@ namespace PoeClone.Enemies
                 p => PassesWithin(previousPosition, p, HitRadius * Mathf.Sqrt(1.4f)),
                 volleyMinions, stopAfterFirst: true))
             {
+                if (isBow) PoeClone.Audio.AudioManager.Instance?.PlayEffect("combat.bow.impact", transform.position);
                 Destroy(gameObject);
                 return;
             }

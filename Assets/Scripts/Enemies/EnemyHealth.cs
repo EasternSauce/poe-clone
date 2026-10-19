@@ -228,7 +228,7 @@ namespace PoeClone.Enemies
         }
 
         public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration, bool throughExposedHead = false,
-            bool flinch = true, Vector3? hitOrigin = null, int rollSeed = 0)
+            bool flinch = true, Vector3? hitOrigin = null, int rollSeed = 0, string impactSound = null)
         {
             if (dead || amount <= 0f)
                 return 0f;
@@ -257,6 +257,9 @@ namespace PoeClone.Enemies
                 }
                 return 0f;
             }
+
+            if (impactSound != null)
+                AudioManager.Instance?.PlayEffect(impactSound, transform.position);
 
             // An indestructible, unarmoured target. Use the same damage event as monsters,
             // including damage over time, without death rewards, stagger or a shrinking life pool.
@@ -308,20 +311,16 @@ namespace PoeClone.Enemies
             if (!flinch || Reassembling)
                 return amount;
 
-            // Bosses don't flinch.
-            if (EnemyKinds.Get(KindIndex).IsBoss)
+            // Bosses don't flinch, but use the same impact audio as other enemies.
+            if (!kind.IsBoss)
             {
-                if (AudioManager.Instance != null)
-                    AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.meleeHit, transform.position);
-                return amount;
+                Stagger stagger = GetComponent<Stagger>();
+                if (stagger == null)
+                    stagger = gameObject.AddComponent<Stagger>();
+                stagger.Trigger();
             }
 
-            Stagger stagger = GetComponent<Stagger>();
-            if (stagger == null)
-                stagger = gameObject.AddComponent<Stagger>();
-            stagger.Trigger();
-
-            if (AudioManager.Instance != null)
+            if (impactSound == null && AudioManager.Instance != null)
                 AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.meleeHit, transform.position);
             return amount;
         }

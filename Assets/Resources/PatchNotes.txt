@@ -1,3 +1,7 @@
+version: 2026-10-19-bow-impact-audio
+- Arrows now play one of three dedicated impact recordings when they hit, replacing the generic weapon impact on enemies.
+- Split Shot, Piercing Shot, Burning Arrow and Venom Arrow now use the new bow attack recordings too.
+
 version: 2026-10-19-bow-attack-audio
 - Bow shots now use two new bow attack recordings, including Archer and Skeleton Archer shots that share the same sounds.
 

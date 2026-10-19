@@ -471,7 +471,7 @@ namespace PoeClone.Player
                     continue;
                 if (target is Enemies.EnemyHealth enemy && !enemy.IsDead && FirstVolleyHit(target))
                     HitEffects.Deal(owner, enemy, damage * 0.4f, isAttack, textColor, damageType, igniteBonus: igniteBonus,
-                        projectileDistance: DistanceTo(at), hitOrigin: launchPosition, tree: tree, skillIncreased: skillIncreased, sourceDamageMultiplier: DamageMultiplier);
+                        projectileDistance: DistanceTo(at), hitOrigin: launchPosition, tree: tree, skillIncreased: skillIncreased, sourceDamageMultiplier: DamageMultiplier, impactSound: isAttack ? "combat.bow.impact" : null);
             }
         }
 
@@ -481,8 +481,12 @@ namespace PoeClone.Player
                 return;
 
             IDamageable target = collider.GetComponentInParent<IDamageable>();
-            if (target == null || !FirstVolleyHit(target))
+            if (target == null)
+            {
+                if (isAttack) PoeClone.Audio.AudioManager.Instance?.PlayEffect("combat.bow.impact", collider.ClosestPoint(transform.position));
                 return;
+            }
+            if (!FirstVolleyHit(target)) return;
 
             if (target is Enemies.EnemyHealth enemy)
             {
@@ -494,7 +498,7 @@ namespace PoeClone.Player
                         ai.Chill(chillSeconds * (tree?.DurationMultiplier ?? 1f));
                 }
                 HitEffects.Deal(owner, enemy, damage, isAttack, textColor, damageType, igniteBonus: igniteBonus,
-                    projectileDistance: DistanceTo(enemy.transform.position), venomArrowLevel: venomArrowLevel, hitOrigin: launchPosition, tree: tree, skillIncreased: skillIncreased, sourceDamageMultiplier: DamageMultiplier);
+                    projectileDistance: DistanceTo(enemy.transform.position), venomArrowLevel: venomArrowLevel, hitOrigin: launchPosition, tree: tree, skillIncreased: skillIncreased, sourceDamageMultiplier: DamageMultiplier, impactSound: isAttack ? "combat.bow.impact" : null);
                 return;
             }
 
@@ -502,10 +506,11 @@ namespace PoeClone.Player
             {
                 serpent.TakeArrowHit(owner, damage, isAttack, damageType, textColor, igniteBonus,
                     projectileDistance: DistanceTo(serpent.MouthPosition), venomArrowLevel: venomArrowLevel, tree: tree, skillIncreased: skillIncreased,
-                    sourceDamageMultiplier: DamageMultiplier);
+                    sourceDamageMultiplier: DamageMultiplier, impactSound: isAttack ? "combat.bow.impact" : null);
                 return;
             }
 
+            if (isAttack) PoeClone.Audio.AudioManager.Instance?.PlayEffect("combat.bow.impact", collider.ClosestPoint(transform.position));
             target.TakeDamage(damage * DamageMultiplier);
 
             var hitTransform = (target as Component)?.transform;

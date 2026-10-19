@@ -48,7 +48,7 @@ namespace PoeClone.Player
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
             DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null,
             bool throughExposedHead = false, bool melee = false, float projectileDistance = -1f, int venomArrowLevel = 0,
-            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f, WeaponSkillBonuses tree = null, float skillIncreased = 0f, bool flinch = true, float sourceDamageMultiplier = 1f)
+            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f, WeaponSkillBonuses tree = null, float skillIncreased = 0f, bool flinch = true, float sourceDamageMultiplier = 1f, string impactSound = null)
         {
             // Utility effects must never become hits through added mana damage or on-hit stats.
             if (enemy == null || enemy.IsDead || damage <= 0f)
@@ -124,7 +124,7 @@ namespace PoeClone.Player
                 else if (type == DamageType.Poison) elementalPenetration += sheet.Total(StatType.PoisonPenetration);
             }
             damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration, throughExposedHead,
-                flinch: flinch, hitOrigin: hitOrigin ?? (attacker != null ? (Vector3?)attacker.position : null), rollSeed: rollSeed);
+                flinch: flinch, hitOrigin: hitOrigin ?? (attacker != null ? (Vector3?)attacker.position : null), rollSeed: rollSeed, impactSound: impactSound);
             // A warded hit cannot apply ailments, cull, or grant on-hit recovery.
             if (damage <= 0f) return;
             if (!secondary) WeaponSkillHit.Apply(attacker, enemy, damage, tree, type, wasChilled, melee: melee);

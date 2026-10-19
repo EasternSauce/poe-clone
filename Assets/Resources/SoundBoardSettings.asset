@@ -40,6 +40,17 @@ MonoBehaviour:
     suggestions: []
     selected: {fileID: 0}
     muted: 0
+  - id: combat.bow.impact
+    label: Bow projectile impact
+    group: Combat
+    description: Arrow impacts on enemies and scenery, including bow skills and enemy archers.
+    soundGroupId: sound.combat.bow.impact
+    aliases: []
+    sharedIds: []
+    defaults: []
+    suggestions: []
+    selected: {fileID: 0}
+    muted: 0
   - id: combat.hit
     label: Hit impact
     group: Combat
@@ -2031,6 +2042,14 @@ MonoBehaviour:
     - {fileID: 8300000, guid: fcf25444dc8444338cf56181f5f2738b, type: 3}
     cooldown: 0
     topPriority: 0
+  - id: sound.combat.bow.impact
+    purpose: Bow projectile impacts
+    clips:
+    - {fileID: 8300000, guid: bb0006f6bc964360bd18d861ba16487b, type: 3}
+    - {fileID: 8300000, guid: 1b2b9c2be4bb43c9b13ac94d71e45652, type: 3}
+    - {fileID: 8300000, guid: fd0400d30bc84e6888723fc12708f430, type: 3}
+    cooldown: 0
+    topPriority: 0
   - id: sound.combat.hit
     purpose: Weapon hit impacts
     clips:
@@ -2354,13 +2373,15 @@ MonoBehaviour:
   - id: sound.skill.SplitShot
     purpose: Split Shot
     clips:
-    - {fileID: 8300000, guid: f373f799363f0ed4383c3bf7ff747c43, type: 3}
+    - {fileID: 8300000, guid: 6398415eb0e6426c8b2dbe96b0cb12b1, type: 3}
+    - {fileID: 8300000, guid: fcf25444dc8444338cf56181f5f2738b, type: 3}
     cooldown: 0
     topPriority: 0
   - id: sound.skill.PiercingShot
     purpose: Piercing Shot
     clips:
-    - {fileID: 8300000, guid: f373f799363f0ed4383c3bf7ff747c43, type: 3}
+    - {fileID: 8300000, guid: 6398415eb0e6426c8b2dbe96b0cb12b1, type: 3}
+    - {fileID: 8300000, guid: fcf25444dc8444338cf56181f5f2738b, type: 3}
     cooldown: 0
     topPriority: 0
   - id: sound.skill.RainOfArrows
@@ -2373,7 +2394,8 @@ MonoBehaviour:
   - id: sound.skill.BurningArrow
     purpose: Burning Arrow
     clips:
-    - {fileID: 8300000, guid: f373f799363f0ed4383c3bf7ff747c43, type: 3}
+    - {fileID: 8300000, guid: 6398415eb0e6426c8b2dbe96b0cb12b1, type: 3}
+    - {fileID: 8300000, guid: fcf25444dc8444338cf56181f5f2738b, type: 3}
     cooldown: 0
     topPriority: 0
   - id: sound.skill.FangStrike
@@ -2385,7 +2407,8 @@ MonoBehaviour:
   - id: sound.skill.VenomArrow
     purpose: Venom Arrow
     clips:
-    - {fileID: 8300000, guid: f373f799363f0ed4383c3bf7ff747c43, type: 3}
+    - {fileID: 8300000, guid: 6398415eb0e6426c8b2dbe96b0cb12b1, type: 3}
+    - {fileID: 8300000, guid: fcf25444dc8444338cf56181f5f2738b, type: 3}
     cooldown: 0
     topPriority: 0
   - id: sound.skill.VenomSpout

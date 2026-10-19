@@ -171,7 +171,7 @@ namespace PoeClone.Skills
                 distance.y = 0f;
                 HitEffects.Deal(transform, enemy, damage, attack: true, CombatText.PhysicalColor,
                     projectileDistance: distance.magnitude, tree: tree,
-                    sourceDamageMultiplier: returns ? ReturningProjectileFlight.DamageMultiplier : 1f);
+                    sourceDamageMultiplier: returns ? ReturningProjectileFlight.DamageMultiplier : 1f, impactSound: "combat.bow.impact");
                 struck?.Add(enemy);
             }
             if (returns && struck.Count > 0)

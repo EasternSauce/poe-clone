@@ -132,14 +132,14 @@ namespace PoeClone.Enemies
         }
 
         public void TakeArrowHit(Transform attacker, float amount, bool attack, Combat.DamageType type, Color color, float igniteBonus,
-            float projectileDistance = -1f, bool melee = false, int venomArrowLevel = 0, PoeClone.Inventory.WeaponSkillBonuses tree = null, float skillIncreased = 0f, float sourceDamageMultiplier = 1f)
+            float projectileDistance = -1f, bool melee = false, int venomArrowLevel = 0, PoeClone.Inventory.WeaponSkillBonuses tree = null, float skillIncreased = 0f, float sourceDamageMultiplier = 1f, string impactSound = null)
         {
             if (owner == null || owner.IsDead || amount <= 0f)
                 return;
             LastSharedDamage = amount * 1.5f * sourceDamageMultiplier;
             HitEffects.Deal(attacker, owner, amount * 1.5f, attack, color, type, igniteBonus: igniteBonus,
                 displayAt: MouthPosition, throughExposedHead: true, melee: melee, projectileDistance: projectileDistance,
-                venomArrowLevel: venomArrowLevel, tree: tree, skillIncreased: skillIncreased, sourceDamageMultiplier: sourceDamageMultiplier);
+                venomArrowLevel: venomArrowLevel, tree: tree, skillIncreased: skillIncreased, sourceDamageMultiplier: sourceDamageMultiplier, impactSound: impactSound);
         }
 
         private Vector3 Mouth => head != null ? head.position + head.up * headReach : nose + direction * headReach;
