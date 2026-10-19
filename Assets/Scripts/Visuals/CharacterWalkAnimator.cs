@@ -122,6 +122,7 @@ namespace PoeClone.Visuals
         private PoeClone.Audio.SoundBoardSettings soundBoard;
         private int lastStepIndex;
         private float nextFootstepAt;
+        private bool silentFootsteps;
 
         // Idle: a slow breath and a little sway, out of step from one character to the next.
         private float idleSeed;
@@ -301,6 +302,9 @@ namespace PoeClone.Visuals
         private void Start()
         {
             var owner = GetComponentInParent<PoeClone.Enemies.EnemyHealth>();
+            // Summoned minions lose EnemyHealth; network replicas retain it as allies.
+            silentFootsteps = GetComponentInParent<PoeClone.Skills.Minion>() != null ||
+                (owner != null && owner.IsAlly);
             importantAnimation = importantAnimation || GetComponentInParent<PoeClone.Player.PlayerController>() != null ||
                 (owner != null && (owner.IsAlly || PoeClone.Enemies.EnemyKinds.Get(owner.KindIndex).IsBoss));
             soundBoard = PoeClone.Audio.SoundBoardSettings.Load();
@@ -827,7 +831,7 @@ namespace PoeClone.Visuals
 
         private void PlayFootstep()
         {
-            if (Time.time < nextFootstepAt || audioSource == null || footstepClips == null || footstepClips.Length == 0)
+            if (silentFootsteps || Time.time < nextFootstepAt || audioSource == null || footstepClips == null || footstepClips.Length == 0)
                 return;
 
             AudioClip clip = footstepClips[Random.Range(0, footstepClips.Length)];
