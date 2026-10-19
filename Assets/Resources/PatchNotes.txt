@@ -1,5 +1,6 @@
 version: 2026-10-19-shader-build-warnings
 - Web builds exclude the unused PC graphics tier and its GPU debugging resources. Skin and world shaders skip an unused lighting loop in clustered rendering, preserving the existing torch lighting.
+- Removed an unused experimental automation package that produced a runtime-configuration warning during builds.
 
 version: 2026-10-19-arena-build-level-groups
 - Arena build routes are grouped by their minimum level and sorted by estimated DPS, highest first. Each level group highlights its top DPS builds in green.
