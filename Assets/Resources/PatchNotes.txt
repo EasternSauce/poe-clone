@@ -1,3 +1,8 @@
+version: 2026-10-19-summon-damage-and-quick-lessons
+- Enemy abilities now damage vulnerable summons inside their actual hit areas, including Rimeheart's frost rings, boss explosions, beams, charges, breath attacks, ground hazards, traps and projectile volleys. Each summon has its own hit limits and hazard cooldowns; spirit wolves remain untargetable.
+- Raise Skeletons and Skeleton Mages now have a 2-second base cooldown.
+- Quick Lessons retains its minion attack speed and now summons up to two skeleton mages per cast, without increasing the summon limit.
+
 version: 2026-10-19-arena-middle-ground-and-dps
 - Arena waves now spawn 7-12 monsters at once, down from 15-25.
 - Each route in the arena build picker shows approximate single-target DPS at the preview level, using typical poor ground-loot equipment and its skill/passive trees. Minion estimates include a full army; movement and mana downtime are excluded. Random-level previews use each route's minimum level.

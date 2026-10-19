@@ -16,9 +16,12 @@ namespace PoeClone.Enemies
             int interrupted = stagger != null ? stagger.TriggerCount : 0;
             busyUntil = Time.time + (BasinWindup + 0.7f) / kind.AbilitySpeed;
             bool hit = false;
+            var hitMinions = new System.Collections.Generic.HashSet<Minion>();
             yield return BasinPattern(this, kind, transform, target, (at, radius) =>
             {
                 // Overlapping patches from one cast can hit each local player only once.
+                if (CastAlive(interrupted))
+                    Minion.HitInArea(damage, DamageType.Physical, p => Flat(p - at).magnitude <= radius, hitMinions);
                 if (hit || !CastAlive(interrupted) || !CanSpecialHit() ||
                     Flat(player.transform.position - at).magnitude > radius) return;
                 hit = true;

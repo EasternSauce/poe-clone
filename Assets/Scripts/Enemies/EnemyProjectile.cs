@@ -22,19 +22,19 @@ namespace PoeClone.Enemies
         private DamageType damageType;
         private bool isAttack;
         private PlayerStats target;   // null = visual only (or aimed at a minion)
-        private Minion minion;        // aimed at one of the player's minions instead
+        private System.Collections.Generic.HashSet<Minion> volleyMinions;
         private bool spins;
         private bool blockedByScenery;
         private float spin;
         private bool[] volleyHit;     // shared by arrows loosed together: only the first to land hurts
 
         /// <summary>A real bolt aimed at a point (a volley's side arrows), that can still hit the player.</summary>
-        public static void LaunchAt(Vector3 from, Vector3 aimAt, PlayerStats target, EnemyKind kind, float damage, bool[] volleyHit = null, int rollSeed = 0)
+        public static void LaunchAt(Vector3 from, Vector3 aimAt, PlayerStats target, EnemyKind kind, float damage, bool[] volleyHit = null, int rollSeed = 0, System.Collections.Generic.HashSet<Minion> volleyMinions = null)
         {
-            if (target == null)
-                return;
-            EnemyProjectile bolt = Create(from, new Vector3(aimAt.x, target.transform.position.y + AimHeight, aimAt.z), kind, damage, target, rollSeed);
+            float targetY = target != null ? target.transform.position.y : aimAt.y;
+            EnemyProjectile bolt = Create(from, new Vector3(aimAt.x, targetY + AimHeight, aimAt.z), kind, damage, target, rollSeed);
             bolt.volleyHit = volleyHit;
+            bolt.volleyMinions = volleyMinions;
         }
 
         /// <summary>A real bolt at one of the player's minions (an enemy drawn off the player by it).</summary>
@@ -43,7 +43,6 @@ namespace PoeClone.Enemies
             if (target == null)
                 return;
             EnemyProjectile bolt = Create(from, target.transform.position + Vector3.up * AimHeight, kind, damage, null);
-            bolt.minion = target;
             bolt.travelLeft = kind.AttackRange * 1.6f;
         }
 
@@ -86,9 +85,9 @@ namespace PoeClone.Enemies
             bolt.blockedByScenery = kind.Javelin;
             bolt.velocity = direction * Mathf.Max(1f, kind.ProjectileSpeed);
             // A real bolt flies on past a dodge; a visual one just needs to reach its mark.
-            bolt.travelLeft = target != null ? kind.AttackRange * 1.6f : Vector3.Distance(from, aimAt);
+            bolt.travelLeft = damage > 0f ? kind.AttackRange * 1.6f : Vector3.Distance(from, aimAt);
             bolt.damage = damage;
-            bolt.rollSeed = target != null ? (rollSeed != 0 ? rollSeed : EventRandom.NextSeed()) : 0;
+            bolt.rollSeed = damage > 0f ? (rollSeed != 0 ? rollSeed : EventRandom.NextSeed()) : 0;
             bolt.damageType = kind.AttackDamageType;
             bolt.isAttack = kind.Bow || kind.Javelin;
             bolt.target = target;
@@ -132,14 +131,12 @@ namespace PoeClone.Enemies
                 }
             }
 
-            if (minion != null && !minion.IsDead)
+            if (Minion.HitInArea(damage, damageType,
+                p => PassesWithin(previousPosition, p + Vector3.up * AimHeight, HitRadius * Mathf.Sqrt(1.4f)),
+                volleyMinions, stopAfterFirst: true))
             {
-                if (PassesWithin(previousPosition, minion.transform.position + Vector3.up * AimHeight, HitRadius * Mathf.Sqrt(1.4f)))
-                {
-                    minion.TakeHit(damage, damageType);
-                    Destroy(gameObject);
-                    return;
-                }
+                Destroy(gameObject);
+                return;
             }
 
             if (travelLeft <= 0f)

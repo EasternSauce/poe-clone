@@ -52,11 +52,14 @@ namespace PoeClone.Enemies
             yield return new WaitForSeconds(windup / kind.AbilitySpeed);
             if (!CastAlive(interrupted)) yield break;
             bool hit = false;
+            var hitMinions = new System.Collections.Generic.HashSet<Minion>();
             for (float t = 0; t < duration && CastAlive(interrupted); t += (Time.deltaTime * kind.AbilitySpeed))
             {
                 Vector3 before = transform.position;
                 if (!mirror && body != null && body.enabled)
                     body.Move(axis * (speed * (Time.deltaTime * kind.AbilitySpeed)) + Vector3.down * 2f * (Time.deltaTime * kind.AbilitySpeed));
+                Minion.HitInArea(damage, DamageType.Physical,
+                    p => SegmentDistance(before, transform.position + axis * 0.8f, p) < 1.3f, hitMinions);
                 if (!hit && CanSpecialHit() && aimedAtLocal && SegmentDistance(before, transform.position + axis * 0.8f, player.transform.position) < 1.3f)
                 {
                     player.TakeHit(damage, DamageType.Physical);
@@ -79,6 +82,7 @@ namespace PoeClone.Enemies
             yield return new WaitForSeconds(windup / kind.AbilitySpeed);
             if (!CastAlive(interrupted)) yield break;
             SkillEffects.Shockwave(from + axis * 2.4f, 0.8f, new Color(0.65f, 0.72f, 0.22f), 0.25f);
+            Minion.HitInArea(damage * 0.8f, DamageType.Physical, p => InsideDesertLine(from, axis, 4, 1.3f, p));
             if (CanSpecialHit() && InsideDesertLine(from, axis, 4, 1.3f, player.transform.position) &&
                 player.TakeHit(damage * 0.8f, DamageType.Physical))
                 player.Poison(damage * 0.65f, 3f);
@@ -172,6 +176,7 @@ namespace PoeClone.Enemies
             if (move == 0)
             {
                 SkillEffects.Shockwave(from + axis * 2, 3, DustColor, 0.3f);
+                Minion.HitInArea(damage * 1.3f, DamageType.Physical, p => Flat(p - from).magnitude < 4.8f && Vector3.Angle(axis, Flat(p - from)) < 65);
                 if (CanSpecialHit())
                 {
                     Vector3 offset = Flat(player.transform.position - from);
@@ -182,10 +187,13 @@ namespace PoeClone.Enemies
             else
             {
                 bool hit = false;
+                var hitMinions = new System.Collections.Generic.HashSet<Minion>();
                 for (int i = 1; i <= 6 && CastAlive(interrupted); i++)
                 {
                     Vector3 p = from + axis * i * 2;
                     SkillEffects.Shockwave(p, 1.2f, DustColor, 0.25f);
+                    Minion.HitInArea(damage * 1.2f, DamageType.Physical,
+                        at => SegmentDistance(p - axis, p + axis, at) < 1.2f, hitMinions);
                     if (!hit && CanSpecialHit() && SegmentDistance(p - axis, p + axis, player.transform.position) < 1.2f)
                     {
                         player.TakeHit(damage * 1.2f, DamageType.Physical);

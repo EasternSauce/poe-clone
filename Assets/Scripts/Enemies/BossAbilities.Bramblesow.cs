@@ -57,6 +57,7 @@ namespace PoeClone.Enemies
                 Act(CreatureAnimator.BossAct.Charge, 2f);
                 const float speed = 19f;
                 bool hit = false;
+                var hitMinions = new System.Collections.Generic.HashSet<Minion>();
                 bool rammed = false;
                 Vector3 start = transform.position;
                 float giveUp = Time.time + length / speed + 1f;
@@ -70,6 +71,7 @@ namespace PoeClone.Enemies
                         break;
                     MoveTo(before + step);
                     float moved = Flat(transform.position - before).magnitude;
+                    Minion.HitInArea(DamageOf(1.8f), DamageType.Physical, p => Flat(p - transform.position).magnitude < width * 0.5f + 0.9f, hitMinions);
                     if (!hit && player != null && !player.IsDead && Flat(player.transform.position - transform.position).magnitude < width * 0.5f + 0.9f)
                     {
                         hit = true;

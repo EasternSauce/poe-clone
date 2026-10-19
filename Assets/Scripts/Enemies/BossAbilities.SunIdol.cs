@@ -65,6 +65,7 @@ namespace PoeClone.Enemies
                 rays[b] = ray.transform;
             }
             float nextBurn = 0f;
+            var minionBurns = new System.Collections.Generic.Dictionary<Minion, float>();
             float groundY = Debris.GroundBelow(center + Vector3.up) + 0.6f;
             for (float t = 0f; t < sweep; t += Time.deltaTime)
             {
@@ -75,6 +76,13 @@ namespace PoeClone.Enemies
                     float a = b == 0 ? start + turned : start + 180f - turned;
                     Vector3 dir = Quaternion.Euler(0f, a, 0f) * Vector3.forward;
                     rays[b].SetPositionAndRotation(new Vector3(center.x, groundY, center.z), Quaternion.LookRotation(dir));
+                    Minion.HitInArea(DamageOf(0.6f), DamageType.Fire, p =>
+                    {
+                        Vector3 off = Flat(p - center);
+                        float along = Vector3.Dot(off, dir);
+                        return along >= -0.5f && along <= length + 0.5f &&
+                            Mathf.Abs(Vector3.Dot(off, Vector3.Cross(Vector3.up, dir))) <= width * 0.5f + 0.3f;
+                    }, nextHits: minionBurns, interval: 0.35f);
                     if (Time.time >= nextBurn && InStrip(center, dir, length, width))
                     {
                         nextBurn = Time.time + 0.35f;

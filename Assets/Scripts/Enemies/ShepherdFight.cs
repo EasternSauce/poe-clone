@@ -377,6 +377,8 @@ namespace PoeClone.Enemies
                 spot => HitInside(spot, radius + 0.2f, 0.7f, attack: false),
                 (centre, r) =>
                 {
+                    PoeClone.Skills.Minion.HitInArea(BaseHit() * 0.16666667f, kind.DamageType,
+                        p => Flat(p - centre).magnitude <= r);
                     if (Party.PartnerInside(p => Flat(p - centre).magnitude <= r))
                         Party.PartnerDamaged?.Invoke(0f, kind.DamageType, false, BaseHit() * 0.16666667f, 2f);
                     if (player != null && !player.IsDead && Flat(player.transform.position - centre).magnitude <= r)
@@ -900,7 +902,7 @@ namespace PoeClone.Enemies
 
         private bool HitInCone(float reach, float halfAngle, float multiplier)
         {
-            HitPartner(p => Flat(p - transform.position).magnitude <= reach &&
+            HitMinionsAndPartner(p => Flat(p - transform.position).magnitude <= reach &&
                 Vector3.Angle(transform.forward, Flat(p - transform.position)) <= halfAngle, multiplier);
             Vector3 to = Flat(player.transform.position - transform.position);
             if (to.magnitude > reach || Vector3.Angle(transform.forward, to) > halfAngle)
@@ -911,14 +913,14 @@ namespace PoeClone.Enemies
 
         private void HitInside(Vector3 centre, float radius, float multiplier, bool attack = true)
         {
-            HitPartner(p => Flat(p - centre).magnitude <= radius, multiplier, attack);
+            HitMinionsAndPartner(p => Flat(p - centre).magnitude <= radius, multiplier, attack);
             if (player != null && !player.IsDead && Flat(player.transform.position - centre).magnitude <= radius)
                 Damage(multiplier, attack);
         }
 
         private void HitAlong(Vector3 from, Vector3 dir, float length, float halfWidth, float multiplier)
         {
-            HitPartner(p => Vector3.Dot(Flat(p - from), dir) >= -0.5f &&
+            HitMinionsAndPartner(p => Vector3.Dot(Flat(p - from), dir) >= -0.5f &&
                 Vector3.Dot(Flat(p - from), dir) <= length && Vector3.Cross(dir, Flat(p - from)).magnitude <= halfWidth, multiplier);
             if (player == null || player.IsDead)
                 return;
@@ -932,9 +934,11 @@ namespace PoeClone.Enemies
         private const float PoisonShare = 0.4f;
         private const float PoisonSeconds = 3f;
 
-        private void HitPartner(System.Func<Vector3, bool> inside, float multiplier, bool attack = true)
+        private void HitMinionsAndPartner(System.Func<Vector3, bool> inside, float multiplier, bool attack = true)
         {
-            if (health == null || health.IsDead || !Party.PartnerInside(inside)) return;
+            if (health == null || health.IsDead) return;
+            PoeClone.Skills.Minion.HitInArea(BaseHit() * multiplier, kind.DamageType, inside);
+            if (!Party.PartnerInside(inside)) return;
             float hit = BaseHit() * multiplier;
             Party.PartnerDamaged?.Invoke(hit, kind.DamageType, attack, Phase >= 2 ? hit * PoisonShare : 0f, PoisonSeconds);
         }

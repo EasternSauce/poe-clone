@@ -38,6 +38,8 @@ namespace PoeClone.Enemies
             yield return new WaitForSeconds(warning);
             if (health.IsDead) yield break;
             SkillEffects.Shockwave(from + axis * 3, 3.5f, Dust, 0.35f);
+            Minion.HitInArea(DamageOf(1.4f), DamageType.Physical,
+                p => Flat(p - from).magnitude <= 7 && Vector3.Angle(axis, Flat(p - from)) <= 55);
             if (player != null && !player.IsDead)
             {
                 Vector3 offset = Flat(player.transform.position - from);

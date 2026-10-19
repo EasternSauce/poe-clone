@@ -212,7 +212,7 @@ namespace PoeClone.Enemies
                 {
                     HitIfInside(spot, radius, 0.5f, DamageType.Physical);
                     SkillEffects.Blast(spot + Vector3.up * 0.4f, 1.6f, Spore, 0.4f);
-                    Patch(spot, radius, 4.5f, Spore, p =>
+                    Patch(spot, radius, 4.5f, Spore, 0.15f, DamageType.Physical, p =>
                     {
                         p.GetComponent<Player.PlayerController>()?.Chill(0.7f);
                         p.TakeHit(DamageOf(0.15f), DamageType.Physical, attack: false);

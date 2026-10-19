@@ -251,7 +251,7 @@ namespace PoeClone.Skills
                 foreach (Minion other in All.FindAll(m => m.owner == owner && m.Kind != kind && IsPermanent(m.Kind)))
                     other.Crumble();
             }
-            int count = Mathf.Min(cap, kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1);
+            int count = SummonCount(kind, TreeFor(owner, kind), cap);
             // All keeps creation order; dismiss only this owner's oldest matching summons.
             var existing = All.FindAll(m => m.owner == owner && m.Kind == kind && !m.dead);
             int replacements = Mathf.Max(0, existing.Count + count - cap);
@@ -269,6 +269,13 @@ namespace PoeClone.Skills
                 Vector3 at = ClearSummonPoint(owner, desired) + Vector3.up * 0.3f;
                 Create(spawner.EnemyPrefab, owner, kind, at, level, sheet);
             }
+        }
+
+        /// <summary>Per-cast batch, capped before replacing any existing minions.</summary>
+        public static int SummonCount(MinionKind kind, WeaponSkillBonuses tree, int cap)
+        {
+            int baseline = kind == MinionKind.Warrior || kind == MinionKind.Wolf ? 2 : 1;
+            return Mathf.Clamp(Mathf.Max(baseline, Mathf.RoundToInt(tree?.Get(WeaponSkillEffect.SummonsPerCast) ?? 0f)), 0, cap);
         }
 
         /// <summary>Brings back saved permanent minions around the owner, up to their current cap.</summary>
@@ -499,6 +506,30 @@ namespace PoeClone.Skills
                 }
             }
             return best;
+        }
+
+        /// <summary>Enemy ability damage uses the same footprint for every vulnerable summon.
+        /// A shared set limits a travelling wave or overlapping patches to one hit per minion.
+        /// Iterate backwards because a lethal hit removes the minion from All immediately.</summary>
+        public static bool HitInArea(float damage, DamageType type, System.Func<Vector3, bool> inside,
+            HashSet<Minion> hitOnce = null, bool stopAfterFirst = false,
+            Dictionary<Minion, float> nextHits = null, float interval = 0f)
+        {
+            if (damage <= 0f) return false; // spectator effects carry zero damage
+            bool hit = false;
+            for (int i = All.Count - 1; i >= 0; i--)
+            {
+                Minion minion = All[i];
+                if (minion == null || !minion.Targetable || !minion.isActiveAndEnabled ||
+                    (hitOnce != null && hitOnce.Contains(minion)) || !inside(minion.transform.position)) continue;
+                if (nextHits != null && nextHits.TryGetValue(minion, out float nextHit) && Time.time < nextHit) continue;
+                if (nextHits != null) nextHits[minion] = Time.time + interval;
+                hitOnce?.Add(minion);
+                minion.TakeHit(damage, type);
+                hit = true;
+                if (stopAfterFirst) break;
+            }
+            return hit;
         }
 
         /// <summary>An enemy's blow (or bolt) lands on this minion.</summary>

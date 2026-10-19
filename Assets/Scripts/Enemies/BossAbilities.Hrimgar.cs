@@ -101,12 +101,14 @@ namespace PoeClone.Enemies
             spear.transform.localScale = Vector3.one * 1.3f;
             spear.transform.SetPositionAndRotation(from, Quaternion.LookRotation(dir));
             bool hit = false;
+            var hitMinions = new System.Collections.Generic.HashSet<Minion>();
             const float speed = 32f;
             for (float d = 0f; d < length; d += speed * Time.deltaTime)
             {
                 if (spear == null)
                     yield break;
                 spear.transform.position = from + dir * d;
+                Minion.HitInArea(DamageOf(1.5f), DamageType.Cold, p => Flat(p - spear.transform.position).magnitude < width * 0.5f + 0.4f, hitMinions);
                 if (!hit && player != null && !player.IsDead && Flat(player.transform.position - spear.transform.position).magnitude < width * 0.5f + 0.4f)
                 {
                     hit = true;

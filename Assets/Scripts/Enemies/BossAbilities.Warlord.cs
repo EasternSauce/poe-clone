@@ -23,6 +23,7 @@ namespace PoeClone.Enemies
         private bool platesFlying;
         private float plateSpin;
         private float nextPlateBurn;
+        private readonly System.Collections.Generic.Dictionary<Minion, float> nextMinionPlateBurn = new System.Collections.Generic.Dictionary<Minion, float>();
 
         private void SetUpWarlord()
         {
@@ -54,7 +55,7 @@ namespace PoeClone.Enemies
             Vector3 origin = transform.position + dir * (1.1f * Size);
             int count = secondPhase ? 9 : 7;
             EruptionLine(origin, dir, count, 1.7f, 1.6f, windUp, 0.07f, DamageType.Fire, 1.2f,
-                at => Patch(at, 1.2f, 2.5f, Ember, p => p.TakeHit(DamageOf(0.2f), DamageType.Fire, attack: false)));
+                at => Patch(at, 1.2f, 2.5f, Ember, 0.2f, DamageType.Fire, p => p.TakeHit(DamageOf(0.2f), DamageType.Fire, attack: false)));
             yield return new WaitForSeconds(windUp);
             CameraSystem.CameraFollow.Shake(0.3f, 0.4f);
             SkillEffects.Shockwave(origin, 1.8f, Dust, 0.35f);
@@ -83,7 +84,7 @@ namespace PoeClone.Enemies
                 {
                     HitIfInside(spot, radius, 0.9f, DamageType.Fire);
                     SkillEffects.Blast(spot + Vector3.up * 0.3f, 1.2f, Ember, 0.3f);
-                    Patch(spot, 1.3f, 3f, Ember, p => p.TakeHit(DamageOf(0.2f), DamageType.Fire, attack: false));
+                    Patch(spot, 1.3f, 3f, Ember, 0.2f, DamageType.Fire, p => p.TakeHit(DamageOf(0.2f), DamageType.Fire, attack: false));
                 }));
             }
             yield return Pause(0.3f);
@@ -104,6 +105,8 @@ namespace PoeClone.Enemies
             for (int i = 1; i <= 4; i++)
                 SkillEffects.Blast(transform.position + dir * radius * i / 4.5f + Vector3.up * 0.4f, 0.9f + i * 0.2f, i % 2 == 0 ? Ember : Dust, 0.35f);
             Audio.AudioManager.Instance?.PlayEffect("combat.ground." + DamageType.Fire, transform.position + dir * radius * 0.5f);
+            Minion.HitInArea(DamageOf(1.7f), DamageType.Fire, p => Flat(p - transform.position).magnitude <= radius &&
+                Vector3.Angle(Flat(p - transform.position), dir) <= halfAngle + 4f);
             Vector3 off = Flat(player.transform.position - transform.position);
             if (off.magnitude <= radius && Vector3.Angle(off, dir) <= halfAngle + 4f)
                 player.TakeHit(DamageOf(1.7f), DamageType.Fire, attack: true);
@@ -145,6 +148,8 @@ namespace PoeClone.Enemies
                 want.y = Debris.GroundBelow(want + Vector3.up * 3f) + 1.1f + Mathf.Sin(Time.time * 3f + i) * 0.2f;
                 p.position = Vector3.Lerp(p.position, want, 1f - Mathf.Exp(-10f * Time.deltaTime));
                 p.rotation = Quaternion.LookRotation(offset);
+                Minion.HitInArea(DamageOf(0.5f), DamageType.Fire, at => Flat(at - p.position).magnitude < 1.2f,
+                    nextHits: nextMinionPlateBurn, interval: 0.6f);
                 if (player != null && !player.IsDead && Time.time >= nextPlateBurn && Flat(player.transform.position - p.position).magnitude < 1.2f)
                 {
                     nextPlateBurn = Time.time + 0.6f;
@@ -187,11 +192,13 @@ namespace PoeClone.Enemies
             bool hit = false;
             float y = plate.position.y;
             float fly = 0.35f;
+            var hitMinions = new System.Collections.Generic.HashSet<Minion>();
             for (float t = 0f; t < fly; t += Time.deltaTime)
             {
                 Vector3 p = from + dir * length * (t / fly);
                 plate.position = new Vector3(p.x, y, p.z);
                 plate.Rotate(0f, 0f, 900f * Time.deltaTime, Space.Self);
+                Minion.HitInArea(DamageOf(1.1f), DamageType.Fire, pos => Flat(pos - plate.position).magnitude < width * 0.5f + 0.5f, hitMinions);
                 if (!hit && player != null && !player.IsDead && Flat(player.transform.position - plate.position).magnitude < width * 0.5f + 0.5f)
                 {
                     hit = true;

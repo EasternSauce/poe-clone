@@ -14,8 +14,11 @@ namespace PoeClone.Enemies
             int interrupted = stagger != null ? stagger.TriggerCount : 0;
             busyUntil = Time.time + 2 / kind.AbilitySpeed;
             bool hit = false;
+            var hitMinions = new System.Collections.Generic.HashSet<Minion>();
             yield return CourtPattern(this, kind, transform, target, (at, radius) =>
             {
+                if (CastAlive(interrupted))
+                    Minion.HitInArea(damage, kind.DamageType, p => Flat(p - at).magnitude <= radius, hitMinions);
                 if (hit || !CastAlive(interrupted) || !CanSpecialHit() ||
                     Flat(player.transform.position - at).magnitude > radius) return;
                 hit = true;

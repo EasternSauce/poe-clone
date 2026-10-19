@@ -274,13 +274,21 @@ namespace PoeClone.Enemies
                     busyUntil = Time.time + RootWindUp / kind.AbilitySpeed;
                     GetComponentInChildren<CreatureAnimator>()?.Crouch(RootWindUp / kind.AbilitySpeed);
                     PoeClone.Visuals.DistanceActivity.StartTracked(this, CooldownAfter(ThornGarden(this, transform.position, target, kind,
-                        () => CanSpecialHit(), center => HitIfInside(center, RootRadius, damage * 0.35f))));
+                        () => CanAbilityHit(), centers =>
+                        {
+                            System.Func<Vector3, bool> inside = p => System.Array.Exists(centers, c => Flat(p - c).magnitude <= RootRadius);
+                            HitMinions(damage * 0.35f, inside);
+                            if (CanSpecialHit() && inside(player.transform.position))
+                                player.TakeHit(damage * 0.35f, kind.DamageType);
+                        })));
                     break;
                 case EnemySkill.Wail:
                     busyUntil = Time.time + WailWindUp / kind.AbilitySpeed;
                     GetComponentInChildren<CreatureAnimator>()?.Crouch(WailWindUp / kind.AbilitySpeed);
                     PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunRing(LastTarget, WailInnerRadius, WailOuterRadius, WailWindUp / kind.AbilitySpeed, kind.DamageType, center =>
                     {
+                        HitMinions(damage * 1.3f, p => Flat(p - center).magnitude >= WailInnerRadius &&
+                            Flat(p - center).magnitude <= WailOuterRadius);
                         if (!CanSpecialHit()) return;
                         float range = Flat(player.transform.position - center).magnitude;
                         if (range >= WailInnerRadius && range <= WailOuterRadius)
@@ -293,6 +301,7 @@ namespace PoeClone.Enemies
                     Vector3 fissureFrom = transform.position;
                     FrostFissures(this, fissureFrom, target, kind, () =>
                     {
+                        HitMinions(damage * 1.2f, p => InsideFissures(fissureFrom, target, p));
                         if (!CanSpecialHit()) return;
                         if (InsideFissures(fissureFrom, target, player.transform.position))
                             player.TakeHit(damage * 1.2f, kind.DamageType, attack: false);
@@ -367,6 +376,7 @@ namespace PoeClone.Enemies
                     nextTick += WhirlTick;
                     SkillEffects.Shockwave(transform.position, radius, DustColor, 0.25f);
                     EnemySounds.Play(kind, EnemySounds.Event.Attack, transform.position);
+                    HitMinions(damage, p => Flat(p - transform.position).magnitude <= radius);
                     if (player != null && !player.IsDead && !Sanctuary.Contains(player.transform.position, 1f) &&
                         Flat(player.transform.position - transform.position).magnitude <= radius)
                         player.TakeHit(damage, kind.DamageType);
@@ -404,6 +414,7 @@ namespace PoeClone.Enemies
             if (health.IsDead)
                 yield break;
             GameObject cage = RaisePrison(centre, kind);
+            HitMinions(damage, p => Mathf.Abs(Flat(p - centre).magnitude - PrisonRadius) <= PrisonBand);
             if (player == null || player.IsDead || Sanctuary.Contains(player.transform.position, 1f))
                 yield break;
 
@@ -496,6 +507,8 @@ namespace PoeClone.Enemies
             if (!CastAlive(staggerCount)) yield break;
             FlameCone(origin, facing, kind);
             Audio.AudioManager.Instance?.PlayEffect("combat.ground." + kind.DamageType, origin);
+            HitMinions(damage, p => Flat(p - origin).magnitude <= BreathOfFireRange &&
+                Vector3.Dot(Flat(p - origin).normalized, facing) >= Mathf.Cos(BreathOfFireHalfAngle * Mathf.Deg2Rad));
             if (CanSpecialHit())
             {
                 Vector3 offset = Flat(player.transform.position - origin);
@@ -540,7 +553,9 @@ namespace PoeClone.Enemies
             bool cut = false;
             PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(at, HowlRadius, HowlWindUp / kind.AbilitySpeed, kind.DamageType, center =>
             {
-                if (cut || !CanSpecialHit()) return;
+                if (cut) return;
+                HitMinions(damage, p => Flat(p - center).magnitude <= HowlRadius);
+                if (!CanSpecialHit()) return;
                 if (Flat(player.transform.position - center).magnitude <= HowlRadius)
                 {
                     player.TakeHit(damage, kind.DamageType, attack: false);
@@ -585,6 +600,13 @@ namespace PoeClone.Enemies
             {
                 if (cut) return;
                 RaiseSpikes(origin + axis * 0.8f, axis, kind);
+                HitMinions(damage, p =>
+                {
+                    Vector3 minionOffset = Flat(p - (origin + axis * 0.8f));
+                    float minionAlong = Vector3.Dot(minionOffset, axis);
+                    return minionAlong >= -0.5f && minionAlong <= SpikeLength + 0.5f &&
+                        Mathf.Abs(Vector3.Dot(minionOffset, Vector3.Cross(Vector3.up, axis))) <= SpikeWidth * 0.5f + 0.4f;
+                });
                 if (!CanSpecialHit()) return;
                 Vector3 offset = Flat(player.transform.position - (origin + axis * 0.8f));
                 float along = Vector3.Dot(offset, axis);
@@ -632,7 +654,9 @@ namespace PoeClone.Enemies
             float radius = ShriekRadius(transform);
             PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(transform.position, radius, ShriekWindUp / kind.AbilitySpeed, kind.DamageType, center =>
             {
-                if (!CastAlive(staggerCount) || !CanSpecialHit()) return;
+                if (!CastAlive(staggerCount)) return;
+                HitMinions(damage, p => Flat(p - center).magnitude <= radius);
+                if (!CanSpecialHit()) return;
                 SkillEffects.Shockwave(center, radius * 0.6f, kind.Eyes, 0.3f);
                 Vector3 away = Flat(player.transform.position - center);
                 if (away.magnitude > radius) return;
@@ -666,6 +690,7 @@ namespace PoeClone.Enemies
             if (rollSeed == 0) rollSeed = EventRandom.NextSeed();
             PoeClone.Visuals.DistanceActivity.StartTracked(host, GroundTelegraph.Run(at, ArrowRainRadius, ArrowRainDelay / kind.AbilitySpeed, DamageType.Physical, center =>
             {
+                Minion.HitInArea(damage, kind.AttackDamageType, p => Flat(p - center).magnitude <= ArrowRainRadius);
                 if (target == null || target.IsDead || Sanctuary.Contains(target.transform.position, 1f)) return;
                 if (Flat(target.transform.position - center).magnitude <= ArrowRainRadius)
                     target.TakeHit(damage, kind.AttackDamageType, rollSeed: rollSeed);
@@ -729,11 +754,26 @@ namespace PoeClone.Enemies
             PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.RunCone(origin, facing, BreathRange, BreathHalfAngle, duration / kind.AbilitySpeed,
                 () => CastAlive(staggerCount)));
             float exposure = 0f;
+            var minionExposure = new Dictionary<Minion, float>();
             try
             {
                 for (float t = 0f; t < duration; t += (Time.deltaTime * kind.AbilitySpeed))
                 {
                     if (!CastAlive(staggerCount)) yield break;
+                    for (int i = Minion.All.Count - 1; i >= 0; i--)
+                    {
+                        Minion minion = Minion.All[i];
+                        if (minion == null || !minion.Targetable) continue;
+                        minionExposure.TryGetValue(minion, out float exposed);
+                        exposed = t >= BreathWindUp && InsideBreath(origin, facing, minion.transform.position)
+                            ? exposed + Time.deltaTime * kind.AbilitySpeed : 0f;
+                        if (exposed >= BreathDamageInterval)
+                        {
+                            exposed -= BreathDamageInterval;
+                            minion.TakeHit(damage, kind.DamageType);
+                        }
+                        minionExposure[minion] = exposed;
+                    }
                     if (t >= BreathWindUp && CanSpecialHit() && InsideBreath(origin, facing, player.transform.position))
                     {
                         exposure += (Time.deltaTime * kind.AbilitySpeed);
@@ -760,6 +800,7 @@ namespace PoeClone.Enemies
                     }
                     yield return null;
                 }
+                HitMinions(damage, p => InsideBreath(origin, facing, p) && Flat(p - origin).magnitude < 2.6f);
                 if (CanSpecialHit() && InsideBreath(origin, facing, player.transform.position) &&
                     Flat(player.transform.position - origin).magnitude < 2.6f)
                 {
@@ -800,14 +841,21 @@ namespace PoeClone.Enemies
             nextUse = Time.time + kind.SkillCooldown / kind.AbilitySpeed;
         }
 
-        private bool CanSpecialHit() => this != null && health != null && !health.IsDead &&
-            player != null && !player.IsDead && !Sanctuary.Contains(player.transform.position, 1f) &&
+        private bool CanAbilityHit() => this != null && health != null && !health.IsDead &&
             (stagger == null || !stagger.IsStaggered);
+
+        private bool CanSpecialHit() => CanAbilityHit() && player != null && !player.IsDead &&
+            !Sanctuary.Contains(player.transform.position, 1f);
+
+        private void HitMinions(float damage, System.Func<Vector3, bool> inside, HashSet<Minion> once = null)
+        {
+            if (CanAbilityHit()) Minion.HitInArea(damage, kind.DamageType, inside, once);
+        }
 
         // Three fixed patches grow after a warning, then persist for four seconds. Standing at
         // a seam never takes multiple patch hits on the same tick. Replicas run visuals only.
         private static IEnumerator ThornGarden(MonoBehaviour host, Vector3 from, Vector3 target, EnemyKind kind,
-            System.Func<bool> active, System.Action<Vector3> hit)
+            System.Func<bool> active, System.Action<Vector3[]> hit)
         {
             Vector3 direction = Flat(target - from).normalized;
             if (direction.sqrMagnitude < 0.001f) direction = Vector3.forward;
@@ -838,8 +886,8 @@ namespace PoeClone.Enemies
                 foreach (Vector3 center in centers)
                 {
                     SkillEffects.Shockwave(center, RootRadius, kind.Pants, 0.5f);
-                    hit?.Invoke(center);
                 }
+                hit?.Invoke(centers);
                 yield return new WaitForSeconds(0.5f / kind.AbilitySpeed);
             }
             Object.Destroy(roots);
@@ -893,6 +941,7 @@ namespace PoeClone.Enemies
 
             bool calledOff = false;
             bool struck = false;
+            var hitMinions = new HashSet<Minion>();
             float radius = LeapRadius(transform);
             PoeClone.Visuals.DistanceActivity.StartTracked(this, GroundTelegraph.Run(landing, radius, (LeapCrouch + LeapAir) / kind.AbilitySpeed, kind.DamageType, center =>
             {
@@ -936,6 +985,8 @@ namespace PoeClone.Enemies
                     body.Move(clear - transform.position);
                 }
 
+                if (rise < 1.5f)
+                    HitMinions(damage, p => Flat(p - transform.position).magnitude < gap + 0.3f, hitMinions);
                 // In the way: still low enough to bowl into the player rather than sail over them.
                 if (!struck && aimedAtLocal && player != null && !player.IsDead && rise < 1.5f &&
                     Flat(player.transform.position - transform.position).magnitude < gap + 0.3f)
@@ -982,7 +1033,9 @@ namespace PoeClone.Enemies
 
         private void HitIfInside(Vector3 center, float radius, float damage)
         {
-            if (this == null || health.IsDead || player == null || player.IsDead)
+            if (this == null || health.IsDead) return;
+            HitMinions(damage, p => Flat(p - center).magnitude <= radius);
+            if (player == null || player.IsDead)
                 return;
             if (Flat(player.transform.position - center).magnitude <= radius)
                 player.TakeHit(damage, kind.DamageType, attack: kind.Skill != EnemySkill.Strike);
@@ -992,6 +1045,7 @@ namespace PoeClone.Enemies
         // is carried by the host's snapshots (a little behind), so it watches a little longer.
         private IEnumerator Charge(float damage)
         {
+            var hitMinions = new HashSet<Minion>();
             busyUntil = Time.time + ChargeMaxSeconds / kind.AbilitySpeed;
             SkillEffects.Shockwave(transform.position, 1.2f, DustColor, 0.3f);
             float until = Time.time + (ChargeMaxSeconds + (mirror ? 0.3f : 0f)) / kind.AbilitySpeed;
@@ -999,6 +1053,7 @@ namespace PoeClone.Enemies
             {
                 if (stagger != null && stagger.IsStaggered)
                     break;
+                HitMinions(damage, p => Flat(p - transform.position).magnitude < 1.6f, hitMinions);
                 Vector3 toTarget = Flat(aim.position - transform.position);
                 if (toTarget.magnitude < (mirror ? 2f : 1.6f))
                 {
@@ -1132,14 +1187,12 @@ namespace PoeClone.Enemies
         private static void Volley(Transform body, EnemyKind kind, Vector3 target, PlayerStats hit, float damage)
         {
             Vector3 from = EnemyCombat.BoltOrigin(body);
-            var volleyHit = new bool[1]; // the player is hurt by one arrow of the three at most
+            var volleyHit = new bool[1]; // one hit per target across the volley
+            var volleyMinions = new HashSet<Minion>();
             for (int k = -1; k <= 1; k++)
             {
                 Vector3 aim = from + Quaternion.AngleAxis(k * 14f, Vector3.up) * (target - from);
-                if (hit != null)
-                    EnemyProjectile.LaunchAt(from, aim, hit, kind, damage, volleyHit);
-                else
-                    EnemyProjectile.LaunchVisual(from, aim, kind);
+                EnemyProjectile.LaunchAt(from, aim, hit, kind, damage, volleyHit, volleyMinions: volleyMinions);
             }
         }
 

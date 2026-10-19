@@ -575,15 +575,16 @@ namespace PoeClone.Enemies
         // A glowing patch that fills in over the wind-up, then hurts the player if they're still on
         // it. Patches sharing a <paramref name="hitOnce"/> flag hurt at most once between them.
         private IEnumerator Eruption(Vector3 center, float radius, float windUp, DamageType type, float damageMultiplier, bool[] hitOnce = null,
-            Action<Vector3> burst = null)
+            Action<Vector3> burst = null, HashSet<Minion> hitMinions = null)
         {
             return GroundTelegraph.Run(center, radius, windUp, type, at =>
             {
                 if (this == null || health.IsDead)
                     return;
+                Minion.HitInArea(DamageOf(damageMultiplier), type, p => Flat(p - at).magnitude <= radius, hitMinions);
                 if (hitOnce == null || !hitOnce[0])
                 {
-                    if (HitIfInside(at, radius, damageMultiplier, type) && hitOnce != null)
+                    if (HitIfInside(at, radius, damageMultiplier, type, hitMinions: false) && hitOnce != null)
                         hitOnce[0] = true;
                 }
                 burst?.Invoke(at);
@@ -595,19 +596,21 @@ namespace PoeClone.Enemies
             float damage, Action<Vector3> burst = null)
         {
             var once = new bool[1];
+            var hitMinions = new HashSet<Minion>();
             for (int k = 0; k < count; k++)
-                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(origin + dir * step * k, radius, windUp + k * delayStep / T, type, damage, once, burst));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(origin + dir * step * k, radius, windUp + k * delayStep / T, type, damage, once, burst, hitMinions));
         }
 
         // Eruptions in a ring round a point, all at once after the wind-up.
         private void Ring(Vector3 center, float ringRadius, int count, float patchRadius, float windUp, DamageType type, float damage = 0.9f)
         {
             var once = new bool[1];
+            var hitMinions = new HashSet<Minion>();
             for (int k = 0; k < count; k++)
             {
                 float a = k * Mathf.PI * 2f / count;
                 Vector3 at = center + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * ringRadius;
-                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(at, patchRadius, windUp, type, damage, once));
+                PoeClone.Visuals.DistanceActivity.StartTracked(this, Eruption(at, patchRadius, windUp, type, damage, once, hitMinions: hitMinions));
             }
         }
 
@@ -636,6 +639,7 @@ namespace PoeClone.Enemies
             }
 
             bool hit = false;
+            var hitMinions = new HashSet<Minion>();
             for (float r = 0.8f; r < maxRadius; r += speed * Time.deltaTime)
             {
                 if (this == null)
@@ -650,6 +654,13 @@ namespace PoeClone.Enemies
                     s.localScale = new Vector3(chord, 0.5f + 0.25f * Mathf.Sin(r * 2f + i), thickness * 0.6f);
                 }
 
+                if (!health.IsDead)
+                    Minion.HitInArea(DamageOf(damage), type, p =>
+                    {
+                        Vector3 off = Flat(p - center);
+                        return Mathf.Abs(off.magnitude - r) < thickness * 0.5f + 0.3f &&
+                            !InGap(Mathf.Atan2(off.x, off.z) * Mathf.Rad2Deg, gapAngles, gapWidth);
+                    }, hitMinions);
                 if (!hit && player != null && !player.IsDead && !health.IsDead)
                 {
                     Vector3 off = Flat(player.transform.position - center);
@@ -729,6 +740,8 @@ namespace PoeClone.Enemies
                 thing.transform.position += direction * speed * Time.deltaTime;
                 if (spin)
                     thing.transform.Rotate(0f, 0f, 900f * Time.deltaTime, Space.Self);
+                if (Minion.HitInArea(DamageOf(damage), type,
+                    p => Flat(p - thing.transform.position).magnitude < hitRadius, stopAfterFirst: true)) break;
                 if (player != null && !player.IsDead && Flat(player.transform.position - thing.transform.position).magnitude < hitRadius)
                 {
                     if (player.TakeHit(DamageOf(damage), type, attack: true))
@@ -742,7 +755,7 @@ namespace PoeClone.Enemies
         }
 
         /// <summary>A lingering patch (fire, spores): every half second it does something to whoever stands in it.</summary>
-        private void Patch(Vector3 at, float radius, float seconds, Color color, Action<PlayerStats> inside)
+        private void Patch(Vector3 at, float radius, float seconds, Color color, float damage, DamageType type, Action<PlayerStats> inside)
         {
             GameObject pool = RuntimePrimitives.Create(PrimitiveType.Cylinder, null, color);
             pool.name = "BossPatch";
@@ -755,9 +768,9 @@ namespace PoeClone.Enemies
             p.Tick = 0.5f;
             p.Inside = (center, r) =>
             {
-                if (this == null || health.IsDead || player == null || player.IsDead)
-                    return;
-                if (Flat(player.transform.position - center).magnitude <= r)
+                if (this == null || health.IsDead) return;
+                Minion.HitInArea(DamageOf(damage), type, pos => Flat(pos - center).magnitude <= r);
+                if (player != null && !player.IsDead && Flat(player.transform.position - center).magnitude <= r)
                     inside?.Invoke(player);
             };
             leftovers.Add(pool);
@@ -804,8 +817,10 @@ namespace PoeClone.Enemies
             return kind.Damage * multiplier * EnemyKinds.DamageScale(level, kind);
         }
 
-        private bool HitIfInside(Vector3 center, float radius, float damageMultiplier, DamageType? type = null, bool attack = false)
+        private bool HitIfInside(Vector3 center, float radius, float damageMultiplier, DamageType? type = null, bool attack = false, bool hitMinions = true)
         {
+            if (hitMinions)
+                Minion.HitInArea(DamageOf(damageMultiplier), type ?? kind.DamageType, p => Flat(p - center).magnitude <= radius);
             if (player == null || player.IsDead || Flat(player.transform.position - center).magnitude > radius)
                 return false;
             return player.TakeHit(DamageOf(damageMultiplier), type ?? kind.DamageType, attack);

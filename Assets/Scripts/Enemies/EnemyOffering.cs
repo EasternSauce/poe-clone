@@ -43,6 +43,12 @@ namespace PoeClone.Enemies
             yield return GroundTelegraph.Run(at, Radius, Fuse, DamageType.Fire, center =>
             {
                 SkillEffects.Blast(center, Radius, kind.Eyes, 0.4f);
+                Minion.HitInArea(damage, DamageType.Fire, p =>
+                {
+                    Vector3 minionOffset = p - center;
+                    minionOffset.y = 0;
+                    return minionOffset.sqrMagnitude <= Radius * Radius;
+                });
                 if (target == null || target.IsDead || Sanctuary.Contains(target.transform.position, 1f)) return;
                 Vector3 offset = target.transform.position - center;
                 offset.y = 0f;

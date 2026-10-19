@@ -14,6 +14,7 @@ namespace PoeClone.Enemies
         private EnemyHealth owner;
         private float damage, elapsed, nextHit;
         private bool visualOnly;
+        private readonly System.Collections.Generic.Dictionary<PoeClone.Skills.Minion, float> minionHits = new System.Collections.Generic.Dictionary<PoeClone.Skills.Minion, float>();
         private Transform[] motes;
 
         public static GameObject Launch(Vector3 at, Vector3 direction, float damage, PlayerStats player, EnemyHealth owner, bool visualOnly = false)
@@ -55,6 +56,13 @@ namespace PoeClone.Enemies
                 motes[i].localPosition = new Vector3(Mathf.Sin(a) * radius, height + 0.1f, Mathf.Cos(a) * radius);
                 motes[i].localRotation = Quaternion.Euler(0, -a * Mathf.Rad2Deg, 0);
             }
+            if (!visualOnly)
+                PoeClone.Skills.Minion.HitInArea(damage * 0.5f, DamageType.Physical, p =>
+                {
+                    Vector3 minionOffset = p - transform.position;
+                    minionOffset.y = 0;
+                    return minionOffset.sqrMagnitude <= Radius * Radius;
+                }, nextHits: minionHits, interval: 0.6f);
             if (visualOnly || player == null || player.IsDead || Sanctuary.Contains(player.transform.position, 1)) return;
             Vector3 offset = player.transform.position - transform.position; offset.y = 0;
             if (offset.sqrMagnitude > Radius * Radius || Time.time < nextHit) return;

@@ -731,6 +731,7 @@ namespace PoeClone.Enemies
             float bladeYaw = Mathf.Atan2(bladeDirection.x, bladeDirection.z) * Mathf.Rad2Deg;
             float spin = (GravediggerClips.SweepEnd - GravediggerClips.SweepStart) / T;
             bool hit = false;
+            var hitMinions = new System.Collections.Generic.HashSet<Minion>();
             float previous = 0f, nextDust = 0f;
             for (float t = 0f; !health.IsDead; t += Time.deltaTime)
             {
@@ -738,6 +739,13 @@ namespace PoeClone.Enemies
                 transform.rotation = Quaternion.Euler(0f, yaw + angle, 0f);
                 // Judge only the sector the blade crossed this frame, including the final sector.
                 // The old sweep hit the entire circle before he had even begun turning.
+                Minion.HitInArea(DamageOf(1.3f), DamageType.Physical, p =>
+                {
+                    Vector3 off = Flat(p - transform.position);
+                    float bearing = Mathf.Repeat(Mathf.Atan2(off.x, off.z) * Mathf.Rad2Deg - bladeYaw, 360f);
+                    return off.magnitude <= radius && (off.magnitude < 0.7f ||
+                        (bearing >= previous - 12f && bearing <= angle + 12f));
+                }, hitMinions);
                 if (!hit && player != null && !player.IsDead)
                 {
                     Vector3 off = Flat(player.transform.position - transform.position);
@@ -746,7 +754,7 @@ namespace PoeClone.Enemies
                     if (off.magnitude <= radius && (crossed || off.magnitude < 0.7f))
                     {
                         hit = true;
-                        HitIfInside(transform.position, radius, 1.3f, DamageType.Physical, attack: true);
+                        HitIfInside(transform.position, radius, 1.3f, DamageType.Physical, attack: true, hitMinions: false);
                     }
                 }
                 // Short-lived soil kicked out by the shovel follows the dangerous leading edge.
