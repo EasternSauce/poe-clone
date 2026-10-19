@@ -1,3 +1,6 @@
+version: 2026-10-19-spaced-damage-numbers
+- Simultaneous damage numbers now spread sideways and into separate rows with space between their text, making rapid hits and critical strikes easier to read.
+
 version: 2026-10-19-runebound-gates
 - Area gates now have segmented metal arches, aged bronze inlays, glowing inscriptions and crystal crowns instead of plain stone columns and lintels.
 - Destination-tinted portals now swirl with living mist, moving filaments, drifting sparks and pulsing luminous edges.

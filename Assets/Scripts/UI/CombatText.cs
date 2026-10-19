@@ -31,10 +31,12 @@ namespace PoeClone.UI
             public float Born;
             public float Size;
             public long Number;
+            public Vector2 ScreenOffset;
         }
 
         private static CombatText instance;
         private readonly List<Entry> entries = new List<Entry>();
+        private readonly List<Rect> drawnRects = new List<Rect>();
         private GUIStyle style;
         private GUIStyle shadow;
 
@@ -65,9 +67,7 @@ namespace PoeClone.UI
             while (instance.entries.Count >= Visuals.AdaptiveQuality.TextBudget)
                 instance.entries.RemoveAt(0);
 
-            // A little sideways jitter so quick repeated hits don't print on top of each other.
-            Vector3 jitter = new Vector3(Random.Range(-0.3f, 0.3f), 0f, Random.Range(-0.3f, 0.3f));
-            instance.entries.Add(new Entry { World = world + jitter, Text = text, Color = color, Born = Time.unscaledTime, Size = size, Number = number });
+            instance.entries.Add(new Entry { World = world, Text = text, Color = color, Born = Time.unscaledTime, Size = size, Number = number });
         }
 
         private void OnDestroy()
@@ -94,14 +94,16 @@ namespace PoeClone.UI
 
             float scale = TouchMode.GuiScale;
             float now = Time.unscaledTime;
+            drawnRects.Clear();
 
-            for (int k = entries.Count - 1; k >= 0; k--)
+            // Older hits keep their space; new hits spread around their actual text bounds.
+            for (int k = 0; k < entries.Count; k++)
             {
                 Entry e = entries[k];
                 float age = now - e.Born;
                 if (age >= Lifetime)
                 {
-                    entries.RemoveAt(k);
+                    entries.RemoveAt(k--);
                     continue;
                 }
 
@@ -121,10 +123,54 @@ namespace PoeClone.UI
                 Vector2 textSize = style.CalcSize(new GUIContent(e.Text));
                 var rect = new Rect(screen.x - textSize.x * 0.5f, Screen.height - screen.y - textSize.y * 0.5f,
                     textSize.x, textSize.y);
+                Vector2 origin = rect.position;
+                rect.position += e.ScreenOffset * scale;
+                rect = FindFreeRect(rect, origin, 10f * scale, 220f * scale);
+                e.ScreenOffset = (rect.position - origin) / scale;
+                entries[k] = e;
+                drawnRects.Add(rect);
                 float offset = Mathf.Max(2f, 2f * scale);
                 GUI.Label(new Rect(rect.x + offset, rect.y + offset, rect.width, rect.height), e.Text, shadow);
                 GUI.Label(rect, e.Text, style);
             }
+        }
+
+        private Rect FindFreeRect(Rect desired, Vector2 origin, float gap, float maxSideways)
+        {
+            if (!OverlapsText(desired, gap)) return desired;
+
+            Rect best = desired;
+            float bestDistance = float.PositiveInfinity;
+            foreach (Rect occupied in drawnRects)
+            {
+                // Try either side, then a row above. The topmost row always provides a fallback.
+                Consider(new Vector2(occupied.xMin - desired.width - gap, desired.y));
+                Consider(new Vector2(occupied.xMax + gap, desired.y));
+                Consider(new Vector2(desired.x, occupied.yMin - desired.height - gap));
+            }
+            return best;
+
+            void Consider(Vector2 position)
+            {
+                if (Mathf.Abs(position.x - origin.x) > maxSideways) return;
+                float distance = (position - desired.position).sqrMagnitude;
+                if (distance >= bestDistance) return;
+                var candidate = new Rect(position, desired.size);
+                if (OverlapsText(candidate, gap)) return;
+                best = candidate;
+                bestDistance = distance;
+            }
+        }
+
+        private bool OverlapsText(Rect rect, float gap)
+        {
+            rect.xMin -= gap * 0.5f;
+            rect.xMax += gap * 0.5f;
+            rect.yMin -= gap * 0.5f;
+            rect.yMax += gap * 0.5f;
+            foreach (Rect occupied in drawnRects)
+                if (rect.Overlaps(occupied)) return true;
+            return false;
         }
 
         public static Color ColorFor(Combat.DamageType type)
