@@ -203,7 +203,7 @@ namespace PoeClone.World
             pageLabel.text = "Routes " + (page + 1) + " / " + pages;
             detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected: " + skill + " · " + choices.First(b => b.id == route).name) +
                 (randomBuild ? "\nRandom builds use routes available at the chosen level." : "\nMinimum level " + MinimumLevel + ". Change build to lower the level further.") +
-                "\nSampled best-of-20 rare gear and passives; no uniques." +
+                "\nGround-loot rarity rolls; random pick from the worst 30% per slot. Survey passives; no uniques." +
                 "\n20 waves of 1–5 enemies and occasional bosses at your level. No XP, loot or saves.";
         }
         private void StartRun()

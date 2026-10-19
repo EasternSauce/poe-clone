@@ -1,3 +1,6 @@
+version: 2026-10-19-arena-poor-ground-loot
+- Arena equipment now uses ordinary ground-loot rarity rolls (50% normal, 35% magic, 15% rare), then picks randomly from the weakest 30% of each slot's rolls. Your chosen skill and passive trees are preserved, with wearable item bases.
+
 version: 2026-10-19-connected-leg-mesh
 - Refreshed the connected leg mesh bounds and skinning data to better fit the anatomical leg rig.
 

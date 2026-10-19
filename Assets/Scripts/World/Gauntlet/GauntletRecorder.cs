@@ -620,7 +620,7 @@ namespace PoeClone.World
             sb.AppendLine();
             sb.AppendLine("GEAR AT START");
             foreach (GearRecord g in d.gearAtStart)
-                sb.AppendLine("  " + g.slot + ": " + g.name + " (" + g.rarity + " " + g.baseName + ", ilvl " + g.itemLevel + (g.rolls > 0 ? ", best of " + g.rolls + ", score " + F(g.score) : "") +
+                sb.AppendLine("  " + g.slot + ": " + g.name + " (" + g.rarity + " " + g.baseName + ", ilvl " + g.itemLevel + (g.rolls > 0 ? ", rolls " + g.rolls + ", score " + F(g.score) : "") +
                     (string.IsNullOrEmpty(g.note) ? "" : ", " + g.note) + ")\n      " + string.Join("; ", g.mods.ToArray()));
             if (d.rerolls.Count > 0)
             {
