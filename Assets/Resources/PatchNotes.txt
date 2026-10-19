@@ -1,3 +1,7 @@
+version: 2026-10-19-readable-combat-text
+- Enlarged floating damage numbers and strengthened their shadows for easier reading. Text bounds now fit large numbers and combat messages.
+- Enlarged the training doll's damage readout and spaced its information over four lines, with a panel that grows to fit the text.
+
 version: 2026-10-19-forward-death-animations
 - Players and humanoid enemies now buckle at the knees, reach out to brace and fall face first, settling into a prone corpse pose. Reviving restores the standing rig.
 - Creature deaths now include a loss of support, a falling phase and an impact settle: curling insect legs, buckling beasts, collapsing wings and splatting slimes. Upright monster bosses also fall face first.

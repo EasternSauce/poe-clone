@@ -117,10 +117,15 @@ namespace PoeClone.World
             if (labelStyle == null)
                 labelStyle = new GUIStyle(GUI.skin.box) { alignment = TextAnchor.MiddleCenter, font = UiKit.Font, richText = true };
             float scale = TouchMode.GuiScale;
-            labelStyle.fontSize = Mathf.RoundToInt(17f * scale);
-            GUI.Box(new Rect(screen.x - 130f * scale, Screen.height - screen.y - 88f * scale, 260f * scale, 88f * scale),
+            labelStyle.fontSize = Mathf.RoundToInt(28f * scale);
+            var content = new GUIContent(
                 "<b>Training Doll · No defences</b>\nDPS (last 5s): " + Dps.ToString("N0") +
-                "\nTotal: " + TotalDamage.ToString("N0") + " · Resets after 5s idle", labelStyle);
+                "\nTotal: " + TotalDamage.ToString("N0") + "\nResets after 5s idle");
+            Vector2 textSize = labelStyle.CalcSize(content);
+            float width = textSize.x + 24f * scale;
+            float height = textSize.y + 16f * scale;
+            GUI.Box(new Rect(screen.x - width * 0.5f, Screen.height - screen.y - height, width, height),
+                content, labelStyle);
         }
     }
 }

@@ -110,7 +110,7 @@ namespace PoeClone.UI
                 if (screen.z <= 0f || screen.x < -100f || screen.x > Screen.width + 100f || screen.y < -40f || screen.y > Screen.height + 40f)
                     continue;
 
-                int fontSize = Mathf.RoundToInt(20f * e.Size * scale);
+                int fontSize = Mathf.RoundToInt(32f * e.Size * scale);
                 style.fontSize = fontSize;
                 shadow.fontSize = fontSize;
 
@@ -118,8 +118,10 @@ namespace PoeClone.UI
                 style.normal.textColor = new Color(e.Color.r, e.Color.g, e.Color.b, alpha);
                 shadow.normal.textColor = new Color(0f, 0f, 0f, 0.8f * alpha);
 
-                var rect = new Rect(screen.x - 100f, Screen.height - screen.y - 20f, 200f, 40f);
-                float offset = Mathf.Max(1f, scale);
+                Vector2 textSize = style.CalcSize(new GUIContent(e.Text));
+                var rect = new Rect(screen.x - textSize.x * 0.5f, Screen.height - screen.y - textSize.y * 0.5f,
+                    textSize.x, textSize.y);
+                float offset = Mathf.Max(2f, 2f * scale);
                 GUI.Label(new Rect(rect.x + offset, rect.y + offset, rect.width, rect.height), e.Text, shadow);
                 GUI.Label(rect, e.Text, style);
             }
