@@ -1,3 +1,6 @@
+version: 2026-10-19-arena-minion-recall
+- Minions can now teleport back to you in the arena, its starting room and corridor, and the minimal combat arena.
+
 version: 2026-10-19-skeleton-mage-rally
 - Skeleton Mages deal 25% less base damage.
 - More Missiles is now Rallying Volley: it retains two additional projectiles and grants 20% more skeleton mage cast speed if you have summoned a minion in the last 4 seconds.

@@ -181,7 +181,7 @@ namespace PoeClone.World
             }
             else
             {
-                Block(transform, "Minimal Arena Floor", new Vector3(0f, -0.5f, 0f), new Vector3(48f, 1f, 48f), FloorColor);
+                Block(transform, "Ground_MinimalArena", new Vector3(0f, -0.5f, 0f), new Vector3(48f, 1f, 48f), FloorColor);
                 // Low walls keep both actors on the small, otherwise empty floor.
                 Block(transform, "Minimal Arena Wall", new Vector3(-24f, 1f, 0f), new Vector3(1f, 2f, 49f), WallColor);
                 Block(transform, "Minimal Arena Wall", new Vector3(24f, 1f, 0f), new Vector3(1f, 2f, 49f), WallColor);

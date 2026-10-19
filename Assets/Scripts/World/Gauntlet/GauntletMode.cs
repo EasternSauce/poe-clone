@@ -137,7 +137,7 @@ namespace PoeClone.World
         {
             Color floor = MinimalCombatMode.FloorColor, wall = MinimalCombatMode.WallColor;
             float a = ArenaHalf;
-            MinimalCombatMode.Block(transform, "Gauntlet Arena Floor", new Vector3(0f, -0.5f, 0f), new Vector3(a * 2f, 1f, a * 2f), floor);
+            MinimalCombatMode.Block(transform, "Ground_GauntletArena", new Vector3(0f, -0.5f, 0f), new Vector3(a * 2f, 1f, a * 2f), floor);
             MinimalCombatMode.Block(transform, "Gauntlet Wall", new Vector3(-a, 1f, 0f), new Vector3(1f, 2f, a * 2f + 1f), wall);
             MinimalCombatMode.Block(transform, "Gauntlet Wall", new Vector3(a, 1f, 0f), new Vector3(1f, 2f, a * 2f + 1f), wall);
             MinimalCombatMode.Block(transform, "Gauntlet Wall", new Vector3(0f, 1f, a), new Vector3(a * 2f + 1f, 2f, 1f), wall);
@@ -148,14 +148,14 @@ namespace PoeClone.World
             if (Automated) return;
 
             float corridorStart = StartRoomCenter.z + StartRoomHalf, corridorLength = -a - corridorStart;
-            MinimalCombatMode.Block(transform, "Gauntlet Corridor", new Vector3(0f, -0.5f, corridorStart + corridorLength * 0.5f),
+            MinimalCombatMode.Block(transform, "Ground_GauntletCorridor", new Vector3(0f, -0.5f, corridorStart + corridorLength * 0.5f),
                 new Vector3(DoorHalf * 2f, 1f, corridorLength + 0.2f), floor * 0.9f);
             MinimalCombatMode.Block(transform, "Gauntlet Wall", new Vector3(-DoorHalf - 0.5f, 1f, corridorStart + corridorLength * 0.5f), new Vector3(1f, 2f, corridorLength), wall);
             MinimalCombatMode.Block(transform, "Gauntlet Wall", new Vector3(DoorHalf + 0.5f, 1f, corridorStart + corridorLength * 0.5f), new Vector3(1f, 2f, corridorLength), wall);
 
             float s = StartRoomHalf;
             Vector3 c = StartRoomCenter;
-            MinimalCombatMode.Block(transform, "Gauntlet Start Floor", c + new Vector3(0f, -0.5f, 0f), new Vector3(s * 2f, 1f, s * 2f), floor * 0.85f);
+            MinimalCombatMode.Block(transform, "Ground_GauntletStart", c + new Vector3(0f, -0.5f, 0f), new Vector3(s * 2f, 1f, s * 2f), floor * 0.85f);
             MinimalCombatMode.Block(transform, "Gauntlet Wall", c + new Vector3(-s, 1f, 0f), new Vector3(1f, 2f, s * 2f + 1f), wall);
             MinimalCombatMode.Block(transform, "Gauntlet Wall", c + new Vector3(s, 1f, 0f), new Vector3(1f, 2f, s * 2f + 1f), wall);
             MinimalCombatMode.Block(transform, "Gauntlet Wall", c + new Vector3(0f, 1f, -s), new Vector3(s * 2f + 1f, 2f, 1f), wall);
