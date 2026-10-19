@@ -2276,7 +2276,7 @@ MonoBehaviour:
   - id: sound.skill.Dash
     purpose: Dash
     clips:
-    - {fileID: 8300000, guid: 4d0e6dd91fe0e294c967e5e7bc200f5b, type: 3}
+    - {fileID: 8300000, guid: c6667885552c157429f2bbcf165a5316, type: 3}
     cooldown: 0
     topPriority: 0
   - id: sound.skill.FrostNova

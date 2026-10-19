@@ -2547,7 +2547,7 @@
             "soundGroup": "sound.skill.Dash",
             "purpose": "Dash",
             "current": [
-                "Assets/Audio/SoundLibrary/Combat & weapons/Heavy_weapon_whoosh,_#4-1766763889384.wav"
+                "Assets/Audio/SoundLibrary/Magic & spells/Skill_Wind03.wav"
             ],
             "usages": [
                 {

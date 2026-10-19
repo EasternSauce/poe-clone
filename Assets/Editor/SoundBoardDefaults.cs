@@ -46,7 +46,7 @@ namespace PoeClone.EditorTools
             { "skill.RaiseSkeletons", new[] { "shade1", "shade2", "shade3" } },
             { "enemy.Forest Shaman.Attack", new[] { "Skill_Dark07" } },
             { "skill.BoneGolem", new[] { "Skill_Golem01", "Skill_Golem02" } },
-            { "skill.Dash", new[] { "Heavy_weapon_whoosh,_#4-1766763889384" } },
+            { "skill.Dash", new[] { "Skill_Wind03" } },
             { "skill.WarCry", new[] { "Skill_Warrior02_warcry", "Skill_Warrior03_warcry", "Skill_Warrior05_warcry" } },
             { "skill.Cleave", new[] { "Skill_Warrior08_slash", "Skill_Warrior09_slash" } },
             { "skill.ReapingArc", new[] { "Weapon_Scythe01", "Weapon_Scythe02" } },
