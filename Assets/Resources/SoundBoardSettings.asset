@@ -2027,7 +2027,8 @@ MonoBehaviour:
   - id: sound.player.bow
     purpose: Bow releases
     clips:
-    - {fileID: 8300000, guid: f373f799363f0ed4383c3bf7ff747c43, type: 3}
+    - {fileID: 8300000, guid: 6398415eb0e6426c8b2dbe96b0cb12b1, type: 3}
+    - {fileID: 8300000, guid: fcf25444dc8444338cf56181f5f2738b, type: 3}
     cooldown: 0
     topPriority: 0
   - id: sound.combat.hit

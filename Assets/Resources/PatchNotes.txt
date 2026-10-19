@@ -1,3 +1,6 @@
+version: 2026-10-19-bow-attack-audio
+- Bow shots now use two new bow attack recordings, including Archer and Skeleton Archer shots that share the same sounds.
+
 version: 2026-10-19-dash-wind-audio
 - Dash now plays a short, smooth air rush with no weapon strike or impact sound.
 
