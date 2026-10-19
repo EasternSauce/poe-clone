@@ -14,7 +14,7 @@ namespace PoeClone.Inventory
         MoreDamage, LifeOnHit, ProjectileSpeed, MinionMoveSpeed, MinionDuration,
         HalfMinions, MinionSize, RainSpread, RainSalvos, FireOrbit, ChargeDamage,
         ChargeTime, ArmourPenetration, DamageVsLowLife, PackHunt, MinionRegen,
-        NoFork, FirstStrike, GolemAftershock, SummonsPerCast
+        NoFork, FirstStrike, GolemAftershock, SummonsPerCast, MageCastSpeedAfterSummon
     }
 
     [Serializable]

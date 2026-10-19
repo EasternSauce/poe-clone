@@ -1,3 +1,8 @@
+version: 2026-10-19-skeleton-mage-rally
+- Skeleton Mages deal 25% less base damage.
+- More Missiles is now Rallying Volley: it retains two additional projectiles and grants 20% more skeleton mage cast speed if you have summoned a minion in the last 4 seconds.
+- Quick Lessons is now Twin Apprentices, retaining its minion attack speed and two mages per cast.
+
 version: 2026-10-19-weathered-equipment-colours
 - Purple equipment tier tints now use aged bronze, ash grey and muted green-grey shades across worn gear and shared item art, making them easier to distinguish from missing-material colours.
 

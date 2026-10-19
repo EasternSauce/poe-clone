@@ -95,6 +95,7 @@ namespace PoeClone.Skills
         private float retargetAt;
         private float teleportRetryAt;
         private float damagedAt = float.NegativeInfinity;
+        private float mageRallyUntil;
         private bool dead;
         private float soulBond;
         private float commandRange = 1f;
@@ -121,7 +122,7 @@ namespace PoeClone.Skills
             switch (kind)
             {
                 case MinionKind.Mage:
-                    return new Profile { Life = 369f, Damage = 24f, DamageGrowth = .035f, Cooldown = 1.6f, Range = 12f, Speed = 6f, Look = "Skeleton Mage" };
+                    return new Profile { Life = 369f, Damage = 18f, DamageGrowth = .035f, Cooldown = 1.6f, Range = 12f, Speed = 6f, Look = "Skeleton Mage" };
                 case MinionKind.Wolf:
                     return new Profile { Life = 88f, Damage = 7.25f, DamageGrowth = .035f, Cooldown = 0.8f, Range = 2f, Speed = 9f, Look = "Spirit Wolf" };
                 case MinionKind.Golem:
@@ -269,6 +270,11 @@ namespace PoeClone.Skills
                 Vector3 at = ClearSummonPoint(owner, desired) + Vector3.up * 0.3f;
                 Create(spawner.EnemyPrefab, owner, kind, at, level, sheet);
             }
+            // Any successful summon rallies this owner's mages; restoring saved minions does not.
+            if (count > 0)
+                foreach (Minion minion in All)
+                    if (minion != null && minion.owner == owner && minion.Kind == MinionKind.Mage && !minion.dead)
+                        minion.mageRallyUntil = Time.time + 4f;
         }
 
         /// <summary>Per-cast batch, capped before replacing any existing minions.</summary>
@@ -676,6 +682,8 @@ namespace PoeClone.Skills
             float bonus = hordeSpeed * horde;
             speed = baseSpeed * Mathf.Max(0.2f, 1f + (moveIncrease + bonus) / 100f);
             float attackHaste = Mathf.Max(0.2f, 1f + (attackIncrease + bonus) / 100f);
+            if (Kind == MinionKind.Mage && Time.time < mageRallyUntil)
+                attackHaste *= 1f + tree.Get(WeaponSkillEffect.MageCastSpeedAfterSummon) / 100f;
             attackCooldown = baseCooldown / attackHaste;
             attack.PlaybackSpeed = attackHaste;
         }
@@ -693,7 +701,8 @@ namespace PoeClone.Skills
         private void Update()
         {
             if (Kind == MinionKind.Effigy) return;
-            if (hordeSpeed > 0f) ApplySpeed(HordeCount(owner));
+            if (hordeSpeed > 0f || (Kind == MinionKind.Mage && tree.Get(WeaponSkillEffect.MageCastSpeedAfterSummon) > 0f))
+                ApplySpeed(hordeSpeed > 0f ? HordeCount(owner) : 0);
             Player.PlayerStats ownerStats = owner != null ? owner.GetComponent<Player.PlayerStats>() : null;
             if (owner == null || Time.time >= expiresAt || (ownerStats != null && ownerStats.IsDead))
             {
