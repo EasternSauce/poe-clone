@@ -1,3 +1,6 @@
+version: 2026-10-19-toughness-life-only
+- Toughness now grants only +12 maximum life. Removed its unconditional 5% less damage taken from the first step of the passive tree.
+
 version: 2026-10-19-map-toggle-and-waterfall-fix
 - The Map button stays in place when opening or closing the map outline, so it can be used as a toggle.
 - Quest details start hidden unless you have saved a preference to show them.

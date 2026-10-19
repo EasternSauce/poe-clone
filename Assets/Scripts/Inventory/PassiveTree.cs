@@ -178,7 +178,7 @@ namespace PoeClone.Inventory
         private static void BuildMight()
         {
             Sector(PassiveBranch.Might, 210f);
-            N("m1", "Toughness", 0.55f, 0f, Mod(StatType.MaxLife, 12), Mod(StatType.DamageTaken, -5));
+            N("m1", "Toughness", 0.55f, 0f, Mod(StatType.MaxLife, 12));
             N("m2", "Brawn", 0.9f, 0f, Road());
             Chain("m1", "m2");
 
