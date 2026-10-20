@@ -149,7 +149,7 @@ namespace PoeClone.World
             routeScroll.content = content;
             routeScroll.horizontal = false;
             routeScroll.movementType = ScrollRect.MovementType.Clamped;
-            routeScroll.scrollSensitivity = 50;
+            routeScroll.scrollSensitivity = 50f / 3f;
 
             Image track = UiKit.NewImage("Scrollbar", area, new Color(.04f, .04f, .05f));
             track.raycastTarget = true;

@@ -1,3 +1,6 @@
+version: 2026-10-20-arena-scroll-speed
+- Reduced build picker mouse-wheel scrolling speed to one-third.
+
 version: 2026-10-20-arena-top-dps-frame
 - The highest-DPS arena build in each level category now has a persistent green frame and green-tinted background. Selected builds keep their orange background.
 
