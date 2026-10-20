@@ -1,3 +1,6 @@
+version: 2026-10-20-arena-top-dps-frame
+- The highest-DPS arena build in each level category now has a persistent green frame and green-tinted background. Selected builds keep their orange background.
+
 version: 2026-10-20-arena-route-effects
 - Arena build picker routes now show their current destination effects instead of node names. Rows expand to keep effects and DPS readable.
 

@@ -26,6 +26,7 @@ namespace PoeClone.World
         private ScrollRect routeScroll;
         private Image randomLevelButton, randomBuildButton, lowerLevelButton;
         private readonly List<Image> routeButtons = new List<Image>();
+        private readonly List<Image> routeHighlights = new List<Image>();
         private readonly List<Text> routeLabels = new List<Text>();
         private readonly List<Text> categoryHeaders = new List<Text>();
         private string skill, route;
@@ -312,13 +313,16 @@ namespace PoeClone.World
                             route = visibleChoices[index].id; randomBuild = false; Refresh();
                         });
                         routeButtons.Add(button);
+                        Image highlight = UiKit.Rim(button.rectTransform, outset: -1f, tint: HighestDps);
+                        highlight.name = "TopDpsFrame";
+                        routeHighlights.Add(highlight);
                         Text label = button.GetComponentInChildren<Text>();
                         routeLabels.Add(label);
                     }
                 }
             }
             for (int i = category; i < categoryHeaders.Count; i++) categoryHeaders[i].gameObject.SetActive(false);
-            levelGroupLabel.text = "All level categories · Highest DPS first within each category · Green = leader";
+            levelGroupLabel.text = "All level categories · Highest DPS first within each category · Green frame = top DPS";
             levelLabel.text = randomLevel ? "Level " + MinimumLevel + "–34" : "Level " + level;
             skillLabel.text = skill + "  (" + (System.Array.IndexOf(skills, skill) + 1) + "/" + skills.Length + ")";
             randomLevelButton.color = randomLevel ? Selected : Color.white;
@@ -332,12 +336,14 @@ namespace PoeClone.World
                 float dps = BalanceArenaBuilds.EstimatedDps(preview);
                 float bossDps = BalanceArenaBuilds.EstimatedDps(preview, boss: true);
                 bool highest = choice.id == leaders[choice.level];
+                routeHighlights[i].gameObject.SetActive(highest);
                 routeLabels[i].text = BalanceArenaBuilds.RouteEffects(choice) + "  · Lv " + choice.level + "+" +
                     "\n≈ " + dps.ToString("N0") + " effective DPS" +
                     (Mathf.Approximately(dps, bossDps) ? "" : " · " + bossDps.ToString("N0") + " boss DPS") +
                     " at Lv " + preview.level + (highest ? " · TOP DPS" : "");
                 routeLabels[i].color = highest ? HighestDps : UiKit.TextColor;
-                routeButtons[i].color = !randomBuild && choice.id == route ? Selected : Color.white;
+                routeButtons[i].color = !randomBuild && choice.id == route ? Selected :
+                    highest ? new Color(.7f, 1f, .8f) : Color.white;
             }
             routeCountLabel.text = choices.Count + " routes in " + category + " level categories · Scroll or drag to browse all builds";
             detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected skill: " + skill) +
