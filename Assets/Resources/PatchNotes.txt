@@ -1,3 +1,8 @@
+version: 2026-10-20-heavy-weapon-passives
+- Cleave's sustain branch now grants heavy-hit damage and armour penetration, ending in 30% more damage. Opening Edge grants 20% more damage against full-life enemies, and Headsman's Blow executes non-boss enemies below 20% life.
+- Replaced life leech and life-on-hit passives on Reaping Arc, Lunging Thrust, Fissure, Aftershock and Cross Slash with damage, armour penetration or full-life bonuses.
+- Reaping Arc, Cross Slash and Piercing Shot now reward opening hits against full-life enemies instead of increased damage against low-life enemies.
+
 version: 2026-10-20-cleave-reach-tuning
 - Reduced Cleave's reach by 20%, keeping its 120-degree angle.
 

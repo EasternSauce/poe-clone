@@ -9,11 +9,11 @@ namespace PoeClone.Inventory
         Damage, Speed, Area, Range, Projectiles, Chains, Pierce, Fork, LegacyRepeat,
         Chill, Shock, Ignite, Shatter, Explode, Poison, Cloud, Duration,
         Minions, MinionLife, LegacyMinionSpeed, MinionArmour, MinionResists,
-        Leech, Cull, Splash, Fire, Cold, Lightning, DamageVsChilled,
+        LegacyLeech, Cull, Splash, Fire, Cold, Lightning, DamageVsChilled,
         Cost, LegacySingleProjectile, ChainRetention, ExtraWaves, MinionDeathBurst,
         MoreDamage, LifeOnHit, ProjectileSpeed, MinionMoveSpeed, MinionDuration,
         HalfMinions, MinionSize, RainSpread, RainSalvos, FireOrbit, ChargeDamage,
-        ChargeTime, ArmourPenetration, DamageVsLowLife, PackHunt, MinionRegen,
+        ChargeTime, ArmourPenetration, LegacyDamageVsLowLife, PackHunt, MinionRegen,
         NoFork, FirstStrike, GolemAftershock, SummonsPerCast, MageCastSpeedAfterSummon
     }
 

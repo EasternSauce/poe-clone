@@ -548,7 +548,7 @@ namespace PoeClone.EditorTools
             Incoming(kit.basis.Level, sheet, tree, false, out s.incomingHit, out s.incomingDps);
             s.lifeRecovery = sheet.Total(StatType.NoLifeRegen) > 0 ? 0 : DefenceMath.LifeRegenPerSecond(s.life, sheet.Total(StatType.LifeRegen), sheet.Total(StatType.PercentLifeRegen));
             float leech = skill.Summon ? sheet.Total(StatType.SoulBond) : skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.LifeLeech) : sheet.Total(StatType.SpellLeech);
-            s.lifeRecovery += s.hitDps * s.encounterUseFraction * (leech + tree.Get(E.Leech)) / 100;
+            s.lifeRecovery += s.hitDps * s.encounterUseFraction * leech / 100;
             if (!skill.Summon) s.lifeRecovery += (tree.Get(E.LifeOnHit) + (skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.LifeOnAttackHit) : 0)) * s.usesPerSecond * s.encounterUseFraction;
             s.hitsToDie = s.life / Mathf.Max(.01f, s.incomingHit);
             s.secondsToDie = s.incomingDps <= s.lifeRecovery ? -1 : s.life / (s.incomingDps - s.lifeRecovery);

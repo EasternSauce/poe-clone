@@ -35,10 +35,10 @@ namespace PoeClone.Skills
                 // These effects are a share of the final hit; do not apply owner damage increases twice.
                 if (b.Get(E.Poison) > 0 || b.Get(E.Cloud) > 0)
                     WeaponVenom.Apply(owner, enemy, dealt, b.Get(E.Poison), b.Get(E.Cloud), inventory?.Stats, minionDamage: true, melee: melee, durationMultiplier: b.DurationMultiplier, radiusMultiplier: b.AreaMultiplier, tree: b);
-                if (b.Get(E.Cull) > 0 && !EnemyKinds.Get(enemy.KindIndex).IsBoss && enemy.CurrentHealth < enemy.MaxHealth * 0.1f)
+                if (b.Get(E.Cull) > 0 && !EnemyKinds.Get(enemy.KindIndex).IsBoss && enemy.CurrentHealth < enemy.MaxHealth * b.Get(E.Cull) / 100f)
                     enemy.TakeDamage(enemy.CurrentHealth + enemy.MaxHealth + 1f);
             }
-            if (stats != null && !stats.IsDead) stats.Heal(dealt * b.Get(E.Leech) / 100f + b.Get(E.LifeOnHit));
+            if (stats != null && !stats.IsDead) stats.Heal(b.Get(E.LifeOnHit));
             bool shatter = enemy.IsDead && (wasChilled || ai != null && ai.IsChilled) && Roll(b.Get(E.Shatter));
             bool explode = enemy.IsDead && Roll(b.Get(E.Explode));
             float splash = b.Get(E.Splash);

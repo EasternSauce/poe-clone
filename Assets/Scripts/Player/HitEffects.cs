@@ -87,8 +87,7 @@ namespace PoeClone.Player
             if (sheet != null)
             {
                 damage *= Increase(sheet, stats, attack, type, wasChilled, spell: !secondary, skillIncreased: !secondary && tree != null ?
-                    skillIncreased + tree.Get(WeaponSkillEffect.Damage) + (wasChilled ? tree.Get(WeaponSkillEffect.DamageVsChilled) : 0f) +
-                    (enemy.CurrentHealth < enemy.MaxHealth * 0.5f ? tree.Get(WeaponSkillEffect.DamageVsLowLife) : 0f) : 0f);
+                    skillIncreased + tree.Get(WeaponSkillEffect.Damage) + (wasChilled ? tree.Get(WeaponSkillEffect.DamageVsChilled) : 0f) : 0f);
                 damage *= 1f + stats.RampageStacks * Mathf.Max(0f, sheet.Total(StatType.Rampage)) / 100f;
                 if (projectileDistance >= 0f && sheet.Total(StatType.PointBlank) > 0f)
                     damage *= StatSheet.PointBlankMultiplier(projectileDistance);

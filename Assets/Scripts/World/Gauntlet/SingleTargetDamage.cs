@@ -65,7 +65,7 @@ namespace PoeClone.World
                 baseHit += sheet.Total(StatType.MaxMana) * sheet.Total(StatType.ManaAsDamage) / 100;
                 float chilled = skill.Id == SkillId.IceShard ? 1 : ChanceUptime(tree.Get(E.Chill) + (attack ? sheet.Total(StatType.ChillOnHit) : 0), rate, 2 * tree.DurationMultiplier);
                 multiplier = sheet.DamageMultiplier(attack, skill.Bow, false, false, DamageStat(element), spell: true,
-                    skillIncreased: tree.Get(E.Damage) + (skill.Id == SkillId.PiercingShot ? tree.Get(E.ChargeDamage) : 0) + chilled * (tree.Get(E.DamageVsChilled) + sheet.Total(StatType.DamageVsChilled)) + .5f * tree.Get(E.DamageVsLowLife)) * tree.MoreDamageMultiplier;
+                    skillIncreased: tree.Get(E.Damage) + (skill.Id == SkillId.PiercingShot ? tree.Get(E.ChargeDamage) : 0) + chilled * (tree.Get(E.DamageVsChilled) + sheet.Total(StatType.DamageVsChilled))) * tree.MoreDamageMultiplier;
                 if (attack) multiplier *= 1 + sheet.AttackCriticalChance / 100 * (.5f + sheet.Total(StatType.CriticalMultiplier) / 100);
                 if (skill.Bow && sheet.Total(StatType.PointBlank) > 0) multiplier *= StatSheet.PointBlankMultiplier(6);
             }
