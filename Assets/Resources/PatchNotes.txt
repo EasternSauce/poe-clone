@@ -1,3 +1,7 @@
+version: 2026-10-20-arena-all-routes
+- All arena builds for a skill now appear in one scrollable list with visible minimum-level category headers. The initial level-one route no longer occupies a page by itself and hides the other builds behind page navigation.
+- Each category keeps descending DPS order and its green top entry. A scrollbar and route count make the remaining builds discoverable.
+
 version: 2026-10-20-arena-dps-categories
 - Arena build categories now have separate pages for each minimum level, ranked by effective DPS with the category leader highlighted green.
 - DPS estimates now include the Skeleton Mage buff maintained by summoning, Marching Horde attack speed, and curse-on-hit uptime. Opening-hit, full/low-life and on-kill buffs remain excluded.

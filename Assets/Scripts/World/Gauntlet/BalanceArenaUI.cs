@@ -16,17 +16,18 @@ namespace PoeClone.World
         private readonly List<Vector2> layoutPositions = new List<Vector2>();
         private readonly List<Vector2> layoutSizes = new List<Vector2>();
         private Vector2 lastCanvasSize;
-        private Text status, levelLabel, skillLabel, detail, pageLabel, levelGroupLabel;
+        private Text status, levelLabel, skillLabel, detail, routeCountLabel, levelGroupLabel;
+        private ScrollRect routeScroll;
         private Image randomLevelButton, randomBuildButton, lowerLevelButton;
         private readonly List<Image> routeButtons = new List<Image>();
         private readonly List<Text> routeLabels = new List<Text>();
+        private readonly List<Text> categoryHeaders = new List<Text>();
         private string skill, route;
-        private int level = 21, page;
+        private int level = 21;
         private bool randomLevel, randomBuild;
         private List<BalanceArenaBuilds.Entry> choices;
         private string[] skills;
         private List<BalanceArenaBuilds.Entry> visibleChoices;
-        private const int PageSize = 6;
         private static readonly Color HighestDps = new Color(.45f, 1f, .65f);
         private static readonly Color Selected = new Color(1f, .62f, .3f);
 
@@ -63,7 +64,7 @@ namespace PoeClone.World
             levelLabel = Label(panel, "", new Vector2(115, -130), new Vector2(200, 48), 24);
             Button(panel, "+", new Vector2(325, -130), new Vector2(65, 48), () => ChangeLevel(1));
             randomLevelButton = Button(panel, "Random level", new Vector2(430, -130), new Vector2(280, 48), () => {
-                randomLevel = !randomLevel; page = 0; Refresh();
+                randomLevel = !randomLevel; Refresh();
             });
             randomBuildButton = Button(panel, "Random build", new Vector2(750, -130), new Vector2(330, 48), () => {
                 randomBuild = !randomBuild; Refresh();
@@ -72,22 +73,8 @@ namespace PoeClone.World
             skillLabel = Label(panel, "", new Vector2(275, -200), new Vector2(570, 48), 24);
             Button(panel, "Next skill", new Vector2(860, -200), new Vector2(220, 48), () => ChangeSkill(1));
             levelGroupLabel = Label(panel, "", new Vector2(40, -256), new Vector2(1040, 28), 18);
-            for (int i = 0; i < PageSize; i++)
-            {
-                int index = i;
-                Image b = Button(panel, "", new Vector2(40, -290 - i * 50), new Vector2(1040, 46), () => {
-                    route = visibleChoices[index].id; randomBuild = false; Refresh();
-                });
-                routeButtons.Add(b);
-                Text label = b.GetComponentInChildren<Text>();
-                label.resizeTextForBestFit = true;
-                label.resizeTextMinSize = 12;
-                label.resizeTextMaxSize = 19;
-                routeLabels.Add(label);
-            }
-            Button(panel, "Previous routes", new Vector2(40, -604), new Vector2(240, 42), () => { page--; Refresh(); });
-            pageLabel = Label(panel, "", new Vector2(290, -604), new Vector2(540, 42), 18);
-            Button(panel, "Next routes", new Vector2(840, -604), new Vector2(240, 42), () => { page++; Refresh(); });
+            BuildRouteList();
+            routeCountLabel = Label(panel, "", new Vector2(40, -604), new Vector2(1040, 42), 18);
             detail = Label(panel, "", new Vector2(40, -662), new Vector2(1040, 100), 18);
             Button(panel, "Enter arena", new Vector2(200, -780), new Vector2(330, 54), StartRun, 24);
             Button(panel, "Random level + build", new Vector2(590, -780), new Vector2(330, 54), () => {
@@ -103,6 +90,54 @@ namespace PoeClone.World
             }
             Refresh();
             Layout();
+        }
+
+        private void BuildRouteList()
+        {
+            var area = UiKit.NewRect("BuildRoutes", panel);
+            UiKit.TopLeft(area, new Vector2(40, -290), new Vector2(1040, 304));
+            Image viewport = UiKit.NewImage("Viewport", area, Color.clear);
+            UiKit.Stretch(viewport.rectTransform, 0);
+            viewport.rectTransform.offsetMax = new Vector2(-20, 0);
+            viewport.raycastTarget = true;
+            viewport.gameObject.AddComponent<RectMask2D>();
+            var content = UiKit.NewRect("Routes", viewport.transform);
+            content.anchorMin = new Vector2(0, 1);
+            content.anchorMax = new Vector2(1, 1);
+            content.pivot = new Vector2(.5f, 1);
+            content.sizeDelta = Vector2.zero;
+            routeScroll = area.gameObject.AddComponent<ScrollRect>();
+            routeScroll.viewport = viewport.rectTransform;
+            routeScroll.content = content;
+            routeScroll.horizontal = false;
+            routeScroll.movementType = ScrollRect.MovementType.Clamped;
+            routeScroll.scrollSensitivity = 50;
+
+            Image track = UiKit.NewImage("Scrollbar", area, new Color(.04f, .04f, .05f));
+            track.raycastTarget = true;
+            track.rectTransform.anchorMin = new Vector2(1, 0);
+            track.rectTransform.anchorMax = Vector2.one;
+            track.rectTransform.pivot = new Vector2(1, .5f);
+            track.rectTransform.sizeDelta = new Vector2(13, 0);
+            var sliding = UiKit.NewRect("SlidingArea", track.transform);
+            UiKit.Stretch(sliding, 2);
+            Image handle = UiKit.NewImage("Handle", sliding, UiKit.BorderColor);
+            handle.raycastTarget = true;
+            UiKit.Stretch(handle.rectTransform, 0);
+            var scrollbar = track.gameObject.AddComponent<Scrollbar>();
+            scrollbar.targetGraphic = handle;
+            scrollbar.handleRect = handle.rectTransform;
+            scrollbar.direction = Scrollbar.Direction.BottomToTop;
+            routeScroll.verticalScrollbar = scrollbar;
+        }
+
+        private static void RoutePosition(RectTransform rect, float y, float height)
+        {
+            rect.anchorMin = new Vector2(0, 1);
+            rect.anchorMax = new Vector2(1, 1);
+            rect.pivot = new Vector2(.5f, 1);
+            rect.anchoredPosition = new Vector2(0, -y);
+            rect.sizeDelta = new Vector2(0, height);
         }
 
         private void Layout()
@@ -146,20 +181,14 @@ namespace PoeClone.World
                     else if (y == 604f)
                     {
                         at.y = -684f;
-                        if (at.x == 290f) { at.x = 94f; dimensions.x = w - 188f; }
-                        else
-                        {
-                            at.x = at.x == 40f ? 24f : w - 84f; dimensions.x = 60f;
-                            layoutItems[i].GetComponentInChildren<Text>().text = layoutPositions[i].x == 40f ? "‹" : "›";
-                        }
+                        at.x = 24f; dimensions.x = w - 48f;
                     }
                     else if (y == 662f) { at = new Vector2(24f, -746f); dimensions = new Vector2(w - 48f, 240f); }
                     else if (y == 780f) { at = new Vector2(24f, at.x == 200f ? -1010f : -1080f); dimensions.x = w - 48f; }
                 }
-                else if (-at.y == 200f || -at.y == 604f)
+                else if (-at.y == 200f)
                 {
-                    string value = at.x == 40f ? (-at.y == 200f ? "Previous skill" : "Previous routes") :
-                        at.x == 860f ? "Next skill" : at.x == 840f ? "Next routes" : null;
+                    string value = at.x == 40f ? "Previous skill" : at.x == 860f ? "Next skill" : null;
                     if (value != null) layoutItems[i].GetComponentInChildren<Text>().text = value;
                 }
                 UiKit.TopLeft(layoutItems[i], at, dimensions);
@@ -174,7 +203,7 @@ namespace PoeClone.World
         private void ChangeLevel(int delta)
         {
             level = Mathf.Clamp(level + delta, MinimumLevel, 34);
-            randomLevel = false; page = 0; Refresh();
+            randomLevel = false; Refresh();
         }
         private int MinimumLevel => randomBuild ? 1 : choices.First(b => b.id == route).level;
         private IEnumerable<BalanceArenaBuilds.Entry> Available => BalanceArenaBuilds.Data.builds.Where(b => randomLevel || b.level == level);
@@ -182,7 +211,9 @@ namespace PoeClone.World
         {
             int current = System.Array.IndexOf(skills, skill);
             skill = skills[(current + delta + skills.Length) % skills.Length];
-            route = null; randomBuild = false; page = 0; Refresh();
+            route = null; randomBuild = false; Refresh();
+            routeScroll.StopMovement();
+            routeScroll.verticalNormalizedPosition = 1;
         }
         private void Refresh()
         {
@@ -193,27 +224,53 @@ namespace PoeClone.World
             if (!choices.Any(b => b.id == route)) route = choices[0].id;
             level = Mathf.Max(level, MinimumLevel);
             lowerLevelButton.color = !randomLevel && level <= MinimumLevel ? new Color(.45f, .45f, .45f) : Color.white;
-            // Each page belongs to one minimum-level category, including continuation pages.
-            var categoryPages = new List<List<BalanceArenaBuilds.Entry>>();
+            // Keep every category in one list: the flexible level-one route must not hide the rest.
+            visibleChoices = new List<BalanceArenaBuilds.Entry>();
             var leaders = new Dictionary<int, string>();
+            float y = 0;
+            int category = 0;
             foreach (var group in choices.GroupBy(b => b.level).OrderBy(g => g.Key))
             {
                 var ranked = group.OrderByDescending(b => BalanceArenaBuilds.EstimatedDps(Preview(b)))
                     .ThenBy(b => b.name, System.StringComparer.Ordinal).ThenBy(b => b.id, System.StringComparer.Ordinal).ToList();
                 leaders[group.Key] = ranked[0].id;
-                for (int offset = 0; offset < ranked.Count; offset += PageSize)
-                    categoryPages.Add(ranked.Skip(offset).Take(PageSize).ToList());
+                if (category >= categoryHeaders.Count)
+                    categoryHeaders.Add(Label(routeScroll.content, "", Vector2.zero, Vector2.zero, 18));
+                Text header = categoryHeaders[category++];
+                header.gameObject.SetActive(true);
+                header.text = "MINIMUM LEVEL " + group.Key + " · " + ranked.Count + (ranked.Count == 1 ? " route" : " routes");
+                header.raycastTarget = false;
+                RoutePosition(header.rectTransform, y, 28);
+                y += 32;
+                foreach (var choice in ranked)
+                {
+                    int index = visibleChoices.Count;
+                    visibleChoices.Add(choice);
+                    if (index >= routeButtons.Count)
+                    {
+                        Image button = Button(routeScroll.content, "", Vector2.zero, Vector2.zero, () => {
+                            route = visibleChoices[index].id; randomBuild = false; Refresh();
+                        });
+                        routeButtons.Add(button);
+                        Text label = button.GetComponentInChildren<Text>();
+                        label.resizeTextForBestFit = true;
+                        label.resizeTextMinSize = 12;
+                        label.resizeTextMaxSize = 19;
+                        routeLabels.Add(label);
+                    }
+                    RoutePosition(routeButtons[index].rectTransform, y, 46);
+                    y += 50;
+                }
+                y += 8;
             }
-            int pages = categoryPages.Count;
-            page = Mathf.Clamp(page, 0, pages - 1);
-            visibleChoices = categoryPages[page];
-            int categoryLevel = visibleChoices[0].level;
-            levelGroupLabel.text = "MINIMUM LEVEL " + categoryLevel + " · Highest DPS first · Green = category leader";
+            for (int i = category; i < categoryHeaders.Count; i++) categoryHeaders[i].gameObject.SetActive(false);
+            routeScroll.content.sizeDelta = new Vector2(0, y);
+            levelGroupLabel.text = "All level categories · Highest DPS first within each category · Green = leader";
             levelLabel.text = randomLevel ? "Level " + MinimumLevel + "–34" : "Level " + level;
             skillLabel.text = skill + "  (" + (System.Array.IndexOf(skills, skill) + 1) + "/" + skills.Length + ")";
             randomLevelButton.color = randomLevel ? Selected : Color.white;
             randomBuildButton.color = randomBuild ? Selected : Color.white;
-            for (int i = 0; i < PageSize; i++)
+            for (int i = 0; i < routeButtons.Count; i++)
             {
                 routeButtons[i].gameObject.SetActive(i < visibleChoices.Count);
                 if (i >= visibleChoices.Count) continue;
@@ -229,7 +286,7 @@ namespace PoeClone.World
                 routeLabels[i].color = highest ? HighestDps : UiKit.TextColor;
                 routeButtons[i].color = !randomBuild && choice.id == route ? Selected : Color.white;
             }
-            pageLabel.text = "Level " + categoryLevel + " category · Page " + (page + 1) + " / " + pages + " · " + choices.Count + " routes total";
+            routeCountLabel.text = choices.Count + " routes in " + category + " level categories · Scroll or drag to browse all builds";
             detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected: " + skill + " · " + choices.First(b => b.id == route).name) +
                 (randomBuild ? "\nRandom builds use routes available at the chosen level." : "\nMinimum level " + MinimumLevel + ". Change build to lower the level further.") +
                 "\nDPS: full army + repeatable buffs; cull vs non-bosses. Excludes opening/kill buffs and downtime." +
