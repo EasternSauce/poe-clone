@@ -60,6 +60,7 @@ namespace PoeClone.Player
         private bool pressSpentElsewhere;
         // The held press has attacked, so hovering an item, an NPC or a gate no longer stops it.
         private bool pressAttacking;
+        private bool attackWasHeld;
         private bool sniperCharging;
         private float sniperCharge;
         private ItemData sniperWeapon;
@@ -201,6 +202,8 @@ namespace PoeClone.Player
                     pressAttacking = true;
             }
 
+            bool freshAttack = attackPressed && !attackWasHeld;
+            attackWasHeld = attackPressed;
             if (sniperCharging)
             {
                 if (SkillSet == null || SkillSet.MainWeapon != sniperWeapon || stats.IsDead ||
@@ -226,7 +229,7 @@ namespace PoeClone.Player
             if (SkillSet != null)
                 SkillSet.AttackHeld = attackPressed;
 
-            bool queuedMelee = SkillSet != null && SkillSet.QueueMeleeFollowup(attackPressed);
+            bool queuedMelee = SkillSet != null && SkillSet.QueueMeleeFollowup(attackPressed, freshAttack);
             bool attackReady = cooldownTimer <= 0f || (queuedMelee && SkillSet.MeleeFollowupReady);
             if ((attackPressed || queuedMelee) && attackReady && (controller == null || (!controller.IsSkillCommitted && !controller.IsChannelling)) &&
                 attackAnimator != null && !attackAnimator.IsAttacking)
@@ -318,7 +321,7 @@ namespace PoeClone.Player
             if (controller != null)
                 controller.CancelWalk();
 
-            FaceAimPoint();
+            if (controller == null || !controller.IsComboLocked) FaceAimPoint();
             aimEnemy = highlighted;
             hasAimPoint = TryGetAimPoint(out aimPoint);
             if (TouchMode.Active)

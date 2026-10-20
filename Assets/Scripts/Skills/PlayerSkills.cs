@@ -170,9 +170,7 @@ namespace PoeClone.Skills
 
         private void OnDisable()
         {
-            ResetMeleeCombo();
-            CancelPendingCast();
-            EndWhirlwind();
+            CancelActions();
         }
 
         private void OnPlayerDied()
@@ -359,6 +357,7 @@ namespace PoeClone.Skills
                 return;
             }
 
+            AdvanceComboPreview();
             AdvanceCast();
 
             int pressed = VirtualInput.SkillPressed;
@@ -1079,6 +1078,7 @@ namespace PoeClone.Skills
 
         private void Face(Vector3 direction)
         {
+            if (controller != null && controller.IsComboLocked) return;
             direction = Flat(direction);
             if (direction.sqrMagnitude > 0.0001f)
                 transform.rotation = Quaternion.LookRotation(direction);

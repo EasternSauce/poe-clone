@@ -185,7 +185,7 @@ namespace PoeClone.Player
             if (perSecond <= 0f)
                 return;
 
-            float dealt = perSecond * Time.deltaTime;
+            float dealt = perSecond * Time.deltaTime * ComboTakenMultiplier;
             poisonShown += dealt;
             if (Time.time >= poisonShowAt)
             {
@@ -413,6 +413,7 @@ namespace PoeClone.Player
             }
 
             Color color = type == DamageType.Physical ? CombatText.PlayerHurtColor : CombatText.ColorFor(type);
+            damage *= ComboTakenMultiplier;
             CombatText.Show(textAt, Mathf.Max(1, Mathf.RoundToInt(damage)).ToString(), color);
 
             float absorbed = DefenceMath.ManaAbsorbed(damage, currentMana, sheet != null ? sheet.Total(StatType.ManaAbsorb) : 0f);
@@ -420,7 +421,7 @@ namespace PoeClone.Player
             if (absorbed > 0f)
                 ManaAbsorbedHit?.Invoke(absorbed);
 
-            ApplyDamage(damage - absorbed, rollSeed);
+            ApplyDamage(damage - absorbed, rollSeed, comboReduced: true);
             return true;
         }
 
@@ -469,11 +470,14 @@ namespace PoeClone.Player
 
         public void TakeDamage(float amount) => ApplyDamage(amount, EventRandom.NextSeed());
 
-        private void ApplyDamage(float amount, int rollSeed)
+        public float ComboTakenMultiplier => controller != null && controller.IsComboLocked ? 0.4f : 1f;
+
+        private void ApplyDamage(float amount, int rollSeed, bool comboReduced = false)
         {
             if (dead || ArrivalProtected || amount <= 0f)
                 return;
 
+            if (!comboReduced) amount *= ComboTakenMultiplier;
             DamageTaken?.Invoke(Mathf.Min(amount, currentHealth));
             currentHealth = Mathf.Max(
                 0f,

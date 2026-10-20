@@ -637,6 +637,7 @@ namespace PoeClone.Visuals
         private bool holding;
 
         public bool IsAttacking { get; private set; }
+        public bool ComboBracing { get; set; }
 
         /// <summary>True while a channelled skill's pose is held (Whirlwind): the legs brace instead of striding.</summary>
         public bool IsHolding => IsAttacking && holding;
@@ -659,7 +660,7 @@ namespace PoeClone.Visuals
         public float Lunge { get; private set; }
 
         /// <summary>True while a two-handed attack is posing the off arm (the walk cycle leaves it alone).</summary>
-        public bool DrivesOffArm => IsAttacking && activeProfile != null && (activeProfile.UsesOffArm || activeProfile.TwoHandGrip || activeProfile.Staff);
+        public bool DrivesOffArm => ComboBracing || IsAttacking && activeProfile != null && (activeProfile.UsesOffArm || activeProfile.TwoHandGrip || activeProfile.Staff);
 
         /// <summary>True while a staff swing or cast plays: <see cref="CurrentStaffPose"/> says where the staff is.</summary>
         public bool PosesStaff => IsAttacking && activeProfile != null && activeProfile.Staff;
@@ -912,7 +913,14 @@ namespace PoeClone.Visuals
         {
             if (!IsAttacking)
             {
-                TorsoPitch = TorsoYaw = Lunge = 0f;
+                TorsoPitch = ComboBracing ? 12f : 0f;
+                TorsoYaw = ComboBracing ? -12f : 0f;
+                Lunge = 0f;
+                if (ComboBracing)
+                {
+                    Apply(weaponArm, weaponElbow, new Pose(-65f, -25f, -15f, 55f));
+                    Apply(offArm, offElbow, new Pose(-55f, 20f, 12f, 60f));
+                }
                 return;
             }
 

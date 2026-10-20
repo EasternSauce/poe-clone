@@ -229,6 +229,7 @@ namespace PoeClone.Network
             EntityState prev = applied;
             applied = p.Clone();
             attack?.ApplyReplicatedHold(p.ap, p.ah != 0 && p.d == 0);
+            if (attack != null) attack.ComboBracing = p.cb && p.d == 0;
             Transform t = body.transform;
             if (prev == null)
             {

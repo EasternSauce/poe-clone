@@ -30,6 +30,29 @@ namespace PoeClone.Player
         private bool walking;
         private bool skillCommitted;
         public bool IsSkillCommitted => skillCommitted;
+        public bool IsComboBraced { get; private set; }
+        private bool comboAttackLocked;
+        private Quaternion comboFacing;
+        public bool IsComboLocked => IsComboBraced || comboAttackLocked;
+
+        public void SetComboBrace(bool braced)
+        {
+            if (braced && !IsComboLocked) comboFacing = transform.rotation;
+            IsComboBraced = braced;
+            if (braced) CancelWalk();
+        }
+
+        public void BeginComboAttack(bool locked)
+        {
+            comboAttackLocked = locked;
+            IsComboBraced = false;
+            if (locked) transform.rotation = comboFacing;
+        }
+
+        private void LateUpdate()
+        {
+            if (IsComboLocked) transform.rotation = comboFacing;
+        }
         private Vector3 walkTarget;
         private float walkArriveDistance;
         private float walkGiveUpAt;
@@ -110,6 +133,7 @@ namespace PoeClone.Player
         /// <summary>Discard movement in progress so it cannot resume on the far side of a gate.</summary>
         public void StopMovement()
         {
+            IsComboBraced = comboAttackLocked = false;
             MovementRevision++;
             CancelWalk();
             dashTimeLeft = 0f;
@@ -228,8 +252,8 @@ namespace PoeClone.Player
                 return;
             }
 
-            Vector2 input = skillCommitted || IsRooted || channelling ? Vector2.zero : ReadMovementInput();
-            if (skillCommitted || IsRooted || channelling)
+            Vector2 input = skillCommitted || IsComboBraced || IsRooted || channelling ? Vector2.zero : ReadMovementInput();
+            if (skillCommitted || IsComboBraced || IsRooted || channelling)
                 walking = false;
 
             // Move relative to the camera so W is always "up the screen",
@@ -326,6 +350,7 @@ namespace PoeClone.Player
         public void SetSkillCommit(bool committed)
         {
             skillCommitted = committed;
+            if (!committed) comboAttackLocked = false;
             if (committed)
                 CancelWalk();
         }

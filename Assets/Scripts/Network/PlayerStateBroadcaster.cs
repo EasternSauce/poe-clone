@@ -192,6 +192,7 @@ namespace PoeClone.Network
             p.atk = attackAnimator != null ? attackAnimator.AttackCount : 0;
             p.ap = attackAnimator != null ? attackAnimator.ProfileId : 0;
             p.ah = attackAnimator != null && attackAnimator.IsHolding ? 1 : 0;
+            p.cb = attackAnimator != null && attackAnimator.ComboBracing;
             p.rs = skills != null ? skills.WhirlYawSpeed : 0f;
             p.stg = stagger != null ? stagger.TriggerCount : 0;
             p.ch = 0;

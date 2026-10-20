@@ -112,7 +112,7 @@ namespace PoeClone.Visuals
         // skipping them here (rather than both scripts writing to the same pivot every frame)
         // avoids fighting over control regardless of script execution order.
         private CharacterAttackAnimator attackAnimator;
-        private bool RightArmSuppressed => attackAnimator != null && attackAnimator.IsAttacking;
+        private bool RightArmSuppressed => attackAnimator != null && (attackAnimator.IsAttacking || attackAnimator.ComboBracing);
         private bool LeftArmSuppressed => attackAnimator != null && attackAnimator.DrivesOffArm;
 
         // Read for its RecoilFraction only; Stagger itself lives on the root, not this model.
@@ -371,7 +371,7 @@ namespace PoeClone.Visuals
             // One foot lands every half-cycle (PI radians of phase); fire a step each
             // time we cross into a new half-cycle while actually moving.
             // A held channel (Whirlwind) plants the feet wide, knees bent, and glides instead of striding.
-            plant = Mathf.MoveTowards(plant, attackAnimator != null && attackAnimator.IsHolding ? 1f : 0f, 8f * dt);
+            plant = Mathf.MoveTowards(plant, attackAnimator != null && (attackAnimator.IsHolding || attackAnimator.ComboBracing) ? 1f : 0f, 8f * dt);
             float stepping = 1f - plant;
 
             int stepIndex = Mathf.FloorToInt(phase / Mathf.PI);
@@ -656,7 +656,7 @@ namespace PoeClone.Visuals
             // (the swing's own off-arm pose only seeds the solve); other off-arm poses let go.
             float weight = holdBlend;
             if (leftArmSuppressed)
-                weight = attackAnimator.SwingsTwoHanded ? 1f : 0f;
+                weight = attackAnimator.SwingsTwoHanded || attackAnimator.ComboBracing ? 1f : 0f;
 
             Transform weapon = equipmentVisuals.TwoHandedWeapon;
             if (weapon != mountedWeapon)

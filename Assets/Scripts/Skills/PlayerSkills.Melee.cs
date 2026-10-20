@@ -35,32 +35,119 @@ namespace PoeClone.Skills
         private float ComboArea => meleeFinisher ? 1.35f * DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea)) : 1f;
         private float ComboKnockback => meleeFinisher ? WeaponBonuses.Get(WeaponSkillEffect.ComboKnockback) : 0f;
         public bool MeleeFollowupReady => meleeComboQueued && Time.time >= meleeComboReadyAt;
+        private float comboPreviewStartedAt;
+        private readonly List<GroundTelegraph.Decal> comboPreview = new List<GroundTelegraph.Decal>();
 
         public void ResetMeleeCombo()
         {
             meleeComboSwing = 0;
             meleeComboQueued = false;
             meleeComboWeapon = null;
+            controller?.SetComboBrace(false);
+            if (attackAnimator != null) attackAnimator.ComboBracing = false;
+            ClearComboPreview();
         }
 
         /// <summary>Buffer one follow-up near the next swing, including a held attack.</summary>
-        public bool QueueMeleeFollowup(bool attackHeld)
+        public bool QueueMeleeFollowup(bool attackHeld, bool freshPress = false)
         {
             if (meleeComboSwing == 0) return false;
-            if (controller.MovementRevision != meleeComboMovement || controller.InputDirection().sqrMagnitude > 0.001f ||
+            if (controller.MovementRevision != meleeComboMovement || (!meleeComboQueued && !freshPress && controller.InputDirection().sqrMagnitude > 0.001f) ||
                 MainWeapon != meleeComboWeapon || Time.time > meleeComboReadyAt + ComboQueueWindow)
             {
                 ResetMeleeCombo();
                 return false;
             }
-            if (attackHeld && Time.time >= meleeComboReadyAt - ComboQueueWindow)
+            if (!meleeComboQueued && attackHeld && (freshPress || Time.time >= meleeComboReadyAt - ComboQueueWindow))
+            {
                 meleeComboQueued = true;
+                controller.SetComboBrace(true);
+                if (attackAnimator != null) attackAnimator.ComboBracing = true;
+                ShowComboPreview();
+            }
             return meleeComboQueued;
+        }
+
+        private void ClearComboPreview(bool release = false)
+        {
+            foreach (var decal in comboPreview)
+            {
+                if (decal.Root == null) continue;
+                if (release) decal.SetProgress(1f);
+                Destroy(decal.Root, release ? 0.07f : 0f);
+            }
+            comboPreview.Clear();
+        }
+
+        private void AdvanceComboPreview()
+        {
+            float progress = Mathf.InverseLerp(comboPreviewStartedAt, Mathf.Max(comboPreviewStartedAt + 0.01f, meleeComboReadyAt), Time.time);
+            foreach (var decal in comboPreview) decal.SetProgress(progress);
+        }
+
+        private void ShowComboPreview()
+        {
+            ClearComboPreview();
+            if (!ActiveMeleeSkill.HasValue) return;
+            var skill = SkillBook.Get(ActiveMeleeSkill.Value);
+            int length = WeaponSkillRules.ComboLength(skill.Grant);
+            bool final = length > 0 && (meleeComboSwing + 1) % length == 0;
+            float area = final ? 1.35f * DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea)) : 1f;
+            Vector3 facing = transform.forward;
+            Vector3 origin = transform.position + facing * (final ? 1.65f : 1.1f);
+            Vector3 slam = origin + facing * CharacterAttackAnimator.AttackRange(CurrentWeapon());
+            var pattern = SkillEffects.DamagePattern(skill);
+            void Add(GroundTelegraph.Decal decal)
+            {
+                decal.Root.name = "Locked combo area";
+                decal.Block.SetFloat("_Impact", 0f);
+                decal.Block.SetColor("_WarnColor", Color.Lerp(Color.black, skill.Color, 0.12f));
+                decal.Block.SetColor("_FillColor", skill.Color);
+                decal.SetProgress(0f);
+                comboPreview.Add(decal);
+            }
+            void Disc(Vector3 at, float radius, float angle = 180f) =>
+                Add(GroundTelegraph.ImpactDisc(at, facing, radius, angle, skill.Color, pattern));
+            void Line(Vector3 at, Vector3 along, float reach, float width) =>
+                Add(GroundTelegraph.ImpactLine(at, along, reach, width, skill.Color, pattern));
+            switch (skill.Id)
+            {
+                case SkillId.Cleave: Disc(origin, MeleeSkillReach() * area, CleaveHalfAngle); break;
+                case SkillId.Pulverize: Disc(slam, 3.6f * AreaMultiplier * MeleeRangeMultiplier * area); break;
+                case SkillId.Fissure: Line(slam, facing, FissureLength * MeleeRangeMultiplier * area, 2f * FissureHalfWidth * AreaMultiplier * area); break;
+                case SkillId.Aftershock:
+                    var radii = AftershockRadii(AftershockFirstRadius * AreaMultiplier * area * Mathf.Sqrt(WeaponBonuses.RangeMultiplier),
+                        3 + Mathf.RoundToInt(WeaponBonuses.Get(WeaponSkillEffect.ExtraWaves)));
+                    for (int k = 0; k < radii.Length; k++)
+                    {
+                        if (k > 0) slam += facing * (radii[k - 1] + radii[k]) * 0.85f;
+                        Disc(slam, radii[k]);
+                    }
+                    break;
+                case SkillId.CrossSlash:
+                    float reach = MeleeSkillReach() * area;
+                    foreach (float angle in new[] { 45f, -45f })
+                    {
+                        Vector3 along = Quaternion.Euler(0f, angle, 0f) * facing;
+                        Line(origin - along * reach, along, reach * 2f, 2f * CrossHalfWidth * AreaMultiplier * area);
+                    }
+                    break;
+                case SkillId.LungingThrust:
+                    Line(origin, facing, 3f * MeleeRangeMultiplier * area + LungeStep * WeaponBonuses.RangeMultiplier, final ? 2f : 0.8f);
+                    break;
+                case SkillId.FangStrike: Disc(origin, 2.4f * MeleeRangeMultiplier * area, final ? CleaveHalfAngle : 20f); break;
+                case SkillId.ReapingArc: Disc(origin, MeleeSkillReach() * area, 72f); break;
+                case SkillId.VenomSlash: Disc(origin, MeleeSkillReach() * area, VenomSlashHalfAngle); break;
+            }
+            comboPreviewStartedAt = Time.time;
         }
 
         private void BeginMeleeCombo(SkillDefinition skill, float interval)
         {
             bool continuing = QueueMeleeFollowup(false) && Time.time >= meleeComboReadyAt;
+            controller.BeginComboAttack(continuing);
+            if (attackAnimator != null) attackAnimator.ComboBracing = false;
+            ClearComboPreview(release: continuing);
             meleeComboSwing = continuing ? meleeComboSwing + 1 : 1;
             int length = WeaponSkillRules.ComboLength(skill.Grant);
             meleeFinisher = length > 0 && meleeComboSwing % length == 0;
@@ -77,7 +164,7 @@ namespace PoeClone.Skills
         {
             float elapsed = 0f;
             float stepped = 0f;
-            float distance = meleeComboSwing > 1 ? (meleeFinisher ? 0.6f : 0.38f) : 0f;
+            float distance = meleeComboSwing > 1 ? (meleeFinisher ? 1.65f : 1.1f) : 0f;
             while (elapsed < seconds)
             {
                 elapsed = Mathf.Min(seconds, elapsed + Time.deltaTime);
@@ -99,6 +186,10 @@ namespace PoeClone.Skills
             else if (meleeCleaveAccent)
                 PoeClone.CameraSystem.CameraFollow.Shake(0.08f, 0.1f);
         }
+
+        private EnemyHealth MeleeAimedEnemy(float reach) => controller.IsComboLocked
+            ? EnemyInDirection(transform.forward, reach)
+            : AimedEnemy(reach) ?? EnemyInDirection(transform.forward, reach);
 
         private void MeleeHit(EnemyHealth enemy, float damage, Color color, SkillId skill, float knockback)
         {
@@ -225,7 +316,7 @@ namespace PoeClone.Skills
 
             interval = MeleeInterval(id.Value);
             // Keep the normal cooldown for isolated attacks, but allow a queued follow-up after
-            // one third of the attack-speed-scaled interval. Fit the pose and hit into that gap.
+            // one quarter of the attack-speed-scaled interval. Fit the pose and hit into that gap.
             float comboInterval = interval / WeaponSkillRules.ComboFollowupSpeed;
             float rate = Mathf.Max(1f, MeleeSeconds(id.Value) / interval) * WeaponSkillRules.ComboFollowupSpeed;
             BeginMeleeCombo(skill, comboInterval);
@@ -340,7 +431,7 @@ namespace PoeClone.Skills
 
             // Closes the gap to what it's aimed at (up to LungeStep), never past it.
             float reach = 3f * MeleeRangeMultiplier * ComboArea;
-            EnemyHealth target = AimedEnemy(reach + LungeStep) ?? EnemyInDirection(transform.forward, reach + LungeStep);
+            EnemyHealth target = MeleeAimedEnemy(reach + LungeStep);
             float step = LungeStep * BonusesFor(skill.Id).RangeMultiplier;
             if (target != null)
             {
@@ -490,7 +581,7 @@ namespace PoeClone.Skills
         private void LungingThrust(SkillDefinition skill, int level, float reach, EnemyHealth target)
         {
             if (target == null || target.IsDead || !Within(target, reach))
-                target = AimedEnemy(reach) ?? EnemyInDirection(transform.forward, reach);
+                target = MeleeAimedEnemy(reach);
             SkillEffects.Arc(transform.position + Vector3.up, transform.position + Vector3.up + transform.forward * reach, skill.Color, 0.25f);
             foreach (EnemyHealth enemy in MeleeThrustTargets(target, reach, skill))
                 MeleeHit(enemy, WeaponDamage() * skill.WeaponMultiplierAt(level) * ComboDamage, CombatText.PhysicalColor, skill.Id, ComboKnockback);
@@ -546,7 +637,7 @@ namespace PoeClone.Skills
         private void FangStrike(SkillDefinition skill, int level)
         {
             float reach = 2.4f * MeleeRangeMultiplier * ComboArea;
-            EnemyHealth target = AimedEnemy(reach) ?? EnemyInDirection(transform.forward, reach);
+            EnemyHealth target = MeleeAimedEnemy(reach);
             Record(skill, level, reach);
             foreach (EnemyHealth enemy in MeleeThrustTargets(target, reach, skill))
             {

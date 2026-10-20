@@ -1,3 +1,8 @@
+version: 2026-10-20-braced-combo-followups
+- Combo follow-ups now run at four times the normal attack-speed-scaled cadence and step forward 1.1 metres, or 1.65 metres on a finisher. Build picker DPS includes the faster cadence.
+- A quick follow-up click buffers immediately and locks movement and facing through the next attack. Between swings the character braces with a raised weapon and planted feet, while a dark attack-area preview fills toward the skill's color.
+- Take 60% less damage while bracing or performing the locked follow-up, including poison damage. The protection ends with the action or cancellation. Whirlwind remains excluded.
+
 version: 2026-10-20-fast-combo-followups
 - Queued melee combo follow-ups now start after one-third of the normal weapon interval, still scaling with attack speed. Swing animations and hit timing are accelerated to fit the faster chain; missed queues and movement restore the normal attack cooldown.
 - Build picker DPS now includes the faster sustained combo cadence. Whirlwind remains unchanged.
