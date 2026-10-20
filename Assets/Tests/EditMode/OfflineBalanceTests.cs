@@ -18,6 +18,79 @@ namespace PoeClone.Tests
             .Select(a => a.GetType("PoeClone.EditorTools." + name)).First(t => t != null);
         private static object Call(string method, params object[] args) => EditorType("OfflineBalance").GetMethod(method).Invoke(null, args);
 
+        private static float SingleTarget(string skill, ItemData weapon, StatSheet sheet, bool cull = false)
+        {
+            var book = Type.GetType("PoeClone.Skills.SkillBook, Assembly-CSharp", true);
+            var skillId = Type.GetType("PoeClone.Skills.SkillId, Assembly-CSharp", true);
+            var model = Type.GetType("PoeClone.World.SingleTargetDamage, Assembly-CSharp", true);
+            object definition = book.GetMethod("Get").Invoke(null, new[] { Enum.Parse(skillId, skill) });
+            return (float)model.GetMethod("Estimate").Invoke(null,
+                new object[] { definition, weapon, sheet, new WeaponSkillBonuses(weapon), 0f, 0f, 0f, cull });
+        }
+
+        private static ItemData DamageWeapon(string baseId, StatType grant, string prefix, int points)
+        {
+            var item = ItemGenerator.Generate(new Random(1), baseId, 21, ItemRarity.Normal, grant);
+            item.SkillProgress = new WeaponSkillProgress { level = 10 };
+            for (int i = 0; i < points; i++) Assert.IsTrue(item.SkillProgress.Allocate(grant, prefix + i));
+            return item;
+        }
+
+        [Test]
+        public void SingleTarget_MageRallyIsTwentyPercentMoreAfterRepeatedSummons()
+        {
+            var weapon = DamageWeapon("bone_sceptre", StatType.GrantSkeletonMages, "v2_0_", 2);
+            var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.CastSpeed, 50), null);
+            float before = SingleTarget("SkeletonMages", weapon, sheet);
+            Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantSkeletonMages, "v2_0_2"));
+            Assert.AreEqual(before * 1.2f, SingleTarget("SkeletonMages", weapon, sheet), .001f);
+        }
+
+        [TestCase("Cleave", "rusty_sword", StatType.GrantCleave, "v2_2_", 20f)]
+        [TestCase("SpiritWolves", "bone_sceptre", StatType.GrantSpiritWolves, "v2_0_", 10f)]
+        public void SingleTarget_CullingSkipsLifeOnlyForNonBossEstimates(string skill, string baseId, StatType grant, string prefix, float threshold)
+        {
+            var weapon = DamageWeapon(baseId, grant, prefix, 5);
+            var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
+            float before = SingleTarget(skill, weapon, sheet);
+            Assert.IsTrue(weapon.SkillProgress.Allocate(grant, prefix + 5));
+            Assert.AreEqual(before, SingleTarget(skill, weapon, sheet), .001f, "Bosses cannot be culled");
+            Assert.AreEqual(before / (1 - threshold / 100), SingleTarget(skill, weapon, sheet, true), .001f);
+        }
+
+        [Test]
+        public void SingleTarget_OpeningDamageDoesNotInflateSustainedDamage()
+        {
+            var weapon = DamageWeapon("rusty_sword", StatType.GrantCleave, "v2_2_", 2);
+            var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
+            float before = SingleTarget("Cleave", weapon, sheet);
+            Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantCleave, "v2_2_2"));
+            Assert.AreEqual(before, SingleTarget("Cleave", weapon, sheet), .001f);
+        }
+
+        [Test]
+        public void SingleTarget_CurseOnHitAffectsPlayerHitsButNotMinionHits()
+        {
+            var basis = new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30);
+            var plain = StatSheet.Build(basis, null);
+            var cursed = StatSheet.Build(basis.Set(StatType.CurseOnHit, 100), null);
+            var staff = DamageWeapon("gnarled_staff", StatType.GrantFireBolt, "v2_0_", 0);
+            var wand = DamageWeapon("bone_sceptre", StatType.GrantSkeletonMages, "v2_0_", 0);
+            Assert.AreEqual(SingleTarget("FireBolt", staff, plain) * 1.15f, SingleTarget("FireBolt", staff, cursed), .001f);
+            Assert.AreEqual(SingleTarget("SkeletonMages", wand, plain), SingleTarget("SkeletonMages", wand, cursed), .001f);
+        }
+
+        [Test]
+        public void SingleTarget_MarchingHordeSpeedsAttackingMinionsOnly()
+        {
+            var basis = new BaseStats { Level = 21 };
+            var plain = StatSheet.Build(basis, null);
+            var horde = StatSheet.Build(basis.Set(StatType.MinionHordeSpeed, 10), null);
+            var wand = DamageWeapon("bone_sceptre", StatType.GrantSkeletonMages, "v2_0_", 0);
+            Assert.AreEqual(SingleTarget("SkeletonMages", wand, plain), SingleTarget("SkeletonMages", wand, horde), .001f);
+            Assert.Greater(SingleTarget("SpiritWolves", wand, horde), SingleTarget("SpiritWolves", wand, plain));
+        }
+
         [Test]
         public void Catalogue_CoversEverySkillAndEveryDestination_WithLegalBudgets()
         {

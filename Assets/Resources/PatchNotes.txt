@@ -1,3 +1,8 @@
+version: 2026-10-20-arena-dps-categories
+- Arena build categories now have separate pages for each minimum level, ranked by effective DPS with the category leader highlighted green.
+- DPS estimates now include the Skeleton Mage buff maintained by summoning, Marching Horde attack speed, and curse-on-hit uptime. Opening-hit, full/low-life and on-kill buffs remain excluded.
+- Build rows show both effective DPS including culling and boss DPS without it. Culling skips the final 10% or 20% of non-boss life; it does not affect bosses.
+
 version: 2026-10-20-heavy-weapon-passives
 - Cleave's sustain branch now grants heavy-hit damage and armour penetration, ending in 30% more damage. Opening Edge grants 20% more damage against full-life enemies, and Headsman's Blow executes non-boss enemies below 20% life.
 - Replaced life leech and life-on-hit passives on Reaping Arc, Lunging Thrust, Fissure, Aftershock and Cross Slash with damage, armour penetration or full-life bonuses.

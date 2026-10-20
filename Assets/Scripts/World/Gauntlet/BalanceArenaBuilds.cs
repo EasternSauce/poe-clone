@@ -31,12 +31,12 @@ namespace PoeClone.World
         public static Catalogue Data => catalogue ?? (catalogue = JsonUtility.FromJson<Catalogue>(Resources.Load<TextAsset>("BalanceArenaBuilds").text));
         private static string[] Split(string text) => string.IsNullOrEmpty(text) ? new string[0] : text.Split(',');
 
-        private static readonly Dictionary<Entry, float> damageEstimates = new Dictionary<Entry, float>();
+        private static readonly Dictionary<(Entry entry, bool boss), float> damageEstimates = new Dictionary<(Entry, bool), float>();
 
         /// <summary>Median of three repeatable poor-loot kits, without touching player state or RNG.</summary>
-        public static float EstimatedDps(Entry entry)
+        public static float EstimatedDps(Entry entry, bool boss = false)
         {
-            if (damageEstimates.TryGetValue(entry, out float cached)) return cached;
+            if (damageEstimates.TryGetValue((entry, boss), out float cached)) return cached;
             int seed = entry.level;
             foreach (char c in entry.id) seed = unchecked(seed * 31 + c);
             var rolls = new float[3];
@@ -53,10 +53,10 @@ namespace PoeClone.World
                 var weapon = equipment.GetActive(EquipSlot.MainHand);
                 rolls[i] = weapon == null ? 0 : SingleTargetDamage.Estimate(
                     SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill)), weapon, sheet,
-                    new WeaponSkillBonuses(weapon), out _, out _, out _);
+                    new WeaponSkillBonuses(weapon), out _, out _, out _, includeNonBossCull: !boss);
             }
             Array.Sort(rolls);
-            return damageEstimates[entry] = rolls[1];
+            return damageEstimates[(entry, boss)] = rolls[1];
         }
 
         public static GauntletLoadout.Result Equip(Entry entry, PlayerStats player, PlayerInventory inventory, System.Random rng)

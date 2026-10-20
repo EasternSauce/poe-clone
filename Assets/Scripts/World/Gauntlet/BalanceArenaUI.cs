@@ -193,21 +193,22 @@ namespace PoeClone.World
             if (!choices.Any(b => b.id == route)) route = choices[0].id;
             level = Mathf.Max(level, MinimumLevel);
             lowerLevelButton.color = !randomLevel && level <= MinimumLevel ? new Color(.45f, .45f, .45f) : Color.white;
-            // Fill pages across level groups so the first page doesn't hide every specialized
-            // route behind the lone level-one flexible build. Each row carries its minimum level.
-            var rankedChoices = new List<BalanceArenaBuilds.Entry>();
-            var leaders = new Dictionary<int, float>();
+            // Each page belongs to one minimum-level category, including continuation pages.
+            var categoryPages = new List<List<BalanceArenaBuilds.Entry>>();
+            var leaders = new Dictionary<int, string>();
             foreach (var group in choices.GroupBy(b => b.level).OrderBy(g => g.Key))
             {
                 var ranked = group.OrderByDescending(b => BalanceArenaBuilds.EstimatedDps(Preview(b)))
                     .ThenBy(b => b.name, System.StringComparer.Ordinal).ThenBy(b => b.id, System.StringComparer.Ordinal).ToList();
-                leaders[group.Key] = BalanceArenaBuilds.EstimatedDps(Preview(ranked[0]));
-                rankedChoices.AddRange(ranked);
+                leaders[group.Key] = ranked[0].id;
+                for (int offset = 0; offset < ranked.Count; offset += PageSize)
+                    categoryPages.Add(ranked.Skip(offset).Take(PageSize).ToList());
             }
-            int pages = Mathf.CeilToInt(rankedChoices.Count / (float)PageSize);
+            int pages = categoryPages.Count;
             page = Mathf.Clamp(page, 0, pages - 1);
-            visibleChoices = rankedChoices.Skip(page * PageSize).Take(PageSize).ToList();
-            levelGroupLabel.text = "Routes grouped by minimum level · Highest DPS first within each group";
+            visibleChoices = categoryPages[page];
+            int categoryLevel = visibleChoices[0].level;
+            levelGroupLabel.text = "MINIMUM LEVEL " + categoryLevel + " · Highest DPS first · Green = category leader";
             levelLabel.text = randomLevel ? "Level " + MinimumLevel + "–34" : "Level " + level;
             skillLabel.text = skill + "  (" + (System.Array.IndexOf(skills, skill) + 1) + "/" + skills.Length + ")";
             randomLevelButton.color = randomLevel ? Selected : Color.white;
@@ -219,18 +220,20 @@ namespace PoeClone.World
                 var choice = visibleChoices[i];
                 var preview = Preview(choice);
                 float dps = BalanceArenaBuilds.EstimatedDps(preview);
-                bool highest = dps == leaders[choice.level];
+                float bossDps = BalanceArenaBuilds.EstimatedDps(preview, boss: true);
+                bool highest = choice.id == leaders[choice.level];
                 routeLabels[i].text = choice.name + "  · Lv " + choice.level + "+" +
-                    "\n≈ " + dps.ToString("N0") + " DPS at Lv " + preview.level + (highest ? " · TOP DPS" : "");
+                    "\n≈ " + dps.ToString("N0") + " effective DPS" +
+                    (Mathf.Approximately(dps, bossDps) ? "" : " · " + bossDps.ToString("N0") + " boss DPS") +
+                    " at Lv " + preview.level + (highest ? " · TOP DPS" : "");
                 routeLabels[i].color = highest ? HighestDps : UiKit.TextColor;
                 routeButtons[i].color = !randomBuild && choice.id == route ? Selected : Color.white;
             }
-            pageLabel.text = "Routes " + (page * PageSize + 1) + "–" + (page * PageSize + visibleChoices.Count) +
-                " of " + rankedChoices.Count + " · Page " + (page + 1) + " / " + pages;
+            pageLabel.text = "Level " + categoryLevel + " category · Page " + (page + 1) + " / " + pages + " · " + choices.Count + " routes total";
             detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected: " + skill + " · " + choices.First(b => b.id == route).name) +
                 (randomBuild ? "\nRandom builds use routes available at the chosen level." : "\nMinimum level " + MinimumLevel + ". Change build to lower the level further.") +
-                "\nWorst 30% ground-loot gear. DPS: single target, full army; excludes movement/mana downtime." +
-                "\n20 waves of " + GauntletMode.ArenaMinMonsters + "–" + GauntletMode.ArenaMaxMonsters +
+                "\nDPS: full army + repeatable buffs; cull vs non-bosses. Excludes opening/kill buffs and downtime." +
+                "\nWorst 30% ground loot. 20 waves of " + GauntletMode.ArenaMinMonsters + "–" + GauntletMode.ArenaMaxMonsters +
                 " enemies and occasional bosses. No XP, loot or saves.";
         }
         private BalanceArenaBuilds.Entry Preview(BalanceArenaBuilds.Entry choice)

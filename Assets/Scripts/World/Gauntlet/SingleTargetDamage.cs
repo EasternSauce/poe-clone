@@ -11,7 +11,8 @@ using E = PoeClone.Inventory.WeaponSkillEffect;
 namespace PoeClone.World
 {
     /// <summary>Shared stationary single-target damage approximation for the survey and arena picker.
-    /// Includes damage over time and a full minion army; excludes mana downtime and movement.</summary>
+    /// Includes damage over time, a full minion army and repeatable on-hit/summon buffs.
+    /// Excludes opening hits, low/full-life and on-kill buffs, mana downtime and movement.</summary>
     public static class SingleTargetDamage
     {
         private static readonly EnemyKind[] benchmarkBosses = EnemyKinds.All.Where(e => e.IsBoss &&
@@ -20,7 +21,7 @@ namespace PoeClone.World
             Mathf.Max(.65f, 1.6f * (1 + chargeTimePercent / 100) / attackRate) + .35f / attackRate;
         private static DamageType BaseElement(SkillDefinition skill) => skill.MeleeAttack || skill.Bow ?
             skill.Id == SkillId.BurningArrow ? DamageType.Fire : DamageType.Physical : SkillEffects.DamagePattern(skill);
-        public static float Estimate(SkillDefinition skill, ItemData weapon, StatSheet sheet, WeaponSkillBonuses tree, out float hitDps, out float dotDps, out float uses)
+        public static float Estimate(SkillDefinition skill, ItemData weapon, StatSheet sheet, WeaponSkillBonuses tree, out float hitDps, out float dotDps, out float uses, bool includeNonBossCull = false)
         {
             float speed = Mathf.Max(.5f, 1 + ((skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.AttackSpeed) : sheet.Total(StatType.CastSpeed)) + tree.Get(E.Speed)) / 100);
             uses = skill.Spell ? 1f / Mathf.Max(.01f, skill.UseInterval(speed, sheet.CooldownRecoveryMultiplier)) :
@@ -42,7 +43,10 @@ namespace PoeClone.World
                 var kind = PlayerSkills.MinionKindOf(skill.Id);
                 int cap = Minion.CapFor(kind, tree, sheet);
                 float interval = kind == MinionKind.Warrior ? 1.1f : kind == MinionKind.Mage ? 1.6f : kind == MinionKind.Wolf ? .8f : kind == MinionKind.Golem ? 1.5f : 1.15f;
-                rate = Mathf.Max(.2f, 1 + (Minion.ActionSpeedIncreaseFor(kind, sheet, tree)) / 100) / interval;
+                float hordeSpeed = Minion.UsesProjectileSpell(kind) ? 0 : Mathf.Max(0, sheet.Total(StatType.MinionHordeSpeed)) * cap;
+                rate = Mathf.Max(.2f, 1 + (Minion.ActionSpeedIncreaseFor(kind, sheet, tree) + hordeSpeed) / 100) / interval;
+                // Regular resummoning maintains the four-second rally, a separate multiplier in Minion.ApplySpeed.
+                if (kind == MinionKind.Mage) rate *= 1 + tree.Get(E.MageCastSpeedAfterSummon) / 100;
                 baseHit = Minion.DamageFor(kind, 1, sheet, tree);
                 if (kind == MinionKind.Wolf) baseHit *= (100 + sheet.Total(StatType.MinionDamage) + sheet.Total(StatType.Intelligence) * .5f + tree.Get(E.Damage) + Math.Min(4, cap - 1) * tree.Get(E.PackHunt)) /
                     Mathf.Max(1, 100 + sheet.Total(StatType.MinionDamage) + sheet.Total(StatType.Intelligence) * .5f + tree.Get(E.Damage));
@@ -70,7 +74,10 @@ namespace PoeClone.World
                 if (skill.Bow && sheet.Total(StatType.PointBlank) > 0) multiplier *= StatSheet.PointBlankMultiplier(6);
             }
             float shock = ChanceUptime(tree.Get(E.Shock) + (element == DamageType.Lightning && !skill.Summon ? sheet.Total(StatType.ShockChance) : 0), rate * hits, 4 * tree.DurationMultiplier);
-            float dealt = AgainstEnemy(baseHit * multiplier * (1 + .25f * shock), element, sheet.Level, sheet, tree, skill.Summon);
+            // Minion hits do not trigger the owner's CurseOnHit stat (Minion.Deal).
+            float curse = skill.Summon ? 0 : ChanceUptime(sheet.Total(StatType.CurseOnHit), rate * hits, 4);
+            float taken = (1 + .25f * shock) * (1 + .15f * curse);
+            float dealt = AgainstEnemy(baseHit * multiplier * taken, element, sheet.Level, sheet, tree, skill.Summon);
             hitDps = dealt * rate * hits;
             dotDps = 0;
             float poison = tree.Get(E.Poison) / 100;
@@ -93,9 +100,18 @@ namespace PoeClone.World
             {
                 float treeIgnite = ChanceUptime(tree.Get(E.Ignite), rate * hits, 3 * tree.DurationMultiplier);
                 float ownerIgnite = skill.Summon ? 0 : ChanceUptime(sheet.Total(StatType.IgniteChance) + (skill.Id == SkillId.BurningArrow ? 20 : 0), rate * hits, 3 * tree.DurationMultiplier);
-                float ownerBurn = baseHit * tree.MoreDamageMultiplier * sheet.DamageMultiplier(false, false, false, false, StatType.FireDamage, damageOverTime: true, skillIncreased: tree.Get(E.Damage)) * 5 / (3 * tree.DurationMultiplier);
+                float ownerBurn = baseHit * taken * tree.MoreDamageMultiplier * sheet.DamageMultiplier(false, false, false, false, StatType.FireDamage, damageOverTime: true, skillIncreased: tree.Get(E.Damage)) * 5 / (3 * tree.DurationMultiplier);
                 // Ignites refresh/replace, never stack per projectile or per minion.
                 dotDps += AgainstEnemy(Mathf.Max(dealt * 5 / (3 * tree.DurationMultiplier) * treeIgnite, ownerBurn * ownerIgnite), DamageType.Fire, sheet.Level, sheet, tree, true);
+            }
+            // Culling skips the final fraction of life; use the strongest threshold, never add them.
+            // It is disabled on bosses in both hit paths, so the survey's default remains boss DPS.
+            if (includeNonBossCull)
+            {
+                float cull = Mathf.Max(tree.Get(E.Cull) / 100, !skill.Summon && sheet.Total(StatType.CullingStrike) > 0 ? DefenceMath.CullThreshold : 0);
+                float effective = 1 / Mathf.Max(.01f, 1 - Mathf.Clamp01(cull));
+                hitDps *= effective;
+                dotDps *= effective;
             }
             return Mathf.Max(0, hitDps + dotDps);
         }
