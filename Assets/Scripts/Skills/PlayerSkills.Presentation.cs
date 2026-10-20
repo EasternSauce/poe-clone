@@ -7,6 +7,30 @@ namespace PoeClone.Skills
 {
     public partial class PlayerSkills
     {
+        // Shared by the attacking player and replicated casts, at the actual damage release.
+        private static void PlayComboFinisherVisual(CastRecord cast, SkillDefinition skill)
+        {
+            Vector3 center = cast.At;
+            float radius = cast.Size;
+            switch (cast.Skill)
+            {
+                case SkillId.Pulverize:
+                case SkillId.CrossSlash:
+                    break;
+                case SkillId.Fissure:
+                case SkillId.Aftershock:
+                    if (cast.Points != null && cast.Points.Length > 0)
+                        center = cast.Points[0];
+                    break;
+                default:
+                    Vector3 forward = cast.Facing;
+                    forward.y = 0f;
+                    center += forward.normalized * Mathf.Min(radius * 0.5f, 2f);
+                    break;
+            }
+            // A short visual accent, kept compact so a long fissure doesn't hide the arena.
+            SkillEffects.Explosion(center, Mathf.Clamp(radius * 0.65f, 1.2f, 3.5f), skill.Color);
+        }
 
         /// <summary>
         /// Draws a cast's effect without any of its gameplay: harmless bolts and shards, the rings,
@@ -24,6 +48,7 @@ namespace PoeClone.Skills
             PlaySkillSound(cast.Skill, cast.At);
             if (cast.Finisher)
             {
+                PlayComboFinisherVisual(cast, skill);
                 var audio = PoeClone.Audio.AudioManager.Instance;
                 audio?.PlayEffect("combat.melee.finisher", cast.At, audio.Sfx("melee_combo_finisher"));
             }

@@ -55,11 +55,12 @@ namespace PoeClone.Skills
             return meleeComboQueued;
         }
 
-        private void BeginMeleeCombo(float interval)
+        private void BeginMeleeCombo(SkillDefinition skill, float interval)
         {
             bool continuing = QueueMeleeFollowup(false) && Time.time >= meleeComboReadyAt;
             meleeComboSwing = continuing ? meleeComboSwing + 1 : 1;
-            meleeFinisher = meleeComboSwing % 3 == 0;
+            int length = WeaponSkillRules.ComboLength(skill.Grant);
+            meleeFinisher = length > 0 && meleeComboSwing % length == 0;
             meleeComboQueued = false;
             meleeComboWeapon = MainWeapon;
             meleeComboMovement = controller.MovementRevision;
@@ -218,7 +219,7 @@ namespace PoeClone.Skills
             interval = MeleeInterval(id.Value);
             // Faster attacks speed the whole move up; slower ones leave a pause after it, like a swing.
             float rate = Mathf.Max(1f, MeleeSeconds(id.Value) / interval);
-            BeginMeleeCombo(Mathf.Max(interval, MeleeSeconds(id.Value) / rate));
+            BeginMeleeCombo(skill, Mathf.Max(interval, MeleeSeconds(id.Value) / rate));
             switch (skill.Id)
             {
                 case SkillId.Cleave:
@@ -487,7 +488,7 @@ namespace PoeClone.Skills
             Record(skill, level, reach);
         }
 
-        // Single-target thrusts open into a crowd-clearing cone on their third attack.
+        // Single-target thrusts open into a crowd-clearing cone on their combo finisher.
         private IEnumerable<EnemyHealth> MeleeThrustTargets(EnemyHealth primary, float reach, SkillDefinition skill)
         {
             if (!meleeFinisher)

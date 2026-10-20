@@ -4,7 +4,7 @@ using E = PoeClone.Inventory.WeaponSkillEffect;
 
 namespace PoeClone.Inventory
 {
-    /// <summary>Skill-local specializations. Three winding trunks each divide into two destinations.</summary>
+    /// <summary>Skill-local specializations: three branching trunks, plus a finisher route for melee swings.</summary>
     public static class WeaponSkillTrees
     {
         private static readonly Dictionary<StatType, List<WeaponSkillNode>> trees = Build();
@@ -161,7 +161,7 @@ namespace PoeClone.Inventory
                 P("Serpent Scales", U(E.MinionLife, 12), "Hardened Scales", M(B(E.MinionArmour, 100), B(E.MinionResists, 75)), "Persistent Brood", M(B(E.MinionDuration, 60), B(E.Minions, 1), B(E.MoreDamage, -15)), "Regrowth", B(E.MinionRegen, 3)),
                 P("Striking Serpents", U(E.MinionMoveSpeed, 15), "Quick Fangs", M(B(E.Speed, 15)), "Toxic Trail", M(B(E.Cloud, 25)), "Serpent Swarm", B(E.Minions, 1), B(E.MoreDamage, -15)));
             foreach (StatType grant in SkillGrants.MeleeSkills)
-                if (grant != StatType.GrantWhirlwind && t.TryGetValue(grant, out var meleeNodes))
+                if (WeaponSkillRules.ComboLength(grant) > 0 && t.TryGetValue(grant, out var meleeNodes))
                     AddComboBranch(meleeNodes, grant);
             return t;
         }
@@ -194,9 +194,9 @@ namespace PoeClone.Inventory
             {
                 case E.Damage: return Percent(b.Value, damage);
                 case E.MoreDamage: return More(b.Value, damage);
-                case E.ComboDamage: return More(b.Value, "damage with every third combo attack");
-                case E.ComboArea: return Percent(b.Value, "area of effect with every third combo attack");
-                case E.ComboKnockback: return "Every third combo attack knocks non-boss enemies back " + b.Value.ToString("0.#") + " metres";
+                case E.ComboDamage: return More(b.Value, "damage with combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks)");
+                case E.ComboArea: return Percent(b.Value, "area of effect with combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks)");
+                case E.ComboKnockback: return "Combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks) knock non-boss enemies back " + b.Value.ToString("0.#") + " metres";
                 case E.MageCastSpeedAfterSummon: return More(b.Value, "skeleton mage cast speed if you have summoned a minion in the last 4 seconds");
                 case E.Speed: return Percent(b.Value, grant == StatType.GrantSkeletonMages ? "minion cast speed" : minion ? "minion attack speed" : attack ? "attack speed" : "cast speed");
                 case E.Area: return Percent(b.Value, "area of effect" + (grant == StatType.GrantRainOfArrows ? " per arrow impact" : ""));

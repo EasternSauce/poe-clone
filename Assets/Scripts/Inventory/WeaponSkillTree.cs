@@ -144,6 +144,24 @@ namespace PoeClone.Inventory
 
     public static class WeaponSkillRules
     {
+        /// <summary>Distinct attacks per combo; channelled and non-melee skills have no combo.</summary>
+        public static int ComboLength(StatType grant)
+        {
+            switch (grant)
+            {
+                case StatType.GrantPulverize:
+                case StatType.GrantFissure:
+                case StatType.GrantAftershock:
+                case StatType.GrantReapingArc: return 3;
+                case StatType.GrantCleave:
+                case StatType.GrantLungingThrust:
+                case StatType.GrantCrossSlash: return 4;
+                case StatType.GrantFangStrike:
+                case StatType.GrantVenomSlash: return 5;
+                default: return 0;
+            }
+        }
+
         public static bool IsLevelBonus(StatType stat) =>
             stat == StatType.AllSpellLevels || stat == StatType.FireSpellLevels || stat == StatType.ColdSpellLevels ||
             stat == StatType.LightningSpellLevels || stat == StatType.MinionLevels ||

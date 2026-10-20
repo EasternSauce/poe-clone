@@ -2029,7 +2029,7 @@ MonoBehaviour:
   - id: combat.melee.finisher
     label: Melee combo finisher
     group: Combat
-    description: Heavy impact layered onto every third melee combo attack.
+    description: Heavy impact layered onto the final attack of each melee combo.
     soundGroupId: sound.combat.melee.finisher
     aliases: []
     sharedIds: []
@@ -2670,7 +2670,7 @@ MonoBehaviour:
     cooldown: 0
     topPriority: 0
   - id: sound.combat.melee.finisher
-    purpose: Third melee combo attack impact
+    purpose: Melee combo finisher impact
     clips:
     - {fileID: 8300000, guid: e55b5c1610d44addb031c58c9cee3ebe, type: 3}
     cooldown: 0

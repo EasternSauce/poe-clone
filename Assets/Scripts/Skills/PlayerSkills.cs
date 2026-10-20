@@ -109,7 +109,7 @@ namespace PoeClone.Skills
         private void Record(SkillDefinition skill, int level, float size = 0f, int count = 0, Vector3[] points = null, Vector3? at = null, Vector3? facing = null)
         {
             CastCount++;
-            recentCasts[CastCount % RecentCastCount] = new CastRecord
+            var cast = new CastRecord
             {
                 Number = CastCount,
                 Skill = skill.Id,
@@ -122,6 +122,9 @@ namespace PoeClone.Skills
                 Points = points,
                 Time = Time.time
             };
+            recentCasts[CastCount % RecentCastCount] = cast;
+            if (cast.Finisher)
+                PlayComboFinisherVisual(cast, skill);
         }
 
         public static string KeyLabel(int slot)

@@ -1,3 +1,8 @@
+version: 2026-10-20-combo-finisher-bursts
+- Combo finishers now erupt in a bright impact burst and expanding ring, also visible in co-op and spectator views.
+- Pulverize, Fissure, Aftershock and Reaping Arc finish on hit 3; Cleave, Lunging Thrust and Cross Slash on hit 4; Fang Strike and Venom Slash on hit 5. Whirlwind remains excluded.
+- Weapon-tree finisher bonuses now follow each skill's combo length, shown in their descriptions. Knockback still affects only non-boss enemies.
+
 version: 2026-10-20-melee-combos
 - Chain melee attacks by staying still and queueing the next swing within 0.22 seconds of its recovery. Movement or a missed window resets the combo; holding attack queues follow-ups automatically. Whirlwind is unchanged.
 - Follow-up attacks step forward, Cleave alternates swing direction, and every third attack deals 75% more damage with 35% greater reach, a heavy impact sound and a camera jolt. Third-hit thrusts also strike a cone of enemies.
