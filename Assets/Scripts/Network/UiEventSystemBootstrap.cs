@@ -15,21 +15,13 @@ namespace PoeClone.Network
     {
         public static void EnsureExists()
         {
-            var events = Object.FindAnyObjectByType<EventSystem>();
-            if (events == null)
-            {
-                var go = new GameObject("EventSystem");
-                events = go.AddComponent<EventSystem>();
-                Object.DontDestroyOnLoad(go);
-            }
-            events.enabled = true;
-            // An existing EventSystem is not enough: a scene may supply a legacy or disabled module.
-            foreach (var other in events.GetComponents<BaseInputModule>())
-                if (!(other is InputSystemUIInputModule)) other.enabled = false;
-            var input = events.GetComponent<InputSystemUIInputModule>();
-            if (input == null) input = events.gameObject.AddComponent<InputSystemUIInputModule>();
-            if (input.point == null || input.leftClick == null) input.AssignDefaultActions();
-            input.enabled = true;
+            if (Object.FindAnyObjectByType<EventSystem>() != null)
+                return;
+
+            var go = new GameObject("EventSystem");
+            go.AddComponent<EventSystem>();
+            go.AddComponent<InputSystemUIInputModule>();
+            Object.DontDestroyOnLoad(go);
         }
     }
 }

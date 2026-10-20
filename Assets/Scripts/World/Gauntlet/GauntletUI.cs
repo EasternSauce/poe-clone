@@ -57,11 +57,8 @@ namespace PoeClone.World
             UiKit.TopLeft(plate.rectTransform, pos, size);
             Text text = UiKit.NewText("Label", plate.rectTransform, label, fontSize, UiKit.TextColor, TextAnchor.MiddleCenter);
             UiKit.Stretch(text.rectTransform, 4f);
-            plate.raycastTarget = true;
-            var button = plate.gameObject.AddComponent<UnityEngine.UI.Button>();
-            button.targetGraphic = plate;
-            button.onClick.AddListener(() => onClick());
             UiKit.StyleButton(plate, text);
+            UiKit.OnClick(plate, onClick);
             return plate;
         }
 

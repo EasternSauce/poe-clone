@@ -1,15 +1,8 @@
+version: 2026-10-20-arena-workaround-rollback
+- Removed the experimental arena loading and Editor input workarounds.
+
 version: 2026-10-20-forward-cleave
 - Cleave now strikes a half-circle in front of you instead of spinning and hitting all around. Its attack releases three times faster, with a short recovery and matching animation and effects.
-
-version: 2026-10-20-arena-loading-startup
-- Interactive arenas now use the loading screen while the arena and interface initialize over player frames. Controls become available after UI layout and input-module activation.
-- Removed the ineffective automatic Editor pause/resume workaround.
-
-version: 2026-10-20-arena-input-startup-refresh
-- Interactive arenas now apply a single Editor pause/resume refresh after the setup menu appears, avoiding the manual pause/unpause workaround for unresponsive buttons. Later manual pauses and automated gauntlet runs are unaffected.
-
-version: 2026-10-20-arena-editor-input
-- Launching the arena now opens and focuses Unity's Game tab and routes mouse and keyboard input to the game during the session, including when Play Unfocused is configured. Stopping Play restores the previous input-routing setting.
 
 version: 2026-10-20-arena-route-pages
 - Arena build pages now fill across minimum-level groups, so specialized builds appear alongside the flexible tree on the first page. Each route retains its minimum-level label and DPS ranking within its group.
@@ -17,7 +10,6 @@ version: 2026-10-20-arena-route-pages
 
 version: 2026-10-19-editor-production-arena
 - Unity's PoeClone menu now opens Balance Test Arena with the same build selector, training doll and fights as the production arena.
-- Arena buttons now use standard Unity buttons, and arena startup preserves and initializes the UI input system.
 
 version: 2026-10-19-editor-menu-cleanup
 - Cleaned up the Unity PoeClone menu: removed redundant partial asset rebuild shortcuts and grouped full rebuilds under Maintenance, item and passive editors under Editors, and automated gauntlets under Balance. Class Gauntlet remains directly accessible.

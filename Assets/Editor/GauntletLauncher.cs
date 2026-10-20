@@ -26,7 +26,6 @@ namespace PoeClone.EditorTools
         private const string DevQueryKey = "PoeClone.DevQuery";
         private const string ActiveKey = "PoeClone.Gauntlet.Active";
         private const string PreviousQueryKey = "PoeClone.Gauntlet.PreviousQuery";
-        private const string PreviousInputKey = "PoeClone.Gauntlet.PreviousEditorInput";
         private const string QueueKey = "PoeClone.Gauntlet.Queue";
         private const string RowsKey = "PoeClone.Gauntlet.Rows";
         private const string OptionsKey = "PoeClone.Gauntlet.Options";
@@ -113,32 +112,15 @@ namespace PoeClone.EditorTools
         private static void Launch(string extra, bool arena = false)
         {
             if (!SessionState.GetBool(ActiveKey, false))
-            {
                 SessionState.SetString(PreviousQueryKey, PlayerPrefs.GetString(DevQueryKey, ""));
-                SessionState.SetInt(PreviousInputKey, (int)UnityEngine.InputSystem.InputSystem.settings.editorInputBehaviorInPlayMode);
-            }
             SessionState.SetBool(ActiveKey, true);
             PlayerPrefs.SetString(DevQueryKey, (arena ? "?arena=1" : "?minimal=1&gauntlet=1&drops=0&quests=0") + extra);
             PlayerPrefs.Save();
-            PrepareGameViewInput();
             EditorApplication.isPlaying = true;
-        }
-
-        private static void PrepareGameViewInput()
-        {
-            UnityEngine.InputSystem.InputSystem.settings.editorInputBehaviorInPlayMode =
-                UnityEngine.InputSystem.InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
-            // Menu launches can leave the Scene view or Console focused, especially with Play Unfocused.
-            // The arena must open in the interactive Game view rather than leave its canvas in Scene view.
-            var gameView = EditorWindow.GetWindow(Type.GetType("UnityEditor.GameView, UnityEditor"), false, "Game", true);
-            gameView.Show();
-            gameView.Focus();
         }
 
         private static void OnPlayModeChanged(PlayModeStateChange state)
         {
-            if (state == PlayModeStateChange.EnteredPlayMode && SessionState.GetBool(ActiveKey, false))
-                PrepareGameViewInput();
             if (state == PlayModeStateChange.ExitingPlayMode && SessionState.GetBool(ActiveKey, false))
                 CollectRow();
             if (state != PlayModeStateChange.EnteredEditMode || !SessionState.GetBool(ActiveKey, false)) return;
@@ -147,9 +129,6 @@ namespace PoeClone.EditorTools
             if (previous.Length > 0) PlayerPrefs.SetString(DevQueryKey, previous);
             else PlayerPrefs.DeleteKey(DevQueryKey);
             PlayerPrefs.Save();
-            UnityEngine.InputSystem.InputSystem.settings.editorInputBehaviorInPlayMode =
-                (UnityEngine.InputSystem.InputSettings.EditorInputBehaviorInPlayMode)SessionState.GetInt(PreviousInputKey,
-                    (int)UnityEngine.InputSystem.InputSettings.EditorInputBehaviorInPlayMode.PointersAndKeyboardsRespectGameViewFocus);
             SessionState.SetBool(ActiveKey, false);
         }
 
